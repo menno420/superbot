@@ -696,6 +696,111 @@ async def _apply_single(
             )
 
 
+# ---------------------------------------------------------------------------
+# Threshold writes (audited service seam)
+# ---------------------------------------------------------------------------
+#
+# The auto-role thresholds (time-in-server / XP level) have no dedicated
+# mutation pipeline — the panels write them straight through
+# ``utils.db.roles``.  These two functions give the threshold writes a
+# single audited seam so the setup wizard's ``set_role_threshold`` op can
+# route through a *service* (not raw DB) and the change surfaces on the
+# audit channel, mirroring how the setup dispatcher's cog-routing arm
+# handles a no-pipeline write (route through a service + emit
+# ``audit.action_recorded``).  ``role_id`` / ``display_name`` are captured
+# (PR6 id-groundwork) so a later rename does not orphan the tier.
+
+
+async def set_time_threshold(
+    *,
+    guild_id: int,
+    role_id: int,
+    role_name: str,
+    days: int,
+    actor_id: int | None,
+    actor_type: str = "user",
+) -> str:
+    """Set a role's time-in-server auto-assign threshold (days).
+
+    Persists through the canonical :mod:`utils.db.roles` layer, then
+    emits the ``audit.action_recorded`` companion.  Returns the
+    ``mutation_id``.
+    """
+    import uuid
+
+    from utils.db import roles as roles_db
+
+    mutation_id = str(uuid.uuid4())
+    await roles_db.set_role_threshold(
+        guild_id,
+        role_name,
+        days,
+        role_id=role_id,
+        display_name=role_name,
+    )
+    await emit_audit_action(
+        mutation_id=mutation_id,
+        subsystem="role_automation",
+        mutation_type="set_time_threshold",
+        target=f"role:{role_id}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=None,
+        new_value=f"{days}d",
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=datetime.now(tz=timezone.utc),
+    )
+    return mutation_id
+
+
+async def set_xp_threshold(
+    *,
+    guild_id: int,
+    role_id: int,
+    role_name: str,
+    level: int,
+    actor_id: int | None,
+    actor_type: str = "user",
+    auto_assign: bool = True,
+) -> str:
+    """Set a role's XP-level auto-assign threshold.
+
+    Persists via :mod:`utils.db.roles`, invalidates the XP-threshold
+    cache so the live XP listener picks the change up, then emits the
+    audit companion.  Returns the ``mutation_id``.
+    """
+    import uuid
+
+    from utils.db import roles as roles_db
+    from utils.guild_config_accessors import invalidate_xp_threshold_roles
+
+    mutation_id = str(uuid.uuid4())
+    await roles_db.set_role_xp_threshold(
+        guild_id,
+        role_name,
+        level,
+        auto_assign,
+        role_id=role_id,
+        display_name=role_name,
+    )
+    invalidate_xp_threshold_roles(guild_id)
+    await emit_audit_action(
+        mutation_id=mutation_id,
+        subsystem="role_automation",
+        mutation_type="set_xp_threshold",
+        target=f"role:{role_id}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=None,
+        new_value=f"L{level}",
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=datetime.now(tz=timezone.utc),
+    )
+    return mutation_id
+
+
 __all__ = [
     "ApplyError",
     "ApplyResult",
@@ -706,5 +811,7 @@ __all__ = [
     "check_preflight",
     "compute_assignments",
     "explain_assignment_for",
+    "set_time_threshold",
+    "set_xp_threshold",
     "summarize_failures",
 ]

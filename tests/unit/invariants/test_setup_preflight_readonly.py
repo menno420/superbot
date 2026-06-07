@@ -28,6 +28,7 @@ _PREFLIGHT_FUNCS: frozenset[str] = frozenset(
         "_preflight_clear_binding",
         "_preflight_set_setting",
         "_preflight_set_cog_routing",
+        "_preflight_set_role_threshold",
     },
 )
 

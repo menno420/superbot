@@ -87,6 +87,15 @@ _REACHABILITY_EXEMPT_BADGES = frozenset({"historical", "archive"})
 # deliberately unlinked; prefer linking it from a folio/README/read-path doc.
 _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 
+# Soft ratchet on the *top-level* docs/ pile (docs/*.md, not subdirs). The
+# friction a new session feels is the count, not any one doc — so freeze the
+# top-level count at today's value and only ever lower it as plans / audits /
+# historical snapshots move into a subdir (docs/archive/, docs/planning/, …).
+# This is a **soft** forcing function: the census prints every run and warns on
+# a breach, but it never changes the exit code (adding a genuinely top-level doc
+# must not break CI). Lower this number when you trim; never raise it.
+_TOP_LEVEL_DOCS_BUDGET = 41
+
 
 def _docs_files() -> list[Path]:
     return sorted(DOCS_ROOT.rglob("*.md"))
@@ -269,6 +278,46 @@ def check_freshness() -> list[tuple[Path, str, str]]:
     return violations
 
 
+def census() -> tuple[int, int, dict[str, int]]:
+    """Return ``(total_docs, top_level_count, counts_by_badge)``.
+
+    Pure (no printing) so it is unit-testable. ADRs are counted under a
+    synthetic ``decision (ADR)`` key since they carry no Status badge.
+    """
+    files = _docs_files()
+    by_badge: dict[str, int] = {}
+    for f in files:
+        key = "decision (ADR)" if _is_adr(f) else (_doc_badge(f) or "(unbadged)")
+        by_badge[key] = by_badge.get(key, 0) + 1
+    top_level = sum(1 for f in files if f.parent == DOCS_ROOT)
+    return len(files), top_level, by_badge
+
+
+def print_census() -> None:
+    """Print the doc census + the top-level-pile ratchet status.
+
+    Informational and **soft** — never changes the exit code. The point is
+    to keep the doc surface visible every run so the top-level pile can't
+    silently regrow past :data:`_TOP_LEVEL_DOCS_BUDGET`.
+    """
+    total, top_level, by_badge = census()
+    print("check_docs census:")
+    print(
+        f"  total docs: {total}  ·  top-level docs/*.md: {top_level} "
+        f"(ratchet {_TOP_LEVEL_DOCS_BUDGET})",
+    )
+    ordered = sorted(by_badge.items(), key=lambda kv: (-kv[1], kv[0]))
+    print("  by badge: " + ", ".join(f"{k}={n}" for k, n in ordered))
+    if top_level > _TOP_LEVEL_DOCS_BUDGET:
+        print(
+            f"  ⚠ top-level pile grew by {top_level - _TOP_LEVEL_DOCS_BUDGET} over "
+            "the ratchet — move plans/audits/historical snapshots into a docs/ "
+            "subdir (folio-linked), or lower the ratchet if you intentionally "
+            "trimmed. (soft — not a CI failure)",
+        )
+    print()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SuperBot doc-hygiene checker.")
     parser.add_argument(
@@ -277,6 +326,8 @@ def main(argv: list[str] | None = None) -> int:
         help="exit 1 if any violation (CI gate); default reports and exits 0",
     )
     args = parser.parse_args(argv)
+
+    print_census()
 
     violations = (
         check_badges()

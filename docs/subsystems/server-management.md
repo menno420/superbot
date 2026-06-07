@@ -76,8 +76,10 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   hub at the administrator floor).
 - Channel creation remains owned by resource provisioning; clone, overwrites, and
   some category/lifecycle follow-ups remain outside the shipped lifecycle service.
-- Cleanup and setup exist today, but the tracker queues their server-management
-  convergence/expansion rather than treating the old roadmap sequence as shipped.
+- Cleanup and setup exist today; setup convergence has begun — the setup wizard now has
+  **moderation** and **roles** sections (PR11 moderation + roles slices, 2026-06-07) that
+  stage `set_setting` / `set_role_threshold` drafts through the Final-Review apply gate. The
+  tracker queues the remaining setup work (diagnostics/repair, templates, hub).
 - Known UX follow-ups: moderation member quicksearch via `discord.ui.UserSelect`
   (`unban` remains ID-based); bulk **Clear missing** on time/XP panels; selector-ize
   Edit Role.
@@ -94,9 +96,10 @@ requested from the cleanup subsystem), the optional public moderation log
 (`public_log_actions` / `public_log_channel`, moderator-redacted, delivered by
 `server_logging`), and **moderator/trusted roles + capabilities** (ADR-008,
 capability-native: a configured role resolves to the `moderator` tier via the governance
-tier resolver). Next comes **PR11** (setup role/moderation/governance sections), then
-repair sections, role templates, and finally the unified Server Management Hub. Link to
-the tracker for exact order and dependencies rather than copying them here.
+tier resolver). **PR11's moderation + roles setup sections are built** (2026-06-07, owner
+decision Q-0008; governance section deferred). Next comes **PR12** (setup diagnostics &
+repair), then role templates, and finally the unified Server Management Hub. Link to the
+tracker for exact order and dependencies rather than copying them here.
 
 ## Ideas (not approved)
 
@@ -111,10 +114,13 @@ reusable so a web companion is *possible* later, but do not start web work now.
 ## Next candidates
 
 1. **PR10 is complete** (all six slices, ending with moderator/trusted **roles +
-   capabilities** — ADR-008). Next is **PR11** (setup role/moderation/governance
-   sections): reuse provisioning previews/confirmation + capability checks; do not add a
-   second resource-creation path. Verify source before using either older planning
-   document.
+   capabilities** — ADR-008). **PR11's moderation + roles setup sections are built**
+   (2026-06-07, owner decision Q-0008): the moderation section stages `set_setting` drafts
+   for the PR10 knobs; the roles section adds a `set_role_threshold` op-kind (routed through
+   the audited `role_automation.set_{time,xp}_threshold` seam) for time/XP auto-role tiers.
+   PR11's **governance** section is **deferred** (cleanup already owns the main governance
+   write). Next is **PR12** (setup diagnostics & repair). Reuse provisioning
+   previews/confirmation + capability checks; never add a second resource-creation path.
 2. Take one bounded known UX follow-up (member quicksearch or role selector/cleanup)
    without changing lifecycle ownership.
 3. When extending setup, reuse provisioning previews/confirmation and capability

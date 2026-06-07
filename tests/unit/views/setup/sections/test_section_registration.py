@@ -23,6 +23,8 @@ def test_all_production_sections_are_registered():
         "identity",
         "channels",
         "cleanup",
+        "moderation",
+        "roles",
         "cog_routing",
         "final_review",
     }

@@ -22,9 +22,11 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
     final_review,
     identity,
     logging_presets,
+    moderation,
     preset_select,
     purpose,
     readiness,
+    roles,
     server_scan,
     suggestions,
 )
@@ -38,9 +40,11 @@ __all__ = [
     "final_review",
     "identity",
     "logging_presets",
+    "moderation",
     "preset_select",
     "purpose",
     "readiness",
+    "roles",
     "server_scan",
     "suggestions",
 ]

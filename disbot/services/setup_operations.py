@@ -126,6 +126,7 @@ OperationKind = Literal[
     "disable_automation_rule",
     "set_cleanup_policy",
     "set_cog_routing",
+    "set_role_threshold",
 ]
 
 OperationStatus = Literal["applied", "failed", "skipped", "not_yet_implemented"]
@@ -147,12 +148,18 @@ _KNOWN_KINDS: frozenset[str] = frozenset(
         "disable_automation_rule",
         # Per-feature op kinds.  ``set_cleanup_policy`` routes through
         # governance.writes.set_cleanup_policy_for_scope; ``set_cog_routing``
-        # routes through services.command_routing.set_policy.  See the
+        # routes through services.command_routing.set_policy;
+        # ``set_role_threshold`` routes through
+        # services.role_automation.set_{time,xp}_threshold.  See the
         # dispatch arms in this module.
         "set_cleanup_policy",
         "set_cog_routing",
+        "set_role_threshold",
     },
 )
+
+# set_role_threshold sub-kinds carried on ``op.setting_name``.
+_ROLE_THRESHOLD_KINDS: frozenset[str] = frozenset({"time", "xp"})
 
 # bind_* kinds that route through BindingMutationPipeline.set_binding.
 _BINDING_KINDS: frozenset[str] = frozenset(
@@ -413,6 +420,15 @@ async def preflight_operations(
                     guild_id,
                 )
             )
+        elif kind == "set_role_threshold":
+            # Needs the live guild (not just guild_id) for the read-only
+            # bot-feasibility note (can the bot actually assign this role?).
+            current, proposed, would_change, read_error = (
+                await _preflight_set_role_threshold(
+                    op,
+                    guild,
+                )
+            )
         else:
             # Known kind without a v1 read adapter (create_*, automation,
             # cleanup_policy).  Render proposed value where available;
@@ -578,6 +594,91 @@ async def _preflight_set_cog_routing(
         )
     current = ChangeValue(kind="value", value=bool(current_val))
     would_change = bool(current_val) != proposed_val
+    return current, proposed, would_change, None
+
+
+async def _preflight_set_role_threshold(
+    op: SetupOperation,
+    guild: Any,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read-only current/proposed diff for a role-threshold op + a bot-feasibility note.
+
+    Two read-only signals, so Final Review is not blind to role tiers (the
+    gap before this adapter — the op fell to ``no_adapter``):
+
+    * **diff** — the role's current time/XP tier vs. the proposed one
+      (id-first, so a renamed role is matched by id);
+    * **feasibility** — a hint folded into the proposed display when the bot
+      could not actually *assign* the role (missing / above the bot / no
+      Manage Roles), surfacing the ``role_automation.check_preflight`` class
+      of blocker at review time. The threshold write itself is benign config
+      (assignment is separately guarded in ``role_automation.apply``); this is
+      transparency, not a gate.
+
+    **Read-only by contract** (``test_setup_preflight_readonly``): no DB write,
+    no mutation pipeline — only ``get_role_thresholds`` (read), ``resolve_role``,
+    and ``evaluate_role``.
+    """
+    from services.setup_change_plan import UNKNOWN, ChangeValue
+
+    sub_kind = (op.setting_name or "").strip().lower()
+    proposed = ChangeValue(kind="value", value=_fmt_threshold(sub_kind, op.value))
+    guild_id = getattr(guild, "id", None)
+    if guild_id is None or sub_kind not in ("time", "xp") or op.target_id is None:
+        return (UNKNOWN, proposed, True, "missing guild/sub-kind/target on op")
+
+    current: ChangeValue = UNKNOWN
+    would_change = True
+    try:
+        from utils.db import roles as roles_db
+
+        rows = await roles_db.get_role_thresholds(guild_id)
+        row = next((r for r in rows if r.get("role_id") == op.target_id), None)
+        if row is not None:
+            cur = (
+                row.get("days_required")
+                if sub_kind == "time"
+                else row.get(
+                    "level_required",
+                )
+            )
+            current = ChangeValue(
+                kind="value",
+                value=(_fmt_threshold(sub_kind, cur) if cur else None),
+            )
+            try:
+                would_change = int(cur or 0) != int(op.value)
+            except (TypeError, ValueError):
+                would_change = True
+    except Exception as exc:  # noqa: BLE001 — preflight is fail-safe
+        return (UNKNOWN, proposed, True, f"{type(exc).__name__}: {exc}")
+
+    # Bot-feasibility note (read-only): can the bot actually assign this role?
+    try:
+        from core.runtime import guild_resources as resources
+        from utils.role_feasibility import (
+            ABOVE_BOT,
+            BOT_MISSING_MANAGE_ROLES,
+            evaluate_role,
+        )
+
+        role = resources.resolve_role(guild, role_id=op.target_id)
+        if role is None:
+            note = "⚠ role missing — automation can't assign"
+        else:
+            code = evaluate_role(role, bot_member=getattr(guild, "me", None)).code
+            note = {
+                BOT_MISSING_MANAGE_ROLES: "⚠ bot lacks Manage Roles",
+                ABOVE_BOT: "⚠ above bot's top role — automation can't assign",
+            }.get(code, "")
+        if note:
+            proposed = ChangeValue(
+                kind="value",
+                value=f"{_fmt_threshold(sub_kind, op.value)}  {note}",
+            )
+    except Exception:  # noqa: BLE001 — the note is best-effort, never fatal
+        pass
+
     return current, proposed, would_change, None
 
 
@@ -887,6 +988,14 @@ async def _dispatch_one(
 
         if op.kind == "set_cog_routing":
             return await _apply_set_cog_routing(
+                op,
+                guild=guild,
+                actor=actor,
+                label=label,
+            )
+
+        if op.kind == "set_role_threshold":
+            return await _apply_set_role_threshold(
                 op,
                 guild=guild,
                 actor=actor,
@@ -1350,6 +1459,102 @@ async def _apply_set_cog_routing(
     )
 
 
+async def _apply_set_role_threshold(
+    op: SetupOperation,
+    *,
+    guild: Any,
+    actor: Any,
+    label: str,
+) -> SetupOperationResult:
+    """Persist an auto-role threshold via :mod:`services.role_automation`.
+
+    The threshold sub-kind (``"time"`` / ``"xp"``) rides ``op.setting_name``
+    and the numeric value (days for time, level for xp) rides ``op.value``;
+    ``op.target_id`` is the role id.  Routes through the audited
+    ``role_automation.set_{time,xp}_threshold`` seam — a service, not a raw
+    DB write — mirroring the cog-routing arm's no-pipeline pattern (the
+    setup-operations invariant forbids a top-level ``utils.db`` import).
+    """
+    from services import role_automation
+
+    sub_kind = (op.setting_name or "").strip().lower()
+    if sub_kind not in _ROLE_THRESHOLD_KINDS:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=(
+                f"set_role_threshold: setting_name {op.setting_name!r} must be "
+                f"one of {sorted(_ROLE_THRESHOLD_KINDS)}"
+            ),
+        )
+
+    if op.target_id is None:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_role_threshold: requires target_id (the role id)",
+        )
+
+    # Drafts round-trip values as strings; coerce back to int.
+    try:
+        value = int(op.value)
+    except (TypeError, ValueError):
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=f"set_role_threshold: value {op.value!r} is not an integer",
+        )
+    if value <= 0:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_role_threshold: value must be a positive integer",
+        )
+
+    # Resolve the role name id-first via the canonical resolver; the row is
+    # keyed by role_name with role_id captured so a later rename does not
+    # orphan the tier.
+    from core.runtime import guild_resources as resources
+
+    role = resources.resolve_role(guild, role_id=op.target_id)
+    role_name = getattr(role, "name", None) or op.target_name
+    if not role_name:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_role_threshold: could not resolve the role name",
+        )
+
+    actor_id = getattr(actor, "id", None)
+    if sub_kind == "time":
+        mutation_id = await role_automation.set_time_threshold(
+            guild_id=guild.id,
+            role_id=op.target_id,
+            role_name=role_name,
+            days=value,
+            actor_id=actor_id,
+        )
+    else:  # "xp"
+        mutation_id = await role_automation.set_xp_threshold(
+            guild_id=guild.id,
+            role_id=op.target_id,
+            role_name=role_name,
+            level=value,
+            actor_id=actor_id,
+        )
+    return SetupOperationResult(
+        status="applied",
+        operation=op,
+        label=label,
+        mutation_id=mutation_id,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -1392,7 +1597,25 @@ def _label(op: SetupOperation) -> str:
         enabled = _coerce_routing_enabled(op)
         flag = "enabled" if enabled else "disabled"
         return f"cog_routing.{scope}({scope_label}).{op.value!r} = {flag}"
+    if op.kind == "set_role_threshold":
+        sub_kind = op.setting_name or "?"
+        role_label = op.target_name or (
+            str(op.target_id) if op.target_id is not None else "?"
+        )
+        return (
+            f"role_threshold.{sub_kind}({role_label}) = "
+            f"{_fmt_threshold(sub_kind, op.value)}"
+        )
     return f"{op.kind}: {op.subsystem}"
+
+
+def _fmt_threshold(sub_kind: str, value: Any) -> str:
+    """Human label for a role-threshold value: time → ``"7d"``, xp → ``"L10"``."""
+    if sub_kind == "time":
+        return f"{value}d"
+    if sub_kind == "xp":
+        return f"L{value}"
+    return f"{value}"
 
 
 __all__ = [

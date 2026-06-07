@@ -737,3 +737,169 @@ Moved/copied on: 2026-06-07 — implemented: format_public_log_embed shows membe
   no actor; the staff mod-log keeps the full record.
 Notes: one fact, one home — server-logging.md owns the embed-content contract.
 ```
+
+### Q-0008 — How far to take PR11 (setup role/moderation/governance sections)?
+
+**Area:** Server management / Setup wizard
+**Type:** Scope / Sequencing
+**Priority:** Medium
+**Status:** Answered (2026-06-07) — **Routed** (built this session)
+**Suggested destination after answer:** server-management tracker (Remaining queue) + folio
+
+**Question:** PR11 nominally bundles three setup-wizard sections (roles, moderation,
+governance). Source analysis showed the **moderation** section maps cleanly onto the
+existing `set_setting` dispatch (no new infra), **roles** (time/XP automation) needs a
+small new `set_role_threshold` op-kind, and **governance** is ambiguous in scope — its
+main write (cleanup policy) is already a wizard section, so what remains
+(capability-overrides / command-access) is a distinct feature needing its own design.
+How far should PR11 go this session?
+
+**Maintainer answer**
+
+```text
+Answer: "Moderation + Roles."
+Build the Moderation setup section and the Roles setup section (with the new
+set_role_threshold op-kind) this session. Defer the Governance section.
+```
+
+**Routing result**
+
+```text
+Destination: docs/planning/server-management-status-2026-06-05.md (Remaining queue) +
+  the server-management folio + docs/current-state.md (▶ Next action).
+Moved/copied on: 2026-06-07 — built: views/setup/sections/moderation.py (set_setting
+  drafts for dm_on_action / require_reason / warn_escalation_action / moderator_role) and
+  views/setup/sections/roles.py (set_role_threshold drafts for time/XP tiers), plus the
+  new set_role_threshold op-kind routed through services.role_automation.set_{time,xp}_
+  threshold. Governance section deferred — cleanup already covers the main governance
+  write; capability-override/command-access setup is a separate, design-led follow-up.
+Notes: the server-management tracker owns the PR11→PR14 queue; governance setup is not yet
+  a committed PR11 deliverable and needs a scope decision before it is built.
+```
+
+### Q-0009 — How much autonomy do agents have to shape the workflow itself?
+
+**Area:** Workflow / Meta (the self-improving ecosystem)
+**Type:** Autonomy boundary
+**Priority:** High
+**Status:** Answered (2026-06-07) — **Routed**
+**Suggested destination after answer:** `docs/collaboration-model.md` + `.claude/CLAUDE.md`
++ `.session-journal.md` (REVIEW/Authority)
+
+**Question:** The journal said durable workflow rules only land in CLAUDE.md/hooks with
+per-rule maintainer approval. The vision (AI runs the workflow, owner oversees vision)
+suggests agents could self-improve the workflow faster. How much autonomy for shaping the
+workflow?
+
+**Maintainer answer**
+
+```text
+Answer: "Docs free, ask for config."
+Free rein to improve docs / journal / orientation / folios without asking. Ask before
+changing executable config — hooks, .claude/settings.json, or the binding *rules* in
+.claude/CLAUDE.md (architecture / CI / layer rules).
+```
+
+**Routing result**
+
+```text
+Destination: docs/collaboration-model.md § "Why this system exists" (the boundary) +
+  .claude/CLAUDE.md Working-agreement bullet + .session-journal.md REVIEW + Authority.
+Moved/copied on: 2026-06-07 — encoded the boundary in all three. Adding a pointer/ethos to
+  CLAUDE.md counts as docs; adding an enforced rule or a hook counts as config (ask).
+Notes: this is the operating rule for the self-improving-ecosystem loop.
+```
+
+### Q-0010 — Do you want the top-level docs/ pile actively shrunk?
+
+**Area:** Docs / Workflow
+**Type:** Scope / Priority
+**Priority:** Medium
+**Status:** Answered (2026-06-07) — **Routed**
+**Suggested destination after answer:** `docs/current-state.md` Next candidates +
+`scripts/check_docs.py` census ratchet
+
+**Question:** The top-level `docs/` pile is 41 files; the new census ratchet stops growth.
+Long-term, do you want a dedicated session to actively shrink it (move plans/audits/
+historical into subdirs behind the folios, target ~15)?
+
+**Maintainer answer**
+
+```text
+Answer: "Schedule it soon."
+A near-term dedicated docs session does the 41 → ~15 consolidation, then lowers the ratchet.
+```
+
+**Routing result**
+
+```text
+Destination: docs/current-state.md "Next candidates" (scheduled item) + the
+  _TOP_LEVEL_DOCS_BUDGET ratchet comment in scripts/check_docs.py.
+Moved/copied on: 2026-06-07 — recorded as a near-term docs lane. The census prints the live
+  count every run; the ratchet holds the line until the consolidation lowers it.
+Notes: consolidation moves content into subdirs behind folios — it does not delete content;
+  reachability + freshness gates must stay green.
+```
+
+### Q-0011 — What should the deferred governance setup section configure?
+
+**Area:** Server management / Setup wizard
+**Type:** Scope
+**Priority:** Medium
+**Status:** Answered (2026-06-07) — **Routed** (records intent; not built yet)
+**Suggested destination after answer:** server-management status tracker (PR11 subsection)
+
+**Question:** PR11's deferred "governance" setup section — what should it eventually
+configure, if anything?
+
+**Maintainer answer**
+
+```text
+Answer: "Capability overrides + Command-access policy."
+The governance section, when built, should configure (1) per-guild capability overrides
+(delegate moderation/admin to a role) and (2) command-access policy (which channels the bot
+responds in).
+```
+
+**Routing result**
+
+```text
+Destination: docs/planning/server-management-status-2026-06-05.md (PR11 "Remaining" note).
+Moved/copied on: 2026-06-07 — scope recorded: capability_execution_overrides (governance) +
+  command_access_service, staged through Final Review like other sections, likely via new
+  set_capability_override / set_command_access op-kinds (mirroring set_cog_routing). Not
+  started; sequence after PR12 unless pulled forward.
+Notes: this is intent capture, not approval to build now.
+```
+
+### Q-0012 — Should each session record a structured "context delta"?
+
+**Area:** Workflow / Meta (the self-improving ecosystem)
+**Type:** Process
+**Priority:** High
+**Status:** Answered (2026-06-07) — **Routed**
+**Suggested destination after answer:** `.sessions/README.md` template + `.session-journal.md`
+(END + REVIEW)
+
+**Question:** To make "every session improves the next" measurable, should each session log
+a short structured "context delta" — what it needed vs. what orientation pointed it to, and
+what it had to discover by hand — that a periodic review mines to promote recurring gaps?
+
+**Maintainer answer**
+
+```text
+Answer: "Yes, in the log template."
+Add a required short "context delta" field to the .sessions/ log template + a REVIEW step
+that mines it.
+```
+
+**Routing result**
+
+```text
+Destination: .sessions/README.md (required Context-delta section in the convention) +
+  .session-journal.md END protocol (write it) + REVIEW step (mine it) +
+  docs/collaboration-model.md § "Why this system exists" (the loop).
+Moved/copied on: 2026-06-07 — added the three-bullet Context-delta field (needed-not-pointed /
+  pointed-not-needed / discovered-by-hand) and the REVIEW mining step.
+Notes: this is the measurement that turns "hopefully better" into "demonstrably better".
+```
