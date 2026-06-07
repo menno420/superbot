@@ -31,7 +31,8 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   blackjack, and deathmatch panel paths became actionable; settings/readiness and
   back-navigation contracts were added.
 - Terminal-button behavior/history is guarded by the help/games actionability tests;
-  future changes should inspect terminal callbacks, disabled-state edits, timeout
+  the 2026-06-06 readiness review found no source/test evidence of an unresolved
+  terminal-state “interaction failed” regression. Future changes should inspect terminal callbacks, disabled-state edits, timeout
   handling, and expired-interaction failure paths first.
 - Blackjack has solo/PvP/tournament flows; RPS has solo/PvP/tournament persistence;
   mining owns its item/recipe/reward/exploration loop. Economy is a dependency for

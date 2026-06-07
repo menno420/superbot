@@ -6,16 +6,16 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-06 · #552 merged (session journal made lean +
-> self-maintaining). This session (PR pending): **server-management PR10 —
-> config-backed moderation behaviour (first slice)**: a `moderation_config`
-> policy read model + four operator settings (`dm_on_action`, `dm_template`,
-> `ban_delete_message_days`, `max_timeout_minutes`) applied at the
-> `moderation_service` mutation seam — member DMs on action, ban message-purge,
-> and a timeout ceiling, behaviour-preserving by default. See the
-> server-management tracker's PR10 entry for the remaining queue. Verify open
-> PRs against live GitHub (`list_pull_requests`); this snapshot names none on
-> purpose.
+> **Last updated:** 2026-06-07 · #554 merged (implementation-readiness reconciliation
+> — `docs/audits/implementation-readiness-review-2026-06-06.md`; #553's consistency-warning
+> + role-hierarchy fixes also landed — see Recently shipped). This PR (pending):
+> **server-management PR10 — config-backed moderation behaviour (first slice)**: a
+> `moderation_config` policy read model + four operator settings (`dm_on_action`,
+> `dm_template`, `ban_delete_message_days`, `max_timeout_minutes`) applied at the
+> `moderation_service` mutation seam — member DMs on action, ban message-purge, and a
+> timeout ceiling, behaviour-preserving by default. See the server-management tracker's
+> PR10 entry for the remaining queue. Verify open PRs against live GitHub
+> (`list_pull_requests`); this snapshot names none on purpose.
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -41,6 +41,8 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
+- **#554** — implementation-readiness reconciliation: source-grounded readiness audit (`docs/audits/implementation-readiness-review-2026-06-06.md`) + reclassified stale Phase-2 / platform-consistency status cells so they aren't mistaken for current work queues; docs-only.
+- **#553** — consistency-warning presentation fix (the health snapshot no longer flags benign `SKIPPED` consistency sections — bindings-from-DM / no-backfill-rows — as "needs attention") + role-hierarchy tiebreak (`role_feasibility` / `role_automation` compare hierarchy by (position, id) like discord.py, not raw `position`).
 - **#552** — session journal made lean + self-maintaining: archive split (`.session-journal-archive.md`), a Quick reference, Rules regrouped, and a "tidy-each-session" protocol step (mirrored in `.claude/CLAUDE.md`); docs-only.
 - **#551** — role-automation degradation fix: `role_automation.apply` preflight-guards at the mutation seam (via `utils.role_feasibility`), classifies failures, and keeps predictable Manage-Roles/hierarchy blockers off the ERROR-only health surface; operator + role-Diagnostics surfaces show the cause.
 - **#550** — collaboration-model doc + truth-layer restructure (goal-first, prompts-as-guidance); docs-only.
@@ -62,12 +64,12 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
+- Highest-value approved implementation lane: start from the server-management status
+  tracker's first remaining item (PR10); do not duplicate its queue here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
-  see `docs/subsystems/health-diagnostics.md`. The migration `057`
-  persistence/dedupe/retention integration gap is **closed** (this session — real-PG
-  integration suite + static SQL-shape pin; CI-safe skip).
-- Use the canonical subsystem folios for area-specific implementation/planning; keep
-  this global router thin.
+  see `docs/subsystems/health-diagnostics.md`.
+- Use the canonical subsystem folios for area-specific implementation/planning. The
+  2026-06-06 readiness audit classifies stale, gated, and ready workstreams.
 
 ## Gates / blocked work
 

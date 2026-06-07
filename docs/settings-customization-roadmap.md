@@ -1,5 +1,11 @@
 # Settings & Customization Manager — Roadmap
 
+> **Status (reconciled 2026-06-06):** architectural lane/reference roadmap. The
+> S7–S12 planned/in-progress labels below are **not a verified current queue**; later
+> source contains access, cleanup, setup, and provisioning surfaces that make the
+> milestone sequence incomplete as status reporting. Start at
+> `docs/subsystems/settings-bindings-provisioning.md` and verify source before work.
+
 Architecture summary and 15-milestone implementation sequence for the **Global
 Settings & Customization Manager**. Companion to
 [`docs/settings-customization-command-map.md`](settings-customization-command-map.md)
