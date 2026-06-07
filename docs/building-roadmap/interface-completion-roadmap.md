@@ -1,6 +1,7 @@
 # SuperBot Interface Completion Roadmap
 
-Status: Open roadmap — Phases 1, 3, 4, 5, 6, 6.5a, 7 (Option A) landed; Phase 8 audit-complete; stabilization plan PRs #143-#151 landed (navigation lifecycle + parent_hub metadata + Community metadata-driven + XP/Economy pipelines + Settings selectors/presets + Settings default-on + `/help` slash)
+> **Status:** `plan` — interface-completion roadmap; cross-check source.
+
 Runtime impact: None for this doc
 
 This document captures the next major arc of SuperBot work: pulling the existing scattered cog surface into a coherent, discoverable, Discord-native application. The platform foundation (settings/customization map, registry, pipelines, `!platform` hub, Settings Manager shell, Logging subsystem) was complete before this roadmap started; the interface skeleton is now also landed (see status snapshot below).

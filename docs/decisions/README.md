@@ -1,5 +1,7 @@
 # Architecture Decision Records
 
+> **Status:** `reference` — ADR index.
+
 This directory holds short, durable records of deliberate
 architectural decisions — particularly the ones that say *what we
 chose not to do, and why*.  Without them, every quarter someone

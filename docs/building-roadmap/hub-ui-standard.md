@@ -1,6 +1,7 @@
 # Hub UI Standard
 
-Status: Reference only
+> **Status:** `reference` — hub UI standard.
+
 Runtime impact: None
 Scope: Future hub/panel design — how SuperBot's mother-cog hubs and child panels are laid out
 

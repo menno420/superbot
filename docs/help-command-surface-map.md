@@ -1,5 +1,7 @@
 # Help / Command Surface Map
 
+> **Status:** `binding` — Cog/command surface inventory; pinned to code by a doc-test.
+
 Source-of-truth inventory for every loaded cog/subsystem and how each is
 reachable today through Help, hubs, and typed commands. Captured at HEAD
 `38353aa` (post-PR-#142, post-PR-#143). The Help routing unification

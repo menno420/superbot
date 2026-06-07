@@ -1,5 +1,7 @@
 # BTD6 Bot — Smoke-Test Checklist
 
+> **Status:** `reference` — BTD6 smoke-test checklist.
+
 A hands-on script for testing the bot's BTD6 **capabilities** and **limitations**
 after a deploy. It covers everything landed in the data/grounding work of
 PRs #500–#505 plus the earlier upgrade-detail/faithfulness work, and — just as

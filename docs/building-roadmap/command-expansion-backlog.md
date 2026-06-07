@@ -1,6 +1,7 @@
 # Command Expansion Backlog
 
-Status: Reference only  
+> **Status:** `plan` — command-expansion backlog; cross-check source.
+
 Runtime impact: None  
 Scope: Near-term command, panel, and gameplay improvements
 

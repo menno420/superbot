@@ -1,6 +1,7 @@
 # Config Input Standard
 
-Status: Reference only
+> **Status:** `reference` — config-widget UI standard.
+
 Runtime impact: None
 Scope: Future config-mutation UIs — how every admin/settings input should be shaped so the same patterns work across subsystems
 

@@ -196,9 +196,15 @@ each major doc should carry a one-line badge in its header. Use one of:
 - **`reference`** — a standard / how-to; stable.
 - **`plan`** — a planned end-state; cross-check source before implementing.
 - **`historical`** — superseded; kept for context. Start at `docs/current-state.md`.
+- **`audit`** — a dated review/analysis snapshot; findings reflect that date only.
+- **`owner-guidance`** — maintainer-facing intent/question routing (e.g. `docs/owner/`).
 - **`ideas`** — brainstorm; not approved for implementation.
+- **`archive`** — retired content kept only for history; do not act on it.
 
-When a doc has no badge, the classification lists below are authoritative.
+Write the badge as the **first** `> **Status:** \`badge\` — <role>` line under the
+H1. When you touch a doc whose status is declared in an older free-form way
+(`Status: …`, a "Superseded" banner), normalize it to this token opportunistically.
+When a doc still has no badge, the classification lists below are authoritative.
 
 ### Binding (treat as authoritative)
 

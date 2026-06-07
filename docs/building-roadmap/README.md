@@ -1,6 +1,7 @@
 # SuperBot Building Roadmap
 
-Status: Reference only  
+> **Status:** `reference` — building-roadmap index.
+
 Runtime impact: None
 
 This directory contains reference documents for future command, panel, help-menu, Settings Manager, and setup-wizard work.

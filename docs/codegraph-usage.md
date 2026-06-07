@@ -1,5 +1,7 @@
 # CodeGraph Usage Guide — SuperBot
 
+> **Status:** `binding` — CodeGraph trust matrix; the short rules live in `.claude/CLAUDE.md`.
+
 > **This is the full trust matrix. `.claude/CLAUDE.md` contains the mandatory
 > short rules; this document contains the evidence behind them.**
 >

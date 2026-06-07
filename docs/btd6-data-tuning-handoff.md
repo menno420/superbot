@@ -1,5 +1,7 @@
 # BTD6 dataset & grounding — tuning handoff
 
+> **Status:** `reference` — BTD6 data-tuning handoff reference.
+
 Working notes for continuing to fine-tune the BTD6 answer quality. This is a
 **handoff doc, not a binding contract** — when it disagrees with source, source
 wins. Start here, then open the files it points at.
