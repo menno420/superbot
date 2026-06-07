@@ -260,6 +260,10 @@ top before trusting the contents.
 
 - `docs/owner/README.md` + `docs/owner/maintainer-question-router.md` — owner-facing
   question/intent routing; not a roadmap, plan, or approval source.
+- `docs/owner/maintainer-working-profile.md` (`owner-guidance`) — the maintainer's
+  working style and idea-flow shape (the *person*).
+- `docs/owner/ai-project-workflow.md` (`reference`) — the multi-agent pipeline: per-project
+  roles, handoff templates, idea-state vocabulary, and failure modes (the *process*).
 
 Read once when relevant. They describe how to do something, not what
 has already been done.

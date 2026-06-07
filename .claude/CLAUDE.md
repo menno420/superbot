@@ -36,6 +36,13 @@ The short version that governs how you work:
 - **Bugs first, durably.** Root-level bugs/inconveniences jump the queue: fix them
   immediately when you can, root cause over symptom, one source of truth over a
   local patch. Aim for a positive, preferably *noticeable*, result every session.
+- **A new idea is not a new priority.** Idea order ≠ implementation order: an idea
+  raised mid-stream is *captured and classified* (`docs/ideas/`), not promoted to active
+  work — unless the maintainer says so or it exposes a blocker, safety, or architectural
+  conflict. The maintainer thinks associatively on purpose; classify, route, then build.
+  How work flows across the AI projects (pipeline, handoffs, idea states) is
+  `docs/owner/ai-project-workflow.md`; the maintainer's working style is
+  `docs/owner/maintainer-working-profile.md`.
 
 ## Read first — agent orientation
 
