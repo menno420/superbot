@@ -53,6 +53,7 @@ read **`docs/helper-policy.md`** first.
 | 4 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
 | 5 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
 | 6 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
+| 7 | `docs/owner/maintainer-question-router.md` (when needed) | Unresolved maintainer-facing questions and preserved owner intent. Unanswered questions are not approval. |
 
 ### Adding a new subsystem / cog
 
@@ -237,6 +238,9 @@ top before trusting the contents.
   Run against the codebase post-hardening session (2026-05-24).
 
 ### Standards / reference guides
+
+- `docs/owner/README.md` + `docs/owner/maintainer-question-router.md` — owner-facing
+  question/intent routing; not a roadmap, plan, or approval source.
 
 Read once when relevant. They describe how to do something, not what
 has already been done.

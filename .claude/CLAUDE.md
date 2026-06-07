@@ -26,6 +26,10 @@ The short version that governs how you work:
   external publish), large/cross-cutting (architectural), or the goal itself is
   genuinely ambiguous. If you're about to offer options you expect rejected,
   you've answered your own question — act.
+- **Unclear owner intent.** Consult or add to
+  `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
+  unclear; unanswered questions are not approval. Preserve maintainer answers and
+  route durable conclusions to their correct documentation home.
 - **Bugs first, durably.** Root-level bugs/inconveniences jump the queue: fix them
   immediately when you can, root cause over symptom, one source of truth over a
   local patch. Aim for a positive, preferably *noticeable*, result every session.
