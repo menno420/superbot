@@ -96,11 +96,12 @@ Folio: [ai](subsystems/ai.md) · **Gate:** AI expansion is gated on *all* of bot
 stability + provider/provenance + caching/source-health + behavior-config correctness
 (`docs/current-state.md`), **plus a dedicated decision** for any action capability.
 
-> **AI sequencing is being consolidated** into a dedicated AI roadmap,
-> `docs/planning/ai-roadmap-2026-06-07.md` (incoming via PR #565 — Phase 0–11 + a
-> maintainer question batch `AR-2026-06-07`). Once it merges and its questions are
-> answered, **it becomes the AI-area authority and this section defers to it** (one home).
-> The plans below are inputs it consolidates; treat this section as provisional until then.
+> **AI sequencing lives in the dedicated AI roadmap:**
+> [`planning/ai-roadmap-2026-06-07.md`](planning/ai-roadmap-2026-06-07.md) (Phase 0–11,
+> source-verified, planning-only) — the **AI-area authority**; the plans below are the
+> inputs it consolidates. **First Opus AI target (AR-10, 2026-06-07): lock the orchestration
+> foundation** before any net-new tools; audience posture is **tiered** (AR-08) and AI stays
+> **explanation-only** (AR-09). Decisions: [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §18.
 
 - **Later (do first when unblocked)** — approve the **orchestration foundation**
   ([ai-complex-request-tool-orchestration-plan](ai-complex-request-tool-orchestration-plan.md))

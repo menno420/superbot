@@ -626,3 +626,30 @@ prevents parallel plans from competing or silently implying approval.
 Awareness PR1. C. Plan command/help/discovery metadata. D. Plan approved-docs search.
 **Safe default / recommended direction:** A — it is the shared safety and compatibility
 foundation for every later AI tool.
+
+## 18. AR batch — answered (2026-06-07)
+
+The maintainer answered the **decision-gating** AR questions on 2026-06-07, after an Opus
+review of the AI roadmap ([`../planning/ai-roadmap-2026-06-07.md`](../planning/ai-roadmap-2026-06-07.md)).
+Answers are leading owner intent; they do **not** approve implementation — each phase still
+needs source-verified Opus planning and the normal promotion path.
+
+### Answered now (these gate the next move)
+
+- **AR-10 → A. Lock the AI orchestration foundation.** The first focused Opus AI planning
+  session locks the shared orchestration foundation (tool descriptors / toolsets / budgets /
+  evidence envelope). **Net-new AI tools wait until that is locked.** Routed → `docs/subsystems/ai.md`
+  + `docs/roadmap.md` (AI section).
+- **AR-08 → A. Tiered by audience.** Standing posture: users → public help / BTD6; admins →
+  guild setup / health; owner → platform / update / connector detail. **Read access never
+  confers action authority**, and each deterministic owner may narrow further. Routed → `docs/subsystems/ai.md`.
+- **AR-09 → A now (explanation-only); a recurring-report draft is the first category *if*
+  ever revisited.** Confirms today's read-only posture; sets the eventual first action
+  category as *direction only* — still behind all AI gates + a dedicated decision (Q-0001).
+
+### Deferred — safe default holds until the lane is active
+
+AR-01 (next track after orchestration), AR-02–AR-06 (Update-Awareness import / "tested
+since update" / scope / audience / guide-card policy), and AR-07 (knowledge-base corpus)
+are **not** decided yet. Each question's recommended safe default applies provisionally;
+revisit when that lane is greenlit. Unanswered ≠ approval.
