@@ -653,3 +653,83 @@ AR-01 (next track after orchestration), AR-02–AR-06 (Update-Awareness import /
 since update" / scope / audience / guide-card policy), and AR-07 (knowledge-base corpus)
 are **not** decided yet. Each question's recommended safe default applies provisionally;
 revisit when that lane is greenlit. Unanswered ≠ approval.
+
+## 19. Server-management PR10 decision batch — answered (2026-06-07)
+
+Two decisions gating the **remaining PR10 items** (the cross-cutting moderation work).
+Answers are leading owner intent; they do **not** by themselves approve implementation —
+mod-roles still needs an ADR + the normal review path.
+
+### Q-0006 — How should a configured moderator role grant authority?
+
+**Area:** Server management / Architecture / Safety
+**Type:** Architecture
+**Priority:** High (gates the last PR10 item; changes *who can ban members*)
+**Status:** Answered (2026-06-07) — needs routing into an ADR when mod-roles is built
+**Suggested destination after answer:** `docs/decisions/` (ADR) + server-management folio/tracker
+
+**Question:** Mod/trusted roles + capabilities lets non-admins moderate. Should a
+configured role (a) resolve to the existing `moderator` tier routed through the
+capability resolver, (b) drive a full general per-capability tier matrix, or (c) be a
+cog-level allowlist beside Discord perms?
+
+**Why agents need this:** `capability-authority.md` §5 deliberately defers the
+per-capability tier matrix to "revisit per the ADR-005 re-evaluation criteria"; this is
+the single highest-stakes change in the server-management plan.
+
+**Maintainer answer**
+
+```text
+Answer: A — "Role → moderator tier" (capability-native).
+A configured role resolves to the existing `moderator` tier; route the mod cog +
+panel/modals through the capability resolver so moderation needs `moderator` (not the
+admin floor). Reuses the tier system + the documented `moderation.*.apply` capabilities,
+scoped to moderation.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Build behaviour-preserving: PRESERVE the existing Discord-perm checks as an alternative
+allow so no one currently able to moderate loses access — the configured role only
+*grants*. Wire trusted_tier_role_id (currently inert) symmetrically. The sync
+get_member_visibility_tier stays UI-only; execution authority needs an async role-aware
+resolver. Record the model in a new ADR + thorough authority tests (grant via role, no
+escalation, no regression, cross-guild deny) when implemented.
+```
+
+**Routing result**
+
+```text
+Destination: docs/decisions/ (new ADR, when mod-roles ships) + the server-management
+  tracker's PR10 Remaining-queue + folio (decision already noted in both).
+Moved/copied on: 2026-06-07 (decision captured; ADR pending implementation).
+Notes: current-state.md ▶ Next action links here for the decision of record.
+```
+
+### Q-0007 — What should a PUBLIC moderation-log entry reveal?
+
+**Area:** Server management / Privacy
+**Type:** UX / Safety
+**Priority:** Medium
+**Status:** Answered (2026-06-07) — **Routed** (shipped in the public-log slice)
+**Suggested destination after answer:** server-management folio + `docs/server-logging.md`
+
+**Question:** For the optional public moderation log (default-OFF, operator opt-in), what
+should a public entry show — given reason text can contain sensitive details?
+
+**Maintainer answer**
+
+```text
+Answer: "Include reason, not mod."
+Public entries show the action + affected member + reason, but NOT which moderator acted.
+```
+
+**Routing result**
+
+```text
+Destination: docs/server-logging.md (public-log section) + the server-management folio.
+Moved/copied on: 2026-06-07 — implemented: format_public_log_embed shows member + reason,
+  no actor; the staff mod-log keeps the full record.
+Notes: one fact, one home — server-logging.md owns the embed-content contract.
+```

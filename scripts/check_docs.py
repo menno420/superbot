@@ -17,6 +17,11 @@ Hard rules (CI gate — see ``--strict``):
      root (the read-path docs + subsystem folios + every ``README.md`` + ``CLAUDE.md``).
      Orphans fail unless badged ``historical`` / ``archive``, an ADR, or allowlisted —
      so a doc nobody links to can't accumulate silently.
+  5. **freshness** — ``current-state.md`` must not hard-code the in-flight PR in prose.
+     Markers like ``(this PR, pending)`` / ``(pending PR)`` rot the moment that PR
+     merges (they were left stale twice in one session). The living ledger names only
+     MERGED work + the single ``▶ Next action`` pointer; in-flight status comes from
+     live GitHub. This gate forbids reintroducing the rotting markers.
 
 Pure stdlib (no third-party imports) so CI can run it on every PR — including
 docs-only PRs — without installing anything.
@@ -64,6 +69,14 @@ _PATH_REF_RE = re.compile(
     r"/[\w./-]+\.(?:py|md|sql|ya?ml|txt|sh|json|toml|cfg|ini))`",
 )
 _READPATH_DOCS = ("AGENT_ORIENTATION.md", "current-state.md", "repo-navigation-map.md")
+
+# Rot-prone "in-flight PR named in prose" markers. current-state.md must name only
+# MERGED work + the ▶ Next action line; these forms assert a transient PR status
+# that becomes a false claim the instant the PR merges.
+_STALE_PENDING_RE = re.compile(
+    r"\(\s*pending pr\s*\)|\(\s*this pr,?\s*pending\s*\)|\bthis pr \(pending\)",
+    re.IGNORECASE,
+)
 
 # A backtick-wrapped docs path, e.g. `docs/foo.md` — used to walk the doc graph
 # (backtick refs are how most SuperBot docs cross-link, alongside markdown links).
@@ -229,6 +242,33 @@ def check_reachable() -> list[tuple[Path, str, str]]:
     return violations
 
 
+def check_freshness() -> list[tuple[Path, str, str]]:
+    """``current-state.md`` must not hard-code the in-flight PR in prose.
+
+    A ``(this PR, pending)`` / ``(pending PR)`` marker is a transient claim that
+    rots on merge — the recurring drift this gate exists to stop. The living
+    ledger names only merged PRs + the ``▶ Next action`` line; in-flight status is
+    fetched from live GitHub at session start.
+    """
+    violations: list[tuple[Path, str, str]] = []
+    f = DOCS_ROOT / "current-state.md"
+    if not f.exists():
+        return violations
+    rel = f.relative_to(REPO_ROOT)
+    for lineno, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        if _STALE_PENDING_RE.search(line):
+            violations.append(
+                (
+                    rel,
+                    "freshness",
+                    f"L{lineno}: in-flight-PR marker in prose rots on merge — name "
+                    "only merged work + the ▶ Next action line; get in-flight status "
+                    "from live GitHub (`list_pull_requests`).",
+                ),
+            )
+    return violations
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SuperBot doc-hygiene checker.")
     parser.add_argument(
@@ -238,7 +278,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    violations = check_badges() + check_links() + check_pinned() + check_reachable()
+    violations = (
+        check_badges()
+        + check_links()
+        + check_pinned()
+        + check_reachable()
+        + check_freshness()
+    )
     if not violations:
         print("check_docs: all checks passed ✓")
         return 0

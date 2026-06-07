@@ -6,20 +6,23 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **Last updated:** 2026-06-07 · server-management **PR10's first four slices are
-> merged**: config-backed moderation behaviour (#555), require-reason + bot-readiness
-> diagnostics (#556), configurable **warn escalation** (#558), and **post-action
-> message cleanup** (#567). The cross-area implementation roadmap also merged (#566).
-> **This PR (pending): server-management PR10 fifth slice** — the optional **public
-> moderation log** (`public_log_actions`: none/bans/removals/all → `public_log_channel`,
-> **default OFF**, moderator **redacted** per owner decision), delivered by a separate
-> `server_logging` subscriber so the staff log path is untouched.
-> **Next stage = the ONE remaining PR10 item** — moderator/trusted **roles +
-> capabilities** (owner decision 2026-06-07: capability-native — a configured role
-> resolves to the `moderator` tier, routed through the capability resolver; this is the
-> per-capability tier matrix `capability-authority.md §5` defers, so it's a careful
-> security-sensitive change). See the server-management tracker's PR10 entry. Verify
-> open PRs against live GitHub (`list_pull_requests`); this snapshot names none on purpose.
+> **▶ Next action:** finish **PR10's last item** — moderator/trusted **roles +
+> capabilities** (owner decision 2026-06-07, preserved in
+> [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §19:
+> *capability-native* — a configured role resolves to the `moderator` tier, routed
+> through the capability resolver; this is the per-capability tier matrix
+> `capability-authority.md` §5 defers, so it warrants an ADR + thorough authority
+> tests, a careful security-sensitive change). Authoritative scope + dependencies: the
+> server-management [status tracker](planning/server-management-status-2026-06-05.md)
+> Remaining-queue.
+>
+> **Last updated:** 2026-06-07 · server-management **PR10's first four slices merged**:
+> config-backed moderation behaviour (#555), require-reason + bot-readiness diagnostics
+> (#556), warn escalation (#558), post-action message cleanup (#567); the cross-area
+> roadmap also merged (#566). Later PR10 slices + the full queue live in the **status
+> tracker** (linked above). **This file lists only _merged_ work + the ▶ Next action;**
+> get in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status
+> in prose here rots on merge (a `scripts/check_docs.py` freshness gate enforces this).
 >
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -45,7 +48,10 @@ Source code and merged PRs win over anything written here.
 
 ## Recently shipped (newest first)
 
-- **PR10 fifth slice** (this PR, pending) — server-management **optional public moderation log**: an operator-opt-in public channel that announces selected actions (`public_log_actions`: none/bans/removals/all → `public_log_channel`, **default OFF**) with the **acting moderator redacted** (owner decision: action + member + reason, not who moderated). Delivered by a **separate** `server_logging` subscriber (staff path untouched), gated solely by the moderation policy, fail-safe + counted. Scalar/KV, no migration.
+> Convention: **merged PRs only** (with #numbers). In-flight work is *not* listed here —
+> get it from live GitHub. The newest merge a session sees may not be added yet; that
+> lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
+
 - **#567** — server-management **PR10 fourth slice**: optional post-kick/ban **message cleanup** (`post_action_cleanup`: none/kick/ban/both up to `post_action_cleanup_limit`, **default OFF**), owned at the `moderation_service` kick/ban seam and *requested from* `services/history_cleanup.py` (new author-scoped plan + a shared `apply_history_cleanup_plan` extracted from `!cleanuphistory` — one delete path). Best-effort: a blocked sweep never undoes the action.
 - **#566** (merged) — **cross-area implementation roadmap** (`docs/roadmap.md`): the one by-area "what's planned, in what order" index (relative Now/Next/Later/Someday horizons + gates, not dates), linking each authoritative plan + folio, with a clearly-marked not-approved ideas section. Its AI section defers to the AI roadmap. Re-badged two mis-badged historical plans (`phase_2b_bindings_plan`, BTD6 extraction). Wired into `current-state` + `AGENT_ORIENTATION`.
 - **#565** (Codex, merged) — source-verified **AI roadmap** (`docs/planning/ai-roadmap-2026-06-07.md`, Phase 0–11) + a 10-question batch. Opus-reviewed (sound; read-only boundary preserved). Owner answers (router §18): **AR-10** first Opus target = lock the orchestration foundation; **AR-08** tiered audience; **AR-09** explanation-only now. AR-01–07 hold at safe defaults until their lanes activate.
@@ -80,13 +86,12 @@ Source code and merged PRs win over anything written here.
 - **Cross-area sequencing + the plan index now live in [`docs/roadmap.md`](roadmap.md)**
   (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
   for which part of the code). The picks below are the current top of that list.
-- Highest-value approved implementation lane: server-management. PR10's first five
-  slices have shipped — config-backed behaviour (#555), require-reason + bot-readiness
-  (#556), warn escalation (#558), post-action cleanup (#567), and the optional public
-  log (this PR); the next step is the **one remaining PR10 item** — moderator/trusted
-  **roles + capabilities** (owner decision: capability-native role→`moderator`-tier
-  grant; a careful security-sensitive change) — then PR11–PR14. The
-  `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
+- Highest-value approved implementation lane: server-management. PR10's first four
+  slices are merged (#555/#556/#558/#567), with the optional public log in flight; the
+  next step is the **one remaining PR10 item** — moderator/trusted **roles +
+  capabilities** (owner decision: capability-native role→`moderator`-tier grant; a
+  careful security-sensitive change — see the ▶ Next action at the top) — then PR11–PR14.
+  The `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
   queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
