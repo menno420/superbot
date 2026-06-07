@@ -26,6 +26,15 @@ by stating, up front:
    not treat as the current end-state).
 4. Which docs are **how-to-work-in-this-repo** material.
 
+> **This route is part of a self-improving system, not just a map.** It exists to
+> get you productive fast *so you can spend the saved effort improving the system
+> for the next agent* — tighten a route, capture a gotcha, fix a stale pointer.
+> When you finish a task and notice the orientation could have pointed you better,
+> **improving it is expected work, not scope creep** (you have free rein on docs;
+> ask before changing hooks/config). The *why* is `docs/collaboration-model.md`
+> § "Why this system exists"; the measurement loop is the session **context delta**
+> (`.sessions/README.md`).
+
 If you only read three files before touching code, read:
 
 1. **`docs/architecture.md`** — layering, invariants, decomposition rules.

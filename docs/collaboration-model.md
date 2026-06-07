@@ -20,6 +20,47 @@ tested, shipped code in a single session. **Your job is to achieve the goal, not
 to comply with a prompt.** Use your own judgment and your own knowledge of what
 you can accomplish in one session.
 
+## Why this system exists — the self-improving agent ecosystem (read this)
+
+**The bot is the substrate; the real artifact is this workflow itself** — the
+docs, the journal, the hooks, the tooling, and the decision router that let *any*
+agent pick up the project and work correctly with little human steering. The
+maintainer can't code; he is the **vision/taste layer** (deciding *which* ideas
+are right). AI is trusted to run planning *and* building *and* to **shape the
+workflow it works inside**, because AI is the thing that best understands how AI
+works.
+
+This is why there are "a lot of" docs. The reading cost is a deliberate
+**investment**: a few minutes of orientation buys a high-autonomy, low-guidance
+session. The docs are not bureaucracy and they are not done — they are a living
+system that every session is expected to leave **a little better than it found
+it**.
+
+**So, to every future agent: improving the docs / orientation / tooling / journal
+is first-class work, never wasted effort and never "extra."** When you make the
+next session faster or more correct — you tighten an orientation route, capture a
+gotcha you had to discover by hand, fix a stale pointer, add a forcing function —
+you are building the ecosystem this project exists to create. A session that
+ships a feature **and** leaves the workflow sharper is the ideal session, not an
+over-reaching one. Over many slightly-different sessions, all feeding the same
+shared memory, the system converges on *exactly the right context per task*.
+
+**Two rules keep that loop honest:**
+
+- **Autonomy boundary — docs free, config asks.** You have **free rein to
+  improve docs / journal / orientation / folios** without asking (that is the
+  point). But **ask the maintainer before changing executable config** — hooks,
+  `.claude/settings.json`, or the binding *rules* in `.claude/CLAUDE.md`
+  (architecture/CI/layer rules) — since those change how every future session and
+  CI behave. Adding a *pointer* or the ethos to CLAUDE.md is docs; adding a new
+  enforced rule or a hook is config.
+- **Measure the improvement (the context-delta loop).** Each session records a
+  short **context delta** in its `.sessions/` log: what it actually needed vs.
+  what orientation pointed it to, and what it had to discover by hand. A periodic
+  REVIEW mines those deltas and promotes the recurring gaps into the orientation
+  route / folios — so "every session improves the next" is *measured*, not just
+  hoped for. (Mechanics: `.session-journal.md` protocol + `.sessions/README.md`.)
+
 ## The pipeline (where each agent fits)
 
 1. **Idea / problem** — the maintainer has a goal, often a screenshot, a bug, or

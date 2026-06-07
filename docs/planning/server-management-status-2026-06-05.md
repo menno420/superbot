@@ -505,7 +505,15 @@ the only apply gate** (no setup view imports a mutation pipeline; invariant
   `test_roles_section.py`, `tests/unit/services/test_setup_operations_role_threshold.py`,
   `test_role_automation_thresholds.py`, and the registration manifest. Full CI mirror green;
   live-booted clean (both sections register, 0 ERROR/CRITICAL).
-- **Remaining in PR11:** the **governance** section (deferred per Q-0008).
+- **Remaining in PR11 — the governance section (deferred Q-0008; scope set by Q-0011,
+  2026-06-07).** When built, it should configure two things, staged as `SetupOperation`s
+  through Final Review like every other section (no new resource path): **(1) capability
+  overrides** — delegate moderation/admin capability to a role via the per-guild
+  `capability_execution_overrides` seam (`governance`); and **(2) command-access policy** —
+  which channels the bot responds in (`command_access_service`). Both likely need a new
+  op-kind (`set_capability_override` / `set_command_access`) routed through their canonical
+  service, mirroring the `set_cog_routing` no-pipeline pattern. Not started — sequence after
+  PR12 unless the maintainer pulls it forward.
 
 ---
 

@@ -43,3 +43,34 @@
   feature). Next committed lane: **PR12** (setup diagnostics & repair).
 - **State:** `docs/current-state.md` + the server-management
   [status tracker](../docs/planning/server-management-status-2026-06-05.md) PR11 subsection.
+
+## Continued (same session) — workflow tooling, PR review, ecosystem docs
+
+- **Workflow tooling** (review recommendations #1 + #3): a `PreToolUse` hook
+  (`scripts/claude_pre_edit.py`) now injects a `disbot/*.py` file's `context_map` once per
+  session before the first edit (it fired on my own edits, confirming the loop); + a
+  CLAUDE.md reflex entry; + a self-policing **doc census/ratchet** in `check_docs.py`.
+- **PR #570 review (ChatGPT, verified against source):** fixed the stale "PR open" wording
+  (tracker + current-state → merge-stable) and added a **read-only `_preflight_set_role_threshold`**
+  adapter (current→proposed tier diff + a "bot can't assign" feasibility note) so Final
+  Review isn't blind to role feasibility. Verified the severity nuance: the threshold write
+  is benign config — assignment is independently guarded by `role_automation.check_preflight`.
+- **Self-improving-ecosystem docs** (maintainer vision): made the *purpose* explicit so
+  future agents know shaping the workflow is first-class work — new
+  `docs/collaboration-model.md` § "Why this system exists", CLAUDE.md bullet, AGENT_ORIENTATION
+  note. Locked owner decisions **Q-0009..Q-0012** (autonomy boundary "docs free, config asks";
+  context-delta loop; scheduled doc consolidation; governance-section scope).
+
+## Context delta (self-improvement loop — `.sessions/README.md`)
+
+- **Needed but not pointed to:** `views/setup/final_review.py::_PHASE_ORDER` is the apply-time
+  integration point for any new setup op-kind — nothing in the setup route flags it; I found
+  it via a test. → Candidate: name it in the server-management folio's "adding a setup op-kind"
+  notes.
+- **Pointed to but didn't need:** the two older server-management planning docs (roadmap +
+  implementation plan) — the **status tracker** alone carried the current PR11 truth; the
+  plans were context-only. The route already says "tracker wins," which held.
+- **Discovered by hand:** the `op_kinds` empty-vs-set rule for setup sections (shared
+  `set_setting` → empty; section-specific kind → set) lived only in a trailing comment in
+  `identity.py`. The `context_map` reflex + a future "adding a setup section" checklist (folio)
+  would surface it. The new PreToolUse hook now mitigates the broader class.

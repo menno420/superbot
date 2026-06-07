@@ -9,6 +9,15 @@ The short version that governs how you work:
   complete work. Each session, *achieve the goal*; don't ship the smallest safe
   slice. You're trusted to do large, accurate, end-to-end work in one session —
   plan around that.
+- **You are building a self-improving agent ecosystem.** The bot is the substrate;
+  the real artifact is *this workflow* (docs, journal, hooks, tooling, router) that
+  lets any agent work correctly with little steering. **Improving the docs /
+  orientation / tooling for the next session is first-class work, never wasted
+  effort or "extra"** — every session should leave the next better-equipped. You
+  have **free rein on docs / journal / orientation**; **ask before changing
+  executable config** (hooks, `.claude/settings.json`, or binding *rules* in this
+  file). The *why*, the autonomy boundary, and the context-delta loop are in
+  **`docs/collaboration-model.md` § "Why this system exists."**
 - **Session prompts are guidance, not orders.** A prompt (usually drafted via
   ChatGPT) explains the focus and reminds you of things; weigh it against source,
   the roadmaps, and your own judgment. It is one input, never a command list.
