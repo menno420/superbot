@@ -34,6 +34,7 @@ from typing import TYPE_CHECKING
 
 import discord
 
+from core.runtime import guild_resources as resources
 from services import setup_draft, setup_session
 from services.moderation_config import WARN_ESCALATION_ACTIONS
 from services.setup_operations import SetupOperation
@@ -117,7 +118,11 @@ def build_moderation_embed(
     ):
         role_text = "_(none)_"
         if moderator_role_id:
-            role = guild.get_role(moderator_role_id) if guild is not None else None
+            role = (
+                resources.resolve_role(guild, role_id=moderator_role_id)
+                if guild is not None
+                else None
+            )
             role_text = role.mention if role is not None else f"`{moderator_role_id}`"
         embed.add_field(
             name="Detected",

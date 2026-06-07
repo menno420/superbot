@@ -1421,12 +1421,12 @@ async def _apply_set_role_threshold(
             error="set_role_threshold: value must be a positive integer",
         )
 
-    # Resolve the role name id-first; the row is keyed by role_name with
-    # role_id captured so a later rename does not orphan the tier.
-    role = None
-    getter = getattr(guild, "get_role", None)
-    if callable(getter):
-        role = getter(op.target_id)
+    # Resolve the role name id-first via the canonical resolver; the row is
+    # keyed by role_name with role_id captured so a later rename does not
+    # orphan the tier.
+    from core.runtime import guild_resources as resources
+
+    role = resources.resolve_role(guild, role_id=op.target_id)
     role_name = getattr(role, "name", None) or op.target_name
     if not role_name:
         return SetupOperationResult(
