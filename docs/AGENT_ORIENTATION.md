@@ -43,6 +43,19 @@ read **`docs/helper-policy.md`** first.
 > (consolidates that area's rules · current state · ideas · next candidates). The
 > routes below add the binding/cross-cutting reading needed after the folio.
 
+> **Load context in layers — do not read the whole `docs/` tree by default.**
+> The default read path is short on purpose; everything else is consumed on demand.
+>
+> 1. `.claude/CLAUDE.md` + `docs/collaboration-model.md` — how we work.
+> 2. `docs/current-state.md` — what is true right now.
+> 3. this file's task route → the **one** relevant `docs/subsystems/<area>.md` folio.
+> 4. binding/deep docs (`architecture` · `ownership` · `runtime_contracts` · ADRs)
+>    **only when the task touches them** — not preventively.
+> 5. `docs/owner/maintainer-question-router.md` when product/owner intent is unclear.
+>
+> Everything under `docs/planning/` and `docs/audits/` is **historical context, read
+> on demand** — never a top-to-bottom read. When in doubt, source files win over docs.
+
 ### Any task
 
 | Order | Doc | Why |
@@ -53,6 +66,7 @@ read **`docs/helper-policy.md`** first.
 | 4 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
 | 5 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
 | 6 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
+| 7 | `docs/owner/maintainer-question-router.md` (when needed) | Unresolved maintainer-facing questions and preserved owner intent. Unanswered questions are not approval. |
 
 ### Adding a new subsystem / cog
 
@@ -237,6 +251,9 @@ top before trusting the contents.
   Run against the codebase post-hardening session (2026-05-24).
 
 ### Standards / reference guides
+
+- `docs/owner/README.md` + `docs/owner/maintainer-question-router.md` — owner-facing
+  question/intent routing; not a roadmap, plan, or approval source.
 
 Read once when relevant. They describe how to do something, not what
 has already been done.
