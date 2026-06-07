@@ -37,6 +37,10 @@ def test_default_policy_is_behaviour_preserving():
     assert policy.warn_threshold == 3
     assert policy.warn_timeout_minutes == 10
     assert policy.warn_escalation_action == "timeout"
+    # Post-action cleanup is off by default (behaviour-preserving).
+    assert policy.post_action_cleanup == "none"
+    assert policy.post_action_cleanup_limit == 100
+    assert policy.effective_post_action_cleanup_limit == 100
 
 
 @pytest.mark.parametrize(
@@ -99,6 +103,8 @@ async def test_load_policy_maps_resolved_values():
         "warn_threshold": 5,
         "warn_timeout_minutes": 25,
         "warn_escalation_action": "kick",
+        "post_action_cleanup": "both",
+        "post_action_cleanup_limit": 200,
     }
 
     async def _fake_resolve(guild_id, subsystem, name, fallback):
@@ -120,6 +126,8 @@ async def test_load_policy_maps_resolved_values():
         warn_threshold=5,
         warn_timeout_minutes=25,
         warn_escalation_action="kick",
+        post_action_cleanup="both",
+        post_action_cleanup_limit=200,
     )
 
 
@@ -183,6 +191,49 @@ def test_escalation_respects_configured_timeout_minutes():
     policy = ModerationPolicy(warn_threshold=5, warn_timeout_minutes=45)
     assert evaluate_escalation(5, policy) == EscalationDecision(
         action="timeout", timeout_minutes=45
+    )
+
+
+# ---------------------------------------------------------------------------
+# cleanup_applies_to / effective_post_action_cleanup_limit (PR10 fourth slice)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("setting", "action", "expected"),
+    [
+        ("none", "kick", False),
+        ("none", "ban", False),
+        ("kick", "kick", True),
+        ("kick", "ban", False),
+        ("ban", "ban", True),
+        ("ban", "kick", False),
+        ("both", "kick", True),
+        ("both", "ban", True),
+        ("garbage", "kick", False),  # fail-safe: unknown value never sweeps
+    ],
+)
+def test_cleanup_applies_to(setting, action, expected):
+    policy = ModerationPolicy(post_action_cleanup=setting)
+    assert moderation_config.cleanup_applies_to(action, policy) is expected
+
+
+def test_effective_cleanup_limit_clamps_into_window():
+    assert (
+        ModerationPolicy(post_action_cleanup_limit=50).effective_post_action_cleanup_limit
+        == 50
+    )
+    # Above the automatic-sweep ceiling clamps down.
+    assert (
+        ModerationPolicy(
+            post_action_cleanup_limit=10**6
+        ).effective_post_action_cleanup_limit
+        == 500
+    )
+    # Below 1 clamps up.
+    assert (
+        ModerationPolicy(post_action_cleanup_limit=0).effective_post_action_cleanup_limit
+        == 1
     )
 
 

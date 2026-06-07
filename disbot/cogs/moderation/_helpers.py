@@ -72,6 +72,22 @@ def _build_mod_panel_embed(guild: discord.Guild | None = None) -> discord.Embed:
     return embed
 
 
+def _sweepable_channel(
+    channel: object,
+) -> discord.TextChannel | discord.Thread | None:
+    """Narrow a surface's channel to one the post-action sweep can scan.
+
+    Only text channels and threads have meaningful message history to sweep;
+    anything else (a category, a voice channel, ``None`` on a restored panel)
+    yields ``None`` so ``moderation_service`` skips the optional cleanup.
+    Keeping the check here means the cog and the panel modals narrow
+    identically.
+    """
+    if isinstance(channel, (discord.TextChannel, discord.Thread)):
+        return channel
+    return None
+
+
 def _can_act_on_interaction(
     interaction: discord.Interaction,
     member: Member,
@@ -125,3 +141,33 @@ def render_warn_outcome_lines(
     elif outcome.escalated and action == "ban":
         lines.append(f"🚫 {member_mention} banned ({outcome.threshold} warnings).")
     return lines
+
+
+def render_cleanup_outcome_line(
+    member_mention: str,
+    outcome: moderation_service.CleanupOutcome | None,
+) -> str | None:
+    """Render the post-action cleanup line for a kick/ban, or ``None`` to stay quiet.
+
+    The sweep is **owned by** ``services.moderation_service`` (PR10 fourth slice)
+    and only runs when the guild enables ``post_action_cleanup`` for the action;
+    this just formats the returned
+    :class:`~services.moderation_service.CleanupOutcome` so ``!kick`` / ``!ban``
+    and the panel's kick/ban modals report it identically.  Returns ``None`` when
+    no sweep was due or nothing was deleted (no line is shown).
+    """
+    if outcome is None or not outcome.requested:
+        return None
+    if outcome.blocked:
+        return (
+            f"🧽 Couldn't sweep {member_mention}'s recent messages here "
+            "(I need Manage Messages + Read Message History)."
+        )
+    if outcome.deleted == 0:
+        return None
+    plural = "s" if outcome.deleted != 1 else ""
+    suffix = f" ({outcome.failed} could not be removed)" if outcome.failed else ""
+    return (
+        f"🧽 Removed {outcome.deleted} recent message{plural} from "
+        f"{member_mention} in this channel.{suffix}"
+    )

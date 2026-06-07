@@ -45,7 +45,7 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
 [status tracker](planning/server-management-status-2026-06-05.md)
 
 - **Now** — remaining **PR10**: moderator/trusted roles + capabilities, dedicated log
-  destinations, post-action cleanup hook.
+  destinations. (Post-action message cleanup shipped 2026-06-07.)
 - **Next** — setup role/moderation/governance convergence + repair sections → role
   templates → the unified **Server Management Hub**.
 - Plans (context, not sequence): [roadmap](planning/server-management-roadmap-2026-06-05.md)

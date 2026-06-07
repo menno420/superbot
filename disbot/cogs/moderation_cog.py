@@ -8,6 +8,8 @@ from discord.ext import commands
 
 from cogs.moderation._helpers import (
     _build_mod_panel_embed,
+    _sweepable_channel,
+    render_cleanup_outcome_line,
     render_warn_outcome_lines,
 )
 from core.runtime import panel_manager
@@ -143,14 +145,18 @@ class ModerationCog(commands.Cog):
             await ctx.send(err)
             return
         try:
-            await moderation_service.kick(
+            outcome = await moderation_service.kick(
                 member,
                 reason=reason,
                 actor_id=ctx.author.id,
+                channel=_sweepable_channel(ctx.channel),
             )
             await ctx.send(
                 f"👢 {member.mention} kicked. Reason: {reason or 'No reason provided'}",
             )
+            cleanup_line = render_cleanup_outcome_line(member.mention, outcome)
+            if cleanup_line:
+                await ctx.send(cleanup_line)
         except ReasonRequiredError as exc:
             await ctx.send(f"❌ {exc}")
         except discord.Forbidden:
@@ -167,15 +173,19 @@ class ModerationCog(commands.Cog):
             await ctx.send(err)
             return
         try:
-            await moderation_service.ban(
+            outcome = await moderation_service.ban(
                 ctx.guild,
                 member,
                 reason=reason,
                 actor_id=ctx.author.id,
+                channel=_sweepable_channel(ctx.channel),
             )
             await ctx.send(
                 f"🚫 {member.mention} banned. Reason: {reason or 'No reason provided'}",
             )
+            cleanup_line = render_cleanup_outcome_line(member.mention, outcome)
+            if cleanup_line:
+                await ctx.send(cleanup_line)
         except ReasonRequiredError as exc:
             await ctx.send(f"❌ {exc}")
         except discord.Forbidden:

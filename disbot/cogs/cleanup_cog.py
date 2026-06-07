@@ -15,7 +15,10 @@ from core.runtime.message_pipeline import (
 )
 from services import governance_service, moderation_service
 from services.governance_service import GovernanceContext
-from services.history_cleanup import build_history_cleanup_plan
+from services.history_cleanup import (
+    apply_history_cleanup_plan,
+    build_history_cleanup_plan,
+)
 from utils import db
 from utils.ui_constants import ADMIN_COLOR
 from views.base import HubView, send_panel
@@ -281,21 +284,11 @@ class Cleanup(commands.Cog):
                 check=check,
             )
             if str(reaction.emoji) == "✅":
-                deleted = 0
-                failed = 0
-                for message in plan.matched:
-                    try:
-                        await message.delete()
-                        deleted += 1
-                    except discord.Forbidden:
-                        failed += 1
-                        self.logger.warning(
-                            "cleanuphistory missing Manage Messages in #%s (%s)",
-                            getattr(ctx.channel, "name", "unknown"),
-                            getattr(ctx.channel, "id", "unknown"),
-                        )
-                    except discord.HTTPException:
-                        failed += 1
+                # Delete mechanics live in the cleanup service (one source of
+                # truth shared with the moderation post-action sweep).
+                apply_result = await apply_history_cleanup_plan(plan)
+                deleted = apply_result.deleted
+                failed = apply_result.failed
                 final_msg = await ctx.send(
                     f"Cleanup completed. Scanned {plan.scanned} message(s) "
                     f"(requested {requested_limit}, effective {effective_limit}). "

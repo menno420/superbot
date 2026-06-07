@@ -31,18 +31,23 @@ member's identity is available.
 
 Beyond writing, the service also **applies the guild's moderation
 policy** (:mod:`services.moderation_config`) at this seam — the optional
-notify-the-member DM, the ban message-purge window, and the timeout
-ceiling — so every surface (prefix commands, panel modals, and the
-future Server-Management hub) gets identical, audited behaviour without
-each call site re-reading config (PR10).
+notify-the-member DM, the ban message-purge window, the timeout
+ceiling, the warn-escalation ladder, and the optional **post-action
+message cleanup** (a kick/ban may sweep the member's recent messages in
+the invoking channel, *requested from* :mod:`services.history_cleanup`)
+— so every surface (prefix commands, panel modals, and the future
+Server-Management hub) gets identical, audited behaviour without each
+call site re-reading config (PR10).
 
 Public API
 ----------
 - :func:`warn(member, *, reason, actor_id)`               — adds a warning,
                                                             applies escalation
 - :func:`timeout(member, *, until, reason, actor_id)`     — Discord timeout
-- :func:`kick(member, *, reason, actor_id)`               — guild kick
-- :func:`ban(guild, user, *, reason, actor_id)`           — guild ban
+- :func:`kick(member, *, reason, actor_id, channel)`      — guild kick
+                                                            (+ optional cleanup)
+- :func:`ban(guild, user, *, reason, actor_id, channel)`  — guild ban
+                                                            (+ optional cleanup)
 - :func:`unban(guild, user, *, reason, actor_id)`         — guild unban
 - :func:`clear_warnings(guild_id, user_id, *, actor_id)`  — reset warnings
 - :func:`auto_delete(message, *, reason, rule, actor_id)` — rule-based
@@ -125,6 +130,27 @@ class WarnOutcome:
     escalation_action: str | None = None
     timeout_minutes: int | None = None
     escalation_blocked: bool = False
+
+
+@dataclass(frozen=True)
+class CleanupOutcome:
+    """Result of an optional post-action message sweep (PR10 fourth slice).
+
+    Returned by :func:`kick` / :func:`ban` when the caller supplies the
+    invoking ``channel``.  ``requested`` is True only when the guild's
+    ``post_action_cleanup`` policy enabled a sweep for this action *and* a
+    channel was available, so a surface can render one consistent line.
+
+    * ``scanned`` / ``deleted`` / ``failed`` — counts from the sweep.
+    * ``blocked`` — the sweep could not run (missing Read Message History /
+      Manage Messages); the moderation action it follows still succeeded.
+    """
+
+    requested: bool
+    scanned: int = 0
+    deleted: int = 0
+    failed: int = 0
+    blocked: bool = False
 
 
 def _resolve_reason(
@@ -261,6 +287,75 @@ async def _notify_target(
         )
 
 
+async def _run_post_action_cleanup(
+    channel: discord.abc.Messageable | None,
+    *,
+    target_id: int,
+    guild_id: int,
+    action: str,
+    actor_id: int | None,
+    policy: moderation_config.ModerationPolicy,
+) -> CleanupOutcome | None:
+    """Best-effort sweep of *target*'s recent messages after a kick/ban.
+
+    Owned at the seam so the orchestration lives in one place instead of being
+    copied into the cog and the panel modals.  The scan + delete are
+    **requested from the cleanup subsystem** (:mod:`services.history_cleanup`) —
+    moderation never re-implements deletion mechanics or cleanup policy.
+
+    Returns ``None`` when no sweep is due (no ``channel`` context, or the
+    guild's ``post_action_cleanup`` policy does not cover *action*).  Otherwise
+    a :class:`CleanupOutcome`.  **Never raises**: the moderation action it
+    follows has already succeeded and stays authoritative, so a missing
+    Read Message History / Manage Messages permission yields a ``blocked``
+    outcome rather than propagating.  A meaningful sweep (``deleted > 0``) is
+    audited as its own ``post_action_cleanup`` action; an empty sweep is a
+    silent no-op.
+    """
+    if channel is None or not moderation_config.cleanup_applies_to(action, policy):
+        return None
+
+    from services import history_cleanup
+
+    limit = policy.effective_post_action_cleanup_limit
+    try:
+        plan = await history_cleanup.build_author_cleanup_plan(
+            channel,
+            author_id=target_id,
+            limit=limit,
+        )
+        result = await history_cleanup.apply_history_cleanup_plan(plan)
+    except (discord.Forbidden, discord.HTTPException):
+        logger.warning(
+            "post-action cleanup blocked (action=%s, guild=%s) — missing "
+            "Read Message History / Manage Messages?",
+            action,
+            guild_id,
+        )
+        return CleanupOutcome(requested=True, blocked=True)
+
+    if result.deleted > 0:
+        await _record_action(
+            guild_id=guild_id,
+            action="post_action_cleanup",
+            target_id=target_id,
+            actor_id=actor_id,
+            reason=f"Swept {result.deleted} recent message(s) after {action}",
+            event_extra={
+                "deleted": result.deleted,
+                "failed": result.failed,
+                "scanned": plan.scanned,
+                "after_action": action,
+            },
+        )
+    return CleanupOutcome(
+        requested=True,
+        scanned=plan.scanned,
+        deleted=result.deleted,
+        failed=result.failed,
+    )
+
+
 async def warn(
     member: discord.Member,
     *,
@@ -389,8 +484,17 @@ async def kick(
     *,
     reason: str,
     actor_id: int | None = None,
-) -> None:
-    """Kick *member* from their guild; log + emit event."""
+    channel: discord.abc.Messageable | None = None,
+) -> CleanupOutcome | None:
+    """Kick *member* from their guild; log + emit event.
+
+    When *channel* is supplied (the surface's invoking channel) and the guild's
+    ``post_action_cleanup`` policy covers kicks, the member's recent messages
+    in that channel are swept afterward via the cleanup service (PR10).  The
+    returned :class:`CleanupOutcome` (or ``None`` when no sweep was due) lets
+    the caller render one consistent line; the default ``channel=None`` keeps
+    today's behaviour exactly.
+    """
     guild_id = member.guild.id
     target_id = member.id
     policy = await moderation_config.load_policy(guild_id)
@@ -411,6 +515,14 @@ async def kick(
         actor_id=actor_id,
         reason=reason,
     )
+    return await _run_post_action_cleanup(
+        channel,
+        target_id=target_id,
+        guild_id=guild_id,
+        action="kick",
+        actor_id=actor_id,
+        policy=policy,
+    )
 
 
 async def ban(
@@ -419,7 +531,8 @@ async def ban(
     *,
     reason: str,
     actor_id: int | None = None,
-) -> None:
+    channel: discord.abc.Messageable | None = None,
+) -> CleanupOutcome | None:
     """Ban *user* from *guild*; log + emit event.
 
     Accepts ``discord.abc.Snowflake`` (Member or User) so the caller
@@ -428,6 +541,13 @@ async def ban(
     the banned member's recent messages; the default of 0 keeps all
     messages, so the ``delete_message_seconds`` kwarg is only passed when
     a purge is actually configured.
+
+    When *channel* is supplied and the guild's ``post_action_cleanup`` policy
+    covers bans, the user's recent messages in that channel are swept
+    afterward via the cleanup service — complementary to the native
+    ``ban_delete_message_days`` window (which Discord applies guild-wide at
+    ban time).  Returns a :class:`CleanupOutcome`, or ``None`` when no sweep
+    was due; ``channel=None`` keeps today's behaviour exactly.
     """
     policy = await moderation_config.load_policy(guild.id)
     reason = _resolve_reason(reason, policy, action="ban")
@@ -451,6 +571,14 @@ async def ban(
         target_id=user.id,
         actor_id=actor_id,
         reason=reason,
+    )
+    return await _run_post_action_cleanup(
+        channel,
+        target_id=user.id,
+        guild_id=guild.id,
+        action="ban",
+        actor_id=actor_id,
+        policy=policy,
     )
 
 

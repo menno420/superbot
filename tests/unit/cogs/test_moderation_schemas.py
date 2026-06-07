@@ -37,7 +37,7 @@ def test_register_schemas_adds_moderation_to_registry():
     assert "moderation" in schema_mod.registered_subsystems()
     schema = schema_mod.get_schema("moderation")
     assert schema is not None
-    assert schema.version == 3
+    assert schema.version == 4
 
 
 def test_moderation_settings_cover_legacy_plus_pr10():
@@ -53,6 +53,8 @@ def test_moderation_settings_cover_legacy_plus_pr10():
         "require_reason",
         "ban_delete_message_days",
         "max_timeout_minutes",
+        "post_action_cleanup",
+        "post_action_cleanup_limit",
     }
 
 
@@ -152,6 +154,39 @@ def test_max_timeout_minutes_is_numeric_presets_in_range():
         spec.validator(40321)
 
 
+def test_post_action_cleanup_is_enum_select():
+    spec = _spec("post_action_cleanup")
+    assert spec.value_type is str
+    assert spec.default == "none"  # behaviour-preserving today
+    assert spec.settings_key == _mod_keys.MOD_POST_ACTION_CLEANUP
+    assert spec.capability_required == "moderation.settings.configure"
+    # Non-empty allowed_values → the edit flow renders a Select, not free text.
+    assert spec.allowed_values == ("none", "kick", "ban", "both")
+    spec.validator("none")
+    spec.validator("both")
+    with pytest.raises(ValueError):
+        spec.validator("nuke")
+    with pytest.raises(ValueError):
+        spec.validator(1)
+
+
+def test_post_action_cleanup_limit_is_numeric_presets_in_range():
+    spec = _spec("post_action_cleanup_limit")
+    assert spec.value_type is int
+    assert spec.default == 100
+    assert spec.settings_key == _mod_keys.MOD_POST_ACTION_CLEANUP_LIMIT
+    assert spec.input_hint == "numeric_presets"
+    assert spec.presets == (50, 100, 200, 500)
+    spec.validator(1)
+    spec.validator(500)
+    with pytest.raises(ValueError):
+        spec.validator(0)
+    with pytest.raises(ValueError):
+        spec.validator(501)
+    with pytest.raises(ValueError):
+        spec.validator(True)  # bool is not a valid scan limit
+
+
 # ---------------------------------------------------------------------------
 # Drift guard — spec defaults must equal the policy defaults
 # ---------------------------------------------------------------------------
@@ -180,4 +215,12 @@ def test_spec_defaults_match_policy_defaults():
     assert (
         _spec("warn_escalation_action").default
         == moderation_config.DEFAULT_WARN_ESCALATION_ACTION
+    )
+    assert (
+        _spec("post_action_cleanup").default
+        == moderation_config.DEFAULT_POST_ACTION_CLEANUP
+    )
+    assert (
+        _spec("post_action_cleanup_limit").default
+        == moderation_config.DEFAULT_POST_ACTION_CLEANUP_LIMIT
     )

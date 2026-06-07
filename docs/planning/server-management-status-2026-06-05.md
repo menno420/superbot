@@ -7,11 +7,12 @@
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
 > **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523; updated 2026-06-06
-> for PR8+PR9, then for **PR10's first + second + third slices** — config-backed
-> moderation behaviour, require-reason, bot-readiness diagnostics, and configurable
-> warn escalation). **Body is current through PR10's third slice; the remaining PR10
-> items + PR11–PR14 are the queue** — the "Shipped" + "Remaining queue" sections
-> below are authoritative.
+> for PR8+PR9, then for **PR10's first–fourth slices** — config-backed moderation
+> behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
+> and the post-action message cleanup sweep). **Body is current through PR10's fourth
+> slice; the remaining PR10 items (mod-roles + capabilities, dedicated log
+> destinations) + PR11–PR14 are the queue** — the "Shipped" + "Remaining queue"
+> sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -365,6 +366,46 @@ it"). Scalar/KV, **no migration**, behaviour-preserving by default.
 - **Remaining PR10 queue:** moderator/trusted **roles + capabilities**, dedicated
   **log destinations**, and a **post-action cleanup** hook.
 
+### PR10 (fourth slice) — Post-action message cleanup, requested at the seam *(shipped 2026-06-07)*
+
+Makes the **post-kick/ban message sweep** first-class and configurable while keeping
+moderation/cleanup separation intact (roadmap: *"a moderation action may request an
+explicit cleanup operation, but it must not duplicate cleanup policy logic"* and
+*"treat message deletion as irreversible"*). Scalar/KV, **no migration**, **default
+OFF** (behaviour-preserving).
+
+- **Two new settings** (`cogs/moderation/schemas.py`, schema → v4):
+  `post_action_cleanup` — enum `none` (default) / `kick` / `ban` / `both`, an
+  `allowed_values` Select (key `MOD_POST_ACTION_CLEANUP`); and
+  `post_action_cleanup_limit` — numeric-presets scan bound (1–500, default 100;
+  key `MOD_POST_ACTION_CLEANUP_LIMIT`). Both consolidated into the
+  `moderation_config` canonical constants (drift-pinned by the schema test).
+- **`moderation_config`** gains the two fields on `ModerationPolicy`, an
+  `effective_post_action_cleanup_limit` clamp, and a **pure**
+  `cleanup_applies_to(action, policy)` (fail-safe: an unknown value never sweeps).
+- **`moderation_service.kick` / `.ban`** take an optional invoking `channel` and,
+  when the policy covers the action, **request** the sweep from the cleanup
+  subsystem (`services.history_cleanup.build_author_cleanup_plan` +
+  `apply_history_cleanup_plan`) — moderation re-implements no deletion mechanics.
+  Best-effort: a missing Read History / Manage Messages yields a `blocked`
+  `CleanupOutcome`, never undoing the (already-succeeded) kick/ban. A meaningful
+  sweep (`deleted > 0`) is audited as its own `post_action_cleanup` action; the cog
+  + the panel's kick/ban modals render the outcome via the shared pure
+  `cogs/moderation/_helpers.render_cleanup_outcome_line`.
+- **Root-cause cleanup (found while building):** the `!cleanuphistory` delete loop
+  was extracted into `apply_history_cleanup_plan`, so the command and the moderation
+  sweep now share **one** deletion path (helper-policy 2-caller rule).
+  `server_logging` gained a `post_action_cleanup` embed style (teal 🧽).
+- **Pinned by** `cleanup_applies_to` + clamp + policy cases in
+  `test_moderation_config.py`, author-plan + apply cases in the new
+  `test_history_cleanup.py`, kick/ban-cleanup (configured / disabled / no-channel /
+  blocked / empty-sweep) cases in `test_moderation_service.py`, and the
+  `post_action_cleanup` shape + drift guard in `test_moderation_schemas.py`.
+  Command-map doc updated for the doc-pin tests.
+- **Remaining PR10 queue:** moderator/trusted **roles + capabilities** and dedicated
+  **log destinations** — both cross-cutting (capability-authority seam /
+  server-logging subsystem) and each carrying an owner decision.
+
 ---
 
 ## Remaining queue (starts at PR10)
@@ -373,7 +414,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR10** | Moderation first-class configuration. **First + second + third slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation — see above). Remaining: mod-roles + capabilities, dedicated log destinations, post-action cleanup hook. | #521 |
+| **PR10** | Moderation first-class configuration. **First–fourth slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup — see above). Remaining: mod-roles + capabilities, dedicated log destinations. | #521 |
 | **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |

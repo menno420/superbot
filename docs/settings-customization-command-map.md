@@ -159,14 +159,18 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 9. **existing_SettingSpec_declarations**: `warn_threshold`,
    `warn_timeout_minutes`, `warn_escalation_action`, `dm_on_action`,
    `dm_template`, `require_reason`, `ban_delete_message_days`,
-   `max_timeout_minutes` (`disbot/cogs/moderation/schemas.py`).  All but
-   `warn_threshold` / `warn_timeout_minutes` are PR10 behaviour config;
-   `warn_escalation_action` + those two are the escalation ladder — all applied
+   `max_timeout_minutes`, `post_action_cleanup`, `post_action_cleanup_limit`
+   (`disbot/cogs/moderation/schemas.py`).  All but `warn_threshold` /
+   `warn_timeout_minutes` are PR10 behaviour config; `warn_escalation_action` +
+   those two are the escalation ladder; `post_action_cleanup` /
+   `post_action_cleanup_limit` are the post-kick/ban message sweep — all applied
    at the `moderation_service` seam.
 10. **existing_settings_keys**: `WARN_THRESHOLD`, `WARN_TIMEOUT_MINS`,
     `MOD_WARN_ESCALATION_ACTION`, `MOD_DM_ON_ACTION`, `MOD_DM_TEMPLATE`,
     `MOD_REQUIRE_REASON`, `MOD_BAN_DELETE_MESSAGE_DAYS`,
-    `MOD_MAX_TIMEOUT_MINUTES` (`disbot/utils/settings_keys/moderation.py`).
+    `MOD_MAX_TIMEOUT_MINUTES`, `MOD_POST_ACTION_CLEANUP`,
+    `MOD_POST_ACTION_CLEANUP_LIMIT`
+    (`disbot/utils/settings_keys/moderation.py`).
 11. **existing_BindingSpec_entries**: none (mod_log promotion planned in
     later milestone).
 12. **existing_ResourceRequirement_entries**: `mod_log` with `binding_name=mod_log`,
@@ -179,11 +183,13 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     are not yet first-class.  PR10 moved DM-on-action (`dm_on_action` /
     `dm_template`), the ban message-purge window (`ban_delete_message_days`),
     the timeout ceiling (`max_timeout_minutes`), `require_reason` (warn/kick/ban
-    must justify; timeout exempt), and the **warn escalation action**
+    must justify; timeout exempt), the **warn escalation action**
     (`warn_escalation_action`: timeout/kick/ban/none at `warn_threshold`, owned
-    at the warn seam) out of code into settings applied at the
-    `moderation_service` mutation seam.  The mod panel also shows a read-only
-    bot-readiness line (`utils/moderation_feasibility.py`).
+    at the warn seam), and the **post-action cleanup sweep**
+    (`post_action_cleanup`: none/kick/ban/both up to `post_action_cleanup_limit`,
+    requested from the cleanup subsystem at the kick/ban seam) out of code into
+    settings applied at the `moderation_service` mutation seam.  The mod panel
+    also shows a read-only bot-readiness line (`utils/moderation_feasibility.py`).
 15. **missing_customization_commands**: `!settings moderation`
     edit/reset surface; `!moderation timeoutpresets`.
 16. **missing_settings_pages**: Settings Manager moderation page.
@@ -193,6 +199,7 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     scalar, `warn_escalation_action` enum select, `dm_on_action` bool toggle,
     `dm_template` free-text, `require_reason` bool toggle,
     `ban_delete_message_days` numeric-presets, `max_timeout_minutes`
+    numeric-presets, `post_action_cleanup` enum select, `post_action_cleanup_limit`
     numeric-presets; `mod_log` binding (after S10 promotion).
 19. **target_Settings_Manager_page**: `!settings subsystem moderation`.
 20. **target_mutation_path**: `SettingsMutationPipeline` (scalars);

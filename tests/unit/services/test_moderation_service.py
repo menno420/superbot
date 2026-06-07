@@ -10,6 +10,7 @@ import pytest
 
 from core.events_catalogue import KNOWN_EVENTS
 from services import moderation_service
+from services.history_cleanup import CleanupApplyResult, HistoryCleanupPlan
 from services.moderation_config import ModerationPolicy
 from services.moderation_service import EVT_MOD_ACTION, ReasonRequiredError
 
@@ -772,6 +773,193 @@ async def test_warn_escalation_blocked_when_forbidden(_default_policy):
     assert outcome.escalation_action == "timeout"
     clear.assert_not_awaited()  # count preserved on a blocked escalation
     log_mod.assert_awaited()  # the warn itself was recorded
+
+
+# ---------------------------------------------------------------------------
+# PR10 fourth slice — post-action message cleanup (requested from the
+# cleanup service, owned at the kick/ban seam)
+# ---------------------------------------------------------------------------
+
+
+def _cleanup_actions(log_mod) -> list[str]:
+    """The action token of every mod_logs row written during the call."""
+    return [call.args[1] for call in log_mod.await_args_list]
+
+
+@pytest.mark.asyncio
+async def test_kick_requests_cleanup_when_configured(_default_policy):
+    _default_policy.return_value = ModerationPolicy(
+        post_action_cleanup="kick", post_action_cleanup_limit=50
+    )
+    member = _make_member()
+    channel = MagicMock()
+    plan = HistoryCleanupPlan(scanned=50, matched=[MagicMock(), MagicMock()])
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.history_cleanup.build_author_cleanup_plan",
+            new_callable=AsyncMock,
+            return_value=plan,
+        ) as build,
+        patch(
+            "services.history_cleanup.apply_history_cleanup_plan",
+            new_callable=AsyncMock,
+            return_value=CleanupApplyResult(deleted=2, failed=0),
+        ) as apply,
+    ):
+        outcome = await moderation_service.kick(
+            member, reason="spam", actor_id=7, channel=channel
+        )
+
+    member.kick.assert_awaited_once()
+    build.assert_awaited_once()
+    assert build.await_args.args[0] is channel
+    assert build.await_args.kwargs["author_id"] == member.id
+    assert build.await_args.kwargs["limit"] == 50
+    apply.assert_awaited_once_with(plan)
+    assert outcome is not None
+    assert outcome.requested is True
+    assert outcome.deleted == 2
+    assert outcome.blocked is False
+    # Two mod_logs rows: the kick itself + the cleanup sweep.
+    assert _cleanup_actions(log_mod) == ["kick", "post_action_cleanup"]
+
+
+@pytest.mark.asyncio
+async def test_kick_no_cleanup_when_policy_disabled(_default_policy):
+    """Default policy (post_action_cleanup="none") never sweeps."""
+    member = _make_member()
+    channel = MagicMock()
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.history_cleanup.build_author_cleanup_plan",
+            new_callable=AsyncMock,
+        ) as build,
+    ):
+        outcome = await moderation_service.kick(
+            member, reason="x", actor_id=1, channel=channel
+        )
+
+    build.assert_not_awaited()
+    assert outcome is None
+
+
+@pytest.mark.asyncio
+async def test_kick_no_cleanup_without_channel(_default_policy):
+    """Even with the policy on, no channel context means no sweep."""
+    _default_policy.return_value = ModerationPolicy(post_action_cleanup="both")
+    member = _make_member()
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.history_cleanup.build_author_cleanup_plan",
+            new_callable=AsyncMock,
+        ) as build,
+    ):
+        outcome = await moderation_service.kick(member, reason="x", actor_id=1)
+
+    build.assert_not_awaited()
+    assert outcome is None
+
+
+@pytest.mark.asyncio
+async def test_ban_requests_cleanup_when_configured(_default_policy):
+    _default_policy.return_value = ModerationPolicy(post_action_cleanup="ban")
+    guild = _make_guild()
+    user = _make_user()
+    channel = MagicMock()
+    plan = HistoryCleanupPlan(scanned=100, matched=[MagicMock()])
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.history_cleanup.build_author_cleanup_plan",
+            new_callable=AsyncMock,
+            return_value=plan,
+        ) as build,
+        patch(
+            "services.history_cleanup.apply_history_cleanup_plan",
+            new_callable=AsyncMock,
+            return_value=CleanupApplyResult(deleted=1, failed=0),
+        ),
+    ):
+        outcome = await moderation_service.ban(
+            guild, user, reason="raid", actor_id=1, channel=channel
+        )
+
+    guild.ban.assert_awaited_once()
+    assert build.await_args.kwargs["author_id"] == user.id
+    assert outcome is not None and outcome.deleted == 1
+
+
+@pytest.mark.asyncio
+async def test_cleanup_blocked_does_not_break_the_action(_default_policy):
+    """A missing Read History / Manage Messages must not undo the kick."""
+    _default_policy.return_value = ModerationPolicy(post_action_cleanup="kick")
+    member = _make_member()
+    channel = MagicMock()
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.history_cleanup.build_author_cleanup_plan",
+            new_callable=AsyncMock,
+            side_effect=discord.Forbidden(MagicMock(), "no history"),
+        ),
+    ):
+        outcome = await moderation_service.kick(
+            member, reason="x", actor_id=1, channel=channel
+        )
+
+    member.kick.assert_awaited_once()  # the action itself still happened
+    assert outcome is not None
+    assert outcome.blocked is True
+    # Only the kick row — a blocked sweep records nothing.
+    assert _cleanup_actions(log_mod) == ["kick"]
+
+
+@pytest.mark.asyncio
+async def test_cleanup_zero_deleted_skips_audit_row(_default_policy):
+    """An empty sweep (nothing matched) is a silent no-op — no extra row."""
+    _default_policy.return_value = ModerationPolicy(post_action_cleanup="kick")
+    member = _make_member()
+    channel = MagicMock()
+    plan = HistoryCleanupPlan(scanned=30, matched=[])
+    with (
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+        patch(
+            "services.history_cleanup.build_author_cleanup_plan",
+            new_callable=AsyncMock,
+            return_value=plan,
+        ),
+        patch(
+            "services.history_cleanup.apply_history_cleanup_plan",
+            new_callable=AsyncMock,
+            return_value=CleanupApplyResult(deleted=0, failed=0),
+        ),
+    ):
+        outcome = await moderation_service.kick(
+            member, reason="x", actor_id=1, channel=channel
+        )
+
+    assert _cleanup_actions(log_mod) == ["kick"]
+    assert outcome is not None
+    assert outcome.requested is True
+    assert outcome.deleted == 0
 
 
 # ---------------------------------------------------------------------------

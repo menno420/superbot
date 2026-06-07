@@ -60,6 +60,21 @@ DEFAULT_WARN_ESCALATION_ACTION = "timeout"
 # ``"none"`` disables auto-escalation (the count still accrues + audits).
 WARN_ESCALATION_ACTIONS: tuple[str, ...] = ("timeout", "kick", "ban", "none")
 
+# Post-action cleanup — after a kick/ban, optionally sweep the moderated
+# member's recent messages in the channel where the action was taken.  The
+# default ``"none"`` keeps today's behaviour exactly; the sweep itself is
+# *requested* from the cleanup subsystem (services.history_cleanup), so
+# moderation never re-implements deletion mechanics.
+DEFAULT_POST_ACTION_CLEANUP = "none"
+# Which actions trigger the sweep: ``"kick"`` / ``"ban"`` / ``"both"`` /
+# ``"none"`` (disabled).
+POST_ACTION_CLEANUP_ACTIONS: tuple[str, ...] = ("none", "kick", "ban", "both")
+DEFAULT_POST_ACTION_CLEANUP_LIMIT = 100
+# How many recent messages the sweep scans in the channel.  Bounded tighter
+# than the manual ``!cleanuphistory`` ceiling because this runs automatically.
+MIN_POST_ACTION_CLEANUP_LIMIT = 1
+MAX_POST_ACTION_CLEANUP_LIMIT = 500
+
 # Validator bounds (also enforced defensively at the service seam).
 MIN_BAN_DELETE_MESSAGE_DAYS = 0
 MAX_BAN_DELETE_MESSAGE_DAYS = 7
@@ -99,6 +114,16 @@ class ModerationPolicy:
     warn_threshold: int = DEFAULT_WARN_THRESHOLD
     warn_timeout_minutes: int = DEFAULT_WARN_TIMEOUT_MINUTES
     warn_escalation_action: str = DEFAULT_WARN_ESCALATION_ACTION
+    post_action_cleanup: str = DEFAULT_POST_ACTION_CLEANUP
+    post_action_cleanup_limit: int = DEFAULT_POST_ACTION_CLEANUP_LIMIT
+
+    @property
+    def effective_post_action_cleanup_limit(self) -> int:
+        """Scan limit for the post-action sweep, clamped to the safe window."""
+        return max(
+            MIN_POST_ACTION_CLEANUP_LIMIT,
+            min(MAX_POST_ACTION_CLEANUP_LIMIT, self.post_action_cleanup_limit),
+        )
 
     @property
     def ban_delete_message_seconds(self) -> int:
@@ -155,6 +180,23 @@ def evaluate_escalation(
         return None
     minutes = policy.warn_timeout_minutes if action == "timeout" else 0
     return EscalationDecision(action=action, timeout_minutes=minutes)
+
+
+def cleanup_applies_to(action: str, policy: ModerationPolicy) -> bool:
+    """Whether *policy* enables a post-action message sweep for *action* (pure).
+
+    ``post_action_cleanup`` is one of ``"none"`` (default) / ``"kick"`` /
+    ``"ban"`` / ``"both"``.  Fail-safe: any unrecognised stored value disables
+    the sweep, so a malformed setting can never trigger an unintended deletion.
+    """
+    setting = policy.post_action_cleanup
+    if setting == "kick":
+        return action == "kick"
+    if setting == "ban":
+        return action == "ban"
+    if setting == "both":
+        return action in ("kick", "ban")
+    return False
 
 
 async def load_policy(guild_id: int) -> ModerationPolicy:
@@ -215,6 +257,18 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         "warn_escalation_action",
         DEFAULT_WARN_ESCALATION_ACTION,
     )
+    post_action_cleanup = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "post_action_cleanup",
+        DEFAULT_POST_ACTION_CLEANUP,
+    )
+    post_action_cleanup_limit = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "post_action_cleanup_limit",
+        DEFAULT_POST_ACTION_CLEANUP_LIMIT,
+    )
     return ModerationPolicy(
         dm_on_action=bool(dm_on_action),
         dm_template=str(dm_template),
@@ -224,6 +278,8 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         warn_threshold=int(warn_threshold),
         warn_timeout_minutes=int(warn_timeout_minutes),
         warn_escalation_action=str(warn_escalation_action),
+        post_action_cleanup=str(post_action_cleanup),
+        post_action_cleanup_limit=int(post_action_cleanup_limit),
     )
 
 
@@ -286,18 +342,24 @@ __all__ = [
     "DEFAULT_DM_ON_ACTION",
     "DEFAULT_DM_TEMPLATE",
     "DEFAULT_MAX_TIMEOUT_MINUTES",
+    "DEFAULT_POST_ACTION_CLEANUP",
+    "DEFAULT_POST_ACTION_CLEANUP_LIMIT",
     "DEFAULT_REQUIRE_REASON",
     "DEFAULT_WARN_ESCALATION_ACTION",
     "DEFAULT_WARN_THRESHOLD",
     "DEFAULT_WARN_TIMEOUT_MINUTES",
     "MAX_BAN_DELETE_MESSAGE_DAYS",
+    "MAX_POST_ACTION_CLEANUP_LIMIT",
     "MAX_TIMEOUT_MINUTES",
     "MIN_BAN_DELETE_MESSAGE_DAYS",
+    "MIN_POST_ACTION_CLEANUP_LIMIT",
     "MIN_TIMEOUT_MINUTES",
+    "POST_ACTION_CLEANUP_ACTIONS",
     "WARN_ESCALATION_ACTIONS",
     "EscalationDecision",
     "ModerationPolicy",
     "SUBSYSTEM",
+    "cleanup_applies_to",
     "evaluate_escalation",
     "has_reason",
     "load_policy",

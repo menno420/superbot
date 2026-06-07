@@ -23,14 +23,19 @@ from services.moderation_config import (
     DEFAULT_DM_ON_ACTION,
     DEFAULT_DM_TEMPLATE,
     DEFAULT_MAX_TIMEOUT_MINUTES,
+    DEFAULT_POST_ACTION_CLEANUP,
+    DEFAULT_POST_ACTION_CLEANUP_LIMIT,
     DEFAULT_REQUIRE_REASON,
     DEFAULT_WARN_ESCALATION_ACTION,
     DEFAULT_WARN_THRESHOLD,
     DEFAULT_WARN_TIMEOUT_MINUTES,
     MAX_BAN_DELETE_MESSAGE_DAYS,
+    MAX_POST_ACTION_CLEANUP_LIMIT,
     MAX_TIMEOUT_MINUTES,
     MIN_BAN_DELETE_MESSAGE_DAYS,
+    MIN_POST_ACTION_CLEANUP_LIMIT,
     MIN_TIMEOUT_MINUTES,
+    POST_ACTION_CLEANUP_ACTIONS,
     WARN_ESCALATION_ACTIONS,
 )
 from utils.settings_keys import (
@@ -38,6 +43,8 @@ from utils.settings_keys import (
     MOD_DM_ON_ACTION,
     MOD_DM_TEMPLATE,
     MOD_MAX_TIMEOUT_MINUTES,
+    MOD_POST_ACTION_CLEANUP,
+    MOD_POST_ACTION_CLEANUP_LIMIT,
     MOD_REQUIRE_REASON,
     MOD_WARN_ESCALATION_ACTION,
     WARN_THRESHOLD,
@@ -93,6 +100,24 @@ def _validate_escalation_action(value: object) -> None:
         raise ValueError(
             "warn_escalation_action must be one of "
             f"{', '.join(WARN_ESCALATION_ACTIONS)}, got {value!r}",
+        )
+
+
+def _validate_post_action_cleanup(value: object) -> None:
+    if value not in POST_ACTION_CLEANUP_ACTIONS:
+        raise ValueError(
+            "post_action_cleanup must be one of "
+            f"{', '.join(POST_ACTION_CLEANUP_ACTIONS)}, got {value!r}",
+        )
+
+
+def _validate_post_action_cleanup_limit(value: object) -> None:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"expected int, got {value!r}")
+    if not (MIN_POST_ACTION_CLEANUP_LIMIT <= value <= MAX_POST_ACTION_CLEANUP_LIMIT):
+        raise ValueError(
+            "post_action_cleanup_limit must be between "
+            f"{MIN_POST_ACTION_CLEANUP_LIMIT} and {MAX_POST_ACTION_CLEANUP_LIMIT}",
         )
 
 
@@ -210,6 +235,38 @@ MODERATION_SETTINGS: tuple[SettingSpec, ...] = (
         input_hint="numeric_presets",
         presets=(60, 1440, 10080, 40320),
     ),
+    # PR10 fourth slice — optional post-action message cleanup, requested
+    # from the cleanup subsystem at the ``moderation_service`` seam.
+    SettingSpec(
+        name="post_action_cleanup",
+        value_type=str,
+        default=DEFAULT_POST_ACTION_CLEANUP,
+        settings_key=MOD_POST_ACTION_CLEANUP,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "After a kick or ban, sweep the member's recent messages in the "
+            "channel where the action was taken: 'none' (default), 'kick', "
+            "'ban', or 'both'.  The bot needs Manage Messages + Read Message "
+            "History in that channel."
+        ),
+        validator=_validate_post_action_cleanup,
+        allowed_values=POST_ACTION_CLEANUP_ACTIONS,
+    ),
+    SettingSpec(
+        name="post_action_cleanup_limit",
+        value_type=int,
+        default=DEFAULT_POST_ACTION_CLEANUP_LIMIT,
+        settings_key=MOD_POST_ACTION_CLEANUP_LIMIT,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "How many recent messages to scan for the post-action cleanup "
+            "sweep (1–500).  Only the moderated member's messages within that "
+            "scan window are removed."
+        ),
+        validator=_validate_post_action_cleanup_limit,
+        input_hint="numeric_presets",
+        presets=(50, 100, 200, 500),
+    ),
 )
 
 MODERATION_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (
@@ -236,7 +293,9 @@ MODERATION_CONFIG_SCHEMA = SubsystemSchema(
     # / max_timeout_minutes behaviour settings.
     # v3 — PR10 third slice added warn_escalation_action (configurable terminal
     # escalation, owned at the moderation_service warn seam).
-    version=3,
+    # v4 — PR10 fourth slice added post_action_cleanup / post_action_cleanup_limit
+    # (optional post-kick/ban message sweep, requested from the cleanup service).
+    version=4,
 )
 
 
