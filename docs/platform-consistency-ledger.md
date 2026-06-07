@@ -1,7 +1,12 @@
 # SuperBot — Platform Consistency Ledger
 
-> **Status:** binding. The authoritative truth map of what exists, who
-> owns it, and where the gaps are as Phase 2 completes.
+> **Status (reconciled 2026-06-06):** reference contract shape + **stale status
+> snapshot**. The ownership/domain shapes remain useful, but many implementation
+> cells below still describe pre-ship Phase-2 state and are **not a current work
+> queue**. Verify every cell against source and the relevant subsystem folio/tracker;
+> see `docs/audits/implementation-readiness-review-2026-06-06.md`. Binding mutation,
+> lifecycle, and layering authority lives in `docs/ownership.md`,
+> `docs/runtime_contracts.md`, and `docs/architecture.md`.
 >
 > **Purpose:** Prevent duplicate systems by codifying ownership for every
 > runtime domain and every subsystem. Every contributor (human or
@@ -16,6 +21,9 @@
 ---
 
 ## How to use this document
+
+> **Freshness warning:** use the shapes/checklists below to avoid duplicate systems,
+> but do not infer that a `❌`, `🚧`, or named PR is current until source verification.
 
 - **Adding a new domain?** First add a row to §1 with empty cells, then
   fill them as PRs land. The empty row is the contract.
