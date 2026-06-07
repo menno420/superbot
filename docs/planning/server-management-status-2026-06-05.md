@@ -10,9 +10,11 @@
 > for PR8+PR9, then for **PR10's first–fifth slices** — config-backed moderation
 > behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
 > the post-action message cleanup sweep, and the optional public moderation log).
-> **Body is current through PR10's final slice — PR10 is COMPLETE** (all six slices
-> shipped, incl. moderator/trusted roles + capabilities, ADR-008). **PR11–PR14 are the
-> queue** — the "Shipped" + "Remaining queue" sections below are authoritative.
+> **Body is current through PR11's moderation + roles slices** (built 2026-06-07, PR open;
+> see the PR11 subsection below). **PR10 is COMPLETE** (all six slices shipped, incl.
+> moderator/trusted roles + capabilities, ADR-008). PR11's **governance** section is
+> deferred (owner decision Q-0008); **PR12–PR14 remain queued** — the "Shipped" +
+> "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -472,6 +474,34 @@ The **last PR10 item** and the highest-stakes change in the workstream (it chang
   capability-authority + folio docs updated.
 - **PR10 is now complete.** Next: **PR11** (setup role/moderation/governance sections).
 
+### PR11 (moderation + roles slices) — Setup sections *(built 2026-06-07; PR open)*
+
+Owner decision **Q-0008 → "Moderation + Roles"** (router): build the moderation and roles
+setup sections this session; **defer the governance section** (cleanup already owns the main
+governance write; capability-override / command-access setup is a separate, design-led
+follow-up). Both sections are draft-first — they stage `SetupOperation`s; **Final Review is
+the only apply gate** (no setup view imports a mutation pipeline; invariant
+`test_setup_operations_invariants.py` preserved).
+
+- **Moderation section** (`views/setup/sections/moderation.py`, order 65) — surfaces PR10's
+  config via existing **`set_setting`** drafts (subsystem `moderation`): `dm_on_action`,
+  `require_reason`, `warn_escalation_action`, `moderator_role`. Recommended-ops builder
+  stages a safe baseline (DM-on-action + require-a-reason). No new op-kind, no migration —
+  reuses the `SettingsMutationPipeline` dispatch. The fuller surface stays in
+  `!settings → Moderation`.
+- **Roles section** (`views/setup/sections/roles.py`, order 55) — time-/XP-based auto-role
+  tiers for **existing** roles (no second resource-creation path). Adds a new
+  **`set_role_threshold`** op-kind to `services/setup_operations.py`, routed through the new
+  audited **`role_automation.set_{time,xp}_threshold`** seam (a service, not a raw DB write,
+  per the no-`utils.db` invariant; mirrors the cog-routing no-pipeline pattern) — captures
+  `role_id` so a rename does not orphan the tier, and emits `audit.action_recorded`. Final
+  Review gains an explicit `role_threshold` apply phase.
+- **Pinned by** `tests/unit/views/setup/sections/test_moderation_section.py`,
+  `test_roles_section.py`, `tests/unit/services/test_setup_operations_role_threshold.py`,
+  `test_role_automation_thresholds.py`, and the registration manifest. Full CI mirror green;
+  live-booted clean (both sections register, 0 ERROR/CRITICAL).
+- **Remaining in PR11:** the **governance** section (deferred per Q-0008).
+
 ---
 
 ## Remaining queue (starts at PR11)
@@ -481,7 +511,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 | PR | Objective | Depends on |
 |---|---|---|
 | **PR10** | Moderation first-class configuration. **COMPLETE** — all six slices shipped (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log, **and moderator/trusted roles + capabilities** — ADR-008, see above). | #521 |
-| **PR11** | Setup role/moderation/governance sections. **← next.** | PR5, PR8–PR10, #522 |
+| **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built (2026-06-07, PR open); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |
 | **PR14** | Server Management Hub (last). | all managers |

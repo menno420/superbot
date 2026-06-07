@@ -737,3 +737,42 @@ Moved/copied on: 2026-06-07 — implemented: format_public_log_embed shows membe
   no actor; the staff mod-log keeps the full record.
 Notes: one fact, one home — server-logging.md owns the embed-content contract.
 ```
+
+### Q-0008 — How far to take PR11 (setup role/moderation/governance sections)?
+
+**Area:** Server management / Setup wizard
+**Type:** Scope / Sequencing
+**Priority:** Medium
+**Status:** Answered (2026-06-07) — **Routed** (built this session)
+**Suggested destination after answer:** server-management tracker (Remaining queue) + folio
+
+**Question:** PR11 nominally bundles three setup-wizard sections (roles, moderation,
+governance). Source analysis showed the **moderation** section maps cleanly onto the
+existing `set_setting` dispatch (no new infra), **roles** (time/XP automation) needs a
+small new `set_role_threshold` op-kind, and **governance** is ambiguous in scope — its
+main write (cleanup policy) is already a wizard section, so what remains
+(capability-overrides / command-access) is a distinct feature needing its own design.
+How far should PR11 go this session?
+
+**Maintainer answer**
+
+```text
+Answer: "Moderation + Roles."
+Build the Moderation setup section and the Roles setup section (with the new
+set_role_threshold op-kind) this session. Defer the Governance section.
+```
+
+**Routing result**
+
+```text
+Destination: docs/planning/server-management-status-2026-06-05.md (Remaining queue) +
+  the server-management folio + docs/current-state.md (▶ Next action).
+Moved/copied on: 2026-06-07 — built: views/setup/sections/moderation.py (set_setting
+  drafts for dm_on_action / require_reason / warn_escalation_action / moderator_role) and
+  views/setup/sections/roles.py (set_role_threshold drafts for time/XP tiers), plus the
+  new set_role_threshold op-kind routed through services.role_automation.set_{time,xp}_
+  threshold. Governance section deferred — cleanup already covers the main governance
+  write; capability-override/command-access setup is a separate, design-led follow-up.
+Notes: the server-management tracker owns the PR11→PR14 queue; governance setup is not yet
+  a committed PR11 deliverable and needs a scope decision before it is built.
+```
