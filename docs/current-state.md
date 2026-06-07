@@ -64,8 +64,13 @@ Source code and merged PRs win over anything written here.
 
 ## Next candidates
 
-- Highest-value approved implementation lane: start from the server-management status
-  tracker's first remaining item (PR10); do not duplicate its queue here.
+- Highest-value approved implementation lane: server-management. PR10's **first slice**
+  (config-backed moderation behaviour — DMs / ban message-purge / timeout ceiling) is
+  shipping in the current PR; the next step is the **remaining PR10 slice** (mod-roles +
+  capabilities, log destinations, escalation rules, required-reason, post-action cleanup,
+  hierarchy diagnostics), then PR11–PR14. The
+  `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
+  queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
 - Use the canonical subsystem folios for area-specific implementation/planning. The

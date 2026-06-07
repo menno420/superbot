@@ -7,8 +7,9 @@
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
 > **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523; updated 2026-06-06
-> for PR8+PR9). **Body is current through PR9; remaining queue starts at PR10** —
-> the "Shipped" + "Remaining queue" sections below are authoritative.
+> for PR8+PR9, then for **PR10's first slice** — config-backed moderation behaviour).
+> **Body is current through PR10's first slice; the remaining PR10 items + PR11–PR14
+> are the queue** — the "Shipped" + "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
