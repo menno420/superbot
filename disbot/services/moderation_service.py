@@ -29,6 +29,13 @@ authorized the action; the service does not re-check permissions.
 Permission checks live at the cog/view layer where the interacting
 member's identity is available.
 
+Beyond writing, the service also **applies the guild's moderation
+policy** (:mod:`services.moderation_config`) at this seam — the optional
+notify-the-member DM, the ban message-purge window, and the timeout
+ceiling — so every surface (prefix commands, panel modals, and the
+future Server-Management hub) gets identical, audited behaviour without
+each call site re-reading config (PR10).
+
 Public API
 ----------
 - :func:`warn(member, *, reason, actor_id)`               — adds a warning
@@ -57,12 +64,13 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import discord
 
 from core.events import bus
+from services import moderation_config
 from services.audit_events import emit_audit_action
 from utils import db
 
@@ -136,6 +144,57 @@ async def _record_action(
     return mutation_id
 
 
+async def _notify_target(
+    target: Any,
+    *,
+    action: str,
+    guild_name: str,
+    reason: str,
+    policy: moderation_config.ModerationPolicy,
+) -> None:
+    """Best-effort DM to the member affected by *action* (PR10 config).
+
+    No-op unless ``dm_on_action`` is enabled and *target* is DM-capable —
+    a user banned by bare id (a ``discord.Object`` snowflake) has no
+    ``send``.  **Never raises**: a member with DMs closed, one who has
+    already left, or any HTTP error is swallowed.  The audited moderation
+    action is authoritative; the courtesy DM is not.
+
+    Ordering is the caller's responsibility: for ``kick`` / ``ban`` this is
+    invoked **before** the Discord removal (a removed member is no longer
+    DM-reachable); for ``warn`` / ``timeout`` it runs after the action,
+    once it is known to have succeeded.
+    """
+    if not policy.dm_on_action:
+        return
+    send = getattr(target, "send", None)
+    if not callable(send):
+        return
+    target_name = (
+        getattr(target, "display_name", None) or getattr(target, "name", None) or ""
+    )
+    body = moderation_config.render_dm_message(
+        action=action,
+        guild_name=guild_name,
+        reason=reason,
+        target_name=target_name,
+        template=policy.dm_template,
+    )
+    try:
+        await send(body)
+    except (discord.Forbidden, discord.HTTPException):
+        logger.debug(
+            "notify DM skipped (action=%s) — DMs closed or unreachable",
+            action,
+        )
+    except Exception:  # noqa: BLE001 — a courtesy DM must never break moderation
+        logger.warning(
+            "notify DM unexpectedly failed (action=%s)",
+            action,
+            exc_info=True,
+        )
+
+
 async def warn(
     member: discord.Member,
     *,
@@ -153,12 +212,20 @@ async def warn(
         The post-increment warning count.
     """
     new_count = await db.add_warning(member.id, member.guild.id)
+    policy = await moderation_config.load_policy(member.guild.id)
     await _record_action(
         guild_id=member.guild.id,
         action="warn",
         target_id=member.id,
         actor_id=actor_id,
         reason=reason,
+    )
+    await _notify_target(
+        member,
+        action="warn",
+        guild_name=member.guild.name,
+        reason=reason,
+        policy=policy,
     )
     return new_count
 
@@ -172,17 +239,32 @@ async def timeout(
 ) -> None:
     """Timeout *member* until *until*; log + emit event.
 
-    Discord-side timeout failures propagate; the audit row is only
-    written on successful timeout.
+    The requested *until* is clamped down to the guild's configured
+    ``max_timeout_minutes`` ceiling (PR10) — the default ceiling is
+    Discord's own 28-day maximum, so an unconfigured guild is unaffected.
+    Discord-side timeout failures propagate; the audit row is only written
+    on successful timeout.
     """
-    await member.timeout(until, reason=reason)
+    policy = await moderation_config.load_policy(member.guild.id)
+    cap = _now_utc() + timedelta(minutes=policy.effective_max_timeout_minutes)
+    effective_until = until if until <= cap else cap
+    await member.timeout(effective_until, reason=reason)
     await _record_action(
         guild_id=member.guild.id,
         action="timeout",
         target_id=member.id,
         actor_id=actor_id,
         reason=reason,
-        event_extra={"until": until.isoformat() if until else None},
+        event_extra={
+            "until": effective_until.isoformat() if effective_until else None,
+        },
+    )
+    await _notify_target(
+        member,
+        action="timeout",
+        guild_name=member.guild.name,
+        reason=reason,
+        policy=policy,
     )
 
 
@@ -195,6 +277,15 @@ async def kick(
     """Kick *member* from their guild; log + emit event."""
     guild_id = member.guild.id
     target_id = member.id
+    policy = await moderation_config.load_policy(guild_id)
+    # DM before removal — a kicked member is no longer DM-reachable.
+    await _notify_target(
+        member,
+        action="kick",
+        guild_name=member.guild.name,
+        reason=reason,
+        policy=policy,
+    )
     await member.kick(reason=reason)
     await _record_action(
         guild_id=guild_id,
@@ -215,9 +306,27 @@ async def ban(
     """Ban *user* from *guild*; log + emit event.
 
     Accepts ``discord.abc.Snowflake`` (Member or User) so the caller
-    can ban users who are not currently in the guild.
+    can ban users who are not currently in the guild.  The guild's
+    configured ``ban_delete_message_days`` (PR10) purges that many days of
+    the banned member's recent messages; the default of 0 keeps all
+    messages, so the ``delete_message_seconds`` kwarg is only passed when
+    a purge is actually configured.
     """
-    await guild.ban(user, reason=reason)
+    policy = await moderation_config.load_policy(guild.id)
+    # DM before the ban — a banned user no longer shares the guild and is
+    # not DM-reachable afterward.
+    await _notify_target(
+        user,
+        action="ban",
+        guild_name=guild.name,
+        reason=reason,
+        policy=policy,
+    )
+    delete_seconds = policy.ban_delete_message_seconds
+    if delete_seconds > 0:
+        await guild.ban(user, reason=reason, delete_message_seconds=delete_seconds)
+    else:
+        await guild.ban(user, reason=reason)
     await _record_action(
         guild_id=guild.id,
         action="ban",

@@ -161,9 +161,13 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
 9. **existing_SettingSpec_declarations**: `warn_threshold`,
-   `warn_timeout_minutes`
-   (`disbot/cogs/moderation/schemas.py`).
-10. **existing_settings_keys**: `WARN_THRESHOLD`, `WARN_TIMEOUT_MINS`
+   `warn_timeout_minutes`, `dm_on_action`, `dm_template`,
+   `ban_delete_message_days`, `max_timeout_minutes`
+   (`disbot/cogs/moderation/schemas.py`).  The last four are PR10's
+   first-class behaviour config (applied at the `moderation_service` seam).
+10. **existing_settings_keys**: `WARN_THRESHOLD`, `WARN_TIMEOUT_MINS`,
+    `MOD_DM_ON_ACTION`, `MOD_DM_TEMPLATE`, `MOD_BAN_DELETE_MESSAGE_DAYS`,
+    `MOD_MAX_TIMEOUT_MINUTES`
     (`disbot/utils/settings_keys/moderation.py`).
 11. **existing_BindingSpec_entries**: none (mod_log promotion planned in
     later milestone).
@@ -173,15 +177,21 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     capabilities `moderation.warn.apply`, `moderation.timeout.apply`,
     `moderation.kick.apply`, `moderation.ban.apply`, `moderation.ban.remove`,
     `moderation.log.view`, `moderation.settings.configure`.
-14. **hardcoded_or_env_only_behavior**: timeout presets, escalation rules,
-    DM-on-action behaviour are inline constants.
+14. **hardcoded_or_env_only_behavior**: escalation rules and timeout presets
+    remain inline constants; mod roles / log destinations are not yet
+    first-class.  PR10 moved DM-on-action (`dm_on_action` / `dm_template`),
+    the ban message-purge window (`ban_delete_message_days`), and the
+    timeout ceiling (`max_timeout_minutes`) out of code into settings applied
+    at the `moderation_service` mutation seam.
 15. **missing_customization_commands**: `!settings moderation`
     edit/reset surface; `!moderation timeoutpresets`.
 16. **missing_settings_pages**: Settings Manager moderation page.
 17. **missing_menu_buttons_selects_modals**: threshold scalar editor,
     timeout-presets list editor, mod-log channel BindingSelectView.
 18. **setting_class_per_value**: `warn_threshold` scalar, `warn_timeout_minutes`
-    scalar; `mod_log` binding (after S10 promotion).
+    scalar, `dm_on_action` bool toggle, `dm_template` free-text,
+    `ban_delete_message_days` numeric-presets, `max_timeout_minutes`
+    numeric-presets; `mod_log` binding (after S10 promotion).
 19. **target_Settings_Manager_page**: `!settings subsystem moderation`.
 20. **target_mutation_path**: `SettingsMutationPipeline` (scalars);
     `BindingMutationPipeline` (mod_log); `ResourceProvisioningPipeline`
