@@ -1,6 +1,7 @@
 # Capability-native authority + mutation kill-switches
 
-**Status:** binding (reference for the implemented system). Decision of record:
+> **Status:** `binding` — (reference for the implemented system). Decision of record:
+
 [`docs/decisions/005-capability-native-authority-and-flag-semantics.md`](decisions/005-capability-native-authority-and-flag-semantics.md)
 (Accepted, implemented in PR #518). When this doc and source disagree, source wins
 (`disbot/governance/capability.py`).

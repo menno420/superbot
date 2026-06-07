@@ -1,6 +1,6 @@
 # SuperBot — Architecture
 
-> **Status:** binding. This document defines the platform's layering
+> **Status:** `binding` — This document defines the platform's layering
 > and dependency rules.  CI invariants (`tests/unit/invariants/`) +
 > ruff config enforce a subset; everything else is enforced by review.
 >

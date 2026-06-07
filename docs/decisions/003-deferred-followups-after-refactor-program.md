@@ -2,8 +2,8 @@
 
 > Status: ADR (PR-07).
 > Supersedes: nothing.
-> Related: [`/home/user/superbot/.claude/plans/1-recommended-target-agent-zazzy-eclipse.md`](../../.claude/plans/1-recommended-target-agent-zazzy-eclipse.md)
-> (the program plan that PR-01a..PR-06c implement).
+> Related: `.claude/plans/1-recommended-target-agent-zazzy-eclipse.md` — the program
+> plan that PR-01a..PR-06c implement (a local planning artifact, not committed to the repo).
 
 The refactor program landed as 13 stacked PRs (#244..#256) plus this
 ADR.  This document records, in this order:

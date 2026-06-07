@@ -1,6 +1,6 @@
 # Bot-Awareness / AI-Assisted Diagnostics — Revised Implementation Plan
 
-> **Status (2026-06-06): PROGRAMME COMPLETE — all 6 PRs shipped.** PR1–PR3 merged in
+> **Status:** `living-ledger` — **Status (2026-06-06): PROGRAMME COMPLETE — all 6 PRs shipped.** PR1–PR3 merged in
 > **#537** (typed health read model + deterministic `!platform health` + panel-only
 > startup health); **PR4–PR6 merged in #541** (opt-in grouped recent-error findings,
 > the owner-gated `diagnostics_health_snapshot` AI tool, and persistent findings with

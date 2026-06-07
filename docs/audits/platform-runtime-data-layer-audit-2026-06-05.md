@@ -1,5 +1,7 @@
 # Platform / Runtime / Data-Layer Audit — 2026-06-05
 
+> **Status:** `audit`
+
 > **Superseded (2026-06-05):** reconciled into
 > [`../planning/superbot-audit-consolidation-2026-06-05.md`](../planning/superbot-audit-consolidation-2026-06-05.md)
 > (verified, RC-n IDs). Read that first; this raw audit is historical context.

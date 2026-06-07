@@ -1,6 +1,6 @@
 # SuperBot — Ideas Lab (brainstorm backlog)
 
-> **Status:** planning artifact / **advisory** backlog — **except** §2 (Operating
+> **Status:** `ideas` — planning artifact / **advisory** backlog — **except** §2 (Operating
 > decisions) and §6 (Rejection ledger), which are **binding** for how this
 > backlog is handled. The rest is a menu of candidate work, not a spec.
 >

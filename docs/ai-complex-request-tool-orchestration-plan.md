@@ -1,6 +1,7 @@
 # Configurable AI Tool Orchestration for Complex BTD6 Requests
 
-**Status:** research-backed planning document; assumes the bot-awareness and
+> **Status:** `plan` — research-backed planning document; assumes the bot-awareness and
+
 health-diagnostics roadmap is already delivered  
 **Verified against:** current repository worktree on 2026-06-06  
 **Primary focus:** complex BTD6 lookups and calculations  

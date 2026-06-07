@@ -1,5 +1,7 @@
 # Server Management Implementation Plan
 
+> **Status:** `plan`
+
 > Converts `docs/planning/server-management-roadmap-2026-06-05.md` into a
 > dependency-ordered, repo-grounded, highest-value-first implementation sequence.
 >

@@ -1,6 +1,6 @@
 # BTD6 absence-claim guard — design proposal
 
-> **Status:** DESIGN PROPOSAL — *not* binding, *not* implemented. Written for
+> **Status:** `reference` — DESIGN PROPOSAL — *not* binding, *not* implemented. Written for
 > independent review (ChatGPT / Analysis side) before any guard code is merged,
 > per the v55 hand-off ("Task 1: DESIGN FIRST, do NOT implement blind").
 > The companion status ledger is `btd6-gamedata-decode-status.md`.

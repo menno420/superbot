@@ -1,6 +1,6 @@
 # Setup Wizard — Finalization Analysis & Plan
 
-> **Status: 🟢 active (plan).** Repo-state analysis of the *shipped* guild setup
+> **Status:** `plan` — **Status: 🟢 active (plan).** Repo-state analysis of the *shipped* guild setup
 > wizard plus the implementation-ready PR sequence to finalize it. This is the
 > "PR-12 — setup wizard plan refresh (plan only)" anticipated by
 > `docs/platform-consistency-ledger.md`.

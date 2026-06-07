@@ -4,7 +4,8 @@
 **Author:** Claude Opus (dedicated planning session)
 **Base verified:** `5e62578` (merge of #529; **== current remote `main`**)
 **Refines:** `docs/planning/stability-preimplementation-plan-2026-06-05.md` (Codex first pass, PR #529)
-**Status:** planning artifact — read-only by design. Intended next for the Revision-project
+> **Status:** `plan` — planning artifact — read-only by design. Intended next for the Revision-project
+
 critique, then a final Opus revision, then execution. **No source was implemented in this pass.**
 
 > **Post-merge update (2026-06-05):** this document was verified **pre-merge** at `5e62578`; it then

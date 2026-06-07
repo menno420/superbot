@@ -1,6 +1,6 @@
 # SuperBot — Ownership boundaries
 
-> **Status:** binding. Every module/table/event listed here has a
+> **Status:** `binding` — Every module/table/event listed here has a
 > single owner that decides what is or isn't legal to do with it.
 > Touching state owned by another subsystem requires going through
 > that subsystem's service layer (or proposing a contract change).

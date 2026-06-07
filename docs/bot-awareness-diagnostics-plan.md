@@ -1,6 +1,7 @@
 # AI-Assisted Bot Awareness and Diagnostics: Repository Map and Delivery Plan
 
-**Status:** planning and brainstorming document; no implementation is authorized by
+> **Status:** `reference` — planning and brainstorming document; no implementation is authorized by
+
 this document alone  
 **Verified against:** the current repository worktree on 2026-06-06  
 **Audience:** maintainers and follow-up implementation agents

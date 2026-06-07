@@ -1,6 +1,7 @@
 # Operator Settings & Provisioning Presets
 
-Status: Reference only  
+> **Status:** `living-ledger` — Reference only
+
 Scope: Future Settings Manager, Resource Provisioning, Cleanup, Logging, Access, Setup Wizard, and Help/Menu UX  
 Runtime impact: None  
 Owner intent: Capture preferred operator defaults and safe presets before UI/setup implementation begins.

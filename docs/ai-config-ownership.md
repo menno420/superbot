@@ -1,6 +1,6 @@
 # AI configuration ownership (binding)
 
-> **Status:** binding. Records the contract every AI-cog change must
+> **Status:** `binding` — Records the contract every AI-cog change must
 > respect: the operator-facing snapshot is the source of truth, every
 > UI surface reads from it, and every write flows through the existing
 > mutation chokepoint. Doc-pin tests in

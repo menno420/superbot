@@ -1,5 +1,7 @@
 # Agent D — BTD6, AI, Paragon, and Video subsystem audit
 
+> **Status:** `audit`
+
 > **Superseded (2026-06-05):** reconciled into
 > [`../planning/superbot-audit-consolidation-2026-06-05.md`](../planning/superbot-audit-consolidation-2026-06-05.md)
 > (verified, RC-n IDs; drives RC-10/11/12). Read that first; this is historical context.

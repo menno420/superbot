@@ -1,6 +1,6 @@
 # SuperBot — Agent Orientation (Read This First)
 
-> **Status:** binding (reference material, not implementation approval).
+> **Status:** `binding` — (reference material, not implementation approval).
 > Future Claude / Codex / human contributors should read this page
 > before proposing or implementing changes. It is the only file in
 > `docs/` that exists to orient a brand-new session; everything else

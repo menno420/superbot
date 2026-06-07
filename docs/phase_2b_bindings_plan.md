@@ -1,6 +1,6 @@
 # Phase 2b — Guild Bindings (HISTORICAL)
 
-> **Status:** ⛔ **HISTORICAL — shipped in PR #73** (plus PR #74
+> **Status:** `plan` — ⛔ **HISTORICAL — shipped in PR #73** (plus PR #74
 > circular-import hotfix). This document was the pre-implementation
 > plan for Phase 2b; it is preserved unchanged below for historical
 > context, but is no longer the source of truth.

@@ -3,7 +3,7 @@
 > **Picking up the work?** Start at **`btd6-gamedata-decode-status.md`** (status,
 > lessons & open items), then this roadmap and `btd6-gamedata-dictionary.md`.
 
-> **Status (historical roadmap — authoritative status is now
+> **Status:** `plan` — **Status (historical roadmap — authoritative status is now
 > `btd6-gamedata-decode-status.md`).** The mapper (`parse_gamedata.py`) maps the
 > dump and self-audits (`--audit`). The plan was later **re-directed by the
 > maintainer to a game-native cutover** (game data leads; store the game's own

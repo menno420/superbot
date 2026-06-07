@@ -1,6 +1,6 @@
 # BTD6 cloud data (object-store fixtures)
 
-> **Status:** shipped mechanism (opt-in). The bot reads BTD6 deterministic
+> **Status:** `reference` — shipped mechanism (opt-in). The bot reads BTD6 deterministic
 > fixtures from the local repo by default; setting `BTD6_DATA_BASE_URL` switches
 > it to a cloud object store. The repo-data removal (the audit-cleanliness
 > payoff) is the gated cutover step below.

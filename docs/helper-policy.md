@@ -1,6 +1,6 @@
 # SuperBot — Helper Discipline & Placement Policy
 
-> **Status:** binding. The rules below govern when a helper may exist,
+> **Status:** `binding` — The rules below govern when a helper may exist,
 > where it must live, when it may be promoted, and what review must
 > precede every new helper. Companion to `docs/architecture.md`
 > (layering), `docs/ownership.md` (which service owns which write),

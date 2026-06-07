@@ -1,6 +1,6 @@
 # SuperBot — Repo Navigation Map
 
-> **Status:** binding (reference material). Describes the current
+> **Status:** `binding` — (reference material). Describes the current
 > layout of the bot tree, who owns which directory, and where to put
 > new code. Companion to `docs/architecture.md` (conceptual layering)
 > and `docs/ownership.md` (per-table / per-service ownership). This

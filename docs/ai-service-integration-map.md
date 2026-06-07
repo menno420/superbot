@@ -1,6 +1,6 @@
 # AI Service Integration Map
 
-Status: planning artifact. No runtime behavior is changed by this file.
+> **Status:** `plan` — planning artifact. No runtime behavior is changed by this file.
 
 > **Read first:** `docs/ai-config-ownership.md` (binding) — the
 > operator-facing read model (`AIConfigSnapshot`), projection rules,

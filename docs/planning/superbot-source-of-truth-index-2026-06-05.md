@@ -1,5 +1,7 @@
 # SuperBot — Planning Source-of-Truth Index
 
+> **Status:** `historical`
+
 > **`historical` — superseded as a daily router by `docs/current-state.md`.**
 > Start at `docs/current-state.md` for *what is true now*. This file is kept for
 > its RC-1…RC-15 audit-reconciliation history (useful for *why* a decision was

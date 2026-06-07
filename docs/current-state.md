@@ -1,6 +1,6 @@
 # SuperBot — Current State
 
-> **Doc type:** living status ledger (project state). **Not binding.**
+> **Status:** `living-ledger` — living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**
 > The In-flight section below is a dated snapshot — **verify open PRs against
 > live GitHub** before trusting it (two same-session reports already

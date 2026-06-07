@@ -1,6 +1,6 @@
 # Plan: AI tool-calling (BTD6 lookup as the first tool)
 
-> **Status: IMPLEMENTED.** The BTD6 lookup tools described here now ship in
+> **Status:** `reference` — **Status: IMPLEMENTED.** The BTD6 lookup tools described here now ship in
 > `services/ai_tools.py` — `btd6_lookup`, `btd6_list_roster` (the complete
 > heroes/towers/paragons roster, #468), `btd6_capability_lookup`,
 > `btd6_superlative_lookup`, `btd6_difficulty_cost`, and the two paragon tools

@@ -1,6 +1,6 @@
 # Cog-by-Cog Functionality Audit — 2026-06-05
 
-> **Status:** live working document. This is the session tracker for a structured,
+> **Status:** `audit` — live working document. This is the session tracker for a structured,
 > cog-by-cog walkthrough of **every** command (prefix + slash) and command panel,
 > assigning each cog a current status. Built against a **live test bot**
 > (`Galaxy Bot#6724`) booted in the cloud container on a **fresh local Postgres**

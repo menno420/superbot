@@ -1,6 +1,6 @@
 # How we work — the collaboration model (read first)
 
-> **Doc type:** `binding`. **Audience:** *every* agent that touches this repo —
+> **Status:** `binding` — **Audience:** *every* agent that touches this repo —
 > the Claude session that **builds**, and the ChatGPT/other agents that help
 > **plan** and **draft session prompts**. This file explains the working
 > relationship so we collaborate well. If a session prompt, a stop-condition, or

@@ -1,6 +1,6 @@
 # SuperBot — Helper Debt Inventory
 
-> **Status:** inventory snapshot, dated 2026-05-24, `main` at `934870e6`.
+> **Status:** `living-ledger` — inventory snapshot, dated 2026-05-24, `main` at `934870e6`.
 > Companion to `docs/helper-policy.md` (the binding rules).
 >
 > **What this is:** a one-shot audit of helpers in the candidate sprawl

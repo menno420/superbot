@@ -1,5 +1,7 @@
 # BTD6 game-data dictionary — what the dump holds & where
 
+> **Status:** `reference`
+
 A map of the **BTD Mod Helper game-data dump**
 (`github.com/Btd6ModHelper/btd6-game-data`, v55.0 verified) so we stop
 rediscovering where each fact lives. The premise behind the BTD6 data work is
