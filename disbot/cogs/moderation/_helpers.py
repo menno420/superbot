@@ -24,8 +24,17 @@ from core.runtime.component_registry import stats_block
 from utils.ui_constants import MOD_COLOR
 
 
-def _build_mod_panel_embed() -> discord.Embed:
-    return stats_block(
+def _build_mod_panel_embed(guild: discord.Guild | None = None) -> discord.Embed:
+    """Build the moderation panel embed.
+
+    When *guild* is supplied (the live ``!modmenu`` / slash / help routes), a
+    read-only **Bot readiness** field reports whether the bot actually holds
+    Ban / Kick / Timeout and where its role sits in the hierarchy — so an
+    operator can see *before* clicking why an action might fail (PR10).
+    Restored persistent panels keep their original embed (no guild at restore
+    time), so the field simply isn't shown there until the panel is reopened.
+    """
+    embed = stats_block(
         "🔨 Moderation Panel",
         [
             ("⚠️ Warn", "Issue a warning (auto-timeout at 3)", True),
@@ -43,6 +52,19 @@ def _build_mod_panel_embed() -> discord.Embed:
         ),
         footer="Any staff member with Moderate Members permission may use this panel.",
     )
+    if guild is not None:
+        from utils.moderation_feasibility import (
+            evaluate_moderation_readiness,
+            render_readiness_line,
+        )
+
+        readiness = evaluate_moderation_readiness(guild)
+        embed.add_field(
+            name="🤖 Bot readiness",
+            value=render_readiness_line(readiness),
+            inline=False,
+        )
+    return embed
 
 
 def _can_act_on_interaction(

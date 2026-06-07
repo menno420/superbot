@@ -9,6 +9,7 @@ from discord.ext import commands
 from cogs.moderation._helpers import _build_mod_panel_embed
 from core.runtime import panel_manager
 from services import moderation_service
+from services.moderation_service import ReasonRequiredError
 from utils import db
 from utils.ui_constants import MOD_COLOR
 
@@ -44,7 +45,7 @@ class ModerationCog(commands.Cog):
     @commands.has_permissions(moderate_members=True)
     async def mod_menu(self, ctx):
         """Show the interactive moderation action panel."""
-        embed = _build_mod_panel_embed()
+        embed = _build_mod_panel_embed(ctx.guild)
         view = ModPanelView()
         await panel_manager.get_or_render_panel(ctx, "moderation", embed, view)
 
@@ -53,7 +54,7 @@ class ModerationCog(commands.Cog):
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook (returns the moderation panel)."""
-        return _build_mod_panel_embed(), ModPanelView()
+        return _build_mod_panel_embed(interaction.guild), ModPanelView()
 
     @app_commands.command(
         name="moderation",
@@ -87,7 +88,7 @@ class ModerationCog(commands.Cog):
 
     @commands.command(name="warn", hidden=True)
     @commands.has_permissions(manage_roles=True)
-    async def warn(self, ctx, member: Member, *, reason="No reason provided"):
+    async def warn(self, ctx, member: Member, *, reason=""):
         """Warn a user. Auto-timeouts at the configured threshold (default: 3)."""
         err = self._can_act_on(ctx, member)
         if err:
@@ -110,13 +111,20 @@ class ModerationCog(commands.Cog):
             "warn_timeout_minutes",
             10,
         )
-        count = await moderation_service.warn(
-            member,
-            reason=reason,
-            actor_id=ctx.author.id,
-        )
+        # The raw reason is passed through; the service enforces require_reason
+        # at the seam and defaults an empty reason for the log.
+        try:
+            count = await moderation_service.warn(
+                member,
+                reason=reason,
+                actor_id=ctx.author.id,
+            )
+        except ReasonRequiredError as exc:
+            await ctx.send(f"❌ {exc}")
+            return
         await ctx.send(
-            f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
+            f"⚠️ {member.mention} warned ({count}/{threshold}). "
+            f"Reason: {reason or 'No reason provided'}",
         )
         if count >= threshold:
             try:
@@ -165,7 +173,7 @@ class ModerationCog(commands.Cog):
 
     @commands.command(name="kick", hidden=True)
     @commands.has_permissions(kick_members=True)
-    async def kick(self, ctx, member: Member, *, reason="No reason provided"):
+    async def kick(self, ctx, member: Member, *, reason=""):
         """Kick a member from the server."""
         err = self._can_act_on(ctx, member)
         if err:
@@ -177,7 +185,11 @@ class ModerationCog(commands.Cog):
                 reason=reason,
                 actor_id=ctx.author.id,
             )
-            await ctx.send(f"👢 {member.mention} kicked. Reason: {reason}")
+            await ctx.send(
+                f"👢 {member.mention} kicked. Reason: {reason or 'No reason provided'}",
+            )
+        except ReasonRequiredError as exc:
+            await ctx.send(f"❌ {exc}")
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to kick that user.")
         except discord.HTTPException as e:
@@ -185,7 +197,7 @@ class ModerationCog(commands.Cog):
 
     @commands.command(name="ban", hidden=True)
     @commands.has_permissions(ban_members=True)
-    async def ban(self, ctx, member: Member, *, reason="No reason provided"):
+    async def ban(self, ctx, member: Member, *, reason=""):
         """Ban a member from the server."""
         err = self._can_act_on(ctx, member)
         if err:
@@ -198,7 +210,11 @@ class ModerationCog(commands.Cog):
                 reason=reason,
                 actor_id=ctx.author.id,
             )
-            await ctx.send(f"🚫 {member.mention} banned. Reason: {reason}")
+            await ctx.send(
+                f"🚫 {member.mention} banned. Reason: {reason or 'No reason provided'}",
+            )
+        except ReasonRequiredError as exc:
+            await ctx.send(f"❌ {exc}")
         except discord.Forbidden:
             await ctx.send("❌ I don't have permission to ban that user.")
         except discord.HTTPException as e:

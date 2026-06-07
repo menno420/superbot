@@ -11,7 +11,7 @@ import pytest
 from core.events_catalogue import KNOWN_EVENTS
 from services import moderation_service
 from services.moderation_config import ModerationPolicy
-from services.moderation_service import EVT_MOD_ACTION
+from services.moderation_service import EVT_MOD_ACTION, ReasonRequiredError
 
 
 @pytest.fixture(autouse=True)
@@ -471,6 +471,137 @@ async def test_timeout_within_ceiling_is_not_clamped(_default_policy):
         await moderation_service.timeout(member, until=requested, reason="x")
 
     member.timeout.assert_awaited_once_with(requested, reason="x")
+
+
+# ---------------------------------------------------------------------------
+# PR10 — require_reason enforcement (warn / kick / ban; timeout exempt)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_warn_requires_reason_raises_before_side_effects(_default_policy):
+    _default_policy.return_value = ModerationPolicy(require_reason=True)
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+        ) as add,
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        with pytest.raises(ReasonRequiredError):
+            await moderation_service.warn(member, reason="", actor_id=1)
+
+    # Raised at the seam before incrementing the count or writing the log.
+    add.assert_not_awaited()
+    log_mod.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_kick_requires_reason_raises_before_removal(_default_policy):
+    _default_policy.return_value = ModerationPolicy(require_reason=True)
+    member = _make_member()
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        with pytest.raises(ReasonRequiredError):
+            await moderation_service.kick(member, reason="   ", actor_id=1)
+
+    member.kick.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_ban_requires_reason_raises_before_ban(_default_policy):
+    _default_policy.return_value = ModerationPolicy(require_reason=True)
+    guild = _make_guild()
+    user = _make_user()
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        with pytest.raises(ReasonRequiredError):
+            await moderation_service.ban(guild, user, reason="", actor_id=1)
+
+    guild.ban.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_placeholder_reason_treated_as_missing_when_required(_default_policy):
+    """The "No reason provided" placeholder counts as no reason."""
+    _default_policy.return_value = ModerationPolicy(require_reason=True)
+    member = _make_member()
+    with (
+        patch("services.moderation_service.db.add_warning", new_callable=AsyncMock),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        with pytest.raises(ReasonRequiredError):
+            await moderation_service.warn(
+                member, reason="No reason provided", actor_id=1,
+            )
+
+
+@pytest.mark.asyncio
+async def test_action_with_reason_passes_when_required(_default_policy):
+    _default_policy.return_value = ModerationPolicy(require_reason=True)
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        count = await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    assert count == 1
+    assert log_mod.await_args.args[4] == "spam"  # reason logged verbatim
+
+
+@pytest.mark.asyncio
+async def test_empty_reason_defaults_to_placeholder_when_not_required():
+    """Default policy (require_reason off): an empty reason logs the placeholder."""
+    member = _make_member()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch(
+            "services.moderation_service.db.log_mod_action",
+            new_callable=AsyncMock,
+        ) as log_mod,
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.warn(member, reason="", actor_id=1)
+
+    assert log_mod.await_args.args[4] == "No reason provided"
+
+
+@pytest.mark.asyncio
+async def test_timeout_exempt_from_require_reason(_default_policy):
+    """Timeout's reason carries the duration, so require_reason never blocks it."""
+    _default_policy.return_value = ModerationPolicy(require_reason=True)
+    member = _make_member()
+    until = datetime(2025, 1, 1, tzinfo=timezone.utc)
+    with (
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.timeout(member, until=until, reason="", actor_id=1)
+
+    member.timeout.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------

@@ -44,6 +44,7 @@ SUBSYSTEM = "moderation"
 
 DEFAULT_DM_ON_ACTION = False
 DEFAULT_DM_TEMPLATE = ""
+DEFAULT_REQUIRE_REASON = False
 DEFAULT_BAN_DELETE_MESSAGE_DAYS = 0
 # Discord caps a member timeout at 28 days; the default ceiling is that hard
 # maximum, so an unconfigured guild keeps today's behaviour exactly.
@@ -82,6 +83,7 @@ class ModerationPolicy:
 
     dm_on_action: bool = DEFAULT_DM_ON_ACTION
     dm_template: str = DEFAULT_DM_TEMPLATE
+    require_reason: bool = DEFAULT_REQUIRE_REASON
     ban_delete_message_days: int = DEFAULT_BAN_DELETE_MESSAGE_DAYS
     max_timeout_minutes: int = DEFAULT_MAX_TIMEOUT_MINUTES
 
@@ -129,6 +131,12 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         "dm_template",
         DEFAULT_DM_TEMPLATE,
     )
+    require_reason = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "require_reason",
+        DEFAULT_REQUIRE_REASON,
+    )
     ban_delete_message_days = await resolve_value(
         guild_id,
         SUBSYSTEM,
@@ -144,6 +152,7 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
     return ModerationPolicy(
         dm_on_action=bool(dm_on_action),
         dm_template=str(dm_template),
+        require_reason=bool(require_reason),
         ban_delete_message_days=int(ban_delete_message_days),
         max_timeout_minutes=int(max_timeout_minutes),
     )
@@ -155,6 +164,17 @@ def _clean_reason(reason: str | None) -> str:
     if not text or text.lower() == _PLACEHOLDER_REASON:
         return ""
     return text
+
+
+def has_reason(reason: str | None) -> bool:
+    """True if *reason* is a real operator-supplied reason.
+
+    Empty, whitespace-only, and the ``"No reason provided"`` placeholder all
+    count as **no** reason — this is the single placeholder-aware check the
+    ``require_reason`` enforcement (at the ``moderation_service`` seam) and the
+    DM renderer share, so "has a reason" means the same thing everywhere.
+    """
+    return _clean_reason(reason) != ""
 
 
 def render_dm_message(
@@ -197,12 +217,14 @@ __all__ = [
     "DEFAULT_DM_ON_ACTION",
     "DEFAULT_DM_TEMPLATE",
     "DEFAULT_MAX_TIMEOUT_MINUTES",
+    "DEFAULT_REQUIRE_REASON",
     "MAX_BAN_DELETE_MESSAGE_DAYS",
     "MAX_TIMEOUT_MINUTES",
     "MIN_BAN_DELETE_MESSAGE_DAYS",
     "MIN_TIMEOUT_MINUTES",
     "ModerationPolicy",
     "SUBSYSTEM",
+    "has_reason",
     "load_policy",
     "render_dm_message",
 ]

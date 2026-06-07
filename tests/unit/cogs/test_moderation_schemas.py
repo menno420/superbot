@@ -49,6 +49,7 @@ def test_moderation_settings_cover_legacy_plus_pr10():
         "warn_timeout_minutes",
         "dm_on_action",
         "dm_template",
+        "require_reason",
         "ban_delete_message_days",
         "max_timeout_minutes",
     }
@@ -70,6 +71,18 @@ def test_dm_on_action_is_bool_toggle():
     assert spec.value_type is bool
     assert spec.default is False
     assert spec.settings_key == _mod_keys.MOD_DM_ON_ACTION
+    assert spec.capability_required == "moderation.settings.configure"
+    spec.validator(True)
+    spec.validator(False)
+    with pytest.raises(ValueError):
+        spec.validator(1)  # int is not bool
+
+
+def test_require_reason_is_bool_toggle():
+    spec = _spec("require_reason")
+    assert spec.value_type is bool
+    assert spec.default is False
+    assert spec.settings_key == _mod_keys.MOD_REQUIRE_REASON
     assert spec.capability_required == "moderation.settings.configure"
     spec.validator(True)
     spec.validator(False)
@@ -133,6 +146,7 @@ def test_spec_defaults_match_policy_defaults():
     behave differently than the settings panel claims."""
     assert _spec("dm_on_action").default == moderation_config.DEFAULT_DM_ON_ACTION
     assert _spec("dm_template").default == moderation_config.DEFAULT_DM_TEMPLATE
+    assert _spec("require_reason").default == moderation_config.DEFAULT_REQUIRE_REASON
     assert (
         _spec("ban_delete_message_days").default
         == moderation_config.DEFAULT_BAN_DELETE_MESSAGE_DAYS

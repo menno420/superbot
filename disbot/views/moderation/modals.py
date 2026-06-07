@@ -34,6 +34,7 @@ import discord
 from cogs.moderation._helpers import _can_act_on_interaction
 from core.runtime.interaction_helpers import safe_defer, safe_followup
 from services import moderation_service
+from services.moderation_service import ReasonRequiredError
 from utils import db
 from utils.helpers import _parse_member
 from utils.ui_constants import MOD_COLOR
@@ -87,11 +88,15 @@ class _WarnModal(discord.ui.Modal, title="Warn Member"):  # type: ignore[call-ar
             "warn_timeout_minutes",
             10,
         )
-        count = await moderation_service.warn(
-            member,
-            reason=reason,
-            actor_id=interaction.user.id,
-        )
+        try:
+            count = await moderation_service.warn(
+                member,
+                reason=reason,
+                actor_id=interaction.user.id,
+            )
+        except ReasonRequiredError as exc:
+            await safe_followup(interaction, f"❌ {exc}", ephemeral=True)
+            return
         await safe_followup(
             interaction,
             f"⚠️ {member.mention} warned ({count}/{threshold}). Reason: {reason}",
@@ -232,6 +237,8 @@ class _KickModal(discord.ui.Modal, title="Kick Member"):  # type: ignore[call-ar
                 interaction,
                 f"👢 {member.mention} kicked. Reason: {reason}",
             )
+        except ReasonRequiredError as exc:
+            await safe_followup(interaction, f"❌ {exc}", ephemeral=True)
         except discord.Forbidden:
             await safe_followup(
                 interaction,
@@ -282,6 +289,8 @@ class _BanModal(discord.ui.Modal, title="Ban Member"):  # type: ignore[call-arg]
                 interaction,
                 f"🚫 {member.mention} banned. Reason: {reason}",
             )
+        except ReasonRequiredError as exc:
+            await safe_followup(interaction, f"❌ {exc}", ephemeral=True)
         except discord.Forbidden:
             await safe_followup(
                 interaction,

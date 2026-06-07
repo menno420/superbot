@@ -22,11 +22,28 @@ def test_default_policy_is_behaviour_preserving():
     policy = ModerationPolicy()
     assert policy.dm_on_action is False
     assert policy.dm_template == ""
+    assert policy.require_reason is False
     assert policy.ban_delete_message_days == 0
     assert policy.max_timeout_minutes == 40320  # 28 days, Discord's max
     # Default ban purge is a no-op; default ceiling is Discord's hard max.
     assert policy.ban_delete_message_seconds == 0
     assert policy.effective_max_timeout_minutes == 40320
+
+
+@pytest.mark.parametrize(
+    ("reason", "expected"),
+    [
+        ("spam", True),
+        ("  trailing  ", True),
+        ("", False),
+        ("   ", False),
+        (None, False),
+        ("No reason provided", False),  # placeholder counts as no reason
+        ("no reason provided", False),
+    ],
+)
+def test_has_reason_is_placeholder_aware(reason, expected):
+    assert moderation_config.has_reason(reason) is expected
 
 
 def test_ban_delete_seconds_clamps_into_discord_window():
@@ -67,6 +84,7 @@ async def test_load_policy_maps_resolved_values():
     resolved = {
         "dm_on_action": True,
         "dm_template": "bye {user}",
+        "require_reason": True,
         "ban_delete_message_days": 3,
         "max_timeout_minutes": 120,
     }
@@ -84,6 +102,7 @@ async def test_load_policy_maps_resolved_values():
     assert policy == ModerationPolicy(
         dm_on_action=True,
         dm_template="bye {user}",
+        require_reason=True,
         ban_delete_message_days=3,
         max_timeout_minutes=120,
     )
