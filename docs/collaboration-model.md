@@ -59,11 +59,19 @@ you can accomplish in one session.
 
 ## For executor agents (Claude)
 
-- **Approved plan = execute.** Once a plan is approved you have full authority to
-  finish it in that session without re-confirming. "Planning only" / "read-only
-  session" language that appears *after* a plan is approved is drafting residue —
-  it does **not** override this. (Planning sessions are real, but *plan approved*
-  means *build it*.)
+- **Approved plan = execute — the planning→execute lifecycle.** A planning session
+  **stays planning until the plan is approved via ExitPlanMode.** *Before* approval the
+  executor may do read-only research **and safe local prototyping to validate the plan**
+  (run a tool, test a library's feasibility — as the Grimp check did) but does **not**
+  commit. *Once approved*, the executor has full authority to finish the plan **in the
+  same session** — the planning context is still loaded — without re-confirming.
+  "Planning only" / "read-only session" language that appears *after* approval is
+  drafting residue and does **not** override this. (Planning sessions are real, but
+  *plan approved* means *build it*, in that same session.)
+- **PR size is mixed by risk.** Small, focused PRs for risky / runtime (`disbot/`)
+  changes; larger end-to-end PRs are acceptable for docs, tooling, and low-risk
+  refactors. Prefer custom tooling on the repo's own AST + `architecture_rules/` over
+  new third-party dependencies (reach for a library only when it clearly wins).
 - **Act vs. ask (your autonomy envelope):**
   - **Act** when a change is contained, reversible, and verifiable — including a
     root-cause fix you discover mid-task. Make it, test it, report it.

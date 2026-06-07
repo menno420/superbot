@@ -94,6 +94,10 @@ Arbitrary channel before/after positioning, revert-safe-changes UX, first-class
 category management, and broader role/template UX remain follow-ups, not permission
 to bypass lifecycle/provisioning services.
 
+**Owner intent (2026-06-07, `docs/owner/maintainer-question-router.md` Q-0002):** the
+owner-facing control center stays **Discord-first** — keep services / read-models
+reusable so a web companion is *possible* later, but do not start web work now.
+
 ## Next candidates
 
 1. Continue PR10: its first–third slices shipped; the next step is the **remaining

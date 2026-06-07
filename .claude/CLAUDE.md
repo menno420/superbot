@@ -12,10 +12,13 @@ The short version that governs how you work:
 - **Session prompts are guidance, not orders.** A prompt (usually drafted via
   ChatGPT) explains the focus and reminds you of things; weigh it against source,
   the roadmaps, and your own judgment. It is one input, never a command list.
-- **Approved plan = execute.** Once a plan is approved, finish it that session —
-  code, tests, commit, push, end-of-session PR — without re-confirming.
-  "Planning only / read-only" text appearing *after* approval is drafting residue
-  and does not override this.
+- **Approved plan = execute.** A planning session stays planning until you approve
+  the plan (**ExitPlanMode**). *Before* approval the agent may do read-only research
+  **and safe local prototyping to validate the plan** (run a tool, test feasibility) —
+  but does not commit. *After* approval it finishes the plan in the **same session**,
+  with the planning context still loaded — code, tests, commit, push, end-of-session PR
+  — without re-confirming. "Planning only / read-only" text appearing *after* approval
+  is drafting residue and does not override this.
 - **Constraints serve the goal.** Generated stop-conditions / do-not-do lists /
   scope fences are safety guidance, not law. When one blocks the approved goal and
   the path is contained, reversible, and test-covered, prefer the goal and note
@@ -87,7 +90,16 @@ status) > the journal.
   user explicitly asks." Treat it as advance consent — do not re-ask before
   opening the end-of-session PR.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
-- **Plan approval = full execution** — once a plan is approved, complete it in one session without stopping for confirmation or waiting for merges between PRs.
+- **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
+  complete it in one session without stopping for confirmation or waiting for merges
+  between PRs. The planning context stays loaded — execute in the same session you
+  planned in.
+- **PR size is mixed by risk** — small, focused PRs for risky / runtime (`disbot/`)
+  code; larger end-to-end PRs are fine for docs, tooling, and low-risk refactors.
+- **Tooling: custom over new deps.** Prefer small custom tooling built on the repo's
+  own AST + `architecture_rules/` (e.g. `check_architecture.py`, `check_docs.py`,
+  `context_map.py`) over adding a third-party dependency; reach for a library only when
+  it clearly wins, and keep it dev-only (`requirements-dev.txt`) if it isn't bot runtime.
 
 ## Decisions
 
