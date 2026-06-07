@@ -41,6 +41,10 @@ def test_default_policy_is_behaviour_preserving():
     assert policy.post_action_cleanup == "none"
     assert policy.post_action_cleanup_limit == 100
     assert policy.effective_post_action_cleanup_limit == 100
+    # Public moderation log is off by default (no channel, no actions).
+    assert policy.public_log_channel == ""
+    assert policy.public_log_channel_id == 0
+    assert policy.public_log_actions == "none"
 
 
 @pytest.mark.parametrize(
@@ -105,6 +109,8 @@ async def test_load_policy_maps_resolved_values():
         "warn_escalation_action": "kick",
         "post_action_cleanup": "both",
         "post_action_cleanup_limit": 200,
+        "public_log_channel": "987654321",
+        "public_log_actions": "removals",
     }
 
     async def _fake_resolve(guild_id, subsystem, name, fallback):
@@ -128,6 +134,8 @@ async def test_load_policy_maps_resolved_values():
         warn_escalation_action="kick",
         post_action_cleanup="both",
         post_action_cleanup_limit=200,
+        public_log_channel="987654321",
+        public_log_actions="removals",
     )
 
 
@@ -235,6 +243,44 @@ def test_effective_cleanup_limit_clamps_into_window():
         ModerationPolicy(post_action_cleanup_limit=0).effective_post_action_cleanup_limit
         == 1
     )
+
+
+# ---------------------------------------------------------------------------
+# public_log_includes / public_log_channel_id (PR10 fifth slice)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("actions", "action", "expected"),
+    [
+        ("none", "ban", False),
+        ("none", "warn", False),
+        ("bans", "ban", True),
+        ("bans", "kick", False),
+        ("removals", "kick", True),
+        ("removals", "ban", True),
+        ("removals", "warn", False),
+        ("all", "warn", True),
+        ("all", "timeout", True),
+        ("all", "ban", True),
+        # never-public actions stay private under every selector
+        ("all", "unban", False),
+        ("all", "clearwarnings", False),
+        ("all", "post_action_cleanup", False),
+        ("garbage", "ban", False),  # fail-safe
+    ],
+)
+def test_public_log_includes(actions, action, expected):
+    policy = ModerationPolicy(public_log_actions=actions)
+    assert moderation_config.public_log_includes(action, policy) is expected
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [("987654321", 987654321), ("", 0), ("  42 ", 42), ("notanid", 0), ("-5", 0)],
+)
+def test_public_log_channel_id_parsing(raw, expected):
+    assert ModerationPolicy(public_log_channel=raw).public_log_channel_id == expected
 
 
 # ---------------------------------------------------------------------------

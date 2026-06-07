@@ -11,13 +11,16 @@ import pytest
 from services import server_logging
 from services.server_logging import (
     _channel_kind_for_action,
+    _on_moderation_action_public,
     _root_action,
     auto_create_enabled,
     counters_snapshot,
     ensure_log_channel,
     format_log_embed,
+    format_public_log_embed,
     is_enabled,
     log_event,
+    maybe_log_public,
     resolve_log_channel,
 )
 
@@ -909,13 +912,15 @@ def test_setup_registers_bus_handler_idempotently():
 
     # Capture handler count before & after.  setup() may have been
     # called by the module import via fixture autouse=False; we test
-    # the idempotency invariant from a known-zero state.
+    # the idempotency invariant from a known-zero state.  Two handlers
+    # are registered on EVT_MOD_ACTION: the staff log + the public mirror
+    # (server-management PR10); a second setup() must not re-register either.
     bus._handlers.get(server_logging.EVT_MOD_ACTION, []).clear()
     server_logging._SUBSCRIBED = False
     server_logging.setup(MagicMock())
     server_logging.setup(MagicMock())  # second call must not re-register
     handlers = bus._handlers.get(server_logging.EVT_MOD_ACTION, [])
-    assert len(handlers) == 1
+    assert len(handlers) == 2
 
 
 def test_setup_captures_bot_reference():
@@ -1007,3 +1012,111 @@ def test_module_source_has_no_top_level_cycle_imports():
             f"partially-loaded core.runtime during startup; move it "
             f"inside the function that needs it."
         )
+
+
+# ---------------------------------------------------------------------------
+# Optional public moderation log (server-management PR10) — separate
+# subscriber, moderator-name redacted, gated by the moderation policy.
+# ---------------------------------------------------------------------------
+
+
+def test_public_embed_redacts_the_moderator():
+    """The public embed shows the member + reason but never the acting mod."""
+    embed = format_public_log_embed(action="ban", target_id=42, reason="raiding")
+    field_names = [f.name for f in embed.fields]
+    assert "Member" in field_names
+    assert "Reason" in field_names
+    # The acting moderator must NOT appear anywhere on the public surface.
+    assert "Actor" not in field_names
+    assert all("<@" not in f.value or "42" in f.value for f in embed.fields)
+    assert "🔨" in embed.title and "ban" in embed.title
+
+
+def test_public_embed_omits_reason_when_empty():
+    embed = format_public_log_embed(action="kick", target_id=7, reason="")
+    assert [f.name for f in embed.fields] == ["Member"]
+
+
+def _public_policy(actions: str, channel_id: int):
+    from services.moderation_config import ModerationPolicy
+
+    return ModerationPolicy(
+        public_log_actions=actions,
+        public_log_channel=str(channel_id) if channel_id else "",
+    )
+
+
+@pytest.mark.asyncio
+async def test_maybe_log_public_sends_when_configured():
+    guild = _make_guild()
+    channel = _make_text_channel(channel_id=555)
+    guild.get_channel = MagicMock(return_value=channel)
+    with patch(
+        "services.moderation_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=_public_policy("removals", 555),
+    ):
+        sent = await maybe_log_public(guild, action="ban", target_id=9, reason="x")
+    assert sent is True
+    channel.send.assert_awaited_once()
+    assert counters_snapshot()["counters"]["mod_public_sent"] == 1
+
+
+@pytest.mark.asyncio
+async def test_maybe_log_public_skips_action_not_selected():
+    guild = _make_guild()
+    channel = _make_text_channel()
+    guild.get_channel = MagicMock(return_value=channel)
+    with patch(
+        "services.moderation_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=_public_policy("bans", 555),  # bans only
+    ):
+        sent = await maybe_log_public(guild, action="kick", target_id=9, reason="x")
+    assert sent is False
+    channel.send.assert_not_awaited()
+    assert counters_snapshot()["counters"]["mod_public_skipped"] == 1
+
+
+@pytest.mark.asyncio
+async def test_maybe_log_public_skips_when_channel_unresolvable():
+    guild = _make_guild()
+    guild.get_channel = MagicMock(return_value=None)  # stale / unset id
+    with patch(
+        "services.moderation_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=_public_policy("all", 555),
+    ):
+        sent = await maybe_log_public(guild, action="warn", target_id=9, reason="x")
+    assert sent is False
+    assert counters_snapshot()["counters"]["mod_public_skipped"] == 1
+
+
+@pytest.mark.asyncio
+async def test_maybe_log_public_forbidden_is_counted_not_raised():
+    guild = _make_guild()
+    channel = _make_text_channel()
+    channel.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "no perms"))
+    guild.get_channel = MagicMock(return_value=channel)
+    with patch(
+        "services.moderation_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=_public_policy("all", 555),
+    ):
+        sent = await maybe_log_public(guild, action="ban", target_id=9, reason="x")
+    assert sent is False
+    assert counters_snapshot()["counters"]["send_error"] == 1
+
+
+@pytest.mark.asyncio
+async def test_public_subscriber_skips_non_disciplinary_without_config_read():
+    """unban / clearwarnings / sweeps never reach the policy read."""
+    with patch(
+        "services.moderation_config.load_policy",
+        new_callable=AsyncMock,
+    ) as load_policy:
+        for action in ("unban", "clearwarnings", "post_action_cleanup", "auto_delete:x"):
+            await _on_moderation_action_public(
+                guild_id=1, target_id=2, action=action, reason="x", actor_id=3,
+            )
+    load_policy.assert_not_awaited()

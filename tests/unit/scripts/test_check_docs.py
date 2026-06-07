@@ -62,7 +62,9 @@ def test_badge_invalid_token_flagged(cd, tmp_path, monkeypatch):
 
 def test_adr_is_exempt_from_badge(cd, tmp_path, monkeypatch):
     docs = tmp_path / "docs"
-    _write(docs / "decisions" / "001-no-redis.md", "# ADR-001\n\n**Status:** Accepted\n")
+    _write(
+        docs / "decisions" / "001-no-redis.md", "# ADR-001\n\n**Status:** Accepted\n"
+    )
     monkeypatch.setattr(cd, "DOCS_ROOT", docs)
     monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
     assert cd.check_badges() == []
@@ -167,3 +169,45 @@ def test_repo_has_no_doc_orphans(cd):
     """Pin the real tree to zero orphans (mirrors the --strict CI gate)."""
     orphans = cd.check_reachable()
     assert orphans == [], "orphaned docs: " + ", ".join(str(v[0]) for v in orphans)
+
+
+# ---------------------------------------------------------------------------
+# Freshness — current-state.md must not name the in-flight PR in prose
+# ---------------------------------------------------------------------------
+
+
+def test_freshness_flags_pending_markers(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "current-state.md",
+        "# State\n\n> **Status:** `living-ledger`\n\n"
+        "- **#100** merged — fine.\n"
+        "- **PR10 fifth slice** (this PR, pending) — rots on merge.\n"
+        "- old note (pending PR) — also rots.\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    viol = cd.check_freshness()
+    assert len(viol) == 2
+    assert all(v[1] == "freshness" for v in viol)
+
+
+def test_freshness_passes_on_merged_only(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "current-state.md",
+        "# State\n\n> **Status:** `living-ledger`\n\n"
+        "> **▶ Next action:** finish X.\n\n"
+        "- **#100** merged — this PR adds Y (no rotting marker).\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    assert cd.check_freshness() == []
+
+
+def test_repo_current_state_has_no_stale_pending(cd):
+    """Pin the real current-state.md to zero in-flight-PR-in-prose markers."""
+    stale = cd.check_freshness()
+    assert stale == [], "stale pending markers: " + "; ".join(
+        f"{v[0]}: {v[2]}" for v in stale
+    )

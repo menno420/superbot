@@ -205,6 +205,28 @@ call the same code path.  No Cog→Cog dependency.
 
 Both require Administrator permission.
 
+## Optional public moderation log (server-management PR10)
+
+A second, **operator-opt-in** subscriber on `moderation.action_taken` mirrors
+selected moderation actions to a **public** channel — separate from the staff
+mod-log, and with the **acting moderator redacted** (the maintainer's choice for
+a public surface).
+
+* Config is **moderation-owned** (`disbot/cogs/moderation/schemas.py`, read via
+  `services.moderation_config.load_policy`), not a `logging.*` key:
+  * `moderation_public_log_channel` — the public channel (a `channel` SettingSpec;
+    empty = off).
+  * `moderation_public_log_actions` — `none` (default) / `bans` / `removals`
+    (kick + ban) / `all` (warn + timeout + kick + ban).  unban, clearwarnings, the
+    post-action sweep, and system `auto_delete:*` are **never** publicised.
+* Delivery lives in `server_logging` (it owns log delivery): the dedicated
+  `_on_moderation_action_public` subscriber pre-filters to disciplinary actions,
+  loads the moderation policy, and posts `format_public_log_embed` (member +
+  reason; **no actor, no guild id**) to `public_log_channel`.
+* **Independent of `logging.enabled`** — gated solely by its own config, since an
+  operator who sets a public channel clearly wants it.  Fail-safe + counted via
+  `mod_public_sent` / `mod_public_skipped`.
+
 ## What's NOT in PR-11
 
 * No new migration; settings live in the legacy `guild_settings` table.

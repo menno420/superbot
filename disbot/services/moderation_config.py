@@ -75,6 +75,23 @@ DEFAULT_POST_ACTION_CLEANUP_LIMIT = 100
 MIN_POST_ACTION_CLEANUP_LIMIT = 1
 MAX_POST_ACTION_CLEANUP_LIMIT = 500
 
+# Optional PUBLIC moderation log — an operator-opt-in channel that announces
+# selected actions WITHOUT naming the acting moderator.  Default OFF (no channel
+# + ``"none"``).  ``public_log_channel`` is a channel-id string ("" = off);
+# ``public_log_actions`` selects which actions are announced.
+DEFAULT_PUBLIC_LOG_CHANNEL = ""
+DEFAULT_PUBLIC_LOG_ACTIONS = "none"
+# ``none`` = off · ``bans`` = ban only · ``removals`` = kick + ban ·
+# ``all`` = warn + timeout + kick + ban.  unban / clearwarnings / system
+# auto-deletes / the post-action sweep are never publicised.
+PUBLIC_LOG_ACTIONS: tuple[str, ...] = ("none", "bans", "removals", "all")
+_PUBLIC_LOG_ACTION_SETS: dict[str, frozenset[str]] = {
+    "none": frozenset(),
+    "bans": frozenset({"ban"}),
+    "removals": frozenset({"kick", "ban"}),
+    "all": frozenset({"warn", "timeout", "kick", "ban"}),
+}
+
 # Validator bounds (also enforced defensively at the service seam).
 MIN_BAN_DELETE_MESSAGE_DAYS = 0
 MAX_BAN_DELETE_MESSAGE_DAYS = 7
@@ -116,6 +133,8 @@ class ModerationPolicy:
     warn_escalation_action: str = DEFAULT_WARN_ESCALATION_ACTION
     post_action_cleanup: str = DEFAULT_POST_ACTION_CLEANUP
     post_action_cleanup_limit: int = DEFAULT_POST_ACTION_CLEANUP_LIMIT
+    public_log_channel: str = DEFAULT_PUBLIC_LOG_CHANNEL
+    public_log_actions: str = DEFAULT_PUBLIC_LOG_ACTIONS
 
     @property
     def effective_post_action_cleanup_limit(self) -> int:
@@ -124,6 +143,12 @@ class ModerationPolicy:
             MIN_POST_ACTION_CLEANUP_LIMIT,
             min(MAX_POST_ACTION_CLEANUP_LIMIT, self.post_action_cleanup_limit),
         )
+
+    @property
+    def public_log_channel_id(self) -> int:
+        """The configured public-log channel id, or ``0`` when unset/malformed."""
+        raw = (self.public_log_channel or "").strip()
+        return int(raw) if raw.isdigit() else 0
 
     @property
     def ban_delete_message_seconds(self) -> int:
@@ -199,6 +224,19 @@ def cleanup_applies_to(action: str, policy: ModerationPolicy) -> bool:
     return False
 
 
+def public_log_includes(action: str, policy: ModerationPolicy) -> bool:
+    """Whether *action* should be announced on the public log under *policy* (pure).
+
+    Considers only the action selector (``public_log_actions``) — the caller
+    (``services.server_logging``) still checks that a channel is configured and
+    resolvable.  Fail-safe: an unrecognised selector announces nothing.  Only
+    the disciplinary actions warn / timeout / kick / ban are ever eligible;
+    unban, clearwarnings, the post-action sweep, and system auto-deletes never
+    surface publicly.
+    """
+    return action in _PUBLIC_LOG_ACTION_SETS.get(policy.public_log_actions, frozenset())
+
+
 async def load_policy(guild_id: int) -> ModerationPolicy:
     """Load the effective :class:`ModerationPolicy` for ``guild_id``.
 
@@ -269,6 +307,18 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         "post_action_cleanup_limit",
         DEFAULT_POST_ACTION_CLEANUP_LIMIT,
     )
+    public_log_channel = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "public_log_channel",
+        DEFAULT_PUBLIC_LOG_CHANNEL,
+    )
+    public_log_actions = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "public_log_actions",
+        DEFAULT_PUBLIC_LOG_ACTIONS,
+    )
     return ModerationPolicy(
         dm_on_action=bool(dm_on_action),
         dm_template=str(dm_template),
@@ -280,6 +330,8 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         warn_escalation_action=str(warn_escalation_action),
         post_action_cleanup=str(post_action_cleanup),
         post_action_cleanup_limit=int(post_action_cleanup_limit),
+        public_log_channel=str(public_log_channel),
+        public_log_actions=str(public_log_actions),
     )
 
 
@@ -344,6 +396,8 @@ __all__ = [
     "DEFAULT_MAX_TIMEOUT_MINUTES",
     "DEFAULT_POST_ACTION_CLEANUP",
     "DEFAULT_POST_ACTION_CLEANUP_LIMIT",
+    "DEFAULT_PUBLIC_LOG_ACTIONS",
+    "DEFAULT_PUBLIC_LOG_CHANNEL",
     "DEFAULT_REQUIRE_REASON",
     "DEFAULT_WARN_ESCALATION_ACTION",
     "DEFAULT_WARN_THRESHOLD",
@@ -355,6 +409,7 @@ __all__ = [
     "MIN_POST_ACTION_CLEANUP_LIMIT",
     "MIN_TIMEOUT_MINUTES",
     "POST_ACTION_CLEANUP_ACTIONS",
+    "PUBLIC_LOG_ACTIONS",
     "WARN_ESCALATION_ACTIONS",
     "EscalationDecision",
     "ModerationPolicy",
@@ -363,5 +418,6 @@ __all__ = [
     "evaluate_escalation",
     "has_reason",
     "load_policy",
+    "public_log_includes",
     "render_dm_message",
 ]
