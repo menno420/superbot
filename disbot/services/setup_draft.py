@@ -103,6 +103,7 @@ _DEFAULT_RISK_BY_KIND: dict[str, str] = {
     "disable_automation_rule": "low",
     "set_cleanup_policy": "low",
     "set_cog_routing": "medium",
+    "set_role_threshold": "medium",
 }
 
 

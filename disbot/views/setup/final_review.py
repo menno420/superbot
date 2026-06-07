@@ -17,9 +17,9 @@ Two construction modes:
       1. ``create_*``      (resource provisioning)
       2. ``bind_*`` / ``clear_binding``  (binding mutation)
       3. ``set_setting``   (settings mutation)
-      4. ``set_cleanup_policy`` / ``set_cog_routing``  (per-feature
-         dispatcher arms — both wired through
-         :mod:`services.setup_operations`)
+      4. ``set_cleanup_policy`` / ``set_cog_routing`` /
+         ``set_role_threshold``  (per-feature dispatcher arms — all
+         wired through :mod:`services.setup_operations`)
       5. ``add_automation_rule``  (created disabled)
       6. ``enable_automation_rule`` / ``disable_automation_rule``
 
@@ -582,6 +582,7 @@ _PHASE_ORDER: tuple[tuple[str, frozenset[str]], ...] = (
     ("settings_mutation", frozenset({"set_setting"})),
     ("cleanup_policy", frozenset({"set_cleanup_policy"})),
     ("cog_routing", frozenset({"set_cog_routing"})),
+    ("role_threshold", frozenset({"set_role_threshold"})),
     ("automation_add", frozenset({"add_automation_rule"})),
     (
         "automation_toggle",

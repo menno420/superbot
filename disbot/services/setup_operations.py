@@ -126,6 +126,7 @@ OperationKind = Literal[
     "disable_automation_rule",
     "set_cleanup_policy",
     "set_cog_routing",
+    "set_role_threshold",
 ]
 
 OperationStatus = Literal["applied", "failed", "skipped", "not_yet_implemented"]
@@ -147,12 +148,18 @@ _KNOWN_KINDS: frozenset[str] = frozenset(
         "disable_automation_rule",
         # Per-feature op kinds.  ``set_cleanup_policy`` routes through
         # governance.writes.set_cleanup_policy_for_scope; ``set_cog_routing``
-        # routes through services.command_routing.set_policy.  See the
+        # routes through services.command_routing.set_policy;
+        # ``set_role_threshold`` routes through
+        # services.role_automation.set_{time,xp}_threshold.  See the
         # dispatch arms in this module.
         "set_cleanup_policy",
         "set_cog_routing",
+        "set_role_threshold",
     },
 )
+
+# set_role_threshold sub-kinds carried on ``op.setting_name``.
+_ROLE_THRESHOLD_KINDS: frozenset[str] = frozenset({"time", "xp"})
 
 # bind_* kinds that route through BindingMutationPipeline.set_binding.
 _BINDING_KINDS: frozenset[str] = frozenset(
@@ -893,6 +900,14 @@ async def _dispatch_one(
                 label=label,
             )
 
+        if op.kind == "set_role_threshold":
+            return await _apply_set_role_threshold(
+                op,
+                guild=guild,
+                actor=actor,
+                label=label,
+            )
+
         # Unreachable given validate_operation above, but explicit.
         return SetupOperationResult(
             status="not_yet_implemented",
@@ -1350,6 +1365,102 @@ async def _apply_set_cog_routing(
     )
 
 
+async def _apply_set_role_threshold(
+    op: SetupOperation,
+    *,
+    guild: Any,
+    actor: Any,
+    label: str,
+) -> SetupOperationResult:
+    """Persist an auto-role threshold via :mod:`services.role_automation`.
+
+    The threshold sub-kind (``"time"`` / ``"xp"``) rides ``op.setting_name``
+    and the numeric value (days for time, level for xp) rides ``op.value``;
+    ``op.target_id`` is the role id.  Routes through the audited
+    ``role_automation.set_{time,xp}_threshold`` seam — a service, not a raw
+    DB write — mirroring the cog-routing arm's no-pipeline pattern (the
+    setup-operations invariant forbids a top-level ``utils.db`` import).
+    """
+    from services import role_automation
+
+    sub_kind = (op.setting_name or "").strip().lower()
+    if sub_kind not in _ROLE_THRESHOLD_KINDS:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=(
+                f"set_role_threshold: setting_name {op.setting_name!r} must be "
+                f"one of {sorted(_ROLE_THRESHOLD_KINDS)}"
+            ),
+        )
+
+    if op.target_id is None:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_role_threshold: requires target_id (the role id)",
+        )
+
+    # Drafts round-trip values as strings; coerce back to int.
+    try:
+        value = int(op.value)
+    except (TypeError, ValueError):
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error=f"set_role_threshold: value {op.value!r} is not an integer",
+        )
+    if value <= 0:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_role_threshold: value must be a positive integer",
+        )
+
+    # Resolve the role name id-first; the row is keyed by role_name with
+    # role_id captured so a later rename does not orphan the tier.
+    role = None
+    getter = getattr(guild, "get_role", None)
+    if callable(getter):
+        role = getter(op.target_id)
+    role_name = getattr(role, "name", None) or op.target_name
+    if not role_name:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="set_role_threshold: could not resolve the role name",
+        )
+
+    actor_id = getattr(actor, "id", None)
+    if sub_kind == "time":
+        mutation_id = await role_automation.set_time_threshold(
+            guild_id=guild.id,
+            role_id=op.target_id,
+            role_name=role_name,
+            days=value,
+            actor_id=actor_id,
+        )
+    else:  # "xp"
+        mutation_id = await role_automation.set_xp_threshold(
+            guild_id=guild.id,
+            role_id=op.target_id,
+            role_name=role_name,
+            level=value,
+            actor_id=actor_id,
+        )
+    return SetupOperationResult(
+        status="applied",
+        operation=op,
+        label=label,
+        mutation_id=mutation_id,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -1392,6 +1503,13 @@ def _label(op: SetupOperation) -> str:
         enabled = _coerce_routing_enabled(op)
         flag = "enabled" if enabled else "disabled"
         return f"cog_routing.{scope}({scope_label}).{op.value!r} = {flag}"
+    if op.kind == "set_role_threshold":
+        sub_kind = op.setting_name or "?"
+        role_label = op.target_name or (
+            str(op.target_id) if op.target_id is not None else "?"
+        )
+        unit = "d" if sub_kind == "time" else "L" if sub_kind == "xp" else ""
+        return f"role_threshold.{sub_kind}({role_label}) = {op.value}{unit}"
     return f"{op.kind}: {op.subsystem}"
 
 

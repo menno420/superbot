@@ -26,6 +26,7 @@ from views.setup.sections import (  # noqa: F401 — import side-effect
     preset_select,
     purpose,
     readiness,
+    roles,
     server_scan,
     suggestions,
 )
@@ -43,6 +44,7 @@ __all__ = [
     "preset_select",
     "purpose",
     "readiness",
+    "roles",
     "server_scan",
     "suggestions",
 ]
