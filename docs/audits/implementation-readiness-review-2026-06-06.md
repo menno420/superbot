@@ -45,7 +45,7 @@ provider-parity, caching/source-health, or behavior/config gates.
   `docs/resource-provisioning-overview.md`, `docs/capability-authority.md`, and
   `docs/server-logging.md`.
 - AI/BTD6: AI ownership/readiness/integration/orchestration/tool-roadmap docs, the AI
-  ideas backlog, ADR-006, all `docs/btd6-*.md`, and the superseded Agent-D audit.
+  ideas backlog, ADR-006, all `docs/btd6/btd6-*.md`, and the superseded Agent-D audit.
 - Settings/games/inventories: settings roadmap/command map/presets,
   `docs/phase-2-completion-readiness.md`, `docs/games-actionability-roadmap.md`,
   `docs/helper-debt-inventory.md`, and `docs/ui-view-adoption-audit.md`.

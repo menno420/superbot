@@ -22,8 +22,8 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
   gate wording.
 - Preserve groundedness and absence-claim guards. Derived values must carry enough
   evidence/provenance to distinguish sourced facts from calculations; see
-  `docs/btd6-derived-value-groundedness-finding.md` and
-  `docs/btd6-absence-claim-guard-design.md`.
+  `docs/btd6/btd6-derived-value-groundedness-finding.md` and
+  `docs/btd6/btd6-absence-claim-guard-design.md`.
 - BTD6 AI behavior is configuration/capability gated; shared media/YouTube is owned
   by `docs/subsystems/media-youtube.md`, not BTD6 (ADR-007).
 
@@ -42,7 +42,8 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
 ## Plans / pending approval
 
 The BTD6 docs describe decode/extraction, pipeline, backend, cloud-data, AI tool
-calling, and smoke-test directions. They remain subordinate to ADR-006 and the global
+calling, and smoke-test directions. They are indexed in
+[`../btd6/README.md`](../btd6/README.md) and remain subordinate to ADR-006 and the global
 AI/BTD6 gate. Do not duplicate their detailed sequences here.
 
 ## Ideas (not approved)
@@ -63,6 +64,7 @@ behavior/config gates are satisfied.
 
 ## Related docs
 
-`docs/decisions/006-btd6-data-provenance-ownership.md`, all `docs/btd6-*.md`,
+`docs/decisions/006-btd6-data-provenance-ownership.md`, the BTD6 docs indexed in
+[`../btd6/README.md`](../btd6/README.md),
 `docs/audits/agent-d-btd6-ai-subsystem-audit-2026-06-05.md`,
 `docs/current-state.md`, `docs/subsystems/ai.md`, `docs/subsystems/media-youtube.md`.

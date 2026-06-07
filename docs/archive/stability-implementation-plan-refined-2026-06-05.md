@@ -3,8 +3,8 @@
 **Date:** 2026-06-05
 **Author:** Claude Opus (dedicated planning session)
 **Base verified:** `5e62578` (merge of #529; **== current remote `main`**)
-**Refines:** `docs/planning/stability-preimplementation-plan-2026-06-05.md` (Codex first pass, PR #529)
-> **Status:** `plan` — planning artifact — read-only by design. Intended next for the Revision-project
+**Refines:** `docs/archive/stability-preimplementation-plan-2026-06-05.md` (Codex first pass, PR #529)
+> **Status:** `archive` — planning artifact — read-only by design. Intended next for the Revision-project
 
 critique, then a final Opus revision, then execution. **No source was implemented in this pass.**
 
@@ -69,7 +69,7 @@ Codex reported the live runbook unusable (no token / DSN / Postgres). **This edi
 
 ### Confirmed but corrected / downgraded
 - **F12 — direct-DB ledger stale → DOCS DRIFT (not a violation).** `docs/direct-db-exception-ledger.md:37` lists `cleanup_cog` as `accepted-read` ("db.fetchall + domain reads"), yet the cog writes prohibited words at four sites; the same doc even notes at `:33` that "prohibited-word writes live in `cleanup_cog`". `ownership.md:64` already classifies `cleanup → prohibited_words → direct via utils/db/moderation.py` as allowed (`accepted-direct-write`). **So the ledger text is wrong, but the write is sanctioned.** Fix is a ledger correction (+ optional drift test), not an INV fix. → PR C.
-- **F3 — cog tracker stale/incomplete → CONFIRMED.** `docs/planning/cog-functionality-audit-2026-06-05.md`: **30 of 34 cogs `❓`**; DiagnosticCog `🔴` (master, line 67) / `❓` (detail) despite #528's `702cf48` fixing its 3 recorded issues; RoleCog inconsistent (`🔴→✅` master line 76 vs `🟡` detail line 124). Partly reconcilable from source now; the `❓` rows need the live walk. → PR B.
+- **F3 — cog tracker stale/incomplete → CONFIRMED.** `docs/archive/cog-functionality-audit-2026-06-05.md`: **30 of 34 cogs `❓`**; DiagnosticCog `🔴` (master, line 67) / `❓` (detail) despite #528's `702cf48` fixing its 3 recorded issues; RoleCog inconsistent (`🔴→✅` master line 76 vs `🟡` detail line 124). Partly reconcilable from source now; the `❓` rows need the live walk. → PR B.
 - **F15 — AI doc overstates guild presets → CONFIRMED, remediation reframed.** Doc (`docs/ai-config-ownership.md:128`, 219-223) claims preset application at **channel/category/guild** + a "guild button" + error `GuildScopeNotSupportedError`. Source: `services/ai_behavior_profile_service.py:151` `_SUPPORTED_SCOPES = frozenset({"channel","category"})`, raises **`InvalidBehaviorPresetScopeError`** (`:219`); `views/ai/behavior/chooser.py` exposes **Channel/Category only**; `test_ai_behavior_profile_service.py:251` asserts guild is refused. The doc-pin test (`tests/unit/docs/test_ai_config_ownership_doc.py`) does **not** assert scope, so **amending the doc needs no test change**. Implementing guild presets is more invasive than Codex implied (guild writes via `ai_policy_mutation.set_guild_policy` take **concrete values, no `UNCHANGED` sentinel** → "sentinel-safe" needs new mutation plumbing). The central mutation seam is otherwise healthy (F17). → **maintainer decision; keep out of next-3** (no-AI-expansion guardrail); near-term default = amend doc + fix the wrong error name.
 - **F19 — provider parity piecemeal → CONFIRMED.** File/Cloud/Postgres providers (`services/btd6_data_provider.py`) are each tested in isolation; **no cross-backend parity test**. → BTD6 gate, out of near-term scope.
 
@@ -133,7 +133,7 @@ and the cleanup work mapped onto the already-queued **PR8 (schema+versioning) / 
 
 **Out of scope.** Feature expansion; polish-only redesign; broad thin-cog migration; completing every future UX improvement; the cleanup redesign (PR C); AI/BTD6 expansion.
 
-**Exact files.** `docs/planning/cog-functionality-audit-2026-06-05.md`; affected cogs/views + a regression test each (first likely targets from existing findings: **ProofChannelCog** — flagged "exception-swallow / no named tests"; plus whatever the walk surfaces); `.session-journal.md` (durable env lesson: **this container has the creds**; record the Postgres bring-up recipe).
+**Exact files.** `docs/archive/cog-functionality-audit-2026-06-05.md`; affected cogs/views + a regression test each (first likely targets from existing findings: **ProofChannelCog** — flagged "exception-swallow / no named tests"; plus whatever the walk surfaces); `.session-journal.md` (durable env lesson: **this container has the creds**; record the Postgres bring-up recipe).
 
 **Migration impact.** Only if a specific fix requires it — additive only; none anticipated.
 

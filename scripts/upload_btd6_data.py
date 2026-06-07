@@ -7,7 +7,7 @@ integrity ``manifest.json`` (sha256 + size per file), and uploads every file
 (plus the manifest) to an S3-compatible bucket (Cloudflare R2 / AWS S3 / GCS).
 
 The bot then reads the fixtures from ``{BTD6_DATA_BASE_URL}/<path>`` at startup
-(see ``docs/btd6-cloud-data.md``). For a public-read bucket no secret is needed
+(see ``docs/btd6/btd6-cloud-data.md``). For a public-read bucket no secret is needed
 at *runtime*; this *upload* uses your S3 credentials locally only.
 
 Usage::

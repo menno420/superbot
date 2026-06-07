@@ -401,7 +401,7 @@ Those were for the superseded path (see appendix).
       whether game-data overrides bloonswiki per-field or wholesale.
 - [ ] **Integration seam**: tower costs currently flow CSV → `import_btd6_data_from_csv.py`
       → `towers.json`; stats files are written directly. Decide where
-      `parse_gamedata.py` plugs in (see `docs/btd6-data-pipeline.md`).
+      `parse_gamedata.py` plugs in (see `docs/btd6/btd6-data-pipeline.md`).
 - [ ] **Don't vendor the 320 MB dump** — read it from a clone at runtime of the
       script; commit only derived `stats/*.json`.
 
@@ -433,7 +433,7 @@ Those were for the superseded path (see appendix).
 
 ## Pick-up checklist for the fresh session
 
-1. Read this doc + `docs/btd6-data-pipeline.md` (the pipeline this augments).
+1. Read this doc + `docs/btd6/btd6-data-pipeline.md` (the pipeline this augments).
 2. Clone the dump (Option A or B above). Re-validate anchors first thing
    (Dart 200, Super 2500) — if they fail, the dump moved; stop and re-check.
 3. Build Phase 1 → 2 → 3 per above. Mirror `parse_bloonswiki.parse_*_json`

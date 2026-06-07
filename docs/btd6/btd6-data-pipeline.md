@@ -210,7 +210,7 @@ The router (`ai_task_router`) is demoted to a fast-path hint. The BTD6 grounding
 discipline in `ai_instruction_service._TASK_CONTRACT` requires the model to call
 a lookup tool and, if no data is found, to lead with "I don't have verified BTD6
 data on that, but here's my best guess:". Original scope:
-**`docs/btd6-ai-tool-calling-plan.md`**. The capability set now covers camo
+**`docs/btd6/btd6-ai-tool-calling-plan.md`**. The capability set now covers camo
 detection plus lead/black/white/purple popping; glass, frozen, and MOAB-class
 immunities are the natural next increment. Coverage + freshness signals
 (`[btd6_coverage]` / `[btd6_freshness]`, from `utils/btd6/coverage.py`) are

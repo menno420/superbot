@@ -14,9 +14,9 @@
 
 ## Why this file exists
 
-SuperBot has 23 markdown files in `docs/` plus three ADRs plus seven
-sub-roadmap docs plus `.claude/CLAUDE.md`. A new agent that opens the
-folder and starts reading top-to-bottom will hit roadmap and audit
+SuperBot has **over 100 markdown files** in `docs/` (plus 7 ADRs and
+`.claude/CLAUDE.md`) — far more than any one session should read. A new agent that opens
+the folder and starts reading top-to-bottom will hit roadmap and audit
 material before reaching the binding contracts. This file fixes that
 by stating, up front:
 
@@ -277,6 +277,8 @@ has already been done.
 - `docs/architecture/service_ownership.md` — enriched "at a glance" ownership lookup.
   Quick-reference companion to `docs/ownership.md`; `ownership.md` is authoritative
   when the two disagree.
+- `docs/context-map-tooling.md` — how to use `scripts/context_map.py` (file-impact context
+  before editing a `disbot/` file: importers, blast radius, related docs/tests, risk).
 
 ### Plans / roadmaps (read for context only)
 
@@ -307,8 +309,11 @@ cross-check the source and the consistency ledger first.
 
 - `docs/phase-2-completion-readiness.md` — old Phase-2 punch list; retained for
   blocker/migration history, not current next-work status.
-- Raw dated audits and the superseded superbot planning routers under `docs/planning/`;
-  obey their banners and start from `docs/current-state.md` instead.
+- `docs/archive/` (see [`docs/archive/README.md`](archive/README.md)) — retired dated
+  snapshots (the 2026-06 planning/audit burst, early cartography); superseded, do not act
+  on them. Start from `docs/current-state.md` instead.
+- Any remaining raw dated audits under `docs/planning/` / `docs/audits/`; obey their
+  banners and start from `docs/current-state.md` instead.
 
 ### Ideas / brainstorms (not approved)
 

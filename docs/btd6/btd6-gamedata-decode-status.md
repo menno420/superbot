@@ -618,7 +618,7 @@ economy files have an empty stamp — decide a value on the next real re-source.
 > - `scripts/btd6_gamedata_inventory.py` — domain/model-type/text-linkage discovery.
 > - `scripts/btd6_decode_inventory_report.py` — **the SHA-pinned roll-up** of the
 >   two above + the ranked zone/buff effect tail (decodable-number? /
->   has-curated-name?). Emits `docs/btd6-decode-inventory-v55.md`; validates
+>   has-curated-name?). Emits `docs/btd6/btd6-decode-inventory-v55.md`; validates
 >   anchors first and aborts if they fail. *Re-run to refresh per patch.*
 
 ## What this effort is
@@ -839,7 +839,7 @@ curator-supplied name is preserved, never regressed to an internal model string.
 **Ordered next steps**
 
 1. **SHA-pinned inventory/audit report** — ✅ **done (2026-06-03).**
-   `scripts/btd6_decode_inventory_report.py` → `docs/btd6-decode-inventory-v55.md`,
+   `scripts/btd6_decode_inventory_report.py` → `docs/btd6/btd6-decode-inventory-v55.md`,
    pinned to dump SHA `a3348a89c28b9db204f6f30776c5b072510584bc` (v55.0). One
    re-runnable artifact: per domain — present? / extracted? / ingest verdict
    (now/later/skip); the full `--audit` field table (verified **33 CLEAN · 15

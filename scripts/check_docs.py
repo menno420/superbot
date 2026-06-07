@@ -13,6 +13,10 @@ Hard rules (CI gate — see ``--strict``):
   3. **pinned** — every concrete repo path referenced in backticks inside the
      read-path docs (``AGENT_ORIENTATION`` / ``current-state`` / ``repo-navigation-map``)
      exists, so the canonical read path never points at a moved/renamed file.
+  4. **reachable** — every live doc is reachable by following links from a read-path
+     root (the read-path docs + subsystem folios + every ``README.md`` + ``CLAUDE.md``).
+     Orphans fail unless badged ``historical`` / ``archive``, an ADR, or allowlisted —
+     so a doc nobody links to can't accumulate silently.
 
 Pure stdlib (no third-party imports) so CI can run it on every PR — including
 docs-only PRs — without installing anything.
@@ -27,6 +31,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections import deque
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -59,6 +64,15 @@ _PATH_REF_RE = re.compile(
     r"/[\w./-]+\.(?:py|md|sql|ya?ml|txt|sh|json|toml|cfg|ini))`",
 )
 _READPATH_DOCS = ("AGENT_ORIENTATION.md", "current-state.md", "repo-navigation-map.md")
+
+# A backtick-wrapped docs path, e.g. `docs/foo.md` — used to walk the doc graph
+# (backtick refs are how most SuperBot docs cross-link, alongside markdown links).
+_DOCS_PATH_RE = re.compile(r"`(docs/[\w./-]+\.md)`")
+# Badges whose docs are retired content and need no inbound link.
+_REACHABILITY_EXEMPT_BADGES = frozenset({"historical", "archive"})
+# Docs intentionally islanded (repo-relative paths). Keep empty unless a doc is
+# deliberately unlinked; prefer linking it from a folio/README/read-path doc.
+_REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 
 
 def _docs_files() -> list[Path]:
@@ -137,6 +151,84 @@ def check_pinned() -> list[tuple[Path, str, str]]:
     return violations
 
 
+def _doc_badge(path: Path) -> str | None:
+    """Return the doc's Status badge token, or None."""
+    head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:12])
+    match = _BADGE_RE.search(head)
+    return match.group(1) if match else None
+
+
+def _reachability_roots() -> list[Path]:
+    """Entry points a new session actually reads — the doc graph must connect here."""
+    roots = [DOCS_ROOT / name for name in _READPATH_DOCS]
+    roots.append(REPO_ROOT / ".claude" / "CLAUDE.md")
+    roots += sorted(DOCS_ROOT.glob("subsystems/*.md"))
+    roots += sorted(DOCS_ROOT.rglob("README.md"))
+    return [r for r in roots if r.exists()]
+
+
+def _outgoing_doc_links(path: Path) -> set[Path]:
+    """Resolve every relative markdown link + backtick ``docs/*.md`` ref in a file."""
+    out: set[Path] = set()
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return out
+    for line in text.splitlines():
+        for raw in _MD_LINK_RE.findall(line):
+            if raw.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            target = _link_target(raw)
+            if target:
+                out.add((path.parent / target).resolve())
+        for ref in _DOCS_PATH_RE.findall(line):
+            out.add((REPO_ROOT / ref).resolve())
+    return out
+
+
+def check_reachable() -> list[tuple[Path, str, str]]:
+    """Every live doc must be reachable from a read-path root / folio / README.
+
+    Walks the doc graph (markdown links + backtick ``docs/*.md`` refs) from the
+    roots; any doc not reached — and not ``historical`` / ``archive`` badged, an
+    ADR, or allowlisted — is an orphan. Turns "can a session find this?" into a gate.
+    """
+    seen: set[Path] = set()
+    queue: deque[Path] = deque()
+    for root in _reachability_roots():
+        resolved = root.resolve()
+        if resolved not in seen:
+            seen.add(resolved)
+            queue.append(resolved)
+    while queue:
+        cur = queue.popleft()
+        if cur.suffix != ".md" or not cur.exists():
+            continue
+        for nxt in _outgoing_doc_links(cur):
+            if nxt not in seen and nxt.suffix == ".md" and nxt.exists():
+                seen.add(nxt)
+                queue.append(nxt)
+
+    violations: list[tuple[Path, str, str]] = []
+    for f in _docs_files():
+        if f.resolve() in seen or _is_adr(f):
+            continue
+        rel = f.relative_to(REPO_ROOT)
+        if str(rel) in _REACHABILITY_ALLOWLIST:
+            continue
+        if _doc_badge(f) in _REACHABILITY_EXEMPT_BADGES:
+            continue
+        violations.append(
+            (
+                rel,
+                "reachable",
+                "orphan: not reachable from any read-path doc / folio / README "
+                "(link it from one, or badge it historical/archive)",
+            ),
+        )
+    return violations
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SuperBot doc-hygiene checker.")
     parser.add_argument(
@@ -146,7 +238,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    violations = check_badges() + check_links() + check_pinned()
+    violations = check_badges() + check_links() + check_pinned() + check_reachable()
     if not violations:
         print("check_docs: all checks passed ✓")
         return 0

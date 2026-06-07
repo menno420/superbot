@@ -13,7 +13,7 @@ data**, never from a hallucinated prior. When it lacks a fact it should say so
 
 > **Data source:** fixtures default to `disbot/data/btd6/` but the backend is
 > swappable via `BTD6_DATA_BACKEND` (`file` / `postgres` / `cloud`) — see
-> **`docs/btd6-data-backends.md`** (Postgres is the recommended production
+> **`docs/btd6/btd6-data-backends.md`** (Postgres is the recommended production
 > backend; it reuses the DB the bot already depends on). The read seam is
 > `services/btd6_data_provider.py`; everything funnels through
 > `btd6_data_service._load_file`, so the backend swap is invisible to consumers.

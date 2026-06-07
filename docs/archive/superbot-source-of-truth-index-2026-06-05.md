@@ -1,6 +1,6 @@
 # SuperBot — Planning Source-of-Truth Index
 
-> **Status:** `historical`
+> **Status:** `archive`
 
 > **`historical` — superseded as a daily router by `docs/current-state.md`.**
 > Start at `docs/current-state.md` for *what is true now*. This file is kept for
@@ -26,9 +26,9 @@
 3. **`docs/planning/superbot-audit-consolidation-2026-06-05.md`** — the verified
    findings (RC-1 … RC-15) with file:line evidence. Trust this over the raw
    audit docs.
-4. **`docs/planning/superbot-architecture-priority-map-2026-06-05.md`** — what to
+4. **`docs/archive/superbot-architecture-priority-map-2026-06-05.md`** — what to
    fix first, dependency graph, must-not-touch list.
-5. **`docs/planning/superbot-next-session-roadmap-2026-06-05.md`** — the PR
+5. **`docs/archive/superbot-next-session-roadmap-2026-06-05.md`** — the PR
    sequence + per-session reading list + stop conditions.
 
 ---
@@ -72,9 +72,9 @@ server-management state and the remaining queue (PR5+).
 | Doc | Trust | Note |
 |---|---|---|
 | `docs/planning/superbot-audit-consolidation-2026-06-05.md` | ✅ current | Supersedes the five raw audit docs' confidence claims where source disagreed. |
-| `docs/planning/superbot-architecture-priority-map-2026-06-05.md` | ✅ current | Priority + dependency ordering. |
-| `docs/planning/superbot-next-session-roadmap-2026-06-05.md` | ✅ current | PR/session plan. |
-| `docs/planning/superbot-source-of-truth-index-2026-06-05.md` | ✅ current | This file. |
+| `docs/archive/superbot-architecture-priority-map-2026-06-05.md` | ✅ current | Priority + dependency ordering. |
+| `docs/archive/superbot-next-session-roadmap-2026-06-05.md` | ✅ current | PR/session plan. |
+| `docs/archive/superbot-source-of-truth-index-2026-06-05.md` | ✅ current | This file. |
 | `docs/planning/superbot-ideas-lab-2026-06-05.md` | ✅ current (advisory) | Brainstorm backlog. §2 (operating decisions) + §6 (rejection ledger) are binding; the rest is gated suggestions — re-verify against source before building. |
 | `docs/planning/server-management-status-2026-06-05.md` | ✅ current | **Live status tracker** for the server-management initiative — what shipped (#520–#523) and the remaining queue (PR5+). Authoritative on *what is done*. |
 | `docs/planning/server-management-implementation-plan-2026-06-05.md` | ✅ current (scope) | Per-PR scope/tests/risks for PR1→PR14. PR1–PR4 shipped; see Rev 3 note for the `clearwarnings` correction. Use with the status tracker. |
@@ -115,14 +115,14 @@ authority.
 
 | Doc(s) | Trust | Caveat from this consolidation |
 |---|---|---|
-| `docs/btd6-data-backends.md`, `docs/btd6-data-pipeline.md`, `docs/btd6-cloud-data.md` | ✅ current | Pair with RC-10: provider-parity is **unverified** (needs live backend); provenance model is a pending decision. |
-| `docs/btd6-derived-value-groundedness-finding.md`, `docs/btd6-absence-claim-guard-design.md` | ✅ current | The faithfulness/groundedness guard is confirmed-healthy (RC-11) — preserve. |
-| `docs/btd6-smoke-test-checklist.md` | ✅ current | Run before BTD6 runtime PRs. |
+| `docs/btd6/btd6-data-backends.md`, `docs/btd6/btd6-data-pipeline.md`, `docs/btd6/btd6-cloud-data.md` | ✅ current | Pair with RC-10: provider-parity is **unverified** (needs live backend); provenance model is a pending decision. |
+| `docs/btd6/btd6-derived-value-groundedness-finding.md`, `docs/btd6/btd6-absence-claim-guard-design.md` | ✅ current | The faithfulness/groundedness guard is confirmed-healthy (RC-11) — preserve. |
+| `docs/btd6/btd6-smoke-test-checklist.md` | ✅ current | Run before BTD6 runtime PRs. |
 | `docs/ai-config-ownership.md`, `docs/ai-service-integration-map.md` | ✅ current (ownership doc is binding) | AI orchestration is healthy; do not refactor the choke point. |
 | `disbot/core/runtime/ai/README.md` | ✅ current | Package intent. |
 | `docs/server-logging.md` | ✅ current (shipped reference) | — |
 
-> BTD6 has **many** subsystem docs (`docs/btd6-*` — 15+ files). They are
+> BTD6 has **many** subsystem docs (`docs/btd6/btd6-*` — 15+ files). They are
 > domain-accurate but verbose; Agent D recommends a single BTD6 data-inventory
 > index (a future opportunity, not yet built). Until then, prefer source +
 > `btd6_data_service` over any single doc for current field state.
@@ -141,7 +141,7 @@ context only". The audit consolidation adds the reconciliation column.
 | `docs/audits/agent-b-governance-control-audit-2026-06-05.md` (Agent B) | source-read audit, no local exec | Findings confirmed in consolidation §3; trust the consolidation's status flags. |
 | `docs/audits/general-feature-layer-analysis-2026-06-05.md` (Agent C) | source-read audit, no local exec | C#4 reclassified (ADR-002); several items overlap ADR-003 §3. |
 | `docs/audits/agent-d-btd6-ai-subsystem-audit-2026-06-05.md` (Agent D) | source-read audit, no local exec | Confirmed; drives RC-10/11/12. |
-| `docs/repo-cartography-2026-06-04.md` (Codex) | neutral inventory, branch `work`, no `main`/remote | Map is sound; its "unknowns" (YouTube, runtime-AI, cleanup ownership) became RC-12/RC-11/RC-5. |
+| `docs/archive/repo-cartography-2026-06-04.md` (Codex) | neutral inventory, branch `work`, no `main`/remote | Map is sound; its "unknowns" (YouTube, runtime-AI, cleanup ownership) became RC-12/RC-11/RC-5. |
 | `docs/audits/repo-wide-audit-2026-05-29.md` | **older** audit (base `5609fe8`), has a remediation table updated post-#414 | **Check its remediation table before re-fixing** — some boundary items are already closed. The A/B/C/D audits did not cross-reference it. |
 | `docs/audits/mutation_boundary_audit.md` | snapshot (2026-05-24) | Companion to `ownership.md`; consult for mutation-boundary history. |
 | `docs/loose-ends-audit-roadmap.md` | plan (read for context) | Findings 2/3/5 overlap RC-14; PR L1–L6 predate this plan — reconcile, don't duplicate. |
@@ -168,7 +168,7 @@ edits belong to **PR 7 (RC-13)**:
    `docs/planning/…consolidation…`" banner so future readers reach the verified
    set first.
 4. Consider a single BTD6 data-inventory index (Agent D future opportunity) to
-   retire ambiguity across the 15+ `docs/btd6-*` files.
+   retire ambiguity across the 15+ `docs/btd6/btd6-*` files.
 
 ---
 

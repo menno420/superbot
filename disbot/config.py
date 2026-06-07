@@ -184,7 +184,7 @@ PARAGON_API_KEY = os.getenv("PARAGON_API_KEY", "")
 # BTD6 deterministic data source (services/btd6_data_service.py)
 # ==========================
 # Backend for the BTD6 fixture JSON + per-entity stats tree. See
-# ``docs/btd6-data-backends.md``.
+# ``docs/btd6/btd6-data-backends.md``.
 #   ""/"file"  → committed files under ``disbot/data/btd6/`` (default).
 #   "postgres" → the ``btd6_data_blobs`` table (recommended when you already
 #                run Postgres; seed with ``scripts/seed_btd6_data.py``). No new

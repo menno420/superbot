@@ -118,18 +118,14 @@ owners.
 
 ## 6. Context-map tooling
 
-`scripts/context_map.py` answers, for any file under `disbot/`: *if I touch this, what else
-is connected, what docs should I read, what tests should I run, and what ownership/risk
-rules apply?* It complements CodeGraph (which cannot resolve this repo's file/module
-edges), computing importers and blast radius with **Grimp** when it is installed and
-falling back to a built-in AST scan otherwise. Curated docs/tests/risk routing comes from
-`docs/context-map-overrides.yml`.
+The **Opus planning** stage uses `scripts/context_map.py` to answer "if I touch this file,
+what else is connected, and what should I read/test before editing?" — the file-impact
+context CodeGraph can't resolve. It's the **custom-wrapper-over-a-useful-engine** philosophy
+in practice (the repo's architecture rules + an override YAML + Grimp), matching the
+"custom-tooling-over-new-deps" rule in `.claude/CLAUDE.md`.
 
-The philosophy is a **custom SuperBot wrapper over a useful existing engine** — the repo's
-own architecture rules supply ownership/layer meaning, the override YAML supplies curated
-routing, and Grimp supplies the import graph. It is meant to be practical, not exhaustive:
-faster and safer agents, not a full runtime model. (Same "custom-tooling-over-new-deps"
-preference recorded in `.claude/CLAUDE.md`; Grimp is dev-only, in `requirements-dev.txt`.)
+Full usage, the trust matrix, and the override-file contract live in
+[`../context-map-tooling.md`](../context-map-tooling.md) — this section does not restate them.
 
 ## 7. Failure modes to prevent
 
