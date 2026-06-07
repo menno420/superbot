@@ -448,3 +448,181 @@ systems.
 | **Binding decision** | A rule or decision agents must not override casually. |
 | **Promotion** | The normal review path that turns an idea or answer into approved planned work. |
 | **Reproposal** | A fair explanation of why the original answer cannot safely be followed, plus a safer alternative for maintainer confirmation. |
+
+## 17. AI roadmap decision batch — AR-2026-06-07
+
+> **Status:** Awaiting maintainer answer. These questions come from
+> `docs/planning/ai-roadmap-2026-06-07.md`. Safe defaults are temporary and do not
+> approve implementation. Preserve answers here, then route concise conclusions to the
+> suggested destination.
+
+### AR-01 — Which AI-adjacent track should follow orchestration?
+
+**Area:** AI / Priority
+**Priority:** High
+**Suggested destination after answer:** AI roadmap / current-state only if promoted
+
+**Question:** After the shared AI orchestration foundation is planned, should the next
+planning track be Update Awareness or command/help/discovery metadata?
+
+**Why it matters:** Update Awareness directly serves release confidence, while richer
+command metadata gives update/help features cleaner stable identifiers and audiences.
+
+**Options:** A. Update Awareness first. B. Command/help metadata first. C. Plan both,
+but implement command metadata first. D. Defer both.
+**Safe default / recommended direction:** C — plan both dependencies, implement the
+smallest compatibility-first command metadata slice before release-linked features.
+
+### AR-02 — How should updates enter the canonical update log?
+
+**Area:** Update Awareness / Product
+**Priority:** Blocking for Update Awareness PR1
+**Suggested destination after answer:** Update Awareness implementation plan
+
+**Question:** How should a release/update first become structured bot truth?
+
+**Why it matters:** Automatic PR/Markdown import is convenient but can silently make
+unreviewed text runtime truth.
+
+**Options:** A. Manual structured registration only. B. Manual first, later offer a PR
+metadata draft that a human confirms. C. Automatic PR import. D. Both manual and
+automatic without confirmation.
+**Safe default / recommended direction:** B — manual authoritative records first; a
+future importer may only prepare a reviewable draft.
+
+### AR-03 — What should “tested since update” mean?
+
+**Area:** Update Awareness / Release confidence
+**Priority:** Blocking for test-status design
+**Suggested destination after answer:** Update Awareness plan and read-model contract
+
+**Question:** Which signals should count, and should they remain separate?
+
+**Why it matters:** A command succeeding once does not necessarily prove a feature was
+intentionally verified.
+
+**Options:** A. Any successful command execution counts as tested. B. Only owner/staff
+manual verification counts. C. Only CI/smoke verification counts. D. Track runtime-used,
+manual-verified, CI-smoked, and failed separately.
+**Safe default / recommended direction:** D — preserve separate facts; never collapse
+runtime use into verified truth.
+
+### AR-04 — Should update/test status be global, guild-specific, or both?
+
+**Area:** Update Awareness / Data model
+**Priority:** High
+**Suggested destination after answer:** Update Awareness plan
+
+**Question:** At what level should release-confidence facts be stored and shown?
+
+**Why it matters:** Global releases are platform facts, while some command paths depend
+on guild configuration and permissions.
+
+**Options:** A. Global only. B. Guild-specific only. C. Global release status plus
+optional guild-specific evidence. D. Decide per feature without a shared rule.
+**Safe default / recommended direction:** C — global canonical update truth with bounded
+optional guild evidence where configuration makes it meaningful.
+
+### AR-05 — Who may see update and test status?
+
+**Area:** Update Awareness / Audience
+**Priority:** Blocking before user-facing surfaces
+**Suggested destination after answer:** Update Awareness plan / AI folio
+
+**Question:** Who should see recent updates, guide cards, untested paths, and failures?
+
+**Why it matters:** Public guides help users, but detailed failures and verification gaps
+may expose owner-only operational information.
+
+**Options:** A. Platform owner only. B. Server admins and platform owner. C. Public-safe
+updates/guides for users, detailed test/failure state for admins/owner. D. Everything to
+everyone.
+**Safe default / recommended direction:** C, with the first deterministic surface owner-
+only until the projection is proven.
+
+### AR-06 — Should every user-visible PR require a feature guide card?
+
+**Area:** Update Awareness / Workflow
+**Priority:** Medium
+**Suggested destination after answer:** collaboration workflow / Update Awareness plan
+
+**Question:** Should a structured “what changed / how to use it / who can use it” card be
+required for every user-visible change?
+
+**Why it matters:** Required cards improve help/update quality but add maintenance work
+and need a clear exception path.
+
+**Options:** A. Required for every user-visible PR. B. Required only for major changes.
+C. Recommended, not required. D. No guide cards.
+**Safe default / recommended direction:** B — require them for major/new user-visible
+features first, then evaluate burden and coverage.
+
+### AR-07 — Which docs may the AI knowledge base search?
+
+**Area:** AI knowledge / Privacy
+**Priority:** Blocking for knowledge-search planning
+**Suggested destination after answer:** approved-corpus plan / AI folio
+
+**Question:** Should AI search only user-safe documentation, or also internal planning
+and owner docs for restricted audiences?
+
+**Why it matters:** Internal docs contain useful context but may include stale plans,
+operational detail, or owner-only information.
+
+**Options:** A. User-safe docs only. B. User-safe plus a separately classified owner-only
+corpus. C. All repo docs with runtime filtering. D. No docs search.
+**Safe default / recommended direction:** A for v1; consider B only after classification,
+audience-isolation, freshness, and secret-leak tests exist.
+
+### AR-08 — Which AI capabilities belong to each audience?
+
+**Area:** AI / Permissions
+**Priority:** High
+**Suggested destination after answer:** AI folio / capability-specific plans
+
+**Question:** What broad capability posture should normal users, server admins, and the
+platform owner receive?
+
+**Why it matters:** A consistent posture prevents every future tool from inventing its
+own access model.
+
+**Options:** A. Users get public help/BTD6; admins get guild setup/health; owner gets
+platform/update/connector detail. B. Admins and users receive the same reads. C. Owner-
+only for all net-new AI capabilities. D. Decide every tool independently.
+**Safe default / recommended direction:** A, while each deterministic owner may narrow
+further and no role inherits action authority from read access.
+
+### AR-09 — Should AI ever prepare action drafts, and what category comes first?
+
+**Area:** AI actions / Safety
+**Priority:** High but not blocking read-only work
+**Suggested destination after answer:** future action-proposal decision / AI folio
+
+**Question:** After all action gates exist, should AI be allowed to prepare a reviewable
+action draft, and which low-risk category should be considered first?
+
+**Why it matters:** Q-0001 permits eventual broader actions in principle, but does not
+approve a category or implementation.
+
+**Options:** A. Keep explanation-only indefinitely. B. First consider a recurring-report
+draft. C. First consider a notification draft to an allowlisted target. D. First consider
+an owner-only maintenance-action draft.
+**Safe default / recommended direction:** A now; if revisited, B is the lowest-risk first
+category because deterministic automation can own confirmation and execution.
+
+### AR-10 — What is the preferred first Opus planning target?
+
+**Area:** AI / Workflow
+**Priority:** High
+**Suggested destination after answer:** AI roadmap / session handoff
+
+**Question:** Which focused Claude Opus planning session should happen first after this
+roadmap?
+
+**Why it matters:** The roadmap is intentionally broad; a single explicit next target
+prevents parallel plans from competing or silently implying approval.
+
+**Options:** A. Lock the AI orchestration foundation. B. Plan deterministic Update
+Awareness PR1. C. Plan command/help/discovery metadata. D. Plan approved-docs search.
+**Safe default / recommended direction:** A — it is the shared safety and compatibility
+foundation for every later AI tool.
