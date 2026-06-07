@@ -420,6 +420,15 @@ async def preflight_operations(
                     guild_id,
                 )
             )
+        elif kind == "set_role_threshold":
+            # Needs the live guild (not just guild_id) for the read-only
+            # bot-feasibility note (can the bot actually assign this role?).
+            current, proposed, would_change, read_error = (
+                await _preflight_set_role_threshold(
+                    op,
+                    guild,
+                )
+            )
         else:
             # Known kind without a v1 read adapter (create_*, automation,
             # cleanup_policy).  Render proposed value where available;
@@ -585,6 +594,91 @@ async def _preflight_set_cog_routing(
         )
     current = ChangeValue(kind="value", value=bool(current_val))
     would_change = bool(current_val) != proposed_val
+    return current, proposed, would_change, None
+
+
+async def _preflight_set_role_threshold(
+    op: SetupOperation,
+    guild: Any,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read-only current/proposed diff for a role-threshold op + a bot-feasibility note.
+
+    Two read-only signals, so Final Review is not blind to role tiers (the
+    gap before this adapter — the op fell to ``no_adapter``):
+
+    * **diff** — the role's current time/XP tier vs. the proposed one
+      (id-first, so a renamed role is matched by id);
+    * **feasibility** — a hint folded into the proposed display when the bot
+      could not actually *assign* the role (missing / above the bot / no
+      Manage Roles), surfacing the ``role_automation.check_preflight`` class
+      of blocker at review time. The threshold write itself is benign config
+      (assignment is separately guarded in ``role_automation.apply``); this is
+      transparency, not a gate.
+
+    **Read-only by contract** (``test_setup_preflight_readonly``): no DB write,
+    no mutation pipeline — only ``get_role_thresholds`` (read), ``resolve_role``,
+    and ``evaluate_role``.
+    """
+    from services.setup_change_plan import UNKNOWN, ChangeValue
+
+    sub_kind = (op.setting_name or "").strip().lower()
+    proposed = ChangeValue(kind="value", value=_fmt_threshold(sub_kind, op.value))
+    guild_id = getattr(guild, "id", None)
+    if guild_id is None or sub_kind not in ("time", "xp") or op.target_id is None:
+        return (UNKNOWN, proposed, True, "missing guild/sub-kind/target on op")
+
+    current: ChangeValue = UNKNOWN
+    would_change = True
+    try:
+        from utils.db import roles as roles_db
+
+        rows = await roles_db.get_role_thresholds(guild_id)
+        row = next((r for r in rows if r.get("role_id") == op.target_id), None)
+        if row is not None:
+            cur = (
+                row.get("days_required")
+                if sub_kind == "time"
+                else row.get(
+                    "level_required",
+                )
+            )
+            current = ChangeValue(
+                kind="value",
+                value=(_fmt_threshold(sub_kind, cur) if cur else None),
+            )
+            try:
+                would_change = int(cur or 0) != int(op.value)
+            except (TypeError, ValueError):
+                would_change = True
+    except Exception as exc:  # noqa: BLE001 — preflight is fail-safe
+        return (UNKNOWN, proposed, True, f"{type(exc).__name__}: {exc}")
+
+    # Bot-feasibility note (read-only): can the bot actually assign this role?
+    try:
+        from core.runtime import guild_resources as resources
+        from utils.role_feasibility import (
+            ABOVE_BOT,
+            BOT_MISSING_MANAGE_ROLES,
+            evaluate_role,
+        )
+
+        role = resources.resolve_role(guild, role_id=op.target_id)
+        if role is None:
+            note = "⚠ role missing — automation can't assign"
+        else:
+            code = evaluate_role(role, bot_member=getattr(guild, "me", None)).code
+            note = {
+                BOT_MISSING_MANAGE_ROLES: "⚠ bot lacks Manage Roles",
+                ABOVE_BOT: "⚠ above bot's top role — automation can't assign",
+            }.get(code, "")
+        if note:
+            proposed = ChangeValue(
+                kind="value",
+                value=f"{_fmt_threshold(sub_kind, op.value)}  {note}",
+            )
+    except Exception:  # noqa: BLE001 — the note is best-effort, never fatal
+        pass
+
     return current, proposed, would_change, None
 
 
@@ -1508,9 +1602,20 @@ def _label(op: SetupOperation) -> str:
         role_label = op.target_name or (
             str(op.target_id) if op.target_id is not None else "?"
         )
-        unit = "d" if sub_kind == "time" else "L" if sub_kind == "xp" else ""
-        return f"role_threshold.{sub_kind}({role_label}) = {op.value}{unit}"
+        return (
+            f"role_threshold.{sub_kind}({role_label}) = "
+            f"{_fmt_threshold(sub_kind, op.value)}"
+        )
     return f"{op.kind}: {op.subsystem}"
+
+
+def _fmt_threshold(sub_kind: str, value: Any) -> str:
+    """Human label for a role-threshold value: time → ``"7d"``, xp → ``"L10"``."""
+    if sub_kind == "time":
+        return f"{value}d"
+    if sub_kind == "xp":
+        return f"L{value}"
+    return f"{value}"
 
 
 __all__ = [

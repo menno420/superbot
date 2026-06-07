@@ -7,18 +7,20 @@
 > contradicted each other across a single merge).
 >
 > **▶ Next action:** server-management **PR12** — setup diagnostics & repair (stage safe
-> repairs via the PR2 findings model + the lifecycle services). **PR11 progressed this
-> session:** the **moderation** and **roles** setup-wizard sections were built (moderation
-> stages `set_setting` drafts for the PR10 knobs; roles stages a new `set_role_threshold`
-> op-kind for time/XP auto-role tiers) — see the server-management
+> repairs via the PR2 findings model + the lifecycle services). **PR11 (moderation + roles
+> slices):** the **moderation** and **roles** setup-wizard sections were built (2026-06-07;
+> moderation stages `set_setting` drafts for the PR10 knobs; roles stages a new
+> `set_role_threshold` op-kind for time/XP auto-role tiers) — verify merge status on live
+> GitHub; see the server-management
 > [status tracker](planning/server-management-status-2026-06-05.md) PR11 subsection. PR11's
 > **governance** section is **deferred** (owner decision **Q-0008** — cleanup already owns the
 > main governance write; capability-override/command-access setup is a separate, design-led
 > follow-up). Authoritative scope + dependencies: the status tracker's Remaining-queue.
 >
 > **Last updated:** 2026-06-07 · server-management **PR11 moderation + roles setup sections**
-> built this session (owner decision **Q-0008**: Moderation + Roles now, Governance deferred).
-> The new sections + the `set_role_threshold` op-kind are recorded in the **status tracker**
+> built in the PR11 moderation + roles slices (owner decision **Q-0008**: Moderation + Roles
+> now, Governance deferred). The new sections + the `set_role_threshold` op-kind are recorded
+> in the **status tracker**
 > (linked above); PR10 is complete (ADR-008; earlier slices merged as #555/#556/#558/#567,
 > cross-area roadmap #566). **This file lists only _merged_ work + the ▶ Next action;** get
 > in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status in prose
@@ -87,8 +89,8 @@ Source code and merged PRs win over anything written here.
   (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
   for which part of the code). The picks below are the current top of that list.
 - Highest-value approved implementation lane: server-management. **PR10 is complete**
-  (six slices, ADR-008). **PR11's moderation + roles setup sections were built this session**
-  (owner decision Q-0008); PR11's **governance** section is **deferred** (cleanup already owns
+  (six slices, ADR-008). **PR11's moderation + roles setup sections were built** (2026-06-07,
+  owner decision Q-0008); PR11's **governance** section is **deferred** (cleanup already owns
   the main governance write — revisit only with a scope decision). The next step is **PR12**
   (setup diagnostics & repair), then PR13–PR14. The
   `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative

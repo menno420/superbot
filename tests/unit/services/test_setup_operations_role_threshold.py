@@ -24,6 +24,7 @@ from services.setup_operations import (
     _KNOWN_KINDS,
     SetupOperation,
     apply_operations,
+    preflight_operations,
     preview_operations,
     validate_operation,
 )
@@ -279,3 +280,118 @@ async def test_setter_failure_isolated_per_op():
     assert len(batch.failed) == 1
     assert "DB down" in batch.failed[0].error
     assert len(batch.applied) == 1
+
+
+# ---------------------------------------------------------------------------
+# Preflight (read-only diff + feasibility note)
+# ---------------------------------------------------------------------------
+
+
+def _preflight_guild(guild_id: int = 1, *, role=None):
+    return SimpleNamespace(
+        id=guild_id,
+        get_role=lambda rid: role,
+        me=SimpleNamespace(),
+    )
+
+
+@pytest.mark.asyncio
+async def test_preflight_is_no_longer_no_adapter():
+    op = SetupOperation(
+        kind="set_role_threshold",
+        subsystem="roles",
+        setting_name="time",
+        target_id=555,
+        target_name="Veteran",
+        value=7,
+    )
+    with patch(
+        "utils.db.roles.get_role_thresholds",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
+        entries = await preflight_operations([op], guild=_preflight_guild())
+    assert len(entries) == 1
+    # Previously this op fell through to the "no_adapter" branch.
+    assert entries[0].preflight_skipped_reason is None
+
+
+@pytest.mark.asyncio
+async def test_preflight_shows_current_vs_proposed_diff():
+    op = SetupOperation(
+        kind="set_role_threshold",
+        subsystem="roles",
+        setting_name="time",
+        target_id=555,
+        target_name="Veteran",
+        value=7,
+    )
+    rows = [{"role_id": 555, "days_required": 3, "level_required": None}]
+    with (
+        patch(
+            "utils.db.roles.get_role_thresholds",
+            new_callable=AsyncMock,
+            return_value=rows,
+        ),
+        patch(
+            "utils.role_feasibility.evaluate_role",
+            return_value=SimpleNamespace(code="selectable"),
+        ),
+    ):
+        entries = await preflight_operations(
+            [op],
+            guild=_preflight_guild(role=SimpleNamespace(id=555, name="Veteran")),
+        )
+    entry = entries[0]
+    assert entry.current.value == "3d"  # current tier read id-first
+    assert entry.would_change is True  # 3d -> 7d
+
+
+@pytest.mark.asyncio
+async def test_preflight_folds_feasibility_note_when_unassignable():
+    op = SetupOperation(
+        kind="set_role_threshold",
+        subsystem="roles",
+        setting_name="xp",
+        target_id=555,
+        target_name="Veteran",
+        value=10,
+    )
+    with (
+        patch(
+            "utils.db.roles.get_role_thresholds",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "utils.role_feasibility.evaluate_role",
+            return_value=SimpleNamespace(code="above_bot"),
+        ),
+    ):
+        entries = await preflight_operations(
+            [op],
+            guild=_preflight_guild(role=SimpleNamespace(id=555, name="Veteran")),
+        )
+    proposed = str(entries[0].proposed.value)
+    assert "L10" in proposed
+    assert "above bot" in proposed.lower()
+
+
+@pytest.mark.asyncio
+async def test_preflight_notes_missing_role():
+    op = SetupOperation(
+        kind="set_role_threshold",
+        subsystem="roles",
+        setting_name="time",
+        target_id=999,
+        target_name="Gone",
+        value=5,
+    )
+    with patch(
+        "utils.db.roles.get_role_thresholds",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
+        # guild.get_role returns None -> resolve_role None -> "role missing" note
+        entries = await preflight_operations([op], guild=_preflight_guild(role=None))
+    assert "missing" in str(entries[0].proposed.value).lower()

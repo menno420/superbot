@@ -10,8 +10,9 @@
 > for PR8+PR9, then for **PR10's first–fifth slices** — config-backed moderation
 > behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
 > the post-action message cleanup sweep, and the optional public moderation log).
-> **Body is current through PR11's moderation + roles slices** (built 2026-06-07, PR open;
-> see the PR11 subsection below). **PR10 is COMPLETE** (all six slices shipped, incl.
+> **Body is current through PR11's moderation + roles slices** (built 2026-06-07;
+> see the PR11 subsection below — verify merge status against live GitHub). **PR10 is
+> COMPLETE** (all six slices shipped, incl.
 > moderator/trusted roles + capabilities, ADR-008). PR11's **governance** section is
 > deferred (owner decision Q-0008); **PR12–PR14 remain queued** — the "Shipped" +
 > "Remaining queue" sections below are authoritative.
@@ -474,7 +475,7 @@ The **last PR10 item** and the highest-stakes change in the workstream (it chang
   capability-authority + folio docs updated.
 - **PR10 is now complete.** Next: **PR11** (setup role/moderation/governance sections).
 
-### PR11 (moderation + roles slices) — Setup sections *(built 2026-06-07; PR open)*
+### PR11 (moderation + roles slices) — Setup sections *(built 2026-06-07)*
 
 Owner decision **Q-0008 → "Moderation + Roles"** (router): build the moderation and roles
 setup sections this session; **defer the governance section** (cleanup already owns the main
@@ -495,7 +496,11 @@ the only apply gate** (no setup view imports a mutation pipeline; invariant
   audited **`role_automation.set_{time,xp}_threshold`** seam (a service, not a raw DB write,
   per the no-`utils.db` invariant; mirrors the cog-routing no-pipeline pattern) — captures
   `role_id` so a rename does not orphan the tier, and emits `audit.action_recorded`. Final
-  Review gains an explicit `role_threshold` apply phase.
+  Review gains an explicit `role_threshold` apply phase **and a read-only
+  `_preflight_set_role_threshold` adapter** — current→proposed tier diff plus a
+  "bot can't assign this role" note (missing / above-bot / no Manage Roles) folded into the
+  preview, so Final Review is not blind to role feasibility (the actual assignment stays
+  separately guarded by `role_automation.check_preflight`).
 - **Pinned by** `tests/unit/views/setup/sections/test_moderation_section.py`,
   `test_roles_section.py`, `tests/unit/services/test_setup_operations_role_threshold.py`,
   `test_role_automation_thresholds.py`, and the registration manifest. Full CI mirror green;
@@ -511,7 +516,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 | PR | Objective | Depends on |
 |---|---|---|
 | **PR10** | Moderation first-class configuration. **COMPLETE** — all six slices shipped (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log, **and moderator/trusted roles + capabilities** — ADR-008, see above). | #521 |
-| **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built (2026-06-07, PR open); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
+| **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built in the moderation + roles slices (2026-06-07); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |
 | **PR14** | Server Management Hub (last). | all managers |
