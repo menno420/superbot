@@ -80,6 +80,44 @@ logger = logging.getLogger("bot.moderation_service")
 # on payload["action"].  Also listed in core/events_catalogue.KNOWN_EVENTS.
 EVT_MOD_ACTION = "moderation.action_taken"
 
+# The token written to mod_logs when a (non-required) action has no reason —
+# keeps the historical display text every surface used before PR10.
+_DEFAULT_REASON = "No reason provided"
+
+
+class ReasonRequiredError(Exception):
+    """Raised when ``require_reason`` is on but no reason was supplied.
+
+    Surfaced at the mutation seam **before** any side effect (DB write, DM,
+    Discord call) so the cog/modal surfaces can tell the operator a reason is
+    required without anything having happened.  Applies to warn / kick / ban;
+    timeout is exempt (its reason carries the duration).
+    """
+
+    def __init__(self, action: str) -> None:
+        self.action = action
+        super().__init__(f"A reason is required to {action} a member.")
+
+
+def _resolve_reason(
+    reason: str,
+    policy: moderation_config.ModerationPolicy,
+    *,
+    action: str,
+) -> str:
+    """Enforce ``require_reason`` and normalise an empty reason for logging.
+
+    Raises :class:`ReasonRequiredError` when the guild requires a reason and
+    none was given (placeholder-aware via :func:`moderation_config.has_reason`);
+    otherwise returns the reason, defaulting empty/placeholder input to
+    ``"No reason provided"`` so the ``mod_logs`` row keeps its historical text.
+    """
+    if not moderation_config.has_reason(reason):
+        if policy.require_reason:
+            raise ReasonRequiredError(action)
+        return _DEFAULT_REASON
+    return reason
+
 
 def _now_utc() -> datetime:
     """Return a tz-aware "now" — INV-N forbids bare datetime.utcnow."""
@@ -211,8 +249,9 @@ async def warn(
     Returns:
         The post-increment warning count.
     """
-    new_count = await db.add_warning(member.id, member.guild.id)
     policy = await moderation_config.load_policy(member.guild.id)
+    reason = _resolve_reason(reason, policy, action="warn")
+    new_count = await db.add_warning(member.id, member.guild.id)
     await _record_action(
         guild_id=member.guild.id,
         action="warn",
@@ -278,6 +317,7 @@ async def kick(
     guild_id = member.guild.id
     target_id = member.id
     policy = await moderation_config.load_policy(guild_id)
+    reason = _resolve_reason(reason, policy, action="kick")
     # DM before removal — a kicked member is no longer DM-reachable.
     await _notify_target(
         member,
@@ -313,6 +353,7 @@ async def ban(
     a purge is actually configured.
     """
     policy = await moderation_config.load_policy(guild.id)
+    reason = _resolve_reason(reason, policy, action="ban")
     # DM before the ban — a banned user no longer shares the guild and is
     # not DM-reachable afterward.
     await _notify_target(

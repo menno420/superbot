@@ -23,6 +23,7 @@ from services.moderation_config import (
     DEFAULT_DM_ON_ACTION,
     DEFAULT_DM_TEMPLATE,
     DEFAULT_MAX_TIMEOUT_MINUTES,
+    DEFAULT_REQUIRE_REASON,
     MAX_BAN_DELETE_MESSAGE_DAYS,
     MAX_TIMEOUT_MINUTES,
     MIN_BAN_DELETE_MESSAGE_DAYS,
@@ -33,6 +34,7 @@ from utils.settings_keys import (
     MOD_DM_ON_ACTION,
     MOD_DM_TEMPLATE,
     MOD_MAX_TIMEOUT_MINUTES,
+    MOD_REQUIRE_REASON,
     WARN_THRESHOLD,
     WARN_TIMEOUT_MINS,
 )
@@ -135,6 +137,19 @@ MODERATION_SETTINGS: tuple[SettingSpec, ...] = (
             "{user}."
         ),
         validator=_validate_dm_template,
+    ),
+    SettingSpec(
+        name="require_reason",
+        value_type=bool,
+        default=DEFAULT_REQUIRE_REASON,
+        settings_key=MOD_REQUIRE_REASON,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "Require a non-empty reason for warn / kick / ban.  When on, the "
+            "action is rejected (at the moderation_service seam) if no reason "
+            "is given.  Timeout is exempt — its reason carries the duration."
+        ),
+        validator=_validate_bool,
     ),
     SettingSpec(
         name="ban_delete_message_days",

@@ -7,9 +7,10 @@
 > the target architecture and the implementation plan remains the PR-scope detail.
 >
 > **Date:** 2026-06-05 (originally verified @ `f0f0824` / #523; updated 2026-06-06
-> for PR8+PR9, then for **PR10's first slice** — config-backed moderation behaviour).
-> **Body is current through PR10's first slice; the remaining PR10 items + PR11–PR14
-> are the queue** — the "Shipped" + "Remaining queue" sections below are authoritative.
+> for PR8+PR9, then for **PR10's first + second slices** — config-backed moderation
+> behaviour, require-reason, and bot-readiness diagnostics). **Body is current through
+> PR10's second slice; the remaining PR10 items + PR11–PR14 are the queue** — the
+> "Shipped" + "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -307,12 +308,31 @@ widget dispatcher.
   `tests/unit/cogs/test_moderation_schemas.py` (incl. a spec-default ↔ policy-default
   drift guard). Booted live (boot_id `a6a24aea`) — ModerationCog loads with the v2
   schema, 0 ERROR/CRITICAL.
-- **Remaining PR10 queue (next slice):** moderator/trusted **roles + capabilities**,
-  dedicated **log destinations** (today rides `logging_mod_channel` + the generic
-  audit channel), **required/optional reason** enforcement, **escalation-rule**
-  config, **post-action cleanup** hook, and **hierarchy diagnostics**. These either
-  touch the capability-authority seam or other subsystems and are the natural second
-  PR10 slice.
+- **Remaining PR10 queue:** moderator/trusted **roles + capabilities**, dedicated
+  **log destinations** (today rides `logging_mod_channel` + the generic audit
+  channel), **escalation-rule** config, and a **post-action cleanup** hook. These
+  touch the capability-authority seam or other subsystems.
+
+### PR10 (second slice) — Required-reason enforcement + bot-readiness diagnostics *(shipped 2026-06-07)*
+
+Two contained remaining PR10 items, kept consistent with the first slice's
+service-seam discipline:
+
+- **`require_reason`** (bool setting; warn / kick / ban) — enforced at the
+  `moderation_service` seam via a new `ReasonRequiredError` raised **before** any side
+  effect; the cog + the seven modals catch it and tell the operator a reason is
+  required. **Timeout is exempt** (its reason carries the duration). Placeholder-aware
+  (`moderation_config.has_reason` treats `"No reason provided"` as no reason), so the
+  surfaces needed only the catch — no reason-handling rewrite.
+- **Bot-readiness diagnostics** — new pure `utils/moderation_feasibility.py`
+  (`evaluate_moderation_readiness` / `render_readiness_line`, mirroring
+  `utils/role_feasibility.py`); the mod panel embed gains a read-only **"🤖 Bot
+  readiness"** field (has Ban/Kick/Timeout? where does my top role sit?) so an operator
+  sees *before* clicking why an action might fail.
+- **Pinned by** `tests/unit/utils/test_moderation_feasibility.py`,
+  `tests/unit/cogs/test_moderation_panel_embed.py`, require-reason cases in
+  `test_moderation_service.py`, and `has_reason` / `require_reason` cases in
+  `test_moderation_config.py` + `test_moderation_schemas.py`.
 
 ---
 
@@ -322,7 +342,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 
 | PR | Objective | Depends on |
 |---|---|---|
-| **PR10** | Moderation first-class configuration. **First slice shipped** (DMs, ban message-purge, timeout ceiling — see above). Remaining: mod-roles + capabilities, log destinations, escalation rules, required-reason, post-action cleanup, hierarchy diagnostics. | #521 |
+| **PR10** | Moderation first-class configuration. **First + second slices shipped** (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics — see above). Remaining: mod-roles + capabilities, dedicated log destinations, escalation rules, post-action cleanup hook. | #521 |
 | **PR11** | Setup role/moderation/governance sections. | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. | PR5, #523 |

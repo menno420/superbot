@@ -56,6 +56,7 @@ from utils.settings_keys.moderation import (
     MOD_DM_ON_ACTION,
     MOD_DM_TEMPLATE,
     MOD_MAX_TIMEOUT_MINUTES,
+    MOD_REQUIRE_REASON,
     WARN_THRESHOLD,
     WARN_TIMEOUT_MINS,
 )
@@ -99,6 +100,7 @@ __all__ = [
     "MOD_DM_ON_ACTION",
     "MOD_DM_TEMPLATE",
     "MOD_MAX_TIMEOUT_MINUTES",
+    "MOD_REQUIRE_REASON",
     "RPS_DEFAULT_ENTRY_FEE",
     "SKIP_ROLES",
     "TIME_ROLES_STACK",
