@@ -62,6 +62,30 @@ Geraldo shop items are now a game-data-native lookup catalog.
 - Parser + data_service + tool tests; `check_quality --full` green (**8130 passed**), arch
   strict 0 errors, `check_docs` clean. Shipped as a second commit on the same PR branch (#593).
 
+## Follow-on #2 (maintainer-directed) — Bloons children + immunity cutover
+
+Maintainer chose the Bloons cutover (via AskUserQuestion) over wrapping up. Sourced the two
+`bloons.json` fields exactly reproducible from the dump from game data instead of bloonswiki.
+
+- **Immunity → game data, verified identical.** New public `immunities_for_bloon_properties`
+  in `utils.btd6.damage_types` inverts the existing projectile-side `_DAMAGE_TYPES` bitmask
+  (one source of truth): a bloon with property bit `p` is immune to every damage type whose
+  mask shares `p`. **23/23 exact** vs the curated lists → the overlay leaves immunity
+  byte-identical (provenance-only).
+- **Children → game data, two wiki corrections.** `parse_gamedata.py --bloons` reads
+  `SpawnChildrenModel`, resolves each child to its base via `baseId`, and **preserves** the
+  variant's camo/regrow/fortified modifiers (matching the curated Glass Bloon children). Two
+  dump-vs-wiki corrections surfaced and were applied (game data wins): **BAD** `3 DDTs` →
+  `3 Camo DDTs`; **DDT** `4 Camo Regrow Ceramic` → `4 Regrow Ceramic`. Flagged in the PR for
+  maintainer eyeball.
+- **The discipline that paid off:** verified decodability *before* coding (23/23 immunity,
+  children base+modifier), which caught that the wiki *already* carried child modifiers (Glass)
+  — so a naive base-normalize would have **regressed** Glass. Preserving modifiers was the
+  faithful choice.
+- Overlay is provenance-marked + re-runnable; coverage map note updated. Inverter + parser +
+  data_service tests (one pre-existing DDT test corrected to the game value). `check_quality
+  --full` green (**8140 passed**). Third commit on PR #593.
+
 ## Context delta
 - **Pointed to & needed:** the prior session log's "Still owed" list was the single best pointer
   to the frontier — far more actionable than current-state (which tracks the *Adaptive Setup*
