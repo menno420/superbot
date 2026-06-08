@@ -742,6 +742,19 @@ def _buffs(model: dict) -> list[dict]:
                 entry[schema_field] = _num(value / 60.0)  # frames → seconds
         if "isGlobal" in behavior:
             entry["isGlobal"] = bool(behavior["isGlobal"])
+        # Stack cap — a faithful structural copy of the dump's own field (no
+        # transform, like ``isGlobal``). Two names encode the same concept:
+        # ``maxStacks`` on most towers, ``maxStackSize`` on Sniper/Ninja/Mermonkey.
+        # Preserve whichever is present, including ``0`` (0 means "applies once,
+        # does not stack"; the renderer's ``_stack_cap`` surfaces only a positive
+        # limit). Emitting it keeps the eventual game-native cutover reproducing
+        # the "(stacks up to N)" clause instead of silently dropping it. Added
+        # after the nested-tag drop check above so a stack cap alone never keeps a
+        # bare, value-less buff alive.
+        for stack_field in ("maxStacks", "maxStackSize"):
+            value = behavior.get(stack_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[stack_field] = _num(value)
         out.append(entry)
     return out
 

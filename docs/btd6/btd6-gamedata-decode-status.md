@@ -246,9 +246,37 @@ Full `check_quality.py --full` green (8070 passed).
 
 **Honest frontier:** 11 is the confirmed ceiling for committed **combat** towers pre-cutover
 (see "Do next" step 1 for why every remaining type is hero / no-committed-tier / paragon).
-Known small gap (not fixed, applies to *all* buff types equally): `_buffs()` does not emit
-`maxStackSize`, so the renderer's `_stack_cap` "(stacks up to N)" clause is lost on the
-parser-native path — a separate, uniform fix, not a per-type decode.
+~~Known small gap: `_buffs()` does not emit `maxStackSize`…~~ **FIXED (2026-06-08, see session
+log below).** `_buffs()` now passes through both stack-cap field names (`maxStacks` /
+`maxStackSize`) verbatim, so the parser-native (cutover) path reproduces the renderer's
+`_stack_cap` "(stacks up to N)" clause instead of dropping it. *Forward-looking* fidelity fix:
+the **committed** buffs already carry the cap (overlay never rewrites `buffs[]`, only
+`{range, footprintRadius}`), so live answers were unaffected — the gap was that the eventual
+game-native cutover would have silently regressed the clause.
+
+### Session log — 2026-06-08 (buff stack-cap now parser-reproducible — cutover fidelity fix)
+
+Closed the standing "known small gap" the buff-tail session flagged: the game-native parser
+path (`map_tower` → `_map_tier` → `_buffs`) dropped the buff **stack cap**, so a future tower
+cutover would have silently lost the renderer's "(stacks up to N)" clause (Ninja Shinobi
+Tactics "stacks up to 20", Trade Empire "up to 20 Merchantmen", sellback "3").
+
+- **Root cause, precisely:** `_buffs()` emitted `isGlobal` but not the stack-cap field, even
+  though `btd6_upgrade_detail_service._stack_cap` reads it (`maxStacks` on most towers,
+  `maxStackSize` on Sniper/Ninja/Mermonkey). The **committed** `buffs[]` still carry the cap
+  (the numeric `--overlay` only refreshes `{range, footprintRadius}`, never `buffs[]`), so live
+  answers were correct — this was a *forward-looking* fidelity gap, not a live bug.
+- **Fix:** `_buffs()` now passes both stack-cap names through **verbatim** (a faithful
+  structural copy, like `isGlobal` — no transform, so it respects "never write a number you
+  can't confirm"; the value *is* the dump's own field). `0` is preserved ("applies once, does
+  not stack"); the renderer remains the single place that suppresses the clause for a
+  non-positive cap. Emitted *after* the nested-tag drop check, so a stack cap alone never keeps
+  a bare value-less buff alive.
+- **Tests:** updated `test_buffs_shinobi_tactics_maps_multiplier_to_rate` (was asserting the cap
+  *dropped* — it encoded the bug) + two new (`test_buffs_emit_stack_cap_both_field_names`,
+  `test_buffs_stack_cap_zero_preserved`). `check_quality.py --full` **green (8157 passed)**.
+- **Honest scope:** parser-side only; no new decoded effect, no committed-data change. It makes
+  the cutover path reproduce what the committed data + renderer already surface.
 
 ### ⚠ Answerability audit — Powers/Knowledge are *lookup catalogs*, not *applied modifiers* (2026-06-08)
 
