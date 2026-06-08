@@ -1778,3 +1778,19 @@ Action owner: maintainer (ChatGPT template).
 **Safe default until answered:** Keep `_SAFE_TEXT` an internal draft; do **not** wire it into live denial paths until the wording is confirmed. The read-only drift work proceeds independently.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.3 / §16.3 + the P1B denial-integration step.
+
+### Q-0037 — BTD6 data provenance: dump vs. wiki precedence (2026-06-08)
+
+**Area:** BTD6 data / extraction
+**Type:** Data provenance / decision principle
+**Priority:** Medium (governs every BTD6 cutover)
+**Status:** Answered (2026-06-08) — Routed → `docs/btd6/btd6-gamedata-decode-status.md` provenance note + the `--bloons`/cutover tooling.
+**Question:** When the game-data dump and the curated bloonswiki value disagree on a fact (e.g. BAD's DDT children, a bloon's health), which wins?
+
+**Why agents need this:** BTD6 data is sourced from two places — the BTD Mod Helper dump (a direct export of the game's internal files) and curated bloonswiki prose. Cutovers (children/immunity shipped; tower stats pending) need a precedence rule so an agent doesn't have to ask per-field.
+
+**Maintainer answer (2026-06-08):** **Always trust the dump wherever it is complete and accurate** — it's a direct copy of the game's internal files and is the most recent. So dump > wiki when the dump's value is present and unambiguous.
+
+**Critical caveat (agent-added, earned this session):** "complete and accurate" requires reading the **right** model. The dump carries template/variant models that look internally consistent but aren't the canonical one — the base `Ddt` template is non-camo (spawns `CeramicRegrow`) while the real in-game DDT is `DdtCamo` (spawns `CeramicRegrowCamo`); and a `DiamondbackDiamondBloon` variant reads health 60 while the canonical `DiamondBloon` is 80. **Both times a naïve "first matching file" pick produced a wrong value the maintainer's domain knowledge caught.** So: trust the dump, but select the model by the bloon's own properties (`_select_bloon_model`) and sanity-check a surprising value against gameplay before asserting it. Net effect this session: the BAD→Camo-DDT correction stands (dump was right, wiki incomplete); the Diamond "60" was withdrawn (variant artifact — canonical is 80, already matching).
+
+**Suggested destination after answer:** `docs/btd6/btd6-gamedata-decode-status.md` (provenance precedence note) + applied by the `--bloons` cutover's model-selection logic.

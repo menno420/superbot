@@ -17,6 +17,19 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Current state & next actions (READ FIRST)
 
+> **Provenance precedence (owner decision Q-0037, 2026-06-08): trust the dump wherever
+> it is complete and accurate** — it's a direct export of the game's internal files and
+> the most recent. Dump > bloonswiki when the dump's value is present and unambiguous.
+> **Caveat earned twice this session:** "accurate" requires reading the *right* model.
+> The dump has template/variant models that look internally consistent but aren't
+> canonical — base `Ddt` is non-camo (children `CeramicRegrow`) vs the real `DdtCamo`
+> (children `CeramicRegrowCamo`); a `DiamondbackDiamondBloon` variant reads health 60 vs
+> the canonical `DiamondBloon` 80. Select by the bloon's own properties
+> (`_select_bloon_model`) and sanity-check a surprising value before asserting it. (Both
+> traps were caught by the maintainer's domain knowledge, not the structural self-check.)
+> Verified: all 23 dump-modelled bloons match the dump on health **and** speed already —
+> our curated bloon stats are correct; only BAD's DDT children needed the camo correction.
+
 **Where the data stands (verified on `main`, full CI green):**
 - **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds still
   **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
