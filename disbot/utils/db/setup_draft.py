@@ -59,11 +59,21 @@ _KNOWN_OP_KINDS: frozenset[str] = frozenset(
         "add_automation_rule",
         "enable_automation_rule",
         "disable_automation_rule",
-        # Per-feature op kinds staged by Setup Wizard sections.
-        # Routed by services.setup_operations._apply_set_cleanup_policy
-        # and _apply_set_cog_routing respectively.
+        # Per-feature op kinds staged by Setup Wizard sections.  Each is
+        # routed by a dedicated dispatch arm in services.setup_operations:
+        # _apply_set_cleanup_policy / _apply_set_cog_routing /
+        # _apply_set_role_threshold / _apply_create_managed_role.
+        #
+        # set_role_threshold + create_managed_role landed with migration 059
+        # (the former closes a PR11 gap where the roles section's op was
+        # wired into the dispatcher but never this gate; the latter is the
+        # PR13 role-template create op).  Keep this set, the dispatcher's
+        # _KNOWN_KINDS, and the migration-059 CHECK in lockstep — pinned by
+        # tests/unit/db/test_setup_draft_op_kind_parity.py.
         "set_cleanup_policy",
         "set_cog_routing",
+        "set_role_threshold",
+        "create_managed_role",
     },
 )
 

@@ -14,8 +14,11 @@
 > PR11's moderation + roles slices merged via #570 — verify the PR12 merge status
 > against live GitHub). **PR10 is COMPLETE** (all six slices shipped, incl.
 > moderator/trusted roles + capabilities, ADR-008). PR11's **governance** section is
-> deferred (owner decision Q-0008); **PR13–PR14 remain queued** — the "Shipped" +
-> "Remaining queue" sections below are authoritative.
+> deferred (owner decision Q-0008); **PR13's deterministic role-templates slice was
+> built 2026-06-08** (its AI generation layer + PR14 remain queued) — the "Shipped" +
+> "Remaining queue" sections below are authoritative. PR13 also fixed a latent PR11
+> regression (the roles section's `set_role_threshold` op could never be staged — the
+> DB op-kind gate + CHECK were never widened; migration 059 closes it).
 >
 > **Companion docs (read together):**
 > - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture
@@ -570,6 +573,71 @@ status on live GitHub.
   + conditional binding-repair (pick-a-target) → PR13/follow-up; governance
   diagnostics → the deferred governance setup section (Q-0008/Q-0011).
 
+### PR13 (deterministic slice) — Role templates *(built 2026-06-08)*
+
+The deterministic foundation of "optional role templates" (roadmap §"Optional
+deterministic role templates"): built-in, **opt-in** role bundles the setup
+wizard previews against the guild and stages as role-creation ops. The **AI
+generation layer is deferred to a PR13 follow-up** (high-sensitivity, not
+live-testable without provider keys; the roadmap sequences deterministic
+first). **No second resource path** — creation routes through the audited
+`RoleLifecycleService`. Verify merge status on live GitHub.
+
+- **`services/setup_role_templates.py` (new, pure — *not* `governance.role_templates`):**
+  `RoleSuggestion` (name / purpose / colour / hoist / mentionable / optional
+  `time_days` / `xp_level` — **structurally no permissions field**) +
+  `RoleTemplate` (slug / display_name / category / suggestions) + 6 built-in
+  templates (community hierarchy, moderation team, gaming/event, time-/XP-
+  progression, support server) + `validate_template` / `validate_suggestion`
+  (bounds, duplicate names, fail-safe colour parse) + a **pure** `plan_template`
+  (partitions create-vs-already-exists against the guild's roles; no I/O). Lives
+  in `services/` so the future hub (PR14) reuses it; distinct from the
+  permission-tier `governance.role_templates` (documented in its docstring).
+- **New `create_managed_role` op-kind** (`services/setup_operations.py`) routes
+  through **`RoleLifecycleService.apply(operation="create")`** — the audited
+  manual-role owner, *not* `ResourceProvisioningPipeline` (which owns
+  subsystem-bound create-or-reuse; a template role is an unbound operator
+  label). The new role's id is threaded into the audited
+  `role_automation.set_{time,xp}_threshold` seam as a **best-effort tier
+  companion** (a failed tier never undoes the created role). Read-only preflight
+  adapter (ABSENT→proposed + a Manage-Roles note) + `_label` arm. No direct
+  `guild.create_role` in `setup_operations` (the `test_setup_operations_invariants`
+  AST pin holds).
+- **`views/setup/sections/role_templates.py` (new section, order 56,
+  standard+advanced):** pick a template → preview (✅ exists / ➕ create) →
+  **"Stage new roles"** drafts one `create_managed_role` op per missing role.
+  `recommended_ops_builder=None` (creating roles is deliberate, never swept into
+  "apply all recommended"). **Final Review is the only apply gate** (no mutation
+  pipeline import).
+- **Root-cause fixes found while building (the setup-draft op-kind gap):**
+  1. **PR11 regression — `set_role_threshold` could never be staged.** It was
+     wired into the dispatcher + `services.setup_draft` risk map but **never**
+     into `utils.db.setup_draft._KNOWN_OP_KINDS` nor the migration-035 CHECK, so
+     the shipped roles section raised `ValueError` at the DB gate (the staging
+     path was unit-mocked, so CI stayed green). **Migration 059** widens the
+     CHECK and the Python gate adds both kinds.
+  2. **Threshold slot-collision.** The draft replace-on-conflict key is
+     `(op_kind, subsystem, setting_name, binding_name)` (no `target_id`), so two
+     roles' time tiers collided on `(set_role_threshold, roles, "time", '')` and
+     the second silently overwrote the first. `roles.py` now sets
+     `binding_name="tier:{role_id}"`; `role_templates` uses
+     `binding_name="role:{name}"` — per-row slot discriminators.
+  3. **Drift guard.** `tests/unit/db/test_setup_draft_op_kind_parity.py` now pins
+     the dispatcher `_KNOWN_KINDS`, the DB `_KNOWN_OP_KINDS`, and the
+     migration-059 CHECK to **one set** — the missing dispatcher↔gate check that
+     would have caught the PR11 gap.
+- **Pinned by** `tests/unit/services/test_setup_role_templates.py`,
+  `test_setup_operations_create_managed_role.py`,
+  `tests/unit/views/setup/sections/test_role_templates_section.py`, the parity
+  guard, and a roles-section regression case. Full CI mirror green (8009 passed);
+  **live-booted clean** (migration 059 applied, SetupCog/section register, DB
+  CHECK verified to accept both kinds, 0 ERROR/CRITICAL).
+- **Deferred to the PR13 AI follow-up:** "Generate with AI" — request modal →
+  AI gateway → strict structured suggestion → the same `validate_*` /
+  safety-filter → preview/accept/reject/edit → the same `create_managed_role`
+  staging path. The deterministic `setup_role_templates` validation is the
+  safety filter it will reuse.
+
 ---
 
 ## Remaining queue (starts at PR11)
@@ -581,8 +649,8 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 | **PR10** | Moderation first-class configuration. **COMPLETE** — all six slices shipped (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log, **and moderator/trusted roles + capabilities** — ADR-008, see above). | #521 |
 | **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built in the moderation + roles slices (2026-06-07); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. **Built 2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section; `clear_binding` the one safe auto-repair, everything else advisory/blocked — see subsection above). | PR5, #522 |
-| **PR13** | Deterministic + AI role templates. **← next.** | PR5, #523 |
-| **PR14** | Server Management Hub (last). | all managers |
+| **PR13** | Deterministic + AI role templates. **Deterministic slice built 2026-06-08** (built-in templates + `create_managed_role` op + setup section; see subsection above). **AI generation layer is the remaining PR13 follow-up.** | PR5, #523 |
+| **PR14** | Server Management Hub (last). **← next after the PR13 AI follow-up.** Plan: [`server-management-pr14-hub-plan.md`](server-management-pr14-hub-plan.md). | all managers |
 
 Near-term completion items folded into the above: finish PR2's diagnostics/findings
 model and selector paging/search (in PR6 as the first production consumer); finish

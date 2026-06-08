@@ -112,8 +112,9 @@ def test_parse_positive_int_bounds():
 async def test_stage_threshold_drafts_set_role_threshold():
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -137,6 +138,47 @@ async def test_stage_threshold_drafts_set_role_threshold():
     assert append_mock.await_args.kwargs.get("section_slug") == "roles"
     assert op.metadata["risk"] == "medium"
     assert "rollback_note" in op.metadata
+
+
+@pytest.mark.asyncio
+async def test_stage_threshold_uses_per_role_slot_discriminator():
+    """Two roles' tiers must not collide on a single draft slot.
+
+    The draft replace-on-conflict key is
+    ``(op_kind, subsystem, setting_name, binding_name)`` and excludes
+    ``target_id``; ``binding_name`` carries the role id so staging a time tier
+    for role A then role B yields two distinct rows (regression: before this
+    fix the second overwrote the first).
+    """
+    interaction = _interaction()
+    with (
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
+        patch("services.setup_draft.count", new_callable=AsyncMock, return_value=2),
+        patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
+    ):
+        await roles._stage_threshold(
+            interaction,
+            kind="time",
+            role_id=111,
+            role_name="A",
+            value=7,
+            label="a",
+        )
+        await roles._stage_threshold(
+            interaction,
+            kind="time",
+            role_id=222,
+            role_name="B",
+            value=14,
+            label="b",
+        )
+    op1 = append_mock.await_args_list[0].args[0]
+    op2 = append_mock.await_args_list[1].args[0]
+    assert op1.binding_name == "tier:111"
+    assert op2.binding_name == "tier:222"
+    assert op1.binding_name != op2.binding_name
 
 
 @pytest.mark.asyncio
@@ -259,8 +301,9 @@ async def test_time_modal_stages_on_valid_input():
     modal = _time_modal("7")
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -286,8 +329,9 @@ async def test_xp_modal_stages_on_valid_input():
     modal = _xp_modal("25")
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):

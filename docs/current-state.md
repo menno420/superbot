@@ -6,18 +6,23 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action:** server-management **PR13** — deterministic + AI role templates (build
-> on PR5 role lifecycle + PR3 staged ops). **PR12 (setup diagnostics & repair) was built
-> 2026-06-07:** a read-only `services/setup_diagnostics.py` layer (composes
-> `resource_health` / `role_feasibility` / `config_arbitration` / `cleanup_diagnostics`
-> into typed findings) + a **Diagnose & repair** setup section that stages the one safe
-> auto-repair — `clear_binding` for a dead binding — through the **Final-Review apply gate**;
-> every other finding is advisory/blocked (no new op-kind, no migration, no second mutation
-> system). Verify merge status on live GitHub; see the server-management
-> [status tracker](planning/server-management-status-2026-06-05.md) PR12 subsection. PR11
-> (moderation + roles) merged via **#570**; PR11's **governance** section stays **deferred**
-> (owner decision **Q-0008**). Authoritative scope + dependencies: the status tracker's
-> Remaining-queue.
+> **▶ Next action:** server-management **PR13 AI follow-up** — the "Generate with AI"
+> role-template layer on top of the deterministic slice (request → AI gateway → strict
+> structured suggestion → reuse the shipped `setup_role_templates` validation/safety filter
+> → preview/accept/edit → the same `create_managed_role` staging path). Then **PR14**
+> (Server Management Hub, last). **PR13's deterministic slice was built 2026-06-08:**
+> `services/setup_role_templates.py` (built-in, permission-free role bundles + pure
+> `plan_template`) + a new audited **`create_managed_role`** op-kind (routes through
+> `RoleLifecycleService`, optional time/XP tier companion) + a **Role templates** setup
+> section that previews a template and stages role creation through the **Final-Review apply
+> gate**. It also fixed a **latent PR11 regression** — the roles section's
+> `set_role_threshold` op could never be staged (the DB op-kind gate + migration CHECK were
+> never widened); **migration 059** closes it, with a drift-guard test pinning the dispatcher
+> ↔ DB-gate ↔ migration CHECK in lockstep. Verify merge status on live GitHub; see the
+> server-management [status tracker](planning/server-management-status-2026-06-05.md) PR13
+> subsection. **PR12 (setup diagnostics & repair) was built 2026-06-07.** PR11 (moderation +
+> roles) merged via **#570**; PR11's **governance** section stays **deferred** (owner decision
+> **Q-0008**). Authoritative scope + dependencies: the status tracker's Remaining-queue.
 >
 > **Last updated:** 2026-06-08 · **Docs consolidation (Q-0010) + idea-backlog lifecycle
 > (Q-0015).** Top-level `docs/` shrunk **41 → 16** (plans / audits / inventories / historical
@@ -98,10 +103,12 @@ Source code and merged PRs win over anything written here.
   (six slices, ADR-008). **PR11 (moderation + roles setup sections) merged via #570**;
   PR11's **governance** section is **deferred** (cleanup already owns the main governance
   write — revisit only with a scope decision). **PR12 (setup diagnostics & repair) was built
-  2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section). The next
-  step is **PR13** (deterministic + AI role templates), then PR14 (hub). The
-  `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
-  queue — don't duplicate it here.
+  2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section). **PR13's
+  deterministic role-templates slice was built 2026-06-08** (`setup_role_templates` catalogue +
+  `create_managed_role` op + Role-templates setup section; also fixed a latent PR11 staging
+  regression via migration 059). The next steps are the **PR13 AI generation follow-up**, then
+  **PR14** (hub). The `docs/planning/server-management-status-2026-06-05.md` tracker is the
+  authoritative queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
 - **Docs consolidation (Q-0010) — executed 2026-06-08.** Top-level `docs/` is now **16**

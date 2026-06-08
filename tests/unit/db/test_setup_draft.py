@@ -7,7 +7,6 @@ expected shape and parameters.  Mirrors the pattern from
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -220,16 +219,29 @@ async def test_insert_serialises_json_payloads(_mock_pool):
 async def test_list_rows_returns_ordered_dicts(_mock_pool):
     _mock_pool.fetch.return_value = [
         {
-            "id": 1, "guild_id": 1, "seq": 1, "op_kind": "set_setting",
-            "subsystem": "moderation", "binding_name": None,
-            "setting_name": "warn_threshold", "value_raw": "3",
-            "label": "warn_threshold = 3", "metadata_json": None,
+            "id": 1,
+            "guild_id": 1,
+            "seq": 1,
+            "op_kind": "set_setting",
+            "subsystem": "moderation",
+            "binding_name": None,
+            "setting_name": "warn_threshold",
+            "value_raw": "3",
+            "label": "warn_threshold = 3",
+            "metadata_json": None,
         },
         {
-            "id": 2, "guild_id": 1, "seq": 2, "op_kind": "bind_channel",
-            "subsystem": "logging", "binding_name": "mod_channel",
-            "setting_name": None, "target_id": 999, "target_name": "#log",
-            "target_kind": "channel", "label": "bind mod_channel → #log",
+            "id": 2,
+            "guild_id": 1,
+            "seq": 2,
+            "op_kind": "bind_channel",
+            "subsystem": "logging",
+            "binding_name": "mod_channel",
+            "setting_name": None,
+            "target_id": 999,
+            "target_name": "#log",
+            "target_kind": "channel",
+            "label": "bind mod_channel → #log",
             "metadata_json": None,
         },
     ]
@@ -294,15 +306,31 @@ async def test_count_returns_zero_when_no_rows(_mock_pool):
 
 
 def test_known_op_kinds_matches_documented_set():
-    assert draft_db._KNOWN_OP_KINDS == frozenset(
-        {
-            "bind_channel", "bind_role", "bind_category", "bind_thread",
-            "bind_member", "clear_binding", "set_setting",
-            "create_channel", "create_role", "create_category",
-            "add_automation_rule", "enable_automation_rule",
-            "disable_automation_rule",
-            "set_cleanup_policy", "set_cog_routing",
-        },
+    assert (
+        frozenset(
+            {
+                "bind_channel",
+                "bind_role",
+                "bind_category",
+                "bind_thread",
+                "bind_member",
+                "clear_binding",
+                "set_setting",
+                "create_channel",
+                "create_role",
+                "create_category",
+                "add_automation_rule",
+                "enable_automation_rule",
+                "disable_automation_rule",
+                "set_cleanup_policy",
+                "set_cog_routing",
+                # Added by migration 059 (set_role_threshold closes a PR11 gap;
+                # create_managed_role is the PR13 role-template create op).
+                "set_role_threshold",
+                "create_managed_role",
+            },
+        )
+        == draft_db._KNOWN_OP_KINDS
     )
 
 
@@ -330,12 +358,19 @@ def test_migration_file_is_idempotent():
 
 
 def test_migration_lists_all_known_op_kinds_in_check():
-    """The CHECK constraint must cover every OperationKind literal."""
+    """Every known op kind must appear in a migration's CHECK constraint.
+
+    Migration 035 created the constraint; migration 059 widened it for
+    ``set_role_threshold`` (PR11 gap) + ``create_managed_role`` (PR13).  A new
+    op kind must land in some migration's CHECK alongside the dispatcher arm —
+    pinned more tightly by ``test_setup_draft_op_kind_parity.py``.
+    """
     from pathlib import Path
 
     here = Path(__file__).resolve().parents[3]
-    sql = (
-        here / "disbot" / "migrations" / "035_setup_draft_operations.sql"
+    migrations = here / "disbot" / "migrations"
+    sql = (migrations / "035_setup_draft_operations.sql").read_text() + (
+        migrations / "059_setup_draft_op_kinds_role_templates.sql"
     ).read_text()
     for kind in draft_db._KNOWN_OP_KINDS:
         assert f"'{kind}'" in sql, f"CHECK omits op_kind {kind!r}"
@@ -351,9 +386,7 @@ def test_migration_045_present_and_idempotent():
     from pathlib import Path
 
     here = Path(__file__).resolve().parents[3]
-    path = (
-        here / "disbot" / "migrations" / "045_setup_draft_provenance.sql"
-    )
+    path = here / "disbot" / "migrations" / "045_setup_draft_provenance.sql"
     assert path.is_file(), "migration 045_setup_draft_provenance.sql is missing"
     sql = path.read_text()
     # All four columns added, all guarded by IF NOT EXISTS.
@@ -368,9 +401,13 @@ def test_migration_045_present_and_idempotent():
 def test_staging_kinds_set_includes_all_documented_values():
     """The DB-layer allowlist must include every staging_kind value
     documented in services.setup_draft (recommended is included here
-    because the layer accepts it from the dedicated writer)."""
-    assert draft_db._STAGING_KINDS == frozenset(
-        {"recommended", "custom", "preset", "manual", "repair"},
+    because the layer accepts it from the dedicated writer).
+    """
+    assert (
+        frozenset(
+            {"recommended", "custom", "preset", "manual", "repair"},
+        )
+        == draft_db._STAGING_KINDS
     )
 
 
