@@ -7,14 +7,16 @@ entry point for unresolved agent questions, maintainer explanations, reusable ow
 intent, and routing answered conclusions to their correct long-term documentation
 home.
 
-Two companion docs capture *how the maintainer works* and *how work flows across AI
-projects*:
+Three companion docs capture the pipeline in increasing depth:
 
 - [`maintainer-working-profile.md`](./maintainer-working-profile.md) — the maintainer's
   working style, strengths, friction points, and idea-flow shape (`owner-guidance`).
 - [`ai-project-workflow.md`](./ai-project-workflow.md) — the multi-agent pipeline:
   per-project roles, handoff templates, idea-state vocabulary, and failure modes
   (`reference`).
+- [`agent-workflow-spec.md`](./agent-workflow-spec.md) — the operational spec for each
+  stage (Analysis, Decisions, Revision, Prompt Forge, Executor): what to do, what not to
+  do, and what the output should look like (`reference`).
 
 `docs/owner/` does **not** replace active plans, `docs/current-state.md`, binding
 contracts or decisions, subsystem folios, the session journal, or brainstorms.

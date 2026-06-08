@@ -45,6 +45,9 @@ Opus is especially valuable for broad context consolidation, documentation archi
 final revision, and large-but-coherent refactors. Codex usually receives **narrower**,
 already-accepted scopes.
 
+**Operational specs** (what each stage does, output formats, cross-cutting rules):
+[`agent-workflow-spec.md`](./agent-workflow-spec.md).
+
 ## 3. Handoff templates
 
 A handoff is clean when the receiving stage can act without re-reading the whole

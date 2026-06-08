@@ -19,12 +19,12 @@
 > (owner decision **Q-0008**). Authoritative scope + dependencies: the status tracker's
 > Remaining-queue.
 >
-> **Last updated:** 2026-06-07 · server-management **PR12 (setup diagnostics & repair)**
-> built — a read-only `setup_diagnostics` service + a Diagnose & repair setup section that
-> stages the lone safe auto-repair (`clear_binding`) through Final Review; everything else
-> advisory/blocked. Recorded in the **status tracker** (linked above). PR11 (moderation +
-> roles) merged via **#570**; PR10 is complete (ADR-008; earlier slices #555/#556/#558/#567,
-> cross-area roadmap #566). **This file lists only _merged_ work + the ▶ Next action;** get
+> **Last updated:** 2026-06-08 · **Agent stage spec** (`docs/owner/agent-workflow-spec.md`)
+> created from a 60-question maintainer Q&A batch (Q-0013): operational spec for Analysis,
+> Decisions, Revision, Prompt Forge, and Executor stages. Wired into `AGENT_ORIENTATION.md`,
+> `docs/owner/README.md`, and `docs/owner/ai-project-workflow.md`. Docs-only.
+> Most recent merged code: server-management **PR12** (2026-06-07; setup diagnostics &
+> repair). **This file lists only _merged_ work + the ▶ Next action;** get
 > in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status in prose
 > here rots on merge (a `scripts/check_docs.py` freshness gate enforces this).
 >
