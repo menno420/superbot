@@ -1,4 +1,4 @@
-# 2026-06-08 — P0C: role-threshold writes converged onto the audited seam (+ P1B re-scope)
+# 2026-06-08 — P0C: role-threshold writes → audited seam (+ P1B re-scope + routing_access_conflict)
 
 **PR:** #592 (branch `claude/pensive-newton-Kq7yg`) · **Plan:**
 `docs/planning/adaptive-setup-access-routine-platform-2026-06-08.md` (Phase 0 → 1)
@@ -53,18 +53,28 @@ Source-read of `setup_diagnostics.py` + `access_projection.py` before starting P
 - The **"locked-reason denial integration"** changes user-facing denial copy → maintainer's
   UX domain; `_SAFE_TEXT` is a draft to confirm, separable from the read-only providers.
 
-Did **not** start P1B implementation: building it now would mean a duplicate provider, a
-partial provider, or a silent UX change. Routed the re-scope to §16.8 + the §9 batch row +
-`current-state` so the next session builds the right thing. (Standing secondary task: this
-*is* the routing/structuring of the next active-plan lane — higher-value than grooming a
-random `docs/ideas/` item this session.)
+Then **built the one ready, unentangled provider**:
+`setup_diagnostics._diagnose_routing_access_conflict` (P1B-part-1) — a read-only,
+**member-independent** collector composing the command-access `CommandAccessPolicySnapshot`
+vs. `command_routing.list_for_guild` (not `resolve_feature_access` — the projection
+short-circuits on the first deny and so can't expose the routing↔access *disagreement*; the
+policy-level read does). Flags `selected_channels`-mode + channel-routed-on-but-not-allowed
+("enabled-but-unusable", warning) and `disabled_except_bootstrap`-mode + any enabled toggle
+(guild advisory). Wired into the `collect_setup_diagnostics` fan-out; 7 tests; read-only
+invariant stays green. **Deferred** `help_advertises_locked` (needs the item-3 audience-sim
+decision, which touches the governance binding layer — not a unilateral tail-of-session
+change) and the denial-message UX (maintainer's domain). Routed all of this to §16.8 + §9 +
+`current-state` so the next session has the exact remaining scope.
 
 ## Gates / state
 
-- #592 CI in progress at hand-off; full mirror was green locally, so green expected.
-  Subscribed for failure/merge. `send_later` not available this session (only `Monitor`,
-  which can't reach GitHub without `gh`), so no timed self-check-in armed.
-- Phase 0 complete; next is **P1B** (re-scoped) then **P1C**.
+- #592 carries P0C + the P1B re-scope docs + `routing_access_conflict` + this log; full
+  mirror green locally (8102 passed). Subscribed for failure/merge. `send_later` not
+  available this session (only `Monitor`, which can't reach GitHub without `gh`), so no
+  timed self-check-in armed.
+- Phase 0 complete; Phase 1 underway. P1B remaining: **`help_advertises_locked`** (gated on
+  the item-3 audience-sim decision) + the confirm-with-maintainer denial-message UX. Then
+  **P1C**.
 
 ## Context delta
 
