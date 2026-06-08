@@ -144,3 +144,14 @@ async def test_named_crosspath_is_grounded():
     blob = "\n".join(context.facts)
     assert "Ninja Monkey" in blob
     assert "(0-2-5)" in blob  # the specifically-named crosspath's stats surface
+
+
+def test_named_crosspath_surfaces_crosspath_specific_zone_effect():
+    # A named crosspath must surface its OWN buff/zone effects, not just headline
+    # stats: Heli 0-1-4's MOAB Shove is stronger (MOAB -0.51) than the 0-0-4 base
+    # (-0.4). Both stored; the crosspath grounding must reach the named one.
+    cross = "\n".join(ctx._render_tower_crosspath("heli_pilot", "Heli Pilot", "014"))
+    base = "\n".join(ctx._render_tower_crosspath("heli_pilot", "Heli Pilot", "004"))
+    assert "[btd6_tower_stats effect]" in cross
+    assert "MOAB-class shoved backward at x-0.51 speed" in cross
+    assert "x-0.51" not in base and "x-0.4" in base  # base path keeps its own value

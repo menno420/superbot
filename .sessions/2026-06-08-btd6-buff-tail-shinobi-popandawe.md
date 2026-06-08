@@ -54,3 +54,15 @@ shoved backward**. Verified the committed per-blimp caps match the dump's
   crosspath code `014` just isn't an *upgrade-card* id for `get_upgrade`, which is not a gap.
 - 4 new tests (3 renderer, 1 parser); `--audit` still nothing-SUSPECT; `check_quality --full`
   green.
+
+## Follow-on #2 — named-crosspath effects are now answerable (gap the maintainer found)
+
+Maintainer asked whether a `0-1-4` heli's stats are askable. Empirically: the crosspath path
+(`_render_tower_crosspath`) grounded only *headline* combat stats — it dropped buff/zone
+effects, so the crosspath-specific MOAB Shove (0-1-4 → MOAB −0.51) was stored but unanswerable
+(only the base-tier −0.4 surfaced, via the upgrade-detail path). Fixed at the seam:
+- New public `btd6_upgrade_detail_service.tier_effect_lines(tier)` renders a tier's buff+zone
+  strings (reuses `_buff_text`/`_zone_text`, identical phrasing).
+- `_render_tower_crosspath` now appends a `[btd6_tower_stats effect]` line per crosspath
+  buff/zone. "0-1-4 heli" now grounds "MOAB-class shoved backward at x-0.51 speed…", distinct
+  from the 0-0-4 base. +1 context test; full suite green (8075 passed).

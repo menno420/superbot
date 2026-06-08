@@ -102,11 +102,16 @@ works** (the traps we hit), and what is still un-decoded.
      crosspaths**, not just MOAB; ZOMG is always positive. `_zone_text` now renders
      all present classes (e.g. "MOAB-class shoved backward at x-0.51 speed, BFB
      shoved backward at x-0.11 speed, ZOMG slowed to x0.09 speed"), and `_zones()`
-     emits the renamed caps for a future cutover. **Crosspath data is fully stored
-     and reachable** — all 15 crosspath tier-states carry their own shove values
-     via `stats.tier(<code>)`; only `get_upgrade_detail` keys on single upgrade
-     *cards* (so a bare crosspath code like `014` isn't an upgrade id), which is
-     not a data gap. **DDT still open (maintainer call):** the dump has **no** DDT
+     emits the renamed caps for a future cutover. **Crosspath effects now answerable** —
+     all 15 crosspath tier-states carry their own shove values via
+     `stats.tier(<code>)`, and naming a crosspath ("0-1-4 heli") already grounded
+     its *headline* stats but **dropped buff/zone effects**; `_render_tower_crosspath`
+     now also emits a `[btd6_tower_stats effect]` line per crosspath buff/zone
+     (via the new `btd6_upgrade_detail_service.tier_effect_lines`), so the
+     crosspath-specific shove (0-1-4 → MOAB −0.51 vs 0-0-4 base −0.4) reaches the
+     user. (`get_upgrade_detail` still keys on single upgrade *cards*, so it shows
+     the base-tier effect — expected; the crosspath path is how a named crosspath
+     answers.) **DDT still open (maintainer call):** the dump has **no** DDT
      field, so the parser deliberately does **not** emit `multiplierForDdt` (never
      fabricate); the committed data mirrors ZOMG and the renderer surfaces that
      curated value when present. Decide at/before the cutover whether DDT should

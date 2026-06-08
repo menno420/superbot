@@ -548,6 +548,21 @@ def render_upgrade_grounding(detail: UpgradeDetail) -> list[str]:
     return lines
 
 
+def tier_effect_lines(tier: dict[str, Any]) -> list[str]:
+    """Rendered buff + zone effect strings for a committed tier node.
+
+    The default upgrade grounding resolves an upgrade *card* to its base-path
+    tier, so a specifically-named crosspath's buff/zone effects (e.g. Heli Pilot
+    0-1-4's stronger MOAB Shove, MOAB -0.51 vs the 0-0-4 base -0.4) are stored but
+    never surfaced. This renders them off any tier dict so the crosspath grounding
+    seam can reach them — reusing the exact ``_buff_text``/``_zone_text`` the
+    upgrade path uses, so the phrasing stays identical.
+    """
+    out = [_buff_text(b) for b in tier.get("buffs", []) if isinstance(b, dict)]
+    out += [_zone_text(z) for z in tier.get("zones", []) if isinstance(z, dict)]
+    return out
+
+
 def grounding_for_query(query: str) -> list[str]:
     """Resolve ``query`` to an upgrade and render its grounding (the wiring seam).
 
@@ -576,4 +591,5 @@ __all__ = [
     "get_upgrade_detail",
     "grounding_for_query",
     "render_upgrade_grounding",
+    "tier_effect_lines",
 ]
