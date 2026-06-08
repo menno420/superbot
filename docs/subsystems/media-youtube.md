@@ -61,3 +61,7 @@ media command.
 `docs/decisions/007-media-youtube-ownership.md`, `docs/server-logging.md`,
 `docs/current-state.md`, `docs/subsystems/ai.md`, `docs/subsystems/btd6.md`,
 `docs/ideas/ai-extra-tool-capability-ideas.md`.
+
+## Broader integration routing (not approved)
+
+The [integrations/media/voice/website roadmap draft](../planning/integrations-media-voice-website-roadmap-2026-06-08.md) routes provider-alert, activity, voice, and website concepts around ADR-007 and the required privacy/credential/moderation/retention decisions. It does not approve a new provider or public media surface.

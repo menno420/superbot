@@ -787,3 +787,8 @@ The strongest candidates for a first dedicated planning pass are:
 5. **Approved API connector base** — reusable foundation for GitHub, BTD6 live data, YouTube/Twitch, website checks, and custom APIs.
 
 Recommended next step: convert one of these into a dedicated planning doc that plugs into `AIOrchestrationPolicy`, `AIToolDescriptor`, strict schemas, budget controls, audit traces, and per-guild/channel configuration.
+
+
+## Routing update — 2026-06-08
+
+All tool families are routed as existing-plan or blocked-gate items in [`../planning/idea-roadmap-inventory-2026-06-08.md`](../planning/idea-roadmap-inventory-2026-06-08.md) and [`../ai/ai-product-extension-routing-2026-06-08.md`](../ai/ai-product-extension-routing-2026-06-08.md). The authoritative AI roadmap and orchestration/action gates still control sequencing.

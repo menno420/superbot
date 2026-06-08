@@ -70,3 +70,7 @@ behavior/config gates are satisfied.
 [`../btd6/README.md`](../btd6/README.md),
 `docs/audits/agent-d-btd6-ai-subsystem-audit-2026-06-05.md`,
 `docs/current-state.md`, `docs/subsystems/ai.md`, `docs/subsystems/media-youtube.md`.
+
+## Product-extension routing (not approved)
+
+The [BTD6 product-extension routing draft](../btd6/btd6-product-extension-routing-2026-06-08.md) routes rules/trivia, challenge generation, score/run tracking, and leaderboards without bypassing ADR-006, provenance, source-health, provider, or groundedness gates.

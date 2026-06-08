@@ -1794,3 +1794,73 @@ Action owner: maintainer (ChatGPT template).
 **Critical caveat (agent-added, earned this session):** "complete and accurate" requires reading the **right** model. The dump carries template/variant models that look internally consistent but aren't the canonical one — the base `Ddt` template is non-camo (spawns `CeramicRegrow`) while the real in-game DDT is `DdtCamo` (spawns `CeramicRegrowCamo`); and a `DiamondbackDiamondBloon` variant reads health 60 while the canonical `DiamondBloon` is 80. **Both times a naïve "first matching file" pick produced a wrong value the maintainer's domain knowledge caught.** So: trust the dump, but select the model by the bloon's own properties (`_select_bloon_model`) and sanity-check a surprising value against gameplay before asserting it. Net effect this session: the BAD→Camo-DDT correction stands (dump was right, wiki incomplete); the Diamond "60" was withdrawn (variant artifact — canonical is 80, already matching).
 
 **Suggested destination after answer:** `docs/btd6/btd6-gamedata-decode-status.md` (provenance precedence note) + applied by the `--bloons` cutover's model-selection logic.
+
+### Q-0038 — What is the identity and tenancy boundary for player guilds/clans?
+
+**Area:** Social / community / progression
+**Type:** Product + architecture boundary
+**Priority:** High (blocks guild, guild-bank, guild-battle, guild-profile, and guild-leaderboard planning)
+**Status:** Open
+**Question:** Is a player guild/clan scoped independently inside each Discord server, or may one player guild span multiple Discord servers? If cross-server identity is wanted, what consent, discoverability, moderation, ownership-transfer, retention, deletion/export, and main-server behavior should apply?
+
+**Why agents need this:** The answer determines the canonical keys and owner for membership, treasury, battles, profiles, and leaderboards. Guessing would create either a duplicate per-server system or an unapproved cross-server identity system.
+
+**Safe default until answered:** Treat the social roadmap as planning-only. Do not create a guild/clan schema or expose cross-server profiles. Preserve existing Discord-guild scoping.
+
+**Suggested destination after answer:** `docs/planning/social-community-progression-roadmap-2026-06-08.md` and a dedicated ownership/ADR decision if a new social domain is approved.
+
+### Q-0039 — Which VIP/donation benefits are acceptable under the no-pay-to-win rule?
+
+**Area:** Economy / rewards
+**Type:** Product, monetization, and fairness boundary
+**Priority:** High (blocks VIP planning)
+**Status:** Open
+**Question:** Should VIP/donation tiers be limited to cosmetic identity and supporter recognition, or may they include convenience benefits? Which exact benefits are explicitly allowed or forbidden, and should donation status ever be stored or processed by SuperBot itself?
+
+**Why agents need this:** “No pay-to-win” is binding owner intent, but convenience, lottery entries, marketplace privileges, and economy-adjacent perks can still create gameplay advantage or external billing/privacy obligations.
+
+**Safe default until answered:** No paid/donation benefit affects XP, coins, drops, odds, cooldowns, market access/fees, guild power, or game outcomes. Do not add billing/provider integration.
+
+**Suggested destination after answer:** `docs/planning/economy-marketplace-rewards-roadmap-2026-06-08.md` and, if external payment data is approved, the integrations/privacy decision set.
+
+### Q-0040 — What operational posture should an AI dungeon master use?
+
+**Area:** AI / games / social
+**Type:** Product, cost, moderation, and retention boundary
+**Priority:** High (blocks AI dungeon-master and player-prompted event planning)
+**Status:** Open
+**Question:** For thread, persistent-channel, and DM modes, what should persist; who may start/join/control a session; what content/moderation limits apply; what cost/rate limits are acceptable; and may AI ever propose mechanics/rewards beyond narrative wrapping of deterministic game-owned outcomes?
+
+**Why agents need this:** The answer governs state ownership, privacy, content safety, provider spend, and whether the feature remains explanation/narrative-only or requires a future action-authority decision.
+
+**Safe default until answered:** No implementation. AI may not own rewards, difficulty, quests, or state mutations; all current AI expansion/action gates remain binding.
+
+**Suggested destination after answer:** `docs/ai/ai-product-extension-routing-2026-06-08.md` and the authoritative `docs/planning/ai-roadmap-2026-06-07.md`.
+
+### Q-0041 — What privacy and provider posture should integrations and voice use?
+
+**Area:** Integrations / media / voice
+**Type:** Privacy, credentials, moderation, retention, and degraded-provider policy
+**Priority:** High (blocks Twitch, YouTube alerts, Spotify/Last.fm, Steam, music, SFX, and speech commands)
+**Status:** Open
+**Question:** Which provider integrations should be considered first, who supplies/owns credentials, what user/server consent is required, what data/content may be cached and for how long, what moderation rules apply, and how should alerts/voice features behave when providers fail or rate-limit the bot?
+
+**Why agents need this:** These ideas share secrets, personal activity, third-party terms, moderation, retention/deletion, rate-limit, and outage behavior. Implementing one ad hoc would create a parallel provider or delivery path.
+
+**Safe default until answered:** No new provider or voice implementation; retain only the existing ADR-007-owned media seams and require opt-in, bounded retention, and safe degraded behavior in future plans.
+
+**Suggested destination after answer:** `docs/planning/integrations-media-voice-website-roadmap-2026-06-08.md` and the media folio/ADR if the shared platform boundary changes.
+
+### Q-0042 — Should a full web dashboard become a future product surface?
+
+**Area:** Website / cross-cutting UI
+**Type:** Product investment + architecture boundary
+**Priority:** Medium (future-only; blocks website planning)
+**Status:** Open
+**Question:** Is the intended website a read-only companion, a full management surface, or not a priority? If management is wanted, what authentication/authorization model, hosting/operations budget, privacy posture, and limit on website-specific behavior should apply?
+
+**Why agents need this:** A website can easily become a second control plane, duplicate Discord-native panels, or bypass domain mutation/audit/permission paths.
+
+**Safe default until answered:** Keep the website at Someday. Mature Discord-native panels and canonical read/mutation services first; do not create website-specific authority or mutations.
+
+**Suggested destination after answer:** `docs/planning/integrations-media-voice-website-roadmap-2026-06-08.md` and a dedicated architecture decision if promoted.

@@ -74,3 +74,7 @@ scoped tools (including owner-gated diagnostics). Source:
 `docs/ai/ai-readiness-plan.md` (`plan`), `docs/ai/ai-readiness-pr-notes.md`,
 `docs/ai/ai-provider-and-grounding-fix-plan.md` (`plan`),
 `disbot/core/runtime/ai/README.md` (package intent).
+
+## Product-extension routing (not approved)
+
+The [AI product-extension routing addendum](../ai/ai-product-extension-routing-2026-06-08.md) routes dungeon-master, generated-event, wider-intent, and extra-tool ideas under the existing authoritative AI roadmap. It does not change the fully gated status or permit write/action tools.

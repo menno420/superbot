@@ -317,3 +317,8 @@ the long-term roadmap even though it is the most complex.**
 | Notifications (DM + channel + inbox + CTAs) | M | Low | Plan |
 | Blueprint-drop crafting (future) | M | Low | Roadmap: Later horizon |
 | Balance change: in-game notice + changelog | S | Low | Quick-win candidate |
+
+
+## Routing update — 2026-06-08
+
+See the single-state routing ledger in [`../planning/idea-roadmap-inventory-2026-06-08.md`](../planning/idea-roadmap-inventory-2026-06-08.md) and its eight linked roadmap drafts. Product-sensitive items are routed to Q-0038–Q-0042; this capture remains preserved and none of its ideas is approved by that routing.

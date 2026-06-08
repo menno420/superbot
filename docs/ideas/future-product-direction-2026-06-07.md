@@ -325,3 +325,8 @@ reviewed concept summary, not directly to implementation or an active tracker.
 - [x] Architecture boundaries remain explicit: thin cogs, service-owned mutations,
   centralized helpers, deterministic flows, correct authority seams, auditability,
   observability, testability, and rollback safety.
+
+
+## Routing update — 2026-06-08
+
+Its catalog is consolidated by cluster in [`../planning/idea-roadmap-inventory-2026-06-08.md`](../planning/idea-roadmap-inventory-2026-06-08.md). Existing-plan, blocked, rejected, and new-roadmap outcomes are explicit there; this source-aware capture remains canonical historical input, not an implementation queue.
