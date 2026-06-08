@@ -50,6 +50,34 @@ grep + CodeGraph (`fn_impact`, then grep-verify) job — see `docs/codegraph-usa
 Decorator-registered Discord handlers (`@commands.command`, `@bot.event`, …) are
 framework dispatch, invisible to any static import/call graph.
 
+## Companion — EventBus wiring map (`scripts/wiring_map.py`)
+
+The one runtime-edge class neither the import graph (above) nor CodeGraph's call
+graph can see: **string-keyed EventBus dispatch**. An emitter does
+`bus.emit("audit.action_recorded", …)`; a subscriber does
+`bus.on("audit.action_recorded", handler)` — they share **no import and no call
+edge** (verified: `server_logging` subscribes to `audit.action_recorded` but never
+imports its emitter `audit_events`). That is the both-tools-blind gap in
+`.claude/CLAUDE.md` ("Some edges are invisible to *both* tools").
+
+`scripts/wiring_map.py` resolves it the way the runtime does — AST-scanning
+`bus.emit` / `bus.on`, resolving the event name (an `EVT_*` constant or a string
+literal), and **joining emitter↔subscriber by event-name string**:
+
+```bash
+python3.10 scripts/wiring_map.py                                    # full map + findings
+python3.10 scripts/wiring_map.py disbot/services/server_logging.py  # one file's wiring
+python3.10 scripts/wiring_map.py --event audit.action_recorded
+python3.10 scripts/wiring_map.py --check                            # exit 1 on catalogue drift
+```
+
+Same discipline as the context map: stdlib-only, no new dependency, and a **lower
+bound** — a parametrized forwarder (`_emit_governance_event(event_name, …)`) or a
+non-`bus` receiver shows as `unresolved`, never a guess. `--check` gates only on
+**catalogue drift** (an event absent from `core/events_catalogue.KNOWN_EVENTS`); a
+"possible dead subscriber" is an advisory hint (FP-prone via forwarders), never a
+gate failure. Pinned by `tests/unit/scripts/test_wiring_map.py`.
+
 ## Dependency
 
 The importer/blast-radius engine uses **Grimp** (`requirements-dev.txt`, pinned).
@@ -72,8 +100,11 @@ their contents (one fact, one home). Add an entry when a new subsystem lands.
 
 ## Roadmap (small, phased)
 
-1. **Now** — single-file map (this script), Grimp + AST fallback, override file, tests.
+1. **Now** — single-file context map (`context_map.py`, Grimp + AST fallback) **and the
+   EventBus wiring map (`wiring_map.py`, emit↔subscribe join + catalogue-drift `--check`)**,
+   override file, tests.
 2. `--changed` mode: run over a PR's changed files for a combined context digest.
-3. Discord-decorator framework-edge scanner (synthetic "invoked by dispatch" edges).
+3. Discord-decorator framework-edge scanner (synthetic "invoked by dispatch" edges) — the
+   remaining both-tools-blind class after EventBus wiring; could extend `wiring_map.py`.
 4. Cache the Grimp graph under `.build/` for repeated queries.
 5. Optional CI warn mode (e.g. "you touched a mutation owner — confirm audit emission").
