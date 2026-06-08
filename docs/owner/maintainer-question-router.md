@@ -1734,3 +1734,47 @@ Action owner: maintainer (ChatGPT template).
 **Safe default until answered:** Defer account links; ship privacy-bounded preferences/onboarding first when Phase 5 is approved.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.7 and a future privacy/data-ownership decision.
+
+### Q-0034 — In a continuation session, how many lanes should I chain before pausing?
+
+**Area:** Workflow / Execution cadence
+**Type:** Workflow
+**Priority:** Medium
+**Status:** Answered (2026-06-08) — confirms existing `docs/collaboration-model.md` rule ("approved plan = execute without stopping"); no binding-doc edit needed, record kept here.
+**Question:** When you say "continue with the plan," should I keep executing successive plan lanes (code+tests+PR) without pausing, pause after each shippable PR, or run to a phase boundary before reporting?
+
+**Why agents need this:** This session shipped P0C → source re-scope → `routing_access_conflict` but checkpointed back after each; the cadence trades momentum against steering.
+
+**Maintainer answer (2026-06-08):** **Chain lanes** — keep executing successive lanes; **pause only at a genuine architectural fork** (e.g. the audience-sim/governance decision) or a UX/product call that is the maintainer's. Over-checkpointing on a continuation directive is the anti-pattern.
+
+**Suggested destination after answer:** Reinforces `docs/collaboration-model.md` (executor "approved plan = execute") + `docs/owner/maintainer-working-profile.md`.
+
+### Q-0035 — How should agents handle binding-doc "dead weight" (e.g. heavy CodeGraph guidance)?
+
+**Area:** Workflow / Docs autonomy
+**Type:** Workflow / Autonomy boundary
+**Priority:** Low
+**Status:** Answered (2026-06-08) — Routed → `.session-journal.md` autonomy-boundary note (propose-first now covers CLAUDE.md *content*, not just enforced rules).
+**Question:** When orientation in a binding file (`.claude/CLAUDE.md`) is heavier than its real usage — e.g. the CodeGraph reliability tiers went unused this session while `context_map.py` + the turn-key §16.5 recipe carried it — should I rebalance it myself, propose first, or only add (never trim)?
+
+**Why agents need this:** Clarifies whether the "docs are free to improve" autonomy extends to *guidance* (not enforced rules) inside the one binding file every session reads.
+
+**Maintainer answer (2026-06-08):** **Propose first, then apply** — surface the proposed change for a quick OK before editing `.claude/CLAUDE.md`. This tightens the autonomy boundary: even non-rule guidance in CLAUDE.md is propose-first; everything outside CLAUDE.md (journal, `docs/`, folios, orientation, planning) stays free-to-improve.
+
+**Suggested destination after answer:** `.session-journal.md` autonomy-boundary note (done) + `docs/collaboration-model.md` "autonomy boundary" (propose-first when next editing that binding doc).
+
+**Follow-up (2026-06-08):** the concrete instance — rebalancing the `.claude/CLAUDE.md` CodeGraph section — was proposed, its reasoning **verified against the source section** (the trust tiers + 5 critical safety rules are load-bearing; the v3.10→v3.11.2 verification narrative was changelog dead-weight), and **applied with maintainer approval**: condensed the version-provenance paragraph (kept the availability gotcha + revert instruction), kept every trust tier + critical rule intact, and added a task-size tool-routing note (`context_map` + turn-key recipe for contained work; CodeGraph for unfamiliar multi-file navigation).
+
+### Q-0036 — Who authors the user-facing locked-reason denial copy (P1B)?
+
+**Area:** Access / Help UX
+**Type:** UX / Product copy
+**Priority:** Medium (before the P1B denial-message integration)
+**Status:** Open
+**Question:** When P1B wires `LockedReason.safe_text` into live command-access/availability denial paths, the strings in `access_projection._SAFE_TEXT` are what every denied user sees. Do you want to author/approve that copy yourself, or have me draft it for your later review?
+
+**Why agents need this:** Denial messages are user-facing UX (the maintainer's design domain). The read-only drift providers (e.g. `routing_access_conflict`, shipped) don't touch this, but the denial-integration step does.
+
+**Safe default until answered:** Keep `_SAFE_TEXT` an internal draft; do **not** wire it into live denial paths until the wording is confirmed. The read-only drift work proceeds independently.
+
+**Suggested destination after answer:** Q-0017 planning doc §6.3 / §16.3 + the P1B denial-integration step.

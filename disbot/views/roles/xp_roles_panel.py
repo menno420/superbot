@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer, safe_followup
+from services import role_automation
 from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ECONOMY_COLOR
@@ -180,13 +181,15 @@ class XpLevelModal(discord.ui.Modal, title="Set XP Threshold"):  # type: ignore[
 
         try:
             # Selector-sourced: the role exists, so persist its id + name snapshot.
-            await db.set_role_xp_threshold(
-                interaction.guild.id,
-                self.role.name,
-                lvl,
-                enabled,
+            # Audited seam (P0C): write + audit emit + XP-cache invalidation all
+            # live in role_automation.set_xp_threshold.
+            await role_automation.set_xp_threshold(
+                guild_id=interaction.guild.id,
                 role_id=self.role.id,
-                display_name=self.role.name,
+                role_name=self.role.name,
+                level=lvl,
+                actor_id=interaction.user.id,
+                auto_assign=enabled,
             )
         except Exception as exc:
             logger.error("XP threshold save failed: %s", exc, exc_info=True)

@@ -22,6 +22,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from core.runtime.command_access import AccessMode
 from core.runtime.subsystem_schema import BindingKind
 from services import resource_health, setup_diagnostics
 from services.resource_health import ResourceHealthFinding
@@ -245,6 +246,11 @@ async def test_collect_composes_and_sorts_by_severity():
             "_diagnose_cleanup",
             new=AsyncMock(return_value=[]),
         ),
+        patch.object(
+            setup_diagnostics,
+            "_diagnose_routing_access_conflict",
+            new=AsyncMock(return_value=[]),
+        ),
     ):
         report = await setup_diagnostics.collect_setup_diagnostics(guild)
     # Warning sorts before advisory regardless of collector order.
@@ -410,4 +416,182 @@ async def test_cleanup_collector_failsafe():
         new=AsyncMock(side_effect=RuntimeError("boom")),
     ):
         out = await setup_diagnostics._diagnose_cleanup(guild)
+    assert out == []
+
+
+# ---------------------------------------------------------------------------
+# Routing ↔ command-access conflict collector (P1B)
+# ---------------------------------------------------------------------------
+
+
+def _access_policy(mode, allowed=frozenset()):
+    return SimpleNamespace(mode=mode, allowed_channels=frozenset(allowed))
+
+
+def _routing_rows(*rows):
+    """Build routing rows with the list_for_guild shape."""
+    out = []
+    for scope_type, scope_id, cog_name, enabled in rows:
+        out.append(
+            {
+                "scope_type": scope_type,
+                "scope_id": scope_id,
+                "cog_name": cog_name,
+                "enabled": enabled,
+            },
+        )
+    return out
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("mode", [None, AccessMode.ALL_CHANNELS.value])
+async def test_routing_conflict_none_when_access_unrestricted(mode):
+    """No command-access restriction → routing can never conflict, and the
+    routing rows aren't even read.
+    """
+    guild = SimpleNamespace(id=1)
+    list_rows = AsyncMock()
+    with (
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=AsyncMock(return_value=_access_policy(mode)),
+        ),
+        patch("services.command_routing.list_for_guild", new=list_rows),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert out == []
+    list_rows.assert_not_awaited()  # short-circuits before reading routing
+
+
+@pytest.mark.asyncio
+async def test_routing_conflict_selected_channels_flags_disallowed_channel():
+    guild = SimpleNamespace(id=1)
+    rows = _routing_rows(("channel", 20, "games", True))
+    with (
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=AsyncMock(
+                return_value=_access_policy(
+                    AccessMode.SELECTED_CHANNELS.value,
+                    allowed={10},
+                ),
+            ),
+        ),
+        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+        patch(
+            "core.runtime.guild_resources.resolve_channel",
+            return_value=SimpleNamespace(name="games-chat"),
+        ),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert len(out) == 1
+    f = out[0]
+    assert f.code == "routing_access_conflict"
+    assert f.severity == setup_diagnostics.SEV_WARNING
+    assert f.subsystem == "games"
+    assert f.resource_id == 20
+    assert f.repairability == setup_diagnostics.REPAIR_ADVISORY
+    assert "#games-chat" in f.summary
+
+
+@pytest.mark.asyncio
+async def test_routing_conflict_no_finding_when_channel_allowed():
+    guild = SimpleNamespace(id=1)
+    rows = _routing_rows(("channel", 10, "games", True))
+    with (
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=AsyncMock(
+                return_value=_access_policy(
+                    AccessMode.SELECTED_CHANNELS.value,
+                    allowed={10},
+                ),
+            ),
+        ),
+        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_routing_conflict_ignores_guild_scope_and_disabled_rows():
+    """Only channel-scoped 'enabled' rows conflict — a guild-scope enable (cog on
+    broadly, commands run in the allowed channels) and a disabled channel row are
+    not conflicts.
+    """
+    guild = SimpleNamespace(id=1)
+    rows = _routing_rows(
+        ("guild", None, "games", True),  # broad enable — not a conflict
+        ("channel", 20, "economy", False),  # disabled — intentional, not a conflict
+    )
+    with (
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=AsyncMock(
+                return_value=_access_policy(
+                    AccessMode.SELECTED_CHANNELS.value,
+                    allowed={10},
+                ),
+            ),
+        ),
+        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_routing_conflict_disabled_except_bootstrap_advisory():
+    guild = SimpleNamespace(id=1)
+    rows = _routing_rows(
+        ("guild", None, "games", True),
+        ("guild", None, "economy", True),
+        ("guild", None, "moderation", False),  # disabled — not listed
+    )
+    with (
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=AsyncMock(
+                return_value=_access_policy(AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value),
+            ),
+        ),
+        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert len(out) == 1
+    f = out[0]
+    assert f.code == "routing_access_conflict"
+    assert f.severity == setup_diagnostics.SEV_ADVISORY
+    assert f.resource_type == "guild"
+    # Only the enabled cogs are named.
+    assert "games" in f.detail and "economy" in f.detail
+    assert "moderation" not in f.detail
+
+
+@pytest.mark.asyncio
+async def test_routing_conflict_disabled_except_bootstrap_no_enabled_rows():
+    guild = SimpleNamespace(id=1)
+    rows = _routing_rows(("guild", None, "games", False))
+    with (
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=AsyncMock(
+                return_value=_access_policy(AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value),
+            ),
+        ),
+        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_routing_conflict_failsafe_on_read_error():
+    guild = SimpleNamespace(id=1)
+    with patch(
+        "utils.guild_config_accessors.get_command_access_policy",
+        new=AsyncMock(side_effect=RuntimeError("boom")),
+    ):
+        out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
     assert out == []

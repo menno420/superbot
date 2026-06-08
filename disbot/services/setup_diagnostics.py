@@ -220,6 +220,7 @@ async def collect_setup_diagnostics(guild: discord.Guild) -> SetupDiagnosticsRep
         _diagnose_role_thresholds,
         _diagnose_moderation_roles,
         _diagnose_cleanup,
+        _diagnose_routing_access_conflict,
     ):
         try:
             findings.extend(await collector(guild))
@@ -683,6 +684,149 @@ async def _diagnose_cleanup(
                 repairability=REPAIR_ADVISORY,
                 advisory_note=(
                     "Remove the stale scope in `!cleanup → Cleanup Policies`."
+                ),
+            ),
+        )
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Collector: cog-routing vs command-access conflict (cross-axis drift, P1B)
+# ---------------------------------------------------------------------------
+
+
+async def _diagnose_routing_access_conflict(
+    guild: discord.Guild,
+) -> list[SetupDiagnosticFinding]:
+    """Flag cog-routing that contradicts the command-access policy.
+
+    Cog routing (per-channel *feature* enable) and command access (per-channel
+    *command admission*) are two independent gates an operator can set to
+    disagree.  When command access restricts *where* commands run, an "enabled"
+    routing toggle for a channel command access blocks is a dead toggle: the
+    feature looks on, but no command in it can execute there.  This is the
+    read-only "routing ↔ access conflict" drift provider (planning §16.5 / §16.8
+    item 6) — it *composes* the two policy owners, never re-deriving either, and
+    needs **no member** (both gates are channel-level), so it runs per-guild
+    without audience simulation.
+
+    Read-only + advisory: the fix is an operator policy choice (widen command
+    access or move the routing), so no auto-repair op is generated.
+    """
+    try:
+        from core.runtime.command_access import AccessMode
+        from services import command_routing
+        from utils.guild_config_accessors import get_command_access_policy
+
+        snapshot = await get_command_access_policy(guild.id)
+    except Exception:
+        logger.exception("setup_diagnostics: command-access policy read failed")
+        return []
+
+    # No command-access restriction (unconfigured or all-channels) → commands run
+    # wherever the cog is on, so routing can never conflict.
+    if snapshot.mode in (None, AccessMode.ALL_CHANNELS.value):
+        return []
+
+    try:
+        rows = await command_routing.list_for_guild(guild.id)
+    except Exception:
+        logger.exception("setup_diagnostics: routing-policy read failed")
+        return []
+
+    if snapshot.mode == AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value:
+        return _disabled_mode_conflict(guild, rows)
+    if snapshot.mode == AccessMode.SELECTED_CHANNELS.value:
+        return _selected_channels_conflicts(guild, rows, snapshot.allowed_channels)
+    return []
+
+
+def _disabled_mode_conflict(
+    guild: discord.Guild,
+    rows: list[dict],
+) -> list[SetupDiagnosticFinding]:
+    """One advisory when command access is disabled-except-bootstrap but cogs are
+    still routed on — every non-bootstrap command is blocked guild-wide, so the
+    "enabled" toggles can't make those features usable.
+    """
+    enabled = sorted({str(r.get("cog_name")) for r in rows if r.get("enabled")})
+    if not enabled:
+        return []
+    listed = ", ".join(f"`{c}`" for c in enabled)
+    return [
+        SetupDiagnosticFinding(
+            code="routing_access_conflict",
+            severity=SEV_ADVISORY,
+            subsystem="command_access",
+            section_slug=None,
+            resource_type="guild",
+            resource_id=guild.id,
+            summary=(
+                "Command access is disabled-except-bootstrap, but "
+                f"{len(enabled)} cog(s) are routed on"
+            ),
+            detail=(
+                "With command access set to disabled-except-bootstrap, every "
+                "non-bootstrap command is blocked guild-wide, so the cog-routing "
+                f"'enabled' toggles ({listed}) don't make those commands usable."
+            ),
+            repairability=REPAIR_ADVISORY,
+            advisory_note=(
+                "If these features should be usable, switch Command Access to "
+                "all-channels or selected-channels in `!settings → Command "
+                "Access`; otherwise the routing toggles have no effect."
+            ),
+        ),
+    ]
+
+
+def _selected_channels_conflicts(
+    guild: discord.Guild,
+    rows: list[dict],
+    allowed_channels: frozenset[int],
+) -> list[SetupDiagnosticFinding]:
+    """One warning per channel-scoped "enabled" routing row whose channel is not
+    in the command-access allow-list — the cog is on there but no command can run.
+
+    Only channel-scoped rows are flagged: a guild/category "enabled" row turns a
+    cog on broadly and its commands still run in the allowed channels, so it is
+    not a conflict.
+    """
+    from core.runtime import guild_resources
+
+    findings: list[SetupDiagnosticFinding] = []
+    for r in rows:
+        if r.get("scope_type") != "channel" or not r.get("enabled"):
+            continue
+        channel_id = r.get("scope_id")
+        if channel_id is None or channel_id in allowed_channels:
+            continue
+        cog_name = str(r.get("cog_name") or "?")
+        channel = guild_resources.resolve_channel(guild, channel_id=channel_id)
+        label = f"#{channel.name}" if channel is not None else f"channel `{channel_id}`"
+        findings.append(
+            SetupDiagnosticFinding(
+                code="routing_access_conflict",
+                severity=SEV_WARNING,
+                subsystem=cog_name,
+                section_slug=None,
+                resource_type="channel",
+                resource_id=channel_id,
+                summary=(
+                    f"Cog `{cog_name}` is routed on in {label}, but command access "
+                    "doesn't allow commands there"
+                ),
+                detail=(
+                    f"`{cog_name}` is enabled for {label} by a cog-routing rule, "
+                    "but command access is in selected-channels mode and that "
+                    "channel isn't in the allow-list — so no command in that cog "
+                    "can run there."
+                ),
+                repairability=REPAIR_ADVISORY,
+                advisory_note=(
+                    f"Add {label} to the command-access allow-list (`!settings → "
+                    f"Command Access`), or route `{cog_name}` to an allowed "
+                    "channel instead."
                 ),
             ),
         )

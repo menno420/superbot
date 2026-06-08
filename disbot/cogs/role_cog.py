@@ -451,7 +451,16 @@ class RoleCog(commands.Cog):
             return
         discord_role = _find_role_normalized(ctx.guild, role_name)
         store_name = discord_role.name if discord_role else role_name
-        await db.set_role_threshold(ctx.guild.id, store_name, days)
+        # Audited seam (P0C): route through role_automation so the change is
+        # audited. role_id is captured when the named role resolves (rename-safe);
+        # the legacy free-text path keeps a name-only write (role_id=None).
+        await role_automation.set_time_threshold(
+            guild_id=ctx.guild.id,
+            role_id=discord_role.id if discord_role else None,
+            role_name=store_name,
+            days=days,
+            actor_id=ctx.author.id,
+        )
         await ctx.send(
             f"✅ Role **{store_name}** will be assigned after **{days}** day(s).",
         )
