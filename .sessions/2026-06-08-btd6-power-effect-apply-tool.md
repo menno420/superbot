@@ -93,6 +93,34 @@ Maintainer chose the Bloons cutover (via AskUserQuestion) over wrapping up. Sour
   data_service tests (one pre-existing DDT test corrected to the game value). `check_quality
   --full` green (**8140 passed**). Third commit on PR #593.
 
+## Follow-on #4 — Geraldo item effects (PR #595) + provenance principle (Q-0037)
+
+After #593 merged, continued on the same branch:
+
+- **Geraldo item effects** (PR #595, merged): five items whose named behaviour model carries
+  clean, description-confirmable numbers gained a structured `effect` (mirroring
+  `PowerEntry.effect`) — Sharpening Stone `{pierce_increase:1, rounds:10}`, Jar of Pickles
+  `{damage_increase:1, attack_speed_scale:0.75, rounds:5}`, Fertilizer `{cash_scale:1.2, rounds:4}`,
+  Rejuv Potion `{lives_gained:50}`, See Invisibility `{rounds:5}`. Projectile/summon/non-numeric
+  items stay `effect == {}` (never fabricated).
+- **Owner decision Q-0037 — dump-vs-wiki provenance:** maintainer's standing principle —
+  **trust the dump wherever it's complete and accurate** (direct export of the game's internal
+  files; most recent). Routed to the question router + decode-status provenance note.
+- **Diamond false-alarm withdrawn.** I'd flagged "Diamond health dump 60 vs wiki 80" as a possible
+  cutover. Re-checking with the parser's variant-aware `_select_bloon_model`: canonical
+  `DiamondBloon` = **80**, matching our data. The "60" was a `DiamondbackDiamondBloon` variant my
+  ad-hoc check grabbed — **the DDT trap again.** All 23 dump-modelled bloons already match the dump
+  on health *and* speed. No change. (This is the second time a naïve "first matching file" pick read
+  a wrong value the maintainer caught — the model-selection caveat is now in Q-0037 + decode-status.)
+
+**Both PRs merged this session:** #593 (power_effect + Geraldo lookup + bloon children/immunity
+cutover + DDT fix) and #595 (Geraldo effects + Q-0037 provenance docs).
+
+**Still owed (maintainer-gated):** MK magnitudes (curate from wiki vs descriptive-only),
+Steam-API patch-detect refresh trigger (sign-off on the GH Actions workflow). The big remaining
+dump-trust opportunity is the **tower stat cutover** — large + architecturally heavy; scope as its
+own planned effort.
+
 ## Context delta
 - **Pointed to & needed:** the prior session log's "Still owed" list was the single best pointer
   to the frontier — far more actionable than current-state (which tracks the *Adaptive Setup*
@@ -107,3 +135,13 @@ Maintainer chose the Bloons cutover (via AskUserQuestion) over wrapping up. Sour
   Dart Monkey). Mid-investigation it read as a resolver bug; it isn't.
 - **Floating-point gotcha:** `round(1/cd,3)` for base vs boosted are rounded independently, so
   `boosted_aps == 2*base_aps` is off by ~0.001 — assert with a `< 0.01` tolerance, not equality.
+- **★ The biggest recurring trap (hit twice — DDT children, Diamond health):** the BTD6 dump
+  has **template/variant models** that look internally consistent but aren't the canonical one a
+  committed bloon maps to. `Bloons/<X>/<X>.json` is **not** reliably the right model — a DDT is
+  inherently camo (`DdtCamo`), Diamond's "60" is a Diamondback-spawned variant (canonical
+  `DiamondBloon` = 80). **Always select by the entity's own properties (`_select_bloon_model`),
+  and sanity-check a surprising value against gameplay before asserting it.** Both misses were
+  caught by the maintainer's domain knowledge, *not* the "23/23 verified" structural check —
+  because the wrong model still verified self-consistently. When a dump value contradicts the
+  wiki *and* your game sense, suspect the model pick before trusting the number. (Owner principle
+  Q-0037: trust the dump where complete/accurate — with this caveat attached.)
