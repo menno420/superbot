@@ -39,6 +39,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_power_lookup",
         "btd6_monkey_knowledge_lookup",
         "btd6_geraldo_lookup",
+        "btd6_boss_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_power_effect",
@@ -358,6 +359,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_power_lookup",
         "btd6_monkey_knowledge_lookup",
         "btd6_geraldo_lookup",
+        "btd6_boss_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_power_effect",
@@ -803,6 +805,27 @@ async def test_btd6_geraldo_lookup_single_and_roster():
     roster = await h["btd6_geraldo_lookup"]({})
     assert roster["count"] == len(roster["items"]) == 16
     assert (await h["btd6_geraldo_lookup"]({"item": "nope"}))["found"] is False
+
+
+async def test_btd6_boss_lookup_single_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    one = await h["btd6_boss_lookup"]({"boss": "Bloonarius"})
+    assert one["found"] is True
+    boss = one["boss"]
+    assert boss["name"] == "Bloonarius" and boss["description"]
+    # Per-tier health is surfaced — tier 3 Bloonarius = 350,000.
+    t3 = next(t for t in boss["tiers"] if t["tier"] == 3)
+    assert t3["health"] == 350_000
+    # Derived immunity surfaces; partial-name match resolves a single boss.
+    assert set((await h["btd6_boss_lookup"]({"boss": "dread"}))["boss"]["immune_to"]) == {
+        "Cold",
+        "Energy",
+        "Sharp",
+        "Shatter",
+    }
+    roster = await h["btd6_boss_lookup"]({})
+    assert roster["count"] == len(roster["bosses"]) == 7
+    assert (await h["btd6_boss_lookup"]({"boss": "nope"}))["found"] is False
 
 
 async def test_btd6_bloon_filter_traits_and_modifier_note():

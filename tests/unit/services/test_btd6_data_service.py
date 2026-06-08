@@ -131,6 +131,36 @@ def test_geraldo_items_load_and_resolve():
     assert find_geraldo_item("") is None
 
 
+def test_bosses_load_resolve_and_carry_tiers():
+    from services.btd6_data_service import find_boss, get_boss
+
+    dataset = get_dataset()
+    # All seven Boss Bloons are ingested.
+    assert len(dataset.bosses) == 7
+    ids = {b.id for b in dataset.bosses}
+    assert {"bloonarius", "lych", "vortex", "dreadbloon", "blastapopoulos", "phayze"} <= ids
+    # Resolves by id and (fuzzily) by canonical name / partial.
+    bloonarius = get_boss("bloonarius")
+    assert bloonarius is not None and bloonarius.canonical == "Bloonarius"
+    assert find_boss("Blasta").canonical == "Blastapopoulos"
+    # Five boss tiers, health scaling up; tier 3 Bloonarius = 350,000.
+    assert len(bloonarius.tiers) == 5
+    t3 = next(t for t in bloonarius.tiers if t["tier"] == 3)
+    assert t3["health"] == 350_000
+    assert [t["health"] for t in bloonarius.tiers] == sorted(
+        t["health"] for t in bloonarius.tiers
+    )
+    # Derived type-immunities: Dreadbloon = Lead, Blastapopoulos = Purple.
+    assert set(get_boss("dreadbloon").immune_to) == {"Cold", "Energy", "Sharp", "Shatter"}
+    assert set(get_boss("blastapopoulos").immune_to) == {"Energy", "Fire", "Frigid", "Plasma"}
+    # Every boss carries a game-authored mechanic description.
+    for boss in dataset.bosses:
+        assert boss.canonical and boss.description and boss.tiers
+    # Unknown / empty fail closed.
+    assert get_boss("zzz") is None
+    assert find_boss("") is None
+
+
 def test_map_removables_curated_for_known_maps_only():
     # Removable obstacles are bloonswiki-curated (not in the dump). They must
     # land on the maps we have data for, and stay blank (= "no data", not

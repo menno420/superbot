@@ -738,6 +738,54 @@ def test_mk_effect_behavioural_or_empty_stays_description_only(mod):
     assert mod._mk_effect({}) == {}
 
 
+def test_map_bosses_reads_roster_tiers_and_derives_immunity(mod, tmp_path):
+    dump = tmp_path / "dump"
+    # Boss roster lives in Bosses/ (the BossData names the family + its LocsKey);
+    # per-tier combat stats come from Bloons/<Family>/<Family>{1..5}.json.
+    _write(dump / "Bosses" / "Dreadbloon.json", {"id": 3, "LocsKey": "Dreadbloon"})
+    _write(
+        dump / "Bloons" / "Dreadbloon" / "Dreadbloon1.json",
+        {"id": "Dreadbloon1", "maxHealth": 7500, "speed": 1.25, "bloonProperties": 1},
+    )
+    _write(
+        dump / "Bloons" / "Dreadbloon" / "Dreadbloon2.json",
+        {"id": "Dreadbloon2", "maxHealth": 25000, "speed": 1.3, "bloonProperties": 1},
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "Dreadbloon": "Dreadbloon",
+            "DreadbloonTagLine": "From Deep Within the Dark Earth...",
+            "DreadbloonTagLine2": "the Armored Behemoth!",
+            "DreadbloonInfoPanelDescription": "• Dreadbloon has Lead properties.\n• Tough.",
+        },
+    )
+    rows, warnings = mod.map_bosses(dump, "55.1")
+    assert warnings == []
+    assert len(rows) == 1
+    boss = rows[0]
+    assert boss["id"] == "dreadbloon"
+    assert boss["canonical"] == "Dreadbloon"
+    assert boss["tagline"] == "From Deep Within the Dark Earth... — the Armored Behemoth!"
+    # Bullets + newlines collapse into one readable grounded line.
+    assert boss["description"] == "Dreadbloon has Lead properties. Tough."
+    # bloonProperties bit 1 (Lead) → the Lead immunity set, via the shared inverter.
+    assert boss["immune_to"] == ["Cold", "Energy", "Sharp", "Shatter"]
+    assert boss["tiers"] == [
+        {"tier": 1, "health": 7500, "speed": 1.25},
+        {"tier": 2, "health": 25000, "speed": 1.3},
+    ]
+
+
+def test_map_bosses_skips_boss_with_no_tier_models(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(dump / "Bosses" / "Ghost.json", {"LocsKey": "Ghost"})
+    _write(dump / "textTable.json", {"Ghost": "Ghost"})
+    rows, warnings = mod.map_bosses(dump, "55.1")
+    assert rows == []
+    assert any("no tier models" in w for w in warnings)
+
+
 def test_validate_anchors(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(dump / "Towers" / "DartMonkey" / "DartMonkey.json", _tower_model(cost=200.0))

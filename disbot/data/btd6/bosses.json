@@ -1,0 +1,255 @@
+{
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
+  "bosses": [
+    {
+      "id": "blastapopoulos",
+      "canonical": "Blastapopoulos",
+      "tagline": "Shrouded in Suffocating Heat — Demon of the Core!",
+      "description": "Blastapopoulos has Purple Bloon properties, and Monkey Towers and Heroes suffer from reduced range and slower ability cooldowns during the fight. At each Skull Blastapopoulos heats up and spews out Fireballs and Pyroclastic Rocks. Fireballs will target Towers and Heroes with pools of magma that prevent selling and ability cooldowns, and reduce tower range and attack speed even more. Pyroclastic Rocks land in a circle, blocking line of sight until they expire. Most projectile hits heat up Blastapopoulos, with fire, plasma, and lasers increasing heat even more, so use those at your own risk! Or you could use some Ice attacks to cool Blastapopoulos down! When the heat bar is completely filled, Blastapopoulos explodes in rage, briefly stunning all Monkeys and increasing ability cooldowns. The leftover heat causes most projectiles to burn up faster than normal. Blastapopoulos passively burns off Sticky Bomb and other damaging effects applied to them, reducing the length of damage over time.",
+      "immune_to": [
+        "Energy",
+        "Fire",
+        "Frigid",
+        "Plasma"
+      ],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 17500,
+          "speed": 1
+        },
+        {
+          "tier": 2,
+          "health": 65000,
+          "speed": 1.05
+        },
+        {
+          "tier": 3,
+          "health": 300000,
+          "speed": 1.1
+        },
+        {
+          "tier": 4,
+          "health": 650000,
+          "speed": 1.15
+        },
+        {
+          "tier": 5,
+          "health": 3000000,
+          "speed": 1.25
+        }
+      ]
+    },
+    {
+      "id": "bloonarius",
+      "canonical": "Bloonarius",
+      "tagline": "From the Swampy Depths — The Inflator Awakens!",
+      "description": "Sludge-dwelling Bloonarius spews Bloons as it takes damage. When each skull on its health bar is reached, Bloonarius disgorges massive Bloon clusters onto the track. Bloonarius' sludge infused husk makes it slow but extremely tough.",
+      "immune_to": [],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 20000,
+          "speed": 1.25
+        },
+        {
+          "tier": 2,
+          "health": 75000,
+          "speed": 1.25
+        },
+        {
+          "tier": 3,
+          "health": 350000,
+          "speed": 1.25
+        },
+        {
+          "tier": 4,
+          "health": 750000,
+          "speed": 1.5
+        },
+        {
+          "tier": 5,
+          "health": 3000000,
+          "speed": 1.5
+        }
+      ]
+    },
+    {
+      "id": "diamondback",
+      "canonical": "Diamondback",
+      "tagline": "Snaking Through the Ground — The Village Devourer!",
+      "description": "Diamondback has multiple segments and regularly spits Bloons forwards on the track. Diamondback's head blocks projectiles from piercing through to its body. The Rattle Tail is shielded from damage, break through the shield to stun and debuff Diamondback temporarily! Diamondback releases Diamond Bloons that only take 1 damage at a time. When each skull is reached, Diamondback sheds a middle segment, spawns many Bloons and regenerates the Rattle Tail shield.",
+      "immune_to": [],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 20000,
+          "speed": 2
+        },
+        {
+          "tier": 2,
+          "health": 95000,
+          "speed": 2
+        },
+        {
+          "tier": 3,
+          "health": 444000,
+          "speed": 2
+        },
+        {
+          "tier": 4,
+          "health": 900000,
+          "speed": 2
+        },
+        {
+          "tier": 5,
+          "health": 3800000,
+          "speed": 2
+        }
+      ]
+    },
+    {
+      "id": "dreadbloon",
+      "canonical": "Dreadbloon",
+      "tagline": "From Deep Within the Dark Earth... — the Armored Behemoth!",
+      "description": "Dreadbloon has Lead properties and reduces all incoming damage by 1. When each skull is reached, Dreadbloon grows a Ceramic Armor Shell and Dreadrock Bloons will begin spawning at the start of the track. When Dreadbloon appears, it is immune to Primary towers. At each skull, this immunity changes to a different tower type: Military, Magic, Support. Dreadrock Bloons and the Ceramic Armor Shell also have these immunities. Dreadrock Bloons have a Strong taunt, be careful what your towers are targeting!",
+      "immune_to": [
+        "Cold",
+        "Energy",
+        "Sharp",
+        "Shatter"
+      ],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 7500,
+          "speed": 1.25
+        },
+        {
+          "tier": 2,
+          "health": 25000,
+          "speed": 1.3
+        },
+        {
+          "tier": 3,
+          "health": 120000,
+          "speed": 1.4
+        },
+        {
+          "tier": 4,
+          "health": 260000,
+          "speed": 1.5
+        },
+        {
+          "tier": 5,
+          "health": 1000000,
+          "speed": 1.6
+        }
+      ]
+    },
+    {
+      "id": "lych",
+      "canonical": "Lych",
+      "tagline": "The Gravelord — has been Resurrected!",
+      "description": "Gravelord Lych drains buffs from your Monkeys and has regenerative properties. Lych regularly summons Bloon Tombs which summon MOAB-class Bloons. Destroy them asap! When each skull on its health bar is reached, Lych goes ethereal and Lych souls are summoned. When ethereal, Lych cannot be damaged until all Lych souls have been popped. Zombie MOAB-class Bloons do not spawn children. While Lych is on the map, sellback value of all Monkeys is reduced significantly.",
+      "immune_to": [],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 14000,
+          "speed": 2
+        },
+        {
+          "tier": 2,
+          "health": 52500,
+          "speed": 2.05
+        },
+        {
+          "tier": 3,
+          "health": 220000,
+          "speed": 2.1
+        },
+        {
+          "tier": 4,
+          "health": 525000,
+          "speed": 2.15
+        },
+        {
+          "tier": 5,
+          "health": 2100000,
+          "speed": 2.2
+        }
+      ]
+    },
+    {
+      "id": "phayze",
+      "canonical": "Phayze",
+      "tagline": "The Reality Warper — Invades from the Chaos Rift!",
+      "description": "Phayze has the Camo property and a Reality Shield that increases its speed while the Shield is active. When each skull is reached, Phayze rebuilds the Reality Shield and warps forward, opening a tear in the fabric of reality allowing Bloons to spawn further along the track. Skulls also trigger a slow aura around Phayze, reducing the attack speed of all Monkey Towers. Phayze triggers Radar Jam every 24 seconds, disabling Camo-seeing buffs as well as restoring its Camo property if it has been stripped. Radar Jam also pulls Bloons to Phayze's location and grants them the Camo property.",
+      "immune_to": [],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 9500,
+          "speed": 0.8
+        },
+        {
+          "tier": 2,
+          "health": 35000,
+          "speed": 0.8
+        },
+        {
+          "tier": 3,
+          "health": 160000,
+          "speed": 0.8
+        },
+        {
+          "tier": 4,
+          "health": 350000,
+          "speed": 0.8
+        },
+        {
+          "tier": 5,
+          "health": 1450000,
+          "speed": 0.8
+        }
+      ]
+    },
+    {
+      "id": "vortex",
+      "canonical": "Vortex",
+      "tagline": "From the skies comes — Deadly Master of Air",
+      "description": "Vortex moves like lightning and speeds other Bloons along! When each health bar skull is reached, Vortex shields itself and sends out a shockwave that stuns nearby Towers before retreating up the track. Vortex emits a regular storm pulse, destroying projectiles, including any non-Powers on the track.",
+      "immune_to": [],
+      "tiers": [
+        {
+          "tier": 1,
+          "health": 20000,
+          "speed": 3.6
+        },
+        {
+          "tier": 2,
+          "health": 62800,
+          "speed": 3.6
+        },
+        {
+          "tier": 3,
+          "health": 294000,
+          "speed": 3.9
+        },
+        {
+          "tier": 4,
+          "health": 628000,
+          "speed": 4.05
+        },
+        {
+          "tier": 5,
+          "health": 2512500,
+          "speed": 4.2
+        }
+      ]
+    }
+  ]
+}

@@ -58,7 +58,10 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
         "children + immunity now game-data-sourced (--bloons); rbe/health/speed/"
         "category/aliases still wiki",
     ),
-    "Bosses": ("⬜", "wiki-sourced; cosmetic Bosses/ — combat lives in Bloons/"),
+    "Bosses": (
+        "✅",
+        "bosses.json: name, mechanic description, immunities, per-tier health/speed",
+    ),
     "Rounds": (
         "🟡",
         "composition drives derived RBE + per-round cash; not ingested as-is",

@@ -15,7 +15,7 @@
 | `Artifacts/` | 568 | ⬜ | not ingested (Rogue Legends artifacts) |
 | `BloonOverlays/` | 46 | ⬜ | cosmetic overlays; not ingested |
 | `Bloons/` | 235 | 🟡 | children + immunity now game-data-sourced (--bloons); rbe/health/speed/category/aliases still wiki |
-| `Bosses/` | 7 | ⬜ | wiki-sourced; cosmetic Bosses/ — combat lives in Bloons/ |
+| `Bosses/` | 7 | ✅ | bosses.json: name, mechanic description, immunities, per-tier health/speed |
 | `Buffs/` | 91 | ⬜ | UI buff ICONS only — effects live inline in Towers/ |
 | `GeraldoItems/` | 16 | ✅ | all 16 shop items: name, description, cash cost, unlock level, quantity |
 | `IncomeSets/` | 7 | 🟡 | decay bands feed the per-round cash derivation |
@@ -61,7 +61,7 @@
 - **Model types:** `AudioClipReference`×2,053, `PrefabReference`×1,291, `Vector2`×510, `CollisionGroupModel+CollisionGroupData`×255, `DisplayModel`×245, `Vector3`×245, `BloonModel`×235, `SpriteReference`×235, `DistributeCashModel`×235, `PopEffectModel`×235, `DamageStateModel`×230, `ShowDamageTextModel`×215, `SpawnBloonsActionModel`×213, `PlayAnimTriggerActionModel`×201, `CreateSoundOnDamageBloonModel`×153, `EffectModel`×152, `BadImmunityModel`×135, `CollisionGroupModel`×126, `ApplyModModel`×107, `SpawnDeathAnimModel`×100
 - **Primary model `BloonModel` scalar fields:** `id`, `baseId`, `overlayClass`, `bloonProperties`, `isMoab`, `isBoss`, `isCamo`, `isGrow`, `isFortified`, `hasChildrenWithDifferentTotalHealths`, `isInvulnerable`, `distributeDamageToChildren`, `disallowCosmetics`, `isSaved`, `isImmuneToSlow`, `isBossSegment`, `radius`, `danger`, `maxHealth`, `coopMultiplier`, `armourMultiplier`, `leakDamage`, `leakDamageSet`, `leakDamageMultiplier`, `layerNumber`, `bonusDamagePerHit`, `dontShowInSandbox`, `dontShowInSandboxOnRelease`, `alwaysRecordsDamage`, `speed`, `speedFrames`, `legendsType`, `basicTypeFlags`, `propertyFlags`, `isFixedMaxHealth`, `updateChildBloonModels`, `Speed`, `IsExclusiveToLegends`, `IsBaseType`, `IsVariant`
 
-### `Bosses/` — 7 files ⬜
+### `Bosses/` — 7 files ✅
 
 - **Model types:** `SpriteReference`×84, `PrefabReference`×70, `BossData`×7, `MusicItem`×7, `AudioClipReference`×7, `AudioClip`×7
 - **Primary model `BossData` scalar fields:** `id`, `bossChildrenOverlay`, `LocsKey`

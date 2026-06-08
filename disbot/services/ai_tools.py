@@ -1242,6 +1242,66 @@ async def _btd6_geraldo_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_boss_lookup --------------------------------------------------------
+
+_BTD6_BOSS_SPEC = AIToolSpec(
+    name="btd6_boss_lookup",
+    description=(
+        "BTD6 Boss Bloon info (Bloonarius, Lych, Vortex, Dreadbloon, "
+        "Blastapopoulos, Phayze, Diamondback): each boss's game-authored mechanic "
+        "description, its damage-type immunities, and the per-tier health + speed "
+        "for all five boss tiers (health scales up sharply by tier; co-op "
+        "multiplies it further). Pass a boss name to look one up, or omit it to "
+        "list every boss. Use for 'how much health does a tier 3 Bloonarius have', "
+        "'what is Dreadbloon immune to', 'how fast is Vortex', 'what does Lych do', "
+        "'list the bosses'."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "boss": {
+                "type": "string",
+                "description": "Boss name (e.g. 'Bloonarius'); omit to list all.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _boss_dict(entry: Any) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "name": entry.canonical,
+        "description": entry.description,
+        # Per-tier {tier, health, speed} for the five boss tiers — the headline
+        # grounded numbers (e.g. tier 3 Bloonarius = 350,000 health).
+        "tiers": [dict(t) for t in entry.tiers],
+    }
+    if entry.tagline:
+        out["tagline"] = entry.tagline
+    if entry.immune_to:
+        out["immune_to"] = list(entry.immune_to)
+    return out
+
+
+async def _btd6_boss_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("boss") or "").strip()
+    if name:
+        entry = btd6_data_service.find_boss(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown boss: {name!r}"}
+        return {"found": True, "boss": _boss_dict(entry)}
+    bosses = btd6_data_service.get_dataset().bosses
+    return {
+        "found": True,
+        "count": len(bosses),
+        "bosses": [_boss_dict(b) for b in bosses],
+    }
+
+
 # --- btd6_bloon_filter -------------------------------------------------------
 
 _BTD6_BLOON_FILTER_SPEC = AIToolSpec(
@@ -1899,6 +1959,7 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
         "btd6_power_lookup",
         "btd6_monkey_knowledge_lookup",
         "btd6_geraldo_lookup",
+        "btd6_boss_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_power_effect",
@@ -1958,6 +2019,7 @@ def build_registry(
         (_BTD6_POWER_LOOKUP_SPEC, _btd6_power_lookup),
         (_BTD6_MK_LOOKUP_SPEC, _btd6_monkey_knowledge_lookup),
         (_BTD6_GERALDO_SPEC, _btd6_geraldo_lookup),
+        (_BTD6_BOSS_SPEC, _btd6_boss_lookup),
         (_BTD6_BLOON_FILTER_SPEC, _btd6_bloon_filter),
         (_BTD6_CUMULATIVE_COST_SPEC, _btd6_cumulative_cost),
         (_BTD6_POWER_EFFECT_SPEC, _btd6_power_effect),
