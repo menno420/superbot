@@ -13,7 +13,7 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-08 — provenance gate lifted, PR #587)
+## ⭐ Next session — start here (updated 2026-06-08 — buff tail 9 → 11, Shinobi + Pop-and-Awe confirmed)
 
 ### Current state & next actions (READ FIRST)
 
@@ -31,19 +31,31 @@ works** (the traps we hit), and what is still un-decoded.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
   **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
-  (**9 of 38** confirmed types in `_BUFF_FIELD_MAP` — incl. the
+  (**11 of 38** confirmed types in `_BUFF_FIELD_MAP` — incl. the
   `VigilanteTowerBehaviorModel` lives-lost buff — each carrying its activation
   `trigger`, which fixes the duration unit: seconds vs round-count).
 
 **Do next (ordered; correctness over speed — the maintainer's standing rule):**
-1. **Buff decode tail (9 → 38).** The cleanly value-confirmable set is now
-   *exhausted* — every remaining committed buff field either has **no committed
-   ground-truth `buffs[]` entry** to verify against (e.g. `RangeSupportModel` on
-   Village) or needs a **value transformation** (raw multiplier → wiki
-   percentage) that the value-coincidence harness can't confirm. So each
-   remaining type needs **per-model semantic analysis**, and for types with no
-   committed counterpart, correctness can only be validated *at/after the
-   cutover*. Do **not** write a number you can't confirm.
+1. **Buff decode tail (11 → 38).** The 2026-06-08 pass added **two** types the
+   earlier "exhausted" read had missed — both confirmed exact against committed
+   wiki values (see the session log below): `SupportShinobiTacticsModel`
+   (Ninja Shinobi Tactics, `multiplier 0.92` → `rateMultiplier`) and
+   `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative 1.0`
+   vs tag `Bad` → `damageAdditiveForBad`). **Now genuinely exhausted for committed
+   *combat* towers:** every other top-level support/buff model lands on (a) a
+   **hero** (Brickell/Benjamin/Etienne/Ezili/Gwen/Obyn/Striker/Corvus/Silas/
+   Sheriff — heroes flow through `map_hero`→`_map_tier`→`_buffs`, but **none of
+   the unmapped types appears on a tower in `stats/*.json` with a committed
+   `buffs[]` to confirm against**), (b) an **economy/support tower with no
+   committed tiers** (Banana Farm `BananaCentralBuffModel`/`CentralMarketBuffModel`,
+   Monkey Village `MonkeyCityIncomeSupportModel` etc. — blocked, maintainer call,
+   step 2), or (c) a **paragon** `base` node (`ObynBuffModel`) / a degenerate
+   empty buff (`GroundZeroBombBuffModel` `damageIncrease 0`). So the remaining
+   numbers can only be validated *at/after the cutover*. Do **not** write a number
+   you can't confirm. **Methodology note for next time:** discovery must scan
+   **all** top-level `behaviors[]` whose short type is a buff, **not** only types
+   ending in `SupportModel`/`BuffModel` — that suffix filter is what hid Shinobi
+   (`SupportShinobiTacticsModel`) and the nested-effect case (`DamageModifierSupportModel`).
 2. **`SCHEMA_FIRST` buff/zone types** — projectile speed/radius, freeze duration,
    banana-cash, etc. carry a real number but `_BUFF_FIELDS` /
    `btd6_upgrade_detail_service` has no field to render it. Extend the renderer
@@ -145,6 +157,43 @@ decision.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-08 (buff tail 9 → 11: Shinobi Tactics + Pop-and-Awe de-orphaned)
+
+Picked up the buff decode tail with the new `scripts/explore_gamedata.py` tool. The
+prior "exhausted" verdict held for every type that earlier discovery had *seen* — but
+the discovery itself was incomplete: it ranked only `*SupportModel`/`*BuffModel`-suffixed
+types, so two confirmable buffs were never examined. Both are now in `_BUFF_FIELD_MAP`
+(parser) and render with no renderer change (the schema fields already existed):
+
+- **`SupportShinobiTacticsModel` → `rateMultiplier`** (Ninja "Shinobi Tactics", 0-3-0+).
+  Dump `multiplier 0.92` == committed wiki buff `Shinobi Tactics → rateMultiplier 0.92`,
+  and dump `maxStackSize 20` == committed `20` (stacks to 20 ninjas). The dump model has
+  **no pierce field**, so only the confirmed rate is written — the committed buff's extra
+  `+8% pierce` lives on a different mechanism and stays unasserted (faithful-over-complete).
+- **`DamageModifierSupportModel` → `damageAdditiveForBad`** (Mortar "Pop and Awe", 0-4-0+).
+  The earlier (2026-06-04) note wrote this off as matching "only on the trivial
+  `customRadius/maxStackSize=0`… real effect lives in a different model" — but the effect
+  is in the **nested `damageModifierModel`** of the *same* model: the misspelled additive
+  `damageAddative 1.0` vs tag `Bad` (the same `damageAddative`-not-`damageMultiplier` trap
+  the projectile tag-bonus decode hit). Raw `1.0` == committed `damageAdditiveForBad 1`,
+  consistent across all 5 instances. A small nested-tag decoder reads it; an unmapped tag
+  emits **no** entry (never a bare value-less buff). Tag→field map covers Bad/Ceramic/Moabs;
+  only `Bad` appears in v55.
+
+**Verification:** `--validate-anchors` PASS (Dart 200, Super 2500); `--audit` stays
+**nothing-SUSPECT** (internal buff names don't align with curated, so they're ignored);
+real-dump output checked (`Ninja-030`/`Ninja-052` → `rateMultiplier 0.92`; `Mortar-050` →
+`damageAdditiveForBad 1, isGlobal True`); `_buff_text` renders "x0.92 attack cooldown" /
+"+1 damage vs BAD". Pinned by `test_buffs_shinobi_tactics_maps_multiplier_to_rate` +
+`test_buffs_damage_modifier_support_reads_nested_tag_bonus` (+ the unmapped-tag drop test).
+Full `check_quality.py --full` green (8070 passed).
+
+**Honest frontier:** 11 is the confirmed ceiling for committed **combat** towers pre-cutover
+(see "Do next" step 1 for why every remaining type is hero / no-committed-tier / paragon).
+Known small gap (not fixed, applies to *all* buff types equally): `_buffs()` does not emit
+`maxStackSize`, so the renderer's `_stack_cap` "(stacks up to N)" clause is lost on the
+parser-native path — a separate, uniform fix, not a per-type decode.
 
 ### Session log — temporary-buff triggers (units fixed) + Vigilante de-orphan + cash-on-leak
 
@@ -753,7 +802,7 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
 | **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
-| **Buffs** (`buffs[]`) — **started (9 of 38)** | `_buffs()` decodes nine types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (the Desperado lives-lost buff: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`). See `_BUFF_FIELD_MAP` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 29 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
+| **Buffs** (`buffs[]`) — **started (11 of 38)** | `_buffs()` decodes eleven types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (Desperado lives-lost: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`), `SupportShinobiTacticsModel` (Ninja, `multiplier 0.92`→`rateMultiplier`) and `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative`+tag→`damageAdditiveForBad`). See `_BUFF_FIELD_MAP` / `_BUFF_DAMAGE_MODIFIER_TYPES` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 27 buff types — each needs same-tier confirmation before its number is written, and (2026-06-08 finding) **none of the remaining types lands on a committed combat tower with a `buffs[]` to confirm against**: they are hero-only (separate `map_hero` path), on economy/support towers with **no committed tiers** (Village/Farm — blocked, maintainer call), or paragon `base` nodes. `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started

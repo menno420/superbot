@@ -616,6 +616,29 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
         "damageIncrease": "damageAdditive",
         "distanceMultiplier": "lifespanMultiplier",
     },
+    # Ninja "Shinobi Tactics" (0-3-0+) attack-speed aura. The dump's dedicated
+    # model carries only ``multiplier`` (the cooldown scale, NOT a SupportModel/
+    # BuffModel-suffixed type, which is why earlier suffix-filtered discovery
+    # missed it). Raw ``multiplier`` 0.92 == committed wiki ``rateMultiplier`` 0.92
+    # and its ``maxStackSize`` 20 == committed 20 (Shinobi stacks to 20 ninjas).
+    # The committed buff also lists +8% pierce, but that lives on a different
+    # mechanism — this model has no pierce field, so we map only the confirmed rate.
+    "SupportShinobiTacticsModel": {"multiplier": "rateMultiplier"},
+}
+
+# Buffs whose effect is a *nested* ``damageModifierModel`` (tag bonus), not a
+# flat top-level field. Same shape as the projectile tag-bonus decode: the real
+# additive is the misspelled ``damageAddative`` (``damageMultiplier`` is the
+# near-always-1.0 decoy — see the decode-status "recurring trap" lesson), and the
+# class comes from ``tag``. Mortar's Pop-and-Awe aura (0-4-0+) is the only
+# instance: raw ``damageAddative`` 1.0 vs tag ``Bad`` == committed wiki
+# ``damageAdditiveForBad`` 1. Only tags with a committed schema field are emitted.
+_BUFF_DAMAGE_MODIFIER_TYPES: frozenset[str] = frozenset({"DamageModifierSupportModel"})
+_BUFF_TAG_FIELD: dict[str, str] = {
+    "Bad": "damageAdditiveForBad",
+    "Ceramic": "damageAdditiveForCeramic",
+    "Moab": "damageAdditiveForMoabs",
+    "Moabs": "damageAdditiveForMoabs",
 }
 
 
@@ -653,7 +676,8 @@ def _buffs(model: dict) -> list[dict]:
             continue
         short = _short_type(behavior)
         field_map = _BUFF_FIELD_MAP.get(short)
-        if field_map is None:
+        nested_tag = short in _BUFF_DAMAGE_MODIFIER_TYPES
+        if field_map is None and not nested_tag:
             continue  # type not yet confirmed — deferred, never guess a number
         entry: dict = {
             "kind": short[: -len("Model")],
@@ -664,10 +688,29 @@ def _buffs(model: dict) -> list[dict]:
         trigger = _BUFF_TRIGGER.get(short)
         if trigger:
             entry["trigger"] = trigger
-        for raw_field, schema_field in field_map.items():
+        for raw_field, schema_field in (field_map or {}).items():
             value = behavior.get(raw_field)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 entry[schema_field] = _num(value)
+        if nested_tag:
+            # Pull the additive tag bonus out of the nested damageModifierModel
+            # (e.g. Mortar Pop-and-Awe → +1 damage vs BAD). Read ``damageAddative``
+            # (sic), never ``damageMultiplier`` (the 1.0 decoy); only emit a tag
+            # that has a confirmed committed schema field.
+            dm = behavior.get("damageModifierModel")
+            if isinstance(dm, dict):
+                schema_field = _BUFF_TAG_FIELD.get(str(dm.get("tag") or ""))
+                value = dm.get("damageAddative")
+                if (
+                    schema_field
+                    and isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                ):
+                    entry[schema_field] = _num(value)
+        # A nested-tag buff whose tag we don't yet map yields no number → drop it
+        # rather than emit a bare, value-less entry the runtime can't render.
+        if nested_tag and len(entry) <= 2:
+            continue
         for raw_field, schema_field in _BUFF_FRAME_FIELDS.get(short, {}).items():
             value = behavior.get(raw_field)
             if isinstance(value, (int, float)) and not isinstance(value, bool):

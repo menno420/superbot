@@ -1063,3 +1063,69 @@ def test_buffs_prince_of_darkness_distance_is_lifespan_multiplier(mod):
     buff = mod._map_tier(model)["buffs"][0]
     assert buff["damageAdditive"] == 3
     assert buff["lifespanMultiplier"] == 1.5
+
+
+def test_buffs_shinobi_tactics_maps_multiplier_to_rate(mod):
+    # Ninja "Shinobi Tactics" (0-3-0+): the dedicated model is not *SupportModel/
+    # *BuffModel-suffixed, so earlier discovery missed it. Raw multiplier 0.92 ==
+    # committed wiki rateMultiplier 0.92. The model has no pierce field, so only
+    # the confirmed rate is written (the committed +8% pierce is a separate model).
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("SupportShinobiTacticsModel"),
+            "name": "SupportShinobiTacticsModel_Support_",
+            "buffLocsName": "ShinobiTacticsBuff",
+            "multiplier": 0.92,
+            "maxStacks": 20,
+            "maxStackSize": 20,
+        }
+    )
+    assert mod._map_tier(model)["buffs"] == [
+        {
+            "kind": "SupportShinobiTactics",
+            "name": "ShinobiTacticsBuff",
+            "rateMultiplier": 0.92,
+        }
+    ]
+
+
+def test_buffs_damage_modifier_support_reads_nested_tag_bonus(mod):
+    # Mortar Pop-and-Awe (0-4-0+): the additive bonus lives in the *nested*
+    # damageModifierModel as the misspelled ``damageAddative`` (1.0 vs tag Bad ==
+    # committed damageAdditiveForBad 1); ``damageMultiplier`` 1.0 is the decoy.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("DamageModifierSupportModel"),
+            "mutatorId": "PopAndAweSupport",
+            "isGlobal": True,
+            "damageModifierModel": {
+                "$type": _t("DamageModifierForTagModel"),
+                "tag": "Bad",
+                "damageMultiplier": 1.0,
+                "damageAddative": 1.0,
+            },
+        }
+    )
+    assert mod._map_tier(model)["buffs"] == [
+        {
+            "kind": "DamageModifierSupport",
+            "name": "PopAndAweSupport",
+            "damageAdditiveForBad": 1,
+            "isGlobal": True,
+        }
+    ]
+
+
+def test_buffs_damage_modifier_support_drops_unmapped_tag(mod):
+    # An unmapped tag yields no number → drop the entry, never emit a bare buff.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("DamageModifierSupportModel"),
+            "mutatorId": "X",
+            "damageModifierModel": {"tag": "Lead", "damageAddative": 2.0},
+        }
+    )
+    assert "buffs" not in mod._map_tier(model)
