@@ -467,6 +467,64 @@ def test_map_geraldo_items_decodes_name_cost_and_meta(mod, tmp_path):
     assert row["between_rounds"] is True
 
 
+def _bloon_model(bid, *, base=None, props=0, camo=False, grow=False, fort=False, children=None):
+    m = {
+        "$type": "Il2CppAssets.Scripts.Models.Bloons.BloonModel, Assembly-CSharp",
+        "id": bid,
+        "baseId": base or bid,
+        "bloonProperties": props,
+        "isCamo": camo,
+        "isGrow": grow,
+        "isFortified": fort,
+        "behaviors": [],
+    }
+    if children is not None:
+        m["behaviors"].append(
+            {
+                "$type": "Il2CppAssets.Scripts.Models.Bloons.Behaviors.SpawnChildrenModel, Assembly-CSharp",
+                "children": children,
+                "name": "",
+            },
+        )
+    return m
+
+
+def test_bloon_children_resolve_base_and_preserve_modifiers(mod, tmp_path):
+    dump = tmp_path / "dump"
+    # A BAD-like bloon spawning 2 plain ZOMG + 3 *camo* DDT, plus the variant
+    # child models that carry the baseId + modifier flags.
+    _write(dump / "Bloons" / "Bad" / "Bad.json",
+           _bloon_model("Bad", children=["Zomg", "Zomg", "DdtCamo", "DdtCamo", "DdtCamo"]))
+    _write(dump / "Bloons" / "Zomg" / "Zomg.json", _bloon_model("Zomg"))
+    _write(dump / "Bloons" / "Ddt" / "DdtCamo.json",
+           _bloon_model("DdtCamo", base="Ddt", camo=True))
+
+    meta = mod._bloon_variant_meta(dump)
+    assert meta["ddtcamo".lower()] == ("Ddt", ["camo"])
+
+    raw = json.loads((dump / "Bloons" / "Bad" / "Bad.json").read_text())
+    children = mod._bloon_children_list(raw, meta)
+    assert children == [
+        {"bloon_id": "zomg", "count": 2, "modifiers": []},
+        {"bloon_id": "ddt", "count": 3, "modifiers": ["camo"]},
+    ]
+    canon = {"zomg": "ZOMG", "ddt": "DDT"}
+    assert mod._children_prose(children, canon) == "2 ZOMGs and 3 Camo DDTs"
+
+
+def test_bloon_immunity_derives_from_property_bitflag(mod, tmp_path):
+    # The parser sources immunity from the shared damage-types inverter; Zebra's
+    # 6 (Black|White) resolves to the union of their immunities.
+    from utils.btd6.damage_types import immunities_for_bloon_properties
+
+    assert set(immunities_for_bloon_properties(6)) == {
+        "Explosion",
+        "Glacier",
+        "Cold",
+        "Frigid",
+    }
+
+
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(

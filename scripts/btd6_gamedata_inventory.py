@@ -53,7 +53,11 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     "Towers": ("✅", "stats, attacks, projectiles, abilities, subtowers, zones, buffs"),
     "Upgrades": ("✅", "names, per-difficulty cost, xp, path/tier, descriptions"),
     "Maps": ("✅", "full cutover: difficulty, has_water, names (curated removables)"),
-    "Bloons": ("🟡", "structure known; still wiki-sourced (children/immunity partial)"),
+    "Bloons": (
+        "🟡",
+        "children + immunity now game-data-sourced (--bloons); rbe/health/speed/"
+        "category/aliases still wiki",
+    ),
     "Bosses": ("⬜", "wiki-sourced; cosmetic Bosses/ — combat lives in Bloons/"),
     "Rounds": (
         "🟡",

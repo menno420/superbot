@@ -18,9 +18,15 @@ works** (the traps we hit), and what is still un-decoded.
 ### Current state & next actions (READ FIRST)
 
 **Where the data stands (verified on `main`, full CI green):**
-- **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds/bloons still
+- **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds still
   **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
   Rounds now carry derived **per-round + cumulative cash** (all 140).
+- **Bloons** 26 — **children + immunity cut over to game data** (`--bloons`):
+  `immune_to` is derived from each bloon's `bloonProperties` bitflag (via
+  `utils.btd6.damage_types.immunities_for_bloon_properties`, verified 23/23 vs
+  the curated lists), and `children` from the dump's `SpawnChildrenModel` with
+  variant modifiers preserved (camo/regrow/fortified). The rest
+  (rbe/health/layers/speed/category/aliases/description) stays wiki-curated.
 - **Maps** 86 — **fully cut over to game data** (`--maps`), with `has_water`,
   curated **removables** (18 maps), and aggregate count/list grounding. (89 dump
   files minus the 3 non-player `IsStandard=False` maps: Blons, Base Editor Map,
@@ -295,6 +301,34 @@ is exactly where the line falls, so the next session doesn't rediscover it:
    `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
 4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
    stats independently; it must NOT be presented as answering combined/applied questions.
+
+### Session log — 2026-06-08 (Bloons children + immunity cut over to game data)
+
+Maintainer-approved cutover of the two `bloons.json` fields that are exactly
+reproducible from the dump, sourcing them from game data instead of bloonswiki.
+
+- **Immunity** — derived from each bloon model's `bloonProperties` bitflag via a new
+  public inverter `utils.btd6.damage_types.immunities_for_bloon_properties` (the inverse of
+  the existing projectile-side `_DAMAGE_TYPES` map — *one* source of truth for the bitmask).
+  A bloon with property bit `p` is immune to every damage type whose `immuneBloonProperties`
+  mask shares `p` (Lead bit 1 → Shatter/Cold/Energy/Sharp; Zebra 6 = Black|White). **Verified
+  23/23 exact** against the curated `immune_to` lists, so the overlay leaves them byte-identical
+  (provenance-only) — zero churn.
+- **Children** — from the dump's `SpawnChildrenModel`, each child resolved to its **base**
+  bloon via the child model's `baseId` and tagged with the variant's `isCamo`/`isGrow`/
+  `isFortified` modifiers. This both matches the curated modifier children (Glass Bloon's
+  plain/regrow/camo Zebras) and **corrects two wiki errors the dump disagrees with**:
+  - **BAD** → `3 DDTs` became `3 **Camo** DDTs` (BAD's DDTs are camo in-game; the wiki dropped it).
+  - **DDT** → `4 **Camo** Regrow Ceramic Bloons` became `4 Regrow Ceramic Bloons` (the dump tags
+    DDT's ceramic children Regrow-only, not Camo). *Maintainer: worth an eyeball — this is the
+    game data overriding the wiki.*
+- **Tooling:** `parse_gamedata.py --bloons` (overlay; `--dry-run` to preview). It updates only
+  `children`/`children_list`/`immune_to`, preserves every other curated field, and writes a
+  `children_immunity_source` provenance marker. Re-runnable per dump pull.
+- **Coverage map:** `Bloons/` note updated (children+immunity game-sourced; the rest still wiki).
+- **Tests:** damage-types inverter (Lead/Black/White/Purple/Zebra-union, dedup, no Normal/Unknown);
+  parser child base-resolution + modifier preservation + prose; data_service cutover assertions
+  (one pre-existing DDT test corrected from the old wiki value). Full suite green.
 
 ### Session log — 2026-06-08 (Geraldo shop items ingested → answerable)
 

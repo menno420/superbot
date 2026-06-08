@@ -355,9 +355,31 @@ def test_bloon_children_list_is_structured():
     assert get_bloon("lead").children_list == (
         {"bloon_id": "black", "count": 2, "modifiers": []},
     )
+    # children/immunity are now game-data-sourced (the --bloons cutover). The
+    # dump tags DDT's four Ceramic children as Regrow only — not Camo, which the
+    # wiki had asserted — so the curated modifier here was corrected to the game's.
     ddt_child = get_bloon("ddt").children_list[0]
     assert ddt_child["bloon_id"] == "ceramic" and ddt_child["count"] == 4
-    assert "camo" in ddt_child["modifiers"]
+    assert ddt_child["modifiers"] == ["regrow"]
+
+
+def test_bloon_children_and_immunity_are_game_data_sourced():
+    # The --bloons cutover sources children + immunity from the dump. Two
+    # curated values the wiki had wrong are now the game's:
+    from services.btd6_data_service import get_bloon
+
+    # BAD spawns *camo* DDTs (the wiki dropped the camo tag).
+    bad_ddt = next(c for c in get_bloon("bad").children_list if c["bloon_id"] == "ddt")
+    assert bad_ddt["modifiers"] == ["camo"]
+    assert "Camo DDTs" in get_bloon("bad").children
+    # Immunity derived from the bloonProperties bitflag still matches the curated
+    # set exactly (the inverter verified 23/23 against the wiki on v55).
+    assert set(get_bloon("zebra").immune_to) == {
+        "Explosion",
+        "Glacier",
+        "Cold",
+        "Frigid",
+    }
 
 
 def test_curated_aliases_and_modifier_entries_preserved():

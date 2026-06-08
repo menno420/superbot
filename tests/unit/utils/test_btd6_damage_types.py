@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from utils.btd6.damage_types import decode_damage_type
+from utils.btd6.damage_types import (
+    decode_damage_type,
+    immunities_for_bloon_properties,
+)
 
 # (immuneBloonProperties, expected name, expected cannot_pop) from Template:BTD6 dt.
 CASES = [
@@ -42,3 +45,32 @@ def test_unknown_value_is_flagged_not_guessed():
     dt = decode_damage_type(999)
     assert not dt.is_known
     assert dt.name == "Unknown"
+
+
+# (bloonProperties bitflag, expected immunity set) — the dump-sourced inverse,
+# pinned against the curated bloonswiki ``immune_to`` lists it reproduces.
+IMMUNITY_CASES = [
+    (0, set()),  # Red/Blue/... : no immunities
+    (1, {"Shatter", "Cold", "Energy", "Sharp"}),  # Lead
+    (2, {"Explosion"}),  # Black
+    (4, {"Glacier", "Cold", "Frigid"}),  # White
+    (8, {"Fire", "Energy", "Frigid", "Plasma"}),  # Purple
+    (6, {"Explosion", "Glacier", "Cold", "Frigid"}),  # Zebra = Black | White
+]
+
+
+@pytest.mark.parametrize(("props", "expected"), IMMUNITY_CASES)
+def test_immunities_for_bloon_properties_matches_curated(props, expected):
+    result = immunities_for_bloon_properties(props)
+    assert set(result) == expected
+    # Deterministic, de-duplicated (Energy comes from masks 9 and 73), and never
+    # emits Normal/Unknown.
+    assert len(result) == len(set(result))
+    assert "Normal" not in result and "Unknown" not in result
+
+
+def test_zebra_immunity_is_the_union_of_its_property_bits():
+    # The bitflag composes: Zebra (6 = 2|4) is immune to exactly Black's ∪ White's.
+    black = set(immunities_for_bloon_properties(2))
+    white = set(immunities_for_bloon_properties(4))
+    assert set(immunities_for_bloon_properties(6)) == black | white

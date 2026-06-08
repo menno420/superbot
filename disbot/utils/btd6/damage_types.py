@@ -75,4 +75,32 @@ def decode_damage_type(immune_bloon_properties: int) -> DamageType:
     return DamageType(name=name, cannot_pop=cannot_pop)
 
 
-__all__ = ["DamageType", "decode_damage_type"]
+def immunities_for_bloon_properties(bloon_properties: int) -> tuple[str, ...]:
+    """Damage-type names a bloon with ``bloon_properties`` is immune to.
+
+    The inverse of :data:`_DAMAGE_TYPES`: a bloon carrying property bit ``p`` is
+    immune to a damage type whose ``immuneBloonProperties`` mask shares that bit
+    (the projectile-side filter excludes any bloon sharing a property bit). So a
+    Lead bloon (bit ``1``) is immune to every damage type whose mask has bit
+    ``1`` set — Shatter / Cold / Energy / Sharp. Deterministic (ascending mask
+    order), de-duplicated by name, and ``Normal``/``Unknown`` are never emitted.
+
+    This reproduces the curated bloonswiki ``immune_to`` lists **exactly** from
+    the game-data dump's ``bloonProperties`` flag (verified 23/23 on v55), so
+    bloon immunity can be sourced from the dump instead of the wiki.
+    """
+    seen: set[str] = set()
+    out: list[str] = []
+    for mask, (name, _) in _DAMAGE_TYPES.items():
+        if (
+            mask
+            and (mask & bloon_properties)
+            and name != "Unknown"
+            and name not in seen
+        ):
+            seen.add(name)
+            out.append(name)
+    return tuple(out)
+
+
+__all__ = ["DamageType", "decode_damage_type", "immunities_for_bloon_properties"]
