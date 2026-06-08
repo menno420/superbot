@@ -51,6 +51,18 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   layer the future Server-Management Hub (PR14) should reuse. Note the *axis*:
   `setup_blockers.py` / `setup_readiness.py` answer "is the bot's substrate built?" — a
   different question from per-guild config health.
+- **A new setup op-kind won't stage / silently overwrites another row** → the
+  setup-draft op-kind is a **three-place contract**: add it to (1) the dispatcher
+  `services/setup_operations.py::_KNOWN_KINDS` + a dispatch arm, (2) the DB gate
+  `utils/db/setup_draft.py::_KNOWN_OP_KINDS`, **and** (3) a migration that widens the
+  `setup_draft_operations.op_kind` CHECK. Miss (2)/(3) and staging raises `ValueError`
+  / a CHECK violation at runtime even though the dispatcher accepts it (this is the bug
+  PR11's `set_role_threshold` hit; migration 059 + the
+  `test_setup_draft_op_kind_parity.py` drift guard close it). **Slot key gotcha:** the
+  draft replace-on-conflict index is `(op_kind, subsystem, setting_name, binding_name)`
+  — it does **not** include `target_id`, so per-target ops (one row per role/channel)
+  must encode the target into `setting_name`/`binding_name` or they collide and the last
+  write wins.
 - **"Should I add a manager/panel?"** → check the tracker's Remaining queue first;
   reuse selectors + provisioning previews; never add a second resource-creation path.
 
