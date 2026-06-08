@@ -1103,3 +1103,169 @@ Implemented this session: SUBSYSTEMS["servermanagement"] + HUBS entry (administr
   enumerations updated. Live boot: identity-contract clean (STRICT=on), 0 ERROR/CRITICAL.
 Moved/copied on: 2026-06-08 (this session — server-management PR14).
 ```
+
+---
+
+### Q-0017 — Adaptive Setup/Access/Routine Platform: planning document structure (2026-06-08)
+
+**Area:** Setup / Access / Automation platform (new)
+**Type:** Planning process / Doc organization
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Brief note in `docs/ideas/` capture file for this
+  platform (once created); the planning doc itself in `docs/planning/`.
+
+**Question:** The Adaptive Setup, Access, Preset, and Routine Platform covers 8 distinct
+concepts (Guild Feature Profiles, Unified Access Map, Help Preview, Setup Health, Preset
+Loader, Routine Engine, Time-based Unlocks, Personal Setup Wizard). Should Codex produce
+one comprehensive planning doc in `docs/planning/`, a summary capture in `docs/ideas/` plus
+a planning doc in `docs/planning/`, or separate planning docs per major concept?
+
+**Maintainer answer**
+
+```text
+One comprehensive doc in docs/planning/
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+All 8 concepts should land in a single comprehensive planning doc in docs/planning/.
+The doc should include the readiness matrix, phased roadmap, do-not-build section, and
+file-ownership mapping — consistent with how server-management-roadmap and ai-roadmap
+are structured. docs/ideas/ does not need a separate capture file for this platform;
+the planning doc is the authoritative home.
+```
+
+**Routing result**
+
+```text
+Destination: the new planning doc in docs/planning/ (to be created by Codex).
+  This Q-block is the durable record of the doc structure decision.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0018 — Adaptive Setup/Access/Routine Platform: Guild Feature Profiles starter set (2026-06-08)
+
+**Area:** Setup / Guild Feature Profiles
+**Type:** Product definition
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** The Q-0017 planning doc (profiles section).
+
+**Question:** Six example Guild Feature Profiles were proposed: Minimal Utility Bot,
+Community Server, Game Server, Moderation Heavy, Private/Friends Server, BTD6-Focused
+Server. Should Codex treat these 6 as the definitive starter set, limit to general-purpose
+profiles only (parking BTD6-Focused Server until BTD6 ships), or revise/extend the set
+based on what the subsystem registry actually models?
+
+**Maintainer answer**
+
+```text
+Let Codex suggest revisions based on what the codebase subsystem registry actually models.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The 6 profiles are a starting suggestion, not a fixed list. When Codex maps the repo,
+it should compare the proposed profiles against the actual subsystem registry entries and
+cog routing capabilities, then propose additions, name changes, or removals as warranted.
+BTD6-Focused Server may be deferred or merged with Game Server depending on BTD6 readiness.
+The planning doc should mark which profiles are implementable today vs. dependent on
+features still in-flight.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (profiles section) — Codex incorporates this when
+  building the doc.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0019 — Adaptive Setup/Access/Routine Platform: Routine Engine default safety posture (2026-06-08)
+
+**Area:** Routine Engine / Automation
+**Type:** Architecture / Safety policy
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** The Q-0017 planning doc (Routine Engine section) +
+  `docs/planning/` once the engine spec is written.
+
+**Question:** When a Routine Engine trigger fires, should the default safety posture be
+(1) conservative — all actions require an approval draft, (2) progressive — low-risk
+actions auto-apply, medium/high-risk need approval, or (3) whitelist — nothing auto-applies
+until the owner marks individual routines as trusted?
+
+**Maintainer answer**
+
+```text
+Progressive: low-risk auto-applies, medium/high-risk needs approval.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The Routine Engine's default posture is progressive. "Low-risk" actions (post/update
+panel, send staff notification, enable quiet mode, hide/show help category, start setup
+checklist) auto-apply. "Medium/high-risk" actions (apply feature profile, modify cog
+routing, change command access, queue Final Review draft) create an approval draft and
+notify staff. The planning doc must define the risk classification table explicitly so
+implementers don't have to guess the line. Audit logging is mandatory for all actions
+regardless of risk level.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Routine Engine section) — the risk classification table
+  and safety posture live there.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0020 — Adaptive Setup/Access/Routine Platform: Personal Setup Wizard planning depth (2026-06-08)
+
+**Area:** Personal Setup Wizard (/my-setup)
+**Type:** Scope / Prioritization
+**Priority:** Low
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** The Q-0017 planning doc (Phase 5 section).
+
+**Question:** How much planning depth should Codex give the Personal Setup Wizard
+(/my-setup, per-user preferences)? Options were: capture-only (short paragraph, park as
+future), sketch the data model and privacy boundary only, or full Phase 5 spec covering
+/my-setup, /my-preferences, onboarding checklist, timezone, help ordering, DM settings,
+and account links.
+
+**Maintainer answer**
+
+```text
+Full Phase 5 spec.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Even though /my-setup is Phase 5 (guild-level features not yet complete), Codex should
+document it at full spec depth: user preference table shape, privacy layering
+(global safety → guild → channel → role → user preference), /my-setup and /my-preferences
+command surfaces, onboarding checklist, per-user timezone for reminders/routines,
+personalized help ordering, DM notification settings, and optional per-feature
+favorites/hiding. The spec should clearly mark which pieces depend on Phase 2-4
+guild-level work completing first. The key invariant: user preferences can hide, sort,
+or personalize but must not grant access.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Phase 5 / Personal Setup Wizard section).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
