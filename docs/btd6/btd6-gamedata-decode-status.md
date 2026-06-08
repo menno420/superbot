@@ -13,7 +13,7 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-04, end of v55 session)
+## ⭐ Next session — start here (updated 2026-06-08 — provenance gate lifted, PR #587)
 
 ### Current state & next actions (READ FIRST)
 
@@ -106,6 +106,36 @@ works** (the traps we hit), and what is still un-decoded.
    maps, and **never claim a complete cross-map list** (coverage is partial —
    ~18 of the ~30+ maps that have removables). Extend `_MAP_REMOVABLES` (not the
    parser logic) to cover more maps; costs still need a verified source.
+
+**Exploration tooling — use this before reading dump files manually:**
+
+`scripts/explore_gamedata.py` (added 2026-06-08, PR #587) — a read-only search tool
+for the game-data dump. Clone the dump first, then run it:
+
+```bash
+git clone --depth 1 https://github.com/Btd6ModHelper/btd6-game-data /tmp/btd6gd
+
+# What model types exist under a tower? (use before mapping a new area)
+python3.10 scripts/explore_gamedata.py --dump /tmp/btd6gd --list-types --in Towers/Village
+
+# Find every instance of a model type + its fields (use when a buff/zone type is unknown)
+python3.10 scripts/explore_gamedata.py --dump /tmp/btd6gd --search RangeSupportModel --struct
+
+# Find every node that carries a specific field (use when the field name is known, model is not)
+python3.10 scripts/explore_gamedata.py --dump /tmp/btd6gd --field damageAddative --in Towers
+
+# Show the field values (not just names) for a specific model instance
+python3.10 scripts/explore_gamedata.py --dump /tmp/btd6gd --search MoabShoveZoneModel --in Towers/HeliPilot
+
+# Show the JSON path to each match (use when you need to understand the nesting)
+python3.10 scripts/explore_gamedata.py --dump /tmp/btd6gd --search RangeSupportModel --show-path --limit 5
+```
+
+The tool walks the full nested JSON tree (depth 30 by default). `--struct` shows field
+names only — useful for deciding if a model type is worth decoding before reading values.
+`--in` accepts any case-insensitive substring of the file path. Provenance note: outputs
+are unverified — cross-check a few against the raw JSON before trusting them in a mapping
+decision.
 
 **Binding discipline for every decode step:**
 - Re-validate anchors first (`--validate-anchors`); if they fail the dump moved → stop.
