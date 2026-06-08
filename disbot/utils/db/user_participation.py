@@ -258,7 +258,7 @@ async def count_rows() -> dict[str, int]:
 
 # ---------------------------------------------------------------------------
 # Teardown — drop every per-guild row for one guild.  Per the
-# retention policy in docs/platform-consistency-ledger.md §3, the
+# retention policy in docs/health/platform-consistency-ledger.md §3, the
 # same user's participation in OTHER guilds is preserved.
 # ---------------------------------------------------------------------------
 

@@ -42,7 +42,7 @@ approval per action; they do not belong in `services.ai_tools`.
 | Live GitHub default branch | `main` via `GET /repos/menno420/superbot` | Re-verify before every Opus plan. |
 | Open PRs | None returned by live public GitHub API on 2026-06-07 | No AI/docs/update/server-management in-flight collision blocked this roadmap. |
 | Latest merged PR | #564, `docs: consolidate BTD6 island + archive retired burst + hard reachability gate`, merged 2026-06-07 15:09:08Z | Current worktree includes the latest merge. |
-| Bot-awareness state | `docs/bot-awareness-implementation-plan.md` and source confirm PR1–PR6 shipped; typed health, `!platform health`, startup health, grouped observations, owner-only AI snapshot, and durable findings exist | Reuse these owners; do not create a second diagnostics system. |
+| Bot-awareness state | `docs/health/bot-awareness-implementation-plan.md` and source confirm PR1–PR6 shipped; typed health, `!platform health`, startup health, grouped observations, owner-only AI snapshot, and durable findings exist | Reuse these owners; do not create a second diagnostics system. |
 | AI tool source | `services.ai_tools` states and implements read-only tools using `AIToolSpec`, `ToolRegistry`, and scope filtering | Planned descriptors/toolsets/budgets remain foundation work, not shipped truth. |
 | Migration chain | `disbot/migrations/057_operational_health_findings.sql` owns durable health findings; latest migration is `058_cleanup_policy_version.sql` | Any update-awareness schema starts at 059 or later after re-verification. |
 | Stop conditions | None triggered | A confident planning-only roadmap is appropriate. |
@@ -78,8 +78,8 @@ abstraction is not present in source.
 | Platform/diagnostics panels | `cogs/diagnostic_cog.py`, `cogs/diagnostic/_platform_embeds.py`, `views/diagnostic/*` | Existing owner/platform diagnostics commands and panel surfaces | No Recent Updates/update confidence item | Stable owner surface; extend |
 | Setup advisor | `services/setup_ai_advisor.py` and server-management/setup services/docs | Existing bounded explanation seam over deterministic setup state | Must not become an AI mutation or second setup engine | Existing advisory seam; gated expansion |
 | Automation/scheduler | `services/automation_registry.py`, `automation_scheduler.py`, `automation_executor.py`, `automation_mutation.py` | Deterministic automation ownership already exists | AI does not own schedules/actions; proposal/confirmation seam is not built | Stable deterministic owner; AI actions deferred |
-| Evaluations/tests | `tests/unit/runtime/ai/`, `tests/unit/services/test_ai_tools.py`, BTD6/health/docs/invariant suites, `docs/ai-guard-coverage-map.md` | Guard, provider, tool, grounding, health, and document checks exist | No shared orchestration trace/budget/connector/action eval suite | Strong base; expand per phase |
-| Broad future AI capabilities | `docs/ai-tool-capability-roadmap.md`, `docs/ideas/ai-extra-tool-capability-ideas.md`, future-direction brainstorm | Source-aware options and safety analysis | Not implementation approval; most capabilities do not exist | Plan/ideas only |
+| Evaluations/tests | `tests/unit/runtime/ai/`, `tests/unit/services/test_ai_tools.py`, BTD6/health/docs/invariant suites, `docs/ai/ai-guard-coverage-map.md` | Guard, provider, tool, grounding, health, and document checks exist | No shared orchestration trace/budget/connector/action eval suite | Strong base; expand per phase |
+| Broad future AI capabilities | `docs/ai/ai-tool-capability-roadmap.md`, `docs/ideas/ai-extra-tool-capability-ideas.md`, future-direction brainstorm | Source-aware options and safety analysis | Not implementation approval; most capabilities do not exist | Plan/ideas only |
 
 ### Source facts that constrain every next plan
 
@@ -100,13 +100,13 @@ abstraction is not present in source.
 | Document | Status / authority | Current usefulness | Reconciliation into this roadmap | Must not be treated as |
 |---|---|---|---|---|
 | `docs/subsystems/ai.md` | Reference folio; routes to binding owners/source | Best AI subsystem entry point and current owner-intent summary | Keep as folio; link this roadmap as planning context after review | Implementation approval or replacement for binding docs |
-| `docs/ai-config-ownership.md` / `docs/ai-service-integration-map.md` | Binding/reference ownership guidance | Defines config/mutation boundaries and existing integration seams | Governs all phases, especially actions/connectors | Permission for AI writes |
-| `docs/ai-readiness-plan.md` | Historical/plan context with shipped foundations | Explains readiness rationale | Reuse existing readiness owner; do not restart plan | Current global roadmap |
-| `docs/ai-tool-capability-roadmap.md` | `plan`, source-verified capability triage | Strong safety sequencing and first-foundation recommendation | This roadmap consolidates its capability sequence; retain it as focused capability rationale | Approval for any listed tool |
-| `docs/ai-complex-request-tool-orchestration-plan.md` | `plan`, research-backed design | Canonical detailed design direction for catalogue/toolsets/budgets/complex BTD6 orchestration | Phase 1 should revise/lock this document rather than invent a second orchestration plan | Shipped `AIToolDescriptor`, toolsets, policies, budgets, or workflows |
-| `docs/bot-awareness-implementation-plan.md` | Living ledger; programme complete | Shipped-status authority for bot-awareness PR1–PR6 and remaining live test | Treat as completed dependency and historical delivery ledger | A request to build more health infrastructure |
-| `docs/bot-awareness-diagnostics-plan.md` | Reference/source map | Useful architecture rationale | Keep as historical map; implementation authority moved to completed plan | Active execution plan |
-| `docs/ai-guard-coverage-map.md` | Reference verification artifact | Confirms expansion choke-point guards | Keep as mandatory pre-expansion check; add new invariant coverage per phase | Proof that future tools/actions are automatically safe |
+| `docs/ai-config-ownership.md` / `docs/ai/ai-service-integration-map.md` | Binding/reference ownership guidance | Defines config/mutation boundaries and existing integration seams | Governs all phases, especially actions/connectors | Permission for AI writes |
+| `docs/ai/ai-readiness-plan.md` | Historical/plan context with shipped foundations | Explains readiness rationale | Reuse existing readiness owner; do not restart plan | Current global roadmap |
+| `docs/ai/ai-tool-capability-roadmap.md` | `plan`, source-verified capability triage | Strong safety sequencing and first-foundation recommendation | This roadmap consolidates its capability sequence; retain it as focused capability rationale | Approval for any listed tool |
+| `docs/ai/ai-complex-request-tool-orchestration-plan.md` | `plan`, research-backed design | Canonical detailed design direction for catalogue/toolsets/budgets/complex BTD6 orchestration | Phase 1 should revise/lock this document rather than invent a second orchestration plan | Shipped `AIToolDescriptor`, toolsets, policies, budgets, or workflows |
+| `docs/health/bot-awareness-implementation-plan.md` | Living ledger; programme complete | Shipped-status authority for bot-awareness PR1–PR6 and remaining live test | Treat as completed dependency and historical delivery ledger | A request to build more health infrastructure |
+| `docs/health/bot-awareness-diagnostics-plan.md` | Reference/source map | Useful architecture rationale | Keep as historical map; implementation authority moved to completed plan | Active execution plan |
+| `docs/ai/ai-guard-coverage-map.md` | Reference verification artifact | Confirms expansion choke-point guards | Keep as mandatory pre-expansion check; add new invariant coverage per phase | Proof that future tools/actions are automatically safe |
 | `docs/ideas/future-product-direction-2026-06-07.md` | `ideas`, capture-only | Broad product direction and do-not-duplicate seams | Feed candidate lanes and questions only | Sequencing, approval, or current truth |
 | `docs/ideas/ai-extra-tool-capability-ideas.md` | `ideas`, backlog | Detailed capability/security brainstorm | Capability matrix merges its non-duplicate ideas | Approval or a standalone implementation backlog |
 | `docs/planning/superbot-ideas-lab-2026-06-05.md` | Mostly ideas; §2 and §6 binding for backlog handling | Gate/rejection ledger | Its rejection/gate rules constrain this roadmap | Approval for non-binding suggestion rows |
@@ -161,7 +161,7 @@ cleanup should avoid broad unrelated edits.
 - Produce a current source map and unresolved-decision list.
 
 **Output:** this roadmap is the initial source map. Before implementation, Opus should
-refresh `docs/ai-complex-request-tool-orchestration-plan.md` and the relevant focused
+refresh `docs/ai/ai-complex-request-tool-orchestration-plan.md` and the relevant focused
 plan. **No runtime changes.**
 
 ### Phase 1 — Canonical AI orchestration foundation

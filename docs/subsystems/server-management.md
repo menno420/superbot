@@ -61,7 +61,7 @@ cleanup policy, setup, and the future unified hub. Inspect first:
 - The roadmap defines target architecture and settled decisions; the implementation
   plan defines dependency/scoping detail. Neither overrides source or the tracker.
 - Manual lifecycle mutations route through domain services and audit paths. Resource
-  creation must preserve `docs/resource-provisioning-overview.md` and the
+  creation must preserve `docs/setup-platform/resource-provisioning-overview.md` and the
   no-silent-auto-create invariant. Authority checks follow
   `docs/capability-authority.md`.
 - Role/channel choices should be dynamic selectors with stable IDs where persisted;
@@ -153,5 +153,5 @@ reusable so a web companion is *possible* later, but do not start web work now.
 `docs/planning/server-management-status-2026-06-05.md`,
 `docs/planning/server-management-roadmap-2026-06-05.md`,
 `docs/planning/server-management-implementation-plan-2026-06-05.md`,
-`docs/resource-provisioning-overview.md`, `docs/capability-authority.md`,
+`docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`,
 `docs/server-logging.md`.

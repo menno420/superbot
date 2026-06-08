@@ -17,38 +17,38 @@ overrides:
     docs: [docs/ownership.md, docs/help-command-surface-map.md]
   - prefix: services/role_
     folio: docs/subsystems/server-management.md
-    docs: [docs/ownership.md, docs/resource-provisioning-overview.md]
+    docs: [docs/ownership.md, docs/setup-platform/resource-provisioning-overview.md]
   - prefix: services/channel_lifecycle
     folio: docs/subsystems/server-management.md
-    docs: [docs/resource-provisioning-overview.md, docs/ownership.md]
+    docs: [docs/setup-platform/resource-provisioning-overview.md, docs/ownership.md]
   - prefix: services/resource_provisioning
     folio: docs/subsystems/server-management.md
-    docs: [docs/resource-provisioning-overview.md]
+    docs: [docs/setup-platform/resource-provisioning-overview.md]
 
   # --- settings / bindings / provisioning ---
   - prefix: services/settings_mutation
     folio: docs/subsystems/settings-bindings-provisioning.md
-    docs: [docs/settings-customization-roadmap.md, docs/capability-authority.md]
+    docs: [docs/setup-platform/settings-customization-roadmap.md, docs/capability-authority.md]
   - prefix: services/binding
     folio: docs/subsystems/settings-bindings-provisioning.md
-    docs: [docs/settings-customization-roadmap.md, docs/ownership.md]
+    docs: [docs/setup-platform/settings-customization-roadmap.md, docs/ownership.md]
   - prefix: cogs/settings
     folio: docs/subsystems/settings-bindings-provisioning.md
     docs: [docs/building-roadmap/config-input-standard.md]
   - prefix: cogs/setup
     folio: docs/subsystems/settings-bindings-provisioning.md
-    docs: [docs/setup_wizard_finalization_plan.md, docs/resource-provisioning-overview.md]
+    docs: [docs/setup-platform/setup_wizard_finalization_plan.md, docs/setup-platform/resource-provisioning-overview.md]
 
   # --- health / diagnostics ---
   - prefix: services/health
     folio: docs/subsystems/health-diagnostics.md
-    docs: [docs/bot-awareness-implementation-plan.md, docs/platform-consistency-ledger.md]
+    docs: [docs/health/bot-awareness-implementation-plan.md, docs/health/platform-consistency-ledger.md]
   - prefix: services/diagnostics
     folio: docs/subsystems/health-diagnostics.md
-    docs: [docs/platform-consistency-ledger.md, docs/smoke-test-checklist.md]
+    docs: [docs/health/platform-consistency-ledger.md, docs/smoke-test-checklist.md]
   - prefix: services/platform_consistency
     folio: docs/subsystems/health-diagnostics.md
-    docs: [docs/platform-consistency-ledger.md]
+    docs: [docs/health/platform-consistency-ledger.md]
   - prefix: cogs/diagnostic
     folio: docs/subsystems/health-diagnostics.md
     docs: [docs/subsystems/health-diagnostics.md]
@@ -87,7 +87,7 @@ overrides:
     docs: [docs/subsystems/games.md]
   - prefix: cogs/mining
     folio: docs/subsystems/games.md
-    docs: [docs/mining_exploration_brainstorm.md]
+    docs: [docs/ideas/mining_exploration_brainstorm.md]
 
   # --- media / youtube ---
   - prefix: services/server_logging

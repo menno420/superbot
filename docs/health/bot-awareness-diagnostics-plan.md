@@ -8,7 +8,7 @@ this document alone
 
 > **➡ Execution authority has moved.** This doc is the repository *map*. The
 > approved, source-verified, PR-by-PR implementation plan lives in
-> **`docs/bot-awareness-implementation-plan.md`** (contracts → deterministic
+> **`docs/health/bot-awareness-implementation-plan.md`** (contracts → deterministic
 > `!platform health` → startup health → structured observations → AI tool →
 > persistent findings). When the two disagree, the implementation plan and the
 > source win.

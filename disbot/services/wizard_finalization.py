@@ -2,7 +2,7 @@
 
 A small, sync, fail-safe registry that reports how far the setup-wizard
 *finalization* tranche (the PR1–PR3 sequence in
-``docs/setup_wizard_finalization_plan.md``) has progressed.  It is
+``docs/setup-platform/setup_wizard_finalization_plan.md``) has progressed.  It is
 surfaced as an informational section of ``!platform consistency`` so
 operators and contributors can see, at a glance, which finalization
 steps have landed.

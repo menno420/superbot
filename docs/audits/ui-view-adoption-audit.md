@@ -8,10 +8,10 @@
 > source — e.g. `views/economy/work_panel.py:86` is no longer "bare"
 > (it now defers before I/O).
 > Companion to `docs/helper-policy.md`, `docs/building-roadmap/hub-ui-standard.md`,
-> `docs/help-command-surface-map.md`, and `docs/helper-debt-inventory.md`.
+> `docs/help-command-surface-map.md`, and `docs/audits/helper-debt-inventory.md`.
 >
 > **What this is:** the second half of the doc-only audit started by
-> `docs/helper-debt-inventory.md`. That inventory looked at *where*
+> `docs/audits/helper-debt-inventory.md`. That inventory looked at *where*
 > helpers live; this one looks at *whether the canonical UI
 > primitives are being used*. Output is a prioritized backlog of
 > small UI PRs.
@@ -32,18 +32,18 @@
 | Help-route panel class names | `cogs/help/route.py` + `docs/help-command-surface-map.md` § 2 | Structural routing correct; 4 panel class names in the surface map drifted from code | **fixed in this PR** — see § 6 |
 
 The rest of this doc details the two drift areas not already covered
-by `docs/helper-debt-inventory.md`, and lists the prioritized
+by `docs/audits/helper-debt-inventory.md`, and lists the prioritized
 backlog.
 
 ---
 
 ## 2. What `helper-debt-inventory.md` already covered
 
-`docs/helper-debt-inventory.md` § 3 (views/navigation.py) is the
+`docs/audits/helper-debt-inventory.md` § 3 (views/navigation.py) is the
 canonical reference for back-button duplication. The drift list there
 is the same one referenced by this audit; do not split it.
 
-`docs/helper-debt-inventory.md` § 4 (views/base.py) confirmed:
+`docs/audits/helper-debt-inventory.md` § 4 (views/base.py) confirmed:
 
 - `BaseView` / `HubView` are uniformly adopted (51 view files).
 - `send_panel` is used by 18 cogs; ~5 one-off `ctx.send(embed=…, view=…)`
@@ -127,7 +127,7 @@ intentionally subsystem-diverse.
 
 ## 4. Back-button factory consolidation — referenced
 
-See `docs/helper-debt-inventory.md` § 3 for the full list. Summary:
+See `docs/audits/helper-debt-inventory.md` § 3 for the full list. Summary:
 
 | Location | Status (post-PR-#297) |
 |---|---|
@@ -149,7 +149,7 @@ complete; no further migration is queued for this area.
 
 ## 5. `send_panel` and `HubView` — referenced
 
-See `docs/helper-debt-inventory.md` § 4. Adoption is healthy:
+See `docs/audits/helper-debt-inventory.md` § 4. Adoption is healthy:
 
 - 18 cogs use `send_panel` for `!<sub>menu` / `!<sub>hub` commands.
 - 51 view files inherit `BaseView` / `HubView`.

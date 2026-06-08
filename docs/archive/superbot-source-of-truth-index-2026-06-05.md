@@ -93,7 +93,7 @@ authority.
 | `docs/architecture.md` | binding — layering/invariants | Confirmed; the `arch-fix-11` cluster is tracked debt against it, not a contradiction. |
 | `docs/ownership.md` | binding — mutation authority + dep direction | Authority for RC-4/RC-7/RC-8 ownership questions. |
 | `docs/runtime_contracts.md` | binding — lifecycle guarantees | §3 (PersistentView), §6 (interaction), §8 (game state) directly govern RC-3/RC-7. |
-| `docs/platform-consistency-ledger.md` | binding — status ledger | Authority for RC-4 (settings/binding phase state) + binding-cache-no-op safety. |
+| `docs/health/platform-consistency-ledger.md` | binding — status ledger | Authority for RC-4 (settings/binding phase state) + binding-cache-no-op safety. |
 | `docs/architecture/service_ownership.md` | reference — at-a-glance ownership | `ownership.md` wins on conflict. |
 | `docs/helper-policy.md` | binding — helper placement | Read before RC-8 view/util moves. |
 | `docs/decisions/001-no-redis-backed-state.md` | ADR (immutable) | Rejects external session/state store. |
@@ -103,7 +103,7 @@ authority.
 | `docs/decisions/005-capability-native-authority-and-flag-semantics.md` | **ADR (Accepted 2026-06-05)** | RC-4 authority + `*_PRIMARY` flag semantics; A1+F1 implemented. Capability-native settings UI is still a follow-up. |
 | `docs/decisions/006-btd6-data-provenance-ownership.md` | **ADR (Accepted 2026-06-05)** | RC-10 provenance/owner-matrix; **Hybrid** storage chosen. BTD6 extraction stays paused until the provenance schema/docs PR. |
 | `docs/decisions/007-media-youtube-ownership.md` | **ADR (Accepted 2026-06-05)** | RC-12 media/YouTube ownership; **M1** chosen. Ownership row + service registration are a follow-on. |
-| `docs/resource-provisioning-overview.md` | reference (RPM lane) | Pair with the RC-9 correction: pipeline **is** adopted. |
+| `docs/setup-platform/resource-provisioning-overview.md` | reference (RPM lane) | Pair with the RC-9 correction: pipeline **is** adopted. |
 | `docs/help-command-surface-map.md` | binding (doc-test pinned) | Authority for RC-14 help parity. |
 | `docs/ai-config-ownership.md` | binding (doc-test pinned) | Read before any AI-cog change (RC-11). |
 | `docs/smoke-test-checklist.md` | binding (doc-test pinned) | Required before any runtime PR ships. |
@@ -118,7 +118,7 @@ authority.
 | `docs/btd6/btd6-data-backends.md`, `docs/btd6/btd6-data-pipeline.md`, `docs/btd6/btd6-cloud-data.md` | ✅ current | Pair with RC-10: provider-parity is **unverified** (needs live backend); provenance model is a pending decision. |
 | `docs/btd6/btd6-derived-value-groundedness-finding.md`, `docs/btd6/btd6-absence-claim-guard-design.md` | ✅ current | The faithfulness/groundedness guard is confirmed-healthy (RC-11) — preserve. |
 | `docs/btd6/btd6-smoke-test-checklist.md` | ✅ current | Run before BTD6 runtime PRs. |
-| `docs/ai-config-ownership.md`, `docs/ai-service-integration-map.md` | ✅ current (ownership doc is binding) | AI orchestration is healthy; do not refactor the choke point. |
+| `docs/ai-config-ownership.md`, `docs/ai/ai-service-integration-map.md` | ✅ current (ownership doc is binding) | AI orchestration is healthy; do not refactor the choke point. |
 | `disbot/core/runtime/ai/README.md` | ✅ current | Package intent. |
 | `docs/server-logging.md` | ✅ current (shipped reference) | — |
 
@@ -144,14 +144,14 @@ context only". The audit consolidation adds the reconciliation column.
 | `docs/archive/repo-cartography-2026-06-04.md` (Codex) | neutral inventory, branch `work`, no `main`/remote | Map is sound; its "unknowns" (YouTube, runtime-AI, cleanup ownership) became RC-12/RC-11/RC-5. |
 | `docs/audits/repo-wide-audit-2026-05-29.md` | **older** audit (base `5609fe8`), has a remediation table updated post-#414 | **Check its remediation table before re-fixing** — some boundary items are already closed. The A/B/C/D audits did not cross-reference it. |
 | `docs/audits/mutation_boundary_audit.md` | snapshot (2026-05-24) | Companion to `ownership.md`; consult for mutation-boundary history. |
-| `docs/loose-ends-audit-roadmap.md` | plan (read for context) | Findings 2/3/5 overlap RC-14; PR L1–L6 predate this plan — reconcile, don't duplicate. |
-| `docs/roadmap_setup_platform.md`, `docs/setup_wizard_finalization_plan.md` | plans | Setup is mostly durable-anchor based now (Agent B SETUP-1); some legacy paths drift (B SETUP-2/3/4). |
-| `docs/phase_2b_bindings_plan.md`, `docs/phase-2-completion-readiness.md` | phase plans/ledgers | Bindings pipeline shipped; cache invalidation is a safe no-op today (ledger §1). |
-| `docs/games-actionability-roadmap.md` | **complete — historical** (per orientation) | Do not treat as active backlog. |
-| `docs/ui-view-adoption-audit.md`, `docs/helper-debt-inventory.md` | snapshots | Corroborate RC-8 (views-in-cogs, baseview-inheritance warnings). |
-| `docs/cog-hub-coverage-audit.md`, `docs/help-command-surface-map.md` | coverage/surface maps | `help-command-surface-map.md` is doc-test-pinned (current); cog-hub-coverage is a snapshot. |
-| `docs/building-roadmap/*`, `docs/settings-customization-*`, `docs/operator-settings-presets.md` | standards + roadmaps | Standards (command-integration, hub-ui, config-input) are current; roadmaps are plans. |
-| `docs/ai-readiness-plan.md`, `docs/ai-readiness-pr-notes.md`, `docs/ai-provider-and-grounding-fix-plan.md` | plans | AI is further along than these imply (RC-11 healthy); read for intent only. |
+| `docs/planning/loose-ends-audit-roadmap.md` | plan (read for context) | Findings 2/3/5 overlap RC-14; PR L1–L6 predate this plan — reconcile, don't duplicate. |
+| `docs/setup-platform/roadmap_setup_platform.md`, `docs/setup-platform/setup_wizard_finalization_plan.md` | plans | Setup is mostly durable-anchor based now (Agent B SETUP-1); some legacy paths drift (B SETUP-2/3/4). |
+| `docs/archive/phase_2b_bindings_plan.md`, `docs/archive/phase-2-completion-readiness.md` | phase plans/ledgers | Bindings pipeline shipped; cache invalidation is a safe no-op today (ledger §1). |
+| `docs/archive/games-actionability-roadmap.md` | **complete — historical** (per orientation) | Do not treat as active backlog. |
+| `docs/audits/ui-view-adoption-audit.md`, `docs/audits/helper-debt-inventory.md` | snapshots | Corroborate RC-8 (views-in-cogs, baseview-inheritance warnings). |
+| `docs/audits/cog-hub-coverage-audit.md`, `docs/help-command-surface-map.md` | coverage/surface maps | `help-command-surface-map.md` is doc-test-pinned (current); cog-hub-coverage is a snapshot. |
+| `docs/building-roadmap/*`, `docs/settings-customization-*`, `docs/setup-platform/operator-settings-presets.md` | standards + roadmaps | Standards (command-integration, hub-ui, config-input) are current; roadmaps are plans. |
+| `docs/ai/ai-readiness-plan.md`, `docs/ai/ai-readiness-pr-notes.md`, `docs/ai/ai-provider-and-grounding-fix-plan.md` | plans | AI is further along than these imply (RC-11 healthy); read for intent only. |
 
 ---
 

@@ -72,7 +72,7 @@ class BlockerSpec:
       ``informational=True`` semantics.
     * ``unlocks`` / ``blocked_by`` — other blocker IDs by name.
     * ``doc_anchor`` — anchor in
-      ``docs/phase-2-completion-readiness.md`` (without the leading
+      ``docs/archive/phase-2-completion-readiness.md`` (without the leading
       ``#``) for "where do I read more?"
     """
 

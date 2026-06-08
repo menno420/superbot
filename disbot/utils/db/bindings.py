@@ -272,7 +272,7 @@ def _parse_delete_count(result: str) -> int:
 async def delete_active_bindings_for_guild(guild_id: int) -> int:
     """Remove ``subsystem_bindings`` rows for ``guild_id``; preserve audit.
 
-    Phase 2 retention policy (see ``docs/platform-consistency-ledger.md``
+    Phase 2 retention policy (see ``docs/health/platform-consistency-ledger.md``
     §3) is to **preserve** ``binding_audit_log`` rows on guild leave so
     the historical trail survives re-invitation.  This primitive is the
     one ``guild_lifecycle.teardown`` calls; the audit purge is a

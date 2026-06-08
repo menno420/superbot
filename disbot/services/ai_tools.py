@@ -8,7 +8,7 @@ a small, JSON-serialisable dict.
 
 Adding a write-capable tool is deliberately out of scope: mutations must
 continue to flow through the deterministic mutation services after
-explicit confirmation (see ``docs/ai-service-integration-map.md`` and
+explicit confirmation (see ``docs/ai/ai-service-integration-map.md`` and
 ``docs/ai-config-ownership.md`` § "Mutation seam"). Tools added here must
 stay read-only.
 

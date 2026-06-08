@@ -212,7 +212,7 @@ instant replay). Smoke any UI-touching PR against them.
 
 ### Back-button coverage
 
-Pinned by `docs/ui-view-adoption-audit.md` §9 — every user-facing
+Pinned by `docs/audits/ui-view-adoption-audit.md` §9 — every user-facing
 subpanel has either an `attach_back_button`-driven Back or is
 classified as none-needed.
 
@@ -251,7 +251,7 @@ classified as none-needed.
 
 ### Interaction-safety wrappers
 
-Pinned by `docs/ui-view-adoption-audit.md` §3 — hotspots converted
+Pinned by `docs/audits/ui-view-adoption-audit.md` §3 — hotspots converted
 to `safe_defer` + `safe_edit`.
 
 - [ ] **`_RpsView._play`** defers up front and uses `safe_edit`

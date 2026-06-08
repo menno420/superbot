@@ -132,7 +132,7 @@ underlying storage directly.
 Scalar settings are declared as `SettingSpec`s in
 `cogs/<subsystem>/schemas.py` and catalogued read-only by
 `core.runtime.settings_registry`. Flags are declared in
-`core.runtime.feature_flags`. `docs/settings-customization-roadmap.md`
+`core.runtime.feature_flags`. `docs/setup-platform/settings-customization-roadmap.md`
 is the authority on the three lanes (settings / binding / provisioning).
 
 ### Mutation authority + kill-switches (ADR-005)
@@ -210,7 +210,7 @@ utils/<helper>    →  standard library, discord (no I/O)
 
 ### Direct DB writes — explicit blocklist
 
-> See also **`docs/direct-db-exception-ledger.md`** (RC-8A) — the per-cog catalog
+> See also **`docs/audits/direct-db-exception-ledger.md`** (RC-8A) — the per-cog catalog
 > of direct `utils.db` reads/writes, classified `accepted-read` /
 > `accepted-direct-write` / `service-migration-required`.
 

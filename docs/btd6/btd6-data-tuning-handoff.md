@@ -128,7 +128,7 @@ python3.10 scripts/check_architecture.py --mode strict
 - `tests/unit/cogs/test_btd6_command_parity.py` — every prefix command needs a slash twin unless in `PREFIX_ONLY`/`SLASH_ONLY`.
 - `tests/unit/invariants/test_cog_size.py` — `*_cog.py` must stay **< 800 LOC** (`btd6_cog.py` is at **799** — it's full; put new command bodies in `cogs/btd6/_builders.py`, which is uncapped).
 - `tests/unit/invariants/test_no_direct_settings_keys_writes.py` — `db.set_setting` callers are allowlisted; new settings get a typed service (e.g. `btd6_ct_team_service`).
-- `tests/unit/docs/test_settings_customization_doc.py` — every `settings_keys.__all__` constant must appear in `docs/settings-customization-command-map.md`.
+- `tests/unit/docs/test_settings_customization_doc.py` — every `settings_keys.__all__` constant must appear in `docs/setup-platform/settings-customization-command-map.md`.
 - `tests/unit/services/test_btd6_rbe.py` — RBE consistency.
 
 **Process:** develop on the session's feature branch; **open a PR every session** (maintainer's standing request = advance consent); the maintainer merges, Railway auto-redeploys. Do not put the model identifier in commits/PRs/code.

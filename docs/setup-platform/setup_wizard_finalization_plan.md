@@ -3,7 +3,7 @@
 > **Status:** `plan` — 🟢 active. Repo-state analysis of the *shipped* guild setup
 > wizard plus the implementation-ready PR sequence to finalize it. This is the
 > "PR-12 — setup wizard plan refresh (plan only)" anticipated by
-> `docs/platform-consistency-ledger.md`.
+> `docs/health/platform-consistency-ledger.md`.
 >
 > When this doc disagrees with a source file, **the source file wins** — open a PR
 > to reconcile. Authored 2026-05-31 against `main` @ commit `370cf4b`.
@@ -78,7 +78,7 @@ gaps are integration / clarity / observability, not a broken core.
 - **Canonical write routing**: `setup_operations.py` dispatches to
   `BindingMutationPipeline`, `SettingsMutationPipeline`, `ResourceProvisioningPipeline`,
   `AutomationMutationPipeline`, `cleanup_mutation`, `command_routing` — matching every
-  "Wizard consumer" contract in `docs/platform-consistency-ledger.md`.
+  "Wizard consumer" contract in `docs/health/platform-consistency-ledger.md`.
 - **Preflight diff**: real current/proposed for `bind_*`/`clear_binding`/`set_setting`/
   `set_cog_routing`; other kinds labelled "preflight unavailable" rather than dropped.
 - **Presets**: `views/setup/sections/preset_select.py` (+ `template_picker.py`,

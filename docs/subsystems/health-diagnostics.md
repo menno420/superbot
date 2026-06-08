@@ -30,7 +30,7 @@ health system for a failure it merely displays.
   Use the finding's `related_subsystem` / `related_command` to locate it.
 - **"Consistency" / bindings-backfill / config-arbitration warnings** → a **separate**
   layer: `services/platform_consistency.py`. Distinguish benign warnings from blockers
-  via `docs/platform-consistency-ledger.md`. The health snapshot renders only
+  via `docs/health/platform-consistency-ledger.md`. The health snapshot renders only
   **WARNING/FATAL** sections as "needs attention"; **SKIPPED** ("not applicable / no
   data / no context") go to `facts.skipped_sections`, not findings
   (`_build_consistency_subsystem`, 2026-06-06). Known-benign states (verified live):
@@ -50,13 +50,13 @@ health system for a failure it merely displays.
 
 ## Rules & approved structures (binding — link, don't restate)
 
-- `docs/bot-awareness-implementation-plan.md` is the execution/status authority;
-  `docs/bot-awareness-diagnostics-plan.md` is repository-map context only.
+- `docs/health/bot-awareness-implementation-plan.md` is the execution/status authority;
+  `docs/health/bot-awareness-diagnostics-plan.md` is repository-map context only.
 - Preserve the typed, read-only health contracts and the two collection lanes:
   cached/synchronous facts versus bounded asynchronous probes. Preserve provider
   isolation and redaction before operator or AI rendering.
 - `docs/runtime_contracts.md`, `docs/ownership.md`, and
-  `docs/platform-consistency-ledger.md` own lifecycle, write, and consistency rules.
+  `docs/health/platform-consistency-ledger.md` own lifecycle, write, and consistency rules.
   `docs/smoke-test-checklist.md` is doc-test-pinned.
 - `diagnostics_health_snapshot` is read-only and owner-gated. AI may explain facts,
   but may not remediate, mutate configuration, query arbitrary tables, or resolve
@@ -102,6 +102,6 @@ path rather than adding ad-hoc diagnostics tools.
 
 ## Related docs
 
-`docs/current-state.md`, `docs/bot-awareness-implementation-plan.md`,
-`docs/bot-awareness-diagnostics-plan.md`, `docs/platform-consistency-ledger.md`,
+`docs/current-state.md`, `docs/health/bot-awareness-implementation-plan.md`,
+`docs/health/bot-awareness-diagnostics-plan.md`, `docs/health/platform-consistency-ledger.md`,
 `docs/smoke-test-checklist.md`, `docs/subsystems/ai.md`.

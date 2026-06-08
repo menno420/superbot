@@ -2,9 +2,9 @@
 
 Tests three docs:
 
-- ``docs/settings-customization-command-map.md``
-- ``docs/settings-customization-roadmap.md``
-- ``docs/resource-provisioning-overview.md``
+- ``docs/setup-platform/settings-customization-command-map.md``
+- ``docs/setup-platform/settings-customization-roadmap.md``
+- ``docs/setup-platform/resource-provisioning-overview.md``
 
 Resilience model (mirrors ``tests/unit/docs/test_phase_2_readiness_doc.py``):
 case-insensitive substring assertions tied to source-of-truth constants and
@@ -28,9 +28,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _DISBOT = _REPO_ROOT / "disbot"
 _DOCS = _REPO_ROOT / "docs"
 
-_COMMAND_MAP = _DOCS / "settings-customization-command-map.md"
-_ROADMAP = _DOCS / "settings-customization-roadmap.md"
-_RPM_OVERVIEW = _DOCS / "resource-provisioning-overview.md"
+_COMMAND_MAP = _DOCS / "setup-platform" / "settings-customization-command-map.md"
+_ROADMAP = _DOCS / "setup-platform" / "settings-customization-roadmap.md"
+_RPM_OVERVIEW = _DOCS / "setup-platform" / "resource-provisioning-overview.md"
 
 _SUBSYSTEM_REGISTRY_SRC = _DISBOT / "utils" / "subsystem_registry.py"
 _CONFIG_SRC = _DISBOT / "config.py"

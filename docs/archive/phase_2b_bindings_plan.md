@@ -31,7 +31,7 @@
 >   the right shape when admin UX motivates it.
 >
 > **Forward pointer:** the operational truth map is
-> `docs/platform-consistency-ledger.md`; the active implementation
+> `docs/health/platform-consistency-ledger.md`; the active implementation
 > plan is in the session-attached Phase 2 plan file. Do not extend
 > this document — extend the ledger and the active plan instead.
 >

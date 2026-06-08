@@ -1,7 +1,7 @@
 """Phase 2b unit tests — validate_binding_target dispatch.
 
 Verifies the design decision documented in
-``docs/phase_2b_bindings_plan.md``: resource kinds use
+``docs/archive/phase_2b_bindings_plan.md``: resource kinds use
 :func:`core.resources.discovery.validate_resource`; member kind uses
 :func:`core.runtime.guild_resources.resolve_member`.
 """

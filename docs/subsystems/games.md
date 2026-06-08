@@ -27,7 +27,7 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 
 ## Current state
 
-- `docs/games-actionability-roadmap.md` is complete: hubs and the principal RPS,
+- `docs/archive/games-actionability-roadmap.md` is complete: hubs and the principal RPS,
   blackjack, and deathmatch panel paths became actionable; settings/readiness and
   back-navigation contracts were added.
 - Terminal-button behavior/history is guarded by the help/games actionability tests;
@@ -42,14 +42,14 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 
 ## Plans / pending approval
 
-The deferred section of `docs/games-actionability-roadmap.md` is contextual, not a
+The deferred section of `docs/archive/games-actionability-roadmap.md` is contextual, not a
 blanket approval. It includes bounded follow-ups such as inventory architecture,
 RPS canonical-key/package cleanup, bot-duel settings/stats, leaderboards, setup, and
 shared back-button adoption. Do **not** propose restart-safe game state.
 
 ## Ideas (not approved)
 
-`docs/mining_exploration_brainstorm.md` records mining design intent/ideas. Apply the
+`docs/ideas/mining_exploration_brainstorm.md` records mining design intent/ideas. Apply the
 ideas promotion path before implementing unapproved game expansions.
 
 ## Next candidates
@@ -64,5 +64,5 @@ ideas promotion path before implementing unapproved game expansions.
 ## Related docs
 
 `docs/decisions/002-game-state-not-restart-safe.md`,
-`docs/games-actionability-roadmap.md`, `docs/mining_exploration_brainstorm.md`,
+`docs/archive/games-actionability-roadmap.md`, `docs/ideas/mining_exploration_brainstorm.md`,
 `docs/current-state.md`, `docs/runtime_contracts.md`.

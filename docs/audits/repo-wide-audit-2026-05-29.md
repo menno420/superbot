@@ -6,8 +6,8 @@
 > (43), and the test tree (512 files / 6,306 tests) was read in full by a fan-out of 22
 > scoped auditors; flagship findings were hand-verified by grep. No code was changed.
 >
-> **Companion to the prior snapshots** (`docs/helper-debt-inventory.md`,
-> `docs/ui-view-adoption-audit.md`, `docs/cog-hub-coverage-audit.md`,
+> **Companion to the prior snapshots** (`docs/audits/helper-debt-inventory.md`,
+> `docs/audits/ui-view-adoption-audit.md`, `docs/audits/cog-hub-coverage-audit.md`,
 > `docs/audits/mutation_boundary_audit.md`). This audit reconciles them against current code
 > and **supersedes the open backlogs in `ui-view-adoption-audit.md` (PRs 1–7 all shipped)**.
 

@@ -1,4 +1,4 @@
-"""Stale-doc guard for docs/phase-2-completion-readiness.md (PR-10).
+"""Stale-doc guard for docs/archive/phase-2-completion-readiness.md (PR-10).
 
 Uses resilient marker-and-name assertions (case-insensitive substring
 matches; no exact markdown formatting pinning) so the doc can be
@@ -16,7 +16,7 @@ import pytest
 from services.platform_consistency import SETUP_READINESS_BLOCKERS
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_DOC_PATH = _REPO_ROOT / "docs" / "phase-2-completion-readiness.md"
+_DOC_PATH = _REPO_ROOT / "docs" / "archive" / "phase-2-completion-readiness.md"
 
 
 @pytest.fixture(scope="module")

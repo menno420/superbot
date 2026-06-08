@@ -15,15 +15,15 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 
 ## Rules & approved structures (binding — link, don't restate)
 
-- `docs/settings-customization-roadmap.md` owns the three-lane model and ownership
-  invariants; `docs/settings-customization-command-map.md` records live surfaces.
+- `docs/setup-platform/settings-customization-roadmap.md` owns the three-lane model and ownership
+  invariants; `docs/setup-platform/settings-customization-command-map.md` records live surfaces.
 - A Discord resource ID is a binding, not a setting. Provisioning creates/reuses a
   resource only through preview + confirmation + audit; it is not an implicit
   binding mutation.
 - `docs/capability-authority.md` owns the capability resolver and operator
   kill-switch rules. Every panel callback must re-check authority/capability at
   execution time; opening a panel is not authorization for later callbacks.
-- Use `docs/platform-consistency-ledger.md` before adding another surface or write
+- Use `docs/health/platform-consistency-ledger.md` before adding another surface or write
   path. Ownership and allowed write paths remain in `docs/ownership.md` and
   `docs/runtime_contracts.md`.
 
@@ -43,7 +43,7 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 
 ## Plans / pending approval
 
-`docs/settings-customization-roadmap.md` and its command map are the starting plans
+`docs/setup-platform/settings-customization-roadmap.md` and its command map are the starting plans
 for coverage work. Future changes must identify the lane and owner first, then state
 migration/backfill needs, cache invalidation, audit behavior, tests, and rollback or
 safe-disable behavior before implementation.
@@ -56,7 +56,7 @@ mutation/provisioning services and preserve operator confirmation.
 
 ## Next candidates
 
-1. Select an inconsistency from `docs/platform-consistency-ledger.md`; verify the
+1. Select an inconsistency from `docs/health/platform-consistency-ledger.md`; verify the
    live registry, command/panel surface, and canonical mutation path before fixing it.
 2. For a new setting/binding, plan additive migration/backfill (if needed), cache
    invalidation, audit, callback re-check, tests, and rollback together.
@@ -65,7 +65,7 @@ mutation/provisioning services and preserve operator confirmation.
 
 ## Related docs
 
-`docs/settings-customization-roadmap.md`, `docs/settings-customization-command-map.md`,
-`docs/resource-provisioning-overview.md`, `docs/capability-authority.md`,
-`docs/platform-consistency-ledger.md`, `docs/operator-settings-presets.md`,
+`docs/setup-platform/settings-customization-roadmap.md`, `docs/setup-platform/settings-customization-command-map.md`,
+`docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`,
+`docs/health/platform-consistency-ledger.md`, `docs/setup-platform/operator-settings-presets.md`,
 `docs/ownership.md`, `docs/runtime_contracts.md`.

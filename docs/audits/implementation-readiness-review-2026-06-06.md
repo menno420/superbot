@@ -17,8 +17,8 @@ also safe candidates, but they are lower priority and must start from source, no
 phase plans.
 
 The largest implementation-readiness problem found is documentation drift rather than
-missing runtime foundations. `docs/platform-consistency-ledger.md` and
-`docs/phase-2-completion-readiness.md` still contain pre-ship Phase-2 cells/next-work
+missing runtime foundations. `docs/health/platform-consistency-ledger.md` and
+`docs/archive/phase-2-completion-readiness.md` still contain pre-ship Phase-2 cells/next-work
 language. Their contract shapes and historical rationale remain useful, but their
 status cells are not current implementation authority. The settings roadmap also
 contains a milestone sequence whose planned/landed labels must be source-verified
@@ -38,17 +38,17 @@ provider-parity, caching/source-health, or behavior/config gates.
 - Every canonical folio under `docs/subsystems/`.
 - All files under `docs/planning/`, `docs/ideas/`, `docs/decisions/`, and
   `docs/audits/`; the repository has no `docs/roadmaps/` or `docs/status/` directories.
-- Health: `docs/bot-awareness-implementation-plan.md`,
-  `docs/bot-awareness-diagnostics-plan.md`, `docs/platform-consistency-ledger.md`, and
+- Health: `docs/health/bot-awareness-implementation-plan.md`,
+  `docs/health/bot-awareness-diagnostics-plan.md`, `docs/health/platform-consistency-ledger.md`, and
   `docs/smoke-test-checklist.md`.
 - Server management: the status tracker, roadmap, implementation plan,
-  `docs/resource-provisioning-overview.md`, `docs/capability-authority.md`, and
+  `docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`, and
   `docs/server-logging.md`.
 - AI/BTD6: AI ownership/readiness/integration/orchestration/tool-roadmap docs, the AI
   ideas backlog, ADR-006, all `docs/btd6/btd6-*.md`, and the superseded Agent-D audit.
 - Settings/games/inventories: settings roadmap/command map/presets,
-  `docs/phase-2-completion-readiness.md`, `docs/games-actionability-roadmap.md`,
-  `docs/helper-debt-inventory.md`, and `docs/ui-view-adoption-audit.md`.
+  `docs/archive/phase-2-completion-readiness.md`, `docs/archive/games-actionability-roadmap.md`,
+  `docs/audits/helper-debt-inventory.md`, and `docs/audits/ui-view-adoption-audit.md`.
 
 ## Source areas inspected
 
@@ -125,10 +125,10 @@ provider-parity, caching/source-health, or behavior/config gates.
 
 ## Superseded or stale docs found
 
-- `docs/phase-2-completion-readiness.md`: superseded as a live next-work queue.
-- `docs/platform-consistency-ledger.md`: contract/reference shape remains useful, but
+- `docs/archive/phase-2-completion-readiness.md`: superseded as a live next-work queue.
+- `docs/health/platform-consistency-ledger.md`: contract/reference shape remains useful, but
   implementation-status cells are stale and conflict with source.
-- `docs/settings-customization-roadmap.md`: architectural lanes remain useful; milestone
+- `docs/setup-platform/settings-customization-roadmap.md`: architectural lanes remain useful; milestone
   status sequence needs source reconciliation.
 - `docs/planning/server-management-implementation-plan-2026-06-05.md`: shipped banner
   lagged PR8+PR9 and incorrectly said the remaining queue began at PR8.

@@ -20,7 +20,7 @@ Related idea-shaped docs that live elsewhere **by design**:
 - `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog, **but** its
   §2 (operating decisions) and §6 (rejection ledger) are **binding** "do-not-propose"
   — so it stays in `planning/`, not here.
-- `docs/mining_exploration_brainstorm.md` — design-intent for the mining subsystem,
+- `docs/ideas/mining_exploration_brainstorm.md` — design-intent for the mining subsystem,
   referenced by `disbot/cogs/mining/exploration.py` as design intent — stays in `docs/`.
 
 ## Promotion path (idea → shipped)

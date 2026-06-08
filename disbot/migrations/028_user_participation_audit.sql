@@ -26,7 +26,7 @@
 -- insert a mis-shaped row.  ``mutation_type='set_subscription'``
 -- with a NULL ``topic`` is rejected at INSERT, etc.
 --
--- Retention policy (per ``docs/platform-consistency-ledger.md`` §3):
+-- Retention policy (per ``docs/health/platform-consistency-ledger.md`` §3):
 -- audit rows are **preserved** on guild leave, matching
 -- ``binding_audit_log`` and ``feature_flag_audit``.  The same user
 -- re-joining a guild sees the historical trail of their prior

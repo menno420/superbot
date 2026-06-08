@@ -8,9 +8,9 @@
 
 Architecture summary and 15-milestone implementation sequence for the **Global
 Settings & Customization Manager**. Companion to
-[`docs/settings-customization-command-map.md`](settings-customization-command-map.md)
+[`docs/setup-platform/settings-customization-command-map.md`](settings-customization-command-map.md)
 (per-cog inventory) and
-[`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md)
+[`docs/setup-platform/resource-provisioning-overview.md`](resource-provisioning-overview.md)
 (the RPM lane explainer).
 
 ## Three architectural lanes
@@ -165,12 +165,12 @@ disbot/
 
 ## See also
 
-- [`docs/settings-customization-command-map.md`](settings-customization-command-map.md)
+- [`docs/setup-platform/settings-customization-command-map.md`](settings-customization-command-map.md)
   — per-cog inventory (24-field template).
-- [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md)
+- [`docs/setup-platform/resource-provisioning-overview.md`](resource-provisioning-overview.md)
   — RPM lane (11-step contract, no-silent-auto-create rule,
   reserved `logging_routes` future model).
-- [`docs/runtime_contracts.md`](runtime_contracts.md) — existing mutation
+- [`docs/runtime_contracts.md`](../runtime_contracts.md) — existing mutation
   pipeline contracts.
-- [`docs/phase-2-completion-readiness.md`](phase-2-completion-readiness.md) —
+- [`docs/archive/phase-2-completion-readiness.md`](../archive/phase-2-completion-readiness.md) —
   setup readiness blocker tracker.

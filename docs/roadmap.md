@@ -57,12 +57,12 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
 
 Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisioning.md)
 
-- **Next** — **setup-wizard finalization** ([plan](setup_wizard_finalization_plan.md), active):
+- **Next** — **setup-wizard finalization** ([plan](setup-platform/setup_wizard_finalization_plan.md), active):
   finish the shipped scan/draft/review/provisioning flow.
 - **Next** — settings coverage: pick a *verified* inconsistency from the
-  [consistency ledger](platform-consistency-ledger.md); the three-lane model is
-  [settings-customization-roadmap](settings-customization-roadmap.md).
-- **Later** — [setup-platform roadmap](roadmap_setup_platform.md) is the *aspirational*
+  [consistency ledger](health/platform-consistency-ledger.md); the three-lane model is
+  [settings-customization-roadmap](setup-platform/settings-customization-roadmap.md).
+- **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
 
 ### 🖥️ Building / interface (Discord-native UI) — **Next**
@@ -70,7 +70,7 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
-  arc; [loose-ends-audit](loose-ends-audit-roadmap.md) is the source audit (its L1–L6
+  arc; [loose-ends-audit](planning/loose-ends-audit-roadmap.md) is the source audit (its L1–L6
   sequence is superseded by mother-hub).
 - **Later** — [command-expansion-backlog](building-roadmap/command-expansion-backlog.md)
   and [admin-powers config-coverage](building-roadmap/admin-powers-config-coverage.md):
@@ -89,7 +89,7 @@ Folio: [health-diagnostics](subsystems/health-diagnostics.md)
   not), plus grouped-findings / recurrence rendering. The sandbox can't do this (no AI key).
 - **Maintenance** — no unshipped phase pending; a new write-capable diagnostics flow needs
   a fresh approved plan. Execution authority:
-  [bot-awareness-implementation-plan](bot-awareness-implementation-plan.md).
+  [bot-awareness-implementation-plan](health/bot-awareness-implementation-plan.md).
 
 ### 🤖 AI — **Later** (fully gated)
 
@@ -105,12 +105,12 @@ stability + provider/provenance + caching/source-health + behavior-config correc
 > **explanation-only** (AR-09). Decisions: [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §18.
 
 - **Later (do first when unblocked)** — approve the **orchestration foundation**
-  ([ai-complex-request-tool-orchestration-plan](ai-complex-request-tool-orchestration-plan.md))
+  ([ai-complex-request-tool-orchestration-plan](ai/ai-complex-request-tool-orchestration-plan.md))
   *before* any net-new tools.
-- **Later** — [ai-tool-capability-roadmap](ai-tool-capability-roadmap.md) sequences the
-  backlog onto that foundation · [ai-readiness-plan](ai-readiness-plan.md) M2 (typed policy
-  tables + central NL stage) · [provider-switch + grounding fix](ai-provider-and-grounding-fix-plan.md).
-  Map: [ai-service-integration-map](ai-service-integration-map.md).
+- **Later** — [ai-tool-capability-roadmap](ai/ai-tool-capability-roadmap.md) sequences the
+  backlog onto that foundation · [ai-readiness-plan](ai/ai-readiness-plan.md) M2 (typed policy
+  tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
+  Map: [ai-service-integration-map](ai/ai-service-integration-map.md).
 
 ### 🎈 BTD6 data / tools — **Later** (gated on ADR-006)
 
@@ -128,7 +128,7 @@ accepted, not a target).
 
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
-  [actionability roadmap](games-actionability-roadmap.md). Low priority; pick one bounded
+  [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
   slice.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
@@ -151,7 +151,7 @@ privacy/provenance/moderation review before any public surface.
   future product direction (polish, extensions, reusable systems, long-term).
 - [ai-extra-tool-capability-ideas](ideas/ai-extra-tool-capability-ideas.md) — AI capability
   backlog (web / vision / file / KB / connectors / scheduler).
-- [mining-exploration-brainstorm](mining_exploration_brainstorm.md) — mining design intent.
+- [mining-exploration-brainstorm](ideas/mining_exploration_brainstorm.md) — mining design intent.
 - [superbot-ideas-lab](planning/superbot-ideas-lab-2026-06-05.md) — broad brainstorm; its
   §2 (operating decisions) + §6 (rejection ledger) are **binding do-not-propose**.
 

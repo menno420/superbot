@@ -1052,7 +1052,7 @@ async def _collect_setup_readiness() -> SectionResult:
         ),
         details=details,
         suggested_actions=(
-            "See `docs/phase-2-completion-readiness.md` for unlock order.",
+            "See `docs/archive/phase-2-completion-readiness.md` for unlock order.",
         ),
         informational=True,
     )
@@ -1062,7 +1062,7 @@ async def _collect_wizard_finalization() -> SectionResult:
     """Section 11: setup-wizard finalization progress (informational).
 
     Reports how far the PR1–PR3 setup-wizard finalization tranche
-    (``docs/setup_wizard_finalization_plan.md``) has landed so progress
+    (``docs/setup-platform/setup_wizard_finalization_plan.md``) has landed so progress
     is observable from ``!platform consistency``.  Each item's status
     comes from a sync, fail-safe provider in
     :mod:`services.wizard_finalization`; the section is
@@ -1097,7 +1097,9 @@ async def _collect_wizard_finalization() -> SectionResult:
             "(informational; setup-wizard finalization in progress)."
         ),
         details=details,
-        suggested_actions=("See `docs/setup_wizard_finalization_plan.md` (PR1–PR3).",),
+        suggested_actions=(
+            "See `docs/setup-platform/setup_wizard_finalization_plan.md` (PR1–PR3).",
+        ),
         informational=True,
     )
 
