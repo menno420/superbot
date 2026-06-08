@@ -44,9 +44,12 @@ class ServerManagementCog(commands.Cog):
     async def servermanagement(self, ctx: commands.Context) -> None:
         """Open the unified Server Management hub."""
         embed, view = await build_server_management_hub(ctx.guild)
+        # Panel-anchor key is the snake_case subsystem identity
+        # (Q-0026 — written to panel_anchors.subsystem, must resolve in
+        # SUBSYSTEMS); the command name above stays ``servermanagement``.
         msg = await panel_manager.get_or_render_panel(
             ctx,
-            "servermanagement",
+            "server_management",
             embed,
             view,
         )

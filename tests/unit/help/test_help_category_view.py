@@ -133,7 +133,7 @@ def test_view_has_one_select_with_visible_hubs_plus_all_commands():
         "admin",
         "settings",
         "diagnostic",
-        "servermanagement",
+        "server_management",
         ALL_COMMANDS_KEY,
     }
 

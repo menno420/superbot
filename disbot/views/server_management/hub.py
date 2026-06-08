@@ -23,7 +23,7 @@ case (a panel outliving the caller's admin role) and lets the same view back the
 ephemeral ``/server-management`` slash, which has no anchor.
 
 **Restoration.** ``ServerManagementHubView`` is ``@register``-ed with a no-arg
-constructor and static ``servermanagement:*`` custom_ids, so
+constructor and static ``server_management:*`` custom_ids, so
 ``message_anchor_manager.restore_anchors`` re-binds it across restarts for free
 (the prefix command anchors the panel via ``panel_manager.get_or_render_panel``).
 """
@@ -53,7 +53,7 @@ _ROUTED_MANAGERS: dict[str, tuple[str, str]] = {
     "cleanup": ("Cleanup", "Cleanup"),
 }
 
-_BACK_CUSTOM_ID = "servermanagement:back"
+_BACK_CUSTOM_ID = "server_management:back"
 _BACK_LABEL = "↩ Server Management"
 
 
@@ -121,7 +121,7 @@ class ServerManagementHubView(PersistentView):
     docstring. Stateless: every callback recovers context from ``interaction``.
     """
 
-    SUBSYSTEM = "servermanagement"
+    SUBSYSTEM = "server_management"
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction_is_admin(interaction):
@@ -175,7 +175,7 @@ class ServerManagementHubView(PersistentView):
         label="🛡️ Moderation",
         style=discord.ButtonStyle.primary,
         row=0,
-        custom_id="servermanagement:moderation",
+        custom_id="server_management:moderation",
     )
     async def moderation_btn(
         self,
@@ -188,7 +188,7 @@ class ServerManagementHubView(PersistentView):
         label="📺 Channels",
         style=discord.ButtonStyle.primary,
         row=0,
-        custom_id="servermanagement:channels",
+        custom_id="server_management:channels",
     )
     async def channels_btn(
         self,
@@ -201,7 +201,7 @@ class ServerManagementHubView(PersistentView):
         label="🎭 Roles",
         style=discord.ButtonStyle.primary,
         row=0,
-        custom_id="servermanagement:roles",
+        custom_id="server_management:roles",
     )
     async def roles_btn(
         self,
@@ -214,7 +214,7 @@ class ServerManagementHubView(PersistentView):
         label="🧹 Cleanup",
         style=discord.ButtonStyle.secondary,
         row=1,
-        custom_id="servermanagement:cleanup",
+        custom_id="server_management:cleanup",
     )
     async def cleanup_btn(
         self,
@@ -227,7 +227,7 @@ class ServerManagementHubView(PersistentView):
         label="🧩 Setup",
         style=discord.ButtonStyle.success,
         row=1,
-        custom_id="servermanagement:setup",
+        custom_id="server_management:setup",
     )
     async def setup_btn(
         self,
@@ -246,7 +246,7 @@ class ServerManagementHubView(PersistentView):
         label="🔄 Refresh",
         style=discord.ButtonStyle.secondary,
         row=2,
-        custom_id="servermanagement:refresh",
+        custom_id="server_management:refresh",
     )
     async def refresh_btn(
         self,

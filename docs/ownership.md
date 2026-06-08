@@ -308,6 +308,56 @@ Every audited mutation goes through this contract:
 
 ---
 
+## Direct vs. draft mutation lanes (binding)
+
+There are **two** sanctioned write lanes plus a read lane. A mutation lands in
+exactly one; the choice is determined by the *shape* of the change, not by which
+panel the operator happens to be in. This is the canonical rule behind the
+per-surface map in
+[`docs/planning/adaptive-setup-access-routine-platform-2026-06-08.md` §5](planning/adaptive-setup-access-routine-platform-2026-06-08.md)
+— that table is the inventory; this is the rule.
+
+| Lane | When to use it | How it writes | Examples |
+|---|---|---|---|
+| **Direct (focused/runtime)** | A single-domain, reversible, operator-initiated action whose effect the operator can see and undo immediately. | Through the domain's **canonical audited service / mutation pipeline** (the "Mutation semantics" contract above) — synchronously, no staging. | A moderation action (`ModerationService`); one typed setting edit (`SettingsMutationPipeline`); a command-access policy write (`command_access_service`); a role exemption (`role_exemption_service`); a cleanup-policy change; a confirmed channel/role lifecycle op (`ChannelLifecycleService` / `RoleLifecycleService`). |
+| **Draft → Final Review (compound/config)** | A compound, multi-setting, cross-subsystem, generated, or higher-risk configuration change — anything where the operator should preview the whole set and an authority recheck must happen at apply time. | Staged as `SetupOperation` rows via `setup_draft`, applied **only** through `views/setup/final_review.py` (authority recheck → ordered apply → partial recovery → audit). | Setup wizard sections; cog-routing profiles; (future) Guild Feature Profile apply; (future) Access Map edits; (future) medium/high-risk routine config actions. |
+| **Read-only (projection)** | Answering "what is true / who can see what / what is unhealthy" without changing anything. | No writes. Composes existing owners' read models. | `setup_diagnostics`; server-management health badges; the (future) Access Map projection; Help Preview. |
+
+**Hard rules:**
+
+1. **Compound config never takes the direct lane.** If a change spans more than one
+   setting/resource, crosses subsystems, is machine-generated (profile / routine /
+   AI), or is classified medium/high risk, it **must** stage `SetupOperation` rows
+   and apply through Final Review. New op kinds require the dispatcher + DB gate +
+   SQL `CHECK` parity (see `services/setup_operations.py`).
+2. **Direct edits stay focused and reversible.** A direct-lane writer touches one
+   domain through its canonical service and emits its audit row in the same
+   transaction. It never writes another domain's tables (use that domain's service)
+   and never stages a draft on the operator's behalf for a change they did not
+   preview.
+3. **Projections never mutate.** A read model / drift provider / badge computes from
+   existing owners; if it finds something to fix, it returns a *repair proposal*
+   that the operator stages as a draft (the `setup_diagnostics` pattern) — it does
+   not write.
+4. **Prohibited paths (enforced by review + negative tests):** a compiler, routine,
+   or AI adapter must **never** call a view callback or a Discord resource API
+   directly, and must **never** call a canonical mutation service except via the
+   draft/Final-Review or (low-risk only) approved-action seam. They emit
+   `SetupOperation` drafts or dispatch through the canonical executor — never a
+   side-channel write. Cogs/views never write DB directly (the
+   "Direct DB writes — explicit blocklist" above).
+
+**Known drift to normalize before automation (selected for the P0C batch):** role
+**threshold** writes currently take a *direct DB write* path from the role panel
+rather than routing through an audited role-automation service seam, and several
+channel create/edit paths mix direct Discord calls with the lifecycle service.
+These must converge on a canonical audited writer **before** any profile/routine is
+allowed to drive role thresholds or channel lifecycle — otherwise the draft lane
+would have no single seam to compile into. Until then, profiles/routines must not
+target those axes.
+
+---
+
 ## Audit-log semantics
 
 Three audit tables exist, all append-only:

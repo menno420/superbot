@@ -190,23 +190,52 @@ _CACHED: CommandSurfaceLedger | None = None
 
 _LEDGER_VERSION = 1
 
-# Cog class name normalisation: trim "Cog" suffix + lowercase.
-# `EconomyCog` → `economy`; `ProofChannelCog` → `proofchannel`.
+# Cog class name normalisation: trim the "Cog" suffix, then split
+# CamelCase into snake_case so a *multi-word* cog class resolves to its
+# multi-word subsystem key (Q-0026).  Before the snake_case pass,
+# `ServerManagementCog` collapsed to `servermanagement` and
+# `ProofChannelCog` to `proofchannel` — the latter silently failed to
+# match the registry's real `proof_channel` key.  Now:
+#   EconomyCog          → economy            (single word, unchanged)
+#   ServerManagementCog → server_management
+#   ProofChannelCog     → proof_channel
+#   FourTwentyCog       → four_twenty
+# Acronym runs stay collapsed (no spurious split): BTD6Cog → btd6,
+# AICog → ai.
 _COG_SUFFIX_RE = re.compile(r"cog$", re.IGNORECASE)
+# Standard two-pass CamelCase → snake_case inflection.  Pass 1 inserts a
+# boundary before an "Upper + lower-run" preceded by any char
+# ("ServerManagement" → "Server_Management"); pass 2 catches the
+# "lower/digit → Upper" boundary ("btd6Ops" → "btd6_Ops").  Together
+# they leave all-caps acronym runs ("AI", "BTD6") intact.
+_CAMEL_HEAD_RE = re.compile(r"(.)([A-Z][a-z]+)")
+_CAMEL_TAIL_RE = re.compile(r"([a-z0-9])([A-Z])")
 
 
 def cog_name_to_subsystem(cog_name: str) -> str | None:
-    """Normalise a cog class name to a SUBSYSTEMS key, or None on miss."""
+    """Normalise a cog class name to a SUBSYSTEMS key, or None on miss.
+
+    Strips a trailing ``Cog`` then converts CamelCase to snake_case, so a
+    multi-word cog class resolves to its snake_case subsystem key — e.g.
+    ``ServerManagementCog`` → ``server_management`` (Q-0026).  The output
+    contract is **snake_case**: every multi-word subsystem must register
+    its key in that form so this round-trips (pinned by
+    ``test_multiword_cog_names_convert_to_snake_case`` and the
+    registered-subsystem round-trip identity test).  Returns ``None``
+    when the resulting key is not a registered subsystem.
+    """
     if not cog_name:
         return None
-    normalised = _COG_SUFFIX_RE.sub("", cog_name).lower()
+    stripped = _COG_SUFFIX_RE.sub("", cog_name)
+    snaked = _CAMEL_HEAD_RE.sub(r"\1_\2", stripped)
+    snaked = _CAMEL_TAIL_RE.sub(r"\1_\2", snaked).lower()
     # Function-local: utils.subsystem_registry transitively touches
     # core.runtime, so we keep this import inside the function to
     # match the cycle-sensitive discipline used by other runtime
     # modules.
     from utils.subsystem_registry import SUBSYSTEMS
 
-    return normalised if normalised in SUBSYSTEMS else None
+    return snaked if snaked in SUBSYSTEMS else None
 
 
 def _reset_for_tests() -> None:

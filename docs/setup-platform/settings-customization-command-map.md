@@ -1430,7 +1430,7 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (binding-select) + S7c (provisioning preview/confirm) + S7d
     (panel + Help / Admin integration).
 
-### servermanagement
+### server_management
 
 The unified Server Management mother hub (PR14). A **routing-only** operator
 surface: it composes the moderation / channels / roles / cleanup / setup
@@ -1438,11 +1438,12 @@ managers behind read-only health badges and owns **no** settings, bindings,
 resources, or mutations of its own.
 
 1. **cog_module**: `disbot/cogs/server_management_cog.py`.
-2. **subsystem**: `servermanagement`.
+2. **subsystem**: `server_management` (snake_case key per Q-0026; the
+   `!servermanagement` command keeps its name).
 3. **current_commands**: `!servermanagement` (aliases `!servermenu`,
    `!guildmenu`), `/server-management`.
 4. **current_command_groups**: none.
-5. **current_command_panel_or_menu**: `servermanagement` →
+5. **current_command_panel_or_menu**: `server_management` (panel-anchor key) →
    `views/server_management/hub.py:ServerManagementHubView`.
 6. **help_menu_discoverable**: Yes (mother hub, administrator tier).
 7. **dedicated_panel_command**: `none`.

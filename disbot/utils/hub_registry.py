@@ -216,7 +216,10 @@ HUBS: tuple[HubEntry, ...] = (
         minimum_tier="administrator",
     ),
     HubEntry(
-        key="servermanagement",
+        # key is the snake_case subsystem key (Q-0026), matching
+        # SUBSYSTEMS["server_management"]; entry_command keeps the
+        # ``!servermanagement`` command name.
+        key="server_management",
         display_name="Server Management",
         emoji="🧭",
         purpose="Moderation, channels, roles, cleanup, and setup in one place.",

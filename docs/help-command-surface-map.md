@@ -43,7 +43,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 | `admin` | ⚙️ Admin / Operations | `!adminmenu` | `admin_cog` | `_AdminPanelView` | administrator |
 | `settings` | 🔧 Settings / Configuration | `!settings` | `settings_cog` | `SettingsHubView` | administrator |
 | `diagnostic` | 🩺 Platform / Diagnostics | `!platform` | `diagnostic_cog` | `_PlatformHubView` | administrator |
-| `servermanagement` | 🧭 Server Management | `!servermanagement` | `server_management_cog` | `ServerManagementHubView` (`views/server_management/hub.py`) | administrator |
+| `server_management` | 🧭 Server Management | `!servermanagement` | `server_management_cog` | `ServerManagementHubView` (`views/server_management/hub.py`) | administrator |
 
 ## 2. Subsystem inventory
 
@@ -79,7 +79,7 @@ or raises.
 | `proof_channel` | `proof_channel_cog.py:113` | `prizestatus`, `prizemenu`, `timedprize` | — | `_PrizeManagerView` | `!help proof` → opens Proof Channel panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `role` | `role_cog.py:334` | `roles`, `rolesettings`, `rolemenu` (legacy alias) | 8+ legacy commands: `rolecreator`, `createrole`, `deleterole`, `setrole`, `unsetrole`, `assignroles`, `debugroles`, `refreshmembers`, plus react-role family | `RoleHubPanelView` | `!help roles` → opens Role panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; legacy commands remain as hidden compatibility |
 | `rps_tournament` | `rps_tournament_cog.py:118` | `rpsregister`/`rpsreg`, `rpsstart`/`rpsbegin`, `rpsbot`, `rpsmatchup`, `rpshelp`, `rpssettings` | — | `RPSPanelView` | `!help rps` → opens RPS panel (shared resolver) | reached via Games | hub child (Games) |
-| `servermanagement` | `server_management_cog.py` | `servermanagement`, `servermenu`, `guildmenu`, `/server-management` | — | `ServerManagementHubView` | `!help` → Server Management (shared resolver) | dropdown Server Management → panel | hub top-level (operator) — composes moderation/channels/roles/cleanup/setup |
+| `server_management` | `server_management_cog.py` | `servermanagement`, `servermenu`, `guildmenu`, `/server-management` | — | `ServerManagementHubView` | `!help` → Server Management (shared resolver) | dropdown Server Management → panel | hub top-level (operator) — composes moderation/channels/roles/cleanup/setup |
 | `settings` | `settings_cog.py` | (entry via `!settings`) | — | `SettingsHubView` | `!help settings` → opens Settings panel (shared resolver) | dropdown Settings → panel | hub top-level |
 | `utility` | `utility_cog.py` | `utilitymenu`, `clear`/`purge`, `info`, `serverinfo`, `userinfo`, `avatar`, `remind` | — | `_UtilityPanelView` | `!help utility` → opens Utility panel (shared resolver) | dropdown Utility → panel | hub top-level |
 | `xp` | `xp_cog.py` | `xpmenu`, `rank`, `givexp`, `resetxp`, `xpconfig` | — | `_XpHubView` | `!help xp` → opens XP panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; admin controls live in panel |

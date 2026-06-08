@@ -33,12 +33,12 @@ from views.server_management.hub import (
 )
 
 _BUTTON_IDS = {
-    "servermanagement:moderation",
-    "servermanagement:channels",
-    "servermanagement:roles",
-    "servermanagement:cleanup",
-    "servermanagement:setup",
-    "servermanagement:refresh",
+    "server_management:moderation",
+    "server_management:channels",
+    "server_management:roles",
+    "server_management:cleanup",
+    "server_management:setup",
+    "server_management:refresh",
 }
 
 
@@ -79,8 +79,8 @@ def _status() -> HubStatus:
 
 
 def test_view_is_registered_for_restoration():
-    assert get_view_class("servermanagement") is ServerManagementHubView
-    assert ServerManagementHubView.SUBSYSTEM == "servermanagement"
+    assert get_view_class("server_management") is ServerManagementHubView
+    assert ServerManagementHubView.SUBSYSTEM == "server_management"
 
 
 def test_view_subsystem_is_registered_first_class():
@@ -186,7 +186,7 @@ async def test_open_manager_routes_and_attaches_back_button():
         c
         for c in child_view.children
         if isinstance(c, discord.ui.Button)
-        and c.custom_id == "servermanagement:back"
+        and c.custom_id == "server_management:back"
     ]
     assert len(back) == 1
 
@@ -234,10 +234,10 @@ async def test_open_manager_hook_failure_sends_ephemeral_not_crash():
 @pytest.mark.asyncio
 async def test_manager_buttons_delegate_to_open_manager():
     expected = {
-        "servermanagement:moderation": "moderation",
-        "servermanagement:channels": "channels",
-        "servermanagement:roles": "roles",
-        "servermanagement:cleanup": "cleanup",
+        "server_management:moderation": "moderation",
+        "server_management:channels": "channels",
+        "server_management:roles": "roles",
+        "server_management:cleanup": "cleanup",
     }
     for custom_id, key in expected.items():
         view = ServerManagementHubView()
@@ -257,7 +257,7 @@ async def test_setup_button_opens_wizard_entry():
         "cogs.setup._wizard_entry.open_wizard_from_slash",
         new=AsyncMock(),
     ) as mock_open:
-        await _button(view, "servermanagement:setup").callback(interaction)
+        await _button(view, "server_management:setup").callback(interaction)
     mock_open.assert_awaited_once_with(interaction)
 
 
@@ -275,7 +275,7 @@ async def test_refresh_recomposes_in_place():
     ), patch.object(
         hub_mod, "safe_defer", new=AsyncMock(return_value=True)
     ), patch.object(hub_mod, "safe_edit", new=AsyncMock()) as mock_edit:
-        await _button(view, "servermanagement:refresh").callback(interaction)
+        await _button(view, "server_management:refresh").callback(interaction)
     mock_edit.assert_awaited_once()
     _args, kwargs = mock_edit.call_args
     assert kwargs["view"] is view
@@ -285,7 +285,7 @@ async def test_refresh_recomposes_in_place():
 async def test_refresh_outside_guild_sends_ephemeral():
     view = ServerManagementHubView()
     interaction = _interaction(guild=False)
-    await _button(view, "servermanagement:refresh").callback(interaction)
+    await _button(view, "server_management:refresh").callback(interaction)
     interaction.response.send_message.assert_awaited_once()
 
 

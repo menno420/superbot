@@ -71,10 +71,13 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   `KNOWN_PANEL_COMMANDS` entry, (4) a `build_help_menu_view` hook on the cog, (5)
   help-surface-map §1+§2 rows, (6) a command-map `### <subsystem>` section, and (7) the hub-set
   / help-category / discoverability **enumeration tests**. **Gotcha:** the registry **key must
-  equal `cog_name_to_subsystem(YourCog)`** — it strips `Cog` + lowercases with **no** underscore
-  (so `ServerManagementCog` ⇒ `servermanagement`), and that same string must be the view's
+  equal `cog_name_to_subsystem(YourCog)`** — it strips `Cog` then converts CamelCase → snake_case
+  (Q-0026), so `ServerManagementCog` ⇒ `server_management` and `ProofChannelCog` ⇒ `proof_channel`
+  (an all-caps acronym run stays collapsed: `BTD6Cog` ⇒ `btd6`). That same key must be the view's
   `SUBSYSTEM` classvar **and** the `panel_manager.get_or_render_panel` anchor string, or the
   identity-contract (view), command-surface-ledger (orphan-cog), and db-anchor findings all fire.
+  (The `!servermanagement` *command* name is separate from the `server_management` *key* — the
+  command keeps its spelling, exactly like `economy` (key) vs `economymenu` (command).)
   A registered `PersistentView` whose `SUBSYSTEM` is not in `SUBSYSTEMS` is an `auto_healable`
   orphan the platform self-heal would unregister. Working exemplar:
   `views/server_management/hub.py` + `cogs/server_management_cog.py` (PR14).
@@ -129,7 +132,7 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   migration 059 + a drift-guard test close it). **The unified Server Management Hub (PR14) was
   built 2026-06-08** — a persistent `!servermanagement` + ephemeral `/server-management`
   composing the managers behind read-only health badges, registered **first-class** as the
-  `servermanagement` subsystem + hub (owner decision Q-0016) via
+  `server_management` subsystem + hub (owner decision Q-0016; key snake_cased per Q-0026) via
   `services/server_management_hub.py` + `views/server_management/hub.py` +
   `cogs/server_management_cog.py`. The tracker's only remaining server-management item is the
   **gated PR13 AI template layer**.
@@ -154,8 +157,8 @@ decision Q-0008; governance section deferred). **PR12 (setup diagnostics & repai
 built 2026-06-07** (read-only `setup_diagnostics` service + a Diagnose & repair section;
 `clear_binding` is the one safe auto-repair, everything else advisory/blocked). **PR13's
 deterministic role-templates slice shipped 2026-06-08, and PR14 (the unified Server Management
-Hub) was built 2026-06-08** (registered first-class as the `servermanagement` subsystem + hub,
-owner decision Q-0016). The only remaining item is the gated PR13 AI generation layer. Link to
+Hub) was built 2026-06-08** (registered first-class as the `server_management` subsystem + hub,
+owner decision Q-0016; key snake_cased per Q-0026). The only remaining item is the gated PR13 AI generation layer. Link to
 the tracker for exact order and dependencies rather than copying them here.
 
 ## Ideas (not approved)
@@ -181,7 +184,7 @@ reusable so a web companion is *possible* later, but do not start web work now.
    `role_feasibility` / `cleanup_diagnostics`; `clear_binding` the lone safe auto-repair,
    staged through Final Review). **PR13's deterministic role-templates slice shipped 2026-06-08**
    (`setup_role_templates` + `create_managed_role` + Role-templates section), and **PR14 (the
-   unified Server Management Hub) was built 2026-06-08** (first-class `servermanagement`
+   unified Server Management Hub) was built 2026-06-08** (first-class `server_management`
    subsystem + hub, Q-0016 — composes the managers behind read-only badges, no new mutation
    path). The lane's only remaining item is the **gated PR13 AI generation follow-up**. Reuse
    provisioning previews/confirmation + capability checks; never add a second resource-creation

@@ -80,7 +80,12 @@ SUBSYSTEMS: dict[str, dict] = {
             "admin.server.stats",
         ],
     },
-    "servermanagement": {
+    # Key is snake_case (Q-0026): it must equal cog_name_to_subsystem(
+    # "ServerManagementCog") = "server_management".  The ``servermanagement``
+    # *entry_point* below is the prefix command name (``!servermanagement``),
+    # which is a command identifier, not the subsystem key — they differ by
+    # design, exactly like ``economy`` (key) vs ``economymenu`` (command).
+    "server_management": {
         "display_name": "Server Management",
         "description": "Unified hub for moderation, channels, roles, cleanup, setup",
         "emoji": "🧭",
