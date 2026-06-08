@@ -344,6 +344,118 @@ def test_map_tower_end_to_end(mod, tmp_path):
     ]
 
 
+def test_map_powers_extracts_named_skips_hidden(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Powers" / "MonkeyBoost.json",
+        {
+            "$type": _t("MonkeyBoostPower"),
+            "PowerId": "MonkeyBoost",
+            "Cost": 100,
+            "quantity": 1,
+            "canBeActivatedBetweenRounds": False,
+        },
+    )
+    # a hidden/event power with no textTable name → skipped, not surfaced raw
+    _write(
+        dump / "Powers" / "SpookyCreature.json",
+        {"$type": _t("Pow"), "PowerId": "SpookyCreature", "Cost": 50},
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "MonkeyBoost": "Monkey Boost",
+            "MonkeyBoost Description": "Attack faster <sup>TM</sup>",
+        },
+    )
+    rows, warnings = mod.map_powers(dump, "55.1")
+    assert [r["id"] for r in rows] == ["monkey_boost"]  # SpookyCreature dropped
+    row = rows[0]
+    assert row["canonical"] == "Monkey Boost"
+    assert row["monkey_money_cost"] == 100
+    # tags are stripped, inner text (the TM, the words) is kept.
+    assert row["description"] == "Attack faster TM"
+
+
+def test_map_powers_fills_placeholder_and_extracts_effect(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Powers" / "MonkeyBoost.json",
+        {
+            "$type": _t("MonkeyBoostPower"),
+            "PowerId": "MonkeyBoost",
+            "Cost": 100,
+            "behaviors": [
+                {"$type": _t("MonkeyBoostModel"), "rateScale": 0.5, "duration": 15.0},
+            ],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "MonkeyBoost": "Monkey Boost",
+            "MonkeyBoost Description": "All towers attack twice as fast for {0} seconds.",
+        },
+    )
+    row = mod.map_powers(dump, "55.1")[0][0]
+    # structured factor extracted from the dump effect model
+    assert row["effect"] == {"rate_scale": 0.5, "duration_seconds": 15}
+    # the {0} window is filled from that same value (the player-facing form)
+    assert row["description"] == "All towers attack twice as fast for 15 seconds."
+
+
+def test_map_powers_pct_fill_renders_scale_as_percent(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Powers" / "Thrive.json",
+        {
+            "$type": _t("ThrivePower"),
+            "PowerId": "Thrive",
+            "Cost": 70,
+            "behaviors": [{"$type": _t("ThriveModel"), "cashScale": 1.25}],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {"Thrive": "Thrive", "Thrive Description": "Increase cash by {0}% this round."},
+    )
+    row = mod.map_powers(dump, "55.1")[0][0]
+    assert row["effect"] == {"cash_scale": 1.25}
+    # 1.25 scale → "25" (the % is already in the text), not "1.25" or "125".
+    assert row["description"] == "Increase cash by 25% this round."
+
+
+def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Knowledge" / "Magic" / "AcidStability.json",
+        {
+            "name": "AcidStability",
+            "category": 2,
+            "monkeyMoneyCost": 250,
+            "investmentRequired": 8,
+            "prerequisiteIds": ["SomePrereq"],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "AcidStability": "Acid Stability",
+            "AcidStabilityDescription": "Acid lasts longer.",
+        },
+    )
+    rows, warnings = mod.map_monkey_knowledge(dump, "55.1")
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["id"] == "acid_stability"
+    assert row["canonical"] == "Acid Stability"
+    assert row["category"] == "Magic"  # from the folder, not the opaque int
+    assert row["description"] == "Acid lasts longer."
+    assert row["monkey_money_cost"] == 250
+    assert row["investment_required"] == 8
+    assert row["prerequisites"] == ["some_prereq"]
+
+
 def test_validate_anchors(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(dump / "Towers" / "DartMonkey" / "DartMonkey.json", _tower_model(cost=200.0))
@@ -1049,6 +1161,27 @@ def test_buffs_placement_area_range_passthrough(mod):
     assert mod._map_tier(model)["buffs"][0]["rangeMultiplier"] == 1.35
 
 
+def test_zones_moab_shove_renames_push_caps(mod):
+    # Heli "MOAB Shove": the dump's *PushSpeedScaleCap → committed multiplierFor*
+    # (verified exact vs the committed zone). DDT has no dump field → not emitted.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("MoabShoveZoneModel"),
+            "name": "MoabShoveZoneModel",
+            "range": 42,
+            "moabPushSpeedScaleCap": -0.51,
+            "bfbPushSpeedScaleCap": -0.11,
+            "zomgPushSpeedScaleCap": 0.09,
+        }
+    )
+    zone = mod._map_tier(model)["zones"][0]
+    assert zone["multiplierForMoab"] == -0.51
+    assert zone["multiplierForBfb"] == -0.11
+    assert zone["multiplierForZomg"] == 0.09
+    assert "multiplierForDdt" not in zone  # dump has no DDT field — never fabricate
+
+
 def test_buffs_prince_of_darkness_distance_is_lifespan_multiplier(mod):
     # The committed wiki data maps distanceMultiplier -> lifespanMultiplier
     # (Undead buff 1.5), so it is the correct field, not a coincidence.
@@ -1063,3 +1196,69 @@ def test_buffs_prince_of_darkness_distance_is_lifespan_multiplier(mod):
     buff = mod._map_tier(model)["buffs"][0]
     assert buff["damageAdditive"] == 3
     assert buff["lifespanMultiplier"] == 1.5
+
+
+def test_buffs_shinobi_tactics_maps_multiplier_to_rate(mod):
+    # Ninja "Shinobi Tactics" (0-3-0+): the dedicated model is not *SupportModel/
+    # *BuffModel-suffixed, so earlier discovery missed it. Raw multiplier 0.92 ==
+    # committed wiki rateMultiplier 0.92. The model has no pierce field, so only
+    # the confirmed rate is written (the committed +8% pierce is a separate model).
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("SupportShinobiTacticsModel"),
+            "name": "SupportShinobiTacticsModel_Support_",
+            "buffLocsName": "ShinobiTacticsBuff",
+            "multiplier": 0.92,
+            "maxStacks": 20,
+            "maxStackSize": 20,
+        }
+    )
+    assert mod._map_tier(model)["buffs"] == [
+        {
+            "kind": "SupportShinobiTactics",
+            "name": "ShinobiTacticsBuff",
+            "rateMultiplier": 0.92,
+        }
+    ]
+
+
+def test_buffs_damage_modifier_support_reads_nested_tag_bonus(mod):
+    # Mortar Pop-and-Awe (0-4-0+): the additive bonus lives in the *nested*
+    # damageModifierModel as the misspelled ``damageAddative`` (1.0 vs tag Bad ==
+    # committed damageAdditiveForBad 1); ``damageMultiplier`` 1.0 is the decoy.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("DamageModifierSupportModel"),
+            "mutatorId": "PopAndAweSupport",
+            "isGlobal": True,
+            "damageModifierModel": {
+                "$type": _t("DamageModifierForTagModel"),
+                "tag": "Bad",
+                "damageMultiplier": 1.0,
+                "damageAddative": 1.0,
+            },
+        }
+    )
+    assert mod._map_tier(model)["buffs"] == [
+        {
+            "kind": "DamageModifierSupport",
+            "name": "PopAndAweSupport",
+            "damageAdditiveForBad": 1,
+            "isGlobal": True,
+        }
+    ]
+
+
+def test_buffs_damage_modifier_support_drops_unmapped_tag(mod):
+    # An unmapped tag yields no number → drop the entry, never emit a bare buff.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("DamageModifierSupportModel"),
+            "mutatorId": "X",
+            "damageModifierModel": {"tag": "Lead", "damageAddative": 2.0},
+        }
+    )
+    assert "buffs" not in mod._map_tier(model)

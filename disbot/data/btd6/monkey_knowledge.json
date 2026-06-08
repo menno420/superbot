@@ -1,0 +1,1452 @@
+{
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
+  "knowledge": [
+    {
+      "id": "4_and4",
+      "canonical": "4 and 4",
+      "category": "Primary",
+      "description": "Dart Monkey's triple shot gets 4 darts every 4th shot.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "crossbow_reach"
+      ]
+    },
+    {
+      "id": "aviation_grade_glue",
+      "canonical": "Aviation Grade Glue",
+      "category": "Primary",
+      "description": "MOAB Glue slows more than normal.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "more_splatty_glue"
+      ]
+    },
+    {
+      "id": "big_cryo_blast",
+      "canonical": "Big Cryo Blast",
+      "category": "Primary",
+      "description": "Cryo Cannon gets increased blast radius.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "so_cold"
+      ]
+    },
+    {
+      "id": "big_inferno",
+      "canonical": "Big Inferno",
+      "category": "Primary",
+      "description": "Inferno Ring upgrade gets +3 burst radius.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "poppy_blades"
+      ]
+    },
+    {
+      "id": "bionic_augmentation",
+      "canonical": "Bionic Augmentation",
+      "category": "Primary",
+      "description": "While Turbo Charge is active, Bionic Boomerang is able to target Camo Bloons.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "long_turbo"
+      ]
+    },
+    {
+      "id": "bonus_glue_gunner",
+      "canonical": "Bonus Glue Gunner",
+      "category": "Primary",
+      "description": "Start each game with 1 free Glue Gunner! (Only 1 free Monkey Tower per game)",
+      "monkey_money_cost": 1000,
+      "investment_required": 10,
+      "prerequisites": [
+        "cheaper_solution"
+      ]
+    },
+    {
+      "id": "bonus_monkey",
+      "canonical": "Bonus Monkey!",
+      "category": "Primary",
+      "description": "Start each game with 1 free Dart Monkey! (Only 1 free Monkey Tower per game)",
+      "monkey_money_cost": 1000,
+      "investment_required": 10,
+      "prerequisites": [
+        "come_on_everybody"
+      ]
+    },
+    {
+      "id": "budget_clusters",
+      "canonical": "Budget Clusters",
+      "category": "Primary",
+      "description": "Bomb Shooter's Cluster Bombs cost reduced by 100.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "fraggy_frags"
+      ]
+    },
+    {
+      "id": "cheap_rangs",
+      "canonical": "Cheap 'Rangs",
+      "category": "Primary",
+      "description": "Base cost of Boomerang Thrower reduced by 50.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "increased_lifespan"
+      ]
+    },
+    {
+      "id": "cheaper_solution",
+      "canonical": "Cheaper Solution",
+      "category": "Primary",
+      "description": "Bloon Liquefier cost reduced by 1000.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "aviation_grade_glue"
+      ]
+    },
+    {
+      "id": "come_on_everybody",
+      "canonical": "Come On Everybody!",
+      "category": "Primary",
+      "description": "Primary towers attack 5% faster if all are below tier 3, and cost 5% less if all are tier 3 or 4.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "master_double_cross"
+      ]
+    },
+    {
+      "id": "crossbow_reach",
+      "canonical": "Crossbow Reach",
+      "category": "Primary",
+      "description": "Crossbow range increased.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "extra_dart_pops"
+      ]
+    },
+    {
+      "id": "extra_bounce",
+      "canonical": "Extra Bounce",
+      "category": "Primary",
+      "description": "Increases Boomerang Ricochet pierce by 30.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "cheap_rangs"
+      ]
+    },
+    {
+      "id": "extra_dart_pops",
+      "canonical": "Extra Dart Pops",
+      "category": "Primary",
+      "description": "Dart Monkeys get +1 pierce to all shots.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "fast_glue",
+      "canonical": "Fast Glue",
+      "category": "Primary",
+      "description": "Glue Gunner 10% increased attack speed.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "fast_tack_attacks"
+      ]
+    },
+    {
+      "id": "fast_tack_attacks",
+      "canonical": "Fast Tack Attacks",
+      "category": "Primary",
+      "description": "Tack Shooter attack speed increased by 8%.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "force_vs_force",
+      "canonical": "Force vs Force",
+      "category": "Primary",
+      "description": "Juggernaut does +2 damage per shot to MOAB-Class Bloons.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "crossbow_reach"
+      ]
+    },
+    {
+      "id": "fraggy_frags",
+      "canonical": "Fraggy Frags",
+      "category": "Primary",
+      "description": "Frag bombs get 2 extra frags.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "increased_lifespan"
+      ]
+    },
+    {
+      "id": "hard_press",
+      "canonical": "Hard Press",
+      "category": "Primary",
+      "description": "MOAB Press pushes back 30% further.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "extra_bounce"
+      ]
+    },
+    {
+      "id": "hard_tacks",
+      "canonical": "Hard Tacks",
+      "category": "Primary",
+      "description": "Tack Shooter tacks can pop Frozen Bloons.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "fast_tack_attacks"
+      ]
+    },
+    {
+      "id": "hypothermia",
+      "canonical": "Hypothermia",
+      "category": "Primary",
+      "description": "Snowstorm freezes Bloons for longer.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "so_cold"
+      ]
+    },
+    {
+      "id": "icy_chill",
+      "canonical": "Icy Chill",
+      "category": "Primary",
+      "description": "Freeze radius slightly increased.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "hard_tacks"
+      ]
+    },
+    {
+      "id": "increased_lifespan",
+      "canonical": "Increased Lifespan",
+      "category": "Primary",
+      "description": "Longer projectile lifespan for Dart Monkey, Bomb Shooter, Tack Shooter and Glue Gunner.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "long_turbo",
+      "canonical": "Long Turbo",
+      "category": "Primary",
+      "description": "Boomerang Turbo Charge ability lasts 15 seconds.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "hard_press"
+      ]
+    },
+    {
+      "id": "master_double_cross",
+      "canonical": "Master Double Cross",
+      "category": "Primary",
+      "description": "Allows you to have TWO Crossbow Masters.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "4_and4"
+      ]
+    },
+    {
+      "id": "mega_mauler",
+      "canonical": "Mega Mauler",
+      "category": "Primary",
+      "description": "MOAB Mauler does more damage per hit.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "aviation_grade_glue",
+        "hard_press"
+      ]
+    },
+    {
+      "id": "more_cash",
+      "canonical": "More Cash",
+      "category": "Primary",
+      "description": "Increase starting cash by 200.",
+      "monkey_money_cost": 1000,
+      "investment_required": 10,
+      "prerequisites": [
+        "bonus_glue_gunner",
+        "bonus_monkey"
+      ]
+    },
+    {
+      "id": "more_splatty_glue",
+      "canonical": "More Splatty Glue",
+      "category": "Primary",
+      "description": "Glue Splatter can affect 2 extra Bloons per shot.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "fast_glue"
+      ]
+    },
+    {
+      "id": "poppy_blades",
+      "canonical": "Poppy Blades",
+      "category": "Primary",
+      "description": "Blade Shooter upgrade gets +2 pierce.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "hard_tacks"
+      ]
+    },
+    {
+      "id": "recurring_rangs",
+      "canonical": "Recurring 'Rangs",
+      "category": "Primary",
+      "description": "Boomerangs that return to the Boomerang Monkey will be thrown a second time.",
+      "monkey_money_cost": 0,
+      "investment_required": 5,
+      "prerequisites": [
+        "extra_bounce"
+      ]
+    },
+    {
+      "id": "so_cold",
+      "canonical": "So... Cold...",
+      "category": "Primary",
+      "description": "Ice Monkey's Permafrost upgrade slows by 60%.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "icy_chill"
+      ]
+    },
+    {
+      "id": "violent_impact",
+      "canonical": "Violent Impact",
+      "category": "Primary",
+      "description": "Bomb Shooter's Bloon Impact stuns for 25% longer.",
+      "monkey_money_cost": 500,
+      "investment_required": 10,
+      "prerequisites": [
+        "budget_clusters"
+      ]
+    },
+    {
+      "id": "accelerated_aerodarts",
+      "canonical": "Accelerated Aerodarts",
+      "category": "Military",
+      "description": "Darts from Monkey Aces fly faster.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "airforce_upgrades"
+      ]
+    },
+    {
+      "id": "advanced_logistics",
+      "canonical": "Advanced Logistics",
+      "category": "Military",
+      "description": "All Military Monkeys base costs reduced by 5%.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "aeronautic_subsidy",
+        "door_gunner"
+      ]
+    },
+    {
+      "id": "aeronautic_subsidy",
+      "canonical": "Aeronautic Subsidy",
+      "category": "Military",
+      "description": "Monkey Ace tier 5 upgrades cost 10% less.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "gun_coolant"
+      ]
+    },
+    {
+      "id": "airforce_upgrades",
+      "canonical": "Airforce Upgrades",
+      "category": "Military",
+      "description": "Monkey Aces and Heli Pilots of Tier 3 or higher get +1 pierce per shot.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "big_bloon_sabotage",
+      "canonical": "Big Bloon Sabotage",
+      "category": "Military",
+      "description": "All MOAB-Class Bloons spawn in a partially damaged state.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "sub_admiral",
+        "master_defender"
+      ]
+    },
+    {
+      "id": "big_bunch",
+      "canonical": "Big Bunch",
+      "category": "Military",
+      "description": "Grape Shot shoots 6 grapes.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "naval_upgrades"
+      ]
+    },
+    {
+      "id": "breaking_ballistic",
+      "canonical": "Breaking Ballistic",
+      "category": "Military",
+      "description": "Ballistic Missiles do more damage to Ceramic Bloons.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "naval_upgrades"
+      ]
+    },
+    {
+      "id": "budget_battery",
+      "canonical": "Budget Battery",
+      "category": "Military",
+      "description": "Artillery Battery cost reduced by 600.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "paint_stripper"
+      ]
+    },
+    {
+      "id": "ceramic_shock",
+      "canonical": "Ceramic Shock",
+      "category": "Military",
+      "description": "Sniper hits on Ceramic Bloons slow them down briefly.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "elite_military_training"
+      ]
+    },
+    {
+      "id": "charged_chinooks",
+      "canonical": "Charged Chinooks",
+      "category": "Military",
+      "description": "Chinook Activated Abilities give 25% more lives and cash.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "rapid_razors"
+      ]
+    },
+    {
+      "id": "cheaper_maiming",
+      "canonical": "Cheaper Maiming",
+      "category": "Military",
+      "description": "Maim MOAB cost reduced by 1000.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "ceramic_shock"
+      ]
+    },
+    {
+      "id": "cross_the_streams",
+      "canonical": "Cross the Streams",
+      "category": "Military",
+      "description": "Where Plasma or Doom beams cross on the track they create temporary plasma pools.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "gorgon_storm"
+      ]
+    },
+    {
+      "id": "door_gunner",
+      "canonical": "Door Gunner",
+      "category": "Military",
+      "description": "Special Poperations Heli allows tier 4 and below Monkey Towers to attack Bloons while in transit.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "charged_chinooks"
+      ]
+    },
+    {
+      "id": "elite_military_training",
+      "canonical": "Elite Military Training",
+      "category": "Military",
+      "description": "All Military Monkeys get a one-off +1000xp and earn xp in-game 5% faster permanently.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "emergency_unlock",
+      "canonical": "Emergency Unlock",
+      "category": "Military",
+      "description": "Activated ability: unlocks locked Dartling Gunners and boosts their swivel speed for a short time.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "extra_burny_stuff",
+      "canonical": "Extra Burny Stuff",
+      "category": "Military",
+      "description": "Burny Stuff pops every second.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": []
+    },
+    {
+      "id": "faster_takedowns",
+      "canonical": "Faster Takedowns",
+      "category": "Military",
+      "description": "MOAB Takedown Ability has 5 second faster cooldown.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "big_bunch"
+      ]
+    },
+    {
+      "id": "flanking_maneuvers",
+      "canonical": "Flanking Maneuvers",
+      "category": "Military",
+      "description": "Sniper, Monkey Sub, & Monkey Buccaneer attack 10% faster when set to 'Last' targeting priority.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "quad_burst",
+        "trade_agreements"
+      ]
+    },
+    {
+      "id": "gorgon_storm",
+      "canonical": "Gorgon Storm",
+      "category": "Military",
+      "description": "Hydra Rocket Storm stuns damaged Bloons for a short time.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "emergency_unlock"
+      ]
+    },
+    {
+      "id": "gun_coolant",
+      "canonical": "Gun Coolant",
+      "category": "Military",
+      "description": "Monkey Aces attack 10% faster.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "targeted_pineapples"
+      ]
+    },
+    {
+      "id": "master_defender",
+      "canonical": "Master Defender",
+      "category": "Military",
+      "description": "Elite Defender has no cooldown.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "cheaper_maiming"
+      ]
+    },
+    {
+      "id": "military_conscription",
+      "canonical": "Military Conscription",
+      "category": "Military",
+      "description": "Purchase price of first Military Monkey each game is two thirds the normal.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "trade_agreements"
+      ]
+    },
+    {
+      "id": "naval_upgrades",
+      "canonical": "Naval Upgrades",
+      "category": "Military",
+      "description": "Monkey Buccaneer and Monkey Sub get +1 pierce per shot.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "paint_stripper",
+      "canonical": "Paint Stripper",
+      "category": "Military",
+      "description": "Mortar shattering shells removes Fortification from DDT Bloons.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "extra_burny_stuff"
+      ]
+    },
+    {
+      "id": "quad_burst",
+      "canonical": "Quad Burst",
+      "category": "Military",
+      "description": "Airburst Darts split into 4 instead of 3.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "breaking_ballistic"
+      ]
+    },
+    {
+      "id": "rapid_razors",
+      "canonical": "Rapid Razors",
+      "category": "Military",
+      "description": "Razor Rotors pop Bloons faster.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "airforce_upgrades"
+      ]
+    },
+    {
+      "id": "sub_admiral",
+      "canonical": "Sub Admiral",
+      "category": "Military",
+      "description": "Sub Commander affects all Monkey Subs on screen.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "flanking_maneuvers"
+      ]
+    },
+    {
+      "id": "targeted_pineapples",
+      "canonical": "Targeted Pineapples",
+      "category": "Military",
+      "description": "Pineapples are only dropped near tracks.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "accelerated_aerodarts"
+      ]
+    },
+    {
+      "id": "trade_agreements",
+      "canonical": "Trade Agreements",
+      "category": "Military",
+      "description": "Merchantman generates +$20 per round.",
+      "monkey_money_cost": 250,
+      "investment_required": 8,
+      "prerequisites": [
+        "faster_takedowns"
+      ]
+    },
+    {
+      "id": "wingmonkey",
+      "canonical": "Wingmonkey",
+      "category": "Military",
+      "description": "Advanced flight pathing that coordinates multiple Monkey Aces on staggered attack runs.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "aeronautic_subsidy"
+      ]
+    },
+    {
+      "id": "acid_stability",
+      "canonical": "Acid Stability",
+      "category": "Magic",
+      "description": "Alchemists' acid pools last 5 seconds longer.",
+      "monkey_money_cost": 250,
+      "investment_required": 4,
+      "prerequisites": [
+        "strong_tonic"
+      ]
+    },
+    {
+      "id": "arcane_impale",
+      "canonical": "Arcane Impale",
+      "category": "Magic",
+      "description": "Arcane Spike does extra damage to MOAB-Class and Ceramic Bloons.",
+      "monkey_money_cost": 250,
+      "investment_required": 4,
+      "prerequisites": [
+        "flame_jet"
+      ]
+    },
+    {
+      "id": "cheaper_doubles",
+      "canonical": "Cheaper Doubles",
+      "category": "Magic",
+      "description": "Ninja Double Shot cost reduced by 100.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "super_range"
+      ]
+    },
+    {
+      "id": "cold_front",
+      "canonical": "Cold Front",
+      "category": "Magic",
+      "description": "Ball Lightning's additional lightning bolts also freeze Bloons.",
+      "monkey_money_cost": 250,
+      "investment_required": 4,
+      "prerequisites": [
+        "warm_oak"
+      ]
+    },
+    {
+      "id": "deadly_tranquility",
+      "canonical": "Deadly Tranquility",
+      "category": "Magic",
+      "description": "Bloonjitsu and Grandmaster Ninja get an extra shuriken per throw.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "diversion_tactics"
+      ]
+    },
+    {
+      "id": "diversion_tactics",
+      "canonical": "Diversion Tactics",
+      "category": "Magic",
+      "description": "Increased chance to distract Bloons from Distraction upgrade.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "cheaper_doubles"
+      ]
+    },
+    {
+      "id": "flame_jet",
+      "canonical": "Flame Jet",
+      "category": "Magic",
+      "description": "Dragon's Breath flame projectiles move much faster.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "magic_tricks",
+        "hot_magic"
+      ]
+    },
+    {
+      "id": "heavy_knockback",
+      "canonical": "Heavy Knockback",
+      "category": "Magic",
+      "description": "Bloons hit by Knockback from Super Monkey are knocked back slightly harder.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "super_range"
+      ]
+    },
+    {
+      "id": "hot_magic",
+      "canonical": "Hot Magic",
+      "category": "Magic",
+      "description": "All Magic type towers can pop Frozen Bloons.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "lingering_magic"
+      ]
+    },
+    {
+      "id": "lingering_magic",
+      "canonical": "Lingering Magic",
+      "category": "Magic",
+      "description": "Longer projectile lifespan for Wizard Monkey, Super Monkey, Ninja Monkey, and Druid.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "magic_tricks",
+      "canonical": "Magic Tricks",
+      "category": "Magic",
+      "description": "Guided Magic and Intense Magic cost 25 less.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "mana_shield",
+      "canonical": "Mana Shield",
+      "category": "Magic",
+      "description": "Creates a special shield that absorbs up to 25 lives for free. Recharges slowly each round if no Bloons leak.",
+      "monkey_money_cost": 1000,
+      "investment_required": 8,
+      "prerequisites": [
+        "arcane_impale"
+      ]
+    },
+    {
+      "id": "mo_monkey_money",
+      "canonical": "Mo' Monkey Money",
+      "category": "Magic",
+      "description": "Earn 10% extra Monkey Money from game wins on any difficulty.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "speedy_brewing"
+      ]
+    },
+    {
+      "id": "speedy_brewing",
+      "canonical": "Speedy Brewing",
+      "category": "Magic",
+      "description": "All Alchemist's potions have 5% faster reload time.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "magic_tricks"
+      ]
+    },
+    {
+      "id": "strike_down_the_false",
+      "canonical": "Strike Down the False",
+      "category": "Magic",
+      "description": "Sun Avatar can pop Purple Bloons.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "heavy_knockback"
+      ]
+    },
+    {
+      "id": "strong_tonic",
+      "canonical": "Strong Tonic",
+      "category": "Magic",
+      "description": "Transforming Tonic lasts longer.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "speedy_brewing"
+      ]
+    },
+    {
+      "id": "super_range",
+      "canonical": "SUPER Range",
+      "category": "Magic",
+      "description": "Increased range for the Super Range upgrade.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "there_can_be_only_one",
+      "canonical": "There Can Be Only One",
+      "category": "Magic",
+      "description": "There can be only one.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "xray_ultra"
+      ]
+    },
+    {
+      "id": "tiny_tornadoes",
+      "canonical": "Tiny Tornadoes",
+      "category": "Magic",
+      "description": "Druid tornadoes spawn 3 smaller tornadoes when they expire.",
+      "monkey_money_cost": 1000,
+      "investment_required": 8,
+      "prerequisites": [
+        "deadly_tranquility",
+        "cold_front",
+        "vine_rupture"
+      ]
+    },
+    {
+      "id": "vine_rupture",
+      "canonical": "Vine Rupture",
+      "category": "Magic",
+      "description": "Grants Spirit of the Forest Druid a new ability to burst all track vines, doing big damage to all non-Lead Bloons. New vines will regrow after each Rupture.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "cold_front"
+      ]
+    },
+    {
+      "id": "warm_oak",
+      "canonical": "Warm Oak",
+      "category": "Magic",
+      "description": "Heart of Oak cost reduced by 100.",
+      "monkey_money_cost": 0,
+      "investment_required": 4,
+      "prerequisites": [
+        "hot_magic"
+      ]
+    },
+    {
+      "id": "xray_ultra",
+      "canonical": "X-ray Ultra",
+      "category": "Magic",
+      "description": "Ultravision allows Super Monkeys to see through and fire through blocking objects.",
+      "monkey_money_cost": 250,
+      "investment_required": 4,
+      "prerequisites": [
+        "strike_down_the_false"
+      ]
+    },
+    {
+      "id": "backroom_deals",
+      "canonical": "Backroom Deals",
+      "category": "Support",
+      "description": "IMF Loan grants $1000 more and repay rate is 40%.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "bigger_banks"
+      ]
+    },
+    {
+      "id": "bank_deposits",
+      "canonical": "Bank Deposits",
+      "category": "Support",
+      "description": "Tier 4 and above Monkey Banks can take deposits from available in game cash.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "better_sell_deals"
+      ]
+    },
+    {
+      "id": "better_sell_deals",
+      "canonical": "Better Sell Deals",
+      "category": "Support",
+      "description": "All Monkeys sell for 5% more.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "backroom_deals"
+      ]
+    },
+    {
+      "id": "big_traps",
+      "canonical": "Big Traps",
+      "category": "Support",
+      "description": "Bloon Trap can hold 30 more RBE.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "thicker_foams"
+      ]
+    },
+    {
+      "id": "bigger_banks",
+      "canonical": "Bigger Banks",
+      "category": "Support",
+      "description": "Monkey Banks can hold 2500 extra money.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "insider_trades"
+      ]
+    },
+    {
+      "id": "farm_subsidy",
+      "canonical": "Farm Subsidy",
+      "category": "Support",
+      "description": "First Banana Farm each game costs 100 less.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "more_valuable_bananas"
+      ]
+    },
+    {
+      "id": "first_last_line_of_defense",
+      "canonical": "First Last Line of Defense",
+      "category": "Support",
+      "description": "Purchase price of first Spike Factory each game is $150 less.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "one_more_spike"
+      ]
+    },
+    {
+      "id": "flat_pack_buildings",
+      "canonical": "Flat Pack Buildings",
+      "category": "Support",
+      "description": "Farm and Village cost 2% less and sell for 2% more.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "global_ability_cooldowns",
+      "canonical": "Global Ability Cooldowns",
+      "category": "Support",
+      "description": "All Ability cooldowns for all Monkeys reduced by 3%.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "to_arms"
+      ]
+    },
+    {
+      "id": "healthy_bananas",
+      "canonical": "Healthy Bananas",
+      "category": "Support",
+      "description": "Marketplaces now produce 1 life per round and Central Markets produce 3.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "inland_revenue_streams"
+      ]
+    },
+    {
+      "id": "hi_value_mines",
+      "canonical": "Hi-Value Mines",
+      "category": "Support",
+      "description": "Spiked Mines cost reduced by 1500.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "very_shreddy"
+      ]
+    },
+    {
+      "id": "inland_revenue_streams",
+      "canonical": "Inland Revenue Streams",
+      "category": "Support",
+      "description": "Monkey Town cash bonus increased by 10%.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "farm_subsidy"
+      ]
+    },
+    {
+      "id": "insider_trades",
+      "canonical": "Insider Trades",
+      "category": "Support",
+      "description": "Monkey Business discount increases by 2%.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "flat_pack_buildings"
+      ]
+    },
+    {
+      "id": "monkey_education",
+      "canonical": "Monkey Education",
+      "category": "Support",
+      "description": "All Monkeys XP earn rate increased by 8%.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": []
+    },
+    {
+      "id": "more_valuable_bananas",
+      "canonical": "More Valuable Bananas",
+      "category": "Support",
+      "description": "Valuable Bananas upgrade increases to 30%.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "flat_pack_buildings"
+      ]
+    },
+    {
+      "id": "one_more_spike",
+      "canonical": "One More Spike",
+      "category": "Support",
+      "description": "Spike Factory stacks get +1 spike.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "paragon_of_power",
+      "canonical": "Paragon of Power",
+      "category": "Support",
+      "description": "Paragons attack faster if there are no Tier 5 of the same tower.",
+      "monkey_money_cost": 1000,
+      "investment_required": 14,
+      "prerequisites": [
+        "veteran_monkey_training"
+      ]
+    },
+    {
+      "id": "thicker_foams",
+      "canonical": "Thicker Foams",
+      "category": "Support",
+      "description": "Cleansing Foam can hit 3 more Bloons before expiring.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "vigilant_sentries"
+      ]
+    },
+    {
+      "id": "to_arms",
+      "canonical": "To ARMS!",
+      "category": "Support",
+      "description": "Call to Arms duration increased by 3 seconds.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "monkey_education"
+      ]
+    },
+    {
+      "id": "very_shreddy",
+      "canonical": "Very Shreddy",
+      "category": "Support",
+      "description": "MOAB SHREDR spikes do +1 extra damage to MOAB-Class Bloons.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "first_last_line_of_defense"
+      ]
+    },
+    {
+      "id": "veteran_monkey_training",
+      "canonical": "Veteran Monkey Training",
+      "category": "Support",
+      "description": "All Monkeys reload time reduced by 3%.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "to_arms"
+      ]
+    },
+    {
+      "id": "vigilant_sentries",
+      "canonical": "Vigilant Sentries",
+      "category": "Support",
+      "description": "Sentry Turrets last longer than normal.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "one_more_spike"
+      ]
+    },
+    {
+      "id": "ability_discipline",
+      "canonical": "Ability Discipline",
+      "category": "Heroes",
+      "description": "Hero level 10 Ability cooldowns reduced by 10%.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "ability_mastery",
+      "canonical": "Ability Mastery",
+      "category": "Heroes",
+      "description": "At level 20, Heroes' level 3 Ability cooldown reduced by 30%.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "ability_discipline"
+      ]
+    },
+    {
+      "id": "big_bloon_blueprints",
+      "canonical": "Big Bloon Blueprints",
+      "category": "Heroes",
+      "description": "Heroes do +1 extra damage to MOAB-Class Bloons with their base attack.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "ability_mastery"
+      ]
+    },
+    {
+      "id": "empowered_heroes",
+      "canonical": "Empowered Heroes",
+      "category": "Heroes",
+      "description": "Heroes start each game at level 3.",
+      "monkey_money_cost": 500,
+      "investment_required": 8,
+      "prerequisites": [
+        "hero_favors"
+      ]
+    },
+    {
+      "id": "hero_favors",
+      "canonical": "Hero Favors",
+      "category": "Heroes",
+      "description": "Heroes' base cost reduced by 10%.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "self_taught_heroes",
+        "quick_hands"
+      ]
+    },
+    {
+      "id": "heroic_reach",
+      "canonical": "Heroic Reach",
+      "category": "Heroes",
+      "description": "All heroes get slightly increased range.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "heroic_velocity",
+      "canonical": "Heroic Velocity",
+      "category": "Heroes",
+      "description": "All Heroes' projectile speeds increased slightly.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "heroic_reach"
+      ]
+    },
+    {
+      "id": "monkeys_together_strong",
+      "canonical": "Monkeys Together Strong",
+      "category": "Heroes",
+      "description": "Heroes receive 5% more experience per each Hero placed.",
+      "monkey_money_cost": 1000,
+      "investment_required": 8,
+      "prerequisites": [
+        "empowered_heroes"
+      ]
+    },
+    {
+      "id": "more_splody",
+      "canonical": "More 'Splody",
+      "category": "Heroes",
+      "description": "Heroes' explosives get +2 pierce per shot.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "quick_hands",
+      "canonical": "Quick Hands",
+      "category": "Heroes",
+      "description": "Makes all heroes attack 4% faster.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "heroic_velocity"
+      ]
+    },
+    {
+      "id": "scholarships",
+      "canonical": "Scholarships",
+      "category": "Heroes",
+      "description": "Hero training costs reduced by 10%.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "more_splody"
+      ]
+    },
+    {
+      "id": "self_taught_heroes",
+      "canonical": "Self Taught Heroes",
+      "category": "Heroes",
+      "description": "Heroes earn XP 10% faster.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "scholarships"
+      ]
+    },
+    {
+      "id": "weak_point",
+      "canonical": "Weak Point",
+      "category": "Heroes",
+      "description": "All Heroes deal +1 damage to Ceramic & Fortified Bloons.",
+      "monkey_money_cost": 1000,
+      "investment_required": 8,
+      "prerequisites": [
+        "monkeys_together_strong",
+        "big_bloon_blueprints"
+      ]
+    },
+    {
+      "id": "ambush_tech",
+      "canonical": "Ambush Tech",
+      "category": "Powers",
+      "description": "Techbot gains a targeting option to trigger only when Bloons enter a specific track area.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "supersize_glue_trap"
+      ]
+    },
+    {
+      "id": "bigger_camo_trap",
+      "canonical": "Bigger Camo Trap",
+      "category": "Powers",
+      "description": "Camo Trap lasts for 600 Bloons.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "budget_cash_drops",
+      "canonical": "Budget Cash Drops",
+      "category": "Powers",
+      "description": "Cash Drops cost 20 Monkey Money less.",
+      "monkey_money_cost": 500,
+      "investment_required": 3,
+      "prerequisites": [
+        "fit_farmers"
+      ]
+    },
+    {
+      "id": "budget_pontoons",
+      "canonical": "Budget Pontoons",
+      "category": "Powers",
+      "description": "Pontoon costs 40 Monkey Money.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "cheaper_lakes"
+      ]
+    },
+    {
+      "id": "cheaper_lakes",
+      "canonical": "Cheaper Lakes",
+      "category": "Powers",
+      "description": "Portable Lake costs 40 Monkey Money.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "fit_farmers",
+      "canonical": "Fit Farmers",
+      "category": "Powers",
+      "description": "Monkey Farmers have larger radius.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "powerful_monkey_storm"
+      ]
+    },
+    {
+      "id": "grand_prix_spree",
+      "canonical": "Grand Prix Spree",
+      "category": "Powers",
+      "description": "Monkey Money cost to enter Races is reduced by 10%.",
+      "monkey_money_cost": 1000,
+      "investment_required": 10,
+      "prerequisites": [
+        "budget_cash_drops"
+      ]
+    },
+    {
+      "id": "just_one_more",
+      "canonical": "Just One More",
+      "category": "Powers",
+      "description": "Road Spike piles have 21 spikes in them.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": []
+    },
+    {
+      "id": "longer_boosts",
+      "canonical": "Longer Boosts",
+      "category": "Powers",
+      "description": "Monkey Boost lasts longer.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "longer_dart_time"
+      ]
+    },
+    {
+      "id": "longer_dart_time",
+      "canonical": "Longer Time Stop",
+      "category": "Powers",
+      "description": "Time Stop lasts longer than normal.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "just_one_more"
+      ]
+    },
+    {
+      "id": "mauling_moab_mines",
+      "canonical": "Mauling MOAB Mines",
+      "category": "Powers",
+      "description": "MOAB mine does extra damage.",
+      "monkey_money_cost": 0,
+      "investment_required": 0,
+      "prerequisites": [
+        "bigger_camo_trap"
+      ]
+    },
+    {
+      "id": "powerful_monkey_storm",
+      "canonical": "Powerful Monkey Storm",
+      "category": "Powers",
+      "description": "Super Monkey Storm does more damage.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "budget_pontoons",
+        "longer_boosts"
+      ]
+    },
+    {
+      "id": "pre_game_prep",
+      "canonical": "Pre-game Prep",
+      "category": "Powers",
+      "description": "Start each game with a pile of permanent Road Spikes at the end of the track.",
+      "monkey_money_cost": 250,
+      "investment_required": 3,
+      "prerequisites": [
+        "longer_boosts"
+      ]
+    },
+    {
+      "id": "supa_thrive",
+      "canonical": "Supa-Thrive",
+      "category": "Powers",
+      "description": "Thrive adds 30% instead of 25%.",
+      "monkey_money_cost": 500,
+      "investment_required": 3,
+      "prerequisites": [
+        "fit_farmers"
+      ]
+    },
+    {
+      "id": "supersize_glue_trap",
+      "canonical": "Supersize Glue Trap",
+      "category": "Powers",
+      "description": "Glue Trap can slow MOAB-Class Bloons, though the bigger the Bloon, the more glue is used up.",
+      "monkey_money_cost": 0,
+      "investment_required": 3,
+      "prerequisites": [
+        "mauling_moab_mines"
+      ]
+    }
+  ]
+}

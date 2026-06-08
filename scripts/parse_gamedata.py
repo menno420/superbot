@@ -523,6 +523,27 @@ _ZONE_NUMERIC_FIELDS: tuple[str, ...] = (
 )
 
 
+# Renamed zone fields: a few zones carry an effect under a dump field name that
+# differs from the committed schema field the runtime renders. Confirmed exact
+# against the committed wiki value on a matching tier before being listed here.
+#   * Heli Pilot "MOAB Shove" (0-0-3+): per-blimp push-speed caps. Verified vs the
+#     committed zone on every tier (e.g. Comanche Defense 0-0-4: MOAB -0.51, BFB
+#     -0.11, ZOMG 0.09). Negative = shoved backward (maintainer-confirmed
+#     2026-06-08). DDT is intentionally NOT emitted: an exhaustive whole-dump
+#     search (2026-06-08) confirmed ``moab/bfb/zomgPushSpeedScaleCap`` are the ONLY
+#     three push caps in all 9,916 files — there is no ``ddtPushSpeedScaleCap``
+#     anywhere. The game text ("shove MOAB-class Bloons, reversing or slowing") +
+#     the maintainer's in-game check (DDT slowed, not stopped) say DDT IS affected;
+#     the engine applies the heaviest-handled (ZOMG) cap to it, which the committed
+#     data mirrors. We never fabricate a DDT number the dump lacks — the renderer
+#     surfaces the curated ZOMG-mirror; the cutover owns whether to keep it.
+_ZONE_RENAME: dict[str, str] = {
+    "moabPushSpeedScaleCap": "multiplierForMoab",
+    "bfbPushSpeedScaleCap": "multiplierForBfb",
+    "zomgPushSpeedScaleCap": "multiplierForZomg",
+}
+
+
 def _zones(model: dict) -> list[dict]:
     """Start of zone decoding: each ``*ZoneModel`` in the tier's top-level
     behaviors → a structured entry (kind + internal name + any decodable
@@ -544,6 +565,10 @@ def _zones(model: dict) -> list[dict]:
             value = behavior.get(field_name)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 entry[field_name] = _num(value)
+        for raw_field, schema_field in _ZONE_RENAME.items():
+            value = behavior.get(raw_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[schema_field] = _num(value)
         tag = behavior.get("bloonTag")
         if isinstance(tag, str) and tag:
             entry["bloonTag"] = tag
@@ -616,6 +641,29 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
         "damageIncrease": "damageAdditive",
         "distanceMultiplier": "lifespanMultiplier",
     },
+    # Ninja "Shinobi Tactics" (0-3-0+) attack-speed aura. The dump's dedicated
+    # model carries only ``multiplier`` (the cooldown scale, NOT a SupportModel/
+    # BuffModel-suffixed type, which is why earlier suffix-filtered discovery
+    # missed it). Raw ``multiplier`` 0.92 == committed wiki ``rateMultiplier`` 0.92
+    # and its ``maxStackSize`` 20 == committed 20 (Shinobi stacks to 20 ninjas).
+    # The committed buff also lists +8% pierce, but that lives on a different
+    # mechanism — this model has no pierce field, so we map only the confirmed rate.
+    "SupportShinobiTacticsModel": {"multiplier": "rateMultiplier"},
+}
+
+# Buffs whose effect is a *nested* ``damageModifierModel`` (tag bonus), not a
+# flat top-level field. Same shape as the projectile tag-bonus decode: the real
+# additive is the misspelled ``damageAddative`` (``damageMultiplier`` is the
+# near-always-1.0 decoy — see the decode-status "recurring trap" lesson), and the
+# class comes from ``tag``. Mortar's Pop-and-Awe aura (0-4-0+) is the only
+# instance: raw ``damageAddative`` 1.0 vs tag ``Bad`` == committed wiki
+# ``damageAdditiveForBad`` 1. Only tags with a committed schema field are emitted.
+_BUFF_DAMAGE_MODIFIER_TYPES: frozenset[str] = frozenset({"DamageModifierSupportModel"})
+_BUFF_TAG_FIELD: dict[str, str] = {
+    "Bad": "damageAdditiveForBad",
+    "Ceramic": "damageAdditiveForCeramic",
+    "Moab": "damageAdditiveForMoabs",
+    "Moabs": "damageAdditiveForMoabs",
 }
 
 
@@ -653,7 +701,8 @@ def _buffs(model: dict) -> list[dict]:
             continue
         short = _short_type(behavior)
         field_map = _BUFF_FIELD_MAP.get(short)
-        if field_map is None:
+        nested_tag = short in _BUFF_DAMAGE_MODIFIER_TYPES
+        if field_map is None and not nested_tag:
             continue  # type not yet confirmed — deferred, never guess a number
         entry: dict = {
             "kind": short[: -len("Model")],
@@ -664,10 +713,29 @@ def _buffs(model: dict) -> list[dict]:
         trigger = _BUFF_TRIGGER.get(short)
         if trigger:
             entry["trigger"] = trigger
-        for raw_field, schema_field in field_map.items():
+        for raw_field, schema_field in (field_map or {}).items():
             value = behavior.get(raw_field)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 entry[schema_field] = _num(value)
+        if nested_tag:
+            # Pull the additive tag bonus out of the nested damageModifierModel
+            # (e.g. Mortar Pop-and-Awe → +1 damage vs BAD). Read ``damageAddative``
+            # (sic), never ``damageMultiplier`` (the 1.0 decoy); only emit a tag
+            # that has a confirmed committed schema field.
+            dm = behavior.get("damageModifierModel")
+            if isinstance(dm, dict):
+                schema_field = _BUFF_TAG_FIELD.get(str(dm.get("tag") or ""))
+                value = dm.get("damageAddative")
+                if (
+                    schema_field
+                    and isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                ):
+                    entry[schema_field] = _num(value)
+        # A nested-tag buff whose tag we don't yet map yields no number → drop it
+        # rather than emit a bare, value-less entry the runtime can't render.
+        if nested_tag and len(entry) <= 2:
+            continue
         for raw_field, schema_field in _BUFF_FRAME_FIELDS.get(short, {}).items():
             value = behavior.get(raw_field)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -1763,6 +1831,206 @@ def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     return rows, warnings
 
 
+def _clean_desc(text: str) -> str:
+    """Game-authored description → display string: drop HTML-ish markup
+    (``<sup>TM</sup>``, ``<br>``) the textTable carries for in-game rendering.
+    A ``{0}`` placeholder is filled separately, per-power, from the dump's own
+    effect value (see ``_POWER_EFFECTS``) — never invented.
+    """
+    return re.sub(r"<[^>]+>", "", text).strip()
+
+
+# Headline effect factor(s) per Power, read from its dump effect model (the
+# values are the game's own — never hardcoded), plus which extracted field fills
+# the description's single ``{0}`` and how to render it. The filled text is what
+# the game shows the player. Listed only where the headline is clean + confirmable;
+# every other power stays a description-only catalog entry. Tuple shape:
+# (effect_model_type, {dump_field: schema_field}, fill_field | None, fill_kind).
+#   * MonkeyBoost: ``rateScale`` 0.5 = attack at half cooldown (2x speed); the
+#     ``{0}`` window is the 15-second ``duration``.
+#   * Thrive: ``cashScale`` 1.25 = +25% cash; the ``{0}%`` slot is that 25.
+#   * Camo/Glue Trap: a trap projectile's ``pierce`` = the number of Bloons it
+#     affects ("the first {0} Bloons") — verified vs the wiki (Camo 500, Glue 300).
+_POWER_EFFECTS: dict[str, tuple[str, dict[str, str], str | None, str]] = {
+    "MonkeyBoost": (
+        "MonkeyBoostModel",
+        {"rateScale": "rate_scale", "duration": "duration_seconds"},
+        "duration_seconds",
+        "int",
+    ),
+    "Thrive": ("ThriveModel", {"cashScale": "cash_scale"}, "cash_scale", "pct"),
+    "CamoTrap": (
+        "ProjectileModel",
+        {"pierce": "affects_bloons"},
+        "affects_bloons",
+        "int",
+    ),
+    "GlueTrap": (
+        "ProjectileModel",
+        {"pierce": "affects_bloons"},
+        "affects_bloons",
+        "int",
+    ),
+}
+
+
+def _first_model_of(node: Any, short: str) -> dict | None:
+    """The first nested model whose ``$type`` short name is ``short``."""
+    if isinstance(node, dict):
+        if _short_type(node) == short:
+            return node
+        for value in node.values():
+            found = _first_model_of(value, short)
+            if found is not None:
+                return found
+    elif isinstance(node, list):
+        for value in node:
+            found = _first_model_of(value, short)
+            if found is not None:
+                return found
+    return None
+
+
+def _power_effect(raw: dict, pid: str) -> dict:
+    """Structured headline effect factors for a Power (``{}`` if none mapped)."""
+    spec = _POWER_EFFECTS.get(pid)
+    if spec is None:
+        return {}
+    model_type, fields, _fill_field, _kind = spec
+    node = _first_model_of(raw, model_type)
+    if node is None:
+        return {}
+    effect: dict = {}
+    for dump_field, schema_field in fields.items():
+        value = node.get(dump_field)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            effect[schema_field] = _num(value)
+    return effect
+
+
+def _fill_placeholder(description: str, pid: str, effect: dict) -> str:
+    """Fill a description's single ``{0}`` from the power's own effect value."""
+    if "{0}" not in description:
+        return description
+    spec = _POWER_EFFECTS.get(pid)
+    if spec is None:
+        return description
+    _model, _fields, fill_field, kind = spec
+    if fill_field is None or fill_field not in effect:
+        return description
+    value = effect[fill_field]
+    if kind == "pct":  # a 1.25 scale renders as "25" (the % is already in the text)
+        token = str(int(round((value - 1) * 100)))
+    else:
+        token = str(int(value)) if float(value).is_integer() else str(value)
+    return description.replace("{0}", token)
+
+
+def map_powers(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every consumable Power → catalog rows (id, name, description, Monkey-Money
+    cost, quantity, between-rounds, + a structured ``effect`` where the headline
+    factor is cleanly decodable). Names/descriptions are game-authored via
+    ``PowerId`` → ``textTable``; hidden/event powers (no name string) are skipped.
+    """
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for fp in sorted((dump / "Powers").glob("*.json")):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            warnings.append(f"unreadable {fp.name}")
+            continue
+        pid = str(raw.get("PowerId") or raw.get("powerId") or fp.stem)
+        name = tt.get(pid)
+        if not name:
+            # No display string → a hidden/event/internal power (DungeonStatue,
+            # SpookyCreature). Skip rather than surface an internal id.
+            continue
+        rid = _snake(pid)
+        if rid in seen:
+            warnings.append(f"duplicate power id {rid!r} ({pid})")
+            continue
+        seen.add(rid)
+        effect = _power_effect(raw, pid)
+        description = _fill_placeholder(
+            _clean_desc(tt.get(f"{pid} Description", "")),
+            pid,
+            effect,
+        )
+        row = {
+            "id": rid,
+            "canonical": name,
+            "power_id": pid,
+            "description": description,
+            "monkey_money_cost": _num(raw.get("Cost", raw.get("cost", 0))),
+            "quantity": _num(raw.get("quantity", 1)),
+            "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
+            "is_power_pro": bool(raw.get("IsPowerPro", False)),
+        }
+        if effect:
+            row["effect"] = effect
+        rows.append(row)
+    rows.sort(key=lambda p: p["id"])
+    return rows, warnings
+
+
+# In-game Monkey Knowledge categories live as the dump's ``Knowledge/<Category>/``
+# folder — authoritative (like Maps' difficulty folders), so we read the folder
+# rather than decode the opaque integer ``category`` field.
+_MK_CATEGORIES = ("Primary", "Military", "Magic", "Support", "Heroes", "Powers")
+
+
+def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every Monkey Knowledge point → catalog rows (id, name, category,
+    description, Monkey-Money cost, investment required, prerequisites). Name +
+    description are game-authored via the internal id → ``textTable``
+    (``<id>`` / ``<id>Description``).
+    """
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for category in _MK_CATEGORIES:
+        cdir = dump / "Knowledge" / category
+        if not cdir.is_dir():
+            warnings.append(f"missing Knowledge/{category}")
+            continue
+        for fp in sorted(cdir.glob("*.json")):
+            try:
+                raw = json.loads(fp.read_text("utf-8"))
+            except (OSError, json.JSONDecodeError):
+                warnings.append(f"unreadable {fp.name}")
+                continue
+            internal = str(raw.get("name") or fp.stem)
+            name = tt.get(internal)
+            if not name:
+                warnings.append(f"no name string for {internal}")
+                continue
+            kid = _snake(internal)
+            if kid in seen:
+                warnings.append(f"duplicate knowledge id {kid!r} ({internal})")
+                continue
+            seen.add(kid)
+            prereqs = [
+                _snake(str(p)) for p in raw.get("prerequisiteIds", []) or [] if p
+            ]
+            rows.append(
+                {
+                    "id": kid,
+                    "canonical": name,
+                    "category": category,
+                    "description": _clean_desc(tt.get(f"{internal}Description", "")),
+                    "monkey_money_cost": _num(raw.get("monkeyMoneyCost", 0)),
+                    "investment_required": _num(raw.get("investmentRequired", 0)),
+                    "prerequisites": prereqs,
+                },
+            )
+    rows.sort(key=lambda k: (_MK_CATEGORIES.index(k["category"]), k["id"]))
+    return rows, warnings
+
+
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -1806,6 +2074,16 @@ def main(argv: list[str] | None = None) -> int:
         "--maps",
         action="store_true",
         help="rebuild maps.json from the dump's Maps/ folders (all difficulties)",
+    )
+    ap.add_argument(
+        "--powers",
+        action="store_true",
+        help="rebuild powers.json from the dump's Powers/ folder",
+    )
+    ap.add_argument(
+        "--knowledge",
+        action="store_true",
+        help="rebuild monkey_knowledge.json from the dump's Knowledge/ folders",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -1864,6 +2142,35 @@ def main(argv: list[str] | None = None) -> int:
             print(f"wrote maps.json ({len(rows)} maps)")
         for w in warnings:
             print(f"  warning: {w}")
+        return 0
+
+    if args.powers or args.knowledge:
+        version = _dump_version(dump)
+        for flag, fn, key, fname in (
+            (args.powers, map_powers, "powers", "powers.json"),
+            (
+                args.knowledge,
+                map_monkey_knowledge,
+                "knowledge",
+                "monkey_knowledge.json",
+            ),
+        ):
+            if not flag:
+                continue
+            rows, warnings = fn(dump, version)
+            payload = {
+                "data_version": "1.0",
+                "game_version": version,
+                "source": _SOURCE,
+                key: rows,
+            }
+            if args.dry_run:
+                print(json.dumps(payload, indent=2, ensure_ascii=False)[:1500])
+            else:
+                _write(_DATA_ROOT / fname, payload)
+                print(f"wrote {fname} ({len(rows)} {key})")
+            for w in warnings:
+                print(f"  warning: {w}")
         return 0
 
     towers, heroes = build_allowlist(dump)

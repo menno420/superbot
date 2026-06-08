@@ -326,7 +326,44 @@ def _zone_text(zone: dict[str, Any]) -> str:
     cmoab = _num_field(zone, "damageModifierForCeramicOrMoabs")
     if cmoab is not None:
         bits.append(f"+{_fmt_buff_num(cmoab)} damage vs Ceramic/MOAB")
+    bits.extend(_moab_shove_bits(zone))
     return f"{name} ({', '.join(bits)})" if bits else name
+
+
+# Heli Pilot "MOAB Shove" (0-0-3+) per-blimp speed caps, maintainer-confirmed
+# sign semantics (2026-06-08): a NEGATIVE cap means the blimp is shoved
+# *backward* (it moves in reverse, up to that fraction of its normal speed); a
+# POSITIVE cap means it can only be slowed *forward* to that fraction (too heavy
+# to reverse); 0 means it can be slowed to a halt. The dump's
+# ``moab/bfb/zomgPushSpeedScaleCap`` are committed verbatim as these fields and
+# verified exact vs the dump (e.g. Comanche Defense 0-0-4: MOAB -0.51, BFB -0.11,
+# ZOMG 0.09). DDT has no field in the dump; the committed data mirrors ZOMG, so
+# we render it only when present. ``multiplierForMoab`` (singular) is unique to
+# this zone type — it never collides with Ice's ``multiplierForMoabs`` (plural).
+_MOAB_SHOVE_CLASSES: tuple[tuple[str, str], ...] = (
+    ("MOAB-class", "multiplierForMoab"),
+    ("BFB", "multiplierForBfb"),
+    ("ZOMG", "multiplierForZomg"),
+    ("DDT", "multiplierForDdt"),
+)
+
+
+def _moab_shove_bits(zone: dict[str, Any]) -> list[str]:
+    """Per-blimp shove/slow phrasing for a MOAB-Shove zone (empty for others)."""
+    if _num_field(zone, "multiplierForMoab") is None:
+        return []  # not a shove zone — the singular field is its unique marker
+    bits: list[str] = []
+    for label, field in _MOAB_SHOVE_CLASSES:
+        cap = _num_field(zone, field)
+        if cap is None:
+            continue
+        if cap < 0:
+            bits.append(f"{label} shoved backward at x{_fmt_buff_num(cap)} speed")
+        elif cap == 0:
+            bits.append(f"{label} slowed to a halt")
+        else:
+            bits.append(f"{label} slowed to x{_fmt_buff_num(cap)} speed")
+    return bits
 
 
 # ---------------------------------------------------------------------------
@@ -511,6 +548,21 @@ def render_upgrade_grounding(detail: UpgradeDetail) -> list[str]:
     return lines
 
 
+def tier_effect_lines(tier: dict[str, Any]) -> list[str]:
+    """Rendered buff + zone effect strings for a committed tier node.
+
+    The default upgrade grounding resolves an upgrade *card* to its base-path
+    tier, so a specifically-named crosspath's buff/zone effects (e.g. Heli Pilot
+    0-1-4's stronger MOAB Shove, MOAB -0.51 vs the 0-0-4 base -0.4) are stored but
+    never surfaced. This renders them off any tier dict so the crosspath grounding
+    seam can reach them — reusing the exact ``_buff_text``/``_zone_text`` the
+    upgrade path uses, so the phrasing stays identical.
+    """
+    out = [_buff_text(b) for b in tier.get("buffs", []) if isinstance(b, dict)]
+    out += [_zone_text(z) for z in tier.get("zones", []) if isinstance(z, dict)]
+    return out
+
+
 def grounding_for_query(query: str) -> list[str]:
     """Resolve ``query`` to an upgrade and render its grounding (the wiring seam).
 
@@ -539,4 +591,5 @@ __all__ = [
     "get_upgrade_detail",
     "grounding_for_query",
     "render_upgrade_grounding",
+    "tier_effect_lines",
 ]

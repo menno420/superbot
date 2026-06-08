@@ -1,0 +1,270 @@
+{
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
+  "powers": [
+    {
+      "id": "banana_farmer",
+      "canonical": "Banana Farmer",
+      "power_id": "BananaFarmer",
+      "description": "Tired of picking up all those Bananas yourself? So is this guy but at least he's paid to do it. Farmer will auto-gather all Bananas in his radius so you don't have to.",
+      "monkey_money_cost": 50,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "banana_farmer_pro",
+      "canonical": "Banana Farmer Pro",
+      "power_id": "BananaFarmerPro",
+      "description": "",
+      "monkey_money_cost": 100,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": true
+    },
+    {
+      "id": "battle_cat",
+      "canonical": "Battle Cat!",
+      "power_id": "BattleCat",
+      "description": "Bring Cringer from Masters of the Universe TM to the Bloon battlefield! Activate the transformation into Battle Cat for 4 rounds. Fully powered Battle Cat hits Bloons hard, also tearing away Camo property and Bloon immunities.",
+      "monkey_money_cost": 500,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "camo_trap",
+      "canonical": "Camo Trap",
+      "power_id": "CamoTrap",
+      "description": "Monkey Engineering at its finest, this trap will remove Camo state from the first 500 Bloons that touch it. 2 Camo Traps with every purchase.",
+      "monkey_money_cost": 50,
+      "quantity": 2,
+      "between_rounds": true,
+      "is_power_pro": false,
+      "effect": {
+        "affects_bloons": 500
+      }
+    },
+    {
+      "id": "cash_drop",
+      "canonical": "Cash Drop",
+      "power_id": "CashDrop",
+      "description": "Need a quick cash top-up? Get Monkey Command to fire down one of these bad boys stacked with cash asap!",
+      "monkey_money_cost": 200,
+      "quantity": 1,
+      "between_rounds": false,
+      "is_power_pro": false
+    },
+    {
+      "id": "cave_monkey",
+      "canonical": "Cave Monkey",
+      "power_id": "CaveMonkey",
+      "description": "Cave Monkey smash Bloon with club. Bloon so scared Bloon stop.",
+      "monkey_money_cost": 150,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "dart_time",
+      "canonical": "Time Stop",
+      "power_id": "DartTime",
+      "description": "If sometimes things just move too quickly, use Time Stop to briefly halt all action so you can focus on managing your monkeys.",
+      "monkey_money_cost": 50,
+      "quantity": 1,
+      "between_rounds": false,
+      "is_power_pro": false
+    },
+    {
+      "id": "energising_totem",
+      "canonical": "Energizing Totem",
+      "power_id": "EnergisingTotem",
+      "description": "Let's Energize! This totem will increase attack speed of all Monkeys in range by 25%. Lasts 5 rounds and can be recharged.",
+      "monkey_money_cost": 80,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "glue_trap",
+      "canonical": "Glue Trap",
+      "power_id": "GlueTrap",
+      "description": "This sticky trap will slow the first 300 Bloons that go over it before it disappears. 2 Glue Traps with every purchase.",
+      "monkey_money_cost": 50,
+      "quantity": 2,
+      "between_rounds": true,
+      "is_power_pro": false,
+      "effect": {
+        "affects_bloons": 300
+      }
+    },
+    {
+      "id": "health_potion",
+      "canonical": "Health Potion",
+      "power_id": "HealthPotion",
+      "description": "Recover 100 lives.",
+      "monkey_money_cost": 200,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "moab_mine",
+      "canonical": "MOAB Mine",
+      "power_id": "MoabMine",
+      "description": "A powerful mine that detects the presence of MOAB-Class Bloons and will explode causing lots of damage. MOAB Mine will detonate on 10 targets before expiring.",
+      "monkey_money_cost": 50,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "monkey_boost",
+      "canonical": "Monkey Boost",
+      "power_id": "MonkeyBoost",
+      "description": "Let's turn it up to 11! All towers attack twice as fast for 15 seconds.",
+      "monkey_money_cost": 100,
+      "quantity": 1,
+      "between_rounds": false,
+      "is_power_pro": false,
+      "effect": {
+        "rate_scale": 0.5,
+        "duration_seconds": 15
+      }
+    },
+    {
+      "id": "monkey_boost_pro",
+      "canonical": "Hype Boost Monkey",
+      "power_id": "MonkeyBoostPro",
+      "description": "Hype up your Monkeys with a High Intensity Hype ability boosting all Monkeys in radius.",
+      "monkey_money_cost": 300,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": true
+    },
+    {
+      "id": "pontoon",
+      "canonical": "Pontoon",
+      "power_id": "Pontoon",
+      "description": "Place almost any land tower on water with the Pontoon! Deploy the pontoon on water, then place your land tower on top.",
+      "monkey_money_cost": 50,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "portable_lake",
+      "canonical": "Portable Lake",
+      "power_id": "PortableLake",
+      "description": "Nowhere to float your boat? Smart monkeys know they can place a Portable Lake on land, allowing any water unit to be deployed within its waters.",
+      "monkey_money_cost": 50,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "road_spikes",
+      "canonical": "Road Spikes",
+      "power_id": "RoadSpikes",
+      "description": "A huge stack of Road Spikes ready to lay down wherever you need them most! 5 piles of Road Spikes with every purchase.",
+      "monkey_money_cost": 50,
+      "quantity": 5,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "she_ra",
+      "canonical": "Sword of Protection",
+      "power_id": "SheRa",
+      "description": "Summon She-Ra's Sword to strike at Bloons with incredible power. Reduces ability cooldown time for She-Ra and He-Man.",
+      "monkey_money_cost": 500,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "skeletor",
+      "canonical": "Havoc Staff",
+      "power_id": "Skeletor",
+      "description": "Summon Skeletor's Havoc Staff from Masters of the Universe TM to throw Tek Bombs on the screen, stunning and damaging Bloons, while Skeletor claims cash from the Bloons.",
+      "monkey_money_cost": 500,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "stamina_potion",
+      "canonical": "Banana Cookies",
+      "power_id": "StaminaPotion",
+      "description": "Recover 25% Stamina for your entire Posse.",
+      "monkey_money_cost": 200,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "super_monkey_beacon",
+      "canonical": "Super Monkey Beacon",
+      "power_id": "SuperMonkeyBeacon",
+      "description": "A placeable Super Monkey Beacon with a Beacon Storm ability on a long cooldown.",
+      "monkey_money_cost": 400,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": true
+    },
+    {
+      "id": "super_monkey_storm",
+      "canonical": "Super Monkey Storm",
+      "power_id": "SuperMonkeyStorm",
+      "description": "It's a bird. It's a plane. It's a squadron of flying super-powered laser-beamin' monkeys who destroy every single Bloon on screen and do big damage to MOAB-Class Bloons.",
+      "monkey_money_cost": 100,
+      "quantity": 1,
+      "between_rounds": false,
+      "is_power_pro": false
+    },
+    {
+      "id": "sword_of_power",
+      "canonical": "Sword of Power",
+      "power_id": "SwordOfPower",
+      "description": "He-Man's Sword of Power falls from the sky, regularly releasing a surge of power to pop Bloons and generate Mana Shield. He-Man and She-Ra attack faster while the Sword of Power is active.",
+      "monkey_money_cost": 500,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "tech_bot",
+      "canonical": "Tech Bot",
+      "power_id": "TechBot",
+      "description": "Tech Bot can activate your Abilities for you, as soon as they are ready for optimum efficiency.",
+      "monkey_money_cost": 50,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": false
+    },
+    {
+      "id": "tech_bot_prime",
+      "canonical": "Tech Bot Prime",
+      "power_id": "TechBotPrime",
+      "description": "Wow wow wow! Tech Bot Prime can trigger abilities automatically, place multiple ambush points, and look great doing it!",
+      "monkey_money_cost": 150,
+      "quantity": 1,
+      "between_rounds": true,
+      "is_power_pro": true
+    },
+    {
+      "id": "thrive",
+      "canonical": "Thrive",
+      "power_id": "Thrive",
+      "description": "Increase cash production from all of your towers and Bloon pops by 25% for the rest of the round and the entire next round!",
+      "monkey_money_cost": 70,
+      "quantity": 1,
+      "between_rounds": false,
+      "is_power_pro": false,
+      "effect": {
+        "cash_scale": 1.25
+      }
+    }
+  ]
+}

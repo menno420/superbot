@@ -749,7 +749,7 @@ def _render_tower_crosspath(tower_id: str, canonical: str, code: str) -> list[st
     Crosspaths are kept out of default grounding for size; when a user names one
     (e.g. "0-2-5 ninja") this surfaces just that tier's headline stats.
     """
-    from services import btd6_stats_service
+    from services import btd6_stats_service, btd6_upgrade_detail_service
 
     stats = btd6_stats_service.get_tower_stats(tower_id)
     if stats is None:
@@ -757,17 +757,28 @@ def _render_tower_crosspath(tower_id: str, canonical: str, code: str) -> list[st
     tier = stats.tier(code)
     if tier is None:
         return []
-    bits = _normal_stat_bits(btd6_stats_service.normal_stats(tier))
-    if not bits:
-        return []
     name = _tier_name(stats, code)
-    return [
-        _cap(
-            f"[btd6_tower_stats normal] {canonical} {name} "
-            f"({tier_codes.format_code(code)}): {_sanitise(', '.join(bits))} "
-            "(source: bloonswiki)",
-        ),
-    ]
+    pretty = tier_codes.format_code(code)
+    lines: list[str] = []
+    bits = _normal_stat_bits(btd6_stats_service.normal_stats(tier))
+    if bits:
+        lines.append(
+            _cap(
+                f"[btd6_tower_stats normal] {canonical} {name} "
+                f"({pretty}): {_sanitise(', '.join(bits))} (source: bloonswiki)",
+            ),
+        )
+    # The headline stats above omit buff/zone effects, and the upgrade-detail path
+    # only sees a card's base tier — so a named crosspath's effects (e.g. 0-1-4
+    # Heli's stronger MOAB Shove) reach the user nowhere else.
+    for effect in btd6_upgrade_detail_service.tier_effect_lines(tier):
+        lines.append(
+            _cap(
+                f"[btd6_tower_stats effect] {canonical} {name} "
+                f"({pretty}): {_sanitise(effect)} (source: bloonswiki)",
+            ),
+        )
+    return lines
 
 
 def _render_fixture_hero(entry: Any) -> list[str]:

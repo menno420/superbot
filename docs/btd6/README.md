@@ -22,6 +22,12 @@ is one folder behind the folio instead of ~14 files scattered at the root.
   game data version 55.
 - [`btd6-gamedata-dictionary.md`](./btd6-gamedata-dictionary.md) — field/term dictionary
   for the decoded gamedata.
+- [`btd6-dump-coverage-map.md`](./btd6-dump-coverage-map.md) — **auto-generated** per-domain
+  coverage map: every file's model types + fields + a fetch-status (`✅`/`🟡`/`⬜`) column.
+  Regenerate per dump re-pull with `btd6_gamedata_inventory.py --full-map`.
+- [`btd6-data-refresh-pipeline-plan.md`](./btd6-data-refresh-pipeline-plan.md) — plan for the
+  scheduled "fetch everything on each update" pipeline (the manual command chain works today;
+  the GitHub Actions automation needs sign-off).
 - [`btd6-gamedata-native-schema.md`](./btd6-gamedata-native-schema.md) — the native
   gamedata schema.
 

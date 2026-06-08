@@ -13,7 +13,7 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-08 — provenance gate lifted, PR #587)
+## ⭐ Next session — start here (updated 2026-06-08 — buff tail 9 → 11, Shinobi + Pop-and-Awe confirmed)
 
 ### Current state & next actions (READ FIRST)
 
@@ -31,19 +31,31 @@ works** (the traps we hit), and what is still un-decoded.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
   **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
-  (**9 of 38** confirmed types in `_BUFF_FIELD_MAP` — incl. the
+  (**11 of 38** confirmed types in `_BUFF_FIELD_MAP` — incl. the
   `VigilanteTowerBehaviorModel` lives-lost buff — each carrying its activation
   `trigger`, which fixes the duration unit: seconds vs round-count).
 
 **Do next (ordered; correctness over speed — the maintainer's standing rule):**
-1. **Buff decode tail (9 → 38).** The cleanly value-confirmable set is now
-   *exhausted* — every remaining committed buff field either has **no committed
-   ground-truth `buffs[]` entry** to verify against (e.g. `RangeSupportModel` on
-   Village) or needs a **value transformation** (raw multiplier → wiki
-   percentage) that the value-coincidence harness can't confirm. So each
-   remaining type needs **per-model semantic analysis**, and for types with no
-   committed counterpart, correctness can only be validated *at/after the
-   cutover*. Do **not** write a number you can't confirm.
+1. **Buff decode tail (11 → 38).** The 2026-06-08 pass added **two** types the
+   earlier "exhausted" read had missed — both confirmed exact against committed
+   wiki values (see the session log below): `SupportShinobiTacticsModel`
+   (Ninja Shinobi Tactics, `multiplier 0.92` → `rateMultiplier`) and
+   `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative 1.0`
+   vs tag `Bad` → `damageAdditiveForBad`). **Now genuinely exhausted for committed
+   *combat* towers:** every other top-level support/buff model lands on (a) a
+   **hero** (Brickell/Benjamin/Etienne/Ezili/Gwen/Obyn/Striker/Corvus/Silas/
+   Sheriff — heroes flow through `map_hero`→`_map_tier`→`_buffs`, but **none of
+   the unmapped types appears on a tower in `stats/*.json` with a committed
+   `buffs[]` to confirm against**), (b) an **economy/support tower with no
+   committed tiers** (Banana Farm `BananaCentralBuffModel`/`CentralMarketBuffModel`,
+   Monkey Village `MonkeyCityIncomeSupportModel` etc. — blocked, maintainer call,
+   step 2), or (c) a **paragon** `base` node (`ObynBuffModel`) / a degenerate
+   empty buff (`GroundZeroBombBuffModel` `damageIncrease 0`). So the remaining
+   numbers can only be validated *at/after the cutover*. Do **not** write a number
+   you can't confirm. **Methodology note for next time:** discovery must scan
+   **all** top-level `behaviors[]` whose short type is a buff, **not** only types
+   ending in `SupportModel`/`BuffModel` — that suffix filter is what hid Shinobi
+   (`SupportShinobiTacticsModel`) and the nested-effect case (`DamageModifierSupportModel`).
 2. **`SCHEMA_FIRST` buff/zone types** — projectile speed/radius, freeze duration,
    banana-cash, etc. carry a real number but `_BUFF_FIELDS` /
    `btd6_upgrade_detail_service` has no field to render it. Extend the renderer
@@ -78,11 +90,41 @@ works** (the traps we hit), and what is still un-decoded.
      (now `duration_rounds`, `durationFrames`=0, `trigger=start_of_round`).
      Rendered by `_buff_trigger_clause`.
 3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
-   - **NEXT — Heli Pilot `MoabShoveZoneModel`.** Decoded but **not rendered**:
-     per-blimp `*PushSpeedScaleCap` (MOAB −0.3…−0.51, BFB ~0, ZOMG 0.75…0.09).
-     Pending a maintainer call on the sign semantics (negative = shoved backward?)
-     and whether DDT should mirror ZOMG (the dump has no DDT field; committed data
-     currently copies ZOMG). See the smoke-test checklist §7.
+   - **DONE (2026-06-08) — Heli Pilot `MoabShoveZoneModel` rendered + decoded.**
+     The maintainer confirmed the sign semantics: **negative cap = the blimp is
+     shoved *backward*** (moves in reverse up to that fraction of normal speed);
+     **positive = slowed forward** (too heavy to reverse); **0 = halt**. The
+     committed per-blimp caps were verified **exact** against the dump's
+     `moab/bfb/zomgPushSpeedScaleCap` on every tier (Comanche Defense 0-0-4 base:
+     MOAB −0.4 / BFB 0 / ZOMG 0.2; top-crosspath 0-1-4 strengthens it to MOAB
+     −0.51 / BFB −0.11 / ZOMG 0.09). Findings worth recording: **MOAB is always
+     negative; BFB also goes negative (−0.11) at the tier-4/5 top/middle
+     crosspaths**, not just MOAB; ZOMG is always positive. `_zone_text` now renders
+     all present classes (e.g. "MOAB-class shoved backward at x-0.51 speed, BFB
+     shoved backward at x-0.11 speed, ZOMG slowed to x0.09 speed"), and `_zones()`
+     emits the renamed caps for a future cutover. **Crosspath effects now answerable** —
+     all 15 crosspath tier-states carry their own shove values via
+     `stats.tier(<code>)`, and naming a crosspath ("0-1-4 heli") already grounded
+     its *headline* stats but **dropped buff/zone effects**; `_render_tower_crosspath`
+     now also emits a `[btd6_tower_stats effect]` line per crosspath buff/zone
+     (via the new `btd6_upgrade_detail_service.tier_effect_lines`), so the
+     crosspath-specific shove (0-1-4 → MOAB −0.51 vs 0-0-4 base −0.4) reaches the
+     user. (`get_upgrade_detail` still keys on single upgrade *cards*, so it shows
+     the base-tier effect — expected; the crosspath path is how a named crosspath
+     answers.) **DDT — settled (2026-06-08).** An
+     exhaustive whole-dump search confirmed `moab/bfb/zomgPushSpeedScaleCap` are the
+     **only three** push caps in all 9,916 files — there is **no**
+     `ddtPushSpeedScaleCap` anywhere (so the recurring "it's in the dump under
+     another name" was checked and is genuinely *not* here for this zone; DDT-speed
+     fields **do** exist for towers that define them — Silas `ddtSpeedModifier`,
+     Gyrfalcon `moabSpeedScale` — just not on Heli's shove). The game-authored text
+     ("Can collide with and shove **MOAB-class** Bloons, reversing or slowing their
+     movement") + the maintainer's in-game check (DDT **slowed, not stopped**)
+     confirm DDT is affected via the heaviest-handled (**ZOMG**) cap, which the
+     committed data already mirrors and the renderer surfaces. The parser still does
+     **not** fabricate `multiplierForDdt` (no dump field); the ZOMG-mirror is the
+     faithful representation. Only the cutover-storage choice (keep the curated
+     mirror vs. drop it) remains, and it's low-stakes.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
@@ -145,6 +187,141 @@ decision.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-08 (buff tail 9 → 11: Shinobi Tactics + Pop-and-Awe de-orphaned)
+
+Picked up the buff decode tail with the new `scripts/explore_gamedata.py` tool. The
+prior "exhausted" verdict held for every type that earlier discovery had *seen* — but
+the discovery itself was incomplete: it ranked only `*SupportModel`/`*BuffModel`-suffixed
+types, so two confirmable buffs were never examined. Both are now in `_BUFF_FIELD_MAP`
+(parser) and render with no renderer change (the schema fields already existed):
+
+- **`SupportShinobiTacticsModel` → `rateMultiplier`** (Ninja "Shinobi Tactics", 0-3-0+).
+  Dump `multiplier 0.92` == committed wiki buff `Shinobi Tactics → rateMultiplier 0.92`,
+  and dump `maxStackSize 20` == committed `20` (stacks to 20 ninjas). The dump model has
+  **no pierce field**, so only the confirmed rate is written — the committed buff's extra
+  `+8% pierce` lives on a different mechanism and stays unasserted (faithful-over-complete).
+- **`DamageModifierSupportModel` → `damageAdditiveForBad`** (Mortar "Pop and Awe", 0-4-0+).
+  The earlier (2026-06-04) note wrote this off as matching "only on the trivial
+  `customRadius/maxStackSize=0`… real effect lives in a different model" — but the effect
+  is in the **nested `damageModifierModel`** of the *same* model: the misspelled additive
+  `damageAddative 1.0` vs tag `Bad` (the same `damageAddative`-not-`damageMultiplier` trap
+  the projectile tag-bonus decode hit). Raw `1.0` == committed `damageAdditiveForBad 1`,
+  consistent across all 5 instances. A small nested-tag decoder reads it; an unmapped tag
+  emits **no** entry (never a bare value-less buff). Tag→field map covers Bad/Ceramic/Moabs;
+  only `Bad` appears in v55.
+
+**Verification:** `--validate-anchors` PASS (Dart 200, Super 2500); `--audit` stays
+**nothing-SUSPECT** (internal buff names don't align with curated, so they're ignored);
+real-dump output checked (`Ninja-030`/`Ninja-052` → `rateMultiplier 0.92`; `Mortar-050` →
+`damageAdditiveForBad 1, isGlobal True`); `_buff_text` renders "x0.92 attack cooldown" /
+"+1 damage vs BAD". Pinned by `test_buffs_shinobi_tactics_maps_multiplier_to_rate` +
+`test_buffs_damage_modifier_support_reads_nested_tag_bonus` (+ the unmapped-tag drop test).
+Full `check_quality.py --full` green (8070 passed).
+
+**Honest frontier:** 11 is the confirmed ceiling for committed **combat** towers pre-cutover
+(see "Do next" step 1 for why every remaining type is hero / no-committed-tier / paragon).
+Known small gap (not fixed, applies to *all* buff types equally): `_buffs()` does not emit
+`maxStackSize`, so the renderer's `_stack_cap` "(stacks up to N)" clause is lost on the
+parser-native path — a separate, uniform fix, not a per-type decode.
+
+### ⚠ Answerability audit — Powers/Knowledge are *lookup catalogs*, not *applied modifiers* (2026-06-08)
+
+Asked the sharp question: can the bot answer **"what is the attack speed of Crossbow Master
+on a Monkey Boost / Hype Monkey"** or **"starting cash / first-tower cost / upgrade cost / free
+monkeys / extra lives with knowledge X"**? Verified end-to-end. **The answer is no** — and here
+is exactly where the line falls, so the next session doesn't rediscover it:
+
+| Question | Answerable now? | Why |
+|---|---|---|
+| "What does Monkey Boost / Supa-Thrive do?" | ✅ | lookup returns the game-authored description |
+| "How much (Monkey Money) is the Camo Trap power?" | ✅ | `monkey_money_cost` is structured |
+| "What's Crossbow Master's attack speed / cost?" (base) | ✅ | base tier stat (cooldown 0.2375s) via the tower path |
+| "List the magic monkey knowledge / 50-MM powers" | ✅ | category/roster filters |
+| "What's Monkey Boost's exact effect factor?" | ✅ | now structured: `rate_scale 0.5` for `15s` (2026-06-08) |
+| **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ❌ | factor extracted, but **no tool yet applies it to a tower stat** (step 2) |
+| **"…starting cash / upgrade cost / free monkeys / lives *with knowledge X*"** | ❌ | **no layer applies an MK effect to the economy** |
+
+**Root cause — two missing things, not one:**
+
+1. **Powers carry their real effect in the dump, but we didn't extract it and nothing applies
+   it.** `MonkeyBoostModel` has `rateScale 0.5` + `duration 15` (= 2× attack speed for 15 s);
+   we stored only the prose *"twice as fast for {0} seconds"* (the `{0}` is literally the hole
+   where the structured value belongs). Even with the factor extracted, computing
+   `0.2375 × 0.5 = 0.119 s` needs a **deterministic apply-tool** (the structured factor × the
+   resolved base stat, grounded by construction — the exact `btd6_cumulative_cost` pattern), or
+   the faithfulness verifier rejects the derived number as ungrounded.
+2. **Monkey Knowledge effect magnitudes are NOT in the dump.** Every MK `mod` is a bare
+   `ModModel{name}` (134/134) — a named reference whose magnitude (`+X starting cash`,
+   `-Y% cost`, `+1 free Glue Gunner`, `+Z lives`) is **hardcoded game logic**, the same class as
+   mode rules and cash-per-pop. The description prose ("Thrive adds 30% instead of 25%") is the
+   *only* captured form; many are qualitative ("Acid lasts longer"). So MK "apply" can't be
+   sourced from the dump — it needs curated constants or a wiki cross-source.
+
+**Suggested next steps (ordered, for the following session):**
+
+1. **Extract the Power *effect* structure — ✅ DONE (2026-06-08).** `powers.json` now carries a
+   structured `effect` for the cleanly-decodable powers — Monkey Boost `{rate_scale: 0.5,
+   duration_seconds: 15}`, Thrive `{cash_scale: 1.25}`, Camo/Glue Trap `{affects_bloons: 500/300}`
+   — read from the dump effect model (`parse_gamedata._POWER_EFFECTS`), and **the `{0}`
+   placeholders are filled** from those same values (e.g. "twice as fast for **15 seconds**",
+   "by **25%**", "the first **500** Bloons"). Surfaced on `btd6_power_lookup` as `effect`. So the
+   model can now state the *factor* precisely ("Monkey Boost = ×0.5 cooldown for 15s") — but
+   *applying* it to a named tower's stat is still step 2.
+2. **Build `btd6_power_effect` (a deterministic apply-tool) — the remaining piece for the
+   maintainer's question.** Given a tower/upgrade + a Power, return the modified headline stat
+   (base cooldown × `rate_scale`, etc.) grounded by construction so the verifier accepts it.
+   The structured `effect` factors from step 1 are the inputs. Mirrors `btd6_cumulative_cost`.
+   This is what finally makes "Crossbow Master on Monkey Boost" answerable as a *number*. Scope
+   it tightly (attack-speed / cash multipliers first).
+3. **Monkey Knowledge magnitudes — maintainer call.** Not dump-sourced. Either (a) leave MK as a
+   descriptive catalog (current state — honest, "what it does" answers but no computed economy), or
+   (b) curate the numeric magnitudes (starting cash/lives/discounts) from the wiki into
+   `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
+4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
+   stats independently; it must NOT be presented as answering combined/applied questions.
+
+### Session log — 2026-06-08 (Power effect factors extracted + `{0}` placeholders filled)
+
+Closed answerability next-step #1. `map_powers` now decodes a structured `effect` from each
+power's dump effect model (`_POWER_EFFECTS` table, values from the dump — never hardcoded) and
+**fills the description's `{0}`** from that same value:
+
+| Power | `effect` | filled prose |
+|---|---|---|
+| Monkey Boost | `{rate_scale: 0.5, duration_seconds: 15}` | "…twice as fast for **15** seconds." |
+| Thrive | `{cash_scale: 1.25}` | "…cash production …by **25**% …" |
+| Camo Trap | `{affects_bloons: 500}` | "…remove Camo …from the first **500** Bloons…" |
+| Glue Trap | `{affects_bloons: 300}` | "…slow the first **300** Bloons…" |
+
+`PowerEntry.effect` carries it; `btd6_power_lookup` surfaces it. So the model can now state a
+power's exact factor, though *applying* it to a named tower's stat is still the pending apply-tool
+(answerability next-step #2). No `{0}` remains in any committed power description. Pinned by
+`test_map_powers_fills_placeholder_and_extracts_effect` / `_pct_fill_renders_scale_as_percent`
++ the data-service effect assertion.
+
+### Session log — 2026-06-08 (Powers + Monkey Knowledge ingested → answerable)
+
+Two whole domains the coverage map flagged `⬜` are now `✅` end-to-end, following the
+maps/modes/relics pattern (extracted → committed → tool → answerable):
+
+- **Powers (25).** `parse_gamedata.py --powers` → `powers.json` (name, game-authored
+  description, Monkey-Money cost, quantity, between-rounds). Names/descriptions resolve via
+  `PowerId` → `textTable`; 2 hidden/event powers (no name string) are skipped, never surfaced
+  as internal ids. HTML-ish markup (`<sup>TM</sup>`) stripped; `{0}` placeholders kept verbatim
+  (filling them needs per-power effect decode — never invent).
+- **Monkey Knowledge (134).** `--knowledge` → `monkey_knowledge.json` (name, **category from the
+  `Knowledge/<Category>/` folder** — authoritative, like Maps' difficulty folders, not the
+  opaque int — description, MM cost, investment required, prerequisites). Categories: Primary 32
+  / Military 30 / Magic 22 / Support 22 / Heroes 13 / Powers 15.
+- **Runtime:** `btd6_data_service` gained `PowerEntry` / `MonkeyKnowledgeEntry` (optional
+  fixtures, validated, unique-checked) + `get_power` / `get_monkey_knowledge`; `ai_tools`
+  gained `btd6_power_lookup` + `btd6_monkey_knowledge_lookup` (single + roster + category),
+  both registered in `BTD6_GROUNDING_TOOL_NAMES`. So "what does Monkey Boost do", "how much is
+  the Camo Trap power", "list the magic monkey knowledge", "what does Supa-Thrive do" now answer.
+- **Verified:** anchors PASS; `--audit` unaffected (new fixtures, not stats overlay); the
+  coverage map's fetch-status flips Powers/Knowledge → `✅`. Pinned by parser + data-service +
+  ai_tools tests (incl. the two registry drift-guards updated for the new tools).
 
 ### Session log — temporary-buff triggers (units fixed) + Vigilante de-orphan + cash-on-leak
 
@@ -751,9 +928,9 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | Item | Done | Missing |
 |---|---|---|
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
-| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
+| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); now also the Heli **MOAB-Shove** per-blimp caps via `_ZONE_RENAME` (`*PushSpeedScaleCap` → `multiplierFor{Moab,Bfb,Zomg}`, verified exact vs committed). `_zone_text` renders Ice slow, Druid thorn-bonus **and** MOAB-Shove (negative = shoved backward, maintainer-confirmed). Wired into `_map_tier`, audit-safe (internal names) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); MOAB-Shove **DDT** cap (no dump field — curated mirror of ZOMG, maintainer to confirm at cutover) |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
-| **Buffs** (`buffs[]`) — **started (9 of 38)** | `_buffs()` decodes nine types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (the Desperado lives-lost buff: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`). See `_BUFF_FIELD_MAP` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 29 `*SupportModel`/`*BuffModel` types — each needs same-tier confirmation before its number is written (e.g. `PierceSupportModel.pierce`→`pierceAdditive` is **NOT** confirmed; the wiki's pierce buffs are multipliers from a different model). `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
+| **Buffs** (`buffs[]`) — **started (11 of 38)** | `_buffs()` decodes eleven types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (Desperado lives-lost: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`), `SupportShinobiTacticsModel` (Ninja, `multiplier 0.92`→`rateMultiplier`) and `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative`+tag→`damageAdditiveForBad`). See `_BUFF_FIELD_MAP` / `_BUFF_DAMAGE_MODIFIER_TYPES` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 27 buff types — each needs same-tier confirmation before its number is written, and (2026-06-08 finding) **none of the remaining types lands on a committed combat tower with a `buffs[]` to confirm against**: they are hero-only (separate `map_hero` path), on economy/support towers with **no committed tiers** (Village/Farm — blocked, maintainer call), or paragon `base` nodes. `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started
