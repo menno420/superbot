@@ -103,3 +103,9 @@ session ends with a grooming pass once the main task + PR are done and capacity 
 
 A **periodic sweep** (the `.session-journal.md` REVIEW cadence) confirms no idea is stuck
 at `raw`/`captured` with no destination — that is the no-orphan guarantee, made checkable.
+
+## Routed planning pass — 2026-06-08
+
+The current cross-source lifecycle outcomes are recorded in
+[`../planning/idea-roadmap-inventory-2026-06-08.md`](../planning/idea-roadmap-inventory-2026-06-08.md).
+That ledger groups ideas by canonical subsystem/platform seam and links the resulting roadmap drafts; it does not approve implementation or replace the preserved capture docs above.

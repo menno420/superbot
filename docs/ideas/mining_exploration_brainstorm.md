@@ -124,3 +124,8 @@ New files only; no existing file modified; nothing wired into a command yet:
 
 ### To activate image rendering
 Add `Pillow` to `requirements.txt`. Until then `utils/mining_render.render_inventory_card` returns `None` by design and the dependency footprint is unchanged.
+
+
+## Routing update — 2026-06-08
+
+The shipped-engine wiring remains owned by [`../planning/mining-wire-exploration-plan.md`](../planning/mining-wire-exploration-plan.md); deeper floors, bosses, events, co-op, idle extension, and crafting handoff are routed to [`../planning/games-mining-idle-roadmap-2026-06-08.md`](../planning/games-mining-idle-roadmap-2026-06-08.md). This brainstorm remains preserved and unapproved.

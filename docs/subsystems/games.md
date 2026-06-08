@@ -66,3 +66,7 @@ ideas promotion path before implementing unapproved game expansions.
 `docs/decisions/002-game-state-not-restart-safe.md`,
 `docs/archive/games-actionability-roadmap.md`, `docs/ideas/mining_exploration_brainstorm.md`,
 `docs/current-state.md`, `docs/runtime_contracts.md`.
+
+## Product-growth roadmap drafts (not approved)
+
+The [games/mining/idle roadmap draft](../planning/games-mining-idle-roadmap-2026-06-08.md) routes poker, blackjack variants, mining depth/co-op/idle, and crafting handoffs while preserving ADR-002. Cross-cutting game-facing ideas are routed through the [social/community/progression](../planning/social-community-progression-roadmap-2026-06-08.md) and [economy/marketplace/rewards](../planning/economy-marketplace-rewards-roadmap-2026-06-08.md) drafts. The [idea inventory](../planning/idea-roadmap-inventory-2026-06-08.md) owns lifecycle outcomes; none of these drafts is an active implementation lane.
