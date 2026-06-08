@@ -135,6 +135,13 @@ accepted, not a target).
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
   slice.
+- **Next (ready, ungated)** — **wire `!explore` to the shipped depth/loadout engine.** The
+  pure `cogs/mining/exploration.py` engine is already shipped + unit-tested; the swap reuses
+  `resolve_to_legacy_tuple()` (the exact tuple `!explore` already consumes), so it's a bounded
+  one-command behaviour change. Plan:
+  [mining: wire exploration](planning/mining-wire-exploration-plan.md). Promoted from the
+  [mining brainstorm](ideas/mining_exploration_brainstorm.md) §5 via the idea lifecycle
+  (Q-0015 grooming, 2026-06-08); awaiting maintainer go to build.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
 
@@ -157,6 +164,8 @@ privacy/provenance/moderation review before any public surface.
 - [ai-extra-tool-capability-ideas](ideas/ai-extra-tool-capability-ideas.md) — AI capability
   backlog (web / vision / file / KB / connectors / scheduler).
 - [mining-exploration-brainstorm](ideas/mining_exploration_brainstorm.md) — mining design intent.
+  *(§5 step 1 promoted 2026-06-08 to a [plan](planning/mining-wire-exploration-plan.md) + the
+  Games lane; the rest stays captured.)*
 - [superbot-ideas-lab](planning/superbot-ideas-lab-2026-06-05.md) — broad brainstorm; its
   §2 (operating decisions) + §6 (rejection ledger) are **binding do-not-propose**.
 

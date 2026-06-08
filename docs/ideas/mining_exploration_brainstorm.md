@@ -115,6 +115,10 @@ New files only; no existing file modified; nothing wired into a command yet:
 ## 5. Suggested sequencing (future, each its own approved PR)
 
 1. **Wire exploration** — swap `!explore` to build a `Loadout` from inventory and call `exploration.resolve(...)`, applying results through the existing inventory mutation path. Add a depth notion (start at Surface; torch/lantern/depth items push deeper). *Touches `mining_cog.py` — behaviour change, so it's its own PR.*
+   > **→ Routed 2026-06-08 (idea lifecycle / Q-0015 grooming):** promoted to a structured plan,
+   > [`../planning/mining-wire-exploration-plan.md`](../planning/mining-wire-exploration-plan.md),
+   > and onto `docs/roadmap.md` (Games, ready/ungated). Awaiting maintainer go to build. Steps 2–3
+   > below stay captured here.
 2. **Workshop / crafting** — `services/crafting_mutation.py` + `WorkshopView` + tool durability, built on `items.TOOL_LADDERS`.
 3. **AI-active "Guide" + image cards** — renderer + read-only AI tool that narrates the service-owned catalog; opt-in Pillow for art.
 
