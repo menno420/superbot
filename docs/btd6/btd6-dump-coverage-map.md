@@ -14,7 +14,7 @@
 | `Achievements/` | 156 | ⬜ | not ingested |
 | `Artifacts/` | 568 | ⬜ | not ingested (Rogue Legends artifacts) |
 | `BloonOverlays/` | 46 | ⬜ | cosmetic overlays; not ingested |
-| `Bloons/` | 235 | 🟡 | children + immunity now game-data-sourced (--bloons); rbe/health/speed/category/aliases still wiki |
+| `Bloons/` | 235 | 🟡 | children/immunity/health/speed/health_fortified now game-data-sourced (--bloons); rbe (derived from health+children) + category/aliases still wiki |
 | `Bosses/` | 7 | ✅ | bosses.json: name, mechanic description, immunities, per-tier health/speed |
 | `Buffs/` | 91 | ⬜ | UI buff ICONS only — effects live inline in Towers/ |
 | `GeraldoItems/` | 16 | ✅ | all 16 shop items: name, description, cash cost, unlock level, quantity |

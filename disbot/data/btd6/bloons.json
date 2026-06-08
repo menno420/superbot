@@ -781,5 +781,12 @@
       "description": "A regrow modifier: the bloon regrows its popped outer layers over time unless it is fully destroyed."
     }
   ],
-  "children_immunity_source": "BTD Mod Helper game data export"
+  "game_sourced_fields": [
+    "children",
+    "immune_to",
+    "health",
+    "speed",
+    "health_fortified"
+  ],
+  "game_sourced_fields_source": "BTD Mod Helper game data export"
 }

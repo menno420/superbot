@@ -34,12 +34,17 @@ works** (the traps we hit), and what is still un-decoded.
 - **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds still
   **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
   Rounds now carry derived **per-round + cumulative cash** (all 140).
-- **Bloons** 26 — **children + immunity cut over to game data** (`--bloons`):
-  `immune_to` is derived from each bloon's `bloonProperties` bitflag (via
-  `utils.btd6.damage_types.immunities_for_bloon_properties`, verified 23/23 vs
-  the curated lists), and `children` from the dump's `SpawnChildrenModel` with
-  variant modifiers preserved (camo/regrow/fortified). The rest
-  (rbe/health/layers/speed/category/aliases/description) stays wiki-curated.
+- **Bloons** 26 — **children + immunity + health + speed + fortified-health cut
+  over to game data** (`--bloons`): `immune_to` derived from each bloon's
+  `bloonProperties` bitflag (via `utils.btd6.damage_types.immunities_for_bloon_properties`,
+  23/23), `children` from the dump's `SpawnChildrenModel` (variant modifiers
+  preserved), and `health`/`speed`/`health_fortified` are direct dump scalars
+  (`maxHealth`/`speed`, + the Fortified variant's `maxHealth`) — **verified
+  byte-identical 23/23 at cutover** (0 corrections), so the curated combat numbers
+  were already right and are now game-sourced + reproducible. `rbe`/`rbe_fortified`
+  stay **derived** from `health`+`children` (not dump scalars; pinned by
+  `test_btd6_rbe.py`, which turns red if a future dump health moves without an rbe
+  reconcile). The rest (layers/category/aliases/description) stays wiki-curated.
 - **Maps** 86 — **fully cut over to game data** (`--maps`), with `has_water`,
   curated **removables** (18 maps), and aggregate count/list grounding. (89 dump
   files minus the 3 non-player `IsStandard=False` maps: Blons, Base Editor Map,

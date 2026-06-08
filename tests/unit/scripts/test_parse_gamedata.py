@@ -515,7 +515,16 @@ def test_map_geraldo_items_extracts_structured_effect(mod, tmp_path):
 
 
 def _bloon_model(
-    bid, *, base=None, props=0, camo=False, grow=False, fort=False, children=None
+    bid,
+    *,
+    base=None,
+    props=0,
+    camo=False,
+    grow=False,
+    fort=False,
+    children=None,
+    health=None,
+    speed=None,
 ):
     m = {
         "$type": "Il2CppAssets.Scripts.Models.Bloons.BloonModel, Assembly-CSharp",
@@ -527,6 +536,10 @@ def _bloon_model(
         "isFortified": fort,
         "behaviors": [],
     }
+    if health is not None:
+        m["maxHealth"] = health
+    if speed is not None:
+        m["speed"] = speed
     if children is not None:
         m["behaviors"].append(
             {
@@ -607,6 +620,81 @@ def test_bloon_immunity_derives_from_property_bitflag(mod, tmp_path):
         "Cold",
         "Frigid",
     }
+
+
+def test_select_bloon_variant_model_picks_fortified(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(dump / "Bloons" / "Ceramic" / "Ceramic.json", _bloon_model("Ceramic"))
+    _write(
+        dump / "Bloons" / "Ceramic" / "CeramicFortified.json",
+        _bloon_model("CeramicFortified", base="Ceramic", fort=True),
+    )
+    index = mod._bloon_model_index(dump)
+    bloon = {"id": "ceramic", "properties": []}
+    # The base selector picks the plain model; the variant selector adds fortified.
+    assert mod._select_bloon_model(bloon, index).name == "Ceramic.json"
+    fort = mod._select_bloon_variant_model(bloon, index, frozenset({"fortified"}))
+    assert fort.name == "CeramicFortified.json"
+    # A bloon with no fortified variant in the dump → None (never invented).
+    _write(dump / "Bloons" / "Red" / "Red.json", _bloon_model("Red"))
+    index = mod._bloon_model_index(dump)
+    assert (
+        mod._select_bloon_variant_model(
+            {"id": "red", "properties": []}, index, frozenset({"fortified"})
+        )
+        is None
+    )
+
+
+def test_overlay_bloons_sources_health_speed_and_fortified(mod, tmp_path, monkeypatch):
+    # The stats overlay corrects health/speed/health_fortified from the dump and
+    # leaves rbe alone (rbe is derived + pinned by the RBE test, not a dump scalar).
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Bloons" / "Ceramic" / "Ceramic.json",
+        _bloon_model("Ceramic", health=10, speed=62.5),
+    )
+    _write(
+        dump / "Bloons" / "Ceramic" / "CeramicFortified.json",
+        _bloon_model("CeramicFortified", base="Ceramic", fort=True, health=20),
+    )
+    data_root = tmp_path / "data"
+    _write(
+        data_root / "bloons.json",
+        {
+            "data_version": "1.0",
+            "game_version": "55.1",
+            "source": "wiki",
+            "bloons": [
+                {
+                    "id": "ceramic",
+                    "canonical": "Ceramic",
+                    "properties": [],
+                    "health": 99,  # wrong — dump says 10
+                    "speed": 1.0,  # wrong — dump says 62.5
+                    "health_fortified": 999,  # wrong — fortified model says 20
+                    "rbe": 104,  # derived; overlay must leave it untouched
+                    "immune_to": [],
+                    "children_list": [],
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    report = mod.overlay_bloons(dump, dry_run=False)
+    assert set(report["ceramic"]) == {
+        "health 99 -> 10",
+        "speed 1.0 -> 62.5",
+        "health_fortified 999 -> 20",
+    }
+    written = json.loads((data_root / "bloons.json").read_text())["bloons"][0]
+    assert written["health"] == 10 and written["speed"] == 62.5
+    assert written["health_fortified"] == 20
+    assert written["rbe"] == 104  # derived value preserved
+    # Provenance marker broadened to list every game-sourced field.
+    payload = json.loads((data_root / "bloons.json").read_text())
+    assert "health" in payload["game_sourced_fields"]
+    assert "children_immunity_source" not in payload
 
 
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
