@@ -105,7 +105,9 @@ Source code and merged PRs win over anything written here.
   dedicated docs session shrinks the top-level `docs/` pile (41 → ~15) by moving
   plans / audits / historical snapshots into subdirs behind the folios, then lowers the
   `_TOP_LEVEL_DOCS_BUDGET` ratchet in `scripts/check_docs.py`. The census prints the live
-  count every run; the ratchet holds the line until then.
+  count every run; the ratchet holds the line until then. **Ready-to-pick handoff:**
+  [`planning/docs-restructure-brief-2026-06-08.md`](planning/docs-restructure-brief-2026-06-08.md)
+  (also covers binding-doc section-ownership to make concurrent-chat edits collision-safe).
 - Use the canonical subsystem folios for area-specific implementation/planning. The
   2026-06-06 readiness audit classifies stale, gated, and ready workstreams.
 
