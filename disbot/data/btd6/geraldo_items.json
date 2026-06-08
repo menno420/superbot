@@ -25,7 +25,12 @@
       "max_quantity": 4,
       "rounds_to_replenish": 4,
       "amount_to_replenish": 1,
-      "between_rounds": true
+      "between_rounds": true,
+      "effect": {
+        "damage_increase": 1,
+        "attack_speed_scale": 0.75,
+        "rounds": 5
+      }
     },
     {
       "id": "shooty_turret",
@@ -73,7 +78,10 @@
       "max_quantity": 2,
       "rounds_to_replenish": 10,
       "amount_to_replenish": 1,
-      "between_rounds": true
+      "between_rounds": true,
+      "effect": {
+        "rounds": 5
+      }
     },
     {
       "id": "tube_of_amazo_glue",
@@ -97,7 +105,11 @@
       "max_quantity": 3,
       "rounds_to_replenish": 5,
       "amount_to_replenish": 1,
-      "between_rounds": true
+      "between_rounds": true,
+      "effect": {
+        "pierce_increase": 1,
+        "rounds": 10
+      }
     },
     {
       "id": "worn_heros_cape",
@@ -145,7 +157,11 @@
       "max_quantity": 4,
       "rounds_to_replenish": 3,
       "amount_to_replenish": 1,
-      "between_rounds": true
+      "between_rounds": true,
+      "effect": {
+        "cash_scale": 1.2,
+        "rounds": 4
+      }
     },
     {
       "id": "pet_rabbit",
@@ -169,7 +185,10 @@
       "max_quantity": 2,
       "rounds_to_replenish": 5,
       "amount_to_replenish": 1,
-      "between_rounds": true
+      "between_rounds": true,
+      "effect": {
+        "lives_gained": 50
+      }
     },
     {
       "id": "genie_bottle",

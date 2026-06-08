@@ -467,7 +467,56 @@ def test_map_geraldo_items_decodes_name_cost_and_meta(mod, tmp_path):
     assert row["between_rounds"] is True
 
 
-def _bloon_model(bid, *, base=None, props=0, camo=False, grow=False, fort=False, children=None):
+def test_map_geraldo_items_extracts_structured_effect(mod, tmp_path):
+    dump = tmp_path / "dump"
+    # Sharpening Stone's named behaviour model carries the effect numbers; the
+    # mapper reads them into a structured `effect` (values from the dump).
+    _write(
+        dump / "GeraldoItems" / "SharpeningStone.json",
+        {
+            "$type": _t("GeraldoItemModel"),
+            "name": "SharpeningStone",
+            "locsId": "Sharpening stone",
+            "cost": 200,
+            "levelUnlockedAt": 5,
+            "behaviorModels": [
+                {
+                    "$type": "x.SharpeningStoneBehaviorModel, Assembly-CSharp",
+                    "pierceIncrease": 1.0,
+                    "rounds": 10,
+                },
+            ],
+        },
+    )
+    # A projectile item with no named effect model stays description-only.
+    _write(
+        dump / "GeraldoItems" / "BladeTrap.json",
+        {
+            "$type": _t("GeraldoItemModel"),
+            "name": "BladeTrap",
+            "locsId": "Blade trap",
+            "cost": 650,
+            "levelUnlockedAt": 7,
+            "behaviorModels": [{"$type": "x.GeraldoCreateProjectileModel, A"}],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "Sharpening stone name": "Sharpening Stone",
+            "Sharpening stone description": "Sharper than ever!",
+            "Blade trap name": "Blade Trap",
+            "Blade trap description": "Whirling blades!",
+        },
+    )
+    rows = {r["id"]: r for r in mod.map_geraldo_items(dump, "55.1")[0]}
+    assert rows["sharpening_stone"]["effect"] == {"pierce_increase": 1, "rounds": 10}
+    assert "effect" not in rows["blade_trap"]  # never fabricated
+
+
+def _bloon_model(
+    bid, *, base=None, props=0, camo=False, grow=False, fort=False, children=None
+):
     m = {
         "$type": "Il2CppAssets.Scripts.Models.Bloons.BloonModel, Assembly-CSharp",
         "id": bid,
@@ -493,11 +542,15 @@ def test_bloon_children_resolve_base_and_preserve_modifiers(mod, tmp_path):
     dump = tmp_path / "dump"
     # A BAD-like bloon spawning 2 plain ZOMG + 3 *camo* DDT, plus the variant
     # child models that carry the baseId + modifier flags.
-    _write(dump / "Bloons" / "Bad" / "Bad.json",
-           _bloon_model("Bad", children=["Zomg", "Zomg", "DdtCamo", "DdtCamo", "DdtCamo"]))
+    _write(
+        dump / "Bloons" / "Bad" / "Bad.json",
+        _bloon_model("Bad", children=["Zomg", "Zomg", "DdtCamo", "DdtCamo", "DdtCamo"]),
+    )
     _write(dump / "Bloons" / "Zomg" / "Zomg.json", _bloon_model("Zomg"))
-    _write(dump / "Bloons" / "Ddt" / "DdtCamo.json",
-           _bloon_model("DdtCamo", base="Ddt", camo=True))
+    _write(
+        dump / "Bloons" / "Ddt" / "DdtCamo.json",
+        _bloon_model("DdtCamo", base="Ddt", camo=True),
+    )
 
     meta = mod._bloon_variant_meta(dump)
     assert meta["ddtcamo".lower()] == ("Ddt", ["camo"])
@@ -517,14 +570,22 @@ def test_inherently_modified_bloon_selects_its_variant_model(mod, tmp_path):
     # (children CeramicRegrowCamo), NOT the non-camo base Ddt template (children
     # CeramicRegrow) — the base would wrongly drop Camo from DDT's children.
     dump = tmp_path / "dump"
-    _write(dump / "Bloons" / "Ddt" / "Ddt.json",
-           _bloon_model("Ddt", children=["CeramicRegrow"]))
-    _write(dump / "Bloons" / "Ddt" / "DdtCamo.json",
-           _bloon_model("DdtCamo", base="Ddt", camo=True, children=["CeramicRegrowCamo"]))
-    _write(dump / "Bloons" / "Ceramic" / "CeramicRegrow.json",
-           _bloon_model("CeramicRegrow", base="Ceramic", grow=True))
-    _write(dump / "Bloons" / "Ceramic" / "CeramicRegrowCamo.json",
-           _bloon_model("CeramicRegrowCamo", base="Ceramic", camo=True, grow=True))
+    _write(
+        dump / "Bloons" / "Ddt" / "Ddt.json",
+        _bloon_model("Ddt", children=["CeramicRegrow"]),
+    )
+    _write(
+        dump / "Bloons" / "Ddt" / "DdtCamo.json",
+        _bloon_model("DdtCamo", base="Ddt", camo=True, children=["CeramicRegrowCamo"]),
+    )
+    _write(
+        dump / "Bloons" / "Ceramic" / "CeramicRegrow.json",
+        _bloon_model("CeramicRegrow", base="Ceramic", grow=True),
+    )
+    _write(
+        dump / "Bloons" / "Ceramic" / "CeramicRegrowCamo.json",
+        _bloon_model("CeramicRegrowCamo", base="Ceramic", camo=True, grow=True),
+    )
 
     index = mod._bloon_model_index(dump)
     # The inherently-camo bloon resolves to the camo variant...

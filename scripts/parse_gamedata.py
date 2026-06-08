@@ -2031,6 +2031,64 @@ def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str
     return rows, warnings
 
 
+# Structured headline effect per Geraldo item, read from its named behaviour
+# model (values are the game's own — never hardcoded). Listed only where the
+# effect is a clean, description-confirmable number; items whose effect is a
+# spawned projectile (Blade Trap, Stack of Old Nails, Tube of Amaz-o-Glue), a
+# tower summon/upgrade (Creepy Idol, Genie Bottle, Shooty Turret), or has no
+# numeric model (Pet Rabbit, Hot Sauce, Action Figure, Paragon Power Totem,
+# Worn Hero's Cape) stay description-only — never a fabricated value. Tuple
+# shape: (behaviour_model_type, {dump_field: schema_field}).
+#   * Sharpening Stone: +1 pierce for 10 rounds ("sharper than ever").
+#   * Jar of Pickles: +1 damage but attacks at 0.75x speed for 5 rounds ("hit
+#     harder but shoot slower").
+#   * Fertilizer: +20% farm cash (cashScale 1.2) for 4 rounds ("even more bananas").
+#   * Rejuv Potion: restores 50 lives ("restore lost lives").
+#   * See Invisibility Potion: grants camo detection for 5 rounds.
+_GERALDO_EFFECTS: dict[str, tuple[str, dict[str, str]]] = {
+    "sharpening_stone": (
+        "SharpeningStoneBehaviorModel",
+        {"pierceIncrease": "pierce_increase", "rounds": "rounds"},
+    ),
+    "jar_of_pickles": (
+        "JarOfPicklesBehaviorModel",
+        {
+            "damageIncrease": "damage_increase",
+            "attackSpeedScale": "attack_speed_scale",
+            "rounds": "rounds",
+        },
+    ),
+    "fertilizer": (
+        "FertilizerBehaviorModel",
+        {"cashScale": "cash_scale", "rounds": "rounds"},
+    ),
+    "rejuv_potion": ("RejuvPotionBehaviorModel", {"livesGained": "lives_gained"}),
+    "see_invisibility_potion": (
+        "SeeInvisibilityPotionBehaviorModel",
+        {"rounds": "rounds"},
+    ),
+}
+
+
+def _geraldo_effect(raw: dict[str, Any], gid: str) -> dict[str, Any]:
+    """Structured effect factor(s) for a Geraldo item from its named behaviour
+    model, or ``{}`` when the item isn't in ``_GERALDO_EFFECTS`` (projectile /
+    summon / no numeric effect — description-only, never fabricated).
+    """
+    spec = _GERALDO_EFFECTS.get(gid)
+    if spec is None:
+        return {}
+    model_type, field_map = spec
+    for beh in raw.get("behaviorModels", []) or []:
+        if str(beh.get("$type", "")).split(",")[0].split(".")[-1] == model_type:
+            return {
+                schema: _num(beh[dump_f])
+                for dump_f, schema in field_map.items()
+                if dump_f in beh
+            }
+    return {}
+
+
 def map_geraldo_items(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     """Every Geraldo shop item → catalog rows (id, name, description, in-game
     cash cost, the Geraldo level it unlocks at, starting/max quantity, and
@@ -2058,20 +2116,22 @@ def map_geraldo_items(dump: Path, version: str) -> tuple[list[dict], list[str]]:
             warnings.append(f"duplicate geraldo id {gid!r} ({fp.stem})")
             continue
         seen.add(gid)
-        rows.append(
-            {
-                "id": gid,
-                "canonical": _clean_desc(name),
-                "description": _clean_desc(tt.get(f"{loc} description", "")),
-                "cost": _num(raw.get("cost", 0)),
-                "unlock_level": _num(raw.get("levelUnlockedAt", 0)),
-                "starting_quantity": _num(raw.get("startingQuantity", 0)),
-                "max_quantity": _num(raw.get("maxQuantity", 0)),
-                "rounds_to_replenish": _num(raw.get("roundsToReplenish", 0)),
-                "amount_to_replenish": _num(raw.get("amountToReplenish", 0)),
-                "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
-            },
-        )
+        row = {
+            "id": gid,
+            "canonical": _clean_desc(name),
+            "description": _clean_desc(tt.get(f"{loc} description", "")),
+            "cost": _num(raw.get("cost", 0)),
+            "unlock_level": _num(raw.get("levelUnlockedAt", 0)),
+            "starting_quantity": _num(raw.get("startingQuantity", 0)),
+            "max_quantity": _num(raw.get("maxQuantity", 0)),
+            "rounds_to_replenish": _num(raw.get("roundsToReplenish", 0)),
+            "amount_to_replenish": _num(raw.get("amountToReplenish", 0)),
+            "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
+        }
+        effect = _geraldo_effect(raw, gid)
+        if effect:
+            row["effect"] = effect
+        rows.append(row)
     rows.sort(key=lambda g: (g["unlock_level"], g["id"]))
     return rows, warnings
 

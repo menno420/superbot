@@ -251,6 +251,11 @@ class GeraldoItemEntry:
     rounds_to_replenish: int
     amount_to_replenish: int
     between_rounds: bool = False
+    # Structured headline effect decoded from the item's behaviour model (e.g.
+    # Sharpening Stone ``{"pierce_increase": 1, "rounds": 10}``). ``{}`` for items
+    # whose effect is a spawned projectile / tower summon / non-numeric — those
+    # stay description-only.
+    effect: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -680,6 +685,7 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
 
 def _parse_geraldo_item(raw: dict[str, Any]) -> GeraldoItemEntry:
     _require_keys(raw, _REQUIRED_GERALDO_FIELDS, where=f"geraldo {raw.get('id')!r}")
+    effect = raw.get("effect", {})
     return GeraldoItemEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
@@ -691,6 +697,7 @@ def _parse_geraldo_item(raw: dict[str, Any]) -> GeraldoItemEntry:
         rounds_to_replenish=int(raw.get("rounds_to_replenish", 0)),
         amount_to_replenish=int(raw.get("amount_to_replenish", 0)),
         between_rounds=bool(raw.get("between_rounds", False)),
+        effect=dict(effect) if isinstance(effect, dict) else {},
     )
 
 
