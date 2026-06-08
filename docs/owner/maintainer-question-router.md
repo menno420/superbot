@@ -1103,3 +1103,531 @@ Implemented this session: SUBSYSTEMS["servermanagement"] + HUBS entry (administr
   enumerations updated. Live boot: identity-contract clean (STRICT=on), 0 ERROR/CRITICAL.
 Moved/copied on: 2026-06-08 (this session — server-management PR14).
 ```
+
+---
+
+### Q-0017 — Adaptive Setup/Access/Routine Platform: planning document structure (2026-06-08)
+
+**Area:** Setup / Access / Automation platform (new)
+**Type:** Planning process / Doc organization
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Brief note in `docs/ideas/` capture file for this
+  platform (once created); the planning doc itself in `docs/planning/`.
+
+**Question:** The Adaptive Setup, Access, Preset, and Routine Platform covers 8 distinct
+concepts (Guild Feature Profiles, Unified Access Map, Help Preview, Setup Health, Preset
+Loader, Routine Engine, Time-based Unlocks, Personal Setup Wizard). Should Codex produce
+one comprehensive planning doc in `docs/planning/`, a summary capture in `docs/ideas/` plus
+a planning doc in `docs/planning/`, or separate planning docs per major concept?
+
+**Maintainer answer**
+
+```text
+One comprehensive doc in docs/planning/
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+All 8 concepts should land in a single comprehensive planning doc in docs/planning/.
+The doc should include the readiness matrix, phased roadmap, do-not-build section, and
+file-ownership mapping — consistent with how server-management-roadmap and ai-roadmap
+are structured. docs/ideas/ does not need a separate capture file for this platform;
+the planning doc is the authoritative home.
+```
+
+**Routing result**
+
+```text
+Destination: the new planning doc in docs/planning/ (to be created by Codex).
+  This Q-block is the durable record of the doc structure decision.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0018 — Adaptive Setup/Access/Routine Platform: Guild Feature Profiles starter set (2026-06-08)
+
+**Area:** Setup / Guild Feature Profiles
+**Type:** Product definition
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** The Q-0017 planning doc (profiles section).
+
+**Question:** Six example Guild Feature Profiles were proposed: Minimal Utility Bot,
+Community Server, Game Server, Moderation Heavy, Private/Friends Server, BTD6-Focused
+Server. Should Codex treat these 6 as the definitive starter set, limit to general-purpose
+profiles only (parking BTD6-Focused Server until BTD6 ships), or revise/extend the set
+based on what the subsystem registry actually models?
+
+**Maintainer answer**
+
+```text
+Let Codex suggest revisions based on what the codebase subsystem registry actually models.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The 6 profiles are a starting suggestion, not a fixed list. When Codex maps the repo,
+it should compare the proposed profiles against the actual subsystem registry entries and
+cog routing capabilities, then propose additions, name changes, or removals as warranted.
+BTD6-Focused Server may be deferred or merged with Game Server depending on BTD6 readiness.
+The planning doc should mark which profiles are implementable today vs. dependent on
+features still in-flight.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (profiles section) — Codex incorporates this when
+  building the doc.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0019 — Adaptive Setup/Access/Routine Platform: Routine Engine default safety posture (2026-06-08)
+
+**Area:** Routine Engine / Automation
+**Type:** Architecture / Safety policy
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** The Q-0017 planning doc (Routine Engine section) +
+  `docs/planning/` once the engine spec is written.
+
+**Question:** When a Routine Engine trigger fires, should the default safety posture be
+(1) conservative — all actions require an approval draft, (2) progressive — low-risk
+actions auto-apply, medium/high-risk need approval, or (3) whitelist — nothing auto-applies
+until the owner marks individual routines as trusted?
+
+**Maintainer answer**
+
+```text
+Progressive: low-risk auto-applies, medium/high-risk needs approval.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The Routine Engine's default posture is progressive. "Low-risk" actions (post/update
+panel, send staff notification, enable quiet mode, hide/show help category, start setup
+checklist) auto-apply. "Medium/high-risk" actions (apply feature profile, modify cog
+routing, change command access, queue Final Review draft) create an approval draft and
+notify staff. The planning doc must define the risk classification table explicitly so
+implementers don't have to guess the line. Audit logging is mandatory for all actions
+regardless of risk level.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Routine Engine section) — the risk classification table
+  and safety posture live there.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0020 — Adaptive Setup/Access/Routine Platform: Personal Setup Wizard planning depth (2026-06-08)
+
+**Area:** Personal Setup Wizard (/my-setup)
+**Type:** Scope / Prioritization
+**Priority:** Low
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** The Q-0017 planning doc (Phase 5 section).
+
+**Question:** How much planning depth should Codex give the Personal Setup Wizard
+(/my-setup, per-user preferences)? Options were: capture-only (short paragraph, park as
+future), sketch the data model and privacy boundary only, or full Phase 5 spec covering
+/my-setup, /my-preferences, onboarding checklist, timezone, help ordering, DM settings,
+and account links.
+
+**Maintainer answer**
+
+```text
+Full Phase 5 spec.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Even though /my-setup is Phase 5 (guild-level features not yet complete), Codex should
+document it at full spec depth: user preference table shape, privacy layering
+(global safety → guild → channel → role → user preference), /my-setup and /my-preferences
+command surfaces, onboarding checklist, per-user timezone for reminders/routines,
+personalized help ordering, DM notification settings, and optional per-feature
+favorites/hiding. The spec should clearly mark which pieces depend on Phase 2-4
+guild-level work completing first. The key invariant: user preferences can hide, sort,
+or personalize but must not grant access.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Phase 5 / Personal Setup Wizard section).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0021 — Adaptive Setup/Access/Routine Platform: Routine Engine framing (2026-06-08)
+
+**Area:** Routine Engine / Automation scheduler
+**Type:** Architecture / Scope framing
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (Routine Engine section).
+
+**Question:** The repo already has a live automation system (`automation_scheduler`,
+`automation_executor`, `automation_registry`) with trigger kinds (scheduled_time, interval,
+member_join, setup_readiness_below, binding_missing, channel_inactive, manual) and action
+kinds (send_message, assign_role, remove_role, notify_owner, post_readiness_summary,
+post_leaderboard_summary, bind_channel, create_channel). The planning brief rates Samsung
+Routines as "Low readiness," but most of the engine already exists. Should Codex frame Phase 4
+as (1) extending the existing system, (2) replacing it with a broader design, or (3) treating
+config-orchestration routines as a separate parallel system?
+
+**Maintainer answer**
+
+```text
+Extend the existing system.
+
+Existing: scheduled_time, interval, member_join triggers
+Existing: send_message, assign_role, notify_owner, bind_channel actions
+Gap: apply_feature_profile, switch_cog_routing, enable_quiet_mode actions
+Gap: condition model (role_present, setup_stage_completed, event_active)
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The Phase 4 Routine Engine work is NOT a new engine — it is a targeted extension of the
+existing automation_scheduler / automation_executor / automation_registry system.
+
+What to add:
+  Trigger kinds: (none new needed — existing set covers time, interval, and member_join)
+  Condition model: new condition layer evaluated before action dispatch
+    role_present, setup_stage_completed, event_active, cooldown_state, account_age
+  Action kinds: config-mutation actions
+    apply_feature_profile, switch_cog_routing_preset, enable_quiet_mode, hide_show_help_category,
+    queue_final_review_draft
+  Safety gate: apply the Q-0019 progressive posture — low-risk actions (send, notify,
+    enable_quiet_mode, hide_show) auto-apply; config-mutation actions (apply_feature_profile,
+    switch_cog_routing) create an approval draft.
+
+The planning doc's readiness rating was wrong because it missed the existing automation
+infrastructure. Codex should note this and reframe the effort as "medium readiness" with
+a well-understood extension path.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Routine Engine section) — Codex uses this framing.
+  Also informs the readiness matrix update (automation_scheduler is Tier 1, not starting
+  from scratch).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0022 — Adaptive Setup/Access/Routine Platform: canonical naming — Profile vs. Preset (2026-06-08)
+
+**Area:** Guild Feature Profiles / naming
+**Type:** Domain language / Naming convention
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (glossary/naming section) +
+  code comments when the new concept is implemented.
+
+**Question:** The repo already has `ServerPreset` in `automation_templates.py` meaning
+"automation rule template" (welcome-message, daily-readiness-reminder, etc.). The planning
+brief uses "preset" and "profile" loosely for Guild Feature Profiles. To avoid a naming
+collision, should the canonical term be "Guild Feature Profile" (distinct from preset), should
+both merge under the "preset" concept, or should existing ServerPresets be renamed to free up
+the word?
+
+**Maintainer answer**
+
+```text
+Guild Feature Profile = distinct concept; keep 'preset' for automation templates.
+
+Guild Feature Profile: 'Community Server', 'Game Server', 'Moderation Heavy'
+  → generates a setup draft with cog routing + command access + channel bindings
+
+Automation Preset (existing): 'welcome-message', 'daily-readiness-reminder'
+  → generates scheduled automation rules
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Canonical naming from this point forward:
+
+  Guild Feature Profile  — a named server configuration bundle (which features are
+    enabled/visible, where they live, who has access). Generates a setup draft via
+    existing setup_operations primitives. Lives in a new service (feature_profiles or
+    similar). Display name: "Feature Profile" or "Server Profile" in the Discord UI.
+
+  Automation Preset (existing ServerPreset)  — an automation rule template that generates
+    scheduled/triggered automation rules. Unchanged; no rename.
+
+  Preset (in setup_operations context)  — already used for setup draft operations tagged
+    with metadata.source = "preset:<slug>". This third meaning coexists but is internal
+    only (not user-facing).
+
+When implementing Guild Feature Profiles, avoid using the word "preset" in code symbols,
+DB column names, or Discord UI strings for the new concept. Use "profile" instead.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (glossary section); implementation files for the new
+  Guild Feature Profile service should follow this naming.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0023 — Adaptive Setup/Access/Routine Platform: Help Preview audience access (2026-06-08)
+
+**Area:** Help Preview
+**Type:** Product / UX access control
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (Help Preview section).
+
+**Question:** Should `/help preview` (or however help preview is surfaced) be accessible to
+any user for their own view, to staff/admins for cross-role diagnostic views, or both?
+
+**Maintainer answer**
+
+```text
+Staff and admins only.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Help Preview is a setup diagnostic tool, not a self-service user feature. It is
+restricted to staff and admin roles only. Regular users do not get a "what can I see?"
+self-serve preview command. Rationale: it reveals the server's permission structure
+(which roles see which features), which is operator-sensitive information.
+
+The Phase 2 implementation should gate the command on the same capability level as other
+setup/admin diagnostic commands (likely operator or administrator tier). A regular user
+who wants to know "why can't I see command X?" should get a clear locked-reason message
+from the command itself (see time-based unlock UX in the planning doc), not a preview tool.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Help Preview section — access control constraint).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0024 — Adaptive Setup/Access/Routine Platform: Access Map Phase 2 scope (2026-06-08)
+
+**Area:** Unified Access Map
+**Type:** Scope / phasing
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (Access Map section).
+
+**Question:** The Access Map is described as a "read model + editing surface." In Phase 2,
+should it support editing (adjusting command access and cog routing directly from the map
+view), or should it be read-only with editing remaining in the existing setup wizard?
+
+**Maintainer answer**
+
+```text
+Read-only in Phase 2, editing in Phase 3.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Phase 2 Access Map: read-only diagnostic view only.
+  Answers: who can use what, where, and what will they see.
+  Combines: cog routing state, command access grants/denies, subsystem visibility,
+    help visibility, setup visibility, channel/role scope.
+  Does NOT allow mutation in Phase 2.
+
+Phase 3 Access Map: add editing surface.
+  Allow adjusting command access presets and cog routing profiles directly from the
+  map, generating setup draft operations → Final Review flow.
+  This is the "editing surface" part of the original description.
+
+The read-only Phase 2 build lets the map be validated as accurate before trusting it
+with mutations. All Phase 2 mutations still go through the existing setup wizard.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Access Map section — phasing note).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0025 — Subsystem/hub addition: scaffold script vs. doc guide (2026-06-08)
+
+**Area:** Developer tooling / Subsystem onboarding
+**Type:** Tooling / Process
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Suggested destination after answer:** `docs/ideas/` (backlog capture) + future
+  implementation session; eventual home is `scripts/new_subsystem.py`.
+
+**Question:** Adding a hub/subsystem requires ~8 coordinated edits (SUBSYSTEMS, HUBS,
+KNOWN_PANEL_COMMANDS, build_help_menu_view, help-surface-map §1+§2, command-map section,
+four enumeration tests) with no guide or automation. Should the fix be a canonical doc
+checklist, a `new_subsystem.py` scaffold script, or a doc now + script as backlog?
+
+**Maintainer answer**
+
+```text
+Build a scaffold script: new_subsystem.py
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The authoritative fix is a scaffold script (scripts/new_subsystem.py) that automates
+the ~8 required touch-points when adding a new subsystem/hub:
+  - Adds the SUBSYSTEMS entry
+  - Adds the HUBS entry (if it's a hub)
+  - Adds the KNOWN_PANEL_COMMANDS entry
+  - Scaffolds stub cog / service / view files
+  - Adds the help-surface-map §1+§2 entries
+  - Adds the command-map ### section
+
+Until the script is built, a checklist doc is acceptable as a stopgap. But the
+canonical deliverable is the script. Capture as a backlog item in docs/ideas/.
+
+The script should follow the tooling provenance rule (CLAUDE.md): custom tooling
+built on the repo's own AST + architecture_rules/. No external scaffolding packages.
+```
+
+**Routing result**
+
+```text
+Destination: docs/ideas/ — capture as a backlog item with 'decided: build scaffold
+  script' so it doesn't get re-debated.
+Captured: 2026-06-08 (repo friction audit session).
+Not yet implemented.
+```
+
+---
+
+### Q-0026 — cog_name_to_subsystem: fix CamelCase → snake_case conversion (2026-06-08)
+
+**Area:** Core runtime / Subsystem registry / Naming convention
+**Type:** Technical debt / Bug fix
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Suggested destination after answer:** `disbot/core/runtime/command_surface_ledger.py`
+  (function fix) + any doc/comment that describes the subsystem key convention.
+
+**Question:** `cog_name_to_subsystem` strips "Cog" and calls `.lower()` with no
+CamelCase→snake_case conversion. `servermanagement` is the first multi-word subsystem
+key (correct output would be `server_management`). Should the function be fixed to
+do proper CamelCase→snake_case conversion (and the key renamed), a single-word-only
+convention be documented, or both styles be tolerated?
+
+**Maintainer answer**
+
+```text
+Fix the function — convert CamelCase → snake_case.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Action required (a concrete implementation task, not just a doc note):
+
+1. Update cog_name_to_subsystem in disbot/core/runtime/command_surface_ledger.py
+   to do proper CamelCase → snake_case conversion after stripping "Cog":
+     ServerManagementCog → strip "Cog" → ServerManagement → snake → server_management
+
+2. Rename the subsystem key "servermanagement" → "server_management" everywhere:
+   - utils/subsystem_registry.py SUBSYSTEMS dict
+   - HUBS entry
+   - KNOWN_PANEL_COMMANDS entry
+   - Any string reference in views/services/tests that uses the literal key
+
+3. The function fix is a one-time cost; the rename is a grep-and-replace. Together
+   they make every future multi-word subsystem work correctly without manual key tricks.
+
+4. Add a brief doc comment to the function noting the snake_case output contract.
+
+Risk: medium — touches the identity-contract / diagnostics that key off subsystem names.
+Run check_architecture.py + full test suite after the rename.
+```
+
+**Routing result**
+
+```text
+Destination: implementation task — disbot/core/runtime/command_surface_ledger.py +
+  utils/subsystem_registry.py rename.
+Captured: 2026-06-08 (repo friction audit session).
+Not yet implemented — treat as a near-term technical debt fix.
+```
+
+---
+
+### Q-0027 — Session prompt template contradictions: update the ChatGPT template (2026-06-08)
+
+**Area:** Workflow / Session prompt
+**Type:** Process / Template maintenance
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Kept here as general guidance**
+**Suggested destination after answer:** This Q-block (action is external to the repo —
+  the template lives in ChatGPT, not in the codebase).
+
+**Question:** The ChatGPT session prompt template re-introduces two contradictions every
+session: (1) "develop only on branch X / never push elsewhere" (overridden by Q-0014:
+branch identity is not significant) and (2) "don't open a PR unless explicitly asked"
+(overridden by CLAUDE.md standing rule: always create an end-of-session PR). Should the
+ChatGPT template be updated, CLAUDE.md get an explicit override list, or agents just
+resolve it from the binding docs?
+
+**Maintainer answer**
+
+```text
+Update the ChatGPT template to remove the contradictions.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The maintainer will update the ChatGPT session prompt template to:
+  1. Replace the "develop only on branch X / never push elsewhere" line with a note
+     that branch identity is not significant (Q-0014) and agents should use the
+     session-assigned branch as a default but are not locked to it.
+  2. Replace "don't open a PR unless explicitly asked" with a note that the standing
+     rule is always create an end-of-session PR (CLAUDE.md Session & plan workflow).
+
+Until the template is updated, agents should resolve the contradiction from CLAUDE.md
+and Q-0014 as they do now. No repo-side change is needed; this is an external action
+for the maintainer.
+
+Note for agents: if you see these contradicting lines in a session prompt, treat them
+as template residue and apply the binding repo rules (CLAUDE.md + this router).
+```
+
+**Routing result**
+
+```text
+Destination: kept here — the fix is external (ChatGPT template update by the maintainer).
+  No code or doc change needed in the repo.
+Captured: 2026-06-08 (repo friction audit session).
+Action owner: maintainer (ChatGPT template).
+```

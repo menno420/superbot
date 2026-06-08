@@ -150,6 +150,22 @@ Source code and merged PRs win over anything written here.
 - Dense DiagnosticCog platform-subview pagination idea: see
   `docs/subsystems/health-diagnostics.md`.
 
+## Near-term technical debt (decided, not yet implemented)
+
+- **`cog_name_to_subsystem` CamelCase fix (Q-0026).** The function strips "Cog" +
+  lowercases with no CamelCase→snake_case conversion. `servermanagement` is the first
+  multi-word key; the correct output is `server_management`. Fix:
+  (1) update `cog_name_to_subsystem` in `disbot/core/runtime/command_surface_ledger.py`
+  to do a proper CamelCase→snake_case split; (2) rename the `"servermanagement"` key to
+  `"server_management"` everywhere (subsystem_registry, HUBS, KNOWN_PANEL_COMMANDS,
+  any literal references). Run check_architecture + full test suite after rename.
+  Risk: medium — touches identity-contract / diagnostics. **Owner decision Q-0026.**
+
+- **`new_subsystem.py` scaffold script (Q-0025).** Adding a hub/subsystem requires
+  ~8 coordinated edits with no automation. Decided deliverable: a `new_subsystem.py`
+  scaffold script in `scripts/` that covers all required touch-points. Capture in
+  `docs/ideas/` as a decided backlog item. **Owner decision Q-0025.**
+
 ## Off-limits / do-not-propose
 
 - No Redis / external state store (**ADR-001**).
