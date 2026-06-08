@@ -10,11 +10,11 @@
 > for PR8+PR9, then for **PR10's first–fifth slices** — config-backed moderation
 > behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
 > the post-action message cleanup sweep, and the optional public moderation log).
-> **Body is current through PR11's moderation + roles slices** (built 2026-06-07;
-> see the PR11 subsection below — verify merge status against live GitHub). **PR10 is
-> COMPLETE** (all six slices shipped, incl.
+> **Body is current through PR12** (setup diagnostics & repair, built 2026-06-07;
+> PR11's moderation + roles slices merged via #570 — verify the PR12 merge status
+> against live GitHub). **PR10 is COMPLETE** (all six slices shipped, incl.
 > moderator/trusted roles + capabilities, ADR-008). PR11's **governance** section is
-> deferred (owner decision Q-0008); **PR12–PR14 remain queued** — the "Shipped" +
+> deferred (owner decision Q-0008); **PR13–PR14 remain queued** — the "Shipped" +
 > "Remaining queue" sections below are authoritative.
 >
 > **Companion docs (read together):**
@@ -515,6 +515,61 @@ the only apply gate** (no setup view imports a mutation pipeline; invariant
   service, mirroring the `set_cog_routing` no-pipeline pattern. Not started — sequence after
   PR12 unless the maintainer pulls it forward.
 
+### PR12 — Setup diagnostics & repair *(built 2026-06-07)*
+
+A reusable, **read-only** diagnostics layer that inspects a guild's
+server-management config, classifies what is broken / stale / unsafe /
+incomplete, explains each finding, and — for the safe, deterministic
+cases — stages typed `SetupOperation` repairs that **Final Review (the
+only apply gate)** dispatches through the existing canonical pipelines.
+**No new op-kind, no migration, no second mutation system.** Verify merge
+status on live GitHub.
+
+- **`services/setup_diagnostics.py` (new, service-owned — *not* a view):**
+  `SetupDiagnosticFinding` (frozen: stable `code`, severity, subsystem,
+  `section_slug`, resource type/id, summary/detail, repairability,
+  `repair_label`, `repair_ops` batch, advisory note, notes) +
+  `SetupDiagnosticsReport` (severity-sorted, with `counts` / `repairable`
+  / `advisory` / `is_healthy` partitions) + `collect_setup_diagnostics`
+  + `staged_repair_ops`. It **composes existing read-only detectors — it
+  does not re-detect**: `resource_health.inspect` (bindings), `utils.db.roles`
+  + `utils.role_feasibility` (auto-role tiers), `config_arbitration`
+  (moderator/trusted roles), `cleanup_diagnostics.collect_cleanup_diagnostics`
+  (cleanup). Living in `services/` (not a view) is deliberate — the future
+  Server-Management Hub (PR14) renders the same report unchanged.
+- **Severities** `blocker` / `warning` / `advisory` / `info`;
+  **repairability** `auto_repairable` / `conditionally_repairable` /
+  `advisory_only` / `blocked`.
+- **The one safe automatic repair this slice ships:** a dead binding
+  (`stale_binding` / `wrong_type`) → a single **`clear_binding`** op
+  (deterministic, id-free, reversible — re-bind afterwards). Everything
+  else is **advisory_only** or **blocked** by design: missing/unbound
+  bindings (operator must pick the target — no guess, no auto-create),
+  permission/hierarchy blockers (a Discord-side change the bot must not
+  make — never auto-reorders roles), stale/unassignable auto-role tiers
+  (point to `!roles`; no threshold-clear op-kind exists yet — PR13),
+  stale moderator/trusted role (re-pick in the Moderation section), and
+  stale/ineffective cleanup rows (the cleanup panel already owns the fix).
+- **`views/setup/sections/diagnostics.py` (new section, order 85,
+  standard+advanced):** renders the grouped findings (severity-bucketed,
+  capped) and a **“Stage safe repairs”** button that drafts the
+  auto-repairable ops with `staging_kind="repair"` /
+  `section_slug="diagnostics"` provenance, plus **“Re-scan.”** No
+  `recommended_ops_builder` — repairs are staged deliberately, never
+  swept in by the hub's “Apply all recommended.” Partial-apply rendering
+  is inherited free (repairs are ordinary `SetupOperation`s through the
+  unchanged Final-Review path).
+- **Pinned by** `tests/unit/services/test_setup_diagnostics.py`
+  (classification, repair generation, composition, fail-safe collectors),
+  `tests/unit/views/setup/sections/test_diagnostics_section.py` (staging
+  only auto-repairable, never applies, DM-reject, re-scan),
+  `tests/unit/invariants/test_setup_diagnostics_readonly.py` (no mutation
+  pipeline import/call, no `setup_draft` import — generation ≠ staging),
+  and the registration manifest. Full CI mirror green (7949 passed).
+- **Deferred (documented, not snuck in):** a `clear_role_threshold` op-kind
+  + conditional binding-repair (pick-a-target) → PR13/follow-up; governance
+  diagnostics → the deferred governance setup section (Q-0008/Q-0011).
+
 ---
 
 ## Remaining queue (starts at PR11)
@@ -525,8 +580,8 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 |---|---|---|
 | **PR10** | Moderation first-class configuration. **COMPLETE** — all six slices shipped (DMs, ban message-purge, timeout ceiling, require-reason, bot-readiness diagnostics, configurable warn escalation, post-action message cleanup, optional public log, **and moderator/trusted roles + capabilities** — ADR-008, see above). | #521 |
 | **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built in the moderation + roles slices (2026-06-07); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
-| **PR12** | Setup diagnostics & repair. | PR5, #522 |
-| **PR13** | Deterministic + AI role templates. | PR5, #523 |
+| **PR12** | Setup diagnostics & repair. **Built 2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section; `clear_binding` the one safe auto-repair, everything else advisory/blocked — see subsection above). | PR5, #522 |
+| **PR13** | Deterministic + AI role templates. **← next.** | PR5, #523 |
 | **PR14** | Server Management Hub (last). | all managers |
 
 Near-term completion items folded into the above: finish PR2's diagnostics/findings

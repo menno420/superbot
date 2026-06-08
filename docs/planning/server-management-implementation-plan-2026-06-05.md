@@ -402,10 +402,19 @@ critical path (intentionally parallelizable / safe to lead with). Cleanup (PR8/9
   moderation,governance}.py`, `services/setup_sections.py`, tests. **DoD:** sections register,
   recommend, preview, apply, preserve custom choices.
 
-### PR12 — Setup diagnostics & repair  ·  Risk: Medium
+### PR12 — Setup diagnostics & repair  ·  Risk: Medium  ·  **(built 2026-06-07 — see status tracker)**
 - Stage safe repairs (stale bindings, missing resources, invalid roles, permission blockers) via
   PR2 findings + lifecycle services; improve readiness. **DoD:** repairs staged+reviewed like other
   setup ops; partial-apply safe.
+- **As shipped:** a read-only `services/setup_diagnostics.py` layer composes the existing detectors
+  (`resource_health` / `role_feasibility` / `config_arbitration` / `cleanup_diagnostics`) into typed
+  `SetupDiagnosticFinding`s and generates repair `SetupOperation` batches; a **Diagnose & repair**
+  setup section renders them and stages the one safe deterministic repair shipped this slice —
+  `clear_binding` for a dead binding — through the unchanged Final-Review gate. Missing/unbound
+  bindings, permission/hierarchy blockers, stale role tiers, stale moderator roles, and cleanup
+  rows are advisory/blocked (no auto-create, no role reorder, no second mutation path). The model
+  lives in `services/` so the PR14 hub reuses it. Pinned by `test_setup_diagnostics.py`,
+  `test_diagnostics_section.py`, and the `test_setup_diagnostics_readonly` invariant.
 
 ### PR13 — Deterministic + AI role templates  ·  Risk: Medium (AI: High-sensitivity)
 - Template schema + validation + review/edit/reorder UI; built-in deterministic templates first;

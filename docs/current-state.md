@@ -6,22 +6,24 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action:** server-management **PR12** — setup diagnostics & repair (stage safe
-> repairs via the PR2 findings model + the lifecycle services). **PR11 (moderation + roles
-> slices):** the **moderation** and **roles** setup-wizard sections were built (2026-06-07;
-> moderation stages `set_setting` drafts for the PR10 knobs; roles stages a new
-> `set_role_threshold` op-kind for time/XP auto-role tiers) — verify merge status on live
-> GitHub; see the server-management
-> [status tracker](planning/server-management-status-2026-06-05.md) PR11 subsection. PR11's
-> **governance** section is **deferred** (owner decision **Q-0008** — cleanup already owns the
-> main governance write; capability-override/command-access setup is a separate, design-led
-> follow-up). Authoritative scope + dependencies: the status tracker's Remaining-queue.
+> **▶ Next action:** server-management **PR13** — deterministic + AI role templates (build
+> on PR5 role lifecycle + PR3 staged ops). **PR12 (setup diagnostics & repair) was built
+> 2026-06-07:** a read-only `services/setup_diagnostics.py` layer (composes
+> `resource_health` / `role_feasibility` / `config_arbitration` / `cleanup_diagnostics`
+> into typed findings) + a **Diagnose & repair** setup section that stages the one safe
+> auto-repair — `clear_binding` for a dead binding — through the **Final-Review apply gate**;
+> every other finding is advisory/blocked (no new op-kind, no migration, no second mutation
+> system). Verify merge status on live GitHub; see the server-management
+> [status tracker](planning/server-management-status-2026-06-05.md) PR12 subsection. PR11
+> (moderation + roles) merged via **#570**; PR11's **governance** section stays **deferred**
+> (owner decision **Q-0008**). Authoritative scope + dependencies: the status tracker's
+> Remaining-queue.
 >
-> **Last updated:** 2026-06-07 · server-management **PR11 moderation + roles setup sections**
-> built in the PR11 moderation + roles slices (owner decision **Q-0008**: Moderation + Roles
-> now, Governance deferred). The new sections + the `set_role_threshold` op-kind are recorded
-> in the **status tracker**
-> (linked above); PR10 is complete (ADR-008; earlier slices merged as #555/#556/#558/#567,
+> **Last updated:** 2026-06-07 · server-management **PR12 (setup diagnostics & repair)**
+> built — a read-only `setup_diagnostics` service + a Diagnose & repair setup section that
+> stages the lone safe auto-repair (`clear_binding`) through Final Review; everything else
+> advisory/blocked. Recorded in the **status tracker** (linked above). PR11 (moderation +
+> roles) merged via **#570**; PR10 is complete (ADR-008; earlier slices #555/#556/#558/#567,
 > cross-area roadmap #566). **This file lists only _merged_ work + the ▶ Next action;** get
 > in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status in prose
 > here rots on merge (a `scripts/check_docs.py` freshness gate enforces this).
@@ -54,6 +56,7 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 
+- **#570** — server-management **PR11** (moderation + roles setup sections) + workflow tooling + ecosystem docs (owner decision **Q-0008**: Moderation + Roles now, Governance deferred). The moderation section stages `set_setting` drafts for the PR10 knobs; the roles section adds the `set_role_threshold` op-kind for time/XP auto-role tiers. Setup diagnostics & repair (PR12) builds on top.
 - **#567** — server-management **PR10 fourth slice**: optional post-kick/ban **message cleanup** (`post_action_cleanup`: none/kick/ban/both up to `post_action_cleanup_limit`, **default OFF**), owned at the `moderation_service` kick/ban seam and *requested from* `services/history_cleanup.py` (new author-scoped plan + a shared `apply_history_cleanup_plan` extracted from `!cleanuphistory` — one delete path). Best-effort: a blocked sweep never undoes the action.
 - **#566** (merged) — **cross-area implementation roadmap** (`docs/roadmap.md`): the one by-area "what's planned, in what order" index (relative Now/Next/Later/Someday horizons + gates, not dates), linking each authoritative plan + folio, with a clearly-marked not-approved ideas section. Its AI section defers to the AI roadmap. Re-badged two mis-badged historical plans (`phase_2b_bindings_plan`, BTD6 extraction). Wired into `current-state` + `AGENT_ORIENTATION`.
 - **#565** (Codex, merged) — source-verified **AI roadmap** (`docs/planning/ai-roadmap-2026-06-07.md`, Phase 0–11) + a 10-question batch. Opus-reviewed (sound; read-only boundary preserved). Owner answers (router §18): **AR-10** first Opus target = lock the orchestration foundation; **AR-08** tiered audience; **AR-09** explanation-only now. AR-01–07 hold at safe defaults until their lanes activate.
@@ -89,10 +92,11 @@ Source code and merged PRs win over anything written here.
   (by area, with Now / Next / Later / Someday horizons + gates — where to find which plan
   for which part of the code). The picks below are the current top of that list.
 - Highest-value approved implementation lane: server-management. **PR10 is complete**
-  (six slices, ADR-008). **PR11's moderation + roles setup sections were built** (2026-06-07,
-  owner decision Q-0008); PR11's **governance** section is **deferred** (cleanup already owns
-  the main governance write — revisit only with a scope decision). The next step is **PR12**
-  (setup diagnostics & repair), then PR13–PR14. The
+  (six slices, ADR-008). **PR11 (moderation + roles setup sections) merged via #570**;
+  PR11's **governance** section is **deferred** (cleanup already owns the main governance
+  write — revisit only with a scope decision). **PR12 (setup diagnostics & repair) was built
+  2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section). The next
+  step is **PR13** (deterministic + AI role templates), then PR14 (hub). The
   `docs/planning/server-management-status-2026-06-05.md` tracker is the authoritative
   queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):

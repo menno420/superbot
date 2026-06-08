@@ -78,8 +78,14 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   some category/lifecycle follow-ups remain outside the shipped lifecycle service.
 - Cleanup and setup exist today; setup convergence has begun — the setup wizard now has
   **moderation** and **roles** sections (PR11 moderation + roles slices, 2026-06-07) that
-  stage `set_setting` / `set_role_threshold` drafts through the Final-Review apply gate. The
-  tracker queues the remaining setup work (diagnostics/repair, templates, hub).
+  stage `set_setting` / `set_role_threshold` drafts through the Final-Review apply gate, plus
+  a **Diagnose & repair** section (PR12, 2026-06-07) backed by the read-only
+  `services/setup_diagnostics.py` layer — it composes the existing detectors
+  (`resource_health`, `role_feasibility`, `config_arbitration`, `cleanup_diagnostics`) into
+  typed findings and stages the one safe auto-repair (`clear_binding` for a dead binding) as
+  a `SetupOperation`; every other finding is advisory/blocked. The diagnostics model lives in
+  `services/` so the future hub reuses it. The tracker queues the remaining setup work
+  (templates, hub).
 - Known UX follow-ups: moderation member quicksearch via `discord.ui.UserSelect`
   (`unban` remains ID-based); bulk **Clear missing** on time/XP panels; selector-ize
   Edit Role.
@@ -97,9 +103,11 @@ requested from the cleanup subsystem), the optional public moderation log
 `server_logging`), and **moderator/trusted roles + capabilities** (ADR-008,
 capability-native: a configured role resolves to the `moderator` tier via the governance
 tier resolver). **PR11's moderation + roles setup sections are built** (2026-06-07, owner
-decision Q-0008; governance section deferred). Next comes **PR12** (setup diagnostics &
-repair), then role templates, and finally the unified Server Management Hub. Link to the
-tracker for exact order and dependencies rather than copying them here.
+decision Q-0008; governance section deferred). **PR12 (setup diagnostics & repair) was
+built 2026-06-07** (read-only `setup_diagnostics` service + a Diagnose & repair section;
+`clear_binding` is the one safe auto-repair, everything else advisory/blocked). Next comes
+**PR13** (role templates), then the unified Server Management Hub. Link to the tracker for
+exact order and dependencies rather than copying them here.
 
 ## Ideas (not approved)
 
@@ -119,7 +127,10 @@ reusable so a web companion is *possible* later, but do not start web work now.
    for the PR10 knobs; the roles section adds a `set_role_threshold` op-kind (routed through
    the audited `role_automation.set_{time,xp}_threshold` seam) for time/XP auto-role tiers.
    PR11's **governance** section is **deferred** (cleanup already owns the main governance
-   write). Next is **PR12** (setup diagnostics & repair). Reuse provisioning
+   write). **PR12 (setup diagnostics & repair) shipped 2026-06-07** — the read-only
+   `setup_diagnostics` service + Diagnose & repair section (reuses `resource_health` /
+   `role_feasibility` / `cleanup_diagnostics`; `clear_binding` the lone safe auto-repair,
+   staged through Final Review). Next is **PR13** (role templates). Reuse provisioning
    previews/confirmation + capability checks; never add a second resource-creation path.
 2. Take one bounded known UX follow-up (member quicksearch or role selector/cleanup)
    without changing lifecycle ownership.
