@@ -347,18 +347,25 @@ per-surface map in
    side-channel write. Cogs/views never write DB directly (the
    "Direct DB writes — explicit blocklist" above).
 
-**Known drift to normalize before automation (selected for the P0C batch):** role
-**threshold** writes currently take a *direct DB write* path from the role panel
-rather than routing through an audited role-automation service seam, and several
-channel create/edit paths mix direct Discord calls with the lifecycle service.
-These must converge on a canonical audited writer **before** any profile/routine is
-allowed to drive role thresholds or channel lifecycle — otherwise the draft lane
-would have no single seam to compile into. Until then, profiles/routines must not
-target those axes. The role-threshold direct writes are fenced by
-`tests/unit/invariants/test_no_direct_role_threshold_writes.py` (a shrinking
-allowlist — no *new* direct threshold write may appear); the audited seam to converge
-on is `services.role_automation.set_time_threshold` / `set_xp_threshold`, and the
-per-site conversion recipe is in the planning doc §16.5.
+**Known drift to normalize before automation:**
+
+- ✅ **Role-threshold writes — NORMALIZED (P0C, 2026-06-08).** All six time/XP
+  threshold write sites (the role panels' Seed-Defaults, time/XP modals, the
+  created-role XP companion, the `_ensure_defaults` boot seed, and the `!setrole`
+  command) now route through the audited
+  `services.role_automation.set_time_threshold` / `set_xp_threshold` seam (DB write
+  **plus** `audit.action_recorded`, and the XP path also invalidates the XP-threshold
+  cache). The single canonical seam a future profile/routine draft compiles into now
+  exists. The convergence is locked by
+  `tests/unit/invariants/test_no_direct_role_threshold_writes.py` — its allowlist is
+  now **empty**, so *any* direct `utils.db.roles.set_role_threshold*` call from the
+  role command/view surface fails CI.
+- ⏳ **Channel create/edit lifecycle — still mixed.** Several channel create/edit
+  paths mix direct Discord calls with `ChannelLifecycleService`; this must converge on
+  a canonical audited writer **before** any profile/routine is allowed to drive channel
+  lifecycle (otherwise the draft lane has no single seam to compile into). Until then,
+  profiles/routines must not target that axis. This is the larger secondary gap noted
+  in the planning doc §16.5; assess before automating, do not rewrite wholesale.
 
 ---
 

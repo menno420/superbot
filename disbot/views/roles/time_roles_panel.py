@@ -5,6 +5,7 @@ from discord.ext import commands
 
 from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer
+from services import role_automation
 from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from utils.ui_constants import ROLE_COLOR
@@ -136,12 +137,12 @@ class TimeRolesPanel(BaseView):
             if role is None:
                 skipped.append(name)
                 continue
-            await db.set_role_threshold(
-                interaction.guild.id,
-                role.name,
-                days,
+            await role_automation.set_time_threshold(
+                guild_id=interaction.guild.id,
                 role_id=role.id,
-                display_name=role.name,
+                role_name=role.name,
+                days=days,
+                actor_id=interaction.user.id,
             )
             seeded.append(role.name)
         if not await safe_defer(interaction, ephemeral=True):
@@ -223,12 +224,14 @@ class TimeDaysModal(discord.ui.Modal, title="Set Day Threshold"):  # type: ignor
             )
             return
         # Selector-sourced: the role exists, so persist its id + name snapshot.
-        await db.set_role_threshold(
-            interaction.guild.id,
-            self.role.name,
-            d,
+        # Audited seam (P0C): the write + audit emit live in role_automation; the
+        # XP-cache invalidation stays here (the time seam does not invalidate it).
+        await role_automation.set_time_threshold(
+            guild_id=interaction.guild.id,
             role_id=self.role.id,
-            display_name=self.role.name,
+            role_name=self.role.name,
+            days=d,
+            actor_id=interaction.user.id,
         )
         invalidate_xp_threshold_roles(interaction.guild.id)
         if not await safe_defer(interaction):

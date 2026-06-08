@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -377,6 +378,67 @@ def test_format_role_check_result_reports_failures():
     assert "0 made, 3 failed" in summary
     assert "missing Manage Roles: 3" in summary
     assert "Diagnostics" in summary  # points the operator at the fix surface
+
+
+@pytest.mark.asyncio
+async def test_setrole_routes_through_role_automation_seam():
+    """``!setrole`` writes the time threshold through the audited
+    ``role_automation`` seam (P0C) — id-first when the named role resolves, with
+    the invoking author captured as the actor — not a direct DB write.
+    """
+    cog = RoleCog(MagicMock())
+    ctx = MagicMock()
+    ctx.guild.id = 1
+    ctx.author.id = 42
+    ctx.send = AsyncMock()
+    role = SimpleNamespace(id=555, name="Veteran")
+
+    with (
+        patch("cogs.role_cog._find_role_normalized", return_value=role),
+        patch(
+            "cogs.role_cog.role_automation.set_time_threshold",
+            new_callable=AsyncMock,
+        ) as seam,
+    ):
+        await cog.setrole.callback(cog, ctx, 7, role_name="Veteran")
+
+    seam.assert_awaited_once_with(
+        guild_id=1,
+        role_id=555,
+        role_name="Veteran",
+        days=7,
+        actor_id=42,
+    )
+
+
+@pytest.mark.asyncio
+async def test_setrole_keeps_name_only_write_when_role_missing():
+    """The legacy free-text path is preserved: an unresolved role name still
+    writes a name-only threshold (``role_id=None``) — through the seam now, so
+    even that write is audited.
+    """
+    cog = RoleCog(MagicMock())
+    ctx = MagicMock()
+    ctx.guild.id = 1
+    ctx.author.id = 42
+    ctx.send = AsyncMock()
+
+    with (
+        patch("cogs.role_cog._find_role_normalized", return_value=None),
+        patch(
+            "cogs.role_cog.role_automation.set_time_threshold",
+            new_callable=AsyncMock,
+        ) as seam,
+    ):
+        await cog.setrole.callback(cog, ctx, 3, role_name="Ghost")
+
+    seam.assert_awaited_once_with(
+        guild_id=1,
+        role_id=None,
+        role_name="Ghost",
+        days=3,
+        actor_id=42,
+    )
 
 
 def _extract_method(src: str, name: str) -> str | None:

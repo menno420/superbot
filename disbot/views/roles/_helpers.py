@@ -55,6 +55,7 @@ async def _ensure_defaults(guild: discord.Guild) -> None:
     button.  Accepts the guild (not just its id) to resolve role existence.
     """
     from core.runtime import resources
+    from services import role_automation
     from utils import db
 
     existing = await db.get_role_thresholds(guild.id)
@@ -64,12 +65,14 @@ async def _ensure_defaults(guild: discord.Guild) -> None:
         role = resources.resolve_role(guild, name=name)
         if role is None:
             continue
-        await db.set_role_threshold(
-            guild.id,
-            role.name,
-            days,
+        # Audited seam (P0C); system-seeded, so no human actor.
+        await role_automation.set_time_threshold(
+            guild_id=guild.id,
             role_id=role.id,
-            display_name=role.name,
+            role_name=role.name,
+            days=days,
+            actor_id=None,
+            actor_type="system",
         )
 
 

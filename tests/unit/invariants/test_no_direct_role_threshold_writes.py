@@ -1,23 +1,25 @@
-"""Role-threshold writer-convergence drift fence (Adaptive Setup P0C).
+"""Role-threshold writer-convergence invariant (Adaptive Setup P0C — COMPLETE).
 
 Sibling to ``test_no_direct_role_mutations.py`` (which pins role *object*
 create/edit/delete). This one fences the **threshold writes**: the role command
-+ view surface still calls ``utils.db.roles.set_role_threshold`` /
-``set_role_xp_threshold`` **directly**, bypassing the audited
++ view surface must NOT call ``utils.db.roles.set_role_threshold`` /
+``set_role_xp_threshold`` **directly** — it routes through the audited
 ``services.role_automation.set_time_threshold`` / ``set_xp_threshold`` seam
 (which does the identical DB write **plus** the ``audit.action_recorded`` emit
-and the XP-cache invalidation). Until those panels route through the service,
-a profile/routine compiler has no single canonical seam for role-threshold
-changes — see ``docs/ownership.md`` § "Direct vs. draft mutation lanes" and
+and the XP-cache invalidation), so a profile/routine compiler has one canonical
+seam for role-threshold changes — see ``docs/ownership.md`` § "Direct vs. draft
+mutation lanes" and
 ``docs/planning/adaptive-setup-access-routine-platform-2026-06-08.md`` §16.5.
 
-**This is a shrinking ratchet, not a permanent allowlist.** Each file below is a
-known P0C target. As a panel is converted to the audited seam, **remove its
-filename from ``_ALLOWED_DIRECT_THRESHOLD_FILES``** (the test fails until you
-do, which keeps the punch list honest). When the set is empty, the invariant
-becomes the absolute rule: *no direct threshold writes anywhere in the role
-surface*. A **new** direct write in any non-listed file fails immediately, so
-the drift can never grow while P0C is pending.
+**P0C shipped 2026-06-08:** all six original direct-write sites
+(``time_roles_panel`` Seed-Defaults + ``TimeDaysModal``, ``creation_panel``
+``RoleAutomationModal``, ``_helpers._ensure_defaults``, ``xp_roles_panel``
+``XpLevelModal``, and ``role_cog.setrole``) were converted, so
+``_ALLOWED_DIRECT_THRESHOLD_FILES`` is now **empty** and this invariant is the
+absolute rule: *no direct threshold writes anywhere in the role surface*. It
+began as a *shrinking ratchet* — the allowlist pinned the known-remaining sites
+and forbade new drift; emptying it is how P0C records "done". A **new** direct
+write in any scanned file now fails immediately.
 """
 
 from __future__ import annotations
@@ -36,17 +38,13 @@ _SCANNED_DIRS = (_DISBOT / "views" / "roles",)
 # the scanned surface, so its own internal db call is correctly excluded.)
 _DIRECT_THRESHOLD_WRITERS = {"set_role_threshold", "set_role_xp_threshold"}
 
-# Known P0C targets — files that still write a threshold directly today.
-# SHRINK this set as each panel is routed through role_automation. Empty = done.
-_ALLOWED_DIRECT_THRESHOLD_FILES: frozenset[str] = frozenset(
-    {
-        "time_roles_panel.py",
-        "creation_panel.py",
-        "_helpers.py",
-        "xp_roles_panel.py",
-        "role_cog.py",
-    },
-)
+# P0C is COMPLETE (2026-06-08): all six role-threshold write sites now route
+# through services.role_automation.set_{time,xp}_threshold, so the allowlist is
+# empty and the invariant is the absolute rule — *no* direct threshold write
+# anywhere in the role command/view surface. A new direct write in any scanned
+# file now fails immediately. (Re-adding a file here would only mask a fresh
+# regression; convert the write instead.)
+_ALLOWED_DIRECT_THRESHOLD_FILES: frozenset[str] = frozenset()
 
 
 def _role_surface_files() -> list[Path]:

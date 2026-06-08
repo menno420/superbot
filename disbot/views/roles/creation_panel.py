@@ -5,9 +5,9 @@ import logging
 import discord
 from discord.ext import commands
 
+from services import role_automation
 from services.lifecycle import SUCCESS
 from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleService
-from utils import db
 from utils.guild_config_accessors import invalidate_xp_threshold_roles
 from views.base import BaseView
 from views.roles._helpers import _parse_color
@@ -74,7 +74,11 @@ class RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[ca
             )
             return
         role_name = result.steps[0].target_name
-        automation_view = RoleAutomationView(self.ctx, role_name)
+        # Capture the freshly-created role id so the XP-automation companion
+        # writes through the audited seam id-first (rename-safe), like every
+        # other threshold panel — instead of the old name-only write.
+        role_id = result.steps[0].target_id
+        automation_view = RoleAutomationView(self.ctx, role_name, role_id)
         await interaction.response.send_message(
             f"✅ Created role **{role_name}**.\n"
             "Would you like to configure XP-based auto-assignment for this role?",
@@ -87,10 +91,16 @@ class RoleCreateModal(discord.ui.Modal, title="Create Role"):  # type: ignore[ca
 class RoleAutomationView(BaseView):
     """Offered after role creation: configure XP automation or skip."""
 
-    def __init__(self, ctx: commands.Context, role_name: str) -> None:
+    def __init__(
+        self,
+        ctx: commands.Context,
+        role_name: str,
+        role_id: int | None = None,
+    ) -> None:
         super().__init__(ctx.author, timeout=120)
         self.ctx = ctx
         self.role_name = role_name
+        self.role_id = role_id
 
     @discord.ui.button(
         label="⚙️ Configure Automation",
@@ -103,7 +113,7 @@ class RoleAutomationView(BaseView):
         _: discord.ui.Button,
     ) -> None:
         await interaction.response.send_modal(
-            RoleAutomationModal(self.ctx, self.role_name, self),
+            RoleAutomationModal(self.ctx, self.role_name, self, role_id=self.role_id),
         )
 
     @discord.ui.button(label="⏭️ Skip", style=discord.ButtonStyle.secondary, row=0)
@@ -143,10 +153,13 @@ class RoleAutomationModal(
         ctx: commands.Context,
         role_name: str,
         parent_view: RoleAutomationView,
+        *,
+        role_id: int | None = None,
     ) -> None:
         super().__init__()
         self.ctx = ctx
         self.role_name = role_name
+        self.role_id = role_id
         self._parent_view = parent_view
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
@@ -165,14 +178,19 @@ class RoleAutomationModal(
         auto_assign = raw_auto not in ("no", "n", "false", "0")
 
         try:
-            await db.set_role_xp_threshold(
-                interaction.guild.id,
-                self.role_name,
-                level,
-                auto_assign,
+            # Audited seam (P0C): write + audit emit + XP-cache invalidation all
+            # live in role_automation.set_xp_threshold. role_id is the freshly
+            # created role's id (threaded from the lifecycle result).
+            await role_automation.set_xp_threshold(
+                guild_id=interaction.guild.id,
+                role_id=self.role_id,
+                role_name=self.role_name,
+                level=level,
+                actor_id=interaction.user.id,
+                auto_assign=auto_assign,
             )
         except Exception as exc:
-            logger.error("set_role_xp_threshold failed: %s", exc, exc_info=True)
+            logger.error("set_xp_threshold failed: %s", exc, exc_info=True)
             await interaction.response.send_message(
                 f"❌ Failed to save automation config: {exc}",
                 ephemeral=True,

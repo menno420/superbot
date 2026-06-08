@@ -64,6 +64,37 @@ async def test_set_time_threshold_writes_and_audits():
 
 
 @pytest.mark.asyncio
+async def test_set_time_threshold_name_only_when_role_id_none():
+    """``role_id=None`` (the legacy free-text ``!setrole`` path, where the named
+    role may not exist) still writes + audits; the audit target falls back to the
+    role name since there is no id to reference.
+    """
+    with (
+        patch(
+            "utils.db.roles.set_role_threshold",
+            new_callable=AsyncMock,
+        ) as writer,
+        patch(
+            "services.role_automation.emit_audit_action",
+            new_callable=AsyncMock,
+        ) as emit,
+    ):
+        mid = await role_automation.set_time_threshold(
+            guild_id=1,
+            role_id=None,
+            role_name="Ghost",
+            days=5,
+            actor_id=99,
+        )
+
+    assert mid
+    writer.assert_awaited_once()
+    assert writer.await_args.kwargs["role_id"] is None
+    emit.assert_awaited_once()
+    assert emit.await_args.kwargs["target"] == "role:Ghost"  # name fallback
+
+
+@pytest.mark.asyncio
 async def test_set_xp_threshold_writes_invalidates_and_audits():
     invalidate = MagicMock()
     with (

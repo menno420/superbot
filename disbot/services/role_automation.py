@@ -714,7 +714,7 @@ async def _apply_single(
 async def set_time_threshold(
     *,
     guild_id: int,
-    role_id: int,
+    role_id: int | None,
     role_name: str,
     days: int,
     actor_id: int | None,
@@ -725,6 +725,12 @@ async def set_time_threshold(
     Persists through the canonical :mod:`utils.db.roles` layer, then
     emits the ``audit.action_recorded`` companion.  Returns the
     ``mutation_id``.
+
+    ``role_id`` is normally the resolved Discord role id (selector-driven
+    panels capture it so a later rename does not orphan the tier).  It is
+    ``None`` only for the legacy free-text ``!setrole`` path, where the named
+    role may not exist yet — the row is then keyed by name alone, exactly as
+    before, and the audit target falls back to the role name.
     """
     import uuid
 
@@ -742,7 +748,7 @@ async def set_time_threshold(
         mutation_id=mutation_id,
         subsystem="role_automation",
         mutation_type="set_time_threshold",
-        target=f"role:{role_id}",
+        target=f"role:{role_id}" if role_id is not None else f"role:{role_name}",
         scope="guild",
         guild_id=guild_id,
         prev_value=None,
@@ -757,7 +763,7 @@ async def set_time_threshold(
 async def set_xp_threshold(
     *,
     guild_id: int,
-    role_id: int,
+    role_id: int | None,
     role_name: str,
     level: int,
     actor_id: int | None,
@@ -769,6 +775,11 @@ async def set_xp_threshold(
     Persists via :mod:`utils.db.roles`, invalidates the XP-threshold
     cache so the live XP listener picks the change up, then emits the
     audit companion.  Returns the ``mutation_id``.
+
+    ``role_id`` is the resolved Discord role id when the caller has one
+    (every panel does); it is ``None`` only for a name-keyed write where the
+    role id is not available, in which case the audit target falls back to the
+    role name.
     """
     import uuid
 
@@ -789,7 +800,7 @@ async def set_xp_threshold(
         mutation_id=mutation_id,
         subsystem="role_automation",
         mutation_type="set_xp_threshold",
-        target=f"role:{role_id}",
+        target=f"role:{role_id}" if role_id is not None else f"role:{role_name}",
         scope="guild",
         guild_id=guild_id,
         prev_value=None,
