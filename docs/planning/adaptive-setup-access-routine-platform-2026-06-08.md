@@ -288,7 +288,7 @@ Behind existing AI expansion/readiness gates, AI may suggest profiles/routines, 
 | **P0B — Opus:** access/read-model contract | ✅ **DONE 2026-06-08** (docs). Precedence, decision/reason schema (reuses `command_access`), audience simulation, owners, invalidation, direct-vs-draft rule — §16 + `docs/ownership.md`. | Planning/ADR/ownership/runtime docs | Runtime code | Docs/architecture checks | High architecture; stop on unresolved second-permission-system risk. |
 | **P0C — Sonnet:** panel writer normalization | ✅ **DONE 2026-06-08.** All six role-threshold write sites converted to the audited `role_automation.set_{time,xp}_threshold` seam; drift-fence allowlist emptied (absolute rule). Seam relaxed to `role_id: int \| None` for the legacy `!setrole` free-text path; the created-role XP companion now threads the real id (rename-safe). Channel lifecycle remains the deferred secondary gap. | role services/views/tests | New automation actions; channel-lifecycle rewrite | Focused unit/view tests + full quality (8094 passed) | Medium/high; stopped before any behavior-changing destructive flow. |
 | **P1A — Sonnet:** Access Map projection | ✅ **DONE 2026-06-08.** Side-effect-free composed service + 19 tests, no UI — `services/access_projection.py`. | new service module; governance/access/routing/ledger adapters; tests | Editing/persistence | Unit/service/identity tests + strict architecture | High; stop if owner of any axis cannot be identified. |
-| **P1B — Sonnet:** drift + locked reasons | Diagnostic providers and denial explanation integration. | `setup_diagnostics.py`, command-access/interaction helpers, tests | Editing | Diagnostics/access tests + quality | Medium; stop if explanation leaks sensitive policy. |
+| **P1B — Sonnet:** drift + locked reasons | **Re-scoped (§16.8 items 5–7):** build the **two** genuinely-new projection-based drift providers — `routing_access_conflict` (ready now, member-independent) and `help_advertises_locked` (needs the item-3 audience decision first). **Skip `configured_resource_missing`** — already covered by the four existing collectors. The denial-message UX integration is a **confirm-with-maintainer** step, separable from the read-only providers. | `setup_diagnostics.py` (new `_diagnose_*` collectors over `access_projection`), tests | Editing; `configured_resource_missing`; silent denial-message changes | Diagnostics/access tests + quality | Medium; stop if explanation leaks sensitive policy or a provider needs audience sim that isn't built. |
 | **P1C — Sonnet:** Access Map + Help Preview UI | Staff-only read-only panels using P1A; Server Management link. | server-management/help/views/cogs/tests | Mutation | View/authority/help tests + live smoke | Medium. |
 | **P2 — Opus then Sonnet:** Feature Profile preview | Decide starter set/schema, implement catalogue/compiler/dry-run preview. | new profile service, setup operations/read model/views/tests | Apply | Compiler/view tests; no DB writes in preview | High; stop on unresolved profile/risk questions. |
 | **P3 — Opus then Sonnet:** controlled profile/access mutation | Draft generation, provenance, snapshots, Final Review summaries. | setup draft/operations/final review/migrations/views/tests | Routines/AI | Migration, apply/recovery/audit/capability tests | High; stop if any path bypasses Final Review. |
@@ -593,3 +593,43 @@ starting them:
    its rows. The per-feature `AccessDecision.source_chain` is the "why" the row's detail
    view shows. There is **no** diagnostics provider / boot import wired yet (the projection
    is per-request) — P1C wires the first consumer.
+
+#### Further P1B refinements (source-verified during the P0C session, 2026-06-08)
+
+Reading `services/setup_diagnostics.py` + `services/access_projection.py` end-to-end to
+scope P1B surfaced three things that **re-scope the P1B drift batch** — read these before
+starting it (they're the same "verify against source before building" lesson as items 1–4):
+
+5. **`configured_resource_missing` is ALREADY covered — do not build a fourth detector.**
+   `setup_diagnostics` already flags "a bound channel/role referenced by config no longer
+   exists" across **all four** existing collectors: `_diagnose_bindings`
+   (`stale_binding` / `missing_required_binding`, via `resource_health.inspect`),
+   `_diagnose_role_thresholds` (`stale_role_threshold`), `_diagnose_moderation_roles`
+   (`stale_moderation_role`), and `_diagnose_cleanup` (`stale_cleanup_policy`). A general
+   `configured_resource_missing` provider would duplicate this — exactly the situation item
+   1 found for `identity_mismatch`. **So the genuinely-new P1B drift work is just the
+   remaining TWO providers** (`routing_access_conflict`, `help_advertises_locked`).
+
+6. **Of those two, `routing_access_conflict` is unentangled and ready; `help_advertises_locked`
+   depends on the item-3 audience decision.** `routing_access_conflict` compares routing
+   (axis 3) vs. command-access *channel admission* (axes 1–2) — **both channel-level, neither
+   needs a member** — so it is fully defined today for a baseline (non-operator/non-owner)
+   user and can be a clean `_diagnose_*` collector running `resolve_feature_access` per guild
+   text channel. (Pick the conflict semantics deliberately and document them: e.g. *routed-on
+   in ≥1 channel but command-access denies the representative command in every channel where
+   it's routed-on* = "enabled-but-unusable"; the mirror = "admissible-but-routed-off".)
+   `help_advertises_locked`, by contrast, must judge "is this command actually locked for the
+   baseline audience?" — and the **dominant reason help hides a command is the governance/tier
+   axis (axis 4)**, which needs a simulated member (**item 3**). Built before item 3 it would
+   only see command-access/routing denies and **miss the tier dimension** → partial, possibly
+   confusing findings. **Recommended order:** resolve item 3 (audience simulation) → build
+   *both* providers fully; or land `routing_access_conflict` now and `help_advertises_locked`
+   together with item 3.
+
+7. **The "locked-reason denial integration" changes user-facing denial messages — confirm the
+   wording with the maintainer first (it's his UX domain).** Wiring `LockedReason.safe_text`
+   into the live command-access / availability denial paths changes what *every* denied user
+   sees. The maintainer designs/visualizes UX (he audits by clicking and saying "X should be
+   Y"), so the `_SAFE_TEXT` copy table in `access_projection.py` is a **draft to confirm**,
+   not a silent swap. The read-only drift providers (items 5–6) don't touch this and can land
+   independently of it.
