@@ -353,6 +353,14 @@ game-data-native lookup catalog.
 - **AI tool** `btd6_geraldo_lookup` (single + roster) registered + in
   `BTD6_GROUNDING_TOOL_NAMES`. "What does Geraldo's Blade Trap do / how much is the Genie Bottle /
   what level unlocks the Paragon Power Totem" now answer.
+- **Structured effects (follow-on).** Five items whose named behaviour model carries clean,
+  description-confirmable numbers gained a structured `effect` (mirroring `PowerEntry.effect`):
+  Sharpening Stone `{pierce_increase:1, rounds:10}`, Jar of Pickles `{damage_increase:1,
+  attack_speed_scale:0.75, rounds:5}`, Fertilizer `{cash_scale:1.2, rounds:4}`, Rejuv Potion
+  `{lives_gained:50}`, See Invisibility Potion `{rounds:5}`. Items whose effect is a spawned
+  projectile (Blade Trap, Stack of Old Nails, Tube of Amaz-o-Glue), a tower summon (Creepy Idol,
+  Genie Bottle, Shooty Turret), or non-numeric stay description-only — `effect == {}`, never
+  fabricated. Surfaced on `btd6_geraldo_lookup`.
 - **Coverage map:** `GeraldoItems/` fetch-status ⬜ → ✅ (regenerated via `--full-map`).
 - **Tests:** parser (decode + skip-missing-name), data_service (load/resolve/fail-closed), tool
   (single/partial/roster/miss); both registry rosters updated. Full suite green.

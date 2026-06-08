@@ -105,6 +105,18 @@ def test_geraldo_items_load_and_resolve():
         assert item.canonical and item.description
         assert item.cost > 0 and item.unlock_level >= 0
         assert item.max_quantity >= item.starting_quantity >= 0
+    # Cleanly-decodable items carry a structured effect (game-sourced numbers);
+    # projectile/summon items stay description-only (effect == {}).
+    assert get_geraldo_item("sharpening_stone").effect == {
+        "pierce_increase": 1,
+        "rounds": 10,
+    }
+    assert get_geraldo_item("jar_of_pickles").effect == {
+        "damage_increase": 1,
+        "attack_speed_scale": 0.75,
+        "rounds": 5,
+    }
+    assert get_geraldo_item("blade_trap").effect == {}  # projectile — no fabricated effect
     # Unknown / ambiguous lookups fail closed rather than guessing.
     assert get_geraldo_item("nope") is None
     assert find_geraldo_item("") is None

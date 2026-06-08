@@ -1177,10 +1177,13 @@ _BTD6_GERALDO_SPEC = AIToolSpec(
         "BTD6 Geraldo shop item info (Blade Trap, Genie Bottle, Sharpening "
         "Stone, Pet Rabbit, Paragon Power Totem, …): each item's effect, in-game "
         "cash cost, the Geraldo level it unlocks at, and how many he stocks. "
-        "Geraldo (the hero) sells these from his shop. Pass an item name to look "
-        "one up, or omit it to list every item. Use for 'what does Geraldo's "
-        "Blade Trap do', 'how much is the Genie Bottle', 'what level does the "
-        "Paragon Power Totem unlock', 'list Geraldo's items'."
+        "Geraldo (the hero) sells these from his shop. Some items carry a "
+        "structured `effect` with exact numbers (Sharpening Stone +1 pierce for "
+        "10 rounds, Jar of Pickles +1 damage at 0.75x attack speed for 5 rounds, "
+        "Fertilizer +20% farm cash for 4 rounds, Rejuv Potion +50 lives). Pass an "
+        "item name to look one up, or omit it to list every item. Use for 'what "
+        "does Geraldo's Sharpening Stone do', 'how much is the Genie Bottle', "
+        "'what level does the Paragon Power Totem unlock', 'list Geraldo's items'."
     ),
     parameters={
         "type": "object",
@@ -1197,7 +1200,7 @@ _BTD6_GERALDO_SPEC = AIToolSpec(
 
 
 def _geraldo_dict(entry: Any) -> dict[str, Any]:
-    return {
+    out: dict[str, Any] = {
         "name": entry.canonical,
         "description": entry.description,
         "cost": entry.cost,
@@ -1208,6 +1211,11 @@ def _geraldo_dict(entry: Any) -> dict[str, Any]:
         "amount_to_replenish": entry.amount_to_replenish,
         "usable_between_rounds": entry.between_rounds,
     }
+    if entry.effect:
+        # Structured factor(s) decoded from the dump — e.g. Sharpening Stone
+        # +1 pierce for 10 rounds; lets the model state the exact numbers.
+        out["effect"] = dict(entry.effect)
+    return out
 
 
 async def _btd6_geraldo_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
