@@ -95,8 +95,14 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   (`resource_health`, `role_feasibility`, `config_arbitration`, `cleanup_diagnostics`) into
   typed findings and stages the one safe auto-repair (`clear_binding` for a dead binding) as
   a `SetupOperation`; every other finding is advisory/blocked. The diagnostics model lives in
-  `services/` so the future hub reuses it. The tracker queues the remaining setup work
-  (templates, hub).
+  `services/` so the future hub reuses it. **Deterministic role templates shipped 2026-06-08**
+  (PR13 deterministic slice): `services/setup_role_templates.py` (built-in, permission-free
+  role bundles + pure `plan_template`) + a new audited **`create_managed_role`** op-kind
+  (routes through `RoleLifecycleService`, optional time/XP tier companion) + a **Role
+  templates** setup section. That work also fixed a latent PR11 regression (the roles section's
+  `set_role_threshold` op was never added to the DB op-kind gate/CHECK, so it couldn't stage —
+  migration 059 + a drift-guard test close it). The tracker queues the remaining setup work
+  (the PR13 **AI** template layer, then the hub).
 - Known UX follow-ups: moderation member quicksearch via `discord.ui.UserSelect`
   (`unban` remains ID-based); bulk **Clear missing** on time/XP panels; selector-ize
   Edit Role.
@@ -141,7 +147,9 @@ reusable so a web companion is *possible* later, but do not start web work now.
    write). **PR12 (setup diagnostics & repair) shipped 2026-06-07** — the read-only
    `setup_diagnostics` service + Diagnose & repair section (reuses `resource_health` /
    `role_feasibility` / `cleanup_diagnostics`; `clear_binding` the lone safe auto-repair,
-   staged through Final Review). Next is **PR13** (role templates). Reuse provisioning
+   staged through Final Review). **PR13's deterministic role-templates slice shipped 2026-06-08**
+   (`setup_role_templates` + `create_managed_role` + Role-templates section). Next is the
+   **PR13 AI generation follow-up**, then the hub (PR14). Reuse provisioning
    previews/confirmation + capability checks; never add a second resource-creation path.
 2. Take one bounded known UX follow-up (member quicksearch or role selector/cleanup)
    without changing lifecycle ownership.

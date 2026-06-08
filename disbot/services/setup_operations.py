@@ -127,6 +127,7 @@ OperationKind = Literal[
     "set_cleanup_policy",
     "set_cog_routing",
     "set_role_threshold",
+    "create_managed_role",
 ]
 
 OperationStatus = Literal["applied", "failed", "skipped", "not_yet_implemented"]
@@ -150,11 +151,16 @@ _KNOWN_KINDS: frozenset[str] = frozenset(
         # governance.writes.set_cleanup_policy_for_scope; ``set_cog_routing``
         # routes through services.command_routing.set_policy;
         # ``set_role_threshold`` routes through
-        # services.role_automation.set_{time,xp}_threshold.  See the
-        # dispatch arms in this module.
+        # services.role_automation.set_{time,xp}_threshold;
+        # ``create_managed_role`` routes through
+        # services.role_lifecycle_service.RoleLifecycleService (PR13 role
+        # templates).  See the dispatch arms in this module.  Keep this set in
+        # lockstep with utils.db.setup_draft._KNOWN_OP_KINDS and the
+        # migration-059 CHECK (pinned by test_setup_draft_op_kind_parity.py).
         "set_cleanup_policy",
         "set_cog_routing",
         "set_role_threshold",
+        "create_managed_role",
     },
 )
 
@@ -429,6 +435,14 @@ async def preflight_operations(
                     guild,
                 )
             )
+        elif kind == "create_managed_role":
+            # Needs the live guild for the read-only Manage-Roles note.
+            current, proposed, would_change, read_error = (
+                await _preflight_create_managed_role(
+                    op,
+                    guild,
+                )
+            )
         else:
             # Known kind without a v1 read adapter (create_*, automation,
             # cleanup_policy).  Render proposed value where available;
@@ -680,6 +694,44 @@ async def _preflight_set_role_threshold(
         pass
 
     return current, proposed, would_change, None
+
+
+async def _preflight_create_managed_role(
+    op: SetupOperation,
+    guild: Any,
+) -> tuple[ChangeValue, ChangeValue, bool, str | None]:
+    """Read-only preview for a ``create_managed_role`` op.
+
+    The role does not exist yet (``current = ABSENT``); the proposed value is a
+    compact description of the role + any auto-role tier, with a Manage-Roles
+    feasibility note folded in so Final Review is not blind to the case where
+    the create would be blocked.  No DB read, no mutation — only
+    ``guild.me.guild_permissions`` is inspected.
+    """
+    from services.setup_change_plan import ABSENT, ChangeValue
+
+    name = (op.resource_name or "?").strip() or "?"
+    spec = (op.metadata or {}).get("role_template") or {}
+    bits = [f"@{name}"]
+    if spec.get("hoist"):
+        bits.append("hoisted")
+    if spec.get("time_days"):
+        bits.append(f"+{spec['time_days']}d tier")
+    if spec.get("xp_level"):
+        bits.append(f"+XP L{spec['xp_level']} tier")
+    proposed_text = " · ".join(bits)
+
+    note = ""
+    try:
+        me = getattr(guild, "me", None)
+        perms = getattr(me, "guild_permissions", None)
+        if not bool(getattr(perms, "manage_roles", False)):
+            note = "  ⚠ bot lacks Manage Roles — creation will be blocked"
+    except Exception:  # noqa: BLE001 — the note is best-effort, never fatal
+        pass
+
+    proposed = ChangeValue(kind="value", value=proposed_text + note)
+    return (ABSENT, proposed, True, None)
 
 
 async def apply_operations(
@@ -999,6 +1051,15 @@ async def _dispatch_one(
                 op,
                 guild=guild,
                 actor=actor,
+                label=label,
+            )
+
+        if op.kind == "create_managed_role":
+            return await _apply_create_managed_role(
+                op,
+                guild=guild,
+                actor=actor,
+                actor_type=actor_type,
                 label=label,
             )
 
@@ -1555,6 +1616,141 @@ async def _apply_set_role_threshold(
     )
 
 
+async def _apply_create_managed_role(
+    op: SetupOperation,
+    *,
+    guild: Any,
+    actor: Any,
+    actor_type: str,
+    label: str,
+) -> SetupOperationResult:
+    """Create a standalone operator role via :class:`RoleLifecycleService`.
+
+    Role-template creation routes through the role lifecycle service — the
+    audited owner of *manual* role create/edit/delete (server-management PR5),
+    and an allowlisted ``guild.create_role`` caller — rather than
+    :class:`ResourceProvisioningPipeline`, which owns *subsystem-bound*
+    create-or-reuse.  A template role is an unbound operator label, so the
+    lifecycle service is the right owner (and keeps this module free of any
+    direct ``guild.create_*`` call, per ``test_setup_operations_invariants``).
+
+    The role's cosmetic spec (name / colour / hoist / mentionable) and any
+    optional auto-role tier ride ``op.metadata["role_template"]`` (built by
+    :func:`services.setup_role_templates.suggestion_to_spec`).  When the suggestion
+    carries a ``time_days`` / ``xp_level`` tier, the freshly-created role's id
+    is threaded into the audited ``role_automation.set_{time,xp}_threshold``
+    seam as a **best-effort companion**: a failed tier never undoes the
+    already-created role (mirrors the moderation post-action cleanup pattern).
+    """
+    from services import setup_role_templates
+    from services.lifecycle import contracts as lc
+    from services.role_lifecycle_service import (
+        RoleLifecycleRequest,
+        RoleLifecycleService,
+    )
+
+    name = (op.resource_name or "").strip()
+    if not name:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            error="create_managed_role: requires resource_name (the role name)",
+        )
+
+    spec = (op.metadata or {}).get("role_template") or {}
+    request = RoleLifecycleRequest(
+        operation="create",
+        name=name,
+        color=setup_role_templates.parse_color(spec.get("color")),
+        hoist=bool(spec.get("hoist")),
+        mentionable=bool(spec.get("mentionable")),
+        reason=f"setup role template ({spec.get('template_slug') or 'manual'})",
+    )
+    result = await RoleLifecycleService().apply(
+        guild,
+        request,
+        actor,
+        confirmed=True,
+        actor_type=actor_type,
+    )
+    if result.outcome != lc.SUCCESS:
+        return SetupOperationResult(
+            status="failed",
+            operation=op,
+            label=label,
+            mutation_id=result.mutation_id,
+            error=f"role create outcome={result.outcome!r}: {result.first_error}",
+        )
+
+    new_role_id = result.steps[0].target_id if result.steps else None
+    if new_role_id:
+        # The tier needs the role id, which only exists post-create — so the
+        # companion runs here, after the create succeeds.
+        await _apply_template_role_tiers(
+            guild=guild,
+            role_id=new_role_id,
+            role_name=name,
+            spec=spec,
+            actor=actor,
+            label=label,
+        )
+    return SetupOperationResult(
+        status="applied",
+        operation=op,
+        label=label,
+        mutation_id=result.mutation_id,
+    )
+
+
+async def _apply_template_role_tiers(
+    *,
+    guild: Any,
+    role_id: int,
+    role_name: str,
+    spec: dict[str, Any],
+    actor: Any,
+    label: str,
+) -> None:
+    """Best-effort auto-role tier companion for a created template role.
+
+    Failure is logged but never raised: the role itself was created (the
+    primary mutation), so a tier write that fails must not flip the op to
+    ``failed`` — the operator can set the tier by hand in ``!roles``.
+    """
+    time_days = spec.get("time_days")
+    xp_level = spec.get("xp_level")
+    if not time_days and not xp_level:
+        return
+    from services import role_automation
+
+    actor_id = getattr(actor, "id", None)
+    try:
+        if time_days:
+            await role_automation.set_time_threshold(
+                guild_id=guild.id,
+                role_id=role_id,
+                role_name=role_name,
+                days=int(time_days),
+                actor_id=actor_id,
+            )
+        if xp_level:
+            await role_automation.set_xp_threshold(
+                guild_id=guild.id,
+                role_id=role_id,
+                role_name=role_name,
+                level=int(xp_level),
+                actor_id=actor_id,
+            )
+    except Exception:
+        logger.exception(
+            "create_managed_role: auto-role tier companion failed "
+            "(role_id=%s label=%r) — the role itself was created",
+            role_id,
+            label,
+        )
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -1606,6 +1802,14 @@ def _label(op: SetupOperation) -> str:
             f"role_threshold.{sub_kind}({role_label}) = "
             f"{_fmt_threshold(sub_kind, op.value)}"
         )
+    if op.kind == "create_managed_role":
+        spec = (op.metadata or {}).get("role_template") or {}
+        extra = ""
+        if spec.get("time_days"):
+            extra += f" +{spec['time_days']}d"
+        if spec.get("xp_level"):
+            extra += f" +L{spec['xp_level']}"
+        return f"create role @{op.resource_name or '?'}{extra}"
     return f"{op.kind}: {op.subsystem}"
 
 

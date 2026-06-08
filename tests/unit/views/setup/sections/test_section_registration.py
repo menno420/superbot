@@ -25,13 +25,14 @@ def test_all_production_sections_are_registered():
         "cleanup",
         "moderation",
         "roles",
+        "role_templates",
         "diagnostics",
         "cog_routing",
         "final_review",
     }
-    assert expected <= slugs, (
-        f"missing expected production section slugs: {expected - slugs}"
-    )
+    assert (
+        expected <= slugs
+    ), f"missing expected production section slugs: {expected - slugs}"
 
 
 def test_section_render_order_is_stable():

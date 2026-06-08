@@ -104,6 +104,7 @@ _DEFAULT_RISK_BY_KIND: dict[str, str] = {
     "set_cleanup_policy": "low",
     "set_cog_routing": "medium",
     "set_role_threshold": "medium",
+    "create_managed_role": "high",
 }
 
 

@@ -261,6 +261,16 @@ async def _stage_threshold(
         kind="set_role_threshold",
         subsystem=SUBSYSTEM,
         setting_name=kind,
+        # The draft's replace-on-conflict slot key is
+        # (op_kind, subsystem, setting_name, binding_name) — it does NOT
+        # include target_id.  Without a per-role discriminator, staging a
+        # time tier for role A then role B would collide on
+        # (set_role_threshold, roles, "time", '') and the second would
+        # overwrite the first.  Encode the role id into binding_name so each
+        # role's tier is its own slot (re-editing the *same* role's same-kind
+        # tier still replaces, which is correct).  The dispatcher reads
+        # setting_name/target_id, never binding_name, so this is slot-only.
+        binding_name=f"tier:{role_id}",
         target_id=role_id,
         target_name=role_name,
         target_kind="role",
