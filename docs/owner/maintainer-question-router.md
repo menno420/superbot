@@ -1631,3 +1631,105 @@ Destination: kept here — the fix is external (ChatGPT template update by the m
 Captured: 2026-06-08 (repo friction audit session).
 Action owner: maintainer (ChatGPT template).
 ```
+
+---
+
+### Q-0028 — Adaptive Platform: Guild Feature Profile catalogue approval (2026-06-08)
+
+**Area:** Guild Feature Profiles
+**Type:** Product definition
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Suggested destination after answer:** PR #586 planning doc (section 6.1) — add overlap
+  note; also the Phase 2 design session brief when it starts.
+
+**Question:** Codex proposed 5 Guild Feature Profiles derived from what the subsystem
+registry, cog routing, and setup operations actually support: Essential Utility, Community
+Core, Games Community, Moderation Focused, and BTD6 Community (experimental). These are
+baked into the planning doc. Approve as planning baseline, flag an overlap concern, or
+hold the PR for revision?
+
+**Maintainer answer**
+
+```text
+Merge but flag the Essential Utility / Community Core overlap — they may consolidate
+into one 'Foundation' profile + optional moderation add-on in the Phase 2 design session.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The 5-profile catalogue is approved as a Phase 2 planning baseline. The plan can merge.
+
+However, the Phase 2 design session must revisit whether Essential Utility and Community
+Core are distinct products or whether they collapse into:
+  - one Foundation profile (setup/health/settings/help foundations), plus
+  - an optional Community add-on (moderation, roles, cleanup, logging).
+
+Add a note to the planning doc (section 6.1) flagging this potential consolidation before
+Phase 2 starts so agents don't implement two overlapping profiles without reviewing it.
+The BTD6 Community (experimental) profile stays gated and separate.
+```
+
+**Routing result**
+
+```text
+Destination: PR #586 planning doc (section 6.1 — add overlap note); Phase 2 design brief.
+Captured: 2026-06-08 (PR #586 review session).
+```
+
+---
+
+### Q-0029 — Adaptive Platform: "quiet mode" operational definition (2026-06-08)
+
+**Area:** Routine Engine / Availability policy
+**Type:** Product definition
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Suggested destination after answer:** PR #586 planning doc (glossary section 2 + section
+  6.5 routine action kinds + section 6.6 availability policy).
+
+**Question:** The planning doc uses "quiet mode" as a routine action and availability policy
+concept but never defines it operationally. What should quiet mode actually do when triggered?
+Options: command suppression window, outbound message suppression only, or full suppression.
+
+**Maintainer answer**
+
+```text
+Command suppression window: suppress non-essential bot commands and output for a
+configured time window or until manually lifted. Stays in help as 'currently quiet'
+rather than hidden. Used mainly for nighttime/event windows.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Quiet mode definition (add to planning doc glossary):
+
+  **Quiet mode:** a time-window or manually-triggered state that suppresses non-essential
+  bot commands and bot-initiated outbound posts (summaries, reminders, scheduled messages).
+  Behaviour:
+  - Non-essential commands return a quiet-mode denial with a locked reason and the
+    expected end time where known.
+  - Commands stay visible in help, labelled as 'currently quiet' — not hidden.
+  - Staff/admin/essential commands (moderation, diagnostics, help, management) are exempt.
+  - Triggered by routine (scheduled window) or manual staff action.
+  - Lifted by time expiry, manual lift, or routine reset.
+  - Availability policy layer owns the per-command quiet check; routine engine
+    sets/clears the guild-scoped quiet state flag.
+
+Consequence for Phase 4: quiet mode needs:
+  (1) a guild-scoped boolean/expiry state (DB column or settings key);
+  (2) an availability policy provider that checks it;
+  (3) a locked reason template ("Bot is in quiet mode until HH:MM");
+  (4) routine actions enable_quiet_mode(until=) and disable_quiet_mode().
+  Risk classification: low (the flag is trivially reversible by staff).
+```
+
+**Routing result**
+
+```text
+Destination: PR #586 planning doc — glossary (section 2), section 6.5 action kinds,
+  section 6.6 availability policy. Add as a concrete definition before merging.
+Captured: 2026-06-08 (PR #586 review session).
+```
