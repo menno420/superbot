@@ -8,7 +8,7 @@ generous they are), while staying a **pure** domain module: no Discord,
 no DB, no I/O.  Randomness is injected so every roll is deterministic
 under test.
 
-Design intent (see ``docs/mining_exploration_brainstorm.md``):
+Design intent (see ``docs/ideas/mining_exploration_brainstorm.md``):
 
 * The engine owns the *catalog* of possible outcomes and the math that
   selects and scales one.  A future exploration **service** would own

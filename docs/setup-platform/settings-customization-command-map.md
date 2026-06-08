@@ -9,9 +9,9 @@ operators, and future setup-wizard work have one canonical reference.
 This is a docs-first milestone: no code, no migrations, no behaviour change.
 
 Sister docs:
-- [`docs/settings-customization-roadmap.md`](settings-customization-roadmap.md) — 15-milestone
+- [`docs/setup-platform/settings-customization-roadmap.md`](settings-customization-roadmap.md) — 15-milestone
   roadmap and architecture summary.
-- [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md) — the
+- [`docs/setup-platform/resource-provisioning-overview.md`](resource-provisioning-overview.md) — the
   Resource Provisioning Manager (RPM) lane, the 11-step contract, the strict
   no-silent-auto-create rule, and the reserved `logging_routes` future model.
 
@@ -1484,7 +1484,7 @@ documented here so the inventory remains complete.
   - `LOGGING_ENABLED` — scalar setting (`SettingsMutationPipeline` after S4).
   - `LOGGING_AUTO_CREATE_CHANNELS` — scalar setting; flips the implicit
     confirmation rule for `ResourceProvisioningPipeline` channel creation
-    (see [`docs/resource-provisioning-overview.md`](resource-provisioning-overview.md)).
+    (see [`docs/setup-platform/resource-provisioning-overview.md`](resource-provisioning-overview.md)).
   - `LOGGING_MOD_CHANNEL` — legacy KV mirror of the `logging.mod_channel`
     binding; long-term storage is the `subsystem_bindings` row written by
     `BindingMutationPipeline` (called by `ResourceProvisioningPipeline`

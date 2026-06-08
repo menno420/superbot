@@ -225,4 +225,4 @@ beyond the plan.
   same 30-line recipe.
 - **Setup wizard** (`!setup`) — deferred until the S7 logging-route
   pipeline, S8 cleanup-policy pipeline, S10 preset packs, and the P5
-  platform UI framework all land. See `docs/roadmap_setup_platform.md`.
+  platform UI framework all land. See `docs/setup-platform/roadmap_setup_platform.md`.

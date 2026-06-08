@@ -172,7 +172,7 @@ The moderation schema exposes warning threshold, warning timeout minutes, and a 
 
 ### P2 — Help and hub discovery remain incomplete
 
-Specialized hubs exist, but typed-only high-value operations remain. `docs/cog-hub-coverage-audit.md` identifies `cleanuphistory` as a cleanup hub gap and defers a focused audit of the broader channel command set (`docs/cog-hub-coverage-audit.md:65-81,163-177`).
+Specialized hubs exist, but typed-only high-value operations remain. `docs/audits/cog-hub-coverage-audit.md` identifies `cleanuphistory` as a cleanup hub gap and defers a focused audit of the broader channel command set (`docs/audits/cog-hub-coverage-audit.md:65-81,163-177`).
 
 ## Target Architecture
 

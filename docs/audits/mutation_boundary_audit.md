@@ -134,7 +134,7 @@ game progress checkpoints go through `game_state_service` (correct). The
 
 ## Known future work (not in scope of this session)
 
-These are tracked in `docs/platform-consistency-ledger.md` and the
+These are tracked in `docs/health/platform-consistency-ledger.md` and the
 phase-2 PR sequence, not in this audit.
 
 - `setup_session.mark_in_progress()` — does not emit audit. Low value

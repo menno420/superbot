@@ -3,7 +3,7 @@
 Browsing + scalar edit/reset surface for the platform's settings,
 bindings, resource requirements, and recent audit history.
 Mirrors the long-term UX shape documented in
-``docs/operator-settings-presets.md``: a hub with a subsystem
+``docs/setup-platform/operator-settings-presets.md``: a hub with a subsystem
 dropdown, an overview/status header, and four diagnostic
 sub-panels (Needs setup / Invalid settings / Missing bindings /
 Recent changes).

@@ -16,8 +16,8 @@
 
 This document is intentionally separate from the current implementation plans because the existing docs already have narrow ownership:
 
-- `docs/bot-awareness-implementation-plan.md` focuses on operational health diagnostics, startup health, structured observations, persistent findings, and one deferred read-only AI diagnostics tool.
-- `docs/ai-complex-request-tool-orchestration-plan.md` focuses on reusable AI tool orchestration, especially for complex BTD6 requests, toolsets, tool-choice policy, strict schemas, budgets, and evidence contracts.
+- `docs/health/bot-awareness-implementation-plan.md` focuses on operational health diagnostics, startup health, structured observations, persistent findings, and one deferred read-only AI diagnostics tool.
+- `docs/ai/ai-complex-request-tool-orchestration-plan.md` focuses on reusable AI tool orchestration, especially for complex BTD6 requests, toolsets, tool-choice policy, strict schemas, budgets, and evidence contracts.
 
 This backlog should **not** replace those plans. Any idea here should later be refined into one of the existing orchestration/tool registry abstractions rather than implemented as an isolated cog feature.
 

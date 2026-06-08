@@ -98,7 +98,7 @@ read **`docs/helper-policy.md`** first.
 
 1. `docs/architecture.md` § "Ownership boundary" + § "Single-process assumption" + § "State classification".
 2. `docs/runtime_contracts.md` (all sections).
-3. `docs/platform-consistency-ledger.md` § 1 (domain contract ledger).
+3. `docs/health/platform-consistency-ledger.md` § 1 (domain contract ledger).
 4. `docs/decisions/001-no-redis-backed-state.md` — before adding any "we should cache this in Redis" plan.
 
 ### Touching governance / mutation pipelines
@@ -111,15 +111,15 @@ read **`docs/helper-policy.md`** first.
 ### Touching health / diagnostics
 
 1. `docs/subsystems/health-diagnostics.md` — canonical area entry point and verification gaps.
-2. `docs/bot-awareness-implementation-plan.md` — shipped programme status and execution authority.
-3. `docs/platform-consistency-ledger.md` — cross-subsystem consistency/readiness state.
+2. `docs/health/bot-awareness-implementation-plan.md` — shipped programme status and execution authority.
+3. `docs/health/platform-consistency-ledger.md` — cross-subsystem consistency/readiness state.
 4. `docs/smoke-test-checklist.md` — doc-test-pinned runtime smoke expectations.
 
 ### Touching server management
 
 1. `docs/subsystems/server-management.md` — canonical area entry point.
 2. `docs/planning/server-management-status-2026-06-05.md` — authoritative shipped/remaining tracker; trust its body over older ordering.
-3. `docs/resource-provisioning-overview.md` — resource-creation ownership and confirmation rules.
+3. `docs/setup-platform/resource-provisioning-overview.md` — resource-creation ownership and confirmation rules.
 4. `docs/capability-authority.md` — operator authority and callback re-check rules.
 
 ### Touching BTD6 data / tools
@@ -132,7 +132,7 @@ read **`docs/helper-policy.md`** first.
 
 1. `docs/subsystems/games.md` — canonical area entry point and accepted boundaries.
 2. `docs/decisions/002-game-state-not-restart-safe.md` — binding restart-safety decision.
-3. `docs/games-actionability-roadmap.md` — shipped actionability baseline and deferred context.
+3. `docs/archive/games-actionability-roadmap.md` — shipped actionability baseline and deferred context.
 
 ### Touching media / YouTube
 
@@ -143,9 +143,9 @@ read **`docs/helper-policy.md`** first.
 ### Touching settings / bindings / resource provisioning
 
 1. `docs/subsystems/settings-bindings-provisioning.md` — canonical area entry point.
-2. `docs/settings-customization-roadmap.md` — the three lanes (settings / binding / provisioning) and which pipeline owns which.
-3. `docs/resource-provisioning-overview.md` — the RPM lane.
-4. `docs/platform-consistency-ledger.md` § 1 — current state of each domain.
+2. `docs/setup-platform/settings-customization-roadmap.md` — the three lanes (settings / binding / provisioning) and which pipeline owns which.
+3. `docs/setup-platform/resource-provisioning-overview.md` — the RPM lane.
+4. `docs/health/platform-consistency-ledger.md` § 1 — current state of each domain.
 5. `docs/building-roadmap/config-input-standard.md` — UI rules for setting widgets.
 6. `docs/capability-authority.md` — authorization (capability resolver), the two operator kill-switches, and the panel-callback re-check rule.
 
@@ -194,8 +194,8 @@ read **`docs/helper-policy.md`** first.
 2. `docs/ai-config-ownership.md` — binding contract for the AI cog's
    read model, projection rules, mutation seam, and UI surface
    pinning. Read this before any AI-cog change.
-3. `docs/ai-readiness-plan.md` — the inert scaffold + planned layer.
-4. `docs/ai-service-integration-map.md` — current setup advisor integration shape.
+3. `docs/ai/ai-readiness-plan.md` — the inert scaffold + planned layer.
+4. `docs/ai/ai-service-integration-map.md` — current setup advisor integration shape.
 5. `disbot/core/runtime/ai/README.md` — package-level intent.
 
 ---
@@ -258,24 +258,24 @@ top before trusting the contents.
 - `docs/roadmap.md` — the cross-area **plan index**: by area, with Now / Next / Later /
   Someday horizons + gates, linking each authoritative plan + folio. Where to look for
   which plans apply to which part of the code. Evolving; sequencing is relative, not dated.
-- `docs/platform-consistency-ledger.md` — contract/reference shape with stale
+- `docs/health/platform-consistency-ledger.md` — contract/reference shape with stale
   Phase-2 implementation-status cells; verify every cell against source + the relevant
   folio/tracker before treating it as work.
-- `docs/bot-awareness-implementation-plan.md` — the bot-awareness / health-diagnostics
+- `docs/health/bot-awareness-implementation-plan.md` — the bot-awareness / health-diagnostics
   programme. **Execution authority** for that work + live delivery status (**all 6 PRs
   shipped — PR1–PR3 in #537, PR4–PR6 in #541; D1 resolved**). Read
   this before touching `services/health_snapshot_service.py`,
   `services/health_contracts.py`, or the `!platform health` / `!platform startup`
-  surfaces. The Codex map `docs/bot-awareness-diagnostics-plan.md` is context only.
-- `docs/settings-customization-command-map.md`
-- `docs/operator-settings-presets.md`
+  surfaces. The Codex map `docs/health/bot-awareness-diagnostics-plan.md` is context only.
+- `docs/setup-platform/settings-customization-command-map.md`
+- `docs/setup-platform/operator-settings-presets.md`
 - `docs/planning/server-management-status-2026-06-05.md` — live status tracker for
   the server-management initiative. Authoritative on *what is done* + the remaining
   queue; **trust the tracker's "Shipped" / "Remaining queue" sections over any summary
   here** — don't restate its PR numbers (they drift). Start here before the roadmap/plan.
-- `docs/games-actionability-roadmap.md` (status: complete — historical now)
-- `docs/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
-- `docs/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
+- `docs/archive/games-actionability-roadmap.md` (status: complete — historical now)
+- `docs/audits/helper-debt-inventory.md` (snapshot — companion to `helper-policy.md`)
+- `docs/audits/ui-view-adoption-audit.md` (snapshot — companion to `helper-debt-inventory.md`)
 - `docs/audits/mutation_boundary_audit.md` — mutation boundary audit results.
   Run against the codebase post-hardening session (2026-05-24).
 
@@ -295,8 +295,8 @@ has already been done.
 - `docs/building-roadmap/hub-ui-standard.md`
 - `docs/building-roadmap/config-input-standard.md`
 - `docs/building-roadmap/mother-hub-map.md`
-- `docs/settings-customization-roadmap.md`
-- `docs/resource-provisioning-overview.md`
+- `docs/setup-platform/settings-customization-roadmap.md`
+- `docs/setup-platform/resource-provisioning-overview.md`
 - `docs/architecture/service_ownership.md` — enriched "at a glance" ownership lookup.
   Quick-reference companion to `docs/ownership.md`; `ownership.md` is authoritative
   when the two disagree.
@@ -309,15 +309,15 @@ These describe **planned** end-states. They do **not** describe what
 exists today. Do not implement against them as if they were specs —
 cross-check the source and the consistency ledger first.
 
-- `docs/roadmap_setup_platform.md`
-- `docs/loose-ends-audit-roadmap.md`
-- `docs/phase_2b_bindings_plan.md`
+- `docs/setup-platform/roadmap_setup_platform.md`
+- `docs/planning/loose-ends-audit-roadmap.md`
+- `docs/archive/phase_2b_bindings_plan.md`
 - `docs/building-roadmap/interface-completion-roadmap.md`
 - `docs/building-roadmap/command-expansion-backlog.md`
 - `docs/building-roadmap/admin-powers-config-coverage.md`
-- `docs/ai-readiness-plan.md`
-- `docs/ai-readiness-pr-notes.md`
-- `docs/ai-service-integration-map.md`
+- `docs/ai/ai-readiness-plan.md`
+- `docs/ai/ai-readiness-pr-notes.md`
+- `docs/ai/ai-service-integration-map.md`
 - `docs/planning/server-management-roadmap-2026-06-05.md` — target architecture +
   maintainer decisions. **PR ordering superseded after #523** — read the status
   tracker / implementation plan for sequence.
@@ -330,7 +330,7 @@ cross-check the source and the consistency ledger first.
 
 ### Historical snapshots (context only)
 
-- `docs/phase-2-completion-readiness.md` — old Phase-2 punch list; retained for
+- `docs/archive/phase-2-completion-readiness.md` — old Phase-2 punch list; retained for
   blocker/migration history, not current next-work status.
 - `docs/archive/` (see [`docs/archive/README.md`](archive/README.md)) — retired dated
   snapshots (the 2026-06 planning/audit burst, early cartography); superseded, do not act
@@ -410,7 +410,7 @@ This file is **orientation**, not architecture. Update it when:
 
 Do **not** update it for:
 
-- Phase progress (use `docs/phase-2-completion-readiness.md` or
+- Phase progress (use `docs/archive/phase-2-completion-readiness.md` or
   the consistency ledger).
 - Specific PR notes (those belong in the PR description).
 - Long-form architecture rationale (those belong in

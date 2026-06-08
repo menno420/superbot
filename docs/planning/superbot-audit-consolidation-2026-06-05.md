@@ -69,15 +69,15 @@ Postgres provider-parity execution (needs a live DB / cloud bucket).
 
 - `docs/AGENT_ORIENTATION.md`, `docs/architecture.md`, `docs/ownership.md`,
   `docs/runtime_contracts.md`, `docs/architecture/service_ownership.md`
-- `docs/platform-consistency-ledger.md` (binding status ledger)
-- `docs/resource-provisioning-overview.md`, `docs/helper-policy.md`,
-  `docs/helper-debt-inventory.md`, `docs/ui-view-adoption-audit.md`
+- `docs/health/platform-consistency-ledger.md` (binding status ledger)
+- `docs/setup-platform/resource-provisioning-overview.md`, `docs/helper-policy.md`,
+  `docs/audits/helper-debt-inventory.md`, `docs/audits/ui-view-adoption-audit.md`
 - `docs/decisions/001-no-redis-backed-state.md`,
   `docs/decisions/002-game-state-not-restart-safe.md`,
   `docs/decisions/003-deferred-followups-after-refactor-program.md`
-- `docs/loose-ends-audit-roadmap.md`, `docs/roadmap_setup_platform.md`,
-  `docs/setup_wizard_finalization_plan.md`, `docs/help-command-surface-map.md`,
-  `docs/cog-hub-coverage-audit.md`, `docs/games-actionability-roadmap.md`
+- `docs/planning/loose-ends-audit-roadmap.md`, `docs/setup-platform/roadmap_setup_platform.md`,
+  `docs/setup-platform/setup_wizard_finalization_plan.md`, `docs/help-command-surface-map.md`,
+  `docs/audits/cog-hub-coverage-audit.md`, `docs/archive/games-actionability-roadmap.md`
 - `docs/audits/repo-wide-audit-2026-05-29.md` (prior repo-wide audit — see §6)
 - `architecture_rules/{layers,mutation_owners,duplicate_allowlist,canonical_helpers}.yaml`
 

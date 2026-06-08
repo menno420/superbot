@@ -30,7 +30,7 @@
 - **Tests:** `test_moderation_config.py` (new), config cases in `test_moderation_service.py`
   (autouse default-policy patch keeps the convergence-era exact-call assertions valid),
   `test_moderation_schemas.py` (new — shapes + a spec-default↔policy-default drift guard).
-  Updated `docs/settings-customization-command-map.md` for the two doc-pin tests (new keys +
+  Updated `docs/setup-platform/settings-customization-command-map.md` for the two doc-pin tests (new keys +
   SettingSpec names).
 - **Gates:** `check_quality --full` green (**7690 passed**, 16 skipped; black/isort/ruff/mypy);
   `check_architecture --mode strict` **0 errors**; booted clean (boot_id `a6a24aea` —

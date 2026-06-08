@@ -15,7 +15,7 @@
 > **Inputs reconciled:** Codex map (PR #534), a ChatGPT revision pass, and the Codex
 > AI-tool-orchestration successor plan (PR #536).
 > **Execution authority:** this doc; the Codex map
-> `docs/bot-awareness-diagnostics-plan.md` is the repository map.
+> `docs/health/bot-awareness-diagnostics-plan.md` is the repository map.
 
 ---
 
@@ -154,7 +154,7 @@ structured session" while protecting an unattended run.
 ### 2.4 Changed since Codex #534
 
 - **#535** added the *registered-opaque-callable* precedent (`core/runtime/panel_manager` calls a hook wired from `bot1`, the `cleanup_registry` pattern) — the sanctioned way for core to trigger higher-layer behavior without importing it. Bot declared **fully tested as of #535**.
-- **#536** (newer, on `main`) added `docs/ai-complex-request-tool-orchestration-plan.md` — a **successor** programme ("assumes the bot-awareness roadmap is already delivered"). It is mostly BTD6 AI orchestration (out of this session's scope) but defines reusable AI-tool primitives my PR5 must align with — see **§8**. It already reserves a **`diagnostics` toolset** for "future health snapshot tools" and hits the **same `_derive_scope` gap** (its D5 == my D1).
+- **#536** (newer, on `main`) added `docs/ai/ai-complex-request-tool-orchestration-plan.md` — a **successor** programme ("assumes the bot-awareness roadmap is already delivered"). It is mostly BTD6 AI orchestration (out of this session's scope) but defines reusable AI-tool primitives my PR5 must align with — see **§8**. It already reserves a **`diagnostics` toolset** for "future health snapshot tools" and hits the **same `_derive_scope` gap** (its D5 == my D1).
 
 ---
 
@@ -302,7 +302,7 @@ Programme = **6 PRs**. **Unattended overnight slice = PR1 → PR2 → PR3** (+ P
 - [ ] Read `.session-journal.md`, `.claude/CLAUDE.md`, `docs/AGENT_ORIENTATION.md`, this plan; confirm HEAD and "fully tested" state.
 - [ ] Baseline both gates green on a clean tree.
 - [ ] Re-confirm `ls disbot/migrations | tail -1`, `wc -l disbot/cogs/diagnostic_cog.py` (647), and that `core/runtime/ai/contracts.py` is still the inert `AIScope` home.
-- [ ] Commit the approved plan as `docs/bot-awareness-implementation-plan.md` and add a cross-link banner atop `docs/bot-awareness-diagnostics-plan.md`.
+- [ ] Commit the approved plan as `docs/health/bot-awareness-implementation-plan.md` and add a cross-link banner atop `docs/health/bot-awareness-diagnostics-plan.md`.
 
 ### PR1
 - [ ] `services/health_contracts.py` — frozen dataclasses + `SnapshotStatus`/`FindingSeverity`/`HealthAudience`; **no AI import**; confirm `check_architecture --mode strict` (no cycle/heavy-dep).
@@ -373,8 +373,8 @@ on a product/security decision (D1), PR6 is durable state to defer. Branch:
 claude/fervent-turing-J1giu.
 
 Read first: .session-journal.md, .claude/CLAUDE.md, docs/AGENT_ORIENTATION.md, the
-approved plan (docs/bot-awareness-implementation-plan.md — commit it from the plan
-file first, and add a cross-link banner atop docs/bot-awareness-diagnostics-plan.md),
+approved plan (docs/health/bot-awareness-implementation-plan.md — commit it from the plan
+file first, and add a cross-link banner atop docs/health/bot-awareness-diagnostics-plan.md),
 docs/architecture.md, docs/ownership.md, docs/runtime_contracts.md, docs/helper-policy.md.
 
 NON-NEGOTIABLES

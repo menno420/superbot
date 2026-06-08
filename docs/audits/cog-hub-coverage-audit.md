@@ -1,7 +1,7 @@
 # SuperBot — Cog Hub Command-Coverage Audit
 
 > **Status:** `audit` — inventory snapshot, dated 2026-05-24.
-> Companion to `docs/ui-view-adoption-audit.md` (per-view adoption)
+> Companion to `docs/audits/ui-view-adoption-audit.md` (per-view adoption)
 > and `docs/help-command-surface-map.md` (Help route structure).
 >
 > **What this is:** the third audit in the "Smooth Interaction Pass"

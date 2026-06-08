@@ -173,7 +173,7 @@ def counters_snapshot() -> dict[str, Any]:
 # closes that gap for ``!platform consistency`` so an operator can act on
 # a non-zero fallback count instead of guessing.
 #
-# Privacy (hard rule — see docs/setup_wizard_finalization_plan.md §D6):
+# Privacy (hard rule — see docs/setup-platform/setup_wizard_finalization_plan.md §D6):
 # we store ONLY stable internal identifiers (guild_id, subsystem,
 # binding_name, legacy_key, source, flag_state, binding_status, and a
 # UTC timestamp).  We never store the resolved value, channel/role/user

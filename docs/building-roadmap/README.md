@@ -16,7 +16,7 @@ This directory contains reference documents for future command, panel, help-menu
 
 Related reference:
 
-- `docs/operator-settings-presets.md`
+- `docs/setup-platform/operator-settings-presets.md`
 
 ## Core principle
 

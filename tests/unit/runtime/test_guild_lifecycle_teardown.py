@@ -154,7 +154,7 @@ async def test_teardown_does_not_purge_binding_audit(_teardown_patches):
 
     If a future contributor wires the audit-purge primitive into the
     teardown sequence, this test fails and they must update both the
-    retention policy (``docs/platform-consistency-ledger.md`` §3) AND
+    retention policy (``docs/health/platform-consistency-ledger.md`` §3) AND
     this assertion deliberately.
     """
     import guild_lifecycle

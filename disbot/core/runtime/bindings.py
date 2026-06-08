@@ -13,7 +13,7 @@ Public surface:
 * :func:`get_binding` — typed accessor; returns ``UNRESOLVED`` on miss.
 * :func:`validate_binding_target` — dispatch by kind to the appropriate
   validator.  Resolves the long-standing question raised in
-  ``docs/phase_2b_bindings_plan.md`` about member bindings.
+  ``docs/archive/phase_2b_bindings_plan.md`` about member bindings.
 
 Phase 2b does NOT add a ``set_binding`` write here — writes go through
 :class:`~services.binding_mutation.BindingMutationPipeline` which
@@ -106,7 +106,7 @@ class BindingValue:
 # ---------------------------------------------------------------------------
 
 # Resource-kind aliases for the dispatch.  Phase 2b's design decision
-# (see docs/phase_2b_bindings_plan.md): resource kinds use
+# (see docs/archive/phase_2b_bindings_plan.md): resource kinds use
 # ``core.resources.discovery``; member kind uses ``guild_resources``.
 _RESOURCE_KIND_MAP: dict[BindingKind, ResourceKind] = {
     BindingKind.CHANNEL: ResourceKind.CHANNEL,

@@ -123,7 +123,7 @@ RC-1 before the others so the checker can police them.
 ## Priority 3 — Feature consistency & UX cleanup
 
 Real, but non-blocking. Group by root cause; reconcile with existing roadmaps
-(`docs/decisions/003-…` §3, `docs/loose-ends-audit-roadmap.md`) before treating
+(`docs/decisions/003-…` §3, `docs/planning/loose-ends-audit-roadmap.md`) before treating
 anything as net-new.
 
 1. **RC-8 — Thin-cog migration.** Step A (docs only): the **Direct-DB Exception

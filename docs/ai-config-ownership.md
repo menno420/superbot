@@ -287,7 +287,7 @@ contract.
   subsystem's expansion of the AI rows there)
 - `docs/runtime_contracts.md` — pipeline-stage and PersistentView
   guarantees the AI cog relies on
-- `docs/ai-service-integration-map.md` — the AI subsystem's recommended
+- `docs/ai/ai-service-integration-map.md` — the AI subsystem's recommended
   integration paths for new AI-assisted features
 - `docs/decisions/001-no-redis-backed-state.md` — why memory is
   in-process only

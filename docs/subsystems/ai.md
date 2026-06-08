@@ -20,7 +20,7 @@ scoped tools (including owner-gated diagnostics). Source:
   `PLATFORM_OWNER` (decision D1, shipped #541) gates owner-only tools such as
   `diagnostics_health_snapshot`.
 - **Faithfulness / groundedness guards are confirmed-healthy — preserve** (do not
-  refactor the orchestration choke point). See `docs/ai-guard-coverage-map.md` and
+  refactor the orchestration choke point). See `docs/ai/ai-guard-coverage-map.md` and
   `docs/btd6/btd6-derived-value-groundedness-finding.md`.
 
 ## Current state
@@ -29,7 +29,7 @@ scoped tools (including owner-gated diagnostics). Source:
   testable here, but the model actually *calling* a tool must be verified on the
   maintainer's production bot. See `docs/current-state.md` (stability baseline + gates).
 - **Shipped:** owner-gated `diagnostics_health_snapshot` tool (#541). Setup-advisor
-  integration shape: `docs/ai-service-integration-map.md`.
+  integration shape: `docs/ai/ai-service-integration-map.md`.
 - **Gate:** AI feature expansion is gated on *all* of bot-wide stability + provider/
   provenance + caching/source-health clarity + AI behavior/config correctness — see
   `docs/current-state.md` "Gates / blocked work".
@@ -43,10 +43,10 @@ scoped tools (including owner-gated diagnostics). Source:
   AR-08 → **tiered audience** posture (read access never grants action authority); AR-09 →
   **explanation-only** now (recurring-report draft as the eventual first action category only
   if revisited). The rest of the AR batch holds at safe defaults until each lane is active.
-- `docs/ai-complex-request-tool-orchestration-plan.md` (`plan`) — the orchestration
+- `docs/ai/ai-complex-request-tool-orchestration-plan.md` (`plan`) — the orchestration
   foundation itself (toolsets, tool-choice, budgets, evidence); the roadmap's Phase 1.
   Approve this **before** net-new tools.
-- `docs/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
+- `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 
 ## Ideas (not approved)
@@ -71,6 +71,6 @@ scoped tools (including owner-gated diagnostics). Source:
 
 ## Related docs
 
-`docs/ai-readiness-plan.md` (`plan`), `docs/ai-readiness-pr-notes.md`,
-`docs/ai-provider-and-grounding-fix-plan.md` (`plan`),
+`docs/ai/ai-readiness-plan.md` (`plan`), `docs/ai/ai-readiness-pr-notes.md`,
+`docs/ai/ai-provider-and-grounding-fix-plan.md` (`plan`),
 `disbot/core/runtime/ai/README.md` (package intent).

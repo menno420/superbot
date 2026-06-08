@@ -231,7 +231,7 @@ Then per-feature service moves grouped by risk; then help/slash parity (RC-14).
 
 **Reconcile first:** check `docs/decisions/003-…md` §3 (tournament
 platformization, command-annotation sweep, config-arbitration audit are already
-deferred there) and `docs/loose-ends-audit-roadmap.md` Findings 2/3/5 — do not
+deferred there) and `docs/planning/loose-ends-audit-roadmap.md` Findings 2/3/5 — do not
 re-plan items those own.
 
 **Required tests:** import/back-compat after each view move; service-move tests
@@ -303,7 +303,7 @@ the consolidation doc (for the RC-n evidence) → the priority map (for ordering
 | S2 | `docs/runtime_contracts.md` §3/§6; `persistent_views.py`, `interaction_router.py`, `panel_manager.py`; Agent B UI-1/2/3 |
 | S3 | `scripts/check_architecture.py`; `architecture_rules/layers.yaml`; `utils/db/migrations.py` |
 | S4 | `docs/ownership.md`; ADR-002; `session_gc.py`; `settings_mutation.py`/`binding_mutation.py`; `platform-consistency-ledger.md` §1 |
-| S5 | `docs/helper-policy.md`; `docs/decisions/003-…md` §3; `docs/loose-ends-audit-roadmap.md`; `docs/ui-view-adoption-audit.md` |
+| S5 | `docs/helper-policy.md`; `docs/decisions/003-…md` §3; `docs/planning/loose-ends-audit-roadmap.md`; `docs/audits/ui-view-adoption-audit.md` |
 | S6 | `docs/ai-config-ownership.md`; `docs/btd6/btd6-data-backends.md`/`btd6-data-pipeline.md`; `docs/btd6/btd6-derived-value-groundedness-finding.md`; Agent D audit §6/§12/§13 |
 
 ---
@@ -473,7 +473,7 @@ references (resource-provisioning overview, `ownership.md`, this roadmap, Ideas-
 | **C. Broaden the panel-authority guard** | Audit other mutating panels reachable without an admin-gated entry (Help `build_help_menu_view`, hub routes) and apply `interaction_is_admin` | Small, mechanical, per-panel; add a non-admin-blocked test each | `docs/capability-authority.md` §4 |
 | **D. ADR-006 BTD6 provenance** | Implement the single `DataProvenance` object + owner matrix; resume extraction against it | **Gated** — ADR-006 Accepted but extraction stays paused until the schema PR lands | ADR-006, `docs/btd6/btd6-data-backends.md` |
 | **E. ADR-007 media subsystem** | Add the `docs/ownership.md` media-subsystem row + register `youtube_context_service` / `video_reference_cache_service` under it | **Follow-on** of ADR-007 (Accepted); ownership-doc PR | ADR-007, `docs/ownership.md` |
-| **F. RC-8 staged cleanup** | A *tiny* mechanical view/cog slice (Direct-DB ledger → view moves → service moves), per-feature | Staged; never all-at-once; don't touch capability/BTD6/media in the same slice | priority-map §RC-8, `docs/direct-db-exception-ledger.md` |
+| **F. RC-8 staged cleanup** | A *tiny* mechanical view/cog slice (Direct-DB ledger → view moves → service moves), per-feature | Staged; never all-at-once; don't touch capability/BTD6/media in the same slice | priority-map §RC-8, `docs/audits/direct-db-exception-ledger.md` |
 
 **Suggested order:** A or C first (lowest risk, immediate operator value, both build
 directly on what #518 shipped), then B, then the gated D/E when you want to open

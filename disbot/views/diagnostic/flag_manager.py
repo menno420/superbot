@@ -45,7 +45,7 @@ _MAX_FLAGS_PER_SELECT = 25
 
 # Flags whose declaration exists but which no runtime code consults yet
 # (verified by grep for ``is_enabled("<flag>")`` outside the declaration
-# and tests — see docs/setup_wizard_finalization_plan.md §7).  The manager
+# and tests — see docs/setup-platform/setup_wizard_finalization_plan.md §7).  The manager
 # marks these "inactive / no consumer" so an operator does not waste time
 # flipping an override that changes nothing.  A flag graduates off this
 # list the moment a real consumer lands.

@@ -16,7 +16,7 @@
 > **Companion docs:** `docs/ownership.md` (mutation authority + dep
 > direction), `docs/architecture.md` (layering + invariants),
 > `docs/runtime_contracts.md` (lifecycle guarantees),
-> `docs/roadmap_setup_platform.md` (phase plan).
+> `docs/setup-platform/roadmap_setup_platform.md` (phase plan).
 
 ---
 
@@ -398,7 +398,7 @@ These are non-negotiable. Each is enforced (or will be) by tests.
 > (`cogs.setup_cog`, registered in `disbot/config.py`; built and
 > live-tested 2026-05-29). Per "the source file wins," it is removed from
 > the list below — it is now in *finalization*, not greenfield. See
-> `docs/setup_wizard_finalization_plan.md`. The per-user surfaces remain
+> `docs/setup-platform/setup_wizard_finalization_plan.md`. The per-user surfaces remain
 > deferred.
 
 These must not be implemented until the Phase 2 substrate is complete
@@ -408,7 +408,7 @@ satisfied):
 - ~~Setup wizard UI~~ → **SHIPPED** (guild scope): routes every write
   through the canonical mutation pipelines, read-only preflight, audited
   session lifecycle. Finalization tracked in
-  `docs/setup_wizard_finalization_plan.md`.
+  `docs/setup-platform/setup_wizard_finalization_plan.md`.
 - Resource provisioning runtime (creating channels/roles/categories on
   the operator's behalf) — *note: the `ResourceProvisioningPipeline` is now
   invoked by the shipped wizard with explicit confirmation (no silent
@@ -441,8 +441,8 @@ satisfied):
 | `docs/architecture.md` | ✅ current | none |
 | `docs/ownership.md` | ✅ current | extend per new domain as PRs land |
 | `docs/runtime_contracts.md` | ✅ current | extend per new lifecycle as PRs land |
-| `docs/roadmap_setup_platform.md` | ✅ current high-level | this ledger is the operational truth map; the roadmap remains the strategic plan |
-| `docs/phase_2b_bindings_plan.md` | 🟡 **historical** — shipped in PR #73 (see banner) | preserved for context; do not extend |
+| `docs/setup-platform/roadmap_setup_platform.md` | ✅ current high-level | this ledger is the operational truth map; the roadmap remains the strategic plan |
+| `docs/archive/phase_2b_bindings_plan.md` | 🟡 **historical** — shipped in PR #73 (see banner) | preserved for context; do not extend |
 | `docs/decisions/*` | ✅ current | add ADR per architectural decision (e.g. `003-binding-audit-preserve.md` would be the next) |
 | `docs/architecture/service_ownership.md` | ✅ created 2026-05-24 | quick-lookup companion to `ownership.md`; update when `ownership.md` changes |
 | `docs/audits/mutation_boundary_audit.md` | ✅ created 2026-05-24 | first formal mutation audit; update as new mutation paths land |

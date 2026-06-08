@@ -312,7 +312,7 @@ Each requires the runtime read to be wired before the setting lands
 ## Cross-references
 
 * Operating-contract plan: `/root/.claude/plans/current-baseline-for-the-polished-tarjan.md`.
-* Settings command map: `docs/settings-customization-command-map.md`.
+* Settings command map: `docs/setup-platform/settings-customization-command-map.md`.
 * Architecture overview: `docs/architecture.md`.
 * Setup-readiness service: `disbot/services/setup_readiness.py`.
 * Actionability invariant: `tests/unit/help/test_help_actionability_contract.py`.

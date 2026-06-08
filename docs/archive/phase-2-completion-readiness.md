@@ -140,7 +140,7 @@ them as informational tracking.
 > **Status update (2026-05-31) — reconciled with shipped code.** The
 > **setup wizard shipped** after this snapshot (`cogs.setup_cog`,
 > registered in `disbot/config.py`; see
-> `docs/setup_wizard_finalization_plan.md`). It is removed from the
+> `docs/setup-platform/setup_wizard_finalization_plan.md`). It is removed from the
 > lock-box below — it is now in *finalization*, not greenfield. The
 > remaining items stand.
 
@@ -150,7 +150,7 @@ the consistency ledger exists to prevent:
 
 * `/myprofile` or participation hub UI *(still locked — plan-only)*
 * ~~Setup wizard~~ → **SHIPPED**; finalization tracked in
-  `docs/setup_wizard_finalization_plan.md`
+  `docs/setup-platform/setup_wizard_finalization_plan.md`
 * Resource provisioning runtime (channel/role auto-creation) — *note: the
   provisioning pipeline is now invoked by the shipped wizard with explicit
   confirmation (no silent auto-create); the broader auto-provisioning

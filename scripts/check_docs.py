@@ -94,7 +94,10 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # This is a **soft** forcing function: the census prints every run and warns on
 # a breach, but it never changes the exit code (adding a genuinely top-level doc
 # must not break CI). Lower this number when you trim; never raise it.
-_TOP_LEVEL_DOCS_BUDGET = 41
+# 2026-06-08: 41 -> 16 after the Q-0010 consolidation moved plans / audits /
+# inventories / historical snapshots into clustered subdirs (docs/ai/,
+# docs/setup-platform/, docs/health/) and the type buckets, behind their folios.
+_TOP_LEVEL_DOCS_BUDGET = 16
 
 
 def _docs_files() -> list[Path]:

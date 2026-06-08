@@ -4,7 +4,7 @@ Pins the redacted, bounded, per-key attribution that lets
 ``!platform consistency`` name *which* config key degraded to legacy
 instead of only showing a count.
 
-Privacy contract (docs/setup_wizard_finalization_plan.md §D6): only
+Privacy contract (docs/setup-platform/setup_wizard_finalization_plan.md §D6): only
 stable internal identifiers are stored — never resolved values or
 display names.
 """

@@ -22,10 +22,10 @@
 1. Bot-awareness PR4–PR6 are **complete (shipped in #541)** — D1 (platform-owner scope)
    is resolved and the retention/history decision (D8/D11) is approved (30-day TTL). A new
    tool-capability programme may now build on the delivered health stack.
-2. Treat `docs/bot-awareness-implementation-plan.md` as the sole execution authority for
+2. Treat `docs/health/bot-awareness-implementation-plan.md` as the sole execution authority for
    health diagnostics. Future diagnostics AI tools must consume `HealthSnapshot` and
    `OperationalHealthFinding`; never create a second bot-awareness service.
-3. Treat `docs/ai-complex-request-tool-orchestration-plan.md` as the reusable design
+3. Treat `docs/ai/ai-complex-request-tool-orchestration-plan.md` as the reusable design
    direction for the orchestration foundation. Source labels it a research-backed planning
    document, not approved execution authority; obtain maintainer approval before executing
    it. Its catalogue, toolsets, neutral tool choice, budgets, evidence, and safe trace work
@@ -145,9 +145,9 @@ GitHub API for `menno420/superbot`:
 |---|---|
 | `docs/architecture.md`, `docs/ownership.md`, `docs/runtime_contracts.md`, `docs/helper-policy.md` | Binding contracts. Source wins on disagreement. |
 | `docs/AGENT_ORIENTATION.md` | Binding orientation/reference routing; not implementation approval. |
-| `docs/bot-awareness-implementation-plan.md` | Approved execution authority for bot-awareness/health PR4–PR6. |
-| `docs/bot-awareness-diagnostics-plan.md` | Repository map/context only; explicitly defers execution authority to the implementation plan. |
-| `docs/ai-complex-request-tool-orchestration-plan.md` | Research-backed planning/design direction for reusable orchestration and BTD6 complex requests; source does not label it approved execution authority. |
+| `docs/health/bot-awareness-implementation-plan.md` | Approved execution authority for bot-awareness/health PR4–PR6. |
+| `docs/health/bot-awareness-diagnostics-plan.md` | Repository map/context only; explicitly defers execution authority to the implementation plan. |
+| `docs/ai/ai-complex-request-tool-orchestration-plan.md` | Research-backed planning/design direction for reusable orchestration and BTD6 complex requests; source does not label it approved execution authority. |
 | PR #539 `docs/ideas/ai-extra-tool-capability-ideas.md` | Ideas backlog only; useful inventory, not approval or execution authority. |
 | This roadmap | Prioritization/integration proposal for net-new capability families; not runtime approval. |
 | `.session-journal.md` | Cross-session state and cautions; source and binding docs outrank it. |
@@ -181,9 +181,9 @@ approve PR4–PR6 changes, migrations, connectors, or action tools.
 
 | Work type | Controlling document/status | How this roadmap relates |
 |---|---|---|
-| Health snapshots, structured observations, AI diagnostics explanation, persistent findings | `docs/bot-awareness-implementation-plan.md` | Waits for and consumes that work; never duplicates it. |
-| Bot-awareness repository/source context | `docs/bot-awareness-diagnostics-plan.md` | Use as a map only; correct against source and the implementation plan. |
-| Canonical tool catalogue, named toolsets, neutral tool choice, requirements, budgets, evidence, traces, BTD6 complex workflows | `docs/ai-complex-request-tool-orchestration-plan.md` — research-backed planning direction pending explicit implementation approval | Reuses its names and recommends approving/executing its foundation before net-new tools. |
+| Health snapshots, structured observations, AI diagnostics explanation, persistent findings | `docs/health/bot-awareness-implementation-plan.md` | Waits for and consumes that work; never duplicates it. |
+| Bot-awareness repository/source context | `docs/health/bot-awareness-diagnostics-plan.md` | Use as a map only; correct against source and the implementation plan. |
+| Canonical tool catalogue, named toolsets, neutral tool choice, requirements, budgets, evidence, traces, BTD6 complex workflows | `docs/ai/ai-complex-request-tool-orchestration-plan.md` — research-backed planning direction pending explicit implementation approval | Reuses its names and recommends approving/executing its foundation before net-new tools. |
 | Candidate capability inventory | PR #539 `docs/ideas/ai-extra-tool-capability-ideas.md` | Keep as backlog with a status/cross-link; this roadmap triages and sequences it. |
 | Cross-session operational state | `.session-journal.md` | Record decisions and verified PR status; do not promote journal assumptions over source. |
 | Reading order and document classes | `docs/AGENT_ORIENTATION.md` | Add this roadmap only as a non-binding planning reference after approval. |
@@ -401,7 +401,7 @@ abstractions exist.
 ### Phase 1 — Tool orchestration foundation
 
 **Direction:** after explicit maintainer approval, execute/refine the first phases of
-`docs/ai-complex-request-tool-orchestration-plan.md`; do not create a competing plan.
+`docs/ai/ai-complex-request-tool-orchestration-plan.md`; do not create a competing plan.
 
 - Inventory current specs/handlers/schemas/provider loops.
 - Land the canonical descriptor catalogue and named toolsets with compatibility tests.
@@ -745,7 +745,7 @@ closed for sensitive content.
 
 1. **Merge PR #539 as an ideas backlog only**, after adding a short cross-link/status note
    that this roadmap owns triage/sequence and that execution remains unauthorized.
-2. **Keep this new `docs/ai-tool-capability-roadmap.md` as the guidance document** for
+2. **Keep this new `docs/ai/ai-tool-capability-roadmap.md` as the guidance document** for
    the next sessions. Do not convert it into the BTD6 or bot-awareness execution plan.
 3. **Do not replace the approved health plan or the BTD6 planning document.** Update
    their status headers only when source, approval state, and merged PRs prove it.
@@ -784,15 +784,15 @@ You are Claude Opus 4.8 reviewing SuperBot's source-verified AI Tool Capability 
 after the current bot-awareness PR4–PR6 work is finished.
 
 Repository: menno420/superbot
-Primary roadmap: docs/ai-tool-capability-roadmap.md
+Primary roadmap: docs/ai/ai-tool-capability-roadmap.md
 
 Before proposing or changing anything:
 1. Read .claude/CLAUDE.md, .session-journal.md, docs/AGENT_ORIENTATION.md, and all binding
    architecture/ownership/runtime/helper docs.
 2. Verify current main and all open/merged PRs. Do not trust the roadmap's 2026-06-06
    snapshot. Reconcile bot-awareness PR4, PR5, and PR6 against
-   docs/bot-awareness-implementation-plan.md and source.
-3. Read docs/ai-complex-request-tool-orchestration-plan.md and determine which planned
+   docs/health/bot-awareness-implementation-plan.md and source.
+3. Read docs/ai/ai-complex-request-tool-orchestration-plan.md and determine which planned
    contracts/types have actually landed. Search for AIToolSpec, AIToolDescriptor,
    AIOrchestrationPolicy, ToolRequirementMode, tool_choice, build_registry,
    btd6_grounding, and diagnostics.

@@ -6,8 +6,8 @@ Companion doc for the Global Settings & Customization Manager. Explains the
 **Resource Provisioning Lane** that runs parallel to settings and bindings.
 
 Sister docs:
-- [`docs/settings-customization-roadmap.md`](settings-customization-roadmap.md)
-- [`docs/settings-customization-command-map.md`](settings-customization-command-map.md)
+- [`docs/setup-platform/settings-customization-roadmap.md`](settings-customization-roadmap.md)
+- [`docs/setup-platform/settings-customization-command-map.md`](settings-customization-command-map.md)
 
 ## Why a separate lane
 
@@ -46,7 +46,7 @@ allowlist and tracked separately by the server-management lifecycle plan — see
    `resource_provisioning.primary` operator kill-switch is also consulted here —
    when explicitly OFF the pipeline raises `ResourceProvisioningDisabledError`
    before any side effect (fail-open on flag-eval error). See
-   [`docs/capability-authority.md`](capability-authority.md).
+   [`docs/capability-authority.md`](../capability-authority.md).
 3. **Validate bot Discord permissions** for the requested resource kind
    (`manage_channels` for CHANNEL / CATEGORY, `manage_roles` for ROLE) via
    `guild.me.guild_permissions`. Insufficient permissions →
@@ -175,10 +175,10 @@ seeded from `ProvisioningHint.suggested_name`.
 
 ## See also
 
-- [`docs/settings-customization-command-map.md`](settings-customization-command-map.md)
+- [`docs/setup-platform/settings-customization-command-map.md`](settings-customization-command-map.md)
   — per-cog inventory; the `provisionable_resources` row on each cog comes
   from this overview's data model.
-- [`docs/settings-customization-roadmap.md`](settings-customization-roadmap.md)
+- [`docs/setup-platform/settings-customization-roadmap.md`](settings-customization-roadmap.md)
   — 15-milestone roadmap.
 - `disbot/core/runtime/resource_specs.py` — `ResourceKind`,
   `ProvisioningPriority`, `ProvisioningHint`, `ResourceRequirement` data

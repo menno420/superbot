@@ -24,7 +24,7 @@
 >   dependency-ordered PR1→PR14 scope detail that the shipped work follows.
 > - Binding contracts updated by this work: `docs/ownership.md`,
 >   `docs/architecture/service_ownership.md`, `docs/server-logging.md`,
->   `docs/resource-provisioning-overview.md`, `docs/direct-db-exception-ledger.md`.
+>   `docs/setup-platform/resource-provisioning-overview.md`, `docs/audits/direct-db-exception-ledger.md`.
 
 ---
 

@@ -92,7 +92,7 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # Advisory events emitted after the DB commit + audit row land.
         # Subscriber failure is logged with mutation_id and never raised
         # — DB state is authoritative.  Payload contract is documented in
-        # docs/platform-consistency-ledger.md §4.
+        # docs/health/platform-consistency-ledger.md §4.
         "feature_flags.changed",
         "rollout.advanced",
         "environment_tier.changed",
