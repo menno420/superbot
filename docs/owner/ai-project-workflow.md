@@ -92,6 +92,12 @@ new idea → classify → capture or ask a question → route to the right home
          → implement only after acceptance
 ```
 
+The full **idea lifecycle** (intake → map → route → groom → *implemented | discussed |
+rejected*) and the end-of-session **grooming** secondary task — what an agent does with
+leftover capacity so the backlog keeps draining — live in
+[`../ideas/README.md`](../ideas/README.md). This section is the pipeline-level view of the
+same loop; that README owns the mechanics (owner decision Q-0015).
+
 > This is binding agent behavior, stated for agents in `.claude/CLAUDE.md` (Working
 > agreement) and [`../collaboration-model.md`](../collaboration-model.md). This section is
 > the workflow-level explanation of the same rule; the binding text wins.
@@ -154,3 +160,27 @@ Full usage, the trust matrix, and the override-file contract live in
 - **Load context in layers / one-fact-one-home** →
   [`../AGENT_ORIENTATION.md`](../AGENT_ORIENTATION.md) and `docs/current-state.md`.
 - **Idea → shipped promotion gates** → [`../ideas/README.md`](../ideas/README.md).
+
+## 9. Concurrent-editing safety (multiple chats at once)
+
+The maintainer runs several chats in parallel, and `main` can move under you mid-session.
+To keep that productive instead of collision-prone, the shared, frequently-co-edited files
+have **per-section / per-file ownership** so two chats touching different parts never
+conflict:
+
+| Shared file | Collision-safe pattern |
+|---|---|
+| `.claude/CLAUDE.md` | **Section ownership** via `<!-- SECTION_START/END -->` markers (`READ_FIRST` · `SESSION_WORKFLOW` · `CI_PARITY` · `CODEGRAPH` · `ARCH_RULES`). Edit **one** block; two chats in different blocks auto-merge. |
+| `docs/owner/maintainer-question-router.md` | **Append-only.** Add the next free `Q-00NN` block at the end; never renumber or reflow existing ones. |
+| `.sessions/` | **Per-file.** One `YYYY-MM-DD-<slug>.md` per session — no shared anchor, so no structural conflict. |
+| `.session-journal.md` (guidebook) · `docs/current-state.md` | Edit the **smallest** relevant block; on conflict resolve by **UNION** (keep both additions — it's docs, no CI risk). |
+
+Practical rules when several chats are live:
+
+- **Expect `main` to move.** Re-fetch before you push; prefer additive, section-scoped edits
+  over rewrites of a whole shared file.
+- **Ship in logical modular batches** (owner decision Q-0014) — small, self-contained PRs
+  merge around each other cleanly; a sprawling PR that touches every shared file is the one
+  that collides.
+- **One fact, one home.** Route a durable conclusion to its owning doc and link from the rest
+  — restatement across files is exactly what turns a clean merge into a conflict.

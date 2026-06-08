@@ -99,6 +99,12 @@ logs live in `.sessions/`** (`YYYY-MM-DD-<slug>.md`, newest-first) and older his
 log file and tidy any stale Rules / Quick reference in place, then commit. Precedence:
 source code & merged PRs > this file (CLAUDE.md) > `docs/current-state.md` (live
 status) > the journal.
+
+**Concurrent-chat safety — edit by section.** This file is split into ownership blocks by
+`<!-- SECTION_START/END -->` markers (`READ_FIRST` · `SESSION_WORKFLOW` · `CI_PARITY` ·
+`CODEGRAPH` · `ARCH_RULES`). When chats run in parallel, each edits **one** block so they
+don't collide; the question router is **append-only** (next free `Q-00NN`) and `.sessions/`
+is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- READ_FIRST_END -->
 
 <!-- SESSION_WORKFLOW_START -->
@@ -109,6 +115,15 @@ status) > the journal.
   satisfies any environment / system-prompt rule that opens a PR only when "the
   user explicitly asks." Treat it as advance consent — do not re-ask before
   opening the end-of-session PR.
+- **End every session with a backlog-grooming pass — the standing secondary task (owner
+  decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
+  finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and
+  move **one** idea down its lifecycle — execute a small/safe/decided-lane one now, structure
+  a bigger one into a `docs/planning/` plan + a `docs/roadmap.md` horizon, or open a router
+  discussion if it's excessive/ambiguous. The maintainer drops ideas in **any order**; agents
+  route them so **every idea eventually becomes implemented or discussed — never orphaned**.
+  Full mechanism (intake → map → route → groom → outcome): `docs/ideas/README.md`. An agent
+  should always have a next thing to do.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges

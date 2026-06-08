@@ -25,6 +25,11 @@
   stability bar). An item doesn't move up until its gate clears.
 - **Authority:** `docs/current-state.md` owns *what is true now*; the **folios** own
   per-area detail; the **trackers/plans** own scope. This page only sequences them.
+- **Ideas flow in here.** A captured idea (`docs/ideas/`) is routed onto a horizon below
+  once it has a clear direction; until then it sits in **Someday** or in discussion (the
+  question router). The intake → route → groom mechanism is
+  [`ideas/README.md`](ideas/README.md) — promoting a backlog idea to a horizon is standing
+  grooming work, not scope creep.
 
 ## At a glance
 

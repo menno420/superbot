@@ -19,10 +19,13 @@
 > (owner decision **Q-0008**). Authoritative scope + dependencies: the status tracker's
 > Remaining-queue.
 >
-> **Last updated:** 2026-06-08 · **Agent stage spec** (`docs/owner/agent-workflow-spec.md`)
-> created from a 60-question maintainer Q&A batch (Q-0013): operational spec for Analysis,
-> Decisions, Revision, Prompt Forge, and Executor stages. Wired into `AGENT_ORIENTATION.md`,
-> `docs/owner/README.md`, and `docs/owner/ai-project-workflow.md`. Docs-only.
+> **Last updated:** 2026-06-08 · **Docs consolidation (Q-0010) + idea-backlog lifecycle
+> (Q-0015).** Top-level `docs/` shrunk **41 → 16** (plans / audits / inventories / historical
+> moved into clustered subdirs — `docs/ai/`, `docs/setup-platform/`, `docs/health/` — and the
+> type buckets behind their folios; `_TOP_LEVEL_DOCS_BUDGET` lowered 41 → 16). The idea
+> backlog is now a routed **lifecycle + end-of-session grooming secondary task**
+> (`docs/ideas/README.md`); binding-doc **section-ownership** documented for concurrent
+> chats (`docs/owner/ai-project-workflow.md` §9). Docs-only; verify merge status on live GitHub.
 > Most recent merged code: server-management **PR12** (2026-06-07; setup diagnostics &
 > repair). **This file lists only _merged_ work + the ▶ Next action;** get
 > in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status in prose
@@ -101,13 +104,14 @@ Source code and merged PRs win over anything written here.
   queue — don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
-- **Docs consolidation (scheduled — owner decision Q-0010, 2026-06-07):** a near-term
-  dedicated docs session shrinks the top-level `docs/` pile (41 → ~15) by moving
-  plans / audits / historical snapshots into subdirs behind the folios, then lowers the
-  `_TOP_LEVEL_DOCS_BUDGET` ratchet in `scripts/check_docs.py`. The census prints the live
-  count every run; the ratchet holds the line until then. **Ready-to-pick handoff:**
-  [`planning/docs-restructure-brief-2026-06-08.md`](planning/docs-restructure-brief-2026-06-08.md)
-  (also covers binding-doc section-ownership to make concurrent-chat edits collision-safe).
+- **Docs consolidation (Q-0010) — executed 2026-06-08.** Top-level `docs/` is now **16**
+  (the 13 binding contracts + `current-state` + `roadmap` + `context-map-tooling`); plans /
+  audits / inventories / historical snapshots moved into clustered subdirs behind their
+  folios, and `_TOP_LEVEL_DOCS_BUDGET` lowered 41 → 16. Paired with the idea-backlog
+  lifecycle + grooming secondary task (Q-0015, `docs/ideas/README.md`) and the binding-doc
+  section-ownership convention (`docs/owner/ai-project-workflow.md` §9). The original handoff
+  was [`planning/docs-restructure-brief-2026-06-08.md`](planning/docs-restructure-brief-2026-06-08.md).
+  Verify merge status on live GitHub.
 - Use the canonical subsystem folios for area-specific implementation/planning. The
   2026-06-06 readiness audit classifies stale, gated, and ready workstreams.
 

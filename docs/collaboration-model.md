@@ -104,6 +104,14 @@ shared memory, the system converges on *exactly the right context per task*.
   building. The multi-agent pipeline that moves ideas → shipped is
   `docs/owner/ai-project-workflow.md` (per-project roles, handoff templates, idea states);
   the maintainer's working style is `docs/owner/maintainer-working-profile.md`.
+- **The idea backlog is a productive queue, not a graveyard (owner decision Q-0015).** The
+  maintainer drops ideas in *any order, any time*; agents capture them, **route** each to a
+  reasonable home (a `docs/roadmap.md` horizon, a structured plan, or — if it's
+  excessive/ambiguous — a discussion in the question router), and **groom** the backlog as
+  the standing end-of-session secondary task. The guarantee: an agent always has a next
+  thing to do, and **every idea eventually becomes implemented or discussed — never
+  orphaned**. The mechanism (intake → map → route → groom → outcome) is
+  `docs/ideas/README.md`.
 
 ## For executor agents (Claude)
 
