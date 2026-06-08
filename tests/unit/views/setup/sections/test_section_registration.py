@@ -25,6 +25,7 @@ def test_all_production_sections_are_registered():
         "cleanup",
         "moderation",
         "roles",
+        "diagnostics",
         "cog_routing",
         "final_review",
     }
