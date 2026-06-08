@@ -359,6 +359,20 @@ This is real work, not scope creep: the maintainer drops ideas in any order on p
 relies on agents to route them so **every idea eventually becomes implemented or discussed,
 never orphaned** (owner decision Q-0015).
 
+### 7.7 Review your own work before you hand off
+
+Before you open the PR (or hand to the next stage), do a quick self-review pass — the
+cheapest place to catch a problem:
+
+- **Re-read your own diff** for correctness, leftover scaffolding, and drift from the goal.
+  Run the gates: `check_quality.py --full` + `check_architecture.py --mode strict` for code;
+  `check_docs.py --strict` for docs.
+- **Verify, don't assume** — confirm a claim against source (and CodeGraph/Grimp against a
+  grep) rather than trusting a tool or a doc; the truth-layer precedence (§8.1) breaks ties.
+- **Improve what you touched** — once the context is loaded and clear, a small adjacent
+  cleanup or a sharper doc pointer is first-class work (§8.5), not scope creep. Leave the
+  area a little better than you found it.
+
 ---
 
 ## 8. Cross-cutting rules (all stages)

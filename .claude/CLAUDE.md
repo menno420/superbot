@@ -99,6 +99,12 @@ logs live in `.sessions/`** (`YYYY-MM-DD-<slug>.md`, newest-first) and older his
 log file and tidy any stale Rules / Quick reference in place, then commit. Precedence:
 source code & merged PRs > this file (CLAUDE.md) > `docs/current-state.md` (live
 status) > the journal.
+
+**Concurrent-chat safety — edit by section.** This file is split into ownership blocks by
+`<!-- SECTION_START/END -->` markers (`READ_FIRST` · `SESSION_WORKFLOW` · `CI_PARITY` ·
+`CODEGRAPH` · `ARCH_RULES`). When chats run in parallel, each edits **one** block so they
+don't collide; the question router is **append-only** (next free `Q-00NN`) and `.sessions/`
+is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- READ_FIRST_END -->
 
 <!-- SESSION_WORKFLOW_START -->
