@@ -2,7 +2,7 @@
   "mcpServers": {
     "codegraph": {
       "command": "npx",
-      "args": ["-y", "@optave/codegraph@3.10.0", "mcp"],
+      "args": ["-y", "@optave/codegraph@3.11.2", "mcp"],
       "cwd": "/home/user/superbot"
     }
   }
