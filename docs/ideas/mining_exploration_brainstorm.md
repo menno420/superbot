@@ -122,5 +122,141 @@ New files only; no existing file modified; nothing wired into a command yet:
 2. **Workshop / crafting** — `services/crafting_mutation.py` + `WorkshopView` + tool durability, built on `items.TOOL_LADDERS`.
 3. **AI-active "Guide" + image cards** — renderer + read-only AI tool that narrates the service-owned catalog; opt-in Pillow for art.
 
-### To activate image rendering
-Add `Pillow` to `requirements.txt`. Until then `utils/mining_render.render_inventory_card` returns `None` by design and the dependency footprint is unchanged.
+### Image rendering is already unblocked
+`Pillow>=10.0,<12` is in `requirements.txt`, so `utils/mining_render.render_inventory_card`
+returns PNG bytes today (it still returns `None` and falls back to an embed if Pillow ever
+fails to import — fallback-by-design is preserved). No dependency step remains; image cards
+are purely a content + wiring task.
+
+---
+
+## 6. Refined design — foundation-first build (decisions locked 2026-06-08)
+
+> **Status:** still `ideas` — this section is *design intent + recommended phasing*, **not** a
+> build approval. It consolidates the §2 feature menu and a broader "mother panel + child panels
+> + reusable gear" expansion (maintainer brainstorm, 2026-06-08) into one decided, sequenced
+> shape. Each phase still promotes to its own `docs/planning/` slice and needs the maintainer's
+> go before building (§5 step 1's plan is the template).
+
+The brainstorm widened from "make `!explore` smarter" to a **Mining / Exploration / Crafting /
+Gear platform**: one *mother panel* routing four–five child panels, a reusable equipment system
+other game cogs (deathmatch, future modes) can read, and a persistent player world. Eight owner
+decisions this session pin the v1 cut to "foundation-first, clean seams, defer the heavy and the
+risky."
+
+### 6.1 Decisions locked (2026-06-08)
+
+| # | Decision | Choice | Why it matters |
+|---|---|---|---|
+| 1 | Spatial fidelity of v1 | **Depth-bands first** (x/y grid is a later phase) | The shipped `exploration.py` already models depth bands; real coordinates are the biggest net-new build, so they sequence last among the core work. |
+| 2 | World scope | **Personal position, per-guild seed** | No griefing, easy reset/balance; a stored `world_seed` makes the later grid deterministic. Shared dig-sites stay a separate future feature. |
+| 3 | Run model | **Persistent position** | Leave at depth 3, return to depth 3. Position is DB state (allowed by ADR-002); only panels are ephemeral. |
+| 4 | Inventory storage | **Keep two bags, overlay types** | No migration now; `items.py` classifies the existing bag; gear is a new table referencing bag item-names. Unifying the bags stays deferred. |
+| 5 | Survival stats | **None in v1** (health/stamina later) | Prove the loop before balancing danger/recovery. |
+| 6 | Character scope | **Guild-scoped** | Consistent with inventory/XP/economy; gear is built from guild-scoped resources. |
+| 7 | Gear ↔ other games | **Generic stats read model** | Deathmatch/future games read computed stats, never the item catalog — the `economy_service` decoupling pattern. |
+| 8 | Crafting depth | **Flat + quick-craft-last-broken**; stations later | Ship the craft→break→recraft loop first; stations are a later progression gate. |
+
+### 6.2 What v1 is (and isn't)
+
+**In v1:** persistent depth/biome position per player · mother panel + child panels · typed
+inventory overlay · equip/unequip with generic stats · durability + "quick-craft the last item
+that broke" · loadout/depth-aware mining & exploration outcomes (the already-shipped engine) ·
+deathmatch reading gear stats.
+
+**Explicitly deferred (each revisits at its phase):** x/y coordinates + N/S/E/W movement +
+per-cell worldgen (→ P6) · health/stamina + hazards (→ post-loop) · crafting stations (→ after
+flat crafting) · inventory-table unification (own migration) · shared guild dig-site · expeditions
+/ push-your-luck · global character · AI "Guide" (AI-gated) · combat that references specific items.
+
+### 6.3 Panel structure (mother + children)
+
+`MiningHubView` (already a `PersistentView`) becomes the **mother panel** — an overview embed
+(location · depth · biome · equipped main tool · net worth) that mostly *routes*:
+
+```
+Mining Mother Panel (persistent)
+├── 🌍 World / Exploration   (surface actions ↔ underground; dynamic by state)
+├── ⛏️ Mine                  (mine current biome; gear/durability aware)
+├── 🔨 Craft (Workshop)      (quick-craft last broken · craftable-now · all recipes)
+├── 🎒 Inventory             (typed, grouped, net worth)
+└── 🧍 Gear                  (equip/unequip · generic stat summary · [later] character card)
+```
+
+Children are **ephemeral** `BaseView`/`HubView` panels (timeout) with a *Back to hub* button;
+the mother panel persists across restarts. **Dynamic buttons come from state, not the view:**
+
+- Surface: `🌲 Chop` · `🪨 Gather` · `⬇️ Mine Down`
+- Underground (v1): `⛏️ Mine Here` · `⬆️ Go Up` · `⬇️ Go Deeper` (gated by light/depth items)
+- **N/S/E/W movement is deferred to P6** (the grid) — v1 underground movement is vertical only.
+
+### 6.4 New persistent state (follows the `utils/db/games/` + guild-scoping conventions)
+
+```
+mining_worlds          (guild_id PK, seed, worldgen_version, created_at)
+  └ per-guild deterministic seed; stored in P2, first *used* by the P6 grid.
+
+mining_player_state    (guild_id, user_id, depth, current_biome, last_broken_item,
+                        last_action_at, updated_at)        PK (guild_id, user_id)
+  └ reserved-for-later columns: health, stamina (added when survival lands).
+
+mining_equipment       (guild_id, user_id, slot, item_name, durability, equipped_at)
+                        PK (guild_id, user_id, slot)
+  └ references item-names in mining_inventory; durability ticks down per use.
+```
+
+`user_id` stays `TEXT` to match legacy `mining_inventory`. No `discovered_cells` table in v1 —
+that arrives with the P6 grid.
+
+### 6.5 New service seams (mirror `economy_service`: write → audit → event)
+
+- **`services/mining/world_service.py`** — owns position: `get_state`, `descend`/`ascend`
+  (depth ± light/depth-item gating), biome selection. Writes player-state; emits audit.
+- **`services/equipment_service.py`** — `get_equipment`, `equip`/`unequip`, `apply_durability`,
+  broken-item tracking. Exposes an **`EffectiveStats`** read model; emits `equipment.item_equipped`
+  / `equipment.item_broken`. The one seam every game reads.
+- **`services/crafting_mutation.py`** — `craft`/`repair`/`upgrade` through an **audited** path,
+  closing today's gap (current `!build` mutates the bag straight from the modal with no audit
+  seam). Powers quick-craft-last-broken via `mining_player_state.last_broken_item`.
+- **Reuse, don't replace:** the pure `cogs/mining/exploration.py` (catalog + selection) and
+  `cogs/mining/items.py` (taxonomy) stay pure; the new services *apply* their results.
+
+### 6.6 The cross-cog stat contract (the "platform" seam)
+
+`equipment_service` computes a **neutral** stat block from equipped items; each game reads only
+the subset it cares about — no game imports mining's items.
+
+```
+EffectiveStats (generic, read-only):
+  mining_power · light_radius · depth_access · hazard_resistance · luck · loot_bonus
+  damage · defense · max_health · durability
+```
+
+Deathmatch reads `damage` / `defense` / `max_health` (replacing today's hardcoded HP 100 /
+dmg 15); mining reads `mining_power` / `light_radius` / `loot_bonus`; future cogs plug in for free.
+
+### 6.7 Phasing (each = its own approved slice → `docs/planning/`)
+
+| Phase | Deliverable | New tables | Risk |
+|---|---|---|---|
+| **P0** | Wire `!explore` to the loadout/depth engine (**plan already written & ready**) | none | low |
+| **P1** | Mother-panel refactor (route 5 children + overview embed) | none | low |
+| **P2** | Persistent depth/biome position + World view (Go Deeper/Up/Mine Here) | `mining_worlds`, `mining_player_state` | med |
+| **P3** | Typed inventory overlay + grouped Inventory view + net worth | none | low |
+| **P4** | Equipment service + Gear view + generic stats; **deathmatch reads stats** | `mining_equipment` | med |
+| **P5** | Audited Workshop: craft/repair/upgrade + durability + quick-craft-last-broken | none (uses P2/P4) | med |
+| **P6** | x/y grid + deterministic cell gen + N/S/E/W + discovered cells (**the big arc**) | `mining_discovered_cells` | high |
+| **P7** | PIL cards (character + local map), embed-first | none | low |
+| **P8** | AI "Guide" narration (**AI-orchestration-gated**) | none | gated |
+
+P0–P1 are immediate, low-risk, noticeable. P2–P5 are the real foundation ("build the whole
+foundation first"). P6 is where the original grid/coordinate vision lands, on top of a proven loop.
+
+### 6.8 Questions to settle at their phase (captured, not blocking v1)
+
+- **P2:** exactly how do torch/lantern/depth-items "push deeper" — own one tool per band, or
+  consume a light per descent?
+- **P5:** durability harshness — a resource sink, not an annoyance (the brainstorm's own caution).
+- **P6:** resource depletion semantics once cells exist (permanent / regenerating / per-player),
+  and personal-vs-shared dig sites. The `world_seed` stored back in P2 already makes generation
+  deterministic when this lands.
