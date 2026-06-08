@@ -45,6 +45,7 @@ SuperBot already has most of the required write seams and several read seams: se
 - **Condition:** deterministic predicate evaluated before an action; false/failed evaluations are observable.
 - **Action:** canonical executor dispatch target; config actions either use an approved canonical mutation or queue a draft.
 - **Availability policy:** central policy layer for time/event/stage/user-age availability, composed after hard safety and guild policy.
+- **Quiet mode:** a time-window or manually-triggered state that suppresses non-essential bot commands and bot-initiated outbound posts for a configured duration or until lifted. Non-essential commands return a quiet-mode denial with a locked reason and end time. Commands stay visible in help, labelled "currently quiet" — not hidden. Staff/admin/essential commands (moderation, diagnostics, help, management) are exempt. Triggered by routine (`enable_quiet_mode(until=)`) or manual staff action; lifted by time expiry, manual lift, or `disable_quiet_mode()`. Availability policy layer owns the per-command check; the routine engine sets/clears a guild-scoped quiet state flag (a reversible settings key or DB column, risk: low).
 - **Locked reason:** structured, safely renderable explanation of a denial and, where appropriate, the unlock requirement.
 
 ## 3. Current-state source map
@@ -153,7 +154,11 @@ A profile is declarative intent compiled against the current guild into grouped 
 4. **Moderation Focused** — moderation/roles/cleanup/logging with stricter access intent; broad permission changes stay draft-only/high risk.
 5. **BTD6 Community (experimental/gated)** — only after BTD6 readiness and setup coverage are verified; not an initial generally available promise.
 
+**Phase 2 design note (Q-0028):** Essential Utility and Community Core may consolidate during the Phase 2 profile catalogue design session into one Foundation profile plus an optional Community add-on (moderation, roles, cleanup, logging). Do not implement two overlapping profiles without reviewing this first. The distinction should be settled before the profile compiler is built.
+
 Do not start with “Private/Friends” until its policy differences are explicit, or “Game Server” as a blanket profile when registry readiness varies by game. Profiles should use registry metadata to enumerate features but require explicit profile-owned intent; registry presence alone must not enable a feature.
+
+**Open gap for Phase 2:** the compiler spec must decide what a profile does when it would logically require removing a resource (e.g. a channel belonging to a disabled feature). The current plan forbids auto-delete but does not specify whether profiles should surface this as a "manual action required" finding, a no-op with a warning, or a separate cleanup suggestion. Resolve in the Phase 2 design session before implementing the profile compiler.
 
 ### 6.2 Unified Access Map
 
@@ -164,6 +169,8 @@ Phase 3 editing changes intent into grouped setup operations and opens Final Rev
 ### 6.3 Help Preview and locked reasons
 
 Staff/admin Help Preview supplies an explicit simulated audience (normal member, trusted user, moderator, admin, owner/operator where meaningful) to the same live help visibility/rendering path. It must label simulation limits and never imply Discord permissions it cannot accurately model. Normal users do not receive audience simulation; they receive a structured denial message from the live access/availability decision, with unlock guidance only where safe.
+
+**Locked reason structure (minimum fields for Phase 1B):** `code` (stable string identifier, e.g. `quiet_mode`, `command_access_deny`, `availability_window`, `setup_stage_required`), `safe_text` (user-renderable string, never leaks sensitive policy details), `source` (which policy layer produced it: `command_access` | `routing` | `availability` | `capability` | `bootstrap`), `unlock_hint` (optional — only included when the unlock path is safe to show, e.g. "unlocks after 24h membership"). The renderer must never expose role names, channel IDs, or policy internals in `safe_text`.
 
 ### 6.4 Setup health and drift detection
 
