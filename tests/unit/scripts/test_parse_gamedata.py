@@ -1394,17 +1394,53 @@ def test_buffs_shinobi_tactics_maps_multiplier_to_rate(mod):
             "name": "SupportShinobiTacticsModel_Support_",
             "buffLocsName": "ShinobiTacticsBuff",
             "multiplier": 0.92,
-            "maxStacks": 20,
             "maxStackSize": 20,
         }
     )
+    # The stack cap is a faithful structural passthrough (like isGlobal), so the
+    # game-native cutover reproduces the renderer's "(stacks up to 20)" clause.
     assert mod._map_tier(model)["buffs"] == [
         {
             "kind": "SupportShinobiTactics",
             "name": "ShinobiTacticsBuff",
             "rateMultiplier": 0.92,
+            "maxStackSize": 20,
         }
     ]
+
+
+def test_buffs_emit_stack_cap_both_field_names(mod):
+    # Two dump field names encode the stack cap: ``maxStacks`` (most towers) and
+    # ``maxStackSize`` (Sniper/Ninja/Mermonkey). Each is passed through verbatim
+    # so the renderer's ``_stack_cap`` reproduces "(stacks up to N)" at cutover.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("TradeEmpireBuffModel"),
+            "name": "TradeEmpireBuff",
+            "maxStacks": 20,
+            "cashPerRoundPerMechantship": 200,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["maxStacks"] == 20
+
+
+def test_buffs_stack_cap_zero_preserved(mod):
+    # ``0`` ("applies once, does not stack") is a real dump value and must be
+    # preserved faithfully; the renderer (``_stack_cap``) is what suppresses the
+    # clause for a non-positive cap, not the parser.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("RateSupportModel"),
+            "name": "RateBuff",
+            "multiplier": 0.75,
+            "maxStackSize": 0,
+        }
+    )
+    buff = mod._map_tier(model)["buffs"][0]
+    assert buff["maxStackSize"] == 0
 
 
 def test_buffs_damage_modifier_support_reads_nested_tag_bonus(mod):
