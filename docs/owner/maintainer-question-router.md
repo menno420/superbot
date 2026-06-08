@@ -1763,6 +1763,8 @@ Action owner: maintainer (ChatGPT template).
 
 **Suggested destination after answer:** `.session-journal.md` autonomy-boundary note (done) + `docs/collaboration-model.md` "autonomy boundary" (propose-first when next editing that binding doc).
 
+**Follow-up (2026-06-08):** the concrete instance — rebalancing the `.claude/CLAUDE.md` CodeGraph section — was proposed, its reasoning **verified against the source section** (the trust tiers + 5 critical safety rules are load-bearing; the v3.10→v3.11.2 verification narrative was changelog dead-weight), and **applied with maintainer approval**: condensed the version-provenance paragraph (kept the availability gotcha + revert instruction), kept every trust tier + critical rule intact, and added a task-size tool-routing note (`context_map` + turn-key recipe for contained work; CodeGraph for unfamiliar multi-file navigation).
+
 ### Q-0036 — Who authors the user-facing locked-reason denial copy (P1B)?
 
 **Area:** Access / Help UX
