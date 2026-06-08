@@ -187,19 +187,21 @@ CodeGraph's symbol-level tools: it surfaces module-level **and lazy/function-bod
 (`scripts/claude_pre_edit.py`) shows it automatically once per file per session, but run it
 yourself when planning a change. Full reference: `docs/context-map-tooling.md`.
 
-### Reliable tools
+### What to trust as-is vs. always grep-verify
 
-| Tool | Use for |
+Three reliability tiers, **verified against `grep`/`Read` ground truth on this repo's real call/import patterns (2026-06-08)**. Trust tier 1 without re-checking; never act on tier 2/3 without the grep.
+
+**Tier 1 — trust CodeGraph as-is (accurate):**
+
+| Tool | Trust it for |
 |---|---|
-| `mcp__codegraph__where` | Finding where a symbol is defined |
-| `mcp__codegraph__context` | Source + signature + starting caller list |
-| `mcp__codegraph__list_functions` | All symbols in a file or directory |
-| `mcp__codegraph__complexity` | Complexity score for a function or file |
-| `mcp__codegraph__check` | Which functions exceed complexity thresholds |
-| `mcp__codegraph__triage` | Risk-ranked list (use `level=function`, never `level=directory`) |
-| `mcp__codegraph__fn_impact` | Direct callers as a starting list — always grep-verify |
+| `mcp__codegraph__where` / `context` | Symbol **definition** location (file + line range) and **signature** |
+| `mcp__codegraph__list_functions` | Complete **structural listing** of a file's/dir's symbols |
+| `mcp__codegraph__complexity` / `check` / `triage` | Complexity metrics (AST-local). Use `triage level=function`, never `level=directory` |
 
-**Caller lists and file-import edges are hints only.** SuperBot uses function-body lazy imports, module-alias calls, and Discord decorator callbacks pervasively — roughly half of all real call edges are invisible to CodeGraph. Always grep-verify before acting on a caller list:
+**Tier 1 — for imports/dependencies, trust Grimp (not CodeGraph).** For "who imports X / what does X import / import blast-radius", use **`python3.10 scripts/context_map.py <path>`** (Grimp import graph). **Verified complete, including lazy/function-body imports** (e.g. `utils/role_feasibility.py` → *all 6* importers, incl. the 3 body-import callers CodeGraph's call graph misses). Its import edges are reliable as an **import** lower bound — trust them. `fn_impact` / `context.callers` are **not** the tool for this question.
+
+**Tier 2 — `context.callers` / `fn_impact`: starting list, never the list (the bare-token rule).** CodeGraph resolves a call edge only for a **bare-name** call (`foo(...)`). It **misses** the qualified form `module.foo(...)`, indirect/variable calls (`cb(...)`), and decorator/registry-dispatched calls — which SuperBot uses *everywhere* (`resources.resolve_role`, `db.get_setting`, `setup_diagnostics.collect_…`). That is why CodeGraph's own *caller coverage reads ~20%*. Always grep-verify a caller list:
 ```
 grep -rn "function_name\b" disbot/ --include="*.py"
 ```
@@ -217,6 +219,9 @@ When two functions share the same short name in different classes or modules, Co
 
 **4. `callees` lists are often empty — read the source.**
 Functions that contain `from X import Y` inside their body will show `callees: []` even if they call many things. Always read the source directly to find what a function calls.
+
+**5. Some edges are invisible to *both* tools — read the source / grep the wiring.**
+EventBus `emit`→`bus.on` subscriptions, the setup-section `REGISTRY` callback fields (`run` / `detail_embed_builder` invoked off the registry object), the `interaction_router` prefix dispatch, and `getattr`/dynamic dispatch are **neither import edges (Grimp-blind) nor named call edges (CodeGraph-blind)**. Verified: `audit.action_recorded` is emitted by `audit_events.emit_audit_action` and consumed by `server_logging._on_audit_action` via `bus.on(...)`, and `server_logging` does **not** import `audit_events` — so no tool connects emitter→subscriber. For event/dispatch wiring, grep the event-name string or the registry, never trust a blast radius.
 <!-- CODEGRAPH_END -->
 
 <!-- ARCH_RULES_START -->
