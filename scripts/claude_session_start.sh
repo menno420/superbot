@@ -20,7 +20,7 @@ bash "$REPO_ROOT/scripts/setup_dev_env.sh" || \
   echo "[setup] WARNING: setup_dev_env.sh failed — hooks may not work correctly."
 
 # ── 2. CodeGraph index ──────────────────────────────────────────────────────
-CG_PKG="@optave/codegraph@3.10.0"
+CG_PKG="@optave/codegraph@3.11.2"
 echo ""
 echo "[CodeGraph] Checking index..."
 
