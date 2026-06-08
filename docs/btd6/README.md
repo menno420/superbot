@@ -4,10 +4,10 @@
 > [`../subsystems/btd6.md`](../subsystems/btd6.md) is the entry point; ADR-006 and
 > `docs/current-state.md` win over anything here.
 >
-> **Paused work.** BTD6 data extraction is **paused pending the ADR-006 provenance
-> schema** (`../decisions/006-btd6-data-provenance-ownership.md`). These docs capture the
-> decode/extraction/pipeline direction; they are subordinate to ADR-006 and the global
-> AI/BTD6 gate in `docs/current-state.md`. Do not resume extraction from a docs session.
+> **Gate lifted.** The ADR-006 provenance schema is now implemented
+> ([`btd6-provenance-schema.md`](./btd6-provenance-schema.md)). BTD6 data extraction
+> may resume following the ordered backlog in `btd6-gamedata-decode-status.md`. The
+> global AI/BTD6 gate in `docs/current-state.md` still applies.
 
 These were consolidated out of the top level of `docs/` into `docs/btd6/` so the island
 is one folder behind the folio instead of ~14 files scattered at the root.
@@ -27,6 +27,9 @@ is one folder behind the folio instead of ~14 files scattered at the root.
 
 ## Pipeline / backends / data
 
+- [`btd6-provenance-schema.md`](./btd6-provenance-schema.md) — **binding** provenance schema
+  contract (RC-10 gate PR); defines `DataProvenance`, `FactRow`, the owner matrix, and hybrid
+  storage split. Merging this lifts the extraction pause.
 - [`btd6-data-pipeline.md`](./btd6-data-pipeline.md) — the ingestion/data pipeline shape.
 - [`btd6-data-backends.md`](./btd6-data-backends.md) — data backend options and the choice.
 - [`btd6-cloud-data.md`](./btd6-cloud-data.md) — cloud-data backend notes.

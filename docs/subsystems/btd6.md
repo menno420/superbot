@@ -29,8 +29,10 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
 
 ## Current state
 
-- BTD6 data extraction is **paused pending implementation of the ADR-006 provenance
-  schema**. Do not resume extraction or add new mappings in a folio/mapping session.
+- ADR-006 provenance schema **implemented** (`docs/btd6/btd6-provenance-schema.md`).
+  BTD6 data extraction may resume against the ordered backlog in
+  `docs/btd6/btd6-gamedata-decode-status.md`. The broader AI/BTD6 feature-expansion
+  gate (stability + caching + AI config) still applies per `docs/current-state.md`.
 - The repo already contains source registry, ingestion, fact-store, data-provider,
   cache, grounding, resolver, live-query, strategy, and ops-readiness services plus
   migrations/data. Their existence is not proof that provenance/source health is
