@@ -18,6 +18,11 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`cog-improvement-audit-2026-06-08.md`](./cog-improvement-audit-2026-06-08.md) —
+  cog-by-cog improvement audit from a 36-question interactive session (2026-06-08).
+  Covers all 35 existing cogs; includes a priority-ranked routing table. Top finding:
+  setup wizard is P0 (half its steps do nothing); AI cog settings and RPS tournament
+  decoupling are next.
 - [`owner-vision-ideas-2026-06-08.md`](./owner-vision-ideas-2026-06-08.md) —
   20-question interactive session with the maintainer (2026-06-08); covers games
   (poker, idle), economy (marketplace, streaks), AI (dungeon master, NL, events),
