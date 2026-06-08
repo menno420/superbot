@@ -177,6 +177,17 @@ read **`docs/helper-policy.md`** first.
    migration 050's CHECK constraint before adding a new
    `AccessMode` literal.
 
+### Working on the multi-agent pipeline / generating session prompts
+
+1. `docs/owner/agent-workflow-spec.md` — **start here**: Analysis, Decisions, Revision,
+   and Prompt Forge stage specs; prompt anatomy; cross-cutting rules.
+2. `docs/owner/ai-project-workflow.md` — pipeline overview, per-stage role table,
+   handoff templates, and idea-state vocabulary.
+3. `docs/owner/maintainer-question-router.md` — preserved owner intent; Q-block template
+   for routing unclear intent.
+4. `docs/collaboration-model.md` — binding contracts every executor agent must follow
+   (plan→execute lifecycle, act-vs-ask, bugs-first).
+
 ### Touching AI / setup advisor
 
 1. `docs/subsystems/ai.md` — canonical area entry point and expansion gates.

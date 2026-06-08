@@ -903,3 +903,37 @@ Moved/copied on: 2026-06-07 — added the three-bullet Context-delta field (need
   pointed-not-needed / discovered-by-hand) and the REVIEW mining step.
 Notes: this is the measurement that turns "hopefully better" into "demonstrably better".
 ```
+
+### Q-0013 — Agent stage spec batch (60 questions, 2026-06-08)
+
+**Area:** Workflow / Meta
+**Type:** Workflow / Process
+**Priority:** High
+**Status:** Answered (2026-06-08) — **Routed** → `docs/owner/agent-workflow-spec.md`
+**Suggested destination after answer:** `docs/owner/agent-workflow-spec.md` +
+`docs/AGENT_ORIENTATION.md` + `docs/owner/README.md` + `docs/owner/ai-project-workflow.md`
+
+**Question:** A 60-question multiple-choice batch defining the operational spec for every
+stage of the multi-agent pipeline: Analysis, Decisions, Revision, Prompt Forge, and the
+Executor agent. Covers stage scopes, output formats, prompt anatomy, cross-cutting rules
+(truth layers, ideas routing, gate checks, act-vs-ask), and where the answers should live.
+
+**Maintainer answer**
+
+```text
+All 60 answers confirmed recommended directions, with one exception:
+Q22 — Should prompts include a handoff section? Maintainer chose C (Never) over
+recommended B (cross-stage only). No handoff section in generated prompts.
+```
+
+**Routing result**
+
+```text
+Destination: docs/owner/agent-workflow-spec.md (new dedicated spec doc; canonical home
+  for all 60 decisions); wired into docs/AGENT_ORIENTATION.md ("Working on the
+  multi-agent pipeline" task route), docs/owner/README.md, and
+  docs/owner/ai-project-workflow.md §2.
+Moved/copied on: 2026-06-08.
+Notes: ChatGPT projects (Analysis, Decisions, Revision, Prompt Forge) should use
+  agent-workflow-spec.md as their operational reference.
+```
