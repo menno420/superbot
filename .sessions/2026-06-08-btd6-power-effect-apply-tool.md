@@ -42,6 +42,26 @@ extracted, the tool itself the missing piece. Built it end-to-end.
 2. **Steam-API patch-detect refresh trigger** — design in `btd6-data-refresh-pipeline-plan.md`;
    build-id check + GH Actions workflow gated on executable-CI sign-off.
 
+## Follow-on (same session) — Geraldo shop items ingested (next ⬜ domain)
+
+With the apply-tool done and capacity remaining, took the next ⬜ domain off the coverage map
+(`docs/btd6/btd6-dump-coverage-map.md`), mirroring the Powers/Knowledge pattern. All **16**
+Geraldo shop items are now a game-data-native lookup catalog.
+
+- **Decodability verified first** (the discipline that's saved prior sessions): each item's
+  `GeraldoItemModel` has a `locsId`; the textTable keys it as `"<locsId> name"` /
+  `"<locsId> description"` — **0/16 missing**. Plus structured `cost` (in-game cash),
+  `levelUnlockedAt`, `startingQuantity`/`maxQuantity`, `roundsToReplenish`/`amountToReplenish`.
+- **`parse_gamedata.py --geraldo`** → `geraldo_items.json` (16); **`btd6_data_service`**
+  `GeraldoItemEntry` + `get_geraldo_item`/`find_geraldo_item` (optional fixture, validated);
+  **`btd6_geraldo_lookup`** AI tool registered + in `BTD6_GROUNDING_TOOL_NAMES`. Coverage map
+  `GeraldoItems/` → ✅.
+- **Honest scope:** a *lookup* catalog (what each item is/costs/unlocks), **not** an applied
+  modifier — item mechanical magnitudes live in `behaviorModels` and are not extracted; "Blade
+  Trap on a Dart Monkey as a number" is not claimed. Same boundary as Powers/Knowledge.
+- Parser + data_service + tool tests; `check_quality --full` green (**8130 passed**), arch
+  strict 0 errors, `check_docs` clean. Shipped as a second commit on the same PR branch (#593).
+
 ## Context delta
 - **Pointed to & needed:** the prior session log's "Still owed" list was the single best pointer
   to the frontier — far more actionable than current-state (which tracks the *Adaptive Setup*
