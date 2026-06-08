@@ -117,3 +117,34 @@ def test_resolve_always_returns_result_even_when_catalog_filtered():
     result = exp.resolve(exp.Biome.SURFACE, exp.Loadout(), rng=_rng())
     assert result.narration
     assert isinstance(result.final_amount, int)
+
+
+def test_explore_from_inventory_returns_legacy_tuple_shape():
+    text, item, amount = exp.explore_from_inventory({}, rng=_rng())
+    assert isinstance(text, str) and text
+    assert item is None or isinstance(item, str)
+    assert isinstance(amount, int)
+
+
+def test_explore_from_inventory_builds_loadout_and_threads_rng():
+    # The helper must derive the Loadout from the inventory and pass biome +
+    # rng straight through — so it equals calling the engine directly with the
+    # same derived loadout and an identically seeded RNG.
+    inv = {"torch": 1, "pickaxe": 1, "stone": 9, "gold": 4}
+    got = exp.explore_from_inventory(inv, biome=exp.Biome.CAVERN, rng=random.Random(7))
+    expected = exp.resolve_to_legacy_tuple(
+        biome=exp.Biome.CAVERN,
+        loadout=exp.Loadout.from_inventory(inv),
+        rng=random.Random(7),
+    )
+    assert got == expected
+
+
+def test_explore_from_inventory_default_biome_is_surface():
+    # Omitting ``biome`` must behave exactly like passing SURFACE explicitly.
+    inv = {"pickaxe": 1}
+    default = exp.explore_from_inventory(inv, rng=random.Random(3))
+    explicit = exp.explore_from_inventory(
+        inv, biome=exp.Biome.SURFACE, rng=random.Random(3),
+    )
+    assert default == explicit

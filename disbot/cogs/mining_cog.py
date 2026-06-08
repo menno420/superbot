@@ -21,6 +21,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from cogs.mining.exploration import explore_from_inventory
 from cogs.mining.recipes import load_recipes
 from core.runtime import panel_manager
 from utils import db
@@ -223,12 +224,11 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def explore(self, ctx):
-        """Discover random events or items."""
-        from cogs.mining.rewards import roll_explore_outcome
-
+        """Discover random events or items (loadout- and depth-aware)."""
         user_id = str(ctx.author.id)
         gid = ctx.guild.id
-        text, item, amount = roll_explore_outcome()
+        inventory = await db.get_mining_inventory(user_id, gid)
+        text, item, amount = explore_from_inventory(inventory)
         if item:
             await self.update_inventory(user_id, gid, item, amount)
         await ctx.send(f"{ctx.author.mention} {text}")

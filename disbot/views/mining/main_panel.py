@@ -27,7 +27,7 @@ from __future__ import annotations
 import discord
 
 from cogs.mining.recipes import load_recipes
-from cogs.mining.rewards import roll_explore_outcome, roll_harvest_amount
+from cogs.mining.rewards import roll_harvest_amount
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
 from utils import db
@@ -126,9 +126,16 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
+        # Lazy import: the exploration engine is game-domain logic that lives
+        # in cogs/, and views must not import cogs at module level (layer
+        # rule).  A later step relocates the pure engine to a shared layer so
+        # this can become a plain import (mining_exploration_brainstorm §7.4).
+        from cogs.mining.exploration import explore_from_inventory
+
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
-        text, item, amount = roll_explore_outcome()
+        inventory = await db.get_mining_inventory(user_id, gid)
+        text, item, amount = explore_from_inventory(inventory)
         if item:
             await db.update_mining_item(user_id, gid, item, amount)
         embed = discord.Embed(

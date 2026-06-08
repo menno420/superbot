@@ -310,6 +310,25 @@ def resolve_to_legacy_tuple(
     return resolve(biome, loadout or Loadout(), rng=rng).to_legacy_tuple()
 
 
+def explore_from_inventory(
+    inventory: dict[str, int],
+    *,
+    biome: Biome = Biome.SURFACE,
+    rng: random.Random | None = None,
+) -> tuple[str, str | None, int]:
+    """Resolve one exploration step straight from an ``{item: qty}`` inventory.
+
+    Convenience seam for the ``!explore`` command and the hub's Explore
+    button: it builds the :class:`Loadout` from the raw inventory and returns
+    the legacy ``(text, item, amount)`` tuple both call sites already consume.
+    It centralises loadout construction and the (currently fixed, ``SURFACE``)
+    starting depth, so a later persistent-position step can thread the
+    player's real biome through this single place.
+    """
+    loadout = Loadout.from_inventory(inventory)
+    return resolve_to_legacy_tuple(biome=biome, loadout=loadout, rng=rng)
+
+
 # Mutation-application is intentionally NOT here: applying ``final_amount``
 # and ``outcome.consumes`` to an inventory is a write, which must flow
 # through the DB/mutation layer the cog already uses.  This module only
@@ -324,6 +343,7 @@ __all__ = [
     "eligible_outcomes",
     "resolve",
     "resolve_to_legacy_tuple",
+    "explore_from_inventory",
     "PICKAXE",
     "TORCH",
     "LANTERN",

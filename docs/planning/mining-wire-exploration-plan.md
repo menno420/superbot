@@ -1,9 +1,16 @@
 # Mining — wire `!explore` to the depth/loadout engine
 
-> **Status:** `plan` — a small, ready-to-execute slice promoted from the mining brainstorm
-> via the **idea lifecycle** (`docs/ideas/README.md`; owner decision Q-0015 grooming pass,
-> 2026-06-08). **Not yet approved to build** — it is a behaviour change to a user-facing
-> command, so it needs the maintainer's go. Source and merged PRs win over this plan.
+> **Status:** `implemented` (2026-06-08, pending PR merge) — `!explore` (both the command and
+> the hub's Explore button) now resolves through the loadout/depth engine via a new pure
+> `exploration.explore_from_inventory()` seam, with unit tests; the engine is no longer dormant.
+> Promoted from the mining brainstorm via the **idea lifecycle** (`docs/ideas/README.md`,
+> owner decision Q-0015 grooming pass). Source and merged PRs win over this plan.
+>
+> **Implementation note (2026-06-08).** The cog imports the seam at module level (cogs→cogs is
+> allowed); the hub view uses a **lazy** import inside `explore_btn` because `views → cogs` at
+> module level is a layer-rule error (the existing `recipes`/`rewards` module imports are tracked
+> arch-fix-13 debt — no new one was added). Relocating the pure engine to a shared layer so
+> `services/` can build on it is deferred to the platform foundation (brainstorm §7.4).
 
 ## What & why
 
