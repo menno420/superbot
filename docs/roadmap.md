@@ -35,7 +35,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | Server-management **PR13** (role templates; PR10–PR12 shipped) · health/diagnostics production live-tests (owed) · [docs restructure (Q-0010)](planning/docs-restructure-brief-2026-06-08.md) |
+| **Now** | Server-management **PR13 AI** template layer (deterministic slice shipped 2026-06-08; PR10–PR12 shipped) · health/diagnostics production live-tests (owed) · [docs restructure (Q-0010)](planning/docs-restructure-brief-2026-06-08.md) |
 | **Next** | Server-Management Hub (PR14) · deferred governance setup section · Discord-native interface completion · settings consistency coverage |
 | **Later** | AI expansion (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -49,11 +49,13 @@
 Folio: [server-management](subsystems/server-management.md) · **authoritative sequence:**
 [status tracker](planning/server-management-status-2026-06-05.md)
 
-- **Now** — **PR13**: deterministic + AI role templates. (PR10 moderation config, PR11
-  moderation + roles setup sections, and PR12 setup diagnostics & repair all shipped; PR11's
-  governance setup section is deferred — owner decision Q-0008.)
-- **Next** — the unified **Server Management Hub** (PR14, last) → the deferred governance
-  setup section (capability overrides + command-access, Q-0011).
+- **Now** — **PR13 AI** template layer. (PR13's **deterministic** role-templates slice
+  shipped 2026-06-08; PR10 moderation config, PR11 moderation + roles setup sections, and
+  PR12 setup diagnostics & repair all shipped; PR11's governance setup section is deferred —
+  owner decision Q-0008.)
+- **Next** — the unified **Server Management Hub** (PR14, last;
+  [plan](planning/server-management-pr14-hub-plan.md)) → the deferred governance setup section
+  (capability overrides + command-access, Q-0011).
 - Plans (context, not sequence): [roadmap](planning/server-management-roadmap-2026-06-05.md)
   (target architecture) · [implementation-plan](planning/server-management-implementation-plan-2026-06-05.md)
   (PR scope; PR1–9 shipped).

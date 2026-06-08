@@ -650,7 +650,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 | **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built in the moderation + roles slices (2026-06-07); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. **Built 2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section; `clear_binding` the one safe auto-repair, everything else advisory/blocked — see subsection above). | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. **Deterministic slice built 2026-06-08** (built-in templates + `create_managed_role` op + setup section; see subsection above). **AI generation layer is the remaining PR13 follow-up.** | PR5, #523 |
-| **PR14** | Server Management Hub (last). **← next after the PR13 AI follow-up.** | all managers |
+| **PR14** | Server Management Hub (last). **← next after the PR13 AI follow-up.** Plan: [`server-management-pr14-hub-plan.md`](server-management-pr14-hub-plan.md). | all managers |
 
 Near-term completion items folded into the above: finish PR2's diagnostics/findings
 model and selector paging/search (in PR6 as the first production consumer); finish

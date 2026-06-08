@@ -34,6 +34,24 @@ SetupCog/section register, DB CHECK verified live to accept both new kinds, 0 ER
 safety filter + the `create_managed_role` staging path), then **PR14** (Server Management Hub).
 Authoritative queue: `docs/planning/server-management-status-2026-06-05.md`.
 
+**Second deliverable — PR14 implementation plan.** Rather than rush the capstone hub
+(persistent views + restoration aren't cleanly live-testable in the sandbox), researched the
+existing hub infra (Explore agent) and wrote a source-grounded, executable
+**[PR14 hub plan](../docs/planning/server-management-pr14-hub-plan.md)**: reuse each manager's
+`build_help_menu_view()` factory, compose read-only health badges from
+`resource_health`/`setup_diagnostics`/`setup_readiness`/feasibility, mirror `views/games/hub.py`
++ `ModPanelView` for the persistent nav + ADR-005 re-checks. Wired into the roadmap, folio, and
+tracker. PR #582 now carries PR13 (code) + this plan (docs) — review as "PR13 shipped + the
+runway for PR14."
+
+**Idea-backlog grooming (standing secondary task, Q-0015):** browsed `docs/ideas/`. The
+mining brainstorm is already routed (open PR #581); `ai-extra-tool-capability-ideas` is correctly
+parked behind the AI-orchestration gate; `future-product-direction-2026-06-07` is an explicit
+**capture-only** doc ("do not promote until a candidate is actually promoted") whose items are
+nearly all gated *after* server-management — so no unilateral promotion was appropriate this
+session. The PR14 plan **is** the "research → plan for next session" move the maintainer invited.
+No idea left orphaned.
+
 ## Context delta
 - **Needed but not pointed to:** the **setup-draft op-kind machinery** is a *three-place*
   contract — the dispatcher `_KNOWN_KINDS` (`services/setup_operations.py`), the DB gate
