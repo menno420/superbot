@@ -15,8 +15,10 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
+from services.btd6_source_registry import FreshnessBucket, bucket_freshness
 from utils.db import btd6_sources as btd6_db
 
 logger = logging.getLogger("bot.services.btd6_fact_store")
@@ -44,6 +46,91 @@ class BTD6FactQuery:
     fact_type: str | None
     entity_kind: str
     entity_key: str
+
+
+@dataclass(frozen=True)
+class DataProvenance:
+    """Provenance label attached to every live BTD6 fact.
+
+    Assembled from a joined fact row via :func:`extract_provenance`.
+    See ``docs/btd6/btd6-provenance-schema.md`` for the full contract.
+    """
+
+    source_id: int
+    source_key: str
+    source_name: str
+    source_kind: str
+    trust_tier: int
+    fetched_at: datetime
+    game_version: str | None
+    freshness: FreshnessBucket
+
+    @property
+    def is_official(self) -> bool:
+        return self.trust_tier == 1
+
+    @property
+    def label(self) -> str:
+        return f"{self.source_name} (tier {self.trust_tier}, {self.freshness})"
+
+
+def extract_provenance(row: dict[str, Any]) -> DataProvenance:
+    """Assemble a :class:`DataProvenance` from a joined fact row.
+
+    Expects the shape returned by
+    ``btd6_db.fetch_facts_for_intent`` — i.e. the fact columns plus
+    ``source_id``, ``source_key``, ``source_name``, ``source_kind``,
+    ``trust_tier`` joined from ``btd6_source_registry``.
+    """
+    fetched_at: datetime = row["fetched_at"]
+    if fetched_at is None:
+        raise TypeError(
+            "fact row missing fetched_at — column is NOT NULL in btd6_facts",
+        )
+    if isinstance(fetched_at, str):
+        fetched_at = datetime.fromisoformat(fetched_at)
+    return DataProvenance(
+        source_id=int(row["source_id"]),
+        source_key=row.get("source_key") or "",
+        source_name=row.get("source_name") or "",
+        source_kind=row.get("source_kind") or "",
+        trust_tier=int(row.get("trust_tier") or 2),
+        fetched_at=fetched_at,
+        game_version=row.get("game_version"),
+        freshness=bucket_freshness(fetched_at),
+    )
+
+
+@dataclass(frozen=True)
+class FactRow:
+    """Typed wrapper for a fact row with provenance attached.
+
+    Use :meth:`from_row` to lift a raw dict from
+    :func:`fetch_for_intent`.  New extraction code should work with
+    ``FactRow`` rather than raw dicts.
+    """
+
+    fact_id: int
+    fact_type: str
+    entity_kind: str
+    entity_key: str
+    body_json: dict[str, Any]
+    confidence: float
+    version: int
+    provenance: DataProvenance
+
+    @classmethod
+    def from_row(cls, row: dict[str, Any]) -> FactRow:
+        return cls(
+            fact_id=int(row["id"]),
+            fact_type=row["fact_type"],
+            entity_kind=row["entity_kind"],
+            entity_key=row["entity_key"],
+            body_json=row.get("body_json") or {},
+            confidence=float(row.get("confidence") or 1.0),
+            version=int(row.get("version") or 1),
+            provenance=extract_provenance(row),
+        )
 
 
 async def store_fact(
@@ -156,7 +243,10 @@ async def fetch_for_intent(
 
 __all__ = [
     "BTD6FactQuery",
+    "DataProvenance",
+    "FactRow",
     "FactWriteResult",
+    "extract_provenance",
     "fetch_for_intent",
     "store_fact",
     "store_facts",

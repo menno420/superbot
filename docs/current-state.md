@@ -104,7 +104,11 @@ Source code and merged PRs win over anything written here.
 - **AI / BTD6 feature expansion** is gated on *all* of: bot-wide stability **+**
   provider/provenance checks **+** caching / source-health clarity **+** AI
   behavior/config correctness — **not** just the RC-11 guard suite passing.
-- **BTD6 data extraction** stays paused pending the **ADR-006** provenance schema.
+- **BTD6 data extraction** — ADR-006 provenance schema **now implemented**
+  (`docs/btd6/btd6-provenance-schema.md`); extraction may resume against the ordered
+  backlog in `docs/btd6/btd6-gamedata-decode-status.md`. The broader AI/BTD6
+  feature-expansion gate (stability + provider/provenance + caching + AI config) still
+  applies.
 - `_derive_scope` → `PLATFORM_OWNER` (decision D1) — **RESOLVED** in #541; owner-only
   AI tools are now reachable.
 
