@@ -24,7 +24,24 @@ CG_PKG="@optave/codegraph@3.11.2"
 echo ""
 echo "[CodeGraph] Checking index..."
 
-if npx -y "${CG_PKG}" --version >/dev/null 2>&1; then
+# Resolve the pinned CodeGraph CLI, retrying a few times.  On a fresh container
+# the npx cache (/root/.npm/_npx) is cold, so the first `npx -y` must download
+# from the registry — and a transient blip there used to print a bare "Package
+# unavailable" (the real error swallowed by 2>/dev/null) and silently disable
+# CodeGraph for the entire session.  Retry the cold download, and on a genuine
+# failure surface the actual error so a real problem (bad/unpublished version,
+# registry down) is diagnosable instead of guessed at.
+CG_OK=0
+CG_ERR=""
+for attempt in 1 2 3; do
+  if CG_ERR="$(npx -y "${CG_PKG}" --version 2>&1)"; then
+    CG_OK=1
+    break
+  fi
+  [ "$attempt" -lt 3 ] && sleep "$((attempt * 2))"
+done
+
+if [ "$CG_OK" = 1 ]; then
   LAST_BUILT=".codegraph/last_build_commit"
   HEAD="$(git rev-parse HEAD 2>/dev/null || echo "unknown")"
   SHORT="$(git log -1 --format='%h %s' 2>/dev/null || echo "unknown commit")"
@@ -47,7 +64,10 @@ if npx -y "${CG_PKG}" --version >/dev/null 2>&1; then
     fi
   fi
 else
-  echo "[CodeGraph] Package unavailable — skipping index build."
+  echo "[CodeGraph] CLI unavailable after 3 attempts — skipping index build."
+  echo "            (symbol lookups fall back to grep.)"
+  echo "            Last error: ${CG_ERR:-<none captured>}"
+  echo "            Manual retry: npx -y ${CG_PKG} --version"
 fi
 
 # ── 3. Session summary ──────────────────────────────────────────────────────
