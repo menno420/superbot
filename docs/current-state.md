@@ -6,9 +6,9 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action:** Server-management is structurally complete after merged **#584**. The next source-grounded lane is the [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md): begin with Phase 0's decided Q-0026 multi-word subsystem identity repair, then an Opus access/read-model contract session before any new mutation surface. Owner decisions Q-0017–Q-0027 are merged via **#585**; Q-0028–Q-0033 route the remaining profile/risk/rollback/UI/privacy choices. The server-management PR13 AI generation layer remains gated by the AI-expansion gate.
+> **▶ Next action:** Phase 0 of the [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md) is underway. The **Q-0026 multi-word subsystem identity repair is implemented** — `cog_name_to_subsystem` now converts CamelCase → snake_case, the registry key is `server_management`, and the same fix repaired the latent `proof_channel` / `four_twenty` collapse — and the Phase 0 **direct-vs-draft mutation boundary** (`docs/ownership.md` § "Direct vs. draft mutation lanes") and **access read-model contract** (planning doc §4 + §16) are now documented. The next lanes are **P1A** (build the side-effect-free Access Map projection service per the documented contract — no UI, no persistence) and **P0C** (normalize the role-threshold direct-write drift the contract flags). Owner decisions Q-0017–Q-0027 merged via **#585**; Q-0028–Q-0033 hold at their safe defaults. The server-management PR13 AI generation layer remains gated by the AI-expansion gate.
 >
-> **Last updated:** 2026-06-08 · **#584 merged** the first-class Server Management Hub; **#585 merged** Q-0017–Q-0027 for the Adaptive Setup/Access/Routine planning lane. Source and live GitHub state supersede older same-session PR14 wording. This file lists only merged work + the next action; verify open PRs live.
+> **Last updated:** 2026-06-08 · Phase 0 of the Adaptive Setup/Access platform began: the **Q-0026 identity repair is implemented** (snake_case subsystem keys; `servermanagement` → `server_management`) with regression tests, plus the Phase 0 direct-vs-draft and access read-model contracts documented. Earlier the same day **#584 merged** the first-class Server Management Hub and **#585 merged** Q-0017–Q-0027. Source and live GitHub state supersede older wording. This file lists merged work + the next action; verify open PRs live.
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
 > **second**, right after `.claude/CLAUDE.md`.
@@ -121,14 +121,11 @@ Source code and merged PRs win over anything written here.
 
 ## Near-term technical debt (decided, not yet implemented)
 
-- **`cog_name_to_subsystem` CamelCase fix (Q-0026).** The function strips "Cog" +
-  lowercases with no CamelCase→snake_case conversion. `servermanagement` is the first
-  multi-word key; the correct output is `server_management`. Fix:
-  (1) update `cog_name_to_subsystem` in `disbot/core/runtime/command_surface_ledger.py`
-  to do a proper CamelCase→snake_case split; (2) rename the `"servermanagement"` key to
-  `"server_management"` everywhere (subsystem_registry, HUBS, KNOWN_PANEL_COMMANDS,
-  any literal references). Run check_architecture + full test suite after rename.
-  Risk: medium — touches identity-contract / diagnostics. **Owner decision Q-0026.**
+- **`cog_name_to_subsystem` CamelCase fix (Q-0026) — IMPLEMENTED 2026-06-08.** The function
+  now converts CamelCase → snake_case and the registry key is `server_management`; the same
+  fix also repaired the latent `proof_channel` / `four_twenty` collapse and added regression
+  tests pinning the snake_case output contract. (Kept here as a one-line record until the next
+  session reconciles the merge into "Recently shipped"; verify the PR live.)
 
 - **`new_subsystem.py` scaffold script (Q-0025).** Adding a hub/subsystem requires
   ~8 coordinated edits with no automation. Decided deliverable: a `new_subsystem.py`

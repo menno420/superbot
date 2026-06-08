@@ -1102,6 +1102,11 @@ Implemented this session: SUBSYSTEMS["servermanagement"] + HUBS entry (administr
   KNOWN_PANEL_COMMANDS entry, the hub view/cog/service, and the help/discoverability
   enumerations updated. Live boot: identity-contract clean (STRICT=on), 0 ERROR/CRITICAL.
 Moved/copied on: 2026-06-08 (this session — server-management PR14).
+Superseded note (2026-06-08, Q-0026): the registry key was renamed servermanagement →
+  server_management when cog_name_to_subsystem was fixed to snake_case. The interpretation
+  above (key "follows cog_name_to_subsystem, no underscore") was correct only against the
+  then-buggy collapsing function; the canonical key is now server_management. The
+  !servermanagement command name is unchanged.
 ```
 
 ---
@@ -1532,7 +1537,7 @@ Not yet implemented.
 **Area:** Core runtime / Subsystem registry / Naming convention
 **Type:** Technical debt / Bug fix
 **Priority:** High
-**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Status:** Answered in chat (2026-06-08) — **Routed / implemented 2026-06-08**
 **Suggested destination after answer:** `disbot/core/runtime/command_surface_ledger.py`
   (function fix) + any doc/comment that describes the subsystem key convention.
 
@@ -1578,7 +1583,14 @@ Run check_architecture.py + full test suite after the rename.
 Destination: implementation task — disbot/core/runtime/command_surface_ledger.py +
   utils/subsystem_registry.py rename.
 Captured: 2026-06-08 (repo friction audit session).
-Not yet implemented — treat as a near-term technical debt fix.
+Implemented 2026-06-08 (Adaptive Setup Phase 0 / P0A): cog_name_to_subsystem now does a
+  two-pass CamelCase → snake_case conversion; the SUBSYSTEMS / HUBS / KNOWN_PANEL_COMMANDS /
+  PersistentView.SUBSYSTEM / panel-anchor key for the hub were renamed servermanagement →
+  server_management; the same fix repaired the pre-existing collapse of ProofChannelCog →
+  proof_channel and FourTwentyCog → four_twenty (both registry keys were already snake_case
+  and had been silently orphaning). The user-facing !servermanagement command + aliases +
+  /server-management slash are unchanged (command names, not subsystem keys). Regression
+  tests pin the snake_case output contract so a future multi-word subsystem cannot regress.
 ```
 
 ---

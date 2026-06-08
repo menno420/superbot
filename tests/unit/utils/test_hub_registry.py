@@ -64,7 +64,7 @@ def test_committed_hub_set_matches_promoted_hubs():
         "admin",
         "settings",
         "diagnostic",
-        "servermanagement",
+        "server_management",
     }
 
 
@@ -278,7 +278,7 @@ def test_hubs_for_tier_administrator_sees_all():
         "admin",
         "settings",
         "diagnostic",
-        "servermanagement",
+        "server_management",
     }
 
 
@@ -294,7 +294,7 @@ def test_hubs_for_tier_owner_sees_all():
         "admin",
         "settings",
         "diagnostic",
-        "servermanagement",
+        "server_management",
     }
 
 

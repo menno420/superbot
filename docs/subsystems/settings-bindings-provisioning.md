@@ -26,6 +26,11 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 - Use `docs/health/platform-consistency-ledger.md` before adding another surface or write
   path. Ownership and allowed write paths remain in `docs/ownership.md` and
   `docs/runtime_contracts.md`.
+- **Direct vs. draft lane choice** is canonical in `docs/ownership.md` §
+  "Direct vs. draft mutation lanes": focused/reversible single-domain edits write
+  directly through their audited service; compound/multi-setting/generated changes
+  stage `SetupOperation` rows and apply through Final Review. Pick the lane by the
+  *shape* of the change, not the panel you're in.
 
 ## Current state
 

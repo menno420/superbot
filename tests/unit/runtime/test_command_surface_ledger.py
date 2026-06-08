@@ -52,6 +52,47 @@ def test_cog_name_handles_no_cog_suffix():
     assert cog_name_to_subsystem("Economy") == "economy"
 
 
+def test_multiword_cog_names_convert_to_snake_case():
+    """Q-0026: a multi-word cog class resolves to its snake_case key.
+
+    Before the fix these collapsed to ``servermanagement`` /
+    ``proofchannel`` / ``fourtwenty``; the latter two silently failed to
+    match their already-snake_case registry keys (``proof_channel`` /
+    ``four_twenty``), so their commands were orphaned in the ledger.
+    """
+    assert cog_name_to_subsystem("ServerManagementCog") == "server_management"
+    assert cog_name_to_subsystem("ProofChannelCog") == "proof_channel"
+    assert cog_name_to_subsystem("FourTwentyCog") == "four_twenty"
+
+
+def test_acronym_cog_names_stay_collapsed():
+    """Acronym runs are a single token — no spurious underscore."""
+    assert cog_name_to_subsystem("BTD6Cog") == "btd6"
+    assert cog_name_to_subsystem("AICog") == "ai"
+
+
+def test_snake_case_is_the_output_contract():
+    """The conversion output is snake_case regardless of registration.
+
+    A future ``FooBarBazCog`` must register ``foo_bar_baz`` (not the
+    collapsed ``foobarbaz``) to resolve.  Pinned against a synthetic
+    registry so the contract is documented independently of today's
+    keys — this is the regression guard for new multi-word subsystems.
+    """
+    with patch(
+        "utils.subsystem_registry.SUBSYSTEMS",
+        {"foo_bar_baz": {"visibility_tier": "user"}},
+    ):
+        assert cog_name_to_subsystem("FooBarBazCog") == "foo_bar_baz"
+    # With only the collapsed key registered, the cog no longer resolves —
+    # which is exactly the orphan trap Q-0026 removed.
+    with patch(
+        "utils.subsystem_registry.SUBSYSTEMS",
+        {"foobarbaz": {"visibility_tier": "user"}},
+    ):
+        assert cog_name_to_subsystem("FooBarBazCog") is None
+
+
 # ---------------------------------------------------------------------------
 # Builder
 # ---------------------------------------------------------------------------
@@ -121,6 +162,20 @@ def test_build_ledger_marks_subsystem_none_for_orphan_cog():
     assert ledger.entries[0].subsystem is None
     assert ledger.entries[0].visibility_tier is None
     assert "BogusCog" in ledger.findings.orphan_cog_subsystems
+
+
+def test_build_ledger_resolves_multiword_subsystem_cog():
+    """Q-0026 regression guard (end-to-end): a multi-word cog's command
+    is attributed to its snake_case subsystem and is NOT reported as an
+    orphan.  ``ServerManagementCog`` previously collapsed to
+    ``servermanagement``; the registry key is now ``server_management``.
+    """
+    bot = _make_bot(
+        _make_cmd("servermanagement", cog_name="ServerManagementCog"),
+    )
+    ledger = build_ledger(bot)
+    assert ledger.entries[0].subsystem == "server_management"
+    assert "ServerManagementCog" not in ledger.findings.orphan_cog_subsystems
 
 
 def test_build_ledger_visibility_tier_from_subsystems():

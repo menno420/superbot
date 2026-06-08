@@ -1,6 +1,6 @@
 # Adaptive Setup, Access, Profile, and Routine Platform — source map and roadmap
 
-> **Status:** `plan` · **Not implemented** · **Source-verified 2026-06-08**
+> **Status:** `plan` · **Phase 0 in progress** — P0A (Q-0026 identity repair) implemented and P0B (direct-vs-draft + access read-model contracts) documented on 2026-06-08; Phases 1+ not implemented · **Source-verified 2026-06-08**
 > **Owner decisions:** applies [Q-0017 through Q-0027](../owner/maintainer-question-router.md#q-0017--adaptive-setupaccessroutine-platform-planning-document-structure-2026-06-08).
 > **Authority:** source + binding architecture/ownership/runtime contracts win over this plan. This is the one comprehensive planning home required by Q-0017.
 > **Live-repo check:** PRs [#584](https://github.com/menno420/superbot/pull/584) and [#585](https://github.com/menno420/superbot/pull/585) are merged; the GitHub API reported no open PRs during this source-mapping session.
@@ -60,8 +60,8 @@ SuperBot already has most of the required write seams and several read seams: se
 | `disbot/core/runtime/command_access.py` + `services/command_access_service.py` | Resolves guild channel-access mode, bootstrap/operator exceptions, decision reason/source; canonical audited writer. | Access Map command-access axis and locked reason seed. | Current model is command-entry channel admission, not full capability/time availability. |
 | `disbot/services/command_routing.py` + `cog_routing_profiles.py` | Resolves channel → category → guild → default-true cog routing; existing routing profiles compile to setup operations. | Access Map routing axis and Feature Profile compiler building blocks. | Routing profiles are channel-name heuristics for three cogs, not full Guild Feature Profiles. |
 | `disbot/governance/` (`resolve_visibility`, capability resolvers, snapshots) | Canonical subsystem visibility and capability/authority decisions. | Access Map role/capability/help visibility axes. | Must compose, not duplicate; legacy `governance_service` is only a re-export shim. |
-| `disbot/core/runtime/command_surface_ledger.py` | Runtime command/subsystem identity, classification, help-hidden policy, diagnostics. | Feature inventory, help/access consistency checks. | Q-0026: `cog_name_to_subsystem` drops `Cog` then lowercases; multi-word names become collapsed keys. |
-| `disbot/utils/subsystem_registry.py` | `SUBSYSTEMS`, `HUBS`, visibility/capability/entry-point metadata and identity validation. | Profile catalogue vocabulary and Access Map feature index. | Registry metadata describes identity/discovery, not per-guild desired enablement. Current key is `servermanagement`. |
+| `disbot/core/runtime/command_surface_ledger.py` | Runtime command/subsystem identity, classification, help-hidden policy, diagnostics. | Feature inventory, help/access consistency checks. | **Q-0026 resolved 2026-06-08:** `cog_name_to_subsystem` now CamelCase → snake_cases (also repaired the latent `proof_channel`/`four_twenty` collapse). |
+| `disbot/utils/subsystem_registry.py` | `SUBSYSTEMS`, `HUBS`, visibility/capability/entry-point metadata and identity validation. | Profile catalogue vocabulary and Access Map feature index. | Registry metadata describes identity/discovery, not per-guild desired enablement. Key is now `server_management` (snake_cased per Q-0026). |
 | `disbot/cogs/help_cog.py`, `cogs/help/route.py`, help views | Governance-aware live help, registry/category routes, command classification filtering. | Help Preview must invoke the same visibility and render paths with an explicit audience context. | No single composed help+command-access+routing+availability explanation object today. |
 | `disbot/services/setup_diagnostics.py` | Read-only setup findings; suggested repairs are setup operations, never direct writes. | Setup health/drift detector core. | Needs access/help/routing/routine/identity consistency providers. |
 | `disbot/services/server_management_hub.py` + `views/server_management/hub.py` | Read-only badges and handoffs to moderation/channels/roles/cleanup/setup managers. | Owner landing point for Access Map, health, Help Preview. | It deliberately owns no mutation and should stay that way. |
@@ -106,7 +106,7 @@ The projection should return decisions with source, precedence, allow/deny/unkno
 
 ### 4.2 Required prerequisites
 
-1. **Q-0026 identity fix first:** implement CamelCase → snake_case and rename `servermanagement` to `server_management`, with identity-contract, help, hub, router-prefix, and migration/reference verification. Do not build profile identifiers on collapsed multi-word keys.
+1. **Q-0026 identity fix — DONE (2026-06-08).** `cog_name_to_subsystem` now does a two-pass CamelCase → snake_case conversion and the registry key is `server_management`; the same fix repaired the latent `ProofChannelCog → proof_channel` / `FourTwentyCog → four_twenty` collapse, and regression tests pin the snake_case output contract. The user-facing `!servermanagement` command name is unchanged (command names are not subsystem keys). Profile identifiers may now safely assume snake_case multi-word keys.
 2. **Pin the mutation boundary:** profiles, Access Map editing, and risky routines compile to setup drafts; Final Review applies. Focused manager/runtime actions may remain direct through their canonical audited services.
 3. **Build the composed read model before UI/editing:** Access Map, Help Preview, denial explanations, and drift checks must consume one resolver.
 4. **Normalize high-risk drift before automating it:** especially direct role-threshold DB writes and direct channel creation/edit paths.
@@ -232,11 +232,11 @@ Behind existing AI expansion/readiness gates, AI may suggest profiles/routines, 
 
 ### Phase 0 — foundation and reconciliation
 
-- Implement Q-0026 identity fix/rename in a separate technical-debt session.
-- Turn this panel consistency map into explicit canonical direct-vs-draft rules.
-- Specify structured access decision, locked reason, simulated audience, and drift-provider interfaces.
-- Normalize/audit role-threshold writes and assess channel lifecycle gaps before routine action exposure.
-- Confirm first Guild Feature Profile catalogue and risk/snapshot owner decisions.
+- ✅ **Implement Q-0026 identity fix/rename** (2026-06-08) — `cog_name_to_subsystem` snake_cases; key `server_management`; latent `proof_channel`/`four_twenty` collapse also fixed; regression tests added (P0A).
+- ✅ **Turn this panel consistency map into explicit canonical direct-vs-draft rules** (2026-06-08) — now binding in [`docs/ownership.md` § "Direct vs. draft mutation lanes"](../ownership.md) (P0B).
+- ✅ **Specify structured access decision, locked reason, simulated audience, and drift-provider interfaces** (2026-06-08) — see §16 below (P0B). Reuses the existing `command_access` decision/reason model rather than forking it.
+- ⏳ **Normalize/audit role-threshold writes and assess channel lifecycle gaps** before routine action exposure — selected and scoped for the **P0C** batch (see §16.5 and the drift note in `docs/ownership.md`); not yet implemented.
+- ⏳ Confirm first Guild Feature Profile catalogue and risk/snapshot owner decisions (Q-0028 / Q-0030 / Q-0031 — open; safe defaults hold, no committed catalogue built).
 - No product expansion or new mutation surface.
 
 ### Phase 1 — read-only orchestration foundation
@@ -284,8 +284,8 @@ Behind existing AI expansion/readiness gates, AI may suggest profiles/routines, 
 
 | Batch / target agent | Goal and scope | Likely files | Out of scope | Verification | Risk / stop conditions |
 |---|---|---|---|---|---|
-| **P0A — Codex/Sonnet:** Q-0026 identity repair | Snake-case conversion, `server_management` rename, references/tests/docs. | `command_surface_ledger.py`, `subsystem_registry.py`, help/router/hub tests/docs | Product features | Full quality + strict architecture + live identity check | Medium; stop if key migration affects persisted external contracts unexpectedly. |
-| **P0B — Opus:** access/read-model contract | Finalize precedence, decision/reason schema, audience simulation, owners, invalidation. | Planning/ADR/ownership/runtime docs | Runtime code | Docs/architecture checks | High architecture; stop on unresolved second-permission-system risk. |
+| **P0A — Codex/Sonnet:** Q-0026 identity repair | ✅ **DONE 2026-06-08.** Snake-case conversion, `server_management` rename, references/tests/docs. | `command_surface_ledger.py`, `subsystem_registry.py`, help/router/hub tests/docs | Product features | Full quality + strict architecture + live identity check | Medium; stop if key migration affects persisted external contracts unexpectedly. |
+| **P0B — Opus:** access/read-model contract | ✅ **DONE 2026-06-08** (docs). Precedence, decision/reason schema (reuses `command_access`), audience simulation, owners, invalidation, direct-vs-draft rule — §16 + `docs/ownership.md`. | Planning/ADR/ownership/runtime docs | Runtime code | Docs/architecture checks | High architecture; stop on unresolved second-permission-system risk. |
 | **P0C — Sonnet:** panel writer normalization | Centralize role threshold writer/audit; bounded channel lifecycle gaps selected by Opus. | role/channel services/views/tests | New automation actions | Focused unit/view tests + full quality | Medium/high; stop before behavior-changing destructive flow without owner decision. |
 | **P1A — Sonnet:** Access Map projection | Side-effect-free composed service + tests, no UI. | new service module; governance/access/routing/ledger adapters; tests | Editing/persistence | Unit/service/identity tests + strict architecture | High; stop if owner of any axis cannot be identified. |
 | **P1B — Sonnet:** drift + locked reasons | Diagnostic providers and denial explanation integration. | `setup_diagnostics.py`, command-access/interaction helpers, tests | Editing | Diagnostics/access tests + quality | Medium; stop if explanation leaks sensitive policy. |
@@ -371,7 +371,147 @@ Safe defaults until answered: profile preview only; quiet mode modeled as availa
 
 ## 15. Recommended next destination
 
-1. **First technical debt:** Sonnet/Codex implements Q-0026 (`cog_name_to_subsystem` snake_case + `server_management` rename), then the separately decided `scripts/new_subsystem.py` can safely assume canonical multi-word keys.
-2. **Next Opus planning session:** finalize the Phase 0 access/read-model contract, including precedence, reason schema, drift provider ownership, simulation limits, and direct-vs-draft mutation rule. Resolve Q-0028–Q-0032 as needed.
-3. **First Sonnet product implementation after approval:** the side-effect-free Access Map projection service and tests, followed by drift/locked-reason providers; no UI editing.
+1. ✅ **First technical debt — DONE (2026-06-08):** Q-0026 implemented (`cog_name_to_subsystem` snake_case + `server_management` rename + the latent `proof_channel`/`four_twenty` repair). The decided `scripts/new_subsystem.py` (Q-0025) can now safely assume canonical snake_case multi-word keys.
+2. ✅ **Phase 0 access/read-model contract — DOCUMENTED (2026-06-08):** precedence, reason schema (reusing the `command_access` decision model — no second permission system), drift-provider ownership, simulation limits, and the direct-vs-draft rule are in §16 below + [`docs/ownership.md`](../ownership.md). Q-0028–Q-0032 stay at safe defaults (not blockers for read-only work).
+3. **Next — Sonnet (P1A):** implement the side-effect-free Access Map projection service + tests per §16 (no UI, no persistence), then the drift/locked-reason providers (P1B). **Parallel — Sonnet (P0C):** normalize the role-threshold direct-write drift onto an audited service seam (§16.5) before any profile/routine targets role thresholds.
 4. **Blocked/gated:** controlled profile/access mutation waits for the read model and rollback/risk decisions; Routine Engine waits for condition/safety design; Personal Setup waits for privacy decisions; AI drafts wait for current AI expansion gates.
+
+## 16. Phase 0 access read-model contract (P0B)
+
+> **Status:** contract documented 2026-06-08 (P0B). This section is the spec the
+> **P1A** Access Map projection service is built from. It is *read-only*: it defines
+> how to **compose existing owners**, never a new policy. **Reuse the existing
+> decision/reason vocabulary** (`core.runtime.command_access.DecisionReason` /
+> `DecisionSource`) — do **not** fork a parallel enum. Source types win over this
+> section; verify signatures before coding.
+
+### 16.1 Service family (side-effect-free)
+
+Five read-only collaborators (no god service, no persistence):
+
+1. **Feature inventory adapter** — enumerates features from
+   `utils.subsystem_registry.SUBSYSTEMS` + `core.runtime.command_surface_ledger`
+   (the now-snake_case keys from Q-0026). Yields `(subsystem, command/entry_point,
+   owning cog, visibility_tier)`.
+2. **Access context** — one explicit, fully-specified input record (no implicit
+   globals). Superset of the existing `command_access.CommandAccessContext`
+   (`guild_id`, `channel_id`, `user_id`, `command_name`, `invocation_type`,
+   `is_guild_operator`, `is_bot_owner`, `is_dm`) plus `category_id`,
+   `member_role_ids`, `member_tier`, and an optional `now`/`event_state` for the
+   future availability axis. Building a context performs **no** I/O beyond what the
+   wrapped resolvers already do.
+3. **Projection resolver** — composes the axes below into one structured
+   `AccessDecision` per (feature, context). Pure composition; calls each owner's
+   existing async resolver and records its native decision.
+4. **Explanation renderer** — turns an `AccessDecision` into (a) an Access Map row,
+   (b) a Help Preview annotation, or (c) a user-safe denial string. The renderer is
+   the **only** place a `LockedReason.safe_text` is produced for users.
+5. **Drift providers** — compare two owners' projections and emit read-only findings
+   (§16.5). They never write; repairable findings become `SetupOperation` *proposals*
+   per the `setup_diagnostics` pattern.
+
+The **draft compiler(s)** of §4.1 item 6 are **out of scope** until the projection
+stabilises (Phase 3).
+
+### 16.2 Composition precedence (the axis order)
+
+The projection evaluates axes in this fixed order and **short-circuits on the first
+`deny`/`unavailable`** — matching the order the runtime actually gates so the read
+model can never claim "allow" where the runtime denies (the core
+help-advertises-locked guard). Each axis delegates to its existing owner:
+
+| # | Axis | Owner (existing) | Produces |
+|---|---|---|---|
+| 1 | Hard safety / lifecycle / bootstrap | `command_access.resolve_command_access` (lifecycle-drain, bootstrap-bypass branches) | `deny`(silent) / bypass-`allow` |
+| 2 | Command access (channel admission) | `command_access.resolve_command_access` (`DB_POLICY` / `DEFAULT_UNCONFIGURED`) | `allow` / `deny` + `DecisionReason` |
+| 3 | Cog routing (feature enabled here) | `services.command_routing.is_cog_enabled` | `allow` / `deny` |
+| 4 | Governance visibility + capability/tier | `governance.resolver.resolve_visibility` / `get_visible_subsystems` + capability resolver | `visible+permitted` / `hidden` / `tier-insufficient` |
+| 5 | Availability policy (time/tenure/event) | **future** central resolver (§6.6) — absent today ⇒ axis returns `allow`/`unknown` | `allow` / `deny`(window) |
+| 6 | Help classification (help axis only) | `command_surface_ledger.is_hidden_from_help` | `shown` / `hidden` (does **not** affect execution) |
+| 7 | User preference (Phase 5) | **future** — can hide/sort, **never grant** | re-order / hide only |
+
+Axis 6 is informational for the *help-visibility* column only; it must never turn an
+executable `allow` into a denied execution result. Axis 7 is Phase 5 and likewise
+cannot elevate.
+
+### 16.3 Decision & reason schema
+
+```text
+AccessDecision (frozen):
+    feature:      str            # subsystem key (snake_case) or command name
+    effective:    "allow" | "deny" | "unknown"
+    deciding_axis: AccessAxis    # which numbered axis produced `effective`
+    source:       DecisionSource # REUSE command_access.DecisionSource where the
+                                 # axis is command-access; each other axis maps its
+                                 # native source into a small shared AccessAxisSource
+    reason:       LockedReason | None
+    source_chain: tuple[AxisOutcome, ...]   # every axis evaluated, in order, for "why"
+    remediation:  str | None     # safe pointer to the owning panel/setting, never a write
+
+LockedReason (frozen) — minimum fields (per §6.3):
+    code:        str             # stable id, drawn from the union of DecisionReason
+                                 # values + {routing_disabled, capability_insufficient,
+                                 # subsystem_hidden, availability_window, quiet_mode,
+                                 # setup_stage_required}
+    safe_text:   str             # user-renderable; NEVER leaks role names / channel ids /
+                                 # policy internals
+    source:      str             # command_access | routing | governance | availability |
+                                 # bootstrap | help
+    unlock_hint: str | None      # only when safe to show (e.g. "unlocks after 24h")
+```
+
+Reason `code`s reuse `command_access.DecisionReason` verbatim for axes 1–2
+(`allowed`, `bootstrap_bypass`, `lifecycle_draining`, `dm_not_supported`,
+`channel_not_allowed`, `commands_disabled`); axes 3–5 add the small stable set listed
+above. **Do not invent per-feature codes.**
+
+### 16.4 Simulation limits (Help Preview)
+
+Help Preview (staff/admin only — Q-0023) supplies a **simulated** audience context
+(member tier + role set) to the *same* axes. It must label that it cannot model
+live Discord channel-permission overrides it has not been given, must never imply a
+permission it cannot accurately resolve, and renders axis-6 (`hidden`) honestly
+("shown as locked, with reason"). Normal users get no simulator — only the live
+axis-1→5 denial string from the renderer.
+
+### 16.5 Drift providers and the P0C drift selection
+
+Phase 0/1 drift providers (read-only findings; extend `setup_diagnostics`):
+
+- **`identity_mismatch`** — a subsystem key disagrees across registry / ledger / hub /
+  view / anchor surfaces (the Q-0026 *class* of bug; now guarded by the
+  command-surface-ledger identity tests).
+- **`help_advertises_locked`** — help shows a command the projection says is `deny`
+  for the baseline audience (and not deliberately shown-as-locked).
+- **`routing_access_conflict`** — cog routing enables a cog whose commands command-
+  access denies in every channel (or vice-versa).
+- **`configured_resource_missing`** — a bound channel/role referenced by config no
+  longer exists.
+
+**P0C drift selected for normalization (the answer to §4.2 item 4):** the
+**role-threshold writer**. The role panel writes time/XP thresholds via a *direct DB
+write* rather than an audited role-automation service seam, so there is no single
+canonical seam for a future profile/routine draft to compile into. P0C must route
+those writes through an audited `role_automation` mutation (mirroring
+`set_{time,xp}_threshold`) **before** any profile/routine targets role thresholds.
+Channel create/edit lifecycle is the secondary, larger gap (mixed direct-Discord +
+`ChannelLifecycleService`); assess but do not rewrite wholesale in P0C. See the
+binding rule + drift note in [`docs/ownership.md` § "Direct vs. draft mutation lanes"](../ownership.md).
+
+### 16.6 Invalidation / caching
+
+Compute on demand; **do not persist** the projection (a read model is not a source of
+truth — see §10 and §11). Cache **only** with an explicit invalidation owner: the
+projection cache (if any) must be invalidated on a `command_access_service` write, a
+routing write, a governance/capability write, a settings write, and process restart
+(registry change). Absent an explicit owner for every one of those, do not cache.
+
+### 16.7 Negative-architecture guardrails (P1A tests must assert)
+
+- The projection module performs **no** writes and imports **no** mutation service or
+  Discord resource API (AST/negative test).
+- It defines **no** new permission/visibility *policy* — every `allow`/`deny` traces
+  to an existing owner in the §16.2 table (the source_chain makes this auditable).
+- `LockedReason.safe_text` never contains a role name, channel id, or raw policy field
+  (redaction test over a fixture with sensitive values).
+- Help-visibility (axis 6) can never flip an execution `allow` to a denied result.
