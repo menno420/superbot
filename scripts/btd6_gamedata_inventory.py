@@ -44,6 +44,62 @@ _LOOSE_FILES = {
     "resources.json": "asset/resource references",
 }
 
+# Fetch status per domain — does ``parse_gamedata.py`` (or a derived pipeline)
+# currently extract this into committed data / the runtime? This is the bridge
+# from "what exists" to "what we fetch": ⬜ rows are the un-mined surface. Keep in
+# sync with the decode-status doc when a domain's ingestion changes.
+_INGEST_STATUS: dict[str, tuple[str, str]] = {
+    # domain: (status_glyph, what we pull / why not)
+    "Towers": ("✅", "stats, attacks, projectiles, abilities, subtowers, zones, buffs"),
+    "Upgrades": ("✅", "names, per-difficulty cost, xp, path/tier, descriptions"),
+    "Maps": ("✅", "full cutover: difficulty, has_water, names (curated removables)"),
+    "Bloons": ("🟡", "structure known; still wiki-sourced (children/immunity partial)"),
+    "Bosses": ("⬜", "wiki-sourced; cosmetic Bosses/ — combat lives in Bloons/"),
+    "Rounds": (
+        "🟡",
+        "composition drives derived RBE + per-round cash; not ingested as-is",
+    ),
+    "IncomeSets": ("🟡", "decay bands feed the per-round cash derivation"),
+    "Powers": ("⬜", "not ingested"),
+    "Knowledge": ("⬜", "not ingested (monkey knowledge tree)"),
+    "Achievements": ("⬜", "not ingested"),
+    "Artifacts": ("⬜", "not ingested (Rogue Legends artifacts)"),
+    "Mods": ("⬜", "not ingested (game-mode rule mods — partially explored)"),
+    "Skins": ("⬜", "cosmetic; not ingested"),
+    "GeraldoItems": ("⬜", "not ingested (Geraldo shop items)"),
+    "TrophyStoreItems": ("⬜", "cosmetic; not ingested"),
+    "BloonOverlays": ("⬜", "cosmetic overlays; not ingested"),
+    "Buffs": ("⬜", "UI buff ICONS only — effects live inline in Towers/"),
+}
+_LOOSE_INGEST: dict[str, str] = {
+    "textTable.json": "✅",
+    "paragonDegreeData.json": "🟡",
+    "frontierData.json": "⬜",
+    "rogueData.json": "⬜",
+    "resources.json": "⬜",
+}
+
+
+def _dump_version(dump: Path) -> str:
+    """Game version the dump was taken at (Mod Helper stamps it on the commit,
+    e.g. ``55.1``) + the short sha — the map's provenance line. Best-effort.
+    """
+    import subprocess
+
+    out = []
+    for fmt in ("%s", "%h"):
+        try:
+            val = subprocess.check_output(
+                ["git", "-C", str(dump), "log", "-1", f"--format={fmt}"],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+            out.append(val.split()[0] if (fmt == "%s" and val) else val)
+        except Exception:  # noqa: BLE001 - best-effort provenance
+            out.append("")
+    version, sha = out[0], out[1]
+    return f"{version} (sha {sha})" if version or sha else "unknown"
+
 
 def _short_type(node: Any) -> str:
     """The bare model class from a ``$type`` string, or ``""``."""
@@ -185,6 +241,127 @@ def render_domain(dump: Path, domain: str) -> str:
     return "\n".join(lines)
 
 
+# Domains where the closest-to-file-count heuristic picks a per-file singleton
+# (e.g. a CreateSoundOnSellModel) instead of the data-bearing root — name the
+# real root explicitly so the field catalog is useful.
+_PRIMARY_OVERRIDE: dict[str, str] = {"Towers": "TowerModel"}
+
+
+def _primary_model(domain: str, counter: Counter, files: int) -> str | None:
+    """The entity's root model: the non-noise type whose count is closest to the
+    file count (``BloonModel`` 235 ≈ 235 files), tie-broken toward the larger.
+    A curated override wins for domains where that heuristic misfires.
+    """
+    override = _PRIMARY_OVERRIDE.get(domain)
+    if override and override in counter:
+        return override
+    candidates = [t for t in counter if t not in _ASSET_NOISE]
+    if not candidates or not files:
+        return None
+    return min(candidates, key=lambda t: (abs(counter[t] - files), -counter[t]))
+
+
+def _loose_structure(dump: Path, name: str, limit: int = 24) -> list[str]:
+    """Top-level keys (+ value kind) of a loose JSON file — what it holds."""
+    path = dump / name
+    if not path.exists():
+        return ["(missing)"]
+    try:
+        data = json.loads(path.read_text("utf-8"))
+    except Exception:  # noqa: BLE001 - report unreadable rather than crash
+        return ["(unreadable)"]
+    if not isinstance(data, dict):
+        return [
+            (
+                f"({type(data).__name__} of {len(data)})"
+                if isinstance(data, list)
+                else "(scalar)"
+            ),
+        ]
+    kind = {
+        dict: "obj",
+        list: "list",
+        str: "str",
+        bool: "bool",
+        int: "num",
+        float: "num",
+    }
+    keys = [f"{k}:{kind.get(type(v), '?')}" for k, v in list(data.items())[:limit]]
+    tail = f" … (+{len(data) - limit} more)" if len(data) > limit else ""
+    return [f"{len(data):,} top-level keys", ", ".join(keys) + tail]
+
+
+def render_full_map(dump: Path) -> str:
+    """The complete, regenerable coverage map: every domain's file count, all
+    model ``$types``, the primary model's fields, every loose file's structure,
+    and a fetch-status column. Markdown, written to the coverage-map doc.
+    """
+    out: list[str] = [
+        "# BTD6 dump coverage map — what's in each file",
+        "",
+        "> **Status:** `living-ledger` · **auto-generated — do not hand-edit.**",
+        "> Generated by `python3.10 scripts/btd6_gamedata_inventory.py --full-map`",
+        f"> from BTD Mod Helper game-data dump **v{_dump_version(dump)}**.",
+        "> Re-run on every dump re-pull; the file counts double as a change"
+        " fingerprint.",
+        "",
+        "**Fetch status** — does our pipeline extract this yet? `✅` ingested ·"
+        " `🟡` partial · `⬜` present in dump, not yet fetched. The `⬜` rows are"
+        " the remaining surface for the goal of *fetching everything on each"
+        " update*.",
+        "",
+        "## Domains",
+        "",
+        "| Domain | Files | Fetch | What we pull / why not |",
+        "|---|---:|:---:|---|",
+    ]
+    domains = list_domains(dump)
+    summaries: dict[str, tuple[int, Counter]] = {}
+    for domain in domains:
+        files, counter = domain_summary(dump, domain)
+        summaries[domain] = (files, counter)
+        glyph, note = _INGEST_STATUS.get(domain, ("⬜", "—"))
+        out.append(f"| `{domain}/` | {files:,} | {glyph} | {note} |")
+
+    out += [
+        "",
+        "## Loose top-level files",
+        "",
+        "| File | Fetch | Meaning |",
+        "|---|:---:|---|",
+    ]
+    for name, meaning in _LOOSE_FILES.items():
+        glyph = _LOOSE_INGEST.get(name, "⬜")
+        mark = glyph if (dump / name).exists() else "—(absent)"
+        out.append(f"| `{name}` | {mark} | {meaning} |")
+
+    out += ["", "## Per-domain detail", ""]
+    for domain in domains:
+        files, counter = summaries[domain]
+        glyph, note = _INGEST_STATUS.get(domain, ("⬜", "—"))
+        out.append(f"### `{domain}/` — {files:,} files {glyph}")
+        out.append("")
+        types = ", ".join(f"`{t}`×{n:,}" for t, n in counter.most_common(20))
+        out.append(f"- **Model types:** {types}")
+        primary = _primary_model(domain, counter, files)
+        if primary:
+            cat = field_catalog(dump, domain, primary)
+            fields = ", ".join(f"`{f}`" for f, _ in cat.most_common(40))
+            out.append(
+                f"- **Primary model `{primary}` scalar fields:** {fields or '(none)'}",
+            )
+        out.append("")
+
+    out += ["## Loose-file structure", ""]
+    for name in _LOOSE_FILES:
+        out.append(f"### `{name}`")
+        for line in _loose_structure(dump, name):
+            out.append(f"- {line}")
+        out.append("")
+
+    return "\n".join(out).rstrip() + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dump", required=True, type=Path, help="game-data clone path")
@@ -194,13 +371,30 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="report name/description linkage to textTable.json",
     )
+    ap.add_argument(
+        "--full-map",
+        action="store_true",
+        help="render the complete per-domain coverage map (markdown)",
+    )
+    ap.add_argument(
+        "--out",
+        type=Path,
+        help="with --full-map, write the markdown here instead of stdout",
+    )
     args = ap.parse_args(argv)
 
     dump: Path = args.dump
     if not dump.is_dir():
         raise SystemExit(f"--dump {dump} is not a directory")
 
-    if args.text_link:
+    if args.full_map:
+        md = render_full_map(dump)
+        if args.out:
+            args.out.write_text(md, "utf-8")
+            print(f"wrote {args.out} ({md.count(chr(10))} lines)")
+        else:
+            print(md)
+    elif args.text_link:
         print("\n".join(text_link_report(dump)))
     elif args.domain:
         if not (dump / args.domain).is_dir():

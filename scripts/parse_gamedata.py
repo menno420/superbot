@@ -529,9 +529,14 @@ _ZONE_NUMERIC_FIELDS: tuple[str, ...] = (
 #   * Heli Pilot "MOAB Shove" (0-0-3+): per-blimp push-speed caps. Verified vs the
 #     committed zone on every tier (e.g. Comanche Defense 0-0-4: MOAB -0.51, BFB
 #     -0.11, ZOMG 0.09). Negative = shoved backward (maintainer-confirmed
-#     2026-06-08). DDT is intentionally NOT emitted: the dump has no DDT field
-#     (the committed data mirrors ZOMG — a curated call that stays maintainer-owned
-#     until the cutover decides it).
+#     2026-06-08). DDT is intentionally NOT emitted: an exhaustive whole-dump
+#     search (2026-06-08) confirmed ``moab/bfb/zomgPushSpeedScaleCap`` are the ONLY
+#     three push caps in all 9,916 files — there is no ``ddtPushSpeedScaleCap``
+#     anywhere. The game text ("shove MOAB-class Bloons, reversing or slowing") +
+#     the maintainer's in-game check (DDT slowed, not stopped) say DDT IS affected;
+#     the engine applies the heaviest-handled (ZOMG) cap to it, which the committed
+#     data mirrors. We never fabricate a DDT number the dump lacks — the renderer
+#     surfaces the curated ZOMG-mirror; the cutover owns whether to keep it.
 _ZONE_RENAME: dict[str, str] = {
     "moabPushSpeedScaleCap": "multiplierForMoab",
     "bfbPushSpeedScaleCap": "multiplierForBfb",

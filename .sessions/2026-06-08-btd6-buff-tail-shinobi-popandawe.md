@@ -66,3 +66,31 @@ effects, so the crosspath-specific MOAB Shove (0-1-4 → MOAB −0.51) was store
 - `_render_tower_crosspath` now appends a `[btd6_tower_stats effect]` line per crosspath
   buff/zone. "0-1-4 heli" now grounds "MOAB-class shoved backward at x-0.51 speed…", distinct
   from the 0-0-4 base. +1 context test; full suite green (8075 passed).
+
+## Follow-on #3 — DDT settled + whole-dump coverage map + scheduled-refresh design
+
+Maintainer asked to (a) thoroughly search for the DDT shove value (agents keep wrongly saying
+"not in the dump"), (b) map what's in each dump file for future reference, (c) design a system
+that re-fetches all data on every update / at intervals.
+
+- **DDT — settled by exhaustive search.** `moab/bfb/zomgPushSpeedScaleCap` are the ONLY three
+  push caps in all 9,916 files; no `ddtPushSpeedScaleCap` exists. BUT DDT-speed fields DO exist
+  for towers that define them (Silas `ddtSpeedModifier`, Gyrfalcon `moabSpeedScale`) — so the
+  "under a different name" instinct was right in general, just not for Heli's zone. Game text
+  ("shove MOAB-class Bloons, reversing or slowing") + maintainer's in-game check (DDT slowed,
+  not stopped) confirm DDT uses the heaviest-handled (ZOMG) cap, which committed mirrors. Parser
+  still never fabricates `multiplierForDdt`. Documented in parser + decode-status.
+- **Coverage map (the mapping ask).** Added `btd6_gamedata_inventory.py --full-map [--out]` →
+  generates `docs/btd6/btd6-dump-coverage-map.md`: every domain's file count + all model
+  `$types` + the primary model's fields + loose-file structure + a **fetch-status column**
+  (`✅`/`🟡`/`⬜`) that bridges "what exists" → "what we fetch yet". `_PRIMARY_OVERRIDE` fixes
+  the heuristic misfire on Towers (→ `TowerModel`). Regenerable per pull; v-stamp + sha header.
+  Provenance: dump is now **v55.1** (was 55.0). 4 new tool tests.
+- **Scheduled refresh (the system ask).** Wrote `docs/btd6/btd6-data-refresh-pipeline-plan.md`:
+  the manual fetch-everything command chain works today (clone → validate-anchors → overlay →
+  audit → --full-map → decode-inventory); the GitHub Actions weekly automation is designed +
+  YAML-sketched but flagged as needing maintainer sign-off (executable CI config + 320 MB clone
+  cost). Gate: `--overlay` is auto-safe; the `--all` cutover stays human-reviewed. Routed into
+  the folio + roadmap.
+- Gates: `--audit` nothing-SUSPECT, `check_docs --strict` clean (121 docs), `check_quality
+  --full` green (8078 passed).

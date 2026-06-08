@@ -128,6 +128,10 @@ Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · **Ga
 - **Later** — restart extraction only after the provenance schema, source-registry owner
   matrix, safe migrations, and observable cache/source-health are in place. Status:
   [decode-status](btd6/btd6-gamedata-decode-status.md).
+- **Next (needs sign-off)** — scheduled "fetch-everything-on-update" data refresh: the manual
+  command chain + regenerable [coverage map](btd6/btd6-dump-coverage-map.md) exist; committing
+  the GitHub Actions automation is a maintainer call. Plan:
+  [data-refresh-pipeline](btd6/btd6-data-refresh-pipeline-plan.md).
 
 ### 🎮 Games — **Later / maintenance**
 

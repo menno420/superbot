@@ -111,11 +111,20 @@ works** (the traps we hit), and what is still un-decoded.
      crosspath-specific shove (0-1-4 → MOAB −0.51 vs 0-0-4 base −0.4) reaches the
      user. (`get_upgrade_detail` still keys on single upgrade *cards*, so it shows
      the base-tier effect — expected; the crosspath path is how a named crosspath
-     answers.) **DDT still open (maintainer call):** the dump has **no** DDT
-     field, so the parser deliberately does **not** emit `multiplierForDdt` (never
-     fabricate); the committed data mirrors ZOMG and the renderer surfaces that
-     curated value when present. Decide at/before the cutover whether DDT should
-     keep mirroring ZOMG.
+     answers.) **DDT — settled (2026-06-08).** An
+     exhaustive whole-dump search confirmed `moab/bfb/zomgPushSpeedScaleCap` are the
+     **only three** push caps in all 9,916 files — there is **no**
+     `ddtPushSpeedScaleCap` anywhere (so the recurring "it's in the dump under
+     another name" was checked and is genuinely *not* here for this zone; DDT-speed
+     fields **do** exist for towers that define them — Silas `ddtSpeedModifier`,
+     Gyrfalcon `moabSpeedScale` — just not on Heli's shove). The game-authored text
+     ("Can collide with and shove **MOAB-class** Bloons, reversing or slowing their
+     movement") + the maintainer's in-game check (DDT **slowed, not stopped**)
+     confirm DDT is affected via the heaviest-handled (**ZOMG**) cap, which the
+     committed data already mirrors and the renderer surfaces. The parser still does
+     **not** fabricate `multiplierForDdt` (no dump field); the ZOMG-mirror is the
+     faithful representation. Only the cutover-storage choice (keep the curated
+     mirror vs. drop it) remains, and it's low-stakes.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4

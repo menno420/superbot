@@ -129,3 +129,30 @@ def test_render_overview_lists_domains_and_loose_files(mod, dump):
     out = mod.render_overview(dump)
     assert "Bloons" in out and "Upgrades" in out
     assert "textTable.json" in out
+
+
+def test_full_map_renders_domains_fields_and_fetch_status(mod, dump):
+    md = mod.render_full_map(dump)
+    # provenance header + the regenerable warning
+    assert "auto-generated" in md
+    assert "## Domains" in md and "## Per-domain detail" in md
+    # every domain table row + a fetch-status glyph column
+    assert "`Bloons/`" in md and "`Upgrades/`" in md
+    assert "Fetch" in md  # the status column header
+    # per-domain detail surfaces the root model's scalar fields
+    assert "`BloonModel`" in md and "`maxHealth`" in md
+    # loose-file structure is enumerated
+    assert "## Loose-file structure" in md and "textTable.json" in md
+
+
+def test_full_map_primary_override_picks_named_root(mod, dump, monkeypatch):
+    # When the heuristic would misfire, an override names the real root model.
+    monkeypatch.setitem(mod._PRIMARY_OVERRIDE, "Bloons", "BloonModel")
+    files, counter = mod.domain_summary(dump, "Bloons")
+    assert mod._primary_model("Bloons", counter, files) == "BloonModel"
+
+
+def test_loose_structure_reports_keys(mod, dump):
+    lines = mod._loose_structure(dump, "textTable.json")
+    assert "2 top-level keys" in lines[0]
+    assert mod._loose_structure(dump, "nope.json") == ["(missing)"]
