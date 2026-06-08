@@ -12,7 +12,16 @@
       "investment_required": 5,
       "prerequisites": [
         "crossbow_reach"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "alternate_arc",
+            "increase": 1,
+            "shot_count": 4
+          }
+        ]
+      }
     },
     {
       "id": "aviation_grade_glue",
@@ -23,7 +32,16 @@
       "investment_required": 8,
       "prerequisites": [
         "more_splatty_glue"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "slow_modifier_for_tag",
+            "slow_modifier": 2.2,
+            "tag": "Moabs"
+          }
+        ]
+      }
     },
     {
       "id": "big_cryo_blast",
@@ -34,7 +52,15 @@
       "investment_required": 10,
       "prerequisites": [
         "so_cold"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_radius",
+            "multiplier_amount": 1.12
+          }
+        ]
+      }
     },
     {
       "id": "big_inferno",
@@ -45,7 +71,16 @@
       "investment_required": 5,
       "prerequisites": [
         "poppy_blades"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "range",
+            "multiplier": 1,
+            "additive": 3
+          }
+        ]
+      }
     },
     {
       "id": "bionic_augmentation",
@@ -56,7 +91,16 @@
       "investment_required": 10,
       "prerequisites": [
         "long_turbo"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "grant_camo_detect_for_ability",
+            "mutator_id": "BionicAugmentation",
+            "use_ability_duration": true
+          }
+        ]
+      }
     },
     {
       "id": "bonus_glue_gunner",
@@ -67,7 +111,16 @@
       "investment_required": 10,
       "prerequisites": [
         "cheaper_solution"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "free_tower",
+            "base_tower_id": "GlueGunner",
+            "charges": 1
+          }
+        ]
+      }
     },
     {
       "id": "bonus_monkey",
@@ -78,7 +131,16 @@
       "investment_required": 10,
       "prerequisites": [
         "come_on_everybody"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "free_tower",
+            "base_tower_id": "DartMonkey",
+            "charges": 1
+          }
+        ]
+      }
     },
     {
       "id": "budget_clusters",
@@ -89,7 +151,16 @@
       "investment_required": 5,
       "prerequisites": [
         "fraggy_frags"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 100,
+            "upgrade_name": "Cluster Bombs"
+          }
+        ]
+      }
     },
     {
       "id": "cheap_rangs",
@@ -100,7 +171,17 @@
       "investment_required": 0,
       "prerequisites": [
         "increased_lifespan"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "sim_tower_discount",
+            "tower": "BoomerangMonkey",
+            "use_all_heroes": false,
+            "subtraction": 50
+          }
+        ]
+      }
     },
     {
       "id": "cheaper_solution",
@@ -111,7 +192,16 @@
       "investment_required": 10,
       "prerequisites": [
         "aviation_grade_glue"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 1000,
+            "upgrade_name": "Bloon Liquefier"
+          }
+        ]
+      }
     },
     {
       "id": "come_on_everybody",
@@ -122,7 +212,16 @@
       "investment_required": 10,
       "prerequisites": [
         "master_double_cross"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "come_on_everybody",
+            "discount_multiplier": 0.05,
+            "rate_multiplier": 0.95
+          }
+        ]
+      }
     },
     {
       "id": "crossbow_reach",
@@ -133,7 +232,16 @@
       "investment_required": 0,
       "prerequisites": [
         "extra_dart_pops"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "range",
+            "multiplier": 1,
+            "additive": 3
+          }
+        ]
+      }
     },
     {
       "id": "extra_bounce",
@@ -144,7 +252,19 @@
       "investment_required": 5,
       "prerequisites": [
         "cheap_rangs"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "retarget_increase",
+            "amount": 30
+          },
+          {
+            "kind": "projectile_pierce",
+            "amount": 30
+          }
+        ]
+      }
     },
     {
       "id": "extra_dart_pops",
@@ -153,7 +273,15 @@
       "description": "Dart Monkeys get +1 pierce to all shots.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 1
+          }
+        ]
+      }
     },
     {
       "id": "fast_glue",
@@ -164,7 +292,15 @@
       "investment_required": 0,
       "prerequisites": [
         "fast_tack_attacks"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage",
+            "multiplier": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "fast_tack_attacks",
@@ -173,7 +309,15 @@
       "description": "Tack Shooter attack speed increased by 8%.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage",
+            "multiplier": 0.08
+          }
+        ]
+      }
     },
     {
       "id": "force_vs_force",
@@ -184,7 +328,16 @@
       "investment_required": 5,
       "prerequisites": [
         "crossbow_reach"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Moabs",
+            "addative": 2
+          }
+        ]
+      }
     },
     {
       "id": "fraggy_frags",
@@ -195,7 +348,15 @@
       "investment_required": 0,
       "prerequisites": [
         "increased_lifespan"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "emission_arc_count",
+            "additional_count": 2
+          }
+        ]
+      }
     },
     {
       "id": "hard_press",
@@ -206,7 +367,15 @@
       "investment_required": 8,
       "prerequisites": [
         "extra_bounce"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "push_back_increase",
+            "amount": 0.3
+          }
+        ]
+      }
     },
     {
       "id": "hard_tacks",
@@ -217,7 +386,15 @@
       "investment_required": 0,
       "prerequisites": [
         "fast_tack_attacks"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_type",
+            "can_hitbloon_properties": 16
+          }
+        ]
+      }
     },
     {
       "id": "hypothermia",
@@ -228,7 +405,19 @@
       "investment_required": 10,
       "prerequisites": [
         "so_cold"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "freeze_modifier",
+            "duration_add": 1
+          },
+          {
+            "kind": "freeze_modifier",
+            "duration_add": 1
+          }
+        ]
+      }
     },
     {
       "id": "icy_chill",
@@ -239,7 +428,21 @@
       "investment_required": 5,
       "prerequisites": [
         "hard_tacks"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "range",
+            "multiplier": 1,
+            "additive": 3
+          },
+          {
+            "kind": "projectile_radius",
+            "additive_amount": 3,
+            "multiplier_amount": 1
+          }
+        ]
+      }
     },
     {
       "id": "increased_lifespan",
@@ -248,7 +451,15 @@
       "description": "Longer projectile lifespan for Dart Monkey, Bomb Shooter, Tack Shooter and Glue Gunner.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_range_percentage",
+            "percent_increase": 0.15
+          }
+        ]
+      }
     },
     {
       "id": "long_turbo",
@@ -259,7 +470,19 @@
       "investment_required": 10,
       "prerequisites": [
         "hard_press"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "turbo_duration_increase",
+            "amount": 5
+          },
+          {
+            "kind": "create_effect_on_ability",
+            "additional_lifespan": 5
+          }
+        ]
+      }
     },
     {
       "id": "master_double_cross",
@@ -270,7 +493,18 @@
       "investment_required": 8,
       "prerequisites": [
         "4_and4"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tier_five_count",
+            "tower_base_id": "DartMonkey",
+            "path": 2,
+            "tier": 5,
+            "max_count_additive": 1
+          }
+        ]
+      }
     },
     {
       "id": "mega_mauler",
@@ -282,7 +516,16 @@
       "prerequisites": [
         "aviation_grade_glue",
         "hard_press"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Moabs",
+            "addative": 2
+          }
+        ]
+      }
     },
     {
       "id": "more_cash",
@@ -294,7 +537,16 @@
       "prerequisites": [
         "bonus_glue_gunner",
         "bonus_monkey"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "starting_cash",
+            "addition": 200,
+            "multiplier": 1
+          }
+        ]
+      }
     },
     {
       "id": "more_splatty_glue",
@@ -305,7 +557,15 @@
       "investment_required": 5,
       "prerequisites": [
         "fast_glue"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 2
+          }
+        ]
+      }
     },
     {
       "id": "poppy_blades",
@@ -316,7 +576,15 @@
       "investment_required": 0,
       "prerequisites": [
         "hard_tacks"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 2
+          }
+        ]
+      }
     },
     {
       "id": "recurring_rangs",
@@ -327,7 +595,31 @@
       "investment_required": 5,
       "prerequisites": [
         "extra_bounce"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "recurring_rangs",
+            "path1_tier_max": 5,
+            "path2_tier_max": 5,
+            "path3_tier_max": 1
+          },
+          {
+            "kind": "recurring_rangs",
+            "path1_tier_max": 5,
+            "path2_tier_max": 5,
+            "path3_tier_min": 1,
+            "path3_tier_max": 3
+          },
+          {
+            "kind": "recurring_rangs",
+            "path1_tier_max": 5,
+            "path2_tier_max": 5,
+            "path3_tier_min": 3,
+            "path3_tier_max": 5
+          }
+        ]
+      }
     },
     {
       "id": "so_cold",
@@ -338,7 +630,15 @@
       "investment_required": 8,
       "prerequisites": [
         "icy_chill"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "slow_modifier",
+            "slow_modifier": -0.1
+          }
+        ]
+      }
     },
     {
       "id": "violent_impact",
@@ -349,7 +649,15 @@
       "investment_required": 10,
       "prerequisites": [
         "budget_clusters"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "slow_modifier",
+            "duration_modifier": 0.25
+          }
+        ]
+      }
     },
     {
       "id": "accelerated_aerodarts",
@@ -360,7 +668,19 @@
       "investment_required": 0,
       "prerequisites": [
         "airforce_upgrades"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_speed",
+            "multiplier": 0.5
+          },
+          {
+            "kind": "projectile_track_target",
+            "multiplier_turn_rate": 0.2
+          }
+        ]
+      }
     },
     {
       "id": "advanced_logistics",
@@ -372,7 +692,17 @@
       "prerequisites": [
         "aeronautic_subsidy",
         "door_gunner"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "sim_tower_discount",
+            "tower": "SniperMonkey,MonkeySub,MonkeyBuccaneer,MonkeyAce,HeliPilot,MortarMonkey,DartlingGunner",
+            "use_all_heroes": false,
+            "multiplier": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "aeronautic_subsidy",
@@ -383,7 +713,26 @@
       "investment_required": 8,
       "prerequisites": [
         "gun_coolant"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "percentage_reduced": 0.1,
+            "upgrade_name": "Sky Shredder"
+          },
+          {
+            "kind": "upgrade_cost",
+            "percentage_reduced": 0.1,
+            "upgrade_name": "Tsar Bomba"
+          },
+          {
+            "kind": "upgrade_cost",
+            "percentage_reduced": 0.1,
+            "upgrade_name": "Flying Fortress"
+          }
+        ]
+      }
     },
     {
       "id": "airforce_upgrades",
@@ -392,7 +741,16 @@
       "description": "Monkey Aces and Heli Pilots of Tier 3 or higher get +1 pierce per shot.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 1,
+            "min_tier": 3
+          }
+        ]
+      }
     },
     {
       "id": "big_bloon_sabotage",
@@ -404,7 +762,15 @@
       "prerequisites": [
         "sub_admiral",
         "master_defender"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "bloon_health",
+            "percentage_health_reduced": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "big_bunch",
@@ -415,7 +781,15 @@
       "investment_required": 0,
       "prerequisites": [
         "naval_upgrades"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "emission_arc_count",
+            "additional_count": 1
+          }
+        ]
+      }
     },
     {
       "id": "breaking_ballistic",
@@ -426,7 +800,16 @@
       "investment_required": 4,
       "prerequisites": [
         "naval_upgrades"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_bloon_type",
+            "additive_bonus": 1,
+            "with_tag": "Ceramic"
+          }
+        ]
+      }
     },
     {
       "id": "budget_battery",
@@ -437,7 +820,16 @@
       "investment_required": 8,
       "prerequisites": [
         "paint_stripper"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 600,
+            "upgrade_name": "Artillery Battery"
+          }
+        ]
+      }
     },
     {
       "id": "ceramic_shock",
@@ -459,7 +851,19 @@
       "investment_required": 8,
       "prerequisites": [
         "rapid_razors"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "lives",
+            "percent_bonus": 0.25
+          },
+          {
+            "kind": "cash",
+            "percent_bonus": 0.25
+          }
+        ]
+      }
     },
     {
       "id": "cheaper_maiming",
@@ -470,7 +874,16 @@
       "investment_required": 4,
       "prerequisites": [
         "ceramic_shock"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 1000,
+            "upgrade_name": "Maim MOAB"
+          }
+        ]
+      }
     },
     {
       "id": "cross_the_streams",
@@ -481,7 +894,17 @@
       "investment_required": 8,
       "prerequisites": [
         "gorgon_storm"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "cross_the_streams",
+            "rate": 0.5,
+            "position_randomness": 5,
+            "end_point_offset": -2
+          }
+        ]
+      }
     },
     {
       "id": "door_gunner",
@@ -501,7 +924,20 @@
       "description": "All Military Monkeys get a one-off +1000xp and earn xp in-game 5% faster permanently.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tower_xp",
+            "multiplier": 0.05
+          },
+          {
+            "kind": "on_monkey_knowledge_purchase",
+            "towers": "SniperMonkey,MonkeySub,MonkeyBuccaneer,MonkeyAce,HeliPilot,MortarMonkey,DartlingGunner",
+            "xp_to_add": 1000
+          }
+        ]
+      }
     },
     {
       "id": "emergency_unlock",
@@ -519,7 +955,15 @@
       "description": "Burny Stuff pops every second.",
       "monkey_money_cost": 0,
       "investment_required": 4,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_over_time",
+            "time_reduction_amount": 0.25
+          }
+        ]
+      }
     },
     {
       "id": "faster_takedowns",
@@ -530,7 +974,15 @@
       "investment_required": 4,
       "prerequisites": [
         "big_bunch"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "ability_cooldown_time",
+            "cooldown_time_reduction": 5
+          }
+        ]
+      }
     },
     {
       "id": "flanking_maneuvers",
@@ -542,7 +994,16 @@
       "prerequisites": [
         "quad_burst",
         "trade_agreements"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage_on_target_prio",
+            "multiplier": 0.1,
+            "target_type": "Last"
+          }
+        ]
+      }
     },
     {
       "id": "gorgon_storm",
@@ -564,7 +1025,15 @@
       "investment_required": 8,
       "prerequisites": [
         "targeted_pineapples"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage",
+            "multiplier": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "master_defender",
@@ -575,7 +1044,15 @@
       "investment_required": 8,
       "prerequisites": [
         "cheaper_maiming"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "ability_cooldown_percentage",
+            "cooldown_percentage_reduction": 0.5
+          }
+        ]
+      }
     },
     {
       "id": "military_conscription",
@@ -586,7 +1063,23 @@
       "investment_required": 14,
       "prerequisites": [
         "trade_agreements"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "sim_tower_discount",
+            "tower": "SniperMonkey,MonkeySub,MonkeyBuccaneer,MonkeyAce,HeliPilot,MortarMonkey,DartlingGunner",
+            "use_all_heroes": false,
+            "multiplier": 0.33,
+            "charges": 1
+          },
+          {
+            "kind": "on_monkey_knowledge_purchase",
+            "towers": "SniperMonkey,MonkeySub,MonkeyBuccaneer,MonkeyAce,HeliPilot,MortarMonkey,DartlingGunner",
+            "xp_to_add": 1000
+          }
+        ]
+      }
     },
     {
       "id": "naval_upgrades",
@@ -595,7 +1088,15 @@
       "description": "Monkey Buccaneer and Monkey Sub get +1 pierce per shot.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 1
+          }
+        ]
+      }
     },
     {
       "id": "paint_stripper",
@@ -606,7 +1107,15 @@
       "investment_required": 8,
       "prerequisites": [
         "extra_burny_stuff"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "paint_stripper",
+            "remove_tags_from_exclude_list": "Ddt"
+          }
+        ]
+      }
     },
     {
       "id": "quad_burst",
@@ -617,7 +1126,15 @@
       "investment_required": 8,
       "prerequisites": [
         "breaking_ballistic"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "emission_arc_count",
+            "additional_count": 1
+          }
+        ]
+      }
     },
     {
       "id": "rapid_razors",
@@ -628,7 +1145,15 @@
       "investment_required": 4,
       "prerequisites": [
         "airforce_upgrades"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_reduction",
+            "reduction_amount": 0.15
+          }
+        ]
+      }
     },
     {
       "id": "sub_admiral",
@@ -661,7 +1186,15 @@
       "investment_required": 8,
       "prerequisites": [
         "faster_takedowns"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "cash_per_round",
+            "additional_money": 20
+          }
+        ]
+      }
     },
     {
       "id": "wingmonkey",
@@ -683,7 +1216,15 @@
       "investment_required": 4,
       "prerequisites": [
         "strong_tonic"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "acid_pool",
+            "additional_time": 5
+          }
+        ]
+      }
     },
     {
       "id": "arcane_impale",
@@ -694,7 +1235,21 @@
       "investment_required": 4,
       "prerequisites": [
         "flame_jet"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Moabs",
+            "addative": 1
+          },
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Ceramic",
+            "addative": 1
+          }
+        ]
+      }
     },
     {
       "id": "cheaper_doubles",
@@ -705,7 +1260,16 @@
       "investment_required": 0,
       "prerequisites": [
         "super_range"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 100,
+            "upgrade_name": "Double Shot"
+          }
+        ]
+      }
     },
     {
       "id": "cold_front",
@@ -727,7 +1291,15 @@
       "investment_required": 8,
       "prerequisites": [
         "diversion_tactics"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "emission_arc_count",
+            "additional_count": 1
+          }
+        ]
+      }
     },
     {
       "id": "diversion_tactics",
@@ -738,7 +1310,15 @@
       "investment_required": 4,
       "prerequisites": [
         "cheaper_doubles"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "wind",
+            "chance_increase": 0.025
+          }
+        ]
+      }
     },
     {
       "id": "flame_jet",
@@ -750,7 +1330,15 @@
       "prerequisites": [
         "magic_tricks",
         "hot_magic"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_speed",
+            "multiplier": 0.5
+          }
+        ]
+      }
     },
     {
       "id": "heavy_knockback",
@@ -761,7 +1349,15 @@
       "investment_required": 0,
       "prerequisites": [
         "super_range"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "knockback",
+            "percent_multiplier_added": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "hot_magic",
@@ -772,7 +1368,15 @@
       "investment_required": 0,
       "prerequisites": [
         "lingering_magic"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_type",
+            "can_hitbloon_properties": 16
+          }
+        ]
+      }
     },
     {
       "id": "lingering_magic",
@@ -781,7 +1385,15 @@
       "description": "Longer projectile lifespan for Wizard Monkey, Super Monkey, Ninja Monkey, and Druid.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_range_percentage",
+            "percent_increase": 0.2
+          }
+        ]
+      }
     },
     {
       "id": "magic_tricks",
@@ -790,7 +1402,21 @@
       "description": "Guided Magic and Intense Magic cost 25 less.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 25,
+            "upgrade_name": "Guided Magic"
+          },
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 25,
+            "upgrade_name": "Intense Magic"
+          }
+        ]
+      }
     },
     {
       "id": "mana_shield",
@@ -801,7 +1427,17 @@
       "investment_required": 8,
       "prerequisites": [
         "arcane_impale"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "starting_shield",
+            "starting_shield": 25,
+            "max_shield": 25,
+            "shield_per_round": 5
+          }
+        ]
+      }
     },
     {
       "id": "mo_monkey_money",
@@ -812,7 +1448,15 @@
       "investment_required": 0,
       "prerequisites": [
         "speedy_brewing"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "monkey_money",
+            "multiplier": 1.1
+          }
+        ]
+      }
     },
     {
       "id": "speedy_brewing",
@@ -823,7 +1467,15 @@
       "investment_required": 0,
       "prerequisites": [
         "magic_tricks"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage",
+            "multiplier": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "strike_down_the_false",
@@ -834,7 +1486,15 @@
       "investment_required": 4,
       "prerequisites": [
         "heavy_knockback"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "ignore_immunity_for_bloon_type",
+            "bloon_properties": 8
+          }
+        ]
+      }
     },
     {
       "id": "strong_tonic",
@@ -845,7 +1505,19 @@
       "investment_required": 4,
       "prerequisites": [
         "speedy_brewing"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "activate_attack",
+            "additional_time": 4
+          },
+          {
+            "kind": "increase_range",
+            "additional_frames": 4
+          }
+        ]
+      }
     },
     {
       "id": "super_range",
@@ -854,7 +1526,16 @@
       "description": "Increased range for the Super Range upgrade.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "range",
+            "multiplier": 1,
+            "additive": 3
+          }
+        ]
+      }
     },
     {
       "id": "there_can_be_only_one",
@@ -900,7 +1581,16 @@
       "investment_required": 4,
       "prerequisites": [
         "hot_magic"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 100,
+            "upgrade_name": "Heart of Oak"
+          }
+        ]
+      }
     },
     {
       "id": "xray_ultra",
@@ -922,7 +1612,16 @@
       "investment_required": 3,
       "prerequisites": [
         "bigger_banks"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "imf_loan",
+            "additional_loan_amount": 1000,
+            "interest_rate_decrease_amount": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "bank_deposits",
@@ -933,7 +1632,15 @@
       "investment_required": 14,
       "prerequisites": [
         "better_sell_deals"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "bank_deposits",
+            "deposit_percent": 0.5
+          }
+        ]
+      }
     },
     {
       "id": "better_sell_deals",
@@ -944,7 +1651,15 @@
       "investment_required": 8,
       "prerequisites": [
         "backroom_deals"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tower_sell",
+            "mutltiplier": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "big_traps",
@@ -955,7 +1670,15 @@
       "investment_required": 8,
       "prerequisites": [
         "thicker_foams"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "eat_bloon",
+            "additional_trap_amount": 30
+          }
+        ]
+      }
     },
     {
       "id": "bigger_banks",
@@ -966,7 +1689,15 @@
       "investment_required": 3,
       "prerequisites": [
         "insider_trades"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "bank",
+            "additional_capacity": 2500
+          }
+        ]
+      }
     },
     {
       "id": "farm_subsidy",
@@ -977,7 +1708,18 @@
       "investment_required": 3,
       "prerequisites": [
         "more_valuable_bananas"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "sim_tower_discount",
+            "tower": "BananaFarm",
+            "use_all_heroes": false,
+            "subtraction": 100,
+            "charges": 1
+          }
+        ]
+      }
     },
     {
       "id": "first_last_line_of_defense",
@@ -988,7 +1730,18 @@
       "investment_required": 0,
       "prerequisites": [
         "one_more_spike"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "sim_tower_discount",
+            "tower": "SpikeFactory",
+            "use_all_heroes": false,
+            "subtraction": 150,
+            "charges": 1
+          }
+        ]
+      }
     },
     {
       "id": "flat_pack_buildings",
@@ -997,7 +1750,21 @@
       "description": "Farm and Village cost 2% less and sell for 2% more.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tower_sell",
+            "mutltiplier": 0.02
+          },
+          {
+            "kind": "sim_tower_discount",
+            "tower": "BananaFarm,MonkeyAcademy,MonkeyVillage",
+            "use_all_heroes": false,
+            "multiplier": 0.02
+          }
+        ]
+      }
     },
     {
       "id": "global_ability_cooldowns",
@@ -1008,7 +1775,15 @@
       "investment_required": 8,
       "prerequisites": [
         "to_arms"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "ability_cooldown_percentage",
+            "cooldown_percentage_reduction": 0.03
+          }
+        ]
+      }
     },
     {
       "id": "healthy_bananas",
@@ -1019,7 +1794,16 @@
       "investment_required": 8,
       "prerequisites": [
         "inland_revenue_streams"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "healthy_bananas",
+            "marketplace_lives": 1,
+            "central_market_lives": 3
+          }
+        ]
+      }
     },
     {
       "id": "hi_value_mines",
@@ -1030,7 +1814,16 @@
       "investment_required": 8,
       "prerequisites": [
         "very_shreddy"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "upgrade_cost",
+            "amount_reduced": 1500,
+            "upgrade_name": "Spiked Mines"
+          }
+        ]
+      }
     },
     {
       "id": "inland_revenue_streams",
@@ -1041,7 +1834,15 @@
       "investment_required": 3,
       "prerequisites": [
         "farm_subsidy"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "cash_increase",
+            "percent_increase": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "insider_trades",
@@ -1052,7 +1853,15 @@
       "investment_required": 0,
       "prerequisites": [
         "flat_pack_buildings"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "discount_zone",
+            "additional_multiplier": 0.02
+          }
+        ]
+      }
     },
     {
       "id": "monkey_education",
@@ -1061,7 +1870,15 @@
       "description": "All Monkeys XP earn rate increased by 8%.",
       "monkey_money_cost": 0,
       "investment_required": 3,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tower_xp",
+            "multiplier": 0.08
+          }
+        ]
+      }
     },
     {
       "id": "more_valuable_bananas",
@@ -1072,7 +1889,15 @@
       "investment_required": 0,
       "prerequisites": [
         "flat_pack_buildings"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "cash",
+            "bonus_multiplier_buff": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "one_more_spike",
@@ -1081,7 +1906,15 @@
       "description": "Spike Factory stacks get +1 spike.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 1
+          }
+        ]
+      }
     },
     {
       "id": "paragon_of_power",
@@ -1092,7 +1925,15 @@
       "investment_required": 14,
       "prerequisites": [
         "veteran_monkey_training"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "paragon_of_power",
+            "rate_multiplier": 0.8333
+          }
+        ]
+      }
     },
     {
       "id": "thicker_foams",
@@ -1103,7 +1944,15 @@
       "investment_required": 3,
       "prerequisites": [
         "vigilant_sentries"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 3
+          }
+        ]
+      }
     },
     {
       "id": "to_arms",
@@ -1114,7 +1963,15 @@
       "investment_required": 3,
       "prerequisites": [
         "monkey_education"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "call_to_arms",
+            "additional_time": 3
+          }
+        ]
+      }
     },
     {
       "id": "very_shreddy",
@@ -1125,7 +1982,16 @@
       "investment_required": 3,
       "prerequisites": [
         "first_last_line_of_defense"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Moabs",
+            "addative": 1
+          }
+        ]
+      }
     },
     {
       "id": "veteran_monkey_training",
@@ -1136,7 +2002,15 @@
       "investment_required": 8,
       "prerequisites": [
         "to_arms"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage",
+            "multiplier": 0.03
+          }
+        ]
+      }
     },
     {
       "id": "vigilant_sentries",
@@ -1147,7 +2021,15 @@
       "investment_required": 3,
       "prerequisites": [
         "one_more_spike"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tower_expire",
+            "aditional_time_bonus": 2
+          }
+        ]
+      }
     },
     {
       "id": "ability_discipline",
@@ -1156,7 +2038,15 @@
       "description": "Hero level 10 Ability cooldowns reduced by 10%.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "ability_cooldown_percentage",
+            "cooldown_percentage_reduction": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "ability_mastery",
@@ -1167,7 +2057,15 @@
       "investment_required": 3,
       "prerequisites": [
         "ability_discipline"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "ability_cooldown_percentage",
+            "cooldown_percentage_reduction": 0.3
+          }
+        ]
+      }
     },
     {
       "id": "big_bloon_blueprints",
@@ -1178,7 +2076,16 @@
       "investment_required": 8,
       "prerequisites": [
         "ability_mastery"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Moabs",
+            "addative": 1
+          }
+        ]
+      }
     },
     {
       "id": "empowered_heroes",
@@ -1189,7 +2096,16 @@
       "investment_required": 8,
       "prerequisites": [
         "hero_favors"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "hero_xp_injection",
+            "levels": 2,
+            "subtract_hero_cost": false
+          }
+        ]
+      }
     },
     {
       "id": "hero_favors",
@@ -1201,7 +2117,16 @@
       "prerequisites": [
         "self_taught_heroes",
         "quick_hands"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "sim_tower_discount",
+            "use_all_heroes": true,
+            "multiplier": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "heroic_reach",
@@ -1210,7 +2135,16 @@
       "description": "All heroes get slightly increased range.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "range",
+            "multiplier": 1,
+            "additive": 2
+          }
+        ]
+      }
     },
     {
       "id": "heroic_velocity",
@@ -1221,7 +2155,15 @@
       "investment_required": 0,
       "prerequisites": [
         "heroic_reach"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_speed",
+            "multiplier": 0.15
+          }
+        ]
+      }
     },
     {
       "id": "monkeys_together_strong",
@@ -1232,7 +2174,15 @@
       "investment_required": 8,
       "prerequisites": [
         "empowered_heroes"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "hero_xpbonus",
+            "percent_multiplier": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "more_splody",
@@ -1241,7 +2191,15 @@
       "description": "Heroes' explosives get +2 pierce per shot.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "projectile_pierce",
+            "amount": 2
+          }
+        ]
+      }
     },
     {
       "id": "quick_hands",
@@ -1252,7 +2210,15 @@
       "investment_required": 3,
       "prerequisites": [
         "heroic_velocity"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "weapon_reload_percentage",
+            "multiplier": 0.04
+          }
+        ]
+      }
     },
     {
       "id": "scholarships",
@@ -1263,7 +2229,15 @@
       "investment_required": 0,
       "prerequisites": [
         "more_splody"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "hero_cost_to_level",
+            "cost_multiplier": 0.9
+          }
+        ]
+      }
     },
     {
       "id": "self_taught_heroes",
@@ -1274,7 +2248,15 @@
       "investment_required": 3,
       "prerequisites": [
         "scholarships"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "tower_xp",
+            "multiplier": 0.1
+          }
+        ]
+      }
     },
     {
       "id": "weak_point",
@@ -1286,7 +2268,21 @@
       "prerequisites": [
         "monkeys_together_strong",
         "big_bloon_blueprints"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Fortified",
+            "addative": 1
+          },
+          {
+            "kind": "damage_modifier_for_tag",
+            "bloon_tag": "Ceramic",
+            "addative": 1
+          }
+        ]
+      }
     },
     {
       "id": "ambush_tech",
@@ -1306,7 +2302,15 @@
       "description": "Camo Trap lasts for 600 Bloons.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "camo_trap",
+            "pierce_increase": 100
+          }
+        ]
+      }
     },
     {
       "id": "budget_cash_drops",
@@ -1317,7 +2321,15 @@
       "investment_required": 3,
       "prerequisites": [
         "fit_farmers"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "power",
+            "cost_decrease": 20
+          }
+        ]
+      }
     },
     {
       "id": "budget_pontoons",
@@ -1328,7 +2340,15 @@
       "investment_required": 0,
       "prerequisites": [
         "cheaper_lakes"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "power",
+            "cost_decrease": 10
+          }
+        ]
+      }
     },
     {
       "id": "cheaper_lakes",
@@ -1337,7 +2357,15 @@
       "description": "Portable Lake costs 40 Monkey Money.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "power",
+            "cost_decrease": 10
+          }
+        ]
+      }
     },
     {
       "id": "fit_farmers",
@@ -1348,7 +2376,15 @@
       "investment_required": 3,
       "prerequisites": [
         "powerful_monkey_storm"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "banana_farmer",
+            "range_multiplier": 1.2
+          }
+        ]
+      }
     },
     {
       "id": "grand_prix_spree",
@@ -1368,7 +2404,15 @@
       "description": "Road Spike piles have 21 spikes in them.",
       "monkey_money_cost": 0,
       "investment_required": 0,
-      "prerequisites": []
+      "prerequisites": [],
+      "effect": {
+        "factors": [
+          {
+            "kind": "road_spikes_pierce",
+            "addition": 1
+          }
+        ]
+      }
     },
     {
       "id": "longer_boosts",
@@ -1379,7 +2423,15 @@
       "investment_required": 3,
       "prerequisites": [
         "longer_dart_time"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "monkey_boost",
+            "duration_increase": 5
+          }
+        ]
+      }
     },
     {
       "id": "longer_dart_time",
@@ -1390,7 +2442,15 @@
       "investment_required": 0,
       "prerequisites": [
         "just_one_more"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "dart_time",
+            "duration_increase": 5
+          }
+        ]
+      }
     },
     {
       "id": "mauling_moab_mines",
@@ -1401,7 +2461,16 @@
       "investment_required": 0,
       "prerequisites": [
         "bigger_camo_trap"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "moab_mine",
+            "damage_increase": 1250,
+            "damage_boss_increase": -1125
+          }
+        ]
+      }
     },
     {
       "id": "powerful_monkey_storm",
@@ -1413,7 +2482,15 @@
       "prerequisites": [
         "budget_pontoons",
         "longer_boosts"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "super_monkey_storm",
+            "damage_increase": 1000
+          }
+        ]
+      }
     },
     {
       "id": "pre_game_prep",
@@ -1424,7 +2501,15 @@
       "investment_required": 3,
       "prerequisites": [
         "longer_boosts"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "pre_game_prep",
+            "dist_from_edge_of_map": 9
+          }
+        ]
+      }
     },
     {
       "id": "supa_thrive",
@@ -1435,7 +2520,15 @@
       "investment_required": 3,
       "prerequisites": [
         "fit_farmers"
-      ]
+      ],
+      "effect": {
+        "factors": [
+          {
+            "kind": "thrive",
+            "cash_multiplier_increase": 0.05
+          }
+        ]
+      }
     },
     {
       "id": "supersize_glue_trap",

@@ -619,6 +619,12 @@ def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
             "monkeyMoneyCost": 250,
             "investmentRequired": 8,
             "prerequisiteIds": ["SomePrereq"],
+            "mod": {
+                "mutatorMods": [
+                    {"$type": _t("AcidPoolModModel"), "additionalTime": 5.0},
+                ],
+                "name": "AcidStability",
+            },
         },
     )
     _write(
@@ -638,6 +644,98 @@ def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
     assert row["monkey_money_cost"] == 250
     assert row["investment_required"] == 8
     assert row["prerequisites"] == ["some_prereq"]
+    # AcidStability's effect (AcidPool additionalTime 5) decodes into a factor.
+    assert row["effect"] == {"factors": [{"kind": "acid_pool", "additional_time": 5}]}
+
+
+def _mk_mod(*mutators: dict) -> dict:
+    """A KnowledgeModel ``mod`` wrapping the given mutator models."""
+    return {"mutatorMods": [dict(m) for m in mutators], "name": "X"}
+
+
+def test_mk_effect_decodes_scalar_magnitude_and_drops_identity_noise(mod):
+    # More Cash: StartingCashModModel addition 200 is the real magnitude;
+    # changeBase 0.0 (additive identity) is dropped, multiplier 1.0 kept (non-zero).
+    raw = {
+        "mod": _mk_mod(
+            {
+                "$type": _t("StartingCashModModel"),
+                "changeBase": 0.0,
+                "addition": 200.0,
+                "multiplier": 1.0,
+                "name": "MoreCash",
+            },
+        ),
+    }
+    assert mod._mk_effect(raw) == {
+        "factors": [{"kind": "starting_cash", "addition": 200, "multiplier": 1}],
+    }
+
+
+def test_mk_effect_multiple_mutators_become_multiple_factors(mod):
+    # Charged Chinooks stacks two mutators (Lives + Cash) → two factors.
+    raw = {
+        "mod": _mk_mod(
+            {"$type": _t("LivesModModel"), "percentBonus": 0.25},
+            {"$type": _t("CashModModel"), "percentBonus": 0.25, "bonusMultiplierBuff": 0.0},
+        ),
+    }
+    assert mod._mk_effect(raw) == {
+        "factors": [
+            {"kind": "lives", "percent_bonus": 0.25},
+            {"kind": "cash", "percent_bonus": 0.25},  # bonusMultiplierBuff 0 dropped
+        ],
+    }
+
+
+def test_mk_effect_keeps_targets_drops_internal_noise_and_charge_sentinel(mod):
+    # Free-tower / discount mutators: string targets + a small charge count are
+    # real; the unlimited-charge sentinel + pairing/priority hints are dropped.
+    raw = {
+        "mod": _mk_mod(
+            {
+                "$type": _t("FreeTowerModModel"),
+                "baseTowerID": "DartMonkey",
+                "charges": 1,
+                "mutuallyExclusiveWith": "GlueGunner",
+                "priority": -1,
+                "name": "BonusMonkey",
+            },
+            {
+                "$type": _t("SimTowerDiscountModModel"),
+                "tower": "BananaFarm",
+                "useAllHeroes": False,
+                "multiplier": 0.0,
+                "subtraction": 100.0,
+                "charges": 9999999,
+            },
+        ),
+    }
+    assert mod._mk_effect(raw) == {
+        "factors": [
+            {"kind": "free_tower", "base_tower_id": "DartMonkey", "charges": 1},
+            {
+                "kind": "sim_tower_discount",
+                "tower": "BananaFarm",
+                "use_all_heroes": False,
+                "subtraction": 100,
+            },
+        ],
+    }
+
+
+def test_mk_effect_behavioural_or_empty_stays_description_only(mod):
+    # A mutator whose only payload is a nested sub-model (a projectile/ability —
+    # Cold Front, Tiny Tornadoes) carries no scalar magnitude → no factor.
+    nested = {
+        "mod": _mk_mod(
+            {"$type": _t("ColdFrontModModel"), "freeze": {"$type": "X", "layers": 4}},
+        ),
+    }
+    assert mod._mk_effect(nested) == {}
+    # No mutators at all (Grand Prix Spree) → description-only.
+    assert mod._mk_effect({"mod": _mk_mod()}) == {}
+    assert mod._mk_effect({}) == {}
 
 
 def test_validate_anchors(mod, tmp_path):

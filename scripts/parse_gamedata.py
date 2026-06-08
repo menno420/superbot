@@ -1994,6 +1994,85 @@ def map_powers(dump: Path, version: str) -> tuple[list[dict], list[str]]:
 # rather than decode the opaque integer ``category`` field.
 _MK_CATEGORIES = ("Primary", "Military", "Magic", "Support", "Heroes", "Powers")
 
+# Internal / display / id fields on a Monkey Knowledge mutator model that carry
+# no gameplay magnitude — dropped from the structured effect so only the real
+# numbers and targets surface. (Buff-icon loc keys, internal mutation ids, the
+# mutually-exclusive pairing hint, display lifetimes, etc.)
+_MK_MOD_NOISE_FIELDS: frozenset[str] = frozenset(
+    {
+        "name",
+        "buffLocsName",
+        "buffIconName",
+        "buffLocsNameRate",
+        "buffIconNameRate",
+        "buffLocsNamePrice",
+        "buffIconNamePrice",
+        "mutationId",
+        "slowId",
+        "mutuallyExclusiveWith",
+        "priority",
+        "towerSelectionMenuThemeId",
+        "specificScriptId",
+        "id",
+        "displayLifetime",
+        "displayLifespan",
+        "Lifespan",
+        "lifespanFrames",
+    },
+)
+# A ``charges`` value at/above this is the game's "unlimited" sentinel
+# (999999 / 9999999) — a one-shot knowledge uses a small count (e.g. 1), so we
+# surface only the meaningful small values and drop the sentinel.
+_MK_CHARGES_SENTINEL = 100_000
+
+
+def _mk_effect(raw: dict[str, Any]) -> dict[str, Any]:
+    """Structured, dump-native effect for a Monkey Knowledge point.
+
+    The magnitude lives in ``mod.mutatorMods[]`` — each entry is a *typed* mutator
+    model carrying the real numbers (``StartingCashModModel`` ``addition 200``,
+    ``FreeTowerModModel`` ``baseTowerID DartMonkey`` ``charges 1``,
+    ``MonkeyMoneyModModel`` ``multiplier 1.1``, …). This is a **faithful
+    structural passthrough** — the dump's own field names + values, snake-cased,
+    with no semantic transform that could be wrong (the same discipline the buff
+    decode uses). The model states the exact factor grounded by both the number
+    and the game-authored description.
+
+    Returns ``{"factors": [...]}`` with one factor per mutator that carries a
+    gameplay magnitude. A knowledge whose effect is purely behavioural — a nested
+    projectile / ability sub-model (Cold Front, Tiny Tornadoes, Wingmonkey, Vine
+    Rupture, …) — or that has no mutator (Grand Prix Spree) yields no factor and
+    stays description-only (``{}``), never a fabricated value.
+    """
+    mod = raw.get("mod")
+    if not isinstance(mod, dict):
+        return {}
+    factors: list[dict[str, Any]] = []
+    for mut in mod.get("mutatorMods", []) or []:
+        if not isinstance(mut, dict):
+            continue
+        short = _short_type(mut)
+        base = short[: -len("ModModel")] if short.endswith("ModModel") else short
+        fields: dict[str, Any] = {}
+        for key, value in mut.items():
+            if key == "$type" or key in _MK_MOD_NOISE_FIELDS:
+                continue
+            if isinstance(value, (dict, list)):
+                continue  # nested sub-model (projectile / ability) — not a scalar
+            if isinstance(value, bool):
+                fields[_snake(key)] = value
+            elif isinstance(value, (int, float)):
+                if key == "charges" and value >= _MK_CHARGES_SENTINEL:
+                    continue
+                if value == 0:
+                    continue  # additive identity / disabled flag — a no-op, drop
+                fields[_snake(key)] = _num(value)
+            elif isinstance(value, str) and value:
+                fields[_snake(key)] = value
+        if fields:
+            factors.append({"kind": _snake(base), **fields})
+    return {"factors": factors} if factors else {}
+
 
 def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     """Every Monkey Knowledge point → catalog rows (id, name, category,
@@ -2029,17 +2108,19 @@ def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str
             prereqs = [
                 _snake(str(p)) for p in raw.get("prerequisiteIds", []) or [] if p
             ]
-            rows.append(
-                {
-                    "id": kid,
-                    "canonical": name,
-                    "category": category,
-                    "description": _clean_desc(tt.get(f"{internal}Description", "")),
-                    "monkey_money_cost": _num(raw.get("monkeyMoneyCost", 0)),
-                    "investment_required": _num(raw.get("investmentRequired", 0)),
-                    "prerequisites": prereqs,
-                },
-            )
+            row = {
+                "id": kid,
+                "canonical": name,
+                "category": category,
+                "description": _clean_desc(tt.get(f"{internal}Description", "")),
+                "monkey_money_cost": _num(raw.get("monkeyMoneyCost", 0)),
+                "investment_required": _num(raw.get("investmentRequired", 0)),
+                "prerequisites": prereqs,
+            }
+            effect = _mk_effect(raw)
+            if effect:
+                row["effect"] = effect
+            rows.append(row)
     rows.sort(key=lambda k: (_MK_CATEGORIES.index(k["category"]), k["id"]))
     return rows, warnings
 

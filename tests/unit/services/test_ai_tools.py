@@ -770,6 +770,11 @@ async def test_btd6_monkey_knowledge_lookup_single_category_and_roster():
     h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
     one = await h["btd6_monkey_knowledge_lookup"]({"knowledge": "Supa-Thrive"})
     assert one["found"] is True and one["knowledge"]["description"]
+    # The dump-native structured magnitude is surfaced on the lookup payload.
+    cash = await h["btd6_monkey_knowledge_lookup"]({"knowledge": "More Cash"})
+    assert cash["knowledge"]["effect"] == {
+        "factors": [{"kind": "starting_cash", "addition": 200, "multiplier": 1}],
+    }
     magic = await h["btd6_monkey_knowledge_lookup"]({"category": "Magic"})
     assert magic["found"] is True and magic["count"] >= 1
     assert all(k["category"] == "Magic" for k in magic["knowledge"])

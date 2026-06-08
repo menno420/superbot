@@ -1125,13 +1125,20 @@ _BTD6_MK_LOOKUP_SPEC = AIToolSpec(
 
 
 def _mk_dict(entry: Any) -> dict[str, Any]:
-    return {
+    out = {
         "name": entry.canonical,
         "category": entry.category,
         "description": entry.description,
         "monkey_money_cost": entry.monkey_money_cost,
         "investment_required": entry.investment_required,
     }
+    # Structured, dump-native magnitude(s) where the knowledge carries them (e.g.
+    # More Cash {"factors": [{"kind": "starting_cash", "addition": 200}]}). Lets
+    # the model state the exact factor, grounded by both the number and the
+    # description. Absent for purely behavioural knowledge (description-only).
+    if entry.effect:
+        out["effect"] = dict(entry.effect)
+    return out
 
 
 def _find_mk(name: str) -> Any:

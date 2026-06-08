@@ -51,8 +51,12 @@ works** (the traps we hit), and what is still un-decoded.
   **Monkey Knowledge** 134, **Geraldo items** 16 (`--powers` / `--knowledge` /
   `--geraldo`). All player-facing name/description/cost catalogs, each behind an
   AI lookup tool. Powers additionally carry decoded effect factors + the
-  `btd6_power_effect` apply-tool (attack-speed-on-a-boost). Geraldo items carry
-  cash cost, Geraldo unlock level, and stock/replenish cadence.
+  `btd6_power_effect` apply-tool (attack-speed-on-a-boost). **Monkey Knowledge now
+  carries dump-native structured `effect` factors** (119/134) decoded from
+  `mod.mutatorMods[]` — More Cash `+200` starting cash, Bonus Monkey free Dart
+  Monkey, etc. (corrected the earlier "not in the dump" finding; see the MK
+  session log). Geraldo items carry cash cost, Geraldo unlock level, and
+  stock/replenish cadence.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
   **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
@@ -278,6 +282,37 @@ Tactics "stacks up to 20", Trade Empire "up to 20 Merchantmen", sellback "3").
 - **Honest scope:** parser-side only; no new decoded effect, no committed-data change. It makes
   the cutover path reproduce what the committed data + renderer already surface.
 
+### Session log — 2026-06-08 (Monkey Knowledge magnitudes — they WERE in the dump)
+
+The maintainer pushed back on the prior "MK magnitudes aren't in the dump" verdict — *"it has
+to be there, it's a very important part of the game."* He was right. Re-cloned the v55 dump and
+opened an actual `Knowledge/*.json`: the magnitude is in **`mod.mutatorMods[]`**, a layer the
+earlier check never descended into (it read `mod.name`, saw `ModModel`, and stopped).
+
+- **Evidence (full-roster survey of all 134):** **120** carry flat scalar magnitudes, **13** are
+  nested-only behavioural (Cold Front, Tiny Tornadoes, Wingmonkey, Vine Rupture, …), **1** empty
+  (Grand Prix Spree). Headline confirmations, each matching its committed description exactly:
+  More Cash `StartingCash{addition 200}`, Bonus Monkey/Glue Gunner `FreeTower{baseTowerID, charges 1}`,
+  Charged Chinooks `Lives{percentBonus 0.25}`+`Cash{percentBonus 0.25}`, Mo' Monkey Money
+  `MonkeyMoney{multiplier 1.1}`, Big Bloon Sabotage `BloonHealth{percentageHealthReduced 0.1}`,
+  Mana Shield `StartingShield{25/25/+5}`, Hero Favors/Scholarships 10% off, Supa-Thrive `Thrive{+0.05}`.
+- **Extraction (`parse_gamedata._mk_effect`):** a **faithful structural passthrough** of each
+  mutator's own fields → `effect = {"factors": [{"kind": <snake type>, <numbers>}, ...]}`. No
+  semantic transform that could be wrong (same discipline as the buff decode); internal/display
+  ids dropped, identity no-ops (`0`) and the unlimited-`charges` sentinel dropped. Behavioural /
+  empty → `effect == {}` (description-only), never fabricated. `monkey_knowledge.json` regenerated
+  (verified **0 non-effect churn** — only `effect` added to 119 rows).
+- **Runtime:** `MonkeyKnowledgeEntry.effect` + surfaced on `btd6_monkey_knowledge_lookup`. So
+  "how much cash does More Cash add / what does Bonus Monkey give / how big is the Hero Favors
+  discount" now answer with the exact dump number.
+- **Tests:** parser (`_mk_effect` scalar/multi-factor/noise-drop/behavioural-empty + the existing
+  category test extended), data_service (More Cash effect loads, ≥110 carry a magnitude), ai_tools
+  (lookup surfaces the effect). `check_quality.py --full` green.
+- **Binding lesson (recorded in the correction above):** **descend into nested `*Mods[]` /
+  `behaviors[]` arrays before declaring data absent.** The dump nests effects one level below the
+  obvious model; "bare reference" was an artefact of not opening the array. Trust the domain
+  knowledge that says a core mechanic "has to be there."
+
 ### ⚠ Answerability audit — Powers/Knowledge are *lookup catalogs*, not *applied modifiers* (2026-06-08)
 
 Asked the sharp question: can the bot answer **"what is the attack speed of Crossbow Master
@@ -293,7 +328,21 @@ is exactly where the line falls, so the next session doesn't rediscover it:
 | "List the magic monkey knowledge / 50-MM powers" | ✅ | category/roster filters |
 | "What's Monkey Boost's exact effect factor?" | ✅ | now structured: `rate_scale 0.5` for `15s` (2026-06-08) |
 | **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ✅ | `btd6_power_effect` applies the factor to the resolved tier stat (2026-06-08, step 2 DONE) |
-| **"…starting cash / upgrade cost / free monkeys / lives *with knowledge X*"** | ❌ | **no layer applies an MK effect to the economy** |
+| **"…what's the *magnitude* of knowledge X (starting cash / free monkeys / lives / discount)"** | ✅ | **dump-native structured `effect` on `btd6_monkey_knowledge_lookup` (2026-06-08, see correction below)** |
+| **"…starting cash / upgrade cost *with knowledge X*, computed against the economy"** | ❌ | the *magnitude* is now structured, but no layer yet **applies** it (no `btd6_*_effect` apply-tool for MK) |
+
+> **⛔ CORRECTION (2026-06-08) — root-cause point 2 below was WRONG.** "MK magnitudes are NOT in
+> the dump / hardcoded game logic / every `mod` is a bare `ModModel{name}` (134/134)" is **false**.
+> The earlier check stopped at `mod.name` and never opened **`mod.mutatorMods[]`**, where every
+> magnitude lives as a *typed* mutator model: More Cash → `StartingCashModModel{addition 200}`,
+> Bonus Monkey → `FreeTowerModModel{baseTowerID DartMonkey, charges 1}`, Mo' Monkey Money →
+> `MonkeyMoneyModModel{multiplier 1.1}`, Charged Chinooks → `LivesModModel{percentBonus 0.25}` +
+> `CashModModel{percentBonus 0.25}`. **120 of 134 carry flat scalar magnitudes; 13 are nested-only
+> behavioural (Cold Front, Tiny Tornadoes, …); 1 empty (Grand Prix Spree).** Every spot-checked
+> value matches its committed description exactly. Now extracted as a structured `effect`
+> (`{"factors": [...]}`) on each MK row + `btd6_monkey_knowledge_lookup`. **Lesson (binding):
+> descend into nested `*Mods[]`/`behaviors[]` arrays before declaring data absent — the
+> maintainer's "it has to be there" was right.** See the session log "Monkey Knowledge magnitudes".
 
 **Root cause — two missing things, not one:**
 
@@ -304,12 +353,12 @@ is exactly where the line falls, so the next session doesn't rediscover it:
    `0.2375 × 0.5 = 0.119 s` needs a **deterministic apply-tool** (the structured factor × the
    resolved base stat, grounded by construction — the exact `btd6_cumulative_cost` pattern), or
    the faithfulness verifier rejects the derived number as ungrounded.
-2. **Monkey Knowledge effect magnitudes are NOT in the dump.** Every MK `mod` is a bare
-   `ModModel{name}` (134/134) — a named reference whose magnitude (`+X starting cash`,
-   `-Y% cost`, `+1 free Glue Gunner`, `+Z lives`) is **hardcoded game logic**, the same class as
-   mode rules and cash-per-pop. The description prose ("Thrive adds 30% instead of 25%") is the
-   *only* captured form; many are qualitative ("Acid lasts longer"). So MK "apply" can't be
-   sourced from the dump — it needs curated constants or a wiki cross-source.
+2. ~~**Monkey Knowledge effect magnitudes are NOT in the dump.**~~ **FALSE — corrected above.**
+   The magnitudes *are* dump-native, in `mod.mutatorMods[]`, now extracted as structured
+   `effect` factors. (The *prose* is still the only form for the ~13 purely behavioural ones —
+   those legitimately have no scalar magnitude, e.g. "Acid lasts longer".) The remaining gap is
+   only the **apply** step — turning "free Glue Gunner / +$200 cash / -10% hero cost" into a
+   computed economy number — which, like Powers, needs a deterministic apply-tool, not new data.
 
 **Suggested next steps (ordered, for the following session):**
 
@@ -336,12 +385,23 @@ is exactly where the line falls, so the next session doesn't rediscover it:
    resolution was de-duplicated into `btd6_data_service.find_power` (shared by the lookup +
    effect tools). "Crossbow Master on Monkey Boost" now answers **8.42 attacks/sec for 15 s
    (vs 4.21 base)**.
-3. **Monkey Knowledge magnitudes — maintainer call.** Not dump-sourced. Either (a) leave MK as a
-   descriptive catalog (current state — honest, "what it does" answers but no computed economy), or
-   (b) curate the numeric magnitudes (starting cash/lives/discounts) from the wiki into
-   `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
-4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
-   stats independently; it must NOT be presented as answering combined/applied questions.
+3. **Monkey Knowledge magnitudes — ✅ DONE (2026-06-08), dump-native (NOT curated/maintainer call).**
+   The earlier "not dump-sourced, maintainer call" verdict was wrong (see the correction above):
+   the magnitudes live in `mod.mutatorMods[]`. `parse_gamedata._mk_effect` now decodes them into a
+   structured `effect` (`{"factors": [{"kind": ..., <numbers>}]}`) — a faithful structural
+   passthrough of the dump's own mutator fields (snake-cased, identity no-ops dropped; no semantic
+   transform), the same discipline as the buff decode. Surfaced on `MonkeyKnowledgeEntry.effect` +
+   `btd6_monkey_knowledge_lookup`. 119/134 carry a magnitude; the rest are behavioural (description
+   -only). So "what does Bonus Monkey give / how much cash does More Cash add / how big is the Hero
+   Favors discount" now answer with the exact number.
+   - **Possible follow-ups (not blocking):** (a) a clean *curated relabel* of the long-tail field
+     names (the passthrough keeps the dump's own keys, incl. misspellings like `addative`); (b) an
+     **MK apply-tool** (`btd6_*_effect`) that computes the economy (e.g. "+$200 starting cash" →
+     resulting first-tower affordability), the MK analogue of `btd6_power_effect` — that's the only
+     remaining ❌ in the table above.
+4. **The lookup now answers MK *magnitudes* directly**; the only still-partial case is a *computed*
+   economy ("what's my starting cash *after* More Cash + difficulty"), which needs the apply-tool
+   in 3(b). "What does X do / how much does X give" is fully answerable.
 
 ### Session log — 2026-06-08 (Bloons children + immunity cut over to game data)
 
