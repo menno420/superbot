@@ -1269,3 +1269,208 @@ or personalize but must not grant access.
 Destination: Q-0017 planning doc (Phase 5 / Personal Setup Wizard section).
 Captured: 2026-06-08 (pre-Codex clarification session).
 ```
+
+---
+
+### Q-0021 — Adaptive Setup/Access/Routine Platform: Routine Engine framing (2026-06-08)
+
+**Area:** Routine Engine / Automation scheduler
+**Type:** Architecture / Scope framing
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (Routine Engine section).
+
+**Question:** The repo already has a live automation system (`automation_scheduler`,
+`automation_executor`, `automation_registry`) with trigger kinds (scheduled_time, interval,
+member_join, setup_readiness_below, binding_missing, channel_inactive, manual) and action
+kinds (send_message, assign_role, remove_role, notify_owner, post_readiness_summary,
+post_leaderboard_summary, bind_channel, create_channel). The planning brief rates Samsung
+Routines as "Low readiness," but most of the engine already exists. Should Codex frame Phase 4
+as (1) extending the existing system, (2) replacing it with a broader design, or (3) treating
+config-orchestration routines as a separate parallel system?
+
+**Maintainer answer**
+
+```text
+Extend the existing system.
+
+Existing: scheduled_time, interval, member_join triggers
+Existing: send_message, assign_role, notify_owner, bind_channel actions
+Gap: apply_feature_profile, switch_cog_routing, enable_quiet_mode actions
+Gap: condition model (role_present, setup_stage_completed, event_active)
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The Phase 4 Routine Engine work is NOT a new engine — it is a targeted extension of the
+existing automation_scheduler / automation_executor / automation_registry system.
+
+What to add:
+  Trigger kinds: (none new needed — existing set covers time, interval, and member_join)
+  Condition model: new condition layer evaluated before action dispatch
+    role_present, setup_stage_completed, event_active, cooldown_state, account_age
+  Action kinds: config-mutation actions
+    apply_feature_profile, switch_cog_routing_preset, enable_quiet_mode, hide_show_help_category,
+    queue_final_review_draft
+  Safety gate: apply the Q-0019 progressive posture — low-risk actions (send, notify,
+    enable_quiet_mode, hide_show) auto-apply; config-mutation actions (apply_feature_profile,
+    switch_cog_routing) create an approval draft.
+
+The planning doc's readiness rating was wrong because it missed the existing automation
+infrastructure. Codex should note this and reframe the effort as "medium readiness" with
+a well-understood extension path.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Routine Engine section) — Codex uses this framing.
+  Also informs the readiness matrix update (automation_scheduler is Tier 1, not starting
+  from scratch).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0022 — Adaptive Setup/Access/Routine Platform: canonical naming — Profile vs. Preset (2026-06-08)
+
+**Area:** Guild Feature Profiles / naming
+**Type:** Domain language / Naming convention
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (glossary/naming section) +
+  code comments when the new concept is implemented.
+
+**Question:** The repo already has `ServerPreset` in `automation_templates.py` meaning
+"automation rule template" (welcome-message, daily-readiness-reminder, etc.). The planning
+brief uses "preset" and "profile" loosely for Guild Feature Profiles. To avoid a naming
+collision, should the canonical term be "Guild Feature Profile" (distinct from preset), should
+both merge under the "preset" concept, or should existing ServerPresets be renamed to free up
+the word?
+
+**Maintainer answer**
+
+```text
+Guild Feature Profile = distinct concept; keep 'preset' for automation templates.
+
+Guild Feature Profile: 'Community Server', 'Game Server', 'Moderation Heavy'
+  → generates a setup draft with cog routing + command access + channel bindings
+
+Automation Preset (existing): 'welcome-message', 'daily-readiness-reminder'
+  → generates scheduled automation rules
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Canonical naming from this point forward:
+
+  Guild Feature Profile  — a named server configuration bundle (which features are
+    enabled/visible, where they live, who has access). Generates a setup draft via
+    existing setup_operations primitives. Lives in a new service (feature_profiles or
+    similar). Display name: "Feature Profile" or "Server Profile" in the Discord UI.
+
+  Automation Preset (existing ServerPreset)  — an automation rule template that generates
+    scheduled/triggered automation rules. Unchanged; no rename.
+
+  Preset (in setup_operations context)  — already used for setup draft operations tagged
+    with metadata.source = "preset:<slug>". This third meaning coexists but is internal
+    only (not user-facing).
+
+When implementing Guild Feature Profiles, avoid using the word "preset" in code symbols,
+DB column names, or Discord UI strings for the new concept. Use "profile" instead.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (glossary section); implementation files for the new
+  Guild Feature Profile service should follow this naming.
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0023 — Adaptive Setup/Access/Routine Platform: Help Preview audience access (2026-06-08)
+
+**Area:** Help Preview
+**Type:** Product / UX access control
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (Help Preview section).
+
+**Question:** Should `/help preview` (or however help preview is surfaced) be accessible to
+any user for their own view, to staff/admins for cross-role diagnostic views, or both?
+
+**Maintainer answer**
+
+```text
+Staff and admins only.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Help Preview is a setup diagnostic tool, not a self-service user feature. It is
+restricted to staff and admin roles only. Regular users do not get a "what can I see?"
+self-serve preview command. Rationale: it reveals the server's permission structure
+(which roles see which features), which is operator-sensitive information.
+
+The Phase 2 implementation should gate the command on the same capability level as other
+setup/admin diagnostic commands (likely operator or administrator tier). A regular user
+who wants to know "why can't I see command X?" should get a clear locked-reason message
+from the command itself (see time-based unlock UX in the planning doc), not a preview tool.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Help Preview section — access control constraint).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
+
+---
+
+### Q-0024 — Adaptive Setup/Access/Routine Platform: Access Map Phase 2 scope (2026-06-08)
+
+**Area:** Unified Access Map
+**Type:** Scope / phasing
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** Q-0017 planning doc (Access Map section).
+
+**Question:** The Access Map is described as a "read model + editing surface." In Phase 2,
+should it support editing (adjusting command access and cog routing directly from the map
+view), or should it be read-only with editing remaining in the existing setup wizard?
+
+**Maintainer answer**
+
+```text
+Read-only in Phase 2, editing in Phase 3.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Phase 2 Access Map: read-only diagnostic view only.
+  Answers: who can use what, where, and what will they see.
+  Combines: cog routing state, command access grants/denies, subsystem visibility,
+    help visibility, setup visibility, channel/role scope.
+  Does NOT allow mutation in Phase 2.
+
+Phase 3 Access Map: add editing surface.
+  Allow adjusting command access presets and cog routing profiles directly from the
+  map, generating setup draft operations → Final Review flow.
+  This is the "editing surface" part of the original description.
+
+The read-only Phase 2 build lets the map be validated as accurate before trusting it
+with mutations. All Phase 2 mutations still go through the existing setup wizard.
+```
+
+**Routing result**
+
+```text
+Destination: Q-0017 planning doc (Access Map section — phasing note).
+Captured: 2026-06-08 (pre-Codex clarification session).
+```
