@@ -32,8 +32,12 @@ superbot/
 │   ├── utils/               # leaf helpers + DB access + settings keys
 │   └── views/               # Discord UI: panels, modals, selectors, hubs
 ├── docs/                    # reference docs — see AGENT_ORIENTATION.md
+│   └── agent/               # context compiler: index.yml + generated packs
 ├── tests/                   # pytest tree, mirrors disbot/ layout
+├── tools/                   # repo-native dev tooling (not deployed)
+│   └── agent_context/       # build_pack.py + validate_pack.py (context compiler)
 ├── .claude/                 # Claude Code config (CLAUDE.md, settings.json)
+│   └── rules/               # path-scoped Claude instruction files
 ├── .codegraph/              # CodeGraph index (built artifact; not in git)
 ├── .github/workflows/       # CI (code-quality.yml + ai-evals.yml)
 ├── pyproject.toml           # black, isort, ruff, mypy, pytest config

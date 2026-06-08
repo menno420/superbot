@@ -90,6 +90,8 @@ ignore = [
 # CLI scripts: print() is intentional output, subprocess uses hardcoded
 # trusted commands, and AST visitor naming follows the ast module convention.
 "scripts/*.py" = ["T201", "S603", "S607", "N815", "S310"]
+# Dev tooling scripts: same rationale as scripts/ — CLI output + trusted subprocess.
+"tools/**/*.py" = ["T201", "S603", "S607"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 8

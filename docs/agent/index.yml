@@ -1,0 +1,307 @@
+version: 1
+# SuperBot agent context manifest
+# ─────────────────────────────────────────────────────────────────────────────
+# Consumed by tools/agent_context/build_pack.py to generate task-specific
+# context packs in docs/agent/generated/.
+#
+# Generated packs are NOT source of truth. The canonical docs listed under
+# binding_docs always win. Update *this* index when folios, source paths, or
+# do-not-create rules change — never edit generated packs directly.
+#
+# Validation: python3.10 tools/agent_context/validate_pack.py
+# Generation: python3.10 tools/agent_context/build_pack.py
+# ─────────────────────────────────────────────────────────────────────────────
+
+subsystems:
+
+  ai:
+    display_name: "AI / Setup Advisor"
+    folio: docs/subsystems/ai.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+      - docs/ai-config-ownership.md
+    reference_docs:
+      - docs/planning/ai-roadmap-2026-06-07.md
+      - docs/ai/ai-complex-request-tool-orchestration-plan.md
+      - docs/ai/ai-service-integration-map.md
+    source_roots:
+      - disbot/cogs/ai_cog.py
+      - disbot/cogs/ai/
+      - disbot/core/runtime/ai/
+      - disbot/services/ai_policy_mutation.py
+      - disbot/services/ai_config_projection_service.py
+      - disbot/services/ai_gateway.py
+      - disbot/services/ai_tools.py
+      - disbot/utils/settings_keys/ai.py
+    related_subsystems:
+      - health-diagnostics
+      - settings-bindings-provisioning
+    do_not_create:
+      - "A second natural-language policy resolver"
+      - "A second AI tool registry — reuse disbot/services/ai_tools.py"
+      - "A second diagnostics aggregator — reuse disbot/services/diagnostics_service.py"
+      - "A direct DB scanner inside ai_cog.py"
+      - "An AI mutation path that bypasses disbot/services/ai_policy_mutation.py"
+    gates:
+      - "AI feature expansion gated on: bot-wide stability + provider/provenance checks
+        + caching/source-health clarity + AI behavior/config correctness.
+        See docs/current-state.md 'Gates / blocked work'."
+      - "First Opus target = lock orchestration foundation (AR-10, owner decision).
+        Approve docs/ai/ai-complex-request-tool-orchestration-plan.md before net-new tools."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+      - python3.10 -m pytest tests/unit/ -x -q -k ai
+
+  health-diagnostics:
+    display_name: "Health / Diagnostics"
+    folio: docs/subsystems/health-diagnostics.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+    reference_docs:
+      - docs/health/bot-awareness-implementation-plan.md
+      - docs/health/platform-consistency-ledger.md
+      - docs/smoke-test-checklist.md
+    source_roots:
+      - disbot/services/health_contracts.py
+      - disbot/services/health_snapshot_service.py
+      - disbot/services/health_findings_service.py
+      - disbot/services/diagnostics_service.py
+      - disbot/services/platform_consistency.py
+      - disbot/cogs/diagnostic_cog.py
+      - disbot/cogs/diagnostic/
+      - disbot/views/diagnostic/
+      - disbot/utils/db/health_findings.py
+      - disbot/migrations/057_operational_health_findings.sql
+    related_subsystems:
+      - ai
+      - server-management
+    do_not_create:
+      - "A second diagnostics aggregator — compose existing providers in disbot/services/diagnostics_service.py"
+      - "A second health-findings store — reuse disbot/services/health_findings_service.py + disbot/utils/db/health_findings.py"
+      - "A health 'fix' inside the reporting layer — health shows the problem; fix it in the execution subsystem it reports on"
+    gates:
+      - "Health/diagnostics is a reporting layer. Root cause lives in the reported
+        subsystem — do not 'fix' the health system for a failure it merely displays."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+      - python3.10 -m pytest tests/unit/ -x -q -k health
+
+  server-management:
+    display_name: "Server Management"
+    folio: docs/subsystems/server-management.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+      - docs/capability-authority.md
+    reference_docs:
+      - docs/planning/server-management-status-2026-06-05.md
+      - docs/setup-platform/resource-provisioning-overview.md
+    source_roots:
+      - disbot/cogs/channel_cog.py
+      - disbot/cogs/role_cog.py
+      - disbot/cogs/role/
+      - disbot/cogs/moderation_cog.py
+      - disbot/cogs/moderation/
+      - disbot/cogs/cleanup_cog.py
+      - disbot/cogs/cleanup/
+      - disbot/cogs/setup_cog.py
+      - disbot/cogs/setup/
+      - disbot/cogs/server_management_cog.py
+      - disbot/services/channel_lifecycle_service.py
+      - disbot/services/role_lifecycle_service.py
+      - disbot/services/moderation_service.py
+      - disbot/services/cleanup_profiles.py
+      - disbot/services/setup_diagnostics.py
+      - disbot/services/setup_operations.py
+      - disbot/services/setup_role_templates.py
+      - disbot/views/channels/
+      - disbot/views/roles/
+      - disbot/views/moderation/
+      - disbot/views/setup/
+      - disbot/views/server_management/
+    related_subsystems:
+      - health-diagnostics
+      - settings-bindings-provisioning
+    do_not_create:
+      - "A new setup op-kind without updating all three places: disbot/services/setup_operations.py
+        _KNOWN_KINDS + disbot/utils/db/setup_draft.py _KNOWN_OP_KINDS + a migration
+        widening the setup_draft_operations.op_kind CHECK constraint"
+      - "A second mutation path for role thresholds — route through disbot/services/role_automation.py set_{time,xp}_threshold"
+      - "A direct DB write from a cog or view — route through the domain mutation service"
+      - "A second diagnostics composer — reuse disbot/services/setup_diagnostics.py (PR12 canonical composer)"
+    gates:
+      - "New setup op-kind is a three-place contract (dispatcher + DB gate + migration CHECK). See server-management folio debug router."
+      - "PR13 AI generation layer remains gated by the AI-expansion gate in docs/current-state.md."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+      - python3.10 -m pytest tests/unit/ -x -q -k server_management or setup
+
+  btd6:
+    display_name: "BTD6 Data / Tools"
+    folio: docs/subsystems/btd6.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+      - docs/decisions/006-btd6-data-provenance-ownership.md
+    reference_docs:
+      - docs/btd6/btd6-provenance-schema.md
+      - docs/btd6/btd6-gamedata-decode-status.md
+      - docs/btd6/btd6-derived-value-groundedness-finding.md
+      - docs/btd6/btd6-absence-claim-guard-design.md
+    source_roots:
+      - disbot/cogs/btd6_cog.py
+      - disbot/cogs/btd6/
+      - disbot/cogs/btd6_events_cog.py
+      - disbot/cogs/btd6_ops_cog.py
+      - disbot/cogs/btd6_reference_cog.py
+      - disbot/cogs/btd6_strategy_cog.py
+      - disbot/services/btd6_ai_context_service.py
+      - disbot/services/btd6_ai_service.py
+      - disbot/services/btd6_cache_service.py
+      - disbot/services/btd6_data_provider.py
+      - disbot/services/btd6_data_service.py
+      - disbot/services/btd6_fact_store.py
+      - disbot/services/btd6_grounding_service.py
+      - disbot/views/btd6/
+      - disbot/utils/db/btd6_data.py
+      - disbot/utils/settings_keys/btd6.py
+    related_subsystems:
+      - ai
+      - media-youtube
+    do_not_create:
+      - "A BTD6-owned YouTube/media pipeline — ADR-007 declares media a shared platform subsystem"
+      - "Derived values without provenance/source evidence — groundedness guards are required"
+      - "A new extraction path without consulting docs/btd6/btd6-gamedata-decode-status.md"
+    gates:
+      - "BTD6 feature expansion gated on: bot-wide stability + provider/provenance checks
+        + caching/source-health clarity + AI behavior/config correctness.
+        See docs/current-state.md."
+      - "ADR-006 provenance schema required for all new BTD6 fact types."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+      - python3.10 -m pytest tests/unit/btd6/ -x -q
+
+  games:
+    display_name: "Games"
+    folio: docs/subsystems/games.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+      - docs/decisions/002-game-state-not-restart-safe.md
+    reference_docs:
+      - docs/archive/games-actionability-roadmap.md
+    source_roots:
+      - disbot/cogs/games_cog.py
+      - disbot/cogs/blackjack/
+      - disbot/cogs/blackjack_cog.py
+      - disbot/cogs/rps_tournament/
+      - disbot/cogs/rps_tournament_cog.py
+      - disbot/cogs/deathmatch/
+      - disbot/cogs/deathmatch_cog.py
+      - disbot/cogs/mining/
+      - disbot/cogs/mining_cog.py
+      - disbot/cogs/counting/
+      - disbot/views/blackjack/
+      - disbot/views/rps/
+      - disbot/views/games/
+      - disbot/views/mining/
+      - disbot/services/game_state_service.py
+      - disbot/services/economy_service.py
+      - disbot/utils/db/games/
+    related_subsystems: []
+    do_not_create:
+      - "A Redis-backed game-state store — ADR-001 (no Redis) + ADR-002 (in-memory accepted)"
+      - "Any promise of restart-safe game state — ADR-002 is binding"
+      - "Economy side-effects outside the disbot/services/economy_service.py seam"
+    gates:
+      - "Game state is intentionally not restart-safe (ADR-002). Accepted behavior — not a proposal target."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+      - python3.10 -m pytest tests/unit/ -x -q -k game
+
+  media-youtube:
+    display_name: "Media / YouTube"
+    folio: docs/subsystems/media-youtube.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+      - docs/decisions/007-media-youtube-ownership.md
+      - docs/server-logging.md
+    reference_docs: []
+    source_roots:
+      - disbot/services/youtube_context_service.py
+      - disbot/services/youtube_fetch_service.py
+      - disbot/services/video_reference_cache_service.py
+      - disbot/utils/db/youtube_video_cache.py
+      - disbot/views/youtube_embeds.py
+      - disbot/views/youtube_renderers.py
+      - disbot/migrations/049_youtube_video_cache.sql
+    related_subsystems:
+      - btd6
+      - ai
+    do_not_create:
+      - "A BTD6-owned or AI-owned YouTube pipeline — ADR-007: media is shared platform only"
+      - "Logs or audit payloads that leak transcript/content data — docs/server-logging.md"
+    gates:
+      - "YouTube is operator/config gated."
+      - "Provider content is untrusted external data — review privacy, retention,
+        credentials, and guild/channel authority before any expansion."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+
+  settings-bindings-provisioning:
+    display_name: "Settings / Bindings / Provisioning"
+    folio: docs/subsystems/settings-bindings-provisioning.md
+    binding_docs:
+      - docs/architecture.md
+      - docs/ownership.md
+      - docs/runtime_contracts.md
+      - docs/capability-authority.md
+    reference_docs:
+      - docs/setup-platform/settings-customization-roadmap.md
+      - docs/setup-platform/settings-customization-command-map.md
+      - docs/setup-platform/resource-provisioning-overview.md
+      - docs/health/platform-consistency-ledger.md
+      - docs/building-roadmap/config-input-standard.md
+    source_roots:
+      - disbot/core/runtime/settings_registry.py
+      - disbot/core/runtime/bindings.py
+      - disbot/core/runtime/subsystem_capabilities.py
+      - disbot/services/settings_mutation.py
+      - disbot/services/settings_resolution.py
+      - disbot/services/binding_mutation.py
+      - disbot/services/resource_provisioning.py
+      - disbot/core/resources/
+      - disbot/services/governance_service.py
+      - disbot/views/settings/
+      - disbot/views/setup/
+    related_subsystems:
+      - server-management
+      - ai
+      - health-diagnostics
+    do_not_create:
+      - "A setting for a Discord-resource pointer — that is a binding, not a setting"
+      - "A resource-provisioning write that bypasses preview + confirmation + audit"
+      - "A panel callback that does not re-check authority/capability at execution time"
+      - "A direct DB write to settings/bindings from a cog or view — route through the mutation service"
+    gates:
+      - "Direct vs. draft lane choice is canonical in docs/ownership.md 'Direct vs. draft mutation lanes'."
+      - "Every panel callback must re-check authority/capability at execution time (opening a panel is not authorization)."
+    verification:
+      - python3.10 scripts/check_quality.py --full
+      - python3.10 scripts/check_architecture.py --mode strict
+      - python3.10 -m pytest tests/unit/ -x -q -k settings or binding
