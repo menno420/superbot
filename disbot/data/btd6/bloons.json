@@ -703,7 +703,7 @@
       "canonical": "BAD",
       "category": "moab_class",
       "immune_to": [],
-      "children": "2 ZOMGs and 3 DDTs",
+      "children": "2 ZOMGs and 3 Camo DDTs",
       "children_list": [
         {
           "bloon_id": "zomg",
@@ -713,7 +713,9 @@
         {
           "bloon_id": "ddt",
           "count": 3,
-          "modifiers": []
+          "modifiers": [
+            "camo"
+          ]
         }
       ],
       "properties": [
@@ -778,5 +780,6 @@
       ],
       "description": "A regrow modifier: the bloon regrows its popped outer layers over time unless it is fully destroyed."
     }
-  ]
+  ],
+  "children_immunity_source": "BTD Mod Helper game data export"
 }

@@ -2031,12 +2031,265 @@ def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str
     return rows, warnings
 
 
+def map_geraldo_items(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every Geraldo shop item → catalog rows (id, name, description, in-game
+    cash cost, the Geraldo level it unlocks at, starting/max quantity, and
+    replenish cadence). Name + description are game-authored via the model's
+    ``locsId`` → ``textTable`` (``"<locsId> name"`` / ``"<locsId> description"``).
+    All 16 items resolve a name string; an item missing one is skipped + warned.
+    """
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for fp in sorted((dump / "GeraldoItems").glob("*.json")):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            warnings.append(f"unreadable {fp.name}")
+            continue
+        loc = str(raw.get("locsId") or "")
+        name = tt.get(f"{loc} name")
+        if not name:
+            warnings.append(f"no name string for {fp.stem} (locsId {loc!r})")
+            continue
+        gid = _snake(str(raw.get("name") or fp.stem))
+        if gid in seen:
+            warnings.append(f"duplicate geraldo id {gid!r} ({fp.stem})")
+            continue
+        seen.add(gid)
+        rows.append(
+            {
+                "id": gid,
+                "canonical": _clean_desc(name),
+                "description": _clean_desc(tt.get(f"{loc} description", "")),
+                "cost": _num(raw.get("cost", 0)),
+                "unlock_level": _num(raw.get("levelUnlockedAt", 0)),
+                "starting_quantity": _num(raw.get("startingQuantity", 0)),
+                "max_quantity": _num(raw.get("maxQuantity", 0)),
+                "rounds_to_replenish": _num(raw.get("roundsToReplenish", 0)),
+                "amount_to_replenish": _num(raw.get("amountToReplenish", 0)),
+                "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
+            },
+        )
+    rows.sort(key=lambda g: (g["unlock_level"], g["id"]))
+    return rows, warnings
+
+
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+
+
+# --- Bloons children/immunity cutover (wiki → game data) ---------------------
+#
+# ``bloons.json`` is bloonswiki-sourced, but two of its fields are exactly
+# reproducible from the dump and so can be made game-data-native:
+#   * ``immune_to`` — derived from the bloon model's ``bloonProperties`` bitflag
+#     via ``utils.btd6.damage_types.immunities_for_bloon_properties`` (the
+#     inverse of the projectile-side ``immuneBloonProperties`` map). Verified
+#     23/23 against the curated lists on v55.
+#   * ``children_list`` / ``children`` — from the ``SpawnChildrenModel`` behavior.
+#     Each child resolves to its **base** bloon via the child model's ``baseId``
+#     and **keeps** the variant's camo/regrow/fortified modifiers (a
+#     ``CeramicRegrowCamo`` child → ``ceramic`` + ``[camo, regrow]``). A bloon
+#     that is *itself* a variant (DDT is inherently Camo) is read from its
+#     matching model (``DdtCamo``), not the non-camo base ``Ddt`` template.
+# The overlay updates only these two fields, preserves every curated field
+# (rbe/health/layers/speed/category/aliases/description), and keeps the committed
+# value whenever it is already semantically equal so correct data never churns.
+
+
+# Bloon variant modifiers, in the curated display order ("Camo Regrow Ceramic").
+_CHILD_MOD_ORDER = ("camo", "regrow", "fortified")
+
+
+def _bloon_variant_meta(dump: Path) -> dict[str, tuple[str, list[str]]]:
+    """``{lowercased model id: (baseId, ordered modifiers)}`` for every bloon
+    model under ``Bloons/``.
+
+    A spawned child is usually a *variant* model (``CeramicRegrow``, ``DdtCamo``)
+    whose ``baseId`` names the base bloon (``Ceramic`` / ``Ddt``) and whose
+    ``isCamo`` / ``isGrow`` / ``isFortified`` flags name its modifiers. Carrying
+    those modifiers (rather than collapsing to the base) keeps the child faithful
+    to the game data — the curated lists already distinguish e.g. Glass Bloon's
+    plain / regrow / camo Zebra children.
+    """
+    meta: dict[str, tuple[str, list[str]]] = {}
+    for fp in (dump / "Bloons").rglob("*.json"):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        mid = str(raw.get("id") or fp.stem)
+        mods = [m for m in _CHILD_MOD_ORDER if m in _model_mods(raw)]
+        meta[mid.lower()] = (str(raw.get("baseId") or mid), mods)
+    return meta
+
+
+def _spawn_children(raw: dict[str, Any]) -> list[str]:
+    for beh in raw.get("behaviors", []) or []:
+        if str(beh.get("$type", "")).split(".")[-1].startswith("SpawnChildren"):
+            return [str(c) for c in beh.get("children", []) or []]
+    return []
+
+
+def _bloon_children_list(
+    raw: dict[str, Any],
+    meta: dict[str, tuple[str, list[str]]],
+) -> list[dict[str, Any]]:
+    """Ordered ``[{bloon_id, count, modifiers}]`` from the spawn behavior, each
+    child resolved to its base bloon id + the variant's modifiers; identical
+    (base, modifiers) children are aggregated in first-seen order.
+    """
+    counts: dict[tuple[str, tuple[str, ...]], int] = {}
+    order: list[tuple[str, tuple[str, ...]]] = []
+    for child in _spawn_children(raw):
+        base, mods = meta.get(child.lower(), (child, []))
+        key = (_snake(base), tuple(mods))
+        if key not in counts:
+            counts[key] = 0
+            order.append(key)
+        counts[key] += 1
+    return [
+        {"bloon_id": bid, "count": counts[(bid, mods)], "modifiers": list(mods)}
+        for bid, mods in order
+    ]
+
+
+def _children_prose(children_list: list[dict[str, Any]], canon: dict[str, str]) -> str:
+    """Render ``children_list`` to the curated prose form, e.g. ``"4 Ceramic
+    Bloons"`` / ``"2 ZOMGs and 3 Camo DDTs"`` / ``"1 Zebra Bloon, 1 Regrow Zebra
+    Bloon and 1 Camo Zebra Bloon"`` — count, Title-Case modifier prefix, canonical
+    name pluralised with a trailing ``s`` when >1; parts Oxford-joined.
+    """
+    parts: list[str] = []
+    for c in children_list:
+        name = canon.get(c["bloon_id"], c["bloon_id"])
+        prefix = "".join(f"{m.title()} " for m in c["modifiers"])
+        suffix = "s" if c["count"] > 1 else ""
+        parts.append(f"{c['count']} {prefix}{name}{suffix}")
+    if len(parts) <= 1:
+        return parts[0] if parts else ""
+    return ", ".join(parts[:-1]) + " and " + parts[-1]
+
+
+def _children_multiset(
+    children_list: list[dict[str, Any]],
+) -> dict[tuple[str, tuple[str, ...]], int]:
+    out: dict[tuple[str, tuple[str, ...]], int] = {}
+    for c in children_list:
+        key = (c["bloon_id"], tuple(sorted(c.get("modifiers", []))))
+        out[key] = out.get(key, 0) + c["count"]
+    return out
+
+
+def _model_mods(raw: dict[str, Any]) -> frozenset[str]:
+    flags = {
+        "camo": bool(raw.get("isCamo")),
+        "regrow": bool(raw.get("isGrow")),
+        "fortified": bool(raw.get("isFortified")),
+    }
+    return frozenset(m for m in _CHILD_MOD_ORDER if flags[m])
+
+
+def _bloon_model_index(dump: Path) -> dict[tuple[str, frozenset[str]], Path]:
+    """``{(snake(baseId), frozenset(modifiers)): model file}`` over every bloon
+    model. Lets a committed bloon select the *variant* that matches its own
+    inherent modifiers — e.g. ``ddt`` (inherently Camo) maps to ``DdtCamo``, not
+    the non-camo base ``Ddt`` template (whose children differ). The canonical
+    base (``id == baseId``) wins a key collision.
+    """
+    index: dict[tuple[str, frozenset[str]], Path] = {}
+    canonical: set[tuple[str, frozenset[str]]] = set()
+    for fp in (dump / "Bloons").rglob("*.json"):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        mid = str(raw.get("id") or fp.stem)
+        base_id = str(raw.get("baseId") or mid)
+        key = (_snake(base_id), _model_mods(raw))
+        is_canonical = mid == base_id
+        if key not in index or (is_canonical and key not in canonical):
+            index[key] = fp
+            if is_canonical:
+                canonical.add(key)
+    return index
+
+
+def _select_bloon_model(
+    bloon: dict[str, Any],
+    model_index: dict[tuple[str, frozenset[str]], Path],
+) -> Path | None:
+    """The dump model file for a committed bloon, matched on the bloon's own
+    inherent modifiers (camo/regrow/fortified from its ``properties``); falls back
+    to the unmodified base. ``None`` for a bloon with no dump model (the
+    camo/fortified/regrow modifier pseudo-entries).
+    """
+    bid = bloon["id"]
+    props = {str(p).lower() for p in bloon.get("properties", [])}
+    inherent = frozenset(m for m in _CHILD_MOD_ORDER if m in props)
+    for base in (bid, f"{bid}_bloon"):
+        for want in (inherent, frozenset()):
+            fp = model_index.get((base, want))
+            if fp is not None:
+                return fp
+    return None
+
+
+def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
+    """Source ``immune_to`` + ``children`` from the dump for every bloon already
+    in ``bloons.json`` that maps to a dump model. Returns ``{bloon_id: [changes]}``
+    listing only *semantic* corrections (an immunity set or child multiset that
+    differs from the curated value); a value already correct is left untouched so
+    the committed ordering/prose never churns.
+    """
+    from utils.btd6.damage_types import immunities_for_bloon_properties
+
+    path = _DATA_ROOT / "bloons.json"
+    payload = json.loads(path.read_text("utf-8"))
+    meta = _bloon_variant_meta(dump)
+    model_index = _bloon_model_index(dump)
+    canon = {b["id"]: b["canonical"] for b in payload["bloons"]}
+    report: dict[str, list[str]] = {}
+
+    for bloon in payload["bloons"]:
+        fp = _select_bloon_model(bloon, model_index)
+        if fp is None:
+            continue  # modifier pseudo-bloons (camo/fortified/regrow): no model
+        bid = bloon["id"]
+        raw = json.loads(fp.read_text("utf-8"))
+        changes: list[str] = []
+
+        derived_imm = list(
+            immunities_for_bloon_properties(raw.get("bloonProperties", 0)),
+        )
+        if set(derived_imm) != set(bloon.get("immune_to", [])):
+            changes.append(f"immune_to {bloon.get('immune_to')} -> {derived_imm}")
+            bloon["immune_to"] = derived_imm
+
+        derived_children = _bloon_children_list(raw, meta)
+        if _children_multiset(derived_children) != _children_multiset(
+            bloon.get("children_list", []),
+        ):
+            changes.append(
+                f"children {bloon.get('children')!r} -> "
+                f"{_children_prose(derived_children, canon)!r}",
+            )
+            bloon["children_list"] = derived_children
+            bloon["children"] = _children_prose(derived_children, canon)
+
+        if changes:
+            report[bid] = changes
+
+    payload["children_immunity_source"] = _SOURCE
+    if not dry_run:
+        _write(path, payload)
+    return report
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -2085,6 +2338,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="rebuild monkey_knowledge.json from the dump's Knowledge/ folders",
     )
+    ap.add_argument(
+        "--geraldo",
+        action="store_true",
+        help="rebuild geraldo_items.json from the dump's GeraldoItems/ folder",
+    )
+    ap.add_argument(
+        "--bloons",
+        action="store_true",
+        help="source bloon children + immunity from the dump (overlay bloons.json)",
+    )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
 
@@ -2104,6 +2367,22 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.audit:
         print(render_audit(audit(dump)))
+        return 0
+
+    if args.bloons:
+        report = overlay_bloons(dump, dry_run=args.dry_run)
+        verb = "would correct" if args.dry_run else "corrected"
+        if not report:
+            print(
+                "bloons: children + immunity already match game data for every "
+                "mapped bloon (0 corrections) — provenance recorded.",
+            )
+        else:
+            print(f"bloons: {verb} {len(report)} bloon(s)\n")
+            for bid in sorted(report):
+                print(f"  {bid}")
+                for change in report[bid]:
+                    print(f"      {change}")
         return 0
 
     if args.overlay:
@@ -2144,7 +2423,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  warning: {w}")
         return 0
 
-    if args.powers or args.knowledge:
+    if args.powers or args.knowledge or args.geraldo:
         version = _dump_version(dump)
         for flag, fn, key, fname in (
             (args.powers, map_powers, "powers", "powers.json"),
@@ -2153,6 +2432,12 @@ def main(argv: list[str] | None = None) -> int:
                 map_monkey_knowledge,
                 "knowledge",
                 "monkey_knowledge.json",
+            ),
+            (
+                args.geraldo,
+                map_geraldo_items,
+                "geraldo_items",
+                "geraldo_items.json",
             ),
         ):
             if not flag:

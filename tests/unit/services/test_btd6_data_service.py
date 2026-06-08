@@ -12,7 +12,9 @@ from services.btd6_data_provider import FileRawProvider
 from services.btd6_data_service import (
     DATA_ROOT,
     BTD6DataValidationError,
+    find_geraldo_item,
     get_dataset,
+    get_geraldo_item,
     get_monkey_knowledge,
     get_power,
     get_provider,
@@ -86,6 +88,26 @@ def test_powers_and_monkey_knowledge_load_and_resolve():
     # Every MK category folder is represented.
     cats = {k.category for k in dataset.monkey_knowledge}
     assert {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"} <= cats
+
+
+def test_geraldo_items_load_and_resolve():
+    dataset = get_dataset()
+    # All 16 of Geraldo's shop items are ingested.
+    assert len(dataset.geraldo_items) == 16
+    # Resolves by catalog id and (fuzzily) by canonical name / partial.
+    totem = get_geraldo_item("paragon_power_totem")
+    assert totem is not None and totem.canonical == "Paragon Power Totem"
+    assert totem.cost == 26000 and totem.unlock_level == 20
+    assert find_geraldo_item("Genie Bottle") is get_geraldo_item("genie_bottle")
+    assert find_geraldo_item("pickle").canonical == "Jar of Pickles"
+    # Every item carries a game-authored name + description and a sane cost.
+    for item in dataset.geraldo_items:
+        assert item.canonical and item.description
+        assert item.cost > 0 and item.unlock_level >= 0
+        assert item.max_quantity >= item.starting_quantity >= 0
+    # Unknown / ambiguous lookups fail closed rather than guessing.
+    assert get_geraldo_item("nope") is None
+    assert find_geraldo_item("") is None
 
 
 def test_map_removables_curated_for_known_maps_only():
@@ -333,9 +355,31 @@ def test_bloon_children_list_is_structured():
     assert get_bloon("lead").children_list == (
         {"bloon_id": "black", "count": 2, "modifiers": []},
     )
+    # children/immunity are now game-data-sourced (the --bloons cutover). A DDT is
+    # inherently Camo, so it reads from the DdtCamo model, whose four Ceramic
+    # children are CeramicRegrowCamo -> base ceramic with both modifiers.
     ddt_child = get_bloon("ddt").children_list[0]
     assert ddt_child["bloon_id"] == "ceramic" and ddt_child["count"] == 4
-    assert "camo" in ddt_child["modifiers"]
+    assert ddt_child["modifiers"] == ["camo", "regrow"]
+
+
+def test_bloon_children_and_immunity_are_game_data_sourced():
+    # The --bloons cutover sources children + immunity from the dump. Two
+    # curated values the wiki had wrong are now the game's:
+    from services.btd6_data_service import get_bloon
+
+    # BAD spawns *camo* DDTs (the wiki dropped the camo tag).
+    bad_ddt = next(c for c in get_bloon("bad").children_list if c["bloon_id"] == "ddt")
+    assert bad_ddt["modifiers"] == ["camo"]
+    assert "Camo DDTs" in get_bloon("bad").children
+    # Immunity derived from the bloonProperties bitflag still matches the curated
+    # set exactly (the inverter verified 23/23 against the wiki on v55).
+    assert set(get_bloon("zebra").immune_to) == {
+        "Explosion",
+        "Glacier",
+        "Cold",
+        "Frigid",
+    }
 
 
 def test_curated_aliases_and_modifier_entries_preserved():

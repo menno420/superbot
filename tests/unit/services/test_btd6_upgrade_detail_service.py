@@ -471,3 +471,50 @@ def test_vine_instant_pop_sentinel_renders_as_infinity_not_raw_number():
     assert "9,999,999" not in blob and "9999999" not in blob
     assert "∞ dmg" in blob and "∞ pierce" in blob  # the vine collidable
     assert "main attack: 6 dmg" in blob  # real main attack unaffected
+
+
+def test_power_effect_grounds_monkey_boost_on_a_real_upgrade():
+    # Crossbow Master (dart 0-0-5) on a Monkey Boost: rate_scale 0.5 halves the
+    # cooldown, so the boosted attack rate is exactly double the base rate. The
+    # tool returns the grounded numbers so the model never multiplies them itself.
+    res = det.power_effect("Monkey Boost", "Crossbow Master")
+    assert res["found"] is True
+    assert res["target"] == "Crossbow Master"
+    assert res["rate_scale"] == 0.5
+    assert res["duration_seconds"] == 15
+    assert res["boosted_cooldown_seconds"] == round(
+        res["base_cooldown_seconds"] * 0.5, 4
+    )
+    # Independent rounding of base vs boosted leaves a sub-0.01 gap.
+    gap = abs(res["boosted_attacks_per_second"] - 2 * res["base_attacks_per_second"])
+    assert gap < 0.01
+    assert "Monkey Boost" in res["note"]
+
+
+def test_power_effect_accepts_a_bare_tower_as_its_base_tier():
+    res = det.power_effect("Monkey Boost", "Dart Monkey")
+    assert res["found"] is True
+    assert res["tier_code"] == "000"
+    assert res["target"] == "Dart Monkey"
+
+
+def test_power_effect_refuses_non_attack_powers_without_a_number():
+    # Thrive (cash) / Camo Trap (bloons) must not produce an attack-speed number;
+    # they fail closed with a pointer to the lookup tool.
+    for power in ("Thrive", "Camo Trap"):
+        res = det.power_effect(power, "Crossbow Master")
+        assert res["found"] is False
+        assert "btd6_power_lookup" in res["note"]
+        assert "attacks_per_second" not in res
+
+
+def test_power_effect_reports_no_attack_stat_for_economy_towers():
+    # Banana Farm has no committed attack tiers — say so, don't invent a rate.
+    res = det.power_effect("Monkey Boost", "Banana Farm")
+    assert res["found"] is False
+    assert "no attack-speed stat" in res["note"]
+
+
+def test_power_effect_handles_unknown_power_and_unknown_tower():
+    assert det.power_effect("Bogus", "Dart Monkey")["found"] is False
+    assert det.power_effect("Monkey Boost", "not a tower")["found"] is False

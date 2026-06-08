@@ -53,7 +53,11 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     "Towers": ("✅", "stats, attacks, projectiles, abilities, subtowers, zones, buffs"),
     "Upgrades": ("✅", "names, per-difficulty cost, xp, path/tier, descriptions"),
     "Maps": ("✅", "full cutover: difficulty, has_water, names (curated removables)"),
-    "Bloons": ("🟡", "structure known; still wiki-sourced (children/immunity partial)"),
+    "Bloons": (
+        "🟡",
+        "children + immunity now game-data-sourced (--bloons); rbe/health/speed/"
+        "category/aliases still wiki",
+    ),
     "Bosses": ("⬜", "wiki-sourced; cosmetic Bosses/ — combat lives in Bloons/"),
     "Rounds": (
         "🟡",
@@ -72,7 +76,10 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     "Artifacts": ("⬜", "not ingested (Rogue Legends artifacts)"),
     "Mods": ("⬜", "not ingested (game-mode rule mods — partially explored)"),
     "Skins": ("⬜", "cosmetic; not ingested"),
-    "GeraldoItems": ("⬜", "not ingested (Geraldo shop items)"),
+    "GeraldoItems": (
+        "✅",
+        "all 16 shop items: name, description, cash cost, unlock level, quantity",
+    ),
     "TrophyStoreItems": ("⬜", "cosmetic; not ingested"),
     "BloonOverlays": ("⬜", "cosmetic overlays; not ingested"),
     "Buffs": ("⬜", "UI buff ICONS only — effects live inline in Towers/"),

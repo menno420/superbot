@@ -1074,16 +1074,7 @@ def _power_dict(entry: Any) -> dict[str, Any]:
 def _find_power(name: str) -> Any:
     from services import btd6_data_service
 
-    direct = btd6_data_service.get_power(name)
-    if direct is not None:
-        return direct
-    needle = name.strip().lower()
-    powers = btd6_data_service.get_dataset().powers
-    exact = [p for p in powers if p.canonical.lower() == needle]
-    if exact:
-        return exact[0]
-    partial = [p for p in powers if needle in p.canonical.lower()]
-    return partial[0] if len(partial) == 1 else None
+    return btd6_data_service.find_power(name)
 
 
 async def _btd6_power_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
@@ -1175,6 +1166,64 @@ async def _btd6_monkey_knowledge_lookup(arguments: dict[str, Any]) -> dict[str, 
         "count": len(entries),
         "category": category or "all",
         "knowledge": [_mk_dict(k) for k in entries],
+    }
+
+
+# --- btd6_geraldo_lookup -----------------------------------------------------
+
+_BTD6_GERALDO_SPEC = AIToolSpec(
+    name="btd6_geraldo_lookup",
+    description=(
+        "BTD6 Geraldo shop item info (Blade Trap, Genie Bottle, Sharpening "
+        "Stone, Pet Rabbit, Paragon Power Totem, …): each item's effect, in-game "
+        "cash cost, the Geraldo level it unlocks at, and how many he stocks. "
+        "Geraldo (the hero) sells these from his shop. Pass an item name to look "
+        "one up, or omit it to list every item. Use for 'what does Geraldo's "
+        "Blade Trap do', 'how much is the Genie Bottle', 'what level does the "
+        "Paragon Power Totem unlock', 'list Geraldo's items'."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "item": {
+                "type": "string",
+                "description": "Geraldo item name (e.g. 'Genie Bottle'); omit to list all.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _geraldo_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "description": entry.description,
+        "cost": entry.cost,
+        "unlock_level": entry.unlock_level,
+        "starting_quantity": entry.starting_quantity,
+        "max_quantity": entry.max_quantity,
+        "rounds_to_replenish": entry.rounds_to_replenish,
+        "amount_to_replenish": entry.amount_to_replenish,
+        "usable_between_rounds": entry.between_rounds,
+    }
+
+
+async def _btd6_geraldo_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("item") or "").strip()
+    if name:
+        entry = btd6_data_service.find_geraldo_item(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown geraldo item: {name!r}"}
+        return {"found": True, "item": _geraldo_dict(entry)}
+    items = btd6_data_service.get_dataset().geraldo_items
+    return {
+        "found": True,
+        "count": len(items),
+        "items": [_geraldo_dict(g) for g in items],
     }
 
 
@@ -1314,6 +1363,51 @@ async def _btd6_cumulative_cost(arguments: dict[str, Any]) -> dict[str, Any]:
         difficulty=difficulty,
         path=path,
     )
+
+
+# --- btd6_power_effect -------------------------------------------------------
+
+_BTD6_POWER_EFFECT_SPEC = AIToolSpec(
+    name="btd6_power_effect",
+    description=(
+        "Apply a BTD6 Power to a specific tower/upgrade's attack stat and get the "
+        "boosted number. Use for 'what's <tower>'s attack speed ON a Monkey "
+        "Boost', '<upgrade> with Monkey Boost', 'how fast does <tower> attack "
+        "while boosted'. Pass the power (e.g. 'Monkey Boost') and the tower or "
+        "upgrade (e.g. 'Crossbow Master', 'Dart Monkey', 'ninja 0-4-0'). Returns "
+        "base vs boosted attacks-per-second and cooldown plus the duration — the "
+        "grounded answer; do NOT compute the multiplied rate yourself. Only "
+        "Powers that actually change a tower stat resolve (Monkey Boost speeds up "
+        "attacks); for economy/bloon/placed-damage Powers it returns found=false "
+        "with a note — use btd6_power_lookup for those."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "power": {
+                "type": "string",
+                "description": "Power name (e.g. 'Monkey Boost').",
+            },
+            "tower": {
+                "type": "string",
+                "description": "Tower or upgrade (e.g. 'Crossbow Master', 'Dart Monkey').",
+            },
+        },
+        "required": ["power", "tower"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_power_effect(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_upgrade_detail_service
+
+    power = str(arguments.get("power") or "").strip()
+    tower = str(arguments.get("tower") or "").strip()
+    if not power or not tower:
+        return {"found": False, "note": "both power and tower are required"}
+    return btd6_upgrade_detail_service.power_effect(power, tower)
 
 
 # --- btd6_paragon_calculate --------------------------------------------------
@@ -1789,8 +1883,10 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
         "btd6_relic_lookup",
         "btd6_power_lookup",
         "btd6_monkey_knowledge_lookup",
+        "btd6_geraldo_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
+        "btd6_power_effect",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -1846,8 +1942,10 @@ def build_registry(
         (_BTD6_RELIC_LOOKUP_SPEC, _btd6_relic_lookup),
         (_BTD6_POWER_LOOKUP_SPEC, _btd6_power_lookup),
         (_BTD6_MK_LOOKUP_SPEC, _btd6_monkey_knowledge_lookup),
+        (_BTD6_GERALDO_SPEC, _btd6_geraldo_lookup),
         (_BTD6_BLOON_FILTER_SPEC, _btd6_bloon_filter),
         (_BTD6_CUMULATIVE_COST_SPEC, _btd6_cumulative_cost),
+        (_BTD6_POWER_EFFECT_SPEC, _btd6_power_effect),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
         (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),

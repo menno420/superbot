@@ -425,6 +425,129 @@ def test_map_powers_pct_fill_renders_scale_as_percent(mod, tmp_path):
     assert row["description"] == "Increase cash by 25% this round."
 
 
+def test_map_geraldo_items_decodes_name_cost_and_meta(mod, tmp_path):
+    dump = tmp_path / "dump"
+    # The name/description key off the model's locsId via "<locsId> name" /
+    # "<locsId> description"; an item whose name string is missing is skipped.
+    _write(
+        dump / "GeraldoItems" / "GenieBottle.json",
+        {
+            "$type": _t("GeraldoItemModel"),
+            "name": "GenieBottle",
+            "locsId": "Genie bottle",
+            "cost": 2500,
+            "levelUnlockedAt": 12,
+            "startingQuantity": 1,
+            "maxQuantity": 2,
+            "roundsToReplenish": 5,
+            "amountToReplenish": 1,
+            "canBeActivatedBetweenRounds": True,
+        },
+    )
+    _write(
+        dump / "GeraldoItems" / "HiddenThing.json",
+        {"$type": _t("GeraldoItemModel"), "name": "HiddenThing", "locsId": "missing"},
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "Genie bottle name": "Genie Bottle",
+            "Genie bottle description": "Summon a Genie Monkey<br>for a while!",
+        },
+    )
+    rows, warnings = mod.map_geraldo_items(dump, "55.1")
+    assert [r["id"] for r in rows] == ["genie_bottle"]  # HiddenThing skipped + warned
+    assert any("HiddenThing" in w for w in warnings)
+    row = rows[0]
+    assert row["canonical"] == "Genie Bottle"
+    assert row["description"] == "Summon a Genie Monkeyfor a while!"  # tags stripped
+    assert row["cost"] == 2500 and row["unlock_level"] == 12
+    assert row["starting_quantity"] == 1 and row["max_quantity"] == 2
+    assert row["rounds_to_replenish"] == 5 and row["amount_to_replenish"] == 1
+    assert row["between_rounds"] is True
+
+
+def _bloon_model(bid, *, base=None, props=0, camo=False, grow=False, fort=False, children=None):
+    m = {
+        "$type": "Il2CppAssets.Scripts.Models.Bloons.BloonModel, Assembly-CSharp",
+        "id": bid,
+        "baseId": base or bid,
+        "bloonProperties": props,
+        "isCamo": camo,
+        "isGrow": grow,
+        "isFortified": fort,
+        "behaviors": [],
+    }
+    if children is not None:
+        m["behaviors"].append(
+            {
+                "$type": "Il2CppAssets.Scripts.Models.Bloons.Behaviors.SpawnChildrenModel, Assembly-CSharp",
+                "children": children,
+                "name": "",
+            },
+        )
+    return m
+
+
+def test_bloon_children_resolve_base_and_preserve_modifiers(mod, tmp_path):
+    dump = tmp_path / "dump"
+    # A BAD-like bloon spawning 2 plain ZOMG + 3 *camo* DDT, plus the variant
+    # child models that carry the baseId + modifier flags.
+    _write(dump / "Bloons" / "Bad" / "Bad.json",
+           _bloon_model("Bad", children=["Zomg", "Zomg", "DdtCamo", "DdtCamo", "DdtCamo"]))
+    _write(dump / "Bloons" / "Zomg" / "Zomg.json", _bloon_model("Zomg"))
+    _write(dump / "Bloons" / "Ddt" / "DdtCamo.json",
+           _bloon_model("DdtCamo", base="Ddt", camo=True))
+
+    meta = mod._bloon_variant_meta(dump)
+    assert meta["ddtcamo".lower()] == ("Ddt", ["camo"])
+
+    raw = json.loads((dump / "Bloons" / "Bad" / "Bad.json").read_text())
+    children = mod._bloon_children_list(raw, meta)
+    assert children == [
+        {"bloon_id": "zomg", "count": 2, "modifiers": []},
+        {"bloon_id": "ddt", "count": 3, "modifiers": ["camo"]},
+    ]
+    canon = {"zomg": "ZOMG", "ddt": "DDT"}
+    assert mod._children_prose(children, canon) == "2 ZOMGs and 3 Camo DDTs"
+
+
+def test_inherently_modified_bloon_selects_its_variant_model(mod, tmp_path):
+    # Regression: a DDT is inherently Camo, so it must read from the DdtCamo model
+    # (children CeramicRegrowCamo), NOT the non-camo base Ddt template (children
+    # CeramicRegrow) — the base would wrongly drop Camo from DDT's children.
+    dump = tmp_path / "dump"
+    _write(dump / "Bloons" / "Ddt" / "Ddt.json",
+           _bloon_model("Ddt", children=["CeramicRegrow"]))
+    _write(dump / "Bloons" / "Ddt" / "DdtCamo.json",
+           _bloon_model("DdtCamo", base="Ddt", camo=True, children=["CeramicRegrowCamo"]))
+    _write(dump / "Bloons" / "Ceramic" / "CeramicRegrow.json",
+           _bloon_model("CeramicRegrow", base="Ceramic", grow=True))
+    _write(dump / "Bloons" / "Ceramic" / "CeramicRegrowCamo.json",
+           _bloon_model("CeramicRegrowCamo", base="Ceramic", camo=True, grow=True))
+
+    index = mod._bloon_model_index(dump)
+    # The inherently-camo bloon resolves to the camo variant...
+    camo_ddt = {"id": "ddt", "properties": ["camo", "lead", "black"]}
+    assert mod._select_bloon_model(camo_ddt, index).name == "DdtCamo.json"
+    # ...and a plain bloon resolves to the unmodified base.
+    plain = {"id": "ddt", "properties": ["lead", "black"]}
+    assert mod._select_bloon_model(plain, index).name == "Ddt.json"
+
+
+def test_bloon_immunity_derives_from_property_bitflag(mod, tmp_path):
+    # The parser sources immunity from the shared damage-types inverter; Zebra's
+    # 6 (Black|White) resolves to the union of their immunities.
+    from utils.btd6.damage_types import immunities_for_bloon_properties
+
+    assert set(immunities_for_bloon_properties(6)) == {
+        "Explosion",
+        "Glacier",
+        "Cold",
+        "Frigid",
+    }
+
+
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(

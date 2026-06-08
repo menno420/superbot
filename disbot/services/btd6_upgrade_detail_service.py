@@ -563,6 +563,135 @@ def tier_effect_lines(tier: dict[str, Any]) -> list[str]:
     return out
 
 
+# --- Power → tower-stat application -----------------------------------------
+#
+# Most Powers don't touch a tower's combat stat: Cash Drop / Thrive are economy,
+# Camo & Glue Trap act on bloons, Road Spikes / MOAB Mine are placed damage. The
+# one Power whose decoded ``effect`` modifies a *tower* stat is Monkey Boost
+# (``rate_scale`` -> attack cooldown). ``_POWER_STAT_EFFECTS`` is the set of
+# effect keys we know how to apply to a tier stat; a Power lacking all of them is
+# reported honestly as "doesn't modify a tower's attack stat" rather than guessed.
+_POWER_STAT_EFFECTS = ("rate_scale",)
+
+
+def _tier_attack_cooldown(tower_id: str, code: str) -> float | None:
+    """The base attack cooldown (seconds) of a tier's primary attack, or None.
+
+    Reads the raw ``attacks[0].rate`` — the same field
+    :func:`btd6_stats_service.normal_stats` surfaces as ``cooldown`` — so the
+    number matches what every other stat surface reports. ``None`` when the tier
+    has no stats file or no attack (economy/support towers, un-statted tiers).
+    """
+    stats = btd6_stats_service.get_tower_stats(tower_id)
+    tier = stats.tier(code) if stats is not None else None
+    if not tier:
+        return None
+    attacks = tier.get("attacks") or []
+    if not attacks:
+        return None
+    rate = attacks[0].get("rate")
+    return float(rate) if isinstance(rate, (int, float)) and rate > 0 else None
+
+
+def _resolve_stat_target(tower: str) -> tuple[str, str, str] | None:
+    """Resolve ``tower`` to ``(tower_id, tier_code, display_name)`` or None.
+
+    Accepts an upgrade name / alias / path-notation ("Crossbow Master",
+    "dart 0-4-0") via the deterministic upgrade resolver, or a bare tower name
+    ("Dart Monkey") which maps to its base tier ``"000"``. Returns ``None`` for a
+    miss; the special sentinel ``("", "ambiguous", query)`` flags an ambiguous
+    upgrade reference so the caller can ask for clarification.
+    """
+    from services import btd6_data_service
+
+    res = btd6_upgrade_service.resolve_upgrade(tower)
+    if res.match_type == "ambiguous":
+        return ("", "ambiguous", tower)
+    if res.upgrade is not None:
+        return (res.upgrade.tower_id, res.upgrade.code, res.upgrade.canonical)
+    entry = btd6_data_service.find_tower(tower)
+    if entry is not None:
+        return (entry.id, "000", entry.canonical)
+    return None
+
+
+def power_effect(power: str, tower: str) -> dict[str, Any]:
+    """Apply a BTD6 Power's decoded effect to a tower/upgrade's attack stat.
+
+    The grounded compute behind the ``btd6_power_effect`` tool: e.g. *"Crossbow
+    Master on a Monkey Boost"* -> base 4.19 attacks/sec, boosted 8.38 for 15s.
+    Returns ``found=False`` with an honest note for an unknown power, a Power that
+    doesn't modify a tower stat, an unresolved/ambiguous tower, or a tower with no
+    attack stat — never a fabricated number.
+    """
+    from services import btd6_data_service
+
+    entry = btd6_data_service.find_power(power)
+    if entry is None:
+        return {"found": False, "note": f"unknown power: {power!r}"}
+    effect = entry.effect or {}
+    rate_scale = effect.get("rate_scale")
+    if not isinstance(rate_scale, (int, float)) or not any(
+        k in effect for k in _POWER_STAT_EFFECTS
+    ):
+        return {
+            "found": False,
+            "power": entry.canonical,
+            "note": (
+                f"{entry.canonical} doesn't modify a tower's attack stat — use "
+                "btd6_power_lookup for what it does (it's an economy / bloon / "
+                "placed-damage Power, not an attack-speed buff)."
+            ),
+        }
+
+    target = _resolve_stat_target(tower)
+    if target is None:
+        return {"found": False, "note": f"could not resolve tower/upgrade: {tower!r}"}
+    tower_id, code, display = target
+    if code == "ambiguous":
+        return {
+            "found": False,
+            "note": f"ambiguous tower/upgrade reference: {tower!r} — name one upgrade.",
+        }
+
+    cooldown = _tier_attack_cooldown(tower_id, code)
+    if cooldown is None:
+        return {
+            "found": False,
+            "power": entry.canonical,
+            "target": display,
+            "note": (
+                f"no attack-speed stat for {display} — it has no committed attack "
+                "(economy/support tower or un-statted tier)."
+            ),
+        }
+
+    boosted_cooldown = cooldown * float(rate_scale)
+    duration = effect.get("duration_seconds")
+    out: dict[str, Any] = {
+        "found": True,
+        "power": entry.canonical,
+        "target": display,
+        "tier_code": code,
+        "stat": "attack_speed",
+        "rate_scale": float(rate_scale),
+        "base_cooldown_seconds": round(cooldown, 4),
+        "boosted_cooldown_seconds": round(boosted_cooldown, 4),
+        "base_attacks_per_second": round(1.0 / cooldown, 3),
+        "boosted_attacks_per_second": round(1.0 / boosted_cooldown, 3),
+        "note": (
+            f"{entry.canonical} multiplies attack cooldown by {float(rate_scale)} "
+            f"(lower = faster), so {display} attacks "
+            f"{round(1.0 / boosted_cooldown, 3)}x/sec while active "
+            f"(vs {round(1.0 / cooldown, 3)}x/sec normally)"
+            + (f", for {duration} seconds." if duration is not None else ".")
+        ),
+    }
+    if duration is not None:
+        out["duration_seconds"] = duration
+    return out
+
+
 def grounding_for_query(query: str) -> list[str]:
     """Resolve ``query`` to an upgrade and render its grounding (the wiring seam).
 
@@ -590,6 +719,7 @@ __all__ = [
     "UpgradeDetail",
     "get_upgrade_detail",
     "grounding_for_query",
+    "power_effect",
     "render_upgrade_grounding",
     "tier_effect_lines",
 ]

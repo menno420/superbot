@@ -18,9 +18,15 @@ works** (the traps we hit), and what is still un-decoded.
 ### Current state & next actions (READ FIRST)
 
 **Where the data stands (verified on `main`, full CI green):**
-- **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds/bloons still
+- **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds still
   **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
   Rounds now carry derived **per-round + cumulative cash** (all 140).
+- **Bloons** 26 — **children + immunity cut over to game data** (`--bloons`):
+  `immune_to` is derived from each bloon's `bloonProperties` bitflag (via
+  `utils.btd6.damage_types.immunities_for_bloon_properties`, verified 23/23 vs
+  the curated lists), and `children` from the dump's `SpawnChildrenModel` with
+  variant modifiers preserved (camo/regrow/fortified). The rest
+  (rbe/health/layers/speed/category/aliases/description) stays wiki-curated.
 - **Maps** 86 — **fully cut over to game data** (`--maps`), with `has_water`,
   curated **removables** (18 maps), and aggregate count/list grounding. (89 dump
   files minus the 3 non-player `IsStandard=False` maps: Blons, Base Editor Map,
@@ -28,6 +34,12 @@ works** (the traps we hit), and what is still un-decoded.
 - **Modes** 18 — **curated** taxonomy: 3 difficulties (Easy/Medium/Hard) + 13
   modes (Standard is the base mode in every difficulty) + 2 modifiers (Double
   Cash, Fast Track; relative-effect, no fixed numbers).
+- **Consumable / meta catalogs — game-data-native lookups:** **Powers** 25,
+  **Monkey Knowledge** 134, **Geraldo items** 16 (`--powers` / `--knowledge` /
+  `--geraldo`). All player-facing name/description/cost catalogs, each behind an
+  AI lookup tool. Powers additionally carry decoded effect factors + the
+  `btd6_power_effect` apply-tool (attack-speed-on-a-boost). Geraldo items carry
+  cash cost, Geraldo unlock level, and stock/replenish cadence.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
   **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
@@ -239,7 +251,7 @@ is exactly where the line falls, so the next session doesn't rediscover it:
 | "What's Crossbow Master's attack speed / cost?" (base) | ✅ | base tier stat (cooldown 0.2375s) via the tower path |
 | "List the magic monkey knowledge / 50-MM powers" | ✅ | category/roster filters |
 | "What's Monkey Boost's exact effect factor?" | ✅ | now structured: `rate_scale 0.5` for `15s` (2026-06-08) |
-| **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ❌ | factor extracted, but **no tool yet applies it to a tower stat** (step 2) |
+| **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ✅ | `btd6_power_effect` applies the factor to the resolved tier stat (2026-06-08, step 2 DONE) |
 | **"…starting cash / upgrade cost / free monkeys / lives *with knowledge X*"** | ❌ | **no layer applies an MK effect to the economy** |
 
 **Root cause — two missing things, not one:**
@@ -268,18 +280,113 @@ is exactly where the line falls, so the next session doesn't rediscover it:
    "by **25%**", "the first **500** Bloons"). Surfaced on `btd6_power_lookup` as `effect`. So the
    model can now state the *factor* precisely ("Monkey Boost = ×0.5 cooldown for 15s") — but
    *applying* it to a named tower's stat is still step 2.
-2. **Build `btd6_power_effect` (a deterministic apply-tool) — the remaining piece for the
-   maintainer's question.** Given a tower/upgrade + a Power, return the modified headline stat
-   (base cooldown × `rate_scale`, etc.) grounded by construction so the verifier accepts it.
-   The structured `effect` factors from step 1 are the inputs. Mirrors `btd6_cumulative_cost`.
-   This is what finally makes "Crossbow Master on Monkey Boost" answerable as a *number*. Scope
-   it tightly (attack-speed / cash multipliers first).
+2. **Build `btd6_power_effect` (a deterministic apply-tool) — ✅ DONE (2026-06-08).**
+   `btd6_upgrade_detail_service.power_effect(power, tower)` resolves the tower/upgrade via the
+   deterministic upgrade resolver (`"Crossbow Master"`, `"Dart Monkey"`, `"dart 0-4-0"` → the
+   base tier `000`), reads the tier's `attacks[0].rate` (the same cooldown the stats path
+   surfaces), and applies the Power's decoded `rate_scale` → base vs boosted cooldown +
+   attacks/sec + duration. Surfaced as the `btd6_power_effect` AI tool (registered + in
+   `BTD6_GROUNDING_TOOL_NAMES`). **Grounded by construction** (factor × resolved stat, never a
+   model multiplication). Scoped tightly to **attack-speed** for now: only Monkey Boost's
+   `rate_scale` modifies a tower stat; Thrive (cash) / Camo & Glue Trap (bloons) fail closed with
+   a pointer to `btd6_power_lookup` rather than inventing a number, and economy towers
+   (Banana Farm) report "no attack-speed stat". `_POWER_STAT_EFFECTS` is the extension point for
+   future stat-modifying factors (e.g. a cash-multiplier apply against the economy). Power name
+   resolution was de-duplicated into `btd6_data_service.find_power` (shared by the lookup +
+   effect tools). "Crossbow Master on Monkey Boost" now answers **8.42 attacks/sec for 15 s
+   (vs 4.21 base)**.
 3. **Monkey Knowledge magnitudes — maintainer call.** Not dump-sourced. Either (a) leave MK as a
    descriptive catalog (current state — honest, "what it does" answers but no computed economy), or
    (b) curate the numeric magnitudes (starting cash/lives/discounts) from the wiki into
    `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
 4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
    stats independently; it must NOT be presented as answering combined/applied questions.
+
+### Session log — 2026-06-08 (Bloons children + immunity cut over to game data)
+
+Maintainer-approved cutover of the two `bloons.json` fields that are exactly
+reproducible from the dump, sourcing them from game data instead of bloonswiki.
+
+- **Immunity** — derived from each bloon model's `bloonProperties` bitflag via a new
+  public inverter `utils.btd6.damage_types.immunities_for_bloon_properties` (the inverse of
+  the existing projectile-side `_DAMAGE_TYPES` map — *one* source of truth for the bitmask).
+  A bloon with property bit `p` is immune to every damage type whose `immuneBloonProperties`
+  mask shares `p` (Lead bit 1 → Shatter/Cold/Energy/Sharp; Zebra 6 = Black|White). **Verified
+  23/23 exact** against the curated `immune_to` lists, so the overlay leaves them byte-identical
+  (provenance-only) — zero churn.
+- **Children** — from the dump's `SpawnChildrenModel`, each child resolved to its **base**
+  bloon via the child model's `baseId` and tagged with the variant's `isCamo`/`isGrow`/
+  `isFortified` modifiers. **Model selection matters:** a bloon that is *itself* a variant
+  (a DDT is inherently Camo) must read from its matching model (`DdtCamo`, children
+  `CeramicRegrowCamo`), **not** the non-camo base `Ddt` template (children `CeramicRegrow`) —
+  `_select_bloon_model` picks the model whose flags match the bloon's own `properties`. With
+  that, the derivation matches the curated modifier children (Glass Bloon's plain/regrow/camo
+  Zebras; DDT's 4 Camo Regrow Ceramics) and surfaces **one genuine wiki correction**:
+  - **BAD** → `3 DDTs` became `3 **Camo** DDTs` (BAD's DDTs are camo in-game; the wiki dropped it).
+  - *(A first pass mis-matched DDT to the base template and wrongly dropped its Camo; caught by
+    the maintainer and fixed — DDT's children stay Camo Regrow. Regression-pinned by
+    `test_inherently_modified_bloon_selects_its_variant_model`.)*
+- **Tooling:** `parse_gamedata.py --bloons` (overlay; `--dry-run` to preview). It updates only
+  `children`/`children_list`/`immune_to`, preserves every other curated field, and writes a
+  `children_immunity_source` provenance marker. Re-runnable per dump pull.
+- **Coverage map:** `Bloons/` note updated (children+immunity game-sourced; the rest still wiki).
+- **Tests:** damage-types inverter (Lead/Black/White/Purple/Zebra-union, dedup, no Normal/Unknown);
+  parser child base-resolution + modifier preservation + prose; data_service cutover assertions
+  (one pre-existing DDT test corrected from the old wiki value). Full suite green.
+
+### Session log — 2026-06-08 (Geraldo shop items ingested → answerable)
+
+Next ⬜ domain off the coverage map, mirroring the proven Powers/Knowledge
+extracted→committed→tool→answerable pattern. All **16** Geraldo shop items are now a
+game-data-native lookup catalog.
+
+- **Decodability verified first:** every item's `GeraldoItemModel` carries a `locsId`, and the
+  textTable keys it as `"<locsId> name"` / `"<locsId> description"` — **0 of 16 missing**. The
+  model also carries structured `cost` (in-game cash), `levelUnlockedAt` (Geraldo hero level),
+  `startingQuantity`/`maxQuantity`, and `roundsToReplenish`/`amountToReplenish`.
+- **Parser** (`parse_gamedata.py --geraldo`): `map_geraldo_items` → `geraldo_items.json` (16),
+  sorted by unlock level then id. Names/descriptions HTML-stripped via `_clean_desc`; an item
+  missing its name string is skipped + warned (none are today).
+- **Runtime** (`btd6_data_service`): `GeraldoItemEntry` (optional fixture, validated,
+  id/canonical-unique) + `get_geraldo_item` / `find_geraldo_item`; `geraldo_items.json` added to
+  `_OPTIONAL_FIXTURES`.
+- **AI tool** `btd6_geraldo_lookup` (single + roster) registered + in
+  `BTD6_GROUNDING_TOOL_NAMES`. "What does Geraldo's Blade Trap do / how much is the Genie Bottle /
+  what level unlocks the Paragon Power Totem" now answer.
+- **Coverage map:** `GeraldoItems/` fetch-status ⬜ → ✅ (regenerated via `--full-map`).
+- **Tests:** parser (decode + skip-missing-name), data_service (load/resolve/fail-closed), tool
+  (single/partial/roster/miss); both registry rosters updated. Full suite green.
+- **Honest scope:** this is a *lookup catalog* (what each item is/costs/unlocks), not an
+  *applied-modifier* tool — same boundary as Powers/Knowledge. The items' mechanical effects
+  (e.g. Sharpening Stone's +damage magnitude) live in their `behaviorModels` and are **not**
+  extracted; "Blade Trap on a Dart Monkey as a number" is not claimed.
+
+### Session log — 2026-06-08 (`btd6_power_effect` apply-tool — answerability next-step #2 closed)
+
+Built the deterministic Power→tower-stat apply-tool that the prior session left as the
+last owed piece. The maintainer's standing question — *"what's Crossbow Master's attack
+speed **on** a Monkey Boost"* — now answers as a grounded number.
+
+- **Compute** (`btd6_upgrade_detail_service.power_effect`): resolves the tower/upgrade via the
+  existing deterministic resolver (upgrade name / alias / path-notation, falling back to a bare
+  tower's base tier `000`), reads `attacks[0].rate`, and applies the Power's decoded `rate_scale`
+  → `{base,boosted}_cooldown_seconds` + `{base,boosted}_attacks_per_second` + `duration_seconds`.
+  Grounded by construction (factor × resolved stat), so the faithfulness verifier accepts it.
+- **Honest boundaries (fail closed, never fabricate):** only `rate_scale` modifies a tower stat
+  today, so Thrive (cash) / Camo & Glue Trap (bloons) return `found=false` with a `btd6_power_lookup`
+  pointer; economy towers with no committed attack (Banana Farm) return "no attack-speed stat";
+  unknown power / unresolved-or-ambiguous tower / missing args all fail closed.
+  `_POWER_STAT_EFFECTS` is the named extension point for the next stat-modifying factor.
+- **Tool:** `btd6_power_effect(power, tower)` registered in `ai_tools` + added to
+  `BTD6_GROUNDING_TOOL_NAMES` (auto-propagates to the grounding allowlist). Power-name resolution
+  de-duplicated into `btd6_data_service.find_power` (+ a sibling `find_tower`), shared by the
+  lookup and effect tools — one home.
+- **Tests:** 5 service-level (`test_btd6_upgrade_detail_service`) + 2 tool-level
+  (`test_ai_tools`) pinning the boost math (2× rate), the bare-tower base tier, and all four
+  fail-closed paths; both registry-roster tests updated for the new tool. `check_quality --full`
+  **green (8127 passed)**, `check_architecture --mode strict` 0 errors.
+- **Still owed:** MK magnitudes (maintainer call — not dump-sourced) and the Steam-API
+  patch-detect refresh trigger (gated on executable-CI sign-off) carry forward.
 
 ### Session log — 2026-06-08 (Power effect factors extracted + `{0}` placeholders filled)
 
