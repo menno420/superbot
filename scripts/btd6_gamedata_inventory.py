@@ -55,8 +55,8 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     "Maps": ("✅", "full cutover: difficulty, has_water, names (curated removables)"),
     "Bloons": (
         "🟡",
-        "children + immunity now game-data-sourced (--bloons); rbe/health/speed/"
-        "category/aliases still wiki",
+        "children/immunity/health/speed/health_fortified now game-data-sourced "
+        "(--bloons); rbe (derived from health+children) + category/aliases still wiki",
     ),
     "Bosses": (
         "✅",

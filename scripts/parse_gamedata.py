@@ -2476,12 +2476,43 @@ def _select_bloon_model(
     return None
 
 
+def _select_bloon_variant_model(
+    bloon: dict[str, Any],
+    model_index: dict[tuple[str, frozenset[str]], Path],
+    extra: frozenset[str],
+) -> Path | None:
+    """Like :func:`_select_bloon_model` but for a *modifier variant* — the bloon's
+    own inherent modifiers **plus** ``extra`` (e.g. ``{"fortified"}`` to read a
+    bloon's Fortified ``maxHealth``). ``None`` when that exact variant has no dump
+    model (most bloons cannot be fortified).
+    """
+    bid = bloon["id"]
+    props = {str(p).lower() for p in bloon.get("properties", [])}
+    want = frozenset(m for m in _CHILD_MOD_ORDER if m in props) | extra
+    for base in (bid, f"{bid}_bloon"):
+        fp = model_index.get((base, want))
+        if fp is not None:
+            return fp
+    return None
+
+
 def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
-    """Source ``immune_to`` + ``children`` from the dump for every bloon already
-    in ``bloons.json`` that maps to a dump model. Returns ``{bloon_id: [changes]}``
-    listing only *semantic* corrections (an immunity set or child multiset that
-    differs from the curated value); a value already correct is left untouched so
-    the committed ordering/prose never churns.
+    """Source the dump-reproducible bloon fields — ``immune_to``, ``children``,
+    ``health``, ``speed`` and ``health_fortified`` — for every bloon in
+    ``bloons.json`` that maps to a dump model. Returns ``{bloon_id: [changes]}``
+    listing only *semantic* corrections (a value differing from the curated one);
+    a value already correct is left untouched so the committed ordering/prose
+    never churns.
+
+    Combat stats are direct dump scalars in the **same units** as the curated
+    values (``maxHealth`` -> ``health``, ``speed`` -> ``speed``, the Fortified
+    variant's ``maxHealth`` -> ``health_fortified``) — verified byte-identical at
+    cutover, so this is provenance + reproducibility, not a correction. ``rbe`` /
+    ``rbe_fortified`` stay **derived** from ``health`` + ``children`` (they are not
+    dump scalars); ``tests/unit/services/test_btd6_rbe.py`` recomputes and pins
+    them, so if a future dump pull moves a ``health`` the RBE check turns red and
+    forces a reconcile rather than letting the two drift silently. The rest
+    (rbe/category/aliases/description) stays wiki-curated.
     """
     from utils.btd6.damage_types import immunities_for_bloon_properties
 
@@ -2518,10 +2549,44 @@ def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
             bloon["children_list"] = derived_children
             bloon["children"] = _children_prose(derived_children, canon)
 
+        # Base combat stats — direct dump scalars (same units as curated).
+        for stat, dump_key in (("health", "maxHealth"), ("speed", "speed")):
+            if dump_key not in raw:
+                continue
+            value = _num(raw[dump_key])
+            if value != bloon.get(stat):
+                changes.append(f"{stat} {bloon.get(stat)} -> {value}")
+                bloon[stat] = value
+
+        # Fortified health from the bloon's Fortified variant model — only for the
+        # bloons that have a fortified form (Lead / Ceramic / MOAB-class already
+        # carry a curated ``health_fortified``); never invent the field.
+        if bloon.get("health_fortified") is not None:
+            fort_fp = _select_bloon_variant_model(
+                bloon,
+                model_index,
+                frozenset({"fortified"}),
+            )
+            if fort_fp is not None:
+                fort = _num(json.loads(fort_fp.read_text("utf-8")).get("maxHealth", 0))
+                if fort and fort != bloon.get("health_fortified"):
+                    changes.append(
+                        f"health_fortified {bloon.get('health_fortified')} -> {fort}",
+                    )
+                    bloon["health_fortified"] = fort
+
         if changes:
             report[bid] = changes
 
-    payload["children_immunity_source"] = _SOURCE
+    payload["game_sourced_fields"] = [
+        "children",
+        "immune_to",
+        "health",
+        "speed",
+        "health_fortified",
+    ]
+    payload["game_sourced_fields_source"] = _SOURCE
+    payload.pop("children_immunity_source", None)
     if not dry_run:
         _write(path, payload)
     return report
@@ -2586,7 +2651,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--bloons",
         action="store_true",
-        help="source bloon children + immunity from the dump (overlay bloons.json)",
+        help="source bloon children/immunity/health/speed from the dump (overlay bloons.json)",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -2614,8 +2679,8 @@ def main(argv: list[str] | None = None) -> int:
         verb = "would correct" if args.dry_run else "corrected"
         if not report:
             print(
-                "bloons: children + immunity already match game data for every "
-                "mapped bloon (0 corrections) — provenance recorded.",
+                "bloons: children/immunity/health/speed already match game data for "
+                "every mapped bloon (0 corrections) — provenance recorded.",
             )
         else:
             print(f"bloons: {verb} {len(report)} bloon(s)\n")
