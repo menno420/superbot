@@ -66,3 +66,16 @@ Authoritative queue: `docs/planning/server-management-status-2026-06-05.md` (PR1
   `arg-type` ignore). The discoverability invariant derives the cog filename from the
   subsystem key (`{key}_cog.py`), so a module named `server_management_cog.py` with key
   `servermanagement` is invisible to it — resolved via the `KNOWN_PANEL_COMMANDS` floor.
+
+## Idea-backlog grooming (standing secondary task, Q-0015)
+
+Browsed `docs/ideas/`. The three captures are each in a routed state: the mining-brainstorm
+`!explore` wiring was promoted to a plan + roadmap horizon (#581); `ai-extra-tool-capability-ideas`
+stays parked behind the AI-orchestration gate; `future-product-direction-2026-06-07` is an
+explicit **capture-only** doc whose items were nearly all **gated _after_ server-management**.
+**The grooming signal this session:** server-management is now structurally complete (PR14),
+so that gate has cleared — the **next session should re-examine `future-product-direction`'s
+server-management-gated items and route the now-unblocked ones onto a `docs/roadmap.md`
+horizon.** No unilateral promotion this session (the doc is capture-only + I own the live PR
+#584); the trigger is recorded here and the next-lane pointer is in `current-state.md`'s
+▶ Next action. No idea left orphaned.
