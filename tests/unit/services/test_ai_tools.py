@@ -36,6 +36,8 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_relic_lookup",
+        "btd6_power_lookup",
+        "btd6_monkey_knowledge_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_paragon_calculate",
@@ -316,6 +318,8 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_relic_lookup",
+        "btd6_power_lookup",
+        "btd6_monkey_knowledge_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_paragon_calculate",
@@ -710,6 +714,34 @@ async def test_btd6_relic_lookup_single_category_and_roster():
         "found"
     ] is False
     assert (await h["btd6_relic_lookup"]({"category": "bogus"}))["found"] is False
+
+
+async def test_btd6_power_lookup_single_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    boost = await h["btd6_power_lookup"]({"power": "monkey boost"})
+    assert boost["found"] is True
+    assert boost["power"]["name"] == "Monkey Boost"
+    assert boost["power"]["monkey_money_cost"] == 100
+    roster = await h["btd6_power_lookup"]({})
+    assert roster["found"] is True and roster["count"] == len(roster["powers"]) >= 20
+    assert (await h["btd6_power_lookup"]({"power": "nope-not-a-power"}))["found"] is False
+
+
+async def test_btd6_monkey_knowledge_lookup_single_category_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    one = await h["btd6_monkey_knowledge_lookup"]({"knowledge": "Supa-Thrive"})
+    assert one["found"] is True and one["knowledge"]["description"]
+    magic = await h["btd6_monkey_knowledge_lookup"]({"category": "Magic"})
+    assert magic["found"] is True and magic["count"] >= 1
+    assert all(k["category"] == "Magic" for k in magic["knowledge"])
+    roster = await h["btd6_monkey_knowledge_lookup"]({})
+    assert roster["count"] == len(roster["knowledge"]) >= 100
+    assert (await h["btd6_monkey_knowledge_lookup"]({"knowledge": "nope"}))[
+        "found"
+    ] is False
+    assert (await h["btd6_monkey_knowledge_lookup"]({"category": "Bogus"}))[
+        "found"
+    ] is False
 
 
 async def test_btd6_bloon_filter_traits_and_modifier_note():

@@ -13,6 +13,8 @@ from services.btd6_data_service import (
     DATA_ROOT,
     BTD6DataValidationError,
     get_dataset,
+    get_monkey_knowledge,
+    get_power,
     get_provider,
     reset_cache,
     set_provider,
@@ -61,6 +63,25 @@ def test_dataset_has_representative_entries():
     assert len(dataset.maps) >= 3
     assert len(dataset.modes) >= 2
     assert len(dataset.rounds) >= 5
+
+
+def test_powers_and_monkey_knowledge_load_and_resolve():
+    dataset = get_dataset()
+    assert len(dataset.powers) >= 20
+    assert len(dataset.monkey_knowledge) >= 100
+    # Power resolves by catalog id and by game-native power_id.
+    boost = get_power("monkey_boost")
+    assert boost is not None and boost.canonical == "Monkey Boost"
+    assert get_power("MonkeyBoost") is boost
+    assert boost.monkey_money_cost == 100
+    # Monkey knowledge carries its in-game category + costs.
+    mk = get_monkey_knowledge("aviation_grade_glue")
+    assert mk is not None
+    assert mk.category in {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"}
+    assert mk.monkey_money_cost >= 0 and mk.investment_required >= 0
+    # Every MK category folder is represented.
+    cats = {k.category for k in dataset.monkey_knowledge}
+    assert {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"} <= cats
 
 
 def test_map_removables_curated_for_known_maps_only():

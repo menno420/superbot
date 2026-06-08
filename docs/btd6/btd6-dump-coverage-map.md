@@ -19,10 +19,10 @@
 | `Buffs/` | 91 | ⬜ | UI buff ICONS only — effects live inline in Towers/ |
 | `GeraldoItems/` | 16 | ⬜ | not ingested (Geraldo shop items) |
 | `IncomeSets/` | 7 | 🟡 | decay bands feed the per-round cash derivation |
-| `Knowledge/` | 134 | ⬜ | not ingested (monkey knowledge tree) |
+| `Knowledge/` | 134 | ✅ | monkey_knowledge.json: name, category, description, MM cost, investment |
 | `Maps/` | 89 | ✅ | full cutover: difficulty, has_water, names (curated removables) |
 | `Mods/` | 22 | ⬜ | not ingested (game-mode rule mods — partially explored) |
-| `Powers/` | 27 | ⬜ | not ingested |
+| `Powers/` | 27 | ✅ | powers.json: name, description, MM cost, quantity, between-rounds |
 | `Rounds/` | 5,181 | 🟡 | composition drives derived RBE + per-round cash; not ingested as-is |
 | `Skins/` | 51 | ⬜ | cosmetic; not ingested |
 | `Towers/` | 2,093 | ✅ | stats, attacks, projectiles, abilities, subtowers, zones, buffs |
@@ -81,7 +81,7 @@
 - **Model types:** `RoundThresholdMultiplier`×60, `IncomeSetModel`×7
 - **Primary model `IncomeSetModel` scalar fields:** `finalMultiplier`, `name`
 
-### `Knowledge/` — 134 files ⬜
+### `Knowledge/` — 134 files ✅
 
 - **Model types:** `Vector3`×458, `KnowledgeModel`×134, `ModModel`×134, `PrefabReference`×45, `UpgradeCostModModel`×12, `FilterInvisibleModel`×12, `ProjectilePierceModModel`×9, `SoundModel`×9, `AudioClipReference`×9, `DamageModifierForTagModModel`×8, `FilterOutTagModel`×8, `SimTowerDiscountModModel`×7, `DamageModel`×7, `WeaponReloadPercentageModModel`×6, `ProjectileModel`×6, `ProjectileFilterModel`×6, `DisplayModel`×6, `EffectModel`×6, `RangeModModel`×5, `SlowModifierForTagModel`×5
 - **Primary model `KnowledgeModel` scalar fields:** `idx`, `category`, `investmentRequired`, `monkeyMoneyCost`, `name`
@@ -96,7 +96,7 @@
 - **Model types:** `ModModel`×22, `StartingCashModModel`×13, `LockTowerSetModModel`×9, `EndRoundModModel`×8, `MonkeyMoneyModModel`×6, `StartingHealthModModel`×5, `StartingRoundModModel`×4, `SellMultiplierModModel`×4, `BonusCashPerRoundModModel`×4, `GlobalCostModModel`×3, `LockTowerModModel`×2, `MaxHealthModModel`×2, `DisableContinueModModel`×2, `ModifyAllCashModModel`×2, `GlobalSpeedModModel`×2, `RoundSetModModel`×1, `ChimpsModModel`×1, `DisableSellTowerModModel`×1, `DisableMonkeyKnowledgeModModel`×1, `DeflationModel`×1
 - **Primary model `ModModel` scalar fields:** `name`
 
-### `Powers/` — 27 files ⬜
+### `Powers/` — 27 files ✅
 
 - **Model types:** `AudioClipReference`×911, `SoundModel`×887, `PrefabReference`×832, `SpriteReference`×445, `EffectModel`×275, `PowerProTowerModel`×187, `Vector3`×153, `DisplayModel`×139, `CreateSoundOnSellModel`×75, `AbilityModel`×73, `CircleFootprintModel`×71, `TowerModel`×69, `PlayAnimationIndexModel`×69, `CreateSoundOnTowerPlaceModel`×66, `CreateEffectOnPlaceModel`×65, `CreateEffectOnSellModel`×62, `TargetType`×62, `UpgradePathModel`×57, `CreateEffectOnUpgradeModel`×54, `CreateSoundOnUpgradeModel`×54
 - **Primary model `SingleEmissionModel` scalar fields:** `name`

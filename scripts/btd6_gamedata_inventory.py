@@ -60,8 +60,14 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
         "composition drives derived RBE + per-round cash; not ingested as-is",
     ),
     "IncomeSets": ("🟡", "decay bands feed the per-round cash derivation"),
-    "Powers": ("⬜", "not ingested"),
-    "Knowledge": ("⬜", "not ingested (monkey knowledge tree)"),
+    "Powers": (
+        "✅",
+        "powers.json: name, description, MM cost, quantity, between-rounds",
+    ),
+    "Knowledge": (
+        "✅",
+        "monkey_knowledge.json: name, category, description, MM cost, investment",
+    ),
     "Achievements": ("⬜", "not ingested"),
     "Artifacts": ("⬜", "not ingested (Rogue Legends artifacts)"),
     "Mods": ("⬜", "not ingested (game-mode rule mods — partially explored)"),

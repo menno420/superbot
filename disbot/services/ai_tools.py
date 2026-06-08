@@ -1030,6 +1030,148 @@ async def _btd6_relic_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# --- btd6_power_lookup -------------------------------------------------------
+
+_BTD6_POWER_LOOKUP_SPEC = AIToolSpec(
+    name="btd6_power_lookup",
+    description=(
+        "BTD6 consumable Power info (Monkey Boost, Cash Drop, Road Spikes, Camo "
+        "Trap, MOAB Mine, Super Monkey Storm, Pontoon, Tech Bot, …): each Power's "
+        "effect, Monkey Money cost, and how many a purchase grants. Pass a Power "
+        "name to look one up, or omit it to list every Power. Use for 'what does "
+        "Monkey Boost do', 'how much is the Camo Trap power', 'list the powers'."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "power": {
+                "type": "string",
+                "description": "Power name (e.g. 'Monkey Boost'); omit to list all.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _power_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "description": entry.description,
+        "monkey_money_cost": entry.monkey_money_cost,
+        "quantity": entry.quantity,
+        "usable_between_rounds": entry.between_rounds,
+    }
+
+
+def _find_power(name: str) -> Any:
+    from services import btd6_data_service
+
+    direct = btd6_data_service.get_power(name)
+    if direct is not None:
+        return direct
+    needle = name.strip().lower()
+    powers = btd6_data_service.get_dataset().powers
+    exact = [p for p in powers if p.canonical.lower() == needle]
+    if exact:
+        return exact[0]
+    partial = [p for p in powers if needle in p.canonical.lower()]
+    return partial[0] if len(partial) == 1 else None
+
+
+async def _btd6_power_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("power") or "").strip()
+    if name:
+        entry = _find_power(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown power: {name!r}"}
+        return {"found": True, "power": _power_dict(entry)}
+    powers = btd6_data_service.get_dataset().powers
+    return {
+        "found": True,
+        "count": len(powers),
+        "powers": [_power_dict(p) for p in powers],
+    }
+
+
+# --- btd6_monkey_knowledge_lookup --------------------------------------------
+
+_BTD6_MK_LOOKUP_SPEC = AIToolSpec(
+    name="btd6_monkey_knowledge_lookup",
+    description=(
+        "BTD6 Monkey Knowledge info: each MK point's effect, in-game category "
+        "(Primary / Military / Magic / Support / Heroes / Powers), Monkey Money "
+        "cost, and how many points must already be spent in that tab to unlock it. "
+        "Pass a knowledge name to look one up, a category to list that tab, or omit "
+        "both to list everything. Use for 'what does Supa-Thrive do', 'list the "
+        "magic monkey knowledge', 'how much is Bigger Bloon Sabotage'."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "knowledge": {
+                "type": "string",
+                "description": "MK point name (e.g. 'Supa-Thrive'); omit to list.",
+            },
+            "category": {
+                "type": "string",
+                "description": "Filter: Primary / Military / Magic / Support / Heroes / Powers.",
+            },
+        },
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+def _mk_dict(entry: Any) -> dict[str, Any]:
+    return {
+        "name": entry.canonical,
+        "category": entry.category,
+        "description": entry.description,
+        "monkey_money_cost": entry.monkey_money_cost,
+        "investment_required": entry.investment_required,
+    }
+
+
+def _find_mk(name: str) -> Any:
+    from services import btd6_data_service
+
+    needle = name.strip().lower()
+    entries = btd6_data_service.get_dataset().monkey_knowledge
+    exact = [k for k in entries if k.canonical.lower() == needle or k.id == needle]
+    if exact:
+        return exact[0]
+    partial = [k for k in entries if needle in k.canonical.lower()]
+    return partial[0] if len(partial) == 1 else None
+
+
+async def _btd6_monkey_knowledge_lookup(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    name = str(arguments.get("knowledge") or "").strip()
+    if name:
+        entry = _find_mk(name)
+        if entry is None:
+            return {"found": False, "note": f"unknown monkey knowledge: {name!r}"}
+        return {"found": True, "knowledge": _mk_dict(entry)}
+    entries = btd6_data_service.get_dataset().monkey_knowledge
+    category = str(arguments.get("category") or "").strip().lower()
+    if category:
+        entries = tuple(k for k in entries if k.category.lower() == category)
+        if not entries:
+            return {"found": False, "note": f"no monkey knowledge in {category!r}"}
+    return {
+        "found": True,
+        "count": len(entries),
+        "category": category or "all",
+        "knowledge": [_mk_dict(k) for k in entries],
+    }
+
+
 # --- btd6_bloon_filter -------------------------------------------------------
 
 _BTD6_BLOON_FILTER_SPEC = AIToolSpec(
@@ -1639,6 +1781,8 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
         "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_relic_lookup",
+        "btd6_power_lookup",
+        "btd6_monkey_knowledge_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_paragon_calculate",
@@ -1694,6 +1838,8 @@ def build_registry(
         (_BTD6_MAP_LOOKUP_SPEC, _btd6_map_lookup),
         (_BTD6_MODE_LOOKUP_SPEC, _btd6_mode_lookup),
         (_BTD6_RELIC_LOOKUP_SPEC, _btd6_relic_lookup),
+        (_BTD6_POWER_LOOKUP_SPEC, _btd6_power_lookup),
+        (_BTD6_MK_LOOKUP_SPEC, _btd6_monkey_knowledge_lookup),
         (_BTD6_BLOON_FILTER_SPEC, _btd6_bloon_filter),
         (_BTD6_CUMULATIVE_COST_SPEC, _btd6_cumulative_cost),
         (_PARAGON_CALCULATE_SPEC, _paragon_calculate),

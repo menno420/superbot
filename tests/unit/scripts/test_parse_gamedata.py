@@ -344,6 +344,70 @@ def test_map_tower_end_to_end(mod, tmp_path):
     ]
 
 
+def test_map_powers_extracts_named_skips_hidden(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Powers" / "MonkeyBoost.json",
+        {
+            "$type": _t("MonkeyBoostPower"),
+            "PowerId": "MonkeyBoost",
+            "Cost": 100,
+            "quantity": 1,
+            "canBeActivatedBetweenRounds": False,
+        },
+    )
+    # a hidden/event power with no textTable name → skipped, not surfaced raw
+    _write(
+        dump / "Powers" / "SpookyCreature.json",
+        {"$type": _t("Pow"), "PowerId": "SpookyCreature", "Cost": 50},
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "MonkeyBoost": "Monkey Boost",
+            "MonkeyBoost Description": "Attack faster <sup>TM</sup>",
+        },
+    )
+    rows, warnings = mod.map_powers(dump, "55.1")
+    assert [r["id"] for r in rows] == ["monkey_boost"]  # SpookyCreature dropped
+    row = rows[0]
+    assert row["canonical"] == "Monkey Boost"
+    assert row["monkey_money_cost"] == 100
+    # tags are stripped, inner text (the TM, the words) is kept.
+    assert row["description"] == "Attack faster TM"
+
+
+def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Knowledge" / "Magic" / "AcidStability.json",
+        {
+            "name": "AcidStability",
+            "category": 2,
+            "monkeyMoneyCost": 250,
+            "investmentRequired": 8,
+            "prerequisiteIds": ["SomePrereq"],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "AcidStability": "Acid Stability",
+            "AcidStabilityDescription": "Acid lasts longer.",
+        },
+    )
+    rows, warnings = mod.map_monkey_knowledge(dump, "55.1")
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["id"] == "acid_stability"
+    assert row["canonical"] == "Acid Stability"
+    assert row["category"] == "Magic"  # from the folder, not the opaque int
+    assert row["description"] == "Acid lasts longer."
+    assert row["monkey_money_cost"] == 250
+    assert row["investment_required"] == 8
+    assert row["prerequisites"] == ["some_prereq"]
+
+
 def test_validate_anchors(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(dump / "Towers" / "DartMonkey" / "DartMonkey.json", _tower_model(cost=200.0))

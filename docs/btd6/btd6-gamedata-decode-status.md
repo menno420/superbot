@@ -225,6 +225,29 @@ Known small gap (not fixed, applies to *all* buff types equally): `_buffs()` doe
 `maxStackSize`, so the renderer's `_stack_cap` "(stacks up to N)" clause is lost on the
 parser-native path — a separate, uniform fix, not a per-type decode.
 
+### Session log — 2026-06-08 (Powers + Monkey Knowledge ingested → answerable)
+
+Two whole domains the coverage map flagged `⬜` are now `✅` end-to-end, following the
+maps/modes/relics pattern (extracted → committed → tool → answerable):
+
+- **Powers (25).** `parse_gamedata.py --powers` → `powers.json` (name, game-authored
+  description, Monkey-Money cost, quantity, between-rounds). Names/descriptions resolve via
+  `PowerId` → `textTable`; 2 hidden/event powers (no name string) are skipped, never surfaced
+  as internal ids. HTML-ish markup (`<sup>TM</sup>`) stripped; `{0}` placeholders kept verbatim
+  (filling them needs per-power effect decode — never invent).
+- **Monkey Knowledge (134).** `--knowledge` → `monkey_knowledge.json` (name, **category from the
+  `Knowledge/<Category>/` folder** — authoritative, like Maps' difficulty folders, not the
+  opaque int — description, MM cost, investment required, prerequisites). Categories: Primary 32
+  / Military 30 / Magic 22 / Support 22 / Heroes 13 / Powers 15.
+- **Runtime:** `btd6_data_service` gained `PowerEntry` / `MonkeyKnowledgeEntry` (optional
+  fixtures, validated, unique-checked) + `get_power` / `get_monkey_knowledge`; `ai_tools`
+  gained `btd6_power_lookup` + `btd6_monkey_knowledge_lookup` (single + roster + category),
+  both registered in `BTD6_GROUNDING_TOOL_NAMES`. So "what does Monkey Boost do", "how much is
+  the Camo Trap power", "list the magic monkey knowledge", "what does Supa-Thrive do" now answer.
+- **Verified:** anchors PASS; `--audit` unaffected (new fixtures, not stats overlay); the
+  coverage map's fetch-status flips Powers/Knowledge → `✅`. Pinned by parser + data-service +
+  ai_tools tests (incl. the two registry drift-guards updated for the new tools).
+
 ### Session log — temporary-buff triggers (units fixed) + Vigilante de-orphan + cash-on-leak
 
 Decoded the two **time/round-windowed** buffs whose duration field was unit-ambiguous:

@@ -189,6 +189,43 @@ class RelicEntry:
 
 
 @dataclass(frozen=True)
+class PowerEntry:
+    """One consumable Power (Monkey Boost, Cash Drop, Road Spikes, …).
+
+    Game-native: ``canonical``/``description`` are the game-authored strings,
+    ``monkey_money_cost`` is the in-store MM price, ``quantity`` how many a
+    single purchase grants, ``between_rounds`` whether it can be used between
+    rounds. ``power_id`` is the dump's internal id.
+    """
+
+    id: str
+    canonical: str
+    power_id: str
+    description: str
+    monkey_money_cost: int
+    quantity: int
+    between_rounds: bool
+    is_power_pro: bool = False
+
+
+@dataclass(frozen=True)
+class MonkeyKnowledgeEntry:
+    """One Monkey Knowledge point. ``category`` is the in-game tab
+    (Primary/Military/Magic/Support/Heroes/Powers), ``investment_required`` the
+    points that must already be spent in that tab to unlock it,
+    ``monkey_money_cost`` its MM price, ``prerequisites`` the ids it requires.
+    """
+
+    id: str
+    canonical: str
+    category: str
+    description: str
+    monkey_money_cost: int
+    investment_required: int
+    prerequisites: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class BTD6DataSet:
     data_version: str
     game_version: str
@@ -200,6 +237,8 @@ class BTD6DataSet:
     rounds: tuple[RoundEntry, ...] = ()
     bloons: tuple[BloonEntry, ...] = ()
     ct_relics: tuple[RelicEntry, ...] = ()
+    powers: tuple[PowerEntry, ...] = ()
+    monkey_knowledge: tuple[MonkeyKnowledgeEntry, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -267,6 +306,17 @@ _REQUIRED_RELIC_FIELDS = (
     "effect",
 )
 _RELIC_CATEGORIES = frozenset({"offense", "economy", "lives", "powerup", "utility"})
+_REQUIRED_POWER_FIELDS = ("id", "canonical", "power_id", "monkey_money_cost")
+_REQUIRED_KNOWLEDGE_FIELDS = (
+    "id",
+    "canonical",
+    "category",
+    "monkey_money_cost",
+    "investment_required",
+)
+_MK_CATEGORIES = frozenset(
+    {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"},
+)
 
 
 def _require_keys(entry: dict[str, Any], keys: tuple[str, ...], where: str) -> None:
@@ -559,6 +609,43 @@ def _parse_relic(raw: dict[str, Any]) -> RelicEntry:
     )
 
 
+def _parse_power(raw: dict[str, Any]) -> PowerEntry:
+    _require_keys(raw, _REQUIRED_POWER_FIELDS, where=f"power {raw.get('id')!r}")
+    return PowerEntry(
+        id=str(raw["id"]),
+        canonical=str(raw["canonical"]),
+        power_id=str(raw["power_id"]),
+        description=str(raw.get("description", "")).strip(),
+        monkey_money_cost=int(raw["monkey_money_cost"]),
+        quantity=int(raw.get("quantity", 1)),
+        between_rounds=bool(raw.get("between_rounds", False)),
+        is_power_pro=bool(raw.get("is_power_pro", False)),
+    )
+
+
+def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
+    _require_keys(
+        raw,
+        _REQUIRED_KNOWLEDGE_FIELDS,
+        where=f"knowledge {raw.get('id')!r}",
+    )
+    category = str(raw["category"])
+    if category not in _MK_CATEGORIES:
+        raise BTD6DataValidationError(
+            f"knowledge {raw['id']!r}: category {category!r} not one of "
+            f"{sorted(_MK_CATEGORIES)}",
+        )
+    return MonkeyKnowledgeEntry(
+        id=str(raw["id"]),
+        canonical=str(raw["canonical"]),
+        category=category,
+        description=str(raw.get("description", "")).strip(),
+        monkey_money_cost=int(raw["monkey_money_cost"]),
+        investment_required=int(raw["investment_required"]),
+        prerequisites=tuple(str(p) for p in raw.get("prerequisites", []) or ()),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Loader
 # ---------------------------------------------------------------------------
@@ -575,7 +662,12 @@ _REQUIRED_FIXTURES = (
     "modes.json",
     "rounds.json",
 )
-_OPTIONAL_FIXTURES = ("bloons.json", "ct_relics.json")
+_OPTIONAL_FIXTURES = (
+    "bloons.json",
+    "ct_relics.json",
+    "powers.json",
+    "monkey_knowledge.json",
+)
 
 
 def _default_cache_dir() -> Path:
@@ -756,6 +848,9 @@ def _load_dataset() -> BTD6DataSet:
     # ct_relics.json is likewise optional (added in the CT feature); a missing
     # file degrades to an empty catalog rather than aborting the dataset.
     ct_relics_raw = _load_file_optional("ct_relics.json")
+    # powers.json / monkey_knowledge.json are game-native optional fixtures.
+    powers_raw = _load_file_optional("powers.json")
+    knowledge_raw = _load_file_optional("monkey_knowledge.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
@@ -770,6 +865,16 @@ def _load_dataset() -> BTD6DataSet:
     ct_relics = (
         tuple(_parse_relic(r) for r in ct_relics_raw.get("relics", []))
         if ct_relics_raw is not None
+        else ()
+    )
+    powers = (
+        tuple(_parse_power(p) for p in powers_raw.get("powers", []))
+        if powers_raw is not None
+        else ()
+    )
+    monkey_knowledge = (
+        tuple(_parse_knowledge(k) for k in knowledge_raw.get("knowledge", []))
+        if knowledge_raw is not None
         else ()
     )
 
@@ -788,6 +893,13 @@ def _load_dataset() -> BTD6DataSet:
     _check_unique([r.id for r in ct_relics], where="ct_relics.id")
     _check_unique([r.canonical for r in ct_relics], where="ct_relics.canonical")
     _check_unique([r.api_name for r in ct_relics], where="ct_relics.api_name")
+    _check_unique([p.id for p in powers], where="powers.id")
+    _check_unique([p.canonical for p in powers], where="powers.canonical")
+    _check_unique([k.id for k in monkey_knowledge], where="monkey_knowledge.id")
+    _check_unique(
+        [k.canonical for k in monkey_knowledge],
+        where="monkey_knowledge.canonical",
+    )
 
     # Alias collision check across every category — the resolver depends
     # on aliases being globally unique.
@@ -873,6 +985,8 @@ def _load_dataset() -> BTD6DataSet:
         rounds=rounds,
         bloons=bloons,
         ct_relics=ct_relics,
+        powers=powers,
+        monkey_knowledge=monkey_knowledge,
     )
 
 
@@ -923,6 +1037,22 @@ def get_mode(mode_id: str) -> ModeEntry | None:
     for mode in get_dataset().modes:
         if mode.id == mode_id:
             return mode
+    return None
+
+
+def get_power(power_id: str) -> PowerEntry | None:
+    """A Power by catalog id or its game-native ``power_id`` (case-insensitive)."""
+    needle = power_id.strip().lower()
+    for power in get_dataset().powers:
+        if power.id == needle or power.power_id.lower() == needle:
+            return power
+    return None
+
+
+def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
+    for entry in get_dataset().monkey_knowledge:
+        if entry.id == knowledge_id:
+            return entry
     return None
 
 

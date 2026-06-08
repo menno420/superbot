@@ -94,3 +94,31 @@ that re-fetches all data on every update / at intervals.
   the folio + roadmap.
 - Gates: `--audit` nothing-SUSPECT, `check_docs --strict` clean (121 docs), `check_quality
   --full` green (8078 passed).
+
+## Follow-on #4 — Powers + Monkey Knowledge ingested (next-step extraction) + DDT depth
+
+Maintainer picked Powers + Knowledge as the next extraction and Steam-API as the refresh trigger.
+Did Powers + Knowledge end-to-end (the bigger, player-facing win):
+
+- **Parser:** `parse_gamedata.py --powers` / `--knowledge` → `powers.json` (25) /
+  `monkey_knowledge.json` (134). Names/descriptions via `textTable`; MK category from the
+  `Knowledge/<Category>/` folder (authoritative). `_clean_desc` strips HTML tags; `{0}` kept.
+- **Runtime:** `btd6_data_service` `PowerEntry`/`MonkeyKnowledgeEntry` (optional fixtures,
+  validated, unique-checked) + `get_power`/`get_monkey_knowledge`; `ai_tools`
+  `btd6_power_lookup` + `btd6_monkey_knowledge_lookup` (registered + grounding allowlist).
+- **Coverage map:** Powers/Knowledge fetch-status → ✅.
+- **DDT (deeper search):** confirmed `moab/bfb/zomgPushSpeedScaleCap` are the only 3 push caps
+  in 9,916 files; DDT-speed fields exist for Silas/Gyrfalcon (different mechanics), not Heli.
+  Maintainer confirmed DDT slowed-not-stopped → matches the ZOMG cap mirror. (In a prior commit.)
+
+**⚠ Process note (recurring trap, avoided):** bare `python3.10 -m black .` reformatted 243
+files because **CI excludes `tests/`** (`black --check . --exclude '(...|tests|...)'`). Reverted
+all test reformatting (`git checkout HEAD -- tests/`), re-applied only the intended test
+additions, kept the CI-checked non-test files black-clean. Lesson reinforced: never `black .`
+the whole tree; trust `check_quality.py`'s pinned scope. Final `check_quality --full` green
+(8083 passed); diff is feature-only (11 files).
+
+**Still owed (next session):** the Steam-API patch-detect trigger for the refresh pipeline
+(maintainer chose it) — design exists in `btd6-data-refresh-pipeline-plan.md`; the Steam
+`GetAppList`/`up_to_date` build-id check + the GH Actions workflow remain to build (gated on
+sign-off for the executable CI config).

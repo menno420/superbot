@@ -1831,6 +1831,112 @@ def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     return rows, warnings
 
 
+def _clean_desc(text: str) -> str:
+    """Game-authored description → display string: drop HTML-ish markup
+    (``<sup>TM</sup>``, ``<br>``) the textTable carries for in-game rendering.
+    Placeholders like ``{0}`` are left verbatim (filling them needs per-entity
+    effect decode); we never invent a value.
+    """
+    return re.sub(r"<[^>]+>", "", text).strip()
+
+
+def map_powers(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every consumable Power → catalog rows (id, name, description, Monkey-Money
+    cost, quantity, between-rounds). Names/descriptions are game-authored via
+    ``PowerId`` → ``textTable``; hidden/event powers (no name string) are skipped.
+    """
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for fp in sorted((dump / "Powers").glob("*.json")):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            warnings.append(f"unreadable {fp.name}")
+            continue
+        pid = str(raw.get("PowerId") or raw.get("powerId") or fp.stem)
+        name = tt.get(pid)
+        if not name:
+            # No display string → a hidden/event/internal power (DungeonStatue,
+            # SpookyCreature). Skip rather than surface an internal id.
+            continue
+        rid = _snake(pid)
+        if rid in seen:
+            warnings.append(f"duplicate power id {rid!r} ({pid})")
+            continue
+        seen.add(rid)
+        rows.append(
+            {
+                "id": rid,
+                "canonical": name,
+                "power_id": pid,
+                "description": _clean_desc(tt.get(f"{pid} Description", "")),
+                "monkey_money_cost": _num(raw.get("Cost", raw.get("cost", 0))),
+                "quantity": _num(raw.get("quantity", 1)),
+                "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
+                "is_power_pro": bool(raw.get("IsPowerPro", False)),
+            },
+        )
+    rows.sort(key=lambda p: p["id"])
+    return rows, warnings
+
+
+# In-game Monkey Knowledge categories live as the dump's ``Knowledge/<Category>/``
+# folder — authoritative (like Maps' difficulty folders), so we read the folder
+# rather than decode the opaque integer ``category`` field.
+_MK_CATEGORIES = ("Primary", "Military", "Magic", "Support", "Heroes", "Powers")
+
+
+def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every Monkey Knowledge point → catalog rows (id, name, category,
+    description, Monkey-Money cost, investment required, prerequisites). Name +
+    description are game-authored via the internal id → ``textTable``
+    (``<id>`` / ``<id>Description``).
+    """
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for category in _MK_CATEGORIES:
+        cdir = dump / "Knowledge" / category
+        if not cdir.is_dir():
+            warnings.append(f"missing Knowledge/{category}")
+            continue
+        for fp in sorted(cdir.glob("*.json")):
+            try:
+                raw = json.loads(fp.read_text("utf-8"))
+            except (OSError, json.JSONDecodeError):
+                warnings.append(f"unreadable {fp.name}")
+                continue
+            internal = str(raw.get("name") or fp.stem)
+            name = tt.get(internal)
+            if not name:
+                warnings.append(f"no name string for {internal}")
+                continue
+            kid = _snake(internal)
+            if kid in seen:
+                warnings.append(f"duplicate knowledge id {kid!r} ({internal})")
+                continue
+            seen.add(kid)
+            prereqs = [
+                _snake(str(p)) for p in raw.get("prerequisiteIds", []) or [] if p
+            ]
+            rows.append(
+                {
+                    "id": kid,
+                    "canonical": name,
+                    "category": category,
+                    "description": _clean_desc(tt.get(f"{internal}Description", "")),
+                    "monkey_money_cost": _num(raw.get("monkeyMoneyCost", 0)),
+                    "investment_required": _num(raw.get("investmentRequired", 0)),
+                    "prerequisites": prereqs,
+                },
+            )
+    rows.sort(key=lambda k: (_MK_CATEGORIES.index(k["category"]), k["id"]))
+    return rows, warnings
+
+
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -1874,6 +1980,16 @@ def main(argv: list[str] | None = None) -> int:
         "--maps",
         action="store_true",
         help="rebuild maps.json from the dump's Maps/ folders (all difficulties)",
+    )
+    ap.add_argument(
+        "--powers",
+        action="store_true",
+        help="rebuild powers.json from the dump's Powers/ folder",
+    )
+    ap.add_argument(
+        "--knowledge",
+        action="store_true",
+        help="rebuild monkey_knowledge.json from the dump's Knowledge/ folders",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -1932,6 +2048,35 @@ def main(argv: list[str] | None = None) -> int:
             print(f"wrote maps.json ({len(rows)} maps)")
         for w in warnings:
             print(f"  warning: {w}")
+        return 0
+
+    if args.powers or args.knowledge:
+        version = _dump_version(dump)
+        for flag, fn, key, fname in (
+            (args.powers, map_powers, "powers", "powers.json"),
+            (
+                args.knowledge,
+                map_monkey_knowledge,
+                "knowledge",
+                "monkey_knowledge.json",
+            ),
+        ):
+            if not flag:
+                continue
+            rows, warnings = fn(dump, version)
+            payload = {
+                "data_version": "1.0",
+                "game_version": version,
+                "source": _SOURCE,
+                key: rows,
+            }
+            if args.dry_run:
+                print(json.dumps(payload, indent=2, ensure_ascii=False)[:1500])
+            else:
+                _write(_DATA_ROOT / fname, payload)
+                print(f"wrote {fname} ({len(rows)} {key})")
+            for w in warnings:
+                print(f"  warning: {w}")
         return 0
 
     towers, heroes = build_allowlist(dump)
