@@ -161,7 +161,7 @@ CI runs **Python 3.10** (`.github/workflows/code-quality.yml`). Running formatte
 
 CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and file. **Full reference: `docs/codegraph-usage.md`.**
 
-MCP startup: pinned via `npx -y @optave/codegraph@3.10.0 mcp` — no global install required. Build/rebuild index: `npx -y @optave/codegraph@3.10.0 build .` from the project root.
+MCP startup: pinned via `npx -y @optave/codegraph@3.11.2 mcp` — no global install required. Build/rebuild index: `npx -y @optave/codegraph@3.11.2 build .` from the project root. (Bumped 3.10.0 → 3.11.2 on 2026-06-08: 3.11.x fixes duplicate `calls`-edge over-counting and restores receiver/inheritance edges — +25 edges, same 31505 nodes on this repo. The CodeGraph reliability guidance below was **re-verified unchanged** on a 3.11.2 index: the bare-token / `dead-unresolved` behaviour is byte-identical, so the trust tiers still hold. The **runtime MCP server version is env-managed** by the SessionStart hook — this pin documents the target; confirm the environment's MCP config matches.)
 
 ### Use automatically — no prompt required
 
