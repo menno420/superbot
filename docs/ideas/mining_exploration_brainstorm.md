@@ -136,7 +136,9 @@ are purely a content + wiring task.
 > build approval. It consolidates the §2 feature menu and a broader "mother panel + child panels
 > + reusable gear" expansion (maintainer brainstorm, 2026-06-08) into one decided, sequenced
 > shape. Each phase still promotes to its own `docs/planning/` slice and needs the maintainer's
-> go before building (§5 step 1's plan is the template).
+> go before building (§5 step 1's plan is the template). **Update (2026-06-08):** §7 below
+> expands this into the full **character-platform** vision and a revised roadmap — read §7 for
+> the current shape; §6 remains the detailed **mining-mechanics** reference.
 
 The brainstorm widened from "make `!explore` smarter" to a **Mining / Exploration / Crafting /
 Gear platform**: one *mother panel* routing four–five child panels, a reusable equipment system
@@ -260,3 +262,123 @@ foundation first"). P6 is where the original grid/coordinate vision lands, on to
 - **P6:** resource depletion semantics once cells exist (permanent / regenerating / per-player),
   and personal-vs-shared dig sites. The `world_seed` stored back in P2 already makes generation
   deterministic when this lands.
+
+---
+
+## 7. The character platform — expanded vision (brainstorm 2026-06-08)
+
+> **Status:** still `ideas`. This section **expands §6**: where §6 designs "mining as a real
+> game," this round reframed the whole thing — *mining is **activity #1** of a shared **character
+> platform** the entire bot plugs into.* Captured from a multi-round brainstorm with the
+> maintainer (owner taste decisions inline). It **supersedes §6's P0–P8 *ordering*** (see §7.7);
+> §6 stays the detailed reference for **mining mechanics** specifically. Locks nothing; slices
+> still promote to `docs/planning/` individually.
+
+### 7.1 The reframe
+
+The gear system was meant to be referenced by mining, exploration, deathmatch, and future cogs.
+Taken seriously, the artifact isn't a mining game — it's a **persistent character + gear + stats +
+progression layer for the whole bot**. You are a *character on the server*; mining is the first
+(flagship) activity that feeds that character, and deathmatch / blackjack / future games read from
+and contribute to the same character.
+
+**The spine:** `shared character (gear + skills + game-level + coins) → one stat block → many
+activities → social layers on top.` The **Character/Profile** is likely the *mother panel itself*,
+with Mining / Deathmatch / etc. as activities hanging off it.
+
+### 7.2 Owner taste decisions (this brainstorm)
+
+| Topic | Decision |
+|---|---|
+| Pacing | **Active sessions** (click-through now). Idle/passive **parked**. |
+| Social scope | **All four**, sequenced *after* the solo core: solo & cozy · head-to-head (PvP) · co-op & trading · server-wide goals. |
+| XP model | **Two separate tracks bot-wide:** existing **chat XP** (drives auto-roles — keep clean) **+ NEW game XP**, shared across *all* game cogs. |
+| Coins | Mining **sells ore (faucet)** + **buys gear (sink)** — integrated with the existing economy. |
+| Repeat hooks | **Gear progression · leaderboards · build-your-base.** (Not collection/completion.) |
+| Game-XP function | **Prestige + leaderboard** *and* a **capped skill tree**. **Not** content-unlocks (avoids cross-game gating weirdness). |
+| Skill tree | **Four branches:** Mining/gathering · Combat · Fortune/luck · Crafting/utility. **Capped** (can't max all). Respec = coin sink. |
+| Structures | **Forge** (recipes/tiers) · **Vault** (inventory cap + safe stash) · **Home** (hub + profile backdrop). Elevator/fast-travel **parked**. |
+| Profile visual | Ship **composited stat card** (zero art) → grow toward **character with visible gear (paper-doll)** as the dream. Full base-scene **not** the target. |
+| Titles | Earned from **skill mastery + milestones** (permanent, personal). Not rank/seasonal, not hidden. Ship early. |
+
+### 7.3 The three shared layers (what makes it a *platform*)
+
+1. **Gear / equipment** — *horizontal, swappable* power (equip per activity). [§6.5 equipment service]
+2. **Skills** — *vertical, permanent* power; spend capped game-XP points across the 4 branches.
+3. **Coins** — existing currency; mining is faucet **and** sink.
+
+…plus **game XP / level** (the shared progression track) and **identity** (titles, avatar, rank).
+
+**The convergence insight — one stat block.** Gear (swappable) **and** skills (permanent) both add
+modifiers to a single neutral **`EffectiveStats`** read model (§6.6). Every game reads *one number*.
+Adding skills costs almost no new seam — it's another input to a read model gear already feeds. Your
+power = gear + skills (+ later: consumables / structures).
+
+**Build identity — the engine that lights up every social pillar.** Because skill points are
+**capped**, players *specialize* (digger / duelist / tycoon / smith). That single fact makes **solo**
+a real choice, **PvP** varied, **leaderboards** plural (different builds top different boards), and
+**co-op** complementary (an expedition wants a digger *and* a fighter *and* a looter). One mechanic
+powers all four social pillars.
+
+### 7.4 New shared systems (for the next agent — architecture)
+
+- **Game-XP service** — sibling to the existing chat-XP `xp_service`; **own table**, guild-scoped.
+  **Central award policy** so no single game is the optimal XP farm (XP ≈ effort/risk; consider a
+  soft daily cap per game). Other game cogs call it to award XP. *Separate from chat XP on purpose —
+  chat XP already drives the auto-role tiers.*
+- **Skill service** — per-player allocations across 4 branches; computes perk modifiers into
+  `EffectiveStats`; **respec** through an audited path (coin sink).
+- **Equipment service** (§6.5) — gear → `EffectiveStats`; now **merged with** skill modifiers.
+- **Profile read-model + renderer** — composes level, skills, gear→stats, coins, rank, titles;
+  **owns no data**. `utils/mining_render` is the seed but generalizes to a **cross-game character
+  renderer** (no longer mining-specific). Stat-card first; paper-doll later.
+- **Titles / achievements** — skill-mastery + milestone triggers grant equippable titles (text — the
+  cheapest identity feature). Badges = small-art follow-on.
+
+### 7.5 The economic loop (closed, self-balancing)
+
+> mine ore → **sell** some / **craft + repair** gear → go **deeper** → better ore → repeat
+
+**Durability is the keystone** — the recurring ore+coin sink that keeps ore valuable. The sell-ore
+**faucet** is balanced by **sinks**: gear purchases, repairs, structure builds, skill **respec**.
+Design it as *one* loop, not separate features.
+
+### 7.6 Profile & identity (the spine, in detail)
+
+- **What it is:** a read-only card aggregating the whole character — avatar, game level + XP bar,
+  skill spec, equipped gear, coins / net-worth, equipped **title**, leaderboard rank.
+- **Visual roadmap:** **stat card** (avatar + PIL panel, *zero custom art*, ships first) →
+  **paper-doll character** wearing the actual loadout (base character + layered gear sprites,
+  PIL-composited). The character is the **cross-game avatar** — it appears in duels, boards, and
+  future games, which is *why* paper-doll beat the mining-only base-scene.
+- **Titles:** from **skill mastery** ("the Deep", "Ironclad", "Lucky", "Master Smith") and
+  **milestones** ("depth 50", "first diamond"). Permanent, equippable, and depend only on systems
+  we're already building → **ship early**.
+- **Cosmetics** (card themes/frames): optional later **coin sink**; pure expression, never balance.
+
+### 7.7 Revised unified roadmap (supersedes §6's ordering)
+
+Grouped into waves; slices promote to `docs/planning/` individually. **Principle:** build the first
+activity (mining) into a real solo game, *then* extract the shared platform from it — don't build the
+abstraction before its first concrete use.
+
+| Wave | Theme | Contents |
+|---|---|---|
+| **0** | Instant win | Wire `!explore` to the loadout/depth engine (plan ready; no new tables). |
+| **1** | Mining as a real solo game | Hub/mother panel · persistent position + World view · typed inventory · equipment + Gear view (**deathmatch reads stats**) · audited Workshop + durability + functional structures (Forge/Vault/Home) · sell-ore / buy-gear market. |
+| **2** | The platform layers | **Game-XP service** + leaderboards (retrofit other games to award it) · **skill tree** (4 branches, capped) folding into `EffectiveStats` + respec · **Profile** read-model + **stat-card** render + **titles**. |
+| **3** | Visual identity | **Paper-doll** character (layered gear art) · badges · cosmetic card themes. |
+| **4** | The world arc | x/y grid + coordinates + N/S/E/W movement + discovered cells + map render (§6 P6). |
+| **5** | Social systems | Leaderboard depth · **PvP** (arena / coin-wager duels) · **trading / market** (+ anti-alt guardrails) · **server-wide goals** · seasons. |
+| **6** | AI Guide | AI narration layer (AI-orchestration-gated). |
+
+### 7.8 Still-open threads (next brainstorm — not yet decided)
+
+- **PvP shape** — matchmade arena vs. challenge-a-friend **coin-wager duels** vs. gear straight into
+  the existing deathmatch. *(Weapons — sword/bow/dagger — get their purpose here, or from PvE.)*
+- **Server-wide goals** — a shared **dig-bar** toward "the Core" (active contribution) vs. a communal
+  **boss** vs. rotating **events** / seasons.
+- **Trading & market** — player trade / gift / market **and the anti-alt-account guardrails**
+  (level / cooldown gates, audit) so coins / gear / XP can't be laundered through alts.
+- **Smaller open calls:** weapons PvE-vs-PvP purpose · prestige loop at level cap · game-XP
+  normalization / daily-cap specifics · how torch/lantern gate descent (§6.8 P2).
