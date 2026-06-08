@@ -266,6 +266,25 @@ class GeraldoItemEntry:
 
 
 @dataclass(frozen=True)
+class BossEntry:
+    """One Boss Bloon (Bloonarius, Lych, Vortex, Dreadbloon, Blastapopoulos,
+    Phayze, Diamondback). Game-native: ``canonical`` and the mechanic
+    ``description`` are the game-authored strings; ``immune_to`` is the derived
+    damage-type immunity set (e.g. Dreadbloon = Lead, Blastapopoulos = Purple);
+    ``tiers`` carries the five boss tiers' ``{tier, health, speed}`` (both scale
+    up per tier — co-op multiplies health further at runtime). ``tagline`` is the
+    flavour line shown on the boss-select panel.
+    """
+
+    id: str
+    canonical: str
+    description: str
+    tiers: tuple[dict[str, Any], ...] = ()
+    tagline: str = ""
+    immune_to: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class BTD6DataSet:
     data_version: str
     game_version: str
@@ -280,6 +299,7 @@ class BTD6DataSet:
     powers: tuple[PowerEntry, ...] = ()
     monkey_knowledge: tuple[MonkeyKnowledgeEntry, ...] = ()
     geraldo_items: tuple[GeraldoItemEntry, ...] = ()
+    bosses: tuple[BossEntry, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -359,6 +379,7 @@ _MK_CATEGORIES = frozenset(
     {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"},
 )
 _REQUIRED_GERALDO_FIELDS = ("id", "canonical", "cost", "unlock_level")
+_REQUIRED_BOSS_FIELDS = ("id", "canonical")
 
 
 def _require_keys(entry: dict[str, Any], keys: tuple[str, ...], where: str) -> None:
@@ -692,6 +713,27 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
     )
 
 
+def _parse_boss(raw: dict[str, Any]) -> BossEntry:
+    _require_keys(raw, _REQUIRED_BOSS_FIELDS, where=f"boss {raw.get('id')!r}")
+    tiers = tuple(
+        {
+            "tier": int(t["tier"]),
+            "health": int(t["health"]),
+            "speed": float(t["speed"]),
+        }
+        for t in raw.get("tiers", []) or ()
+        if "tier" in t and "health" in t
+    )
+    return BossEntry(
+        id=str(raw["id"]),
+        canonical=str(raw["canonical"]),
+        description=str(raw.get("description", "")).strip(),
+        tiers=tiers,
+        tagline=str(raw.get("tagline", "")).strip(),
+        immune_to=tuple(str(x) for x in raw.get("immune_to", []) or ()),
+    )
+
+
 def _parse_geraldo_item(raw: dict[str, Any]) -> GeraldoItemEntry:
     _require_keys(raw, _REQUIRED_GERALDO_FIELDS, where=f"geraldo {raw.get('id')!r}")
     effect = raw.get("effect", {})
@@ -732,6 +774,7 @@ _OPTIONAL_FIXTURES = (
     "powers.json",
     "monkey_knowledge.json",
     "geraldo_items.json",
+    "bosses.json",
 )
 
 
@@ -917,6 +960,7 @@ def _load_dataset() -> BTD6DataSet:
     powers_raw = _load_file_optional("powers.json")
     knowledge_raw = _load_file_optional("monkey_knowledge.json")
     geraldo_raw = _load_file_optional("geraldo_items.json")
+    bosses_raw = _load_file_optional("bosses.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
@@ -948,6 +992,11 @@ def _load_dataset() -> BTD6DataSet:
         if geraldo_raw is not None
         else ()
     )
+    bosses = (
+        tuple(_parse_boss(b) for b in bosses_raw.get("bosses", []))
+        if bosses_raw is not None
+        else ()
+    )
 
     # Per-category canonical uniqueness.
     _check_unique([t.id for t in towers], where="towers.id")
@@ -973,6 +1022,8 @@ def _load_dataset() -> BTD6DataSet:
     )
     _check_unique([g.id for g in geraldo_items], where="geraldo_items.id")
     _check_unique([g.canonical for g in geraldo_items], where="geraldo_items.canonical")
+    _check_unique([b.id for b in bosses], where="bosses.id")
+    _check_unique([b.canonical for b in bosses], where="bosses.canonical")
 
     # Alias collision check across every category — the resolver depends
     # on aliases being globally unique.
@@ -1061,6 +1112,7 @@ def _load_dataset() -> BTD6DataSet:
         powers=powers,
         monkey_knowledge=monkey_knowledge,
         geraldo_items=geraldo_items,
+        bosses=bosses,
     )
 
 
@@ -1173,6 +1225,36 @@ def find_geraldo_item(name: str) -> GeraldoItemEntry | None:
     if exact:
         return exact[0]
     partial = [g for g in items if needle in g.canonical.lower()]
+    return partial[0] if len(partial) == 1 else None
+
+
+def get_boss(boss_id: str) -> BossEntry | None:
+    """A Boss Bloon by catalog id (case-insensitive)."""
+    needle = boss_id.strip().lower()
+    for boss in get_dataset().bosses:
+        if boss.id == needle:
+            return boss
+    return None
+
+
+def find_boss(name: str) -> BossEntry | None:
+    """Resolve a Boss Bloon by id / canonical name / unique partial.
+
+    Exact id or canonical match wins; otherwise a single case-insensitive
+    substring of a canonical name is accepted, and an ambiguous one returns
+    ``None`` (the same fuzzy contract as :func:`find_geraldo_item`).
+    """
+    direct = get_boss(name)
+    if direct is not None:
+        return direct
+    needle = (name or "").strip().lower()
+    if not needle:
+        return None
+    bosses = get_dataset().bosses
+    exact = [b for b in bosses if b.canonical.lower() == needle]
+    if exact:
+        return exact[0]
+    partial = [b for b in bosses if needle in b.canonical.lower()]
     return partial[0] if len(partial) == 1 else None
 
 

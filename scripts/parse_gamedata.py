@@ -2230,6 +2230,87 @@ def map_geraldo_items(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     return rows, warnings
 
 
+def _clean_boss_desc(text: str) -> str:
+    """A boss ``InfoPanelDescription`` → one readable line: strip HTML, drop the
+    leading ``•`` bullets, and collapse newlines/whitespace so the multi-bullet
+    game text reads as a single grounded paragraph.
+    """
+    no_html = re.sub(r"<[^>]+>", "", text)
+    no_bullets = re.sub(r"\s*•\s*", " ", no_html)
+    return re.sub(r"\s+", " ", no_bullets).strip()
+
+
+def map_bosses(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every Boss Bloon → a catalog row (id, name, tagline, game-authored mechanic
+    description, derived type-immunities, and per-tier health/speed for the five
+    boss tiers). The boss roster is the dump's own ``Bosses/`` folder (each
+    ``BossData`` names the family + its ``LocsKey``); per-tier combat stats come
+    from ``Bloons/<Family>/<Family>{1..5}.json`` (``maxHealth`` / ``speed``), and
+    ``immune_to`` is derived from the base tier's ``bloonProperties`` bitflag via
+    the same inverter the bloon overlay uses (one source of truth for the mask).
+    """
+    from utils.btd6.damage_types import immunities_for_bloon_properties
+
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for fp in sorted((dump / "Bosses").glob("*.json")):
+        try:
+            boss = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            warnings.append(f"unreadable {fp.name}")
+            continue
+        loc = str(boss.get("LocsKey") or fp.stem)
+        name = tt.get(loc)
+        if not name:
+            warnings.append(f"no name string for boss {loc!r}")
+            continue
+        bid = _snake(loc)
+        if bid in seen:
+            warnings.append(f"duplicate boss id {bid!r} ({loc})")
+            continue
+        bdir = dump / "Bloons" / loc
+        tiers: list[dict] = []
+        immune: list[str] = []
+        for tier in range(1, 6):
+            tfp = bdir / f"{loc}{tier}.json"
+            if not tfp.exists():
+                continue
+            model = json.loads(tfp.read_text("utf-8"))
+            tiers.append(
+                {
+                    "tier": tier,
+                    "health": _num(model.get("maxHealth", 0)),
+                    "speed": _num(model.get("speed", 0)),
+                },
+            )
+            if tier == 1:
+                immune = sorted(
+                    immunities_for_bloon_properties(model.get("bloonProperties", 0)),
+                )
+        if not tiers:
+            warnings.append(f"no tier models under Bloons/{loc}/ — skipped")
+            continue
+        seen.add(bid)
+        tagline = " — ".join(
+            _clean_desc(tt[k]) for k in (f"{loc}TagLine", f"{loc}TagLine2") if tt.get(k)
+        )
+        description = _clean_boss_desc(tt.get(f"{loc}InfoPanelDescription", ""))
+        rows.append(
+            {
+                "id": bid,
+                "canonical": name,
+                "tagline": tagline,
+                "description": description,
+                "immune_to": immune,
+                "tiers": tiers,
+            },
+        )
+    rows.sort(key=lambda b: b["id"])
+    return rows, warnings
+
+
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -2498,6 +2579,11 @@ def main(argv: list[str] | None = None) -> int:
         help="rebuild geraldo_items.json from the dump's GeraldoItems/ folder",
     )
     ap.add_argument(
+        "--bosses",
+        action="store_true",
+        help="rebuild bosses.json from the dump's Bosses/ + Bloons/<boss>/ folders",
+    )
+    ap.add_argument(
         "--bloons",
         action="store_true",
         help="source bloon children + immunity from the dump (overlay bloons.json)",
@@ -2577,7 +2663,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  warning: {w}")
         return 0
 
-    if args.powers or args.knowledge or args.geraldo:
+    if args.powers or args.knowledge or args.geraldo or args.bosses:
         version = _dump_version(dump)
         for flag, fn, key, fname in (
             (args.powers, map_powers, "powers", "powers.json"),
@@ -2593,6 +2679,7 @@ def main(argv: list[str] | None = None) -> int:
                 "geraldo_items",
                 "geraldo_items.json",
             ),
+            (args.bosses, map_bosses, "bosses", "bosses.json"),
         ):
             if not flag:
                 continue
