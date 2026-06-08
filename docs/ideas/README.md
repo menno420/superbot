@@ -18,6 +18,12 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`owner-vision-ideas-2026-06-08.md`](./owner-vision-ideas-2026-06-08.md) —
+  20-question interactive session with the maintainer (2026-06-08); covers games
+  (poker, idle), economy (marketplace, streaks), AI (dungeon master, NL, events),
+  social (guilds, achievements, profiles), integrations (Twitch, YouTube, Spotify,
+  Steam), and UX priorities. Includes a routing summary table. **Start here for
+  the most up-to-date owner preferences.**
 - [`future-product-direction-2026-06-07.md`](./future-product-direction-2026-06-07.md) —
   source-aware future product direction across polish, extensions, reusable systems,
   and long-term expansions; capture-only, not a roadmap.
