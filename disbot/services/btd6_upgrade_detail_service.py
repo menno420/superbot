@@ -326,7 +326,44 @@ def _zone_text(zone: dict[str, Any]) -> str:
     cmoab = _num_field(zone, "damageModifierForCeramicOrMoabs")
     if cmoab is not None:
         bits.append(f"+{_fmt_buff_num(cmoab)} damage vs Ceramic/MOAB")
+    bits.extend(_moab_shove_bits(zone))
     return f"{name} ({', '.join(bits)})" if bits else name
+
+
+# Heli Pilot "MOAB Shove" (0-0-3+) per-blimp speed caps, maintainer-confirmed
+# sign semantics (2026-06-08): a NEGATIVE cap means the blimp is shoved
+# *backward* (it moves in reverse, up to that fraction of its normal speed); a
+# POSITIVE cap means it can only be slowed *forward* to that fraction (too heavy
+# to reverse); 0 means it can be slowed to a halt. The dump's
+# ``moab/bfb/zomgPushSpeedScaleCap`` are committed verbatim as these fields and
+# verified exact vs the dump (e.g. Comanche Defense 0-0-4: MOAB -0.51, BFB -0.11,
+# ZOMG 0.09). DDT has no field in the dump; the committed data mirrors ZOMG, so
+# we render it only when present. ``multiplierForMoab`` (singular) is unique to
+# this zone type — it never collides with Ice's ``multiplierForMoabs`` (plural).
+_MOAB_SHOVE_CLASSES: tuple[tuple[str, str], ...] = (
+    ("MOAB-class", "multiplierForMoab"),
+    ("BFB", "multiplierForBfb"),
+    ("ZOMG", "multiplierForZomg"),
+    ("DDT", "multiplierForDdt"),
+)
+
+
+def _moab_shove_bits(zone: dict[str, Any]) -> list[str]:
+    """Per-blimp shove/slow phrasing for a MOAB-Shove zone (empty for others)."""
+    if _num_field(zone, "multiplierForMoab") is None:
+        return []  # not a shove zone — the singular field is its unique marker
+    bits: list[str] = []
+    for label, field in _MOAB_SHOVE_CLASSES:
+        cap = _num_field(zone, field)
+        if cap is None:
+            continue
+        if cap < 0:
+            bits.append(f"{label} shoved backward at x{_fmt_buff_num(cap)} speed")
+        elif cap == 0:
+            bits.append(f"{label} slowed to a halt")
+        else:
+            bits.append(f"{label} slowed to x{_fmt_buff_num(cap)} speed")
+    return bits
 
 
 # ---------------------------------------------------------------------------

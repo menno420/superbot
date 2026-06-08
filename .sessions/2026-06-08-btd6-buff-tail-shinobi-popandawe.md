@@ -33,3 +33,24 @@
   `python3.10 scripts/check_quality.py --full` **green (8070 passed)**.
 - **Docs:** updated `docs/btd6/btd6-gamedata-decode-status.md` (header, "Do next" step 1,
   the data-stands summary, the 🟡 buff row, + this session's status-doc log entry).
+
+## Follow-on (same session) — Heli Pilot MOAB Shove rendered (Zone #3)
+
+Maintainer engaged mid-session and gave the open sign-semantics call: **negative push cap =
+shoved backward**. Verified the committed per-blimp caps match the dump's
+`moab/bfb/zomgPushSpeedScaleCap` **exact** on every tier, then:
+
+- **Renderer** (`btd6_upgrade_detail_service._zone_text` + new `_moab_shove_bits`): renders
+  MOAB-Shove per blimp — negative = "shoved backward at xN speed", positive = "slowed to xN
+  speed", 0 = "slowed to a halt". Keyed on the singular `multiplierForMoab` (unique to shove;
+  never collides with Ice's plural `multiplierForMoabs`). Heli Pilot 0-0-3/0-0-4 now answer
+  end-to-end via `get_upgrade_detail`.
+- **Parser** (`_zones` + new `_ZONE_RENAME`): emits the renamed caps for the cutover.
+  Deliberately does **not** fabricate `multiplierForDdt` — the dump has no DDT field (open
+  maintainer call; committed mirrors ZOMG).
+- **Corrected the maintainer's assumption:** MOAB is always negative, but **BFB also goes
+  negative (−0.11)** at the tier-4/5 top/middle crosspaths — not MOAB-only. ZOMG always positive.
+- **Crosspaths ARE stored + reachable** (all 15 states via `stats.tier(code)`); the bare
+  crosspath code `014` just isn't an *upgrade-card* id for `get_upgrade`, which is not a gap.
+- 4 new tests (3 renderer, 1 parser); `--audit` still nothing-SUSPECT; `check_quality --full`
+  green.

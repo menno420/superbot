@@ -413,6 +413,40 @@ def test_zone_ceramic_moab_bonus_damage_renders():
     assert "+8 damage vs Ceramic/MOAB" in text
 
 
+def test_zone_moab_shove_renders_signed_per_blimp_caps():
+    # Heli Pilot "MOAB Shove" (Comanche Defense 0-1-4): negative cap = shoved
+    # backward (maintainer-confirmed), positive = slowed forward, 0 = halt. Values
+    # are the committed data, verified exact vs the dump's *PushSpeedScaleCap.
+    text = det._zone_text(
+        {
+            "name": "MOAB Shove",
+            "radius": 42,
+            "multiplierForMoab": -0.51,
+            "multiplierForBfb": -0.11,
+            "multiplierForZomg": 0.09,
+            "multiplierForDdt": 0.09,
+        },
+    )
+    assert "MOAB-class shoved backward at x-0.51 speed" in text
+    assert "BFB shoved backward at x-0.11 speed" in text
+    assert "ZOMG slowed to x0.09 speed" in text
+    assert "DDT slowed to x0.09 speed" in text
+
+
+def test_zone_moab_shove_zero_cap_is_a_halt():
+    text = det._zone_text(
+        {"name": "MOAB Shove", "multiplierForMoab": -0.4, "multiplierForBfb": 0},
+    )
+    assert "BFB slowed to a halt" in text
+
+
+def test_zone_moab_shove_marker_does_not_fire_on_ice_slow():
+    # Ice uses multiplierForMoabs (plural); the shove path keys on the singular
+    # multiplierForMoab, so an Ice zone must not pick up shove phrasing.
+    text = det._zone_text({"name": "Arctic Wind", "multiplierForMoabs": 0.7})
+    assert "shoved" not in text and "halt" not in text
+
+
 def test_ice_slow_and_thorn_bonus_surface_end_to_end():
     # Real committed data: the slow and the thorn bonus now reach the rendered
     # detail (and thus AI grounding).

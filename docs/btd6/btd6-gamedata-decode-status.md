@@ -90,11 +90,27 @@ works** (the traps we hit), and what is still un-decoded.
      (now `duration_rounds`, `durationFrames`=0, `trigger=start_of_round`).
      Rendered by `_buff_trigger_clause`.
 3. **Zone effect tail** (28 types) + zones **nested in sub-towers**.
-   - **NEXT — Heli Pilot `MoabShoveZoneModel`.** Decoded but **not rendered**:
-     per-blimp `*PushSpeedScaleCap` (MOAB −0.3…−0.51, BFB ~0, ZOMG 0.75…0.09).
-     Pending a maintainer call on the sign semantics (negative = shoved backward?)
-     and whether DDT should mirror ZOMG (the dump has no DDT field; committed data
-     currently copies ZOMG). See the smoke-test checklist §7.
+   - **DONE (2026-06-08) — Heli Pilot `MoabShoveZoneModel` rendered + decoded.**
+     The maintainer confirmed the sign semantics: **negative cap = the blimp is
+     shoved *backward*** (moves in reverse up to that fraction of normal speed);
+     **positive = slowed forward** (too heavy to reverse); **0 = halt**. The
+     committed per-blimp caps were verified **exact** against the dump's
+     `moab/bfb/zomgPushSpeedScaleCap` on every tier (Comanche Defense 0-0-4 base:
+     MOAB −0.4 / BFB 0 / ZOMG 0.2; top-crosspath 0-1-4 strengthens it to MOAB
+     −0.51 / BFB −0.11 / ZOMG 0.09). Findings worth recording: **MOAB is always
+     negative; BFB also goes negative (−0.11) at the tier-4/5 top/middle
+     crosspaths**, not just MOAB; ZOMG is always positive. `_zone_text` now renders
+     all present classes (e.g. "MOAB-class shoved backward at x-0.51 speed, BFB
+     shoved backward at x-0.11 speed, ZOMG slowed to x0.09 speed"), and `_zones()`
+     emits the renamed caps for a future cutover. **Crosspath data is fully stored
+     and reachable** — all 15 crosspath tier-states carry their own shove values
+     via `stats.tier(<code>)`; only `get_upgrade_detail` keys on single upgrade
+     *cards* (so a bare crosspath code like `014` isn't an upgrade id), which is
+     not a data gap. **DDT still open (maintainer call):** the dump has **no** DDT
+     field, so the parser deliberately does **not** emit `multiplierForDdt` (never
+     fabricate); the committed data mirrors ZOMG and the renderer surfaces that
+     curated value when present. Decide at/before the cutover whether DDT should
+     keep mirroring ZOMG.
 4. **Economy-tower attack suppression** (Banana Farm's nominal `AttackModel`) +
    preserve `paragon_cost`/`paragon_name` — cutover prerequisites.
 5. **The tower cutover** (overlay numbers, or full game-native) — gated on 1–4
@@ -800,7 +816,7 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 | Item | Done | Missing |
 |---|---|---|
 | **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
-| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); wired into `_map_tier`, audit-safe (internal names don't align with curated, so they're ignored) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); runtime `_zone_text` only renders damage-style zones |
+| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); now also the Heli **MOAB-Shove** per-blimp caps via `_ZONE_RENAME` (`*PushSpeedScaleCap` → `multiplierFor{Moab,Bfb,Zomg}`, verified exact vs committed). `_zone_text` renders Ice slow, Druid thorn-bonus **and** MOAB-Shove (negative = shoved backward, maintainer-confirmed). Wired into `_map_tier`, audit-safe (internal names) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); MOAB-Shove **DDT** cap (no dump field — curated mirror of ZOMG, maintainer to confirm at cutover) |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
 | **Buffs** (`buffs[]`) — **started (11 of 38)** | `_buffs()` decodes eleven types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (Desperado lives-lost: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`), `SupportShinobiTacticsModel` (Ninja, `multiplier 0.92`→`rateMultiplier`) and `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative`+tag→`damageAdditiveForBad`). See `_BUFF_FIELD_MAP` / `_BUFF_DAMAGE_MODIFIER_TYPES` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 27 buff types — each needs same-tier confirmation before its number is written, and (2026-06-08 finding) **none of the remaining types lands on a committed combat tower with a `buffs[]` to confirm against**: they are hero-only (separate `map_hero` path), on economy/support towers with **no committed tiers** (Village/Farm — blocked, maintainer call), or paragon `base` nodes. `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |

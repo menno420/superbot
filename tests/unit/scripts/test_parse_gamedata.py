@@ -1049,6 +1049,27 @@ def test_buffs_placement_area_range_passthrough(mod):
     assert mod._map_tier(model)["buffs"][0]["rangeMultiplier"] == 1.35
 
 
+def test_zones_moab_shove_renames_push_caps(mod):
+    # Heli "MOAB Shove": the dump's *PushSpeedScaleCap → committed multiplierFor*
+    # (verified exact vs the committed zone). DDT has no dump field → not emitted.
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("MoabShoveZoneModel"),
+            "name": "MoabShoveZoneModel",
+            "range": 42,
+            "moabPushSpeedScaleCap": -0.51,
+            "bfbPushSpeedScaleCap": -0.11,
+            "zomgPushSpeedScaleCap": 0.09,
+        }
+    )
+    zone = mod._map_tier(model)["zones"][0]
+    assert zone["multiplierForMoab"] == -0.51
+    assert zone["multiplierForBfb"] == -0.11
+    assert zone["multiplierForZomg"] == 0.09
+    assert "multiplierForDdt" not in zone  # dump has no DDT field — never fabricate
+
+
 def test_buffs_prince_of_darkness_distance_is_lifespan_multiplier(mod):
     # The committed wiki data maps distanceMultiplier -> lifespanMultiplier
     # (Undead buff 1.5), so it is the correct field, not a coincidence.

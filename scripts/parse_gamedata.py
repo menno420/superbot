@@ -523,6 +523,22 @@ _ZONE_NUMERIC_FIELDS: tuple[str, ...] = (
 )
 
 
+# Renamed zone fields: a few zones carry an effect under a dump field name that
+# differs from the committed schema field the runtime renders. Confirmed exact
+# against the committed wiki value on a matching tier before being listed here.
+#   * Heli Pilot "MOAB Shove" (0-0-3+): per-blimp push-speed caps. Verified vs the
+#     committed zone on every tier (e.g. Comanche Defense 0-0-4: MOAB -0.51, BFB
+#     -0.11, ZOMG 0.09). Negative = shoved backward (maintainer-confirmed
+#     2026-06-08). DDT is intentionally NOT emitted: the dump has no DDT field
+#     (the committed data mirrors ZOMG — a curated call that stays maintainer-owned
+#     until the cutover decides it).
+_ZONE_RENAME: dict[str, str] = {
+    "moabPushSpeedScaleCap": "multiplierForMoab",
+    "bfbPushSpeedScaleCap": "multiplierForBfb",
+    "zomgPushSpeedScaleCap": "multiplierForZomg",
+}
+
+
 def _zones(model: dict) -> list[dict]:
     """Start of zone decoding: each ``*ZoneModel`` in the tier's top-level
     behaviors → a structured entry (kind + internal name + any decodable
@@ -544,6 +560,10 @@ def _zones(model: dict) -> list[dict]:
             value = behavior.get(field_name)
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 entry[field_name] = _num(value)
+        for raw_field, schema_field in _ZONE_RENAME.items():
+            value = behavior.get(raw_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[schema_field] = _num(value)
         tag = behavior.get("bloonTag")
         if isinstance(tag, str) and tag:
             entry["bloonTag"] = tag
