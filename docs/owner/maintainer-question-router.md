@@ -1058,3 +1058,48 @@ Notes: rule 1 explicitly REPLACES the earlier "unmonitored-mode / self-approval"
   existing homes (roadmap horizons, this router, the rejection ledger, ai-project-workflow
   §5 idea-states); NO parallel tracker created.
 ```
+
+### Q-0016 — Should the Server Management hub be a first-class subsystem? (2026-06-08)
+
+**Area:** Server management (PR14 hub) / Architecture
+**Type:** Architecture / Product surface
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** `docs/planning/server-management-status-2026-06-05.md`
+(PR14 subsection) + `docs/subsystems/server-management.md` + this file.
+
+**Question:** PR14's hub was built as a registered `PersistentView`, but a persistent view
+whose `SUBSYSTEM` is not in `SUBSYSTEMS` is an `auto_healable` identity-contract orphan, and
+every other hub (admin/moderation/settings/games/…) is a registered subsystem. Resolve by
+(1) registering `servermanagement` as a first-class subsystem + hub, (2) a non-persistent nav
+`HubView` (drops restart-persistence), or (3) shipping as-is with two advisory diagnostics + the
+self-heal footgun?
+
+**Maintainer answer**
+
+```text
+Make it a first-class subsystem.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Durable rule: an operator HUB is a first-class subsystem, consistent with every existing hub
+(admin/moderation/settings/games/community/utility/diagnostic/economy/btd6). A new hub gets a
+SUBSYSTEMS + HUBS entry (administrator tier for operator hubs) so it is help-discoverable and
+the identity-contract / orphan-cog / db-anchor diagnostics stay clean. Do NOT ship a registered
+PersistentView whose SUBSYSTEM has no SUBSYSTEMS entry — that leaves an auto_healable orphan the
+platform's own self-heal would unregister. The registry key follows cog_name_to_subsystem (e.g.
+servermanagement, no underscore); module paths may stay readable (server_management).
+```
+
+**Routing result**
+
+```text
+Destination: server-management status tracker (PR14 subsection, "registered first-class");
+  server-management folio (current state); this Q-block.
+Implemented this session: SUBSYSTEMS["servermanagement"] + HUBS entry (administrator),
+  KNOWN_PANEL_COMMANDS entry, the hub view/cog/service, and the help/discoverability
+  enumerations updated. Live boot: identity-contract clean (STRICT=on), 0 ERROR/CRITICAL.
+Moved/copied on: 2026-06-08 (this session — server-management PR14).
+```
