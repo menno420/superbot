@@ -162,9 +162,9 @@ Source code and merged PRs win over anything written here.
   Risk: medium — touches identity-contract / diagnostics. **Owner decision Q-0026.**
 
 - **`new_subsystem.py` scaffold script (Q-0025).** Adding a hub/subsystem requires
-  ~8 coordinated edits with no automation. Decided deliverable: `scripts/new_subsystem.py`
-  that scaffolds all required touch-points. Capture in `docs/ideas/` as a decided
-  backlog item. **Owner decision Q-0025.**
+  ~8 coordinated edits with no automation. Decided deliverable: a `new_subsystem.py`
+  scaffold script in `scripts/` that covers all required touch-points. Capture in
+  `docs/ideas/` as a decided backlog item. **Owner decision Q-0025.**
 
 ## Off-limits / do-not-propose
 
