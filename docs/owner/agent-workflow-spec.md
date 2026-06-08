@@ -342,6 +342,23 @@ Prefer finishing one real improvement end-to-end over starting three and shippin
 scaffolding. You are trusted to do large, accurate work in one session — plan around
 that capacity, not around the smallest safe slice.
 
+### 7.6 End-of-session secondary task — groom the idea backlog
+
+Once the main task + PR are done and capacity remains, you are **not** finished. Spend the
+leftover capacity grooming the idea backlog so it keeps draining and you always have a next
+thing to do:
+
+- **Browse** `docs/ideas/` and any ideas the maintainer raised this session.
+- **Move one idea down its lifecycle** ([`../ideas/README.md`](../ideas/README.md)): execute
+  a small, safe, decided-lane idea now; structure a bigger one into a `docs/planning/` plan +
+  a `docs/roadmap.md` horizon; or open a discussion (router Q-block) if it is excessive,
+  ambiguous, or a product-vision call.
+- **Record** the move — the idea's state + a line in the `.sessions/` log.
+
+This is real work, not scope creep: the maintainer drops ideas in any order on purpose and
+relies on agents to route them so **every idea eventually becomes implemented or discussed,
+never orphaned** (owner decision Q-0015).
+
 ---
 
 ## 8. Cross-cutting rules (all stages)

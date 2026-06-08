@@ -92,6 +92,12 @@ new idea → classify → capture or ask a question → route to the right home
          → implement only after acceptance
 ```
 
+The full **idea lifecycle** (intake → map → route → groom → *implemented | discussed |
+rejected*) and the end-of-session **grooming** secondary task — what an agent does with
+leftover capacity so the backlog keeps draining — live in
+[`../ideas/README.md`](../ideas/README.md). This section is the pipeline-level view of the
+same loop; that README owns the mechanics (owner decision Q-0015).
+
 > This is binding agent behavior, stated for agents in `.claude/CLAUDE.md` (Working
 > agreement) and [`../collaboration-model.md`](../collaboration-model.md). This section is
 > the workflow-level explanation of the same rule; the binding text wins.

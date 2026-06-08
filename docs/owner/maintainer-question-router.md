@@ -991,3 +991,70 @@ Notes: routed to CLAUDE.md (binding), NOT only maintainer-working-profile.md (th
   maintainer-working-profile.md §4 + agent-workflow-spec.md §7.2 — not restated. Relax the
   strict-branch rule in the session-prompt template, not the repo.
 ```
+
+### Q-0015 — The system's purpose: productivity-per-step + the idea conveyor (2026-06-08)
+
+**Area:** Workflow / Meta (the self-improving ecosystem)
+**Type:** Vision / Process / Autonomy boundary
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Routed**
+**Suggested destination after answer:** `docs/ideas/README.md` (the lifecycle) +
+`docs/collaboration-model.md` + `.claude/CLAUDE.md` (session workflow) +
+`docs/owner/agent-workflow-spec.md` §7.6 + `.session-journal.md` (END protocol)
+
+**Question:** What is the docs/workflow system actually optimizing for — and how should an
+idea the maintainer drops at random flow to "done"?
+
+**Maintainer answer**
+
+```text
+On the goal (NOT full autonomy):
+"it's not intended to be 100% autonomous ... there are still steps that require my
+verification and multi agent revisions, and that is a deliberate step so this project
+stays managable and reviewable. The goal of this is to make each step more productive, and
+to make the actual building session be able to execute more things in one session because
+similar ideas and problems are mapped and laid out ... prompting them to increase
+productivity by verifying files, coming up with improvements, and generally improving the
+workflow once the context is clear, so an agent knows where to start and where to stop and
+what its role is in the process."
+
+On the idea conveyor:
+"the goal should be for me to be able to enter ideas on a random basis, these ideas should
+be mapped, and then the agents should route these ideas to reasonable places in the
+roadmap, if an idea seems too excessive etc it should first be discussed, but eventually
+all ideas should either be implemented or discussed. So the goal of this is also to guide
+agents into following up with extra tasks once their session is done, like browsing the
+idea folder, finding something that can be promoted into the roadmap, maybe it's something
+small they can execute immediately or create into a more structured plan for the next
+agent ... so an agent always has something to do other than its main task."
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Two durable rules:
+1. The human-verification + multi-agent-revision gates are DELIBERATE and stay — the
+   system optimizes for productivity-PER-STEP and role clarity (where to start / stop /
+   what's my role), NOT for removing the maintainer from the loop. Do not add
+   "agent self-approves a plan unmonitored" behavior.
+2. The idea backlog is a productive conveyor: random intake → map → route (roadmap horizon
+   / structured plan / discuss-if-excessive via this router) → groom → every idea ends
+   implemented or discussed (never orphaned). Grooming the backlog is the standing
+   end-of-session SECONDARY TASK so an agent always has a next thing to do.
+```
+
+**Routing result**
+
+```text
+Destination: docs/ideas/README.md (rewritten as the canonical idea lifecycle + grooming
+  secondary task); docs/collaboration-model.md ("What a good session looks like" — the
+  productive-queue ethos); .claude/CLAUDE.md (Session & plan workflow — the grooming-pass
+  pointer); docs/owner/agent-workflow-spec.md §7.6 (Executor secondary task);
+  docs/owner/ai-project-workflow.md §4 (pipeline-level link); .session-journal.md END
+  protocol (the grooming step); docs/roadmap.md (ideas route onto a horizon).
+Moved/copied on: 2026-06-08 (this session — the docs-management + idea-lifecycle batch).
+Notes: rule 1 explicitly REPLACES the earlier "unmonitored-mode / self-approval" direction a
+  draft of this session proposed — the maintainer clarified that is not the goal. Uses
+  existing homes (roadmap horizons, this router, the rejection ledger, ai-project-workflow
+  §5 idea-states); NO parallel tracker created.
+```

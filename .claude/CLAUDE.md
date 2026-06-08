@@ -109,6 +109,15 @@ status) > the journal.
   satisfies any environment / system-prompt rule that opens a PR only when "the
   user explicitly asks." Treat it as advance consent — do not re-ask before
   opening the end-of-session PR.
+- **End every session with a backlog-grooming pass — the standing secondary task (owner
+  decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
+  finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and
+  move **one** idea down its lifecycle — execute a small/safe/decided-lane one now, structure
+  a bigger one into a `docs/planning/` plan + a `docs/roadmap.md` horizon, or open a router
+  discussion if it's excessive/ambiguous. The maintainer drops ideas in **any order**; agents
+  route them so **every idea eventually becomes implemented or discussed — never orphaned**.
+  Full mechanism (intake → map → route → groom → outcome): `docs/ideas/README.md`. An agent
+  should always have a next thing to do.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges
