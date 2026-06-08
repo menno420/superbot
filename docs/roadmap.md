@@ -69,6 +69,7 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 - **Next** — settings coverage: pick a *verified* inconsistency from the
   [consistency ledger](health/platform-consistency-ledger.md); the three-lane model is
   [settings-customization-roadmap](setup-platform/settings-customization-roadmap.md).
+- **Later** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md): one source-grounded orchestration roadmap; Phase 0 identity/read-model foundations and owner questions precede product mutation.
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
 
