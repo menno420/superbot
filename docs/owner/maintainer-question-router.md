@@ -1474,3 +1474,160 @@ with mutations. All Phase 2 mutations still go through the existing setup wizard
 Destination: Q-0017 planning doc (Access Map section — phasing note).
 Captured: 2026-06-08 (pre-Codex clarification session).
 ```
+
+---
+
+### Q-0025 — Subsystem/hub addition: scaffold script vs. doc guide (2026-06-08)
+
+**Area:** Developer tooling / Subsystem onboarding
+**Type:** Tooling / Process
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Suggested destination after answer:** `docs/ideas/` (backlog capture) + future
+  implementation session; eventual home is `scripts/new_subsystem.py`.
+
+**Question:** Adding a hub/subsystem requires ~8 coordinated edits (SUBSYSTEMS, HUBS,
+KNOWN_PANEL_COMMANDS, build_help_menu_view, help-surface-map §1+§2, command-map section,
+four enumeration tests) with no guide or automation. Should the fix be a canonical doc
+checklist, a `new_subsystem.py` scaffold script, or a doc now + script as backlog?
+
+**Maintainer answer**
+
+```text
+Build a scaffold script: new_subsystem.py
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The authoritative fix is a scaffold script (scripts/new_subsystem.py) that automates
+the ~8 required touch-points when adding a new subsystem/hub:
+  - Adds the SUBSYSTEMS entry
+  - Adds the HUBS entry (if it's a hub)
+  - Adds the KNOWN_PANEL_COMMANDS entry
+  - Scaffolds stub cog / service / view files
+  - Adds the help-surface-map §1+§2 entries
+  - Adds the command-map ### section
+
+Until the script is built, a checklist doc is acceptable as a stopgap. But the
+canonical deliverable is the script. Capture as a backlog item in docs/ideas/.
+
+The script should follow the tooling provenance rule (CLAUDE.md): custom tooling
+built on the repo's own AST + architecture_rules/. No external scaffolding packages.
+```
+
+**Routing result**
+
+```text
+Destination: docs/ideas/ — capture as a backlog item with 'decided: build scaffold
+  script' so it doesn't get re-debated.
+Captured: 2026-06-08 (repo friction audit session).
+Not yet implemented.
+```
+
+---
+
+### Q-0026 — cog_name_to_subsystem: fix CamelCase → snake_case conversion (2026-06-08)
+
+**Area:** Core runtime / Subsystem registry / Naming convention
+**Type:** Technical debt / Bug fix
+**Priority:** High
+**Status:** Answered in chat (2026-06-08) — **Needs routing**
+**Suggested destination after answer:** `disbot/core/runtime/command_surface_ledger.py`
+  (function fix) + any doc/comment that describes the subsystem key convention.
+
+**Question:** `cog_name_to_subsystem` strips "Cog" and calls `.lower()` with no
+CamelCase→snake_case conversion. `servermanagement` is the first multi-word subsystem
+key (correct output would be `server_management`). Should the function be fixed to
+do proper CamelCase→snake_case conversion (and the key renamed), a single-word-only
+convention be documented, or both styles be tolerated?
+
+**Maintainer answer**
+
+```text
+Fix the function — convert CamelCase → snake_case.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+Action required (a concrete implementation task, not just a doc note):
+
+1. Update cog_name_to_subsystem in disbot/core/runtime/command_surface_ledger.py
+   to do proper CamelCase → snake_case conversion after stripping "Cog":
+     ServerManagementCog → strip "Cog" → ServerManagement → snake → server_management
+
+2. Rename the subsystem key "servermanagement" → "server_management" everywhere:
+   - utils/subsystem_registry.py SUBSYSTEMS dict
+   - HUBS entry
+   - KNOWN_PANEL_COMMANDS entry
+   - Any string reference in views/services/tests that uses the literal key
+
+3. The function fix is a one-time cost; the rename is a grep-and-replace. Together
+   they make every future multi-word subsystem work correctly without manual key tricks.
+
+4. Add a brief doc comment to the function noting the snake_case output contract.
+
+Risk: medium — touches the identity-contract / diagnostics that key off subsystem names.
+Run check_architecture.py + full test suite after the rename.
+```
+
+**Routing result**
+
+```text
+Destination: implementation task — disbot/core/runtime/command_surface_ledger.py +
+  utils/subsystem_registry.py rename.
+Captured: 2026-06-08 (repo friction audit session).
+Not yet implemented — treat as a near-term technical debt fix.
+```
+
+---
+
+### Q-0027 — Session prompt template contradictions: update the ChatGPT template (2026-06-08)
+
+**Area:** Workflow / Session prompt
+**Type:** Process / Template maintenance
+**Priority:** Medium
+**Status:** Answered in chat (2026-06-08) — **Kept here as general guidance**
+**Suggested destination after answer:** This Q-block (action is external to the repo —
+  the template lives in ChatGPT, not in the codebase).
+
+**Question:** The ChatGPT session prompt template re-introduces two contradictions every
+session: (1) "develop only on branch X / never push elsewhere" (overridden by Q-0014:
+branch identity is not significant) and (2) "don't open a PR unless explicitly asked"
+(overridden by CLAUDE.md standing rule: always create an end-of-session PR). Should the
+ChatGPT template be updated, CLAUDE.md get an explicit override list, or agents just
+resolve it from the binding docs?
+
+**Maintainer answer**
+
+```text
+Update the ChatGPT template to remove the contradictions.
+```
+
+**Agent interpretation (not a rewrite of the answer)**
+
+```text
+The maintainer will update the ChatGPT session prompt template to:
+  1. Replace the "develop only on branch X / never push elsewhere" line with a note
+     that branch identity is not significant (Q-0014) and agents should use the
+     session-assigned branch as a default but are not locked to it.
+  2. Replace "don't open a PR unless explicitly asked" with a note that the standing
+     rule is always create an end-of-session PR (CLAUDE.md Session & plan workflow).
+
+Until the template is updated, agents should resolve the contradiction from CLAUDE.md
+and Q-0014 as they do now. No repo-side change is needed; this is an external action
+for the maintainer.
+
+Note for agents: if you see these contradicting lines in a session prompt, treat them
+as template residue and apply the binding repo rules (CLAUDE.md + this router).
+```
+
+**Routing result**
+
+```text
+Destination: kept here — the fix is external (ChatGPT template update by the maintainer).
+  No code or doc change needed in the repo.
+Captured: 2026-06-08 (repo friction audit session).
+Action owner: maintainer (ChatGPT template).
+```
