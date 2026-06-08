@@ -51,6 +51,17 @@ becomes implementation work. That routing is the job of
 [`maintainer-question-router.md`](./maintainer-question-router.md), so the maintainer does
 not have to carry it.
 
+**How he runs it day-to-day (observed 2026-06-08).** The maintainer runs **several chats in
+parallel by default** — typically a Claude Code *implementation* chat, plus ChatGPT *projects*
+per pipeline stage (`SuperBot Prompts` = Prompt Forge, `SuperBot Decisions`, `SuperBot
+Revisions`), plus Discord for the live bot — and spins a **fresh chat per item/issue**. The
+"AI does all the work" read is wrong: he spends the day planning and routing across these
+chats; the agents execute. A chat often ends with a short Q&A like this one whose purpose is
+to **turn session learnings into permanent memory** (route durable answers to the router +
+their home doc). Practical consequence for agents: when you edit a binding/owner doc, assume
+**another chat may be editing it concurrently** — prefer append-only / section-scoped edits,
+take the next free `Q-00NN` number, and don't be surprised when `main` moved mid-session.
+
 ## 3. How ideas arrive: three different orders
 
 The maintainer's idea flow is intentionally broad and associative — a feature idea leads

@@ -937,3 +937,57 @@ Moved/copied on: 2026-06-08.
 Notes: ChatGPT projects (Analysis, Decisions, Revision, Prompt Forge) should use
   agent-workflow-spec.md as their operational reference.
 ```
+
+### Q-0014 — Executor latitude: tooling, prerequisites, branch, disagreement (2026-06-08)
+
+**Area:** Workflow / Meta (Executor stage)
+**Type:** Process / Autonomy
+**Priority:** High
+**Status:** Answered (2026-06-08) — **Routed** → `.claude/CLAUDE.md`
+**Suggested destination after answer:** `.claude/CLAUDE.md` (binding rules);
+`docs/owner/maintainer-working-profile.md` §2 (working-style color)
+
+**Question:** End-of-chat Q&A in the PR12 session — standing executor-autonomy preferences on
+(1) which branch to work on, (2) latitude to adopt tools/packages, (3) requests that need an
+unstated prerequisite step, (4) how much friction when the executor sees a better path or
+disagrees.
+
+**Maintainer answer**
+
+```text
+Branch: "it doesn't matter to me on which branch you work or create a PR, as long as they
+  are all shipped in logical modular batches." (The strict "develop only on branch X" rule
+  is session-PROMPT-TEMPLATE residue — grep finds it nowhere in the repo.)
+Tooling: "you are free to download and try any package available, and implement anything
+  that's verifiable, but state why you did it and note when this was added and that it
+  should be verified for consistency a few times before trusted."
+Prerequisites: "if there was just a step required to do before being able to actually do the
+  thing I asked for, you can see that as me giving you permission to execute it fully ...
+  when I approve a certain function I give you the freedom to get there in the way you think
+  is best, as long as the final output is structured and matches the intended idea."
+Disagreement / better way: "if you think my proposed direction is not the right next step you
+  should state why" + "if you think my idea is not logical because there is a better way to
+  do it, assume I only stated it in such a way because I am unaware of the better plan."
+```
+
+**Routing result**
+
+```text
+Destination: .claude/CLAUDE.md —
+  · Tooling bullet (Session & plan workflow): "custom over new deps" relaxed — a verifiable
+    package is fair game with a provenance header (why + date + "unverified: confirm a few
+    times before trusting"); dev-deps stay lazy + pytest.importorskip, runtime-deps pinned.
+  · Session-workflow: "branch identity is not significant; ship in logical modular PRs."
+  · Working agreement (Constraints serve the goal): goal-approval = path-approval — execute an
+    unstated prerequisite to an approved goal (don't refuse on a missing-step technicality);
+    take a better implementation than the one stated and say why; bound = output stays
+    structured + matches the intended idea.
+  Also: docs/owner/maintainer-working-profile.md §2 — the concurrent-chat working style.
+Moved/copied on: 2026-06-08 (this session).
+Notes: routed to CLAUDE.md (binding), NOT only maintainer-working-profile.md (the maintainer's
+  literal suggestion) — per one-fact-one-home these are executor RULES, and the tooling rule
+  CONTRADICTED the old "custom over deps / ask first," so CLAUDE.md had to change or the old
+  rule wins. The "state disagreement / propose alternative" half was already in
+  maintainer-working-profile.md §4 + agent-workflow-spec.md §7.2 — not restated. Relax the
+  strict-branch rule in the session-prompt template, not the repo.
+```
