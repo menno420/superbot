@@ -355,12 +355,12 @@ def test_bloon_children_list_is_structured():
     assert get_bloon("lead").children_list == (
         {"bloon_id": "black", "count": 2, "modifiers": []},
     )
-    # children/immunity are now game-data-sourced (the --bloons cutover). The
-    # dump tags DDT's four Ceramic children as Regrow only — not Camo, which the
-    # wiki had asserted — so the curated modifier here was corrected to the game's.
+    # children/immunity are now game-data-sourced (the --bloons cutover). A DDT is
+    # inherently Camo, so it reads from the DdtCamo model, whose four Ceramic
+    # children are CeramicRegrowCamo -> base ceramic with both modifiers.
     ddt_child = get_bloon("ddt").children_list[0]
     assert ddt_child["bloon_id"] == "ceramic" and ddt_child["count"] == 4
-    assert ddt_child["modifiers"] == ["regrow"]
+    assert ddt_child["modifiers"] == ["camo", "regrow"]
 
 
 def test_bloon_children_and_immunity_are_game_data_sourced():

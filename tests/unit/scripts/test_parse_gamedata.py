@@ -512,6 +512,29 @@ def test_bloon_children_resolve_base_and_preserve_modifiers(mod, tmp_path):
     assert mod._children_prose(children, canon) == "2 ZOMGs and 3 Camo DDTs"
 
 
+def test_inherently_modified_bloon_selects_its_variant_model(mod, tmp_path):
+    # Regression: a DDT is inherently Camo, so it must read from the DdtCamo model
+    # (children CeramicRegrowCamo), NOT the non-camo base Ddt template (children
+    # CeramicRegrow) — the base would wrongly drop Camo from DDT's children.
+    dump = tmp_path / "dump"
+    _write(dump / "Bloons" / "Ddt" / "Ddt.json",
+           _bloon_model("Ddt", children=["CeramicRegrow"]))
+    _write(dump / "Bloons" / "Ddt" / "DdtCamo.json",
+           _bloon_model("DdtCamo", base="Ddt", camo=True, children=["CeramicRegrowCamo"]))
+    _write(dump / "Bloons" / "Ceramic" / "CeramicRegrow.json",
+           _bloon_model("CeramicRegrow", base="Ceramic", grow=True))
+    _write(dump / "Bloons" / "Ceramic" / "CeramicRegrowCamo.json",
+           _bloon_model("CeramicRegrowCamo", base="Ceramic", camo=True, grow=True))
+
+    index = mod._bloon_model_index(dump)
+    # The inherently-camo bloon resolves to the camo variant...
+    camo_ddt = {"id": "ddt", "properties": ["camo", "lead", "black"]}
+    assert mod._select_bloon_model(camo_ddt, index).name == "DdtCamo.json"
+    # ...and a plain bloon resolves to the unmodified base.
+    plain = {"id": "ddt", "properties": ["lead", "black"]}
+    assert mod._select_bloon_model(plain, index).name == "Ddt.json"
+
+
 def test_bloon_immunity_derives_from_property_bitflag(mod, tmp_path):
     # The parser sources immunity from the shared damage-types inverter; Zebra's
     # 6 (Black|White) resolves to the union of their immunities.

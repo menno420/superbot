@@ -610,12 +610,13 @@
         "Energy",
         "Explosion"
       ],
-      "children": "4 Regrow Ceramic Bloons",
+      "children": "4 Camo Regrow Ceramic Bloons",
       "children_list": [
         {
           "bloon_id": "ceramic",
           "count": 4,
           "modifiers": [
+            "camo",
             "regrow"
           ]
         }

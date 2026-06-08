@@ -72,16 +72,23 @@ Maintainer chose the Bloons cutover (via AskUserQuestion) over wrapping up. Sour
   (one source of truth): a bloon with property bit `p` is immune to every damage type whose
   mask shares `p`. **23/23 exact** vs the curated lists → the overlay leaves immunity
   byte-identical (provenance-only).
-- **Children → game data, two wiki corrections.** `parse_gamedata.py --bloons` reads
+- **Children → game data, one wiki correction.** `parse_gamedata.py --bloons` reads
   `SpawnChildrenModel`, resolves each child to its base via `baseId`, and **preserves** the
-  variant's camo/regrow/fortified modifiers (matching the curated Glass Bloon children). Two
-  dump-vs-wiki corrections surfaced and were applied (game data wins): **BAD** `3 DDTs` →
-  `3 Camo DDTs`; **DDT** `4 Camo Regrow Ceramic` → `4 Regrow Ceramic`. Flagged in the PR for
-  maintainer eyeball.
-- **The discipline that paid off:** verified decodability *before* coding (23/23 immunity,
-  children base+modifier), which caught that the wiki *already* carried child modifiers (Glass)
-  — so a naive base-normalize would have **regressed** Glass. Preserving modifiers was the
-  faithful choice.
+  variant's camo/regrow/fortified modifiers (matching the curated Glass Bloon children). One
+  genuine dump-vs-wiki correction: **BAD** `3 DDTs` → `3 Camo DDTs` (BAD's DDTs are camo; wiki
+  dropped it).
+- **Model-selection bug — caught by the maintainer.** First pass matched each bloon to its
+  directory's *base* model. But a DDT is inherently Camo, and the base `Ddt.json` is a non-camo
+  *template* (children `CeramicRegrow`); the real in-game DDT is `DdtCamo` (children
+  `CeramicRegrowCamo`). So the first pass wrongly dropped Camo from DDT's children. Maintainer
+  flagged it ("they're definitely camo in game"); re-checked the dump, found `DdtCamo`, and
+  added `_select_bloon_model` to pick the model whose flags match the bloon's own `properties`.
+  DDT now correctly stays `Camo Regrow Ceramic`. **Lesson: a bloon's directory base file isn't
+  always its canonical model — match by the bloon's inherent modifiers.** Regression-pinned.
+- **The discipline that paid off:** verifying decodability *before* coding caught that the wiki
+  *already* carried child modifiers (Glass), so a naive base-normalize would have regressed
+  Glass; and the maintainer's domain check caught the DDT model-selection miss that the
+  23/23-on-statted-bloons verification didn't (DDT's base template still "verified" wrongly).
 - Overlay is provenance-marked + re-runnable; coverage map note updated. Inverter + parser +
   data_service tests (one pre-existing DDT test corrected to the game value). `check_quality
   --full` green (**8140 passed**). Third commit on PR #593.

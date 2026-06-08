@@ -316,12 +316,16 @@ reproducible from the dump, sourcing them from game data instead of bloonswiki.
   (provenance-only) — zero churn.
 - **Children** — from the dump's `SpawnChildrenModel`, each child resolved to its **base**
   bloon via the child model's `baseId` and tagged with the variant's `isCamo`/`isGrow`/
-  `isFortified` modifiers. This both matches the curated modifier children (Glass Bloon's
-  plain/regrow/camo Zebras) and **corrects two wiki errors the dump disagrees with**:
+  `isFortified` modifiers. **Model selection matters:** a bloon that is *itself* a variant
+  (a DDT is inherently Camo) must read from its matching model (`DdtCamo`, children
+  `CeramicRegrowCamo`), **not** the non-camo base `Ddt` template (children `CeramicRegrow`) —
+  `_select_bloon_model` picks the model whose flags match the bloon's own `properties`. With
+  that, the derivation matches the curated modifier children (Glass Bloon's plain/regrow/camo
+  Zebras; DDT's 4 Camo Regrow Ceramics) and surfaces **one genuine wiki correction**:
   - **BAD** → `3 DDTs` became `3 **Camo** DDTs` (BAD's DDTs are camo in-game; the wiki dropped it).
-  - **DDT** → `4 **Camo** Regrow Ceramic Bloons` became `4 Regrow Ceramic Bloons` (the dump tags
-    DDT's ceramic children Regrow-only, not Camo). *Maintainer: worth an eyeball — this is the
-    game data overriding the wiki.*
+  - *(A first pass mis-matched DDT to the base template and wrongly dropped its Camo; caught by
+    the maintainer and fixed — DDT's children stay Camo Regrow. Regression-pinned by
+    `test_inherently_modified_bloon_selects_its_variant_model`.)*
 - **Tooling:** `parse_gamedata.py --bloons` (overlay; `--dry-run` to preview). It updates only
   `children`/`children_list`/`immune_to`, preserves every other curated field, and writes a
   `children_immunity_source` provenance marker. Re-runnable per dump pull.

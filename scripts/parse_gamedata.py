@@ -2092,11 +2092,12 @@ def _write(path: Path, payload: dict) -> None:
 #     via ``utils.btd6.damage_types.immunities_for_bloon_properties`` (the
 #     inverse of the projectile-side ``immuneBloonProperties`` map). Verified
 #     23/23 against the curated lists on v55.
-#   * ``children_list`` / ``children`` — from the ``SpawnChildrenModel`` behavior,
-#     each child resolved to its **base** bloon via the child model's ``baseId``
-#     (so a ``CeramicRegrow`` / ``DdtCamo`` child normalises to ``ceramic`` /
-#     ``ddt``, matching the curated base-child representation; the variant's
-#     modifier is intentionally *not* asserted — see the decode-status doc).
+#   * ``children_list`` / ``children`` — from the ``SpawnChildrenModel`` behavior.
+#     Each child resolves to its **base** bloon via the child model's ``baseId``
+#     and **keeps** the variant's camo/regrow/fortified modifiers (a
+#     ``CeramicRegrowCamo`` child → ``ceramic`` + ``[camo, regrow]``). A bloon
+#     that is *itself* a variant (DDT is inherently Camo) is read from its
+#     matching model (``DdtCamo``), not the non-camo base ``Ddt`` template.
 # The overlay updates only these two fields, preserves every curated field
 # (rbe/health/layers/speed/category/aliases/description), and keeps the committed
 # value whenever it is already semantically equal so correct data never churns.
@@ -2124,12 +2125,7 @@ def _bloon_variant_meta(dump: Path) -> dict[str, tuple[str, list[str]]]:
         except (OSError, json.JSONDecodeError):
             continue
         mid = str(raw.get("id") or fp.stem)
-        flags = {
-            "camo": bool(raw.get("isCamo")),
-            "regrow": bool(raw.get("isGrow")),
-            "fortified": bool(raw.get("isFortified")),
-        }
-        mods = [m for m in _CHILD_MOD_ORDER if flags[m]]
+        mods = [m for m in _CHILD_MOD_ORDER if m in _model_mods(raw)]
         meta[mid.lower()] = (str(raw.get("baseId") or mid), mods)
     return meta
 
@@ -2191,6 +2187,60 @@ def _children_multiset(
     return out
 
 
+def _model_mods(raw: dict[str, Any]) -> frozenset[str]:
+    flags = {
+        "camo": bool(raw.get("isCamo")),
+        "regrow": bool(raw.get("isGrow")),
+        "fortified": bool(raw.get("isFortified")),
+    }
+    return frozenset(m for m in _CHILD_MOD_ORDER if flags[m])
+
+
+def _bloon_model_index(dump: Path) -> dict[tuple[str, frozenset[str]], Path]:
+    """``{(snake(baseId), frozenset(modifiers)): model file}`` over every bloon
+    model. Lets a committed bloon select the *variant* that matches its own
+    inherent modifiers — e.g. ``ddt`` (inherently Camo) maps to ``DdtCamo``, not
+    the non-camo base ``Ddt`` template (whose children differ). The canonical
+    base (``id == baseId``) wins a key collision.
+    """
+    index: dict[tuple[str, frozenset[str]], Path] = {}
+    canonical: set[tuple[str, frozenset[str]]] = set()
+    for fp in (dump / "Bloons").rglob("*.json"):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        mid = str(raw.get("id") or fp.stem)
+        base_id = str(raw.get("baseId") or mid)
+        key = (_snake(base_id), _model_mods(raw))
+        is_canonical = mid == base_id
+        if key not in index or (is_canonical and key not in canonical):
+            index[key] = fp
+            if is_canonical:
+                canonical.add(key)
+    return index
+
+
+def _select_bloon_model(
+    bloon: dict[str, Any],
+    model_index: dict[tuple[str, frozenset[str]], Path],
+) -> Path | None:
+    """The dump model file for a committed bloon, matched on the bloon's own
+    inherent modifiers (camo/regrow/fortified from its ``properties``); falls back
+    to the unmodified base. ``None`` for a bloon with no dump model (the
+    camo/fortified/regrow modifier pseudo-entries).
+    """
+    bid = bloon["id"]
+    props = {str(p).lower() for p in bloon.get("properties", [])}
+    inherent = frozenset(m for m in _CHILD_MOD_ORDER if m in props)
+    for base in (bid, f"{bid}_bloon"):
+        for want in (inherent, frozenset()):
+            fp = model_index.get((base, want))
+            if fp is not None:
+                return fp
+    return None
+
+
 def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
     """Source ``immune_to`` + ``children`` from the dump for every bloon already
     in ``bloons.json`` that maps to a dump model. Returns ``{bloon_id: [changes]}``
@@ -2203,22 +2253,15 @@ def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
     path = _DATA_ROOT / "bloons.json"
     payload = json.loads(path.read_text("utf-8"))
     meta = _bloon_variant_meta(dump)
-    # id (snake) -> dump base file. Covers the ``<Name>Bloon`` boss dirs too.
-    dump_files: dict[str, Path] = {}
-    for d in (dump / "Bloons").iterdir():
-        base = d / f"{d.name}.json"
-        if base.exists():
-            dump_files[_snake(d.name)] = base
-            # e.g. DynamiteBloon -> also reachable as "dynamite"
-            dump_files.setdefault(_snake(d.name).replace("_bloon", ""), base)
+    model_index = _bloon_model_index(dump)
     canon = {b["id"]: b["canonical"] for b in payload["bloons"]}
     report: dict[str, list[str]] = {}
 
     for bloon in payload["bloons"]:
-        bid = bloon["id"]
-        fp = dump_files.get(bid)
+        fp = _select_bloon_model(bloon, model_index)
         if fp is None:
             continue  # modifier pseudo-bloons (camo/fortified/regrow): no model
+        bid = bloon["id"]
         raw = json.loads(fp.read_text("utf-8"))
         changes: list[str] = []
 
