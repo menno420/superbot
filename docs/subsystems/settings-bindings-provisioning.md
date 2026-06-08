@@ -1,7 +1,7 @@
 # Settings / bindings / provisioning subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + binding contracts win.
-> **Last updated:** 2026-06-06.
+> **Last updated:** 2026-06-08.
 
 ## What & where
 
@@ -44,7 +44,7 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 ## Plans / pending approval
 
 `docs/setup-platform/settings-customization-roadmap.md` and its command map are the starting plans
-for coverage work. Future changes must identify the lane and owner first, then state
+for coverage work. The comprehensive [Adaptive Setup, Access, Profile, and Routine Platform plan](../planning/adaptive-setup-access-routine-platform-2026-06-08.md) maps the longer-lived read-model, profile, routine, and Personal Setup sequence; it is planning, not implemented. Future changes must identify the lane and owner first, then state
 migration/backfill needs, cache invalidation, audit behavior, tests, and rollback or
 safe-disable behavior before implementation.
 
@@ -66,6 +66,7 @@ mutation/provisioning services and preserve operator confirmation.
 ## Related docs
 
 `docs/setup-platform/settings-customization-roadmap.md`, `docs/setup-platform/settings-customization-command-map.md`,
+`docs/planning/adaptive-setup-access-routine-platform-2026-06-08.md`,
 `docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`,
 `docs/health/platform-consistency-ledger.md`, `docs/setup-platform/operator-settings-presets.md`,
 `docs/ownership.md`, `docs/runtime_contracts.md`.

@@ -1631,3 +1631,94 @@ Destination: kept here — the fix is external (ChatGPT template update by the m
 Captured: 2026-06-08 (repo friction audit session).
 Action owner: maintainer (ChatGPT template).
 ```
+
+---
+
+## 20. Adaptive Setup/Access/Routine follow-up batch — 2026-06-08
+
+> **Planning home:** [`docs/planning/adaptive-setup-access-routine-platform-2026-06-08.md`](../planning/adaptive-setup-access-routine-platform-2026-06-08.md).
+> These questions begin where answered Q-0017–Q-0027 end. Safe defaults allow Phase 0/read-only work to continue; answers are required before the named mutation/privacy surfaces ship.
+
+### Q-0028 — Which Guild Feature Profiles should form the first catalogue?
+
+**Area:** Setup / Guild Feature Profiles
+**Type:** Product definition
+**Priority:** Medium
+**Status:** Open
+**Question:** After source mapping, should the first preview catalogue be **Essential Utility, Community Core, Games Community, Moderation Focused**, with **BTD6 Community** experimental/gated; or should any be added, removed, or renamed?
+
+**Why agents need this:** The catalogue determines the versioned compiler contract, tests, and UI language. Registry presence alone is not enough to infer owner intent.
+
+**Safe default until answered:** Build only catalogue/compiler infrastructure and previews; use the proposed set as examples, not a committed public catalogue.
+
+**Suggested destination after answer:** Q-0017 planning doc §6.1 and future profile catalogue source.
+
+### Q-0029 — Where does quiet mode belong?
+
+**Area:** Access / Automation
+**Type:** Ownership / Product behavior
+**Priority:** Medium
+**Status:** Open
+**Question:** Should quiet mode be a central availability policy that routines may request, a routine-owned setting, or both with availability policy as the sole owner?
+
+**Why agents need this:** Two owners would create disagreement between command availability, help, and routine state.
+
+**Safe default until answered:** Availability policy owns effective quiet mode; a routine may only request a change through that canonical owner.
+
+**Suggested destination after answer:** Q-0017 planning doc §6.5–6.6 and ownership/runtime contracts if implemented.
+
+### Q-0030 — When are rollback snapshots mandatory?
+
+**Area:** Setup / Safety
+**Type:** Safety / Mutation contract
+**Priority:** High
+**Status:** Open
+**Question:** Must every setup-draft apply capture an immutable before-state snapshot, only compound profile/routine applies, or only medium/high-risk applies?
+
+**Why agents need this:** This changes Phase 3 storage, Final Review UX, audit linkage, and what “rollback” can honestly promise.
+
+**Safe default until answered:** Require snapshots for compound profile/routine applies and any high-risk apply; retain explicit manual rollback notes elsewhere.
+
+**Suggested destination after answer:** Q-0017 planning doc §8 Phase 3, data model, observability; ownership/runtime contracts.
+
+### Q-0031 — Approve the first profile/routine risk policy?
+
+**Area:** Automation / Setup safety
+**Type:** Safety classification
+**Priority:** High
+**Status:** Open
+**Question:** Is this starting policy correct: bounded messages/panels/notifications/checklists may auto-apply; routing, bindings, channel creation, thresholds, and multi-setting changes require approval; broad access/capability changes, role creation, and full profiles require high-risk approval; destructive role/permission/mass-channel changes never auto-apply?
+
+**Why agents need this:** Q-0019 sets progressive posture but not the classification of each new action.
+
+**Safe default until answered:** Any ambiguous configuration action queues Final Review; only clearly bounded messaging/notification actions auto-apply.
+
+**Suggested destination after answer:** Q-0017 planning doc §6.5 and future automation registry/risk policy.
+
+### Q-0032 — What should the Discord entry points be called?
+
+**Area:** Access / Help UX
+**Type:** Naming / Information architecture
+**Priority:** Low
+**Status:** Open
+**Question:** Should Access Map and Help Preview be subpanels linked only from Server Management/Settings, named slash commands (for example `/access-map` and `/help-preview`), or both?
+
+**Why agents need this:** Command names become subsystem/help/ledger identity contracts and should not be casually renamed later.
+
+**Safe default until answered:** Build services first and expose later through existing staff hubs; do not reserve new command names.
+
+**Suggested destination after answer:** Q-0017 planning doc Phase 1 and future command/help maps.
+
+### Q-0033 — How should Personal Setup account links begin?
+
+**Area:** Personal Setup / Privacy
+**Type:** Privacy / Product scope
+**Priority:** High (before Phase 5)
+**Status:** Open
+**Question:** Should Personal Setup eventually support a generic account-link framework, begin with specific domain-owned links (such as game profiles), or defer all account links until after preferences/onboarding ship?
+
+**Why agents need this:** Generic links introduce cross-domain ownership, privacy, deletion/export, credential, and cross-guild questions that simple preferences do not.
+
+**Safe default until answered:** Defer account links; ship privacy-bounded preferences/onboarding first when Phase 5 is approved.
+
+**Suggested destination after answer:** Q-0017 planning doc §6.7 and a future privacy/data-ownership decision.
