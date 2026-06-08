@@ -1,7 +1,7 @@
 # Mining — wire `!explore` to the depth/loadout engine
 
-> **Status:** `implemented` (2026-06-08, pending PR merge) — `!explore` (both the command and
-> the hub's Explore button) now resolves through the loadout/depth engine via a new pure
+> **Status:** `plan` — **implemented 2026-06-08** (pending PR merge). `!explore` (both the command
+> and the hub's Explore button) now resolves through the loadout/depth engine via a new pure
 > `exploration.explore_from_inventory()` seam, with unit tests; the engine is no longer dormant.
 > Promoted from the mining brainstorm via the **idea lifecycle** (`docs/ideas/README.md`,
 > owner decision Q-0015 grooming pass). Source and merged PRs win over this plan.

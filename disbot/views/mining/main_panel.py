@@ -34,6 +34,16 @@ from utils import db
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
+# Display labels for the typed Inventory panel, keyed by ItemKind.value so this
+# module need not import the cogs-layer ItemKind enum (views→cogs layer rule).
+_KIND_LABELS: dict[str, str] = {
+    "resource": "⛏️ Resources",
+    "tool": "🛠️ Tools",
+    "consumable": "🧨 Consumables",
+    "structure": "🏛️ Structures",
+    "treasure": "💎 Treasure",
+}
+
 
 @register
 class MiningHubView(PersistentView):
@@ -166,25 +176,38 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
+        # Lazy import: the item taxonomy is game-domain logic in cogs/, and
+        # views must not import cogs at module level (layer rule, as in
+        # explore_btn above).
+        from cogs.mining import items
+
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
+        embed = discord.Embed(
+            title=f"📦 {interaction.user.name}'s Mining Inventory",
+            color=MINING_COLOR,
+        )
         if not inventory:
             # Empty-state UX rule (mother-hub-map.md): explain what the
             # feature does and what the next step is.
-            description = (
+            embed.description = (
                 "Your mining inventory is empty. Use `!mine` in the mining "
                 "channel to start collecting items."
             )
+            embed.set_footer(text="Pick another action above to continue.")
         else:
-            description = "\n".join(
-                f"**{item.title()}**: {qty}" for item, qty in sorted(inventory.items())
+            for kind, rows in items.summarize_inventory(inventory):
+                embed.add_field(
+                    name=_KIND_LABELS.get(kind.value, kind.value.title()),
+                    value="\n".join(f"**{name.title()}** ×{qty}" for name, qty in rows),
+                    inline=False,
+                )
+            embed.set_footer(
+                text=(
+                    f"Net worth: {items.total_value(inventory)}  •  "
+                    "Pick another action above to continue."
+                ),
             )
-        embed = discord.Embed(
-            title=f"📦 {interaction.user.name}'s Mining Inventory",
-            description=description,
-            color=MINING_COLOR,
-        )
-        embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
 
     @discord.ui.button(
@@ -203,6 +226,9 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
+        # Lazy import: cogs-layer taxonomy (layer rule — see explore_btn).
+        from cogs.mining import items
+
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
         total_items = sum(inventory.values())
@@ -213,6 +239,7 @@ class MiningHubView(PersistentView):
         )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
+        embed.add_field(name="Net Worth", value=str(items.total_value(inventory)))
         embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
 

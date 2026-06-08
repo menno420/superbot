@@ -189,6 +189,27 @@ def sort_inventory(inventory: dict[str, int]) -> list[tuple[str, int]]:
     return rows
 
 
+def summarize_inventory(
+    inventory: dict[str, int],
+) -> list[tuple[ItemKind, list[tuple[str, int]]]]:
+    """Group a raw ``{item: qty}`` inventory into ordered display sections.
+
+    Returns ``[(kind, [(name, qty), ...]), ...]`` using the same ordering as
+    :func:`sort_inventory` (kind, then value desc, then name), chunked into one
+    section per :class:`ItemKind` that has at least one positive-quantity item.
+    Pure: no Discord, no DB — call sites turn the sections into embeds/text.
+    """
+    sections: list[tuple[ItemKind, list[tuple[str, int]]]] = []
+    current: ItemKind | None = None
+    for name, qty in sort_inventory(inventory):
+        kind = classify(name)
+        if kind is not current:
+            sections.append((kind, []))
+            current = kind
+        sections[-1][1].append((name, qty))
+    return sections
+
+
 __all__ = [
     "ItemKind",
     "ItemDef",
@@ -202,4 +223,5 @@ __all__ = [
     "total_value",
     "next_tool_upgrade",
     "sort_inventory",
+    "summarize_inventory",
 ]

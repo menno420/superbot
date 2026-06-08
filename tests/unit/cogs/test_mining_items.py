@@ -67,3 +67,38 @@ def test_sort_inventory_orders_by_kind_then_value():
 def test_sort_inventory_drops_zero_quantities():
     inv = {"gold": 0, "stone": 2}
     assert items.sort_inventory(inv) == [("stone", 2)]
+
+
+def test_summarize_inventory_groups_by_kind_in_display_order():
+    inv = {
+        "diamond": 2,  # resource (high value)
+        "stone": 5,  # resource
+        "pickaxe": 1,  # tool
+        "dynamite": 3,  # consumable
+        "stone hut": 1,  # structure
+        "lucky charm": 1,  # treasure
+        "gone": 0,  # dropped (zero qty)
+    }
+    sections = items.summarize_inventory(inv)
+    assert [kind for kind, _ in sections] == [
+        items.ItemKind.RESOURCE,
+        items.ItemKind.TOOL,
+        items.ItemKind.CONSUMABLE,
+        items.ItemKind.STRUCTURE,
+        items.ItemKind.TREASURE,
+    ]
+    # Resources ordered by value desc: diamond (12) before stone (1).
+    assert sections[0][1] == [("diamond", 2), ("stone", 5)]
+    # Zero-qty item is dropped entirely.
+    all_names = {name for _, rows in sections for name, _ in rows}
+    assert "gone" not in all_names
+
+
+def test_summarize_inventory_empty():
+    assert items.summarize_inventory({}) == []
+
+
+def test_summarize_inventory_only_present_kinds_appear():
+    sections = items.summarize_inventory({"iron": 4})
+    assert [kind for kind, _ in sections] == [items.ItemKind.RESOURCE]
+    assert sections[0][1] == [("iron", 4)]

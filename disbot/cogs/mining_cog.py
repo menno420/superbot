@@ -22,6 +22,7 @@ import discord
 from discord.ext import commands
 
 from cogs.mining.exploration import explore_from_inventory
+from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
 from core.runtime import panel_manager
 from utils import db
@@ -121,6 +122,7 @@ class MiningCog(commands.Cog):
         )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
+        embed.add_field(name="Net Worth", value=str(total_value(inventory)))
         await ctx.send(embed=embed)
 
     # ---------------------------------------------------------- build / crafting
