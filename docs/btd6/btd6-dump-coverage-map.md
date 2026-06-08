@@ -22,7 +22,7 @@
 | `Knowledge/` | 134 | ✅ | monkey_knowledge.json: name, category, description, MM cost, investment |
 | `Maps/` | 89 | ✅ | full cutover: difficulty, has_water, names (curated removables) |
 | `Mods/` | 22 | ⬜ | not ingested (game-mode rule mods — partially explored) |
-| `Powers/` | 27 | ✅ | powers.json: name, description, MM cost, quantity, between-rounds |
+| `Powers/` | 27 | ✅ | powers.json: name, desc, MM cost, quantity, between-rounds, effect factors |
 | `Rounds/` | 5,181 | 🟡 | composition drives derived RBE + per-round cash; not ingested as-is |
 | `Skins/` | 51 | ⬜ | cosmetic; not ingested |
 | `Towers/` | 2,093 | ✅ | stats, attacks, projectiles, abilities, subtowers, zones, buffs |

@@ -62,7 +62,7 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     "IncomeSets": ("🟡", "decay bands feed the per-round cash derivation"),
     "Powers": (
         "✅",
-        "powers.json: name, description, MM cost, quantity, between-rounds",
+        "powers.json: name, desc, MM cost, quantity, between-rounds, effect factors",
     ),
     "Knowledge": (
         "✅",

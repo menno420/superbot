@@ -37,11 +37,14 @@
       "id": "camo_trap",
       "canonical": "Camo Trap",
       "power_id": "CamoTrap",
-      "description": "Monkey Engineering at its finest, this trap will remove Camo state from the first {0} Bloons that touch it. 2 Camo Traps with every purchase.",
+      "description": "Monkey Engineering at its finest, this trap will remove Camo state from the first 500 Bloons that touch it. 2 Camo Traps with every purchase.",
       "monkey_money_cost": 50,
       "quantity": 2,
       "between_rounds": true,
-      "is_power_pro": false
+      "is_power_pro": false,
+      "effect": {
+        "affects_bloons": 500
+      }
     },
     {
       "id": "cash_drop",
@@ -87,11 +90,14 @@
       "id": "glue_trap",
       "canonical": "Glue Trap",
       "power_id": "GlueTrap",
-      "description": "This sticky trap will slow the first {0} Bloons that go over it before it disappears. 2 Glue Traps with every purchase.",
+      "description": "This sticky trap will slow the first 300 Bloons that go over it before it disappears. 2 Glue Traps with every purchase.",
       "monkey_money_cost": 50,
       "quantity": 2,
       "between_rounds": true,
-      "is_power_pro": false
+      "is_power_pro": false,
+      "effect": {
+        "affects_bloons": 300
+      }
     },
     {
       "id": "health_potion",
@@ -117,11 +123,15 @@
       "id": "monkey_boost",
       "canonical": "Monkey Boost",
       "power_id": "MonkeyBoost",
-      "description": "Let's turn it up to 11! All towers attack twice as fast for {0} seconds.",
+      "description": "Let's turn it up to 11! All towers attack twice as fast for 15 seconds.",
       "monkey_money_cost": 100,
       "quantity": 1,
       "between_rounds": false,
-      "is_power_pro": false
+      "is_power_pro": false,
+      "effect": {
+        "rate_scale": 0.5,
+        "duration_seconds": 15
+      }
     },
     {
       "id": "monkey_boost_pro",
@@ -247,11 +257,14 @@
       "id": "thrive",
       "canonical": "Thrive",
       "power_id": "Thrive",
-      "description": "Increase cash production from all of your towers and Bloon pops by {0}% for the rest of the round and the entire next round!",
+      "description": "Increase cash production from all of your towers and Bloon pops by 25% for the rest of the round and the entire next round!",
       "monkey_money_cost": 70,
       "quantity": 1,
       "between_rounds": false,
-      "is_power_pro": false
+      "is_power_pro": false,
+      "effect": {
+        "cash_scale": 1.25
+      }
     }
   ]
 }

@@ -206,6 +206,11 @@ class PowerEntry:
     quantity: int
     between_rounds: bool
     is_power_pro: bool = False
+    # Structured headline effect factor(s) decoded from the dump (e.g. Monkey
+    # Boost ``{"rate_scale": 0.5, "duration_seconds": 15}``). ``{}`` when the
+    # power's effect isn't cleanly decodable. The foundation for a future
+    # "apply this power to a tower stat" computation tool.
+    effect: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -611,6 +616,7 @@ def _parse_relic(raw: dict[str, Any]) -> RelicEntry:
 
 def _parse_power(raw: dict[str, Any]) -> PowerEntry:
     _require_keys(raw, _REQUIRED_POWER_FIELDS, where=f"power {raw.get('id')!r}")
+    effect = raw.get("effect", {})
     return PowerEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
@@ -620,6 +626,7 @@ def _parse_power(raw: dict[str, Any]) -> PowerEntry:
         quantity=int(raw.get("quantity", 1)),
         between_rounds=bool(raw.get("between_rounds", False)),
         is_power_pro=bool(raw.get("is_power_pro", False)),
+        effect=dict(effect) if isinstance(effect, dict) else {},
     )
 
 

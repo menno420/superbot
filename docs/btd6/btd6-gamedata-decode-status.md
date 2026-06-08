@@ -238,7 +238,8 @@ is exactly where the line falls, so the next session doesn't rediscover it:
 | "How much (Monkey Money) is the Camo Trap power?" | ✅ | `monkey_money_cost` is structured |
 | "What's Crossbow Master's attack speed / cost?" (base) | ✅ | base tier stat (cooldown 0.2375s) via the tower path |
 | "List the magic monkey knowledge / 50-MM powers" | ✅ | category/roster filters |
-| **"…attack speed of Crossbow Master *on a Monkey Boost*"** | ❌ | **no layer applies a Power's factor to a tower stat** |
+| "What's Monkey Boost's exact effect factor?" | ✅ | now structured: `rate_scale 0.5` for `15s` (2026-06-08) |
+| **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ❌ | factor extracted, but **no tool yet applies it to a tower stat** (step 2) |
 | **"…starting cash / upgrade cost / free monkeys / lives *with knowledge X*"** | ❌ | **no layer applies an MK effect to the economy** |
 
 **Root cause — two missing things, not one:**
@@ -259,21 +260,45 @@ is exactly where the line falls, so the next session doesn't rediscover it:
 
 **Suggested next steps (ordered, for the following session):**
 
-1. **Extract the Power *effect* structure** (low risk, high value) — add the headline factor to
-   `powers.json` from each Power's effect model (`MonkeyBoostModel.rateScale`/`duration`,
-   `ThriveModel.cashModifier`, `RoadSpikesModel`/pierce, etc.), and **fill the `{0}` placeholders**
-   in the description from those values (so "twice as fast for 15 seconds" reads correctly). This
-   is faithful extraction, no new computation.
-2. **Build `btd6_power_effect` (a deterministic apply-tool)** — given a tower/upgrade + a Power,
-   return the modified headline stat (base cooldown × `rateScale`, etc.), grounded by construction
-   so the verifier accepts it. Mirrors `btd6_cumulative_cost`. This is what makes "Crossbow Master
-   on Monkey Boost" answerable. Scope it tightly (attack-speed/damage/cash multipliers only).
+1. **Extract the Power *effect* structure — ✅ DONE (2026-06-08).** `powers.json` now carries a
+   structured `effect` for the cleanly-decodable powers — Monkey Boost `{rate_scale: 0.5,
+   duration_seconds: 15}`, Thrive `{cash_scale: 1.25}`, Camo/Glue Trap `{affects_bloons: 500/300}`
+   — read from the dump effect model (`parse_gamedata._POWER_EFFECTS`), and **the `{0}`
+   placeholders are filled** from those same values (e.g. "twice as fast for **15 seconds**",
+   "by **25%**", "the first **500** Bloons"). Surfaced on `btd6_power_lookup` as `effect`. So the
+   model can now state the *factor* precisely ("Monkey Boost = ×0.5 cooldown for 15s") — but
+   *applying* it to a named tower's stat is still step 2.
+2. **Build `btd6_power_effect` (a deterministic apply-tool) — the remaining piece for the
+   maintainer's question.** Given a tower/upgrade + a Power, return the modified headline stat
+   (base cooldown × `rate_scale`, etc.) grounded by construction so the verifier accepts it.
+   The structured `effect` factors from step 1 are the inputs. Mirrors `btd6_cumulative_cost`.
+   This is what finally makes "Crossbow Master on Monkey Boost" answerable as a *number*. Scope
+   it tightly (attack-speed / cash multipliers first).
 3. **Monkey Knowledge magnitudes — maintainer call.** Not dump-sourced. Either (a) leave MK as a
    descriptive catalog (current state — honest, "what it does" answers but no computed economy), or
    (b) curate the numeric magnitudes (starting cash/lives/discounts) from the wiki into
    `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
 4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
    stats independently; it must NOT be presented as answering combined/applied questions.
+
+### Session log — 2026-06-08 (Power effect factors extracted + `{0}` placeholders filled)
+
+Closed answerability next-step #1. `map_powers` now decodes a structured `effect` from each
+power's dump effect model (`_POWER_EFFECTS` table, values from the dump — never hardcoded) and
+**fills the description's `{0}`** from that same value:
+
+| Power | `effect` | filled prose |
+|---|---|---|
+| Monkey Boost | `{rate_scale: 0.5, duration_seconds: 15}` | "…twice as fast for **15** seconds." |
+| Thrive | `{cash_scale: 1.25}` | "…cash production …by **25**% …" |
+| Camo Trap | `{affects_bloons: 500}` | "…remove Camo …from the first **500** Bloons…" |
+| Glue Trap | `{affects_bloons: 300}` | "…slow the first **300** Bloons…" |
+
+`PowerEntry.effect` carries it; `btd6_power_lookup` surfaces it. So the model can now state a
+power's exact factor, though *applying* it to a named tower's stat is still the pending apply-tool
+(answerability next-step #2). No `{0}` remains in any committed power description. Pinned by
+`test_map_powers_fills_placeholder_and_extracts_effect` / `_pct_fill_renders_scale_as_percent`
++ the data-service effect assertion.
 
 ### Session log — 2026-06-08 (Powers + Monkey Knowledge ingested → answerable)
 

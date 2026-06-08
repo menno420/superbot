@@ -129,7 +129,20 @@ the prose is the hole) + no apply-tool; (2) MK magnitudes are **not** in the dum
 next steps in the decode-status "Answerability audit" section. **Lesson: "ingested" (catalog
 committed) ≠ "answerable" for *combined/applied* questions — keep claiming only the lookup.**
 
-**Still owed (next session):** the Steam-API patch-detect trigger for the refresh pipeline
-(maintainer chose it) — design exists in `btd6-data-refresh-pipeline-plan.md`; the Steam
-`GetAppList`/`up_to_date` build-id check + the GH Actions workflow remain to build (gated on
-sign-off for the executable CI config).
+## Follow-on #5 (closing item) — Power effect factors extracted + `{0}` placeholders filled
+
+Closed answerability next-step #1. `map_powers._POWER_EFFECTS` decodes a structured `effect`
+from each power's dump effect model (values from the dump) and fills the description `{0}`:
+Monkey Boost `{rate_scale:0.5, duration_seconds:15}` → "…for 15 seconds"; Thrive
+`{cash_scale:1.25}` → "by 25%"; Camo/Glue Trap `{affects_bloons:500/300}` → "first 500/300
+Bloons". `PowerEntry.effect` + `btd6_power_lookup` surface it. No `{0}` left in any committed
+power. The *apply-to-tower-stat* tool (next-step #2) is still the piece that makes "Crossbow
+Master on Monkey Boost" answerable as a number — left for next session with the inputs now ready.
+
+**Still owed (next session), in priority order:**
+1. `btd6_power_effect` apply-tool (factors are now extracted — this makes the maintainer's
+   "tower stat under a power" question answerable; mirrors `btd6_cumulative_cost`).
+2. Monkey Knowledge magnitudes — maintainer call (not dump-sourced; curate vs. descriptive-only).
+3. Steam-API patch-detect trigger for the refresh pipeline (design in
+   `btd6-data-refresh-pipeline-plan.md`; the build-id check + GH Actions workflow remain, gated
+   on sign-off for the executable CI config).

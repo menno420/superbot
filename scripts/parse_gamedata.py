@@ -1834,15 +1834,102 @@ def map_maps(dump: Path, version: str) -> tuple[list[dict], list[str]]:
 def _clean_desc(text: str) -> str:
     """Game-authored description → display string: drop HTML-ish markup
     (``<sup>TM</sup>``, ``<br>``) the textTable carries for in-game rendering.
-    Placeholders like ``{0}`` are left verbatim (filling them needs per-entity
-    effect decode); we never invent a value.
+    A ``{0}`` placeholder is filled separately, per-power, from the dump's own
+    effect value (see ``_POWER_EFFECTS``) — never invented.
     """
     return re.sub(r"<[^>]+>", "", text).strip()
 
 
+# Headline effect factor(s) per Power, read from its dump effect model (the
+# values are the game's own — never hardcoded), plus which extracted field fills
+# the description's single ``{0}`` and how to render it. The filled text is what
+# the game shows the player. Listed only where the headline is clean + confirmable;
+# every other power stays a description-only catalog entry. Tuple shape:
+# (effect_model_type, {dump_field: schema_field}, fill_field | None, fill_kind).
+#   * MonkeyBoost: ``rateScale`` 0.5 = attack at half cooldown (2x speed); the
+#     ``{0}`` window is the 15-second ``duration``.
+#   * Thrive: ``cashScale`` 1.25 = +25% cash; the ``{0}%`` slot is that 25.
+#   * Camo/Glue Trap: a trap projectile's ``pierce`` = the number of Bloons it
+#     affects ("the first {0} Bloons") — verified vs the wiki (Camo 500, Glue 300).
+_POWER_EFFECTS: dict[str, tuple[str, dict[str, str], str | None, str]] = {
+    "MonkeyBoost": (
+        "MonkeyBoostModel",
+        {"rateScale": "rate_scale", "duration": "duration_seconds"},
+        "duration_seconds",
+        "int",
+    ),
+    "Thrive": ("ThriveModel", {"cashScale": "cash_scale"}, "cash_scale", "pct"),
+    "CamoTrap": (
+        "ProjectileModel",
+        {"pierce": "affects_bloons"},
+        "affects_bloons",
+        "int",
+    ),
+    "GlueTrap": (
+        "ProjectileModel",
+        {"pierce": "affects_bloons"},
+        "affects_bloons",
+        "int",
+    ),
+}
+
+
+def _first_model_of(node: Any, short: str) -> dict | None:
+    """The first nested model whose ``$type`` short name is ``short``."""
+    if isinstance(node, dict):
+        if _short_type(node) == short:
+            return node
+        for value in node.values():
+            found = _first_model_of(value, short)
+            if found is not None:
+                return found
+    elif isinstance(node, list):
+        for value in node:
+            found = _first_model_of(value, short)
+            if found is not None:
+                return found
+    return None
+
+
+def _power_effect(raw: dict, pid: str) -> dict:
+    """Structured headline effect factors for a Power (``{}`` if none mapped)."""
+    spec = _POWER_EFFECTS.get(pid)
+    if spec is None:
+        return {}
+    model_type, fields, _fill_field, _kind = spec
+    node = _first_model_of(raw, model_type)
+    if node is None:
+        return {}
+    effect: dict = {}
+    for dump_field, schema_field in fields.items():
+        value = node.get(dump_field)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            effect[schema_field] = _num(value)
+    return effect
+
+
+def _fill_placeholder(description: str, pid: str, effect: dict) -> str:
+    """Fill a description's single ``{0}`` from the power's own effect value."""
+    if "{0}" not in description:
+        return description
+    spec = _POWER_EFFECTS.get(pid)
+    if spec is None:
+        return description
+    _model, _fields, fill_field, kind = spec
+    if fill_field is None or fill_field not in effect:
+        return description
+    value = effect[fill_field]
+    if kind == "pct":  # a 1.25 scale renders as "25" (the % is already in the text)
+        token = str(int(round((value - 1) * 100)))
+    else:
+        token = str(int(value)) if float(value).is_integer() else str(value)
+    return description.replace("{0}", token)
+
+
 def map_powers(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     """Every consumable Power → catalog rows (id, name, description, Monkey-Money
-    cost, quantity, between-rounds). Names/descriptions are game-authored via
+    cost, quantity, between-rounds, + a structured ``effect`` where the headline
+    factor is cleanly decodable). Names/descriptions are game-authored via
     ``PowerId`` → ``textTable``; hidden/event powers (no name string) are skipped.
     """
     tt = _text_table(dump)
@@ -1866,18 +1953,25 @@ def map_powers(dump: Path, version: str) -> tuple[list[dict], list[str]]:
             warnings.append(f"duplicate power id {rid!r} ({pid})")
             continue
         seen.add(rid)
-        rows.append(
-            {
-                "id": rid,
-                "canonical": name,
-                "power_id": pid,
-                "description": _clean_desc(tt.get(f"{pid} Description", "")),
-                "monkey_money_cost": _num(raw.get("Cost", raw.get("cost", 0))),
-                "quantity": _num(raw.get("quantity", 1)),
-                "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
-                "is_power_pro": bool(raw.get("IsPowerPro", False)),
-            },
+        effect = _power_effect(raw, pid)
+        description = _fill_placeholder(
+            _clean_desc(tt.get(f"{pid} Description", "")),
+            pid,
+            effect,
         )
+        row = {
+            "id": rid,
+            "canonical": name,
+            "power_id": pid,
+            "description": description,
+            "monkey_money_cost": _num(raw.get("Cost", raw.get("cost", 0))),
+            "quantity": _num(raw.get("quantity", 1)),
+            "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
+            "is_power_pro": bool(raw.get("IsPowerPro", False)),
+        }
+        if effect:
+            row["effect"] = effect
+        rows.append(row)
     rows.sort(key=lambda p: p["id"])
     return rows, warnings
 

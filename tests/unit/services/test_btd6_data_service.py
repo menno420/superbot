@@ -74,6 +74,10 @@ def test_powers_and_monkey_knowledge_load_and_resolve():
     assert boost is not None and boost.canonical == "Monkey Boost"
     assert get_power("MonkeyBoost") is boost
     assert boost.monkey_money_cost == 100
+    # The structured headline effect (2x speed / 15s) is decoded, and the prose
+    # has no unfilled placeholder.
+    assert boost.effect == {"rate_scale": 0.5, "duration_seconds": 15}
+    assert "{0}" not in boost.description
     # Monkey knowledge carries its in-game category + costs.
     mk = get_monkey_knowledge("aviation_grade_glue")
     assert mk is not None

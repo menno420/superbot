@@ -1056,13 +1056,19 @@ _BTD6_POWER_LOOKUP_SPEC = AIToolSpec(
 
 
 def _power_dict(entry: Any) -> dict[str, Any]:
-    return {
+    out: dict[str, Any] = {
         "name": entry.canonical,
         "description": entry.description,
         "monkey_money_cost": entry.monkey_money_cost,
         "quantity": entry.quantity,
         "usable_between_rounds": entry.between_rounds,
     }
+    if entry.effect:
+        # Structured headline factor(s) — e.g. Monkey Boost rate_scale 0.5 (2x
+        # attack speed) for 15s. Lets the model state the effect precisely, though
+        # *applying* it to a specific tower's stat is a separate (future) tool.
+        out["effect"] = dict(entry.effect)
+    return out
 
 
 def _find_power(name: str) -> Any:

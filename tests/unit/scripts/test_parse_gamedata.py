@@ -377,6 +377,54 @@ def test_map_powers_extracts_named_skips_hidden(mod, tmp_path):
     assert row["description"] == "Attack faster TM"
 
 
+def test_map_powers_fills_placeholder_and_extracts_effect(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Powers" / "MonkeyBoost.json",
+        {
+            "$type": _t("MonkeyBoostPower"),
+            "PowerId": "MonkeyBoost",
+            "Cost": 100,
+            "behaviors": [
+                {"$type": _t("MonkeyBoostModel"), "rateScale": 0.5, "duration": 15.0},
+            ],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "MonkeyBoost": "Monkey Boost",
+            "MonkeyBoost Description": "All towers attack twice as fast for {0} seconds.",
+        },
+    )
+    row = mod.map_powers(dump, "55.1")[0][0]
+    # structured factor extracted from the dump effect model
+    assert row["effect"] == {"rate_scale": 0.5, "duration_seconds": 15}
+    # the {0} window is filled from that same value (the player-facing form)
+    assert row["description"] == "All towers attack twice as fast for 15 seconds."
+
+
+def test_map_powers_pct_fill_renders_scale_as_percent(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Powers" / "Thrive.json",
+        {
+            "$type": _t("ThrivePower"),
+            "PowerId": "Thrive",
+            "Cost": 70,
+            "behaviors": [{"$type": _t("ThriveModel"), "cashScale": 1.25}],
+        },
+    )
+    _write(
+        dump / "textTable.json",
+        {"Thrive": "Thrive", "Thrive Description": "Increase cash by {0}% this round."},
+    )
+    row = mod.map_powers(dump, "55.1")[0][0]
+    assert row["effect"] == {"cash_scale": 1.25}
+    # 1.25 scale → "25" (the % is already in the text), not "1.25" or "125".
+    assert row["description"] == "Increase cash by 25% this round."
+
+
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(
