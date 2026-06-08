@@ -1056,6 +1056,29 @@ def get_power(power_id: str) -> PowerEntry | None:
     return None
 
 
+def find_power(name: str) -> PowerEntry | None:
+    """Resolve a Power by id / game-native id / canonical name / unique partial.
+
+    The fuzzy counterpart to :func:`get_power` (which is id-only): an exact id or
+    canonical match wins; otherwise a single case-insensitive substring of a
+    canonical name is accepted, and an ambiguous substring returns ``None``.
+    Shared by the ``btd6_power_lookup`` and ``btd6_power_effect`` tools so name
+    resolution has one home.
+    """
+    direct = get_power(name)
+    if direct is not None:
+        return direct
+    needle = (name or "").strip().lower()
+    if not needle:
+        return None
+    powers = get_dataset().powers
+    exact = [p for p in powers if p.canonical.lower() == needle]
+    if exact:
+        return exact[0]
+    partial = [p for p in powers if needle in p.canonical.lower()]
+    return partial[0] if len(partial) == 1 else None
+
+
 def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
     for entry in get_dataset().monkey_knowledge:
         if entry.id == knowledge_id:
@@ -1263,6 +1286,11 @@ def find_map(name: str) -> MapEntry | None:
 def find_mode(name: str) -> ModeEntry | None:
     """Resolve a game mode by name / alias / id (``"chimps"`` -> CHIMPS)."""
     return _find_by_surface(get_dataset().modes, name)
+
+
+def find_tower(name: str) -> TowerEntry | None:
+    """Resolve a tower by name / alias / id (``"dart"`` -> Dart Monkey)."""
+    return _find_by_surface(get_dataset().towers, name)
 
 
 def cumulative_upgrade_costs(

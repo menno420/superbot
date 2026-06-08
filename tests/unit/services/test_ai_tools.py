@@ -40,6 +40,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_monkey_knowledge_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
+        "btd6_power_effect",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
@@ -302,6 +303,41 @@ async def test_btd6_difficulty_cost_converts_medium_to_all_difficulties():
     ] is False
 
 
+async def test_btd6_power_effect_applies_monkey_boost_to_attack_speed():
+    # The bot previously could state what Monkey Boost does but not apply it to a
+    # tower's attack stat; this tool grounds "Crossbow Master on a Monkey Boost".
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    assert "btd6_power_effect" in registry.handlers
+
+    result = await registry.handlers["btd6_power_effect"](
+        {"power": "Monkey Boost", "tower": "Crossbow Master"},
+    )
+    assert result["found"] is True
+    assert result["power"] == "Monkey Boost"
+    assert result["rate_scale"] == 0.5
+    assert result["duration_seconds"] == 15
+    # rate_scale 0.5 halves cooldown -> doubles attacks/sec (independent rounding
+    # of each value leaves a sub-0.01 gap, so compare with tolerance).
+    assert (
+        abs(result["boosted_attacks_per_second"] - 2 * result["base_attacks_per_second"])
+        < 0.01
+    )
+
+
+async def test_btd6_power_effect_rejects_non_attack_powers_and_bad_input():
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+    handler = registry.handlers["btd6_power_effect"]
+
+    # Thrive is an economy Power — it must NOT fabricate an attack-speed number.
+    thrive = await handler({"power": "Thrive", "tower": "Crossbow Master"})
+    assert thrive["found"] is False
+    assert "btd6_power_lookup" in thrive["note"]
+
+    # Missing args and unknown power both fail closed.
+    assert (await handler({"power": "Monkey Boost", "tower": ""}))["found"] is False
+    assert (await handler({"power": "nope", "tower": "Dart Monkey"}))["found"] is False
+
+
 def test_admin_scope_offers_all_read_only_tools():
     registry = build_registry(scope=AIScope.ADMIN, guild_id=1, actor_id=2)
 
@@ -322,6 +358,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_monkey_knowledge_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
+        "btd6_power_effect",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",

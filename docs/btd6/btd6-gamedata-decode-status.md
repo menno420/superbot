@@ -239,7 +239,7 @@ is exactly where the line falls, so the next session doesn't rediscover it:
 | "What's Crossbow Master's attack speed / cost?" (base) | ✅ | base tier stat (cooldown 0.2375s) via the tower path |
 | "List the magic monkey knowledge / 50-MM powers" | ✅ | category/roster filters |
 | "What's Monkey Boost's exact effect factor?" | ✅ | now structured: `rate_scale 0.5` for `15s` (2026-06-08) |
-| **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ❌ | factor extracted, but **no tool yet applies it to a tower stat** (step 2) |
+| **"…attack speed of Crossbow Master *on a Monkey Boost*"** (as a number) | ✅ | `btd6_power_effect` applies the factor to the resolved tier stat (2026-06-08, step 2 DONE) |
 | **"…starting cash / upgrade cost / free monkeys / lives *with knowledge X*"** | ❌ | **no layer applies an MK effect to the economy** |
 
 **Root cause — two missing things, not one:**
@@ -268,18 +268,54 @@ is exactly where the line falls, so the next session doesn't rediscover it:
    "by **25%**", "the first **500** Bloons"). Surfaced on `btd6_power_lookup` as `effect`. So the
    model can now state the *factor* precisely ("Monkey Boost = ×0.5 cooldown for 15s") — but
    *applying* it to a named tower's stat is still step 2.
-2. **Build `btd6_power_effect` (a deterministic apply-tool) — the remaining piece for the
-   maintainer's question.** Given a tower/upgrade + a Power, return the modified headline stat
-   (base cooldown × `rate_scale`, etc.) grounded by construction so the verifier accepts it.
-   The structured `effect` factors from step 1 are the inputs. Mirrors `btd6_cumulative_cost`.
-   This is what finally makes "Crossbow Master on Monkey Boost" answerable as a *number*. Scope
-   it tightly (attack-speed / cash multipliers first).
+2. **Build `btd6_power_effect` (a deterministic apply-tool) — ✅ DONE (2026-06-08).**
+   `btd6_upgrade_detail_service.power_effect(power, tower)` resolves the tower/upgrade via the
+   deterministic upgrade resolver (`"Crossbow Master"`, `"Dart Monkey"`, `"dart 0-4-0"` → the
+   base tier `000`), reads the tier's `attacks[0].rate` (the same cooldown the stats path
+   surfaces), and applies the Power's decoded `rate_scale` → base vs boosted cooldown +
+   attacks/sec + duration. Surfaced as the `btd6_power_effect` AI tool (registered + in
+   `BTD6_GROUNDING_TOOL_NAMES`). **Grounded by construction** (factor × resolved stat, never a
+   model multiplication). Scoped tightly to **attack-speed** for now: only Monkey Boost's
+   `rate_scale` modifies a tower stat; Thrive (cash) / Camo & Glue Trap (bloons) fail closed with
+   a pointer to `btd6_power_lookup` rather than inventing a number, and economy towers
+   (Banana Farm) report "no attack-speed stat". `_POWER_STAT_EFFECTS` is the extension point for
+   future stat-modifying factors (e.g. a cash-multiplier apply against the economy). Power name
+   resolution was de-duplicated into `btd6_data_service.find_power` (shared by the lookup +
+   effect tools). "Crossbow Master on Monkey Boost" now answers **8.42 attacks/sec for 15 s
+   (vs 4.21 base)**.
 3. **Monkey Knowledge magnitudes — maintainer call.** Not dump-sourced. Either (a) leave MK as a
    descriptive catalog (current state — honest, "what it does" answers but no computed economy), or
    (b) curate the numeric magnitudes (starting cash/lives/discounts) from the wiki into
    `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
 4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
    stats independently; it must NOT be presented as answering combined/applied questions.
+
+### Session log — 2026-06-08 (`btd6_power_effect` apply-tool — answerability next-step #2 closed)
+
+Built the deterministic Power→tower-stat apply-tool that the prior session left as the
+last owed piece. The maintainer's standing question — *"what's Crossbow Master's attack
+speed **on** a Monkey Boost"* — now answers as a grounded number.
+
+- **Compute** (`btd6_upgrade_detail_service.power_effect`): resolves the tower/upgrade via the
+  existing deterministic resolver (upgrade name / alias / path-notation, falling back to a bare
+  tower's base tier `000`), reads `attacks[0].rate`, and applies the Power's decoded `rate_scale`
+  → `{base,boosted}_cooldown_seconds` + `{base,boosted}_attacks_per_second` + `duration_seconds`.
+  Grounded by construction (factor × resolved stat), so the faithfulness verifier accepts it.
+- **Honest boundaries (fail closed, never fabricate):** only `rate_scale` modifies a tower stat
+  today, so Thrive (cash) / Camo & Glue Trap (bloons) return `found=false` with a `btd6_power_lookup`
+  pointer; economy towers with no committed attack (Banana Farm) return "no attack-speed stat";
+  unknown power / unresolved-or-ambiguous tower / missing args all fail closed.
+  `_POWER_STAT_EFFECTS` is the named extension point for the next stat-modifying factor.
+- **Tool:** `btd6_power_effect(power, tower)` registered in `ai_tools` + added to
+  `BTD6_GROUNDING_TOOL_NAMES` (auto-propagates to the grounding allowlist). Power-name resolution
+  de-duplicated into `btd6_data_service.find_power` (+ a sibling `find_tower`), shared by the
+  lookup and effect tools — one home.
+- **Tests:** 5 service-level (`test_btd6_upgrade_detail_service`) + 2 tool-level
+  (`test_ai_tools`) pinning the boost math (2× rate), the bare-tower base tier, and all four
+  fail-closed paths; both registry-roster tests updated for the new tool. `check_quality --full`
+  **green (8127 passed)**, `check_architecture --mode strict` 0 errors.
+- **Still owed:** MK magnitudes (maintainer call — not dump-sourced) and the Steam-API
+  patch-detect refresh trigger (gated on executable-CI sign-off) carry forward.
 
 ### Session log — 2026-06-08 (Power effect factors extracted + `{0}` placeholders filled)
 
