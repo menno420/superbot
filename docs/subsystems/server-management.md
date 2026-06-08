@@ -40,6 +40,17 @@ cleanup policy, setup, and the future unified hub. Inspect first:
 - **Auto-mod deletion missing from the audit log** → it must go through
   `moderation_service.auto_delete` (writes `mod_logs` + `EVT_MOD_ACTION`); a raw
   `message.delete()` in a cog is the gap.
+- **"What's broken / stale / unsafe in a guild's config?" (diagnostics)** → the read-only
+  detectors already emit a **reusable findings model — compose them, don't re-detect**:
+  `services/resource_health.py::inspect` (per-binding stale/missing/wrong-type/permission/
+  hierarchy verdicts), `services/cleanup_diagnostics.py` (stale/ineffective cleanup rows),
+  `utils/role_feasibility.py` + `utils/db/roles.py` (auto-role tier staleness/feasibility),
+  `core/runtime/config_arbitration.py` (moderator/trusted role config). **`services/setup_diagnostics.py`
+  (PR12)** is the canonical composer: it maps those verdicts into typed
+  `SetupDiagnosticFinding`s + safe `clear_binding` repair ops for Final Review, and is the
+  layer the future Server-Management Hub (PR14) should reuse. Note the *axis*:
+  `setup_blockers.py` / `setup_readiness.py` answer "is the bot's substrate built?" — a
+  different question from per-guild config health.
 - **"Should I add a manager/panel?"** → check the tracker's Remaining queue first;
   reuse selectors + provisioning previews; never add a second resource-creation path.
 
