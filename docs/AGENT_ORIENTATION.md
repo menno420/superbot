@@ -58,6 +58,10 @@ read **`docs/helper-policy.md`** first.
 > 1. `.claude/CLAUDE.md` + `docs/collaboration-model.md` — how we work.
 > 2. `docs/current-state.md` — what is true right now.
 > 3. this file's task route → the **one** relevant `docs/subsystems/<area>.md` folio.
+>    **Shortcut:** the generated context pack (`docs/agent/generated/<subsystem>.context.md`)
+>    gives you folio + binding docs + source roots + do-not-create warnings + gates
+>    + verification commands in one page.  Read the folio for the debug router and
+>    next candidates; the pack for everything else.
 > 4. binding/deep docs (`architecture` · `ownership` · `runtime_contracts` · ADRs)
 >    **only when the task touches them** — not preventively.
 > 5. `docs/owner/maintainer-question-router.md` when product/owner intent is unclear.
@@ -176,6 +180,21 @@ read **`docs/helper-policy.md`** first.
    policy storage and the main-server backfill.  Add to
    migration 050's CHECK constraint before adding a new
    `AccessMode` literal.
+
+### Editing the agent context system (docs/agent/, tools/agent_context/)
+
+1. `docs/agent/README.md` — how the system works, what to put in the manifest, and what it does not replace.
+2. `docs/agent/index.yml` — the curated manifest; **edit this, not the generated packs**.
+3. `tools/agent_context/build_pack.py` — generates `docs/agent/generated/*.context.md`.
+4. `tools/agent_context/validate_pack.py` — validates index paths and generated packs.
+5. `tests/unit/docs/test_agent_context_index.py` — CI gate; regenerate + commit packs after index changes.
+
+After editing the index, always run:
+```bash
+python3.10 tools/agent_context/build_pack.py
+python3.10 tools/agent_context/validate_pack.py
+python3.10 -m pytest tests/unit/docs/test_agent_context_index.py -v
+```
 
 ### Working on the multi-agent pipeline / generating session prompts
 
