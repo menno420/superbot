@@ -217,9 +217,18 @@ that arrives with the P6 grid.
 - **`services/equipment_service.py`** — `get_equipment`, `equip`/`unequip`, `apply_durability`,
   broken-item tracking. Exposes an **`EffectiveStats`** read model; emits `equipment.item_equipped`
   / `equipment.item_broken`. The one seam every game reads.
-- **`services/crafting_mutation.py`** — `craft`/`repair`/`upgrade` through an **audited** path,
-  closing today's gap (current `!build` mutates the bag straight from the modal with no audit
-  seam). Powers quick-craft-last-broken via `mining_player_state.last_broken_item`.
+- **`services/mining/crafting_mutation.py`** — *optional future seam, not a current fix.*
+  **Correction (2026-06-08, verified against binding docs):** mining is an **intentional
+  direct-lane domain** — `ownership.md` routes `mining_inventory` *direct via
+  `utils/db/games/mining.py`*, and the RC-8A direct-DB ledger
+  (`docs/audits/direct-db-exception-ledger.md`) catalogues `!build`'s write as
+  **`accepted-direct-write`**: "a mutation service is a *future option, not a current
+  violation*." So today's `!build` is **correct, not an audit gap** (an earlier draft of this
+  doc wrongly called it one). An audited crafting service becomes warranted only when crafting
+  turns **cross-domain** (e.g. it spends coins — that leg *must* route through `economy_service`)
+  or grows durability / quick-craft state. Until then, crafting writes stay on the db helper;
+  the only robustness nit worth fixing there is making the multi-item build **atomic** (one
+  transaction in `utils/db/games/mining.py`). **Lightweight game state ≠ audited service.**
 - **Reuse, don't replace:** the pure `cogs/mining/exploration.py` (catalog + selection) and
   `cogs/mining/items.py` (taxonomy) stay pure; the new services *apply* their results.
 
