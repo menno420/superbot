@@ -425,6 +425,48 @@ def test_map_powers_pct_fill_renders_scale_as_percent(mod, tmp_path):
     assert row["description"] == "Increase cash by 25% this round."
 
 
+def test_map_geraldo_items_decodes_name_cost_and_meta(mod, tmp_path):
+    dump = tmp_path / "dump"
+    # The name/description key off the model's locsId via "<locsId> name" /
+    # "<locsId> description"; an item whose name string is missing is skipped.
+    _write(
+        dump / "GeraldoItems" / "GenieBottle.json",
+        {
+            "$type": _t("GeraldoItemModel"),
+            "name": "GenieBottle",
+            "locsId": "Genie bottle",
+            "cost": 2500,
+            "levelUnlockedAt": 12,
+            "startingQuantity": 1,
+            "maxQuantity": 2,
+            "roundsToReplenish": 5,
+            "amountToReplenish": 1,
+            "canBeActivatedBetweenRounds": True,
+        },
+    )
+    _write(
+        dump / "GeraldoItems" / "HiddenThing.json",
+        {"$type": _t("GeraldoItemModel"), "name": "HiddenThing", "locsId": "missing"},
+    )
+    _write(
+        dump / "textTable.json",
+        {
+            "Genie bottle name": "Genie Bottle",
+            "Genie bottle description": "Summon a Genie Monkey<br>for a while!",
+        },
+    )
+    rows, warnings = mod.map_geraldo_items(dump, "55.1")
+    assert [r["id"] for r in rows] == ["genie_bottle"]  # HiddenThing skipped + warned
+    assert any("HiddenThing" in w for w in warnings)
+    row = rows[0]
+    assert row["canonical"] == "Genie Bottle"
+    assert row["description"] == "Summon a Genie Monkeyfor a while!"  # tags stripped
+    assert row["cost"] == 2500 and row["unlock_level"] == 12
+    assert row["starting_quantity"] == 1 and row["max_quantity"] == 2
+    assert row["rounds_to_replenish"] == 5 and row["amount_to_replenish"] == 1
+    assert row["between_rounds"] is True
+
+
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(

@@ -12,7 +12,9 @@ from services.btd6_data_provider import FileRawProvider
 from services.btd6_data_service import (
     DATA_ROOT,
     BTD6DataValidationError,
+    find_geraldo_item,
     get_dataset,
+    get_geraldo_item,
     get_monkey_knowledge,
     get_power,
     get_provider,
@@ -86,6 +88,26 @@ def test_powers_and_monkey_knowledge_load_and_resolve():
     # Every MK category folder is represented.
     cats = {k.category for k in dataset.monkey_knowledge}
     assert {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"} <= cats
+
+
+def test_geraldo_items_load_and_resolve():
+    dataset = get_dataset()
+    # All 16 of Geraldo's shop items are ingested.
+    assert len(dataset.geraldo_items) == 16
+    # Resolves by catalog id and (fuzzily) by canonical name / partial.
+    totem = get_geraldo_item("paragon_power_totem")
+    assert totem is not None and totem.canonical == "Paragon Power Totem"
+    assert totem.cost == 26000 and totem.unlock_level == 20
+    assert find_geraldo_item("Genie Bottle") is get_geraldo_item("genie_bottle")
+    assert find_geraldo_item("pickle").canonical == "Jar of Pickles"
+    # Every item carries a game-authored name + description and a sane cost.
+    for item in dataset.geraldo_items:
+        assert item.canonical and item.description
+        assert item.cost > 0 and item.unlock_level >= 0
+        assert item.max_quantity >= item.starting_quantity >= 0
+    # Unknown / ambiguous lookups fail closed rather than guessing.
+    assert get_geraldo_item("nope") is None
+    assert find_geraldo_item("") is None
 
 
 def test_map_removables_curated_for_known_maps_only():

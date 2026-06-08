@@ -72,7 +72,10 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     "Artifacts": ("⬜", "not ingested (Rogue Legends artifacts)"),
     "Mods": ("⬜", "not ingested (game-mode rule mods — partially explored)"),
     "Skins": ("⬜", "cosmetic; not ingested"),
-    "GeraldoItems": ("⬜", "not ingested (Geraldo shop items)"),
+    "GeraldoItems": (
+        "✅",
+        "all 16 shop items: name, description, cash cost, unlock level, quantity",
+    ),
     "TrophyStoreItems": ("⬜", "cosmetic; not ingested"),
     "BloonOverlays": ("⬜", "cosmetic overlays; not ingested"),
     "Buffs": ("⬜", "UI buff ICONS only — effects live inline in Towers/"),

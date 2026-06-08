@@ -38,6 +38,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_relic_lookup",
         "btd6_power_lookup",
         "btd6_monkey_knowledge_lookup",
+        "btd6_geraldo_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_power_effect",
@@ -356,6 +357,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_relic_lookup",
         "btd6_power_lookup",
         "btd6_monkey_knowledge_lookup",
+        "btd6_geraldo_lookup",
         "btd6_bloon_filter",
         "btd6_cumulative_cost",
         "btd6_power_effect",
@@ -779,6 +781,23 @@ async def test_btd6_monkey_knowledge_lookup_single_category_and_roster():
     assert (await h["btd6_monkey_knowledge_lookup"]({"category": "Bogus"}))[
         "found"
     ] is False
+
+
+async def test_btd6_geraldo_lookup_single_and_roster():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    one = await h["btd6_geraldo_lookup"]({"item": "Genie Bottle"})
+    assert one["found"] is True
+    item = one["item"]
+    assert item["name"] == "Genie Bottle"
+    assert item["cost"] == 2500 and item["unlock_level"] == 12
+    assert item["description"]
+    # Partial-name match resolves a single item.
+    assert (await h["btd6_geraldo_lookup"]({"item": "pickle"}))["item"]["name"] == (
+        "Jar of Pickles"
+    )
+    roster = await h["btd6_geraldo_lookup"]({})
+    assert roster["count"] == len(roster["items"]) == 16
+    assert (await h["btd6_geraldo_lookup"]({"item": "nope"}))["found"] is False
 
 
 async def test_btd6_bloon_filter_traits_and_modifier_note():

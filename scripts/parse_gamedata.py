@@ -2031,6 +2031,51 @@ def map_monkey_knowledge(dump: Path, version: str) -> tuple[list[dict], list[str
     return rows, warnings
 
 
+def map_geraldo_items(dump: Path, version: str) -> tuple[list[dict], list[str]]:
+    """Every Geraldo shop item → catalog rows (id, name, description, in-game
+    cash cost, the Geraldo level it unlocks at, starting/max quantity, and
+    replenish cadence). Name + description are game-authored via the model's
+    ``locsId`` → ``textTable`` (``"<locsId> name"`` / ``"<locsId> description"``).
+    All 16 items resolve a name string; an item missing one is skipped + warned.
+    """
+    tt = _text_table(dump)
+    rows: list[dict] = []
+    warnings: list[str] = []
+    seen: set[str] = set()
+    for fp in sorted((dump / "GeraldoItems").glob("*.json")):
+        try:
+            raw = json.loads(fp.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            warnings.append(f"unreadable {fp.name}")
+            continue
+        loc = str(raw.get("locsId") or "")
+        name = tt.get(f"{loc} name")
+        if not name:
+            warnings.append(f"no name string for {fp.stem} (locsId {loc!r})")
+            continue
+        gid = _snake(str(raw.get("name") or fp.stem))
+        if gid in seen:
+            warnings.append(f"duplicate geraldo id {gid!r} ({fp.stem})")
+            continue
+        seen.add(gid)
+        rows.append(
+            {
+                "id": gid,
+                "canonical": _clean_desc(name),
+                "description": _clean_desc(tt.get(f"{loc} description", "")),
+                "cost": _num(raw.get("cost", 0)),
+                "unlock_level": _num(raw.get("levelUnlockedAt", 0)),
+                "starting_quantity": _num(raw.get("startingQuantity", 0)),
+                "max_quantity": _num(raw.get("maxQuantity", 0)),
+                "rounds_to_replenish": _num(raw.get("roundsToReplenish", 0)),
+                "amount_to_replenish": _num(raw.get("amountToReplenish", 0)),
+                "between_rounds": bool(raw.get("canBeActivatedBetweenRounds", False)),
+            },
+        )
+    rows.sort(key=lambda g: (g["unlock_level"], g["id"]))
+    return rows, warnings
+
+
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -2084,6 +2129,11 @@ def main(argv: list[str] | None = None) -> int:
         "--knowledge",
         action="store_true",
         help="rebuild monkey_knowledge.json from the dump's Knowledge/ folders",
+    )
+    ap.add_argument(
+        "--geraldo",
+        action="store_true",
+        help="rebuild geraldo_items.json from the dump's GeraldoItems/ folder",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -2144,7 +2194,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  warning: {w}")
         return 0
 
-    if args.powers or args.knowledge:
+    if args.powers or args.knowledge or args.geraldo:
         version = _dump_version(dump)
         for flag, fn, key, fname in (
             (args.powers, map_powers, "powers", "powers.json"),
@@ -2153,6 +2203,12 @@ def main(argv: list[str] | None = None) -> int:
                 map_monkey_knowledge,
                 "knowledge",
                 "monkey_knowledge.json",
+            ),
+            (
+                args.geraldo,
+                map_geraldo_items,
+                "geraldo_items",
+                "geraldo_items.json",
             ),
         ):
             if not flag:

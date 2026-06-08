@@ -231,6 +231,29 @@ class MonkeyKnowledgeEntry:
 
 
 @dataclass(frozen=True)
+class GeraldoItemEntry:
+    """One Geraldo shop item (Blade Trap, Genie Bottle, Paragon Power Totem, …).
+
+    Game-native: ``canonical``/``description`` are the game-authored strings,
+    ``cost`` the in-game cash price (not Monkey Money), ``unlock_level`` the
+    Geraldo hero level it unlocks at, ``starting_quantity``/``max_quantity`` the
+    stock a fresh Geraldo carries and can hold, and ``rounds_to_replenish`` /
+    ``amount_to_replenish`` the restock cadence.
+    """
+
+    id: str
+    canonical: str
+    description: str
+    cost: int
+    unlock_level: int
+    starting_quantity: int
+    max_quantity: int
+    rounds_to_replenish: int
+    amount_to_replenish: int
+    between_rounds: bool = False
+
+
+@dataclass(frozen=True)
 class BTD6DataSet:
     data_version: str
     game_version: str
@@ -244,6 +267,7 @@ class BTD6DataSet:
     ct_relics: tuple[RelicEntry, ...] = ()
     powers: tuple[PowerEntry, ...] = ()
     monkey_knowledge: tuple[MonkeyKnowledgeEntry, ...] = ()
+    geraldo_items: tuple[GeraldoItemEntry, ...] = ()
 
 
 # ---------------------------------------------------------------------------
@@ -322,6 +346,7 @@ _REQUIRED_KNOWLEDGE_FIELDS = (
 _MK_CATEGORIES = frozenset(
     {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"},
 )
+_REQUIRED_GERALDO_FIELDS = ("id", "canonical", "cost", "unlock_level")
 
 
 def _require_keys(entry: dict[str, Any], keys: tuple[str, ...], where: str) -> None:
@@ -653,6 +678,22 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
     )
 
 
+def _parse_geraldo_item(raw: dict[str, Any]) -> GeraldoItemEntry:
+    _require_keys(raw, _REQUIRED_GERALDO_FIELDS, where=f"geraldo {raw.get('id')!r}")
+    return GeraldoItemEntry(
+        id=str(raw["id"]),
+        canonical=str(raw["canonical"]),
+        description=str(raw.get("description", "")).strip(),
+        cost=int(raw["cost"]),
+        unlock_level=int(raw["unlock_level"]),
+        starting_quantity=int(raw.get("starting_quantity", 0)),
+        max_quantity=int(raw.get("max_quantity", 0)),
+        rounds_to_replenish=int(raw.get("rounds_to_replenish", 0)),
+        amount_to_replenish=int(raw.get("amount_to_replenish", 0)),
+        between_rounds=bool(raw.get("between_rounds", False)),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Loader
 # ---------------------------------------------------------------------------
@@ -674,6 +715,7 @@ _OPTIONAL_FIXTURES = (
     "ct_relics.json",
     "powers.json",
     "monkey_knowledge.json",
+    "geraldo_items.json",
 )
 
 
@@ -858,6 +900,7 @@ def _load_dataset() -> BTD6DataSet:
     # powers.json / monkey_knowledge.json are game-native optional fixtures.
     powers_raw = _load_file_optional("powers.json")
     knowledge_raw = _load_file_optional("monkey_knowledge.json")
+    geraldo_raw = _load_file_optional("geraldo_items.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
@@ -884,6 +927,11 @@ def _load_dataset() -> BTD6DataSet:
         if knowledge_raw is not None
         else ()
     )
+    geraldo_items = (
+        tuple(_parse_geraldo_item(g) for g in geraldo_raw.get("geraldo_items", []))
+        if geraldo_raw is not None
+        else ()
+    )
 
     # Per-category canonical uniqueness.
     _check_unique([t.id for t in towers], where="towers.id")
@@ -907,6 +955,8 @@ def _load_dataset() -> BTD6DataSet:
         [k.canonical for k in monkey_knowledge],
         where="monkey_knowledge.canonical",
     )
+    _check_unique([g.id for g in geraldo_items], where="geraldo_items.id")
+    _check_unique([g.canonical for g in geraldo_items], where="geraldo_items.canonical")
 
     # Alias collision check across every category — the resolver depends
     # on aliases being globally unique.
@@ -994,6 +1044,7 @@ def _load_dataset() -> BTD6DataSet:
         ct_relics=ct_relics,
         powers=powers,
         monkey_knowledge=monkey_knowledge,
+        geraldo_items=geraldo_items,
     )
 
 
@@ -1076,6 +1127,36 @@ def find_power(name: str) -> PowerEntry | None:
     if exact:
         return exact[0]
     partial = [p for p in powers if needle in p.canonical.lower()]
+    return partial[0] if len(partial) == 1 else None
+
+
+def get_geraldo_item(item_id: str) -> GeraldoItemEntry | None:
+    """A Geraldo item by catalog id (case-insensitive)."""
+    needle = item_id.strip().lower()
+    for item in get_dataset().geraldo_items:
+        if item.id == needle:
+            return item
+    return None
+
+
+def find_geraldo_item(name: str) -> GeraldoItemEntry | None:
+    """Resolve a Geraldo item by id / canonical name / unique partial.
+
+    The fuzzy counterpart to :func:`get_geraldo_item`: an exact id or canonical
+    match wins; otherwise a single case-insensitive substring of a canonical name
+    is accepted, and an ambiguous substring returns ``None``.
+    """
+    direct = get_geraldo_item(name)
+    if direct is not None:
+        return direct
+    needle = (name or "").strip().lower()
+    if not needle:
+        return None
+    items = get_dataset().geraldo_items
+    exact = [g for g in items if g.canonical.lower() == needle]
+    if exact:
+        return exact[0]
+    partial = [g for g in items if needle in g.canonical.lower()]
     return partial[0] if len(partial) == 1 else None
 
 

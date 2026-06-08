@@ -28,6 +28,12 @@ works** (the traps we hit), and what is still un-decoded.
 - **Modes** 18 — **curated** taxonomy: 3 difficulties (Easy/Medium/Hard) + 13
   modes (Standard is the base mode in every difficulty) + 2 modifiers (Double
   Cash, Fast Track; relative-effect, no fixed numbers).
+- **Consumable / meta catalogs — game-data-native lookups:** **Powers** 25,
+  **Monkey Knowledge** 134, **Geraldo items** 16 (`--powers` / `--knowledge` /
+  `--geraldo`). All player-facing name/description/cost catalogs, each behind an
+  AI lookup tool. Powers additionally carry decoded effect factors + the
+  `btd6_power_effect` apply-tool (attack-speed-on-a-boost). Geraldo items carry
+  cash cost, Geraldo unlock level, and stock/replenish cadence.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
   **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
@@ -289,6 +295,33 @@ is exactly where the line falls, so the next session doesn't rediscover it:
    `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
 4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
    stats independently; it must NOT be presented as answering combined/applied questions.
+
+### Session log — 2026-06-08 (Geraldo shop items ingested → answerable)
+
+Next ⬜ domain off the coverage map, mirroring the proven Powers/Knowledge
+extracted→committed→tool→answerable pattern. All **16** Geraldo shop items are now a
+game-data-native lookup catalog.
+
+- **Decodability verified first:** every item's `GeraldoItemModel` carries a `locsId`, and the
+  textTable keys it as `"<locsId> name"` / `"<locsId> description"` — **0 of 16 missing**. The
+  model also carries structured `cost` (in-game cash), `levelUnlockedAt` (Geraldo hero level),
+  `startingQuantity`/`maxQuantity`, and `roundsToReplenish`/`amountToReplenish`.
+- **Parser** (`parse_gamedata.py --geraldo`): `map_geraldo_items` → `geraldo_items.json` (16),
+  sorted by unlock level then id. Names/descriptions HTML-stripped via `_clean_desc`; an item
+  missing its name string is skipped + warned (none are today).
+- **Runtime** (`btd6_data_service`): `GeraldoItemEntry` (optional fixture, validated,
+  id/canonical-unique) + `get_geraldo_item` / `find_geraldo_item`; `geraldo_items.json` added to
+  `_OPTIONAL_FIXTURES`.
+- **AI tool** `btd6_geraldo_lookup` (single + roster) registered + in
+  `BTD6_GROUNDING_TOOL_NAMES`. "What does Geraldo's Blade Trap do / how much is the Genie Bottle /
+  what level unlocks the Paragon Power Totem" now answer.
+- **Coverage map:** `GeraldoItems/` fetch-status ⬜ → ✅ (regenerated via `--full-map`).
+- **Tests:** parser (decode + skip-missing-name), data_service (load/resolve/fail-closed), tool
+  (single/partial/roster/miss); both registry rosters updated. Full suite green.
+- **Honest scope:** this is a *lookup catalog* (what each item is/costs/unlocks), not an
+  *applied-modifier* tool — same boundary as Powers/Knowledge. The items' mechanical effects
+  (e.g. Sharpening Stone's +damage magnitude) live in their `behaviorModels` and are **not**
+  extracted; "Blade Trap on a Dart Monkey as a number" is not claimed.
 
 ### Session log — 2026-06-08 (`btd6_power_effect` apply-tool — answerability next-step #2 closed)
 

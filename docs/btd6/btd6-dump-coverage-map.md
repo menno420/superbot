@@ -17,7 +17,7 @@
 | `Bloons/` | 235 | 🟡 | structure known; still wiki-sourced (children/immunity partial) |
 | `Bosses/` | 7 | ⬜ | wiki-sourced; cosmetic Bosses/ — combat lives in Bloons/ |
 | `Buffs/` | 91 | ⬜ | UI buff ICONS only — effects live inline in Towers/ |
-| `GeraldoItems/` | 16 | ⬜ | not ingested (Geraldo shop items) |
+| `GeraldoItems/` | 16 | ✅ | all 16 shop items: name, description, cash cost, unlock level, quantity |
 | `IncomeSets/` | 7 | 🟡 | decay bands feed the per-round cash derivation |
 | `Knowledge/` | 134 | ✅ | monkey_knowledge.json: name, category, description, MM cost, investment |
 | `Maps/` | 89 | ✅ | full cutover: difficulty, has_water, names (curated removables) |
@@ -71,7 +71,7 @@
 - **Model types:** `BuffIndicatorModel`×91
 - **Primary model `BuffIndicatorModel` scalar fields:** `buffName`, `iconName`, `stackable`, `maxStackSize`, `globalRange`, `onlyShowBuffIfMutated`, `dontShowX`, `FullName`, `name`, `_fullName`
 
-### `GeraldoItems/` — 16 files ⬜
+### `GeraldoItems/` — 16 files ✅
 
 - **Model types:** `PrefabReference`×91, `AudioClipReference`×46, `SoundModel`×30, `SpriteReference`×29, `GeraldoItemModel`×16, `CreateSoundOnGeraldoItemModel`×16, `FilterInvisibleModel`×14, `DisplayModel`×14, `Vector3`×14, `ProjectileModel`×13, `AgeModel`×11, `ProjectileFilterModel`×11, `DamageModel`×9, `CreateEffectOnGeraldoItemModel`×9, `ClearHitBloonsModel`×5, `FilterAllModel`×4, `SyncCamoDetectionWithTowerModel`×4, `CreateSoundOnProjectileExpireModel`×4, `SingleEmissionModel`×4, `GeraldoUpgradeTowerModel`×4
 - **Primary model `GeraldoItemModel` scalar fields:** `cost`, `canBeActivatedBetweenRounds`, `towerId`, `onlyReplenishIfNonePlaced`, `showBuffsForTower`, `startingQuantity`, `maxQuantity`, `roundsToReplenish`, `amountToReplenish`, `levelUnlockedAt`, `bannedForModes`, `maxPurchases`, `showGeraldoRangeCircle`, `blockPurchaseIfTowerPlaced`, `locsId`, `name`
