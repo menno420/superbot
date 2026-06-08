@@ -287,7 +287,7 @@ Behind existing AI expansion/readiness gates, AI may suggest profiles/routines, 
 | **P0A — Codex/Sonnet:** Q-0026 identity repair | ✅ **DONE 2026-06-08.** Snake-case conversion, `server_management` rename, references/tests/docs. | `command_surface_ledger.py`, `subsystem_registry.py`, help/router/hub tests/docs | Product features | Full quality + strict architecture + live identity check | Medium; stop if key migration affects persisted external contracts unexpectedly. |
 | **P0B — Opus:** access/read-model contract | ✅ **DONE 2026-06-08** (docs). Precedence, decision/reason schema (reuses `command_access`), audience simulation, owners, invalidation, direct-vs-draft rule — §16 + `docs/ownership.md`. | Planning/ADR/ownership/runtime docs | Runtime code | Docs/architecture checks | High architecture; stop on unresolved second-permission-system risk. |
 | **P0C — Sonnet:** panel writer normalization | Centralize role threshold writer/audit; bounded channel lifecycle gaps selected by Opus. | role/channel services/views/tests | New automation actions | Focused unit/view tests + full quality | Medium/high; stop before behavior-changing destructive flow without owner decision. |
-| **P1A — Sonnet:** Access Map projection | Side-effect-free composed service + tests, no UI. | new service module; governance/access/routing/ledger adapters; tests | Editing/persistence | Unit/service/identity tests + strict architecture | High; stop if owner of any axis cannot be identified. |
+| **P1A — Sonnet:** Access Map projection | ✅ **DONE 2026-06-08.** Side-effect-free composed service + 19 tests, no UI — `services/access_projection.py`. | new service module; governance/access/routing/ledger adapters; tests | Editing/persistence | Unit/service/identity tests + strict architecture | High; stop if owner of any axis cannot be identified. |
 | **P1B — Sonnet:** drift + locked reasons | Diagnostic providers and denial explanation integration. | `setup_diagnostics.py`, command-access/interaction helpers, tests | Editing | Diagnostics/access tests + quality | Medium; stop if explanation leaks sensitive policy. |
 | **P1C — Sonnet:** Access Map + Help Preview UI | Staff-only read-only panels using P1A; Server Management link. | server-management/help/views/cogs/tests | Mutation | View/authority/help tests + live smoke | Medium. |
 | **P2 — Opus then Sonnet:** Feature Profile preview | Decide starter set/schema, implement catalogue/compiler/dry-run preview. | new profile service, setup operations/read model/views/tests | Apply | Compiler/view tests; no DB writes in preview | High; stop on unresolved profile/risk questions. |
@@ -373,13 +373,18 @@ Safe defaults until answered: profile preview only; quiet mode modeled as availa
 
 1. ✅ **First technical debt — DONE (2026-06-08):** Q-0026 implemented (`cog_name_to_subsystem` snake_case + `server_management` rename + the latent `proof_channel`/`four_twenty` repair). The decided `scripts/new_subsystem.py` (Q-0025) can now safely assume canonical snake_case multi-word keys.
 2. ✅ **Phase 0 access/read-model contract — DOCUMENTED (2026-06-08):** precedence, reason schema (reusing the `command_access` decision model — no second permission system), drift-provider ownership, simulation limits, and the direct-vs-draft rule are in §16 below + [`docs/ownership.md`](../ownership.md). Q-0028–Q-0032 stay at safe defaults (not blockers for read-only work).
-3. **Next — Sonnet (P1A):** implement the side-effect-free Access Map projection service + tests per §16 (no UI, no persistence), then the drift/locked-reason providers (P1B). **Parallel — Sonnet (P0C):** normalize the role-threshold direct-write drift onto an audited service seam (§16.5) before any profile/routine targets role thresholds.
+3. ✅ **P1A — DONE (2026-06-08):** the side-effect-free Access Map projection service (`services/access_projection.py`) + 19 tests per §16 (no UI, no persistence). **Next — Sonnet (P1B):** drift providers + locked-reason denial integration in `setup_diagnostics`, built on the P1A projection; then **P1C** (read-only Access Map + Help Preview panels). **Parallel — Sonnet (P0C):** normalize the role-threshold direct-write drift onto an audited service seam (§16.5) before any profile/routine targets role thresholds.
 4. **Blocked/gated:** controlled profile/access mutation waits for the read model and rollback/risk decisions; Routine Engine waits for condition/safety design; Personal Setup waits for privacy decisions; AI drafts wait for current AI expansion gates.
 
 ## 16. Phase 0 access read-model contract (P0B)
 
-> **Status:** contract documented 2026-06-08 (P0B). This section is the spec the
-> **P1A** Access Map projection service is built from. It is *read-only*: it defines
+> **Status:** contract documented 2026-06-08 (P0B); **P1A service implemented 2026-06-08** —
+> `services/access_projection.py` (+ `tests/unit/services/test_access_projection.py`) realizes
+> this contract (read-only composed projection; no UI, no persistence). The governance axis
+> **reuses** `governance.get_visible_subsystems` — the same read the existing
+> `views/access/explorer.py::AccessExplorerView` (governance-axis-only diagnostic) uses — so a
+> future read-only Access Map panel (P1C) can compose the multi-axis projection without a second
+> visibility resolver. This section is the spec that service realizes. It is *read-only*: it defines
 > how to **compose existing owners**, never a new policy. **Reuse the existing
 > decision/reason vocabulary** (`core.runtime.command_access.DecisionReason` /
 > `DecisionSource`) — do **not** fork a parallel enum. Source types win over this
