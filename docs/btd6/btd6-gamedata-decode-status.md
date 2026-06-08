@@ -282,6 +282,42 @@ Tactics "stacks up to 20", Trade Empire "up to 20 Merchantmen", sellback "3").
 - **Honest scope:** parser-side only; no new decoded effect, no committed-data change. It makes
   the cutover path reproduce what the committed data + renderer already surface.
 
+### 🔍 Dump re-audit — what's actually missing vs. mis-claimed "not in the dump" (2026-06-08)
+
+After the MK correction, the maintainer asked: *which other data did a session call "not in
+the dump" — re-verify it.* Did a full top-level sweep of the v55.1 dump (18 domains) and
+re-checked every "not in the dump / hardcoded" claim against the raw files. **The recurring
+bug is the same one every time: a session read the obvious top-level model and never opened the
+nested `mutatorMods[]` / `behaviors[]` array where the value actually lives.**
+
+**Re-verified "not in the dump" claims:**
+
+| Claim | Prior verdict | Re-verified truth |
+|---|---|---|
+| MK effect magnitudes | "NOT in dump / hardcoded" | ❌ **FALSE** — `mod.mutatorMods[]` (fixed, PR #598) |
+| **Game-mode rules** (start cash/lives/restrictions/end round) | "gameplay code, not exported assets" | ❌ **FALSE** — `Mods/` (22) holds the full set as typed mutators (see Modes correction below) |
+| **Per-pop cash** ($1/pop) | "hardcoded, bloon `cash` null" | ⚠️ **PARTLY FALSE** — `DistributeCashModel{cash:1.0}` per bloon (top-level `cash` is null, but the behavior carries it) |
+| Map removables / costs | "in AssetBundle scenes, not JSON" | ✅ **TRUE** — whole-dump search finds no removable model, only editor UI strings |
+| `theme` / `coopMapDivisionType` / `unlockDifficulty` | "opaque int enums, not decodable" | ✅ **TRUE** — ints (theme 0–6, coop 0–4), no label source in `textTable` |
+| DDT push-speed cap | "no dump field" | ✅ **TRUE** — exhaustively confirmed earlier |
+
+**Genuinely missing data (present in the dump, NOT yet fetched) — the real backlog:**
+
+| What | Where in dump | Value | Notes |
+|---|---|---|---|
+| **Boss bloons** | `Bloons/{Bloonarius,Blastapopoulos,Lych,Vortex,Dreadbloon,Phayze}/…` (101 boss models incl. Elite + Diamondback segments) | **HIGH** | Full combat stats (`maxHealth` e.g. Bloonarius1 = 20000, `speed`, `isBoss`, properties). Our `bloons.json` has **0** bosses. The biggest real gap. |
+| **Game-mode rules cutover** | `Mods/` (22) | MED–HIGH | `modes.json` is curated; the dump is the authoritative source (and confirms our values). Cutover or verify. |
+| **Alternate round sets** (ABR, etc.) | `Rounds/` (5,181 files = many round sets) | MED | We expose only the default 140. |
+| Achievements | `Achievements/` (156) | LOW | `name`/`goal`/`loot` lookup catalog (e.g. "All for one…" → `KnowledgePoints:1`). |
+| Rogue Legends / Frontier | `Artifacts/` (568), `rogueData.json`, `frontierData.json` | LOW (niche modes) | Roguelike artifacts + the Wild-West Frontier mode config. |
+| Skins / TrophyStore / BloonOverlays | resp. dirs | SKIP | cosmetic — not gameplay. |
+| Per-pop cash (provenance) | `Bloons/*/DistributeCashModel` | LOW | already derived correctly; now confirmable as dump-native. |
+
+**Binding takeaway (already added to the MK correction, restated):** before writing "not in the
+dump", **descend into `mutatorMods[]` / `behaviors[]` and check the per-instance model**, and run
+a whole-dump model-type search (`explore_gamedata.py --search <Model> --struct`). Three of the six
+re-checked "absent" claims were wrong because the array was never opened.
+
 ### Session log — 2026-06-08 (Monkey Knowledge magnitudes — they WERE in the dump)
 
 The maintainer pushed back on the prior "MK magnitudes aren't in the dump" verdict — *"it has
@@ -569,9 +605,11 @@ Decoded the two **time/round-windowed** buffs whose duration field was unit-ambi
 Traced "cash per pop / per round" end to end:
 - **Per-pop:** flat **$1 per bloon layer** (maintainer-confirmed + BloonsWiki "Cash
   per pop"), ×0.5 on Half Cash, reduced in late rounds by the income-decay curve.
-  **Not in the asset dump** — it's hardcoded game logic (no `cashPerPop` field;
-  bloon `cash` is null on all bloons; the difficulty `Mods/` only carry `baseCash`
-  = starting cash). Same story as the mode rules.
+  ~~**Not in the asset dump** — hardcoded game logic.~~ **CORRECTED 2026-06-08 (dump
+  re-audit):** it *is* in the dump. The top-level `cash` field is null, but each bloon
+  carries a **`DistributeCashModel{cash: 1.0}`** behavior — that is the per-pop value
+  (`Bloons/Red/Red.json` → `behaviors[1]`). The derived $1 was right; the "hardcoded,
+  not in dump" reasoning was wrong (didn't read the bloon's `behaviors[]`).
 - **Per-round *tower* income** IS in the dump as `PerRoundCashBonusTowerModel.
   cashPerRound` (Benjamin 90→5000 by level, farms, SOTF) — already surfaced for
   the towers that have committed tiers.
@@ -741,12 +779,21 @@ failure there is mechanism 3, not retrieval.
   from `textTable`; new `has_water` fact wired through `MapEntry` →
   `btd6_map_lookup` (the bot can now answer "which maps have water"). Curated
   prose (`description`/`lines_of_sight_notes`) is preserved where it existed.
-- **Modes — full set (2 → 13).** The dump has **no** game-mode rules (starting
-  cash/lives/restrictions are gameplay code, not exported assets — confirmed: only
-  `rogueData` carries `startingLives`, and `textTable` has mode *names* but not
-  cleanly-keyed descriptions). So `modes.json` is **curated** from established
-  facts: Standard, Primary/Military/Magic Only, Deflation, Apopalypse, Reverse,
-  Double HP MOABs, Half Cash, ABR, Impoppable, CHIMPS, Sandbox.
+- **Modes — full set (2 → 13).** ~~The dump has **no** game-mode rules (starting
+  cash/lives/restrictions are gameplay code, not exported assets).~~ **CORRECTED
+  2026-06-08 (dump re-audit) — FALSE, same `mutatorMods` trap as MK/cash.** `Mods/`
+  (22 files) carries the **entire** rule set as typed mutators at the file's top-level
+  `mutatorMods[]`: Easy/Med/Hard `StartingCashModModel 650` + `StartingHealthModModel
+  200/150/100` + `GlobalCost`/`GlobalSpeed`/`SellMultiplier`/`BonusCashPerRound`/
+  `EndRoundModModel 40/60/80` + `MonkeyMoneyModModel`; **HalfCash** `ModifyAllCash ×0.5`;
+  **Deflation** `StartingCash 20000`+`StartingRound 31`+no-income; **Impoppable** 1 life/
+  `GlobalCost ×1.2`/end 100; **CHIMPS is internally `Clicks.json`** (`ChimpsModModel`+lock
+  farm+1 life+no sell/continue/MK); Primary/Military/MagicOnly = `LockTowerSetModModel`
+  by `towerSet` id. The curated `modes.json` values happen to match the dump (they were
+  right) — but it could be **sourced/verified from `Mods/`** rather than hand-curated.
+  So `modes.json` is **currently curated** from established facts: Standard,
+  Primary/Military/Magic Only, Deflation, Apopalypse, Reverse, Double HP MOABs, Half
+  Cash, ABR, Impoppable, CHIMPS, Sandbox.
 - **Zones — decode started.** `_zones()` emits every top-level `*ZoneModel` as a
   structured `{kind, name, + decodable numbers}` (Ice Arctic Wind →
   `speedScale 0.6`, `zoneRadius 25`), wired into `_map_tier` and audit-safe.
