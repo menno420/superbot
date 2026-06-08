@@ -85,6 +85,15 @@ def test_powers_and_monkey_knowledge_load_and_resolve():
     assert mk is not None
     assert mk.category in {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"}
     assert mk.monkey_money_cost >= 0 and mk.investment_required >= 0
+    # The dump-native structured effect is loaded: More Cash = +$200 starting cash.
+    more_cash = get_monkey_knowledge("more_cash")
+    assert more_cash is not None
+    assert more_cash.effect == {
+        "factors": [{"kind": "starting_cash", "addition": 200, "multiplier": 1}],
+    }
+    # The overwhelming majority carry a magnitude; only behavioural ones are bare.
+    with_effect = [k for k in dataset.monkey_knowledge if k.effect]
+    assert len(with_effect) >= 110
     # Every MK category folder is represented.
     cats = {k.category for k in dataset.monkey_knowledge}
     assert {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"} <= cats

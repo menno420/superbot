@@ -228,6 +228,13 @@ class MonkeyKnowledgeEntry:
     monkey_money_cost: int
     investment_required: int
     prerequisites: tuple[str, ...] = ()
+    # Structured, dump-native effect decoded from the knowledge's
+    # ``mod.mutatorMods[]`` — ``{"factors": [{"kind": ..., <numbers>}, ...]}``
+    # (More Cash ``starting_cash addition 200``, Bonus Monkey
+    # ``free_tower base_tower_id DartMonkey``, …). ``{}`` for the purely
+    # behavioural ones (nested projectile/ability sub-model — Cold Front, Tiny
+    # Tornadoes, …) which stay description-only.
+    effect: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -672,6 +679,7 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
             f"knowledge {raw['id']!r}: category {category!r} not one of "
             f"{sorted(_MK_CATEGORIES)}",
         )
+    effect = raw.get("effect", {})
     return MonkeyKnowledgeEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
@@ -680,6 +688,7 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
         monkey_money_cost=int(raw["monkey_money_cost"]),
         investment_required=int(raw["investment_required"]),
         prerequisites=tuple(str(p) for p in raw.get("prerequisites", []) or ()),
+        effect=dict(effect) if isinstance(effect, dict) else {},
     )
 
 
