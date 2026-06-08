@@ -1430,6 +1430,44 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
     (binding-select) + S7c (provisioning preview/confirm) + S7d
     (panel + Help / Admin integration).
 
+### servermanagement
+
+The unified Server Management mother hub (PR14). A **routing-only** operator
+surface: it composes the moderation / channels / roles / cleanup / setup
+managers behind read-only health badges and owns **no** settings, bindings,
+resources, or mutations of its own.
+
+1. **cog_module**: `disbot/cogs/server_management_cog.py`.
+2. **subsystem**: `servermanagement`.
+3. **current_commands**: `!servermanagement` (aliases `!servermenu`,
+   `!guildmenu`), `/server-management`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `servermanagement` →
+   `views/server_management/hub.py:ServerManagementHubView`.
+6. **help_menu_discoverable**: Yes (mother hub, administrator tier).
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `none` (the cog hosts the command).
+9. **existing_SettingSpec_declarations**: none — routing-only hub.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`; no
+    capabilities (authority is the administrator floor on the command plus the
+    view's `interaction_check`; per-manager authority is re-checked when routing
+    in — ADR-005).
+14. **hardcoded_or_env_only_behavior**: none — composes existing managers.
+15. **missing_customization_commands**: none (it owns no settings).
+16. **missing_settings_pages**: none.
+17. **missing_menu_buttons_selects_modals**: none planned.
+18. **setting_class_per_value**: n/a.
+19. **target_Settings_Manager_page**: n/a — not a settings-owning subsystem.
+20. **target_mutation_path**: none — every action routes into an existing
+    manager's panel; the hub introduces no op-kind, migration, or pipeline.
+21. **target_help_or_menu_route**: Help mother hub → manager panels.
+22. **provisionable_resources**: none.
+23. **priority**: shipped (server-management PR14).
+24. **recommended_PR_phase**: shipped 2026-06-08.
+
 ## Setting class summary
 
 Cross-cut by class, this is the work distribution implied by the per-cog

@@ -6,11 +6,17 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action:** server-management **PR13 AI follow-up** — the "Generate with AI"
-> role-template layer on top of the deterministic slice (request → AI gateway → strict
-> structured suggestion → reuse the shipped `setup_role_templates` validation/safety filter
-> → preview/accept/edit → the same `create_managed_role` staging path). Then **PR14**
-> (Server Management Hub, last). **PR13's deterministic slice was built 2026-06-08:**
+> **▶ Next action:** **Server-management is structurally complete — PR14 (Server Management
+> Hub) was built 2026-06-08:** a persistent `!servermanagement` + ephemeral `/server-management`
+> composing the moderation / channels / roles / cleanup / setup managers behind read-only health
+> badges, registered **first-class** as the `servermanagement` subsystem + hub (owner decision
+> **Q-0016**) so it is help-discoverable and the identity contract stays clean (no new mutation /
+> op-kind / migration / settings). Verify merge on live GitHub — authoritative scope is the
+> [status tracker](planning/server-management-status-2026-06-05.md) PR14 subsection. The **only
+> remaining server-management item is the _gated_ PR13 AI generation layer** ("Generate with AI"
+> role templates, behind the AI-expansion gate below + **not** live-testable here without provider
+> keys); with the lane otherwise done, the next session should pick the next lane from
+> [`docs/roadmap.md`](roadmap.md) or groom `docs/ideas/`. **PR13's deterministic slice was built 2026-06-08:**
 > `services/setup_role_templates.py` (built-in, permission-free role bundles + pure
 > `plan_template`) + a new audited **`create_managed_role`** op-kind (routes through
 > `RoleLifecycleService`, optional time/XP tier companion) + a **Role templates** setup
@@ -24,15 +30,19 @@
 > roles) merged via **#570**; PR11's **governance** section stays **deferred** (owner decision
 > **Q-0008**). Authoritative scope + dependencies: the status tracker's Remaining-queue.
 >
-> **Last updated:** 2026-06-08 · **Docs consolidation (Q-0010) + idea-backlog lifecycle
-> (Q-0015).** Top-level `docs/` shrunk **41 → 16** (plans / audits / inventories / historical
+> **Last updated:** 2026-06-08 · **Server-management PR14 (Server Management Hub) built and
+> registered first-class as the `servermanagement` subsystem + hub (owner decision Q-0016);
+> live boot reports `Identity-contract: clean … STRICT=on`.** Prior 2026-06-08 work — **docs
+> consolidation (Q-0010) + idea-backlog lifecycle
+> (Q-0015):** Top-level `docs/` shrunk **41 → 16** (plans / audits / inventories / historical
 > moved into clustered subdirs — `docs/ai/`, `docs/setup-platform/`, `docs/health/` — and the
 > type buckets behind their folios; `_TOP_LEVEL_DOCS_BUDGET` lowered 41 → 16). The idea
 > backlog is now a routed **lifecycle + end-of-session grooming secondary task**
 > (`docs/ideas/README.md`); binding-doc **section-ownership** documented for concurrent
 > chats (`docs/owner/ai-project-workflow.md` §9). Docs-only; verify merge status on live GitHub.
-> Most recent merged code: server-management **PR12** (2026-06-07; setup diagnostics &
-> repair). **This file lists only _merged_ work + the ▶ Next action;** get
+> Most recent merged code: server-management **PR13** deterministic role templates + migration
+> 059 (#582, 2026-06-08). **PR14 (the hub) is built but not yet merged — verify on live GitHub.**
+> **This file lists only _merged_ work + the ▶ Next action;** get
 > in-flight PRs from live GitHub (`list_pull_requests`) — naming an open PR's status in prose
 > here rots on merge (a `scripts/check_docs.py` freshness gate enforces this).
 >
@@ -64,6 +74,8 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 
+- **#582** — server-management **PR13 deterministic slice**: `services/setup_role_templates.py` (built-in permission-free role bundles + pure `plan_template`) + the audited **`create_managed_role`** op-kind (routes through `RoleLifecycleService`, optional time/XP tier companion) + a **Role templates** setup section. Fixed a **latent PR11 regression** (the roles section's `set_role_threshold` op was never added to the DB op-kind gate/CHECK → couldn't stage): **migration 059** + a dispatcher↔gate↔CHECK drift-guard test close it. The **PR13 AI generation layer** + PR14 (hub) remained queued. (PR12 setup diagnostics & repair shipped 2026-06-07.)
+- **#581** — idea-backlog grooming demo (Q-0015): promoted the mining-brainstorm `!explore` wiring into a structured plan + a `docs/roadmap.md` horizon; the standing end-of-session secondary task in action.
 - **#570** — server-management **PR11** (moderation + roles setup sections) + workflow tooling + ecosystem docs (owner decision **Q-0008**: Moderation + Roles now, Governance deferred). The moderation section stages `set_setting` drafts for the PR10 knobs; the roles section adds the `set_role_threshold` op-kind for time/XP auto-role tiers. Setup diagnostics & repair (PR12) builds on top.
 - **#567** — server-management **PR10 fourth slice**: optional post-kick/ban **message cleanup** (`post_action_cleanup`: none/kick/ban/both up to `post_action_cleanup_limit`, **default OFF**), owned at the `moderation_service` kick/ban seam and *requested from* `services/history_cleanup.py` (new author-scoped plan + a shared `apply_history_cleanup_plan` extracted from `!cleanuphistory` — one delete path). Best-effort: a blocked sweep never undoes the action.
 - **#566** (merged) — **cross-area implementation roadmap** (`docs/roadmap.md`): the one by-area "what's planned, in what order" index (relative Now/Next/Later/Someday horizons + gates, not dates), linking each authoritative plan + folio, with a clearly-marked not-approved ideas section. Its AI section defers to the AI roadmap. Re-badged two mis-badged historical plans (`phase_2b_bindings_plan`, BTD6 extraction). Wired into `current-state` + `AGENT_ORIENTATION`.

@@ -215,6 +215,14 @@ HUBS: tuple[HubEntry, ...] = (
         entry_command="!platform",
         minimum_tier="administrator",
     ),
+    HubEntry(
+        key="servermanagement",
+        display_name="Server Management",
+        emoji="🧭",
+        purpose="Moderation, channels, roles, cleanup, and setup in one place.",
+        entry_command="!servermanagement",
+        minimum_tier="administrator",
+    ),
 )
 
 

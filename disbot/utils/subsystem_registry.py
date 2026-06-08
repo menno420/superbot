@@ -80,6 +80,29 @@ SUBSYSTEMS: dict[str, dict] = {
             "admin.server.stats",
         ],
     },
+    "servermanagement": {
+        "display_name": "Server Management",
+        "description": "Unified hub for moderation, channels, roles, cleanup, setup",
+        "emoji": "🧭",
+        "color": ADMIN_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "admin",
+        "tags": ["admin", "hub", "navigation", "operations"],
+        "entry_points": ["servermanagement"],
+        "default_channels": ["staff", "bot-spam"],
+        "related_subsystems": ["moderation", "cleanup"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        # The hub posts a navigation panel but owns no message-cleanup policy.
+        "has_cleanup_rules": False,
+        "ui_priority": 88,
+        # Routing-only hub: it composes other subsystems' panels and holds no
+        # capability of its own (authority is the administrator floor on the
+        # command + the view's interaction_check).
+        "capabilities": [],
+    },
     "moderation": {
         "display_name": "Moderation",
         "description": "Warnings, timeouts, bans, mod logs",

@@ -638,6 +638,56 @@ first). **No second resource path** — creation routes through the audited
   staging path. The deterministic `setup_role_templates` validation is the
   safety filter it will reuse.
 
+### PR14 — Server Management Hub *(built 2026-06-08)*
+
+The capstone: one **navigation** surface — a persistent `!servermanagement`
+(+ aliases `!servermenu` / `!guildmenu`) and an ephemeral `/server-management` —
+composing the specialised managers (moderation, channels, roles, cleanup, setup)
+behind read-only health badges. The hub holds **no domain logic, no new
+mutation / op-kind / migration, and no settings** — every action routes into an
+existing manager's panel. Verify merge status on live GitHub.
+
+- **`services/server_management_hub.py` (new, read-only, fail-safe):**
+  `collect_hub_status(guild) -> HubStatus` composes per-manager badges
+  (🟢/🟡/⛔/❓) from the existing detectors (`utils.moderation_feasibility`,
+  `utils.role_feasibility`, the Manage-Channels perm) plus a cross-cutting
+  config-health line from the already-fail-safe `setup_diagnostics` report and a
+  completeness % from `setup_readiness`. In `services/` so the future web
+  companion (Q-0002) reuses it; **never raises** (a broken detector → ❓ badge).
+- **`views/server_management/hub.py` (new):** `ServerManagementHubView`
+  (`PersistentView`, `@register`, `SUBSYSTEM="servermanagement"`) — one button per
+  manager + Refresh. Routes via
+  `interaction.client.get_cog(...).build_help_menu_view(interaction)` (the proven
+  Games-hub pattern) with a Back-to-hub button, so the view carries **no
+  module-level `cogs` import** (Setup delegates to `open_wizard_from_slash` via a
+  lazy import). **Authority is an administrator floor** re-checked on every
+  interaction (mirrors `ModPanelView`, ADR-005) — not anchor ownership, so the same
+  view backs both the anchored prefix panel and the anchorless ephemeral slash.
+  Restoration is automatic (no-arg constructor + static `servermanagement:*`
+  custom_ids + `restore_anchors`).
+- **`cogs/server_management_cog.py` (new thin cog):** `!servermanagement` (anchored
+  via `panel_manager.get_or_render_panel`) + `/server-management` (ephemeral) + a
+  `build_help_menu_view` help-dropdown hook. Added to `INITIAL_EXTENSIONS`.
+- **Registered first-class (owner decision Q-0016, 2026-06-08):** `servermanagement`
+  is a real `SUBSYSTEMS` + `HUBS` entry (administrator tier) + a `KNOWN_PANEL_COMMANDS`
+  entry — like every other hub — so it is help-discoverable and the
+  identity-contract / orphan-cog / db-anchor diagnostics stay clean. (The
+  alternative — a standalone persistent view with no subsystem — left an
+  `auto_healable` identity finding the platform self-heal would unregister.) The
+  registry **key is `servermanagement`** (no underscore) to match
+  `cog_name_to_subsystem`; module paths stay readable (`server_management`).
+- **Pinned by** `tests/unit/services/test_server_management_hub.py` +
+  `tests/unit/views/test_server_management_hub_view.py` (registration, admin-floor
+  `interaction_check`, manager routing + Back-button, missing-cog / hook-failure,
+  Setup delegation, Refresh, no module-level cogs import, first-class subsystem),
+  plus updated hub / help / discoverability enumerations. Full CI mirror green
+  (8062 passed); arch strict 0 errors; **live-booted clean** (cog loads, view
+  registered under `servermanagement`, `Identity-contract: clean … STRICT=on`,
+  0 ERROR/CRITICAL). **Restart-restoration live-check + a real operator
+  click-through remain for the maintainer's bot.**
+- **Server-management: the PR14 capstone is built. The only remaining queued item
+  is the PR13 AI generation follow-up** (gated/sensitive — see the PR13 subsection).
+
 ---
 
 ## Remaining queue (starts at PR11)
@@ -650,7 +700,7 @@ Per the implementation plan's dependency order. PR7–PR9 shipped (see above).
 | **PR11** | Setup role/moderation/governance sections. **Moderation + Roles sections built in the moderation + roles slices (2026-06-07); Governance section deferred (Q-0008).** | PR5, PR8–PR10, #522 |
 | **PR12** | Setup diagnostics & repair. **Built 2026-06-07** (read-only `setup_diagnostics` service + Diagnose & repair section; `clear_binding` the one safe auto-repair, everything else advisory/blocked — see subsection above). | PR5, #522 |
 | **PR13** | Deterministic + AI role templates. **Deterministic slice built 2026-06-08** (built-in templates + `create_managed_role` op + setup section; see subsection above). **AI generation layer is the remaining PR13 follow-up.** | PR5, #523 |
-| **PR14** | Server Management Hub (last). **← next after the PR13 AI follow-up.** Plan: [`server-management-pr14-hub-plan.md`](server-management-pr14-hub-plan.md). | all managers |
+| **PR14** | Server Management Hub (last). **Built 2026-06-08** (persistent `!servermanagement` + `/server-management` composing the managers behind read-only badges; registered first-class `servermanagement` subsystem + hub — owner decision Q-0016 — see subsection above). | all managers |
 
 Near-term completion items folded into the above: finish PR2's diagnostics/findings
 model and selector paging/search (in PR6 as the first production consumer); finish

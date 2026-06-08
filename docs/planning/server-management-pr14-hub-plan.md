@@ -1,8 +1,19 @@
 # Server Management Hub — PR14 implementation plan
 
-> **Status:** `plan` — planned end-state; cross-check source before implementing.
+> **Status:** `historical` — **EXECUTED 2026-06-08.** Built largely as planned;
+> kept for design context. The shipped record is the status tracker's PR14
+> subsection ([`server-management-status-2026-06-05.md`](server-management-status-2026-06-05.md)).
 > **Created:** 2026-06-08 · **Owner area:** server management
 > (folio: [`docs/subsystems/server-management.md`](../subsystems/server-management.md)).
+>
+> **What shipped vs. this plan:** the hub was built as a single PR (14a + 14b
+> folded). Routing uses **`interaction.client.get_cog(...)`** inside the button
+> callbacks (Decision #2 resolved: no registry needed — the get_cog lookup keeps
+> the `views → cogs` boundary clean without a provider). Setup routes to its
+> reusable `open_wizard_from_slash` entry (Decision #3 — the wizard owns its
+> session). The hub cog is **not** a `SUBSYSTEMS` entry (Decision #1: a new thin
+> cog, but deliberately not a governed subsystem — see the tracker). The
+> restart-restoration live-check remains for the maintainer's bot.
 >
 > This is the **last** server-management PR (the implementation plan's PR14). It
 > depends on all the specialized managers, which have shipped. Authoritative
