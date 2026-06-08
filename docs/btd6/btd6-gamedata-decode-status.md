@@ -225,6 +225,56 @@ Known small gap (not fixed, applies to *all* buff types equally): `_buffs()` doe
 `maxStackSize`, so the renderer's `_stack_cap` "(stacks up to N)" clause is lost on the
 parser-native path — a separate, uniform fix, not a per-type decode.
 
+### ⚠ Answerability audit — Powers/Knowledge are *lookup catalogs*, not *applied modifiers* (2026-06-08)
+
+Asked the sharp question: can the bot answer **"what is the attack speed of Crossbow Master
+on a Monkey Boost / Hype Monkey"** or **"starting cash / first-tower cost / upgrade cost / free
+monkeys / extra lives with knowledge X"**? Verified end-to-end. **The answer is no** — and here
+is exactly where the line falls, so the next session doesn't rediscover it:
+
+| Question | Answerable now? | Why |
+|---|---|---|
+| "What does Monkey Boost / Supa-Thrive do?" | ✅ | lookup returns the game-authored description |
+| "How much (Monkey Money) is the Camo Trap power?" | ✅ | `monkey_money_cost` is structured |
+| "What's Crossbow Master's attack speed / cost?" (base) | ✅ | base tier stat (cooldown 0.2375s) via the tower path |
+| "List the magic monkey knowledge / 50-MM powers" | ✅ | category/roster filters |
+| **"…attack speed of Crossbow Master *on a Monkey Boost*"** | ❌ | **no layer applies a Power's factor to a tower stat** |
+| **"…starting cash / upgrade cost / free monkeys / lives *with knowledge X*"** | ❌ | **no layer applies an MK effect to the economy** |
+
+**Root cause — two missing things, not one:**
+
+1. **Powers carry their real effect in the dump, but we didn't extract it and nothing applies
+   it.** `MonkeyBoostModel` has `rateScale 0.5` + `duration 15` (= 2× attack speed for 15 s);
+   we stored only the prose *"twice as fast for {0} seconds"* (the `{0}` is literally the hole
+   where the structured value belongs). Even with the factor extracted, computing
+   `0.2375 × 0.5 = 0.119 s` needs a **deterministic apply-tool** (the structured factor × the
+   resolved base stat, grounded by construction — the exact `btd6_cumulative_cost` pattern), or
+   the faithfulness verifier rejects the derived number as ungrounded.
+2. **Monkey Knowledge effect magnitudes are NOT in the dump.** Every MK `mod` is a bare
+   `ModModel{name}` (134/134) — a named reference whose magnitude (`+X starting cash`,
+   `-Y% cost`, `+1 free Glue Gunner`, `+Z lives`) is **hardcoded game logic**, the same class as
+   mode rules and cash-per-pop. The description prose ("Thrive adds 30% instead of 25%") is the
+   *only* captured form; many are qualitative ("Acid lasts longer"). So MK "apply" can't be
+   sourced from the dump — it needs curated constants or a wiki cross-source.
+
+**Suggested next steps (ordered, for the following session):**
+
+1. **Extract the Power *effect* structure** (low risk, high value) — add the headline factor to
+   `powers.json` from each Power's effect model (`MonkeyBoostModel.rateScale`/`duration`,
+   `ThriveModel.cashModifier`, `RoadSpikesModel`/pierce, etc.), and **fill the `{0}` placeholders**
+   in the description from those values (so "twice as fast for 15 seconds" reads correctly). This
+   is faithful extraction, no new computation.
+2. **Build `btd6_power_effect` (a deterministic apply-tool)** — given a tower/upgrade + a Power,
+   return the modified headline stat (base cooldown × `rateScale`, etc.), grounded by construction
+   so the verifier accepts it. Mirrors `btd6_cumulative_cost`. This is what makes "Crossbow Master
+   on Monkey Boost" answerable. Scope it tightly (attack-speed/damage/cash multipliers only).
+3. **Monkey Knowledge magnitudes — maintainer call.** Not dump-sourced. Either (a) leave MK as a
+   descriptive catalog (current state — honest, "what it does" answers but no computed economy), or
+   (b) curate the numeric magnitudes (starting cash/lives/discounts) from the wiki into
+   `monkey_knowledge.json` like the map removables. Don't guess; ask before curating.
+4. **Until 1–2 land, the lookup is correct but partial** — it answers "what does X do" and base
+   stats independently; it must NOT be presented as answering combined/applied questions.
+
 ### Session log — 2026-06-08 (Powers + Monkey Knowledge ingested → answerable)
 
 Two whole domains the coverage map flagged `⬜` are now `✅` end-to-end, following the

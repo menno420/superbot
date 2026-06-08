@@ -118,6 +118,17 @@ additions, kept the CI-checked non-test files black-clean. Lesson reinforced: ne
 the whole tree; trust `check_quality.py`'s pinned scope. Final `check_quality --full` green
 (8083 passed); diff is feature-only (11 files).
 
+**Answerability audit (maintainer asked the sharp question).** Verified that Powers/Knowledge
+are **lookup catalogs, not applied modifiers**: "what does Monkey Boost do" / base Crossbow
+Master stats answer ✅, but **"attack speed of Crossbow Master *on* a Monkey Boost"** and
+**"starting cash / costs / free monkeys / lives *with* knowledge X"** do **not** ✅ — nothing
+applies a Power/MK effect to a tower stat or the economy. Two gaps: (1) Power effect factors
+ARE in the dump (`MonkeyBoostModel.rateScale 0.5`/`duration 15`) but unextracted (the `{0}` in
+the prose is the hole) + no apply-tool; (2) MK magnitudes are **not** in the dump at all (every
+`mod` is a bare `ModModel{name}`; magnitudes are hardcoded game logic). Full verdict + ordered
+next steps in the decode-status "Answerability audit" section. **Lesson: "ingested" (catalog
+committed) ≠ "answerable" for *combined/applied* questions — keep claiming only the lookup.**
+
 **Still owed (next session):** the Steam-API patch-detect trigger for the refresh pipeline
 (maintainer chose it) — design exists in `btd6-data-refresh-pipeline-plan.md`; the Steam
 `GetAppList`/`up_to_date` build-id check + the GH Actions workflow remain to build (gated on
