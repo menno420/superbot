@@ -286,7 +286,7 @@ Behind existing AI expansion/readiness gates, AI may suggest profiles/routines, 
 |---|---|---|---|---|---|
 | **P0A — Codex/Sonnet:** Q-0026 identity repair | ✅ **DONE 2026-06-08.** Snake-case conversion, `server_management` rename, references/tests/docs. | `command_surface_ledger.py`, `subsystem_registry.py`, help/router/hub tests/docs | Product features | Full quality + strict architecture + live identity check | Medium; stop if key migration affects persisted external contracts unexpectedly. |
 | **P0B — Opus:** access/read-model contract | ✅ **DONE 2026-06-08** (docs). Precedence, decision/reason schema (reuses `command_access`), audience simulation, owners, invalidation, direct-vs-draft rule — §16 + `docs/ownership.md`. | Planning/ADR/ownership/runtime docs | Runtime code | Docs/architecture checks | High architecture; stop on unresolved second-permission-system risk. |
-| **P0C — Sonnet:** panel writer normalization | Centralize role threshold writer/audit; bounded channel lifecycle gaps selected by Opus. | role/channel services/views/tests | New automation actions | Focused unit/view tests + full quality | Medium/high; stop before behavior-changing destructive flow without owner decision. |
+| **P0C — Sonnet:** panel writer normalization | Centralize role threshold writer/audit; bounded channel lifecycle gaps selected by Opus. **Groundwork laid 2026-06-08:** punch list + swap recipe in §16.5; shrinking drift-fence invariant `test_no_direct_role_threshold_writes.py` pins the 6 sites. Just convert + shrink the fence. | role/channel services/views/tests | New automation actions | Focused unit/view tests + full quality | Medium/high; stop before behavior-changing destructive flow without owner decision. |
 | **P1A — Sonnet:** Access Map projection | ✅ **DONE 2026-06-08.** Side-effect-free composed service + 19 tests, no UI — `services/access_projection.py`. | new service module; governance/access/routing/ledger adapters; tests | Editing/persistence | Unit/service/identity tests + strict architecture | High; stop if owner of any axis cannot be identified. |
 | **P1B — Sonnet:** drift + locked reasons | Diagnostic providers and denial explanation integration. | `setup_diagnostics.py`, command-access/interaction helpers, tests | Editing | Diagnostics/access tests + quality | Medium; stop if explanation leaks sensitive policy. |
 | **P1C — Sonnet:** Access Map + Help Preview UI | Staff-only read-only panels using P1A; Server Management link. | server-management/help/views/cogs/tests | Mutation | View/authority/help tests + live smoke | Medium. |
@@ -373,7 +373,7 @@ Safe defaults until answered: profile preview only; quiet mode modeled as availa
 
 1. ✅ **First technical debt — DONE (2026-06-08):** Q-0026 implemented (`cog_name_to_subsystem` snake_case + `server_management` rename + the latent `proof_channel`/`four_twenty` repair). The decided `scripts/new_subsystem.py` (Q-0025) can now safely assume canonical snake_case multi-word keys.
 2. ✅ **Phase 0 access/read-model contract — DOCUMENTED (2026-06-08):** precedence, reason schema (reusing the `command_access` decision model — no second permission system), drift-provider ownership, simulation limits, and the direct-vs-draft rule are in §16 below + [`docs/ownership.md`](../ownership.md). Q-0028–Q-0032 stay at safe defaults (not blockers for read-only work).
-3. ✅ **P1A — DONE (2026-06-08):** the side-effect-free Access Map projection service (`services/access_projection.py`) + 19 tests per §16 (no UI, no persistence). **Next — Sonnet (P1B):** drift providers + locked-reason denial integration in `setup_diagnostics`, built on the P1A projection; then **P1C** (read-only Access Map + Help Preview panels). **Parallel — Sonnet (P0C):** normalize the role-threshold direct-write drift onto an audited service seam (§16.5) before any profile/routine targets role thresholds.
+3. ✅ **P1A — DONE (2026-06-08):** the side-effect-free Access Map projection service (`services/access_projection.py`) + 19 tests per §16 (no UI, no persistence). **Next — Sonnet (P1B):** the three *runtime* drift providers (`help_advertises_locked`, `routing_access_conflict`, `configured_resource_missing` — **not** `identity_mismatch`, already covered) + locked-reason denial integration in `setup_diagnostics`, built on the P1A projection; then **P1C** (read-only Access Map + Help Preview panels — resolve the audience-simulation point in §16.8 first). **Parallel — Sonnet (P0C):** normalize the role-threshold direct-write drift — the punch list, swap recipe, and a shrinking drift-fence invariant (`tests/unit/invariants/test_no_direct_role_threshold_writes.py`) are all in place (§16.5); just convert the 6 sites and shrink the fence. Read §16.8 before P1B/P1C.
 4. **Blocked/gated:** controlled profile/access mutation waits for the read model and rollback/risk decisions; Routine Engine waits for condition/safety design; Personal Setup waits for privacy decisions; AI drafts wait for current AI expansion gates.
 
 ## 16. Phase 0 access read-model contract (P0B)
@@ -494,14 +494,40 @@ Phase 0/1 drift providers (read-only findings; extend `setup_diagnostics`):
   longer exists.
 
 **P0C drift selected for normalization (the answer to §4.2 item 4):** the
-**role-threshold writer**. The role panel writes time/XP thresholds via a *direct DB
-write* rather than an audited role-automation service seam, so there is no single
-canonical seam for a future profile/routine draft to compile into. P0C must route
-those writes through an audited `role_automation` mutation (mirroring
-`set_{time,xp}_threshold`) **before** any profile/routine targets role thresholds.
-Channel create/edit lifecycle is the secondary, larger gap (mixed direct-Discord +
-`ChannelLifecycleService`); assess but do not rewrite wholesale in P0C. See the
-binding rule + drift note in [`docs/ownership.md` § "Direct vs. draft mutation lanes"](../ownership.md).
+**role-threshold writer**. The role panels/cog write time/XP thresholds via a *direct
+DB write* (`utils.db.roles.set_role_threshold` / `set_role_xp_threshold`) rather than
+the audited `role_automation` seam, so there is no single canonical seam for a future
+profile/routine draft to compile into. P0C routes those writes through the audited
+service **before** any profile/routine targets role thresholds.
+
+*Turn-key recipe (verified 2026-06-08 — confirm line numbers, they drift):*
+
+- **The audited seam already exists** in `services/role_automation.py`:
+  `set_time_threshold(*, guild_id, role_id, role_name, days, actor_id, actor_type="user")`
+  and `set_xp_threshold(*, guild_id, role_id, role_name, level, actor_id,
+  actor_type="user", auto_assign=True)`. Each does the **identical**
+  `utils.db.roles.set_role_threshold*` write **plus** `emit_audit_action(...)` (and
+  `set_xp_threshold` also invalidates the XP-threshold cache); both return a
+  `mutation_id`. So each swap is **behavior-preserving for the write + additive (audit)**.
+- **The 6 direct-write call sites (the punch list):**
+  1. `views/roles/time_roles_panel.py` ~:139 — *Seed Defaults* button (time) → `actor_id=interaction.user.id`.
+  2. `views/roles/time_roles_panel.py` ~:226 — `TimeDaysModal.on_submit` (time) → `actor_id=interaction.user.id`. *(Keep the existing surrounding cache-invalidation call.)*
+  3. `views/roles/_helpers.py` ~:67 — `_ensure_defaults(guild)` system-seed (time, **no interaction**) → `actor_id=None, actor_type="system"`.
+  4. `views/roles/creation_panel.py` ~:168 — (xp) → `actor_id=interaction.user.id`.
+  5. `views/roles/xp_roles_panel.py` ~:183 — (xp) → `actor_id=interaction.user.id`.
+  6. `cogs/role_cog.py` ~:454 — prefix-command path (time) → `actor_id=ctx.author.id`.
+- **Drift fence / progress tracker:** `tests/unit/invariants/test_no_direct_role_threshold_writes.py`
+  pins exactly these 5 files. As you convert each, **remove its filename from
+  `_ALLOWED_DIRECT_THRESHOLD_FILES`** (the test fails until you do); empty set = P0C done.
+  A new direct write in any other file fails immediately, so drift can't grow meanwhile.
+- **Tests to update:** the role-panel/selector tests that currently assert
+  `db.set_role_threshold*` is called (e.g. `tests/unit/views/test_role_threshold_selectors.py`)
+  → assert the `role_automation.set_{time,xp}_threshold` call instead.
+- **Out of scope for P0C:** channel create/edit lifecycle (mixed direct-Discord +
+  `ChannelLifecycleService`) is the secondary, larger gap — assess but do **not** rewrite
+  wholesale here.
+
+See the binding rule + drift note in [`docs/ownership.md` § "Direct vs. draft mutation lanes"](../ownership.md).
 
 ### 16.6 Invalidation / caching
 
@@ -520,3 +546,41 @@ routing write, a governance/capability write, a settings write, and process rest
 - `LockedReason.safe_text` never contains a role name, channel id, or raw policy field
   (redaction test over a fixture with sensitive values).
 - Help-visibility (axis 6) can never flip an execution `allow` to a denied result.
+
+### 16.8 Notes for the next agent (refinements learned building P1A, 2026-06-08)
+
+The P1A service (`services/access_projection.py`) is built and tested. Four refinements
+surfaced during the build that change how P1B/P1C should be scoped — read these before
+starting them:
+
+1. **Drop `identity_mismatch` from P1B — it's already covered.** Subsystem-key agreement
+   across registry/ledger/view/router/anchor is enforced by
+   `governance`-side `validate_identity_contract` **and** the command-surface-ledger
+   identity tests (added in the Q-0026 PR). Building a fourth identity checker would
+   duplicate. The real P1B drift work is the other three providers
+   (`help_advertises_locked`, `routing_access_conflict`, `configured_resource_missing`).
+
+2. **The P1B drift providers are RUNTIME (per-guild), not static.** They compare
+   *effective* projections, and the projection's command-access / routing / governance
+   axes all read **live per-guild DB policy** — there is no meaningful static answer
+   without a guild + member. So these providers belong in `setup_diagnostics` as
+   per-guild findings (each runs `resolve_feature_access` against the live guild), not as
+   import-time/static checks. Test them with patched resolvers (as the P1A tests do).
+
+3. **Audience simulation is an open integration point (decide before P1C / Help Preview).**
+   The governance axis calls `governance.get_visible_subsystems(GovernanceContext)`, which
+   needs a **real `discord.Member`** (it derives the tier + roles from the member object).
+   Help Preview (Q-0023) and the drift "baseline audience" want to simulate an audience **by
+   tier/role set**, not a real member. `AccessContext.member_tier` exists as a forward hook
+   but **is not consumed yet**. Before P1C, pick one: (a) synthesize a member-like object
+   from the simulated tier/roles and pass it through, or (b) add a tier-input read path to
+   governance and have the governance axis prefer `ctx.member_tier` when set. Option (b) is
+   cleaner but touches governance; option (a) keeps the change in the projection. Either way
+   the simulation must still **label its limits** (it can't model live channel-permission
+   overrides it wasn't given — §16.4).
+
+4. **`project_access_map(ctx)` is the batch surface for the P1C table.** It maps
+   `resolve_feature_access` over `feature_inventory()`; a read-only Access Map panel renders
+   its rows. The per-feature `AccessDecision.source_chain` is the "why" the row's detail
+   view shows. There is **no** diagnostics provider / boot import wired yet (the projection
+   is per-request) — P1C wires the first consumer.

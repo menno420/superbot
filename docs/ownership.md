@@ -354,7 +354,11 @@ channel create/edit paths mix direct Discord calls with the lifecycle service.
 These must converge on a canonical audited writer **before** any profile/routine is
 allowed to drive role thresholds or channel lifecycle — otherwise the draft lane
 would have no single seam to compile into. Until then, profiles/routines must not
-target those axes.
+target those axes. The role-threshold direct writes are fenced by
+`tests/unit/invariants/test_no_direct_role_threshold_writes.py` (a shrinking
+allowlist — no *new* direct threshold write may appear); the audited seam to converge
+on is `services.role_automation.set_time_threshold` / `set_xp_threshold`, and the
+per-site conversion recipe is in the planning doc §16.5.
 
 ---
 
