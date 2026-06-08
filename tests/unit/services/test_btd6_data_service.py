@@ -203,6 +203,28 @@ def test_chimps_mode_has_no_income_restriction():
     )
 
 
+def test_mode_rules_block_grounds_prose_from_game_data():
+    """The structured ``rules`` block (sourced from Mods/ via parse_gamedata
+    --modes) loads onto ModeEntry and backs the prose restrictions with game
+    values; Standard (no Mods file) carries an empty block."""
+    dataset = get_dataset()
+    by_id = {m.id: m for m in dataset.modes}
+
+    impoppable = by_id["impoppable"]
+    assert impoppable.rules["start_round"] == 6
+    assert impoppable.rules["end_round"] == 100
+    assert impoppable.rules["starting_lives"] == 1
+    assert impoppable.rules["cost_multiplier"] > 1  # higher tower prices
+
+    chimps = by_id["chimps"]
+    assert chimps.rules["no_continues"] is True
+    assert chimps.rules["no_monkey_knowledge"] is True
+    assert "BananaFarm" in chimps.rules["locked_towers"]  # no income
+
+    # Standard is the unmutated base — no Mods file, so no rules attached.
+    assert by_id["standard"].rules == {}
+
+
 def test_alias_collision_fails_loudly(tmp_path):
     """A duplicate alias across categories must abort dataset loading."""
     bad_root = tmp_path / "btd6"

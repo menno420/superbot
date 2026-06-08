@@ -114,6 +114,11 @@ class ModeEntry:
     # For a mode: which difficulties it is offered in (Standard/Sandbox span all,
     # the specials are single-difficulty). Empty for difficulties/modifiers.
     difficulties: tuple[str, ...] = ()
+    # Structured, game-sourced rule values parsed from the dump's Mods/<mode>.json
+    # (cash/lives/round bounds, cost/speed/income multipliers, restriction flags).
+    # Grounds the prose ``restrictions``; empty for Standard + modifiers (no Mods
+    # file) and unmapped rows. See ``modes.json:mode_rules_source``.
+    rules: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -559,6 +564,7 @@ def _parse_mode(raw: dict[str, Any]) -> ModeEntry:
             if raw.get("starting_lives") is not None
             else None
         ),
+        rules=dict(raw.get("rules") or {}),
     )
 
 

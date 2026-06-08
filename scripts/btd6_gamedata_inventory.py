@@ -77,7 +77,12 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
     ),
     "Achievements": ("⬜", "not ingested"),
     "Artifacts": ("⬜", "not ingested (Rogue Legends artifacts)"),
-    "Mods": ("⬜", "not ingested (game-mode rule mods — partially explored)"),
+    "Mods": (
+        "🟡",
+        "mode rules sourced into modes.json (--modes): cash/lives verified + "
+        "structured rules block (rounds/cost/speed/income mults + restrictions) "
+        "for all 15 mapped modes; the curated taxonomy/prose stays curated",
+    ),
     "Skins": ("⬜", "cosmetic; not ingested"),
     "GeraldoItems": (
         "✅",

@@ -2592,6 +2592,145 @@ def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
     return report
 
 
+# Mode id (modes.json) -> Mods/<stem>.json. The dump names differ from the
+# canonical mode (CHIMPS' internal name is "Clicks"); Standard + the two
+# modifiers (Double Cash / Fast Track) have no standalone Mods file — Standard is
+# the unmutated base, and the modifiers layer onto a chosen mode.
+_MODE_MODS = {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "primary_only": "PrimaryOnly",
+    "deflation": "Deflation",
+    "military_only": "MilitaryOnly",
+    "apopalypse": "Apopalypse",
+    "reverse": "Reverse",
+    "magic_monkeys_only": "MagicOnly",
+    "double_hp_moabs": "DoubleMoabHealth",
+    "half_cash": "HalfCash",
+    "alternate_bloons_rounds": "AlternateBloonsRounds",
+    "impoppable": "Impoppable",
+    "chimps": "Clicks",
+    "sandbox": "Sandbox",
+}
+# A LockTowerSet mutator names the class a mode forbids (PrimaryOnly locks
+# {military, magic, support}, leaving primary). Reuses the module's _TOWER_SET
+# bitflag map so a locked class matches a tower's lowercase `category`.
+
+
+def _mod_short(type_str: str) -> str:
+    """``Il2Cpp...Mods.StartingCashModModel, Assembly-CSharp`` -> ``StartingCashModModel``."""
+    return type_str.split(",", 1)[0].rsplit(".", 1)[-1]
+
+
+def _parse_mode_rules(raw_mod: dict[str, Any]) -> dict[str, Any]:
+    """Normalize a ``Mods/<mode>.json`` ``mutatorMods`` list into the structured,
+    game-sourced rule values that ground the curated prose ``restrictions``.
+
+    Only the rule-bearing mutators are kept. The standard economy curve
+    (``MonkeyMoney`` / ``BonusCashPerRound`` / ``SellMultiplier`` — identical
+    across difficulties, and ``SetHealthForBloon`` per-round tuning) is dropped on
+    purpose so the block holds only what *varies* and *restricts*. Returns ``{}``
+    for a base/empty ruleset.
+    """
+    rules: dict[str, Any] = {}
+    locked_classes: list[str] = []
+    locked_towers: list[str] = []
+    for m in raw_mod.get("mutatorMods", []):
+        kind = _mod_short(str(m.get("$type", "")))
+        if (
+            kind == "StartingCashModModel"
+            and not m.get("multiplier")
+            and _num(m.get("changeBase", 0)) > 0
+        ):
+            rules["starting_cash"] = int(m["changeBase"])
+        elif kind == "StartingHealthModModel":
+            rules["starting_lives"] = int(_num(m.get("addition", 0)))
+        elif kind == "MaxHealthModModel" and m.get("set"):
+            # The 1-life cap (Impoppable / CHIMPS) — an absolute lives override.
+            rules["starting_lives"] = int(_num(m["set"]))
+        elif kind == "StartingRoundModModel":
+            rules["start_round"] = int(m["round"])
+        elif kind == "EndRoundModModel":
+            rules["end_round"] = int(m["round"])
+        elif kind == "GlobalCostModModel":
+            rules["cost_multiplier"] = _num(m["multiplier"])
+        elif kind == "GlobalSpeedModModel" and m.get("multiplier"):
+            rules["speed_multiplier"] = _num(m["multiplier"])
+        elif kind == "ModifyAllCashModModel":
+            rules["income_multiplier"] = _num(m["multiplier"])
+        elif kind == "RoundSetModModel":
+            rules["round_set"] = str(m.get("roundsetName", ""))
+        elif kind == "BloonHealthModel":
+            tag = str(m.get("bloonTag", "")).lower()
+            rules[f"{tag}_health_multiplier"] = _num(m["healthMod"])
+        elif kind == "LockTowerSetModModel":
+            locked_classes.append(
+                _TOWER_SET.get(int(m["towerSetToLock"]), str(m["towerSetToLock"])),
+            )
+        elif kind == "LockTowerModModel":
+            locked_towers.append(str(m["towerToLock"]))
+        elif kind == "DisableContinueModModel":
+            rules["no_continues"] = True
+        elif kind == "DisableSellTowerModModel":
+            rules["no_selling"] = True
+        elif kind == "DisableMonkeyKnowledgeModModel":
+            rules["no_monkey_knowledge"] = True
+        elif kind == "DeflationModel":
+            rules["no_income"] = True
+        elif kind == "ReverseModel":
+            rules["reverse"] = True
+    if locked_classes:
+        rules["locked_tower_classes"] = sorted(locked_classes)
+    if locked_towers:
+        rules["locked_towers"] = sorted(locked_towers)
+    return rules
+
+
+def overlay_modes(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
+    """Source structured, game-grounded rules for every mode in ``modes.json`` that
+    maps to a ``Mods/<mode>.json`` file. Attaches a normalized ``rules`` block
+    (cash/lives/rounds/cost/speed multipliers + the restriction set) and *verifies*
+    the curated ``starting_cash`` / ``starting_lives`` against the dump's absolute
+    overrides — correcting a mismatch. Returns ``{mode_id: [corrections]}`` (a mode
+    with rules attached but no scalar correction maps to ``[]``).
+
+    The curated *taxonomy* (``kind`` / ``difficulties`` / prose ``description`` +
+    ``restrictions``) is **not** in the dump and stays curated; only the numeric
+    rule values + structured restriction flags are game-sourced here. cash/lives
+    are corrected only when the Mods file sets an *absolute* value (``changeBase``
+    for cash; ``addition`` / ``MaxHealth.set`` for lives) — inherited values (a
+    mode that layers on a base difficulty without restating them) are left curated.
+    """
+    mods_dir = dump / "Mods"
+    path = _DATA_ROOT / "modes.json"
+    payload = json.loads(path.read_text("utf-8"))
+    report: dict[str, list[str]] = {}
+
+    for mode in payload["modes"]:
+        stem = _MODE_MODS.get(mode["id"])
+        if stem is None:
+            continue  # Standard (base) + modifiers: no standalone Mods file
+        fp = mods_dir / f"{stem}.json"
+        if not fp.is_file():
+            continue
+        rules = _parse_mode_rules(json.loads(fp.read_text("utf-8")))
+        changes: list[str] = []
+
+        for scalar in ("starting_cash", "starting_lives"):
+            if scalar in rules and rules[scalar] != mode.get(scalar):
+                changes.append(f"{scalar} {mode.get(scalar)} -> {rules[scalar]}")
+                mode[scalar] = rules[scalar]
+
+        mode["rules"] = rules
+        report[mode["id"]] = changes
+
+    payload["mode_rules_source"] = _SOURCE
+    if not dry_run:
+        _write(path, payload)
+    return report
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
@@ -2653,6 +2792,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="source bloon children/immunity/health/speed from the dump (overlay bloons.json)",
     )
+    ap.add_argument(
+        "--modes",
+        action="store_true",
+        help="source mode rules (cash/lives/rounds/cost + restrictions) from the dump's Mods/ folder (overlay modes.json)",
+    )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
 
@@ -2687,6 +2831,27 @@ def main(argv: list[str] | None = None) -> int:
             for bid in sorted(report):
                 print(f"  {bid}")
                 for change in report[bid]:
+                    print(f"      {change}")
+        return 0
+
+    if args.modes:
+        report = overlay_modes(dump, dry_run=args.dry_run)
+        verb = "would correct" if args.dry_run else "corrected"
+        corrections = {k: v for k, v in report.items() if v}
+        if not corrections:
+            print(
+                f"modes: structured rules sourced from Mods/ for "
+                f"{len(report)} mode(s); cash/lives already match game data "
+                f"(0 corrections) — provenance recorded.",
+            )
+        else:
+            print(
+                f"modes: rules sourced for {len(report)} mode(s); "
+                f"{verb} {len(corrections)} value(s)\n",
+            )
+            for mid in sorted(corrections):
+                print(f"  {mid}")
+                for change in corrections[mid]:
                     print(f"      {change}")
         return 0
 

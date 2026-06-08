@@ -7,6 +7,13 @@ game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, v55.0). Start here
 to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
+> **Where this sits in the bot:** SuperBot is a Discord server-setup/management
+> bot; the BTD6 knowledge base is *one* feature. This subsystem migrates every
+> curated/wiki BTD6 value to **reproducible, game-sourced** data
+> (`disbot/data/btd6/*.json` ← `parse_gamedata.py` overlays ← the dump), each
+> mirrored by a `*Entry` dataclass in `services/btd6_data_service.py` and surfaced
+> through AI lookup tools + the `cogs/btd6/` embeds.
+
 > **New to this effort? Read `btd6-gamedata-decode-explainer.md` first** — a
 > from-first-principles deep explanation of the what/why/how (buffs, the audit,
 > the cutover), with worked examples. *This* doc is the live status + to-do list.
@@ -49,9 +56,20 @@ works** (the traps we hit), and what is still un-decoded.
   curated **removables** (18 maps), and aggregate count/list grounding. (89 dump
   files minus the 3 non-player `IsStandard=False` maps: Blons, Base Editor Map,
   Protect the Yacht.)
-- **Modes** 18 — **curated** taxonomy: 3 difficulties (Easy/Medium/Hard) + 13
-  modes (Standard is the base mode in every difficulty) + 2 modifiers (Double
-  Cash, Fast Track; relative-effect, no fixed numbers).
+- **Modes** 18 — **curated taxonomy, game-sourced rules** (`--modes`): 3
+  difficulties (Easy/Medium/Hard) + 13 modes (Standard is the base mode in every
+  difficulty) + 2 modifiers (Double Cash, Fast Track; relative-effect, no fixed
+  numbers). The `kind` / `difficulties` / prose `description`+`restrictions` stay
+  curated (not in the dump), but each of the **15 mapped modes now carries a
+  structured `rules` block sourced from `Mods/<mode>.json`** — starting cash/lives,
+  start/end rounds, cost/speed/income multipliers, MOAB-health mult, locked tower
+  classes/towers, and no-continue/no-sell/no-MK/no-income flags — parsed from
+  `mutatorMods[]` (standard economy-curve mutators dropped). This **corrected the
+  earlier "the dump has no game-mode rules" finding** (the rules live in `Mods/`,
+  the same place MK effects do), and the cutover **caught one real curated typo**:
+  Sandbox `starting_lives` 9999999 → the game model's 999999. `mode_rules_source`
+  records provenance; `ModeEntry.rules` surfaces it at runtime (display unchanged
+  — wiring the block into the mode embed is the teed-up follow-up).
 - **Consumable / meta catalogs — game-data-native lookups:** **Powers** 25,
   **Monkey Knowledge** 134, **Geraldo items** 16 (`--powers` / `--knowledge` /
   `--geraldo`). All player-facing name/description/cost catalogs, each behind an
