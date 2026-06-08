@@ -1,6 +1,6 @@
 # Owner vision — ideas capture (2026-06-08)
 
-> **Status:** `captured` (raw → captured). Nothing here is approved for implementation.
+> **Status:** `ideas` (captured — not approved for implementation).
 > Source: two interactive Q&A rounds with the maintainer on 2026-06-08 (36 questions total).
 > All items below reflect the owner's stated preferences. Route each idea through
 > the lifecycle in `docs/ideas/README.md` before implementing.
