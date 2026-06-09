@@ -2412,3 +2412,40 @@ them as command-only exceptions and do not expose internal BTD6 cache keys.
 
 **Suggested destination after answer:** BTD6 schema/service plan, settings command map,
 and Phase 2/3 of the settings-centralization audit.
+
+## 28. Consolidated productive-session plan — 2026-06-09
+
+### Q-0065 — Appended scoreboard Lanes 7–8: keep at end of queue, or pull Lane 7 forward?
+
+**Area:** Cross-lane sequencing (Settings / Help)
+**Type:** Priority decision
+**Priority:** Low-friction (a one-line scoreboard reorder either way)
+**Status:** Open
+
+**Question:** The 2026-06-09 end-of-day consolidation
+(`docs/planning/consolidated-productive-session-plan-2026-06-09.md`) appended two
+audit-sourced lanes to the multi-lane scoreboard after your owner-ordered Lanes 1–6:
+**Lane 7** — settings audit Phases 0+1 (Settings hub lists only *actionable* groups +
+every group reachable past Discord's 25-option select cap; today all 28 non-internal
+subsystems are listed and 3 are silently unreachable) — and **Lane 8** — help
+surface-map count reconciliation + Help characterization tests. Their default position
+is **end of queue** (after Lane 6). Should Lane 7 jump forward (e.g. right after
+Lane 2), since the 25-option truncation is the only operator-visible *defect* in the
+queue, or is end-of-queue fine?
+
+**Recommendation:** Keep end-of-queue. Lanes 2–6 are your decided order, each is
+unblocked and small-to-medium, and the truncation is bounded (3 of 28 dropdown
+entries, deterministically the lowest-priority ones). Pull Lane 7 forward only if the
+truncation bothers you in live use.
+
+**Why agents need this:** Lane order is an owner decision; the appended lanes are
+agent-recommended (audit-sourced, #625/#627). Without an explicit answer, agents
+execute in scoreboard row order — the safe default — and must not re-order on their
+own judgment.
+
+**Safe default until answered:** End of queue — execute scoreboard rows strictly in
+order.
+
+**Suggested destination after answer:** the scoreboard lane order
+(`docs/planning/multi-lane-execution-plan-2026-06-09.md`) + one line in
+`docs/planning/consolidated-productive-session-plan-2026-06-09.md` §7.

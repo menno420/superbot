@@ -897,7 +897,7 @@ profile can narrow/disable toolsets without granting additional authority.
 
 ### Phase 2 — Neutral tool choice and budgets
 
-> **✅ SHIPPED 2026-06-09 (this session).** `core/runtime/ai/contracts.py` gained
+> **✅ SHIPPED 2026-06-09 (#618).** `core/runtime/ai/contracts.py` gained
 > `ToolRequirementMode`, `AIToolChoice`, and `AIToolBudget`, plus `tool_choice`/`tool_budget`
 > fields on `AIRequest` (defaults reproduce today's behaviour byte-for-byte). A shared
 > `ToolLoopState` + `cap_tool_result` in `providers/base.py` bound the loop by hop / call /

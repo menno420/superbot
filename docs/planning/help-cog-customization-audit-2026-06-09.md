@@ -5,6 +5,7 @@
 > **Scope:** Help + hubs + navigation + governance visibility + access projection + settings/customization/setup integration.
 >
 > **Source precedence:** live source at `09e5a297` wins over older docs. Live GitHub PR state could not be verified in this checkout because `gh` is unavailable and no Git remote is configured.
+> **Post-merge note (2026-06-09, end-of-day consolidation):** this audit merged as **#627**. Community Spotlight registration shipped the same day (**#626**), so the "queued/unregistered Spotlight" findings below are resolved history. The bounded counts-reconciliation + characterization-tests session is queued as scoreboard **Lane 8** via [`consolidated-productive-session-plan-2026-06-09.md`](consolidated-productive-session-plan-2026-06-09.md); the overlay decisions **Q-0055–Q-0059 remain open** (safe defaults bind).
 
 ## 1. Executive summary
 

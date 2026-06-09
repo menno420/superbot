@@ -1,10 +1,16 @@
 # Multi-lane autonomous execution plan — 2026-06-09
 
-> **Status:** `plan` — the **launch pad for the autonomous multi-lane test session**.
-> All six lanes were decided + gate-lifted in the 2026-06-09 interview (router §22 /
-> Q-0044–Q-0051); nothing here needs a new owner decision unless marked. Written so the
-> next session needs **no directing prompt beyond "execute the multi-lane plan"**.
-> Source and merged PRs win; verify lane state against live GitHub before starting each.
+> **Status:** `plan` — the **launch pad for the autonomous multi-lane test session**
+> and the **one canonical execution pointer** (cross-session scoreboard).
+> Lanes 1–6 were decided + gate-lifted in the 2026-06-09 interview (router §22 /
+> Q-0044–Q-0051); nothing in them needs a new owner decision unless marked. **Lanes 7–8
+> were appended 2026-06-09 by the consolidated plan** — audit-sourced (#625/#627),
+> agent-recommended, *not owner-ordered*; their position is ratifiable via **Q-0065**
+> (default: after Lane 6). Reasoning/verification record for this queue:
+> [`consolidated-productive-session-plan-2026-06-09.md`](consolidated-productive-session-plan-2026-06-09.md).
+> Written so the next session needs **no directing prompt beyond "execute the
+> multi-lane plan"**. Source and merged PRs win; verify lane state against live GitHub
+> before starting each.
 
 ## How to run this (session protocol)
 
@@ -136,10 +142,56 @@
   `draft-answer — awaiting maintainer markup`); safe defaults stay binding until
   marked up.
 
+## Lane 7 — Settings Phases 0+1: actionable-groups discovery + >25 reachability *(appended)*
+
+> Appended 2026-06-09 by the consolidated plan — audit-sourced (settings audit §11,
+> #625), agent-recommended, **not owner-ordered**; position ratifiable via **Q-0065**
+> (default: here, after Lane 6).
+
+- [ ] Shipped in PR: ____
+- **Goal:** settings audit **Phase 0** (reconciliation + test targets — the session's
+  first checklist item) + **Phase 1** display correctness: the Settings hub lists only
+  **actionable** groups (editable scalar · binding editor · provisionable flow ·
+  registered domain panel), every group reachable past the 25-option select cap
+  (pagination/categories), empty pages excluded, actor-aware availability.
+  Today the hub lists all 28 non-internal `SUBSYSTEMS` and silently truncates 3.
+- **Read first:** `docs/planning/settings-cog-centralization-audit-2026-06-09.md`
+  §6 + §11, `disbot/views/settings/hub.py` (`_DISCORD_SELECT_OPTION_LIMIT` :44, the
+  `[:25]` slice :136), `core/runtime/settings_registry.py`, the settings folio.
+- **Hard boundary:** discovery/navigation only — do **not** absorb domain mutation
+  services (scalar / bindings / provisioning / governance / command-access / AI policy
+  stay separate owners); Phases 2/3 stay gated on **Q-0063/Q-0064**.
+- **Exit:** hub tests (empty-group exclusion · >25 reachability · gated/unavailable
+  rendering); CI mirror + arch strict green.
+
+## Lane 8 — Help bounded reconciliation: surface-map counts + characterization tests *(appended)*
+
+> Appended 2026-06-09 by the consolidated plan — audit-sourced (help audit §13, #627),
+> agent-recommended, **not owner-ordered** (Q-0065).
+
+- [ ] Shipped in PR: ____
+- **Goal:** reconcile `docs/help-command-surface-map.md` preamble counts (10 hubs;
+  post-#626 cog/subsystem counts) **together with its pin tests**, and add
+  current-behavior **characterization tests** for the five Help render paths (Home ·
+  Advanced · typed routes · generic embed · dedicated panels) so the future Help
+  projection seam has a regression net. No behavior changes.
+- **Read first:** help audit §4–§5 + §13,
+  `tests/unit/docs/test_help_surface_map_doc.py`, `disbot/cogs/help_cog.py`,
+  `disbot/cogs/help/route.py`.
+- **Hard boundary:** no overlay storage/editor — **Q-0055–Q-0059 open**; the audit's
+  safe defaults bind (presentation-only hiding, Help-only names, panel-local order).
+- **Exit:** preamble counts true + pin tests green; characterization tests pin today's
+  per-route filters.
+
 ---
 
-## After all six (or when stopping)
+## After all lanes (or when stopping)
 
-Run the standing END protocol (journal → END) + tick this scoreboard. If all six are
-done: the next frontier items are the mining Workshop/durability slice (§7.5) and the
-mother-panel live overview (§6.3) — see `docs/current-state.md` ▶ Next action.
+Run the standing END protocol (journal → END) + tick this scoreboard. *(The previous
+tail named the mining Workshop/durability slice + mother-panel live overview as the
+next frontier — those shipped in **#624**, before Lane 1 even landed.)* When every lane
+above is done, the gated tail + next frontier live in
+[`consolidated-productive-session-plan-2026-06-09.md`](consolidated-productive-session-plan-2026-06-09.md)
+§5: Settings Phase 2/3 planning behind **Q-0063/Q-0064** · help overlay behind
+**Q-0055–Q-0059** · adaptive P1C promotion · mining structures / game-XP service —
+see `docs/current-state.md` ▶ Next action.

@@ -10,7 +10,7 @@
 > below is now **largely satisfied**: the `ai-complex-request-tool-orchestration-plan.md`
 > foundation **Phases 1–3 shipped 2026-06-09** — the canonical tool catalogue + deterministic
 > selector (#612), provider-neutral tool-choice + budgets (#618), and the typed
-> orchestration-policy storage + resolver + the **Tools & Workflows** operator UI (this session).
+> orchestration-policy storage + resolver + the **Tools & Workflows** operator UI (#619).
 > So the "land the foundation before net-new capability handlers" precondition (§1 item 3,
 > item 5) is met for Phases 1–3; the remaining sequencing gates for any *net-new* tool are
 > Phase 4 (the complex-BTD6 workflow) **and** the per-tool AI-exposure decision (each net-new
