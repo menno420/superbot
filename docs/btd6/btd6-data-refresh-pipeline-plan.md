@@ -131,4 +131,3 @@ flags new/removed content) for review.
   only, so any regeneration — workflow or the manual chain above — stripped it and
   would have reddened the refresh PR's doc-hygiene gate; pinned by test now).
 - **Gated:** the full `--all` cutover (decode-status steps 1–5).
-</content>
