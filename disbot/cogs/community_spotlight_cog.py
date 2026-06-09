@@ -8,6 +8,7 @@ the same providers and DB helpers used by !leaderboard and !rank.
 from __future__ import annotations
 
 import datetime
+import logging
 from collections import deque
 from typing import Any
 
@@ -20,11 +21,10 @@ from core.runtime.interaction_helpers import safe_defer
 from services import xp_service
 from services.rank_providers import get_provider
 from utils import db
-from utils.logger import get_logger
 from utils.ui_constants import ECONOMY_COLOR, GAME_COLOR, GENERAL_COLOR, UTILITY_COLOR
 from views.base import BaseView
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 MEDALS = ["🥇", "🥈", "🥉"]
 _MAX_LEVELUP_ENTRIES = 5
