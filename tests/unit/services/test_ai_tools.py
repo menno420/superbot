@@ -33,6 +33,7 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
         "btd6_round_composition",
+        "btd6_round_cash",
         "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_relic_lookup",
@@ -353,6 +354,7 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
         "btd6_round_composition",
+        "btd6_round_cash",
         "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_relic_lookup",
@@ -698,6 +700,36 @@ async def test_btd6_round_composition_single_round_full_list_and_errors():
         "found"
     ] is False
     assert (await h["btd6_round_composition"]({"round_start": "x"}))["found"] is False
+
+
+async def test_btd6_round_cash_range_returns_grounded_inclusive_total():
+    # The deterministic round-cash range tool (answerability Phase 1B): the model
+    # must read range_cash, not subtract cumulative values itself.
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    r = await h["btd6_round_cash"]({"round_start": 50, "round_end": 60})
+    assert r["found"] is True
+    assert r["single_round"] is False and r["inclusive"] is True
+    assert (r["round_start"], r["round_end"]) == (50, 60)
+    # The grounded total IS returned, with the cumulative endpoints behind it.
+    delta = r["cumulative_at_end"] - r["cumulative_before_start"]
+    assert abs(r["range_cash"] - delta) < 0.01
+
+
+async def test_btd6_round_cash_single_round_and_structured_errors():
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    one = await h["btd6_round_cash"]({"round_start": 80})
+    assert one["found"] is True and one["single_round"] is True
+    assert one["round_cash"] == 1400.2
+    # Out-of-range and bad input come back structured, never a guessed number.
+    assert (await h["btd6_round_cash"]({"round_start": 999}))["found"] is False
+    assert (await h["btd6_round_cash"]({"round_start": "x"}))["found"] is False
+
+
+def test_btd6_round_cash_grounds_a_btd6_answer():
+    # Its results are deterministic BTD6 facts, so the tool is intentionally on
+    # the grounding allowlist (joins the faithfulness ledger). The subset drift
+    # guard above keeps allowlist and registry in lockstep.
+    assert "btd6_round_cash" in ai_tools.BTD6_GROUNDING_TOOL_NAMES
 
 
 async def test_btd6_map_lookup_single_and_roster():

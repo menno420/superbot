@@ -868,6 +868,58 @@ async def _btd6_round_composition(arguments: dict[str, Any]) -> dict[str, Any]:
     return btd6_data_service.round_composition(start, end, bloon)
 
 
+# --- btd6_round_cash ---------------------------------------------------------
+
+_BTD6_ROUND_CASH_SPEC = AIToolSpec(
+    name="btd6_round_cash",
+    description=(
+        "BTD6 cash EARNED for a round or an inclusive round RANGE (standard "
+        "rounds 1-140, Medium difficulty, $650 start, no income towers). Use for "
+        "'how much cash from round 50 to 60', 'cash on round 80', 'money earned "
+        "rounds 1-40', 'cumulative cash by round 60'. Pass round_start (and "
+        "round_end for a range). The range is INCLUSIVE of both endpoints and the "
+        "returned range_cash IS the grounded answer — do NOT add the per-round "
+        "cash or subtract cumulative values yourself; this returns the exact "
+        "total. For a single round you get round_cash + cumulative_cash; for a "
+        "range you also get cumulative_before_start / cumulative_at_end. Standard "
+        "economy ONLY: it does not apply Double Cash, Half Cash, other "
+        "difficulties, or alternate round sets (ABR) — those come back as a "
+        "found=false reason, never a guessed number."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {
+            "round_start": {
+                "type": "integer",
+                "description": "First round (1-140). For a single round, set only this.",
+            },
+            "round_end": {
+                "type": "integer",
+                "description": "Last round of the range (inclusive); omit for one round.",
+            },
+        },
+        "required": ["round_start"],
+        "additionalProperties": False,
+    },
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_round_cash(arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import btd6_data_service
+
+    try:
+        start = int(arguments.get("round_start"))
+    except (TypeError, ValueError):
+        return {"found": False, "note": "round_start must be an integer (1-140)"}
+    raw_end = arguments.get("round_end")
+    try:
+        end = int(raw_end) if raw_end is not None else None
+    except (TypeError, ValueError):
+        end = None
+    return btd6_data_service.round_cash(start, end)
+
+
 # --- btd6_map_lookup ---------------------------------------------------------
 
 _BTD6_MAP_LOOKUP_SPEC = AIToolSpec(
@@ -1953,6 +2005,7 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
         "btd6_superlative_lookup",
         "btd6_difficulty_cost",
         "btd6_round_composition",
+        "btd6_round_cash",
         "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_relic_lookup",
@@ -2013,6 +2066,7 @@ def build_registry(
         (_BTD6_SUPERLATIVE_SPEC, _btd6_superlative_lookup),
         (_BTD6_DIFFICULTY_COST_SPEC, _btd6_difficulty_cost),
         (_BTD6_ROUND_COMPOSITION_SPEC, _btd6_round_composition),
+        (_BTD6_ROUND_CASH_SPEC, _btd6_round_cash),
         (_BTD6_MAP_LOOKUP_SPEC, _btd6_map_lookup),
         (_BTD6_MODE_LOOKUP_SPEC, _btd6_mode_lookup),
         (_BTD6_RELIC_LOOKUP_SPEC, _btd6_relic_lookup),

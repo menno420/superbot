@@ -83,9 +83,10 @@ def test_task_contract_routes_per_degree_paragon_stats_and_forbids_interpolation
 def test_task_contract_binds_cash_answers_to_grounded_numbers():
     # Un-gating cash (PR #502) wasn't enough: the live bot then ANSWERED FROM
     # MEMORY — "round 40 pays $14,600" (grounded: $521 this round) and a vague
-    # "$20-25k typically" for r50-r60 (grounded: cumulative(60)-cumulative(50) =
-    # $16,824). Bind cash to the grounded numbers, forbid estimates, disambiguate
-    # per-round vs cumulative, and teach the range math.
+    # "$20-25k typically" for r50-r60. Bind cash to the grounded numbers, forbid
+    # estimates, disambiguate per-round vs cumulative, and teach the range math.
+    # Range cash is now INCLUSIVE of both endpoints (owner decision 2026-06-09):
+    # r50-r60 = $19,840 (sum of rounds 50..60), not the exclusive $16,824 it was.
     tc = instr._TASK_CONTRACT
     assert "in-game economy" not in tc  # still un-gated
     assert "Per-round cash IS in your data" in tc
@@ -93,8 +94,11 @@ def test_task_contract_binds_cash_answers_to_grounded_numbers():
     assert "never a remembered or 'typical' estimate" in tc
     # Per-round ('cash this round') vs cumulative disambiguation.
     assert "'cash this round' figure quoted verbatim" in tc
-    # Range = cumulative difference; the two endpoints suffice (the r50-r60 bug).
-    assert "cumulative(B) - cumulative(A)" in tc
+    # Range cash is INCLUSIVE and owned by the btd6_round_cash tool; from
+    # cumulative facts alone the inclusive total is cumulative(B) - cumulative(A-1).
+    assert "INCLUSIVE of both endpoints" in tc
+    assert "btd6_round_cash" in tc
+    assert "cumulative(B) - cumulative(A-1)" in tc
 
 
 def test_task_contract_answers_removables_from_grounding_without_complete_list():

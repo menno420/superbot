@@ -8,12 +8,16 @@
 > **Active gate:** all *AI-exposure* phases remain blocked by the AI/BTD6 feature-expansion
 > gate in [`../current-state.md`](../current-state.md) and, for net-new tools, the
 > approved sequencing requirement to lock the orchestration foundation first.
-> **Progress:** **Phase 1A shipped 2026-06-09** — `btd6_data_service.round_cash()` is the
-> deterministic, owner-calculated round / inclusive-range cash query (no AI tool, no UI, no
-> behaviour change yet), pinned by `tests/unit/services/test_btd6_round_cash.py`. It adds
-> zero AI/user-facing behaviour, so it sits *below* the AI-exposure gate. **Next: Phase 1B**
-> (tool exposure + intent-shaped grounding) — still blocked until the orchestration
-> foundation (AR-10) lands. (Reconcile PR # next session.)
+> **Progress:** **Phase 1A + 1B shipped 2026-06-09.** 1A: `btd6_data_service.round_cash()`,
+> the deterministic owner-calculated round / inclusive-range cash query. 1B: the read-only
+> **`btd6_round_cash` AI tool** (registered in the existing `ai_tools.build_registry` — *not*
+> a parallel registry — per this plan's fallback), added to the BTD6 grounding allowlist, with
+> the instruction stack updated to defer to it. **The maintainer explicitly lifted the AR-10
+> orchestration-first sequencing for this one read-only BTD6 tool** (it composes no workflow
+> and adds no parallel registry). **Owner decision Q-0043 (2026-06-09): range cash is
+> INCLUSIVE of both endpoints** (r50→r60 = $19,840), resolving a conflict where the prior
+> instruction stack/smoke checklist used the exclusive `cumulative(B) − cumulative(A)`. **Next:
+> Phase 2** (central read-only introspection read model). (Reconcile PR # next session.)
 
 ## 1. Purpose and owner intent
 
@@ -273,6 +277,19 @@ Recommendation: make the deterministic owner return exact stored/derived floats 
 separate display formatting from calculation. Do not parse JSON above the data service.
 
 #### Phase 1B — AI exposure, grounding, and end-to-end reliability
+
+> **✅ SHIPPED 2026-06-09 (this session), with the maintainer explicitly lifting AR-10 for
+> this one read-only tool.** Delivered: the **`btd6_round_cash`** AI tool (read-only,
+> `min_scope=USER`) registered in the existing `ai_tools.build_registry` (no parallel
+> registry); added to `ai_tools.BTD6_GROUNDING_TOOL_NAMES` so its results join the
+> faithfulness ledger (the subset drift-guard keeps allowlist↔registry in lockstep); the
+> instruction stack (`ai_instruction_service`) now defers range-cash to the tool and teaches
+> the **inclusive** formula `cumulative(B) − cumulative(A−1)` (owner decision **Q-0043**);
+> tool-registry/handler tests added; the smoke-test checklist updated to the inclusive
+> numbers. The existing faithfulness retry/floor choke point is untouched (preserved). The
+> intent-shaped context packet (below) was **not** needed — the direct tool gives reliable
+> selection and is the more auditable path (§5.7); single-round cash already renders in
+> `_render_fixture_round`. Reconcile PR # next session.
 
 - Register the accepted read-only round-cash tool through the canonical orchestration
   catalogue/compatibility seam; if that foundation still uses `ai_tools.build_registry`,

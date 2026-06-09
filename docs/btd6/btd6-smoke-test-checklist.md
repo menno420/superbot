@@ -47,8 +47,8 @@ guard work (the systemic open item).
 | "how much cash on round 50" | **$3,016** |
 | "how much cash on round 1" | **$121** |
 | "cumulative cash by round 80" | **~$98,254** (running total incl. the $650 Medium start) |
-| "how much do you earn from r50 to r60" | **$16,824** ( = cumulative 55,134 − 38,310 ) |
-| "how much from r70 to r80" | **~$26,939** |
+| "how much do you earn from r50 to r60" | **$19,840** — inclusive of both endpoints (sum of rounds 50–60; = cumulative 55,134 − cumulative-through-r49 35,294). Served by the `btd6_round_cash` tool's `range_cash`. |
+| "how much from r70 to r80" | **~$29,557** (inclusive r70–r80) |
 | "how much money total by round 140" | **~$351,267** |
 
 | 🚫 Limitation | ✅ Expect it to decline |

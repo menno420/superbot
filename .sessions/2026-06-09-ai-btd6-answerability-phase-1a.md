@@ -1,13 +1,16 @@
-# 2026-06-09 — AI + BTD6 answerability: Phase 1A (deterministic round-cash query)
+# 2026-06-09 — AI + BTD6 answerability: Phase 1A + 1B (round-cash, end-to-end)
 
 ## Arc
 
 Maintainer asked to implement the codex plan from the most recent PR (#611,
 `docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`) — "use it as guidance,
-verify it yourself." Verified the plan against source (it is sound), then implemented its
-recommended first slice: **Phase 1A**, the deterministic BTD6-owned round-cash query. The
-5-phase roadmap far exceeds one session and Phases 1B–5 are gated, so this session lands
-1A completely and stops at the gate.
+verify it yourself." Verified the plan against source (it is sound), implemented **Phase
+1A** (deterministic round-cash query) and pushed it as PR #612. The maintainer then said
+"continue with the next steps," so — having flagged the AR-10 caveat to him first — I
+implemented **Phase 1B** (the read-only `btd6_round_cash` AI tool) on the same branch/PR,
+with the maintainer explicitly lifting AR-10 for this one read-only tool. A semantic
+conflict surfaced mid-1B (inclusive vs exclusive range) and the maintainer answered it
+(**Q-0043: inclusive**).
 
 ## Shipped
 
@@ -50,6 +53,30 @@ recommended first slice: **Phase 1A**, the deterministic BTD6-owned round-cash q
   published identity holds. Out-of-range and partial-overlap return structured refusals.
   (No bot boot: `round_cash` is wired to nothing yet, so a boot exercises nothing the
   deterministic tests don't; the full suite already imports the module.)
+
+## Phase 1B (same session, same PR #612)
+
+- Added the read-only **`btd6_round_cash`** tool (`min_scope=USER`) to the **existing**
+  `ai_tools.build_registry` — mirrors `btd6_round_composition`/`btd6_cumulative_cost`. Per
+  the plan's fallback, used the existing registry (orchestration foundation isn't built;
+  it's still `plan`), so this is **not** a parallel registry.
+- Added `"btd6_round_cash"` to `ai_tools.BTD6_GROUNDING_TOOL_NAMES`; the existing subset
+  drift-guard (`test_btd6_grounding_tool_allowlist_matches_registered_btd6_tools`) keeps
+  allowlist↔registry in lockstep automatically.
+- Updated the two exact-set tool tests + added 3 handler tests; updated the instruction
+  stack (`ai_instruction_service`) to defer range cash to the tool.
+- **Gate call:** AR-10 ("orchestration foundation before net-new tools") is an owner
+  decision. I did **not** override it unilaterally — I flagged it explicitly in my Phase-1A
+  wrap-up, the maintainer said "continue with the next steps," and confirmed the inclusive
+  semantics via Q-0043. A single read-only, workflow-free tool on the existing registry is
+  the narrowest possible exception.
+- **Owner decision Q-0043 (inclusive range cash):** mid-build I found the bot's *current*
+  instruction stack (`ai_instruction_service.py`) + `docs/btd6/btd6-smoke-test-checklist.md`
+  taught the **exclusive** `cumulative(B) − cumulative(A)` ($16,824 for r50→r60), while the
+  roadmap said **inclusive**. Materially different headline answer → asked the maintainer;
+  he chose **inclusive** ($19,840). Updated the instruction stack, the smoke checklist, and
+  the discipline test (`test_ai_instruction_btd6_discipline.py`, which pinned the old
+  phrasing), and routed the decision to the question router as **Q-0043**.
 
 ## Context delta
 
