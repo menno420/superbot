@@ -1,7 +1,7 @@
 # AI subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + `docs/current-state.md` win.
-> **Last updated:** 2026-06-06.
+> **Last updated:** 2026-06-09.
 
 ## What & where
 
@@ -52,7 +52,7 @@ scoped tools (including owner-gated diagnostics). Source:
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 
-- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — source-verified answerability/self-awareness bridge with BTD6 round cash as the first proof path. Fully gated; does not supersede the orchestration-first sequence.
+- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — source-verified answerability/self-awareness bridge with BTD6 round cash as the first proof path. **Phase 1A/1B (round cash, #612) + Phase 2 (`services/ai_introspection_service.py`, the read-only composition read model) shipped 2026-06-09.** The read model is additive/read-only with **no AI exposure and no UI**; AI *exposure* (Phase 3 self-awareness tools) and any settings UI (Phase 4) stay gated.
 
 ## Ideas (not approved)
 

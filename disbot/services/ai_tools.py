@@ -1995,6 +1995,62 @@ BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = ai_tool_catalogue.grounding_tool_nam
 )
 
 
+# Every registered tool's spec, with no runtime binding (no guild/member/bot, no
+# handlers). ``build_registry`` pairs these same spec constants with runtime-bound
+# handlers per request; this flat tuple is the **runtime-independent** half a read
+# model (the introspection / effective-policy preview layer) needs to report a tool's
+# name, purpose, and ``min_scope`` without standing up a live registry. Includes the
+# guild-/member-gated tools so a preview can describe the full surface. Pinned ==
+# the canonical catalogue by ``test_ai_tools`` / ``test_ai_tool_catalogue``, so a tool
+# added to ``build_registry`` (and the catalogue) without an entry here fails CI.
+_ALL_TOOL_SPECS: tuple[AIToolSpec, ...] = (
+    _USER_STANDING_SPEC,
+    _SERVER_TIME_SPEC,
+    _BTD6_LOOKUP_SPEC,
+    _BTD6_LIST_ROSTER_SPEC,
+    _BTD6_CAPABILITY_SPEC,
+    _BTD6_SUPERLATIVE_SPEC,
+    _BTD6_DIFFICULTY_COST_SPEC,
+    _BTD6_ROUND_COMPOSITION_SPEC,
+    _BTD6_ROUND_CASH_SPEC,
+    _BTD6_MAP_LOOKUP_SPEC,
+    _BTD6_MODE_LOOKUP_SPEC,
+    _BTD6_RELIC_LOOKUP_SPEC,
+    _BTD6_POWER_LOOKUP_SPEC,
+    _BTD6_MK_LOOKUP_SPEC,
+    _BTD6_GERALDO_SPEC,
+    _BTD6_BOSS_SPEC,
+    _BTD6_BLOON_FILTER_SPEC,
+    _BTD6_CUMULATIVE_COST_SPEC,
+    _BTD6_POWER_EFFECT_SPEC,
+    _PARAGON_CALCULATE_SPEC,
+    _PARAGON_REQUIREMENTS_SPEC,
+    _BTD6_PARAGON_STATS_AT_DEGREE_SPEC,
+    _BTD6_CT_TEAM_SPEC,
+    _GUILD_AI_CONFIG_SPEC,
+    _RECENT_AUDIT_SPEC,
+    _DIAGNOSTICS_HEALTH_SPEC,
+    _SERVER_OVERVIEW_SPEC,
+    _SERVER_ROLES_SPEC,
+    _SERVER_CHANNELS_SPEC,
+    _MEMBER_LOOKUP_SPEC,
+    _MEMBER_LIST_SPEC,
+)
+
+
+def all_tool_specs() -> dict[str, AIToolSpec]:
+    """Every registered tool's provider-neutral spec, keyed by name.
+
+    The runtime-independent catalogue half: no handlers, no ``guild``/``member``/
+    ``bot`` arguments, so a read-only introspection or effective-policy preview can
+    report each tool's name, purpose (``description``), and authoritative ``min_scope``
+    without building a per-request :class:`ToolRegistry`. ``min_scope`` stays the single
+    source of truth for authority. Keys match the canonical catalogue exactly (pinned by
+    test), so this never silently diverges from the tools the model can actually be offered.
+    """
+    return {spec.name: spec for spec in _ALL_TOOL_SPECS}
+
+
 def build_registry(
     *,
     scope: AIScope,

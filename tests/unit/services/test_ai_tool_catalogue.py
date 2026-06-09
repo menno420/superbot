@@ -76,6 +76,17 @@ def test_catalogue_covers_exactly_the_registered_tools(monkeypatch):
     assert set(CATALOGUE) == _all_registered_tool_names(monkeypatch)
 
 
+def test_all_tool_specs_match_the_catalogue():
+    # The runtime-independent spec accessor (used by the introspection / preview layer)
+    # must expose exactly the catalogued tools — and, transitively, the registered ones.
+    specs = ai_tools.all_tool_specs()
+    assert set(specs) == set(CATALOGUE)
+    # Authority is carried on the spec; the accessor must preserve it.
+    assert specs["btd6_round_cash"].min_scope is AIScope.USER
+    assert specs["get_guild_ai_config"].min_scope is AIScope.ADMIN
+    assert specs["diagnostics_health_snapshot"].min_scope is AIScope.PLATFORM_OWNER
+
+
 def test_grounding_set_is_derived_from_catalogue_metadata():
     derived = grounding_tool_names("btd6")
     assert derived == _EXPECTED_BTD6_GROUNDING
