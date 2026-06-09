@@ -46,6 +46,10 @@ _EXPECTED_BTD6_GROUNDING = {
     "btd6_paragon_requirements",
     "btd6_paragon_stats_at_degree",
     "btd6_ct_team_status",
+    # Self-awareness inventory (Phase 3): its fixture counts / versions must be
+    # able to ground a BTD6 answer, or the number-guard would block the very
+    # replies it serves.
+    "btd6_answerability",
 }
 
 
@@ -112,6 +116,7 @@ def test_known_toolsets_are_the_declared_families():
         "server_context_basic",
         "server_context_sensitive",
         "diagnostics",
+        "self_awareness",
     }
 
 

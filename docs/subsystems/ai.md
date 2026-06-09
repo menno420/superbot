@@ -76,7 +76,7 @@ scoped tools (including owner-gated diagnostics). Source:
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 
-- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — source-verified answerability/self-awareness bridge with BTD6 round cash as the first proof path. **Phase 1A/1B (round cash, #612) + Phase 2 (`services/ai_introspection_service.py`, the read-only composition read model) shipped 2026-06-09.** The read model is additive/read-only with **no AI exposure and no UI**; AI *exposure* (Phase 3 self-awareness tools) and any settings UI (Phase 4) stay gated.
+- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — source-verified answerability/self-awareness bridge with BTD6 round cash as the first proof path. **Phase 1A/1B (round cash, #612) + Phase 2 (`services/ai_introspection_service.py`, the read-only composition read model) + Phase 3 (#639, Q-0047 — the three self-awareness tools `get_ai_tool_catalog` / `get_ai_policy_explanation` / `btd6_answerability`, audience-tiered at construction over the Phase 2 read model) shipped 2026-06-09.** `btd6_answerability` deliberately carries the btd6 grounding domain (and so the `btd6_*` name) — its counts/versions must join the faithfulness ledger or the number-guard would block its own replies. The remaining exposure lanes stay gated: any settings UI is Phase 4 (per-exposure ask + settings foundation), the generated dashboard Phase 5.
 
 ## Ideas (not approved)
 
