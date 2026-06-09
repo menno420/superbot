@@ -16,8 +16,11 @@
 > orchestration-first sequencing for this one read-only BTD6 tool** (it composes no workflow
 > and adds no parallel registry). **Owner decision Q-0043 (2026-06-09): range cash is
 > INCLUSIVE of both endpoints** (r50→r60 = $19,840), resolving a conflict where the prior
-> instruction stack/smoke checklist used the exclusive `cumulative(B) − cumulative(A)`. **Next:
-> Phase 2** (central read-only introspection read model). (Reconcile PR # next session.)
+> instruction stack/smoke checklist used the exclusive `cumulative(B) − cumulative(A)`.
+> **Phase 2 shipped 2026-06-09** (this session): the read-only `services/ai_introspection_service.py`
+> composition read model (tool catalogue + BTD6 answerability + audience-filtered AI settings +
+> policy/decision explanation) — no AI exposure, no UI. **Next: Phase 3** (the self-awareness
+> tools that *expose* Phase 2 — gated). (Reconcile PR #s next session.)
 
 ## 1. Purpose and owner intent
 
@@ -306,6 +309,28 @@ are read queries and use `btd6_*` nouns/actions without an `apply` suffix; “ap
 mutation and conflicts with this lane’s read-only boundary.
 
 ### Phase 2 — Central AI introspection read model
+
+> **✅ SHIPPED 2026-06-09 (this session).** Implemented as the read-only
+> `services/ai_introspection_service.py` — a side-effect-free composition over the existing
+> owners, **no AI exposure and no UI** (those stay the gated Phase 3/4). It is the additive
+> read-*model* layer that `current-state.md` flagged as unblocked once the canonical
+> catalogue landed (#612); it mirrors the Phase 1A precedent (a deterministic owner shipped
+> before its gated exposure). Four bounded, typed, audience-filtered builders:
+> `build_tool_catalog(scope)` (joins `ai_tools.all_tool_specs` + `ai_tool_catalogue.CATALOGUE`;
+> names higher-scope tools only as a count), `build_btd6_answerability()` (deterministic
+> fixtures + calculations + the one live domain + explicit unsupported gaps, from
+> `btd6_data_service`), `build_ai_settings_view(guild_id, scope)` (reuses
+> `ai_config_projection_service.build_snapshot`, redacted by tier), and
+> `build_policy_explanation(ctx, scope)` (composes `ai_natural_language_policy.resolve`
+> dry-run trace + bounded `ai_decision_audit_service` history). **Audience filtering happens
+> at construction** (roadmap §5.6 / AR-08): a USER sees only USER tools + enabled-flags + their
+> own reply outcome; admin+ gains effective config, precedence traces, and cross-user audit;
+> provider runtime diagnostics stay platform-owner-only. A small runtime-independent
+> `ai_tools.all_tool_specs()` accessor was added (pinned == the catalogue) so the read model can
+> report a tool's name/purpose/`min_scope` without standing up a live registry. 16 tests +
+> a live smoke against the real catalogue/dataset/DB. **Not** built (still gated): the
+> self-awareness tools that *expose* this (Phase 3) and any settings UI (Phase 4). Reconcile
+> PR # next session.
 
 Plan a read-only `ai_introspection_service` (name subject to architecture review; reuse an
 existing equivalent if the orchestration foundation introduces one). It must compose,
