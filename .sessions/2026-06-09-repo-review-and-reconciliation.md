@@ -102,3 +102,14 @@ banner, nav map, mining brainstorm §6.8, btd6 refresh plan banner.
   (2) P1B remainder (tier-input path + drafted denial copy); (3) orchestration P4 MVP
   slice; (4) answerability P3 trio; (5) BTD6 manual-dispatch workflow; (6) the Q-0051
   vision draft-answer session.
+
+## Part 3 — Workflow close-out
+
+Maintainer confirmed the trust/alignment read on the interview ("I went with your
+recommendations mostly because I actually agree … that's the exact proof that my memory
+system is working") and **approved draft-PR-at-first-push** (it used to work that way and
+silently lapsed) → codified as **Q-0052**: CLAUDE.md SESSION_WORKFLOW (edited with
+explicit chat approval per Q-0035), journal Quick reference + END step 1, multi-lane plan
+§2. The check_docs "(this session)"-marker gate stays a **proposal** (executable config).
+Also shipped this part: the multi-lane execution plan itself + 3 earned journal rules.
+Next session = the autonomous multi-lane test; prompt can be one line.

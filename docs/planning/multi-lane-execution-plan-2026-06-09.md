@@ -11,7 +11,9 @@
 1. Normal orientation first (CLAUDE.md route). Then execute lanes **in order** — the
    order is an owner decision, not a suggestion (earlier lanes de-risk later ones).
 2. **One PR per lane** (small/focused for `disbot/` lanes; docs lanes may ride along).
-   Run the full CI mirror + arch check green **before starting the next lane**.
+   **Open each lane's PR as a DRAFT right after the lane's first push** (Q-0052) so its
+   real # goes straight into this scoreboard + the docs; mark it ready when the lane is
+   green. Run the full CI mirror + arch check green **before starting the next lane**.
 3. **Blocked? Skip forward, never half-route.** If a lane hits a genuine blocker,
    finish its docs/log trail (what + why + exact resume point), then start the next
    lane. A lane left mid-flight with no trail is the only failure mode this plan

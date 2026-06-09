@@ -2068,3 +2068,32 @@ dedicated session drafts a concrete proposed answer per question (clans identity
 fairness, AI dungeon master, integrations/voice privacy, web dashboard), grounded in existing
 decisions + safe defaults, for the maintainer to mark up (approve / adjust / reject per item).
 Nothing implements until approved; safe defaults hold meanwhile.
+
+## 23. Session-workflow follow-up — answered 2026-06-09
+
+### Q-0052 — Open the session PR as a draft at first push (restore the old habit)
+
+**Area:** Workflow / session protocol
+**Type:** Workflow change (binding-doc edit, maintainer-approved in chat)
+**Priority:** Medium (kills the only recurring docs-drift class found in the 2026-06-09 review)
+**Status:** Answered (2026-06-09) — **Routed** → `.claude/CLAUDE.md` § Session & plan workflow + `.session-journal.md` (Quick reference + Protocol END step 1) + the multi-lane execution plan §2
+
+**Question:** Session PR numbers don't exist when end-of-session docs are written, so
+sessions left "(this session) — reconcile PR # next session" placeholders in
+`current-state.md` that piled up across five sessions (the drift the 2026-06-09 review
+cleaned). Should sessions open their PR as a **draft right after the first push**, so the
+real number is available for every doc touched, marking it ready at session end?
+
+**Maintainer answer (verbatim, 2026-06-09):** "about the PR at the start of a session, I
+think that's a perfect idea and that's how it used to be previously, but somewhere along
+the way that stopped, so please change that for me"
+
+**Decision:** Restored as binding workflow: **open the session PR as a draft immediately
+after the first push; reference its real # in all docs; mark it ready at session end.**
+Per-lane drafts in multi-lane sessions follow the same rule. The companion
+`check_docs.py` gate extension (fail on "(this session)" markers) remains a separate
+**proposal** — executable config, not yet approved.
+
+**Routed to:** `.claude/CLAUDE.md` (SESSION_WORKFLOW block — edited with this explicit
+approval per the Q-0035 propose-first rule), `.session-journal.md`, and
+`docs/planning/multi-lane-execution-plan-2026-06-09.md`.
