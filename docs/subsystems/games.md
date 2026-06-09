@@ -35,13 +35,19 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   terminal-state “interaction failed” regression. Future changes should inspect terminal callbacks, disabled-state edits, timeout
   handling, and expired-interaction failure paths first.
 - Blackjack has solo/PvP/tournament flows; RPS has solo/PvP/tournament persistence;
-  mining owns its item/recipe/reward/exploration loop plus a typed inventory, an
-  equipment → `EffectiveStats` gear seam, and a persistent depth/biome "Descent"
-  (Surface→Magma; `mining_player_state`, descent gated by equipped-light `depth_access`,
-  pure logic in `cogs/mining/world.py`). These mining writes are **direct-lane game
-  state** by design (`docs/ownership.md`; RC-8A ledger), not an audited-service gap.
-  Economy is a dependency for bets/rewards, not a place for game cogs/views to duplicate
-  balance writes.
+  mining owns its item/recipe/reward/exploration loop plus a typed inventory and a
+  persistent depth/biome "Descent" (Surface→Magma; `mining_player_state`, descent gated
+  by equipped-light `depth_access`, pure logic in `cogs/mining/world.py`). These mining
+  writes are **direct-lane game state** by design (`docs/ownership.md`; RC-8A ledger),
+  not an audited-service gap. Economy is a dependency for bets/rewards, not a place for
+  game cogs/views to duplicate balance writes.
+- **Cross-game character stats: `utils/equipment.py`** is the shared, pure gear→stats
+  read model (`EffectiveStats` + the gear catalogue + `compute_stats`). Equipment is
+  guild-scoped game state in `mining_equipment` (`utils/db/games/`); one `!equip`/
+  `!unequip`/`!gear` path serves every slot. Mining reads `mining_power`/`light_radius`/
+  `depth_access`; **deathmatch reads `damage`/`defense`/`max_health`** from each fighter's
+  equipped combat gear (weapon/armor) — a small, fair edge tunable in `_GEAR`. Add a new
+  game's stat dependency by reading the block, never by importing another game's items.
 - Known game UX follow-ups are not stability failures; cite the accepted #535
   baseline rather than claiming a fresh live retest.
 

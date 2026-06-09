@@ -157,5 +157,12 @@
     },
     "gold statue": {
         "gold": 4
+    },
+    "sword": {
+        "wood": 1,
+        "stone": 2
+    },
+    "armor": {
+        "iron": 4
     }
 }

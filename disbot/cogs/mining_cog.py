@@ -21,12 +21,12 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import equipment, world
+from cogs.mining import world
 from cogs.mining.exploration import explore_from_state
 from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
 from core.runtime import panel_manager
-from utils import db
+from utils import db, equipment
 from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
 
 # Pattern B re-export: importing this triggers @register on MiningHubView

@@ -504,7 +504,15 @@ async def test_deathmatch_panel_fight_bot_spawns_new_view() -> None:
         if isinstance(c, discord.ui.Button)
         and (c.custom_id or "").endswith(":fight_bot")
     )
-    klass = await _classify_button(btn, panel)
+    # Fight Bot now reads the player's equipped combat gear (EffectiveStats)
+    # before spawning the duel — stub that DB read so the classifier reaches
+    # the view-spawn.
+    with patch(
+        "views.games.deathmatch_panel.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={},
+    ):
+        klass = await _classify_button(btn, panel)
     assert klass in ACTION_CLASSES, (
         f"DeathmatchPanelView 'Fight Bot' button classifies as "
         f"{klass!r}; must be action_* — should spawn _BotDuelView."

@@ -30,7 +30,7 @@ from cogs.mining.recipes import load_recipes
 from cogs.mining.rewards import roll_harvest_amount
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
-from utils import db
+from utils import db, equipment
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
@@ -281,7 +281,8 @@ class MiningHubView(PersistentView):
             )
             return
         # Lazy import: cogs-layer domain logic (layer rule — see explore_btn).
-        from cogs.mining import equipment, world
+        # equipment now lives in utils/ (module-level import above).
+        from cogs.mining import world
 
         user_id = str(interaction.user.id)
         gid = interaction.guild_id

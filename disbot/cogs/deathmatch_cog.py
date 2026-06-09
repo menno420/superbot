@@ -6,25 +6,53 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType, cooldown
 
-from utils import db
+from utils import db, equipment
+
+# Base duel constants — the floor every fighter starts from before equipped
+# combat gear (utils.equipment.EffectiveStats) tilts it.
+BASE_HP = 100
+BASE_ATTACK_DAMAGE = 15
+BASE_CRIT_DAMAGE = 30
 
 
 class _Duel:
-    def __init__(self, player1: discord.Member, player2: discord.Member):
+    def __init__(
+        self,
+        player1: discord.Member,
+        player2: discord.Member,
+        *,
+        p1_stats: equipment.EffectiveStats | None = None,
+        p2_stats: equipment.EffectiveStats | None = None,
+    ):
+        # Combat stats come from each player's equipped gear (the cross-game
+        # EffectiveStats seam).  They default to an all-zero block so a bare
+        # fighter — and every existing caller/test that omits them — duels at
+        # exactly the historical 100 HP / 15 damage.
         self.player1 = player1
         self.player2 = player2
-        self.player1_hp = 100
-        self.player2_hp = 100
+        self.p1_stats = p1_stats or equipment.EffectiveStats()
+        self.p2_stats = p2_stats or equipment.EffectiveStats()
+        self.player1_max_hp = BASE_HP + self.p1_stats.max_health
+        self.player2_max_hp = BASE_HP + self.p2_stats.max_health
+        self.player1_hp = self.player1_max_hp
+        self.player2_hp = self.player2_max_hp
         self.turn = player1
         self.is_over = False
         self.defense: dict[int, bool] = {player1.id: False, player2.id: False}
 
+    def _stats_for(self, player_id: int) -> equipment.EffectiveStats:
+        return self.p1_stats if player_id == self.player1.id else self.p2_stats
+
     def attack(self, attacker_id: int, defender_id: int) -> tuple[int, bool]:
         critical = random.random() < 0.1
-        damage = 30 if critical else 15
+        base = BASE_CRIT_DAMAGE if critical else BASE_ATTACK_DAMAGE
+        damage = base + self._stats_for(attacker_id).damage
         if self.defense.get(defender_id, False):
             damage = damage // 2
             self.defense[defender_id] = False
+        # Armor (defender defense) is flat damage reduction, floored at 1 so an
+        # attack always lands for *something*.
+        damage = max(1, damage - self._stats_for(defender_id).defense)
         if defender_id == self.player1.id:
             self.player1_hp -= damage
         else:
@@ -68,8 +96,10 @@ class _DuelView(discord.ui.View):
     def build_embed(self, last_action: str = "") -> discord.Embed:
         duel = self.duel
         desc = (
-            f"**{duel.player1.display_name}** — {max(duel.player1_hp, 0)} HP\n"
-            f"**{duel.player2.display_name}** — {max(duel.player2_hp, 0)} HP\n\n"
+            f"**{duel.player1.display_name}** — "
+            f"{max(duel.player1_hp, 0)}/{duel.player1_max_hp} HP\n"
+            f"**{duel.player2.display_name}** — "
+            f"{max(duel.player2_hp, 0)}/{duel.player2_max_hp} HP\n\n"
             f"It's **{duel.turn.display_name}**'s turn!"
         )
         if last_action:
@@ -159,8 +189,10 @@ class _DuelView(discord.ui.View):
                 title="⚔️ Deathmatch Ended",
                 description=(
                     f"{action_text}\n\n"
-                    f"**{duel.player1.display_name}** — {max(duel.player1_hp, 0)} HP\n"
-                    f"**{duel.player2.display_name}** — {max(duel.player2_hp, 0)} HP\n\n"
+                    f"**{duel.player1.display_name}** — "
+                    f"{max(duel.player1_hp, 0)}/{duel.player1_max_hp} HP\n"
+                    f"**{duel.player2.display_name}** — "
+                    f"{max(duel.player2_hp, 0)}/{duel.player2_max_hp} HP\n\n"
                     f"🏆 {winner.mention} wins!"
                 ),
                 color=discord.Color.gold(),
@@ -217,7 +249,19 @@ class _ChallengeView(discord.ui.View):
     async def btn_accept(self, interaction: discord.Interaction, _: discord.ui.Button):
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
-        duel = _Duel(self.challenger, self.opponent)
+        # Both fighters bring their equipped combat gear (guild-scoped) into the
+        # duel via the shared EffectiveStats seam.
+        gid = interaction.guild_id or 0
+        duel = _Duel(
+            self.challenger,
+            self.opponent,
+            p1_stats=equipment.compute_stats(
+                await db.get_equipment(str(self.challenger.id), gid),
+            ),
+            p2_stats=equipment.compute_stats(
+                await db.get_equipment(str(self.opponent.id), gid),
+            ),
+        )
         self.cog.active_duels[self.duel_key] = duel
         # PR 8 — read the per-guild turn timeout setting. Falls back to
         # the historical 60s default when unset or unparseable (the

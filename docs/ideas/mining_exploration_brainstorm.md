@@ -346,6 +346,10 @@ powers all four social pillars.
 - **Skill service** — per-player allocations across 4 branches; computes perk modifiers into
   `EffectiveStats`; **respec** through an audited path (coin sink).
 - **Equipment service** (§6.5) — gear → `EffectiveStats`; now **merged with** skill modifiers.
+  *(Partly shipped 2026-06-09: the pure model was relocated to **`utils/equipment.py`** — a
+  shared, stdlib-only seam — the moment a second game needed it, and combat gear
+  (weapon/armor → `damage`/`defense`/`max_health`) was added so **deathmatch reads
+  `EffectiveStats`**. A stateful service + skill-modifier merge remain later steps.)*
 - **Profile read-model + renderer** — composes level, skills, gear→stats, coins, rank, titles;
   **owns no data**. `utils/mining_render` is the seed but generalizes to a **cross-game character
   renderer** (no longer mining-specific). Stat-card first; paper-doll later.
@@ -393,6 +397,9 @@ abstraction before its first concrete use.
 
 - **PvP shape** — matchmade arena vs. challenge-a-friend **coin-wager duels** vs. gear straight into
   the existing deathmatch. *(Weapons — sword/bow/dagger — get their purpose here, or from PvE.)*
+  **Update 2026-06-09:** the "gear into the existing deathmatch" leg **shipped** — equipped
+  weapon/armor now tilts duels (a small, fair edge). The broader arena-vs-wager-vs-existing
+  *shape*, and whether gear should swing PvP harder, stay open for a product call.
 - **Server-wide goals** — a shared **dig-bar** toward "the Core" (active contribution) vs. a communal
   **boss** vs. rotating **events** / seasons.
 - **Trading & market** — player trade / gift / market **and the anti-alt-account guardrails**

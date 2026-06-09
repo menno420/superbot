@@ -1,14 +1,14 @@
-"""Tests for cogs.mining.equipment — pure gear→stats model."""
+"""Tests for utils.equipment — pure, cross-game gear→stats model."""
 
 from __future__ import annotations
 
 from dataclasses import fields
 
-from cogs.mining import equipment as eq
+from utils import equipment as eq
 
 
-def test_slots_are_the_three_v1_slots():
-    assert eq.SLOTS == (eq.TOOL, eq.LIGHT, eq.CHARM)
+def test_slots_are_the_five_character_slots():
+    assert eq.SLOTS == (eq.TOOL, eq.LIGHT, eq.CHARM, eq.WEAPON, eq.ARMOR)
 
 
 def test_slot_for_known_items():
@@ -17,6 +17,36 @@ def test_slot_for_known_items():
     assert eq.slot_for("torch") == eq.LIGHT
     assert eq.slot_for("lantern") == eq.LIGHT
     assert eq.slot_for("lucky charm") == eq.CHARM
+
+
+def test_combat_gear_slots_and_stats():
+    assert eq.slot_for("sword") == eq.WEAPON
+    assert eq.slot_for("iron sword") == eq.WEAPON
+    assert eq.slot_for("shield") == eq.ARMOR
+    assert eq.slot_for("armor") == eq.ARMOR
+    assert eq.item_stats("sword").damage == 3
+    assert eq.item_stats("iron sword").damage == 6
+    shield = eq.item_stats("shield")
+    assert (shield.defense, shield.max_health) == (2, 10)
+    body = eq.item_stats("armor")
+    assert (body.defense, body.max_health) == (4, 20)
+
+
+def test_compute_stats_mixes_mining_and_combat_gear():
+    # A character equips mining AND combat gear at once; stats sum across all
+    # five slots into one neutral block that each game reads its subset of.
+    equipped = {
+        eq.TOOL: "iron pickaxe",
+        eq.LIGHT: "lantern",
+        eq.WEAPON: "iron sword",
+        eq.ARMOR: "armor",
+    }
+    stats = eq.compute_stats(equipped)
+    assert stats.mining_power == 4
+    assert stats.depth_access == 2
+    assert stats.damage == 6
+    assert stats.defense == 4
+    assert stats.max_health == 20
 
 
 def test_slot_for_is_case_insensitive():

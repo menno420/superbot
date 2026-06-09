@@ -28,6 +28,7 @@ from cogs.deathmatch.actions import (
     pick_bot_action,
 )
 from cogs.deathmatch_cog import Deathmatch, _ChallengeView, _Duel
+from utils import db, equipment
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.games.common import BackToPanelButton
@@ -75,6 +76,16 @@ def build_deathmatch_rules_embed() -> discord.Embed:
         inline=False,
     )
     embed.add_field(
+        name="Gear",
+        value=(
+            "Equip combat gear from the mining hub (`!equip iron sword`, "
+            "`!equip armor`): a **weapon** adds attack damage, **armor** adds "
+            "max HP and flat damage reduction. A small, fair edge — not a "
+            "guaranteed win."
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="Leaderboard",
         value=(
             "PvP wins and losses update the deathmatch leaderboard. "
@@ -93,8 +104,10 @@ def build_bot_duel_embed(
     last_action: str = "",
 ) -> discord.Embed:
     desc = (
-        f"**{player.display_name}** — {max(duel.player1_hp, 0)} HP\n"
-        f"**{bot_user.display_name}** — {max(duel.player2_hp, 0)} HP\n"
+        f"**{player.display_name}** — "
+        f"{max(duel.player1_hp, 0)}/{duel.player1_max_hp} HP\n"
+        f"**{bot_user.display_name}** — "
+        f"{max(duel.player2_hp, 0)}/{duel.player2_max_hp} HP\n"
     )
     if not duel.is_over:
         whose_turn = (
@@ -121,8 +134,10 @@ def build_bot_duel_result_embed(
         title="⚔️ Bot Duel Ended",
         description=(
             f"{last_action}\n\n"
-            f"**{player.display_name}** — {max(duel.player1_hp, 0)} HP\n"
-            f"**{bot_user.display_name}** — {max(duel.player2_hp, 0)} HP\n\n"
+            f"**{player.display_name}** — "
+            f"{max(duel.player1_hp, 0)}/{duel.player1_max_hp} HP\n"
+            f"**{bot_user.display_name}** — "
+            f"{max(duel.player2_hp, 0)}/{duel.player2_max_hp} HP\n\n"
             f"🏆 **{winner.display_name}** wins!\n"
             "_Bot duels don't update the PvP leaderboard._"
         ),
@@ -159,14 +174,21 @@ class _BotDuelView(discord.ui.View):
         self,
         player: discord.Member | discord.User,
         bot_user: discord.User | discord.ClientUser,
+        *,
+        player_stats: equipment.EffectiveStats | None = None,
     ) -> None:
         super().__init__(timeout=120.0)
         self.player = player
         self.bot_user = bot_user
         # ``_Duel`` expects two discord.Member arguments; ClientUser
         # duck-types correctly for the .id / .display_name / .mention
-        # attributes _Duel reads.
-        self.duel = _Duel(player, bot_user)  # type: ignore[arg-type]
+        # attributes _Duel reads.  The player brings their equipped combat
+        # gear (EffectiveStats); the bot fights bare (default all-zero stats).
+        self.duel = _Duel(
+            player,  # type: ignore[arg-type]
+            bot_user,  # type: ignore[arg-type]
+            p1_stats=player_stats or equipment.EffectiveStats(),
+        )
         self.message: discord.Message | None = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -415,7 +437,10 @@ class DeathmatchPanelView(HubView):
                 ephemeral=True,
             )
             return
-        view = _BotDuelView(interaction.user, bot_user)
+        player_stats = equipment.compute_stats(
+            await db.get_equipment(str(interaction.user.id), interaction.guild_id or 0),
+        )
+        view = _BotDuelView(interaction.user, bot_user, player_stats=player_stats)
         await interaction.response.edit_message(
             embed=build_bot_duel_embed(view.duel, interaction.user, bot_user),
             view=view,
