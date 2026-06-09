@@ -29,6 +29,10 @@
    The next session resumes at the first unchecked lane.
 5. Tick the checkbox + add the PR # here as each lane lands (this file is the
    cross-session scoreboard).
+6. **Running lanes in parallel (multiple agents at once)?** Proven viable 2026-06-09
+   (Lanes 2+3). Follow `docs/owner/ai-project-workflow.md` §9 → "Parallel execution
+   lanes": edit only your own lane's card/paragraph, re-sync `origin/main` before the
+   final docs push, second-to-merge reconciles (UNION), skip the grooming pass.
 
 ## Known tripwires (read once, they bite across lanes)
 

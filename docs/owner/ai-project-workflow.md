@@ -184,3 +184,39 @@ Practical rules when several chats are live:
   that collides.
 - **One fact, one home.** Route a durable conclusion to its owning doc and link from the rest
   — restatement across files is exactly what turns a clean merge into a conflict.
+
+### Parallel execution lanes (two agents on the same plan, simultaneously)
+
+First deliberate run: 2026-06-09, Lanes 2 (#632) + 3 (#634) of the multi-lane plan,
+one agent each. Empirical result: **zero code conflicts, one mechanical docs conflict**
+— the model works. What made it work, and the rules it earned:
+
+- **Partition by subsystem, and put an explicit "do not touch" list in each prompt.**
+  Lane 2 (governance/access/diagnostics) and Lane 3 (AI orchestration) share no files,
+  so the build phases never interacted. The exclusion list meant no guessing about the
+  boundary. Two agents inside the *same* subsystem would need file-level partition —
+  don't run that variant without one.
+- **The entire collision surface is the cross-cutting ledgers** (`docs/current-state.md`
+  lane list, the execution plan's scoreboard). Lane-owned docs — plan section banners,
+  folios, `capability-authority.md` — partition naturally and merged clean. Budget your
+  caution accordingly: free rein on lane-owned docs, surgical edits on ledgers.
+- **Edit only your own lane's paragraph/card; never reflow neighbours.** The scoreboard's
+  per-lane cards auto-merged (separate list items). The current-state lane list ¶2/¶3
+  conflicted *only because the paragraphs are adjacent lines* — and resolution was
+  mechanical UNION (keep both) precisely because each agent had stayed inside its own ¶.
+- **Leave the shared "▶ Next action" header pointer alone during a parallel burst.** It
+  says "first unchecked lane", which self-corrects through the scoreboard; rewriting it
+  from two sessions is a guaranteed same-line conflict for zero information gain.
+- **Re-fetch + merge `origin/main` right before the END-protocol docs push.** The 2026-06-09
+  conflict landed because the other lane merged between this lane's code push and docs
+  push. A last-moment sync usually absorbs it; when the other PR merges *after* your final
+  push anyway, the **second-to-merge agent owns the reconciliation** — a ~2-minute UNION
+  resolve. That is the designed cost: accept-and-reconcile (Q-0060), no locks.
+- **Skip the standing backlog-grooming secondary task in a parallel session** — two agents
+  grooming `docs/ideas/` simultaneously is an avoidable collision on a shared tracker;
+  the next solo session picks it back up.
+- **Name the parallel partner in the PR body** ("Agent N is concurrently working on
+  Lane M; this PR avoids …") so the reviewer knows two PRs are siblings, not rivals.
+- **Do not add coordination machinery.** The observed total overhead was one mechanical
+  merge; any session-ledger / lock protocol would cost more than it saves. The
+  per-section ownership table above + the rules here are sufficient.

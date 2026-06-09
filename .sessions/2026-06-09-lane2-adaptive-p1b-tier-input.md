@@ -48,3 +48,46 @@ broader sweep 884 passed · arch strict 0 errors · full CI mirror green before 
 - **Pointed to but didn't need:** §16.5's `configured_resource_missing`/`identity_mismatch`
   context (already-marked-covered; correctly skipped). The router Q-0036/Q-0045 entries
   were exactly sufficient — no owner question needed this session.
+
+## Parallel-session retrospective (maintainer-requested)
+
+How it felt from inside, and what the next parallel run should know. Durable rules
+extracted to `docs/owner/ai-project-workflow.md` §9 → "Parallel execution lanes";
+this is the narrative record behind them.
+
+- **The partner was invisible, and that was the point.** During the entire build
+  phase Agent 2 existed only as (a) the prompt's "do not touch" list and (b) live
+  GitHub. Zero friction, zero coordination messages, no waiting. The pre-partition
+  by subsystem (Lane 2 = governance/access/diagnostics, Lane 3 = AI orchestration)
+  meant my prompt's stop-condition ("if Agent 2 touched the same files, stop and
+  document") never came close to triggering. Parallelism felt *safe* precisely
+  because the owner had already made the partition decision — the agents didn't
+  have to negotiate anything.
+- **The one collision was predicted in-session, and still happened** — which is the
+  useful lesson. I saw at docs time that `current-state.md`'s lane list was the
+  shared surface, deliberately left the "▶ Next action" header line alone (its
+  "first unchecked lane" pointer self-corrects via the scoreboard), and edited only
+  my own ¶2… and the conflict arrived anyway, because Agent 2's ¶3 edit sits on the
+  adjacent line and #634 merged after my final push. Resolution was two minutes of
+  mechanical UNION (keep both ¶s) — *because* both agents had stayed inside their
+  own paragraphs. So the discipline didn't prevent the conflict; it made the
+  conflict trivial. That's the realistic goal for parallel sessions: cheap
+  collisions, not zero collisions.
+- **What I'd do differently:** re-fetch + merge `origin/main` immediately before
+  the END-protocol docs push (now a §9 rule). It wouldn't have helped this exact
+  time (#634 merged after my push), but it shrinks the window; whoever merges
+  second owns the reconciliation, and that should be treated as normal work, not
+  an incident.
+- **What quietly worked and should be kept:** per-file `.sessions/` logs (both
+  sessions wrote logs, zero interaction); per-lane scoreboard cards (auto-merged —
+  both executor notes survived); the PR-body parallel-work note (reviewer sees
+  sibling PRs, not rivals); draft-PR-early (both lane numbers existed before either
+  session's docs pass, so neither ledger ever held a "(this session)" placeholder).
+  I also skipped the standing backlog-grooming pass on purpose — two agents
+  grooming `docs/ideas/` concurrently is an avoidable tracker collision (now a §9
+  rule too).
+- **Suggestion for scaling past two agents:** stay with subsystem-partitioned lanes
+  and accept-and-reconcile; resist adding a coordination ledger. The observed total
+  overhead at N=2 was one mechanical merge. If a future burst runs lanes that
+  *must* share a subsystem, partition by file in the prompts — that's the only
+  variant I'd treat as genuinely risky.
