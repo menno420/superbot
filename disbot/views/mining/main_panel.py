@@ -140,12 +140,13 @@ class MiningHubView(PersistentView):
         # in cogs/, and views must not import cogs at module level (layer
         # rule).  A later step relocates the pure engine to a shared layer so
         # this can become a plain import (mining_exploration_brainstorm §7.4).
-        from cogs.mining.exploration import explore_from_inventory
+        from cogs.mining.exploration import explore_from_state
 
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
         inventory = await db.get_mining_inventory(user_id, gid)
-        text, item, amount = explore_from_inventory(inventory)
+        equipped = await db.get_equipment(user_id, gid)
+        text, item, amount = explore_from_state(equipped, inventory)
         if item:
             await db.update_mining_item(user_id, gid, item, amount)
         embed = discord.Embed(

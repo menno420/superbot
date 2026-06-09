@@ -22,7 +22,7 @@ import discord
 from discord.ext import commands
 
 from cogs.mining import equipment
-from cogs.mining.exploration import explore_from_inventory
+from cogs.mining.exploration import explore_from_state
 from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
 from core.runtime import panel_manager
@@ -227,11 +227,12 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def explore(self, ctx):
-        """Discover random events or items (loadout- and depth-aware)."""
+        """Discover random events or items (driven by your equipped gear)."""
         user_id = str(ctx.author.id)
         gid = ctx.guild.id
         inventory = await db.get_mining_inventory(user_id, gid)
-        text, item, amount = explore_from_inventory(inventory)
+        equipped = await db.get_equipment(user_id, gid)
+        text, item, amount = explore_from_state(equipped, inventory)
         if item:
             await self.update_inventory(user_id, gid, item, amount)
         await ctx.send(f"{ctx.author.mention} {text}")

@@ -33,6 +33,8 @@ import random
 from dataclasses import dataclass, field
 from enum import Enum
 
+from cogs.mining import equipment
+
 
 class Biome(Enum):
     """Depth bands.  Deeper biomes carry richer (and riskier) outcomes."""
@@ -244,20 +246,24 @@ def eligible_outcomes(biome: Biome, loadout: Loadout) -> list[ExploreOutcome]:
     ]
 
 
-def _scale_amount(outcome: ExploreOutcome, loadout: Loadout) -> int:
-    """Apply loadout-driven scaling to a positive payout.
+# Items whose gains scale with mining power (ore — not flavour drops like wood).
+_ORE_ITEMS: frozenset[str] = frozenset({"stone", "iron", "gold", "diamond"})
 
-    A pickaxe doubles ore gains (mirrors the existing !mine bonus); a
-    lucky charm adds +1 on top.  Penalties (negative amounts) are never
-    scaled — gear protects gains, it does not amplify losses.
+
+def _scale_amount(outcome: ExploreOutcome, stats: equipment.EffectiveStats) -> int:
+    """Apply equipped-gear scaling to a positive payout.
+
+    ``mining_power`` multiplies ore gains — power 2 → ×2 (matching the old
+    pickaxe bonus), power 4 (an iron pickaxe) → ×3; ``loot_bonus`` adds a flat
+    extra to any gain.  Penalties (negative amounts) are never scaled — gear
+    protects gains, it does not amplify losses.
     """
     amount = outcome.amount
     if amount <= 0:
         return amount
-    if loadout.has(PICKAXE) and outcome.item in {"stone", "iron", "gold", "diamond"}:
-        amount *= 2
-    if loadout.has(LUCKY_CHARM):
-        amount += 1
+    if outcome.item in _ORE_ITEMS:
+        amount *= 1 + stats.mining_power // 2
+    amount += stats.loot_bonus
     return amount
 
 
@@ -265,16 +271,18 @@ def resolve(
     biome: Biome,
     loadout: Loadout,
     *,
+    stats: equipment.EffectiveStats | None = None,
     rng: random.Random | None = None,
 ) -> ExploreResult:
     """Pick and resolve one weighted exploration outcome.
 
-    *rng* is injected for deterministic tests; defaults to the module
-    :mod:`random`.  Always returns a result — if nothing is eligible
-    (should not happen given the surface fallbacks), a benign "nothing"
-    result is produced.
+    *loadout* gates which outcomes are reachable; *stats* (from equipped gear)
+    scales the amount.  *rng* is injected for deterministic tests.  Always
+    returns a result — if nothing is eligible (should not happen given the
+    surface fallbacks), a benign "nothing" result is produced.
     """
     chooser = rng or random
+    effective = stats or equipment.EffectiveStats()
     candidates = eligible_outcomes(biome, loadout)
     if not candidates:
         empty = ExploreOutcome(
@@ -288,7 +296,7 @@ def resolve(
     outcome = chooser.choices(candidates, weights=[o.weight for o in candidates], k=1)[
         0
     ]
-    final_amount = _scale_amount(outcome, loadout)
+    final_amount = _scale_amount(outcome, effective)
     narration = outcome.narration.format(
         amount=abs(final_amount),
         item=outcome.item or "",
@@ -300,33 +308,50 @@ def resolve_to_legacy_tuple(
     biome: Biome = Biome.SURFACE,
     loadout: Loadout | None = None,
     *,
+    stats: equipment.EffectiveStats | None = None,
     rng: random.Random | None = None,
 ) -> tuple[str, str | None, int]:
-    """Drop-in replacement for ``rewards.roll_explore_outcome``.
-
-    Returns ``(text, item_or_None, delta)`` so a future wiring step can
-    swap the call site with no change to the cog's downstream code.
+    """Resolve one step and return the legacy ``(text, item, amount)`` tuple
+    that ``rewards.roll_explore_outcome`` produced — the shape both ``!explore``
+    call sites consume.
     """
-    return resolve(biome, loadout or Loadout(), rng=rng).to_legacy_tuple()
+    return resolve(biome, loadout or Loadout(), stats=stats, rng=rng).to_legacy_tuple()
 
 
-def explore_from_inventory(
+# Equipment slots → the capability token the catalog gates on.  A light in the
+# LIGHT slot (torch *or* lantern) satisfies the deep-find gate — fixing the old
+# behaviour where only a literal "torch" counted; v1 has one tool family, so the
+# TOOL slot maps to PICKAXE.
+_SLOT_TO_TOKEN: dict[str, str] = {
+    equipment.TOOL: PICKAXE,
+    equipment.LIGHT: TORCH,
+    equipment.CHARM: LUCKY_CHARM,
+}
+
+
+def explore_from_state(
+    equipped: dict[str, str],
     inventory: dict[str, int],
     *,
     biome: Biome = Biome.SURFACE,
     rng: random.Random | None = None,
 ) -> tuple[str, str | None, int]:
-    """Resolve one exploration step straight from an ``{item: qty}`` inventory.
+    """Resolve one exploration step from the player's *equipped* gear.
 
-    Convenience seam for the ``!explore`` command and the hub's Explore
-    button: it builds the :class:`Loadout` from the raw inventory and returns
-    the legacy ``(text, item, amount)`` tuple both call sites already consume.
-    It centralises loadout construction and the (currently fixed, ``SURFACE``)
-    starting depth, so a later persistent-position step can thread the
-    player's real biome through this single place.
+    Equipped gear drives both gating (a light unlocks deep finds) and scaling
+    (``mining_power`` → more ore, ``loot_bonus`` → extra) via the equipment
+    :class:`~cogs.mining.equipment.EffectiveStats`.  Consumables that gate
+    outcomes but are not equippable (dynamite) are still read from *inventory*.
+    Returns the legacy ``(text, item, amount)`` tuple both call sites consume;
+    the (currently fixed, ``SURFACE``) starting depth lives here, so a later
+    persistent-position step threads the player's real biome through one place.
     """
-    loadout = Loadout.from_inventory(inventory)
-    return resolve_to_legacy_tuple(biome=biome, loadout=loadout, rng=rng)
+    tokens = {_SLOT_TO_TOKEN[slot] for slot in equipped if slot in _SLOT_TO_TOKEN}
+    if inventory.get(DYNAMITE, 0) > 0:
+        tokens.add(DYNAMITE)
+    loadout = Loadout(tools=frozenset(tokens))
+    stats = equipment.compute_stats(equipped)
+    return resolve(biome, loadout, stats=stats, rng=rng).to_legacy_tuple()
 
 
 # Mutation-application is intentionally NOT here: applying ``final_amount``
@@ -343,7 +368,7 @@ __all__ = [
     "eligible_outcomes",
     "resolve",
     "resolve_to_legacy_tuple",
-    "explore_from_inventory",
+    "explore_from_state",
     "PICKAXE",
     "TORCH",
     "LANTERN",
