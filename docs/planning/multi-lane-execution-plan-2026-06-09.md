@@ -129,11 +129,13 @@
 
 ## Lane 6 — Vision draft-answers for Q-0038–Q-0042 (Q-0051; docs-only)
 
-- [x] Shipped in PR: **#631** (2026-06-09, parallel-agent run — Lane 6 only). All five
-  drafts appended under their router entries, marked `draft-answer — awaiting
-  maintainer markup`; safe defaults still bind. *Lane exit ≠ questions closed:* the
-  markup pass (approve/adjust/reject per item) + routing to destinations is the
-  maintainer's follow-up, and per Q-0062 it can seed the lazy owner-voice folio blocks.
+- [x] Shipped in PR: **#631** (2026-06-09, parallel-agent run — Lane 6 only), **and the
+  maintainer marked up all five same day** (structured-choices round in the PR session):
+  Q-0038/Q-0039/Q-0041/Q-0042 approved as drafted; **Q-0040 adjusted — bounded-menu DM
+  posture** (AI selects quest/reward/difficulty from pre-approved, hard-capped menus).
+  Answers + scopes recorded in the router; conclusions routed to the four roadmap
+  drafts, `docs/roadmap.md` gate lines, and the AI folio's first Q-0062 owner-voice
+  block. Posture only — implementation still needs per-lane promotion.
 - **Goal:** one drafted, concrete proposed answer per open vision question (clans
   identity · VIP fairness · AI dungeon-master posture · integrations/voice privacy ·
   web dashboard), each grounded in existing decisions + safe defaults, formatted so

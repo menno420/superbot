@@ -56,14 +56,37 @@ ideas-lab §2 operating decisions + §6 rejection ledger (nothing rejected re-pr
 answered Q-0001/Q-0002 + AR-08/AR-09, Q-0033/Q-0043–Q-0051,
 `docs/ideas/future-product-direction-2026-06-07.md` (website/cross-server guardrails).
 
-## Follow-ups (not approved work — the markup pass owns them)
+## Markup round — same session, same day (structured choices)
 
-- Maintainer marks up the five drafts (approve / adjust / reject per item — PR #631's
-  table is the index). The markup session then flips statuses, routes conclusions to
-  the destination docs, and per Q-0062 seeds the lazy owner-voice folio blocks for the
-  touched areas (social/games, economy, AI, media, platform).
+The maintainer returned and marked up all five drafts in-session via two
+AskUserQuestion rounds (the Q-0061 pattern):
+
+- **Q-0038 clans — approved as drafted** (server-scoped, one clan per player per
+  server, "clan" naming).
+- **Q-0039 VIP — approved as drafted** (donation = cosmetic + recognition only; no
+  bot-side billing; CI invariant).
+- **Q-0040 AI DM — ADJUSTED: "AI picks from bounded menus"** — AI chooses quest
+  template / reward tier / difficulty from pre-approved, hard-capped menus enforced by
+  deterministic code (chosen over leave-as-drafted and full-authority, after clarifying
+  the narrator posture he'd flagged as possibly misunderstood). Mode order, opt-in,
+  budgets, persistence rules unchanged. Needs a small bounded-authority decision + the
+  per-exposure lift before any build.
+- **Q-0041 integrations/voice — approved as drafted** (YouTube-first, dual opt-in,
+  metadata-only caches; voice behind its own review; speech last — deferred, not
+  dropped).
+- **Q-0042 web — approved as drafted** (staged read-only-first, same audited services,
+  Someday).
+
+Routing done in the same commit: router answer blocks (verbatim selections + answer
+scopes), the four roadmap drafts' decision notes, `docs/roadmap.md` gate lines,
+current-state cross-cutting line, this scoreboard row, and the AI folio's first
+**Q-0062 owner-voice block** (the only area whose markup carried fresh owner voice —
+the four "leave as drafted" picks add no new signal worth a folio block yet).
+
+## Follow-ups (not approved work)
+
 - Backlog-grooming note (Q-0015): this lane *is* a five-question grooming move down the
-  idea conveyor (open → discussed-with-draft); no additional `docs/ideas/` item was
+  idea conveyor (open → discussed → **answered**); no additional `docs/ideas/` item was
   groomed to avoid colliding with the three parallel sibling sessions in shared docs.
 
 ## Context delta
