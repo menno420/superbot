@@ -210,20 +210,22 @@ _DECODE_CLASS: dict[str, str] = {
     "PierceSupportModel": "SAFE_WRITE",  # pierce -> pierceAdditive
     "RateSupportModel": "SAFE_WRITE",  # multiplier -> rateMultiplier (x-cooldown)
     "PoplustSupportModel": "SAFE_WRITE",  # *PercentIncrease -> *Percentage (verified)
+    # 2026-06-09 evidence pass — semantics pinned by committed values, mapped
+    # in _BUFF_FIELD_MAP (see each entry's confirmation note there):
+    "RangeSupportModel": "SAFE_WRITE",  # additive/multiplier -> rangeAdditive/%
+    "StartOfRoundRateBuffModel": "SAFE_WRITE",  # decoded since PR #501 (was stale)
+    "ProjectileRadiusSupportModel": "SAFE_WRITE",  # -> radiusMultiplier (Striker)
+    "BananaCashIncreaseSupportModel": "SAFE_WRITE",  # -> incomePercentage (Benjamin)
     # SCHEMA_FIRST — real number, no committed buff-schema field yet
-    "ProjectileSpeedSupportModel": "SCHEMA_FIRST",
-    "ProjectileRadiusSupportModel": "SCHEMA_FIRST",
-    "FreezeDurationSupportModel": "SCHEMA_FIRST",
-    "BananaCashIncreaseSupportModel": "SCHEMA_FIRST",  # economy
-    "CentralMarketBuffModel": "SCHEMA_FIRST",  # economy
-    "BananaCentralBuffModel": "SCHEMA_FIRST",  # economy
-    "BonusCashZoneModel": "SCHEMA_FIRST",  # economy zone
+    "ProjectileSpeedSupportModel": "SCHEMA_FIRST",  # 0.25 fraction-vs-x unpinned
+    "FreezeDurationSupportModel": "SCHEMA_FIRST",  # Silas; no confirming number
+    "CentralMarketBuffModel": "SCHEMA_FIRST",  # economy (blocked: Farm has no tiers)
+    "BananaCentralBuffModel": "SCHEMA_FIRST",  # economy (no committed number at all)
+    "BonusCashZoneModel": "SCHEMA_FIRST",  # Temple zone: sacrifice-conditional
     # DEFER — ambiguous magnitude/semantics until examples prove them
-    "RangeSupportModel": "DEFER",  # multiplier is an ambiguous fraction
-    "StartOfRoundRateBuffModel": "DEFER",  # bare "modifier"
-    "BrickellFreezeMinesAbilityBuffModel": "DEFER",  # niche
-    "BuffBlowbackZoneModel": "DEFER",  # knockback magnitude
-    "ActivateRangeSupportZoneModel": "DEFER",  # timed activated zone
+    "BrickellFreezeMinesAbilityBuffModel": "DEFER",  # bare multiplier 0.25 ambiguous
+    "BuffBlowbackZoneModel": "DEFER",  # knockback magnitude (hero not committed)
+    "ActivateRangeSupportZoneModel": "DEFER",  # inside AbilityModel; value unconfirmed
 }
 
 

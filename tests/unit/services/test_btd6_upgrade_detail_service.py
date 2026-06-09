@@ -272,6 +272,31 @@ def test_buff_sellback_multiplier_renders_whole_percent():
     )
 
 
+def test_buff_projectile_radius_fields_render():
+    # Striker Jones L7's committed radiusMultiplier rendered as a bare "buff"
+    # before these fields landed (extracted-but-not-answerable).
+    text = det._buff_text(
+        {"name": "Projectile radius buff", "radiusMultiplier": 1.1},
+    )
+    assert "x1.1 projectile radius" in text
+    assert "+15% projectile radius" in det._buff_text(
+        {"name": "X", "radiusPercentage": 0.15},
+    )
+    assert "6 projectile radius" in det._buff_text(
+        {"name": "X", "projectileRadius": 6},
+    )
+
+
+def test_buff_bank_income_percentage_renders_whole_percent():
+    # Benjamin's Bank Hack: fraction in data (0.05 / 0.12), percent on screen.
+    assert "+5% income" in det._buff_text(
+        {"name": "Bank Hack", "incomePercentage": 0.05},
+    )
+    assert "+12% income" in det._buff_text(
+        {"name": "Bank Hack", "incomePercentage": 0.12},
+    )
+
+
 def test_trade_empire_detail_surfaces_income_end_to_end():
     # The real committed Buccaneer 0-0-5 data: the income buff now reaches the
     # rendered detail (and thus AI grounding), not just the damage bonus.

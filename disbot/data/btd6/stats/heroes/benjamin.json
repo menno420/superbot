@@ -1,7 +1,7 @@
 {
   "hero_id": "benjamin",
   "canonical": "Benjamin",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 1200,
   "cost_chimps": 1200,
@@ -161,6 +161,15 @@
           "cooldown": 30
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.05,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -194,6 +203,15 @@
         {
           "name": "Biohack",
           "cooldown": 30
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.05,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,
@@ -266,6 +284,15 @@
           "cooldown": 30
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.05,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -336,6 +363,15 @@
           "cooldown": 30
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.05,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -404,6 +440,15 @@
         {
           "name": "Biohack",
           "cooldown": 30
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,
@@ -480,6 +525,15 @@
           "cooldown": 65
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -552,6 +606,15 @@
         {
           "name": "Syphon Funding",
           "cooldown": 65
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,
@@ -628,6 +691,15 @@
           "cooldown": 65
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -700,6 +772,15 @@
         {
           "name": "Syphon Funding",
           "cooldown": 65
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,
@@ -776,6 +857,15 @@
           "cooldown": 65
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -848,6 +938,15 @@
         {
           "name": "Syphon Funding",
           "cooldown": 65
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,
@@ -924,6 +1023,15 @@
           "cooldown": 65
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -996,6 +1104,15 @@
         {
           "name": "Syphon Funding",
           "cooldown": 65
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,
@@ -1072,6 +1189,15 @@
           "cooldown": 65
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -1146,6 +1272,15 @@
           "cooldown": 65
         }
       ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": false,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -1218,6 +1353,15 @@
         {
           "name": "Syphon Funding",
           "cooldown": 65
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "BananaCashIncreaseSupport",
+          "name": "BuffIconBenjamin",
+          "incomePercentage": 0.12,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": false,

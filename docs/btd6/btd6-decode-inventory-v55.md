@@ -6,8 +6,8 @@
 > re-run it on the same dump clone to reproduce this file. A diff
 > means the dump moved; re-validate before trusting old verdicts.
 
-- **Dump SHA (pin):** `a3348a89c28b9db204f6f30776c5b072510584bc`
-- **Game version:** 55.0
+- **Dump SHA (pin):** `4e22e5861bedb9764af62d4a10947fe4db15f2c6`
+- **Game version:** 55.1
 - **Anchor gate:** Dart Monkey 200, Super Monkey 2500 — **PASS** (checked first; report aborts on failure).
 
 ## 1. Domain coverage (present? / extracted? / verdict)
@@ -15,24 +15,24 @@
 | Domain | Files | Extracted? | Verdict | Reason |
 |---|---|---|---|---|
 | `Achievements/` | 156 | no | cosmetic-skip | achievement metadata; not gameplay stats. |
-| `Artifacts/` | 568 | no | cosmetic-skip | Rogue Legends artifacts; dictionary marks skip. |
+| `Artifacts/` | 568 | no | cosmetic-skip | Rogue Legends/Frontier artifacts+traits; real gameplay modifiers but spin-off-mode-only — out of main-game scope (pairs with rogueData.json; revisit only on a scope expansion). |
 | `BloonOverlays/` | 46 | no | cosmetic-skip | bloon sprite overlays; cosmetic. |
-| `Bloons/` | 235 | partial | ingest-later | bosses live here (Bloonarius sampled = 20k HP); 235 bloons counted, children/immunity decode unverified. Still wiki-sourced. |
-| `Bosses/` | 7 | no | cosmetic-skip | boss *cosmetic* data (music/sprites); the HP/stats live in Bloons/ (see decode-status). Dictionary marks skip. |
+| `Bloons/` | 235 | yes | ingest-now | children/immune_to/health/speed/fortified-health cut over to game data (--bloons, game_sourced_fields marker); bosses ingested from Bloons/<boss>/ via --bosses. rbe stays derived; prose wiki-curated. |
+| `Bosses/` | 7 | yes | ingest-now | --bosses builds bosses.json from Bosses/ + Bloons/<boss>/ (the HP/stats carrier); the folder's own music/sprite files stay cosmetic. |
 | `Buffs/` | 91 | no | cosmetic-skip | BuffIndicatorModel = UI icons, not effects; effects are inline in tower models. Dictionary marks skip. |
-| `GeraldoItems/` | 16 | no | cosmetic-skip | Geraldo shop item presentation; dictionary marks skip. |
+| `GeraldoItems/` | 16 | yes | ingest-now | --geraldo builds geraldo_items.json (16 items: cash cost, unlock level, stock/replenish cadence + structured effect factors). |
 | `IncomeSets/` | 7 | no | ingest-later | 7 IncomeSetModels for economy income; counted, not mapped. |
-| `Knowledge/` | 134 | no | cosmetic-skip | monkey-knowledge tree; dictionary marks skip. |
-| `Maps/` | 89 | no | cosmetic-skip | map metadata; dictionary marks skip. |
-| `Mods/` | 22 | no | ingest-later | game-mode rule mods (CHIMPS etc.); not opened. |
-| `Powers/` | 27 | no | ingest-later | 27 consumable powers; one sampled, structure not mapped. |
+| `Knowledge/` | 134 | yes | ingest-now | --knowledge builds monkey_knowledge.json (134 entries, 119 with structured effect factors decoded from mod.mutatorMods). |
+| `Maps/` | 89 | yes | ingest-now | --maps rebuilds maps.json from Maps/ folders (86 player maps, all difficulties, has_water; curated removables preserved). |
+| `Mods/` | 22 | yes | ingest-now | --modes overlays per-mode structured rules blocks (cash/lives/rounds/cost + restrictions) onto modes.json from Mods/<mode>.json mutatorMods; taxonomy/prose stay curated. |
+| `Powers/` | 27 | yes | ingest-now | --powers builds powers.json (25 of 27; Rogue/seasonal excluded) with decoded effect factors + filled {0} placeholders. |
 | `Rounds/` | 5181 | no | ingest-later | 5181 RoundModels (all modes); structure counted, not mapped. |
 | `Skins/` | 51 | no | cosmetic-skip | cosmetic skins; audio/prefab swaps only. |
 | `Towers/` | 2093 | yes | ingest-now | core stats live here; numeric leaves audit CLEAN/DELTA. The zone/buff/subtower-tail effects are the open decode work (step 5). |
 | `TrophyStoreItems/` | 424 | no | cosmetic-skip | trophy-store cosmetics; not gameplay. |
 | `Upgrades/` | 764 | yes | ingest-now | per-tier cost/xp/name extracted; LocsKey->textTable descriptions now wired inline into stats (373/375) + grounding. |
 
-textTable: 12,127 keys
+textTable: 12,136 keys
 
 - Upgrades: 423/764 have a name string, 421/764 have a '<name> Description'
 - Powers: 25/27 have a name string, 25/27 have a '<name> Description'
@@ -41,7 +41,7 @@ textTable: 12,127 keys
 
 Per-field verdict for everything the mapper already extracts. `SUSPECT` (>20% divergence) = never overlay; `DELTA` = sparse, likely a genuine v55 change; `CLEAN` = matches committed data.
 
-**Totals:** 33 CLEAN · 15 DELTA · 0 SUSPECT (across 48 numeric/bool fields).
+**Totals:** 37 CLEAN · 15 DELTA · 0 SUSPECT (across 52 numeric/bool fields).
 
 | Field | Verdict | Diffs | Total | Rate |
 |---|---|---|---|---|
@@ -55,7 +55,7 @@ Per-field verdict for everything the mapper already extracts. `SUSPECT` (>20% di
 | `bool:canCollisionBeBlockedByMapLos` | DELTA | 20 | 1971 | 1% |
 | `immuneBloonProperties` | DELTA | 20 | 1501 | 1% |
 | `speed` | DELTA | 19 | 905 | 2% |
-| `lifespan` | DELTA | 18 | 1097 | 2% |
+| `lifespan` | DELTA | 13 | 1130 | 1% |
 | `rate` | DELTA | 12 | 1840 | 1% |
 | `damage` | DELTA | 8 | 1501 | 1% |
 | `sharedGridRange` | DELTA | 1 | 1854 | 0% |
@@ -88,11 +88,15 @@ Per-field verdict for everything the mapper already extracts. `SUSPECT` (>20% di
 | `damageModifierForFortified` | CLEAN | 0 | 107 | 0% |
 | `damageModifierForLead` | CLEAN | 0 | 17 | 0% |
 | `damageModifierForMoabs` | CLEAN | 0 | 205 | 0% |
+| `bool:isGlobal` | CLEAN | 0 | 17 | 0% |
+| `maxStackSize` | CLEAN | 0 | 17 | 0% |
+| `rateMultiplier` | CLEAN | 0 | 1 | 0% |
 | `cooldown` | CLEAN | 0 | 531 | 0% |
 | `damageModifierForCamo` | CLEAN | 0 | 138 | 0% |
 | `cashPerRound` | CLEAN | 0 | 41 | 0% |
 | `cost_chimps` | CLEAN | 0 | 13 | 0% |
 | `level` | CLEAN | 0 | 340 | 0% |
+| `incomePercentage` | CLEAN | 0 | 16 | 0% |
 
 > Most DELTAs sit on positionally-indexed `projectiles[1/2/3]` leaves — phantom diffs from index alignment, not real changes (named projectiles align cleanly). Numeric overlay (step 3/4) must align nested lists by name, never index.
 
@@ -143,12 +147,12 @@ The 'stat-based effect' half of the goal. These `$type`s are **inline behaviors 
 
 | Buff/Support `$type` | Count | Decodable-number? | Has-curated-name? | Decode-class |
 |---|---|---|---|---|
-| `RangeSupportModel` | 163 | yes (additive, multiplier) | yes (buffLocsName) | DEFER |
+| `RangeSupportModel` | 163 | yes (additive, multiplier) | yes (buffLocsName) | SAFE_WRITE |
 | `PierceSupportModel` | 103 | yes (pierce) | yes (buffLocsName) | SAFE_WRITE |
 | `VisibilitySupportModel` | 94 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `RateSupportModel` | 85 | yes (multiplier) | yes (buffLocsName) | SAFE_WRITE |
 | `PlacementAreaTypeRangeBuffModel` | 64 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
-| `StartOfRoundRateBuffModel` | 41 | yes (modifier) | via owning upgrade | DEFER |
+| `StartOfRoundRateBuffModel` | 41 | yes (modifier) | via owning upgrade | SAFE_WRITE |
 | `AddBehaviorToTowerSupportModel` | 39 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `DroneSupportModel` | 38 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
 | `ProjectileSpeedSupportModel` | 30 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
@@ -156,7 +160,7 @@ The 'stat-based effect' half of the goal. These `$type`s are **inline behaviors 
 | `MonkeyCityIncomeSupportModel` | 26 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `DamageSupportModel` | 20 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
 | `AddBehaviorToTowerTypeSupportModel` | 19 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
-| `BananaCashIncreaseSupportModel` | 16 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `BananaCashIncreaseSupportModel` | 16 | yes (multiplier) | yes (buffLocsName) | SAFE_WRITE |
 | `PyrotechnicsSupportModel` | 16 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `AbilityCooldownScaleSupportModel` | 16 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `ObynGlobalSupportModel` | 16 | no (name/flag only) | via owning upgrade | DESCRIPTION_ONLY |
@@ -165,7 +169,7 @@ The 'stat-based effect' half of the goal. These `$type`s are **inline behaviors 
 | `DamageTypeSupportModel` | 15 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `BrickellFreezeMinesAbilityBuffModel` | 14 | yes (multiplier) | yes (buffLocsName) | DEFER |
 | `SpiritTowerSupportModel` | 14 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
-| `ProjectileRadiusSupportModel` | 14 | yes (multiplier) | yes (model name) | SCHEMA_FIRST |
+| `ProjectileRadiusSupportModel` | 14 | yes (multiplier) | yes (model name) | SAFE_WRITE |
 | `CentralMarketBuffModel` | 10 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
 | `PoplustSupportModel` | 10 | no (name/flag only) | yes (buffLocsName) | SAFE_WRITE |
 | `EziliSupportModel` | 10 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |

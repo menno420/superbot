@@ -1931,3 +1931,182 @@ def test_build_abr_rounds_synthetic_dump(mod, tmp_path, monkeypatch):
     )
     # Fortified MOAB pulls the fortified RBE from committed bloons.json.
     assert r3["rbe"] == 856
+
+
+# --- subtower mechanism tail + zone inclusive + new buff maps (2026-06-09) ----
+
+
+def _spawn_tm(name: str, **extra) -> dict:
+    node = {"$type": _t("TowerModel"), "name": name, "behaviors": []}
+    node.update(extra)
+    return node
+
+
+def test_morph_secondary_tower_model_emits_subtower(mod):
+    # Alchemist Total Transformation: towerModel is null, the morphed form
+    # lives in secondaryTowerModel (no named-reference morph exists in v55.1).
+    spawn = {
+        "$type": _t("MorphTowerModel"),
+        "towerModel": None,
+        "secondaryTowerModel": _spawn_tm("TransformedBaseMonkey", range=72.0),
+        "name": "MorphTowerModel_TransformingTonic",
+    }
+    model = _spawn_tm("Alchemist", behaviors=[spawn])
+    subs = mod._subtowers(model)
+    assert [s["name"] for s in subs] == ["TransformedBaseMonkey"]
+    assert subs[0]["range"] == 72.0
+
+
+def test_beast_handler_leash_emits_both_beasts(mod):
+    # Dual-path Beast Handler: the leash carries two embedded beasts at once.
+    spawn = {
+        "$type": _t("BeastHandlerLeashModel"),
+        "towerModel": _spawn_tm("Microraptor"),
+        "towerModelSecond": _spawn_tm("Gyrfalcon"),
+    }
+    model = _spawn_tm("BeastHandler", behaviors=[spawn])
+    assert [s["name"] for s in mod._subtowers(model)] == ["Microraptor", "Gyrfalcon"]
+
+
+def test_comanche_trance_and_tower_create_spawns_collected(mod):
+    model = _spawn_tm(
+        "X",
+        behaviors=[
+            {"$type": _t("ComancheDefenceModel"), "towerModel": _spawn_tm("ComancheDefenceHeli")},
+            {"$type": _t("TranceTotemSpawnerModel"), "tower": _spawn_tm("TranceTotem")},
+            {"$type": _t("TowerCreateTowerModel"), "towerModel": _spawn_tm("PermaPhoenix")},
+        ],
+    )
+    assert [s["name"] for s in mod._subtowers(model)] == [
+        "ComancheDefenceHeli",
+        "TranceTotem",
+        "PermaPhoenix",
+    ]
+
+
+def test_subtower_lifespan_falls_back_to_embedded_expire_model(mod):
+    # Marine/Lava Phoenix: the spawn has no (or a zero) towerLifetime — the
+    # window lives on the embedded model's own TowerExpireModel.
+    nested = _spawn_tm("Marine")
+    nested["behaviors"] = [{"$type": _t("TowerExpireModel"), "lifespan": 30.0}]
+    spawn = {"$type": _t("CreateTowerModel"), "tower": nested, "towerLifetime": 0.0}
+    subs = mod._subtowers(_spawn_tm("Heli", behaviors=[spawn]))
+    assert subs[0]["lifespan"] == 30.0
+    # A real spawn-side lifetime still wins (Phoenix 20s stays spawn-sourced).
+    timed = {"$type": _t("CreateTowerModel"), "tower": _spawn_tm("P"), "towerLifetime": 20.0}
+    assert mod._subtowers(_spawn_tm("W", behaviors=[timed]))[0]["lifespan"] == 20.0
+
+
+def test_nested_subtower_spawns_stay_unclaimed(mod):
+    # A minion's own spawn is not the parent's minion: the walker must not
+    # descend into any declared nested-model field (incl. secondaryTowerModel).
+    inner_spawn = {"$type": _t("CreateTowerModel"), "tower": _spawn_tm("InnerMinion")}
+    morphed = _spawn_tm("Morphed", behaviors=[inner_spawn])
+    spawn = {"$type": _t("MorphTowerModel"), "towerModel": None, "secondaryTowerModel": morphed}
+    subs = mod._subtowers(_spawn_tm("Outer", behaviors=[spawn]))
+    assert [s["name"] for s in subs] == ["Morphed"]
+
+
+def test_subtower_air_unit_attacks_emitted(mod):
+    # Mini-Comanche: the Ballistic Missile lives under AttackAirUnitModel.
+    nested = _spawn_tm("ComancheDefenceHeli")
+    nested["behaviors"] = [
+        {
+            "$type": _t("AttackAirUnitModel"),
+            "name": "AttackAirUnitModel_BallisticMissile_",
+            "weapons": [
+                {
+                    "$type": _t("WeaponModel"),
+                    "rate": 3.0,
+                    "projectile": {
+                        "$type": _t("ProjectileModel"),
+                        "name": "Explosion",
+                        "behaviors": [
+                            {"$type": _t("DamageModel"), "damage": 4.0},
+                        ],
+                    },
+                },
+            ],
+        },
+    ]
+    spawn = {"$type": _t("ComancheDefenceModel"), "towerModel": nested}
+    subs = mod._subtowers(_spawn_tm("HeliPilot", behaviors=[spawn]))
+    attacks = subs[0]["attacks"]
+    assert len(attacks) == 1 and attacks[0]["rate"] == 3.0
+
+
+def test_zone_inclusive_flag_captured_with_tag(mod):
+    # Obyn's totem: two SlowBloonsZones both tagged Moabs — one inclusive
+    # (MOABs), one exclusive (everything else). Dropping the flag inverts one.
+    model = _spawn_tm(
+        "Totem",
+        behaviors=[
+            {
+                "$type": _t("SlowBloonsZoneModel"),
+                "name": "SlowBloonsZoneModel_NonMoabs",
+                "speedScale": 0.6,
+                "zoneRadius": 32.0,
+                "bloonTag": "Moabs",
+                "inclusive": False,
+            },
+            {
+                "$type": _t("SlowBloonsZoneModel"),
+                "name": "SlowBloonsZoneModel_Moabs",
+                "speedScale": 0.8,
+                "zoneRadius": 32.0,
+                "bloonTag": "Moabs",
+                "inclusive": True,
+            },
+        ],
+    )
+    zones = mod._zones(model)
+    assert [(z["bloonTag"], z["inclusive"], z["speedScale"]) for z in zones] == [
+        ("Moabs", False, 0.6),
+        ("Moabs", True, 0.8),
+    ]
+
+
+def test_buffs_range_support_maps_additive_and_fraction(mod):
+    model = _spawn_tm(
+        "V",
+        behaviors=[
+            {
+                "$type": _t("RangeSupportModel"),
+                "name": "RangeSupportModel_",
+                "buffLocsName": "BiggerRadiusBuff",
+                "additive": 5.0,
+                "multiplier": 0.0,
+                "isGlobal": True,
+            },
+        ],
+    )
+    (buff,) = mod._buffs(model)
+    assert buff["rangeAdditive"] == 5.0
+    assert buff["rangePercentage"] == 0.0  # the zero cross-checks the mapping
+    assert buff["isGlobal"] is True
+
+
+def test_buffs_projectile_radius_and_bank_income(mod):
+    model = _spawn_tm(
+        "H",
+        behaviors=[
+            {
+                "$type": _t("ProjectileRadiusSupportModel"),
+                "name": "x",
+                "buffLocsName": "",
+                "mutatorId": "StrikerJonesProjectileRadiusBuff",
+                "multiplier": 1.1,
+            },
+            {
+                "$type": _t("BananaCashIncreaseSupportModel"),
+                "name": "y",
+                "buffLocsName": "BuffIconBenjamin",
+                "multiplier": 0.05,
+                "isGlobal": True,
+            },
+        ],
+    )
+    radius, bank = mod._buffs(model)
+    assert radius["radiusMultiplier"] == 1.1
+    assert radius["name"] == "StrikerJonesProjectileRadiusBuff"
+    assert bank["incomePercentage"] == 0.05

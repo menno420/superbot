@@ -200,6 +200,17 @@ _BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
     ("lifespanMultiplier", "x{} lifespan", 1),
     ("abilityCooldownMultiplier", "x{} ability cooldown", 1),
     ("heroXpMultiplier", "x{} hero XP", 1),
+    # Projectile-size buffs. radiusMultiplier was committed (Striker Jones L7's
+    # Mortar blast-radius aura, x1.1) but had no render field, so it surfaced
+    # as a bare "buff" — the same extracted-but-not-answerable class as the
+    # cash fields below. radiusPercentage (Mortar 0-4-0 ability buff, 0.15)
+    # and the absolute projectileRadius (Super Monkey Fan Club) ride along.
+    ("radiusMultiplier", "x{} projectile radius", 1),
+    ("radiusPercentage", "+{}% projectile radius", 100),
+    ("projectileRadius", "{} projectile radius", 1),
+    # Benjamin's Bank Hack: banks earn +N% income (a fraction in data, like
+    # the other *Percentage fields; L5 0.05, L9 0.12 — prose-confirmed).
+    ("incomePercentage", "+{}% income", 100),
     # Cash / economy buffs. These were decoded into committed data
     # (TradeEmpireBuffModel, Bucc 0-0-5) but had no render field here, so the
     # renderer surfaced only the damage bonus and silently dropped the income —

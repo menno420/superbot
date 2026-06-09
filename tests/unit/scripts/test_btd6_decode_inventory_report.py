@@ -174,5 +174,12 @@ def test_decode_class_registry_is_classification_only(mod):
     assert c["PierceSupportModel"] == "SAFE_WRITE"
     assert c["RateSupportModel"] == "SAFE_WRITE"
     assert c["ProjectileSpeedSupportModel"] == "SCHEMA_FIRST"
-    assert c["RangeSupportModel"] == "DEFER"  # ambiguous multiplier
+    # 2026-06-09: RangeSupport's fraction ambiguity was pinned by four
+    # committed confirmations (see parse_gamedata._BUFF_FIELD_MAP) — it and
+    # the other newly-mapped types graduated to SAFE_WRITE.
+    assert c["RangeSupportModel"] == "SAFE_WRITE"
+    assert c["StartOfRoundRateBuffModel"] == "SAFE_WRITE"
+    assert c["ProjectileRadiusSupportModel"] == "SAFE_WRITE"
+    assert c["BananaCashIncreaseSupportModel"] == "SAFE_WRITE"
+    assert c["BrickellFreezeMinesAbilityBuffModel"] == "DEFER"
     assert set(c.values()) <= {"SAFE_WRITE", "SCHEMA_FIRST", "DEFER", "DESCRIPTION_ONLY"}

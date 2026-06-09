@@ -442,14 +442,33 @@ def _target_types(model: dict) -> dict:
     }
 
 
-# Models that spawn a sub-tower / minion, and the field holding its TowerModel:
-# AbilityCreateTower (Phoenix, Adora's Ball of Light) / MorphTower (Druid's
-# Masqued Macaque) use ``towerModel``; CreateTower (Engineer sentries, Etienne's
-# UAV, hero totems) uses ``tower``.
-_SUBTOWER_SPAWN_TYPES = {
-    "AbilityCreateTowerModel",
-    "MorphTowerModel",
-    "CreateTowerModel",
+# Models that spawn a sub-tower / minion → the field(s) holding its embedded
+# TowerModel. All mechanisms verified against v55.1 (2026-06-09 evidence pass;
+# the per-mechanism committed confirmations are in
+# btd6-gamedata-decode-status.md step 5c):
+#   * AbilityCreateTower (Phoenix, Adora's Ball of Light) / CreateTower
+#     (Engineer sentries, Etienne's UAV, hero totems): ``towerModel``/``tower``.
+#   * MorphTower: ``towerModel`` when the morphed form is embedded directly
+#     (DanDMonke's Masqued Macaque), ``secondaryTowerModel`` for Alchemist's
+#     Total Transformation (its ``towerModel`` is null — there is NO
+#     named-reference morph anywhere in v55.1; the standalone
+#     TransformedMonkey*.json files are orphans nothing references).
+#   * BeastHandlerLeash: the equipped beast(s) — ``towerModel`` plus
+#     ``towerModelSecond`` on dual-path crosspaths (two beasts at once).
+#   * ComancheDefence (Heli 0-0-4+): the Mini-Comanche reinforcement.
+#   * TowerCreateTower (Wizard 0-5-0 PermaPhoenix, Corvus' Spirit) and
+#     TranceTotemSpawner (Mermonkey 0-0-4+): persistent spawned towers.
+# ``FindDeploymentLocationModel`` (Heli 0-5-0) is intentionally absent: its
+# ``towerModel`` is a second copy of the Marine that ``CreateTowerModel``
+# already emits — wiring it would double-emit.
+_SUBTOWER_SPAWN_TYPES: dict[str, tuple[str, ...]] = {
+    "AbilityCreateTowerModel": ("towerModel", "tower"),
+    "MorphTowerModel": ("towerModel", "secondaryTowerModel"),
+    "CreateTowerModel": ("towerModel", "tower"),
+    "BeastHandlerLeashModel": ("towerModel", "towerModelSecond"),
+    "ComancheDefenceModel": ("towerModel",),
+    "TowerCreateTowerModel": ("towerModel",),
+    "TranceTotemSpawnerModel": ("tower",),
 }
 
 
@@ -460,10 +479,12 @@ def _find_spawn_models(node: Any) -> list[dict]:
     """
     out: list[dict] = []
     if isinstance(node, dict):
-        if _short_type(node) in _SUBTOWER_SPAWN_TYPES:
+        short = _short_type(node)
+        if short in _SUBTOWER_SPAWN_TYPES:
             out.append(node)
+            nested_fields = _SUBTOWER_SPAWN_TYPES[short]
             for key, value in node.items():
-                if key not in ("towerModel", "tower"):
+                if key not in nested_fields:
                     out.extend(_find_spawn_models(value))
             return out
         for value in node.values():
@@ -493,15 +514,33 @@ def _subtowers(model: dict) -> list[dict]:
     """
     out: list[dict] = []
     for spawn in _find_spawn_models(model):
-        nested = spawn.get("towerModel") or spawn.get("tower")
-        if not isinstance(nested, dict):
-            continue
-        node: dict = {"name": _clean_subtower_name(nested)}
-        node.update(_map_tier(nested, _subtower=True))
-        for src, dst in (("towerLifetime", "lifespan"), ("towerLifetimeFrames", None)):
-            if dst and src in spawn:
-                node[dst] = _num(spawn[src])
-        out.append(node)
+        for field_name in _SUBTOWER_SPAWN_TYPES[_short_type(spawn)]:
+            nested = spawn.get(field_name)
+            if not isinstance(nested, dict):
+                continue
+            node: dict = {"name": _clean_subtower_name(nested)}
+            node.update(_map_tier(nested, _subtower=True))
+            for src, dst in (
+                ("towerLifetime", "lifespan"),
+                ("towerLifetimeFrames", None),
+            ):
+                if dst and src in spawn:
+                    node[dst] = _num(spawn[src])
+            # Persistent spawns carry their window on the embedded model's own
+            # TowerExpireModel, not the spawn (Heli's Marine 30s, Wizard's Lava
+            # Phoenix 20s — both committed-confirmed). Only fill when the spawn
+            # gave no (or a zero) lifespan, so timed spawns keep their value.
+            if not node.get("lifespan"):
+                for behavior in nested.get("behaviors", []) or []:
+                    if (
+                        isinstance(behavior, dict)
+                        and _short_type(behavior) == "TowerExpireModel"
+                    ):
+                        value = behavior.get("lifespan")
+                        if isinstance(value, (int, float)) and value:
+                            node["lifespan"] = _num(value)
+                        break
+            out.append(node)
     return out
 
 
@@ -572,6 +611,14 @@ def _zones(model: dict) -> list[dict]:
         tag = behavior.get("bloonTag")
         if isinstance(tag, str) and tag:
             entry["bloonTag"] = tag
+            # ``inclusive`` disambiguates the tag: True = affects bloons WITH
+            # the tag, False = everything WITHOUT it. Obyn's totem carries two
+            # SlowBloonsZones both tagged "Moabs" — one inclusive (MOABs x0.8),
+            # one exclusive (everything else x0.6); dropping the flag inverts
+            # the exclusive zone's meaning.
+            inclusive = behavior.get("inclusive")
+            if isinstance(inclusive, bool):
+                entry["inclusive"] = inclusive
         out.append(entry)
     return out
 
@@ -649,6 +696,32 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     # The committed buff also lists +8% pierce, but that lives on a different
     # mechanism — this model has no pierce field, so we map only the confirmed rate.
     "SupportShinobiTacticsModel": {"multiplier": "rateMultiplier"},
+    # Range aura (Village / heroes / Mermonkey conch / Ninja paragon). The
+    # fraction-vs-multiplier ambiguity that kept this DEFER is now pinned by
+    # FOUR independent committed confirmations (2026-06-09 evidence pass):
+    # Mermonkey 0-0-5 conch buffs[0] rangeAdditive 0 / rangePercentage 0.15 ==
+    # dump additive 0.0 / multiplier 0.15 (both fields, identity); Ninja
+    # paragon base buffs[2] rangeAdditive 10 / rangePercentage 0 == dump 10.0 /
+    # 0.0 (the zero cross-checks each mapping); Etienne L2/L16 prose "10%/20%
+    # more range" == multiplier 0.1/0.2; Obyn L11 prose "+5 range" ==
+    # additive 5.0. So: additive = flat range, multiplier = a FRACTION
+    # (0.1 = +10%), never a true multiplier.
+    "RangeSupportModel": {
+        "additive": "rangeAdditive",
+        "multiplier": "rangePercentage",
+    },
+    # Striker Jones L7+ Mortar blast-radius aura: committed
+    # heroes/striker_jones.json levels/7/buffs[0] radiusMultiplier 1.1 == dump
+    # multiplier 1.1 (identity; the prose "increased by 10%" agrees). Unlike
+    # RangeSupport, this ``multiplier`` IS a true multiplier — per-$type
+    # semantics, never assume across types.
+    "ProjectileRadiusSupportModel": {"multiplier": "radiusMultiplier"},
+    # Benjamin's Bank Hack (L5+: banks earn more). Committed prose states both
+    # numbers: L5 description "all banks earn +5% income" == dump multiplier
+    # 0.05; L9 "Bank hack increased to 12%" == 0.12. Fraction semantics
+    # (committed-prose-confirmed), rendered x100 like the other *Percentage
+    # fields.
+    "BananaCashIncreaseSupportModel": {"multiplier": "incomePercentage"},
 }
 
 # Buffs whose effect is a *nested* ``damageModifierModel`` (tag bonus), not a
@@ -777,6 +850,14 @@ def _map_tier(model: dict, _subtower: bool = False) -> dict:
             foot.get("doesntBlockTowerPlacement", False),
         )
     attacks = _behaviors(model, "AttackModel")
+    if _subtower:
+        # Air-unit subtowers carry combat under AttackAirUnitModel (standard
+        # weapons[] shape). Verified for the Mini-Comanche: its Ballistic
+        # Missile (rate 3.0, Explosion damage 4) lives there and matches the
+        # committed heli 0-0-4 attack — without this the missile never emits.
+        # Scoped to subtowers on purpose: widening it for base towers changes
+        # unverified heli/ace output (cutover-scope, not this slice).
+        attacks = attacks + _behaviors(model, "AttackAirUnitModel")
     tier["attacks"] = [_clean_attack(a, i) for i, a in enumerate(attacks)]
     abilities = _behaviors(model, "AbilityModel")
     if abilities:
