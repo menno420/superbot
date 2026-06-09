@@ -584,7 +584,7 @@ starting them:
    per-guild findings (each runs `resolve_feature_access` against the live guild), not as
    import-time/static checks. Test them with patched resolvers (as the P1A tests do).
 
-3. **Audience simulation — DECIDED 2026-06-09 (Q-0045): option (b), the governance tier-input path.** Add the read-only path so the governance axis prefers `AccessContext.member_tier` when set; the simulation must still label its limits (§16.4). P1B `help_advertises_locked` + P1C Help Preview are unblocked. (Original trade-off kept below for context.)
+3. **Audience simulation — DECIDED 2026-06-09 (Q-0045): option (b), the governance tier-input path.** ✅ **IMPLEMENTED (PR #632, 2026-06-09):** `GovernanceContext.member_tier` is the declared-tier input; `resolver._resolve_member_tier` prefers it verbatim (member derivation + role grants skipped — the caller declares the *effective* standing; invalid values ignored with a warning, never escalating), and the projection's governance axis consumes `AccessContext.member_tier` (member-less + declared tier now evaluates instead of `unknown`, with the §16.4 limit label on the chain detail). The visibility cache keys on the resolved tier, so declared-`user` and a real user-tier member share one cache entry and one answer. P1C Help Preview builds on this as-is. (Original trade-off kept below for context.)
    The governance axis calls `governance.get_visible_subsystems(GovernanceContext)`, which
    needs a **real `discord.Member`** (it derives the tier + roles from the member object).
    Help Preview (Q-0023) and the drift "baseline audience" want to simulate an audience **by
@@ -627,12 +627,19 @@ starting it (they're the same "verify against source before building" lesson as 
    *disagreement*; the policy-level read does). Conflict semantics: command access in
    `selected_channels` mode + a channel-scoped `enabled` routing row for a non-allowed channel
    = "enabled-but-unusable" (warning); `disabled_except_bootstrap` mode + any `enabled` routing
-   toggle = a guild-level advisory. **`help_advertises_locked` remains** — it must judge "is
-   this command actually locked for the baseline audience?", and the **dominant reason help
-   hides a command is the governance/tier axis (axis 4)**, which needs a simulated member
-   (**item 3**). Built before item 3 it would only see command-access/routing denies and **miss
-   the tier dimension** → partial. **Recommended order:** resolve item 3 (audience simulation)
-   → build `help_advertises_locked` fully on all axes.
+   toggle = a guild-level advisory. ✅ **`help_advertises_locked` shipped too (PR #632,
+   2026-06-09, on the item-3 tier path)** as `setup_diagnostics._diagnose_help_advertises_locked`.
+   Semantic learned building it (source-verified): help menus + typed routes already filter
+   through `resolve_visibility` per member, so *"advertised to the baseline audience"* =
+   **ledger-shown ∧ governance-visible at tier `user`** (one up-front `get_visible_subsystems`
+   call on the Q-0045 path — needed because the projection short-circuits on a routing deny
+   *before* its governance axis runs). A governance/tier lock is therefore the "deliberately
+   shown-as-locked" exclusion realized through the canonical owner — **the per-feature drift
+   that remains is the routing axis** (advertised but routed off), plus one guild-level finding
+   per guild-wide command-access lock (disabled-except-bootstrap advisory / empty-selected-
+   channels warning). `unknown` never produces a finding; selected-channels scans evaluate in
+   the lowest allowed channel id so a channel-scoped deny can't masquerade as a guild lock;
+   every finding carries the §16.4 simulation-limit note verbatim.
 
 7. **The "locked-reason denial integration" changes user-facing denial messages — confirm the
    wording with the maintainer first (it's his UX domain).** Wiring `LockedReason.safe_text`
@@ -641,3 +648,9 @@ starting it (they're the same "verify against source before building" lesson as 
    Y"), so the `_SAFE_TEXT` copy table in `access_projection.py` is a **draft to confirm**,
    not a silent swap. The read-only drift providers (items 5–6) don't touch this and can land
    independently of it.
+   📝 **Draft complete (PR #632, 2026-06-09, per Q-0036):** `_SAFE_TEXT` now covers the full
+   §16.3 code union (added `capability_insufficient`, `quiet_mode`, `setup_stage_required`;
+   refined `routing_disabled` to scope-neutral wording) and the full table is presented in the
+   PR #632 body for the maintainer's read-through. **Still NOT wired into any live denial
+   path** — the live command-access feedback strings are unchanged; wiring is a follow-up
+   commit after his markup.

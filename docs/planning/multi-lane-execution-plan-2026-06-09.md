@@ -69,7 +69,14 @@
 
 ## Lane 2 — Adaptive P1B remainder: tier-input + `help_advertises_locked` + denial copy (Q-0045 / Q-0036)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#632** (2026-06-09; parallel session — Agent 2 ran Lane 3
+  concurrently by owner direction). *Executor notes:* (1) "advertised to the baseline
+  audience" must include governance visibility — help menus/typed routes already filter
+  through `resolve_visibility`, so the provider reads `get_visible_subsystems` once up
+  front (the projection short-circuits on a routing deny before its governance axis);
+  the per-feature drift that remains is the **routing** axis. (2) The denial-copy table
+  is in the PR #632 body for the maintainer's read-through — **not live-wired** (Q-0036);
+  wiring is a follow-up after his markup. Details: adaptive plan §16.8 items 3/6/7.
 - **Goal:** implement the decided governance tier-input path (Q-0045 option b):
   governance axis prefers `AccessContext.member_tier` when set; build the
   `help_advertises_locked` drift provider on top; draft the full denial-copy set.
