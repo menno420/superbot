@@ -20,7 +20,7 @@
 > **Phase 2 shipped 2026-06-09** (this session): the read-only `services/ai_introspection_service.py`
 > composition read model (tool catalogue + BTD6 answerability + audience-filtered AI settings +
 > policy/decision explanation) — no AI exposure, no UI. **Next: Phase 3** (the self-awareness
-> tools that *expose* Phase 2 — gated). (Reconcile PR #s next session.)
+> tools that *expose* Phase 2 — gated). (PRs reconciled 2026-06-09: Phase 1A/1B = **#612**, Phase 2 = **#616**.)
 
 ## 1. Purpose and owner intent
 
@@ -252,7 +252,7 @@ coherently in one review.
 > round, inclusive both-endpoints, reversed→normalized, invalid→`invalid_range`,
 > partial-overlap→`cash_unavailable`, cumulative identity, full-range detail cap, and
 > disclosed economy assumptions). No AI tool, context, or UI change was made — that is
-> Phase 1B, which stays gated. Reconcile PR # next session.
+> Phase 1B, which stays gated. (Shipped in **#612**.)
 
 Add a deterministic, read-only query in `btd6_data_service` (or a narrowly named
 BTD6-owned sibling only if service size/ownership requires it) that returns:
@@ -292,7 +292,7 @@ separate display formatting from calculation. Do not parse JSON above the data s
 > numbers. The existing faithfulness retry/floor choke point is untouched (preserved). The
 > intent-shaped context packet (below) was **not** needed — the direct tool gives reliable
 > selection and is the more auditable path (§5.7); single-round cash already renders in
-> `_render_fixture_round`. Reconcile PR # next session.
+> `_render_fixture_round`. (Shipped in **#612**.)
 
 - Register the accepted read-only round-cash tool through the canonical orchestration
   catalogue/compatibility seam; if that foundation still uses `ai_tools.build_registry`,

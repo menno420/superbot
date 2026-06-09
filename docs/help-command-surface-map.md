@@ -86,6 +86,17 @@ or raises.
 
 ## 3. Known inconsistencies (resolved by PR #142 / PR #143)
 
+> **OPEN (2026-06-09) — Community Spotlight is outside the Help/hub surface.**
+> `cogs/community_spotlight_cog.py` (merged via #613/#614, side-lane) registers
+> `!spotlight` (aliases `!hub`, `!activity`, `!server`) with its own panel
+> (`SpotlightView`), but is **not** in `utils/subsystem_registry.py` or
+> `utils/hub_registry.py` — so it is invisible to typed Help routes, the Help
+> dropdown, and this doc's §2 inventory (whose doc-test pins only *registered*
+> subsystems). Registering it is the ~8-touch-point subsystem-addition task
+> (Q-0025 scaffold); integration depth + the greedy `!hub`/`!server` aliases are
+> routed as **Q-0044** in the question router. Until then this banner is the
+> tracked exception.
+
 These three classes of bug were live before PR #142 / PR #143. All are
 now resolved in `main` and pinned by tests under `tests/unit/help/` and
 `tests/unit/views/`. They remain documented here so a future reader

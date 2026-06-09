@@ -1895,3 +1895,67 @@ stack and smoke-test checklist were updated to match (they previously taught the
 `disbot/services/ai_tools.py` (`btd6_round_cash` tool description), and
 `docs/btd6/btd6-smoke-test-checklist.md` (expected values). Plan:
 `docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md` §1A/§5.7/§9.
+
+## 21. Repo review batch — 2026-06-09
+
+### Q-0044 — Community Spotlight: integration depth + the greedy `!hub` / `!server` aliases
+
+**Area:** Community / Help surface / subsystem platform
+**Type:** Product intent + platform integration scope
+**Priority:** Medium (the feature works; it is outside the Help/hub/settings platform)
+**Status:** Open
+
+**Question:** The Community Spotlight cog (merged side-lane via #613/#614, then hotfixed by
+#615/#617) ships `!spotlight` with aliases `!hub`, `!activity`, and `!server`, its own
+in-cog views, and a direct `xp`-table read — but is **not** registered in
+`utils/subsystem_registry.py` / `utils/hub_registry.py`, so it is invisible to typed Help,
+the Help dropdown, governance visibility, and the settings platform. Three sub-questions:
+(a) Should it become a *registered subsystem* (the ~8-touch-point Q-0025 scaffold task),
+a child surface of the existing `community` hub, or stay a deliberately lightweight
+standalone command? (b) Keep or drop the `!hub` and `!server` aliases? They are greedy
+grabs on platform vocabulary — "hub" is the mother-hub concept and a likely future
+top-level entry, and "server" collides with server-management mindshare. (c) Should its
+panel adopt the hub-navigation standard (back-to-Help routing)?
+
+**Why agents need this:** Every future Help/hub/governance feature iterates the
+registries; an unregistered user-facing surface silently drifts out of every inventory,
+audit, and doc-test. And alias choices are user-facing product identity an agent should
+not change unilaterally.
+
+**Safe default until answered:** Feature stays as shipped (works, has tests since
+2026-06-09, reads via the canonical `utils/db/xp.py` owner). The gap is bannered in
+`docs/help-command-surface-map.md` §3 and the navigation map. No registration, no alias
+change.
+
+**Suggested destination after answer:** `docs/help-command-surface-map.md` (§2 row +
+remove the §3 banner), `utils/subsystem_registry.py` (+ the Q-0025 scaffold if chosen),
+and the games/community folio that takes ownership.
+
+### Q-0045 — Audience simulation for Help Preview / `help_advertises_locked` (P1B/P1C gate)
+
+**Area:** Adaptive Setup/Access platform (governance axis)
+**Type:** Architecture decision (formalizes plan §16.8 item 3)
+**Priority:** High (blocks P1B's `help_advertises_locked` provider and the P1C Help Preview panel)
+**Status:** Open
+
+**Question:** The governance axis (`governance.get_visible_subsystems(GovernanceContext)`)
+needs a real `discord.Member`; Help Preview (Q-0023) and the drift "baseline audience"
+want to simulate an audience by **tier/role set** instead. Pick one: **(a)** synthesize a
+member-like object from the simulated tier/roles and pass it through the existing axis
+(keeps the change inside the projection layer), or **(b)** add a tier-input read path to
+governance so the axis prefers `AccessContext.member_tier` when set (cleaner, but touches
+governance). Either way the simulation must label its limits (it cannot model live
+channel-permission overrides it wasn't given — plan §16.4).
+
+**Why agents need this:** Two queued deliverables (P1B `help_advertises_locked`, P1C Help
+Preview) both build on whichever path is chosen; building one ad hoc would lock the other
+in. This was an "implicit" open decision buried in plan §16.8 — promoted here so it has a
+canonical, answerable home.
+
+**Safe default until answered:** Ship P1B/P1C surfaces that don't need audience
+simulation (`routing_access_conflict` is already member-independent and shipped in #592);
+defer `help_advertises_locked` + Help Preview.
+
+**Suggested destination after answer:** plan §16.8 item 3 + §16.4 (simulation limits),
+`services/access_projection.py` (`AccessContext.member_tier` consumption), and — if (b) —
+`docs/capability-authority.md` / the governance folio.

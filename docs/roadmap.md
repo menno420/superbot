@@ -35,9 +35,9 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | Server-management **PR13 AI** template layer (deterministic slice shipped 2026-06-08; PR10–PR12 shipped) · health/diagnostics production live-tests (owed) · [docs restructure (Q-0010)](planning/docs-restructure-brief-2026-06-08.md) |
-| **Next** | Server-Management Hub (PR14) · deferred governance setup section · Discord-native interface completion · settings consistency coverage |
-| **Later** | AI expansion (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability, mother-panel live overview next) · **Adaptive Setup/Access** Phase 1 (P1B remainder gated on the audience-sim decision; P1C next) · **AI tooling** (orchestration Phase 4 + answerability Phase 3 — per-exposure gate lifts) |
+| **Next** | Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · deferred governance setup section · health/diagnostics production live-tests (owed) · settings consistency coverage |
+| **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
@@ -99,11 +99,14 @@ Folio: [health-diagnostics](subsystems/health-diagnostics.md)
   a fresh approved plan. Execution authority:
   [bot-awareness-implementation-plan](health/bot-awareness-implementation-plan.md).
 
-### 🤖 AI — **Later** (fully gated)
+### 🤖 AI — **Now** (active lane; per-exposure gate lifts)
 
-Folio: [ai](subsystems/ai.md) · **Gate:** AI expansion is gated on *all* of bot-wide
-stability + provider/provenance + caching/source-health + behavior-config correctness
-(`docs/current-state.md`), **plus a dedicated decision** for any action capability.
+Folio: [ai](subsystems/ai.md) · **Gate:** net-new AI **exposure** (a new tool, any UI)
+still needs the global gate explicitly lifted per surface — the maintainer lifted it for
+`btd6_round_cash` (#612) and the `ai:tools` operator UI (#619). Broad expansion stays
+gated on *all* of bot-wide stability + provider/provenance + caching/source-health +
+behavior-config correctness (`docs/current-state.md`), **plus a dedicated decision** for
+any action capability.
 
 > **AI sequencing lives in the dedicated AI roadmap:**
 > [`planning/ai-roadmap-2026-06-07.md`](planning/ai-roadmap-2026-06-07.md) (Phase 0–11,
@@ -112,10 +115,17 @@ stability + provider/provenance + caching/source-health + behavior-config correc
 > foundation** before any net-new tools; audience posture is **tiered** (AR-08) and AI stays
 > **explanation-only** (AR-09). Decisions: [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §18.
 
-- **Later (fully gated; answerability lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md): harden known deterministic BTD6 facts into reliable chat answers, then add scoped AI introspection/self-awareness; orchestration foundation + global AI/BTD6 gate apply.
-- **Later (do first when unblocked)** — approve the **orchestration foundation**
+- **Now (active lane)** — the **orchestration foundation**
   ([ai-complex-request-tool-orchestration-plan](ai/ai-complex-request-tool-orchestration-plan.md))
-  *before* any net-new tools.
+  **Phases 1–3 shipped** (#612 catalogue+selector, #618 tool-choice+budgets, #619 typed
+  policy + the gate-lifted `ai:tools` operator UI). **Next: Phase 4** (complex-BTD6
+  plan/execute/verify workflow + typed answer contracts + the deferred §12.1 audit trace) —
+  confirm the Phase-4 MVP scope first.
+- **Now (active lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md):
+  **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool) and **Phase 2
+  shipped** (#616 — the read-only introspection read model). **Next: Phase 3** (the
+  self-awareness tools that *expose* the read model — net-new AI exposure, needs the gate
+  explicitly lifted; confirm the committed tool list first).
 - **Later** — [ai-tool-capability-roadmap](ai/ai-tool-capability-roadmap.md) sequences the
   backlog onto that foundation · [ai-readiness-plan](ai/ai-readiness-plan.md) M2 (typed policy
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
@@ -134,22 +144,24 @@ Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · **Ga
   the GitHub Actions automation is a maintainer call. Plan:
   [data-refresh-pipeline](btd6/btd6-data-refresh-pipeline-plan.md).
 
-### 🎮 Games — **Later / maintenance**
+### 🎮 Games — **Now** (mining character platform active lane)
 
 Folio: [games](subsystems/games.md) · **Boundary:** ADR-002 (game state not restart-safe —
 accepted, not a target).
 
+- **Now (active lane)** — the **mining character platform** (Wave 1, from the
+  [mining brainstorm](ideas/mining_exploration_brainstorm.md) §7 vision). Shipped: explore
+  wiring + equipment seam (#606, incl. the
+  [wire-exploration plan](planning/mining-wire-exploration-plan.md)), "The Descent"
+  persistent depth (#607), combat gear → deathmatch via the shared `utils/equipment.py`
+  stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
+  Character overview (#610). **Next Wave-1 slices:** the audited **Workshop + durability**
+  (brainstorm §7.5 — the keystone recurring ore/coin sink) and the **mother-panel live
+  overview** (§6.3).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
   slice.
-- **Next (ready, ungated)** — **wire `!explore` to the shipped depth/loadout engine.** The
-  pure `cogs/mining/exploration.py` engine is already shipped + unit-tested; the swap reuses
-  `resolve_to_legacy_tuple()` (the exact tuple `!explore` already consumes), so it's a bounded
-  one-command behaviour change. Plan:
-  [mining: wire exploration](planning/mining-wire-exploration-plan.md). Promoted from the
-  [mining brainstorm](ideas/mining_exploration_brainstorm.md) §5 via the idea lifecycle
-  (Q-0015 grooming, 2026-06-08); awaiting maintainer go to build.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
 

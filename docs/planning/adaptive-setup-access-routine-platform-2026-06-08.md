@@ -373,7 +373,7 @@ Safe defaults until answered: profile preview only; quiet mode modeled as availa
 
 1. ✅ **First technical debt — DONE (2026-06-08):** Q-0026 implemented (`cog_name_to_subsystem` snake_case + `server_management` rename + the latent `proof_channel`/`four_twenty` repair). The decided `scripts/new_subsystem.py` (Q-0025) can now safely assume canonical snake_case multi-word keys.
 2. ✅ **Phase 0 access/read-model contract — DOCUMENTED (2026-06-08):** precedence, reason schema (reusing the `command_access` decision model — no second permission system), drift-provider ownership, simulation limits, and the direct-vs-draft rule are in §16 below + [`docs/ownership.md`](../ownership.md). Q-0028–Q-0032 stay at safe defaults (not blockers for read-only work).
-3. ✅ **P1A — DONE (2026-06-08):** the side-effect-free Access Map projection service (`services/access_projection.py`) + 19 tests per §16 (no UI, no persistence). ✅ **P0C — DONE (2026-06-08):** all six role-threshold write sites route through the audited `role_automation.set_{time,xp}_threshold` seam; drift-fence allowlist emptied (§16.5). **Next — Sonnet (P1B):** the three *runtime* drift providers (`help_advertises_locked`, `routing_access_conflict`, `configured_resource_missing` — **not** `identity_mismatch`, already covered) + locked-reason denial integration in `setup_diagnostics`, built on the P1A projection; then **P1C** (read-only Access Map + Help Preview panels — resolve the audience-simulation point in §16.8 first). Read §16.8 before P1B/P1C.
+3. ✅ **P1A — DONE (2026-06-08):** the side-effect-free Access Map projection service (`services/access_projection.py`) + 19 tests per §16 (no UI, no persistence). ✅ **P0C — DONE (2026-06-08, #592):** all six role-threshold write sites route through the audited `role_automation.set_{time,xp}_threshold` seam; drift-fence allowlist emptied (§16.5). ✅ **P1B `routing_access_conflict` — DONE (#592)**; **skipped** `configured_resource_missing` (already covered by the four existing collectors — §9 row). **Remaining — P1B:** `help_advertises_locked` (blocked on the audience-simulation decision, §16.8 item 3 = **Q-0045**) + the locked-reason denial UX (confirm-with-maintainer, Q-0036); then **P1C** (read-only Access Map + Help Preview panels — resolve Q-0045 first). Read §16.8 before P1B/P1C.
 4. **Blocked/gated:** controlled profile/access mutation waits for the read model and rollback/risk decisions; Routine Engine waits for condition/safety design; Personal Setup waits for privacy decisions; AI drafts wait for current AI expansion gates.
 
 ## 16. Phase 0 access read-model contract (P0B)
@@ -576,7 +576,7 @@ starting them:
    per-guild findings (each runs `resolve_feature_access` against the live guild), not as
    import-time/static checks. Test them with patched resolvers (as the P1A tests do).
 
-3. **Audience simulation is an open integration point (decide before P1C / Help Preview).**
+3. **Audience simulation is an open integration point (decide before P1C / Help Preview — now routed as Q-0045 in the question router).**
    The governance axis calls `governance.get_visible_subsystems(GovernanceContext)`, which
    needs a **real `discord.Member`** (it derives the tier + roles from the member object).
    Help Preview (Q-0023) and the drift "baseline audience" want to simulate an audience **by

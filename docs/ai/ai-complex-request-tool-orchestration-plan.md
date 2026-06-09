@@ -32,7 +32,7 @@ health-diagnostics roadmap is already delivered
 > maintainer lifted the AI-exposure gate for this operator UI this session. **Not yet:** the complex-BTD6
 > workflow (Phase 4) and the durable orchestration *audit trace* (plan §12.1 — the dry-run preview already
 > gives operators inspectability; the per-decision audit column is deferred to keep the hot audit path
-> untouched). Reconcile PR #s next session.
+> untouched). PRs reconciled 2026-06-09: Phase 1 = **#612**, Phase 2 = **#618**, Phase 3 = **#619** (+ **#620** real-Postgres hardening for the 062 storage).
 
 ## 1. Executive recommendation
 
