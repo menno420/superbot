@@ -1495,17 +1495,32 @@ Verified **deeply**: `Towers/` (attacks, projectiles, abilities, subtowers,
 damage modifiers, costs/upgrades) and `Upgrades/` + `textTable.json` linkage.
 
 **Not examined / only counted — do not assume:**
-- **Domains never opened:** `Achievements/`, `Artifacts/`, `BloonOverlays/`,
-  `GeraldoItems/`, `Knowledge/`, `Maps/`, `Mods/`, `Skins/`, `TrophyStoreItems/`.
-- **Only counted / single-sample (structure not mapped):** `Rounds/` (5181
-  files, counted), `IncomeSets/` (7, counted), `Powers/` (1 sampled), `Bloons/`
-  (Bloonarius sampled + the `BloonModel` field list seen via the inventory tool;
-  not all 235 bloons verified, children/immunity decode unverified).
-- **Loose files unread:** `frontierData.json`, `rogueData.json`, `resources.json`.
-  `paragonDegreeData.json` is *referenced* (we derive degrees) but never
-  cross-checked against the dump's constants.
-- **Within `Towers/` (examined domain) still undecoded:** the 12 **zone** + 37
-  **buff** model types (identified, fields not extracted); status-effect /
+- **Domains never opened (cosmetic-skip; verdicts stand):** `Achievements/`,
+  `BloonOverlays/`, `Skins/`, `TrophyStoreItems/`. *(The rest of the old
+  "never opened" list has since been ingested: `GeraldoItems/`, `Knowledge/`,
+  `Maps/`, `Mods/` — see the ⭐ top section.)* `Artifacts/` was spot-checked
+  2026-06-09: it carries **real gameplay modifiers** (rate/damage behavior
+  models), but exclusively for the Rogue Legends / Frontier spin-off modes —
+  skip stands on scope, not on "cosmetic".
+- **Only counted (structure not mapped):** `Rounds/` (5,181 files across 46
+  round-set folders incl. `AlternateRoundSet`), `IncomeSets/` (7).
+- **Loose files — triaged 2026-06-09:** `frontierData.json` = Frontier event
+  meta-mode balance (121 keys; no main-game boss scaling — the old dictionary
+  label was wrong); `rogueData.json` = Rogue Legends spin-off balance;
+  `resources.json` = a 19,260-entry GUID→asset-path lookup, zero stat content.
+  All three: skip on scope. **`paragonDegreeData.json` is now CROSS-CHECKED
+  (2026-06-09):** `paragon_degrees.power_for_degree` matches the dump's
+  `powerDegreeRequirements` **100/100 exactly** (incl. 0 @ d1, 200,000 @ d100),
+  and all 12 scalar caps/divisors + the scaling-formula constants match
+  `paragon_math` / `paragon_degrees`. Known, accepted edge: the offline
+  fallback `paragon_math.threshold` replicates the live Paragon-API *floor*
+  where the game *rounds* — 48 boundaries sit exactly 1 power low (e.g. d6:
+  API 3407 vs game 3408). Display path is game-exact; only the API-replica
+  fallback carries the 1-power edge (kept API-faithful on purpose).
+  `POWER_PER_TOTEM = 2000` has no dump counterpart — still unverified.
+- **Within `Towers/` (examined domain) still undecoded:** the **28 zone + 38
+  buff** model types' remaining effect fields (the SHA-pinned inventory report
+  §3 is the live worklist; 11 buff types are decoded); status-effect /
   targeting / income behavior models beyond what `_map_tier` reads.
 
 ## Freshness

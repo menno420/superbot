@@ -299,6 +299,9 @@ class BTD6DataSet:
     maps: tuple[MapEntry, ...] = ()
     modes: tuple[ModeEntry, ...] = ()
     rounds: tuple[RoundEntry, ...] = ()
+    # Alternate Bloons Rounds — its own tuple (never mixed into ``rounds``:
+    # both sets number 1-140, and rounds.round uniqueness is load-bearing).
+    abr_rounds: tuple[RoundEntry, ...] = ()
     bloons: tuple[BloonEntry, ...] = ()
     ct_relics: tuple[RelicEntry, ...] = ()
     powers: tuple[PowerEntry, ...] = ()
@@ -781,6 +784,7 @@ _OPTIONAL_FIXTURES = (
     "monkey_knowledge.json",
     "geraldo_items.json",
     "bosses.json",
+    "abr_rounds.json",
 )
 
 
@@ -967,12 +971,21 @@ def _load_dataset() -> BTD6DataSet:
     knowledge_raw = _load_file_optional("monkey_knowledge.json")
     geraldo_raw = _load_file_optional("geraldo_items.json")
     bosses_raw = _load_file_optional("bosses.json")
+    # abr_rounds.json is the game-sourced Alternate Bloons Rounds sidecar —
+    # same row shape as rounds.json, kept in its own file/field so the
+    # wiki-sourced standard set and its pins stay untouched.
+    abr_rounds_raw = _load_file_optional("abr_rounds.json")
 
     towers = tuple(_parse_tower(t) for t in towers_raw.get("towers", []))
     heroes = tuple(_parse_hero(h) for h in heroes_raw.get("heroes", []))
     maps = tuple(_parse_map(m) for m in maps_raw.get("maps", []))
     modes = tuple(_parse_mode(m) for m in modes_raw.get("modes", []))
     rounds = tuple(_parse_round(r) for r in rounds_raw.get("rounds", []))
+    abr_rounds = (
+        tuple(_parse_round(r) for r in abr_rounds_raw.get("rounds", []))
+        if abr_rounds_raw is not None
+        else ()
+    )
     bloons = (
         tuple(_parse_bloon(b) for b in bloons_raw.get("bloons", []))
         if bloons_raw is not None
@@ -1014,6 +1027,7 @@ def _load_dataset() -> BTD6DataSet:
     _check_unique([m.id for m in modes], where="modes.id")
     _check_unique([m.canonical for m in modes], where="modes.canonical")
     _check_unique([r.round_number for r in rounds], where="rounds.round")
+    _check_unique([r.round_number for r in abr_rounds], where="abr_rounds.round")
     _check_unique([b.id for b in bloons], where="bloons.id")
     _check_unique([b.canonical for b in bloons], where="bloons.canonical")
     _check_unique([r.id for r in ct_relics], where="ct_relics.id")
@@ -1103,6 +1117,8 @@ def _load_dataset() -> BTD6DataSet:
         sources["bloons"] = str(bloons_raw["source"])
     if ct_relics_raw is not None:
         sources["ct_relics"] = str(ct_relics_raw["source"])
+    if abr_rounds_raw is not None:
+        sources["abr_rounds"] = str(abr_rounds_raw["source"])
 
     return BTD6DataSet(
         data_version=str(towers_raw["data_version"]),
@@ -1113,6 +1129,7 @@ def _load_dataset() -> BTD6DataSet:
         maps=maps,
         modes=modes,
         rounds=rounds,
+        abr_rounds=abr_rounds,
         bloons=bloons,
         ct_relics=ct_relics,
         powers=powers,
@@ -1271,8 +1288,33 @@ def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
     return None
 
 
-def get_round(round_number: int) -> RoundEntry | None:
-    for entry in get_dataset().rounds:
+# Round-set selection. "default" = the standard 1-140 (rounds.json, wiki-
+# sourced); "alternate" = ABR (abr_rounds.json, game-sourced sidecar). Aliases
+# accept the names players actually type; anything else resolves to None and
+# the caller returns a structured refusal, never a silent default.
+_ROUNDSET_ALIASES = {
+    "default": "default",
+    "standard": "default",
+    "alternate": "alternate",
+    "alternate_bloons_rounds": "alternate",
+    "abr": "alternate",
+}
+
+
+def resolve_roundset(roundset: str) -> str | None:
+    return _ROUNDSET_ALIASES.get(str(roundset).strip().lower().replace(" ", "_"))
+
+
+def _rounds_for_set(roundset: str) -> tuple[RoundEntry, ...]:
+    dataset = get_dataset()
+    return dataset.rounds if roundset == "default" else dataset.abr_rounds
+
+
+def get_round(round_number: int, roundset: str = "default") -> RoundEntry | None:
+    resolved = resolve_roundset(roundset)
+    if resolved is None:
+        return None
+    for entry in _rounds_for_set(resolved):
         if entry.round_number == round_number:
             return entry
     return None
@@ -1358,35 +1400,62 @@ _ROUND_DETAIL_CAP = 40
 _HEAVIEST_CAP = 8
 
 
+# What an "alternate" (ABR) answer assumes — disclosed on every ABR result so
+# the boundary is part of the answer (mirrors _CASH_ASSUMPTIONS' role).
+_ABR_NOTE = (
+    "Alternate Bloons Rounds (ABR): a Hard-difficulty round set entered at "
+    "round 3 (rounds 1-2 exist in game data but are never played); the mode "
+    "ends at round 80, 81+ is freeplay."
+)
+
+
 def round_composition(
     round_start: int,
     round_end: int | None = None,
     bloon: str | None = None,
+    roundset: str = "default",
 ) -> dict[str, Any]:
-    """Bloon composition for a round or inclusive round range (standard rounds).
+    """Bloon composition for a round or inclusive round range.
 
-    With ``bloon``: the total count of that bloon across the range plus the
-    per-round counts (only rounds where it appears). Without: each round's
-    spawn groups + RBE. Lists are capped at :data:`_ROUND_DETAIL_CAP`.
+    ``roundset`` selects the standard set (``"default"``) or Alternate Bloons
+    Rounds (``"alternate"`` / ``"abr"``). With ``bloon``: the total count of
+    that bloon across the range plus the per-round counts (only rounds where
+    it appears). Without: each round's spawn groups + RBE. Lists are capped
+    at :data:`_ROUND_DETAIL_CAP`.
     """
+    resolved = resolve_roundset(roundset)
+    if resolved is None:
+        return {
+            "found": False,
+            "note": f"unknown round set: {roundset!r} (default or alternate/abr)",
+        }
     lo = round_start
     hi = round_start if round_end is None else round_end
     if lo > hi:
         lo, hi = hi, lo
-    rounds = [r for r in get_dataset().rounds if lo <= r.round_number <= hi]
+    all_rounds = _rounds_for_set(resolved)
+    set_label = "standard" if resolved == "default" else "alternate (ABR)"
+    if not all_rounds:
+        return {
+            "found": False,
+            "note": f"no {set_label} round data is loaded",
+        }
+    rounds = [r for r in all_rounds if lo <= r.round_number <= hi]
     if not rounds:
         return {
             "found": False,
-            "note": f"no standard rounds in {lo}-{hi} (valid 1-140)",
+            "note": f"no {set_label} rounds in {lo}-{hi} (valid 1-140)",
         }
 
     out: dict[str, Any] = {
         "found": True,
         "round_start": lo,
         "round_end": hi,
-        "roundset": "default",
+        "roundset": resolved,
         "rounds_in_range": len(rounds),
     }
+    if resolved == "alternate":
+        out["note"] = _ABR_NOTE
     if bloon:
         bid = resolve_bloon_id(bloon)
         if bid is None:
@@ -1465,7 +1534,26 @@ _CASH_ASSUMPTIONS = (
 )
 
 
-def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]:
+# ABR cash boundary (abr_rounds.json:cash_source): same $650 start and the
+# same income decay as standard, but the set is entered at round 3 (Hard) —
+# cumulative totals baseline there, and ABR rounds 1-2 carry per-round cash
+# only (their cumulative_cash is null in the fixture).
+_ABR_STARTING_CASH = 650.0
+_ABR_CASH_ASSUMPTIONS = (
+    "Alternate Bloons Rounds (ABR) round set, Hard rules ($650 start at "
+    "round 3; the mode ends at round 80, 81+ is freeplay), no income towers. "
+    "Per-round cash is pop cash (v55 income decay) plus the $100 + round "
+    "end-of-round bonus. ABR rounds 1-2 exist in game data but are never "
+    "played, so cumulative totals start at round 3. Cash modifiers (Double "
+    "Cash, Half Cash) and other difficulties are not applied."
+)
+
+
+def round_cash(
+    round_start: int,
+    round_end: int | None = None,
+    roundset: str = "default",
+) -> dict[str, Any]:
     """Deterministic standard/Medium cash for a round or inclusive round range.
 
     This is the BTD6-owned answer to "how much cash do I earn from round A to
@@ -1493,24 +1581,39 @@ def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]
     success). The ``per_round`` breakdown is capped at :data:`_ROUND_DETAIL_CAP`
     while ``range_cash`` is always summed over the full range.
     """
+    resolved = resolve_roundset(roundset)
+    if resolved is None:
+        return {
+            "found": False,
+            "reason": "unknown_roundset",
+            "note": f"unknown round set: {roundset!r} (default or alternate/abr)",
+        }
+    set_label = "standard" if resolved == "default" else "alternate (ABR)"
+    starting_cash = (
+        _MEDIUM_STARTING_CASH if resolved == "default" else _ABR_STARTING_CASH
+    )
+    assumptions = (
+        _CASH_ASSUMPTIONS if resolved == "default" else _ABR_CASH_ASSUMPTIONS
+    )
+
     lo = round_start
     hi = round_start if round_end is None else round_end
     normalized = lo > hi
     if normalized:
         lo, hi = hi, lo
 
-    # Only the standard ("default") round set carries cash data; never sum an
-    # alternate round set's rows (should one ever land) as standard cash.
+    # Each set sums only its own rows — never another set's (the rows carry
+    # their roundset and both sets number 1-140).
     cash_rounds = [
         r
-        for r in get_dataset().rounds
-        if r.roundset == "default" and r.cash is not None
+        for r in _rounds_for_set(resolved)
+        if r.roundset == resolved and r.cash is not None
     ]
     if not cash_rounds:
         return {
             "found": False,
             "reason": "no_cash_data",
-            "note": "no standard round cash data is loaded",
+            "note": f"no {set_label} round cash data is loaded",
         }
     available = {r.round_number for r in cash_rounds}
     valid_min, valid_max = min(available), max(available)
@@ -1522,7 +1625,9 @@ def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]
             "reason": "invalid_range",
             "round_start": lo,
             "round_end": hi,
-            "note": f"no standard rounds in {lo}-{hi} (valid {valid_min}-{valid_max})",
+            "note": (
+                f"no {set_label} rounds in {lo}-{hi} (valid {valid_min}-{valid_max})"
+            ),
         }
     # A request that straddles the edge of the known set: name the missing
     # rounds instead of silently returning a partial-range total.
@@ -1543,25 +1648,36 @@ def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]
 
     if lo == hi:
         entry = by_n[lo]
-        return {
+        result: dict[str, Any] = {
             "found": True,
-            "roundset": "default",
+            "roundset": resolved,
             "single_round": True,
             "round_start": lo,
             "round_end": hi,
             "round_cash": entry.cash,
             "cumulative_cash": entry.cumulative_cash,
-            "starting_cash": _MEDIUM_STARTING_CASH,
-            "assumptions": _CASH_ASSUMPTIONS,
+            "starting_cash": starting_cash,
+            "assumptions": assumptions,
         }
+        if entry.cumulative_cash is None:
+            # ABR rounds 1-2: real per-round cash, but no played cumulative.
+            result["cumulative_note"] = (
+                "this round is never played in ABR (entered at round 3), so "
+                "there is no cumulative total through it"
+            )
+        return result
 
     range_cash = round(sum(float(r.cash) for r in in_range if r.cash is not None), 2)
     # cumulative(A-1): the running total *before* the first round in range, so
-    # range_cash == cumulative_at_end - cumulative_before_start. For a range that
-    # starts at the first known round there is no prior row — the baseline is the
-    # Medium starting cash.
+    # range_cash == cumulative_at_end - cumulative_before_start. For a range
+    # that starts at the set's first *played* round there is no prior row (or
+    # the prior row is an unplayed ABR round with a null cumulative) — the
+    # baseline is the set's starting cash.
+    prior = by_n.get(lo - 1)
     cumulative_before_start = (
-        by_n[lo - 1].cumulative_cash if (lo - 1) in by_n else _MEDIUM_STARTING_CASH
+        prior.cumulative_cash
+        if prior is not None and prior.cumulative_cash is not None
+        else starting_cash
     )
     per_round = [
         {
@@ -1571,9 +1687,9 @@ def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]
         }
         for r in in_range[:_ROUND_DETAIL_CAP]
     ]
-    return {
+    result = {
         "found": True,
-        "roundset": "default",
+        "roundset": resolved,
         "single_round": False,
         "inclusive": True,
         "normalized": normalized,
@@ -1583,11 +1699,22 @@ def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]
         "range_cash": range_cash,
         "cumulative_before_start": cumulative_before_start,
         "cumulative_at_end": by_n[hi].cumulative_cash,
-        "starting_cash": _MEDIUM_STARTING_CASH,
+        "starting_cash": starting_cash,
         "per_round": per_round,
         "truncated": len(in_range) > _ROUND_DETAIL_CAP,
-        "assumptions": _CASH_ASSUMPTIONS,
+        "assumptions": assumptions,
     }
+    if resolved == "alternate" and lo < 3:
+        # The range includes ABR's unplayed rounds 1-2: range_cash still sums
+        # exactly the rounds asked for, but cumulative totals only describe
+        # the played game (from round 3), so the subtraction identity does
+        # not cover the unplayed rounds.
+        result["cumulative_note"] = (
+            "ABR is entered at round 3 — rounds 1-2 are never played; "
+            "range_cash sums the requested rounds' data, while cumulative "
+            "totals describe the played game from round 3"
+        )
+    return result
 
 
 def _find_by_surface(entries: tuple, name: str):

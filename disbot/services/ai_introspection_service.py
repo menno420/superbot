@@ -189,9 +189,12 @@ class BTD6AnswerabilitySnapshot:
 # verified owner/data path.
 _UNSUPPORTED_DOMAINS: tuple[AnswerabilityDomain, ...] = (
     AnswerabilityDomain(
-        "alternate_round_sets",
+        "other_round_sets",
         "unsupported",
-        note="ABR / alternate round sets are not modelled; only the standard round set.",
+        note=(
+            "Quest / Rogue / Frontier round sets are not modelled; standard "
+            "and ABR are the supported sets."
+        ),
     ),
     AnswerabilityDomain(
         "achievements",
@@ -243,6 +246,15 @@ def build_btd6_answerability() -> BTD6AnswerabilitySnapshot:
         AnswerabilityDomain("maps", "deterministic_fixture", len(ds.maps)),
         AnswerabilityDomain("modes", "deterministic_fixture", len(ds.modes)),
         AnswerabilityDomain("rounds", "deterministic_fixture", len(ds.rounds)),
+        AnswerabilityDomain(
+            "abr_rounds",
+            "deterministic_fixture",
+            len(ds.abr_rounds),
+            note=(
+                "Alternate Bloons Rounds composition + derived RBE/cash "
+                "(entered at round 3; rounds 1-2 unplayed)."
+            ),
+        ),
         AnswerabilityDomain("bloons", "deterministic_fixture", len(ds.bloons)),
         AnswerabilityDomain("ct_relics", "deterministic_fixture", len(ds.ct_relics)),
         AnswerabilityDomain("powers", "deterministic_fixture", len(ds.powers)),
@@ -262,7 +274,10 @@ def build_btd6_answerability() -> BTD6AnswerabilitySnapshot:
         AnswerabilityDomain(
             "round_cash",
             "calculation",
-            note="Standard/Medium per-round and inclusive-range cash earned (rounds 1-140).",
+            note=(
+                "Per-round and inclusive-range cash earned (rounds 1-140): "
+                "standard/Medium by default, ABR via roundset='abr'."
+            ),
         ),
         AnswerabilityDomain(
             "difficulty_cost",

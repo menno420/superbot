@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "data_version": "1.0",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export (IncomeSets/)",
+  "note": "default_income_set is the cash-per-pop decay for ALL standard play incl. ABR; the rest are quest/Rogue/Frontier curves (reference only). tests pin the rounds.json/abr_rounds.json cash derivation to default_income_set's bands.",
+  "income_sets": [
+    {
+      "id": "accelerated_income_set",
+      "name": "AcceleratedIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 5,
+          "multiplier": 1.2
+        },
+        {
+          "threshold": 10,
+          "multiplier": 0.7
+        },
+        {
+          "threshold": 15,
+          "multiplier": 0.35
+        },
+        {
+          "threshold": 20,
+          "multiplier": 0.2
+        },
+        {
+          "threshold": 25,
+          "multiplier": 0.05
+        },
+        {
+          "threshold": 30,
+          "multiplier": 0.05
+        }
+      ],
+      "final_multiplier": 0.02
+    },
+    {
+      "id": "default_income_set",
+      "name": "DefaultIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 50,
+          "multiplier": 1.0
+        },
+        {
+          "threshold": 60,
+          "multiplier": 0.5
+        },
+        {
+          "threshold": 85,
+          "multiplier": 0.2
+        },
+        {
+          "threshold": 100,
+          "multiplier": 0.1
+        },
+        {
+          "threshold": 120,
+          "multiplier": 0.05
+        },
+        {
+          "threshold": 140,
+          "multiplier": 0.04
+        }
+      ],
+      "final_multiplier": 0.02
+    },
+    {
+      "id": "endurance_income_set",
+      "name": "EnduranceIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 40,
+          "multiplier": 1.0
+        },
+        {
+          "threshold": 50,
+          "multiplier": 0.5
+        },
+        {
+          "threshold": 60,
+          "multiplier": 0.2
+        },
+        {
+          "threshold": 80,
+          "multiplier": 0.1
+        },
+        {
+          "threshold": 100,
+          "multiplier": 0.05
+        }
+      ],
+      "final_multiplier": 0.02
+    },
+    {
+      "id": "frontier_income_set",
+      "name": "FrontierIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 5,
+          "multiplier": 1.1
+        },
+        {
+          "threshold": 10,
+          "multiplier": 1.0
+        },
+        {
+          "threshold": 15,
+          "multiplier": 0.65
+        },
+        {
+          "threshold": 20,
+          "multiplier": 0.55
+        },
+        {
+          "threshold": 25,
+          "multiplier": 0.4
+        },
+        {
+          "threshold": 30,
+          "multiplier": 0.22
+        },
+        {
+          "threshold": 35,
+          "multiplier": 0.14
+        },
+        {
+          "threshold": 40,
+          "multiplier": 0.11
+        },
+        {
+          "threshold": 45,
+          "multiplier": 0.09
+        },
+        {
+          "threshold": 55,
+          "multiplier": 0.07
+        },
+        {
+          "threshold": 60,
+          "multiplier": 0.05
+        },
+        {
+          "threshold": 65,
+          "multiplier": 0.04
+        },
+        {
+          "threshold": 70,
+          "multiplier": 0.03
+        }
+      ],
+      "final_multiplier": 0.02
+    },
+    {
+      "id": "frontier_reduced_income_set",
+      "name": "FrontierReducedIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 5,
+          "multiplier": 0.001
+        },
+        {
+          "threshold": 10,
+          "multiplier": 0.00075
+        },
+        {
+          "threshold": 15,
+          "multiplier": 0.0005
+        },
+        {
+          "threshold": 20,
+          "multiplier": 0.0004
+        },
+        {
+          "threshold": 25,
+          "multiplier": 0.0003
+        },
+        {
+          "threshold": 30,
+          "multiplier": 0.0002
+        },
+        {
+          "threshold": 35,
+          "multiplier": 0.0001
+        },
+        {
+          "threshold": 40,
+          "multiplier": 9e-05
+        },
+        {
+          "threshold": 45,
+          "multiplier": 8e-05
+        },
+        {
+          "threshold": 55,
+          "multiplier": 7e-05
+        },
+        {
+          "threshold": 60,
+          "multiplier": 5e-05
+        },
+        {
+          "threshold": 65,
+          "multiplier": 4e-05
+        },
+        {
+          "threshold": 70,
+          "multiplier": 3e-05
+        }
+      ],
+      "final_multiplier": 2e-05
+    },
+    {
+      "id": "moabmadness_income_set",
+      "name": "MOABMadnessIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 1,
+          "multiplier": 0.5
+        },
+        {
+          "threshold": 2,
+          "multiplier": 0.4
+        },
+        {
+          "threshold": 3,
+          "multiplier": 0.3
+        },
+        {
+          "threshold": 4,
+          "multiplier": 0.2
+        },
+        {
+          "threshold": 5,
+          "multiplier": 0.1
+        }
+      ],
+      "final_multiplier": 0.02
+    },
+    {
+      "id": "rogue_income_set",
+      "name": "RogueIncomeSet",
+      "thresholds": [
+        {
+          "threshold": 5,
+          "multiplier": 1.1
+        },
+        {
+          "threshold": 10,
+          "multiplier": 0.7
+        },
+        {
+          "threshold": 15,
+          "multiplier": 0.45
+        },
+        {
+          "threshold": 20,
+          "multiplier": 0.39
+        },
+        {
+          "threshold": 25,
+          "multiplier": 0.28
+        },
+        {
+          "threshold": 30,
+          "multiplier": 0.16
+        },
+        {
+          "threshold": 35,
+          "multiplier": 0.1
+        },
+        {
+          "threshold": 45,
+          "multiplier": 0.09
+        },
+        {
+          "threshold": 55,
+          "multiplier": 0.07
+        },
+        {
+          "threshold": 60,
+          "multiplier": 0.05
+        },
+        {
+          "threshold": 65,
+          "multiplier": 0.04
+        },
+        {
+          "threshold": 70,
+          "multiplier": 0.03
+        }
+      ],
+      "final_multiplier": 0.02
+    }
+  ]
+}

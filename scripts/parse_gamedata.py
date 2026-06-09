@@ -2731,6 +2731,229 @@ def overlay_modes(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
     return report
 
 
+# ---------------------------------------------------------------------------
+# Rounds (AlternateRoundSet) + IncomeSets — game-native ingestion
+# ---------------------------------------------------------------------------
+
+_ABR_SET_DIR = "AlternateRoundSet"
+_ABR_ROUND_COUNT = 140
+# RoundModel group start/end are 1/60-second frames (verified: default r1
+# end 1050.75 == the committed 17.51 s duration).
+_FRAMES_PER_SEC = 60.0
+# ABR is the Hard-difficulty alternate set: Mods/Hard.json carries
+# StartingCashModModel.changeBase=650, StartingRoundModModel.round=3 and
+# EndRoundModModel.round=80 (81+ = freeplay). Cumulative cash therefore
+# baselines at round 3 with the $650 Hard start; ABR rounds 1-2 exist in the
+# dump but are never played, so their cumulative_cash is null.
+_ABR_START_ROUND = 3
+_ABR_STARTING_CASH = 650.0
+_END_OF_ROUND_BONUS_BASE = 100  # the $100 + n end-of-round bonus
+
+
+def _income_bands(
+    dump: Path,
+    stem: str = "DefaultIncomeSet",
+) -> tuple[list[tuple[int, float]], float]:
+    """``IncomeSets/<stem>.json`` -> (sorted (threshold, multiplier) bands, final).
+
+    The multiplier applies through rounds <= threshold; past the last band the
+    ``finalMultiplier`` holds (semantics reproduce the cyberquincy-validated
+    cash table 80/80 — see tests/unit/services/test_btd6_round_cash.py).
+    """
+    raw = json.loads((dump / "IncomeSets" / f"{stem}.json").read_text("utf-8"))
+    bands = sorted(
+        (int(t["threshold"]), float(t["multiplier"]))
+        for t in raw.get("thresholds", [])
+    )
+    return bands, float(raw.get("finalMultiplier", 0.0))
+
+
+def _cash_per_pop(n: int, bands: list[tuple[int, float]], final: float) -> float:
+    for threshold, multiplier in bands:
+        if n <= threshold:
+            return multiplier
+    return final
+
+
+def _bloon_support() -> tuple[dict[str, dict], dict[str, int], dict[str, str]]:
+    """From committed bloons.json: rbe_map, children-inclusive pop sizes, labels.
+
+    RBE is health-weighted (rbe/rbe_fortified, children-inclusive already);
+    cash is pop-weighted (1 + children, modifier-independent) — a MOAB is 1+
+    its tree's pops but 616 RBE, which is why cash != RBE once blimps appear.
+    """
+    raw = json.loads((_DATA_ROOT / "bloons.json").read_text("utf-8"))
+    rows = {str(b["id"]): b for b in raw.get("bloons", [])}
+    rbe_map = {
+        bid: {"rbe": b.get("rbe"), "rbe_fortified": b.get("rbe_fortified")}
+        for bid, b in rows.items()
+    }
+    pops: dict[str, int] = {}
+
+    def pop_size(bid: str) -> int:
+        if bid in pops:
+            return pops[bid]
+        total = 1
+        for child in rows[bid].get("children_list") or []:
+            total += int(child["count"]) * pop_size(str(child["bloon_id"]))
+        pops[bid] = total
+        return total
+
+    for bid in rows:
+        pop_size(bid)
+    names = {
+        bid: str(b.get("canonical") or bid.title()).removesuffix(" Bloon")
+        for bid, b in rows.items()
+    }
+    return rbe_map, pops, names
+
+
+def _bloon_label(bid: str, modifiers: list[str], names: dict[str, str]) -> str:
+    prefix = [m.capitalize() for m in ("fortified", "camo", "regrow") if m in modifiers]
+    return " ".join([*prefix, names.get(bid, bid.title())])
+
+
+def _intify(value: float) -> float | int:
+    """Whole-dollar values as ints, matching the committed rounds.json style."""
+    return int(value) if float(value).is_integer() else value
+
+
+def build_abr_rounds(dump: Path) -> dict[str, Any]:
+    """``Rounds/AlternateRoundSet/`` -> the ``abr_rounds.json`` payload.
+
+    Mirrors the committed ``rounds.json`` row shape (round / summary / danger /
+    common_threats / rbe / cash / cumulative_cash / roundset / groups) so the
+    runtime's ``_parse_round`` consumes both identically. summary / danger /
+    common_threats are mechanical derivations (composition + RBE) — ABR has no
+    wiki prose to curate. Reads only ``groups[]``: the dump's ``emissions[]``
+    is a redundant per-bloon expansion (sum(count) == len verified 280/280).
+    """
+    from utils.btd6.bloon_ids import MOAB_IDS, parse_round_bloon_key
+
+    scripts_dir = Path(__file__).resolve().parent
+    if str(scripts_dir) not in sys.path:
+        sys.path.insert(0, str(scripts_dir))
+    import parse_bloonswiki as pbw
+
+    rounds_dir = dump / "Rounds" / _ABR_SET_DIR
+    bands, final_mult = _income_bands(dump)
+    rbe_map, pop_table, names = _bloon_support()
+    version = _dump_version(dump)
+
+    rows: list[dict[str, Any]] = []
+    cumulative = _ABR_STARTING_CASH
+    for n in range(1, _ABR_ROUND_COUNT + 1):
+        raw = json.loads((rounds_dir / f"{n}.json").read_text("utf-8"))
+        groups: list[dict[str, Any]] = []
+        rbe = 0
+        pop_count = 0
+        has_moab = False
+        totals: dict[str, int] = {}
+        for grp in raw.get("groups") or []:
+            bloon_id, modifiers = parse_round_bloon_key(str(grp.get("bloon", "")))
+            count = int(grp.get("count", 0))
+            start_f = float(grp.get("start", 0.0))
+            end_f = float(grp.get("end", 0.0))
+            groups.append(
+                {
+                    "bloon_id": bloon_id,
+                    "count": count,
+                    "start": round(start_f / _FRAMES_PER_SEC, 2),
+                    "duration": round((end_f - start_f) / _FRAMES_PER_SEC, 2),
+                    "modifiers": modifiers,
+                },
+            )
+            has_moab = has_moab or bloon_id in MOAB_IDS
+            per = pbw._group_rbe(bloon_id, modifiers, rbe_map)
+            if per is not None:
+                rbe += per * count
+            pop_count += count * pop_table.get(bloon_id, 0)
+            label = _bloon_label(bloon_id, modifiers, names)
+            totals[label] = totals.get(label, 0) + count
+        cash = round(
+            pop_count * _cash_per_pop(n, bands, final_mult)
+            + (_END_OF_ROUND_BONUS_BASE + n),
+            2,
+        )
+        cumulative_out: float | int | None
+        if n < _ABR_START_ROUND:
+            cumulative_out = None
+        else:
+            cumulative = round(cumulative + cash, 2)
+            cumulative_out = _intify(cumulative)
+        top = sorted(totals.items(), key=lambda kv: (-kv[1], kv[0]))
+        summary = ", ".join(f"{count} {label}" for label, count in top[:3])
+        rows.append(
+            {
+                "round": n,
+                "summary": f"{summary}. RBE {rbe:,}." if summary else f"RBE {rbe:,}.",
+                "danger": pbw._round_danger(rbe, has_moab),
+                "common_threats": [label for label, _ in top[:4]],
+                "rbe": rbe,
+                "cash": _intify(cash),
+                "cumulative_cash": cumulative_out,
+                "roundset": "alternate",
+                "groups": groups,
+            },
+        )
+    return {
+        "schema_version": 1,
+        "data_version": "1.0",
+        "game_version": version,
+        "source": f"{_SOURCE} (Rounds/{_ABR_SET_DIR})",
+        "cash_source": (
+            "ABR per-round cash = pop_count x cash-per-pop decay + ($100 + n) "
+            "end-of-round bonus — the same derivation as rounds.json, with the "
+            "decay bands read from the dump's IncomeSets/DefaultIncomeSet.json "
+            "(ABR applies no income mutator; Mods/AlternateBloonsRounds.json is "
+            "a roundset swap only). cumulative_cash baselines at round 3 with "
+            "the $650 Hard start (Mods/Hard.json: StartingCash 650, "
+            "StartingRound 3, EndRound 80); ABR rounds 1-2 are never played, "
+            "so their cumulative_cash is null."
+        ),
+        "rounds": rows,
+    }
+
+
+def build_income_sets(dump: Path) -> dict[str, Any]:
+    """``IncomeSets/`` -> the ``income_sets.json`` payload (7 tiny curves).
+
+    Only ``default_income_set`` governs standard play (including ABR — no mode
+    mod references an income set; selection is game-code-side). The others are
+    quest / Rogue / Frontier curves, committed for reference + drift-guarding.
+    """
+    sets: list[dict[str, Any]] = []
+    for fp in sorted((dump / "IncomeSets").glob("*.json")):
+        raw = json.loads(fp.read_text("utf-8"))
+        sets.append(
+            {
+                "id": _snake(fp.stem),
+                "name": fp.stem,
+                "thresholds": [
+                    {"threshold": int(t["threshold"]), "multiplier": float(t["multiplier"])}
+                    for t in sorted(
+                        raw.get("thresholds", []),
+                        key=lambda t: int(t["threshold"]),
+                    )
+                ],
+                "final_multiplier": float(raw.get("finalMultiplier", 0.0)),
+            },
+        )
+    return {
+        "schema_version": 1,
+        "data_version": "1.0",
+        "game_version": _dump_version(dump),
+        "source": f"{_SOURCE} (IncomeSets/)",
+        "note": (
+            "default_income_set is the cash-per-pop decay for ALL standard play "
+            "incl. ABR; the rest are quest/Rogue/Frontier curves (reference "
+            "only). tests pin the rounds.json/abr_rounds.json cash derivation "
+            "to default_income_set's bands."
+        ),
+        "income_sets": sets,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
@@ -2797,6 +3020,16 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="source mode rules (cash/lives/rounds/cost + restrictions) from the dump's Mods/ folder (overlay modes.json)",
     )
+    ap.add_argument(
+        "--abr-rounds",
+        action="store_true",
+        help="rebuild abr_rounds.json from the dump's Rounds/AlternateRoundSet/ (140 rounds, derived rbe/cash)",
+    )
+    ap.add_argument(
+        "--income-sets",
+        action="store_true",
+        help="rebuild income_sets.json from the dump's IncomeSets/ folder (7 cash-decay curves)",
+    )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
 
@@ -2853,6 +3086,32 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  {mid}")
                 for change in corrections[mid]:
                     print(f"      {change}")
+        return 0
+
+    if args.abr_rounds:
+        payload = build_abr_rounds(dump)
+        dest = _DATA_ROOT / "abr_rounds.json"
+        if args.dry_run:
+            print(json.dumps(payload, indent=2, ensure_ascii=False)[:1500])
+        else:
+            _write(dest, payload)
+            print(
+                f"wrote {dest.relative_to(_REPO_ROOT)} "
+                f"({len(payload['rounds'])} rounds, game v{payload['game_version']})",
+            )
+        return 0
+
+    if args.income_sets:
+        payload = build_income_sets(dump)
+        dest = _DATA_ROOT / "income_sets.json"
+        if args.dry_run:
+            print(json.dumps(payload, indent=2, ensure_ascii=False)[:1500])
+        else:
+            _write(dest, payload)
+            print(
+                f"wrote {dest.relative_to(_REPO_ROOT)} "
+                f"({len(payload['income_sets'])} sets)",
+            )
         return 0
 
     if args.overlay:

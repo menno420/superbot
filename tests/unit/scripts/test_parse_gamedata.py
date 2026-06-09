@@ -1842,3 +1842,92 @@ def test_buffs_damage_modifier_support_drops_unmapped_tag(mod):
         }
     )
     assert "buffs" not in mod._map_tier(model)
+
+
+# --- ABR rounds + income sets (game-native ingestion) -------------------------
+
+
+def test_intify_whole_dollars_to_int(mod):
+    assert mod._intify(121.0) == 121 and isinstance(mod._intify(121.0), int)
+    assert mod._intify(1400.2) == 1400.2
+
+
+def test_bloon_label_prefixes_modifiers(mod):
+    names = {"lead": "Lead", "moab": "MOAB"}
+    assert mod._bloon_label("lead", ["camo"], names) == "Camo Lead"
+    assert mod._bloon_label("moab", ["fortified"], names) == "Fortified MOAB"
+    assert (
+        mod._bloon_label("lead", ["regrow", "camo", "fortified"], names)
+        == "Fortified Camo Regrow Lead"
+    )
+
+
+def _write_income_set(root: Path, thresholds, final) -> None:
+    (root / "IncomeSets").mkdir(parents=True, exist_ok=True)
+    (root / "IncomeSets" / "DefaultIncomeSet.json").write_text(
+        json.dumps(
+            {
+                "thresholds": [
+                    {"threshold": t, "multiplier": m} for t, m in thresholds
+                ],
+                "finalMultiplier": final,
+                "name": "DefaultIncomeSet",
+            }
+        ),
+        "utf-8",
+    )
+
+
+def test_income_bands_sorted_and_cash_per_pop_band_selection(mod, tmp_path):
+    _write_income_set(tmp_path, [(60, 0.5), (50, 1.0)], 0.02)  # unsorted on disk
+    bands, final = mod._income_bands(tmp_path)
+    assert bands == [(50, 1.0), (60, 0.5)] and final == 0.02
+    assert mod._cash_per_pop(50, bands, final) == 1.0  # inclusive threshold
+    assert mod._cash_per_pop(51, bands, final) == 0.5
+    assert mod._cash_per_pop(61, bands, final) == 0.02  # past last band -> final
+
+
+def test_build_abr_rounds_synthetic_dump(mod, tmp_path, monkeypatch):
+    # 3-round synthetic AlternateRoundSet: frames -> seconds, id decomposition,
+    # the unplayed r1-2 null cumulative, and the r3 Hard-start baseline.
+    _write_income_set(tmp_path, [(50, 1.0)], 0.02)
+    rounds_dir = tmp_path / "Rounds" / "AlternateRoundSet"
+    rounds_dir.mkdir(parents=True)
+    rows = {
+        1: [{"bloon": "Blue", "start": 0.0, "end": 1050.75, "count": 10}],
+        2: [],  # the empty-groups shape (DefaultSkipEveryOddRound has these)
+        3: [{"bloon": "MoabFortified", "start": 60.0, "end": 120.0, "count": 1}],
+    }
+    for n, groups in rows.items():
+        (rounds_dir / f"{n}.json").write_text(
+            json.dumps({"groups": groups, "emissions": [], "name": ""}),
+            "utf-8",
+        )
+    monkeypatch.setattr(mod, "_ABR_ROUND_COUNT", 3)
+    monkeypatch.setattr(mod, "_dump_version", lambda dump: "55.1")
+    payload = mod.build_abr_rounds(tmp_path)
+
+    assert payload["game_version"] == "55.1"
+    assert "AlternateRoundSet" in payload["source"]
+    r1, r2, r3 = payload["rounds"]
+    assert r1["groups"] == [
+        {
+            "bloon_id": "blue",
+            "count": 10,
+            "start": 0.0,
+            "duration": 17.51,  # 1050.75 frames / 60
+            "modifiers": [],
+        },
+    ]
+    assert r1["cumulative_cash"] is None and r2["cumulative_cash"] is None
+    assert r2["groups"] == [] and r2["rbe"] == 0
+    assert r3["groups"][0]["bloon_id"] == "moab"
+    assert r3["groups"][0]["modifiers"] == ["fortified"]
+    assert r3["groups"][0]["start"] == 1.0 and r3["groups"][0]["duration"] == 1.0
+    assert r3["roundset"] == "alternate"
+    # Cumulative baselines at round 3 with the $650 Hard start.
+    assert r3["cumulative_cash"] == mod._intify(
+        round(mod._ABR_STARTING_CASH + r3["cash"], 2)
+    )
+    # Fortified MOAB pulls the fortified RBE from committed bloons.json.
+    assert r3["rbe"] == 856
