@@ -45,13 +45,18 @@ class Biome(Enum):
     MAGMA = "magma"
 
 
+# Canonical depth ordering, shallow→deep: the index of a biome IS its integer
+# depth.  Single source of truth shared with cogs.mining.world (position) so the
+# depth↔biome mapping can never drift between the two modules.
+BIOME_ORDER: tuple[Biome, ...] = (
+    Biome.SURFACE,
+    Biome.CAVERN,
+    Biome.DEEP,
+    Biome.MAGMA,
+)
+
 # Depth ordering for "this outcome is available at this biome or deeper".
-_BIOME_DEPTH: dict[Biome, int] = {
-    Biome.SURFACE: 0,
-    Biome.CAVERN: 1,
-    Biome.DEEP: 2,
-    Biome.MAGMA: 3,
-}
+_BIOME_DEPTH: dict[Biome, int] = {b: i for i, b in enumerate(BIOME_ORDER)}
 
 
 class Rarity(Enum):
@@ -360,6 +365,7 @@ def explore_from_state(
 # decides *what* happened, never *commits* it.
 __all__ = [
     "Biome",
+    "BIOME_ORDER",
     "Rarity",
     "Loadout",
     "ExploreOutcome",

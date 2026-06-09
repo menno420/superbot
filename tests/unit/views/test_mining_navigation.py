@@ -102,6 +102,10 @@ async def test_handle_mine_swaps_to_results_view_not_none():
         new_callable=AsyncMock,
         return_value={"pickaxe": 1},
     ), patch(
+        "views.mining.mine_view.db.get_depth",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
         "views.mining.mine_view.db.update_mining_item",
         new_callable=AsyncMock,
     ), patch(

@@ -15,6 +15,15 @@ def _rng() -> random.Random:
     return random.Random(42)
 
 
+def test_biome_order_is_canonical_depth_mapping():
+    # BIOME_ORDER is the shallow→deep ordering; _BIOME_DEPTH derives from it so
+    # the index of a biome equals its integer depth.  cogs.mining.world reuses
+    # BIOME_ORDER, so this is the single source of truth for both modules.
+    assert len(exp.BIOME_ORDER) == len(exp.Biome)
+    for depth, biome in enumerate(exp.BIOME_ORDER):
+        assert exp._BIOME_DEPTH[biome] == depth
+
+
 def test_surface_outcomes_need_no_tools():
     elig = exp.eligible_outcomes(exp.Biome.SURFACE, exp.Loadout())
     keys = {o.key for o in elig}

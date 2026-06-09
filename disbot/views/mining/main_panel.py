@@ -60,7 +60,9 @@ class MiningHubView(PersistentView):
                 "**🗺️ Explore** — discover random events\n"
                 "**📦 Inventory** — view your mining resources\n"
                 "**📊 Stats** — view your mining statistics\n"
-                "**🔨 Build** — craft a structure"
+                "**🔨 Build** — craft a structure\n"
+                "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
+                "(deeper = richer, gated by your light)"
             ),
             color=MINING_COLOR,
         )
@@ -140,18 +142,27 @@ class MiningHubView(PersistentView):
         # in cogs/, and views must not import cogs at module level (layer
         # rule).  A later step relocates the pure engine to a shared layer so
         # this can become a plain import (mining_exploration_brainstorm §7.4).
+        from cogs.mining import world
         from cogs.mining.exploration import explore_from_state
 
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
         inventory = await db.get_mining_inventory(user_id, gid)
         equipped = await db.get_equipment(user_id, gid)
-        text, item, amount = explore_from_state(equipped, inventory)
+        depth = await db.get_depth(user_id, gid)
+        text, item, amount = explore_from_state(
+            equipped,
+            inventory,
+            biome=world.biome_for_depth(depth),
+        )
         if item:
             await db.update_mining_item(user_id, gid, item, amount)
         embed = discord.Embed(
             title="⛏️ Mining Hub",
-            description=f"{interaction.user.mention} {text}",
+            description=(
+                f"{interaction.user.mention} {text}\n"
+                f"_{world.describe_position(depth)}_"
+            ),
             color=SUCCESS_COLOR if amount >= 0 else ERROR_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
@@ -252,6 +263,92 @@ class MiningHubView(PersistentView):
     )
     async def build_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_BuildModal())
+
+    @discord.ui.button(
+        label="⬇️ Descend",
+        style=discord.ButtonStyle.success,
+        custom_id="mining:descend",
+        row=2,
+    )
+    async def descend_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: cogs-layer domain logic (layer rule — see explore_btn).
+        from cogs.mining import equipment, world
+
+        user_id = str(interaction.user.id)
+        gid = interaction.guild_id
+        depth = await db.get_depth(user_id, gid)
+        stats = equipment.compute_stats(await db.get_equipment(user_id, gid))
+        new_depth = world.descend(depth, stats)
+        if new_depth == depth:
+            description = (
+                f"{interaction.user.mention} can't descend any deeper.\n"
+                f"_{world.descend_hint(stats)}_"
+            )
+            color = ERROR_COLOR
+        else:
+            await db.set_depth(user_id, gid, new_depth)
+            description = (
+                f"{interaction.user.mention} descended to "
+                f"**{world.describe_position(new_depth)}**."
+            )
+            color = SUCCESS_COLOR
+        embed = discord.Embed(
+            title="⛏️ Mining Hub",
+            description=description,
+            color=color,
+        )
+        embed.set_footer(text="Pick another action above to continue.")
+        await safe_edit(interaction, embed=embed, view=self)
+
+    @discord.ui.button(
+        label="⬆️ Ascend",
+        style=discord.ButtonStyle.secondary,
+        custom_id="mining:ascend",
+        row=2,
+    )
+    async def ascend_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: cogs-layer domain logic (layer rule — see explore_btn).
+        from cogs.mining import world
+
+        user_id = str(interaction.user.id)
+        gid = interaction.guild_id
+        depth = await db.get_depth(user_id, gid)
+        new_depth = world.ascend(depth)
+        if new_depth == depth:
+            description = f"{interaction.user.mention} is already at the **Surface**."
+            color = MINING_COLOR
+        else:
+            await db.set_depth(user_id, gid, new_depth)
+            description = (
+                f"{interaction.user.mention} climbed up to "
+                f"**{world.describe_position(new_depth)}**."
+            )
+            color = SUCCESS_COLOR
+        embed = discord.Embed(
+            title="⛏️ Mining Hub",
+            description=description,
+            color=color,
+        )
+        embed.set_footer(text="Pick another action above to continue.")
+        await safe_edit(interaction, embed=embed, view=self)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]
