@@ -3,7 +3,7 @@
 > **Status:** `plan` — the binding mapping standard for the two parallel Codex
 > platform-mapping agents (Agent A: user-facing surface · Agent B: admin/platform
 > surface) and the merge/implementation session that follows them. Produced by the
-> 2026-06-09 standards-setting session (PR #640); source-verified at HEAD `7534e3e`
+> 2026-06-09 standards-setting session (PR #641); source-verified at HEAD `7534e3e`
 > (merge of #637). **Source code and merged PRs win over this document** — re-verify
 > the §2 baseline facts and the §2.4 in-flight list against live GitHub before
 > mapping.
