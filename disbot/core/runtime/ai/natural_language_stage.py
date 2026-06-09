@@ -1094,18 +1094,40 @@ async def _invoke_gateway(
     appended to the system prompt on the regenerate-once retry to tell the
     model which names/numbers it must not restate.
     """
-    from core.runtime.ai.contracts import AIRequest, AIResponseMode, AIToolSpec
+    from core.runtime.ai.contracts import (
+        AIRequest,
+        AIResponseMode,
+        AIToolBudget,
+        AIToolChoice,
+        AIToolSpec,
+    )
     from core.runtime.ai.feature_flags import ai_tools_enabled
     from services import ai_gateway, ai_tools
 
     ctx = built.request_context
     specs: tuple[AIToolSpec, ...] = ()
     handlers: Mapping[str, ToolHandler] | None = None
+    # Orchestration policy (Phase 3). Defaults reproduce today's behaviour
+    # byte-for-byte (AUTO choice + hop-bounded budget, no toolset narrowing);
+    # the resolver only tightens them when an operator has set a non-default
+    # profile for this guild / category / channel.
+    tool_choice = AIToolChoice()
+    tool_budget = AIToolBudget()
     if ai_tools_enabled() and ctx.guild_id is not None and ctx.actor_id is not None:
+        from services import ai_orchestration_policy
+
         # Pass the live guild + asking member so the server-introspection
         # tools can read roles / channels / overview. ``build_registry``
         # omits those tools when ``guild`` is None.
         message = getattr(_ctx, "message", None)
+        category_id = getattr(getattr(message, "channel", None), "category_id", None)
+        orchestration = await ai_orchestration_policy.resolve(
+            ai_orchestration_policy.OrchestrationContext(
+                guild_id=int(ctx.guild_id),
+                channel_id=int(ctx.channel_id or 0),
+                category_id=int(category_id) if category_id is not None else None,
+            ),
+        )
         registry = ai_tools.build_registry(
             scope=ctx.scope,
             guild_id=ctx.guild_id,
@@ -1113,15 +1135,27 @@ async def _invoke_gateway(
             guild=getattr(message, "guild", None),
             member=getattr(message, "author", None),
             bot=getattr(_ctx, "bot", None),
+            # The orchestration profile may NARROW the offered toolset; it can
+            # never grant a tool above the caller's scope (select_tools enforces).
+            enabled_toolsets=orchestration.enabled_toolsets,
+            disabled_tools=orchestration.disabled_tools,
         )
         specs = registry.specs
         handlers = registry.handlers
+        tool_choice = orchestration.tool_choice
+        tool_budget = orchestration.tool_budget
         if ledger is not None:
             handlers = _wrap_handlers_for_ledger(
                 handlers,
                 ai_tools.BTD6_GROUNDING_TOOL_NAMES,
                 ledger,
             )
+
+    # When no tools are offered (tools disabled, or a "no tools" orchestration
+    # profile narrowed them all away) take the identical legacy single-shot
+    # path: no tool_handlers, byte-for-byte the no-tools request.
+    if not specs:
+        handlers = None
 
     system_prompt = stack.render_system_prompt()
     if grounding_constraint:
@@ -1133,6 +1167,8 @@ async def _invoke_gateway(
         payload={"text": stack.render_payload_text()},
         mode=AIResponseMode.TEXT,
         tools=specs,
+        tool_choice=tool_choice,
+        tool_budget=tool_budget,
     )
     # Pass tool_handlers only when tools are active so the no-tools path
     # matches the legacy single-argument ``execute(request)`` call.

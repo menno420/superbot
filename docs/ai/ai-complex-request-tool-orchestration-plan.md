@@ -20,8 +20,19 @@ health-diagnostics roadmap is already delivered
 > and Anthropic adapters, enforced by a shared `ToolLoopState`. Defaults are
 > **compatibility-preserving** (AUTO + hop-bounded, no other caps = today's behaviour). The
 > gateway's redaction seam now uses `dataclasses.replace`, so a new request field can never be
-> dropped there again. **Not yet:** policy storage/projection/UI (Phase 3), the complex-BTD6
-> workflow (Phase 4). Reconcile PR #s next session.
+> dropped there again.
+> **Phase 3 shipped 2026-06-09** (PR slices D+E) — typed orchestration-policy storage + resolver +
+> mutation + projection + the operator UI. Migration `062` adds a nullable `orchestration_profile`
+> column to `ai_guild_policy` / `ai_channel_policy` / `ai_category_policy`; `services.ai_orchestration_presets`
+> holds the built-in presets (the default reproduces today's behaviour byte-for-byte); `services.ai_orchestration_policy.resolve`
+> picks most-specific-wins (channel → category → guild → default); `services.ai_orchestration_mutation` is the
+> audited write seam (built-in keys only); the resolved policy is wired into `natural_language_stage._invoke_gateway`
+> (toolset narrowing + tool_choice/tool_budget, default = byte-identical); the **Tools & Workflows** AI-panel
+> button (`ai:tools`) opens the chooser (per-scope profile picker + dry-run analyzer with reason codes). The
+> maintainer lifted the AI-exposure gate for this operator UI this session. **Not yet:** the complex-BTD6
+> workflow (Phase 4) and the durable orchestration *audit trace* (plan §12.1 — the dry-run preview already
+> gives operators inspectability; the per-decision audit column is deferred to keep the hot audit path
+> untouched). Reconcile PR #s next session.
 
 ## 1. Executive recommendation
 
@@ -910,6 +921,20 @@ budget exhaustion.
 
 ### Phase 3 — Typed orchestration policy and admin UX
 
+> **✅ SHIPPED 2026-06-09 (PR slices D+E).** Migration `062` adds the nullable
+> `orchestration_profile` column to the three policy tables. `services.ai_orchestration_presets`
+> (built-in presets: `compatible_default` = today's behaviour, `balanced_helper`, `btd6_grounded`,
+> `btd6_grounded_strict`, `no_tools`), `services.ai_orchestration_policy.resolve` (most-specific-wins +
+> dry-run trace, DB-fault-tolerant), and `services.ai_orchestration_mutation` (audited write seam,
+> built-in keys only, emits `ai.orchestration.*_changed`) land the storage/read/mutation ownership.
+> `AIConfigSnapshot.orchestration` carries the guild-default + override counts (read-only, I-2 preserved).
+> The resolved policy is wired into `natural_language_stage._invoke_gateway` (toolset narrowing +
+> `tool_choice`/`tool_budget`; default = byte-identical). The **Tools & Workflows** panel button
+> (`ai:tools` → `views.ai.tools`) gives per-scope profile pickers + a dry-run analyzer that shows the
+> resolved profile, offered/withheld tools with reason codes, and the budget. **Deferred:** the durable
+> per-decision orchestration *audit trace* (§12.1) — the dry-run preview covers operator inspectability,
+> and deferring it keeps the hot `ai_decision_audit` write path + its doc-pin untouched.
+
 Implement:
 
 - orchestration policy storage/read/mutation ownership;
@@ -956,8 +981,11 @@ Implement:
 3. **PR C — Provider-neutral tool choice and dynamic budgets.** ✅ *shipped 2026-06-09
    (neutral `AIToolChoice`/`AIToolBudget` + OpenAI/Anthropic mappings + shared budget loop;
    compatibility-preserving). Safe trace summaries/metrics deferred to PR D/E.*
-4. **PR D — Orchestration policy resolver, projection, and mutation ownership.**
-5. **PR E — Tools & workflows admin UI, preview, and dry run.**
+4. **PR D — Orchestration policy resolver, projection, and mutation ownership.** ✅ *shipped
+   2026-06-09 (migration 062 + `ai_orchestration_presets` / `ai_orchestration_policy` /
+   `ai_orchestration_mutation` + `AIConfigSnapshot.orchestration` + the `_invoke_gateway` wiring).*
+5. **PR E — Tools & workflows admin UI, preview, and dry run.** ✅ *shipped 2026-06-09
+   (`ai:tools` panel button → `views.ai.tools`: per-scope profile pickers + dry-run analyzer).*
 6. **PR F — BTD6 request analysis and evidence/calculation contracts.**
 7. **PR G — Complex BTD6 plan/execute/verify workflow and answer contracts.**
 8. **PR H — Trace/eval expansion and provider/preset tuning.**

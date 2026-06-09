@@ -137,6 +137,13 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "ai.policy.role_changed",
         "ai.policy.projection_failed",
         "ai.instruction.profile_changed",
+        # Tool-orchestration profile writes (services/ai_orchestration_mutation.py,
+        # Phase 3). Advisory: emitted after the orchestration_profile column is
+        # written + the resolver cache is invalidated. Payload: guild_id,
+        # mutation_id. Same swallow-on-subscriber-failure contract as ai.policy.*.
+        "ai.orchestration.guild_changed",
+        "ai.orchestration.channel_changed",
+        "ai.orchestration.category_changed",
         # ── BTD6 (services/btd6_patch_service.py) ────────────────────────
         # Advisory. Emitted when patch-notes ingestion writes a BTD6
         # version strictly newer than the previously-stored latest (never

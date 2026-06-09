@@ -65,6 +65,14 @@ _FORBIDDEN_CALLS: frozenset[tuple[str, str]] = frozenset(
         # Apply-side behavior preset
         ("ai_behavior_profile_service", "apply_preset"),
         ("ai_behavior_profile_service", "apply_preset_to_guild"),
+        # Orchestration-profile writes (Phase 3) + resolver-cache invalidation
+        ("ai_db", "set_guild_orchestration_profile"),
+        ("ai_db", "set_channel_orchestration_profile"),
+        ("ai_db", "set_category_orchestration_profile"),
+        ("ai_orchestration_mutation", "set_guild_orchestration"),
+        ("ai_orchestration_mutation", "set_channel_orchestration"),
+        ("ai_orchestration_mutation", "set_category_orchestration"),
+        ("ai_orchestration_policy", "invalidate"),
     },
 )
 

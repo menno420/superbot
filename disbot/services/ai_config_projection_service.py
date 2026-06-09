@@ -40,6 +40,7 @@ from services import (
     ai_decision_audit_service,
     ai_diagnostics_service,
     ai_memory_service,
+    ai_orchestration_presets,
     ai_policy_mutation,
 )
 from utils.db import ai as ai_db
@@ -178,6 +179,24 @@ class AuditSnapshot:
 
 
 @dataclass(frozen=True)
+class OrchestrationSnapshot:
+    """Tool-orchestration profile state (Phase 3).
+
+    ``guild_profile_key`` is the guild-default orchestration profile, or
+    ``None`` when no profile is set (the guild resolves to the compatible
+    default — today's behaviour). The override counts tally channel / category
+    rows that pin a non-NULL orchestration profile. Read-only — the resolved
+    per-channel decision comes from ``ai_orchestration_policy.resolve``, never
+    from this snapshot.
+    """
+
+    guild_profile_key: str | None = None
+    guild_profile_label: str | None = None
+    channel_override_count: int = 0
+    category_override_count: int = 0
+
+
+@dataclass(frozen=True)
 class AIConfigSnapshot:
     """The operator-facing read model.
 
@@ -193,6 +212,7 @@ class AIConfigSnapshot:
     projection: ProjectionSnapshot
     instruction: InstructionSnapshot
     audit: AuditSnapshot
+    orchestration: OrchestrationSnapshot = field(default_factory=OrchestrationSnapshot)
     readiness_summary: str | None = None
 
 
@@ -230,6 +250,7 @@ async def build_snapshot(
     projection_snapshot = await _build_projection_snapshot(guild_id, policy_snapshot)
     instruction_snapshot = await _build_instruction_snapshot(policy_snapshot)
     audit_snapshot = await _build_audit_snapshot(guild_id, audit_window)
+    orchestration_snapshot = await _build_orchestration_snapshot(guild_id)
     return AIConfigSnapshot(
         guild_id=guild_id,
         policy=policy_snapshot,
@@ -238,6 +259,7 @@ async def build_snapshot(
         projection=projection_snapshot,
         instruction=instruction_snapshot,
         audit=audit_snapshot,
+        orchestration=orchestration_snapshot,
         readiness_summary=readiness_summary,
     )
 
@@ -467,6 +489,53 @@ async def _build_instruction_snapshot(
     )
 
 
+async def _build_orchestration_snapshot(guild_id: int) -> OrchestrationSnapshot:
+    """Read the orchestration profile + override counts. Safe on missing data.
+
+    Read-only: pulls the guild-default profile key from ``ai_guild_policy`` and
+    counts channel / category rows pinning a non-NULL orchestration profile.
+    Maps the key to a human label via the built-in preset registry (pure data).
+    """
+    try:
+        policy = await ai_db.get_guild_policy(guild_id)
+    except Exception:
+        logger.exception(
+            "ai_config_projection: orchestration guild read failed for guild=%d",
+            guild_id,
+        )
+        return OrchestrationSnapshot()
+
+    guild_key = (policy or {}).get("orchestration_profile")
+    profile = ai_orchestration_presets.get(guild_key)
+    guild_label = profile.label if profile is not None else None
+
+    channel_count = 0
+    category_count = 0
+    try:
+        channel_count = sum(
+            1
+            for row in await ai_db.list_channel_policies(guild_id)
+            if row.get("orchestration_profile")
+        )
+        category_count = sum(
+            1
+            for row in await ai_db.list_category_policies(guild_id)
+            if row.get("orchestration_profile")
+        )
+    except Exception:
+        logger.exception(
+            "ai_config_projection: orchestration override count failed for guild=%d",
+            guild_id,
+        )
+
+    return OrchestrationSnapshot(
+        guild_profile_key=guild_key,
+        guild_profile_label=guild_label,
+        channel_override_count=channel_count,
+        category_override_count=category_count,
+    )
+
+
 async def _build_audit_snapshot(guild_id: int, window: int) -> AuditSnapshot:
     """Read the latest ``window`` audit rows; tally per-decision counts."""
     try:
@@ -532,6 +601,7 @@ __all__ = [
     "AuditSnapshot",
     "InstructionSnapshot",
     "MemorySnapshot",
+    "OrchestrationSnapshot",
     "PolicySnapshot",
     "ProjectionFieldStatus",
     "ProjectionSnapshot",
