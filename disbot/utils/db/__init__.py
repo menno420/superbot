@@ -85,6 +85,11 @@ from utils.db.games.mining import (
     set_mining_inventory,
     update_mining_item,
 )
+from utils.db.games.mining_equipment import (
+    equip_item,
+    get_equipment,
+    unequip_slot,
+)
 from utils.db.games.rps import rps_ensure_player, rps_get_leaderboard, rps_update_stat
 from utils.db.governance import (
     get_all_cleanup_for_guild,
@@ -257,4 +262,7 @@ __all__ = [
     "set_mining_inventory",
     "update_deathmatch",
     "update_mining_item",
+    "equip_item",
+    "get_equipment",
+    "unequip_slot",
 ]

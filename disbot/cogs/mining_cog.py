@@ -21,6 +21,9 @@ import logging
 import discord
 from discord.ext import commands
 
+from cogs.mining import equipment
+from cogs.mining.exploration import explore_from_state
+from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
 from core.runtime import panel_manager
 from utils import db
@@ -120,6 +123,7 @@ class MiningCog(commands.Cog):
         )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
+        embed.add_field(name="Net Worth", value=str(total_value(inventory)))
         await ctx.send(embed=embed)
 
     # ---------------------------------------------------------- build / crafting
@@ -223,12 +227,12 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def explore(self, ctx):
-        """Discover random events or items."""
-        from cogs.mining.rewards import roll_explore_outcome
-
+        """Discover random events or items (driven by your equipped gear)."""
         user_id = str(ctx.author.id)
         gid = ctx.guild.id
-        text, item, amount = roll_explore_outcome()
+        inventory = await db.get_mining_inventory(user_id, gid)
+        equipped = await db.get_equipment(user_id, gid)
+        text, item, amount = explore_from_state(equipped, inventory)
         if item:
             await self.update_inventory(user_id, gid, item, amount)
         await ctx.send(f"{ctx.author.mention} {text}")
@@ -256,6 +260,71 @@ class MiningCog(commands.Cog):
 
         await self.update_inventory(user_id, gid, item, -1)
         await ctx.send(f"{ctx.author.mention} {message}")
+
+    # ---------------------------------------------------------- gear / equipment
+
+    @commands.command(hidden=True)
+    async def equip(self, ctx, *, item: str = None):
+        """Equip a tool, light, or charm so its stats apply to your character."""
+        if not item:
+            return await ctx.send("Specify what to equip, e.g. `!equip iron pickaxe`.")
+        item = item.strip().lower()
+        slot = equipment.slot_for(item)
+        if slot is None:
+            return await ctx.send(f"**{item.title()}** can't be equipped.")
+        user_id = str(ctx.author.id)
+        gid = ctx.guild.id
+        inventory = await db.get_mining_inventory(user_id, gid)
+        if inventory.get(item, 0) < 1:
+            return await ctx.send(f"You don't own a **{item.title()}** to equip.")
+        await db.equip_item(user_id, gid, slot, item)
+        await ctx.send(
+            f"{ctx.author.mention} equipped **{item.title()}** in the **{slot}** slot.",
+        )
+
+    @commands.command(hidden=True)
+    async def unequip(self, ctx, *, slot: str = None):
+        """Clear an equipment slot (tool / light / charm)."""
+        if not slot:
+            return await ctx.send(
+                f"Specify a slot to clear: {', '.join(equipment.SLOTS)}.",
+            )
+        slot = slot.strip().lower()
+        if slot not in equipment.SLOTS:
+            return await ctx.send(
+                f"Unknown slot **{slot}**. Slots: {', '.join(equipment.SLOTS)}.",
+            )
+        await db.unequip_slot(str(ctx.author.id), ctx.guild.id, slot)
+        await ctx.send(f"{ctx.author.mention} cleared the **{slot}** slot.")
+
+    @commands.command(hidden=True)
+    async def gear(self, ctx):
+        """Show your equipped gear and the stats it grants."""
+        user_id = str(ctx.author.id)
+        equipped = await db.get_equipment(user_id, ctx.guild.id)
+        stats = equipment.compute_stats(equipped)
+        embed = discord.Embed(
+            title=f"🧍 {ctx.author.name}'s Gear",
+            color=MINING_COLOR,
+        )
+        for slot in equipment.SLOTS:
+            held = equipped.get(slot)
+            embed.add_field(
+                name=slot.title(),
+                value=f"**{held.title()}**" if held else "*(empty)*",
+                inline=True,
+            )
+        bonuses = equipment.describe_stats(stats)
+        embed.add_field(
+            name="Stats",
+            value=(
+                "\n".join(f"{label}: +{value}" for label, value in bonuses)
+                if bonuses
+                else "No bonuses yet — equip some gear!"
+            ),
+            inline=False,
+        )
+        await ctx.send(embed=embed)
 
     # ---------------------------------------------------------------- admin
 

@@ -66,7 +66,7 @@ writes must come from the owning cog or a shared service.
 | `cleanup`      | `prohibited_words`                             | direct via `utils/db/moderation.py` |
 | `chain`        | `chain_channels`                               | direct via `utils/db/games/chain.py` |
 | `counting`     | `counting_state`                               | direct via `utils/db/games/counting.py` |
-| `mining`       | `mining_inventory`                             | direct via `utils/db/games/mining.py` |
+| `mining`       | `mining_inventory`, `mining_equipment`         | direct via `utils/db/games/mining*.py` |
 | `deathmatch`   | `deathmatch_stats`                             | direct via `utils/db/games/deathmatch.py` |
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |

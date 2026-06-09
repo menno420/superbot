@@ -33,7 +33,8 @@ def test_torch_unlocks_deep_finds():
 def test_dynamite_gated_outcome_requires_dynamite():
     without = exp.eligible_outcomes(exp.Biome.DEEP, exp.Loadout())
     with_dyn = exp.eligible_outcomes(
-        exp.Biome.DEEP, exp.Loadout(tools=frozenset({exp.DYNAMITE})),
+        exp.Biome.DEEP,
+        exp.Loadout(tools=frozenset({exp.DYNAMITE})),
     )
     assert "blasted_vein" not in {o.key for o in without}
     assert "blasted_vein" in {o.key for o in with_dyn}
@@ -44,31 +45,37 @@ def test_deeper_biome_includes_shallower_outcomes():
     assert "secret_chest" in {o.key for o in deep}  # a surface outcome
 
 
-def test_pickaxe_doubles_ore_gain():
-    # abandoned_camp grants gold; pickaxe should double a positive ore gain.
-    base = exp.Loadout()
-    geared = exp.Loadout(tools=frozenset({exp.PICKAXE}))
-    outcome = next(o for o in exp.CATALOG if o.key == "abandoned_camp")
+def test_mining_power_doubles_ore_gain():
+    # abandoned_camp grants gold; mining_power 2 (a pickaxe) doubles a positive
+    # ore gain, and 4 (an iron pickaxe) triples it.
+    from cogs.mining.equipment import EffectiveStats
     from cogs.mining.exploration import _scale_amount
 
-    assert _scale_amount(outcome, geared) == _scale_amount(outcome, base) * 2
+    outcome = next(o for o in exp.CATALOG if o.key == "abandoned_camp")
+    base = _scale_amount(outcome, EffectiveStats())
+    assert _scale_amount(outcome, EffectiveStats(mining_power=2)) == base * 2
+    assert _scale_amount(outcome, EffectiveStats(mining_power=4)) == base * 3
 
 
 def test_penalties_are_never_scaled():
-    geared = exp.Loadout(tools=frozenset({exp.PICKAXE, exp.LUCKY_CHARM}))
+    from cogs.mining.equipment import EffectiveStats
+    from cogs.mining.exploration import _scale_amount
+
     hazard = next(o for o in exp.CATALOG if o.key == "monster_ambush")
-    from cogs.mining.exploration import _scale_amount
-
     # Negative amount stays exactly as authored — gear protects gains only.
-    assert _scale_amount(hazard, geared) == hazard.amount
+    assert (
+        _scale_amount(hazard, EffectiveStats(mining_power=4, loot_bonus=1))
+        == hazard.amount
+    )
 
 
-def test_lucky_charm_adds_one():
-    geared = exp.Loadout(tools=frozenset({exp.LUCKY_CHARM}))
-    outcome = next(o for o in exp.CATALOG if o.key == "secret_chest")
+def test_loot_bonus_adds_flat_extra():
+    from cogs.mining.equipment import EffectiveStats
     from cogs.mining.exploration import _scale_amount
 
-    assert _scale_amount(outcome, geared) == outcome.amount + 1
+    # secret_chest gives wood (not ore): loot_bonus still adds a flat +1.
+    outcome = next(o for o in exp.CATALOG if o.key == "secret_chest")
+    assert _scale_amount(outcome, EffectiveStats(loot_bonus=1)) == outcome.amount + 1
 
 
 def test_resolve_is_deterministic_with_seeded_rng():
@@ -117,3 +124,56 @@ def test_resolve_always_returns_result_even_when_catalog_filtered():
     result = exp.resolve(exp.Biome.SURFACE, exp.Loadout(), rng=_rng())
     assert result.narration
     assert isinstance(result.final_amount, int)
+
+
+def test_explore_from_state_returns_legacy_tuple_shape():
+    text, item, amount = exp.explore_from_state({}, {}, rng=_rng())
+    assert isinstance(text, str) and text
+    assert item is None or isinstance(item, str)
+    assert isinstance(amount, int)
+
+
+def test_explore_from_state_maps_equipped_gear_and_threads_stats():
+    # Equipped slots map to the catalog's capability tokens (TOOL→PICKAXE,
+    # LIGHT→TORCH, CHARM→LUCKY_CHARM); dynamite is read from inventory; and the
+    # equipped stats are threaded — so the helper equals resolving directly with
+    # that loadout + computed stats under an identically seeded RNG.
+    from cogs.mining import equipment
+
+    equipped = {
+        equipment.TOOL: "iron pickaxe",
+        equipment.LIGHT: "lantern",
+        equipment.CHARM: "lucky charm",
+    }
+    inv = {"dynamite": 1, "gold": 4}
+    got = exp.explore_from_state(
+        equipped, inv, biome=exp.Biome.CAVERN, rng=random.Random(7)
+    )
+    expected = exp.resolve(
+        exp.Biome.CAVERN,
+        exp.Loadout(
+            tools=frozenset({exp.PICKAXE, exp.TORCH, exp.LUCKY_CHARM, exp.DYNAMITE}),
+        ),
+        stats=equipment.compute_stats(equipped),
+        rng=random.Random(7),
+    ).to_legacy_tuple()
+    assert got == expected
+
+
+def test_light_slot_satisfies_deep_find_gate():
+    # Regression: a lantern (not a literal "torch") in the LIGHT slot must
+    # unlock the torch-gated deep finds — the old ownership check missed it.
+    from cogs.mining import equipment
+
+    assert exp._SLOT_TO_TOKEN[equipment.LIGHT] == exp.TORCH
+
+
+def test_explore_from_state_default_biome_is_surface():
+    from cogs.mining import equipment
+
+    equipped = {equipment.TOOL: "pickaxe"}
+    default = exp.explore_from_state(equipped, {}, rng=random.Random(3))
+    explicit = exp.explore_from_state(
+        equipped, {}, biome=exp.Biome.SURFACE, rng=random.Random(3)
+    )
+    assert default == explicit
