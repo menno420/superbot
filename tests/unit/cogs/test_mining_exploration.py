@@ -57,8 +57,8 @@ def test_deeper_biome_includes_shallower_outcomes():
 def test_mining_power_doubles_ore_gain():
     # abandoned_camp grants gold; mining_power 2 (a pickaxe) doubles a positive
     # ore gain, and 4 (an iron pickaxe) triples it.
-    from cogs.mining.equipment import EffectiveStats
     from cogs.mining.exploration import _scale_amount
+    from utils.equipment import EffectiveStats
 
     outcome = next(o for o in exp.CATALOG if o.key == "abandoned_camp")
     base = _scale_amount(outcome, EffectiveStats())
@@ -67,8 +67,8 @@ def test_mining_power_doubles_ore_gain():
 
 
 def test_penalties_are_never_scaled():
-    from cogs.mining.equipment import EffectiveStats
     from cogs.mining.exploration import _scale_amount
+    from utils.equipment import EffectiveStats
 
     hazard = next(o for o in exp.CATALOG if o.key == "monster_ambush")
     # Negative amount stays exactly as authored — gear protects gains only.
@@ -79,8 +79,8 @@ def test_penalties_are_never_scaled():
 
 
 def test_loot_bonus_adds_flat_extra():
-    from cogs.mining.equipment import EffectiveStats
     from cogs.mining.exploration import _scale_amount
+    from utils.equipment import EffectiveStats
 
     # secret_chest gives wood (not ore): loot_bonus still adds a flat +1.
     outcome = next(o for o in exp.CATALOG if o.key == "secret_chest")
@@ -147,7 +147,7 @@ def test_explore_from_state_maps_equipped_gear_and_threads_stats():
     # LIGHT→TORCH, CHARM→LUCKY_CHARM); dynamite is read from inventory; and the
     # equipped stats are threaded — so the helper equals resolving directly with
     # that loadout + computed stats under an identically seeded RNG.
-    from cogs.mining import equipment
+    from utils import equipment
 
     equipped = {
         equipment.TOOL: "iron pickaxe",
@@ -172,13 +172,13 @@ def test_explore_from_state_maps_equipped_gear_and_threads_stats():
 def test_light_slot_satisfies_deep_find_gate():
     # Regression: a lantern (not a literal "torch") in the LIGHT slot must
     # unlock the torch-gated deep finds — the old ownership check missed it.
-    from cogs.mining import equipment
+    from utils import equipment
 
     assert exp._SLOT_TO_TOKEN[equipment.LIGHT] == exp.TORCH
 
 
 def test_explore_from_state_default_biome_is_surface():
-    from cogs.mining import equipment
+    from utils import equipment
 
     equipped = {equipment.TOOL: "pickaxe"}
     default = exp.explore_from_state(equipped, {}, rng=random.Random(3))

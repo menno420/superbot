@@ -33,7 +33,7 @@ import random
 from dataclasses import dataclass, field
 from enum import Enum
 
-from cogs.mining import equipment
+from utils import equipment
 
 
 class Biome(Enum):
@@ -345,7 +345,7 @@ def explore_from_state(
 
     Equipped gear drives both gating (a light unlocks deep finds) and scaling
     (``mining_power`` → more ore, ``loot_bonus`` → extra) via the equipment
-    :class:`~cogs.mining.equipment.EffectiveStats`.  Consumables that gate
+    :class:`~utils.equipment.EffectiveStats`.  Consumables that gate
     outcomes but are not equippable (dynamite) are still read from *inventory*.
     Returns the legacy ``(text, item, amount)`` tuple both call sites consume;
     the (currently fixed, ``SURFACE``) starting depth lives here, so a later

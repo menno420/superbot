@@ -3,7 +3,7 @@
 The *position* half of the mining "Descent".  A player has a persistent integer
 **depth** (stored in ``mining_player_state``); this module maps that depth onto a
 :class:`~cogs.mining.exploration.Biome` and decides — from the player's equipped
-gear :class:`~cogs.mining.equipment.EffectiveStats` — how deep they may descend.
+gear :class:`~utils.equipment.EffectiveStats` — how deep they may descend.
 
 Pure: no Discord, no DB, no state.  Sibling to ``exploration.py`` (which owns the
 outcome *catalog*) and ``equipment.py`` (which owns the stat block); it reuses
@@ -20,8 +20,8 @@ slice; this keeps position a stable, reversible game constant (one function,
 
 from __future__ import annotations
 
-from cogs.mining.equipment import EffectiveStats
 from cogs.mining.exploration import BIOME_ORDER, Biome
+from utils.equipment import EffectiveStats
 
 # Deepest reachable band index (MAGMA).  Position is clamped to [0, MAX_DEPTH].
 MAX_DEPTH: int = len(BIOME_ORDER) - 1

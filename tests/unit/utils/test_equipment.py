@@ -1,10 +1,10 @@
-"""Tests for cogs.mining.equipment — pure gear→stats model."""
+"""Tests for utils.equipment — pure, cross-game gear→stats model."""
 
 from __future__ import annotations
 
 from dataclasses import fields
 
-from cogs.mining import equipment as eq
+from utils import equipment as eq
 
 
 def test_slots_are_the_three_v1_slots():

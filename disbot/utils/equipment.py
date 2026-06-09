@@ -1,10 +1,16 @@
-"""Equipment — pure gear→stats model (foundation).
+"""Equipment — pure, cross-game gear→stats model.
 
 Maps the items a player has *equipped* into slots onto a generic
 :class:`EffectiveStats` block that game logic reads.  This is the cross-game
 "what is my character good at?" read model: a game asks for the stats, never
-for specific item names.  Sibling to ``items.py`` / ``exploration.py`` — no
-Discord, no DB, no state.
+for specific item names.
+
+It lives in ``utils/`` (stdlib-only, no Discord/DB/state) precisely *because*
+it is shared: mining reads ``mining_power``/``light_radius``/``depth_access``,
+deathmatch reads ``damage``/``defense``/``max_health``, and a future stat
+service (``services/``, which may not import ``cogs/``) can build on it too.
+This realises the brainstorm §7.4 "relocate the pure stat model to a shared
+layer" step — extracted the moment a second game (deathmatch) needed it.
 
 Slots and per-item stats are deliberately data (``_GEAR``): extend by adding
 rows.  Combat slots (weapon/armor) and their damage/defense stats are reserved
