@@ -138,7 +138,7 @@ class SettingsCog(commands.Cog):
             return
         from views.settings.hub import SettingsHubView
 
-        view = SettingsHubView(ctx.author)
+        view = await SettingsHubView.create(ctx.author, guild_id)
         await send_panel(ctx, embed=SettingsHubView.build_embed(), view=view)
 
     @settings_root.command(  # type: ignore[arg-type]
@@ -187,7 +187,7 @@ class SettingsCog(commands.Cog):
             return _disabled_embed(), _DisabledHelpHookView(interaction.user)
         from views.settings.hub import SettingsHubView
 
-        view = SettingsHubView(interaction.user)
+        view = await SettingsHubView.create(interaction.user, guild_id)
         return SettingsHubView.build_embed(), view
 
     @app_commands.command(

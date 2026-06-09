@@ -48,6 +48,7 @@ from __future__ import annotations
 import datetime
 import logging
 import re
+from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any, TypeVar
 
@@ -483,6 +484,159 @@ def get_cached_catalogue() -> CustomizationCatalogue | None:
 
 
 # ---------------------------------------------------------------------------
+# Actionable settings groups — the Settings hub's discovery rule
+# (settings audit §6 inclusion rule + §11 Phase 1, scoreboard Lane 7)
+# ---------------------------------------------------------------------------
+
+
+# Subsystems whose real configuration lives in a dedicated, canonical domain
+# panel rather than scalar settings / bindings / resources (audit §4: cleanup's
+# governance policy tables + structured panel; its scalar Settings page is
+# empty). Declared here, not discovered — settings Phase 2 replaces this table
+# with real per-domain registrations. Adding a name here only affects
+# *discovery*; the domain's own panel/services stay the mutation owner.
+DOMAIN_CONFIG_SUBSYSTEMS: frozenset[str] = frozenset({"cleanup"})
+
+
+@dataclass(frozen=True)
+class ActionableGroup:
+    """One subsystem the Settings hub should list, and why.
+
+    A group is *actionable* when an operator who opens it can actually do
+    something: edit a declared scalar (``editable_setting_count``), edit a
+    binding, run a provisionable resource flow, or open a registered
+    domain-config panel. Router-only / read-only / internal / empty
+    subsystems never become groups (audit §6 — the "28 listed, 3 truncated,
+    many empty" defect class).
+    """
+
+    subsystem: str
+    display_name: str
+    description: str
+    emoji: str | None
+    ui_priority: int
+    editable_setting_count: int = 0
+    binding_count: int = 0
+    resource_count: int = 0
+    has_domain_panel: bool = False
+
+    @property
+    def surfaces(self) -> tuple[str, ...]:
+        """The actionable surface kinds this group declares (stable order)."""
+        out: list[str] = []
+        if self.editable_setting_count:
+            out.append("settings")
+        if self.binding_count:
+            out.append("bindings")
+        if self.resource_count:
+            out.append("resources")
+        if self.has_domain_panel:
+            out.append("panel")
+        return tuple(out)
+
+
+def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
+    """Every subsystem the Settings hub should offer, sorted for display.
+
+    Live composition (no snapshot staleness): reads the identity manifest
+    (``utils.subsystem_registry.SUBSYSTEMS``), the live schema declarations
+    (``core.runtime.subsystem_schema.all_schemas``), and the declared
+    domain-config table above. Inclusion rule (audit §6):
+
+    * ``visibility_mode='internal'`` never appears;
+    * otherwise the subsystem needs at least one actionable surface —
+      an *editable* scalar (a ``SettingSpec`` with a ``settings_key``),
+      a declared binding, a declared resource requirement, or a
+      registered domain-config panel.
+
+    Deterministic and side-effect-free; sorted by ``ui_priority`` then
+    display name. Discovery only — mutation stays with each surface's
+    canonical owner (scalar pipeline / binding / provisioning / domain
+    services).
+    """
+    # Function-local imports: keep this module import-light and let tests
+    # monkeypatch the manifest/schema sources.
+    from core.runtime.subsystem_schema import all_schemas
+    from utils.subsystem_registry import SUBSYSTEMS
+
+    schemas = all_schemas()
+    groups: list[ActionableGroup] = []
+    for name, meta in SUBSYSTEMS.items():
+        if meta.get("visibility_mode", "normal") == "internal":
+            continue
+        schema = schemas.get(name)
+        editable = (
+            sum(1 for spec in schema.settings if spec.settings_key)
+            if schema is not None
+            else 0
+        )
+        bindings = len(schema.bindings) if schema is not None else 0
+        resources = len(schema.resource_requirements) if schema is not None else 0
+        domain_panel = name in DOMAIN_CONFIG_SUBSYSTEMS
+        if not (editable or bindings or resources or domain_panel):
+            continue
+        groups.append(
+            ActionableGroup(
+                subsystem=name,
+                display_name=str(meta.get("display_name", name)),
+                description=str(meta.get("description", "")),
+                emoji=meta.get("emoji") or None,
+                ui_priority=int(meta.get("ui_priority", 99)),
+                editable_setting_count=editable,
+                binding_count=bindings,
+                resource_count=resources,
+                has_domain_panel=domain_panel,
+            ),
+        )
+    groups.sort(key=lambda g: (g.ui_priority, g.display_name.lower(), g.subsystem))
+    return tuple(groups)
+
+
+async def group_availability(
+    guild_id: int,
+    subsystems: Collection[str],
+) -> dict[str, str]:
+    """Actor-facing availability labels for ``subsystems`` in ``guild_id``.
+
+    One deterministic axis today: per-guild **cog routing** (the canonical
+    "is this feature active here" owner, ``services.command_routing``). A
+    subsystem with a guild-scope ``enabled=false`` routing row maps to a
+    ``"routed off"`` label; everything else is absent from the dict. The hub
+    renders the label on the group's option — the group stays *reachable*
+    (an admin may configure a routed-off feature before enabling it), and
+    every edit/reset callback still re-checks authority at execution time.
+
+    Supplementary by contract: a routing read failure returns ``{}`` rather
+    than sinking the hub. Channel/category-scope rows are deliberately not
+    surfaced — a partial restriction is not a group-level state.
+    """
+    from core.runtime.command_surface_ledger import cog_name_to_subsystem
+    from services import command_routing
+
+    wanted = set(subsystems)
+    labels: dict[str, str] = {}
+    try:
+        rows = await command_routing.list_for_guild(guild_id)
+    except Exception:  # noqa: BLE001 — availability is supplementary
+        logger.warning(
+            "customization_catalogue: routing availability read failed; "
+            "rendering hub without availability labels",
+            exc_info=True,
+        )
+        return {}
+    for row in rows:
+        if row.get("scope_type") != "guild" or row.get("enabled"):
+            continue
+        raw = str(row.get("cog_name") or "")
+        # Routing rows store the subsystem key (the setup section's option
+        # values); normalise class-name rows defensively.
+        key = raw if raw in wanted else cog_name_to_subsystem(raw)
+        if key in wanted:
+            labels[str(key)] = "routed off"
+    return labels
+
+
+# ---------------------------------------------------------------------------
 # Diagnostics provider — registers at import time
 # ---------------------------------------------------------------------------
 
@@ -539,12 +693,16 @@ _register_diagnostics()
 
 
 __all__: list[str] = [
+    "ActionableGroup",
     "CustomizationCatalogue",
     "CustomizationEntry",
     "CustomizationFindings",
+    "DOMAIN_CONFIG_SUBSYSTEMS",
     "KNOWN_PANEL_COMMANDS",
     "PanelDeclaration",
+    "actionable_settings_groups",
     "build_catalogue",
     "get_cached_catalogue",
+    "group_availability",
     "panel_command",
 ]
