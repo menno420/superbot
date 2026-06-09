@@ -93,6 +93,17 @@ This doc is intent, not enforcement. The rules it implies live in their proper h
 - **The planning→execute lifecycle, act-vs-ask, bugs-first** → `docs/collaboration-model.md`
   and `.claude/CLAUDE.md` (don't restate them; follow them).
 
+**Vision-ledger blocks (Q-0062, decided 2026-06-09).** Each area folio
+(`docs/subsystems/*`) may carry one short owner-voice block — ≤10 lines: *what this
+area is for · what "right" feels like · one example of "wrong"* — so agents can check
+a plan against the owner's intent for the area, not only against recorded decisions
+(decision trails capture *what* was chosen, rarely *what the area is for*). Written
+**lazily**: only when an interview already touches that area, the interviewer routes
+~3 extra lines into the folio; seeded from the Q-0051 draft-answer session. No
+backfill sessions — an area without interviews simply has no block yet. Agents still
+**escalate taste** they can't ground in a block or a decision (the honest limit in
+`docs/audits/agent-memory-system-review-2026-06-09.md` §4).
+
 Two standing expectations the maintainer has stated:
 
 - His answers are **leading owner intent** unless impossible, unsafe, inefficient, too

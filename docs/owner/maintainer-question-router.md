@@ -2261,3 +2261,154 @@ bounded length and reset-to-default.
 
 **Suggested destination after answer:** Settings declaration or structured Help-overlay schema,
 plus preview/editor tests.
+## 26. Agent-memory system review batch — answered 2026-06-09
+
+### Q-0060 — Parallel sessions: stay accept-and-reconcile, or add session visibility?
+
+**Area:** Workflow / multi-agent coordination
+**Type:** Workflow preference
+**Priority:** Medium (the cost is real but bounded — one five-file merge this session)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/owner/ai-project-workflow.md` §9
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **(a) accept-and-reconcile stays the policy**, with the §9
+collision rules as the documented resolution method. The active-sessions ledger (b)
+is revisited only if deliberately-parallel sessions become routine. *Not decided:*
+nothing about CI/branch mechanics — this is purely the docs-hotspot write policy.
+
+**Question:** Two sessions ran concurrently on 2026-06-09 and collided on the doc
+hotspots (router numbers, current-state, roadmap) — resolved cleanly via the §9
+conventions, but at ~a small feature's worth of context. Options: **(a)** keep
+**accept-and-reconcile** (current; zero coordination overhead, occasional merge cost),
+**(b)** a tiny **active-sessions ledger** (each session appends one line — focus +
+branch — at start, removes it at end; siblings see who else is writing and which
+hotspot to avoid), or **(c)** a soft convention that only one concurrent session does
+**docs-hotspot** work (router/current-state/roadmap edits) while others stay code-only
+until their END step.
+
+**Agent recommendation (approved):** (a) unless parallel sessions become routine —
+the §9 rules made the reconcile mechanical, and (b)/(c) add ceremony every session to
+save cost in the rare colliding one.
+
+**Routed to:** `docs/owner/ai-project-workflow.md` §9 (policy note on the router row).
+
+### Q-0061 — Make the end-of-session structured interview a standing convention?
+
+**Area:** Workflow / decision throughput
+**Type:** Workflow change (affects how you're pinged)
+**Priority:** Medium-high (decision latency is the #1 lane blocker class)
+**Status:** Answered (2026-06-09) — **Routed** → `.session-journal.md` Protocol → END step 6a
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **yes, scoped**: sessions end with one structured-choices batch
+when open questions (1) block a lane or (2) are answerable in ≤1 minute; **≤4 choices
+per batch**; deep product questions stay router-only for a dedicated interview session.
+*Not decided:* no obligation to interview when nothing blocks — silence stays fine.
+
+**Question:** The two highest-leverage decision moments on 2026-06-09 were structured
+choice batches: the gate-lifting interview (16 decisions) and this session's
+AskUserQuestion round (4 answers → Q-0054 closed + lane choice in one minute). Should
+sessions adopt a standing END-step: *when open router questions touch the session's
+area (or block any lane), batch them into one structured-choices prompt before
+wrapping up* — making the router primarily an **archive of answers** rather than a
+queue of opens?
+
+**Agent recommendation:** yes, scoped — batch only questions that are (1) blocking a
+lane or (2) answerable as structured choices in ≤1 minute; never more than ~4 at once
+(the AskUserQuestion ceiling); deep product questions stay router-only for a dedicated
+interview session. This keeps your interrupt small and kills the "open question ages
+three sessions" pattern.
+
+**Routed to:** `.session-journal.md` Protocol → END (new step 6a).
+
+### Q-0062 — Per-area "vision ledger": capture what each area is FOR, in your words
+
+**Area:** Workflow / vision transfer
+**Type:** Documentation convention (closes the honest gap in the 2026-06-09 review §4)
+**Priority:** Medium
+**Status:** Answered (2026-06-09) — **Routed** → `docs/owner/maintainer-working-profile.md` (the convention); folio blocks grow lazily
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **yes, lazily**: a ≤10-line owner-voice block per area folio
+("what this area is for · what right feels like · one example of wrong"), written
+**only when an interview already touches that area** (the interviewer routes ~3 extra
+lines per answer); seed from the Q-0051 draft-answer session. *Not decided:* no
+backfill sessions — areas without interviews simply don't have blocks yet.
+
+**Question:** Agents can reliably catch a plan that *contradicts a recorded decision*,
+but a plan that's internally consistent and merely *off your taste* passes silently —
+the decision trails capture what you chose, rarely **why / what the area is for**.
+Should each area folio gain a short owner-voice block (≤10 lines: "what this area is
+for · what right feels like · one example of wrong"), seeded from the Q-0051
+draft-answer session and grown one block per interview?
+
+**Agent recommendation:** yes, but lazily — only write a block when an interview
+already touched that area (zero dedicated sessions; the interviewer routes 3 extra
+lines per answer). Over a few weeks every active area gets one, and "does this plan
+fit the vision?" becomes checkable instead of guessable.
+
+**Routed to:** `docs/owner/maintainer-working-profile.md` (the convention; folios
+gain blocks lazily as interviews touch their areas).
+## 27. Settings centralization audit — 2026-06-09
+
+### Q-0063 — Is AI's partial scalar-to-policy projection the durable ownership model?
+
+**Area:** AI / Settings platform
+**Type:** Architecture + product-surface decision
+**Priority:** Important (blocks broad AI Settings redesign, not Phase 1 display correctness)
+**Status:** Open
+
+**Question:** The generic Settings Manager owns ten AI `SettingSpec`s. Seven guild-policy
+keys are already projected after scalar mutation through
+`ai_policy_mutation.project_from_legacy_settings` into the typed `ai_guild_policy` row;
+memory settings intentionally remain scalar-owned; and the free-text guild-instruction
+scalar is explicitly not projected to typed instruction profiles. Should this hybrid
+remain the durable contract, or should AI gradually converge on typed policy/profile
+panels while retaining only genuinely separate scalar memory settings?
+
+**Recommendation:** Converge gradually on typed policy/profile panels for policy-owned
+fields, while keeping memory as its own declared scalar family. Until parity and migration
+are proven, preserve and visibly diagnose the existing seven-key projection rather than
+removing it.
+
+**Why agents need this:** The projection is already implemented and tested, so describing
+AI as an unbridged source-of-truth conflict would be wrong. However, projection is
+best-effort: the legacy KV mutation can commit while typed projection fails and emits a
+diagnostic event. Agents need to know whether to harden that compatibility seam or plan
+its eventual retirement. AI UI changes also remain per-exposure gated.
+
+**Safe default until answered:** Preserve the tested seven-key projection; do not add more
+projected keys or new AI UI; surface the hybrid/effective source in plans and diagnostics.
+
+**Suggested destination after answer:**
+`docs/planning/settings-cog-centralization-audit-2026-06-09.md`,
+`docs/ai-config-ownership.md`, AI subsystem docs, and the Phase 0 target-test plan.
+
+### Q-0064 — Should BTD6 CT-team and announcement pointers become first-class configuration?
+
+**Area:** BTD6 / Settings / bindings
+**Type:** Product-surface + ownership decision
+**Priority:** Medium (does not block Phase 1 display correctness)
+**Status:** Open
+
+**Question:** BTD6's version-announcement channel and CT team group are operator-settable
+through typed command services that directly write allowlisted legacy KV keys, but neither
+is declared in the BTD6 schema or discoverable/editable in Settings. Should the
+announcement channel become a first-class BTD6 binding with a native channel selector,
+and should the CT group become a first-class advanced BTD6 setting/guided flow or remain
+an operational command-only pointer?
+
+**Recommendation:** Promote the **announcement channel** to a binding and expose it through
+a structured selector. Keep the **CT group** as an advanced guided BTD6 configuration
+flow (accept URL/ID, parse, preview, confirm) rather than a generic scalar text field.
+
+**Why agents need this:** The current services are intentional direct-write exceptions,
+so an implementation agent must not silently force them through the scalar pipeline.
+Owner intent determines whether they are hidden operational pointers or real guild
+configuration deserving discovery/audit/UI coverage.
+
+**Safe default until answered:** Keep both typed services and commands unchanged; document
+them as command-only exceptions and do not expose internal BTD6 cache keys.
+
+**Suggested destination after answer:** BTD6 schema/service plan, settings command map,
+and Phase 2/3 of the settings-centralization audit.
