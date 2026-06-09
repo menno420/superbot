@@ -30,6 +30,7 @@ from governance.models import (
 from utils import db
 from utils.subsystem_registry import SUBSYSTEMS
 from utils.visibility_rules import (
+    VISIBILITY_TIERS,
     get_member_visibility_tier,
     get_subsystems_for_tier,
     is_tier_sufficient,
@@ -169,6 +170,16 @@ async def _role_grants_tier(
 async def _resolve_member_tier(ctx: GovernanceContext) -> str:
     """Resolve the member's effective tier, applying configured-role grants.
 
+    **Declared-tier read path (Q-0045, option b):** when
+    ``ctx.member_tier`` is set, it is preferred verbatim — member
+    derivation *and* the configured-role grants are skipped, because the
+    caller declared the **effective** standing to evaluate (the read-only
+    audience-simulation input for Help Preview and the
+    ``help_advertises_locked`` drift baseline).  A declared value outside
+    :data:`utils.visibility_rules.VISIBILITY_TIERS` is ignored with a
+    warning and resolution proceeds as if unset, so a bad input can never
+    escalate (nor demote) anyone.
+
     The base tier comes from Discord permissions
     (:func:`utils.visibility_rules.get_member_visibility_tier`).  Two
     configured-role grants may then *raise* it — never lower it:
@@ -188,6 +199,15 @@ async def _resolve_member_tier(ctx: GovernanceContext) -> str:
     ``is_enabled("bindings.primary", ...)`` directly (forbidden by the PR-7
     invariant test).
     """
+    if ctx.member_tier is not None:
+        if ctx.member_tier in VISIBILITY_TIERS:
+            return ctx.member_tier
+        logger.warning(
+            "governance: ignoring unknown declared member_tier %r (guild %s)",
+            ctx.member_tier,
+            ctx.guild_id,
+        )
+
     if ctx.member is None:
         return "user"
 

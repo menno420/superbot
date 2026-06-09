@@ -136,6 +136,13 @@ class AccessContext:
     inputs (``member`` / ``member_role_ids``) and the channel/category scope the
     routing axis needs. Building one performs no I/O; the resolvers it is passed
     to do their own (read-only) lookups.
+
+    ``member_tier`` is the **audience-simulation input** (Q-0045, option b):
+    when set, the governance axis evaluates as that declared tier — with or
+    without a real ``member`` — because governance's own tier resolution
+    prefers a declared tier verbatim. Simulated contexts must label their
+    limits (§16.4): a declared tier cannot model live Discord
+    channel-permission overrides the simulation was not given.
     """
 
     guild_id: int | None
@@ -156,6 +163,13 @@ class AccessContext:
 # ---------------------------------------------------------------------------
 # User-safe reason text. Static strings only — never interpolate context
 # (this is what keeps `safe_text` leak-free; §16.7 redaction guard).
+#
+# This is the FULL drafted denial-copy set for the §16.3 reason-code union
+# (owner decision Q-0036: Claude drafts, maintainer reviews in the PR).
+# DRAFT STATUS: these strings are NOT wired into any live denial path yet —
+# the live command-access feedback strings in core/runtime/command_access.py
+# are unchanged. Wiring is a follow-up commit after the maintainer's
+# read-through of the table in the P1B PR.
 # ---------------------------------------------------------------------------
 
 # code -> (safe_text, source, unlock_hint, remediation)
@@ -182,12 +196,12 @@ _SAFE_TEXT: dict[str, tuple[str, str, str | None, str | None]] = {
     "channel_not_allowed": (
         "This command isn't enabled in this channel.",
         "command_access",
-        None,
+        "try one of the server's command channels",
         "Add this channel in the Command Access settings.",
     ),
     # axis 3 — routing
     "routing_disabled": (
-        "This feature is turned off for this channel.",
+        "This feature is turned off here.",
         "routing",
         None,
         "Re-enable the feature in the Cog Routing setup section.",
@@ -199,12 +213,31 @@ _SAFE_TEXT: dict[str, tuple[str, str, str | None, str | None]] = {
         None,
         None,
     ),
-    # axis 5 — availability (future)
+    "capability_insufficient": (
+        "You don't have permission to do that here.",
+        "governance",
+        None,
+        None,
+    ),
+    # axis 5 — availability (future; availability owns quiet mode — Q-0029)
     "availability_window": (
         "This feature isn't available right now.",
         "availability",
+        "try again later",
         None,
+    ),
+    "quiet_mode": (
+        "The server is in quiet hours — this feature is paused.",
+        "availability",
+        "try again after quiet hours",
+        "Adjust quiet hours in the Availability settings.",
+    ),
+    # bootstrap — setup staging
+    "setup_stage_required": (
+        "This feature isn't set up yet.",
+        "bootstrap",
         None,
+        "Finish this feature's setup in the setup wizard.",
     ),
 }
 
@@ -342,20 +375,36 @@ async def _axis_governance(feature: FeatureEntry, ctx: AccessContext) -> AxisOut
 
     Reuses ``governance.get_visible_subsystems`` — the exact read the
     AccessExplorer view uses — so there is no duplicate visibility logic.
+
+    **Audience simulation (Q-0045, option b):** when ``ctx.member_tier``
+    is set it is passed through to governance, whose tier resolution
+    prefers a declared tier verbatim.  A context with *no* member but a
+    declared tier therefore evaluates instead of degrading to ``unknown``
+    — that is the read path Help Preview and the drift baseline use.  The
+    outcome ``detail`` labels the simulation and its limit (a declared
+    tier cannot model live Discord channel-permission overrides — §16.4).
     """
-    if ctx.member is None:
-        # Without a resolved member we cannot evaluate tier/visibility; report
-        # unknown rather than guess (a guess could falsely claim allow).
+    if ctx.member is None and ctx.member_tier is None:
+        # Without a resolved member or a declared tier we cannot evaluate
+        # tier/visibility; report unknown rather than guess (a guess could
+        # falsely claim allow).
         return AxisOutcome(AccessAxis.GOVERNANCE, "unknown", detail="no member")
     from governance import get_visible_subsystems
     from governance.models import GovernanceContext
 
+    simulated = (
+        f"simulated tier={ctx.member_tier} "
+        "(live channel-permission overrides not modeled)"
+        if ctx.member_tier is not None
+        else None
+    )
     gctx = GovernanceContext(
         guild_id=ctx.guild_id or 0,
         channel_id=ctx.channel_id,
         category_id=ctx.category_id,
         member=ctx.member,
         role_ids=set(ctx.member_role_ids),
+        member_tier=ctx.member_tier,
     )
     try:
         visible = await get_visible_subsystems(gctx)
@@ -363,12 +412,15 @@ async def _axis_governance(feature: FeatureEntry, ctx: AccessContext) -> AxisOut
         logger.warning("access_projection: governance axis raised: %s", exc)
         return AxisOutcome(AccessAxis.GOVERNANCE, "unknown", detail="resolver error")
     if feature.subsystem in visible:
-        return AxisOutcome(AccessAxis.GOVERNANCE, "allow")
+        return AxisOutcome(AccessAxis.GOVERNANCE, "allow", detail=simulated)
+    deny_detail = f"required_tier={feature.visibility_tier}"
+    if simulated is not None:
+        deny_detail = f"{deny_detail}; {simulated}"
     return AxisOutcome(
         AccessAxis.GOVERNANCE,
         "deny",
         reason_code="subsystem_hidden",
-        detail=f"required_tier={feature.visibility_tier}",
+        detail=deny_detail,
     )
 
 
