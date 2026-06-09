@@ -5,8 +5,8 @@
 > Lanes 1–6 were decided + gate-lifted in the 2026-06-09 interview (router §22 /
 > Q-0044–Q-0051); nothing in them needs a new owner decision unless marked. **Lanes 7–8
 > were appended 2026-06-09 by the consolidated plan** — audit-sourced (#625/#627),
-> agent-recommended, *not owner-ordered*; their position is ratifiable via **Q-0065**
-> (default: after Lane 6). Reasoning/verification record for this queue:
+> agent-recommended; their **end-of-queue position was owner-ratified same evening
+> (Q-0065 answered: after Lane 6)**. Reasoning/verification record for this queue:
 > [`consolidated-productive-session-plan-2026-06-09.md`](consolidated-productive-session-plan-2026-06-09.md).
 > Written so the next session needs **no directing prompt beyond "execute the
 > multi-lane plan"**. Source and merged PRs win; verify lane state against live GitHub
@@ -145,8 +145,9 @@
 ## Lane 7 — Settings Phases 0+1: actionable-groups discovery + >25 reachability *(appended)*
 
 > Appended 2026-06-09 by the consolidated plan — audit-sourced (settings audit §11,
-> #625), agent-recommended, **not owner-ordered**; position ratifiable via **Q-0065**
-> (default: here, after Lane 6).
+> #625), agent-recommended; **position owner-ratified (Q-0065 answered 2026-06-09):
+> here, after Lane 6.** Phase 2/3 directions were also decided same evening (Q-0063
+> converge-gradually · Q-0064 binding+guided flow) — they remain *after* this lane.
 
 - [ ] Shipped in PR: ____
 - **Goal:** settings audit **Phase 0** (reconciliation + test targets — the session's
@@ -167,7 +168,11 @@
 ## Lane 8 — Help bounded reconciliation: surface-map counts + characterization tests *(appended)*
 
 > Appended 2026-06-09 by the consolidated plan — audit-sourced (help audit §13, #627),
-> agent-recommended, **not owner-ordered** (Q-0065).
+> agent-recommended; **end-of-queue position owner-ratified (Q-0065 answered
+> 2026-06-09)**. The full overlay question batch (Q-0055–Q-0059) was answered the same
+> evening — display-only hide · Help-only names · panel-local order · custom+default in
+> admin · **embed-builder** Home message — so the overlay is design-ready (structured
+> storage), sequenced **after** this lane + the projection seam.
 
 - [ ] Shipped in PR: ____
 - **Goal:** reconcile `docs/help-command-surface-map.md` preamble counts (10 hubs;

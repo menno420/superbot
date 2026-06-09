@@ -72,7 +72,8 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 - **Next** — **settings audit Phases 0+1** (actionable-groups-only hub + >25-option
   reachability — scoreboard **Lane 7**, appended 2026-06-09; sequencing home:
   [settings audit §11](planning/settings-cog-centralization-audit-2026-06-09.md)).
-  Phases 2/3 stay **gated on Q-0063/Q-0064**.
+  Phase 2/3 directions decided 2026-06-09 (**Q-0063** converge-gradually ·
+  **Q-0064** binding+guided flow — router §27); the work itself follows Lane 7.
 - **Later** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md): one source-grounded orchestration roadmap; Phase 0 identity/read-model foundations and owner questions precede product mutation.
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.

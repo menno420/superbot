@@ -119,6 +119,11 @@ settings UI yet.
 | Decision audit rows | `services.ai_decision_audit_service.record` (called once per pipeline-stage invocation) |
 | Settings → typed projection | `services.ai_policy_mutation.project_from_legacy_settings` (called by the settings mutation pipeline post-write) |
 
+The projection's seven-key set is **frozen** (owner decision **Q-0063**, 2026-06-09):
+no new projected keys; the hybrid stays visibly diagnosed, and typed policy/profile
+panel **convergence is planned at settings-audit Phase 3** (memory settings remain
+their own scalar family).
+
 Reinforces `docs/ownership.md`'s direct-write blocklist for the AI
 subsystem: **no view, cog, or panel may write to `ai_guild_policy`,
 `ai_channel_policy`, `ai_category_policy`, `ai_role_policy`,
