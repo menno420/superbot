@@ -92,3 +92,16 @@ async def delete_xp(user_id: int, guild_id: int) -> None:
         "DELETE FROM xp WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
     )
+
+
+async def get_guild_xp_totals(guild_id: int) -> tuple[int, int]:
+    """Return ``(total_xp, total_coins)`` summed over the guild's xp rows."""
+    row = await pool.fetchone(
+        "SELECT COALESCE(SUM(xp), 0) AS total_xp, "
+        "COALESCE(SUM(coins), 0) AS total_coins "
+        "FROM xp WHERE guild_id=$1",
+        (guild_id,),
+    )
+    if row is None:
+        return 0, 0
+    return int(row["total_xp"]), int(row["total_coins"])

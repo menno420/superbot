@@ -38,18 +38,6 @@ _levelup_feed: dict[int, deque[str]] = {}
 # ---------------------------------------------------------------------------
 
 
-async def _server_totals(guild_id: int) -> tuple[int, int]:
-    """Return (total_xp, total_coins) for the guild from the xp table."""
-    row = await db.fetchone(
-        "SELECT COALESCE(SUM(xp), 0) AS total_xp, COALESCE(SUM(coins), 0) AS total_coins "
-        "FROM xp WHERE guild_id=$1",
-        (guild_id,),
-    )
-    if row is None:
-        return 0, 0
-    return int(row["total_xp"]), int(row["total_coins"])
-
-
 async def _build_main_embed(guild: discord.Guild) -> discord.Embed:
     """Build the live spotlight embed for *guild*."""
     embed = discord.Embed(
@@ -58,11 +46,13 @@ async def _build_main_embed(guild: discord.Guild) -> discord.Embed:
     )
 
     # ── Server overview ─────────────────────────────────────────────────────
-    total_xp, total_coins = await _server_totals(guild.id)
+    total_xp, total_coins = await db.get_guild_xp_totals(guild.id)
+    # member_count is Optional — None until the guild is chunked/cached.
+    member_count = guild.member_count or 0
     embed.add_field(
         name="📊 Server at a Glance",
         value=(
-            f"👥 **{guild.member_count:,}** members\n"
+            f"👥 **{member_count:,}** members\n"
             f"⭐ **{total_xp:,}** XP earned\n"
             f"🪙 **{total_coins:,}** coins in circulation"
         ),
