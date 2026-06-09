@@ -2762,8 +2762,7 @@ def _income_bands(
     """
     raw = json.loads((dump / "IncomeSets" / f"{stem}.json").read_text("utf-8"))
     bands = sorted(
-        (int(t["threshold"]), float(t["multiplier"]))
-        for t in raw.get("thresholds", [])
+        (int(t["threshold"]), float(t["multiplier"])) for t in raw.get("thresholds", [])
     )
     return bands, float(raw.get("finalMultiplier", 0.0))
 
@@ -2930,7 +2929,10 @@ def build_income_sets(dump: Path) -> dict[str, Any]:
                 "id": _snake(fp.stem),
                 "name": fp.stem,
                 "thresholds": [
-                    {"threshold": int(t["threshold"]), "multiplier": float(t["multiplier"])}
+                    {
+                        "threshold": int(t["threshold"]),
+                        "multiplier": float(t["multiplier"]),
+                    }
                     for t in sorted(
                         raw.get("thresholds", []),
                         key=lambda t: int(t["threshold"]),

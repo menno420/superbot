@@ -1592,9 +1592,7 @@ def round_cash(
     starting_cash = (
         _MEDIUM_STARTING_CASH if resolved == "default" else _ABR_STARTING_CASH
     )
-    assumptions = (
-        _CASH_ASSUMPTIONS if resolved == "default" else _ABR_CASH_ASSUMPTIONS
-    )
+    assumptions = _CASH_ASSUMPTIONS if resolved == "default" else _ABR_CASH_ASSUMPTIONS
 
     lo = round_start
     hi = round_start if round_end is None else round_end
