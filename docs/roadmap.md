@@ -146,11 +146,11 @@ Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · **Ga
 - **Later** — restart extraction only after the provenance schema, source-registry owner
   matrix, safe migrations, and observable cache/source-health are in place. Status:
   [decode-status](btd6/btd6-gamedata-decode-status.md).
-- **Next (signed off 2026-06-09, Q-0049)** — the "fetch-everything-on-update" data refresh
-  ships as a **manual-dispatch GitHub Actions workflow** (`workflow_dispatch` only, no
-  schedule): one-click refresh after a game update, no unattended fetches. The manual
-  command chain + regenerable [coverage map](btd6/btd6-dump-coverage-map.md) exist; building
-  the workflow is the queued slice. Plan:
+- **Built (2026-06-09, Q-0049 — PR #633, scoreboard Lane 5; verify merge)** — the
+  "fetch-everything-on-update" data refresh is a committed **manual-dispatch GitHub
+  Actions workflow** (`workflow_dispatch` only, no schedule): one-click refresh after a
+  game update, no unattended fetches, output is a reviewable PR (never a push to main).
+  Remaining: the first real dispatch from the Actions tab. Plan + how-to-run:
   [data-refresh-pipeline](btd6/btd6-data-refresh-pipeline-plan.md).
 
 ### 🎮 Games — **Now** (mining character platform active lane)
