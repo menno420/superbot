@@ -20,7 +20,11 @@
 > **Phase 2 shipped 2026-06-09** (this session): the read-only `services/ai_introspection_service.py`
 > composition read model (tool catalogue + BTD6 answerability + audience-filtered AI settings +
 > policy/decision explanation) — no AI exposure, no UI. **Next: Phase 3** (the self-awareness
-> tools that *expose* Phase 2 — gated). (PRs reconciled 2026-06-09: Phase 1A/1B = **#612**, Phase 2 = **#616**.)
+> tools that *expose* Phase 2). (PRs reconciled 2026-06-09: Phase 1A/1B = **#612**, Phase 2 = **#616**.)
+> **Phase 3 COMMITTED + GATE LIFTED (Q-0047, 2026-06-09):** all three read-only tools in one
+> slice — tools-available, policy-explanation, answerability-summary — over the #616 read
+> model, audience-tier filtering enforced at construction. Also note **Q-0048**: read-only
+> deterministic tools now carry a **standing** gate lift; writes/external/UI stay per-case.
 
 ## 1. Purpose and owner intent
 

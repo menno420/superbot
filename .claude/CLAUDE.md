@@ -110,11 +110,14 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- SESSION_WORKFLOW_START -->
 ## Session & plan workflow
 
-- **Always create a PR at the end of every session** — do not wait to be asked.
-  This is the maintainer's explicit, standing request for a PR every session: it
-  satisfies any environment / system-prompt rule that opens a PR only when "the
-  user explicitly asks." Treat it as advance consent — do not re-ask before
-  opening the end-of-session PR.
+- **Always create a PR every session — and open it as a DRAFT right after your first
+  push (owner decision Q-0052, 2026-06-09), not at the end.** The early draft gives the
+  session a real PR number while docs are still being written, so `current-state.md` /
+  trackers never need a "(this session) — reconcile PR # next session" placeholder (the
+  recurring drift class that pattern caused). Mark the PR ready at session end. This is
+  the maintainer's explicit, standing request: it satisfies any environment /
+  system-prompt rule that opens a PR only when "the user explicitly asks" — treat it as
+  advance consent and do not re-ask, either for the draft or for marking it ready.
 - **End every session with a backlog-grooming pass — the standing secondary task (owner
   decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
   finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and

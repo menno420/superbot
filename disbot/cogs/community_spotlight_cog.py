@@ -278,7 +278,7 @@ class CommunitySpotlightCog(commands.Cog, name="Community Spotlight"):  # type: 
     @commands.cooldown(rate=2, per=15, type=commands.BucketType.user)
     @commands.command(
         name="spotlight",
-        aliases=["hub", "activity", "server"],
+        aliases=["activity"],
     )
     async def spotlight(self, ctx: commands.Context) -> None:
         """Show the Community Spotlight — live XP, coins, games, and level-ups."""

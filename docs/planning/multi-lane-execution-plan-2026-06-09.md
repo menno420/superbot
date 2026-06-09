@@ -1,0 +1,142 @@
+# Multi-lane autonomous execution plan — 2026-06-09
+
+> **Status:** `plan` — the **launch pad for the autonomous multi-lane test session**.
+> All six lanes were decided + gate-lifted in the 2026-06-09 interview (router §22 /
+> Q-0044–Q-0051); nothing here needs a new owner decision unless marked. Written so the
+> next session needs **no directing prompt beyond "execute the multi-lane plan"**.
+> Source and merged PRs win; verify lane state against live GitHub before starting each.
+
+## How to run this (session protocol)
+
+1. Normal orientation first (CLAUDE.md route). Then execute lanes **in order** — the
+   order is an owner decision, not a suggestion (earlier lanes de-risk later ones).
+2. **One PR per lane** (small/focused for `disbot/` lanes; docs lanes may ride along).
+   **Open each lane's PR as a DRAFT right after the lane's first push** (Q-0052) so its
+   real # goes straight into this scoreboard + the docs; mark it ready when the lane is
+   green. Run the full CI mirror + arch check green **before starting the next lane**.
+3. **Blocked? Skip forward, never half-route.** If a lane hits a genuine blocker,
+   finish its docs/log trail (what + why + exact resume point), then start the next
+   lane. A lane left mid-flight with no trail is the only failure mode this plan
+   forbids.
+4. **Context budget:** when context runs low, do not start a new lane — run the END
+   protocol (session log + current-state + this plan's checkboxes), push, open the PR.
+   The next session resumes at the first unchecked lane.
+5. Tick the checkbox + add the PR # here as each lane lands (this file is the
+   cross-session scoreboard).
+
+## Known tripwires (read once, they bite across lanes)
+
+- **800-LOC cog ceiling**: `ai_cog.py` ≈ 795, `setup_cog.py` ≈ 744 — add panel
+  buttons/views, not cog subcommands (the Phase-3 `ai:tools` precedent).
+- New bus events must be added to `core/events_catalogue.py KNOWN_EVENTS`.
+- Doc-pin tests (`tests/unit/docs/`) red when their doc + code drift — update both in
+  the same commit (help-surface-map, ai-config-ownership, current-state structure).
+- The sandbox has **no AI provider key**: model-loop behaviour (lanes 3/4) is verified
+  deterministically + by unit tests here; the live model pass happens on the
+  maintainer's prod bot.
+- Real-Postgres tests: module-local skip-if-unreachable fixture only (journal rule).
+
+---
+
+## Lane 1 — `new_subsystem.py` scaffold → register Community Spotlight (Q-0025 + Q-0044)
+
+- [ ] Shipped in PR: ____
+- **Goal:** build `scripts/new_subsystem.py` (custom tooling, repo-AST based — no
+  external scaffold deps), then use it to register `community_spotlight` as a
+  `community`-hub child; panel adopts hub navigation; delete the help-map §3 banner.
+- **The ~8 touch-points the script must cover** (from Q-0025, verified 2026-06-09):
+  `SUBSYSTEMS` entry (schema v2 — `tests/unit/utils/test_subsystem_registry.py`
+  validates; key must equal `cog_name_to_subsystem(CogClassName)` → snake_case) ·
+  `HUBS` entry *(only if new hub — not needed here; Spotlight is a child via
+  `parent_hub="community"`)* · `KNOWN_PANEL_COMMANDS` · `build_help_menu_view` hook ·
+  `docs/help-command-surface-map.md` §1+§2 rows · the command-map `###` section ·
+  the four enumeration tests · `docs/repo-navigation-map.md` row.
+- **Read first:** the `xp` entry in `utils/subsystem_registry.py` (sibling shape,
+  `parent_hub="community"`), `tests/unit/docs/test_help_surface_map_doc.py` (what the
+  doc-test will demand once registered), `docs/building-roadmap/command-integration-standard.md`.
+- **Exit:** Spotlight appears in `!help` dropdown + typed route; all doc-pin +
+  registry tests green; §3 banner removed; scaffold script has its own tests + a
+  provenance header (CLAUDE.md tooling rule).
+
+## Lane 2 — Adaptive P1B remainder: tier-input + `help_advertises_locked` + denial copy (Q-0045 / Q-0036)
+
+- [ ] Shipped in PR: ____
+- **Goal:** implement the decided governance tier-input path (Q-0045 option b):
+  governance axis prefers `AccessContext.member_tier` when set; build the
+  `help_advertises_locked` drift provider on top; draft the full denial-copy set.
+- **Read first:** adaptive plan §16.4 (simulation limits — the simulation must label
+  what it can't model), §16.8, `services/access_projection.py`
+  (`member_tier` forward hook), `services/setup_diagnostics.py`
+  (`_diagnose_routing_access_conflict` is the shape template),
+  `governance/resolver.py` (`get_visible_subsystems`).
+- **Denial copy (Q-0036):** write the `_SAFE_TEXT` strings, but **do not wire them
+  into live denial paths** — present the full set in the PR description for the
+  maintainer's read-through; wiring is a follow-up commit after his OK.
+- **Exit:** provider + tests (patched-resolver style, like P1A's); read-only AST
+  invariant stays green; copy table in the PR body.
+
+## Lane 3 — Orchestration Phase 4 MVP: one vertical slice (Q-0046)
+
+- [ ] Shipped in PR: ____
+- **Goal:** the plan→execute→verify workflow for the **round-cash question family**
+  ("cash from A to B / can I afford X at round R?") + **one** typed
+  answer-with-evidence contract. Everything else in plan §7 stays deferred.
+- **Read first:** orchestration plan §4–§9 (the shipped foundation it composes:
+  catalogue → resolver → tool_choice/budget), `services/btd6_data_service.round_cash`
+  (the deterministic owner), `natural_language_stage._invoke_gateway` (the seam the
+  workflow hangs off), Q-0043 (inclusive range semantics — the contract must carry it).
+- **Compatibility bar (same as Phases 1–3):** default behaviour byte-identical; the
+  workflow activates only under the orchestration profile that selects it.
+- **Exit:** deterministic tests for plan/execute/verify + the contract; live boot
+  green; model-loop behaviour explicitly flagged for the maintainer's prod check.
+
+## Lane 4 — Answerability Phase 3: the three self-awareness tools (Q-0047, gate lifted)
+
+- [ ] Shipped in PR: ____
+- **Goal:** expose the #616 read model as three read-only AI tools —
+  tools-available · policy-explanation · answerability-summary — audience-tiered
+  (AR-08) at construction.
+- **Read first:** answerability roadmap Phase 3, `services/ai_introspection_service.py`
+  (the read model — already audience-filtered), `services/ai_tool_catalogue.py`
+  (**every new tool needs a `CATALOGUE` entry + toolset membership** — the pinning
+  test enforces it), `ai_tools.build_registry` (register here, never a parallel path).
+- **Covered by the Q-0048 standing lift** (read-only, deterministic, tiered) — no
+  per-tool ask needed; cite Q-0047/Q-0048 in the PR.
+- **Exit:** tools registered + catalogued + tested per tier; instruction stack updated
+  if it should advertise them; grounding allowlists untouched unless the plan says so.
+
+## Lane 5 — BTD6 data-refresh workflow, manual-dispatch only (Q-0049)
+
+- [ ] Shipped in PR: ____
+- **Goal:** commit `.github/workflows/btd6-data-refresh.yml` with **`workflow_dispatch`
+  only** (no schedule — that variant is explicitly not approved). It runs the existing
+  manual chain from `docs/btd6/btd6-data-refresh-pipeline-plan.md` and opens a PR with
+  the refreshed data (never pushes to main).
+- **Caveat:** this is executable CI config — the interview approval (Q-0049) covers
+  exactly the dispatch-only shape; any deviation (schedule, push-to-main) needs a new
+  ask. Keep the job minimal; the ~320 MB clone cost is known + accepted for manual runs.
+- **Exit:** workflow lints (`actionlint` if available / GitHub's parser), dry-run
+  documented, plan doc's command chain referenced not duplicated.
+
+## Lane 6 — Vision draft-answers for Q-0038–Q-0042 (Q-0051; docs-only)
+
+- [ ] Shipped in PR: ____
+- **Goal:** one drafted, concrete proposed answer per open vision question (clans
+  identity · VIP fairness · AI dungeon-master posture · integrations/voice privacy ·
+  web dashboard), each grounded in existing decisions + safe defaults, formatted so
+  the maintainer can mark up approve/adjust/reject per item (the gate-lifting
+  interview pattern, but with drafted prose to react to).
+- **Read first:** each question's router entry (§21) + its "Suggested destination";
+  `docs/planning/superbot-ideas-lab-2026-06-05.md` §6 rejection ledger (don't propose
+  anything it rejects); ADR-001/002/007 boundaries.
+- **Exit:** drafts appended to the router under each question (clearly marked
+  `draft-answer — awaiting maintainer markup`); safe defaults stay binding until
+  marked up.
+
+---
+
+## After all six (or when stopping)
+
+Run the standing END protocol (journal → END) + tick this scoreboard. If all six are
+done: the next frontier items are the mining Workshop/durability slice (§7.5) and the
+mother-panel live overview (§6.3) — see `docs/current-state.md` ▶ Next action.

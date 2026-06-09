@@ -1,9 +1,11 @@
 # BTD6 data refresh pipeline — fetch-everything-on-update (plan)
 
 > **Status:** `plan` — design + ready-to-run command chain. The **manual chain
-> below works today**; the **scheduled automation** (GitHub Actions) needs
-> maintainer sign-off before the workflow file is committed (it is executable CI
-> config with real cost — a ~320 MB clone on a schedule).
+> below works today**. **SIGNED OFF 2026-06-09 (Q-0049, gate-lifting interview):**
+> commit the GitHub Actions workflow as **`workflow_dispatch`-only** (manual
+> one-click trigger, **no schedule**) — one-click refresh after a game update with
+> zero unattended-fetch risk. The scheduled variant stays not-approved. Building
+> the workflow file is the queued slice for the next BTD6 session.
 
 ## Goal (maintainer, 2026-06-08)
 
