@@ -194,6 +194,7 @@ privacy/provenance/moderation review before any public surface.
 - **Existing plans** — [server-management/setup/access/routine extension routing](planning/server-management-extension-routing-2026-06-08.md): announcements, anti-spam, availability, explanations, analytics; gate: authoritative trackers and privacy/AI decisions.
 - **Someday / Later** — [integrations/media/voice/website](planning/integrations-media-voice-website-roadmap-2026-06-08.md): provider alerts, activity, voice, and web projection; gate: Q-0041/Q-0042 + privacy/security/moderation.
 - **Later** — [UX/discoverability/mobile-first](planning/ux-discoverability-mobile-roadmap-2026-06-08.md): help, changelog, copy, and mobile conformance through existing UI standards; gate: authoritative interface sequencing and copy/release-manifest decisions.
+- **Later (decisions first)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): unify Help catalogue/projection before guild rename/hide/order customization; gate: Q-0055–Q-0059 + coordination with Adaptive Setup/Access P1B/P1C.
 - Routing ledger: [idea-to-roadmap inventory](planning/idea-roadmap-inventory-2026-06-08.md).
 
 ## Someday / ideas (NOT approved — capture only)
