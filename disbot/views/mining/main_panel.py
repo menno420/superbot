@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import discord
 
-from cogs.mining.recipes import load_recipes
 from cogs.mining.rewards import roll_harvest_amount
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
@@ -44,6 +43,82 @@ _KIND_LABELS: dict[str, str] = {
     "treasure": "💎 Treasure",
 }
 
+# The hub's routing guide — shared by the stateless fallback embed and the
+# per-player live overview so the action list has one home.
+_ACTIONS_GUIDE = (
+    "**⛏️ Mine** — start a mining session\n"
+    "**🌲 Harvest** — chop wood\n"
+    "**🗺️ Explore** — discover random events\n"
+    "**📦 Inventory** — view your mining resources\n"
+    "**📊 Stats** — view your mining statistics\n"
+    "**🔨 Build** — craft a structure\n"
+    "**🔧 Workshop** — repair worn gear, craft replacements\n"
+    "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
+    "(deeper = richer, gated by your light)\n"
+    "**🛒 Market** — sell ore for coins, buy gear\n"
+    "**🧍 Character** — your full character overview"
+)
+
+
+async def build_overview_embed(
+    user_id: int,
+    guild_id: int,
+    *,
+    name: str | None = None,
+) -> discord.Embed:
+    """The mother panel's **live overview** (brainstorm §6.3): location ·
+    equipped tool + durability · net worth at a glance, above the action guide.
+
+    Rendered for the player opening the hub (``!minemenu`` / Help → Mining);
+    the stateless :meth:`MiningHubView.build_embed` remains the fallback for
+    restore paths with no player context.
+    """
+    # Lazy import: cogs-layer domain logic (views→cogs layer rule).
+    from cogs.mining import items, workshop, world
+
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    wear = await db.get_gear_wear(suid, guild_id)
+    depth = await db.get_depth(suid, guild_id)
+    last_broken = await db.get_last_broken(suid, guild_id)
+
+    def _gear_line(slot: str) -> str:
+        item = equipped.get(slot)
+        if not item:
+            return "—"
+        maximum = equipment.max_durability(item)
+        if maximum is None:
+            return item.title()
+        bar = workshop.durability_bar(wear.get(item, maximum), maximum)
+        return f"{item.title()} {bar}"
+
+    embed = discord.Embed(
+        title=f"⛏️ Mining Hub — {name}" if name else "⛏️ Mining Hub",
+        description=_ACTIONS_GUIDE,
+        color=MINING_COLOR,
+    )
+    embed.add_field(
+        name="📍 Location",
+        value=world.describe_position(depth),
+        inline=True,
+    )
+    embed.add_field(name="🧰 Tool", value=_gear_line(equipment.TOOL), inline=True)
+    embed.add_field(name="💡 Light", value=_gear_line(equipment.LIGHT), inline=True)
+    embed.add_field(
+        name="💰 Wealth",
+        value=f"Net worth: **{items.total_value(inventory)}**",
+        inline=True,
+    )
+    if last_broken:
+        embed.add_field(
+            name="💥 Broken gear",
+            value=f"Your **{last_broken}** broke — quick-craft it at the 🔧 Workshop.",
+            inline=True,
+        )
+    embed.set_footer(text="Only you can interact with this panel.")
+    return embed
+
 
 @register
 class MiningHubView(PersistentView):
@@ -54,17 +129,7 @@ class MiningHubView(PersistentView):
     def build_embed(self) -> discord.Embed:
         embed = discord.Embed(
             title="⛏️ Mining Hub",
-            description=(
-                "**⛏️ Mine** — start a mining session\n"
-                "**🌲 Harvest** — chop wood\n"
-                "**🗺️ Explore** — discover random events\n"
-                "**📦 Inventory** — view your mining resources\n"
-                "**📊 Stats** — view your mining statistics\n"
-                "**🔨 Build** — craft a structure\n"
-                "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
-                "(deeper = richer, gated by your light)\n"
-                "**🛒 Market** — sell ore for coins, buy gear"
-            ),
+            description=_ACTIONS_GUIDE,
             color=MINING_COLOR,
         )
         embed.set_footer(text="Only you can interact with this panel.")
@@ -143,7 +208,7 @@ class MiningHubView(PersistentView):
         # in cogs/, and views must not import cogs at module level (layer
         # rule).  A later step relocates the pure engine to a shared layer so
         # this can become a plain import (mining_exploration_brainstorm §7.4).
-        from cogs.mining import world
+        from cogs.mining import workshop, world
         from cogs.mining.exploration import explore_from_state
 
         user_id = str(interaction.user.id)
@@ -158,12 +223,21 @@ class MiningHubView(PersistentView):
         )
         if item:
             await db.update_mining_item(user_id, gid, item, amount)
+        wear = await workshop.apply_wear(
+            interaction.user.id,
+            gid,
+            action=workshop.ACTION_EXPLORE,
+            depth=depth,
+            equipped=equipped,
+        )
+        description = (
+            f"{interaction.user.mention} {text}\n_{world.describe_position(depth)}_"
+        )
+        if wear.notes:
+            description += "\n" + "\n".join(wear.notes)
         embed = discord.Embed(
             title="⛏️ Mining Hub",
-            description=(
-                f"{interaction.user.mention} {text}\n"
-                f"_{world.describe_position(depth)}_"
-            ),
+            description=description,
             color=SUCCESS_COLOR if amount >= 0 else ERROR_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
@@ -264,6 +338,33 @@ class MiningHubView(PersistentView):
     )
     async def build_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.send_modal(_BuildModal())
+
+    @discord.ui.button(
+        label="🔧 Workshop",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:workshop",
+        row=1,
+    )
+    async def workshop_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.workshop_panel import MiningWorkshopView, build_workshop_embed
+
+        embed = await build_workshop_embed(interaction.user.id, interaction.guild_id)
+        view = await MiningWorkshopView.create(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
 
     @discord.ui.button(
         label="⬇️ Descend",
@@ -424,40 +525,17 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        gid = interaction.guild_id
-        structure_lower = self.structure.value.strip().lower()
+        # Lazy import: cogs-layer domain logic (views→cogs layer rule).  One
+        # shared craft implementation (atomic materials+product transaction)
+        # serves this modal, !build/!craft, and the Workshop panel.
+        from cogs.mining import workshop
 
-        recipes = load_recipes()
-        required_items = recipes.get(structure_lower)
-        if not required_items:
-            await interaction.response.send_message(
-                (
-                    f"Unknown structure **{self.structure.value}**.  "
-                    "Use `!buildlist` to see available structures."
-                ),
-                ephemeral=True,
-            )
-            return
-
-        inventory = await db.get_mining_inventory(user_id, gid)
-        for item, amount_needed in required_items.items():
-            if inventory.get(item, 0) < amount_needed:
-                await interaction.response.send_message(
-                    (
-                        f"You don't have enough **{item}** to build "
-                        f"**{self.structure.value}**."
-                    ),
-                    ephemeral=True,
-                )
-                return
-
-        for item, amount_needed in required_items.items():
-            await db.update_mining_item(user_id, gid, item, -amount_needed)
-        await db.update_mining_item(user_id, gid, structure_lower, 1)
-
+        result = await workshop.apply_craft(
+            interaction.user.id,
+            interaction.guild_id,
+            self.structure.value,
+        )
         await interaction.response.send_message(
-            f"{interaction.user.mention} successfully built a "
-            f"**{self.structure.value}**!",
+            f"{interaction.user.mention} {result.message}",
             ephemeral=True,
         )

@@ -275,6 +275,27 @@ class CommunitySpotlightCog(commands.Cog, name="Community Spotlight"):  # type: 
         for gid in stale:
             del _levelup_feed[gid]
 
+    async def build_help_menu_view(
+        self,
+        interaction: discord.Interaction,
+    ) -> tuple[discord.Embed, discord.ui.View]:
+        """Help/hub direct-navigation hook (returns the Spotlight panel).
+
+        Called by the Help dropdown and the Community hub's child routing;
+        the caller appends its own back-navigation button.
+        """
+        if interaction.guild is None:
+            return (
+                discord.Embed(
+                    description="The Community Spotlight is only available "
+                    "inside a server.",
+                ),
+                discord.ui.View(),
+            )
+        embed = await _build_main_embed(interaction.guild)
+        view = SpotlightView(interaction.guild, interaction.user)
+        return embed, view
+
     @commands.cooldown(rate=2, per=15, type=commands.BucketType.user)
     @commands.command(
         name="spotlight",

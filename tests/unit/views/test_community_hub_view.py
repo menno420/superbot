@@ -112,10 +112,7 @@ def test_discover_primary_sorted_by_ui_priority_then_key():
     ascending — so the button layout doesn't drift across imports.
     """
     primary, _cross = discover_community_children()
-    keys = [
-        (meta.get("ui_priority", 99), name)
-        for name, meta in primary
-    ]
+    keys = [(meta.get("ui_priority", 99), name) for name, meta in primary]
     assert keys == sorted(keys)
 
 
@@ -131,9 +128,9 @@ def test_embed_lists_all_five_children():
     # drift but not styling tweaks to the description.
     for key in ("xp", "role", "counting", "chain", "leaderboard"):
         display = SUBSYSTEMS[key]["display_name"]
-        assert display in description, (
-            f"{key!r} display_name {display!r} missing from embed description"
-        )
+        assert (
+            display in description
+        ), f"{key!r} display_name {display!r} missing from embed description"
 
 
 def test_embed_title_and_color():
@@ -154,14 +151,14 @@ def test_embed_section_headings_present():
 
 
 # ---------------------------------------------------------------------------
-# View shape — five buttons routing to the five child subsystems
+# View shape — six buttons routing to the six child subsystems
 # ---------------------------------------------------------------------------
 
 
-def test_view_has_five_child_buttons():
+def test_view_has_six_child_buttons():
     view = CommunityHubView(_author())
     buttons = [c for c in view.children if isinstance(c, _CommunityChildButton)]
-    assert len(buttons) == 5
+    assert len(buttons) == 6
 
 
 def test_buttons_cover_each_target_subsystem():
@@ -171,18 +168,22 @@ def test_buttons_cover_each_target_subsystem():
         for btn in view.children
         if isinstance(btn, _CommunityChildButton)
     }
-    assert subsystems == {"xp", "role", "counting", "chain", "leaderboard"}
+    assert subsystems == {
+        "xp",
+        "community_spotlight",
+        "role",
+        "counting",
+        "chain",
+        "leaderboard",
+    }
 
 
 def test_button_custom_ids_are_stable_and_namespaced():
     view = CommunityHubView(_author())
-    ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, _CommunityChildButton)
-    }
+    ids = {c.custom_id for c in view.children if isinstance(c, _CommunityChildButton)}
     assert ids == {
         "community:open:xp",
+        "community:open:community_spotlight",
         "community:open:role",
         "community:open:counting",
         "community:open:chain",
@@ -191,8 +192,8 @@ def test_button_custom_ids_are_stable_and_namespaced():
 
 
 def test_buttons_split_across_two_rows():
-    """Primary children (XP/Roles, parent_hub="community") on row 0;
-    cross-links (Counting/Chain/Leaderboard, declared in
+    """Primary children (XP/Spotlight/Roles, parent_hub="community") on
+    row 0; cross-links (Counting/Chain/Leaderboard, declared in
     hub_registry.cross_link_children) on row 1.
     """
     view = CommunityHubView(_author())
@@ -206,7 +207,7 @@ def test_buttons_split_across_two_rows():
         for btn in view.children
         if isinstance(btn, _CommunityChildButton) and btn.row == 1
     }
-    assert row0 == {"xp", "role"}
+    assert row0 == {"xp", "community_spotlight", "role"}
     assert row1 == {"counting", "chain", "leaderboard"}
 
 
@@ -275,8 +276,9 @@ async def test_button_opens_host_cog_panel_in_place():
     fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
 
     interaction = _interaction()
-    with _all_visible(), patch(
-        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    with (
+        _all_visible(),
+        patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog),
     ):
         await button.callback(interaction)
 
@@ -289,8 +291,7 @@ async def test_button_opens_host_cog_panel_in_place():
     back_buttons = [
         c
         for c in fake_view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "community:back"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "community:back"
     ]
     assert len(back_buttons) == 1, (
         "Community child panel must have Back-to-Community attached — "
@@ -307,9 +308,7 @@ async def test_button_missing_cog_sends_ephemeral():
         row=0,
     )
     interaction = _interaction()
-    with _all_visible(), patch(
-        "cogs.help_cog._cog_for_subsystem", return_value=None
-    ):
+    with _all_visible(), patch("cogs.help_cog._cog_for_subsystem", return_value=None):
         await button.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
     interaction.response.edit_message.assert_not_called()
@@ -325,8 +324,9 @@ async def test_button_cog_without_hook_sends_ephemeral():
     )
     fake_cog = MagicMock(spec=[])  # no build_help_menu_view attr
     interaction = _interaction()
-    with _all_visible(), patch(
-        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    with (
+        _all_visible(),
+        patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog),
     ):
         await button.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
@@ -344,8 +344,9 @@ async def test_button_hook_exception_sends_ephemeral():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
     interaction = _interaction()
-    with _all_visible(), patch(
-        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+    with (
+        _all_visible(),
+        patch("cogs.help_cog._cog_for_subsystem", return_value=fake_cog),
     ):
         await button.callback(interaction)
     interaction.response.send_message.assert_awaited_once()
@@ -382,8 +383,15 @@ def test_view_falls_back_to_unfiltered_when_lists_omitted():
         for c in view.children
         if isinstance(c, _CommunityChildButton)
     }
-    # Same as before PR D — five children rendered when nothing is filtered.
-    assert buttons == {"xp", "role", "counting", "chain", "leaderboard"}
+    # Same as before PR D — all six children rendered when nothing is filtered.
+    assert buttons == {
+        "xp",
+        "community_spotlight",
+        "role",
+        "counting",
+        "chain",
+        "leaderboard",
+    }
 
 
 def test_view_uses_pre_filtered_lists_when_supplied():
@@ -480,11 +488,14 @@ async def test_button_fails_closed_when_subsystem_invisible():
         traces={},
     )
     cog_lookup = MagicMock()
-    with patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        return_value=vis_result,
-    ), patch("cogs.help_cog._cog_for_subsystem", cog_lookup):
+    with (
+        patch(
+            "services.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            return_value=vis_result,
+        ),
+        patch("cogs.help_cog._cog_for_subsystem", cog_lookup),
+    ):
         await button.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()

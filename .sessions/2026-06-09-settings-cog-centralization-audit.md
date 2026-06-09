@@ -25,7 +25,7 @@ for AI partial-projection ownership and BTD6 command-only pointer classification
 ## Files changed
 
 - `docs/planning/settings-cog-centralization-audit-2026-06-09.md` — new durable audit and roadmap.
-- `docs/owner/maintainer-question-router.md` — Q-0054 and Q-0055.
+- `docs/owner/maintainer-question-router.md` — Q-0063 and Q-0064.
 - `.sessions/2026-06-09-settings-cog-centralization-audit.md` — this journal.
 
 `docs/current-state.md` was not changed because this session did not change runtime truth.
@@ -96,7 +96,7 @@ for AI partial-projection ownership and BTD6 command-only pointer classification
 
 ## Recommended next step
 
-Run an Opus Phase 0 revision session after Q-0054/Q-0055 are answered. It should specify
+Run an Opus Phase 0 revision session after Q-0063/Q-0064 are answered. It should specify
 the actionable configuration-group catalogue and exact failing target tests, review and
 diagnose the AI partial-projection seam before exposure, and preserve all separate
 mutation-domain owners. Then use Sonnet for

@@ -202,7 +202,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | chain | `cogs/chain_cog.py` | — | direct CRUD | `utils/db/games/chain.py` |
 | cleanup | `cogs/cleanup_cog.py` (+ `cogs/cleanup/`) | — | direct CRUD | `utils/db/moderation.py` |
 | community | `cogs/community_cog.py` | `views/community/` | n/a (hub) | n/a |
-| community_spotlight | `cogs/community_spotlight_cog.py` | views in-cog (`SpotlightView`/`GamesView`) | read-only — `services/rank_providers` + EventBus `xp.level_up` feed | reads via `utils/db/xp.py` (`get_guild_xp_totals`); registration **queued** via the Q-0025 scaffold (Q-0044 answered 2026-06-09) |
+| community_spotlight | `cogs/community_spotlight_cog.py` | views in-cog (`SpotlightView`/`GamesView`) | read-only — `services/rank_providers` + EventBus `xp.level_up` feed | reads via `utils/db/xp.py` (`get_guild_xp_totals`); registered as a `community`-hub child via `scripts/new_subsystem.py` (Q-0025/Q-0044, 2026-06-09) |
 | counting | `cogs/counting_cog.py` (+ `cogs/counting/`) | `views/counting/` | direct CRUD | `utils/db/games/counting.py` |
 | deathmatch | `cogs/deathmatch_cog.py` (+ `cogs/deathmatch/`) | — | direct CRUD | `utils/db/games/deathmatch.py` |
 | diagnostic | `cogs/diagnostic_cog.py` (+ `cogs/diagnostic/`) | `views/diagnostic/` | `services/diagnostics_service.py` (read-only providers) | n/a |

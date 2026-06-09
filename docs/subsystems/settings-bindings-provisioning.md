@@ -56,6 +56,8 @@ safe-disable behavior before implementation.
 - **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — conditionally plans one AI-settings vertical slice after a centralized effective-settings introspection read model exists; it does not approve a broad Settings Manager rewrite.
 - **[`docs/planning/settings-cog-centralization-audit-2026-06-09.md`](../planning/settings-cog-centralization-audit-2026-06-09.md)** (`plan`) — source-verified audit of scalar settings, settings-adjacent domains, UI discovery/editability gaps, and the phased convergence roadmap.
 
+- **[Help cog customization audit and roadmap](../planning/help-cog-customization-audit-2026-06-09.md)** (`plan`) — maps Help/hub/access/customization ownership and recommends a catalogue + projection + audited presentation-overlay sequence; it does not approve runtime customization before Q-0055–Q-0059.
+
 ## Ideas (not approved)
 
 Do not create a generic "configuration" write path that collapses the three lanes.

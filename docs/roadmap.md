@@ -35,7 +35,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability, mother-panel live overview next) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
 | **Next** | **Q-0025 scaffold → register Community Spotlight** (Q-0044) · Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -159,9 +159,12 @@ accepted, not a target).
   [wire-exploration plan](planning/mining-wire-exploration-plan.md)), "The Descent"
   persistent depth (#607), combat gear → deathmatch via the shared `utils/equipment.py`
   stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
-  Character overview (#610). **Next Wave-1 slices:** the audited **Workshop + durability**
-  (brainstorm §7.5 — the keystone recurring ore/coin sink) and the **mother-panel live
-  overview** (§6.3).
+  Character overview (#610), and — built 2026-06-09 (verify the PR merged on live
+  GitHub) — the audited **Workshop + durability** keystone (brainstorm §7.5; migration
+  063, tuning = Q-0054) with the **mother-panel live overview** (§6.3). **Next Wave-1
+  slices:** functional **structures** (Forge/Vault/Home — the remaining §7.5 sinks),
+  the owner-approved **duels-tick-weapon/armor-wear** slice (Q-0054), then Wave 2's
+  **game-XP service** (§7.4).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
@@ -191,6 +194,7 @@ privacy/provenance/moderation review before any public surface.
 - **Existing plans** — [server-management/setup/access/routine extension routing](planning/server-management-extension-routing-2026-06-08.md): announcements, anti-spam, availability, explanations, analytics; gate: authoritative trackers and privacy/AI decisions.
 - **Someday / Later** — [integrations/media/voice/website](planning/integrations-media-voice-website-roadmap-2026-06-08.md): provider alerts, activity, voice, and web projection; gate: Q-0041/Q-0042 + privacy/security/moderation.
 - **Later** — [UX/discoverability/mobile-first](planning/ux-discoverability-mobile-roadmap-2026-06-08.md): help, changelog, copy, and mobile conformance through existing UI standards; gate: authoritative interface sequencing and copy/release-manifest decisions.
+- **Later (decisions first)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): unify Help catalogue/projection before guild rename/hide/order customization; gate: Q-0055–Q-0059 + coordination with Adaptive Setup/Access P1B/P1C.
 - Routing ledger: [idea-to-roadmap inventory](planning/idea-roadmap-inventory-2026-06-08.md).
 
 ## Someday / ideas (NOT approved — capture only)

@@ -127,10 +127,15 @@ class MiningMarketView(HubView):
     @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=1)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         # Late import keeps the module-load graph acyclic (the hub imports this).
-        from views.mining.main_panel import MiningHubView
+        from views.mining.main_panel import MiningHubView, build_overview_embed
 
+        embed = await build_overview_embed(
+            self._author.id,
+            self.guild_id,
+            name=getattr(self._author, "display_name", None),
+        )
         view = MiningHubView()
-        await interaction.response.edit_message(embed=view.build_embed(), view=view)
+        await interaction.response.edit_message(embed=embed, view=view)
         self.stop()
 
 

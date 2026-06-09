@@ -2127,9 +2127,143 @@ The other 21 ideas are captured with states/destinations (no orphans). Predictio
 
 **Routed to:** the three docs above; grooming sessions pull ⭐ rows first.
 
-## 24. Settings centralization audit — 2026-06-09
+### Q-0054 — Mining durability tuning + the Q-0050 "craft-once" interplay
 
-### Q-0054 — Is AI's partial scalar-to-policy projection the durable ownership model?
+**Area:** Games — mining character platform (Wave 1)
+**Type:** Balance confirmation (agent call already shipped in PR #624, fully reversible data)
+**Priority:** Low-medium (live and self-consistent; one semantic overlap with Q-0050 to settle)
+**Status:** Answered (2026-06-09) — **Routed** → brainstorm §6.8 P5 (owner-confirmed) + §7.5 (queued duels-wear) + roadmap games row
+
+**Maintainer answer (2026-06-09, structured choices):** **(1) Lights keep wear** as
+shipped — Q-0050's "craft-once" referred to the *descent* mechanic (no consume-per-
+descend), not to durability; one sink covers all gear. **(2) Numbers stay as shipped**
+(pickaxe 60 / iron 150 / torch 40 / lantern 100 / charm 80; `REPAIR_RATE` 0.5).
+**(3) Duels SHOULD tick weapon/armor wear — queued as its own later slice** (combat
+gear joins the craft→break→repair loop; maxes already defined).
+
+**Question:** The Workshop + durability slice (PR #624) shipped with agent-chosen numbers,
+picked generous-side per the §6.8 P5 caution ("a resource sink, not an annoyance").
+Confirm or retune: **(1) maxes** — pickaxe 60 uses, iron pickaxe 150, torch 40, lantern
+100, lucky charm 80 (combat gear has maxes — sword 60 / iron sword 150 / shield 90 /
+armor 120 — but **no wear path yet**: duels don't tick durability); **(2) wear plan** —
+mining wears tool always + light underground; exploring wears light underground + charm;
+harvest/descent wear nothing (descent stays persistent-gated per Q-0050); **(3) repair
+price** — `REPAIR_RATE` 0.5 × gear-shop price, scaled by missing durability, so the shop
+catalogue is the single tuning knob; **(4)** should **duels** eventually tick weapon/armor
+wear, and should the **lucky charm** (buy-only treasure, 80 🪙) wear at all?
+
+**The Q-0050 interplay (the real question):** Q-0050's answer says lights are
+"**craft-once gear**; depth is a progression unlock, not an upkeep cost" — answered about
+the *descent* mechanic (no consume-per-descend; PR #624 honours that: descent is free).
+But the shipped durability slice has lights **wear per underground action** (torch 40
+uses, lantern 100) as part of "the Workshop durability slice carries the recurring-sink
+role". If "craft-once" was meant broadly (lights never break), the fix is one-line data:
+remove torch/lantern from `MAX_DURABILITY` so only tools + charms wear.
+
+**Routed to:** brainstorm §6.8 P5 (P5 entry now owner-confirmed) + §7.5 (duels-wear
+queued), `docs/roadmap.md` games section (queued slice).
+
+## 25. Help customization decisions — 2026-06-09
+
+### Q-0055 — Is hiding a command from Help display-only or execution-blocking?
+
+**Area:** Help / governance / command access
+**Type:** Product + architecture boundary
+**Priority:** High (blocks Help-overlay mutation semantics)
+**Status:** Open
+
+**Question:** When an operator hides a command from a guild's Help panels, should that action
+only remove the command from discovery, or should the same control also block execution?
+
+**Why agents need this:** Help classification is currently informational/display-only, while
+command access, routing, and governance own execution. Combining them in one mutation would
+change security/policy ownership and could make hidden commands unexpectedly unusable.
+
+**Safe default until answered:** Help hiding is display-only. Execution changes require a
+separate explicit command-access/routing/governance action and confirmation.
+
+**Suggested destination after answer:**
+`docs/planning/help-cog-customization-audit-2026-06-09.md` §6/§9 and the future Help overlay mutation contract.
+
+### Q-0056 — Where should custom cog/subsystem names appear?
+
+**Area:** Help / settings / shared panels
+**Type:** Product presentation scope
+**Priority:** High (blocks overlay/read-model scope)
+**Status:** Open
+
+**Question:** Should a guild's custom cog/category/subsystem display name affect only Help, or
+should every bot panel (Settings, setup, Access Explorer, mother hubs, diagnostics) use it?
+
+**Why agents need this:** Help-only naming is a bounded presentation overlay. Global naming
+requires every shared catalogue/panel to consume the overlay and creates a larger migration,
+cache, and test surface.
+
+**Safe default until answered:** Custom names affect Help surfaces only; stable/default names
+continue everywhere else.
+
+**Suggested destination after answer:** Future Help Catalogue/Projection contract and Settings/setup editor plan.
+
+### Q-0057 — Is command ordering global or panel-local?
+
+**Area:** Help / command panels
+**Type:** Product customization model
+**Priority:** High (blocks structured overlay schema)
+**Status:** Open
+
+**Question:** Should a guild define one global command order reused everywhere, or customize
+order independently within each Help/hub/command panel?
+
+**Why agents need this:** Commands and actions can appear in multiple hubs, and dedicated panels
+contain non-command actions. A global ordering key is simpler but cannot express panel-specific
+composition; panel-local ordering requires stable panel/action identities and more storage.
+
+**Safe default until answered:** Ordering is panel-local, and no ordering UI ships until stable
+panel/action identities exist.
+
+**Suggested destination after answer:** Future command/panel catalogue and Phase 4 overlay schema.
+
+### Q-0058 — Should admin/debug views preserve default names beside custom names?
+
+**Area:** Help / diagnostics / operator UX
+**Type:** Product safety and explainability
+**Priority:** Medium
+**Status:** Open
+
+**Question:** When a guild renames a cog/category/subsystem, should admin/debug/audit views show
+the canonical default name and stable key beside the custom label?
+
+**Why agents need this:** Operators and support need an unambiguous identity for diagnostics,
+audit logs, stale-override repair, and documentation even when public labels differ by guild.
+
+**Safe default until answered:** Public Help shows the custom label; admin/debug/audit views show
+custom label + canonical default label + stable key.
+
+**Suggested destination after answer:** Help overlay diagnostics, audit rendering, and reset UX.
+
+### Q-0059 — What formats may a guild-specific Help Home message use?
+
+**Area:** Help / settings / content safety
+**Type:** Product format decision
+**Priority:** High (blocks storage/editor choice)
+**Status:** Open
+
+**Question:** Should guild-specific Help Home copy support plain text only, structured rich
+embeds, or a constrained template with variables? If variables are allowed, which values are
+safe and useful?
+
+**Why agents need this:** Plain text fits the existing scalar settings path. Rich embeds or
+templates require structured validation, preview, Discord-limit enforcement, mention safety,
+and likely a dedicated overlay model.
+
+**Safe default until answered:** Plain text only, no variables, mentions suppressed, with a
+bounded length and reset-to-default.
+
+**Suggested destination after answer:** Settings declaration or structured Help-overlay schema,
+plus preview/editor tests.
+## 27. Settings centralization audit — 2026-06-09
+
+### Q-0063 — Is AI's partial scalar-to-policy projection the durable ownership model?
 
 **Area:** AI / Settings platform
 **Type:** Architecture + product-surface decision
@@ -2162,7 +2296,7 @@ projected keys or new AI UI; surface the hybrid/effective source in plans and di
 `docs/planning/settings-cog-centralization-audit-2026-06-09.md`,
 `docs/ai-config-ownership.md`, AI subsystem docs, and the Phase 0 target-test plan.
 
-### Q-0055 — Should BTD6 CT-team and announcement pointers become first-class configuration?
+### Q-0064 — Should BTD6 CT-team and announcement pointers become first-class configuration?
 
 **Area:** BTD6 / Settings / bindings
 **Type:** Product-surface + ownership decision

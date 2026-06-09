@@ -31,3 +31,28 @@ async def set_depth(user_id: str, guild_id: int, depth: int) -> None:
            DO UPDATE SET depth=$3, updated_at=now()""",
         (user_id, guild_id, depth),
     )
+
+
+async def get_last_broken(user_id: str, guild_id: int) -> str | None:
+    """The last gear item that broke for this player, or None (quick-craft)."""
+    row = await pool.fetchone(
+        "SELECT last_broken_item FROM mining_player_state "
+        "WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+    )
+    return row["last_broken_item"] if row else None
+
+
+async def set_last_broken(
+    user_id: str,
+    guild_id: int,
+    item_name: str | None,
+) -> None:
+    """Record (or clear, with None) the last item that broke (upsert)."""
+    await pool.execute(
+        """INSERT INTO mining_player_state (user_id, guild_id, last_broken_item)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (user_id, guild_id)
+           DO UPDATE SET last_broken_item=$3, updated_at=now()""",
+        (user_id, guild_id, item_name),
+    )
