@@ -54,9 +54,14 @@ python3.10 scripts/btd6_decode_inventory_report.py                     # if dump
   automation **stops at overlay + audit + the coverage/inventory docs** and leaves
   the cutover a human-reviewed step.
 
-## Proposed automation — scheduled GitHub Actions (needs sign-off)
+## Proposed automation — GitHub Actions *(decided: dispatch-only)*
 
-A scheduled workflow is the natural home: it already has network access, runs CI,
+> **Superseded sketch (2026-06-09):** this section predates the Q-0049 sign-off in the
+> header — only **`workflow_dispatch`** is approved; the `schedule:`/cron trigger below
+> is **not approved**. When scoreboard **Lane 5** commits the workflow, strip the
+> `schedule:` line and keep `workflow_dispatch` only.
+
+A GitHub Actions workflow is the natural home: it already has network access, runs CI,
 and can open a PR. Sketch (NOT committed — drop in once approved):
 
 ```yaml
@@ -91,10 +96,9 @@ flags new/removed content) for review.
 
 ## Open decisions (maintainer)
 
-1. **Cadence/trigger.** Weekly cron (simple) vs. **patch-detect** (only when the
-   dump's commit version changes, or off the Steam patch-notes feed from #459).
-   Patch-detect avoids empty weekly runs; cron is simpler. *(Leaning: cron + an
-   early "did the dump version change? exit if not" guard — cheap and self-skipping.)*
+1. **Cadence/trigger.** ~~Weekly cron (simple) vs. **patch-detect**~~ — **DECIDED
+   2026-06-09 (Q-0049, gate-lifting interview): manual `workflow_dispatch` only; no
+   schedule of any kind.** A scheduled/cron variant would need a new owner ask.
 2. **Where the 320 MB clone runs.** GitHub Actions (proposed) vs. the bot's
    `automation_scheduler` (in-process — heavier, needs disk + the network policy to
    allow the clone; **ADR-001** keeps state out of the runtime, so a CI job is the
@@ -106,6 +110,7 @@ flags new/removed content) for review.
 
 - **Done (2026-06-08):** the coverage-map step (#6) — `--full-map` +
   [`btd6-dump-coverage-map.md`](btd6-dump-coverage-map.md), regenerable per pull.
-- **Next (needs sign-off):** commit the workflow above with the chosen cadence.
+- **Next (signed off, Q-0049):** commit the workflow as **`workflow_dispatch`-only**
+  (strip the sketch's cron line) — queued as scoreboard **Lane 5**.
 - **Gated:** the full `--all` cutover (decode-status steps 1–5).
 </content>

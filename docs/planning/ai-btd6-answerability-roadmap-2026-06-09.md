@@ -17,7 +17,7 @@
 > and adds no parallel registry). **Owner decision Q-0043 (2026-06-09): range cash is
 > INCLUSIVE of both endpoints** (r50→r60 = $19,840), resolving a conflict where the prior
 > instruction stack/smoke checklist used the exclusive `cumulative(B) − cumulative(A)`.
-> **Phase 2 shipped 2026-06-09** (this session): the read-only `services/ai_introspection_service.py`
+> **Phase 2 shipped 2026-06-09** (#616): the read-only `services/ai_introspection_service.py`
 > composition read model (tool catalogue + BTD6 answerability + audience-filtered AI settings +
 > policy/decision explanation) — no AI exposure, no UI. **Next: Phase 3** (the self-awareness
 > tools that *expose* Phase 2). (PRs reconciled 2026-06-09: Phase 1A/1B = **#612**, Phase 2 = **#616**.)
@@ -245,7 +245,7 @@ coherently in one review.
 
 #### Phase 1A — BTD6-owned range semantics
 
-> **✅ SHIPPED 2026-06-09 (this session).** Implemented as
+> **✅ SHIPPED 2026-06-09 (#612).** Implemented as
 > `btd6_data_service.round_cash(round_start, round_end=None)` — a pure, read-only
 > sibling of `round_composition` / `cumulative_upgrade_costs` (kept in
 > `btd6_data_service`; the service has no LOC ceiling and this is the deterministic
@@ -285,7 +285,7 @@ separate display formatting from calculation. Do not parse JSON above the data s
 
 #### Phase 1B — AI exposure, grounding, and end-to-end reliability
 
-> **✅ SHIPPED 2026-06-09 (this session), with the maintainer explicitly lifting AR-10 for
+> **✅ SHIPPED 2026-06-09 (#612), with the maintainer explicitly lifting AR-10 for
 > this one read-only tool.** Delivered: the **`btd6_round_cash`** AI tool (read-only,
 > `min_scope=USER`) registered in the existing `ai_tools.build_registry` (no parallel
 > registry); added to `ai_tools.BTD6_GROUNDING_TOOL_NAMES` so its results join the
@@ -314,7 +314,7 @@ mutation and conflicts with this lane’s read-only boundary.
 
 ### Phase 2 — Central AI introspection read model
 
-> **✅ SHIPPED 2026-06-09 (this session).** Implemented as the read-only
+> **✅ SHIPPED 2026-06-09 (#616).** Implemented as the read-only
 > `services/ai_introspection_service.py` — a side-effect-free composition over the existing
 > owners, **no AI exposure and no UI** (those stay the gated Phase 3/4). It is the additive
 > read-*model* layer that `current-state.md` flagged as unblocked once the canonical

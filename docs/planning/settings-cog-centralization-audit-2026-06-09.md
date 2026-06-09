@@ -3,6 +3,7 @@
 > **Status:** `plan` — source-verified mapping and implementation roadmap; no runtime changes in this session.
 > **Truth rule:** source code wins over this document. Re-run the verification plan before implementation because schemas are registered at cog load and active subsystem work can move concurrently.
 > **Live concurrency check:** GitHub API showed one open PR on 2026-06-09: [#624](https://github.com/menno420/superbot/pull/624), the mining Workshop/durability lane. It does not touch the settings stack, but mining product/config conclusions remain concurrency-sensitive. AI UI expansion remains per-exposure gated; governance setup remains deferred pending a scope decision.
+> **Post-merge note (2026-06-09, end-of-day consolidation):** this audit merged as **#625**; #624 and **#626** (Community Spotlight registration) merged the same day, so Spotlight rows below are resolved history. The §11 phasing is queued: Phases 0+1 = scoreboard **Lane 7** via [`consolidated-productive-session-plan-2026-06-09.md`](consolidated-productive-session-plan-2026-06-09.md); Phases 2/3 stay gated on **Q-0063/Q-0064** (open).
 
 ## 1. Executive summary
 
@@ -179,7 +180,7 @@ Legend: **scalar** = central `SettingSpec`; **domain** = real config with anothe
 | Inventory | **None** | Gameplay/storage surface, no config schema. | Exclude. |
 | Leaderboard | **None / XP-adjacent** | No config schema; visibility/preference belongs to other domains. | Exclude. |
 | Proof channel | **Setup/binding candidate; command-managed** | Resource pointers documented for promotion but no schema. | Add binding/resource declarations before exposing. |
-| Community / Community Spotlight | **No settings currently** | Community is hub; Spotlight registration is decided but not yet shipped. | Exclude until a real configuration contract exists; re-audit after registration lane. |
+| Community / Community Spotlight | **No settings currently** | Community is hub; Spotlight registration is decided but not yet shipped *(shipped **#626** same day, post-audit)*. | Exclude until a real configuration contract exists; re-audit after registration lane. |
 | Admin / General / Utility / Four-twenty / Diagnostic / Settings | **No configurable subsystem settings** | Commands, diagnostics, or front doors. | Exclude from subsystem Settings dropdown. Diagnostic/platform controls remain separate. |
 
 ## 5. Current settings map

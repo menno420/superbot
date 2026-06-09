@@ -1,7 +1,7 @@
 # SuperBot — Implementation Roadmap
 
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
-> what order" index. **Last updated:** 2026-06-08.
+> what order" index. **Last updated:** 2026-06-09.
 >
 > **What this is:** a thin router over the detailed plans. Each row is a one-line
 > description + a link to the **authoritative plan** and the area **folio** — it restates
@@ -36,7 +36,7 @@
 | Horizon | Items |
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | **Q-0025 scaffold → register Community Spotlight** (Q-0044) · Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) |
+| **Next** | Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · **Settings hub actionable-groups + >25 reachability** and **Help counts + characterization tests** (scoreboard Lanes 7–8, appended 2026-06-09 — position Q-0065) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(the Q-0025 scaffold → Spotlight registration shipped, **#626**)* |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -69,6 +69,10 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 - **Next** — settings coverage: pick a *verified* inconsistency from the
   [consistency ledger](health/platform-consistency-ledger.md); the three-lane model is
   [settings-customization-roadmap](setup-platform/settings-customization-roadmap.md).
+- **Next** — **settings audit Phases 0+1** (actionable-groups-only hub + >25-option
+  reachability — scoreboard **Lane 7**, appended 2026-06-09; sequencing home:
+  [settings audit §11](planning/settings-cog-centralization-audit-2026-06-09.md)).
+  Phases 2/3 stay **gated on Q-0063/Q-0064**.
 - **Later** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md): one source-grounded orchestration roadmap; Phase 0 identity/read-model foundations and owner questions precede product mutation.
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
