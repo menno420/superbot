@@ -55,8 +55,12 @@ scoped tools (including owner-gated diagnostics). Source:
   most-specific-wins) / `ai_orchestration_mutation` (audited seam) + `AIConfigSnapshot.orchestration` +
   the `_invoke_gateway` wiring (default byte-identical) + the **Tools & Workflows** panel button
   (`ai:tools` → `views.ai.tools`: per-scope profile pickers + dry-run analyzer). The operator UI was
-  gate-lifted by the maintainer this session. **Phase 4** (complex BTD6 workflow) + the durable
-  orchestration audit trace are next.
+  gate-lifted by the maintainer this session. **Phase 4 MVP built 2026-06-09 (#634, Q-0046):**
+  the round-cash plan→execute→verify workflow (`services/ai_round_cash_workflow.py`) + the one
+  typed answer-with-evidence contract (`AIAnswerWithEvidence`/`CalculationEvidence`, Q-0043
+  inclusive semantics), profile-gated on `workflow == "analyze_execute_verify"`; default
+  byte-identical; **model loop awaits the maintainer's production check** (no sandbox provider
+  key). The remaining §7 families/contracts + the durable orchestration audit trace are next.
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 

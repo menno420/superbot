@@ -37,6 +37,19 @@ health-diagnostics roadmap is already delivered
 > workflow for the round-cash question family ("cash from A to B / can I afford X?") with
 > **one** typed answer-with-evidence contract. Prove the pattern end-to-end; remaining §7
 > contracts + the §12.1 durable audit trace follow the proven template, not this slice.
+> **Phase 4 MVP BUILT 2026-06-09 (PR #634, execution-plan Lane 3):** new
+> `services/ai_round_cash_workflow.py` — deterministic plan (conservative question
+> recogniser) → execute (the existing `btd6_data_service.round_cash` owner; afford-check
+> composes on its cumulative outputs) → verify (§10.2 completeness gate incl. the Q-0043
+> identity `range_cash == cum(B) − cum(A−1)`; failures degrade to precise *unsupported*
+> refusals) → synthesize (evidence block onto the system prompt + the faithfulness ledger;
+> the model explains, never recomputes). The one typed contract: `AIAnswerWithEvidence` +
+> `CalculationEvidence` (`core/runtime/ai/contracts.py`, contract `calculation_explained`,
+> **explicitly carrying Q-0043 inclusive-range semantics**). Activation is profile-gated on
+> the resolved `workflow == "analyze_execute_verify"` label (`btd6_grounded` /
+> `btd6_grounded_strict`); the compatible default never reaches it — **default byte-identical,
+> pinned by wiring tests**. Model-loop behaviour needs the maintainer's **production check**
+> (no provider key in the sandbox). Remaining §7 scope + §12.1 stay deferred.
 
 ## 1. Executive recommendation
 
@@ -952,6 +965,17 @@ grounding/calculator groups for a channel without editing instruction text.
 
 ### Phase 4 — Complex BTD6 workflow
 
+> **🟡 MVP SLICE BUILT 2026-06-09 (PR #634, Q-0046).** The round-cash family
+> (`services/ai_round_cash_workflow.py`): typed plan (`RoundCashPlan`), deterministic
+> capability-to-tool execution (the `round_cash` owner), the evidence-completeness gate,
+> and the one typed answer contract (`AIAnswerWithEvidence`/`CalculationEvidence`,
+> `calculation_explained`). Faithfulness verification retained as the final backstop —
+> the workflow's evidence feeds the same ledger. **Still deferred from this phase:**
+> general `BTD6RequestAnalysis` (other intents), clarification rules, the multi-entity
+> comparison helper (§7.5), the remaining answer contracts (§10.1), and any structured
+> model-call analysis. The exit criterion below is met for the round-cash family only;
+> the remaining families follow this proven template.
+
 Implement:
 
 - typed BTD6 request analysis;
@@ -990,8 +1014,12 @@ Implement:
    `ai_orchestration_mutation` + `AIConfigSnapshot.orchestration` + the `_invoke_gateway` wiring).*
 5. **PR E — Tools & workflows admin UI, preview, and dry run.** ✅ *shipped 2026-06-09
    (`ai:tools` panel button → `views.ai.tools`: per-scope profile pickers + dry-run analyzer).*
-6. **PR F — BTD6 request analysis and evidence/calculation contracts.**
-7. **PR G — Complex BTD6 plan/execute/verify workflow and answer contracts.**
+6. **PR F — BTD6 request analysis and evidence/calculation contracts.** 🟡 *round-cash
+   slice shipped 2026-06-09 (#634): `RoundCashPlan` + `CalculationEvidence` +
+   `AIAnswerWithEvidence`; the general `BTD6RequestAnalysis` remains.*
+7. **PR G — Complex BTD6 plan/execute/verify workflow and answer contracts.** 🟡 *round-cash
+   vertical slice shipped 2026-06-09 (#634, Q-0046); remaining families/contracts follow
+   the template.*
 8. **PR H — Trace/eval expansion and provider/preset tuning.**
 
 Do not combine storage, provider protocol changes, complex BTD6 workflows, and UI

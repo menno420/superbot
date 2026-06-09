@@ -230,6 +230,55 @@ class AIToolMetadata:
 
 
 @dataclass(frozen=True)
+class CalculationEvidence:
+    """One deterministic calculator result supporting an AI answer.
+
+    The provider-neutral evidence record from the orchestration plan §7.4: a
+    repository calculator (never the model) produced ``outputs`` from
+    ``normalized_inputs`` under ``assumptions``. ``calculator_version`` versions
+    the calculation *semantics* (so an eval can pin them); ``data_version`` is
+    the game-data version the calculator read. Answer renderers refer to
+    ``evidence_id`` and must not alter the numeric outputs.
+    """
+
+    evidence_id: str
+    calculator: str
+    calculator_version: str
+    normalized_inputs: dict[str, Any]
+    assumptions: tuple[str, ...]
+    outputs: dict[str, Any]
+    warnings: tuple[str, ...] = ()
+    data_version: str | None = None
+
+
+@dataclass(frozen=True)
+class AIAnswerWithEvidence:
+    """Typed answer-with-evidence contract (orchestration plan §10.1, Phase 4 MVP).
+
+    The one answer contract the round-cash plan→execute→verify workflow emits
+    (owner decision Q-0046): the deterministic ``result_text`` the model must
+    explain without recomputing, plus the :class:`CalculationEvidence` that
+    grounds it. ``status`` distinguishes a complete answer from a precise
+    *unsupported* refusal (plan §7.2 step 8) — an unsupported answer still
+    carries evidence (the structured refusal), never a fabricated number.
+
+    ``inclusive_range`` explicitly carries the owner-decided range semantics
+    (Q-0043): round ranges count BOTH endpoints —
+    ``range_cash(A, B) = cumulative(B) − cumulative(A−1)``.
+    """
+
+    contract: str
+    workflow: str
+    intent: str
+    status: Literal["complete", "unsupported"]
+    result_text: str
+    inclusive_range: bool
+    evidence: tuple[CalculationEvidence, ...]
+    assumptions: tuple[str, ...] = ()
+    warnings: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class AIRequest:
     """Provider-neutral request passed to a future AI gateway."""
 
@@ -301,6 +350,7 @@ class AIDiagnosticsSnapshot:
 
 
 __all__ = [
+    "AIAnswerWithEvidence",
     "AIDiagnosticsSnapshot",
     "AIRequest",
     "AIRequestContext",
@@ -313,6 +363,7 @@ __all__ = [
     "AIToolBudget",
     "AIToolChoice",
     "AIToolSpec",
+    "CalculationEvidence",
     "Confidence",
     "PolicyDenialReason",
     "Severity",

@@ -93,7 +93,12 @@
 
 ## Lane 3 — Orchestration Phase 4 MVP: one vertical slice (Q-0046)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#634** (2026-06-09, parallel-session Agent 2). *Executor note:*
+  the presets already declared the `workflow` labels, so no preset/catalogue/migration
+  changes were needed — the gate is the resolved decision's `workflow` field in
+  `_invoke_gateway`. The faithfulness ledger entry must carry **both** number forms
+  (formatted `$19,840.00` + raw `19840.0`) because the verifier is a comma-normalised
+  substring test. **Model loop flagged for the maintainer's prod check** (no sandbox key).
 - **Goal:** the plan→execute→verify workflow for the **round-cash question family**
   ("cash from A to B / can I afford X at round R?") + **one** typed
   answer-with-evidence contract. Everything else in plan §7 stays deferred.
