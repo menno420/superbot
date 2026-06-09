@@ -93,7 +93,7 @@ This doc is intent, not enforcement. The rules it implies live in their proper h
 - **The planning→execute lifecycle, act-vs-ask, bugs-first** → `docs/collaboration-model.md`
   and `.claude/CLAUDE.md` (don't restate them; follow them).
 
-**Vision-ledger blocks (Q-0057, decided 2026-06-09).** Each area folio
+**Vision-ledger blocks (Q-0062, decided 2026-06-09).** Each area folio
 (`docs/subsystems/*`) may carry one short owner-voice block — ≤10 lines: *what this
 area is for · what "right" feels like · one example of "wrong"* — so agents can check
 a plan against the owner's intent for the area, not only against recorded decisions

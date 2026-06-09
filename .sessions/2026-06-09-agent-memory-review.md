@@ -12,7 +12,7 @@ plan that mis-captured the vision — plus self-questions and questions back.
   wording, "verified" prose lists rotting), the direct clarity answer, and the
   split vision-detection self-assessment (contradiction-detection strong /
   taste-detection weak by construction).
-- **Router Q-0055/Q-0056/Q-0057** — parallel-session visibility · standing
+- **Router Q-0060/Q-0061/Q-0062** — parallel-session visibility · standing
   end-of-session structured interviews · per-area vision-ledger blocks (each
   with a recommendation + safe default).
 - **Conventions codified** (`ai-project-workflow.md` §9): router merge-collision
@@ -24,7 +24,7 @@ plan that mis-captured the vision — plus self-questions and questions back.
 ## Outcome (same day)
 
 The maintainer approved all three recommendations verbatim ("yes I agree with your
-recommended answers"). Q-0055/Q-0056/Q-0057 flipped to Answered and routed:
+recommended answers"). Q-0060/Q-0061/Q-0062 flipped to Answered and routed:
 accept-and-reconcile stays policy (§9 note) · the structured-choices interview is now
 journal Protocol END step **6a** · the vision-ledger convention lives in
 `maintainer-working-profile.md` §4 (folio blocks grow lazily from interviews).

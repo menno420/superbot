@@ -2163,9 +2163,107 @@ remove torch/lantern from `MAX_DURABILITY` so only tools + charms wear.
 **Routed to:** brainstorm §6.8 P5 (P5 entry now owner-confirmed) + §7.5 (duels-wear
 queued), `docs/roadmap.md` games section (queued slice).
 
-## 25. Agent-memory system review batch — 2026-06-09
+## 25. Help customization decisions — 2026-06-09
 
-### Q-0055 — Parallel sessions: stay accept-and-reconcile, or add session visibility?
+### Q-0055 — Is hiding a command from Help display-only or execution-blocking?
+
+**Area:** Help / governance / command access
+**Type:** Product + architecture boundary
+**Priority:** High (blocks Help-overlay mutation semantics)
+**Status:** Open
+
+**Question:** When an operator hides a command from a guild's Help panels, should that action
+only remove the command from discovery, or should the same control also block execution?
+
+**Why agents need this:** Help classification is currently informational/display-only, while
+command access, routing, and governance own execution. Combining them in one mutation would
+change security/policy ownership and could make hidden commands unexpectedly unusable.
+
+**Safe default until answered:** Help hiding is display-only. Execution changes require a
+separate explicit command-access/routing/governance action and confirmation.
+
+**Suggested destination after answer:**
+`docs/planning/help-cog-customization-audit-2026-06-09.md` §6/§9 and the future Help overlay mutation contract.
+
+### Q-0056 — Where should custom cog/subsystem names appear?
+
+**Area:** Help / settings / shared panels
+**Type:** Product presentation scope
+**Priority:** High (blocks overlay/read-model scope)
+**Status:** Open
+
+**Question:** Should a guild's custom cog/category/subsystem display name affect only Help, or
+should every bot panel (Settings, setup, Access Explorer, mother hubs, diagnostics) use it?
+
+**Why agents need this:** Help-only naming is a bounded presentation overlay. Global naming
+requires every shared catalogue/panel to consume the overlay and creates a larger migration,
+cache, and test surface.
+
+**Safe default until answered:** Custom names affect Help surfaces only; stable/default names
+continue everywhere else.
+
+**Suggested destination after answer:** Future Help Catalogue/Projection contract and Settings/setup editor plan.
+
+### Q-0057 — Is command ordering global or panel-local?
+
+**Area:** Help / command panels
+**Type:** Product customization model
+**Priority:** High (blocks structured overlay schema)
+**Status:** Open
+
+**Question:** Should a guild define one global command order reused everywhere, or customize
+order independently within each Help/hub/command panel?
+
+**Why agents need this:** Commands and actions can appear in multiple hubs, and dedicated panels
+contain non-command actions. A global ordering key is simpler but cannot express panel-specific
+composition; panel-local ordering requires stable panel/action identities and more storage.
+
+**Safe default until answered:** Ordering is panel-local, and no ordering UI ships until stable
+panel/action identities exist.
+
+**Suggested destination after answer:** Future command/panel catalogue and Phase 4 overlay schema.
+
+### Q-0058 — Should admin/debug views preserve default names beside custom names?
+
+**Area:** Help / diagnostics / operator UX
+**Type:** Product safety and explainability
+**Priority:** Medium
+**Status:** Open
+
+**Question:** When a guild renames a cog/category/subsystem, should admin/debug/audit views show
+the canonical default name and stable key beside the custom label?
+
+**Why agents need this:** Operators and support need an unambiguous identity for diagnostics,
+audit logs, stale-override repair, and documentation even when public labels differ by guild.
+
+**Safe default until answered:** Public Help shows the custom label; admin/debug/audit views show
+custom label + canonical default label + stable key.
+
+**Suggested destination after answer:** Help overlay diagnostics, audit rendering, and reset UX.
+
+### Q-0059 — What formats may a guild-specific Help Home message use?
+
+**Area:** Help / settings / content safety
+**Type:** Product format decision
+**Priority:** High (blocks storage/editor choice)
+**Status:** Open
+
+**Question:** Should guild-specific Help Home copy support plain text only, structured rich
+embeds, or a constrained template with variables? If variables are allowed, which values are
+safe and useful?
+
+**Why agents need this:** Plain text fits the existing scalar settings path. Rich embeds or
+templates require structured validation, preview, Discord-limit enforcement, mention safety,
+and likely a dedicated overlay model.
+
+**Safe default until answered:** Plain text only, no variables, mentions suppressed, with a
+bounded length and reset-to-default.
+
+**Suggested destination after answer:** Settings declaration or structured Help-overlay schema,
+plus preview/editor tests.
+## 26. Agent-memory system review batch — answered 2026-06-09
+
+### Q-0060 — Parallel sessions: stay accept-and-reconcile, or add session visibility?
 
 **Area:** Workflow / multi-agent coordination
 **Type:** Workflow preference
@@ -2194,7 +2292,7 @@ save cost in the rare colliding one.
 
 **Routed to:** `docs/owner/ai-project-workflow.md` §9 (policy note on the router row).
 
-### Q-0056 — Make the end-of-session structured interview a standing convention?
+### Q-0061 — Make the end-of-session structured interview a standing convention?
 
 **Area:** Workflow / decision throughput
 **Type:** Workflow change (affects how you're pinged)
@@ -2223,7 +2321,7 @@ three sessions" pattern.
 
 **Routed to:** `.session-journal.md` Protocol → END (new step 6a).
 
-### Q-0057 — Per-area "vision ledger": capture what each area is FOR, in your words
+### Q-0062 — Per-area "vision ledger": capture what each area is FOR, in your words
 
 **Area:** Workflow / vision transfer
 **Type:** Documentation convention (closes the honest gap in the 2026-06-09 review §4)

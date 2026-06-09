@@ -83,7 +83,7 @@ Split the question in two:
   what the maintainer would want (pacing, tone, what "fun" means for this
   community), would likely pass me. The system already has the right
   counter-measures — owner-taste tables in brainstorms, the interview loop,
-  Q-0051's coming vision drafts — and the Q-0057 proposal below would close
+  Q-0051's coming vision drafts — and the Q-0062 proposal below would close
   more of it. The honest position: **agents should be trusted to enforce the
   written vision and to *escalate* taste, not to have taste.**
 
@@ -116,13 +116,13 @@ Split the question in two:
 ## 6. Questions routed to the maintainer (new — **all three approved as
 recommended the same day**; the router entries carry the recorded answers)
 
-- **Q-0055** — parallel-session visibility: should concurrently-open sessions
+- **Q-0060** — parallel-session visibility: should concurrently-open sessions
   be visible to each other (a tiny active-sessions ledger), or stay
   accept-and-reconcile?
-- **Q-0056** — end-of-session interviews: make the structured-choices
+- **Q-0061** — end-of-session interviews: make the structured-choices
   interview (AskUserQuestion batch over open router questions) a standing
   end-of-session convention?
-- **Q-0057** — per-area vision ledgers: after the Q-0051 draft-answer session,
+- **Q-0062** — per-area vision ledgers: after the Q-0051 draft-answer session,
   should agents maintain a one-page "what this area is for, in the owner's
   words" ledger per area folio?
 
