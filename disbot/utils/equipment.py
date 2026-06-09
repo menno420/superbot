@@ -21,12 +21,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-# Equipment slots — each holds at most one item.  Weapon/armor are reserved
-# for combat gear and intentionally not in SLOTS until those items exist.
+# Equipment slots — each holds at most one item.  Mining slots (tool/light/
+# charm) feed the mining stats; combat slots (weapon/armor) feed the deathmatch
+# stats.  One equip/unequip path serves every slot.
 TOOL = "tool"
 LIGHT = "light"
 CHARM = "charm"
-SLOTS: tuple[str, ...] = (TOOL, LIGHT, CHARM)
+WEAPON = "weapon"
+ARMOR = "armor"
+SLOTS: tuple[str, ...] = (TOOL, LIGHT, CHARM, WEAPON, ARMOR)
 
 
 @dataclass(frozen=True)
@@ -75,11 +78,19 @@ STAT_LABELS: dict[str, str] = {
 
 # Which slot each gear item fits, and the stats it contributes.
 _GEAR: dict[str, tuple[str, EffectiveStats]] = {
+    # Mining gear → mining stats.
     "pickaxe": (TOOL, EffectiveStats(mining_power=2)),
     "iron pickaxe": (TOOL, EffectiveStats(mining_power=4)),
     "torch": (LIGHT, EffectiveStats(light_radius=1, depth_access=1)),
     "lantern": (LIGHT, EffectiveStats(light_radius=2, depth_access=2)),
     "lucky charm": (CHARM, EffectiveStats(luck=1, loot_bonus=1)),
+    # Combat gear → deathmatch stats.  Deliberately a SMALL, fair edge over the
+    # base 100 HP / 15-damage duel — gear tilts a fight, it does not decide it
+    # (a bare fighter still wins on crits + good defends).  Tune here.
+    "sword": (WEAPON, EffectiveStats(damage=3)),
+    "iron sword": (WEAPON, EffectiveStats(damage=6)),
+    "shield": (ARMOR, EffectiveStats(defense=2, max_health=10)),
+    "armor": (ARMOR, EffectiveStats(defense=4, max_health=20)),
 }
 
 
