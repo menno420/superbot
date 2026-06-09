@@ -21,7 +21,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import world
+from cogs.mining import market, world
 from cogs.mining.exploration import explore_from_state
 from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
@@ -374,6 +374,62 @@ class MiningCog(commands.Cog):
         await ctx.send(
             f"{ctx.author.mention} climbed up to {world.describe_position(new_depth)}.",
         )
+
+    # ---------------------------------------------------------- market
+
+    @commands.command(hidden=True)
+    async def sell(self, ctx, item: str = None, amount: int = 1):
+        """Sell raw resources for coins (e.g. `!sell diamond 5`)."""
+        if not item:
+            return await ctx.send(
+                "Specify what to sell, e.g. `!sell iron 10` — or `!sellall`.",
+            )
+        result = await market.apply_sell(ctx.author.id, ctx.guild.id, item, amount)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    @commands.command(name="sellall", hidden=True)
+    async def sell_all(self, ctx):
+        """Sell every raw resource in your inventory for coins."""
+        result = await market.apply_sell_all(ctx.author.id, ctx.guild.id)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    @commands.command(hidden=True)
+    async def buy(self, ctx, *, item: str = None):
+        """Buy gear with coins (e.g. `!buy iron sword`)."""
+        if not item:
+            return await ctx.send("Specify what to buy — see `!market` for the shop.")
+        result = await market.apply_buy(ctx.author.id, ctx.guild.id, item)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    @commands.command(name="market", hidden=True)
+    async def market_cmd(self, ctx):
+        """Show the mining market — sellable resources + the gear shop."""
+        inventory = await db.get_mining_inventory(str(ctx.author.id), ctx.guild.id)
+        balance = await db.get_coins(ctx.author.id, ctx.guild.id)
+        sellables = market.sellable_inventory(inventory)
+        sale_total = sum(qty * price for _, qty, price in sellables)
+        embed = discord.Embed(title="🛒 Mining Market", color=MINING_COLOR)
+        if sellables:
+            embed.add_field(
+                name=f"💰 Sell (total {sale_total} 🪙)",
+                value="\n".join(
+                    f"**{name.title()}** ×{qty} → {qty * price} 🪙"
+                    for name, qty, price in sellables
+                ),
+                inline=False,
+            )
+        embed.add_field(
+            name="🛍️ Buy gear",
+            value="\n".join(
+                f"**{name.title()}** — {price} 🪙"
+                for name, price in market.shop_listing()
+            ),
+            inline=False,
+        )
+        embed.set_footer(
+            text=f"Balance: {balance} 🪙  •  !sell <item> [n] · !sellall · !buy <item>",
+        )
+        await ctx.send(embed=embed)
 
     # ---------------------------------------------------------------- admin
 

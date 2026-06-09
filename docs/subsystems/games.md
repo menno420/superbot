@@ -48,6 +48,12 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   `depth_access`; **deathmatch reads `damage`/`defense`/`max_health`** from each fighter's
   equipped combat gear (weapon/armor) — a small, fair edge tunable in `_GEAR`. Add a new
   game's stat dependency by reading the block, never by importing another game's items.
+- **Mining economy loop: `cogs/mining/market.py`** — sell raw resources for coins
+  (faucet, reusing `items.item_value`) and buy gear with coins (sink), closing the
+  mine→sell→upgrade→descend loop. The one mining path that touches money: coins move
+  **only** through the audited `services.economy_service` (`credit`/`debit` → audit row +
+  balance event); the inventory side stays direct-lane. Surfaced via `!sell`/`!sellall`/
+  `!buy`/`!market` and a Market panel on the hub.
 - Known game UX follow-ups are not stability failures; cite the accepted #535
   baseline rather than claiming a fresh live retest.
 

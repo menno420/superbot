@@ -364,6 +364,11 @@ powers all four social pillars.
 **faucet** is balanced by **sinks**: gear purchases, repairs, structure builds, skill **respec**.
 Design it as *one* loop, not separate features.
 
+**Shipped 2026-06-09:** the **sell-ore / buy-gear market** (`cogs/mining/market.py`) — the
+faucet + first sink. Coins move only through the audited `services.economy_service`; sell
+prices reuse `items.item_value`; the gear shop is a tunable coin catalogue. The recurring
+sink (**durability + repair**) and the other sinks (structures, respec) remain next.
+
 ### 7.6 Profile & identity (the spine, in detail)
 
 - **What it is:** a read-only card aggregating the whole character — avatar, game level + XP bar,

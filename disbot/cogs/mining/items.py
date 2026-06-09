@@ -80,6 +80,36 @@ _CATALOG: dict[str, ItemDef] = {
         value=20,
         tags=frozenset({"luck"}),
     ),
+    # Combat gear (deathmatch) — equippable tools-of-war; never sellable (TOOL,
+    # not RESOURCE).  Values are for inventory net-worth display, not a sale price.
+    "sword": ItemDef(
+        "sword",
+        ItemKind.TOOL,
+        tier=1,
+        value=5,
+        tags=frozenset({"weapon"}),
+    ),
+    "iron sword": ItemDef(
+        "iron sword",
+        ItemKind.TOOL,
+        tier=2,
+        value=15,
+        tags=frozenset({"weapon"}),
+    ),
+    "shield": ItemDef(
+        "shield",
+        ItemKind.TOOL,
+        tier=1,
+        value=8,
+        tags=frozenset({"armor"}),
+    ),
+    "armor": ItemDef(
+        "armor",
+        ItemKind.TOOL,
+        tier=2,
+        value=18,
+        tags=frozenset({"armor"}),
+    ),
     # Structures are built via recipes rather than mined.
     "stone hut": ItemDef("stone hut", ItemKind.STRUCTURE, value=10, stackable=False),
     "iron pickaxe": ItemDef("iron pickaxe", ItemKind.TOOL, tier=2, value=15),
