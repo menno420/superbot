@@ -9,9 +9,11 @@ all open questions in the repo. Explicitly a test of the system *and* the agent.
 Executed in the review's readiness order: **lane 1 (mining — turn-key)** built
 end-to-end; **lanes 2–4 (adaptive Q-0045 / answerability / orchestration)** are
 confirm-blocked by the repo's own gates, so their blocking inputs were converted into
-one-line-answerable router questions instead of guessed at. Judgement call recorded in
-Q-0047: a general "execute the plan" prompt is **not** an explicit AI-exposure gate
+one-line-answerable router questions instead of guessed at. Judgement call (recorded
+here): a general "execute the plan" prompt is **not** an explicit AI-exposure gate
 lift (the repo's pattern is per-feature lifts; "unanswered questions are not approval").
+The parallel gate-lifting interview validated the read: those lifts were granted
+explicitly there (and a standing read-only-deterministic lift, Q-0048, now exists).
 
 ## Shipped (one PR)
 
@@ -32,10 +34,11 @@ lift (the repo's pattern is per-feature lifts; "unanswered questions are not app
   (iron pickaxe ×3, legacy inventory fallback preserved); `ownership.md` mining row
   drift (missing `mining_player_state`) fixed; a known views→cogs module-level import
   retired (arch warnings 87→86).
-- **Docs/routing:** Q-0046 (durability tuning confirm), Q-0047 (answerability Phase 3
-  gate lift + tool list, with recommendation), Q-0048 (orchestration Phase 4 MVP slice,
-  with recommendation); current-state + roadmap lane pointers re-synced; R5
-  (roadmap-freshness line) adopted into the journal END checklist.
+- **Docs/routing:** durability-tuning confirm routed (renumbered **Q-0054** after the
+  merge — a parallel gate-lifting interview session took Q-0046–Q-0053 and *answered*
+  the orchestration-MVP + answerability-gate questions I had routed under those
+  numbers); current-state + roadmap lane pointers re-synced; R5 (roadmap-freshness
+  line) adopted into the journal END checklist.
 
 ## Verification
 
@@ -45,14 +48,12 @@ loaded, 0 errors); **live DB round-trip** of the full loop: 60 wear ticks → br
 inventory consumed → quick-craft (atomic, auto-equip) → repair debits real coins through
 economy_service → insufficient-funds rejected with wear intact.
 
-## Open / for the maintainer (all one-liners, in the router)
+## Open / for the maintainer (post-merge state)
 
-- **Q-0045** — audience simulation (blocks adaptive P1B/P1C). Pre-existing.
-- **Q-0046** — confirm/retune the shipped durability numbers; should duels tick
-  weapon/armor wear next?
-- **Q-0047** — answerability Phase 3: gate lift + the four-tool list (recommended: yes).
-- **Q-0048** — orchestration Phase 4 MVP: deterministic-first slice (recommended shape
-  in the entry).
+- **Q-0054** — confirm/retune the shipped durability numbers + the Q-0050
+  "craft-once lights" interplay (do torches/lanterns wear, as shipped, or never break?).
+- Q-0045/Q-0046/Q-0047/Q-0048 (main's numbering) were **answered** in the parallel
+  gate-lifting interview — the lanes this session routed as questions are now unblocked.
 
 ## Context delta
 

@@ -271,7 +271,9 @@ foundation first"). P6 is where the original grid/coordinate vision lands, on to
 
 ### 6.8 Questions to settle at their phase (captured, not blocking v1)
 
-- **P2 — DECIDED 2026-06-09 (agent call, reversible; flag for owner confirm).** Descent is
+- **P2 — DECIDED 2026-06-09; OWNER-CONFIRMED 2026-06-09 (Q-0050, gate-lifting interview):
+  lights stay permanent** — durability (P5/§7.5 Workshop) carries the recurring-sink role
+  instead; one sink, clearly owned. Descent is
   gated by the equipped light's already-shipped `depth_access` stat and is **persistent, not
   consumed**: a torch (`depth_access` 1) unlocks the Cavern, a lantern (`depth_access` 2) the
   Deep; the Magma core needs `depth_access` 3, which no current gear grants (aspirational
@@ -281,7 +283,7 @@ foundation first"). P6 is where the original grid/coordinate vision lands, on to
   consumption/sink mechanic to the durability slice (P5) instead of overloading descent now.
   The whole gate is one pure function (`cogs/mining/world.max_accessible_depth`) — trivially
   swappable to a consumption model if the owner prefers it.
-- **P5 — DECIDED 2026-06-09 (agent call, tunable; flag for owner confirm — Q-0046).**
+- **P5 — DECIDED 2026-06-09 (agent call, tunable; flag for owner confirm — Q-0054).**
   Durability shipped generous-side per this caution: pickaxe 60 uses / iron 150 / torch 40 /
   lantern 100 / charm 80 (data in `utils/equipment.MAX_DURABILITY`); repair = `REPAIR_RATE`
   (0.5) × shop price, scaled by missing durability; lights wear only **underground**; descent
@@ -440,8 +442,8 @@ abstraction before its first concrete use.
 - **Trading & market** — player trade / gift / market **and the anti-alt-account guardrails**
   (level / cooldown gates, audit) so coins / gear / XP can't be laundered through alts.
 - **Smaller open calls:** weapons PvE-vs-PvP purpose · prestige loop at level cap · game-XP
-  normalization / daily-cap specifics. *(Descent gating — §6.8 P2 — was decided 2026-06-09:
-  persistent, light-`depth_access`-gated; see §6.8. Flagged for owner confirm.)*
+  normalization / daily-cap specifics. *(Descent gating — §6.8 P2 — decided 2026-06-09:
+  persistent, light-`depth_access`-gated; **owner-confirmed** same day (Q-0050); see §6.8.)*
 
 
 ## Routing update — 2026-06-08

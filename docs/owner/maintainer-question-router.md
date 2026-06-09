@@ -1656,12 +1656,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Setup / Guild Feature Profiles
 **Type:** Product definition
 **Priority:** Medium
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §6.1 (catalogue set committed)
 **Question:** After source mapping, should the first preview catalogue be **Essential Utility, Community Core, Games Community, Moderation Focused**, with **BTD6 Community** experimental/gated; or should any be added, removed, or renamed?
 
 **Why agents need this:** The catalogue determines the versioned compiler contract, tests, and UI language. Registry presence alone is not enough to infer owner intent.
 
 **Safe default until answered:** Build only catalogue/compiler infrastructure and previews; use the proposed set as examples, not a committed public catalogue.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Commit the proposed set** — Essential Utility, Community Core, Games Community, Moderation Focused, with BTD6 Community experimental/gated. The names are committed product language (compiler contract, tests, UI); profiles stay preview-only until the apply pipeline is separately approved.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.1 and future profile catalogue source.
 
@@ -1670,12 +1672,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Access / Automation
 **Type:** Ownership / Product behavior
 **Priority:** Medium
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §6.5–6.6 (availability policy is sole owner)
 **Question:** Should quiet mode be a central availability policy that routines may request, a routine-owned setting, or both with availability policy as the sole owner?
 
 **Why agents need this:** Two owners would create disagreement between command availability, help, and routine state.
 
 **Safe default until answered:** Availability policy owns effective quiet mode; a routine may only request a change through that canonical owner.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Availability policy owns it** — quiet mode is a central availability policy and the sole owner of effective state; a routine may only *request* a change through that owner. One source of truth: Help, command checks, and routines can never disagree.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.5–6.6 and ownership/runtime contracts if implemented.
 
@@ -1684,12 +1688,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Setup / Safety
 **Type:** Safety / Mutation contract
 **Priority:** High
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §8 Phase 3 (snapshots: compound + high-risk)
 **Question:** Must every setup-draft apply capture an immutable before-state snapshot, only compound profile/routine applies, or only medium/high-risk applies?
 
 **Why agents need this:** This changes Phase 3 storage, Final Review UX, audit linkage, and what “rollback” can honestly promise.
 
 **Safe default until answered:** Require snapshots for compound profile/routine applies and any high-risk apply; retain explicit manual rollback notes elsewhere.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Compound + high-risk** — immutable before-state snapshots are mandatory for compound profile/routine applies and any high-risk single apply; simple low-risk edits keep lightweight undo notes instead.
 
 **Suggested destination after answer:** Q-0017 planning doc §8 Phase 3, data model, observability; ownership/runtime contracts.
 
@@ -1698,12 +1704,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Automation / Setup safety
 **Type:** Safety classification
 **Priority:** High
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §6.5 + future automation registry (policy approved as written)
 **Question:** Is this starting policy correct: bounded messages/panels/notifications/checklists may auto-apply; routing, bindings, channel creation, thresholds, and multi-setting changes require approval; broad access/capability changes, role creation, and full profiles require high-risk approval; destructive role/permission/mass-channel changes never auto-apply?
 
 **Why agents need this:** Q-0019 sets progressive posture but not the classification of each new action.
 
 **Safe default until answered:** Any ambiguous configuration action queues Final Review; only clearly bounded messaging/notification actions auto-apply.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Approved as written** — bounded messages/panels/notifications/checklists may auto-apply; routing, bindings, channel creation, thresholds, and multi-setting changes require approval; broad access/capability changes, role creation, and full profiles require high-risk approval; destructive role/permission/mass-channel changes never auto-apply.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.5 and future automation registry/risk policy.
 
@@ -1712,12 +1720,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Access / Help UX
 **Type:** Naming / Information architecture
 **Priority:** Low
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan Phase 1 (staff-hub subpanels only; no new command names yet)
 **Question:** Should Access Map and Help Preview be subpanels linked only from Server Management/Settings, named slash commands (for example `/access-map` and `/help-preview`), or both?
 
 **Why agents need this:** Command names become subsystem/help/ledger identity contracts and should not be casually renamed later.
 
 **Safe default until answered:** Build services first and expose later through existing staff hubs; do not reserve new command names.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Staff-hub panels only** — Access Map and Help Preview are subpanels reachable from Server Management / Settings; **no new top-level command names are reserved yet**. Names can be chosen later once the panels have been used; nothing locks in before the surfaces stabilize.
 
 **Suggested destination after answer:** Q-0017 planning doc Phase 1 and future command/help maps.
 
@@ -1726,12 +1736,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Personal Setup / Privacy
 **Type:** Privacy / Product scope
 **Priority:** High (before Phase 5)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §6.7 (account links deferred entirely)
 **Question:** Should Personal Setup eventually support a generic account-link framework, begin with specific domain-owned links (such as game profiles), or defer all account links until after preferences/onboarding ship?
 
 **Why agents need this:** Generic links introduce cross-domain ownership, privacy, deletion/export, credential, and cross-guild questions that simple preferences do not.
 
 **Safe default until answered:** Defer account links; ship privacy-bounded preferences/onboarding first when Phase 5 is approved.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Defer links entirely** — ship privacy-bounded preferences/onboarding first when Phase 5 is approved; account links return later as their own decision with the privacy/deletion/export questions answered. No cross-domain identity surface now.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.7 and a future privacy/data-ownership decision.
 
@@ -1770,12 +1782,14 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Access / Help UX
 **Type:** UX / Product copy
 **Priority:** Medium (before the P1B denial-message integration)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §6.3/§16.3 (Claude drafts, maintainer reviews in PR)
 **Question:** When P1B wires `LockedReason.safe_text` into live command-access/availability denial paths, the strings in `access_projection._SAFE_TEXT` are what every denied user sees. Do you want to author/approve that copy yourself, or have me draft it for your later review?
 
 **Why agents need this:** Denial messages are user-facing UX (the maintainer's design domain). The read-only drift providers (e.g. `routing_access_conflict`, shipped) don't touch this, but the denial-integration step does.
 
 **Safe default until answered:** Keep `_SAFE_TEXT` an internal draft; do **not** wire it into live denial paths until the wording is confirmed. The read-only drift work proceeds independently.
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Claude drafts, maintainer reviews** — the agent writes the full denial-copy set and presents it in a PR for the maintainer's read-through before any of it goes live. Nothing user-facing ships unseen; the maintainer keeps final word on tone without authoring from scratch.
 
 **Suggested destination after answer:** Q-0017 planning doc §6.3 / §16.3 + the P1B denial-integration step.
 
@@ -1805,6 +1819,8 @@ Action owner: maintainer (ChatGPT template).
 
 **Why agents need this:** The answer determines the canonical keys and owner for membership, treasury, battles, profiles, and leaderboards. Guessing would create either a duplicate per-server system or an unapproved cross-server identity system.
 
+**Handling (Q-0051, 2026-06-09):** a draft-answer session is queued — the agent drafts a concrete proposed answer for the maintainer to mark up; safe default holds until then.
+
 **Safe default until answered:** Treat the social roadmap as planning-only. Do not create a guild/clan schema or expose cross-server profiles. Preserve existing Discord-guild scoping.
 
 **Suggested destination after answer:** `docs/planning/social-community-progression-roadmap-2026-06-08.md` and a dedicated ownership/ADR decision if a new social domain is approved.
@@ -1818,6 +1834,8 @@ Action owner: maintainer (ChatGPT template).
 **Question:** Should VIP/donation tiers be limited to cosmetic identity and supporter recognition, or may they include convenience benefits? Which exact benefits are explicitly allowed or forbidden, and should donation status ever be stored or processed by SuperBot itself?
 
 **Why agents need this:** “No pay-to-win” is binding owner intent, but convenience, lottery entries, marketplace privileges, and economy-adjacent perks can still create gameplay advantage or external billing/privacy obligations.
+
+**Handling (Q-0051, 2026-06-09):** a draft-answer session is queued — the agent drafts a concrete proposed answer for the maintainer to mark up; safe default holds until then.
 
 **Safe default until answered:** No paid/donation benefit affects XP, coins, drops, odds, cooldowns, market access/fees, guild power, or game outcomes. Do not add billing/provider integration.
 
@@ -1833,6 +1851,8 @@ Action owner: maintainer (ChatGPT template).
 
 **Why agents need this:** The answer governs state ownership, privacy, content safety, provider spend, and whether the feature remains explanation/narrative-only or requires a future action-authority decision.
 
+**Handling (Q-0051, 2026-06-09):** a draft-answer session is queued — the agent drafts a concrete proposed answer for the maintainer to mark up; safe default holds until then.
+
 **Safe default until answered:** No implementation. AI may not own rewards, difficulty, quests, or state mutations; all current AI expansion/action gates remain binding.
 
 **Suggested destination after answer:** `docs/ai/ai-product-extension-routing-2026-06-08.md` and the authoritative `docs/planning/ai-roadmap-2026-06-07.md`.
@@ -1847,6 +1867,8 @@ Action owner: maintainer (ChatGPT template).
 
 **Why agents need this:** These ideas share secrets, personal activity, third-party terms, moderation, retention/deletion, rate-limit, and outage behavior. Implementing one ad hoc would create a parallel provider or delivery path.
 
+**Handling (Q-0051, 2026-06-09):** a draft-answer session is queued — the agent drafts a concrete proposed answer for the maintainer to mark up; safe default holds until then.
+
 **Safe default until answered:** No new provider or voice implementation; retain only the existing ADR-007-owned media seams and require opt-in, bounded retention, and safe degraded behavior in future plans.
 
 **Suggested destination after answer:** `docs/planning/integrations-media-voice-website-roadmap-2026-06-08.md` and the media folio/ADR if the shared platform boundary changes.
@@ -1860,6 +1882,8 @@ Action owner: maintainer (ChatGPT template).
 **Question:** Is the intended website a read-only companion, a full management surface, or not a priority? If management is wanted, what authentication/authorization model, hosting/operations budget, privacy posture, and limit on website-specific behavior should apply?
 
 **Why agents need this:** A website can easily become a second control plane, duplicate Discord-native panels, or bypass domain mutation/audit/permission paths.
+
+**Handling (Q-0051, 2026-06-09):** a draft-answer session is queued — the agent drafts a concrete proposed answer for the maintainer to mark up; safe default holds until then.
 
 **Safe default until answered:** Keep the website at Someday. Mature Discord-native panels and canonical read/mutation services first; do not create website-specific authority or mutations.
 
@@ -1903,7 +1927,7 @@ stack and smoke-test checklist were updated to match (they previously taught the
 **Area:** Community / Help surface / subsystem platform
 **Type:** Product intent + platform integration scope
 **Priority:** Medium (the feature works; it is outside the Help/hub/settings platform)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → Q-0025 scaffold task + help-surface-map §3 banner + the cog (aliases dropped same day)
 
 **Question:** The Community Spotlight cog (merged side-lane via #613/#614, then hotfixed by
 #615/#617) ships `!spotlight` with aliases `!hub`, `!activity`, and `!server`, its own
@@ -1927,6 +1951,8 @@ not change unilaterally.
 `docs/help-command-surface-map.md` §3 and the navigation map. No registration, no alias
 change.
 
+**Maintainer answer (2026-06-09, gate-lifting interview):** (a) **Register via the scaffold** — build the Q-0025 `new_subsystem.py` scaffold first, then use it to register Community Spotlight as a child of the existing `community` hub (Help-visible, governed; the scaffold gets battle-tested on a real consumer). (b) **Drop `!hub` and `!server`, keep `!spotlight` + `!activity`** — frees platform vocabulary ("hub" is the mother-hub concept; "server" collides with server-management). *Implemented same session:* the alias drop (one-line cog change). The registration ships with the scaffold lane. (c) Panel adopts hub-navigation standard as part of registration.
+
 **Suggested destination after answer:** `docs/help-command-surface-map.md` (§2 row +
 remove the §3 banner), `utils/subsystem_registry.py` (+ the Q-0025 scaffold if chosen),
 and the games/community folio that takes ownership.
@@ -1936,7 +1962,7 @@ and the games/community folio that takes ownership.
 **Area:** Adaptive Setup/Access platform (governance axis)
 **Type:** Architecture decision (formalizes plan §16.8 item 3)
 **Priority:** High (blocks P1B's `help_advertises_locked` provider and the P1C Help Preview panel)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → adaptive plan §16.8 item 3 (option (b): governance tier-input path)
 
 **Question:** The governance axis (`governance.get_visible_subsystems(GovernanceContext)`)
 needs a real `discord.Member`; Help Preview (Q-0023) and the drift "baseline audience"
@@ -1956,91 +1982,178 @@ canonical, answerable home.
 simulation (`routing_access_conflict` is already member-independent and shipped in #592);
 defer `help_advertises_locked` + Help Preview.
 
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Option (b) — teach governance tiers**: add the read-only tier-input path so the governance axis prefers `AccessContext.member_tier` when set (the forward hook exists for exactly this). Durable, one source of truth; the simulation must still label its limits (it cannot model live channel-permission overrides it wasn't given — plan §16.4). This unblocks both P1B `help_advertises_locked` and the P1C Help Preview.
+
 **Suggested destination after answer:** plan §16.8 item 3 + §16.4 (simulation limits),
 `services/access_projection.py` (`AccessContext.member_tier` consumption), and — if (b) —
 `docs/capability-authority.md` / the governance folio.
 
-### Q-0046 — Mining durability tuning: confirm the shipped wear/repair numbers
+## 22. Gate-lifting interview batch — answered 2026-06-09
+
+> All six asked and answered in the 2026-06-09 gate-lifting interview (same session as the
+> repo review / PR #621). Recorded as already-answered entries so each decision has a
+> citable Q-number; verbatim selections preserved.
+
+### Q-0046 — Orchestration Phase 4: what is the MVP slice?
+
+**Area:** AI / tool orchestration
+**Type:** Scope definition (plan §7 described ideals without an MVP)
+**Priority:** High (next step of an active lane)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/ai/ai-complex-request-tool-orchestration-plan.md` (Phase 4 MVP note)
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **One vertical slice** — build the
+plan→execute→verify workflow for ONE question family (round-cash style: "how much cash from
+round A to B and can I afford X?") with **one** typed answer-with-evidence contract. Proves the
+whole pattern end-to-end; the remaining contracts follow the proven template. Full §7 scope and
+the §12.1 durable audit trace stay deferred behind it.
+
+### Q-0047 — Answerability Phase 3: committed tool list + gate lift
+
+**Area:** AI / answerability
+**Type:** Exposure gate lift + scope commit
+**Priority:** High (next step of an active lane)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md` Phase 3
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **All three tools in one slice,
+gate lifted for them** — tools-available ("what can you do here?"), policy-explanation ("why
+didn't you reply?"), and answerability-summary ("what do you know?"), all read-only over the
+shipped #616 read model with audience-tier filtering enforced at construction.
+
+### Q-0048 — AI exposure gate posture: standing lift for read-only deterministic tools
+
+**Area:** AI / expansion gate (cross-cutting)
+**Type:** Standing policy change (supersedes per-exposure lifts for one risk class)
+**Priority:** High (changes every future AI session's ask-vs-act line)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/current-state.md` Gates + `docs/roadmap.md` AI section + the AI folio
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Auto-allow read-only tools** —
+a standing lift for AI tools that are **read-only AND deterministic** (no writes, no external
+calls, audience-tiered): they may ship without a per-case ask. Anything that **writes, costs
+money, calls external services, or adds UI** still requires the per-exposure lift. (Decided
+after two per-case lifts — `btd6_round_cash` #612, `ai:tools` UI #619 — established the
+pattern.)
+
+### Q-0049 — BTD6 data-refresh automation: commit as manual-dispatch workflow
+
+**Area:** BTD6 data / CI
+**Type:** Sign-off (was "Next (needs sign-off)" in the roadmap)
+**Priority:** Medium
+**Status:** Answered (2026-06-09) — **Routed** → `docs/btd6/btd6-data-refresh-pipeline-plan.md` + roadmap BTD6 section
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Manual-trigger workflow** —
+commit the GitHub Actions refresh workflow as `workflow_dispatch`-only (one click on GitHub,
+no schedule). One-click refresh after a game update with zero unattended-fetch risk. Building
+the workflow is queued lane work, not done in the interview session.
+
+### Q-0050 — Mining descent lights: permanent (owner confirm of §6.8 P2)
+
+**Area:** Games / mining
+**Type:** Shipped-behaviour confirm (was "flagged for owner confirm" in #607)
+**Priority:** Low
+**Status:** Answered (2026-06-09) — **Routed** → `docs/ideas/mining_exploration_brainstorm.md` §6.8
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Keep lights permanent** — torch/
+lantern are craft-once gear; depth is a progression unlock, not an upkeep cost. The Workshop
+durability slice (§7.5) carries the recurring-sink role instead: one sink, clearly owned.
+
+### Q-0051 — Handling the five open product-vision questions (Q-0038–Q-0042)
+
+**Area:** Workflow / product vision
+**Type:** Meta-decision (how to answer, not the answers)
+**Priority:** Medium
+**Status:** Answered (2026-06-09) — **Routed** → handling notes on Q-0038–Q-0042; draft-answer session queued
+
+**Maintainer answer (2026-06-09, gate-lifting interview):** **Claude drafts answers** — a
+dedicated session drafts a concrete proposed answer per question (clans identity, VIP
+fairness, AI dungeon master, integrations/voice privacy, web dashboard), grounded in existing
+decisions + safe defaults, for the maintainer to mark up (approve / adjust / reject per item).
+Nothing implements until approved; safe defaults hold meanwhile.
+
+## 23. Session-workflow follow-up — answered 2026-06-09
+
+### Q-0052 — Open the session PR as a draft at first push (restore the old habit)
+
+**Area:** Workflow / session protocol
+**Type:** Workflow change (binding-doc edit, maintainer-approved in chat)
+**Priority:** Medium (kills the only recurring docs-drift class found in the 2026-06-09 review)
+**Status:** Answered (2026-06-09) — **Routed** → `.claude/CLAUDE.md` § Session & plan workflow + `.session-journal.md` (Quick reference + Protocol END step 1) + the multi-lane execution plan §2
+
+**Question:** Session PR numbers don't exist when end-of-session docs are written, so
+sessions left "(this session) — reconcile PR # next session" placeholders in
+`current-state.md` that piled up across five sessions (the drift the 2026-06-09 review
+cleaned). Should sessions open their PR as a **draft right after the first push**, so the
+real number is available for every doc touched, marking it ready at session end?
+
+**Maintainer answer (verbatim, 2026-06-09):** "about the PR at the start of a session, I
+think that's a perfect idea and that's how it used to be previously, but somewhere along
+the way that stopped, so please change that for me"
+
+**Decision:** Restored as binding workflow: **open the session PR as a draft immediately
+after the first push; reference its real # in all docs; mark it ready at session end.**
+Per-lane drafts in multi-lane sessions follow the same rule. The companion
+`check_docs.py` gate extension (fail on "(this session)" markers) remains a separate
+**proposal** — executable config, not yet approved.
+
+**Routed to:** `.claude/CLAUDE.md` (SESSION_WORKFLOW block — edited with this explicit
+approval per the Q-0035 propose-first rule), `.session-journal.md`, and
+`docs/planning/multi-lane-execution-plan-2026-06-09.md`.
+
+## 24. Fun & ease brainstorm batch — answered 2026-06-09
+
+### Q-0053 — Fun/ease brainstorm: owner cluster picks + session scope
+
+**Area:** Product direction / games / UX
+**Type:** Owner preference (answered in-session via structured choices)
+**Priority:** Medium (steers idea-backlog grooming order)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/ideas/fun-and-ease-brainstorm-2026-06-09.md` §2 (capture) + `docs/planning/pets-companions-plan-2026-06-09.md` (structure) + `docs/roadmap.md` (games Later row + Someday line)
+
+**Question:** The 2026-06-09 brainstorm produced 24 dedup-verified new fun/ease ideas.
+Which clusters should lead the routing, and what should the session ship beyond the
+capture doc?
+
+**Maintainer answer (2026-06-09, structured choices):**
+- Fun cluster pick: **Pets & companions** (over server goals/mascot, social memory,
+  competition layer).
+- Ease picks: **context-menu actions** and **persistent reminders**.
+- Session scope: **capture + structure the top cluster into a plan** (no feature code
+  that session).
+
+**Decision:** Pets & companions structured into a games-lane plan at **Later** (gated
+behind the Wave-1 keystone slices + balance review + owner promotion). Context-menu
+actions and persistent reminders are marked **top quick-win candidates** in the capture
+doc's routing table — strong next-session picks; both stay `captured`, not approved.
+The other 21 ideas are captured with states/destinations (no orphans). Predictions
+(A6) explicitly rides the existing economy chance-reward review gate.
+
+**Routed to:** the three docs above; grooming sessions pull ⭐ rows first.
+
+### Q-0054 — Mining durability tuning + the Q-0050 "craft-once" interplay
 
 **Area:** Games — mining character platform (Wave 1)
-**Type:** Balance confirmation (agent call already shipped, fully reversible data)
-**Priority:** Low (live and self-consistent; only the *feel* needs an owner pass)
+**Type:** Balance confirmation (agent call already shipped in PR #624, fully reversible data)
+**Priority:** Low-medium (live and self-consistent; one semantic overlap with Q-0050 to settle)
 **Status:** Open
 
-**Question:** The Workshop + durability slice shipped with agent-chosen numbers, picked
-generous-side per the §6.8 P5 caution ("a resource sink, not an annoyance"). Confirm or
-retune: **(1) maxes** — pickaxe 60 uses, iron pickaxe 150, torch 40, lantern 100, lucky
-charm 80 (combat gear has maxes — sword 60 / iron sword 150 / shield 90 / armor 120 — but
-**no wear path yet**: duels don't tick durability); **(2) wear plan** — mining wears tool
-always + light underground; exploring wears light underground + charm; harvest/descent wear
-nothing (descent stays persistent-gated per the §6.8 P2 decision); **(3) repair price** —
-`REPAIR_RATE` 0.5 × gear-shop price, scaled by missing durability (full pickaxe rescue ≈ 13 🪙
-vs. 25 🪙 new), so the shop catalogue is the single tuning knob; **(4)** should **duels**
-eventually tick weapon/armor wear (the natural next sink), and should the **lucky charm**
-(buy-only treasure, 80 🪙) really wear at all?
+**Question:** The Workshop + durability slice (PR #624) shipped with agent-chosen numbers,
+picked generous-side per the §6.8 P5 caution ("a resource sink, not an annoyance").
+Confirm or retune: **(1) maxes** — pickaxe 60 uses, iron pickaxe 150, torch 40, lantern
+100, lucky charm 80 (combat gear has maxes — sword 60 / iron sword 150 / shield 90 /
+armor 120 — but **no wear path yet**: duels don't tick durability); **(2) wear plan** —
+mining wears tool always + light underground; exploring wears light underground + charm;
+harvest/descent wear nothing (descent stays persistent-gated per Q-0050); **(3) repair
+price** — `REPAIR_RATE` 0.5 × gear-shop price, scaled by missing durability, so the shop
+catalogue is the single tuning knob; **(4)** should **duels** eventually tick weapon/armor
+wear, and should the **lucky charm** (buy-only treasure, 80 🪙) wear at all?
 
-**Why agents need this:** Every number is data (`utils/equipment.MAX_DURABILITY`,
-`workshop.REPAIR_RATE`, `_WEAR_PLAN`) — retuning is a one-table edit, but agents shouldn't
-oscillate balance numbers across sessions without an owner anchor.
+**The Q-0050 interplay (the real question):** Q-0050's answer says lights are
+"**craft-once gear**; depth is a progression unlock, not an upkeep cost" — answered about
+the *descent* mechanic (no consume-per-descend; PR #624 honours that: descent is free).
+But the shipped durability slice has lights **wear per underground action** (torch 40
+uses, lantern 100) as part of "the Workshop durability slice carries the recurring-sink
+role". If "craft-once" was meant broadly (lights never break), the fix is one-line data:
+remove torch/lantern from `MAX_DURABILITY` so only tools + charms wear.
 
-**Safe default until answered:** Keep the shipped numbers; don't add new wear paths
-(duels) until answered.
+**Safe default until answered:** keep the shipped numbers; no new wear paths (duels).
 
 **Suggested destination after answer:** brainstorm §6.8 P5 (the decided entry) +
 `utils/equipment.py` / `cogs/mining/workshop.py` constants.
-
-### Q-0047 — Answerability Phase 3: confirm the tool list + the AI-exposure gate lift
-
-**Area:** AI tooling (answerability lane)
-**Type:** Gate lift + scope confirmation (the lane's only blocking input)
-**Priority:** High (Phase 3 is otherwise turn-key: the Phase 2 read model #616 and the
-orchestration catalogue #612/#619 are both shipped)
-**Status:** Open
-
-**Question:** Phase 3 exposes the read-only introspection read model as **net-new AI
-tools** — the repo's AI-exposure gate requires an explicit per-feature lift plus a
-committed tool list (the 2026-06-09 session prompt's general "execute the multi-lane
-plan" was judged *not* specific enough to constitute that lift; pattern: the explicit
-per-feature lifts recorded for `btd6_round_cash` and the `ai:tools` panel). Confirm:
-**(1)** lift the gate for the roadmap's four candidate tools — `get_ai_tool_catalog`,
-`get_ai_settings_snapshot`, `get_ai_policy_explanation`,
-`get_btd6_answerability_snapshot` — finalized through the canonical catalogue; **(2)** the
-AR-08 audience split as documented (users: public capability summary only; admin+:
-effective settings + policy trace + bounded audit; platform owner: provider/diagnostic
-detail); **(3)** intent-gated `bot_knowledge_service` blocks so ordinary turns pay no
-prompt cost.
-
-**Agent recommendation:** lift for all four — they are read-only, side-effect-free,
-scope-filtered at construction (the Phase 2 service was built exactly for this), and the
-task card documents rollback as "remove tool/block exposure while retaining read model."
-A one-line "yes, all four as documented" (or a subset) unblocks the executor.
-
-**Safe default until answered:** read model stays unexposed (Phase 2 state).
-
-**Suggested destination after answer:** answerability roadmap Phase 3 (+ task card),
-`services/ai_tool_catalogue.py`, AI folio gate notes.
-
-### Q-0048 — Orchestration Phase 4: confirm the complex-BTD6 MVP slice
-
-**Area:** AI tooling (orchestration lane)
-**Type:** Scope confirmation (plan §7 "describes ideals without naming the MVP slice" —
-repo review 2026-06-09 §4)
-**Priority:** Medium-high (next orchestration step after Phases 1–3, #612/#618/#619)
-**Status:** Open
-
-**Question:** Which slice of the §7 plan/execute/verify workflow is the Phase 4 MVP?
-
-**Agent recommendation (deterministic-first MVP):** ship **(a)** `BTD6RequestAnalysis`
-with *deterministic-only* entity/intent extraction (no structured model-analysis call
-yet), **(b)** the application-owned capability→tool mapping (§7.2 step 3), **(c)** the
-§7.5 multi-entity comparison helper for **one** family — tower/upgrade **cost
-comparison**, whose calculators + catalogue already exist — emitting §7.4
-`CalculationEvidence`, and **(d)** one typed answer contract for that family (§10),
-riding the existing `btd6_grounded` preset (no new exposure surface; the gate question is
-orthogonal to Q-0047). **Defer to 4B:** the structured model-analysis fallback, more
-families (paragon degrees, round-range comparisons), and the §12.1 durable audit trace.
-
-**Safe default until answered:** Phases 1–3 behaviour stands; no Phase 4 work starts.
-
-**Suggested destination after answer:** orchestration plan §7/§13 (Phase 4 row, MVP
-named), then a `docs/planning/` task card for the executor session.

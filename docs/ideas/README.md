@@ -18,6 +18,12 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`fun-and-ease-brainstorm-2026-06-09.md`](./fun-and-ease-brainstorm-2026-06-09.md) —
+  24 dedup-verified new ideas for "more fun + easier to use" (social/competition layer,
+  ambient delight, member UX), each grep-checked against docs *and* source before
+  capture. Owner cluster picks recorded (Q-0053): **pets & companions** (structured →
+  [`../planning/pets-companions-plan-2026-06-09.md`](../planning/pets-companions-plan-2026-06-09.md)),
+  context-menu actions, persistent reminders.
 - [`cog-improvement-audit-2026-06-08.md`](./cog-improvement-audit-2026-06-08.md) —
   cog-by-cog improvement audit from a 36-question interactive session (2026-06-08).
   Covers all 35 existing cogs; includes a priority-ranked routing table. Top finding:

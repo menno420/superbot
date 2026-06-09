@@ -71,7 +71,12 @@ shared back-button adoption. Do **not** propose restart-safe game state.
 
 ## Ideas (not approved)
 
-`docs/ideas/mining_exploration_brainstorm.md` records mining design intent/ideas. Apply the
+`docs/ideas/mining_exploration_brainstorm.md` records mining design intent/ideas;
+`docs/ideas/fun-and-ease-brainstorm-2026-06-09.md` adds the 2026-06-09 fun/ease batch
+(several game-facing: server goals, bounties, rivalries, word game, treasure hunts).
+Its ⭐ pets cluster is structured in
+[`../planning/pets-companions-plan-2026-06-09.md`](../planning/pets-companions-plan-2026-06-09.md)
+(Later horizon — gated behind the Wave-1 keystone slices + balance review). Apply the
 ideas promotion path before implementing unapproved game expansions.
 
 ## Next candidates

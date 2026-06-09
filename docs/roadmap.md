@@ -35,8 +35,8 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09; structures or game-XP next) · **Adaptive Setup/Access** Phase 1 (P1B remainder gated on the audience-sim decision Q-0045; P1C next) · **AI tooling** (orchestration Phase 4 = Q-0048 confirm · answerability Phase 3 = Q-0047 gate lift) |
-| **Next** | Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · deferred governance setup section · health/diagnostics production live-tests (owed) · settings consistency coverage |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Next** | **Q-0025 scaffold → register Community Spotlight** (Q-0044) · Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -101,12 +101,13 @@ Folio: [health-diagnostics](subsystems/health-diagnostics.md)
 
 ### 🤖 AI — **Now** (active lane; per-exposure gate lifts)
 
-Folio: [ai](subsystems/ai.md) · **Gate:** net-new AI **exposure** (a new tool, any UI)
-still needs the global gate explicitly lifted per surface — the maintainer lifted it for
-`btd6_round_cash` (#612) and the `ai:tools` operator UI (#619). Broad expansion stays
-gated on *all* of bot-wide stability + provider/provenance + caching/source-health +
-behavior-config correctness (`docs/current-state.md`), **plus a dedicated decision** for
-any action capability.
+Folio: [ai](subsystems/ai.md) · **Gate (re-postured 2026-06-09, Q-0048):** **read-only,
+deterministic tools carry a standing lift** (no per-case ask; audience-tiered, no writes /
+external calls); anything that **writes, costs money, calls external services, or adds UI**
+still needs a per-exposure lift (precedents: `btd6_round_cash` #612, `ai:tools` UI #619).
+Broad expansion stays gated on *all* of bot-wide stability + provider/provenance +
+caching/source-health + behavior-config correctness (`docs/current-state.md`), **plus a
+dedicated decision** for any action capability.
 
 > **AI sequencing lives in the dedicated AI roadmap:**
 > [`planning/ai-roadmap-2026-06-07.md`](planning/ai-roadmap-2026-06-07.md) (Phase 0–11,
@@ -118,14 +119,15 @@ any action capability.
 - **Now (active lane)** — the **orchestration foundation**
   ([ai-complex-request-tool-orchestration-plan](ai/ai-complex-request-tool-orchestration-plan.md))
   **Phases 1–3 shipped** (#612 catalogue+selector, #618 tool-choice+budgets, #619 typed
-  policy + the gate-lifted `ai:tools` operator UI). **Next: Phase 4** (complex-BTD6
-  plan/execute/verify workflow + typed answer contracts + the deferred §12.1 audit trace) —
-  confirm the Phase-4 MVP scope first.
+  policy + the gate-lifted `ai:tools` operator UI). **Next: Phase 4 MVP (decided, Q-0046)**
+  — one vertical slice: the plan→execute→verify workflow for the round-cash question family
+  + one typed answer-with-evidence contract; remaining §7 contracts + the §12.1 audit trace
+  follow the proven template.
 - **Now (active lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md):
   **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool) and **Phase 2
-  shipped** (#616 — the read-only introspection read model). **Next: Phase 3** (the
-  self-awareness tools that *expose* the read model — net-new AI exposure, needs the gate
-  explicitly lifted; confirm the committed tool list first).
+  shipped** (#616 — the read-only introspection read model). **Next: Phase 3 (committed +
+  gate lifted, Q-0047)** — all three read-only self-awareness tools in one slice
+  (tools-available · policy-explanation · answerability-summary), audience-tiered.
 - **Later** — [ai-tool-capability-roadmap](ai/ai-tool-capability-roadmap.md) sequences the
   backlog onto that foundation · [ai-readiness-plan](ai/ai-readiness-plan.md) M2 (typed policy
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
@@ -139,9 +141,11 @@ Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · **Ga
 - **Later** — restart extraction only after the provenance schema, source-registry owner
   matrix, safe migrations, and observable cache/source-health are in place. Status:
   [decode-status](btd6/btd6-gamedata-decode-status.md).
-- **Next (needs sign-off)** — scheduled "fetch-everything-on-update" data refresh: the manual
-  command chain + regenerable [coverage map](btd6/btd6-dump-coverage-map.md) exist; committing
-  the GitHub Actions automation is a maintainer call. Plan:
+- **Next (signed off 2026-06-09, Q-0049)** — the "fetch-everything-on-update" data refresh
+  ships as a **manual-dispatch GitHub Actions workflow** (`workflow_dispatch` only, no
+  schedule): one-click refresh after a game update, no unattended fetches. The manual
+  command chain + regenerable [coverage map](btd6/btd6-dump-coverage-map.md) exist; building
+  the workflow is the queued slice. Plan:
   [data-refresh-pipeline](btd6/btd6-data-refresh-pipeline-plan.md).
 
 ### 🎮 Games — **Now** (mining character platform active lane)
@@ -157,13 +161,17 @@ accepted, not a target).
   stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
   Character overview (#610), and — built 2026-06-09 (verify the PR merged on live
   GitHub) — the audited **Workshop + durability** keystone (brainstorm §7.5; migration
-  063, tuning = Q-0046) with the **mother-panel live overview** (§6.3). **Next Wave-1
+  063, tuning = Q-0054) with the **mother-panel live overview** (§6.3). **Next Wave-1
   slices:** functional **structures** (Forge/Vault/Home — the remaining §7.5 sinks),
   then Wave 2's **game-XP service** (§7.4).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
   slice.
+- **Later** — [**Pet companions**](planning/pets-companions-plan-2026-06-09.md): nameable
+  pets from exploration drops + a care-loop coin/ore sink + tiny non-P2W perks; the
+  owner's ⭐ pick from the 2026-06-09 fun/ease brainstorm (Q-0053). Gate: Wave-1
+  keystone slices (Workshop + durability) + balance review + owner promotion.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
 
@@ -193,6 +201,9 @@ privacy/provenance/moderation review before any public surface.
 > requires the gates in [`ideas/README.md`](ideas/README.md). Do not treat anything here as
 > a priority.
 
+- [fun-and-ease-brainstorm](ideas/fun-and-ease-brainstorm-2026-06-09.md) — 24
+  dedup-verified fun + ease-of-use ideas (social/competition, ambient delight, member
+  UX); owner picks recorded (Q-0053; pets structured → a games-lane plan).
 - [future-product-direction](ideas/future-product-direction-2026-06-07.md) — source-aware
   future product direction (polish, extensions, reusable systems, long-term).
 - [ai-extra-tool-capability-ideas](ideas/ai-extra-tool-capability-ideas.md) — AI capability
