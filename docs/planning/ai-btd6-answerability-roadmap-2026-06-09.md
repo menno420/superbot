@@ -5,9 +5,19 @@
 > **Area authorities:** [`../subsystems/ai.md`](../subsystems/ai.md),
 > [`../subsystems/btd6.md`](../subsystems/btd6.md), and
 > [`../subsystems/settings-bindings-provisioning.md`](../subsystems/settings-bindings-provisioning.md).
-> **Active gate:** all runtime phases remain blocked by the AI/BTD6 feature-expansion
+> **Active gate:** all *AI-exposure* phases remain blocked by the AI/BTD6 feature-expansion
 > gate in [`../current-state.md`](../current-state.md) and, for net-new tools, the
 > approved sequencing requirement to lock the orchestration foundation first.
+> **Progress:** **Phase 1A + 1B shipped 2026-06-09.** 1A: `btd6_data_service.round_cash()`,
+> the deterministic owner-calculated round / inclusive-range cash query. 1B: the read-only
+> **`btd6_round_cash` AI tool** (registered in the existing `ai_tools.build_registry` — *not*
+> a parallel registry — per this plan's fallback), added to the BTD6 grounding allowlist, with
+> the instruction stack updated to defer to it. **The maintainer explicitly lifted the AR-10
+> orchestration-first sequencing for this one read-only BTD6 tool** (it composes no workflow
+> and adds no parallel registry). **Owner decision Q-0043 (2026-06-09): range cash is
+> INCLUSIVE of both endpoints** (r50→r60 = $19,840), resolving a conflict where the prior
+> instruction stack/smoke checklist used the exclusive `cumulative(B) − cumulative(A)`. **Next:
+> Phase 2** (central read-only introspection read model). (Reconcile PR # next session.)
 
 ## 1. Purpose and owner intent
 
@@ -228,6 +238,19 @@ coherently in one review.
 
 #### Phase 1A — BTD6-owned range semantics
 
+> **✅ SHIPPED 2026-06-09 (this session).** Implemented as
+> `btd6_data_service.round_cash(round_start, round_end=None)` — a pure, read-only
+> sibling of `round_composition` / `cumulative_upgrade_costs` (kept in
+> `btd6_data_service`; the service has no LOC ceiling and this is the deterministic
+> BTD6 fact owner). It returns the structured result below and **owner-calculates the
+> inclusive range total** (`range_cash`) plus the cumulative endpoints so the
+> `cumulative(B) − cumulative(A−1)` identity is explicit. Every row of the semantics
+> table is pinned by tests in `tests/unit/services/test_btd6_round_cash.py` (single
+> round, inclusive both-endpoints, reversed→normalized, invalid→`invalid_range`,
+> partial-overlap→`cash_unavailable`, cumulative identity, full-range detail cap, and
+> disclosed economy assumptions). No AI tool, context, or UI change was made — that is
+> Phase 1B, which stays gated. Reconcile PR # next session.
+
 Add a deterministic, read-only query in `btd6_data_service` (or a narrowly named
 BTD6-owned sibling only if service size/ownership requires it) that returns:
 
@@ -254,6 +277,19 @@ Recommendation: make the deterministic owner return exact stored/derived floats 
 separate display formatting from calculation. Do not parse JSON above the data service.
 
 #### Phase 1B — AI exposure, grounding, and end-to-end reliability
+
+> **✅ SHIPPED 2026-06-09 (this session), with the maintainer explicitly lifting AR-10 for
+> this one read-only tool.** Delivered: the **`btd6_round_cash`** AI tool (read-only,
+> `min_scope=USER`) registered in the existing `ai_tools.build_registry` (no parallel
+> registry); added to `ai_tools.BTD6_GROUNDING_TOOL_NAMES` so its results join the
+> faithfulness ledger (the subset drift-guard keeps allowlist↔registry in lockstep); the
+> instruction stack (`ai_instruction_service`) now defers range-cash to the tool and teaches
+> the **inclusive** formula `cumulative(B) − cumulative(A−1)` (owner decision **Q-0043**);
+> tool-registry/handler tests added; the smoke-test checklist updated to the inclusive
+> numbers. The existing faithfulness retry/floor choke point is untouched (preserved). The
+> intent-shaped context packet (below) was **not** needed — the direct tool gives reliable
+> selection and is the more auditable path (§5.7); single-round cash already renders in
+> `_render_fixture_round`. Reconcile PR # next session.
 
 - Register the accepted read-only round-cash tool through the canonical orchestration
   catalogue/compatibility seam; if that foundation still uses `ai_tools.build_registry`,

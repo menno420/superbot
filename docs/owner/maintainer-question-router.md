@@ -1864,3 +1864,34 @@ Action owner: maintainer (ChatGPT template).
 **Safe default until answered:** Keep the website at Someday. Mature Discord-native panels and canonical read/mutation services first; do not create website-specific authority or mutations.
 
 **Suggested destination after answer:** `docs/planning/integrations-media-voice-website-roadmap-2026-06-08.md` and a dedicated architecture decision if promoted.
+
+### Q-0043 — How is BTD6 "cash from round A to B" defined: inclusive sum or wallet-delta?
+
+**Area:** BTD6 / AI answerability
+**Type:** Product semantics (changes the user-facing number)
+**Priority:** Medium (blocked the round-cash answerability slice; now resolved)
+**Status:** Answered (2026-06-09) — **Routed** → instruction stack + `btd6_round_cash` tool + `docs/btd6/btd6-smoke-test-checklist.md` (shipped this session)
+
+**Question:** For "how much cash do you earn from round A to B?", does the range count both
+endpoints (inclusive sum of rounds A..B) or only the wallet gain between checkpoints
+(exclusive `cumulative(B) − cumulative(A)`)? The two readings give different numbers for the
+same question (r50→r60 = $19,840 inclusive vs $16,824 exclusive), and the bot's *prior*
+instruction stack + smoke-test checklist used the exclusive reading while the answerability
+roadmap recommended inclusive — a direct conflict surfaced while building Phase 1B.
+
+**Why agents need this:** It defines the deterministic `range_cash` the `btd6_round_cash`
+tool returns and what the model is grounded on; getting it wrong makes the bot contradict
+its own smoke checklist on the headline answerability question.
+
+**Maintainer answer (verbatim selection):** "Inclusive sum (roadmap)."
+
+**Decision:** Range cash is **INCLUSIVE of both endpoints** — `range_cash(A,B)` = sum of each
+round's cash for A..B = `cumulative(B) − cumulative(A−1)`. r50→r60 = **$19,840**. The
+deterministic `btd6_data_service.round_cash` owner already implements this; the instruction
+stack and smoke-test checklist were updated to match (they previously taught the exclusive
+`cumulative(B) − cumulative(A)`).
+
+**Routed to:** `disbot/services/ai_instruction_service.py` (range-cash guidance),
+`disbot/services/ai_tools.py` (`btd6_round_cash` tool description), and
+`docs/btd6/btd6-smoke-test-checklist.md` (expected values). Plan:
+`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md` §1A/§5.7/§9.

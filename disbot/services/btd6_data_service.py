@@ -1447,6 +1447,149 @@ def round_composition(
     return out
 
 
+# Medium-difficulty standard starting cash — the cumulative-cash baseline.
+# rounds.json stores cumulative_cash as $650 + the running per-round total
+# (pinned by tests/unit/services/test_btd6_round_cash.py); this constant lets a
+# range query report "cumulative before the first round" without an off-by-one.
+_MEDIUM_STARTING_CASH = 650.0
+
+# One canonical statement of what the standard cash numbers assume, so every
+# caller (and any grounding line built from this result) discloses the same
+# economy boundary instead of re-wording it. Cash modifiers and alternate
+# round sets are NOT applied here — that boundary is part of the answer.
+_CASH_ASSUMPTIONS = (
+    "Standard (default) round set, Medium difficulty ($650 start), no income "
+    "towers. Per-round cash is pop cash (v55 income decay) plus the "
+    "$100 + round end-of-round bonus. Cash modifiers (Double Cash, Half Cash) "
+    "and other difficulties or round sets (e.g. ABR) are not applied."
+)
+
+
+def round_cash(round_start: int, round_end: int | None = None) -> dict[str, Any]:
+    """Deterministic standard/Medium cash for a round or inclusive round range.
+
+    This is the BTD6-owned answer to "how much cash do I earn from round A to
+    B?" — the owner derives the total so the result never depends on the model
+    doing arithmetic over context facts (the cumulative-cost pattern, applied to
+    income). All values are standard (default) round set, Medium difficulty
+    ($650 start), no income towers; see :data:`_CASH_ASSUMPTIONS`.
+
+    Behaviour (pinned by ``tests/unit/services/test_btd6_round_cash.py``):
+
+    * Single round (``round_end`` omitted, or equal endpoints) -> that round's
+      earned ``round_cash`` and the ``cumulative_cash`` total through it (which
+      already includes the $650 Medium start).
+    * Inclusive range ``A``–``B`` -> the owner-calculated ``range_cash`` = sum of
+      each round's cash for ``A..B`` with **both endpoints counted**, plus the
+      cumulative endpoints so the ``cumulative(B) - cumulative(A-1)`` identity is
+      explicit and auditable.
+    * Reversed ``B``–``A`` -> normalised, flagged with ``normalized: True``.
+    * Out-of-range / unknown rounds -> ``found: False`` with a structured
+      ``reason`` code (never a fabricated number); a range that only partly
+      overlaps the known rounds reports ``cash_unavailable`` rather than summing
+      a partial range as if it were the whole.
+
+    Returns a structured ``dict`` (always carries ``found``; the fields above on
+    success). The ``per_round`` breakdown is capped at :data:`_ROUND_DETAIL_CAP`
+    while ``range_cash`` is always summed over the full range.
+    """
+    lo = round_start
+    hi = round_start if round_end is None else round_end
+    normalized = lo > hi
+    if normalized:
+        lo, hi = hi, lo
+
+    # Only the standard ("default") round set carries cash data; never sum an
+    # alternate round set's rows (should one ever land) as standard cash.
+    cash_rounds = [
+        r
+        for r in get_dataset().rounds
+        if r.roundset == "default" and r.cash is not None
+    ]
+    if not cash_rounds:
+        return {
+            "found": False,
+            "reason": "no_cash_data",
+            "note": "no standard round cash data is loaded",
+        }
+    available = {r.round_number for r in cash_rounds}
+    valid_min, valid_max = min(available), max(available)
+
+    in_range = [r for r in cash_rounds if lo <= r.round_number <= hi]
+    if not in_range:
+        return {
+            "found": False,
+            "reason": "invalid_range",
+            "round_start": lo,
+            "round_end": hi,
+            "note": f"no standard rounds in {lo}-{hi} (valid {valid_min}-{valid_max})",
+        }
+    # A request that straddles the edge of the known set: name the missing
+    # rounds instead of silently returning a partial-range total.
+    missing = [n for n in range(lo, hi + 1) if n not in available]
+    if missing:
+        return {
+            "found": False,
+            "reason": "cash_unavailable",
+            "round_start": lo,
+            "round_end": hi,
+            "note": (
+                f"cash data is only available for rounds {valid_min}-{valid_max}; "
+                f"missing: {missing[:10]}"
+            ),
+        }
+
+    by_n = {r.round_number: r for r in cash_rounds}
+
+    if lo == hi:
+        entry = by_n[lo]
+        return {
+            "found": True,
+            "roundset": "default",
+            "single_round": True,
+            "round_start": lo,
+            "round_end": hi,
+            "round_cash": entry.cash,
+            "cumulative_cash": entry.cumulative_cash,
+            "starting_cash": _MEDIUM_STARTING_CASH,
+            "assumptions": _CASH_ASSUMPTIONS,
+        }
+
+    range_cash = round(sum(float(r.cash) for r in in_range if r.cash is not None), 2)
+    # cumulative(A-1): the running total *before* the first round in range, so
+    # range_cash == cumulative_at_end - cumulative_before_start. For a range that
+    # starts at the first known round there is no prior row — the baseline is the
+    # Medium starting cash.
+    cumulative_before_start = (
+        by_n[lo - 1].cumulative_cash if (lo - 1) in by_n else _MEDIUM_STARTING_CASH
+    )
+    per_round = [
+        {
+            "round": r.round_number,
+            "cash": r.cash,
+            "cumulative_cash": r.cumulative_cash,
+        }
+        for r in in_range[:_ROUND_DETAIL_CAP]
+    ]
+    return {
+        "found": True,
+        "roundset": "default",
+        "single_round": False,
+        "inclusive": True,
+        "normalized": normalized,
+        "round_start": lo,
+        "round_end": hi,
+        "rounds_counted": hi - lo + 1,
+        "range_cash": range_cash,
+        "cumulative_before_start": cumulative_before_start,
+        "cumulative_at_end": by_n[hi].cumulative_cash,
+        "starting_cash": _MEDIUM_STARTING_CASH,
+        "per_round": per_round,
+        "truncated": len(in_range) > _ROUND_DETAIL_CAP,
+        "assumptions": _CASH_ASSUMPTIONS,
+    }
+
+
 def _find_by_surface(entries: tuple, name: str):
     """First entry whose id / canonical / alias matches ``name`` (case-insensitive)."""
     key = (name or "").strip().lower()
