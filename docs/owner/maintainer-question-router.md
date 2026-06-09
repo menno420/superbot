@@ -2170,7 +2170,15 @@ queued), `docs/roadmap.md` games section (queued slice).
 **Area:** Help / governance / command access
 **Type:** Product + architecture boundary
 **Priority:** High (blocks Help-overlay mutation semantics)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → help audit §6/§9 + the future Help overlay mutation contract
+
+**Maintainer answer (2026-06-09, structured choices):** **Display-only** — hiding changes
+presentation only; execution stays governed by command access / routing / governance /
+capabilities. Operator views label "hidden from Help but still executable".
+*Answer scope:* decides hide **semantics** only — Q-0056–Q-0059 (names / order / debug
+display / home-message format) stay open with their safe defaults, and this does **not**
+green-light overlay storage/editor work (that whole lane still waits on the rest of the
+batch).
 
 **Question:** When an operator hides a command from a guild's Help panels, should that action
 only remove the command from discovery, or should the same control also block execution?
@@ -2190,7 +2198,13 @@ separate explicit command-access/routing/governance action and confirmation.
 **Area:** Help / settings / shared panels
 **Type:** Product presentation scope
 **Priority:** High (blocks overlay/read-model scope)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → future Help Catalogue/Projection contract + help audit §9
+
+**Maintainer answer (2026-06-09, structured choices):** **Help-only** (the
+recommendation as written) — custom names render in Help surfaces only; stable/default
+names continue everywhere else (settings, setup, logs, audit, diagnostics).
+*Answer scope:* presentation scope only — does not decide storage shape or schedule the
+overlay work.
 
 **Question:** Should a guild's custom cog/category/subsystem display name affect only Help, or
 should every bot panel (Settings, setup, Access Explorer, mother hubs, diagnostics) use it?
@@ -2209,7 +2223,13 @@ continue everywhere else.
 **Area:** Help / command panels
 **Type:** Product customization model
 **Priority:** High (blocks structured overlay schema)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → future command/panel catalogue + Phase 4 overlay schema (help audit)
+
+**Maintainer answer (2026-06-09, structured choices):** **Panel-local** (the
+recommendation as written) — each panel/page carries its own optional order; no
+cross-surface coupling.
+*Answer scope:* the ordering **model** only — the safe-default rider still binds: no
+ordering UI ships until stable panel/action identities exist.
 
 **Question:** Should a guild define one global command order reused everywhere, or customize
 order independently within each Help/hub/command panel?
@@ -2228,7 +2248,13 @@ panel/action identities exist.
 **Area:** Help / diagnostics / operator UX
 **Type:** Product safety and explainability
 **Priority:** Medium
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → Help overlay diagnostics / audit rendering / reset UX (help audit)
+
+**Maintainer answer (2026-06-09, structured choices):** **Custom + default** (the
+recommendation as written) — public Help shows the custom label; admin/debug/audit
+views show custom label + canonical default + stable key.
+*Answer scope:* display rule only — no toggle/knob for it (the "toggle per guild"
+option was not chosen).
 
 **Question:** When a guild renames a cog/category/subsystem, should admin/debug/audit views show
 the canonical default name and stable key beside the custom label?
@@ -2246,7 +2272,18 @@ custom label + canonical default label + stable key.
 **Area:** Help / settings / content safety
 **Type:** Product format decision
 **Priority:** High (blocks storage/editor choice)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → structured Help-overlay schema + preview/editor tests (help audit)
+
+**Maintainer answer (2026-06-09, structured choices):** **Embed builder** — structured
+title/description/color fields rendered as an embed. **Deviates from the plain-text
+recommendation** (owner chose the richest option), which settles the storage question
+the audit raised: the Help Home message needs the **structured overlay model**, not a
+scalar setting.
+*Answer scope:* format only. The safety floors stay mandatory regardless of format:
+bounded field lengths, Discord embed limits enforced, mentions suppressed, validation +
+preview before save, reset-to-default. **Variables/templating were not chosen** and
+remain out unless asked separately. Until the overlay ships, the current default Help
+Home stands — this schedules nothing.
 
 **Question:** Should guild-specific Help Home copy support plain text only, structured rich
 embeds, or a constrained template with variables? If variables are allowed, which values are
@@ -2356,7 +2393,15 @@ gain blocks lazily as interviews touch their areas).
 **Area:** AI / Settings platform
 **Type:** Architecture + product-surface decision
 **Priority:** Important (blocks broad AI Settings redesign, not Phase 1 display correctness)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → settings audit Phase 3 row + `docs/ai-config-ownership.md` projection note + consolidated plan §7
+
+**Maintainer answer (2026-06-09, structured choices):** **Converge gradually** (the
+recommendation as written): keep and visibly diagnose the tested seven-key projection
+now, **freeze new projected keys**, and plan typed policy/profile panel convergence at
+settings **Phase 3** planning; memory stays its own scalar family.
+*Answer scope:* decides the **direction** only — it does not fix migration mechanics or
+timing, does not approve removing any scalar yet (parity + migration proof first), and
+does **not** lift the per-exposure gate on AI UI changes.
 
 **Question:** The generic Settings Manager owns ten AI `SettingSpec`s. Seven guild-policy
 keys are already projected after scalar mutation through
@@ -2389,7 +2434,15 @@ projected keys or new AI UI; surface the hybrid/effective source in plans and di
 **Area:** BTD6 / Settings / bindings
 **Type:** Product-surface + ownership decision
 **Priority:** Medium (does not block Phase 1 display correctness)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → settings audit Phase 2 BTD6 rows + BTD6 folio/schema plan + consolidated plan §7
+
+**Maintainer answer (2026-06-09, structured choices):** **Binding + guided flow** (the
+recommendation as written): promote the **announcement channel** to a first-class BTD6
+**binding** with a native channel selector; the **CT group** becomes a **guided advanced
+flow** (accept URL/ID → parse → preview → confirm), not a generic scalar text field.
+*Answer scope:* decides the **target shapes** only — it does not schedule the work (it
+lands with settings Phase 2's BTD6 rows, after Lane 7), and internal BTD6 cache knobs
+remain unexposed.
 
 **Question:** BTD6's version-announcement channel and CT team group are operator-settable
 through typed command services that directly write allowlisted legacy KV keys, but neither
@@ -2420,7 +2473,14 @@ and Phase 2/3 of the settings-centralization audit.
 **Area:** Cross-lane sequencing (Settings / Help)
 **Type:** Priority decision
 **Priority:** Low-friction (a one-line scoreboard reorder either way)
-**Status:** Open
+**Status:** Answered (structured choices, 2026-06-09) — **Routed** → scoreboard Lane 7/8 provenance notes + consolidated plan §7
+
+**Maintainer answer (2026-06-09, structured choices):** **End of queue** (the
+recommendation as written) — Lanes 2–6 run in the decided order; Lanes 7–8 follow after
+Lane 6.
+*Answer scope:* decides **position** only — it does not re-rank Lanes 2–6, does not
+change Lane 7/8 scope, and the owner can still pull Lane 7 forward later with a one-line
+scoreboard edit.
 
 **Question:** The 2026-06-09 end-of-day consolidation
 (`docs/planning/consolidated-productive-session-plan-2026-06-09.md`) appended two

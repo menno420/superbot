@@ -24,10 +24,11 @@ Verified live (GitHub API) + at source this session — not inherited from docs:
   → #625 (settings centralization audit).
 - **Router (final numbering after the §9 collision renumbers):** Q-0044–Q-0054
   **answered** (incl. Q-0045 tier-input *option b*, Q-0047/Q-0048 gate lifts, Q-0052
-  draft-PR-at-first-push, Q-0054 durability). **Q-0055–Q-0059 open** (help overlay
-  semantics; safe defaults documented in the help audit §8). Q-0060–Q-0062 answered
-  (#628). **Q-0063/Q-0064 open** (#625). Next free number: **Q-0065** (minted by this
-  session, §7).
+  draft-PR-at-first-push, Q-0054 durability). Q-0060–Q-0062 answered (#628).
+  *Post-merge update (same evening, two structured-choices rounds):* **Q-0055–Q-0059
+  and Q-0063–Q-0065 all answered** — every pick was the recommended option except
+  **Q-0059 = embed builder** (owner chose the richest Help-Home format → structured
+  overlay storage, not a scalar). See §7. Next free number: **Q-0066**.
 - **Source confirmations (file:line checked on disk):**
   - Settings hub lists all **28 non-internal SUBSYSTEMS** and silently truncates at the
     Discord 25-option cap — `disbot/views/settings/hub.py:44` + `:136`. Scalar stack is
@@ -78,10 +79,12 @@ the queue; everything else is enhancement).
 - No generic configuration god-object; Settings stays a **discovery/navigation surface
   over separate mutation owners** (scalar / bindings / provisioning / governance /
   command-access / role / AI policy / rollout / participation / runtime-game state).
-- No help-overlay storage or editors until **Q-0055–Q-0059** are answered (safe defaults
-  hold: presentation-only hiding, Help-only names, panel-local order, admin shows
-  default+custom, plain text).
-- No new projected AI keys, no broad AI Settings redesign until **Q-0063**; no AI writes /
+- Help-overlay storage/editors are **no longer question-gated** — the full batch was
+  answered 2026-06-09 (display-only hide · Help-only names · panel-local order ·
+  custom+default in admin · **embed-builder Home message**) — but stay **sequenced**:
+  after Lane 8's characterization net and the HLP-2 projection seam, not before.
+- No new projected AI keys (**frozen by the Q-0063 answer, 2026-06-09**: converge
+  gradually — typed-panel convergence planned at settings Phase 3); no AI writes /
   external calls / cost-bearing behavior / new AI UI without per-exposure lift (Q-0048
   posture: only read-only + deterministic + tiered tools have the standing lift).
 - BTD6 extraction/cutover stays gated (ADR-006 lane discipline; `--all` is not
@@ -134,10 +137,11 @@ audit's real finding is **discovery/display, not a missing settings system**.
   domain-panel registrations for *verified real* config; BTD6/proof/logging/economy
   pointer classification). Partially gated: **Q-0064** for the BTD6 pointers; mining is
   an active lane; AI policy UI stays gated.
-- **SET-3 [G]** — Phase 3 duplicate/hardcoded/command-only path elimination + AI
-  projection hardening/simplification. Gated on **Q-0063** (+ AI exposure posture).
-  Until answered, the audit's safe default **binds**: keep the tested seven-key
-  projection, add **no** new projected keys, label the hybrid seam in diagnostics.
+- **SET-3 [F]** — Phase 3 duplicate/hardcoded/command-only path elimination + AI
+  projection convergence. **Direction decided (Q-0063, 2026-06-09): converge
+  gradually** — keep + diagnose the tested seven-key projection, projected-key set
+  frozen, typed-panel convergence planned at this phase; AI UI exposure stays
+  per-case gated. Sequenced after Lane 7.
 - **SET-4 [F]** — Phase 4 structured editors (group/order/advanced/reset metadata,
   guided ranges, presets, member/multi-select; less free text).
 - **SET-5 [F]** — Phase 5 Setup/Settings convergence (shared catalogue/definition
@@ -165,9 +169,12 @@ is test work, not a prose patch).
   composing governance + command-access + routing + **access_projection**). Design home:
   help audit §9. Sequence after ADP-1/ADP-2 (it consumes their seams); the *read-only*
   projection service needs no overlay answers.
-- **HLP-3 [G]** — Guild Help **overlay storage/editor** (names/descriptions/order/hide,
-  Help Home message). Gated on **Q-0055–Q-0059**; safe defaults bind until answered.
-  Display-only hiding must never equal execution denial (Q-0055 keystone).
+- **HLP-3 [F]** — Guild Help **overlay storage/editor**. **Fully decided 2026-06-09
+  (Q-0055–Q-0059):** hiding is display-only (never execution denial) · names Help-only ·
+  ordering panel-local (no UI until stable panel/action identities) · admin/debug shows
+  custom + default + key · Help Home message = **embed builder** (structured
+  title/description/color → needs the structured overlay model, not a scalar; bounded +
+  mention-suppressed + preview mandatory). Sequenced after Lane 8 + the HLP-2 seam.
 - **HLP-4** — *(constraint)* Help customization must never change slash registration or
   execution authorization; presentation overlays stay separate from governance and
   command access.
@@ -193,8 +200,10 @@ Shipped: orchestration Phases 1–3 (#612/#618/#619), answerability 1A/1B/2 (#61
 - **BTD-1 [I]** — **Lane 5: data-refresh workflow**, `workflow_dispatch`-**only**
   (Q-0049): runs the existing manual chain, opens a PR, never pushes to main, no
   schedule. Small (~1h); batched with Lane 6 in one session (two PRs) per §5.
-- **BTD-2 [G]** — CT-team + version-announcement pointer classification (promote to
-  binding / declared advanced config / intentional exception). Gated on **Q-0064**.
+- **BTD-2 [F]** — CT-team + version-announcement pointer promotion. **Shapes decided
+  (Q-0064, 2026-06-09):** announcement channel → first-class BTD6 **binding** (native
+  selector); CT group → **guided advanced flow** (URL/ID → parse → preview → confirm).
+  Lands with settings Phase 2's BTD6 rows, after Lane 7.
 - **BTD-3 [G]** — extraction/cutover (`--all`): ADR-006 lane discipline; zone/buff/
   subtower tail + name guard + value-pinned test updates make it human-reviewed, not
   automatable.
@@ -257,8 +266,8 @@ confirmed, duels-wear queued (Q-0054).
 | Critical blocker | — none. Nothing red-stops the queue; the worst live defect is the bounded 25-option truncation (SET-1). |
 | Important next | ADP-1 → AI-1 → AI-2 → BTD-1 + DOC-5 → SET-1 (scoreboard order; Q-0065 may pull SET-1 forward) · then ADP-2 |
 | Cleanup | DOC-1, DOC-4, BTD-4, SET-7 (all shipped in this PR) · HLP-1 (Lane 8) |
-| Future opportunity | HLP-2, SET-4, SET-5, AI-4, GME-1, GME-2, GME-4, SRV-1, SRV-2, DOC-2, HLT-2 |
-| Gated / off-limits | ADP-3 (copy review) · SET-2/SET-3 (Q-0064/Q-0063 + AI gate) · HLP-3 (Q-0055–59) · BTD-2 (Q-0064) · BTD-3 (ADR-006) · GME-3 (keystones+balance) · AI writes/external/UI (Q-0048 posture) · plus the standing off-limits in `current-state.md` |
+| Future opportunity | HLP-2, HLP-3, SET-2, SET-3, SET-4, SET-5, AI-4, BTD-2, GME-1, GME-2, GME-4, SRV-1, SRV-2, DOC-2, HLT-2 *(SET-2/SET-3/BTD-2/HLP-3 directions all decided 2026-06-09 — Q-0063/Q-0064/Q-0055–59; sequenced after Lanes 7/8)* |
+| Gated / off-limits | ADP-3 (copy review) · BTD-3 (ADR-006) · GME-3 (keystones+balance) · AI writes/external/UI (Q-0048 posture) · plus the standing off-limits in `current-state.md` |
 
 ## §5 Recommended session sequence
 
@@ -276,7 +285,7 @@ first push (Q-0052); CI mirror green before the next lane.
 | S6 | Lane 7 | **SET-1** — Settings Phases 0+1 | M | none; position = Q-0065 |
 | S7 | Lane 8 | **HLP-1** — surface-map counts + Help characterization tests | S–M | none |
 | later | — | Settings P2/3 planning (SET-2/SET-3) | M | **Q-0063, Q-0064** |
-| later | — | Help overlay/editor (HLP-3, via HLP-2 seam) | L | **Q-0055–Q-0059** |
+| later | — | Help overlay/editor (HLP-3, via HLP-2 seam) | L | questions answered 2026-06-09 — sequenced after Lane 8 + HLP-2 |
 | later | — | ADP-2 P1C panels · GME-1 frontier · SRV queue | M | owner promotion |
 
 ### S2 expanded — Lane 2 (Adaptive P1B remainder)
@@ -340,17 +349,23 @@ session: Q-0066.**
 | Question | Status | Gates |
 |---|---|---|
 | Q-0038–Q-0042 (vision batch) | open — Q-0051 drafts route | DOC-5 / Lane 6 produces the draft answers |
-| Q-0055 (hide = display-only vs deny) | open | HLP-3 keystone; safe default display-only |
-| Q-0056–Q-0059 (names/order/debug/home-msg) | open | HLP-3 details; safe defaults bind; depend on Q-0055 |
-| Q-0063 (AI hybrid projection durable?) | open | SET-3 + any broad AI Settings redesign |
-| Q-0064 (BTD6 CT/version pointers) | open | BTD-2 + parts of SET-2 |
-| **Q-0065 (new, this session)** | open | position of appended Lanes 7/8 — default: end of queue |
+| Q-0055 (hide = display-only vs deny) | **answered 2026-06-09: display-only** | HLP-3 keystone settled; hiding never blocks execution |
+| Q-0056 (custom-name scope) | **answered 2026-06-09: Help-only** | stable names everywhere else |
+| Q-0057 (ordering scope) | **answered 2026-06-09: panel-local** | no ordering UI until stable panel/action identities |
+| Q-0058 (admin/debug names) | **answered 2026-06-09: custom + default + key** | audit/diagnostics keep canonical identity |
+| Q-0059 (Help Home format) | **answered 2026-06-09: embed builder** *(deviates from recommendation)* | structured overlay storage; bounds/sanitation mandatory |
+| Q-0063 (AI hybrid projection durable?) | **answered 2026-06-09: converge gradually** | projected keys frozen; typed-panel convergence at SET-3/Phase 3 |
+| Q-0064 (BTD6 CT/version pointers) | **answered 2026-06-09: binding + guided flow** | BTD-2 shapes set; lands with settings Phase 2 |
+| Q-0065 (new, this session) | **answered 2026-06-09: end of queue** | Lanes 7/8 stay after Lane 6 |
 
-**End-of-session structured choices (Protocol END 6a, one round, fire-and-continue):**
-Q-0065 (lane position) · Q-0063 (recommend: keep tested hybrid, freeze projected keys,
-converge at Phase-3 planning) · Q-0064 (recommend: announcement → binding; CT group →
-declared advanced config) · Q-0055 (recommend: display-only). Unanswered ⇒ stay open;
-nothing in S2–S5 blocks on them.
+**End-of-session structured choices (Protocol END 6a) — outcome:** two rounds, both
+after #629 went ready. Round 1 (Q-0065 · Q-0063 · Q-0064 · Q-0055): all four answered
+with the recommended option. Round 2 (offered when the maintainer asked "any more
+questions?" — Q-0056–Q-0059): three recommended options plus one deviation, **Q-0059 =
+embed builder**, which settles the overlay-storage question (structured model, not a
+scalar). All recorded verbatim with answer-scope lines in the router (§25/§27/§28) and
+routed in the follow-up PR. Nothing in S2–S5 was ever blocked on them; the entire
+gated-tail question set (except the Lane-6 vision batch) is now pre-cleared.
 
 ## §8 Next-session prompt (copy-paste)
 

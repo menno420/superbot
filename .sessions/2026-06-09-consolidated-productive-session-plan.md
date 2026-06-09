@@ -64,3 +64,25 @@ two settings-roadmap pins) · zero open PRs re-checked pre-push · no runtime co
 - **Cross-agent verify rule paid again:** one scout reported `scripts/new_subsystem.py`
   missing (it exists) and the dual-write "not confirmed" (it is) — both settled by
   direct grep before they could distort sequencing.
+
+## Post-merge follow-up (same evening, PR #630)
+
+#629 merged within minutes; the Protocol END 6a round fired after ready-marking and the
+maintainer answered **everything** — then asked "any more questions?" and took a second
+round:
+
+- **Round 1:** Q-0065 **end-of-queue** · Q-0063 **converge gradually** (projected keys
+  frozen; typed-panel convergence at settings Phase 3) · Q-0064 **binding + guided
+  flow** · Q-0055 **display-only** — all the recommended options.
+- **Round 2 (Q-0056–Q-0059):** Help-only names · panel-local order · custom+default in
+  admin — and **Q-0059 = embed builder**, the one deviation from a recommendation: the
+  Help Home message gets structured title/description/color fields, which settles the
+  audit's storage question (structured overlay model, not a scalar; bounds/sanitation/
+  preview mandatory; variables not chosen).
+
+Routed in this PR: router §25/§27/§28 (verbatim + answer-scope lines) · consolidated
+plan §1/§2/§3/§4/§5/§7 · scoreboard lane notes (position ratified) · both audits'
+post-merge notes · `ai-config-ownership.md` frozen-keys note · roadmap settings bullet ·
+current-state stamp. Remaining open questions after today: **only Q-0038–Q-0042** (the
+vision batch, deliberately reserved for Lane 6's draft-answers session per Q-0051).
+Next free: **Q-0066**.
