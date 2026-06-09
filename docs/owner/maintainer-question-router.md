@@ -2126,3 +2126,67 @@ The other 21 ideas are captured with states/destinations (no orphans). Predictio
 (A6) explicitly rides the existing economy chance-reward review gate.
 
 **Routed to:** the three docs above; grooming sessions pull ⭐ rows first.
+
+## 24. Settings centralization audit — 2026-06-09
+
+### Q-0054 — Is AI's partial scalar-to-policy projection the durable ownership model?
+
+**Area:** AI / Settings platform
+**Type:** Architecture + product-surface decision
+**Priority:** Important (blocks broad AI Settings redesign, not Phase 1 display correctness)
+**Status:** Open
+
+**Question:** The generic Settings Manager owns ten AI `SettingSpec`s. Seven guild-policy
+keys are already projected after scalar mutation through
+`ai_policy_mutation.project_from_legacy_settings` into the typed `ai_guild_policy` row;
+memory settings intentionally remain scalar-owned; and the free-text guild-instruction
+scalar is explicitly not projected to typed instruction profiles. Should this hybrid
+remain the durable contract, or should AI gradually converge on typed policy/profile
+panels while retaining only genuinely separate scalar memory settings?
+
+**Recommendation:** Converge gradually on typed policy/profile panels for policy-owned
+fields, while keeping memory as its own declared scalar family. Until parity and migration
+are proven, preserve and visibly diagnose the existing seven-key projection rather than
+removing it.
+
+**Why agents need this:** The projection is already implemented and tested, so describing
+AI as an unbridged source-of-truth conflict would be wrong. However, projection is
+best-effort: the legacy KV mutation can commit while typed projection fails and emits a
+diagnostic event. Agents need to know whether to harden that compatibility seam or plan
+its eventual retirement. AI UI changes also remain per-exposure gated.
+
+**Safe default until answered:** Preserve the tested seven-key projection; do not add more
+projected keys or new AI UI; surface the hybrid/effective source in plans and diagnostics.
+
+**Suggested destination after answer:**
+`docs/planning/settings-cog-centralization-audit-2026-06-09.md`,
+`docs/ai-config-ownership.md`, AI subsystem docs, and the Phase 0 target-test plan.
+
+### Q-0055 — Should BTD6 CT-team and announcement pointers become first-class configuration?
+
+**Area:** BTD6 / Settings / bindings
+**Type:** Product-surface + ownership decision
+**Priority:** Medium (does not block Phase 1 display correctness)
+**Status:** Open
+
+**Question:** BTD6's version-announcement channel and CT team group are operator-settable
+through typed command services that directly write allowlisted legacy KV keys, but neither
+is declared in the BTD6 schema or discoverable/editable in Settings. Should the
+announcement channel become a first-class BTD6 binding with a native channel selector,
+and should the CT group become a first-class advanced BTD6 setting/guided flow or remain
+an operational command-only pointer?
+
+**Recommendation:** Promote the **announcement channel** to a binding and expose it through
+a structured selector. Keep the **CT group** as an advanced guided BTD6 configuration
+flow (accept URL/ID, parse, preview, confirm) rather than a generic scalar text field.
+
+**Why agents need this:** The current services are intentional direct-write exceptions,
+so an implementation agent must not silently force them through the scalar pipeline.
+Owner intent determines whether they are hidden operational pointers or real guild
+configuration deserving discovery/audit/UI coverage.
+
+**Safe default until answered:** Keep both typed services and commands unchanged; document
+them as command-only exceptions and do not expose internal BTD6 cache keys.
+
+**Suggested destination after answer:** BTD6 schema/service plan, settings command map,
+and Phase 2/3 of the settings-centralization audit.

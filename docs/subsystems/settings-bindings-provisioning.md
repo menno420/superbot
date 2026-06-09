@@ -1,7 +1,7 @@
 # Settings / bindings / provisioning subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + binding contracts win.
-> **Last updated:** 2026-06-08.
+> **Last updated:** 2026-06-09.
 
 ## What & where
 
@@ -54,6 +54,7 @@ migration/backfill needs, cache invalidation, audit behavior, tests, and rollbac
 safe-disable behavior before implementation.
 
 - **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — conditionally plans one AI-settings vertical slice after a centralized effective-settings introspection read model exists; it does not approve a broad Settings Manager rewrite.
+- **[`docs/planning/settings-cog-centralization-audit-2026-06-09.md`](../planning/settings-cog-centralization-audit-2026-06-09.md)** (`plan`) — source-verified audit of scalar settings, settings-adjacent domains, UI discovery/editability gaps, and the phased convergence roadmap.
 
 ## Ideas (not approved)
 
