@@ -84,24 +84,32 @@ without depending on bot startup or runtime registry population.
 
 ## Loaded cogs and registered subsystems
 
-The 22 cogs loaded at startup come from `disbot/config.py:INITIAL_EXTENSIONS`.
-The 22 subsystems live in `disbot/utils/subsystem_registry.py:SUBSYSTEMS`. The
-extra subsystem with no corresponding cog file is `diagnostic` (its
-`!diagnostics` + `!platform` surface lives inside
-`disbot/cogs/diagnostic_cog.py`).
+The 36 extensions loaded at startup come from
+`disbot/config.py:INITIAL_EXTENSIONS`. The 29 subsystems live in
+`disbot/utils/subsystem_registry.py:SUBSYSTEMS`; each has exactly one owning
+cog. The 7 loaded extensions that are **not** one-to-one subsystems are
+`bootstrap_access_cog` (command-admission guard), `setup_cog` (the setup
+wizard surface), and the five split BTD6 cogs (`btd6_reference_cog`,
+`btd6_events_cog`, `btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which
+all surface under the single `btd6` subsystem. (Counts re-verified against
+source 2026-06-09 at `7534e3e`.)
 
-Cogs (23): `admin_cog`, `blackjack_cog`, `bootstrap_access_cog`,
-`chain_cog`, `channel_cog`,
-`cleanup_cog`, `community_spotlight_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
-`economy_cog`, `general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`,
-`logging_cog`, `mining_cog`, `moderation_cog`, `proof_channel_cog`,
-`role_cog`, `rps_tournament_cog`, `settings_cog`, `setup_cog`,
-`utility_cog`, `xp_cog`.
+Cogs (36): `admin_cog`, `ai_cog`, `blackjack_cog`, `bootstrap_access_cog`,
+`btd6_cog`, `btd6_events_cog`, `btd6_ops_cog`, `btd6_reference_cog`,
+`btd6_strategy_cog`, `chain_cog`, `channel_cog`, `cleanup_cog`,
+`community_cog`, `community_spotlight_cog`, `counting_cog`, `deathmatch_cog`,
+`diagnostic_cog`, `economy_cog`, `four_twenty_cog`, `games_cog`,
+`general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`, `logging_cog`,
+`mining_cog`, `moderation_cog`, `paragon_cog`, `proof_channel_cog`,
+`role_cog`, `rps_tournament_cog`, `server_management_cog`, `settings_cog`,
+`setup_cog`, `utility_cog`, `xp_cog`.
 
-Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
-`xp`, `role`, `channel`, `cleanup`, `blackjack`, `deathmatch`,
-`rps_tournament`, `counting`, `chain`, `leaderboard`, `proof_channel`,
-`utility`, `general`, `help`, `diagnostic`, `settings`, `logging`.
+Subsystems (29): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
+`cleanup`, `community`, `community_spotlight`, `counting`, `deathmatch`,
+`diagnostic`, `economy`, `four_twenty`, `games`, `general`, `help`,
+`inventory`, `leaderboard`, `logging`, `mining`, `moderation`,
+`proof_channel`, `role`, `rps_tournament`, `server_management`, `settings`,
+`utility`, `xp`.
 
 ## Per-cog inventory
 
