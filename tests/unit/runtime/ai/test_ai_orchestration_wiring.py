@@ -29,10 +29,11 @@ from services import ai_context_service  # noqa: E402
 from services import ai_orchestration_policy as orch  # noqa: E402
 
 
-def _fake_stack():
+def _fake_stack(user_message: str = "hi"):
     return SimpleNamespace(
         render_system_prompt=lambda: "system",
         render_payload_text=lambda: "hi",
+        user_message=user_message,
     )
 
 
@@ -144,3 +145,100 @@ async def test_no_tools_decision_takes_single_shot_path(monkeypatch) -> None:
     assert captured["request"].tools == ()
     assert captured["handlers"] is None
     assert captured["request"].tool_choice.mode is ToolRequirementMode.NONE
+
+
+# ---------------------------------------------------------------------------
+# Phase 4 MVP — the round-cash workflow is profile-gated (Q-0046)
+# ---------------------------------------------------------------------------
+
+_ROUND_CASH_QUESTION = "how much cash from round 50 to 60?"
+
+_AEV = orch.OrchestrationDecision(
+    profile_key="btd6_grounded",
+    source="channel",
+    enabled_toolsets=("btd6_reference", "btd6_rounds"),
+    disabled_tools=(),
+    tool_choice=AIToolChoice(),
+    tool_budget=AIToolBudget(max_hops=3, max_calls=4),
+    workflow="analyze_execute_verify",
+    answer_contract="concise_fact",
+)
+
+
+async def test_default_profile_never_runs_workflow_prompt_byte_identical(
+    monkeypatch,
+) -> None:
+    """A round-cash question under the DEFAULT profile must produce the exact
+    historical request — the workflow is gated on the profile's ``workflow``
+    label, not on the question text."""
+    captured = _wire(monkeypatch, _DEFAULT)
+    ledger: list[str] = []
+    await nls._invoke_gateway(
+        _fake_stack(_ROUND_CASH_QUESTION), _built(), object(), ledger=ledger
+    )
+
+    assert captured["request"].system_prompt == "system"
+    assert ledger == []
+
+
+async def test_workflow_engages_under_analyze_execute_verify(monkeypatch) -> None:
+    captured = _wire(monkeypatch, _AEV)
+    ledger: list[str] = []
+    await nls._invoke_gateway(
+        _fake_stack(_ROUND_CASH_QUESTION), _built(), object(), ledger=ledger
+    )
+
+    prompt = captured["request"].system_prompt
+    assert prompt.startswith("system\n\n")
+    assert "Deterministic round-cash workflow result" in prompt
+    assert "19,840.00" in prompt  # the Q-0043 inclusive anchor
+    # The evidence also grounds the faithfulness ledger.
+    assert len(ledger) == 1 and "19840" in ledger[0].replace(",", "")
+
+
+async def test_workflow_silent_for_non_matching_text(monkeypatch) -> None:
+    """Under the workflow-selecting profile, a non-round-cash question leaves
+    the request byte-identical (the conservative planner stays out)."""
+    captured = _wire(monkeypatch, _AEV)
+    ledger: list[str] = []
+    await nls._invoke_gateway(
+        _fake_stack("which heroes are best?"), _built(), object(), ledger=ledger
+    )
+
+    assert captured["request"].system_prompt == "system"
+    assert ledger == []
+
+
+async def test_workflow_ledger_entry_not_duplicated_on_retry(monkeypatch) -> None:
+    """The regenerate-once grounding retry reuses the same ledger — the
+    deterministic evidence entry must appear exactly once."""
+    captured = _wire(monkeypatch, _AEV)
+    ledger: list[str] = []
+    stack = _fake_stack(_ROUND_CASH_QUESTION)
+    await nls._invoke_gateway(stack, _built(), object(), ledger=ledger)
+    await nls._invoke_gateway(
+        stack, _built(), object(), ledger=ledger, grounding_constraint="no"
+    )
+
+    assert len(ledger) == 1
+    # The retry still carries the workflow block + the constraint.
+    assert "Deterministic round-cash workflow result" in captured["request"].system_prompt
+    assert captured["request"].system_prompt.endswith("no")
+
+
+async def test_workflow_fault_degrades_to_unchanged_request(monkeypatch) -> None:
+    """A workflow crash must never break the reply — the request degrades to
+    the exact no-workflow shape."""
+    captured = _wire(monkeypatch, _AEV)
+
+    def boom(_text):
+        raise RuntimeError("workflow exploded")
+
+    monkeypatch.setattr("services.ai_round_cash_workflow.run", boom)
+    ledger: list[str] = []
+    await nls._invoke_gateway(
+        _fake_stack(_ROUND_CASH_QUESTION), _built(), object(), ledger=ledger
+    )
+
+    assert captured["request"].system_prompt == "system"
+    assert ledger == []

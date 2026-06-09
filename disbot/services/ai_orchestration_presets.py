@@ -47,9 +47,13 @@ class OrchestrationProfile:
     names regardless of toolset. ``tool_choice`` / ``tool_budget`` are the
     provider-neutral contracts the adapters already enforce (Phase 2).
 
-    ``workflow`` and ``answer_contract`` are declared labels the later complex-
-    BTD6 workflow phase (Phase 4) will consume; they carry no behaviour today
-    beyond being surfaced in the operator preview.
+    ``workflow`` selects the deterministic complex-request workflow for the
+    scope: ``analyze_execute_verify`` engages the Phase 4 MVP round-cash
+    plan→execute→verify workflow (:mod:`services.ai_round_cash_workflow`,
+    Q-0046) for recognised round-cash questions; every other label carries no
+    behaviour yet beyond being surfaced in the operator preview.
+    ``answer_contract`` is still a declared label only — the workflow emits the
+    one typed contract (``calculation_explained``) itself.
     """
 
     key: str
