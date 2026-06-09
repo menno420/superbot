@@ -68,6 +68,13 @@ byte-identical*.
   CLAUDE.md says CI excludes `tests/` — a new test file with non-trivial imports (aliased
   re-imports) can redden the local mirror while CI would pass. Run the formatters on new test
   files too.
+- **Cross-agent collision (resolved):** the boot-check spotlight fix I committed turned out to
+  duplicate **#617** (`fix/spotlight-logger-import`), which merged to `main` first — so the PR
+  went `mergeable_state: dirty`. Resolved by **dropping my redundant commit** (reset to the new
+  `main`, cherry-pick only the orchestration commit, force-push) and deferring to #617's version.
+  Lesson: when a fix is "pre-existing + unrelated," expect another agent may be fixing it too;
+  keeping it a **separate commit** made the drop a one-liner. Check open PRs for the same file
+  before committing an adjacent fix.
 - **Unresolved for next session:** reconcile this PR's #. Next is **orchestration Phase 3**
   (typed policy storage + projection + the Tools & Workflows admin UX) or **answerability
   Phase 3** (the scope-filtered self-awareness tools — net-new AI exposure, needs the gate
