@@ -40,7 +40,10 @@
 
 ## Lane 1 — `new_subsystem.py` scaffold → register Community Spotlight (Q-0025 + Q-0044)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#626** (2026-06-09). *Executor note:* the verified touch-point
+  list missed one — the parent hub's `primary_children` tuple must also declare the
+  child (`test_every_hub_primary_children_match_parent_hub_filter` pins it). The
+  scaffold now checks it (`hub-primary-children`).
 - **Goal:** build `scripts/new_subsystem.py` (custom tooling, repo-AST based — no
   external scaffold deps), then use it to register `community_spotlight` as a
   `community`-hub child; panel adopts hub navigation; delete the help-map §3 banner.
