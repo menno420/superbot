@@ -339,6 +339,19 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.command(name="character", aliases=["profile", "char"], hidden=True)
+    async def character(self, ctx):
+        """Show your full mining character — location, gear, stats, wealth."""
+        # cogs→views is allowed; the builder aggregates the existing owners.
+        from views.mining.character_panel import build_character_embed
+
+        embed = await build_character_embed(
+            ctx.author.id,
+            ctx.guild.id,
+            name=ctx.author.display_name,
+        )
+        await ctx.send(embed=embed)
+
     # ---------------------------------------------------------- world / descent
 
     @commands.command(hidden=True)
