@@ -171,7 +171,7 @@ conflict:
 | Shared file | Collision-safe pattern |
 |---|---|
 | `.claude/CLAUDE.md` | **Section ownership** via `<!-- SECTION_START/END -->` markers (`READ_FIRST` · `SESSION_WORKFLOW` · `CI_PARITY` · `CODEGRAPH` · `ARCH_RULES`). Edit **one** block; two chats in different blocks auto-merge. |
-| `docs/owner/maintainer-question-router.md` | **Append-only.** Add the next free `Q-00NN` block at the end; never renumber or reflow existing ones. |
+| `docs/owner/maintainer-question-router.md` | **Append-only.** Add the next free `Q-00NN` block at the end; never renumber or reflow existing ones. **Accept-and-reconcile is the decided policy for concurrent sessions (Q-0060)** — no session ledger, no hotspot locks; collisions resolve at merge. **Merge collision** (two sessions appended concurrently — it happened 2026-06-09): the *merged/answered* entries keep their numbers; an unmerged entry that duplicates an answered question is **dropped**, not double-recorded; still-open unmerged entries **renumber to the new tail** and the renumbering session fixes its own cross-references. **Answer scope:** when recording an answer next to adjacent mechanics, add one line on what it does *not* decide (the Q-0050 "craft-once" wording forced a re-ask, Q-0054). |
 | `.sessions/` | **Per-file.** One `YYYY-MM-DD-<slug>.md` per session — no shared anchor, so no structural conflict. |
 | `.session-journal.md` (guidebook) · `docs/current-state.md` | Edit the **smallest** relevant block; on conflict resolve by **UNION** (keep both additions — it's docs, no CI risk). |
 

@@ -2261,6 +2261,94 @@ bounded length and reset-to-default.
 
 **Suggested destination after answer:** Settings declaration or structured Help-overlay schema,
 plus preview/editor tests.
+## 26. Agent-memory system review batch — answered 2026-06-09
+
+### Q-0060 — Parallel sessions: stay accept-and-reconcile, or add session visibility?
+
+**Area:** Workflow / multi-agent coordination
+**Type:** Workflow preference
+**Priority:** Medium (the cost is real but bounded — one five-file merge this session)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/owner/ai-project-workflow.md` §9
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **(a) accept-and-reconcile stays the policy**, with the §9
+collision rules as the documented resolution method. The active-sessions ledger (b)
+is revisited only if deliberately-parallel sessions become routine. *Not decided:*
+nothing about CI/branch mechanics — this is purely the docs-hotspot write policy.
+
+**Question:** Two sessions ran concurrently on 2026-06-09 and collided on the doc
+hotspots (router numbers, current-state, roadmap) — resolved cleanly via the §9
+conventions, but at ~a small feature's worth of context. Options: **(a)** keep
+**accept-and-reconcile** (current; zero coordination overhead, occasional merge cost),
+**(b)** a tiny **active-sessions ledger** (each session appends one line — focus +
+branch — at start, removes it at end; siblings see who else is writing and which
+hotspot to avoid), or **(c)** a soft convention that only one concurrent session does
+**docs-hotspot** work (router/current-state/roadmap edits) while others stay code-only
+until their END step.
+
+**Agent recommendation (approved):** (a) unless parallel sessions become routine —
+the §9 rules made the reconcile mechanical, and (b)/(c) add ceremony every session to
+save cost in the rare colliding one.
+
+**Routed to:** `docs/owner/ai-project-workflow.md` §9 (policy note on the router row).
+
+### Q-0061 — Make the end-of-session structured interview a standing convention?
+
+**Area:** Workflow / decision throughput
+**Type:** Workflow change (affects how you're pinged)
+**Priority:** Medium-high (decision latency is the #1 lane blocker class)
+**Status:** Answered (2026-06-09) — **Routed** → `.session-journal.md` Protocol → END step 6a
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **yes, scoped**: sessions end with one structured-choices batch
+when open questions (1) block a lane or (2) are answerable in ≤1 minute; **≤4 choices
+per batch**; deep product questions stay router-only for a dedicated interview session.
+*Not decided:* no obligation to interview when nothing blocks — silence stays fine.
+
+**Question:** The two highest-leverage decision moments on 2026-06-09 were structured
+choice batches: the gate-lifting interview (16 decisions) and this session's
+AskUserQuestion round (4 answers → Q-0054 closed + lane choice in one minute). Should
+sessions adopt a standing END-step: *when open router questions touch the session's
+area (or block any lane), batch them into one structured-choices prompt before
+wrapping up* — making the router primarily an **archive of answers** rather than a
+queue of opens?
+
+**Agent recommendation:** yes, scoped — batch only questions that are (1) blocking a
+lane or (2) answerable as structured choices in ≤1 minute; never more than ~4 at once
+(the AskUserQuestion ceiling); deep product questions stay router-only for a dedicated
+interview session. This keeps your interrupt small and kills the "open question ages
+three sessions" pattern.
+
+**Routed to:** `.session-journal.md` Protocol → END (new step 6a).
+
+### Q-0062 — Per-area "vision ledger": capture what each area is FOR, in your words
+
+**Area:** Workflow / vision transfer
+**Type:** Documentation convention (closes the honest gap in the 2026-06-09 review §4)
+**Priority:** Medium
+**Status:** Answered (2026-06-09) — **Routed** → `docs/owner/maintainer-working-profile.md` (the convention); folio blocks grow lazily
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **yes, lazily**: a ≤10-line owner-voice block per area folio
+("what this area is for · what right feels like · one example of wrong"), written
+**only when an interview already touches that area** (the interviewer routes ~3 extra
+lines per answer); seed from the Q-0051 draft-answer session. *Not decided:* no
+backfill sessions — areas without interviews simply don't have blocks yet.
+
+**Question:** Agents can reliably catch a plan that *contradicts a recorded decision*,
+but a plan that's internally consistent and merely *off your taste* passes silently —
+the decision trails capture what you chose, rarely **why / what the area is for**.
+Should each area folio gain a short owner-voice block (≤10 lines: "what this area is
+for · what right feels like · one example of wrong"), seeded from the Q-0051
+draft-answer session and grown one block per interview?
+
+**Agent recommendation:** yes, but lazily — only write a block when an interview
+already touched that area (zero dedicated sessions; the interviewer routes 3 extra
+lines per answer). Over a few weeks every active area gets one, and "does this plan
+fit the vision?" becomes checkable instead of guessable.
+
+**Routed to:** `docs/owner/maintainer-working-profile.md` (the convention; folios
+gain blocks lazily as interviews touch their areas).
 ## 27. Settings centralization audit — 2026-06-09
 
 ### Q-0063 — Is AI's partial scalar-to-policy projection the durable ownership model?
