@@ -277,6 +277,73 @@ async def test_governance_unknown_when_no_member():
 
 
 # ---------------------------------------------------------------------------
+# Audience simulation — the declared-tier governance input (Q-0045 option b)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_declared_tier_evaluates_governance_without_member():
+    """member=None + member_tier set → the axis evaluates instead of unknown,
+    and the declared tier is passed through to the governance context."""
+    captured: list = []
+
+    async def _capture(gctx):
+        captured.append(gctx)
+        return {"economy"}
+
+    p_ca, p_rt, _ = _patch_axes(ca=_ca_allow(), routing=True)
+    with p_ca, p_rt, patch("governance.get_visible_subsystems", new=_capture):
+        decision = await resolve_feature_access(
+            _FEATURE,
+            _ctx(member=None, member_tier="user"),
+        )
+    assert decision.effective == "allow"
+    gv = next(o for o in decision.source_chain if o.axis is AccessAxis.GOVERNANCE)
+    assert gv.state == "allow"
+    assert len(captured) == 1
+    assert captured[0].member is None
+    assert captured[0].member_tier == "user"
+
+
+@pytest.mark.asyncio
+async def test_simulated_governance_outcome_labels_its_limits():
+    """§16.4: a simulated evaluation must label what it cannot model — the
+    label rides the (internal-only) outcome detail on allow AND deny."""
+    allow = await _resolve(
+        ctx=_ctx(member=None, member_tier="user"),
+        ca=_ca_allow(),
+        routing=True,
+        visible={"economy"},
+    )
+    gv = next(o for o in allow.source_chain if o.axis is AccessAxis.GOVERNANCE)
+    assert "simulated tier=user" in (gv.detail or "")
+    assert "overrides not modeled" in (gv.detail or "")
+
+    deny = await _resolve(
+        ctx=_ctx(member=None, member_tier="user"),
+        ca=_ca_allow(),
+        routing=True,
+        visible=set(),
+    )
+    assert deny.effective == "deny"
+    assert deny.deciding_axis is AccessAxis.GOVERNANCE
+    assert deny.reason is not None
+    assert deny.reason.code == "subsystem_hidden"
+    gv = next(o for o in deny.source_chain if o.axis is AccessAxis.GOVERNANCE)
+    assert "simulated tier=user" in (gv.detail or "")
+    # ...while the user-facing safe_text stays static and label-free.
+    assert "simulated" not in deny.reason.safe_text
+
+
+@pytest.mark.asyncio
+async def test_live_member_outcome_carries_no_simulation_label():
+    decision = await _resolve(ca=_ca_allow(), routing=True, visible={"economy"})
+    gv = next(o for o in decision.source_chain if o.axis is AccessAxis.GOVERNANCE)
+    assert gv.state == "allow"
+    assert gv.detail is None
+
+
+# ---------------------------------------------------------------------------
 # Help axis is informational — never gates
 # ---------------------------------------------------------------------------
 
@@ -354,6 +421,36 @@ def test_every_reason_code_maps_to_leak_free_static_text():
             assert (
                 marker not in text
             ), f"{code}: suspicious token {marker!r} in {text!r}"
+
+
+def test_safe_text_covers_the_full_reason_code_union():
+    """Q-0036: the drafted denial-copy set covers the entire §16.3 code union
+    (DecisionReason deny values + the axis 3-5/bootstrap codes), each with a
+    source from the §16.3 vocabulary. Draft only — not wired into live denial
+    paths (the live command-access feedback strings are separate)."""
+    expected = {
+        "lifecycle_draining",
+        "dm_not_supported",
+        "channel_not_allowed",
+        "commands_disabled",
+        "routing_disabled",
+        "capability_insufficient",
+        "subsystem_hidden",
+        "availability_window",
+        "quiet_mode",
+        "setup_stage_required",
+    }
+    assert expected <= set(ap._SAFE_TEXT)
+    allowed_sources = {
+        "command_access",
+        "routing",
+        "governance",
+        "availability",
+        "bootstrap",
+        "help",
+    }
+    for code, (_text, source, _hint, _rem) in ap._SAFE_TEXT.items():
+        assert source in allowed_sources, f"{code}: unknown source {source!r}"
 
 
 # ---------------------------------------------------------------------------

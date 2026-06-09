@@ -221,6 +221,7 @@ async def collect_setup_diagnostics(guild: discord.Guild) -> SetupDiagnosticsRep
         _diagnose_moderation_roles,
         _diagnose_cleanup,
         _diagnose_routing_access_conflict,
+        _diagnose_help_advertises_locked,
     ):
         try:
             findings.extend(await collector(guild))
@@ -831,6 +832,251 @@ def _selected_channels_conflicts(
             ),
         )
     return findings
+
+
+# ---------------------------------------------------------------------------
+# Collector: help advertises a locked feature (cross-axis drift, P1B)
+# ---------------------------------------------------------------------------
+
+# The simulated baseline audience for the drift judgment: an ordinary member
+# with no roles, no permissions, and no operator standing.
+_BASELINE_TIER = "user"
+
+# §16.4 simulation-limit label, surfaced verbatim on every per-feature finding
+# so the operator knows what the simulated judgment could NOT model.
+_SIMULATION_LIMIT_NOTE = (
+    "Judged for a simulated baseline member (tier 'user', no roles); the "
+    "simulation cannot model live Discord channel-permission overrides it "
+    "was not given."
+)
+
+
+async def _diagnose_help_advertises_locked(
+    guild: discord.Guild,
+) -> list[SetupDiagnosticFinding]:
+    """Flag features help advertises that the baseline audience cannot use.
+
+    The P1B ``help_advertises_locked`` drift provider (planning §16.5 / §16.8
+    items 3+6), built on the Q-0045 governance tier-input path: it runs the
+    access projection for a **simulated baseline audience** (tier ``"user"``,
+    no member, no roles) and compares the result with what help advertises.
+
+    *Advertised to the baseline audience* means **both**: the command-surface
+    ledger shows the command (help's static hide flags), **and** governance
+    makes the subsystem visible at the baseline tier — the live help menu and
+    typed routes filter through ``resolve_visibility``, so a governance-hidden
+    or tier-gated subsystem is *not* advertised to that audience (that is the
+    "deliberately shown-as-locked" exclusion: a registry tier above ``user``
+    or an operator's visibility override is design, not drift).
+
+    What remains as drift:
+
+    * **per-feature** — a subsystem help advertises whose execution the
+      routing axis kills (routed off for the evaluated scope): the menu shows
+      it, no command in it runs (``SEV_WARNING``);
+    * **guild-wide** — a command-access mode under which *nothing* help
+      advertises can run for regular members: ``disabled_except_bootstrap``
+      (one ``SEV_ADVISORY`` — the mode is a deliberate operator choice) or
+      ``selected_channels`` with an **empty** allow-list (one ``SEV_WARNING``
+      — a likely misconfiguration).
+
+    In ``selected_channels`` mode the per-feature scan evaluates in a
+    deterministic representative allowed channel (the lowest id), so a
+    channel-scoped denial is never mistaken for a guild-wide lock —
+    channel-level routing↔access disagreement is
+    :func:`_diagnose_routing_access_conflict`'s job.  Simulation limits are
+    labeled on every finding (§16.4); an ``unknown`` projection result never
+    produces a finding (no drift claim the model could not verify).  Read-only
+    + advisory: the fix is an operator policy choice, so no repair op is
+    generated.
+    """
+    from core.runtime.command_surface_ledger import (
+        get_cached_ledger,
+        is_hidden_from_help,
+    )
+
+    ledger = get_cached_ledger()
+    if ledger is None:
+        # Without the ledger there is no "what does help advertise?" surface
+        # to compare against — emit nothing rather than guess (§16.4).
+        logger.info(
+            "setup_diagnostics: command-surface ledger not built; "
+            "skipping help_advertises_locked",
+        )
+        return []
+
+    try:
+        from core.runtime.command_access import AccessMode
+        from utils.guild_config_accessors import get_command_access_policy
+
+        snapshot = await get_command_access_policy(guild.id)
+    except Exception:
+        logger.exception("setup_diagnostics: command-access policy read failed")
+        return []
+
+    if snapshot.mode == AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value:
+        return [_help_locked_guild_wide_finding(guild, disabled_mode=True)]
+
+    eval_channel_id: int | None = None
+    if snapshot.mode == AccessMode.SELECTED_CHANNELS.value:
+        if not snapshot.allowed_channels:
+            return [_help_locked_guild_wide_finding(guild, disabled_mode=False)]
+        eval_channel_id = min(snapshot.allowed_channels)
+
+    from governance import get_visible_subsystems
+    from governance.models import GovernanceContext
+    from services.access_projection import (
+        AccessAxis,
+        AccessContext,
+        feature_inventory,
+        resolve_feature_access,
+    )
+
+    ctx = AccessContext(
+        guild_id=guild.id,
+        channel_id=eval_channel_id,
+        category_id=None,
+        user_id=None,
+        member=None,
+        member_role_ids=(),
+        member_tier=_BASELINE_TIER,
+        is_guild_operator=False,
+        is_bot_owner=False,
+        is_dm=False,
+    )
+
+    # One baseline visibility read for the whole scan: the projection
+    # short-circuits on a routing deny *before* its governance axis runs, so
+    # the "is this even advertised to the baseline audience?" question needs
+    # the governance owner's answer up front (same resolver, same cache —
+    # never a second visibility policy).
+    try:
+        baseline_visible = await get_visible_subsystems(
+            GovernanceContext(
+                guild_id=guild.id,
+                channel_id=eval_channel_id,
+                member=None,
+                role_ids=set(),
+                member_tier=_BASELINE_TIER,
+            ),
+        )
+    except Exception:
+        logger.exception("setup_diagnostics: baseline visibility read failed")
+        return []
+
+    findings: list[SetupDiagnosticFinding] = []
+    for feature in feature_inventory():
+        if feature.command_name is None:
+            continue  # nothing for help to advertise (no representative command)
+        if feature.subsystem not in baseline_visible:
+            continue  # help hides it for this audience — deliberate, not drift
+        entry = ledger.find(feature.command_name)
+        if entry is None or is_hidden_from_help(entry):
+            continue  # help does not advertise it — no drift possible
+
+        decision = await resolve_feature_access(feature, ctx)
+        if decision.effective != "deny":
+            continue  # allowed (or unknown — never claim drift unverified)
+        if decision.deciding_axis is not AccessAxis.ROUTING:
+            # Command-access channel denials are channel-scoped (the
+            # routing↔access provider owns those); governance denials cannot
+            # reach here (the feature is baseline-visible). Anything else is
+            # not a help↔execution drift this provider can stand behind.
+            continue
+
+        findings.append(
+            SetupDiagnosticFinding(
+                code="help_advertises_locked",
+                severity=SEV_WARNING,
+                subsystem=feature.subsystem,
+                section_slug=None,
+                resource_type=None,
+                resource_id=None,
+                summary=(
+                    f"Help advertises `{feature.command_name}`, but "
+                    f"`{feature.subsystem}` is routed off for regular members"
+                ),
+                detail=(
+                    f"Help shows `{feature.command_name}` to ordinary members "
+                    f"(the `{feature.subsystem}` subsystem is visible at the "
+                    "baseline tier and the command isn't hidden), but cog "
+                    "routing disables the feature where they would use it — "
+                    "so the advertised command can't actually run."
+                ),
+                repairability=REPAIR_ADVISORY,
+                advisory_note=(
+                    f"Either re-enable `{feature.subsystem}` in the Cog "
+                    "Routing setup section, or hide the subsystem for "
+                    "regular members so help stops advertising it."
+                ),
+                notes=(_SIMULATION_LIMIT_NOTE,),
+            ),
+        )
+    return findings
+
+
+def _help_locked_guild_wide_finding(
+    guild: discord.Guild,
+    *,
+    disabled_mode: bool,
+) -> SetupDiagnosticFinding:
+    """The single guild-level finding for a command-access mode under which
+    every advertised command is locked for regular members.
+
+    One finding instead of one per feature: the cause is a single guild-wide
+    policy, so a per-feature fan-out would bury the report in duplicates.
+    """
+    if disabled_mode:
+        return SetupDiagnosticFinding(
+            code="help_advertises_locked",
+            severity=SEV_ADVISORY,
+            subsystem="command_access",
+            section_slug=None,
+            resource_type="guild",
+            resource_id=guild.id,
+            summary=(
+                "Help still advertises features, but command access is "
+                "disabled-except-bootstrap"
+            ),
+            detail=(
+                "With command access set to disabled-except-bootstrap, no "
+                "non-bootstrap command can run for anyone — but help menus "
+                "and panels still advertise those features, so members see "
+                "commands that are locked guild-wide."
+            ),
+            repairability=REPAIR_ADVISORY,
+            advisory_note=(
+                "If this lockdown is temporary, no action is needed; "
+                "otherwise re-enable commands in `!settings → Command "
+                "Access`."
+            ),
+            notes=(_SIMULATION_LIMIT_NOTE,),
+        )
+    return SetupDiagnosticFinding(
+        code="help_advertises_locked",
+        severity=SEV_WARNING,
+        subsystem="command_access",
+        section_slug=None,
+        resource_type="guild",
+        resource_id=guild.id,
+        summary=(
+            "Command access is in selected-channels mode with an empty "
+            "allow-list — everything help advertises is locked"
+        ),
+        detail=(
+            "Selected-channels mode with no allowed channels means no "
+            "command can run anywhere for regular members, while help still "
+            "advertises the features. This is usually a misconfiguration "
+            "(the mode was set but no channels were picked)."
+        ),
+        repairability=REPAIR_ADVISORY,
+        advisory_note=(
+            "Add at least one channel to the command-access allow-list in "
+            "`!settings → Command Access`, or switch the mode back to "
+            "all-channels."
+        ),
+        notes=(_SIMULATION_LIMIT_NOTE,),
+    )
 
 
 __all__ = [

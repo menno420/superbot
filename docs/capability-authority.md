@@ -157,6 +157,17 @@ the authority of the equivalent typed command.
   mechanism than the per-capability matrix below and does **not** change this
   resolver's single-floor policy. See
   [`docs/decisions/008-moderator-role-capability-native-authority.md`](decisions/008-moderator-role-capability-native-authority.md).
+- **Shipped (Q-0045, option b) — the declared-tier *read* path, not a grant.**
+  `GovernanceContext.member_tier`, when set, is preferred **verbatim** by the same tier
+  resolver: member derivation *and* the ADR-008 role grants are skipped (the caller
+  declared the *effective* standing to evaluate), and a value outside
+  `VISIBILITY_TIERS` is ignored with a warning — so the input can never escalate or
+  demote anyone. It exists **only** for read-only audience simulation (Help Preview,
+  the `help_advertises_locked` drift baseline, via
+  `services.access_projection.AccessContext.member_tier`); no execution or mutation
+  path constructs a declared-tier context, and simulated reads must label their limits
+  (adaptive plan §16.4). Pinned by
+  `tests/unit/governance/test_declared_tier_input.py`.
 - **Future policy (still deferred):** a per-capability tier matrix (e.g. some settings
   need only `moderator`) replaces `_DEFAULT_REQUIRED_TIER` *here*, in
   `actor_holds_capability`. ADR-008 deliberately did **not** introduce this — it stays

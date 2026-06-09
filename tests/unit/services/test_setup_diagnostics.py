@@ -251,6 +251,11 @@ async def test_collect_composes_and_sorts_by_severity():
             "_diagnose_routing_access_conflict",
             new=AsyncMock(return_value=[]),
         ),
+        patch.object(
+            setup_diagnostics,
+            "_diagnose_help_advertises_locked",
+            new=AsyncMock(return_value=[]),
+        ),
     ):
         report = await setup_diagnostics.collect_setup_diagnostics(guild)
     # Warning sorts before advisory regardless of collector order.
@@ -594,4 +599,277 @@ async def test_routing_conflict_failsafe_on_read_error():
         new=AsyncMock(side_effect=RuntimeError("boom")),
     ):
         out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
+    assert out == []
+
+
+# ---------------------------------------------------------------------------
+# Help-advertises-locked collector (P1B — Q-0045 baseline-audience simulation)
+# ---------------------------------------------------------------------------
+#
+# Patched-resolver style (like the P1A projection tests): the live policy
+# owners are patched at their source modules; the provider's composition over
+# them is what's under test. The simulated baseline audience is tier "user"
+# with no member, via the Q-0045 governance tier-input path.
+
+from contextlib import ExitStack
+
+from core.runtime.command_access import (
+    CommandAccessDecision,
+    DecisionReason,
+    DecisionSource,
+)
+from services.access_projection import FeatureEntry
+
+
+class _FakeLedger:
+    """Minimal command-surface ledger: name -> entry (or None)."""
+
+    def __init__(self, entries: dict):
+        self._entries = entries
+
+    def find(self, name):
+        return self._entries.get(name)
+
+
+def _shown_entry():
+    # The real is_hidden_from_help reads .classification — use real values.
+    return SimpleNamespace(classification="primary_entrypoint")
+
+def _hidden_entry():
+    return SimpleNamespace(classification="hidden")
+
+
+def _ca_allow_decision():
+    return CommandAccessDecision(
+        allowed=True,
+        reason=DecisionReason.ALLOWED,
+        source=DecisionSource.DEFAULT_UNCONFIGURED,
+        mode=AccessMode.ALL_CHANNELS,
+        feedback=None,
+    )
+
+
+def _help_locked_env(
+    *,
+    mode=None,
+    allowed=frozenset(),
+    inventory=(),
+    visible=frozenset(),
+    ledger_entries=None,
+    routing=True,
+    no_ledger=False,
+    policy_error=False,
+):
+    """Build (patches, handles) for one provider invocation."""
+    ledger = None if no_ledger else _FakeLedger(dict(ledger_entries or {}))
+    policy = (
+        AsyncMock(side_effect=RuntimeError("boom"))
+        if policy_error
+        else AsyncMock(return_value=_access_policy(mode, allowed))
+    )
+    routing_mock = (
+        AsyncMock(side_effect=routing)
+        if isinstance(routing, Exception)
+        else AsyncMock(return_value=routing)
+    )
+    governance_mock = AsyncMock(return_value=set(visible))
+    patches = [
+        patch(
+            "core.runtime.command_surface_ledger.get_cached_ledger",
+            return_value=ledger,
+        ),
+        patch(
+            "utils.guild_config_accessors.get_command_access_policy",
+            new=policy,
+        ),
+        patch("governance.get_visible_subsystems", new=governance_mock),
+        patch("services.command_routing.is_cog_enabled", new=routing_mock),
+        patch(
+            "core.runtime.command_access.resolve_command_access",
+            new=AsyncMock(return_value=_ca_allow_decision()),
+        ),
+        patch(
+            "services.access_projection.feature_inventory",
+            return_value=tuple(inventory),
+        ),
+    ]
+    handles = {
+        "policy": policy,
+        "routing": routing_mock,
+        "governance": governance_mock,
+    }
+    return patches, handles
+
+
+async def _run_help_locked(guild=None, **env):
+    guild = guild or SimpleNamespace(id=1)
+    patches, handles = _help_locked_env(**env)
+    with ExitStack() as stack:
+        for p in patches:
+            stack.enter_context(p)
+        out = await setup_diagnostics._diagnose_help_advertises_locked(guild)
+    return out, handles
+
+
+_GAMES = FeatureEntry(subsystem="games", command_name="gamesmenu", visibility_tier="user")
+
+
+@pytest.mark.asyncio
+async def test_help_locked_flags_routed_off_advertised_feature():
+    out, _ = await _run_help_locked(
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _shown_entry()},
+        routing=False,
+    )
+    assert len(out) == 1
+    f = out[0]
+    assert f.code == "help_advertises_locked"
+    assert f.severity == setup_diagnostics.SEV_WARNING
+    assert f.subsystem == "games"
+    assert f.repairability == setup_diagnostics.REPAIR_ADVISORY
+    assert f.repair_ops == ()
+    assert "gamesmenu" in f.summary
+    # §16.4: the simulation labels what it cannot model.
+    assert any("simulated baseline member" in n for n in f.notes)
+    assert any("cannot model" in n for n in f.notes)
+
+
+@pytest.mark.asyncio
+async def test_help_locked_skips_feature_help_hides():
+    out, _ = await _run_help_locked(
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _hidden_entry()},
+        routing=False,
+    )
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_help_locked_skips_feature_not_baseline_visible():
+    """Tier-gated / governance-hidden subsystems are NOT advertised to the
+    baseline audience (help filters through the same resolver), so a lock on
+    them is deliberate — not drift. The projection isn't even consulted."""
+    out, handles = await _run_help_locked(
+        inventory=(_GAMES,),
+        visible=set(),  # baseline audience can't see it in help
+        ledger_entries={"gamesmenu": _shown_entry()},
+        routing=False,
+    )
+    assert out == []
+    handles["routing"].assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_help_locked_no_finding_when_feature_usable():
+    out, _ = await _run_help_locked(
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _shown_entry()},
+        routing=True,
+    )
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_help_locked_unknown_projection_never_flags():
+    """A resolver error makes the projection 'unknown' — never a drift claim."""
+    out, _ = await _run_help_locked(
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _shown_entry()},
+        routing=RuntimeError("db down"),
+    )
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_help_locked_skips_feature_without_command():
+    out, _ = await _run_help_locked(
+        inventory=(
+            FeatureEntry(subsystem="games", command_name=None, visibility_tier="user"),
+        ),
+        visible={"games"},
+        routing=False,
+    )
+    assert out == []
+
+
+@pytest.mark.asyncio
+async def test_help_locked_disabled_mode_single_guild_advisory():
+    guild = SimpleNamespace(id=42)
+    out, handles = await _run_help_locked(
+        guild=guild,
+        mode=AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value,
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _shown_entry()},
+    )
+    assert len(out) == 1
+    f = out[0]
+    assert f.code == "help_advertises_locked"
+    assert f.severity == setup_diagnostics.SEV_ADVISORY
+    assert f.subsystem == "command_access"
+    assert f.resource_type == "guild"
+    assert f.resource_id == 42
+    # One guild-level finding, not a per-feature fan-out.
+    handles["routing"].assert_not_awaited()
+    handles["governance"].assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_help_locked_selected_channels_empty_allowlist_warning():
+    out, handles = await _run_help_locked(
+        mode=AccessMode.SELECTED_CHANNELS.value,
+        allowed=frozenset(),
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _shown_entry()},
+    )
+    assert len(out) == 1
+    assert out[0].code == "help_advertises_locked"
+    assert out[0].severity == setup_diagnostics.SEV_WARNING
+    assert out[0].resource_type == "guild"
+    handles["routing"].assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_help_locked_selected_channels_uses_representative_channel():
+    """The per-feature scan evaluates in the lowest allowed channel id, so a
+    channel-scoped command-access denial can't masquerade as a guild lock."""
+    out, handles = await _run_help_locked(
+        mode=AccessMode.SELECTED_CHANNELS.value,
+        allowed=frozenset({30, 10, 20}),
+        inventory=(_GAMES,),
+        visible={"games"},
+        ledger_entries={"gamesmenu": _shown_entry()},
+        routing=False,
+    )
+    assert len(out) == 1  # routed-off feature still flagged in selected mode
+    handles["routing"].assert_awaited()
+    assert handles["routing"].await_args.kwargs["channel_id"] == 10
+
+
+@pytest.mark.asyncio
+async def test_help_locked_no_ledger_no_findings():
+    out, handles = await _run_help_locked(
+        no_ledger=True,
+        inventory=(_GAMES,),
+        visible={"games"},
+        routing=False,
+    )
+    assert out == []
+    # Short-circuits before any policy read.
+    handles["policy"].assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_help_locked_failsafe_on_policy_read_error():
+    out, _ = await _run_help_locked(
+        policy_error=True,
+        ledger_entries={"gamesmenu": _shown_entry()},
+        inventory=(_GAMES,),
+        visible={"games"},
+    )
     assert out == []

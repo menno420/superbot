@@ -85,6 +85,16 @@ class GovernanceContext:
 
     Use from_ctx() / from_interaction() rather than constructing directly.
     Future-proofs for threads, DMs, dashboards, AI agents, scheduled jobs.
+
+    ``member_tier`` is the **declared-tier read path** (owner decision
+    Q-0045, option b): when set, tier resolution prefers it verbatim over
+    member-derivation and the configured-role grants — see
+    :func:`governance.resolver._resolve_member_tier`.  It exists so
+    read-only audience *simulation* (Help Preview, the
+    ``help_advertises_locked`` drift baseline) can ask "what does a member
+    of tier X see?" without a real :class:`discord.Member`.  Simulated
+    callers must label their limits (a declared tier cannot model live
+    Discord channel-permission overrides — adaptive plan §16.4).
     """
 
     guild_id: int
@@ -93,6 +103,7 @@ class GovernanceContext:
     thread_id: int | None = None
     member: discord.Member | None = None
     role_ids: set[int] = field(default_factory=set)
+    member_tier: str | None = None
 
     @classmethod
     def from_ctx(cls, ctx) -> GovernanceContext:
