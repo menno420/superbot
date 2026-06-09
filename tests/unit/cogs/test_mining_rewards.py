@@ -45,6 +45,29 @@ def test_ore_weights_contain_all_four_resources():
     assert set(rewards.ORE_WEIGHTS) == {"stone", "iron", "gold", "diamond"}
 
 
+def test_ore_weights_for_depth_zero_equals_surface_table():
+    # Depth 0 must be byte-identical to the legacy table so surface behaviour
+    # (and the pickaxe-doubling test above) is unchanged.
+    assert rewards.ore_weights_for_depth(0) == rewards.ORE_WEIGHTS
+
+
+def test_deeper_bands_favor_rarer_ore():
+    surface = rewards.ore_weights_for_depth(0)
+    deep = rewards.ore_weights_for_depth(2)
+    assert deep["stone"] < surface["stone"]  # stone gets rarer with depth
+    assert deep["diamond"] > surface["diamond"]  # rare ore gets likelier
+    assert deep["gold"] > surface["gold"]
+    # Same four ores at every depth — callers never see an unknown drop.
+    assert set(deep) == set(rewards.ORE_WEIGHTS)
+
+
+def test_roll_mine_loot_keeps_known_ore_names_at_every_depth():
+    for depth in range(4):
+        found, amount = rewards.roll_mine_loot(has_pickaxe=False, depth=depth)
+        assert found in rewards.ORE_WEIGHTS
+        assert 1 <= amount <= 3
+
+
 # ---------------------------------------------------------------------------
 # roll_harvest_amount
 # ---------------------------------------------------------------------------

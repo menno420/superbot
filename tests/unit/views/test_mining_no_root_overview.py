@@ -47,9 +47,11 @@ def test_mining_hub_view_action_buttons_still_present():
 
 
 def test_mining_hub_view_button_count_after_overview_removal():
-    """Six action buttons, no Overview — the Build modal button counts as
-    one of the six. Total children must be exactly 6.
+    """Eight action buttons, no Overview: the six core actions (Mine / Harvest /
+    Explore / Inventory / Stats / Build) plus the two depth-navigation buttons
+    (Descend / Ascend). The count is pinned so an accidental no-op control can't
+    creep back in.
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 6
+    assert len(buttons) == 8

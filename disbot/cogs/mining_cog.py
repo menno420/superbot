@@ -21,7 +21,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import equipment
+from cogs.mining import equipment, world
 from cogs.mining.exploration import explore_from_state
 from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
@@ -117,9 +117,15 @@ class MiningCog(commands.Cog):
         total_items = sum(inventory.values())
         unique_items = len(inventory)
 
+        depth = await db.get_depth(user_id, ctx.guild.id)
         embed = discord.Embed(
             title=f"{ctx.author.name}'s Mining Stats",
             color=MINING_COLOR,
+        )
+        embed.add_field(
+            name="Location",
+            value=world.describe_position(depth),
+            inline=False,
         )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
@@ -227,15 +233,22 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def explore(self, ctx):
-        """Discover random events or items (driven by your equipped gear)."""
+        """Discover random events or items (driven by your gear and depth)."""
         user_id = str(ctx.author.id)
         gid = ctx.guild.id
         inventory = await db.get_mining_inventory(user_id, gid)
         equipped = await db.get_equipment(user_id, gid)
-        text, item, amount = explore_from_state(equipped, inventory)
+        depth = await db.get_depth(user_id, gid)
+        text, item, amount = explore_from_state(
+            equipped,
+            inventory,
+            biome=world.biome_for_depth(depth),
+        )
         if item:
             await self.update_inventory(user_id, gid, item, amount)
-        await ctx.send(f"{ctx.author.mention} {text}")
+        await ctx.send(
+            f"{ctx.author.mention} {text}\n_{world.describe_position(depth)}_",
+        )
 
     @commands.command(hidden=True)
     async def use(self, ctx, *, item: str = None):
@@ -325,6 +338,42 @@ class MiningCog(commands.Cog):
             inline=False,
         )
         await ctx.send(embed=embed)
+
+    # ---------------------------------------------------------- world / descent
+
+    @commands.command(hidden=True)
+    async def descend(self, ctx):
+        """Descend one mining band deeper (gated by your equipped light)."""
+        user_id = str(ctx.author.id)
+        gid = ctx.guild.id
+        depth = await db.get_depth(user_id, gid)
+        stats = equipment.compute_stats(await db.get_equipment(user_id, gid))
+        new_depth = world.descend(depth, stats)
+        if new_depth == depth:
+            await ctx.send(
+                f"{ctx.author.mention} can't descend any deeper. "
+                f"{world.descend_hint(stats)}",
+            )
+            return
+        await db.set_depth(user_id, gid, new_depth)
+        await ctx.send(
+            f"{ctx.author.mention} descended to {world.describe_position(new_depth)}.",
+        )
+
+    @commands.command(hidden=True)
+    async def ascend(self, ctx):
+        """Climb one mining band back toward the surface."""
+        user_id = str(ctx.author.id)
+        gid = ctx.guild.id
+        depth = await db.get_depth(user_id, gid)
+        new_depth = world.ascend(depth)
+        if new_depth == depth:
+            await ctx.send(f"{ctx.author.mention} is already at the Surface.")
+            return
+        await db.set_depth(user_id, gid, new_depth)
+        await ctx.send(
+            f"{ctx.author.mention} climbed up to {world.describe_position(new_depth)}.",
+        )
 
     # ---------------------------------------------------------------- admin
 

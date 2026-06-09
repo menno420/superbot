@@ -1,7 +1,7 @@
 # Games subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + ADR-002 win.
-> **Last updated:** 2026-06-06.
+> **Last updated:** 2026-06-09.
 
 ## What & where
 
@@ -35,8 +35,13 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   terminal-state “interaction failed” regression. Future changes should inspect terminal callbacks, disabled-state edits, timeout
   handling, and expired-interaction failure paths first.
 - Blackjack has solo/PvP/tournament flows; RPS has solo/PvP/tournament persistence;
-  mining owns its item/recipe/reward/exploration loop. Economy is a dependency for
-  bets/rewards, not a place for game cogs/views to duplicate balance writes.
+  mining owns its item/recipe/reward/exploration loop plus a typed inventory, an
+  equipment → `EffectiveStats` gear seam, and a persistent depth/biome "Descent"
+  (Surface→Magma; `mining_player_state`, descent gated by equipped-light `depth_access`,
+  pure logic in `cogs/mining/world.py`). These mining writes are **direct-lane game
+  state** by design (`docs/ownership.md`; RC-8A ledger), not an audited-service gap.
+  Economy is a dependency for bets/rewards, not a place for game cogs/views to duplicate
+  balance writes.
 - Known game UX follow-ups are not stability failures; cite the accepted #535
   baseline rather than claiming a fresh live retest.
 

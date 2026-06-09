@@ -96,10 +96,15 @@ class MineView(discord.ui.View):
         if not await safe_defer(interaction):
             return
 
+        # Lazy import: cogs-layer domain logic — views must not import cogs at
+        # module level (layer rule; the rewards import above is tracked debt).
+        from cogs.mining import world
+
         user_id = str(self.user_id)
         inventory = await db.get_mining_inventory(user_id, self.guild_id)
+        depth = await db.get_depth(user_id, self.guild_id)
         has_pickaxe = inventory.get("pickaxe", 0) > 0
-        found, amount = roll_mine_loot(has_pickaxe=has_pickaxe)
+        found, amount = roll_mine_loot(has_pickaxe=has_pickaxe, depth=depth)
 
         await db.update_mining_item(user_id, self.guild_id, found, amount)
 
@@ -107,7 +112,7 @@ class MineView(discord.ui.View):
             title="⛏️ Mined!",
             description=(
                 f"{interaction.user.mention} mined **{amount}x {found}** "
-                f"by going {direction}!"
+                f"by going {direction} in {world.describe_position(depth)}!"
             ),
             color=MINING_COLOR,
         )

@@ -1,0 +1,33 @@
+"""mining_player_state CRUD — a player's persistent depth/biome position.
+
+Direct-lane game state: ``docs/ownership.md`` routes mining writes direct via
+``utils/db/games/`` (no audited service — see the RC-8A direct-DB ledger).  One
+row per ``(user_id, guild_id)``; ``user_id`` is ``TEXT`` to match
+``mining_inventory``'s legacy column type.  ``depth`` is the integer band index
+(0 = Surface); the biome is derived from it (:mod:`cogs.mining.world`), never
+stored, so depth is the single source of truth for position.
+"""
+
+from __future__ import annotations
+
+from utils.db import pool
+
+
+async def get_depth(user_id: str, guild_id: int) -> int:
+    """Return the player's stored depth (0 = Surface) for a guild."""
+    row = await pool.fetchone(
+        "SELECT depth FROM mining_player_state WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+    )
+    return row["depth"] if row else 0
+
+
+async def set_depth(user_id: str, guild_id: int, depth: int) -> None:
+    """Persist the player's *depth* for a guild (upsert — one row per player)."""
+    await pool.execute(
+        """INSERT INTO mining_player_state (user_id, guild_id, depth)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (user_id, guild_id)
+           DO UPDATE SET depth=$3, updated_at=now()""",
+        (user_id, guild_id, depth),
+    )

@@ -265,8 +265,16 @@ foundation first"). P6 is where the original grid/coordinate vision lands, on to
 
 ### 6.8 Questions to settle at their phase (captured, not blocking v1)
 
-- **P2:** exactly how do torch/lantern/depth-items "push deeper" — own one tool per band, or
-  consume a light per descent?
+- **P2 — DECIDED 2026-06-09 (agent call, reversible; flag for owner confirm).** Descent is
+  gated by the equipped light's already-shipped `depth_access` stat and is **persistent, not
+  consumed**: a torch (`depth_access` 1) unlocks the Cavern, a lantern (`depth_access` 2) the
+  Deep; the Magma core needs `depth_access` 3, which no current gear grants (aspirational
+  headroom for a future deeper light). Ascent is always free; position persists in
+  `mining_player_state.depth`. *Why this over "consume a light per descent":* it reuses the
+  stat gear already feeds, matches decision 6.1 #3 (persistent position), and leaves the
+  consumption/sink mechanic to the durability slice (P5) instead of overloading descent now.
+  The whole gate is one pure function (`cogs/mining/world.max_accessible_depth`) — trivially
+  swappable to a consumption model if the owner prefers it.
 - **P5:** durability harshness — a resource sink, not an annoyance (the brainstorm's own caution).
 - **P6:** resource depletion semantics once cells exist (permanent / regenerating / per-player),
   and personal-vs-shared dig sites. The `world_seed` stored back in P2 already makes generation
@@ -390,7 +398,8 @@ abstraction before its first concrete use.
 - **Trading & market** — player trade / gift / market **and the anti-alt-account guardrails**
   (level / cooldown gates, audit) so coins / gear / XP can't be laundered through alts.
 - **Smaller open calls:** weapons PvE-vs-PvP purpose · prestige loop at level cap · game-XP
-  normalization / daily-cap specifics · how torch/lantern gate descent (§6.8 P2).
+  normalization / daily-cap specifics. *(Descent gating — §6.8 P2 — was decided 2026-06-09:
+  persistent, light-`depth_access`-gated; see §6.8. Flagged for owner confirm.)*
 
 
 ## Routing update — 2026-06-08

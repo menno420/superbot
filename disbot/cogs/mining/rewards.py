@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import random
 
-# Mining ore weights — used by both !mine and MiningHubView.mine_btn.
+# Mining ore weights at the Surface (depth 0).  Deeper bands re-weight these
+# toward rarer ore via ``ore_weights_for_depth`` — the same four ores at every
+# depth, just better odds the deeper you mine.
 ORE_WEIGHTS: dict[str, float] = {
     "stone": 3,
     "iron": 2,
@@ -19,14 +21,35 @@ ORE_WEIGHTS: dict[str, float] = {
 }
 
 
-def roll_mine_loot(*, has_pickaxe: bool) -> tuple[str, int]:
+def ore_weights_for_depth(depth: int) -> dict[str, float]:
+    """Ore selection weights for a mining band.
+
+    ``depth`` 0 returns :data:`ORE_WEIGHTS` unchanged (so the Surface roll is
+    identical to the pre-depth behaviour); each band deeper shifts the odds away
+    from stone and toward iron/gold/diamond — "deeper = richer" — while keeping
+    the same four ores so callers never see an unknown drop.
+    """
+    d = max(0, depth)
+    return {
+        "stone": max(0.5, ORE_WEIGHTS["stone"] - d),
+        "iron": ORE_WEIGHTS["iron"] + 0.5 * d,
+        "gold": ORE_WEIGHTS["gold"] + 0.5 * d,
+        "diamond": ORE_WEIGHTS["diamond"] + 0.5 * d,
+    }
+
+
+def roll_mine_loot(*, has_pickaxe: bool, depth: int = 0) -> tuple[str, int]:
     """Return ``(ore_name, amount)`` for one !mine click / Mine button press.
 
-    A pickaxe in the inventory doubles the amount mined.
+    A pickaxe in the inventory doubles the amount mined.  *depth* (the player's
+    band, 0 = Surface) re-weights the ore table toward rarer finds the deeper the
+    player has descended; it defaults to 0 so existing surface callers and their
+    tests are unaffected.
     """
+    weights = ore_weights_for_depth(depth)
     found = random.choices(
-        list(ORE_WEIGHTS.keys()),
-        weights=list(ORE_WEIGHTS.values()),
+        list(weights.keys()),
+        weights=list(weights.values()),
         k=1,
     )[0]
     bonus = 2 if has_pickaxe else 1
