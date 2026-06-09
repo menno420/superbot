@@ -2,7 +2,10 @@
 
 > **Status:** `plan` — planning/routing draft; not implementation approval.
 > **Horizon:** Later. **Primary source:** `docs/ideas/owner-vision-ideas-2026-06-08.md` §4, §14, §22.
-> **Owner decision needed:** Q-0038 in the maintainer question router.
+> **Owner decision Q-0038 — answered (2026-06-09, router):** **server-scoped clans** —
+> `(guild_id, clan_id)` keys, one clan per player per server, no cross-server identity
+> in v1; code/schema say "clan". Decides tenancy/identity only; implementation still
+> needs the new-owner/ownership decision + normal promotion.
 
 ## Planning contract
 
@@ -17,7 +20,7 @@ The owner selected social interaction as the highest-value way to make SuperBot 
 
 ## Scope
 
-- A guild-scoped social identity and membership model; exact cross-server semantics remain open in Q-0038.
+- A guild-scoped social identity and membership model; cross-server semantics settled by Q-0038 (2026-06-09): server-scoped, no cross-server identity in v1.
 - Guild treasury controls, upgrades/levels, and competitive events.
 - Persistent achievements/badges for game milestones, social actions, and hidden triggers.
 - Read-only player profile cards focused on economy and guild membership/rank.
@@ -55,6 +58,8 @@ Use additive schemas and explicit backfill/consent rules; scope and invalidate c
 
 ## Open questions and next session
 
-- Q-0038 owns guild identity, cross-server behavior, and privacy semantics.
+- Q-0038 answered (2026-06-09): server-scoped clans — see the router entry for the full
+  marked-up answer (membership/transfer/retention/moderation details).
 - Decide whether inbox is bot-wide or feature-owned composition before schema design.
-- **Recommended next model/session:** Opus product/architecture revision after Q-0038; no Sonnet implementation slice until ownership is approved.
+- **Recommended next model/session:** Opus product/architecture revision (Q-0038 is now
+  answered); no Sonnet implementation slice until ownership is approved.

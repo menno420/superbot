@@ -2,7 +2,11 @@
 
 > **Status:** `plan` — planning/routing draft; not implementation approval.
 > **Horizon:** Later. **Primary source:** `docs/ideas/owner-vision-ideas-2026-06-08.md` §2, §12–15, §23.
-> **Owner decision needed:** Q-0039 for VIP/donation boundaries.
+> **Owner decision Q-0039 — answered (2026-06-09, router):** donation benefits =
+> **cosmetic identity + supporter recognition only**; convenience/progression perks only
+> on the earned milestone track; supporter status read from an externally-managed
+> Discord role — **SuperBot stores/processes no payment data**. Decides the fairness
+> boundary only; the VIP phase still needs economy-health evidence + promotion.
 
 ## Planning contract
 
@@ -17,7 +21,7 @@ This draft groups marketplace trading, mining trade goods, cosmetics/titles, col
 
 ## Scope
 
-Player listings/trades; mining resources as goods; non-gameplay cosmetics/titles and collectibles; currency/cosmetic/lottery streak rewards; transparent coin sinks; starter packs and first-run economy guidance; and future blueprint-drop crafting. VIP is decision-only until Q-0039 clears.
+Player listings/trades; mining resources as goods; non-gameplay cosmetics/titles and collectibles; currency/cosmetic/lottery streak rewards; transparent coin sinks; starter packs and first-run economy guidance; and future blueprint-drop crafting. VIP's fairness boundary is decided (Q-0039, 2026-06-09: donation = cosmetic + recognition only; no billing in the bot); the VIP phase itself still needs promotion.
 
 ## Out of scope
 
@@ -52,6 +56,7 @@ Add item/listing/reward schemas incrementally with reconciliation/backfill plans
 
 ## Open questions and next session
 
-- Q-0039 owns VIP/donation benefits and strict non-pay-to-win limits.
+- Q-0039 answered (2026-06-09): donation = cosmetic-only, no bot-side billing — see the
+  router entry for the full marked-up answer (allow/forbid lists + the CI invariant).
 - Decide legal/product posture for lottery entries before any executable plan.
 - **Recommended next model/session:** Opus economy architecture/revision; a later Sonnet slice may draft starter-pack or deterministic streak-read planning after economy-health evidence exists.

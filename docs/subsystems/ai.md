@@ -11,6 +11,18 @@ scoped tools (including owner-gated diagnostics). Source:
 `disbot/cogs/ai_cog.py`, `disbot/services/ai_policy_mutation.py`,
 `disbot/utils/settings_keys/ai.py`.
 
+## Owner vision (Q-0062 block — seeded from the Q-0040/Q-0051 markup, 2026-06-09)
+
+- **What this area is for:** the AI dungeon master is the owner's single
+  highest-regret-if-missing feature — "the most creative, differentiating feature —
+  nothing else in Discord bots does this well" (owner-vision §25).
+- **What right feels like:** AI that feels genuinely *generative*, not canned — it
+  writes the story AND **chooses** quests/rewards/difficulty — but always from
+  pre-approved menus whose hard caps deterministic code enforces (Q-0040, chosen over
+  both pure narration and free-form authority).
+- **One example of wrong:** a player talks the AI into a jackpot, or a session burns
+  uncapped provider spend — the cap and the budget are the product, not red tape.
+
 ## Rules & approved structures (binding — link, don't restate)
 
 - **`docs/ai-config-ownership.md`** (`binding`, doc-test-pinned) — the AI cog's read

@@ -2,7 +2,12 @@
 
 > **Status:** `plan` — planning/routing draft; not implementation approval.
 > **Authority:** `docs/planning/ai-roadmap-2026-06-07.md`; this addendum does not compete with it.
-> **Horizon:** Later, fully gated. **Owner decision needed:** Q-0040 for AI dungeon-master posture.
+> **Horizon:** Later, fully gated. **Owner decision Q-0040 — answered (2026-06-09,
+> router):** DM posture = **AI picks from bounded menus** — the AI writes all narrative
+> AND chooses quest template / reward tier / difficulty from pre-approved menus whose
+> hard caps deterministic code enforces; fully AI-*invented* rewards/difficulty stay
+> behind the dedicated action-authority decision. Posture only — building still needs
+> its own plan, a small bounded-authority decision, and the per-exposure lift.
 
 ## Planning contract
 
@@ -18,7 +23,7 @@ Route AI dungeon master, AI-generated game events, wider natural-language intent
 ## Scope and routing
 
 - Wider NL intent coverage: route to the central NL-stage/readiness work in the authoritative AI roadmap.
-- AI dungeon master and generated narrative/event concepts: product concepts only; mechanics/rewards/difficulty remain deterministic domain-service decisions. Q-0040 owns modes, persistence, cost, moderation, and retention posture.
+- AI dungeon master and generated narrative/event concepts: product concepts only; mechanics/rewards/difficulty remain deterministic domain-service decisions, with one decided refinement — per Q-0040 (2026-06-09) the AI may **select** quest/reward/difficulty from pre-approved, hard-capped menus (deterministic code enforces the caps); free-form invention stays gated. Q-0040's router entry owns the full modes/persistence/cost/moderation/retention posture.
 - Web/vision/file/KB/connectors/scheduler/admin tools: already covered by `ai-extra-tool-capability-ideas.md` and `ai-tool-capability-roadmap.md`; sequence only after orchestration foundation.
 - AI-generated setup/moderation/actions: blocked until the dedicated action gates and decisions clear; use drafts/explanations, never direct writes.
 
@@ -48,4 +53,8 @@ Defer schemas until the authoritative AI plan approves them; never persist raw r
 
 ## Open questions and next session
 
-Q-0040 owns dungeon-master scope and operational posture. **Recommended next model/session:** first Opus AI session remains orchestration-foundation revision; Codex remains mapping-only for net-new AI actions, and Sonnet receives no action-tool implementation.
+Q-0040 answered (2026-06-09): bounded-menu DM posture — see the router entry for the full
+marked-up answer (modes order, persistence, opt-in, budgets). **Recommended next
+model/session:** first Opus AI session remains orchestration-foundation revision; Codex
+remains mapping-only for net-new AI actions, and Sonnet receives no action-tool
+implementation.
