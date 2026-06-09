@@ -1,5 +1,6 @@
 """
 Community Spotlight Cog
+
 A fun dashboard for server activity, highlights, and engagement.
 Fully configurable with presets. Uses in-place updates where possible.
 """
@@ -10,7 +11,7 @@ from typing import Optional
 
 from ..core.runtime import SessionManager, EventBus
 from ..utils.logger import get_logger
-# from ..services import activity_service  # TODO: Extend later
+
 
 logger = get_logger(__name__)
 
@@ -24,20 +25,18 @@ class CommunitySpotlight(commands.Cog):
         self.event_bus: Optional[EventBus] = None
         self.update_loop.start()
 
-    async def cog_load(self):
+    async def cog_load(self) -> None:
         """Called when cog is loaded."""
-        # Access core services (adjust based on your exact setup)
         self.session_manager = getattr(self.bot, "session_manager", None)
         self.event_bus = getattr(self.bot, "event_bus", None)
         logger.info("CommunitySpotlight cog loaded")
 
     @commands.command(name="spotlight", aliases=["hub", "activity"])
     @commands.has_permissions(manage_guild=True)
-    async def spotlight(self, ctx: commands.Context):
+    async def spotlight(self, ctx: commands.Context) -> None:
         """Open the Community Spotlight dashboard (persistent)."""
         embed = self._create_main_dashboard_embed(ctx.guild)
         view = SpotlightView(self)
-
         await ctx.send(embed=embed, view=view)
 
     def _create_main_dashboard_embed(self, guild: discord.Guild) -> discord.Embed:
@@ -58,7 +57,7 @@ class CommunitySpotlight(commands.Cog):
         return embed
 
     @tasks.loop(minutes=30)
-    async def update_loop(self):
+    async def update_loop(self) -> None:
         """Background updates for live data."""
         # TODO: Integrate with real activity tracking service
         pass
@@ -68,13 +67,13 @@ class SpotlightView(discord.ui.View):
     """Persistent view for the spotlight dashboard."""
 
     def __init__(self, cog: CommunitySpotlight):
-        super().__init__(timeout=None)  # Persistent view
+        super().__init__(timeout=None)
         self.cog = cog
 
     @discord.ui.button(label="Refresh", style=discord.ButtonStyle.gray, emoji="🔄")
     async def refresh(
         self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    ) -> None:
         embed = self.cog._create_main_dashboard_embed(interaction.guild)
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -83,12 +82,12 @@ class SpotlightView(discord.ui.View):
     )
     async def suggest_activity(
         self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    ) -> None:
         await interaction.response.send_message(
             "How about a quick game night or movie watch party?", ephemeral=True
         )
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     """Setup the cog."""
     await bot.add_cog(CommunitySpotlight(bot))
