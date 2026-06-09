@@ -90,9 +90,9 @@ extra subsystem with no corresponding cog file is `diagnostic` (its
 `!diagnostics` + `!platform` surface lives inside
 `disbot/cogs/diagnostic_cog.py`).
 
-Cogs (22): `admin_cog`, `blackjack_cog`, `bootstrap_access_cog`,
+Cogs (23): `admin_cog`, `blackjack_cog`, `bootstrap_access_cog`,
 `chain_cog`, `channel_cog`,
-`cleanup_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
+`cleanup_cog`, `community_spotlight_cog`, `counting_cog`, `deathmatch_cog`, `diagnostic_cog`,
 `economy_cog`, `general_cog`, `help_cog`, `inventory_cog`, `leaderboard_cog`,
 `logging_cog`, `mining_cog`, `moderation_cog`, `proof_channel_cog`,
 `role_cog`, `rps_tournament_cog`, `settings_cog`, `setup_cog`,
@@ -564,6 +564,39 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 22. **provisionable_resources**: none.
 23. **priority**: `P1` — interface skeleton, low risk.
 24. **recommended_PR_phase**: mother-hub PR sequence Phase S9.
+
+### community_spotlight
+
+1. **cog_module**: `disbot/cogs/community_spotlight_cog.py`.
+2. **subsystem**: none (standalone dashboard, no settings subsystem).
+3. **current_commands**: `!spotlight` (aliases: `!hub`, `!activity`, `!server`).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: opens `SpotlightView` — live embed
+   with server stats, XP/coin leaders, level-up feed, and a Games sub-panel.
+6. **help_menu_discoverable**: No — not yet registered in `hub_registry.py`.
+7. **dedicated_panel_command**: `!spotlight`.
+8. **help_menu_direct_navigation_hook**: none.
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; no
+    permission gate — any server member can run `!spotlight`.
+14. **hardcoded_or_env_only_behavior**: data sources are hard-coded to
+    the `xp` table and `rank_providers` registry; no per-server config.
+15. **missing_customization_commands**: no settings surface yet.
+16. **missing_settings_pages**: future work — allow admins to pin a
+    spotlight channel and configure which panels are shown.
+17. **missing_menu_buttons_selects_modals**: no Help direct-nav hook yet.
+18. **setting_class_per_value**: n/a (no configurable state today).
+19. **target_Settings_Manager_page**: future — Spotlight section under
+    Community settings.
+20. **target_mutation_path**: n/a; read-only dashboard.
+21. **target_help_or_menu_route**: future — community hub child or
+    standalone Help category.
+22. **provisionable_resources**: none.
+23. **priority**: `P2` — functional as-is; settings surface is future work.
+24. **recommended_PR_phase**: future community-settings PR.
 
 ### games
 

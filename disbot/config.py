@@ -84,6 +84,7 @@ INITIAL_EXTENSIONS = [
     "cogs.logging_cog",
     "cogs.games_cog",
     "cogs.community_cog",
+    "cogs.community_spotlight_cog",
     "cogs.setup_cog",
     "cogs.server_management_cog",
 ]
