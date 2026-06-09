@@ -4,11 +4,17 @@
 > **Purpose:** refine the open AI extra-tool ideas backlog into a source-verified,
 > implementation-ready sequence without replacing the approved bot-awareness plan or the
 > research-backed BTD6 orchestration planning document.
-> **Current gate (updated 2026-06-06):** bot-awareness PR4–PR6 shipped (#541) and the
+> **Current gate (updated 2026-06-09):** bot-awareness PR4–PR6 shipped (#541) and the
 > `PLATFORM_OWNER` reachability decision (D1) is **resolved** — `_derive_scope()` now
-> returns `AIScope.PLATFORM_OWNER` for the bot owner. The remaining gate is **maintainer
-> approval of the orchestration foundation**
-> (`ai-complex-request-tool-orchestration-plan.md`) before any net-new tool. (The
+> returns `AIScope.PLATFORM_OWNER` for the bot owner. The orchestration-foundation gate
+> below is now **largely satisfied**: the `ai-complex-request-tool-orchestration-plan.md`
+> foundation **Phases 1–3 shipped 2026-06-09** — the canonical tool catalogue + deterministic
+> selector (#612), provider-neutral tool-choice + budgets (#618), and the typed
+> orchestration-policy storage + resolver + the **Tools & Workflows** operator UI (this session).
+> So the "land the foundation before net-new capability handlers" precondition (§1 item 3,
+> item 5) is met for Phases 1–3; the remaining sequencing gates for any *net-new* tool are
+> Phase 4 (the complex-BTD6 workflow) **and** the per-tool AI-exposure decision (each net-new
+> tool still needs the expansion gate lifted, as `btd6_round_cash` and the Tools UI were). (The
 > pre-#541 verification snapshot in §2.1 is historical.)
 >
 > **Authority:** this document governs prioritization and integration boundaries for
