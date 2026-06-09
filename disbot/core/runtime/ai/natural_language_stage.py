@@ -1142,6 +1142,8 @@ async def _invoke_gateway(
             guild=getattr(message, "guild", None),
             member=getattr(message, "author", None),
             bot=getattr(_ctx, "bot", None),
+            # Binds get_ai_policy_explanation to the asking channel.
+            channel=getattr(message, "channel", None),
             # The orchestration profile may NARROW the offered toolset; it can
             # never grant a tool above the caller's scope (select_tools enforces).
             enabled_toolsets=orchestration.enabled_toolsets,
