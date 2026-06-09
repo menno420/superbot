@@ -20,7 +20,7 @@ cannot even attempt to call it.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -31,19 +31,9 @@ from services import (
     ai_config_projection_service,
     ai_decision_audit_service,
     ai_permission_service,
+    ai_tool_catalogue,
 )
 from services.health_contracts import HealthAudience
-
-# Least-privilege ordering for AIScope. A caller may be offered a tool
-# when their rank is >= the tool's ``min_scope`` rank.
-_SCOPE_RANK: dict[AIScope, int] = {
-    AIScope.USER: 0,
-    AIScope.MODERATOR: 1,
-    AIScope.ADMIN: 2,
-    AIScope.SERVER_OWNER: 3,
-    AIScope.PLATFORM_OWNER: 4,
-    AIScope.SYSTEM: 5,
-}
 
 _NO_ARGS_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -51,10 +41,11 @@ _NO_ARGS_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
 }
 
-
-def _scope_allows(caller: AIScope, required: AIScope) -> bool:
-    """True if ``caller`` is privileged enough to be offered ``required``."""
-    return _SCOPE_RANK.get(caller, 0) >= _SCOPE_RANK.get(required, 0)
+# Scope ordering + offered-tool selection now live in the canonical tool catalogue
+# (``services.ai_tool_catalogue``), the orchestration foundation. ``_scope_allows`` is
+# re-exported so the historical ``from services.ai_tools import _scope_allows`` import
+# (and its test) keep working against the single source of truth.
+_scope_allows = ai_tool_catalogue.scope_allows
 
 
 # --- get_user_standing -------------------------------------------------
@@ -1994,33 +1985,13 @@ class ToolRegistry:
 # Tools whose results are BTD6 *facts* and may therefore ground a BTD6 answer.
 # The natural-language stage captures ONLY these tools' outputs into the
 # faithfulness ledger — server/user/config tools (member counts, timestamps,
-# IDs) must never whitelist a hallucinated BTD6 name or number. Keep in sync
-# with the ``btd6_*`` specs above; ``tests/unit/services/test_ai_tools.py``
-# pins this set ⊆ the registered ``btd6_*`` tool names so it cannot drift.
-BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = frozenset(
-    {
-        "btd6_lookup",
-        "btd6_list_roster",
-        "btd6_capability_lookup",
-        "btd6_superlative_lookup",
-        "btd6_difficulty_cost",
-        "btd6_round_composition",
-        "btd6_round_cash",
-        "btd6_map_lookup",
-        "btd6_mode_lookup",
-        "btd6_relic_lookup",
-        "btd6_power_lookup",
-        "btd6_monkey_knowledge_lookup",
-        "btd6_geraldo_lookup",
-        "btd6_boss_lookup",
-        "btd6_bloon_filter",
-        "btd6_cumulative_cost",
-        "btd6_power_effect",
-        "btd6_paragon_calculate",
-        "btd6_paragon_requirements",
-        "btd6_paragon_stats_at_degree",
-        "btd6_ct_team_status",
-    },
+# IDs) must never whitelist a hallucinated BTD6 name or number. **Derived** from
+# the canonical catalogue's ``grounding_domain`` metadata (the single source of
+# truth), so it can no longer drift from the registered tool set by hand;
+# ``tests/unit/services/test_ai_tools.py`` still pins it == the registered
+# ``btd6_*`` tools.
+BTD6_GROUNDING_TOOL_NAMES: frozenset[str] = ai_tool_catalogue.grounding_tool_names(
+    "btd6",
 )
 
 
@@ -2032,6 +2003,8 @@ def build_registry(
     guild: Any = None,
     member: Any = None,
     bot: Any = None,
+    enabled_toolsets: Collection[str] | None = None,
+    disabled_tools: Collection[str] | None = None,
 ) -> ToolRegistry:
     """Build the read-only tool set the caller's ``scope`` may be offered.
 
@@ -2039,6 +2012,14 @@ def build_registry(
     them); ``handlers`` are passed to ``ai_gateway.execute`` as
     ``tool_handlers``. Only tools whose ``min_scope`` the caller
     satisfies are included.
+
+    ``enabled_toolsets`` / ``disabled_tools`` are the optional orchestration policy
+    (canonical-catalogue toolset names / explicit tool names). They can only **narrow**
+    the offered set — never grant a tool above ``scope``. Both default to ``None``, which
+    means "no toolset restriction": the registry then offers exactly the scope-allowed
+    tools, identical to the historical behaviour. Selection is delegated to
+    :func:`services.ai_tool_catalogue.select_tools` so it stays deterministic and
+    inspectable.
 
     ``guild`` (the live ``discord.Guild``) and ``member`` (the asking
     ``discord.Member``) enable the server-introspection tools. When
@@ -2106,10 +2087,19 @@ def build_registry(
                     (_MEMBER_LIST_SPEC, _make_list_members(guild)),
                 ],
             )
+    decisions = {
+        d.name: d
+        for d in ai_tool_catalogue.select_tools(
+            [spec for spec, _ in catalog],
+            scope=scope,
+            enabled_toolsets=enabled_toolsets,
+            disabled_tools=disabled_tools,
+        )
+    }
     specs: list[AIToolSpec] = []
     handlers: dict[str, ToolHandler] = {}
     for spec, handler in catalog:
-        if _scope_allows(scope, spec.min_scope):
+        if decisions[spec.name].included:
             specs.append(spec)
             handlers[spec.name] = handler
     return ToolRegistry(specs=tuple(specs), handlers=handlers)

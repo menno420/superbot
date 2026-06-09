@@ -44,8 +44,11 @@ scoped tools (including owner-gated diagnostics). Source:
   **explanation-only** now (recurring-report draft as the eventual first action category only
   if revisited). The rest of the AR batch holds at safe defaults until each lane is active.
 - `docs/ai/ai-complex-request-tool-orchestration-plan.md` (`plan`) — the orchestration
-  foundation itself (toolsets, tool-choice, budgets, evidence); the roadmap's Phase 1.
-  Approve this **before** net-new tools.
+  foundation itself (toolsets, tool-choice, budgets, evidence). **Phase 1 shipped 2026-06-09:**
+  `services.ai_tool_catalogue` is now the canonical tool catalogue (`AIToolMetadata` + named
+  toolsets + the deterministic `select_tools`), `build_registry` consults it, and
+  `BTD6_GROUNDING_TOOL_NAMES` is derived from it. Phases 2–4 (tool-choice/budgets, policy
+  storage/UI, complex workflow) are next.
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 

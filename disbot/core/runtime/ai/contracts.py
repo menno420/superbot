@@ -136,6 +136,53 @@ class AIToolSpec:
     min_scope: AIScope = AIScope.USER
 
 
+class ToolExclusionReason(str, Enum):
+    """Stable, deterministic reason a tool was withheld from a request's offered set.
+
+    Safe to surface in an effective-policy preview / dry run (no IDs, no arguments).
+    Mirrors the orchestration selection precedence in the tool-orchestration plan
+    (``docs/ai/ai-complex-request-tool-orchestration-plan.md`` §5.3). Authority
+    (``scope_denied``) and runtime availability are checked first; toolset / explicit
+    policy may only *narrow* the offered set, never widen it.
+    """
+
+    SCOPE_DENIED = "scope_denied"
+    RUNTIME_UNAVAILABLE = "runtime_unavailable"
+    TASK_MISMATCH = "task_mismatch"
+    TOOLSET_DISABLED = "toolset_disabled"
+    EXPLICITLY_DISABLED = "explicitly_disabled"
+    BUDGET_DISALLOWED = "budget_disallowed"
+    FRESHNESS_DISALLOWED = "freshness_disallowed"
+
+
+@dataclass(frozen=True)
+class AIToolMetadata:
+    """Selection/UI metadata for one registered AI tool — the catalogue half of a
+    tool, kept separate from its provider-facing :class:`AIToolSpec` (a clean data
+    object the model sees) and its live runtime handler.
+
+    This is the per-tool record the orchestration layer selects from. ``min_scope`` on
+    the spec stays **authoritative** for authority: a toolset/disable policy may only
+    *narrow* the offered set, never grant a tool above the caller's scope.
+
+    Only ``toolsets`` and ``grounding_domain`` drive behaviour today (deterministic
+    selection + deriving the BTD6 grounding allowlist). The remaining fields are the
+    declared contract the later orchestration phases (budgets, preflight, task-affinity
+    narrowing, answer/UI metadata) will consume; they carry conservative defaults until
+    those phases wire and verify them.
+    """
+
+    toolsets: frozenset[str]
+    task_affinity: frozenset[AITask] = frozenset()
+    grounding_domain: str | None = None
+    capability_tags: frozenset[str] = frozenset()
+    cost_class: Literal["cheap", "normal", "expensive"] = "normal"
+    freshness: Literal["static", "cached", "live"] = "static"
+    parallel_safe: bool = True
+    preflight_safe: bool = False
+    result_contract: str = ""
+
+
 @dataclass(frozen=True)
 class AIRequest:
     """Provider-neutral request passed to a future AI gateway."""

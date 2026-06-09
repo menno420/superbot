@@ -7,6 +7,16 @@ health-diagnostics roadmap is already delivered
 **Primary focus:** complex BTD6 lookups and calculations  
 **Secondary goal:** reusable configuration/orchestration for future read-only tools
 
+> **Progress (2026-06-09):** **Phase 1 foundation shipped** (PR slices A+B) — the canonical
+> tool catalogue (`services.ai_tool_catalogue`: `AIToolMetadata` + named toolsets + one
+> `CATALOGUE` entry per registered tool) and a deterministic, compatibility-preserving
+> selector (`select_tools`, with `ToolExclusionReason` codes) that `build_registry` now uses.
+> `BTD6_GROUNDING_TOOL_NAMES` is **derived** from the catalogue (no more hand-maintained
+> drift). Default behaviour is unchanged; an optional `enabled_toolsets`/`disabled_tools`
+> policy can only **narrow** the offered set, never grant above `AIScope` (proven by test).
+> **Not yet:** neutral tool-choice/budgets (Phase 2), policy storage/projection/UI (Phase 3),
+> the complex-BTD6 workflow (Phase 4). Reconcile PR # next session.
+
 ## 1. Executive recommendation
 
 SuperBot already has the difficult foundations: provider-neutral tool contracts,
@@ -840,6 +850,18 @@ an unambiguous resolved policy and expected trace.
 
 ### Phase 1 — Tool catalogue and per-request selection
 
+> **✅ SHIPPED 2026-06-09.** `services.ai_tool_catalogue` holds `AIToolMetadata`
+> (`core.runtime.ai.contracts`), the named-toolset constants, and a `CATALOGUE` entry per
+> registered tool; `select_tools` is the deterministic selector with `ToolExclusionReason`
+> codes; `build_registry` consults it and gained optional `enabled_toolsets`/`disabled_tools`
+> params (default `None` = unchanged behaviour). `BTD6_GROUNDING_TOOL_NAMES` is derived from
+> the catalogue. The **exit criterion is met and tested** (`test_ai_tool_catalogue.py`):
+> default behaviour is byte-identical, a profile can narrow/disable toolsets, and an enabled
+> toolset can never grant a tool above the caller's `AIScope`. **Deferred from this slice:**
+> the strict-schema validator and a full runtime-availability-aware preview API (the selector
+> emits reason codes today, but does not re-derive `runtime_unavailable` — that joins the
+> Phase 3 dry-run/projection work).
+
 Implement:
 
 - enriched `AIToolDescriptor` catalogue;
@@ -907,9 +929,11 @@ Implement:
 
 ## 14. Suggested PR slices
 
-1. **PR A — Tool catalogue metadata and strict-schema audit.**
-2. **PR B — Named toolsets and deterministic per-request selector.**
-3. **PR C — Provider-neutral tool choice and dynamic budgets.**
+1. **PR A — Tool catalogue metadata and strict-schema audit.** ✅ *catalogue metadata
+   shipped 2026-06-09 (`ai_tool_catalogue`); the strict-schema audit/validator is still TODO.*
+2. **PR B — Named toolsets and deterministic per-request selector.** ✅ *shipped 2026-06-09
+   (`select_tools` + `build_registry` toolset policy; compatibility-preserving).*
+3. **PR C — Provider-neutral tool choice and dynamic budgets.** ← next.
 4. **PR D — Orchestration policy resolver, projection, and mutation ownership.**
 5. **PR E — Tools & workflows admin UI, preview, and dry run.**
 6. **PR F — BTD6 request analysis and evidence/calculation contracts.**
