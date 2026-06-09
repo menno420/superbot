@@ -63,6 +63,7 @@ or raises.
 | `channel` | `channel_cog.py:144` | `lock`, `unlock` | several `*_channel`-family commands | `_ChannelManagerView` | `!help channel` → opens Channel panel (shared resolver) | reached via Admin | hub child (Admin) |
 | `cleanup` | `cleanup_cog.py:324` | `cleanuphistory`, `word`, `wordmenu`, `cleanup` | — | `CleanupPanelView` | `!help cleanup` → opens Cleanup panel (shared resolver) | reached via Moderation; `parent_hub="moderation"` since PR #3 | hub child (Moderation) — declared |
 | `community` | `community_cog.py` | `community` | — | `CommunityHubView` | `!help community` → opens Community panel (shared resolver) | dropdown Community → panel | hub top-level |
+| `community_spotlight` | `community_spotlight_cog.py` | `spotlight` (alias `activity`) | — | `SpotlightView` | `!help` → Community → Spotlight (shared resolver) | reached via Community; `parent_hub="community"` since the Q-0025 scaffold lane | hub child (Community) — read-only live dashboard |
 | `counting` | `counting_cog.py` | `countingmenu`, `start_match`, `end_match`, `reset_count` | — | `_CountingHubView` | `!help counting` → opens Counting panel (shared resolver) | reached via Games / Community | hub child |
 | `deathmatch` | `deathmatch_cog.py` | `dm_challenge`, `deathmatch`, `dm`, `dm_help` | — | `DeathmatchPanelView` | `!help deathmatch` → opens Deathmatch panel (shared resolver) | reached via Games | hub child (Games) |
 | `diagnostic` | `diagnostic_cog.py:70` | `diagnostics`, `diag`, `latency`, `platform` (group, 20+ subcommands) | — | `_DiagnosticsHubView` (generic hook); `_PlatformHubView` (platform builder) | `!help platform` / `!help diagnostic` → opens Platform Hub via the `HUB_PANEL_BUILDERS["diagnostic"]` override; `!help diagnostics` / `!help diag` → opens Diagnostics subsystem via the subsystem-alias branch (not the Platform hub) | hub top-level "Platform / Diagnostics" via the override; sibling subsystem aliases reach Diagnostics | hub top-level (Platform); `diagnostics`/`diag` open Diagnostics Hub |
@@ -86,17 +87,10 @@ or raises.
 
 ## 3. Known inconsistencies (resolved by PR #142 / PR #143)
 
-> **DECIDED, registration queued (Q-0044 answered 2026-06-09) — Community Spotlight
-> is still outside the Help/hub surface until the scaffold lane ships.**
-> `cogs/community_spotlight_cog.py` (merged via #613/#614, side-lane) registers
-> `!spotlight` (alias `!activity` — the greedy `!hub`/`!server` aliases were
-> **dropped 2026-06-09** per Q-0044) with its own panel (`SpotlightView`), but is
-> **not yet** in `utils/subsystem_registry.py` / `utils/hub_registry.py` — invisible
-> to typed Help routes, the Help dropdown, and this doc's §2 inventory (whose
-> doc-test pins only *registered* subsystems). **The decision:** build the Q-0025
-> `new_subsystem.py` scaffold, then register Spotlight as a `community`-hub child
-> (its panel adopts the hub-navigation standard in the same move). When that lane
-> ships: add the §2 row and delete this banner.
+> **RESOLVED 2026-06-09 (Q-0044 + Q-0025):** Community Spotlight is registered as a
+> `community`-hub child via the `scripts/new_subsystem.py` scaffold lane — see its
+> §2 row. The greedy `!hub`/`!server` aliases were dropped the same day; `!spotlight`
+> (alias `!activity`) remains, plus the `build_help_menu_view` direct-navigation hook.
 
 These three classes of bug were live before PR #142 / PR #143. All are
 now resolved in `main` and pinned by tests under `tests/unit/help/` and

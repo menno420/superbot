@@ -569,13 +569,15 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 
 1. **cog_module**: `disbot/cogs/community_spotlight_cog.py`.
 2. **subsystem**: none (standalone dashboard, no settings subsystem).
-3. **current_commands**: `!spotlight` (aliases: `!hub`, `!activity`, `!server`).
+3. **current_commands**: `!spotlight` (alias: `!activity` — the greedy
+   `!hub`/`!server` aliases were dropped 2026-06-09, Q-0044).
 4. **current_command_groups**: none.
 5. **current_command_panel_or_menu**: opens `SpotlightView` — live embed
    with server stats, XP/coin leaders, level-up feed, and a Games sub-panel.
-6. **help_menu_discoverable**: No — not yet registered in `hub_registry.py`.
+6. **help_menu_discoverable**: Yes — registered in `subsystem_registry.py` as a
+   `community`-hub child (Q-0025 scaffold lane, 2026-06-09).
 7. **dedicated_panel_command**: `!spotlight`.
-8. **help_menu_direct_navigation_hook**: none.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` on the cog.
 9. **existing_SettingSpec_declarations**: none.
 10. **existing_settings_keys**: none.
 11. **existing_BindingSpec_entries**: none.
@@ -587,13 +589,14 @@ Subsystems (22): `admin`, `moderation`, `economy`, `inventory`, `mining`,
 15. **missing_customization_commands**: no settings surface yet.
 16. **missing_settings_pages**: future work — allow admins to pin a
     spotlight channel and configure which panels are shown.
-17. **missing_menu_buttons_selects_modals**: no Help direct-nav hook yet.
+17. **missing_menu_buttons_selects_modals**: none blocking — hook + hub child
+    routing in place.
 18. **setting_class_per_value**: n/a (no configurable state today).
 19. **target_Settings_Manager_page**: future — Spotlight section under
     Community settings.
 20. **target_mutation_path**: n/a; read-only dashboard.
-21. **target_help_or_menu_route**: future — community hub child or
-    standalone Help category.
+21. **target_help_or_menu_route**: DONE — community hub child
+    (`parent_hub="community"`).
 22. **provisionable_resources**: none.
 23. **priority**: `P2` — functional as-is; settings surface is future work.
 24. **recommended_PR_phase**: future community-settings PR.

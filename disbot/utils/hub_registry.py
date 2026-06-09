@@ -162,12 +162,14 @@ HUBS: tuple[HubEntry, ...] = (
         emoji="🌱",
         purpose="Progression, roles, and community activities.",
         entry_command="!community",
-        # XP and Role are the primary children (parent_hub="community"
-        # since PR #3). Counting, Chain (whose primary is Games) and
+        # XP, Role, and Spotlight are the primary children
+        # (parent_hub="community"; Spotlight registered via the Q-0025
+        # scaffold lane). Counting, Chain (whose primary is Games) and
         # Leaderboard (whose primary is Economy) appear as cross-links —
         # CommunityHubView discovers both groups from registry (PR #4).
         primary_children=(
             "xp",
+            "community_spotlight",
             "role",
         ),
         cross_link_children=(
