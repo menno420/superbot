@@ -40,6 +40,14 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 - Settings UI includes typed editors, invalid-setting and missing-binding surfaces;
   setup includes scan/draft/review/provisioning flows. Source remains authoritative
   on which entries are actually registered and exposed.
+- **Hub discovery is actionable-groups-only (audit Phases 0+1, shipped #640,
+  2026-06-09):** `services/customization_catalogue.actionable_settings_groups()` is
+  the one inclusion rule (editable scalar · binding · provisionable resource ·
+  declared domain panel — `DOMAIN_CONFIG_SUBSYSTEMS`, a Phase 1 seam until Phase 2's
+  real registrations); the hub select paginates past Discord's 25-option cap and
+  `SettingsHubView.create(author, guild_id)` marks routed-off groups via per-guild
+  cog routing while keeping them reachable. Audit + phase queue:
+  [settings audit §11](../planning/settings-cog-centralization-audit-2026-06-09.md).
 - Platform consistency remains a useful contract/reference inventory, but its
   Phase-2 implementation-status cells are stale as of the 2026-06-06 readiness review.
   Verify a cell against source before treating it as pending work. The settings
