@@ -91,3 +91,18 @@ this is the narrative record behind them.
   overhead at N=2 was one mechanical merge. If a future burst runs lanes that
   *must* share a subsystem, partition by file in the prompts — that's the only
   variant I'd treat as genuinely risky.
+
+## Addendum — post-burst docs reconciliation (same session, maintainer-requested)
+
+After #632 merged it emerged the burst was actually **four** agents (Lanes 2/3/5/6 —
+#632/#634/#633/#631), not two; all merged. On the maintainer's request, this session
+then reconciled the cross-cutting ledgers against everything landed: current-state
+(▶ header now points at Lane 4; #620–#634 verified merged; Recently-shipped entries
+added for #634/#633/#632/#631/#626 + one batched #620–#630 docs-burst line; BTD6
+Q-0049 clause now says *built* in #633; Last-updated narrates the burst) and
+roadmap.md (Now/Next rows + the AI orchestration bullet → Phases 1–4 shipped).
+Verified already-current and left alone: the scoreboard (each agent maintained its
+own card — the §9 discipline held at N=4), router Q-0038–Q-0042 statuses, the BTD6
+refresh plan banner, the answerability banner, and the AI folio. Lesson reinforced:
+**lane agents kept their own docs perfectly; only the shared ledgers needed a
+reconciler** — exactly the §9 collision-surface prediction.

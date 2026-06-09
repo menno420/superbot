@@ -35,8 +35,8 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · **Settings hub actionable-groups + >25 reachability** and **Help counts + characterization tests** (scoreboard Lanes 7–8, appended 2026-06-09 — position Q-0065) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(the Q-0025 scaffold → Spotlight registration shipped, **#626**)* |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **next: answerability P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Next** | Adaptive **P1C** (staff-hub subpanels — Q-0032; tier path shipped #632) · **Settings hub actionable-groups + >25 reachability** and **Help counts + characterization tests** (scoreboard Lanes 7–8, appended 2026-06-09 — position Q-0065) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(shipped out of this row 2026-06-09: the Q-0025 scaffold → Spotlight registration **#626**, the Q-0049 BTD6 manual-dispatch refresh workflow **#633**)* |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -123,11 +123,12 @@ dedicated decision** for any action capability.
 
 - **Now (active lane)** — the **orchestration foundation**
   ([ai-complex-request-tool-orchestration-plan](ai/ai-complex-request-tool-orchestration-plan.md))
-  **Phases 1–3 shipped** (#612 catalogue+selector, #618 tool-choice+budgets, #619 typed
-  policy + the gate-lifted `ai:tools` operator UI). **Next: Phase 4 MVP (decided, Q-0046)**
-  — one vertical slice: the plan→execute→verify workflow for the round-cash question family
-  + one typed answer-with-evidence contract; remaining §7 contracts + the §12.1 audit trace
-  follow the proven template.
+  **Phases 1–4 MVP shipped** (#612 catalogue+selector, #618 tool-choice+budgets, #619 typed
+  policy + the gate-lifted `ai:tools` operator UI, **#634 the Phase 4 MVP slice** — the
+  round-cash plan→execute→verify workflow + the first typed answer-with-evidence contract,
+  profile-gated, default byte-identical; model loop awaits the maintainer's prod check).
+  **Next:** the remaining §7 workflow families + the §12.1 durable audit trace follow the
+  proven template.
 - **Now (active lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md):
   **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool) and **Phase 2
   shipped** (#616 — the read-only introspection read model). **Next: Phase 3 (committed +
