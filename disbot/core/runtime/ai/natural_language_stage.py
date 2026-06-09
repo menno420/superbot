@@ -1093,6 +1093,12 @@ async def _invoke_gateway(
     can ground the model's reply against them. ``grounding_constraint`` is
     appended to the system prompt on the regenerate-once retry to tell the
     model which names/numbers it must not restate.
+
+    Orchestration profiles whose ``workflow`` selects it additionally run the
+    deterministic round-cash plan→execute→verify workflow
+    (:mod:`services.ai_round_cash_workflow`, Phase 4 MVP) before the model
+    call; its evidence rides the system prompt + ledger. The default profile's
+    ``direct_or_tool`` workflow never engages it.
     """
     from core.runtime.ai.contracts import (
         AIRequest,
@@ -1113,8 +1119,9 @@ async def _invoke_gateway(
     # profile for this guild / category / channel.
     tool_choice = AIToolChoice()
     tool_budget = AIToolBudget()
+    workflow_block: str | None = None
     if ai_tools_enabled() and ctx.guild_id is not None and ctx.actor_id is not None:
-        from services import ai_orchestration_policy
+        from services import ai_orchestration_policy, ai_round_cash_workflow
 
         # Pass the live guild + asking member so the server-introspection
         # tools can read roles / channels / overview. ``build_registry``
@@ -1150,6 +1157,42 @@ async def _invoke_gateway(
                 ai_tools.BTD6_GROUNDING_TOOL_NAMES,
                 ledger,
             )
+        # Phase 4 MVP (Q-0046): the deterministic round-cash plan→execute→
+        # verify workflow — profile-gated on the resolved ``workflow`` label,
+        # so the compatible default (``direct_or_tool``) never reaches it and
+        # default behaviour stays byte-identical. A recognised question's
+        # evidence is appended to the system prompt (the model explains the
+        # already-computed result) and to the faithfulness ledger (so the
+        # restated numbers are grounded). Defensive: a workflow fault must
+        # never break the reply path — it degrades to the unchanged request.
+        if orchestration.workflow == ai_round_cash_workflow.WORKFLOW_KEY:
+            try:
+                answer = ai_round_cash_workflow.run(
+                    getattr(stack, "user_message", "") or "",
+                )
+                if answer is not None:
+                    workflow_block = ai_round_cash_workflow.render_system_block(
+                        answer,
+                    )
+                    if ledger is not None:
+                        from core.runtime.ai.redaction import redact_text
+
+                        entry = redact_text(
+                            ai_round_cash_workflow.render_ledger_entry(answer),
+                        ).value
+                        # The regenerate-once retry reuses the same ledger;
+                        # the deterministic entry must not duplicate.
+                        if entry not in ledger:
+                            ledger.append(entry)
+            except Exception:  # noqa: BLE001 — degrade to the normal path
+                logger.warning(
+                    "ai_round_cash_workflow: failed; continuing without "
+                    "deterministic evidence (guild=%s channel=%s)",
+                    ctx.guild_id,
+                    ctx.channel_id,
+                    exc_info=True,
+                )
+                workflow_block = None
 
     # When no tools are offered (tools disabled, or a "no tools" orchestration
     # profile narrowed them all away) take the identical legacy single-shot
@@ -1158,6 +1201,8 @@ async def _invoke_gateway(
         handlers = None
 
     system_prompt = stack.render_system_prompt()
+    if workflow_block:
+        system_prompt = f"{system_prompt}\n\n{workflow_block}"
     if grounding_constraint:
         system_prompt = f"{system_prompt}\n\n{grounding_constraint}"
 
