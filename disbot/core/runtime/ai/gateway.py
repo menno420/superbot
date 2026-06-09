@@ -30,6 +30,7 @@ import json
 import logging
 import time
 from collections.abc import Mapping
+from dataclasses import replace
 from typing import Any
 
 from core.runtime.ai import redaction
@@ -251,15 +252,13 @@ class AIGateway:
 
         redacted_payload = _redact_payload(request.payload)
         redacted_system = _redact_string(request.system_prompt)
-        redacted_request = AIRequest(
-            context=request.context,
+        # Redact only the two free-text fields; ``replace`` carries every other field
+        # (tools, tool_choice, tool_budget, and any field added later) through untouched,
+        # so a new AIRequest field can never again be silently dropped at the redaction seam.
+        redacted_request = replace(
+            request,
             system_prompt=redacted_system,
             payload=redacted_payload,
-            mode=request.mode,
-            response_schema=request.response_schema,
-            max_output_tokens=request.max_output_tokens,
-            timeout_seconds=request.timeout_seconds,
-            tools=request.tools,
         )
 
         provider = provider_override or self._providers.get(target.provider)

@@ -155,6 +155,52 @@ class ToolExclusionReason(str, Enum):
     FRESHNESS_DISALLOWED = "freshness_disallowed"
 
 
+class ToolRequirementMode(str, Enum):
+    """How strongly the model must call a tool this turn (orchestration plan §4.2).
+
+    Provider-neutral: each adapter maps these onto its own ``tool_choice`` semantics
+    (``docs/ai/ai-complex-request-tool-orchestration-plan.md`` §8.2). ``REQUIRED_GROUP`` is a
+    SuperBot rule, not a native provider feature — the resolver narrows the *offered* tools to
+    the group and the adapter then uses "require any" over that narrowed set.
+    """
+
+    NONE = "none"  # no model-visible tools (single-shot answer)
+    AUTO = "auto"  # model may call zero or more (the historical default)
+    REQUIRED_ANY = "required_any"  # at least one offered tool
+    REQUIRED_GROUP = "required_group"  # at least one tool from a pre-narrowed group
+    REQUIRED_TOOL = "required_tool"  # force one named tool
+
+
+@dataclass(frozen=True)
+class AIToolChoice:
+    """Provider-neutral tool-choice policy for one request.
+
+    The default (``AUTO``) reproduces the historical behaviour exactly: tools, when present,
+    are offered with automatic choice. ``tool_name`` is required for ``REQUIRED_TOOL`` and
+    ``group_name`` labels a ``REQUIRED_GROUP`` (for traces); both are ignored otherwise.
+    """
+
+    mode: ToolRequirementMode = ToolRequirementMode.AUTO
+    tool_name: str | None = None
+    group_name: str | None = None
+
+
+@dataclass(frozen=True)
+class AIToolBudget:
+    """Per-request bound on the model<->tool loop.
+
+    The defaults are **compatibility-preserving**: ``max_hops`` mirrors the adapters'
+    historical hop limit, and the remaining caps are ``None`` ("no limit"), so a request that
+    does not set a budget behaves exactly as before (hop-bounded only). A policy may tighten
+    any field; the adapters enforce them (orchestration plan §11.1).
+    """
+
+    max_hops: int = 4
+    max_calls: int | None = None
+    max_wall_seconds: float | None = None
+    max_result_chars: int | None = None
+
+
 @dataclass(frozen=True)
 class AIToolMetadata:
     """Selection/UI metadata for one registered AI tool — the catalogue half of a
@@ -195,6 +241,12 @@ class AIRequest:
     max_output_tokens: int = 1500
     timeout_seconds: float = 20.0
     tools: tuple[AIToolSpec, ...] = ()
+    # Orchestration policy (plan §8.1). Defaults reproduce the historical behaviour:
+    # AUTO choice + hop-bounded loop with no call/wall/result caps. A resolver may set
+    # a tighter policy; the provider adapters enforce it. They can only narrow, never
+    # widen, what the scope-filtered ``tools`` already permit.
+    tool_choice: AIToolChoice = AIToolChoice()
+    tool_budget: AIToolBudget = AIToolBudget()
 
 
 @dataclass(frozen=True)
@@ -258,8 +310,11 @@ __all__ = [
     "AISuggestion",
     "AISuggestionKind",
     "AITask",
+    "AIToolBudget",
+    "AIToolChoice",
     "AIToolSpec",
     "Confidence",
     "PolicyDenialReason",
     "Severity",
+    "ToolRequirementMode",
 ]

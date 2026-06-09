@@ -30,13 +30,24 @@ import logging
 import os
 from typing import Any
 
-from core.runtime.ai.contracts import AIRequest, AIResponseMode, AIToolSpec
-from core.runtime.ai.providers.base import ProviderUnavailableError, ToolDispatch
+from core.runtime.ai.contracts import (
+    AIRequest,
+    AIResponseMode,
+    AIToolChoice,
+    AIToolSpec,
+    ToolRequirementMode,
+)
+from core.runtime.ai.providers.base import (
+    ProviderUnavailableError,
+    ToolDispatch,
+    ToolLoopState,
+    cap_tool_result,
+)
 
 logger = logging.getLogger("bot.runtime.ai.anthropic_provider")
 
-# Maximum number of model<->tool round-trips before the adapter forces a
-# final, tool-free answer (mirrors the OpenAI adapter).
+# Historical hop limit, kept as documentation + the default ``AIToolBudget.max_hops``
+# (mirrors the OpenAI adapter). The live bound is now ``request.tool_budget.max_hops``.
 _TOOL_HOP_LIMIT = 4
 
 # Anthropic's Messages API requires ``max_tokens``. Fall back to this when
@@ -100,12 +111,20 @@ class AnthropicProvider:
             {"role": "user", "content": json.dumps(request.payload, default=str)},
         ]
         output_config = _output_config(request)
-        offer_tools = bool(request.tools) and dispatch is not None
+        choice = request.tool_choice
+        budget = request.tool_budget
+        # NONE disables model-visible tools entirely (single-shot answer).
+        offer_tools = (
+            bool(request.tools)
+            and dispatch is not None
+            and choice.mode is not ToolRequirementMode.NONE
+        )
         tool_params = _to_anthropic_tools(request.tools) if offer_tools else None
         max_tokens = request.max_output_tokens or _DEFAULT_MAX_TOKENS
+        state = ToolLoopState(budget)
 
-        for hop in range(_TOOL_HOP_LIMIT + 1):
-            allow_tools = tool_params is not None and hop < _TOOL_HOP_LIMIT
+        for hop in range(budget.max_hops + 1):
+            allow_tools = tool_params is not None and state.may_offer_tools(hop)
             kwargs: dict[str, Any] = {
                 "model": model,
                 "max_tokens": max_tokens,
@@ -116,7 +135,7 @@ class AnthropicProvider:
                 kwargs["output_config"] = output_config
             if allow_tools:
                 kwargs["tools"] = tool_params
-                kwargs["tool_choice"] = {"type": "auto"}
+                kwargs["tool_choice"] = _anthropic_tool_choice(choice, hop)
 
             response = await client.messages.create(**kwargs)
             blocks = _blocks_of(response)
@@ -139,9 +158,13 @@ class AnthropicProvider:
             for tool_use in tool_uses:
                 raw_input = getattr(tool_use, "input", None)
                 arguments = raw_input if isinstance(raw_input, dict) else {}
-                result = await dispatch(  # type: ignore[misc]
-                    getattr(tool_use, "name", "") or "",
-                    arguments,
+                state.record_call()
+                result = cap_tool_result(
+                    await dispatch(  # type: ignore[misc]
+                        getattr(tool_use, "name", "") or "",
+                        arguments,
+                    ),
+                    budget.max_result_chars,
                 )
                 tool_results.append(
                     {
@@ -188,6 +211,21 @@ def _to_anthropic_tools(specs: tuple[AIToolSpec, ...]) -> list[dict[str, Any]]:
         }
         for spec in specs
     ]
+
+
+def _anthropic_tool_choice(choice: AIToolChoice, hop: int) -> dict[str, Any]:
+    """Map the neutral tool-choice policy onto Anthropic's ``tool_choice`` for this hop.
+
+    ``{"type": "auto"}`` every hop is the historical default. A ``REQUIRED_*`` policy forces a
+    tool only on the **first** tool-offering hop, then relaxes to ``auto`` so a later hop can
+    produce the final answer. ``REQUIRED_ANY`` / ``REQUIRED_GROUP`` → ``{"type": "any"}`` (the
+    group is already narrowed by the resolver); ``REQUIRED_TOOL`` → ``{"type": "tool", ...}``.
+    """
+    if choice.mode is ToolRequirementMode.AUTO or hop > 0:
+        return {"type": "auto"}
+    if choice.mode is ToolRequirementMode.REQUIRED_TOOL and choice.tool_name:
+        return {"type": "tool", "name": choice.tool_name}
+    return {"type": "any"}
 
 
 def _output_config(request: AIRequest) -> dict[str, Any] | None:

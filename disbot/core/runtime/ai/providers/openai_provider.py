@@ -14,14 +14,25 @@ import logging
 import os
 from typing import Any
 
-from core.runtime.ai.contracts import AIRequest, AIResponseMode, AIToolSpec
-from core.runtime.ai.providers.base import ProviderUnavailableError, ToolDispatch
+from core.runtime.ai.contracts import (
+    AIRequest,
+    AIResponseMode,
+    AIToolChoice,
+    AIToolSpec,
+    ToolRequirementMode,
+)
+from core.runtime.ai.providers.base import (
+    ProviderUnavailableError,
+    ToolDispatch,
+    ToolLoopState,
+    cap_tool_result,
+)
 
 logger = logging.getLogger("bot.runtime.ai.openai_provider")
 
-# Maximum number of model<->tool round-trips before the adapter forces
-# a final, tool-free answer. Bounds latency and cost; also a safety
-# stop against a model that loops on tool calls indefinitely.
+# Historical hop limit, kept as documentation + the default ``AIToolBudget.max_hops``
+# (they must agree). The live bound is now ``request.tool_budget.max_hops``; a request
+# without a budget uses this value, so default behaviour is unchanged.
 _TOOL_HOP_LIMIT = 4
 
 
@@ -81,11 +92,20 @@ class OpenAIProvider:
             {"role": "user", "content": json.dumps(request.payload, default=str)},
         ]
         response_format = _response_format(request)
-        offer_tools = bool(request.tools) and dispatch is not None
+        choice = request.tool_choice
+        budget = request.tool_budget
+        # NONE disables model-visible tools entirely (single-shot answer); otherwise the
+        # historical "offer when tools present and a dispatch is wired" rule holds.
+        offer_tools = (
+            bool(request.tools)
+            and dispatch is not None
+            and choice.mode is not ToolRequirementMode.NONE
+        )
         tool_params = _to_openai_tools(request.tools) if offer_tools else None
+        state = ToolLoopState(budget)
 
-        for hop in range(_TOOL_HOP_LIMIT + 1):
-            allow_tools = tool_params is not None and hop < _TOOL_HOP_LIMIT
+        for hop in range(budget.max_hops + 1):
+            allow_tools = tool_params is not None and state.may_offer_tools(hop)
             kwargs: dict[str, Any] = {"model": model, "messages": messages}
             # Honour the request's output cap (the Anthropic adapter already
             # does). ``max_tokens`` is the Chat Completions field; the
@@ -96,7 +116,7 @@ class OpenAIProvider:
                 kwargs["response_format"] = response_format
             if allow_tools:
                 kwargs["tools"] = tool_params
-                kwargs["tool_choice"] = "auto"
+                kwargs["tool_choice"] = _openai_tool_choice(choice, hop)
 
             response = await client.chat.completions.create(**kwargs)
             message = _message_of(response)
@@ -116,9 +136,13 @@ class OpenAIProvider:
             # come back as a JSON error string the model can react to.
             messages.append(_assistant_tool_call_turn(message, tool_calls))
             for call in tool_calls:
-                result = await dispatch(  # type: ignore[misc]
-                    _call_name(call),
-                    _call_arguments(call),
+                state.record_call()
+                result = cap_tool_result(
+                    await dispatch(  # type: ignore[misc]
+                        _call_name(call),
+                        _call_arguments(call),
+                    ),
+                    budget.max_result_chars,
                 )
                 messages.append(
                     {
@@ -157,6 +181,22 @@ def _to_openai_tools(specs: tuple[AIToolSpec, ...]) -> list[dict[str, Any]]:
         }
         for spec in specs
     ]
+
+
+def _openai_tool_choice(choice: AIToolChoice, hop: int) -> Any:
+    """Map the neutral tool-choice policy onto OpenAI's ``tool_choice`` for this hop.
+
+    ``AUTO`` every hop is the historical default (byte-identical output). A ``REQUIRED_*``
+    policy forces a tool only on the **first** tool-offering hop — guaranteeing "at least one"
+    — then relaxes to ``"auto"`` so later hops can synthesise the final answer instead of being
+    forced to keep calling tools. ``REQUIRED_GROUP`` arrives already narrowed to its group by
+    the resolver, so "require any of the offered" is the correct mapping.
+    """
+    if choice.mode is ToolRequirementMode.AUTO or hop > 0:
+        return "auto"
+    if choice.mode is ToolRequirementMode.REQUIRED_TOOL and choice.tool_name:
+        return {"type": "function", "function": {"name": choice.tool_name}}
+    return "required"
 
 
 def _assistant_tool_call_turn(message: Any, tool_calls: Any) -> dict[str, Any]:
