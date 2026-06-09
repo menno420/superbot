@@ -50,8 +50,13 @@ scoped tools (including owner-gated diagnostics). Source:
   `BTD6_GROUNDING_TOOL_NAMES` is derived from it. **Phase 2 shipped 2026-06-09:**
   provider-neutral `AIToolChoice`/`ToolRequirementMode` + `AIToolBudget` on `AIRequest`,
   mapped onto both the OpenAI and Anthropic adapters via a shared `ToolLoopState`
-  (compatibility-preserving defaults). Phases 3–4 (typed policy storage + Tools & Workflows
-  UI, complex BTD6 workflow) are next.
+  (compatibility-preserving defaults). **Phase 3 shipped 2026-06-09:** typed orchestration-policy
+  storage (migration `062`) + `services.ai_orchestration_presets` / `ai_orchestration_policy` (resolver,
+  most-specific-wins) / `ai_orchestration_mutation` (audited seam) + `AIConfigSnapshot.orchestration` +
+  the `_invoke_gateway` wiring (default byte-identical) + the **Tools & Workflows** panel button
+  (`ai:tools` → `views.ai.tools`: per-scope profile pickers + dry-run analyzer). The operator UI was
+  gate-lifted by the maintainer this session. **Phase 4** (complex BTD6 workflow) + the durable
+  orchestration audit trace are next.
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 

@@ -36,8 +36,8 @@ async def get_guild_policy(guild_id: int) -> dict[str, Any] | None:
         SELECT guild_id, enabled, natural_language_enabled,
                default_provider, default_model, minimum_level_default,
                cooldown_seconds, fresh_user_mention_allowance,
-               guild_instruction_profile_id, generation, updated_at,
-               updated_by
+               guild_instruction_profile_id, orchestration_profile,
+               generation, updated_at, updated_by
         FROM ai_guild_policy
         WHERE guild_id = $1
         """,
@@ -115,6 +115,96 @@ async def bump_generation(guild_id: int) -> int:
 
 
 # ---------------------------------------------------------------------------
+# Orchestration-profile column setters (migration 062)
+# ---------------------------------------------------------------------------
+#
+# Each touches ONLY the orchestration_profile column (and updated_at/by),
+# leaving the natural-language reply policy on the same row untouched. The
+# guild setter bumps generation inline (like upsert_guild_policy); the
+# channel/category setters leave the bump to the mutation seam's
+# bump_generation call, matching upsert_channel_policy / upsert_category_policy.
+# ``orchestration_profile`` is validated against the built-in presets at the
+# audited service seam (services.ai_orchestration_mutation), so these write the
+# value as-is. NULL clears the override (inherit).
+
+
+async def set_guild_orchestration_profile(
+    guild_id: int,
+    *,
+    orchestration_profile: str | None,
+    updated_by: int | None,
+) -> int:
+    """Set the guild-default orchestration profile; returns new ``generation``."""
+    row = await pool.get().fetchrow(
+        """
+        INSERT INTO ai_guild_policy (guild_id, orchestration_profile,
+                                     generation, updated_at, updated_by)
+        VALUES ($1, $2, 0, NOW(), $3)
+        ON CONFLICT (guild_id) DO UPDATE SET
+            orchestration_profile = EXCLUDED.orchestration_profile,
+            generation            = ai_guild_policy.generation + 1,
+            updated_at            = NOW(),
+            updated_by            = EXCLUDED.updated_by
+        RETURNING generation
+        """,
+        guild_id,
+        orchestration_profile,
+        updated_by,
+    )
+    return int(row["generation"])
+
+
+async def set_channel_orchestration_profile(
+    guild_id: int,
+    channel_id: int,
+    *,
+    orchestration_profile: str | None,
+    updated_by: int | None,
+) -> None:
+    """Set a channel's orchestration profile (mode defaults to 'inherit' on insert)."""
+    await pool.get().execute(
+        """
+        INSERT INTO ai_channel_policy (guild_id, channel_id, mode,
+                                       orchestration_profile, updated_at, updated_by)
+        VALUES ($1, $2, 'inherit', $3, NOW(), $4)
+        ON CONFLICT (guild_id, channel_id) DO UPDATE SET
+            orchestration_profile = EXCLUDED.orchestration_profile,
+            updated_at            = NOW(),
+            updated_by            = EXCLUDED.updated_by
+        """,
+        guild_id,
+        channel_id,
+        orchestration_profile,
+        updated_by,
+    )
+
+
+async def set_category_orchestration_profile(
+    guild_id: int,
+    category_id: int,
+    *,
+    orchestration_profile: str | None,
+    updated_by: int | None,
+) -> None:
+    """Set a category's orchestration profile (mode defaults to 'inherit' on insert)."""
+    await pool.get().execute(
+        """
+        INSERT INTO ai_category_policy (guild_id, category_id, mode,
+                                        orchestration_profile, updated_at, updated_by)
+        VALUES ($1, $2, 'inherit', $3, NOW(), $4)
+        ON CONFLICT (guild_id, category_id) DO UPDATE SET
+            orchestration_profile = EXCLUDED.orchestration_profile,
+            updated_at            = NOW(),
+            updated_by            = EXCLUDED.updated_by
+        """,
+        guild_id,
+        category_id,
+        orchestration_profile,
+        updated_by,
+    )
+
+
+# ---------------------------------------------------------------------------
 # ai_channel_policy / ai_category_policy
 # ---------------------------------------------------------------------------
 
@@ -123,7 +213,8 @@ async def list_channel_policies(guild_id: int) -> list[dict[str, Any]]:
     rows = await pool.get().fetch(
         """
         SELECT guild_id, channel_id, mode, min_level, cooldown_seconds,
-               instruction_profile_id, updated_at, updated_by
+               instruction_profile_id, orchestration_profile,
+               updated_at, updated_by
         FROM ai_channel_policy
         WHERE guild_id = $1
         """,
@@ -136,7 +227,8 @@ async def get_channel_policy(guild_id: int, channel_id: int) -> dict[str, Any] |
     row = await pool.get().fetchrow(
         """
         SELECT guild_id, channel_id, mode, min_level, cooldown_seconds,
-               instruction_profile_id, updated_at, updated_by
+               instruction_profile_id, orchestration_profile,
+               updated_at, updated_by
         FROM ai_channel_policy
         WHERE guild_id = $1 AND channel_id = $2
         """,
@@ -211,7 +303,8 @@ async def list_category_policies(guild_id: int) -> list[dict[str, Any]]:
     rows = await pool.get().fetch(
         """
         SELECT guild_id, category_id, mode, min_level, cooldown_seconds,
-               instruction_profile_id, updated_at, updated_by
+               instruction_profile_id, orchestration_profile,
+               updated_at, updated_by
         FROM ai_category_policy
         WHERE guild_id = $1
         """,
@@ -224,7 +317,8 @@ async def get_category_policy(guild_id: int, category_id: int) -> dict[str, Any]
     row = await pool.get().fetchrow(
         """
         SELECT guild_id, category_id, mode, min_level, cooldown_seconds,
-               instruction_profile_id, updated_at, updated_by
+               instruction_profile_id, orchestration_profile,
+               updated_at, updated_by
         FROM ai_category_policy
         WHERE guild_id = $1 AND category_id = $2
         """,

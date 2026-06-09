@@ -44,6 +44,7 @@ Sub-namespaces:
 | `projection` | `services.settings_resolution.resolve_setting` × `ai_policy_mutation.projectable_keys` | drift status per projected legacy scalar |
 | `instruction` | `utils.db.ai.get_instruction_profile` | active guild instruction profile id + name |
 | `audit` | `services.ai_decision_audit_service.query` | latest decision row + per-decision counts over the recent window |
+| `orchestration` | `utils.db.ai.get_guild_policy` (profile key) + `list_channel_policies` / `list_category_policies` (override counts) + `services.ai_orchestration_presets` (label) | guild-default tool-orchestration profile + per-scope override counts (Phase 3) |
 | `readiness_summary` | `services.ai_readiness_service.scan` (caller passes the summary line through) | optional one-line health string |
 
 Every field tolerates unknown / missing data using `None` or `"—"` so
@@ -113,6 +114,7 @@ settings UI yet.
 |---|---|
 | Guild AI policy (master switch, NL baseline, provider, model, level, cooldown, fresh-user, guild instruction profile binding) | `services.ai_policy_mutation.set_guild_policy` |
 | Channel / category / role overrides | `services.ai_policy_mutation.set_channel_policy` / `set_category_policy` / `set_role_policy` |
+| Tool-orchestration profile (guild / channel / category) | `services.ai_orchestration_mutation.set_guild_orchestration` / `set_channel_orchestration` / `set_category_orchestration` (Phase 3) |
 | Instruction profile body (typed table) | `services.ai_instruction_mutation.upsert_profile` |
 | Decision audit rows | `services.ai_decision_audit_service.record` (called once per pipeline-stage invocation) |
 | Settings → typed projection | `services.ai_policy_mutation.project_from_legacy_settings` (called by the settings mutation pipeline post-write) |
@@ -121,7 +123,12 @@ Reinforces `docs/ownership.md`'s direct-write blocklist for the AI
 subsystem: **no view, cog, or panel may write to `ai_guild_policy`,
 `ai_channel_policy`, `ai_category_policy`, `ai_role_policy`,
 `ai_instruction_profile`, or `ai_decision_audit` directly.** All writes
-flow through the named services.
+flow through the named services. The `orchestration_profile` column on
+`ai_guild_policy` / `ai_channel_policy` / `ai_category_policy`
+(migration 062) is written **only** through
+`services.ai_orchestration_mutation`; the natural-language reply policy
+on those same rows stays owned by `services.ai_policy_mutation`. The two
+seams touch disjoint columns and never clobber each other.
 
 ### Preservation invariant (PR-6 territory)
 
@@ -234,6 +241,18 @@ do not relitigate them.
   → `AI_DEFAULT_PROVIDER` → `"deterministic"`. So editing the setting
   **does** take effect for that guild; the env var is only the
   cross-guild fallback.
+- **Tool orchestration is independent of reply behaviour (Phase 3).** The
+  orchestration profile answers *how* tools are offered (which toolsets,
+  tool-choice requirement, loop budget) — a separate axis from the reply
+  policy (*whether* to reply: mode / level / cooldown) and the behavior
+  preset (*tone*). It resolves most-specific-wins (channel → category →
+  guild → system default) in `services.ai_orchestration_policy.resolve`.
+  The system default key (`compatible_default`) reproduces today's
+  behaviour byte-for-byte: every scope-allowed tool offered with automatic
+  choice and a hop-bounded budget — so a guild that never opens **Tools &
+  Workflows** is unchanged. A profile can only **narrow** the offered set;
+  `AIToolSpec.min_scope` (via `ai_tool_catalogue.select_tools`) stays
+  authoritative, so a profile never grants a tool above the caller's scope.
 
 ---
 
@@ -250,7 +269,9 @@ is allowed; PR descriptions should verify no test asserts a fixed
 
 The AI panel's button custom_ids today: `ai:refresh`, `ai:diagnostics`,
 `ai:providers`, `ai:routing`, `ai:settings`, `ai:policy`, `ai:behavior`.
-PR-3 adds `ai:memory`.
+PR-3 adds `ai:memory`. Phase 3 adds `ai:tools` (Tools & Workflows —
+orchestration profiles), routed by `handle_ai_interaction` and dispatched
+to `views.ai.tools.ToolsChooserView`.
 
 ### Additive nullable migrations (I-4)
 

@@ -242,10 +242,55 @@ class AIPanelView(PersistentView):
             ephemeral=True,
         )
 
+    @discord.ui.button(
+        label="Tools",
+        style=discord.ButtonStyle.success,
+        row=1,
+        custom_id="ai:tools",
+    )
+    async def tools_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        # Phase 3: open the Tools & Workflows chooser (orchestration profiles).
+        # Reads the snapshot best-effort so the chooser shows the current
+        # guild-default profile + override counts; writes flow through
+        # services.ai_orchestration_mutation from inside the scope views.
+        from views.ai.tools import ToolsChooserView, build_tools_embed
+
+        snapshot = await _best_effort_ai_snapshot(interaction.guild_id)
+        await interaction.response.send_message(
+            embed=build_tools_embed(snapshot),
+            view=ToolsChooserView(),
+            ephemeral=True,
+        )
+
 
 # ---------------------------------------------------------------------------
 # Shared dispatch + interaction-router handler
 # ---------------------------------------------------------------------------
+
+
+async def _best_effort_ai_snapshot(guild_id: int | None) -> Any:
+    """Build the AI config snapshot for ``guild_id``, or ``None`` on failure.
+
+    Used to show the current orchestration profile in the Tools & Workflows
+    chooser. Best-effort: the chooser renders its static intro without it.
+    """
+    if guild_id is None:
+        return None
+    try:
+        from services import ai_config_projection_service
+
+        return await ai_config_projection_service.build_snapshot(guild_id)
+    except Exception:
+        logger.debug(
+            "ai panel: snapshot build failed for guild=%s",
+            guild_id,
+            exc_info=True,
+        )
+        return None
 
 
 def _embed_for_ai_panel_action(action: str) -> discord.Embed | None:
@@ -346,6 +391,19 @@ async def handle_ai_interaction(
             await interaction.response.send_message(
                 embed=build_behavior_embed(),
                 view=BehaviorChooserView(),
+                ephemeral=True,
+            )
+            return
+
+        if action == "tools":
+            from views.ai.tools import ToolsChooserView, build_tools_embed
+
+            snapshot = await _best_effort_ai_snapshot(interaction.guild_id)
+            if interaction.response.is_done():
+                return
+            await interaction.response.send_message(
+                embed=build_tools_embed(snapshot),
+                view=ToolsChooserView(),
                 ephemeral=True,
             )
             return
