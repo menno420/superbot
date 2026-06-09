@@ -96,7 +96,7 @@ def test_community_hub_uses_new_cog():
     assert community is not None
     assert community.entry_command == "!community"
     assert community.minimum_tier == "user"
-    assert community.primary_children == ("xp", "role")
+    assert community.primary_children == ("xp", "community_spotlight", "role")
     assert community.cross_link_children == ("counting", "chain", "leaderboard")
     assert community.panel_available is True
 

@@ -356,6 +356,32 @@ SUBSYSTEMS: dict[str, dict] = {
             "community.hub.view",
         ],
     },
+    # Key is snake_case (Q-0026): cog_name_to_subsystem("CommunitySpotlightCog")
+    # = "community_spotlight".  Registered via the Q-0025 scaffold lane (Q-0044):
+    # a read-only live dashboard, reached as a Community-hub child.
+    "community_spotlight": {
+        "display_name": "Community Spotlight",
+        "description": "Live server activity dashboard — leaders, level-ups, game stats",
+        "emoji": "🌟",
+        "color": GENERAL_COLOR.value,
+        "visibility_tier": "user",
+        "visibility_mode": "normal",
+        "category": "community",
+        "tags": ["spotlight", "activity", "leaderboard", "community"],
+        "entry_points": ["spotlight"],
+        "default_channels": ["general", "bot-commands"],
+        "related_subsystems": ["xp", "economy", "leaderboard"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 30,
+        "parent_hub": "community",
+        "hub_group": "activities",
+        "capabilities": [
+            "community_spotlight.dashboard.view",
+        ],
+    },
     "blackjack": {
         "display_name": "Blackjack",
         "description": "Blackjack card game",
