@@ -49,6 +49,36 @@ async def update_mining_item(
     )
 
 
+async def apply_inventory_deltas(
+    user_id: str,
+    guild_id: int,
+    deltas: dict[str, int],
+) -> None:
+    """Apply several item deltas in ONE transaction (crafting's atomicity fix).
+
+    A multi-item craft previously issued one upsert per material — a failure
+    mid-way could consume half a recipe (the §6.5 robustness nit).  Quantities
+    clamp to 0 exactly like :func:`update_mining_item`.
+    """
+    if not deltas:
+        return
+    p = pool.get()
+    async with p.acquire() as conn, conn.transaction():
+        for item_name, delta in deltas.items():
+            await conn.execute(
+                """INSERT INTO mining_inventory
+                       (user_id, guild_id, item_name, quantity)
+                   VALUES ($1, $2, $3, GREATEST(0, $4))
+                   ON CONFLICT (user_id, guild_id, item_name)
+                   DO UPDATE SET
+                       quantity = GREATEST(0, mining_inventory.quantity + $4)""",
+                user_id,
+                guild_id,
+                item_name,
+                delta,
+            )
+
+
 async def set_mining_inventory(
     user_id: str,
     guild_id: int,

@@ -207,6 +207,12 @@ mining_equipment       (guild_id, user_id, slot, item_name, durability, equipped
   └ references item-names in mining_inventory; durability ticks down per use.
 ```
 
+> **Correction (2026-06-09, as built):** durability did **not** land as a column on
+> `mining_equipment` — a slot-keyed value resets on unequip/re-equip, a free-repair
+> exploit. It lives in its own **`mining_gear_wear`** table keyed by *(user, guild,
+> item_name)* (migration 063); a row exists only while the item is worn.
+> `last_broken_item` landed on `mining_player_state` as sketched.
+
 `user_id` stays `TEXT` to match legacy `mining_inventory`. No `discovered_cells` table in v1 —
 that arrives with the P6 grid.
 
@@ -277,7 +283,13 @@ foundation first"). P6 is where the original grid/coordinate vision lands, on to
   consumption/sink mechanic to the durability slice (P5) instead of overloading descent now.
   The whole gate is one pure function (`cogs/mining/world.max_accessible_depth`) — trivially
   swappable to a consumption model if the owner prefers it.
-- **P5:** durability harshness — a resource sink, not an annoyance (the brainstorm's own caution).
+- **P5 — DECIDED 2026-06-09; OWNER-CONFIRMED 2026-06-09 (Q-0054): numbers + the
+  lights-wear-underground model stay as shipped.**
+  Durability shipped generous-side per this caution: pickaxe 60 uses / iron 150 / torch 40 /
+  lantern 100 / charm 80 (data in `utils/equipment.MAX_DURABILITY`); repair = `REPAIR_RATE`
+  (0.5) × shop price, scaled by missing durability; lights wear only **underground**; descent
+  itself stays free (the P2 persistent-gating decision is unchanged — wear-on-use replaced
+  the deferred "consume a light per descent" idea). All knobs are single-table data.
 - **P6:** resource depletion semantics once cells exist (permanent / regenerating / per-player),
   and personal-vs-shared dig sites. The `world_seed` stored back in P2 already makes generation
   deterministic when this lands.
@@ -368,8 +380,21 @@ Design it as *one* loop, not separate features.
 
 **Shipped 2026-06-09:** the **sell-ore / buy-gear market** (`cogs/mining/market.py`) — the
 faucet + first sink. Coins move only through the audited `services.economy_service`; sell
-prices reuse `items.item_value`; the gear shop is a tunable coin catalogue. The recurring
-sink (**durability + repair**) and the other sinks (structures, respec) remain next.
+prices reuse `items.item_value`; the gear shop is a tunable coin catalogue.
+
+**Shipped 2026-06-09 (second slice): the keystone — Workshop + durability**
+(`cogs/mining/workshop.py` + migration 063 + `views/mining/workshop_panel.py`): gear wears
+1 durability per use (mine wears tool + light-underground; explore wears light-underground
++ charm), breaks at 0 (**consumed from inventory** — the ore sink), and comes back via
+**repair** (coin sink, audited through economy_service `mining:repair_gear`; price derived
+from the gear shop at `REPAIR_RATE`) or **re-craft** (`!craft`/quick-craft-last-broken,
+auto-equip; materials+product move in one transaction). Wear is keyed by item *name*
+(`mining_gear_wear`), not slot, so unequip/re-equip can't reset it (the §6.4 sketch of a
+durability column on `mining_equipment` was a free-repair exploit — corrected). The hub
+also gained the §6.3 **live overview** embed (location · tool+durability · light · net
+worth · broken-gear hint). The remaining sinks (**structures** Forge/Vault/Home, **respec**)
+are next; combat gear has durability maxes but **no wear path yet** — **duels ticking
+weapon/armor wear is owner-approved and queued as its own later slice (Q-0054)**.
 
 ### 7.6 Profile & identity (the spine, in detail)
 

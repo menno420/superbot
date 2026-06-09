@@ -94,6 +94,30 @@ _GEAR: dict[str, tuple[str, EffectiveStats]] = {
 }
 
 
+# Max durability — how many uses the "active" unit of a gear item survives
+# before it breaks (consumed from inventory; the brainstorm §7.5 keystone
+# resource sink).  Generous on purpose: a sink, not an annoyance (§6.8 P5).
+# Combat gear (sword/shield/…) has maxes defined now but no wear path until a
+# later slice ticks durability in duels.  Items absent from this table never
+# wear (safe default for unknown/legacy items).
+MAX_DURABILITY: dict[str, int] = {
+    "pickaxe": 60,
+    "iron pickaxe": 150,
+    "torch": 40,
+    "lantern": 100,
+    "lucky charm": 80,
+    "sword": 60,
+    "iron sword": 150,
+    "shield": 90,
+    "armor": 120,
+}
+
+
+def max_durability(item_name: str) -> int | None:
+    """Uses before *item_name* breaks, or None if it does not wear."""
+    return MAX_DURABILITY.get(item_name.lower())
+
+
 def slot_for(item_name: str) -> str | None:
     """The slot *item_name* equips into, or None if it is not equippable."""
     entry = _GEAR.get(item_name.lower())
@@ -134,6 +158,8 @@ __all__ = [
     "SLOTS",
     "EffectiveStats",
     "STAT_LABELS",
+    "MAX_DURABILITY",
+    "max_durability",
     "slot_for",
     "is_equippable",
     "item_stats",

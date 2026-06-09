@@ -2126,3 +2126,39 @@ The other 21 ideas are captured with states/destinations (no orphans). Predictio
 (A6) explicitly rides the existing economy chance-reward review gate.
 
 **Routed to:** the three docs above; grooming sessions pull ⭐ rows first.
+
+### Q-0054 — Mining durability tuning + the Q-0050 "craft-once" interplay
+
+**Area:** Games — mining character platform (Wave 1)
+**Type:** Balance confirmation (agent call already shipped in PR #624, fully reversible data)
+**Priority:** Low-medium (live and self-consistent; one semantic overlap with Q-0050 to settle)
+**Status:** Answered (2026-06-09) — **Routed** → brainstorm §6.8 P5 (owner-confirmed) + §7.5 (queued duels-wear) + roadmap games row
+
+**Maintainer answer (2026-06-09, structured choices):** **(1) Lights keep wear** as
+shipped — Q-0050's "craft-once" referred to the *descent* mechanic (no consume-per-
+descend), not to durability; one sink covers all gear. **(2) Numbers stay as shipped**
+(pickaxe 60 / iron 150 / torch 40 / lantern 100 / charm 80; `REPAIR_RATE` 0.5).
+**(3) Duels SHOULD tick weapon/armor wear — queued as its own later slice** (combat
+gear joins the craft→break→repair loop; maxes already defined).
+
+**Question:** The Workshop + durability slice (PR #624) shipped with agent-chosen numbers,
+picked generous-side per the §6.8 P5 caution ("a resource sink, not an annoyance").
+Confirm or retune: **(1) maxes** — pickaxe 60 uses, iron pickaxe 150, torch 40, lantern
+100, lucky charm 80 (combat gear has maxes — sword 60 / iron sword 150 / shield 90 /
+armor 120 — but **no wear path yet**: duels don't tick durability); **(2) wear plan** —
+mining wears tool always + light underground; exploring wears light underground + charm;
+harvest/descent wear nothing (descent stays persistent-gated per Q-0050); **(3) repair
+price** — `REPAIR_RATE` 0.5 × gear-shop price, scaled by missing durability, so the shop
+catalogue is the single tuning knob; **(4)** should **duels** eventually tick weapon/armor
+wear, and should the **lucky charm** (buy-only treasure, 80 🪙) wear at all?
+
+**The Q-0050 interplay (the real question):** Q-0050's answer says lights are
+"**craft-once gear**; depth is a progression unlock, not an upkeep cost" — answered about
+the *descent* mechanic (no consume-per-descend; PR #624 honours that: descent is free).
+But the shipped durability slice has lights **wear per underground action** (torch 40
+uses, lantern 100) as part of "the Workshop durability slice carries the recurring-sink
+role". If "craft-once" was meant broadly (lights never break), the fix is one-line data:
+remove torch/lantern from `MAX_DURABILITY` so only tools + charms wear.
+
+**Routed to:** brainstorm §6.8 P5 (P5 entry now owner-confirmed) + §7.5 (duels-wear
+queued), `docs/roadmap.md` games section (queued slice).

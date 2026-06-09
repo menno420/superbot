@@ -21,7 +21,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import market, world
+from cogs.mining import market, workshop, world
 from cogs.mining.exploration import explore_from_state
 from cogs.mining.items import total_value
 from cogs.mining.recipes import load_recipes
@@ -32,6 +32,7 @@ from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
 # Pattern B re-export: importing this triggers @register on MiningHubView
 # so message_anchor_manager.restore_anchors() finds the class at on_ready.
 from views.mining import MineView, MiningHubView  # noqa: F401 — re-exported
+from views.mining.main_panel import build_overview_embed
 
 logger = logging.getLogger("bot.cogs.mining")
 
@@ -63,15 +64,35 @@ class MiningCog(commands.Cog):
     async def minemenu(self, ctx):
         """Open the mining hub panel."""
         view = MiningHubView()
-        await panel_manager.get_or_render_panel(ctx, "mining", view.build_embed(), view)
+        embed = await build_overview_embed(
+            ctx.author.id,
+            ctx.guild.id,
+            name=ctx.author.display_name,
+        )
+        await panel_manager.get_or_render_panel(ctx, "mining", embed, view)
 
     async def build_help_menu_view(
         self,
         interaction: discord.Interaction,
     ) -> tuple[discord.Embed, discord.ui.View]:
-        """Help-menu direct-navigation hook (returns the mining hub panel)."""
+        """Help-menu direct-navigation hook (returns the mining hub panel).
+
+        The live overview is an enrichment: navigation must not crash if its
+        reads fail, so any error degrades to the stateless hub embed.
+        """
         view = MiningHubView()
-        return view.build_embed(), view
+        if interaction.guild_id is None:
+            return view.build_embed(), view
+        try:
+            embed = await build_overview_embed(
+                interaction.user.id,
+                interaction.guild_id,
+                name=interaction.user.display_name,
+            )
+        except Exception:  # noqa: BLE001 — navigation must not crash Help
+            logger.warning("mining overview unavailable; using static hub embed")
+            return view.build_embed(), view
+        return embed, view
 
     @commands.command()
     async def mine(self, ctx):
@@ -134,46 +155,17 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- build / crafting
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, aliases=["craft"])
     async def build(self, ctx, *, structure: str = None):
-        """Build a structure based on recipes.
+        """Build / craft an item from recipes (one shared, atomic implementation).
 
         If no structure is specified, calls !buildlist to show all.
         """
         try:
             if structure is None:
                 return await ctx.invoke(self.bot.get_command("buildlist"))
-
-            user_id = str(ctx.author.id)
-            gid = ctx.guild.id
-            inventory = await db.get_mining_inventory(user_id, gid)
-
-            structure_lower = structure.lower()
-            required_items = self.recipes.get(structure_lower)
-
-            if not required_items:
-                return await ctx.send(
-                    "Unknown structure. Use `!buildlist` to see all available structures.",
-                )
-
-            for item, amount_needed in required_items.items():
-                if inventory.get(item, 0) < amount_needed:
-                    return await ctx.send(
-                        f"You don't have enough **{item}** to build **{structure}**.",
-                    )
-
-            for item, amount_needed in required_items.items():
-                await self.update_inventory(
-                    ctx.author.id,
-                    gid,
-                    item,
-                    -amount_needed,
-                )
-            await self.update_inventory(ctx.author.id, gid, structure_lower, 1)
-
-            await ctx.send(
-                f"{ctx.author.mention} successfully built a **{structure}**!",
-            )
+            result = await workshop.apply_craft(ctx.author.id, ctx.guild.id, structure)
+            await ctx.send(f"{ctx.author.mention} {result.message}")
         except Exception:
             logger.exception("build command failed")
             await ctx.send("An unexpected error occurred while trying to build.")
@@ -246,9 +238,17 @@ class MiningCog(commands.Cog):
         )
         if item:
             await self.update_inventory(user_id, gid, item, amount)
-        await ctx.send(
-            f"{ctx.author.mention} {text}\n_{world.describe_position(depth)}_",
+        wear = await workshop.apply_wear(
+            ctx.author.id,
+            gid,
+            action=workshop.ACTION_EXPLORE,
+            depth=depth,
+            equipped=equipped,
         )
+        message = f"{ctx.author.mention} {text}\n_{world.describe_position(depth)}_"
+        if wear.notes:
+            message += "\n" + "\n".join(wear.notes)
+        await ctx.send(message)
 
     @commands.command(hidden=True)
     async def use(self, ctx, *, item: str = None):
@@ -312,9 +312,10 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def gear(self, ctx):
-        """Show your equipped gear and the stats it grants."""
+        """Show your equipped gear, its condition, and the stats it grants."""
         user_id = str(ctx.author.id)
         equipped = await db.get_equipment(user_id, ctx.guild.id)
+        wear = await db.get_gear_wear(user_id, ctx.guild.id)
         stats = equipment.compute_stats(equipped)
         embed = discord.Embed(
             title=f"🧍 {ctx.author.name}'s Gear",
@@ -322,9 +323,17 @@ class MiningCog(commands.Cog):
         )
         for slot in equipment.SLOTS:
             held = equipped.get(slot)
+            value = "*(empty)*"
+            if held:
+                value = f"**{held.title()}**"
+                maximum = equipment.max_durability(held)
+                if maximum is not None:
+                    value += (
+                        f"\n{workshop.durability_bar(wear.get(held, maximum), maximum)}"
+                    )
             embed.add_field(
                 name=slot.title(),
-                value=f"**{held.title()}**" if held else "*(empty)*",
+                value=value,
                 inline=True,
             )
         bonuses = equipment.describe_stats(stats)
@@ -443,6 +452,37 @@ class MiningCog(commands.Cog):
             text=f"Balance: {balance} 🪙  •  !sell <item> [n] · !sellall · !buy <item>",
         )
         await ctx.send(embed=embed)
+
+    # ---------------------------------------------------------- workshop
+
+    @commands.command(name="workshop", hidden=True)
+    async def workshop_cmd(self, ctx):
+        """Open the workshop — repair worn gear, craft replacements."""
+        # cogs→views is allowed; one builder shared with the hub button.
+        from views.mining.workshop_panel import (
+            MiningWorkshopView,
+            build_workshop_embed,
+        )
+
+        embed = await build_workshop_embed(ctx.author.id, ctx.guild.id)
+        view = await MiningWorkshopView.create(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
+    @commands.command(hidden=True)
+    async def repair(self, ctx, *, item: str = None):
+        """Repair a worn gear item for coins (e.g. `!repair pickaxe`)."""
+        if not item:
+            return await ctx.send(
+                "Specify what to repair, e.g. `!repair pickaxe` — or `!workshop`.",
+            )
+        result = await workshop.apply_repair(ctx.author.id, ctx.guild.id, item)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    @commands.command(name="quickcraft", hidden=True)
+    async def quick_craft(self, ctx):
+        """Re-craft the last gear item that broke and equip it."""
+        result = await workshop.apply_quick_craft(ctx.author.id, ctx.guild.id)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
 
     # ---------------------------------------------------------------- admin
 

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import random
 
+from utils import equipment
+
 # Mining ore weights at the Surface (depth 0).  Deeper bands re-weight these
 # toward rarer ore via ``ore_weights_for_depth`` — the same four ores at every
 # depth, just better odds the deeper you mine.
@@ -38,13 +40,37 @@ def ore_weights_for_depth(depth: int) -> dict[str, float]:
     }
 
 
-def roll_mine_loot(*, has_pickaxe: bool, depth: int = 0) -> tuple[str, int]:
+def mine_multiplier(
+    equipped: dict[str, str],
+    inventory: dict[str, int],
+) -> int:
+    """The mine-amount multiplier from the player's tool.
+
+    An **equipped** tool wins and scales with its ``mining_power`` using the
+    exploration engine's formula (``1 + power // 2``): pickaxe ×2 (the legacy
+    bonus), iron pickaxe ×3 — equipping the better tool finally pays.  With no
+    tool equipped, a pickaxe sitting in the inventory keeps the legacy ×2 so
+    pre-equipment players lose nothing (and take no durability wear either).
+    """
+    tool = equipped.get(equipment.TOOL)
+    if tool:
+        return 1 + equipment.compute_stats({equipment.TOOL: tool}).mining_power // 2
+    return 2 if inventory.get("pickaxe", 0) > 0 else 1
+
+
+def roll_mine_loot(
+    *,
+    has_pickaxe: bool,
+    depth: int = 0,
+    multiplier: int | None = None,
+) -> tuple[str, int]:
     """Return ``(ore_name, amount)`` for one !mine click / Mine button press.
 
     A pickaxe in the inventory doubles the amount mined.  *depth* (the player's
     band, 0 = Surface) re-weights the ore table toward rarer finds the deeper the
     player has descended; it defaults to 0 so existing surface callers and their
-    tests are unaffected.
+    tests are unaffected.  *multiplier* (from :func:`mine_multiplier`) overrides
+    the binary pickaxe bonus when the caller is equipment-aware.
     """
     weights = ore_weights_for_depth(depth)
     found = random.choices(
@@ -52,7 +78,7 @@ def roll_mine_loot(*, has_pickaxe: bool, depth: int = 0) -> tuple[str, int]:
         weights=list(weights.values()),
         k=1,
     )[0]
-    bonus = 2 if has_pickaxe else 1
+    bonus = multiplier if multiplier is not None else (2 if has_pickaxe else 1)
     amount = random.randint(1, 3) * bonus
     return found, amount
 
