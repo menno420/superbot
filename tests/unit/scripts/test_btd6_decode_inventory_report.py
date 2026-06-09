@@ -145,6 +145,29 @@ def test_dump_sha_unknown_outside_git(mod, tmp_path):
     assert mod._dump_sha(tmp_path) == "unknown"
 
 
+def test_header_preamble_matches_committed_doc(mod):
+    # The committed artifact must reproduce from the script (modulo the dump
+    # moving) — including the Status badge that check_docs.py --strict
+    # demands on every docs/ file. The badge was once hand-added to the
+    # artifact only, so regenerating stripped it and would have reddened the
+    # doc-hygiene gate on the refresh PR; this pins script <-> artifact.
+    committed = (_REPO_ROOT / "docs" / "btd6" / "btd6-decode-inventory-v55.md").read_text(
+        encoding="utf-8"
+    )
+    assert committed.startswith("\n".join(mod._HEADER_LINES))
+
+
+def test_header_carries_valid_status_badge(mod):
+    # check_docs.py badge contract: `> **Status:** `<token>`` in the first
+    # 12 lines, token from its allowlist ("reference" is allowlisted).
+    import re
+
+    head = "\n".join(mod._HEADER_LINES[:12])
+    match = re.search(r"\*\*Status:\*\*\s*`([a-z-]+)`", head)
+    assert match is not None
+    assert match.group(1) == "reference"
+
+
 def test_decode_class_registry_is_classification_only(mod):
     # Slice-2 scaffolding: the registry classifies but writes no numbers.
     c = mod._DECODE_CLASS

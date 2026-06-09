@@ -1,11 +1,13 @@
 # BTD6 data refresh pipeline — fetch-everything-on-update (plan)
 
 > **Status:** `plan` — design + ready-to-run command chain. The **manual chain
-> below works today**. **SIGNED OFF 2026-06-09 (Q-0049, gate-lifting interview):**
-> commit the GitHub Actions workflow as **`workflow_dispatch`-only** (manual
-> one-click trigger, **no schedule**) — one-click refresh after a game update with
-> zero unattended-fetch risk. The scheduled variant stays not-approved. Building
-> the workflow file is the queued slice for the next BTD6 session.
+> below works today**, and the **`workflow_dispatch`-only GitHub Actions workflow
+> is committed**: [`.github/workflows/btd6-data-refresh.yml`](../../.github/workflows/btd6-data-refresh.yml)
+> (PR **#633**, 2026-06-09 — scoreboard Lane 5, per the Q-0049 sign-off: manual
+> one-click trigger, **no schedule**, opens a reviewable PR, never pushes to
+> main). The scheduled variant stays not-approved — adding any `schedule:`/cron
+> trigger needs a new owner ask. Only the `--all` cutover tail remains gated
+> (see below).
 
 ## Goal (maintainer, 2026-06-08)
 
@@ -40,7 +42,8 @@ python3.10 scripts/parse_gamedata.py --dump "$DUMP" --overlay          # safe re
 python3.10 scripts/parse_gamedata.py --dump "$DUMP" --audit            # must stay clean
 python3.10 scripts/btd6_gamedata_inventory.py --dump "$DUMP" --full-map \
     --out docs/btd6/btd6-dump-coverage-map.md
-python3.10 scripts/btd6_decode_inventory_report.py                     # if dump SHA changed
+python3.10 scripts/btd6_decode_inventory_report.py --dump "$DUMP" \
+    > docs/btd6/btd6-decode-inventory-v55.md                            # if dump SHA changed
 ```
 
 ## The gate (why "fetch everything" ≠ "commit everything")
@@ -54,15 +57,21 @@ python3.10 scripts/btd6_decode_inventory_report.py                     # if dump
   automation **stops at overlay + audit + the coverage/inventory docs** and leaves
   the cutover a human-reviewed step.
 
-## Proposed automation — GitHub Actions *(decided: dispatch-only)*
+## Automation — GitHub Actions *(committed, dispatch-only)*
 
-> **Superseded sketch (2026-06-09):** this section predates the Q-0049 sign-off in the
-> header — only **`workflow_dispatch`** is approved; the `schedule:`/cron trigger below
-> is **not approved**. When scoreboard **Lane 5** commits the workflow, strip the
-> `schedule:` line and keep `workflow_dispatch` only.
+> **Committed 2026-06-09 (PR #633, Lane 5):** the real workflow is
+> [`.github/workflows/btd6-data-refresh.yml`](../../.github/workflows/btd6-data-refresh.yml)
+> — **the file wins over the historical sketch below.** Differences from the sketch:
+> **no `schedule:`** (Q-0049 — cron was never approved; a new trigger needs a new owner
+> ask), an opt-in default-false `regenerate_decode_inventory` input (decision 3 below),
+> minimal `permissions:` + a `concurrency` queue, the audit report piped to the run
+> Summary page, and `create-pull-request` SHA-pinned at v8.1.1. Run it from the GitHub
+> **Actions** tab → *BTD6 Data Refresh (manual)* → *Run workflow*. A no-diff run opens
+> no PR (the normal outcome between game patches). Prerequisite: repo Settings → Actions
+> must allow workflows to create PRs; CI doesn't auto-run on the bot-opened PR (close &
+> reopen it, or push to its branch).
 
-A GitHub Actions workflow is the natural home: it already has network access, runs CI,
-and can open a PR. Sketch (NOT committed — drop in once approved):
+Historical sketch (kept for context only — the committed file above is authoritative):
 
 ```yaml
 # .github/workflows/btd6-data-refresh.yml  (PROPOSAL)
@@ -99,18 +108,26 @@ flags new/removed content) for review.
 1. **Cadence/trigger.** ~~Weekly cron (simple) vs. **patch-detect**~~ — **DECIDED
    2026-06-09 (Q-0049, gate-lifting interview): manual `workflow_dispatch` only; no
    schedule of any kind.** A scheduled/cron variant would need a new owner ask.
-2. **Where the 320 MB clone runs.** GitHub Actions (proposed) vs. the bot's
-   `automation_scheduler` (in-process — heavier, needs disk + the network policy to
-   allow the clone; **ADR-001** keeps state out of the runtime, so a CI job is the
-   better fit).
-3. **Scope of the auto-commit.** Overlay-only (recommended) vs. also regenerating
-   the decode-inventory each run.
+2. **Where the 320 MB clone runs.** ~~GitHub Actions vs. the bot's
+   `automation_scheduler`~~ — **RESOLVED by the committed workflow (#633): GitHub
+   Actions**, into `/tmp` (temp storage, never committed). **ADR-001** keeps state out
+   of the runtime, so the CI job was the better fit.
+3. **Scope of the auto-commit.** ~~Overlay-only (recommended) vs. also regenerating
+   the decode-inventory each run~~ — **RESOLVED in the committed workflow (#633) per
+   this doc's own recommendation:** the default scope is overlay + coverage map; the
+   decode-inventory roll-up is an **opt-in, default-false dispatch input**
+   (`regenerate_decode_inventory`) for when the dump SHA moved.
 
 ## Status / next
 
 - **Done (2026-06-08):** the coverage-map step (#6) — `--full-map` +
   [`btd6-dump-coverage-map.md`](btd6-dump-coverage-map.md), regenerable per pull.
-- **Next (signed off, Q-0049):** commit the workflow as **`workflow_dispatch`-only**
-  (strip the sketch's cron line) — queued as scoreboard **Lane 5**.
+- **Done (2026-06-09, PR #633 — Lane 5):** the **`workflow_dispatch`-only workflow**
+  ([`btd6-data-refresh.yml`](../../.github/workflows/btd6-data-refresh.yml)). Verified
+  against a live clone before commit: anchors OK, overlay 0-change no-op, audit
+  0-SUSPECT, coverage map byte-identical. Same PR fixed a latent regeneration trap at
+  the root: `btd6_decode_inventory_report.py` now emits the `Status:` badge that
+  `check_docs.py --strict` requires (it had been hand-added to the committed artifact
+  only, so any regeneration — workflow or the manual chain above — stripped it and
+  would have reddened the refresh PR's doc-hygiene gate; pinned by test now).
 - **Gated:** the full `--all` cutover (decode-status steps 1–5).
-</content>

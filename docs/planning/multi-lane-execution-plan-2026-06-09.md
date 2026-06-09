@@ -121,7 +121,14 @@
 
 ## Lane 5 — BTD6 data-refresh workflow, manual-dispatch only (Q-0049)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#633** (2026-06-09). *Executor note:* live-running the chain
+  before committing caught a real trap — `btd6_decode_inventory_report.py` didn't emit
+  the `Status:` badge `check_docs.py --strict` demands (it was hand-added to the
+  committed artifact only), so any regeneration would have reddened the refresh PR's
+  doc-hygiene gate; fixed at the generator + pinned by test in the same PR. Decode
+  roll-up regen is an opt-in default-false dispatch input (plan doc decision 3, per its
+  own recommendation). First real dispatch still owed (needs the repo
+  "Actions can create PRs" setting — documented in the workflow header).
 - **Goal:** commit `.github/workflows/btd6-data-refresh.yml` with **`workflow_dispatch`
   only** (no schedule — that variant is explicitly not approved). It runs the existing
   manual chain from `docs/btd6/btd6-data-refresh-pipeline-plan.md` and opens a PR with

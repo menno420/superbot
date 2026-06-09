@@ -1,0 +1,147 @@
+# BTD6 data refresh — the committed form of the pipeline in
+# docs/btd6/btd6-data-refresh-pipeline-plan.md.
+#
+# Trigger policy (owner decision Q-0049, 2026-06-09): workflow_dispatch ONLY.
+# Do NOT add a schedule/cron trigger — the scheduled variant is explicitly
+# not approved; adding one needs a new owner sign-off.
+#
+# What it does: clones the Btd6ModHelper/btd6-game-data dump into temp
+# storage (~320 MB, never committed), then runs the existing tested script
+# chain — validate-anchors (hard gate) -> overlay (conservative
+# uniquely-keyed numeric refresh, name-frozen) -> audit (report in the run
+# summary) -> coverage-map regeneration [-> decode inventory, opt-in input].
+# No extraction logic lives in this YAML; the scripts own all parsing.
+#
+# It NEVER pushes to main: changes land on the auto/btd6-data-refresh
+# branch as a reviewable PR. When the refreshed data matches what is
+# committed (no game update since the last run) the diff is empty and no
+# PR is opened — a no-op run is the expected outcome most of the time.
+#
+# The full `--all` cutover is intentionally NOT part of this job — it stays
+# a gated, human-reviewed step (docs/btd6/btd6-gamedata-decode-status.md).
+#
+# Prerequisites (repo Settings -> Actions -> General -> Workflow
+# permissions): "Allow GitHub Actions to create and approve pull requests"
+# must be enabled for the create-pull-request step to open the PR with the
+# default GITHUB_TOKEN. Known GitHub limitation: CI (code-quality) does not
+# auto-run on PRs opened with GITHUB_TOKEN — close & reopen the PR, or push
+# any commit to its branch, to trigger it.
+
+name: BTD6 Data Refresh (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      regenerate_decode_inventory:
+        description: >-
+          Also regenerate docs/btd6/btd6-decode-inventory-v55.md (use when
+          the dump SHA moved; default scope is overlay + coverage map)
+        type: boolean
+        default: false
+
+# Minimal token surface: push the auto branch + open the PR. Nothing else.
+permissions:
+  contents: write
+  pull-requests: write
+
+# Two concurrent dispatches would race on the same auto branch — queue them.
+concurrency:
+  group: btd6-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # The script chain is stdlib-only today; install runtime deps anyway
+      # so a future script-side import never diverges from CI's env.
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Temp storage only — the repo commits derived data, never the dump.
+      - name: Clone btd6-game-data dump
+        run: >-
+          git clone --depth 1
+          https://github.com/Btd6ModHelper/btd6-game-data /tmp/btd6gd
+
+      - name: Record dump SHA
+        id: dump
+        run: echo "sha=$(git -C /tmp/btd6gd rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # Hard gate: abort before any write if the dump's shape moved
+      # (Dart 200 / Super 2500 anchors) — exits 1 on failure.
+      - name: Validate anchors
+        run: >-
+          python3.10 scripts/parse_gamedata.py --dump /tmp/btd6gd
+          --validate-anchors
+
+      - name: Overlay refresh (safe, name-frozen)
+        run: python3.10 scripts/parse_gamedata.py --dump /tmp/btd6gd --overlay
+
+      # Informational (exit 0 either way) — the per-field fidelity report
+      # goes to the run Summary page; the reviewer checks it stays
+      # nothing-SUSPECT before merging the PR this run opens.
+      - name: Audit field fidelity (report in run summary)
+        shell: bash
+        run: |
+          {
+            echo '### BTD6 audit — dump ${{ steps.dump.outputs.sha }}'
+            echo ''
+            echo '```text'
+            python3.10 scripts/parse_gamedata.py --dump /tmp/btd6gd --audit
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Regenerate dump coverage map
+        run: >-
+          python3.10 scripts/btd6_gamedata_inventory.py --dump /tmp/btd6gd
+          --full-map --out docs/btd6/btd6-dump-coverage-map.md
+
+      - name: Regenerate decode inventory report (opt-in)
+        if: inputs.regenerate_decode_inventory
+        run: >-
+          python3.10 scripts/btd6_decode_inventory_report.py
+          --dump /tmp/btd6gd > docs/btd6/btd6-decode-inventory-v55.md
+
+      # Third-party action (adopted 2026-06-09, Lane 5 / Q-0049): the
+      # de-facto standard for PR-from-workflow, expected by the pipeline
+      # plan. SHA-pinned (supply-chain posture of this repo's workflows);
+      # bump deliberately by editing the SHA + version comment together.
+      # Unverified: confirm its output against the first few real runs
+      # before trusting it unattended.
+      - name: Open reviewable PR (never pushes to main)
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: auto/btd6-data-refresh
+          delete-branch: true
+          add-paths: |
+            disbot/data/btd6/**
+            docs/btd6/**
+          commit-message: >-
+            BTD6 data refresh (dump ${{ steps.dump.outputs.sha }})
+          title: "BTD6 data refresh (manual dispatch)"
+          body: |
+            Automated overlay refresh from a manual `BTD6 Data Refresh`
+            dispatch — review the diff; nothing merges on its own.
+
+            - Dump: `Btd6ModHelper/btd6-game-data` @ `${{ steps.dump.outputs.sha }}`
+            - Chain: validate-anchors → overlay (uniquely-keyed numbers,
+              name-frozen) → audit → coverage map${{ inputs.regenerate_decode_inventory && ' → decode inventory' || '' }}
+            - The audit report is on the dispatch run's Summary page — check
+              it stays nothing-SUSPECT before merging.
+            - The full `--all` cutover is intentionally not part of this job
+              (`docs/btd6/btd6-gamedata-decode-status.md`).
+            - CI note: code-quality does not auto-run on workflow-opened PRs —
+              close & reopen this PR (or push any commit) to trigger it.
+
+            Pipeline doc: `docs/btd6/btd6-data-refresh-pipeline-plan.md` (Q-0049).
