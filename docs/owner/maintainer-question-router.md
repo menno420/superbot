@@ -1814,7 +1814,7 @@ Action owner: maintainer (ChatGPT template).
 **Area:** Social / community / progression
 **Type:** Product + architecture boundary
 **Priority:** High (blocks guild, guild-bank, guild-battle, guild-profile, and guild-leaderboard planning)
-**Status:** Open
+**Status:** Open — draft-answer appended below (2026-06-09), awaiting maintainer markup; safe default still binds
 **Question:** Is a player guild/clan scoped independently inside each Discord server, or may one player guild span multiple Discord servers? If cross-server identity is wanted, what consent, discoverability, moderation, ownership-transfer, retention, deletion/export, and main-server behavior should apply?
 
 **Why agents need this:** The answer determines the canonical keys and owner for membership, treasury, battles, profiles, and leaderboards. Guessing would create either a duplicate per-server system or an unapproved cross-server identity system.
@@ -1825,12 +1825,60 @@ Action owner: maintainer (ChatGPT template).
 
 **Suggested destination after answer:** `docs/planning/social-community-progression-roadmap-2026-06-08.md` and a dedicated ownership/ADR decision if a new social domain is approved.
 
+**Draft answer — awaiting maintainer markup** *(Lane 6, 2026-06-09, per Q-0051 — proposed for approve / adjust / reject per item; nothing below is decided until marked up)*
+
+**Proposed answer:** **Server-scoped clans.** A player clan lives entirely inside one
+Discord server; nothing about it crosses servers. Per sub-question:
+
+- **Tenancy / canonical keys:** every clan row is keyed `(guild_id, clan_id)`; membership
+  is `(guild_id, clan_id, user_id)`. One clan per player per server (switching allowed,
+  with a cooldown so treasuries/leaderboards can't be hopped). The same player may be in
+  different clans on different servers — those are unrelated facts.
+- **Cross-server identity:** none in v1 — no cross-server membership, treasury, battles,
+  profiles, or leaderboards. A later "cross-server clan showcase" would be a separate,
+  consent-first decision after the server-scoped model is stable; it is not part of this
+  answer.
+- **Consent / discoverability:** no consent machinery needed (nothing leaves the server);
+  clans are discoverable in-server via a clan list / clan leaderboard panel.
+- **Moderation:** server staff fully own what happens in their server — clan names and
+  descriptions are moderatable content; staff can rename/disband through the same audited
+  service path the clan owner uses.
+- **Ownership transfer:** explicit owner action (or staff override), audited.
+- **Retention / deletion / export:** clan data follows the existing guild-lifecycle rules —
+  when the bot leaves a server or its data is cleaned, its clans go with it. Disband
+  liquidates the treasury back through `economy_service` (audited) so coins are never
+  orphaned. No export surface in v1.
+- **Main-server behavior:** nothing special — the main server is just another tenant.
+- **Naming:** code/schema say **"clan"** (`player_clans`, `clan_id`) to avoid colliding
+  with discord.py's `Guild` (= Discord server) throughout the codebase; user-facing copy
+  may still say "guild" if preferred — that choice is cosmetic and reversible.
+
+**Why this fits current SuperBot direction:** the owner's own architecture note says new
+features must keep scoping data per-server (`docs/ideas/owner-vision-ideas-2026-06-08.md`
+§9); every existing table follows guild-scoped tenancy; ADR-001 keeps the bot
+single-process with no shared external state, which cross-server identity would strain;
+and the future-product capture explicitly bars cross-server profiles before dedicated
+privacy/consent/retention decisions. Server-scoped clans need none of that machinery and
+unblock everything the owner actually selected (§4a shared bank + officer spending,
+battles, upgrades/levels; §14 guild leaderboard).
+**Safe default until approved:** unchanged — the safe default above stands (planning-only;
+no schema, no cross-server exposure).
+**Implementation implication if approved later:** the social roadmap's phase 1 becomes
+specifiable: schema/ownership with `(guild_id, clan_id)` keys, a new social domain owner
+declared in `docs/ownership.md` (+ likely an ADR), treasury mutations through
+`economy_service`, and officer authority as a small capability surface.
+**Rejected / avoided direction:** cross-server clan identity in v1 — it imports consent,
+moderation-jurisdiction, retention/export, and abuse problems the bot does not have
+today, for no feature the owner selected (every §4a selection works server-scoped). Also
+avoided: multi-clan membership per player per server (treasury/leaderboard exploit
+surface).
+
 ### Q-0039 — Which VIP/donation benefits are acceptable under the no-pay-to-win rule?
 
 **Area:** Economy / rewards
 **Type:** Product, monetization, and fairness boundary
 **Priority:** High (blocks VIP planning)
-**Status:** Open
+**Status:** Open — draft-answer appended below (2026-06-09), awaiting maintainer markup; safe default still binds
 **Question:** Should VIP/donation tiers be limited to cosmetic identity and supporter recognition, or may they include convenience benefits? Which exact benefits are explicitly allowed or forbidden, and should donation status ever be stored or processed by SuperBot itself?
 
 **Why agents need this:** “No pay-to-win” is binding owner intent, but convenience, lottery entries, marketplace privileges, and economy-adjacent perks can still create gameplay advantage or external billing/privacy obligations.
@@ -1841,12 +1889,56 @@ Action owner: maintainer (ChatGPT template).
 
 **Suggested destination after answer:** `docs/planning/economy-marketplace-rewards-roadmap-2026-06-08.md` and, if external payment data is approved, the integrations/privacy decision set.
 
+**Draft answer — awaiting maintainer markup** *(Lane 6, 2026-06-09, per Q-0051 — proposed for approve / adjust / reject per item; nothing below is decided until marked up)*
+
+**Proposed answer:** **Donation benefits = cosmetic identity + supporter recognition only;
+convenience perks live on the earned track only; SuperBot never stores or processes
+payment data.**
+
+- **Donation track (real money) — allowed:** supporter badge/title on the profile card,
+  cosmetic name color / banner / flair variants, supporter-only *cosmetic* shop items,
+  a thank-you/credits surface. All purely presentational.
+- **Donation track — explicitly forbidden:** anything touching XP, coins, drops, odds,
+  cooldowns, daily/streak claims, lottery entries, market access/fees, guild/clan power,
+  or game outcomes — and also "soft convenience" with economic effect (cooldown skips,
+  extra claims, fee discounts). Lottery entries are named deliberately: the lottery pays
+  coins, so a purchasable entry is pay-to-win with extra steps.
+- **Earned in-game VIP track (milestones, no money):** may carry convenience and
+  progression perks — that is normal game progression, governed by game balance, not by
+  this fairness rule. The two tracks stack visually (both badges can show), per the
+  owner's "two separate tracks that can stack."
+- **Donation status storage:** none. SuperBot runs no billing and stores no payment or
+  donor data. Supporter status enters as a **Discord role** managed outside the bot
+  (e.g. Patreon's own role sync, or manually granted by the owner); the bot *reads* that
+  role live to render cosmetics. Role gone → cosmetics deactivate. No schema, no PII,
+  no chargeback handling.
+- **Enforcement:** add an invariant test asserting no supporter/VIP predicate appears in
+  any odds / reward / cooldown / fee code path — the no-pay-to-win rule becomes
+  CI-checkable instead of reviewer-remembered.
+
+**Why this fits current SuperBot direction:** it is the owner's own §13 selection
+(`docs/ideas/owner-vision-ideas-2026-06-08.md`: donation VIP = "cosmetic perks only, no
+gameplay advantage"; earned + donation as two stacking tracks) made precise; the
+not-selected markers already exclude XP multipliers and pay-to-win consumables (§2a/§2b);
+and keeping billing out of SuperBot avoids the entire payment-privacy/provider obligation
+the safe default warns about.
+**Safe default until approved:** unchanged — the safe default above stands (no paid
+benefit touches gameplay; no billing/provider integration).
+**Implementation implication if approved later:** the economy roadmap's VIP phase becomes
+specifiable: a `supporter_only` flag on the cosmetic catalog, rendering keyed off the
+configured supporter role (existing role/binding patterns), the CI invariant above, and
+zero payment schema.
+**Rejected / avoided direction:** convenience benefits on the donation track (each is a
+quiet economy advantage); SuperBot-native billing or donation processing (a privacy/legal
+surface far above current posture); purchasable lottery entries or purchasable odds of
+any kind.
+
 ### Q-0040 — What operational posture should an AI dungeon master use?
 
 **Area:** AI / games / social
 **Type:** Product, cost, moderation, and retention boundary
 **Priority:** High (blocks AI dungeon-master and player-prompted event planning)
-**Status:** Open
+**Status:** Open — draft-answer appended below (2026-06-09), awaiting maintainer markup; safe default still binds
 **Question:** For thread, persistent-channel, and DM modes, what should persist; who may start/join/control a session; what content/moderation limits apply; what cost/rate limits are acceptable; and may AI ever propose mechanics/rewards beyond narrative wrapping of deterministic game-owned outcomes?
 
 **Why agents need this:** The answer governs state ownership, privacy, content safety, provider spend, and whether the feature remains explanation/narrative-only or requires a future action-authority decision.
@@ -1857,12 +1949,64 @@ Action owner: maintainer (ChatGPT template).
 
 **Suggested destination after answer:** `docs/ai/ai-product-extension-routing-2026-06-08.md` and the authoritative `docs/planning/ai-roadmap-2026-06-07.md`.
 
+**Draft answer — awaiting maintainer markup** *(Lane 6, 2026-06-09, per Q-0051 — proposed for approve / adjust / reject per item; nothing below is decided until marked up)*
+
+**Proposed answer:** **AI is the narrator, never the game-owner — thread-first,
+budget-capped, public-surface-first.**
+
+- **Authority posture (the core rule):** AI writes story/flavor around outcomes that
+  deterministic, audited game services own. Rewards, difficulty, odds, and state
+  mutations always come from deterministic owners (reward tables, `economy_service`);
+  AI never computes an amount or mutates state. Of the four selected event styles
+  (owner-vision §3b), **narrative flavor text** and **player-prompted events** (the
+  prompt seeds the *story* around a deterministically rolled event) fit this posture
+  and come first; **dynamic difficulty scaling** and **fully AI-generated quests with
+  AI-chosen rewards** require AI influence over mechanics, so they stay sequenced last,
+  behind the dedicated action-authority decision (the Q-0001 / AR-09 path) — deferred,
+  not rejected.
+- **Mode order:** thread-per-session first (the owner's own suggested priority), then
+  persistent-channel world, then DM mode. Threads are ADR-002-honest: a restart ends the
+  session and refunds any stake — no restart-safe promise. DM mode comes last because it
+  has the least moderation visibility.
+- **What persists:** per-session bounded summary state only (the existing
+  `game_state_service` versioned-JSONB pattern, if a session wants resume), cleared on
+  completion; **never** raw transcripts or model reasoning. Persistent-channel mode
+  persists a bounded world summary under the same rules.
+- **Who may start/join/control:** per-guild opt-in feature, **off by default**; starting
+  a session follows the guild's normal command-access policy; joining is open to
+  thread/channel members up to a player cap; end/kick = session starter + server staff.
+- **Content/moderation:** sessions run on public surfaces (threads/channels) first so
+  server moderation sees everything; provider safety + the existing instruction stack +
+  guild content settings apply; standard moderation tools work on the messages.
+- **Cost/rate limits:** hard per-guild daily budget + per-session turn cap,
+  operator-configurable with conservative defaults, riding the shipped orchestration
+  budget machinery (Phase 2 `AIToolBudget` / Phase 3 profiles); budget exhausted → the
+  feature degrades closed with a clear message, never silent overspend.
+
+**Why this fits current SuperBot direction:** it keeps the owner's #1 regret-if-missing
+feature (owner-vision §25) moving with a concrete, gate-respecting shape; it is exactly
+the AI routing addendum's "narrative wraps deterministic domain outputs" rule; AR-09's
+explanation-only posture stays intact (narration is presentation, not action); and the
+budget seam is the orchestration foundation that just shipped (#612/#618/#619) doing the
+job it was built for.
+**Safe default until approved:** unchanged — the safe default above stands (no
+implementation; AI owns no rewards, difficulty, quests, or state mutations; all AI
+expansion/action gates remain binding).
+**Implementation implication if approved later:** approving this is a *posture* approval,
+not a build green-light — the feature still needs its own plan plus the per-exposure lift
+(it writes, costs money, and adds UI, so the Q-0048 standing lift explicitly does **not**
+cover it). Likely sequence: a deterministic games-side event/reward owner first, then a
+`dungeon_master` orchestration profile/toolset, then the thread-mode pilot.
+**Rejected / avoided direction:** AI-owned rewards/difficulty/quest mechanics in v1
+(deferred behind the action-authority decision, per AR-09); raw transcript or reasoning
+retention; DM-mode-first rollout; uncapped provider spend.
+
 ### Q-0041 — What privacy and provider posture should integrations and voice use?
 
 **Area:** Integrations / media / voice
 **Type:** Privacy, credentials, moderation, retention, and degraded-provider policy
 **Priority:** High (blocks Twitch, YouTube alerts, Spotify/Last.fm, Steam, music, SFX, and speech commands)
-**Status:** Open
+**Status:** Open — draft-answer appended below (2026-06-09), awaiting maintainer markup; safe default still binds
 **Question:** Which provider integrations should be considered first, who supplies/owns credentials, what user/server consent is required, what data/content may be cached and for how long, what moderation rules apply, and how should alerts/voice features behave when providers fail or rate-limit the bot?
 
 **Why agents need this:** These ideas share secrets, personal activity, third-party terms, moderation, retention/deletion, rate-limit, and outage behavior. Implementing one ad hoc would create a parallel provider or delivery path.
@@ -1873,12 +2017,65 @@ Action owner: maintainer (ChatGPT template).
 
 **Suggested destination after answer:** `docs/planning/integrations-media-voice-website-roadmap-2026-06-08.md` and the media folio/ADR if the shared platform boundary changes.
 
+**Draft answer — awaiting maintainer markup** *(Lane 6, 2026-06-09, per Q-0051 — proposed for approve / adjust / reject per item; nothing below is decided until marked up)*
+
+**Proposed answer:** **YouTube-alerts pilot first on operator-owned keys with dual opt-in,
+metadata-only bounded caches, and fail-quiet degradation; voice sequenced behind its own
+architecture decision, speech recognition last.**
+
+- **Provider order:** (1) **YouTube upload alerts** — reuses the ADR-007 media seams the
+  bot already owns (fetch/context/cache services), so it is the cheapest proof of the
+  shared provider contract; (2) **Twitch live alerts** — a second adapter on the *same*
+  alert-delivery contract, proving reuse; (3) **Spotify/Last.fm and Steam** — only after
+  the alert pattern is proven, because both need per-user account linking (a much bigger
+  consent surface; pairs with the deferred account-links direction in Q-0033).
+- **Credentials:** operator-owned, platform-level API keys via environment config (the
+  existing env-gated pattern — AI provider and YouTube keys already work this way). Users
+  never supply bot-level secrets. Per-user account links (Spotify/Steam) would be explicit
+  user-initiated OAuth connects, revocable any time — and need their own consent decision
+  before those providers ship.
+- **Consent:** dual opt-in — the **operator** enables the integration and binds the
+  destination channel (existing bindings pattern), and the **individual user** opts in
+  before the bot announces anything about *them* (going live, listening status). No
+  member-activity tracking by default.
+- **Cache/retention:** metadata only (IDs, titles, timestamps, thumbnails) in bounded-TTL
+  caches with provenance/freshness labels (the existing video-cache pattern). No media
+  content, no transcripts, no accumulated listening/watch history.
+- **Moderation:** alerts post only to operator-bound channels; any operator-customizable
+  alert text passes the same content rules as other settings.
+- **Degraded providers:** provider down / rate-limited → skip the cycle quietly and
+  surface it in health/readiness (the degraded-not-broken posture current-state already
+  uses for env-gated features). Never queue-and-burst missed alerts on recovery.
+- **Voice (music / SFX / speech):** wanted (the owner explicitly rejected "no voice") but
+  **sequenced behind a dedicated architecture review** after the first two alert
+  integrations prove the provider contract — playback infrastructure is the bot's biggest
+  operational-cost step. **Speech recognition comes last, if ever, with its own
+  consent/retention decision** — continuous audio capture is the most privacy-sensitive
+  item in the whole vision and must not ride in on a music-playback approval.
+
+**Why this fits current SuperBot direction:** ADR-007 already makes media a shared
+platform subsystem — YouTube-first is reuse, not new surface; dual opt-in and
+metadata-only retention match the consent/bounded-cache posture every related capture
+demands; fail-quiet matches the accepted degraded-in-sandbox behavior; and one shared
+provider contract prevents the per-provider parallel pipelines the integrations roadmap
+warns against.
+**Safe default until approved:** unchanged — the safe default above stands (no new
+provider or voice implementation; ADR-007-owned media seams only).
+**Implementation implication if approved later:** integrations roadmap phases 2–3 become
+specifiable (shared provider contract + the YouTube pilot); every provider registers
+under media subsystem ownership (ADR-007), never as a per-feature pipeline; AI/tool
+exposure of provider data stays separately gated (the Q-0048 standing lift covers
+neither external calls nor new UI).
+**Rejected / avoided direction:** user-supplied bot-level credentials; default-on
+tracking of member activity; storing listening/watch history or transcripts;
+speech-recognition-first voice; one-off per-provider delivery pipelines.
+
 ### Q-0042 — Should a full web dashboard become a future product surface?
 
 **Area:** Website / cross-cutting UI
 **Type:** Product investment + architecture boundary
 **Priority:** Medium (future-only; blocks website planning)
-**Status:** Open
+**Status:** Open — draft-answer appended below (2026-06-09), awaiting maintainer markup; safe default still binds
 **Question:** Is the intended website a read-only companion, a full management surface, or not a priority? If management is wanted, what authentication/authorization model, hosting/operations budget, privacy posture, and limit on website-specific behavior should apply?
 
 **Why agents need this:** A website can easily become a second control plane, duplicate Discord-native panels, or bypass domain mutation/audit/permission paths.
@@ -1888,6 +2085,52 @@ Action owner: maintainer (ChatGPT template).
 **Safe default until answered:** Keep the website at Someday. Mature Discord-native panels and canonical read/mutation services first; do not create website-specific authority or mutations.
 
 **Suggested destination after answer:** `docs/planning/integrations-media-voice-website-roadmap-2026-06-08.md` and a dedicated architecture decision if promoted.
+
+**Draft answer — awaiting maintainer markup** *(Lane 6, 2026-06-09, per Q-0051 — proposed for approve / adjust / reject per item; nothing below is decided until marked up)*
+
+**Proposed answer:** **Yes as a destination, in two stages — read-only companion first,
+management second, never a second control plane — and it stays at Someday until the
+Discord-native foundations mature.**
+
+- **Stage A — read-only companion (the first web work, when promoted):** public-safe
+  profiles, leaderboards, and server feature status rendered from the read models the
+  bot already exposes (the AR-08 audience tiers apply on the web exactly as in Discord).
+  Login = **Discord OAuth2 only** — identity stays Discord-native; no separate account
+  system.
+- **Stage B — management surface (a separate later decision):** every write calls the
+  same audited domain mutation services with the same capability resolution, evaluated
+  server-side per request. The web layer owns **no** authority, no web-only mutations,
+  no web-only tables. If a panel exists in Discord and on the web, both call the same
+  service.
+- **Hosting/architecture posture (decided at promotion; the boundary now):** the bot
+  process does **not** serve the website. A web app is a separate process — which makes
+  Stage B exactly ADR-001's re-evaluation trigger 3 (a cross-process state requirement),
+  so promotion requires the dedicated ADR by design, not as an afterthought. Hosting and
+  ops budget are decided in that ADR.
+- **Privacy:** the web surface renders only what the viewer's audience tier already
+  permits in Discord; public pages are opt-in per server (an operator setting), never
+  default-published.
+- **Timing / gate:** stays **Someday** until (a) the Discord-native panel lanes
+  (settings/help/hub) mature, (b) the tiered read models cover what the site would show,
+  and (c) a dedicated security architecture review is approved. No web work starts now.
+
+**Why this fits current SuperBot direction:** it is Q-0002's answered posture
+("Discord-first, web companion possible later; keep services/read-models reusable")
+extended to the owner's full-dashboard end-state (owner-vision §21) — the full dashboard
+is honored as the destination while the staging prevents the second-control-plane
+failure mode the integrations roadmap and the future-product capture both warn about.
+The tiered introspection/projection read models shipping now (e.g. #616) are already the
+Stage-A foundation, so current work builds toward the site with zero web-specific effort.
+**Safe default until approved:** unchanged — the safe default above stands (website at
+Someday; mature Discord-native panels and canonical services first; no website-specific
+authority or mutations).
+**Implementation implication if approved later:** approving this answer sets *shape*,
+not schedule — promotion still needs the dedicated web-architecture ADR (auth/session/
+CSRF, hosting, ops budget) plus the integrations roadmap's phase 6; until then the only
+"web work" is keeping read models reusable, which is already the rule.
+**Rejected / avoided direction:** website-specific mutation authority, tables, or a
+separate account system; serving the web UI from the bot process; starting web work
+before panel/read-model maturity; default-public web exposure of guild data.
 
 ### Q-0043 — How is BTD6 "cash from round A to B" defined: inclusive sum or wallet-delta?
 
