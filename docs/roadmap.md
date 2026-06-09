@@ -112,6 +112,7 @@ stability + provider/provenance + caching/source-health + behavior-config correc
 > foundation** before any net-new tools; audience posture is **tiered** (AR-08) and AI stays
 > **explanation-only** (AR-09). Decisions: [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §18.
 
+- **Later (fully gated; answerability lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md): harden known deterministic BTD6 facts into reliable chat answers, then add scoped AI introspection/self-awareness; orchestration foundation + global AI/BTD6 gate apply.
 - **Later (do first when unblocked)** — approve the **orchestration foundation**
   ([ai-complex-request-tool-orchestration-plan](ai/ai-complex-request-tool-orchestration-plan.md))
   *before* any net-new tools.

@@ -53,6 +53,8 @@ for coverage work. The comprehensive [Adaptive Setup, Access, Profile, and Routi
 migration/backfill needs, cache invalidation, audit behavior, tests, and rollback or
 safe-disable behavior before implementation.
 
+- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — conditionally plans one AI-settings vertical slice after a centralized effective-settings introspection read model exists; it does not approve a broad Settings Manager rewrite.
+
 ## Ideas (not approved)
 
 Do not create a generic "configuration" write path that collapses the three lanes.

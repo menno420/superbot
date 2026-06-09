@@ -49,6 +49,8 @@ scoped tools (including owner-gated diagnostics). Source:
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 
+- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — source-verified answerability/self-awareness bridge with BTD6 round cash as the first proof path. Fully gated; does not supersede the orchestration-first sequence.
+
 ## Ideas (not approved)
 
 - `docs/ideas/ai-extra-tool-capability-ideas.md` — capability backlog (web/vision/

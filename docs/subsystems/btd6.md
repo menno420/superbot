@@ -48,6 +48,8 @@ calling, and smoke-test directions. They are indexed in
 [`../btd6/README.md`](../btd6/README.md) and remain subordinate to ADR-006 and the global
 AI/BTD6 gate. Do not duplicate their detailed sequences here.
 
+- **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — maps the gap between already-known deterministic BTD6 data and reliable AI selection, grounding, explanation, and introspection. It is not a broad extraction pass and remains under the global AI/BTD6 gate.
+
 ## Ideas (not approved)
 
 Further live-event/tower/hero/leaderboard browsing, richer paragon calculation, and
