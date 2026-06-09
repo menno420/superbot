@@ -20,10 +20,12 @@ Providers may raise:
 
 from __future__ import annotations
 
+import time
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
-from core.runtime.ai.contracts import AIRequest
+from core.runtime.ai.contracts import AIRequest, AIToolBudget
 
 #: A read-only tool handler: receives parsed arguments and returns a
 #: JSON-serialisable result (or a string). Handlers live in the
@@ -37,6 +39,50 @@ ToolHandler = Callable[[dict[str, Any]], Awaitable[Any]]
 #: context. It never raises — tool failures come back as a JSON error
 #: string so the loop can continue and the model can react.
 ToolDispatch = Callable[[str, dict[str, Any]], Awaitable[str]]
+
+
+def cap_tool_result(result: str, max_chars: int | None) -> str:
+    """Bound a tool-result string to the request budget (no-op when ``max_chars`` is None).
+
+    Keeps an over-large result from blowing the context/token budget on the follow-up hop.
+    ``None`` (the default budget) returns the result unchanged — the historical behaviour.
+    """
+    if max_chars is None or len(result) <= max_chars:
+        return result
+    return result[:max_chars] + " …[tool result truncated]"
+
+
+@dataclass
+class ToolLoopState:
+    """Per-request accounting that bounds a provider's model<->tool loop by its budget.
+
+    Shared by both adapters so the rule is enforced (and tested) once. The default budget
+    (``max_calls``/``max_wall_seconds`` = ``None``) reproduces the historical hop-only bound:
+    :meth:`may_offer_tools` then returns True for every hop below ``max_hops`` exactly as the
+    old ``hop < _TOOL_HOP_LIMIT`` check did. Tighter caps stop the loop offering further tools
+    — the next hop produces the final tool-free answer.
+    """
+
+    budget: AIToolBudget
+    calls_made: int = 0
+    started_monotonic: float = field(default_factory=time.monotonic)
+
+    def may_offer_tools(self, hop: int) -> bool:
+        """True if this hop may still offer tools, given hop / call / wall-time caps."""
+        budget = self.budget
+        if hop >= budget.max_hops:
+            return False
+        if budget.max_calls is not None and self.calls_made >= budget.max_calls:
+            return False
+        if budget.max_wall_seconds is not None:
+            elapsed = time.monotonic() - self.started_monotonic
+            if elapsed >= budget.max_wall_seconds:
+                return False
+        return True
+
+    def record_call(self) -> None:
+        """Count one dispatched tool call against the budget."""
+        self.calls_made += 1
 
 
 class ProviderUnavailableError(RuntimeError):

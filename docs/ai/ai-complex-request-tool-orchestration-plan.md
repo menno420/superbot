@@ -14,8 +14,14 @@ health-diagnostics roadmap is already delivered
 > `BTD6_GROUNDING_TOOL_NAMES` is **derived** from the catalogue (no more hand-maintained
 > drift). Default behaviour is unchanged; an optional `enabled_toolsets`/`disabled_tools`
 > policy can only **narrow** the offered set, never grant above `AIScope` (proven by test).
-> **Not yet:** neutral tool-choice/budgets (Phase 2), policy storage/projection/UI (Phase 3),
-> the complex-BTD6 workflow (Phase 4). Reconcile PR # next session.
+> **Phase 2 shipped 2026-06-09** (PR slice C) — provider-neutral tool-choice + budgets:
+> `AIToolChoice`/`ToolRequirementMode` (NONE/AUTO/REQUIRED_ANY/REQUIRED_GROUP/REQUIRED_TOOL)
+> and `AIToolBudget` (hop/call/wall/result caps) on `AIRequest`, mapped onto BOTH the OpenAI
+> and Anthropic adapters, enforced by a shared `ToolLoopState`. Defaults are
+> **compatibility-preserving** (AUTO + hop-bounded, no other caps = today's behaviour). The
+> gateway's redaction seam now uses `dataclasses.replace`, so a new request field can never be
+> dropped there again. **Not yet:** policy storage/projection/UI (Phase 3), the complex-BTD6
+> workflow (Phase 4). Reconcile PR #s next session.
 
 ## 1. Executive recommendation
 
@@ -876,6 +882,20 @@ profile can narrow/disable toolsets without granting additional authority.
 
 ### Phase 2 — Neutral tool choice and budgets
 
+> **✅ SHIPPED 2026-06-09 (this session).** `core/runtime/ai/contracts.py` gained
+> `ToolRequirementMode`, `AIToolChoice`, and `AIToolBudget`, plus `tool_choice`/`tool_budget`
+> fields on `AIRequest` (defaults reproduce today's behaviour byte-for-byte). A shared
+> `ToolLoopState` + `cap_tool_result` in `providers/base.py` bound the loop by hop / call /
+> wall-time / result-size; the OpenAI and Anthropic adapters map the five modes onto their
+> native `tool_choice` (`_openai_tool_choice` / `_anthropic_tool_choice`) — REQUIRED_* forces a
+> tool on the first hop then relaxes to auto, REQUIRED_GROUP rides the resolver-narrowed set,
+> NONE offers no tools. The gateway redaction now uses `dataclasses.replace` so the new fields
+> survive. **Exit criterion met + tested** (`tests/unit/runtime/ai/test_tool_orchestration.py`,
+> 18 tests): all five modes across both adapters + budget exhaustion + redaction preservation.
+> **Deferred to later phases:** safe trace summaries / metrics and adapter-level required-group
+> *verification* (the resolver pre-narrows, so the adapter mapping is correct today) ride with
+> Phase 3's policy/projection work, where the orchestration trace lands.
+
 Implement:
 
 - neutral tool-choice and budget request contracts;
@@ -933,7 +953,9 @@ Implement:
    shipped 2026-06-09 (`ai_tool_catalogue`); the strict-schema audit/validator is still TODO.*
 2. **PR B — Named toolsets and deterministic per-request selector.** ✅ *shipped 2026-06-09
    (`select_tools` + `build_registry` toolset policy; compatibility-preserving).*
-3. **PR C — Provider-neutral tool choice and dynamic budgets.** ← next.
+3. **PR C — Provider-neutral tool choice and dynamic budgets.** ✅ *shipped 2026-06-09
+   (neutral `AIToolChoice`/`AIToolBudget` + OpenAI/Anthropic mappings + shared budget loop;
+   compatibility-preserving). Safe trace summaries/metrics deferred to PR D/E.*
 4. **PR D — Orchestration policy resolver, projection, and mutation ownership.**
 5. **PR E — Tools & workflows admin UI, preview, and dry run.**
 6. **PR F — BTD6 request analysis and evidence/calculation contracts.**

@@ -47,8 +47,11 @@ scoped tools (including owner-gated diagnostics). Source:
   foundation itself (toolsets, tool-choice, budgets, evidence). **Phase 1 shipped 2026-06-09:**
   `services.ai_tool_catalogue` is now the canonical tool catalogue (`AIToolMetadata` + named
   toolsets + the deterministic `select_tools`), `build_registry` consults it, and
-  `BTD6_GROUNDING_TOOL_NAMES` is derived from it. Phases 2–4 (tool-choice/budgets, policy
-  storage/UI, complex workflow) are next.
+  `BTD6_GROUNDING_TOOL_NAMES` is derived from it. **Phase 2 shipped 2026-06-09:**
+  provider-neutral `AIToolChoice`/`ToolRequirementMode` + `AIToolBudget` on `AIRequest`,
+  mapped onto both the OpenAI and Anthropic adapters via a shared `ToolLoopState`
+  (compatibility-preserving defaults). Phases 3–4 (typed policy storage + Tools & Workflows
+  UI, complex BTD6 workflow) are next.
 - `docs/ai/ai-tool-capability-roadmap.md` (`plan`, non-authoritative) — triages/sequences
   the ideas backlog onto that foundation.
 
