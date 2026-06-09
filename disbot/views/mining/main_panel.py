@@ -62,7 +62,8 @@ class MiningHubView(PersistentView):
                 "**📊 Stats** — view your mining statistics\n"
                 "**🔨 Build** — craft a structure\n"
                 "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
-                "(deeper = richer, gated by your light)"
+                "(deeper = richer, gated by your light)\n"
+                "**🛒 Market** — sell ore for coins, buy gear"
             ),
             color=MINING_COLOR,
         )
@@ -350,6 +351,30 @@ class MiningHubView(PersistentView):
         )
         embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
+
+    @discord.ui.button(
+        label="🛒 Market",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:market",
+        row=2,
+    )
+    async def market_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (avoids any import-order surprise
+        # with the back-link the market panel makes to this hub).
+        from views.mining.market_panel import MiningMarketView, build_market_embed
+
+        embed = await build_market_embed(interaction.user.id, interaction.guild_id)
+        view = MiningMarketView(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]
