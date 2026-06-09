@@ -18,6 +18,17 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`cog-improvement-audit-2026-06-08.md`](./cog-improvement-audit-2026-06-08.md) —
+  cog-by-cog improvement audit from a 36-question interactive session (2026-06-08).
+  Covers all 35 existing cogs; includes a priority-ranked routing table. Top finding:
+  setup wizard is P0 (half its steps do nothing); AI cog settings and RPS tournament
+  decoupling are next.
+- [`owner-vision-ideas-2026-06-08.md`](./owner-vision-ideas-2026-06-08.md) —
+  20-question interactive session with the maintainer (2026-06-08); covers games
+  (poker, idle), economy (marketplace, streaks), AI (dungeon master, NL, events),
+  social (guilds, achievements, profiles), integrations (Twitch, YouTube, Spotify,
+  Steam), and UX priorities. Includes a routing summary table. **Start here for
+  the most up-to-date owner preferences.**
 - [`future-product-direction-2026-06-07.md`](./future-product-direction-2026-06-07.md) —
   source-aware future product direction across polish, extensions, reusable systems,
   and long-term expansions; capture-only, not a roadmap.
@@ -97,3 +108,9 @@ session ends with a grooming pass once the main task + PR are done and capacity 
 
 A **periodic sweep** (the `.session-journal.md` REVIEW cadence) confirms no idea is stuck
 at `raw`/`captured` with no destination — that is the no-orphan guarantee, made checkable.
+
+## Routed planning pass — 2026-06-08
+
+The current cross-source lifecycle outcomes are recorded in
+[`../planning/idea-roadmap-inventory-2026-06-08.md`](../planning/idea-roadmap-inventory-2026-06-08.md).
+That ledger groups ideas by canonical subsystem/platform seam and links the resulting roadmap drafts; it does not approve implementation or replace the preserved capture docs above.

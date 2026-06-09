@@ -515,7 +515,16 @@ def test_map_geraldo_items_extracts_structured_effect(mod, tmp_path):
 
 
 def _bloon_model(
-    bid, *, base=None, props=0, camo=False, grow=False, fort=False, children=None
+    bid,
+    *,
+    base=None,
+    props=0,
+    camo=False,
+    grow=False,
+    fort=False,
+    children=None,
+    health=None,
+    speed=None,
 ):
     m = {
         "$type": "Il2CppAssets.Scripts.Models.Bloons.BloonModel, Assembly-CSharp",
@@ -527,6 +536,10 @@ def _bloon_model(
         "isFortified": fort,
         "behaviors": [],
     }
+    if health is not None:
+        m["maxHealth"] = health
+    if speed is not None:
+        m["speed"] = speed
     if children is not None:
         m["behaviors"].append(
             {
@@ -607,6 +620,207 @@ def test_bloon_immunity_derives_from_property_bitflag(mod, tmp_path):
         "Cold",
         "Frigid",
     }
+
+
+def test_select_bloon_variant_model_picks_fortified(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(dump / "Bloons" / "Ceramic" / "Ceramic.json", _bloon_model("Ceramic"))
+    _write(
+        dump / "Bloons" / "Ceramic" / "CeramicFortified.json",
+        _bloon_model("CeramicFortified", base="Ceramic", fort=True),
+    )
+    index = mod._bloon_model_index(dump)
+    bloon = {"id": "ceramic", "properties": []}
+    # The base selector picks the plain model; the variant selector adds fortified.
+    assert mod._select_bloon_model(bloon, index).name == "Ceramic.json"
+    fort = mod._select_bloon_variant_model(bloon, index, frozenset({"fortified"}))
+    assert fort.name == "CeramicFortified.json"
+    # A bloon with no fortified variant in the dump → None (never invented).
+    _write(dump / "Bloons" / "Red" / "Red.json", _bloon_model("Red"))
+    index = mod._bloon_model_index(dump)
+    assert (
+        mod._select_bloon_variant_model(
+            {"id": "red", "properties": []}, index, frozenset({"fortified"})
+        )
+        is None
+    )
+
+
+def test_overlay_bloons_sources_health_speed_and_fortified(mod, tmp_path, monkeypatch):
+    # The stats overlay corrects health/speed/health_fortified from the dump and
+    # leaves rbe alone (rbe is derived + pinned by the RBE test, not a dump scalar).
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Bloons" / "Ceramic" / "Ceramic.json",
+        _bloon_model("Ceramic", health=10, speed=62.5),
+    )
+    _write(
+        dump / "Bloons" / "Ceramic" / "CeramicFortified.json",
+        _bloon_model("CeramicFortified", base="Ceramic", fort=True, health=20),
+    )
+    data_root = tmp_path / "data"
+    _write(
+        data_root / "bloons.json",
+        {
+            "data_version": "1.0",
+            "game_version": "55.1",
+            "source": "wiki",
+            "bloons": [
+                {
+                    "id": "ceramic",
+                    "canonical": "Ceramic",
+                    "properties": [],
+                    "health": 99,  # wrong — dump says 10
+                    "speed": 1.0,  # wrong — dump says 62.5
+                    "health_fortified": 999,  # wrong — fortified model says 20
+                    "rbe": 104,  # derived; overlay must leave it untouched
+                    "immune_to": [],
+                    "children_list": [],
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    report = mod.overlay_bloons(dump, dry_run=False)
+    assert set(report["ceramic"]) == {
+        "health 99 -> 10",
+        "speed 1.0 -> 62.5",
+        "health_fortified 999 -> 20",
+    }
+    written = json.loads((data_root / "bloons.json").read_text())["bloons"][0]
+    assert written["health"] == 10 and written["speed"] == 62.5
+    assert written["health_fortified"] == 20
+    assert written["rbe"] == 104  # derived value preserved
+    # Provenance marker broadened to list every game-sourced field.
+    payload = json.loads((data_root / "bloons.json").read_text())
+    assert "health" in payload["game_sourced_fields"]
+    assert "children_immunity_source" not in payload
+
+
+def _mode_mut(short, **fields):
+    """A single mutatorMods entry with the dump's fully-qualified ``$type``."""
+    return {
+        "$type": f"Il2CppAssets.Scripts.Models.Gameplay.Mods.{short}, Assembly-CSharp",
+        **fields,
+    }
+
+
+def test_parse_mode_rules_normalizes_mutators_and_drops_economy_noise(mod):
+    raw = {
+        "mutatorMods": [
+            _mode_mut("StartingCashModModel", changeBase=650.0, multiplier=0.0),
+            _mode_mut("MaxHealthModModel", set=1.0),  # the 1-life cap
+            _mode_mut("StartingRoundModModel", round=6),
+            _mode_mut("EndRoundModModel", round=100),
+            _mode_mut("GlobalCostModModel", multiplier=1.2),
+            _mode_mut("LockTowerModModel", towerToLock="BananaFarm"),
+            _mode_mut("LockTowerSetModModel", towerSetToLock=2),  # Military
+            _mode_mut("DisableContinueModModel"),
+            _mode_mut("DisableMonkeyKnowledgeModModel"),
+            # Standard economy curve — must be dropped, not surfaced as a rule.
+            _mode_mut("MonkeyMoneyModModel", changeBase=1.0, multiplier=0.0),
+            _mode_mut("BonusCashPerRoundModModel", baseCash=5, roundMultiple=1),
+            _mode_mut("SellMultiplierModModel", addition=0.7, multiplier=0.0),
+        ],
+    }
+    assert mod._parse_mode_rules(raw) == {
+        "starting_cash": 650,
+        "starting_lives": 1,
+        "start_round": 6,
+        "end_round": 100,
+        "cost_multiplier": 1.2,
+        "no_continues": True,
+        "no_monkey_knowledge": True,
+        "locked_tower_classes": ["military"],
+        "locked_towers": ["BananaFarm"],
+    }
+    # A HalfCash-style mod sets only the income multiplier; nothing else leaks in.
+    assert mod._parse_mode_rules(
+        {"mutatorMods": [_mode_mut("ModifyAllCashModModel", multiplier=0.5)]},
+    ) == {"income_multiplier": 0.5}
+
+
+def test_overlay_modes_attaches_rules_and_corrects_scalars(mod, tmp_path, monkeypatch):
+    dump = tmp_path / "dump"
+    # Sandbox's absolute lives override differs from a curated typo (extra 9).
+    _write(
+        dump / "Mods" / "Sandbox.json",
+        {
+            "mutatorMods": [
+                _mode_mut("StartingCashModModel", changeBase=9999999.0, multiplier=0.0),
+                _mode_mut("StartingHealthModModel", addition=999999.0, multiplier=0.0),
+            ],
+        },
+    )
+    _write(
+        dump / "Mods" / "Impoppable.json",
+        {
+            "mutatorMods": [
+                _mode_mut("StartingRoundModModel", round=6),
+                _mode_mut("MaxHealthModModel", set=1.0),
+                _mode_mut("GlobalCostModModel", multiplier=1.2),
+                _mode_mut("EndRoundModModel", round=100),
+            ],
+        },
+    )
+    data_root = tmp_path / "data"
+    _write(
+        data_root / "modes.json",
+        {
+            "data_version": "3.0",
+            "game_version": "55.1",
+            "source": "curated",
+            "modes": [
+                {
+                    "id": "sandbox",
+                    "canonical": "Sandbox",
+                    "kind": "mode",
+                    "aliases": [],
+                    "description": "",
+                    "restrictions": [],
+                    "starting_cash": 9999999,
+                    "starting_lives": 9999999,  # curated typo — dump says 999999
+                },
+                {
+                    "id": "impoppable",
+                    "canonical": "Impoppable",
+                    "kind": "mode",
+                    "aliases": [],
+                    "description": "",
+                    "restrictions": [],
+                    "starting_cash": 650,
+                    "starting_lives": 1,  # already correct (MaxHealth.set=1)
+                },
+                {
+                    "id": "standard",  # no Mods file → no rules attached
+                    "canonical": "Standard",
+                    "kind": "mode",
+                    "aliases": [],
+                    "description": "",
+                    "restrictions": [],
+                    "starting_cash": 650,
+                    "starting_lives": 150,
+                },
+            ],
+        },
+    )
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    report = mod.overlay_modes(dump, dry_run=False)
+    assert report["sandbox"] == ["starting_lives 9999999 -> 999999"]
+    assert report["impoppable"] == []  # rules attached, no scalar correction
+    assert "standard" not in report  # unmapped → untouched
+
+    written = {m["id"]: m for m in json.loads((data_root / "modes.json").read_text())["modes"]}
+    assert written["sandbox"]["starting_lives"] == 999999
+    assert written["impoppable"]["rules"] == {
+        "start_round": 6,
+        "starting_lives": 1,
+        "cost_multiplier": 1.2,
+        "end_round": 100,
+    }
+    assert "rules" not in written["standard"]
+    payload = json.loads((data_root / "modes.json").read_text())
+    assert payload["mode_rules_source"]
 
 
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):

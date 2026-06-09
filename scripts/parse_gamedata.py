@@ -2476,12 +2476,43 @@ def _select_bloon_model(
     return None
 
 
+def _select_bloon_variant_model(
+    bloon: dict[str, Any],
+    model_index: dict[tuple[str, frozenset[str]], Path],
+    extra: frozenset[str],
+) -> Path | None:
+    """Like :func:`_select_bloon_model` but for a *modifier variant* — the bloon's
+    own inherent modifiers **plus** ``extra`` (e.g. ``{"fortified"}`` to read a
+    bloon's Fortified ``maxHealth``). ``None`` when that exact variant has no dump
+    model (most bloons cannot be fortified).
+    """
+    bid = bloon["id"]
+    props = {str(p).lower() for p in bloon.get("properties", [])}
+    want = frozenset(m for m in _CHILD_MOD_ORDER if m in props) | extra
+    for base in (bid, f"{bid}_bloon"):
+        fp = model_index.get((base, want))
+        if fp is not None:
+            return fp
+    return None
+
+
 def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
-    """Source ``immune_to`` + ``children`` from the dump for every bloon already
-    in ``bloons.json`` that maps to a dump model. Returns ``{bloon_id: [changes]}``
-    listing only *semantic* corrections (an immunity set or child multiset that
-    differs from the curated value); a value already correct is left untouched so
-    the committed ordering/prose never churns.
+    """Source the dump-reproducible bloon fields — ``immune_to``, ``children``,
+    ``health``, ``speed`` and ``health_fortified`` — for every bloon in
+    ``bloons.json`` that maps to a dump model. Returns ``{bloon_id: [changes]}``
+    listing only *semantic* corrections (a value differing from the curated one);
+    a value already correct is left untouched so the committed ordering/prose
+    never churns.
+
+    Combat stats are direct dump scalars in the **same units** as the curated
+    values (``maxHealth`` -> ``health``, ``speed`` -> ``speed``, the Fortified
+    variant's ``maxHealth`` -> ``health_fortified``) — verified byte-identical at
+    cutover, so this is provenance + reproducibility, not a correction. ``rbe`` /
+    ``rbe_fortified`` stay **derived** from ``health`` + ``children`` (they are not
+    dump scalars); ``tests/unit/services/test_btd6_rbe.py`` recomputes and pins
+    them, so if a future dump pull moves a ``health`` the RBE check turns red and
+    forces a reconcile rather than letting the two drift silently. The rest
+    (rbe/category/aliases/description) stays wiki-curated.
     """
     from utils.btd6.damage_types import immunities_for_bloon_properties
 
@@ -2518,10 +2549,183 @@ def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
             bloon["children_list"] = derived_children
             bloon["children"] = _children_prose(derived_children, canon)
 
+        # Base combat stats — direct dump scalars (same units as curated).
+        for stat, dump_key in (("health", "maxHealth"), ("speed", "speed")):
+            if dump_key not in raw:
+                continue
+            value = _num(raw[dump_key])
+            if value != bloon.get(stat):
+                changes.append(f"{stat} {bloon.get(stat)} -> {value}")
+                bloon[stat] = value
+
+        # Fortified health from the bloon's Fortified variant model — only for the
+        # bloons that have a fortified form (Lead / Ceramic / MOAB-class already
+        # carry a curated ``health_fortified``); never invent the field.
+        if bloon.get("health_fortified") is not None:
+            fort_fp = _select_bloon_variant_model(
+                bloon,
+                model_index,
+                frozenset({"fortified"}),
+            )
+            if fort_fp is not None:
+                fort = _num(json.loads(fort_fp.read_text("utf-8")).get("maxHealth", 0))
+                if fort and fort != bloon.get("health_fortified"):
+                    changes.append(
+                        f"health_fortified {bloon.get('health_fortified')} -> {fort}",
+                    )
+                    bloon["health_fortified"] = fort
+
         if changes:
             report[bid] = changes
 
-    payload["children_immunity_source"] = _SOURCE
+    payload["game_sourced_fields"] = [
+        "children",
+        "immune_to",
+        "health",
+        "speed",
+        "health_fortified",
+    ]
+    payload["game_sourced_fields_source"] = _SOURCE
+    payload.pop("children_immunity_source", None)
+    if not dry_run:
+        _write(path, payload)
+    return report
+
+
+# Mode id (modes.json) -> Mods/<stem>.json. The dump names differ from the
+# canonical mode (CHIMPS' internal name is "Clicks"); Standard + the two
+# modifiers (Double Cash / Fast Track) have no standalone Mods file — Standard is
+# the unmutated base, and the modifiers layer onto a chosen mode.
+_MODE_MODS = {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "primary_only": "PrimaryOnly",
+    "deflation": "Deflation",
+    "military_only": "MilitaryOnly",
+    "apopalypse": "Apopalypse",
+    "reverse": "Reverse",
+    "magic_monkeys_only": "MagicOnly",
+    "double_hp_moabs": "DoubleMoabHealth",
+    "half_cash": "HalfCash",
+    "alternate_bloons_rounds": "AlternateBloonsRounds",
+    "impoppable": "Impoppable",
+    "chimps": "Clicks",
+    "sandbox": "Sandbox",
+}
+# A LockTowerSet mutator names the class a mode forbids (PrimaryOnly locks
+# {military, magic, support}, leaving primary). Reuses the module's _TOWER_SET
+# bitflag map so a locked class matches a tower's lowercase `category`.
+
+
+def _mod_short(type_str: str) -> str:
+    """``Il2Cpp...Mods.StartingCashModModel, Assembly-CSharp`` -> ``StartingCashModModel``."""
+    return type_str.split(",", 1)[0].rsplit(".", 1)[-1]
+
+
+def _parse_mode_rules(raw_mod: dict[str, Any]) -> dict[str, Any]:
+    """Normalize a ``Mods/<mode>.json`` ``mutatorMods`` list into the structured,
+    game-sourced rule values that ground the curated prose ``restrictions``.
+
+    Only the rule-bearing mutators are kept. The standard economy curve
+    (``MonkeyMoney`` / ``BonusCashPerRound`` / ``SellMultiplier`` — identical
+    across difficulties, and ``SetHealthForBloon`` per-round tuning) is dropped on
+    purpose so the block holds only what *varies* and *restricts*. Returns ``{}``
+    for a base/empty ruleset.
+    """
+    rules: dict[str, Any] = {}
+    locked_classes: list[str] = []
+    locked_towers: list[str] = []
+    for m in raw_mod.get("mutatorMods", []):
+        kind = _mod_short(str(m.get("$type", "")))
+        if (
+            kind == "StartingCashModModel"
+            and not m.get("multiplier")
+            and _num(m.get("changeBase", 0)) > 0
+        ):
+            rules["starting_cash"] = int(m["changeBase"])
+        elif kind == "StartingHealthModModel":
+            rules["starting_lives"] = int(_num(m.get("addition", 0)))
+        elif kind == "MaxHealthModModel" and m.get("set"):
+            # The 1-life cap (Impoppable / CHIMPS) — an absolute lives override.
+            rules["starting_lives"] = int(_num(m["set"]))
+        elif kind == "StartingRoundModModel":
+            rules["start_round"] = int(m["round"])
+        elif kind == "EndRoundModModel":
+            rules["end_round"] = int(m["round"])
+        elif kind == "GlobalCostModModel":
+            rules["cost_multiplier"] = _num(m["multiplier"])
+        elif kind == "GlobalSpeedModModel" and m.get("multiplier"):
+            rules["speed_multiplier"] = _num(m["multiplier"])
+        elif kind == "ModifyAllCashModModel":
+            rules["income_multiplier"] = _num(m["multiplier"])
+        elif kind == "RoundSetModModel":
+            rules["round_set"] = str(m.get("roundsetName", ""))
+        elif kind == "BloonHealthModel":
+            tag = str(m.get("bloonTag", "")).lower()
+            rules[f"{tag}_health_multiplier"] = _num(m["healthMod"])
+        elif kind == "LockTowerSetModModel":
+            locked_classes.append(
+                _TOWER_SET.get(int(m["towerSetToLock"]), str(m["towerSetToLock"])),
+            )
+        elif kind == "LockTowerModModel":
+            locked_towers.append(str(m["towerToLock"]))
+        elif kind == "DisableContinueModModel":
+            rules["no_continues"] = True
+        elif kind == "DisableSellTowerModModel":
+            rules["no_selling"] = True
+        elif kind == "DisableMonkeyKnowledgeModModel":
+            rules["no_monkey_knowledge"] = True
+        elif kind == "DeflationModel":
+            rules["no_income"] = True
+        elif kind == "ReverseModel":
+            rules["reverse"] = True
+    if locked_classes:
+        rules["locked_tower_classes"] = sorted(locked_classes)
+    if locked_towers:
+        rules["locked_towers"] = sorted(locked_towers)
+    return rules
+
+
+def overlay_modes(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
+    """Source structured, game-grounded rules for every mode in ``modes.json`` that
+    maps to a ``Mods/<mode>.json`` file. Attaches a normalized ``rules`` block
+    (cash/lives/rounds/cost/speed multipliers + the restriction set) and *verifies*
+    the curated ``starting_cash`` / ``starting_lives`` against the dump's absolute
+    overrides — correcting a mismatch. Returns ``{mode_id: [corrections]}`` (a mode
+    with rules attached but no scalar correction maps to ``[]``).
+
+    The curated *taxonomy* (``kind`` / ``difficulties`` / prose ``description`` +
+    ``restrictions``) is **not** in the dump and stays curated; only the numeric
+    rule values + structured restriction flags are game-sourced here. cash/lives
+    are corrected only when the Mods file sets an *absolute* value (``changeBase``
+    for cash; ``addition`` / ``MaxHealth.set`` for lives) — inherited values (a
+    mode that layers on a base difficulty without restating them) are left curated.
+    """
+    mods_dir = dump / "Mods"
+    path = _DATA_ROOT / "modes.json"
+    payload = json.loads(path.read_text("utf-8"))
+    report: dict[str, list[str]] = {}
+
+    for mode in payload["modes"]:
+        stem = _MODE_MODS.get(mode["id"])
+        if stem is None:
+            continue  # Standard (base) + modifiers: no standalone Mods file
+        fp = mods_dir / f"{stem}.json"
+        if not fp.is_file():
+            continue
+        rules = _parse_mode_rules(json.loads(fp.read_text("utf-8")))
+        changes: list[str] = []
+
+        for scalar in ("starting_cash", "starting_lives"):
+            if scalar in rules and rules[scalar] != mode.get(scalar):
+                changes.append(f"{scalar} {mode.get(scalar)} -> {rules[scalar]}")
+                mode[scalar] = rules[scalar]
+
+        mode["rules"] = rules
+        report[mode["id"]] = changes
+
+    payload["mode_rules_source"] = _SOURCE
     if not dry_run:
         _write(path, payload)
     return report
@@ -2586,7 +2790,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--bloons",
         action="store_true",
-        help="source bloon children + immunity from the dump (overlay bloons.json)",
+        help="source bloon children/immunity/health/speed from the dump (overlay bloons.json)",
+    )
+    ap.add_argument(
+        "--modes",
+        action="store_true",
+        help="source mode rules (cash/lives/rounds/cost + restrictions) from the dump's Mods/ folder (overlay modes.json)",
     )
     ap.add_argument("--dry-run", action="store_true", help="print, do not write")
     args = ap.parse_args(argv)
@@ -2614,14 +2823,35 @@ def main(argv: list[str] | None = None) -> int:
         verb = "would correct" if args.dry_run else "corrected"
         if not report:
             print(
-                "bloons: children + immunity already match game data for every "
-                "mapped bloon (0 corrections) — provenance recorded.",
+                "bloons: children/immunity/health/speed already match game data for "
+                "every mapped bloon (0 corrections) — provenance recorded.",
             )
         else:
             print(f"bloons: {verb} {len(report)} bloon(s)\n")
             for bid in sorted(report):
                 print(f"  {bid}")
                 for change in report[bid]:
+                    print(f"      {change}")
+        return 0
+
+    if args.modes:
+        report = overlay_modes(dump, dry_run=args.dry_run)
+        verb = "would correct" if args.dry_run else "corrected"
+        corrections = {k: v for k, v in report.items() if v}
+        if not corrections:
+            print(
+                f"modes: structured rules sourced from Mods/ for "
+                f"{len(report)} mode(s); cash/lives already match game data "
+                f"(0 corrections) — provenance recorded.",
+            )
+        else:
+            print(
+                f"modes: rules sourced for {len(report)} mode(s); "
+                f"{verb} {len(corrections)} value(s)\n",
+            )
+            for mid in sorted(corrections):
+                print(f"  {mid}")
+                for change in corrections[mid]:
                     print(f"      {change}")
         return 0
 

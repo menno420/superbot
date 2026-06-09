@@ -14,14 +14,14 @@
 | `Achievements/` | 156 | ⬜ | not ingested |
 | `Artifacts/` | 568 | ⬜ | not ingested (Rogue Legends artifacts) |
 | `BloonOverlays/` | 46 | ⬜ | cosmetic overlays; not ingested |
-| `Bloons/` | 235 | 🟡 | children + immunity now game-data-sourced (--bloons); rbe/health/speed/category/aliases still wiki |
+| `Bloons/` | 235 | 🟡 | children/immunity/health/speed/health_fortified now game-data-sourced (--bloons); rbe (derived from health+children) + category/aliases still wiki |
 | `Bosses/` | 7 | ✅ | bosses.json: name, mechanic description, immunities, per-tier health/speed |
 | `Buffs/` | 91 | ⬜ | UI buff ICONS only — effects live inline in Towers/ |
 | `GeraldoItems/` | 16 | ✅ | all 16 shop items: name, description, cash cost, unlock level, quantity |
 | `IncomeSets/` | 7 | 🟡 | decay bands feed the per-round cash derivation |
 | `Knowledge/` | 134 | ✅ | monkey_knowledge.json: name, category, description, MM cost, investment |
 | `Maps/` | 89 | ✅ | full cutover: difficulty, has_water, names (curated removables) |
-| `Mods/` | 22 | ⬜ | not ingested (game-mode rule mods — partially explored) |
+| `Mods/` | 22 | 🟡 | mode rules sourced into modes.json (--modes): cash/lives verified + structured rules block (rounds/cost/speed/income mults + restrictions) for all 15 mapped modes; the curated taxonomy/prose stays curated |
 | `Powers/` | 27 | ✅ | powers.json: name, desc, MM cost, quantity, between-rounds, effect factors |
 | `Rounds/` | 5,181 | 🟡 | composition drives derived RBE + per-round cash; not ingested as-is |
 | `Skins/` | 51 | ⬜ | cosmetic; not ingested |
@@ -91,7 +91,7 @@
 - **Model types:** `MapDetails`×89, `SpriteReference`×89, `PrefabReference`×89
 - **Primary model `MapDetails` scalar fields:** `id`, `difficulty`, `coopMapDivisionType`, `unlockDifficulty`, `mapMusic`, `isDebug`, `isBrowserOnly`, `hasWater`, `theme`, `IsStandard`, `IsBrowserOnly`
 
-### `Mods/` — 22 files ⬜
+### `Mods/` — 22 files 🟡
 
 - **Model types:** `ModModel`×22, `StartingCashModModel`×13, `LockTowerSetModModel`×9, `EndRoundModModel`×8, `MonkeyMoneyModModel`×6, `StartingHealthModModel`×5, `StartingRoundModModel`×4, `SellMultiplierModModel`×4, `BonusCashPerRoundModModel`×4, `GlobalCostModModel`×3, `LockTowerModModel`×2, `MaxHealthModModel`×2, `DisableContinueModModel`×2, `ModifyAllCashModModel`×2, `GlobalSpeedModModel`×2, `RoundSetModModel`×1, `ChimpsModModel`×1, `DisableSellTowerModModel`×1, `DisableMonkeyKnowledgeModModel`×1, `DeflationModel`×1
 - **Primary model `ModModel` scalar fields:** `name`

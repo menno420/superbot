@@ -75,3 +75,7 @@ mutation/provisioning services and preserve operator confirmation.
 `docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`,
 `docs/health/platform-consistency-ledger.md`, `docs/setup-platform/operator-settings-presets.md`,
 `docs/ownership.md`, `docs/runtime_contracts.md`.
+
+## Cross-area extension routing (not approved)
+
+The [server-management/setup/access/routine extension routing draft](../planning/server-management-extension-routing-2026-06-08.md) preserves this folio's three mutation lanes while routing announcement/routine and guidance ideas. The [UX/mobile-first roadmap draft](../planning/ux-discoverability-mobile-roadmap-2026-06-08.md) routes presentation work through existing panels and standards rather than a new UI framework.

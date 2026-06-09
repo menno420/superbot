@@ -391,3 +391,8 @@ abstraction before its first concrete use.
   (level / cooldown gates, audit) so coins / gear / XP can't be laundered through alts.
 - **Smaller open calls:** weapons PvE-vs-PvP purpose · prestige loop at level cap · game-XP
   normalization / daily-cap specifics · how torch/lantern gate descent (§6.8 P2).
+
+
+## Routing update — 2026-06-08
+
+The shipped-engine wiring remains owned by [`../planning/mining-wire-exploration-plan.md`](../planning/mining-wire-exploration-plan.md); deeper floors, bosses, events, co-op, idle extension, and crafting handoff are routed to [`../planning/games-mining-idle-roadmap-2026-06-08.md`](../planning/games-mining-idle-roadmap-2026-06-08.md). This brainstorm remains preserved and unapproved.

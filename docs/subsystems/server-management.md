@@ -202,3 +202,7 @@ reusable so a web companion is *possible* later, but do not start web work now.
 `docs/planning/server-management-pr14-hub-plan.md` (PR14 hub plan),
 `docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`,
 `docs/server-logging.md`.
+
+## Extension routing (not a competing tracker)
+
+The [server-management/setup/access/routine extension routing draft](../planning/server-management-extension-routing-2026-06-08.md) sends scheduled announcements, anti-spam, availability/explanation, guidance, and analytics ideas back to this tracker and the adaptive setup/access plan. It creates no new active sequence or mutation path.

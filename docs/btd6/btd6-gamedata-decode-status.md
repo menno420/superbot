@@ -7,6 +7,13 @@ game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, v55.0). Start here
 to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
+> **Where this sits in the bot:** SuperBot is a Discord server-setup/management
+> bot; the BTD6 knowledge base is *one* feature. This subsystem migrates every
+> curated/wiki BTD6 value to **reproducible, game-sourced** data
+> (`disbot/data/btd6/*.json` ← `parse_gamedata.py` overlays ← the dump), each
+> mirrored by a `*Entry` dataclass in `services/btd6_data_service.py` and surfaced
+> through AI lookup tools + the `cogs/btd6/` embeds.
+
 > **New to this effort? Read `btd6-gamedata-decode-explainer.md` first** — a
 > from-first-principles deep explanation of the what/why/how (buffs, the audit,
 > the cutover), with worked examples. *This* doc is the live status + to-do list.
@@ -34,19 +41,35 @@ works** (the traps we hit), and what is still un-decoded.
 - **Towers** 25, **Heroes** 17, **Rounds** 140 — towers/rounds still
   **wiki-sourced** (no cutover yet); the 11 wiki-missing heroes are game-data.
   Rounds now carry derived **per-round + cumulative cash** (all 140).
-- **Bloons** 26 — **children + immunity cut over to game data** (`--bloons`):
-  `immune_to` is derived from each bloon's `bloonProperties` bitflag (via
-  `utils.btd6.damage_types.immunities_for_bloon_properties`, verified 23/23 vs
-  the curated lists), and `children` from the dump's `SpawnChildrenModel` with
-  variant modifiers preserved (camo/regrow/fortified). The rest
-  (rbe/health/layers/speed/category/aliases/description) stays wiki-curated.
+- **Bloons** 26 — **children + immunity + health + speed + fortified-health cut
+  over to game data** (`--bloons`): `immune_to` derived from each bloon's
+  `bloonProperties` bitflag (via `utils.btd6.damage_types.immunities_for_bloon_properties`,
+  23/23), `children` from the dump's `SpawnChildrenModel` (variant modifiers
+  preserved), and `health`/`speed`/`health_fortified` are direct dump scalars
+  (`maxHealth`/`speed`, + the Fortified variant's `maxHealth`) — **verified
+  byte-identical 23/23 at cutover** (0 corrections), so the curated combat numbers
+  were already right and are now game-sourced + reproducible. `rbe`/`rbe_fortified`
+  stay **derived** from `health`+`children` (not dump scalars; pinned by
+  `test_btd6_rbe.py`, which turns red if a future dump health moves without an rbe
+  reconcile). The rest (layers/category/aliases/description) stays wiki-curated.
 - **Maps** 86 — **fully cut over to game data** (`--maps`), with `has_water`,
   curated **removables** (18 maps), and aggregate count/list grounding. (89 dump
   files minus the 3 non-player `IsStandard=False` maps: Blons, Base Editor Map,
   Protect the Yacht.)
-- **Modes** 18 — **curated** taxonomy: 3 difficulties (Easy/Medium/Hard) + 13
-  modes (Standard is the base mode in every difficulty) + 2 modifiers (Double
-  Cash, Fast Track; relative-effect, no fixed numbers).
+- **Modes** 18 — **curated taxonomy, game-sourced rules** (`--modes`): 3
+  difficulties (Easy/Medium/Hard) + 13 modes (Standard is the base mode in every
+  difficulty) + 2 modifiers (Double Cash, Fast Track; relative-effect, no fixed
+  numbers). The `kind` / `difficulties` / prose `description`+`restrictions` stay
+  curated (not in the dump), but each of the **15 mapped modes now carries a
+  structured `rules` block sourced from `Mods/<mode>.json`** — starting cash/lives,
+  start/end rounds, cost/speed/income multipliers, MOAB-health mult, locked tower
+  classes/towers, and no-continue/no-sell/no-MK/no-income flags — parsed from
+  `mutatorMods[]` (standard economy-curve mutators dropped). This **corrected the
+  earlier "the dump has no game-mode rules" finding** (the rules live in `Mods/`,
+  the same place MK effects do), and the cutover **caught one real curated typo**:
+  Sandbox `starting_lives` 9999999 → the game model's 999999. `mode_rules_source`
+  records provenance; `ModeEntry.rules` surfaces it at runtime (display unchanged
+  — wiring the block into the mode embed is the teed-up follow-up).
 - **Consumable / meta catalogs — game-data-native lookups:** **Powers** 25,
   **Monkey Knowledge** 134, **Geraldo items** 16 (`--powers` / `--knowledge` /
   `--geraldo`). All player-facing name/description/cost catalogs, each behind an
