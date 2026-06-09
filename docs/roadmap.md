@@ -35,7 +35,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability, mother-panel live overview next) · **Adaptive Setup/Access** Phase 1 (P1B remainder gated on the audience-sim decision; P1C next) · **AI tooling** (orchestration Phase 4 + answerability Phase 3 — per-exposure gate lifts) |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09; structures or game-XP next) · **Adaptive Setup/Access** Phase 1 (P1B remainder gated on the audience-sim decision Q-0045; P1C next) · **AI tooling** (orchestration Phase 4 = Q-0048 confirm · answerability Phase 3 = Q-0047 gate lift) |
 | **Next** | Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · deferred governance setup section · health/diagnostics production live-tests (owed) · settings consistency coverage |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -155,9 +155,11 @@ accepted, not a target).
   [wire-exploration plan](planning/mining-wire-exploration-plan.md)), "The Descent"
   persistent depth (#607), combat gear → deathmatch via the shared `utils/equipment.py`
   stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
-  Character overview (#610). **Next Wave-1 slices:** the audited **Workshop + durability**
-  (brainstorm §7.5 — the keystone recurring ore/coin sink) and the **mother-panel live
-  overview** (§6.3).
+  Character overview (#610), and — built 2026-06-09 (verify the PR merged on live
+  GitHub) — the audited **Workshop + durability** keystone (brainstorm §7.5; migration
+  063, tuning = Q-0046) with the **mother-panel live overview** (§6.3). **Next Wave-1
+  slices:** functional **structures** (Forge/Vault/Home — the remaining §7.5 sinks),
+  then Wave 2's **game-XP service** (§7.4).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
