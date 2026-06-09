@@ -2132,7 +2132,14 @@ The other 21 ideas are captured with states/destinations (no orphans). Predictio
 **Area:** Games — mining character platform (Wave 1)
 **Type:** Balance confirmation (agent call already shipped in PR #624, fully reversible data)
 **Priority:** Low-medium (live and self-consistent; one semantic overlap with Q-0050 to settle)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → brainstorm §6.8 P5 (owner-confirmed) + §7.5 (queued duels-wear) + roadmap games row
+
+**Maintainer answer (2026-06-09, structured choices):** **(1) Lights keep wear** as
+shipped — Q-0050's "craft-once" referred to the *descent* mechanic (no consume-per-
+descend), not to durability; one sink covers all gear. **(2) Numbers stay as shipped**
+(pickaxe 60 / iron 150 / torch 40 / lantern 100 / charm 80; `REPAIR_RATE` 0.5).
+**(3) Duels SHOULD tick weapon/armor wear — queued as its own later slice** (combat
+gear joins the craft→break→repair loop; maxes already defined).
 
 **Question:** The Workshop + durability slice (PR #624) shipped with agent-chosen numbers,
 picked generous-side per the §6.8 P5 caution ("a resource sink, not an annoyance").
@@ -2153,7 +2160,5 @@ uses, lantern 100) as part of "the Workshop durability slice carries the recurri
 role". If "craft-once" was meant broadly (lights never break), the fix is one-line data:
 remove torch/lantern from `MAX_DURABILITY` so only tools + charms wear.
 
-**Safe default until answered:** keep the shipped numbers; no new wear paths (duels).
-
-**Suggested destination after answer:** brainstorm §6.8 P5 (the decided entry) +
-`utils/equipment.py` / `cogs/mining/workshop.py` constants.
+**Routed to:** brainstorm §6.8 P5 (P5 entry now owner-confirmed) + §7.5 (duels-wear
+queued), `docs/roadmap.md` games section (queued slice).

@@ -163,7 +163,8 @@ accepted, not a target).
   GitHub) — the audited **Workshop + durability** keystone (brainstorm §7.5; migration
   063, tuning = Q-0054) with the **mother-panel live overview** (§6.3). **Next Wave-1
   slices:** functional **structures** (Forge/Vault/Home — the remaining §7.5 sinks),
-  then Wave 2's **game-XP service** (§7.4).
+  the owner-approved **duels-tick-weapon/armor-wear** slice (Q-0054), then Wave 2's
+  **game-XP service** (§7.4).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
