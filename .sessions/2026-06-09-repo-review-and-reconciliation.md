@@ -65,3 +65,40 @@ sight. Deliverable: [`docs/audits/repo-review-2026-06-09.md`](../docs/audits/rep
 - **Unresolved for next session:** reconcile this PR's # into current-state (the R3
   recommendation — draft-PR-first or a freshness gate — would end this recurring step);
   Q-0044/Q-0045 await answers; #620 (test-only) was open at session end.
+
+## Part 2 — Gate-lifting interview (same session, after #621 merged)
+
+The maintainer asked for all unresolved questions via AskUserQuestion, plain-language,
+with one recommended option each — goal: lift every gate blocking plan revision/execution.
+**16 questions over 4 rounds; every recommendation accepted.**
+
+Decisions (verbatim in router; new entries §22):
+- **Q-0045** audience sim → governance tier-input path (P1B/P1C **unblocked**)
+- **Q-0044** Spotlight → register via the Q-0025 scaffold as a community-hub child;
+  `!hub`/`!server` aliases **dropped same session** (code)
+- **Q-0046** orchestration P4 MVP → one vertical slice (round-cash family + 1 contract)
+- **Q-0047** answerability P3 → all three read-only tools, gate lifted
+- **Q-0048** gate posture → **standing lift for read-only deterministic AI tools**;
+  writes/external/UI stay per-exposure
+- **Q-0049** BTD6 refresh → manual-dispatch Actions workflow approved
+- **Q-0036** denial copy → Claude drafts, maintainer reviews in PR
+- **Q-0028–Q-0031** → catalogue committed · availability owns quiet mode · snapshots
+  compound+high-risk · risk policy approved as written
+- **Q-0032/Q-0033** → staff-hub subpanels only, no new command names · account links deferred
+- **Q-0050** mining lights permanent (owner-confirmed §6.8 P2)
+- **Q-0051** vision batch (Q-0038–Q-0042) → draft-answer session queued
+
+Routed into: router (9 entries → Answered + §22 with Q-0046–Q-0051 + handling notes on
+Q-0038–Q-0042), adaptive plan (§14/§15/§16.8), both AI plans, roadmap (at-a-glance + AI
+gate + BTD6 sign-off), current-state (gates re-postured + lanes unblocked), help-map
+banner, nav map, mining brainstorm §6.8, btd6 refresh plan banner.
+
+### Context delta (part 2)
+- The interview pattern worked: 4 rounds × 4 single-select questions with one
+  recommended option each — the maintainer accepted all 16 recommendations, which
+  suggests batching open router questions into recommendation-led interviews is an
+  efficient periodic ritual (vs. letting Opens accumulate).
+- **Next sessions, in decided order:** (1) Q-0025 scaffold → register Spotlight;
+  (2) P1B remainder (tier-input path + drafted denial copy); (3) orchestration P4 MVP
+  slice; (4) answerability P3 trio; (5) BTD6 manual-dispatch workflow; (6) the Q-0051
+  vision draft-answer session.

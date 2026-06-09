@@ -33,6 +33,10 @@ health-diagnostics roadmap is already delivered
 > workflow (Phase 4) and the durable orchestration *audit trace* (plan §12.1 — the dry-run preview already
 > gives operators inspectability; the per-decision audit column is deferred to keep the hot audit path
 > untouched). PRs reconciled 2026-06-09: Phase 1 = **#612**, Phase 2 = **#618**, Phase 3 = **#619** (+ **#620** real-Postgres hardening for the 062 storage).
+> **Phase 4 MVP DECIDED (Q-0046, 2026-06-09): one vertical slice** — the plan→execute→verify
+> workflow for the round-cash question family ("cash from A to B / can I afford X?") with
+> **one** typed answer-with-evidence contract. Prove the pattern end-to-end; remaining §7
+> contracts + the §12.1 durable audit trace follow the proven template, not this slice.
 
 ## 1. Executive recommendation
 
