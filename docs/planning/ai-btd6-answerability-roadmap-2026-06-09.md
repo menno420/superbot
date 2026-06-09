@@ -5,9 +5,15 @@
 > **Area authorities:** [`../subsystems/ai.md`](../subsystems/ai.md),
 > [`../subsystems/btd6.md`](../subsystems/btd6.md), and
 > [`../subsystems/settings-bindings-provisioning.md`](../subsystems/settings-bindings-provisioning.md).
-> **Active gate:** all runtime phases remain blocked by the AI/BTD6 feature-expansion
+> **Active gate:** all *AI-exposure* phases remain blocked by the AI/BTD6 feature-expansion
 > gate in [`../current-state.md`](../current-state.md) and, for net-new tools, the
 > approved sequencing requirement to lock the orchestration foundation first.
+> **Progress:** **Phase 1A shipped 2026-06-09** — `btd6_data_service.round_cash()` is the
+> deterministic, owner-calculated round / inclusive-range cash query (no AI tool, no UI, no
+> behaviour change yet), pinned by `tests/unit/services/test_btd6_round_cash.py`. It adds
+> zero AI/user-facing behaviour, so it sits *below* the AI-exposure gate. **Next: Phase 1B**
+> (tool exposure + intent-shaped grounding) — still blocked until the orchestration
+> foundation (AR-10) lands. (Reconcile PR # next session.)
 
 ## 1. Purpose and owner intent
 
@@ -227,6 +233,19 @@ Split into two small PRs if orchestration/catalogue work and BTD6 semantics cann
 coherently in one review.
 
 #### Phase 1A — BTD6-owned range semantics
+
+> **✅ SHIPPED 2026-06-09 (this session).** Implemented as
+> `btd6_data_service.round_cash(round_start, round_end=None)` — a pure, read-only
+> sibling of `round_composition` / `cumulative_upgrade_costs` (kept in
+> `btd6_data_service`; the service has no LOC ceiling and this is the deterministic
+> BTD6 fact owner). It returns the structured result below and **owner-calculates the
+> inclusive range total** (`range_cash`) plus the cumulative endpoints so the
+> `cumulative(B) − cumulative(A−1)` identity is explicit. Every row of the semantics
+> table is pinned by tests in `tests/unit/services/test_btd6_round_cash.py` (single
+> round, inclusive both-endpoints, reversed→normalized, invalid→`invalid_range`,
+> partial-overlap→`cash_unavailable`, cumulative identity, full-range detail cap, and
+> disclosed economy assumptions). No AI tool, context, or UI change was made — that is
+> Phase 1B, which stays gated. Reconcile PR # next session.
 
 Add a deterministic, read-only query in `btd6_data_service` (or a narrowly named
 BTD6-owned sibling only if service size/ownership requires it) that returns:
