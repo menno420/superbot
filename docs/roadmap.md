@@ -166,6 +166,10 @@ accepted, not a target).
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
   slice.
+- **Later** — [**Pet companions**](planning/pets-companions-plan-2026-06-09.md): nameable
+  pets from exploration drops + a care-loop coin/ore sink + tiny non-P2W perks; the
+  owner's ⭐ pick from the 2026-06-09 fun/ease brainstorm (Q-0053). Gate: Wave-1
+  keystone slices (Workshop + durability) + balance review + owner promotion.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
 
@@ -195,6 +199,9 @@ privacy/provenance/moderation review before any public surface.
 > requires the gates in [`ideas/README.md`](ideas/README.md). Do not treat anything here as
 > a priority.
 
+- [fun-and-ease-brainstorm](ideas/fun-and-ease-brainstorm-2026-06-09.md) — 24
+  dedup-verified fun + ease-of-use ideas (social/competition, ambient delight, member
+  UX); owner picks recorded (Q-0053; pets structured → a games-lane plan).
 - [future-product-direction](ideas/future-product-direction-2026-06-07.md) — source-aware
   future product direction (polish, extensions, reusable systems, long-term).
 - [ai-extra-tool-capability-ideas](ideas/ai-extra-tool-capability-ideas.md) — AI capability

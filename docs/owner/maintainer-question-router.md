@@ -2097,3 +2097,32 @@ Per-lane drafts in multi-lane sessions follow the same rule. The companion
 **Routed to:** `.claude/CLAUDE.md` (SESSION_WORKFLOW block — edited with this explicit
 approval per the Q-0035 propose-first rule), `.session-journal.md`, and
 `docs/planning/multi-lane-execution-plan-2026-06-09.md`.
+
+## 24. Fun & ease brainstorm batch — answered 2026-06-09
+
+### Q-0053 — Fun/ease brainstorm: owner cluster picks + session scope
+
+**Area:** Product direction / games / UX
+**Type:** Owner preference (answered in-session via structured choices)
+**Priority:** Medium (steers idea-backlog grooming order)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/ideas/fun-and-ease-brainstorm-2026-06-09.md` §2 (capture) + `docs/planning/pets-companions-plan-2026-06-09.md` (structure) + `docs/roadmap.md` (games Later row + Someday line)
+
+**Question:** The 2026-06-09 brainstorm produced 24 dedup-verified new fun/ease ideas.
+Which clusters should lead the routing, and what should the session ship beyond the
+capture doc?
+
+**Maintainer answer (2026-06-09, structured choices):**
+- Fun cluster pick: **Pets & companions** (over server goals/mascot, social memory,
+  competition layer).
+- Ease picks: **context-menu actions** and **persistent reminders**.
+- Session scope: **capture + structure the top cluster into a plan** (no feature code
+  that session).
+
+**Decision:** Pets & companions structured into a games-lane plan at **Later** (gated
+behind the Wave-1 keystone slices + balance review + owner promotion). Context-menu
+actions and persistent reminders are marked **top quick-win candidates** in the capture
+doc's routing table — strong next-session picks; both stay `captured`, not approved.
+The other 21 ideas are captured with states/destinations (no orphans). Predictions
+(A6) explicitly rides the existing economy chance-reward review gate.
+
+**Routed to:** the three docs above; grooming sessions pull ⭐ rows first.
