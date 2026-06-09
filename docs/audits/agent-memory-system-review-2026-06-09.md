@@ -113,7 +113,8 @@ Split the question in two:
   paid for itself this session. The two adopted conventions (§9 collision
   rules, answer-scope lines) are refinements, not redesigns.
 
-## 6. Questions routed to the maintainer (new)
+## 6. Questions routed to the maintainer (new — **all three approved as
+recommended the same day**; the router entries carry the recorded answers)
 
 - **Q-0055** — parallel-session visibility: should concurrently-open sessions
   be visible to each other (a tiny active-sessions ledger), or stay

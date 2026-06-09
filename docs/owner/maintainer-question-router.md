@@ -2170,7 +2170,13 @@ queued), `docs/roadmap.md` games section (queued slice).
 **Area:** Workflow / multi-agent coordination
 **Type:** Workflow preference
 **Priority:** Medium (the cost is real but bounded — one five-file merge this session)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → `docs/owner/ai-project-workflow.md` §9
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **(a) accept-and-reconcile stays the policy**, with the §9
+collision rules as the documented resolution method. The active-sessions ledger (b)
+is revisited only if deliberately-parallel sessions become routine. *Not decided:*
+nothing about CI/branch mechanics — this is purely the docs-hotspot write policy.
 
 **Question:** Two sessions ran concurrently on 2026-06-09 and collided on the doc
 hotspots (router numbers, current-state, roadmap) — resolved cleanly via the §9
@@ -2182,21 +2188,24 @@ hotspot to avoid), or **(c)** a soft convention that only one concurrent session
 **docs-hotspot** work (router/current-state/roadmap edits) while others stay code-only
 until their END step.
 
-**Agent recommendation:** (a) unless parallel sessions become routine — the §9 rules
-made the reconcile mechanical, and (b)/(c) add ceremony every session to save cost in
-the rare colliding one. If you often run 2+ sessions deliberately, (b) is the cheapest
-visibility win.
+**Agent recommendation (approved):** (a) unless parallel sessions become routine —
+the §9 rules made the reconcile mechanical, and (b)/(c) add ceremony every session to
+save cost in the rare colliding one.
 
-**Safe default until answered:** (a), with the §9 collision rules.
-
-**Suggested destination after answer:** `docs/owner/ai-project-workflow.md` §9.
+**Routed to:** `docs/owner/ai-project-workflow.md` §9 (policy note on the router row).
 
 ### Q-0056 — Make the end-of-session structured interview a standing convention?
 
 **Area:** Workflow / decision throughput
 **Type:** Workflow change (affects how you're pinged)
 **Priority:** Medium-high (decision latency is the #1 lane blocker class)
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → `.session-journal.md` Protocol → END step 6a
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **yes, scoped**: sessions end with one structured-choices batch
+when open questions (1) block a lane or (2) are answerable in ≤1 minute; **≤4 choices
+per batch**; deep product questions stay router-only for a dedicated interview session.
+*Not decided:* no obligation to interview when nothing blocks — silence stays fine.
 
 **Question:** The two highest-leverage decision moments on 2026-06-09 were structured
 choice batches: the gate-lifting interview (16 decisions) and this session's
@@ -2212,18 +2221,21 @@ lane or (2) answerable as structured choices in ≤1 minute; never more than ~4 
 interview session. This keeps your interrupt small and kills the "open question ages
 three sessions" pattern.
 
-**Safe default until answered:** sessions may offer an end-of-session batch when
-questions block their own lane (this session's precedent); no obligation.
-
-**Suggested destination after answer:** `.session-journal.md` Protocol → END +
-`docs/owner/ai-project-workflow.md`.
+**Routed to:** `.session-journal.md` Protocol → END (new step 6a).
 
 ### Q-0057 — Per-area "vision ledger": capture what each area is FOR, in your words
 
 **Area:** Workflow / vision transfer
 **Type:** Documentation convention (closes the honest gap in the 2026-06-09 review §4)
 **Priority:** Medium
-**Status:** Open
+**Status:** Answered (2026-06-09) — **Routed** → `docs/owner/maintainer-working-profile.md` (the convention); folio blocks grow lazily
+
+**Maintainer answer (2026-06-09, verbatim batch approval):** "yes I agree with your
+recommended answers" → **yes, lazily**: a ≤10-line owner-voice block per area folio
+("what this area is for · what right feels like · one example of wrong"), written
+**only when an interview already touches that area** (the interviewer routes ~3 extra
+lines per answer); seed from the Q-0051 draft-answer session. *Not decided:* no
+backfill sessions — areas without interviews simply don't have blocks yet.
 
 **Question:** Agents can reliably catch a plan that *contradicts a recorded decision*,
 but a plan that's internally consistent and merely *off your taste* passes silently —
@@ -2237,8 +2249,5 @@ already touched that area (zero dedicated sessions; the interviewer routes 3 ext
 lines per answer). Over a few weeks every active area gets one, and "does this plan
 fit the vision?" becomes checkable instead of guessable.
 
-**Safe default until answered:** none added; agents continue escalating taste
-questions via the router.
-
-**Suggested destination after answer:** `docs/subsystems/*` folios (one block each) +
-`docs/owner/maintainer-working-profile.md` (the convention).
+**Routed to:** `docs/owner/maintainer-working-profile.md` (the convention; folios
+gain blocks lazily as interviews touch their areas).
