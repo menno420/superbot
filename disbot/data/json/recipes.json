@@ -100,8 +100,7 @@
         "diamond": 24
     },
     "torch": {
-        "stick": 1,
-        "coal": 1
+        "wood": 2
     },
     "chest": {
         "wooden planks": 8
@@ -164,5 +163,13 @@
     },
     "armor": {
         "iron": 4
+    },
+    "pickaxe": {
+        "wood": 2,
+        "stone": 3
+    },
+    "lantern": {
+        "iron": 2,
+        "gold": 1
     }
 }

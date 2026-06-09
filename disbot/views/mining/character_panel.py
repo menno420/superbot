@@ -30,9 +30,20 @@ async def build_character_embed(
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     equipped = await db.get_equipment(suid, guild_id)
+    wear = await db.get_gear_wear(suid, guild_id)
     depth = await db.get_depth(suid, guild_id)
     coins = await db.get_coins(user_id, guild_id)
     stats = equipment.compute_stats(equipped)
+
+    def _gear_line(slot: str) -> str:
+        item = equipped.get(slot)
+        if not item:
+            return f"**{slot.title()}**: —"
+        line = f"**{slot.title()}**: {item.title()}"
+        maximum = equipment.max_durability(item)
+        if maximum is not None:
+            line += f" ({wear.get(item, maximum)}/{maximum})"
+        return line
 
     embed = discord.Embed(
         title=f"🧍 {name}'s Character" if name else "🧍 Character",
@@ -45,14 +56,7 @@ async def build_character_embed(
     )
     embed.add_field(
         name="🧰 Gear",
-        value="\n".join(
-            (
-                f"**{slot.title()}**: {equipped[slot].title()}"
-                if slot in equipped
-                else f"**{slot.title()}**: —"
-            )
-            for slot in equipment.SLOTS
-        ),
+        value="\n".join(_gear_line(slot) for slot in equipment.SLOTS),
         inline=True,
     )
     bonuses = equipment.describe_stats(stats)

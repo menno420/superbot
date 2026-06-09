@@ -80,6 +80,7 @@ from utils.db.games.deathmatch import (
     update_deathmatch,
 )
 from utils.db.games.mining import (
+    apply_inventory_deltas,
     get_all_mining_totals,
     get_mining_inventory,
     set_mining_inventory,
@@ -90,7 +91,17 @@ from utils.db.games.mining_equipment import (
     get_equipment,
     unequip_slot,
 )
-from utils.db.games.mining_player_state import get_depth, set_depth
+from utils.db.games.mining_gear_wear import (
+    clear_gear_wear,
+    get_gear_wear,
+    set_gear_wear,
+)
+from utils.db.games.mining_player_state import (
+    get_depth,
+    get_last_broken,
+    set_depth,
+    set_last_broken,
+)
 from utils.db.games.rps import rps_ensure_player, rps_get_leaderboard, rps_update_stat
 from utils.db.governance import (
     get_all_cleanup_for_guild,
@@ -276,4 +287,10 @@ __all__ = [
     "unequip_slot",
     "get_depth",
     "set_depth",
+    "get_last_broken",
+    "set_last_broken",
+    "apply_inventory_deltas",
+    "get_gear_wear",
+    "set_gear_wear",
+    "clear_gear_wear",
 ]

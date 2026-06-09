@@ -98,22 +98,37 @@ class MineView(discord.ui.View):
 
         # Lazy import: cogs-layer domain logic — views must not import cogs at
         # module level (layer rule; the rewards import above is tracked debt).
-        from cogs.mining import world
+        from cogs.mining import workshop, world
+        from cogs.mining.rewards import mine_multiplier
 
         user_id = str(self.user_id)
         inventory = await db.get_mining_inventory(user_id, self.guild_id)
+        equipped = await db.get_equipment(user_id, self.guild_id)
         depth = await db.get_depth(user_id, self.guild_id)
-        has_pickaxe = inventory.get("pickaxe", 0) > 0
-        found, amount = roll_mine_loot(has_pickaxe=has_pickaxe, depth=depth)
+        found, amount = roll_mine_loot(
+            has_pickaxe=inventory.get("pickaxe", 0) > 0,
+            depth=depth,
+            multiplier=mine_multiplier(equipped, inventory),
+        )
 
         await db.update_mining_item(user_id, self.guild_id, found, amount)
+        wear = await workshop.apply_wear(
+            self.user_id,
+            self.guild_id,
+            action=workshop.ACTION_MINE,
+            depth=depth,
+            equipped=equipped,
+        )
 
+        description = (
+            f"{interaction.user.mention} mined **{amount}x {found}** "
+            f"by going {direction} in {world.describe_position(depth)}!"
+        )
+        if wear.notes:
+            description += "\n" + "\n".join(wear.notes)
         result_embed = discord.Embed(
             title="⛏️ Mined!",
-            description=(
-                f"{interaction.user.mention} mined **{amount}x {found}** "
-                f"by going {direction} in {world.describe_position(depth)}!"
-            ),
+            description=description,
             color=MINING_COLOR,
         )
         result_embed.set_footer(
@@ -189,13 +204,15 @@ class _MineResultsView(discord.ui.View):
     ) -> None:
         # Late import to keep the module-load graph acyclic
         # (main_panel imports this module).
-        from views.mining.main_panel import MiningHubView
+        from views.mining.main_panel import MiningHubView, build_overview_embed
 
-        view = MiningHubView()
-        await interaction.response.edit_message(
-            embed=view.build_embed(),
-            view=view,
+        embed = await build_overview_embed(
+            self.user_id,
+            self.guild_id,
+            name=interaction.user.display_name,
         )
+        view = MiningHubView()
+        await interaction.response.edit_message(embed=embed, view=view)
         self.stop()
 
     @discord.ui.button(

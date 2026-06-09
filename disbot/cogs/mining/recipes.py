@@ -28,6 +28,11 @@ DEFAULT_RECIPES: dict[str, dict[str, int]] = {
     "gold statue": {"gold": 4},
     "diamond throne": {"diamond": 6},
     "wooden house": {"wood": 8},
+    # Starter gear — craftable from mineable resources so broken gear
+    # (the durability sink) is always re-craftable, not buy-only.
+    "pickaxe": {"wood": 2, "stone": 3},
+    "torch": {"wood": 2},
+    "lantern": {"iron": 2, "gold": 1},
 }
 
 

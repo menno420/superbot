@@ -26,6 +26,10 @@ async def test_build_character_embed_aggregates_every_owner():
         new_callable=AsyncMock,
         return_value={"tool": "iron pickaxe", "weapon": "iron sword"},
     ), patch(
+        "views.mining.character_panel.db.get_gear_wear",
+        new_callable=AsyncMock,
+        return_value={"iron pickaxe": 42},
+    ), patch(
         "views.mining.character_panel.db.get_depth",
         new_callable=AsyncMock,
         return_value=2,

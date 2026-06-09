@@ -102,6 +102,10 @@ async def test_handle_mine_swaps_to_results_view_not_none():
         new_callable=AsyncMock,
         return_value={"pickaxe": 1},
     ), patch(
+        "views.mining.mine_view.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={},  # nothing equipped → no durability wear path
+    ), patch(
         "views.mining.mine_view.db.get_depth",
         new_callable=AsyncMock,
         return_value=0,
@@ -162,9 +166,16 @@ async def test_mining_menu_button_swaps_to_mining_hub_view():
     btn = _find_button(results, "Mining Menu")
     interaction = MagicMock()
     interaction.user.id = 1
+    interaction.user.display_name = "tester"
     interaction.response.edit_message = AsyncMock()
 
-    await btn.callback(interaction)
+    # The menu now renders the live overview (DB-backed) — stub the builder.
+    with patch(
+        "views.mining.main_panel.build_overview_embed",
+        new_callable=AsyncMock,
+        return_value=discord.Embed(title="⛏️ Mining Hub — tester"),
+    ):
+        await btn.callback(interaction)
 
     interaction.response.edit_message.assert_awaited_once()
     kwargs = interaction.response.edit_message.await_args.kwargs

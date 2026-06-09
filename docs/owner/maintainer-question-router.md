@@ -1959,3 +1959,32 @@ defer `help_advertises_locked` + Help Preview.
 **Suggested destination after answer:** plan §16.8 item 3 + §16.4 (simulation limits),
 `services/access_projection.py` (`AccessContext.member_tier` consumption), and — if (b) —
 `docs/capability-authority.md` / the governance folio.
+
+### Q-0046 — Mining durability tuning: confirm the shipped wear/repair numbers
+
+**Area:** Games — mining character platform (Wave 1)
+**Type:** Balance confirmation (agent call already shipped, fully reversible data)
+**Priority:** Low (live and self-consistent; only the *feel* needs an owner pass)
+**Status:** Open
+
+**Question:** The Workshop + durability slice shipped with agent-chosen numbers, picked
+generous-side per the §6.8 P5 caution ("a resource sink, not an annoyance"). Confirm or
+retune: **(1) maxes** — pickaxe 60 uses, iron pickaxe 150, torch 40, lantern 100, lucky
+charm 80 (combat gear has maxes — sword 60 / iron sword 150 / shield 90 / armor 120 — but
+**no wear path yet**: duels don't tick durability); **(2) wear plan** — mining wears tool
+always + light underground; exploring wears light underground + charm; harvest/descent wear
+nothing (descent stays persistent-gated per the §6.8 P2 decision); **(3) repair price** —
+`REPAIR_RATE` 0.5 × gear-shop price, scaled by missing durability (full pickaxe rescue ≈ 13 🪙
+vs. 25 🪙 new), so the shop catalogue is the single tuning knob; **(4)** should **duels**
+eventually tick weapon/armor wear (the natural next sink), and should the **lucky charm**
+(buy-only treasure, 80 🪙) really wear at all?
+
+**Why agents need this:** Every number is data (`utils/equipment.MAX_DURABILITY`,
+`workshop.REPAIR_RATE`, `_WEAR_PLAN`) — retuning is a one-table edit, but agents shouldn't
+oscillate balance numbers across sessions without an owner anchor.
+
+**Safe default until answered:** Keep the shipped numbers; don't add new wear paths
+(duels) until answered.
+
+**Suggested destination after answer:** brainstorm §6.8 P5 (the decided entry) +
+`utils/equipment.py` / `cogs/mining/workshop.py` constants.
