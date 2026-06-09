@@ -54,6 +54,11 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   **only** through the audited `services.economy_service` (`credit`/`debit` → audit row +
   balance event); the inventory side stays direct-lane. Surfaced via `!sell`/`!sellall`/
   `!buy`/`!market` and a Market panel on the hub.
+- **Character overview: `views/mining/character_panel.py`** — a read-only profile embed
+  (`!character`/`!profile` + a hub Character button) that **aggregates, owns nothing**:
+  position, equipped gear + `EffectiveStats`, coins, and inventory net worth, each read from
+  its existing owner. The brainstorm §7.6 stat-card seed (no PIL yet); it grows for free as
+  game-XP / skills / titles land.
 - Known game UX follow-ups are not stability failures; cite the accepted #535
   baseline rather than claiming a fresh live retest.
 

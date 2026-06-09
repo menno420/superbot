@@ -376,6 +376,37 @@ class MiningHubView(PersistentView):
         view = MiningMarketView(interaction.user, interaction.guild_id)
         await safe_edit(interaction, embed=embed, view=view)
 
+    @discord.ui.button(
+        label="🧍 Character",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:character",
+        row=3,
+    )
+    async def character_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Read-only character overview, shown in place on the hub.
+        from views.mining.character_panel import build_character_embed
+
+        embed = await build_character_embed(
+            interaction.user.id,
+            interaction.guild_id,
+            name=interaction.user.display_name,
+        )
+        embed.set_footer(text="Pick another action above to continue.")
+        await safe_edit(interaction, embed=embed, view=self)
+
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]
     """Modal launched by the Build button — validates inventory then crafts."""

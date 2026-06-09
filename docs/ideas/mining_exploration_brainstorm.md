@@ -371,6 +371,12 @@ sink (**durability + repair**) and the other sinks (structures, respec) remain n
 
 ### 7.6 Profile & identity (the spine, in detail)
 
+> **Shipped 2026-06-09 (seed):** a read-only **Character overview** (`!character`/`!profile`
+> + a hub Character button, `views/mining/character_panel.py`) aggregating position +
+> gear/`EffectiveStats` + coins + net worth — the stat-card-first step as an embed. The PIL
+> card and paper-doll remain the later visual-roadmap steps; game-level/skills/titles slot in
+> as those systems land.
+
 - **What it is:** a read-only card aggregating the whole character — avatar, game level + XP bar,
   skill spec, equipped gear, coins / net-worth, equipped **title**, leaderboard rank.
 - **Visual roadmap:** **stat card** (avatar + PIL panel, *zero custom art*, ships first) →
