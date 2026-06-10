@@ -540,6 +540,7 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
     """
     from services import btd6_stats_service
     from utils.btd6 import paragon_degrees
+    from utils.btd6.effect_lines import tier_effect_lines
 
     pstats = btd6_stats_service.get_paragon_stats_by_tower(tower_id)
     if pstats is None or not pstats.has_combat_stats:
@@ -587,6 +588,29 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
             "gain most. Boss-damage steps every 20 degrees (1.0 to 2.0), 2.25 "
             "at Degree 100.",
         ),
+    )
+    # Degree-independent extras. Income + buff/zone auras were committed
+    # (Navarch's cashPerRound 3200, its Trade Empire / Flagship / sellback
+    # buffs) but no paragon grounding line ever rendered them — the model,
+    # told only about the tower path's income, confidently answered that the
+    # paragon "makes no coins" (live miss, 2026-06-10). Towers surface income
+    # via specials and heroes via [btd6_hero_buff]; this is the paragon leg.
+    income = pstats.income_per_round
+    if income is not None:
+        lines.append(
+            _cap(
+                f"[btd6_paragon_stats normal] {name} income: generates "
+                f"${income:,} at the end of each round (degree-independent; "
+                f"source: {src})",
+            ),
+        )
+    effects: list[str] = []
+    for effect in tier_effect_lines(pstats.base):
+        if effect and effect not in effects:
+            effects.append(effect)
+    lines.extend(
+        _cap(f"[btd6_paragon_stats effect] {name}: {_sanitise(effect)} (source: {src})")
+        for effect in effects
     )
     return lines
 
@@ -1679,6 +1703,21 @@ def _map_roster_reply(text: str, maps: list) -> str:
     return f"**BTD6 Maps ({len(maps)})** by difficulty:\n{grouped(maps)}"
 
 
+_PARAGON_NAME_FILLERS = frozenset({"the", "of"})
+
+
+def _squash_paragon_name(text: str) -> str:
+    """Lowercase, strip punctuation, and drop filler words ("the"/"of").
+
+    Users drop articles when naming paragons — the live miss was "navarch of
+    seas" failing the exact-substring match against "Navarch of the Seas" and
+    leaving the question with ZERO grounding (2026-06-10 screenshot). This
+    normalises both sides of the match without loosening to fuzzy matching.
+    """
+    tokens = re.sub(r"[^a-z0-9]+", " ", text.lower()).split()
+    return " ".join(t for t in tokens if t not in _PARAGON_NAME_FILLERS)
+
+
 def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
     """Ground a paragon named directly (e.g. "what are Glaive Dominus's stats?").
 
@@ -1692,18 +1731,40 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
     from utils.btd6 import paragon_math
 
     text = (message_text or "").lower()
+    squashed = _squash_paragon_name(text)
     out: list[str] = []
     grounded: set[str] = set(resolved_tower_ids)
     for paragon in paragon_math.PARAGONS:
-        # Strip a parenthetical (e.g. "… (B.O.M.B.)") and match the bare name.
+        # Strip a parenthetical (e.g. "… (B.O.M.B.)") and match the bare name —
+        # exactly, then article-tolerantly ("navarch of seas").
         name = paragon.name.split(" (")[0].strip().lower()
-        if not name or name not in text:
+        if not name:
+            continue
+        if name not in text and _squash_paragon_name(name) not in squashed:
             continue
         pstats = btd6_stats_service.get_paragon_stats(paragon.paragon_id)
         if pstats is None or pstats.tower_id in grounded:
             continue
         grounded.add(pstats.tower_id)
         out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
+
+    # Shorthand the way players actually talk ("ice paragon", "boat paragon",
+    # "navarch"): when the text says "paragon", try each word/word-pair against
+    # the canonical shorthand resolver (tower names + curated aliases). Gating
+    # on the keyword keeps generic alias words ("ice", "sub", "boat") from
+    # grounding paragons in ordinary chat.
+    if "paragon" in text:
+        tokens = squashed.split()
+        candidates = tokens + [" ".join(pair) for pair in zip(tokens, tokens[1:])]
+        for candidate in candidates:
+            resolved = paragon_math.resolve_paragon(candidate)
+            if resolved is None:
+                continue
+            pstats = btd6_stats_service.get_paragon_stats(resolved.paragon_id)
+            if pstats is None or pstats.tower_id in grounded:
+                continue
+            grounded.add(pstats.tower_id)
+            out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
 
     # A paragon ABILITY named directly (e.g. "Spikeageddon cooldown", "what does
     # Final Strike do") — the names are distinctive, so a full-name substring

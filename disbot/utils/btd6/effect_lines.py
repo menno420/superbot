@@ -153,6 +153,12 @@ def buff_text(buff: dict[str, Any]) -> str:
     parts += [text for field, text in _BUFF_FLAG_TEXT if buff.get(field) is True]
     name = str(buff.get("name") or "").strip()
     body = ", ".join(parts) if parts else "buff"
+    # The cutover's structural split: a paragon can carry the same aura twice,
+    # once global and once paragon-scoped (Navarch/Glaive/Shadow Flagship-style
+    # buffs). Without this clause the two entries render identically and read
+    # as a duplicate.
+    if buff.get("onlyAffectParagon") is True:
+        body += " (affects paragons only)"
     clause = _buff_trigger_clause(buff)
     if clause:
         body += f" {clause}"
