@@ -84,6 +84,20 @@ WAS such a demand), item 4 is the maintainer's live spot-check (now including
 the Navarch income answer + minion names), item 7 is the captured
 conversation-grounding idea. PR #662 review = the diff.
 
+## Continuation 3 (same session, after #668 merged — closeout)
+
+- **Ledger reconcile done by this session itself** (#666/#668 added to
+  current-state Recently-shipped — the "next session reconciles" lag closed
+  early).
+- **Item-7 eval pin shipped**: two canned-fact probes in `tests/evals/cases.py`
+  carrying the report's verbatim text (turn 1 + the carryover-labeled turn 2),
+  graded format-tolerantly (`3,200|3200`). They run on the maintainer's
+  opt-in live eval (`scripts/run_evals.py`); CI validates import/shape only.
+  A true multi-turn eval needs a harness `recent_turns` field — recorded in
+  the plan as out of scope, not silently dropped.
+- Lane state at close: items 1/2/5/6/7 done · item 3 demand-driven ·
+  item 4 = the maintainer's prod spot-check (6-point list in the chat reply).
+
 ## Continuation 2 (same session, after #666 merged — "anything else you can do?")
 
 The maintainer asked what could ship without his testing. Three moves:
