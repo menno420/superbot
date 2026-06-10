@@ -1,11 +1,14 @@
-"""Mining subsystem — domain logic (S4.1).
+"""Mining subsystem — write orchestration awaiting the RS02 workflow service.
 
-See ``docs/architecture.md`` §"Subsystem decomposition" for the layout
-convention.  Domain modules in this package are pure: no Discord,
-no views.  The cog file ``cogs/mining_cog.py`` and views in
-``views/mining/`` consume these helpers.
+The pure domain modules (items, rewards, world, exploration, recipes, and
+the pricing/durability helpers) relocated to ``utils/mining/`` (RS02
+stage 1) so views and services import them without layer violations.
+What remains here is the *orchestration* half — the multi-write
+``apply_*`` operations — which converges into
+``services/mining_workflow.py`` (workshop ops this stage; market and the
+remaining writers in RS02 stage 2, after which this package is deleted).
 
 Modules:
-    recipes  — JSON-driven structure recipes
-    rewards  — mining loot tables + explore outcomes
+    market   — sell/buy orchestration (apply_sell / apply_sell_all / apply_buy)
+    workshop — durability orchestration (apply_wear / apply_repair / apply_craft)
 """

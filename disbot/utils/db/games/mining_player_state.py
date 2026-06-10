@@ -4,7 +4,7 @@ Direct-lane game state: ``docs/ownership.md`` routes mining writes direct via
 ``utils/db/games/`` (no audited service — see the RC-8A direct-DB ledger).  One
 row per ``(user_id, guild_id)``; ``user_id`` is ``TEXT`` to match
 ``mining_inventory``'s legacy column type.  ``depth`` is the integer band index
-(0 = Surface); the biome is derived from it (:mod:`cogs.mining.world`), never
+(0 = Surface); the biome is derived from it (:mod:`utils.mining.world`), never
 stored, so depth is the single source of truth for position.
 """
 

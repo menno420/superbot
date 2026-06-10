@@ -1,7 +1,7 @@
 """Exploration engine — pure, loadout-aware outcome catalog (foundation).
 
 This module is the structured successor to the flat five-entry
-``EXPLORE_OUTCOMES`` table in :mod:`cogs.mining.rewards`.  It models
+``EXPLORE_OUTCOMES`` table in :mod:`utils.mining.rewards`.  It models
 exploration as *depth-banded* (a :class:`Biome`) and *loadout-aware* (the
 tools a player has equipped change which outcomes are reachable and how
 generous they are), while staying a **pure** domain module: no Discord,
@@ -46,7 +46,7 @@ class Biome(Enum):
 
 
 # Canonical depth ordering, shallow→deep: the index of a biome IS its integer
-# depth.  Single source of truth shared with cogs.mining.world (position) so the
+# depth.  Single source of truth shared with utils.mining.world (position) so the
 # depth↔biome mapping can never drift between the two modules.
 BIOME_ORDER: tuple[Biome, ...] = (
     Biome.SURFACE,

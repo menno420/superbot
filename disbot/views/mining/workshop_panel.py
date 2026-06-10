@@ -18,6 +18,7 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from utils import db, equipment
+from utils.mining.recipes import load_recipes
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
 
@@ -30,7 +31,6 @@ async def build_workshop_embed(
 ) -> discord.Embed:
     """Build the workshop embed: gear condition, repair costs, craftable gear."""
     from cogs.mining import workshop
-    from cogs.mining.recipes import load_recipes
 
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
@@ -171,7 +171,6 @@ class MiningWorkshopView(HubView):
     ) -> MiningWorkshopView:
         """Async factory — the selects depend on the player's current state."""
         from cogs.mining import workshop
-        from cogs.mining.recipes import load_recipes
 
         view = cls(author, guild_id)
         suid = str(author.id)

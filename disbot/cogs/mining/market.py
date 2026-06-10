@@ -6,7 +6,7 @@ closing the *mine → sell → upgrade → descend* loop (brainstorm §7.5).
 
 Two halves:
 
-* **Pure pricing** (no I/O): sell prices reuse :func:`cogs.mining.items.item_value`
+* **Pure pricing** (no I/O): sell prices reuse :func:`utils.mining.items.item_value`
   so "what an ore is worth" has a single source of truth; the gear shop is a
   small, tunable coin catalogue.
 * **Orchestration** (``apply_*``): the only place mining touches money.  Coins
@@ -29,7 +29,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from cogs.mining import items
+from utils.mining import items
 from services import economy_service
 from utils import db
 

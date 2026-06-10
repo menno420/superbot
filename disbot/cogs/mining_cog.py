@@ -21,12 +21,13 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import market, workshop, world
-from cogs.mining.exploration import explore_from_state
-from cogs.mining.items import total_value
-from cogs.mining.recipes import load_recipes
+from cogs.mining import market, workshop
 from core.runtime import panel_manager
 from utils import db, equipment
+from utils.mining import world
+from utils.mining.exploration import explore_from_state
+from utils.mining.items import total_value
+from utils.mining.recipes import load_recipes
 from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
 
 # Pattern B re-export: importing this triggers @register on MiningHubView
@@ -111,7 +112,7 @@ class MiningCog(commands.Cog):
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
-        from cogs.mining.rewards import roll_harvest_amount
+        from utils.mining.rewards import roll_harvest_amount
 
         user_id = str(ctx.author.id)
         inventory = await db.get_mining_inventory(user_id, ctx.guild.id)

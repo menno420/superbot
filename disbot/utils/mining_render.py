@@ -73,7 +73,7 @@ def build_card_spec(
     """Build a :class:`CardSpec` from ordered ``(item_name, qty)`` rows.
 
     *classify_kind* is an optional ``name -> kind_string`` callable (e.g.
-    ``lambda n: cogs.mining.items.classify(n).value``) used to colour
+    ``lambda n: utils.mining.items.classify(n).value``) used to colour
     rows.  Kept as an injected callable so this ``utils`` module never
     imports the ``cogs`` layer (respecting the layer boundary) and stays
     trivially testable.

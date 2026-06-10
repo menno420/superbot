@@ -1,4 +1,4 @@
-"""Tests for cogs.mining.world — pure depth↔biome + descent-gating model.
+"""Tests for utils.mining.world — pure depth↔biome + descent-gating model.
 
 These pin the descent-gating decision (brainstorm §6.8 P2): depth access is
 gated by the equipped-gear ``depth_access`` stat (torch → Cavern, lantern →
@@ -7,8 +7,8 @@ Deep) and is persistent, not consumed per descent.
 
 from __future__ import annotations
 
-from cogs.mining import world
-from cogs.mining.exploration import BIOME_ORDER, Biome
+from utils.mining import world
+from utils.mining.exploration import BIOME_ORDER, Biome
 from utils.equipment import EffectiveStats
 
 

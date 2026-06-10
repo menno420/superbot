@@ -74,7 +74,7 @@ def test_starter_gear_has_obtainable_recipes():
     # The durability loop needs broken starter gear to be re-craftable starting
     # from mineable resources (wood/stone/iron/gold/diamond) — directly or via
     # craftable intermediates (wood → wooden planks → stick → iron pickaxe).
-    from cogs.mining.recipes import load_recipes
+    from utils.mining.recipes import load_recipes
 
     recipes = load_recipes()
     mineable = {"wood", "stone", "iron", "gold", "diamond"}

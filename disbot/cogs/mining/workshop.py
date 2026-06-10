@@ -34,7 +34,7 @@ import math
 from dataclasses import dataclass, field
 
 from cogs.mining import market
-from cogs.mining.recipes import load_recipes
+from utils.mining.recipes import load_recipes
 from services import economy_service
 from utils import db, equipment
 
