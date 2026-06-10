@@ -1,16 +1,24 @@
-"""Characterization tests for the five Help render paths (Lane 8).
+"""Characterization tests for the five Help render paths (Lane 8 + Batch 6).
 
-These pin **today's** behavior — Home (hub category index) · Advanced
+These pin the behavior of — Home (hub category index) · Advanced
 (paginated subsystem browser) · typed routes (`resolve_route`) · the
 generic command-list embed · dedicated panels (`build_help_menu_view`
-dispatch + fallbacks) — so the future Help projection seam (help audit
-§9) lands against a regression net instead of an untested surface.
+dispatch + fallbacks). The #642 net pinned the pre-seam divergence;
+the **Batch 6 projection seam (HLP-2) consciously changed the pins**
+marked below: every path now consumes one
+:class:`services.help_projection.HelpProjection`, so
 
-**No behavior changes ride with these tests.** Where a pin encodes a
-quirk (e.g. hub names shadow same-named subsystems in route priority),
-that is deliberate: changing the quirk later must be a conscious,
-test-visible decision. The Q-0055–Q-0059 overlay answers are design
-posture only — nothing here implements or assumes overlay storage.
+* typed/dropdown hub + subsystem routes return not-found for targets the
+  projection hides (pre-seam they opened regardless of governance);
+* the typed single-command route applies the same display filter as the
+  command-list embed (pre-seam it skipped classification/hidden/disabled);
+* Home hides a hub whose host subsystem is governance-hidden (pre-seam
+  Home was tier-only).
+
+Where a pin encodes a quirk (e.g. hub names shadow same-named subsystems
+in route priority), that remains deliberate: changing it must be a
+conscious, test-visible decision. The Q-0055–Q-0059 overlay answers are
+design posture only — nothing here implements or assumes overlay storage.
 """
 
 from __future__ import annotations
@@ -37,6 +45,8 @@ from cogs.help_cog import (
     build_categories_overview_embed,
     build_cog_embed,
 )
+from governance.models import VisibilityResult
+from services.help_projection import HelpProjection
 from utils.hub_registry import HUBS, hubs_for_tier
 from utils.subsystem_registry import SUBSYSTEMS
 
@@ -96,6 +106,18 @@ _ALL_VISIBLE = set(SUBSYSTEMS)
 _TOP_LEVEL = [name for name, meta in SUBSYSTEMS.items() if not meta.get("parent_hub")]
 
 
+def _projection(visible: set[str], tier: str) -> HelpProjection:
+    """The audience projection every render path consumes (HLP-2)."""
+    return HelpProjection.from_visibility(
+        VisibilityResult(
+            visible_subsystems=visible,
+            member_tier=tier,
+            resolved_from={},
+            traces={},
+        ),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Path 1 — Home: the hub category index
 # ---------------------------------------------------------------------------
@@ -144,8 +166,7 @@ async def test_advanced_lists_only_visible_top_level_subsystems():
     embed, view = await open_route(
         HelpRoute(key="advanced", kind="advanced"),
         _opener(bot),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="administrator",
+        projection=_projection(_ALL_VISIBLE, "administrator"),
     )
 
     assert isinstance(view, HelpPanelView)
@@ -167,8 +188,7 @@ async def test_advanced_respects_governance_visibility():
     embed, _view = await open_route(
         HelpRoute(key="advanced", kind="advanced"),
         _opener(bot),
-        visible_subsystems=narrowed,
-        member_tier="administrator",
+        projection=_projection(narrowed, "administrator"),
     )
     text = " ".join(f"{f.name} {f.value}" for f in embed.fields)
     assert SUBSYSTEMS["ai"]["display_name"] not in text
@@ -179,8 +199,7 @@ async def test_advanced_paginates_top_level_list_at_page_size():
     embed, _view = await open_route(
         HelpRoute(key="advanced", kind="advanced"),
         _opener(bot),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="administrator",
+        projection=_projection(_ALL_VISIBLE, "administrator"),
     )
     pages = max(1, math.ceil(len(_TOP_LEVEL) / _PAGE_SIZE))
     if pages > 1:
@@ -330,8 +349,7 @@ async def test_subsystem_route_opens_the_cog_hook_panel():
     embed, view = await open_route(
         HelpRoute(key="xp", kind="subsystem", target="xp"),
         _opener(bot),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="user",
+        projection=_projection(_ALL_VISIBLE, "user"),
     )
     assert embed.title == "XP PANEL"
     assert view is not None
@@ -347,8 +365,7 @@ async def test_subsystem_hook_failure_falls_back_to_command_list():
     embed, view = await open_route(
         HelpRoute(key="xp", kind="subsystem", target="xp"),
         _opener(bot),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="user",
+        projection=_projection(_ALL_VISIBLE, "user"),
     )
     # Fallback is the embed-only generic command list — Help never crashes.
     assert view is None
@@ -370,8 +387,7 @@ async def test_hub_route_uses_panel_builder_override_table():
     embed, _view = await open_route(
         HelpRoute(key="platform", kind="hub", target="diagnostic"),
         _opener(bot),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="administrator",
+        projection=_projection(_ALL_VISIBLE, "administrator"),
     )
     assert embed.title == "PLATFORM HUB"
 
@@ -386,8 +402,7 @@ async def test_hub_hook_failure_renders_not_found():
     embed, view = await open_route(
         HelpRoute(key="games", kind="hub", target="games"),
         _opener(bot),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="user",
+        projection=_projection(_ALL_VISIBLE, "user"),
     )
     assert view is None
     assert "No command or category named" in (embed.description or "")
@@ -397,8 +412,7 @@ async def test_unresolvable_host_cog_renders_not_found():
     embed, view = await open_route(
         HelpRoute(key="xp", kind="subsystem", target="xp"),
         _opener(_bot(cogs={})),  # no cog matches the entry points
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="user",
+        projection=_projection(_ALL_VISIBLE, "user"),
     )
     assert view is None
     assert "No command or category named" in (embed.description or "")
@@ -408,8 +422,131 @@ async def test_unknown_route_renders_not_found():
     embed, view = await open_route(
         HelpRoute(key="zzz", kind="unknown"),
         _opener(_bot()),
-        visible_subsystems=_ALL_VISIBLE,
-        member_tier="user",
+        projection=_projection(_ALL_VISIBLE, "user"),
     )
     assert view is None
     assert embed.description == build_not_found_embed("zzz").description
+
+
+# ---------------------------------------------------------------------------
+# Batch 6 (HLP-2) — effective-access unification across the five paths.
+# One projection decides; every path observes the same decision.
+# ---------------------------------------------------------------------------
+
+
+def test_home_hides_hub_whose_host_subsystem_is_governance_hidden():
+    """Path 1: pre-seam Home was tier-only (the resolved governance set was
+    discarded — audit §3). Now a hub disappears when its host subsystem is
+    hidden in this scope."""
+    projection = _projection(_ALL_VISIBLE - {"games"}, "user")
+    embed = build_categories_overview_embed(projection=projection)
+    names = " ".join(f.name for f in embed.fields)
+    assert "Games" not in names
+    assert "Economy" in names  # unaffected sibling
+
+
+async def test_advanced_and_typed_route_agree_on_hidden_subsystem():
+    """Paths 2+3: a governance-hidden subsystem is absent from Advanced AND
+    its typed route renders not-found — the same decision, not two filters."""
+    narrowed = _ALL_VISIBLE - {"ai"}
+    projection = _projection(narrowed, "administrator")
+    assert "ai" not in projection.advanced_subsystems()
+
+    embed, view = await open_route(
+        HelpRoute(key="ai", kind="subsystem", target="ai"),
+        _opener(_bot()),
+        projection=projection,
+    )
+    assert view is None
+    assert "No command or category named" in (embed.description or "")
+
+
+async def test_typed_hub_route_checks_target_against_projection():
+    """Path 3: pre-seam, a typed hub route opened the panel regardless of
+    governance (audit §3 'no target check'). Now hidden = not-found,
+    indistinguishable from a nonexistent name."""
+    cog = _StubCog([_command("games")], hook=_panel_pair("GAMES HUB"))
+    bot = _bot(cogs={"GamesCog": cog})
+
+    visible_projection = _projection(_ALL_VISIBLE, "user")
+    embed, view = await open_route(
+        HelpRoute(key="games", kind="hub", target="games"),
+        _opener(bot),
+        projection=visible_projection,
+    )
+    assert embed.title == "GAMES HUB"
+
+    hidden_projection = _projection(_ALL_VISIBLE - {"games"}, "user")
+    embed, view = await open_route(
+        HelpRoute(key="games", kind="hub", target="games"),
+        _opener(bot),
+        projection=hidden_projection,
+    )
+    assert view is None
+    assert "No command or category named" in (embed.description or "")
+
+
+async def test_typed_hub_route_applies_the_hub_tier_floor():
+    """Path 3: pre-seam, `!help settings` opened the admin hub panel for
+    user-tier members. The projection applies the same tier floor Home
+    always used."""
+    cog = _StubCog([_command("settings")], hook=_panel_pair("SETTINGS HUB"))
+    bot = _bot(cogs={"SettingsCog": cog})
+
+    embed, view = await open_route(
+        HelpRoute(key="settings", kind="hub", target="settings"),
+        _opener(bot),
+        projection=_projection(_ALL_VISIBLE, "user"),
+    )
+    assert view is None
+    assert "No command or category named" in (embed.description or "")
+
+
+async def test_typed_command_route_applies_the_shared_display_filter():
+    """Paths 3+4: pre-seam, `!help <cmd>` rendered ledger-hidden /
+    Discord-hidden / disabled commands the command-list embed filtered out.
+    One filter now (`services.help_projection.command_display_state`)."""
+    projection = _projection(_ALL_VISIBLE, "user")
+
+    visible_cmd = _command("ping", help="Pong.")
+    embed, view = await open_route(
+        HelpRoute(key="ping", kind="command", target="ping"),
+        _opener(_bot(command=visible_cmd)),
+        projection=projection,
+    )
+    assert embed.title == "`!ping`"
+
+    for hidden_cmd in (
+        _command("ghost", hidden=True),
+        _command("old", extras={"classification": "legacy_duplicate"}),
+    ):
+        embed, view = await open_route(
+            HelpRoute(key=hidden_cmd.name, kind="command", target=hidden_cmd.name),
+            _opener(_bot(command=hidden_cmd)),
+            projection=projection,
+        )
+        assert view is None, hidden_cmd.name
+        assert "No command or category named" in (embed.description or "")
+
+
+async def test_dedicated_panel_dispatch_respects_the_projection():
+    """Path 5: the dedicated-panel hook never fires for a hidden target —
+    the dispatch seam (open_route) applies the decision before the builder
+    is consulted."""
+    calls: list[str] = []
+
+    async def hook(opener):
+        calls.append("built")
+        return discord.Embed(title="XP PANEL"), discord.ui.View()
+
+    cog = _StubCog([_command("xpmenu")], hook=hook)
+    bot = _bot(cogs={"XpCog": cog})
+
+    embed, view = await open_route(
+        HelpRoute(key="xp", kind="subsystem", target="xp"),
+        _opener(bot),
+        projection=_projection(_ALL_VISIBLE - {"xp"}, "user"),
+    )
+    assert view is None
+    assert calls == []  # the builder was never invoked
+    assert "No command or category named" in (embed.description or "")

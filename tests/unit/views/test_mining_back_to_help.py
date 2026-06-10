@@ -31,6 +31,20 @@ from cogs import help_cog
 from views.mining.main_panel import MiningHubView
 
 
+def _projection(visible: set[str], tier: str):
+    from governance.models import VisibilityResult
+    from services.help_projection import HelpProjection
+
+    return HelpProjection.from_visibility(
+        VisibilityResult(
+            visible_subsystems=visible,
+            member_tier=tier,
+            resolved_from={},
+            traces={},
+        ),
+    )
+
+
 def _opener() -> help_cog.HelpOpener:
     user = MagicMock()
     user.id = 1
@@ -89,8 +103,7 @@ async def test_typed_help_mining_opens_panel_with_back_to_help(monkeypatch):
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"mining"},
-        member_tier="user",
+        projection=_projection({"mining"}, "user"),
     )
 
     assert view is fake_view
@@ -120,8 +133,7 @@ async def test_dropdown_help_mining_opens_panel_with_back_to_help(monkeypatch):
     _, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"mining"},
-        member_tier="user",
+        projection=_projection({"mining"}, "user"),
     )
 
     help_cog._attach_back_to_help_button(view)

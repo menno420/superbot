@@ -123,23 +123,48 @@ def test_general_cog_has_build_help_menu_view():
 
 @pytest.mark.asyncio
 async def test_help_on_select_handles_missing_cog():
-    """When _cog_for_subsystem returns None the user gets a friendly ephemeral."""
+    """When _cog_for_subsystem returns None the user gets a friendly ephemeral.
+
+    HLP-2: ``_on_select`` re-resolves governance and checks the projection
+    *before* the cog lookup, so the governance mock must advertise the
+    selected subsystem (a real registry key) for this test to reach the
+    missing-cog branch.
+    """
     from unittest.mock import patch
 
+    from cogs import help_cog as help_cog_module
     from cogs.help_cog import HelpPanelView
+    from utils.subsystem_registry import SUBSYSTEMS
 
-    view = HelpPanelView(visible_list=["ghost"], page=0)
+    view = HelpPanelView(visible_list=["xp"], page=0)
 
     interaction = MagicMock()
-    interaction.data = {"values": ["ghost"]}
+    interaction.data = {"values": ["xp"]}
     interaction.response.send_message = AsyncMock()
     interaction.response.edit_message = AsyncMock()
     interaction.client = MagicMock()
 
-    with patch("cogs.help_cog._cog_for_subsystem", return_value=None):
+    vis_result = MagicMock()
+    vis_result.visible_subsystems = set(SUBSYSTEMS)
+    vis_result.member_tier = "user"
+
+    with patch(
+        "cogs.help_cog._cog_for_subsystem",
+        return_value=None,
+    ), patch.object(
+        help_cog_module.governance_service,
+        "resolve_visibility",
+        new=AsyncMock(return_value=vis_result),
+    ), patch.object(
+        help_cog_module.GovernanceContext,
+        "from_interaction",
+        lambda i: MagicMock(),
+    ):
         await view._on_select(interaction)
 
     interaction.response.send_message.assert_awaited_once()
+    msg = interaction.response.send_message.await_args.args[0]
+    assert "no longer loaded" in msg
     interaction.response.edit_message.assert_not_called()
 
 

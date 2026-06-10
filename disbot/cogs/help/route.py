@@ -16,6 +16,15 @@ Routes have five kinds:
 - ``advanced``  — open the legacy paginated ``HelpPanelView``.
 - ``command``   — render a single-command help embed.
 - ``unknown``   — render the "not found" fallback embed.
+
+HLP-2 (Batch 6): :func:`open_route` consumes the
+:class:`services.help_projection.HelpProjection` seam, so a typed/selected
+target the projection hides (governance-hidden subsystem/hub, hidden or
+disabled command) renders the same not-found fallback the unknown route
+uses — discoverability and the Home/Advanced surfaces can no longer
+disagree about what exists. Lock states (``routed_off`` /
+``command_locked``) deliberately stay routable: Help advertises locked
+features; execution stays denied by the owning policy.
 """
 
 from __future__ import annotations
@@ -27,8 +36,9 @@ from typing import Literal
 import discord
 from discord.ext import commands
 
+from services.help_projection import HelpProjection, is_command_displayable
 from utils.hub_registry import HUBS, get_hub
-from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
+from utils.subsystem_registry import SUBSYSTEMS
 from utils.ui_constants import UTILITY_COLOR
 
 logger = logging.getLogger("bot")
@@ -241,8 +251,7 @@ async def open_route(
     route: HelpRoute,
     opener: HelpOpener,
     *,
-    visible_subsystems: set[str],
-    member_tier: str,
+    projection: HelpProjection,
     prefix: str = "!",
 ) -> tuple[discord.Embed, discord.ui.View | None]:
     """Build the ``(embed, view)`` pair for a resolved :class:`HelpRoute`.
@@ -251,6 +260,11 @@ async def open_route(
     (single-command help, not-found fallback, command-list fallback for
     subsystems whose hook raised). The caller decides whether to send a
     new message or edit in place.
+
+    ``projection`` is the audience's :class:`HelpProjection` — every
+    destination is checked against it before opening, so a target the
+    projection hides renders not-found exactly like a nonexistent name
+    (no information leak about hidden surfaces).
 
     Imports of ``HelpPanelView``, ``_build_page_embed``, ``build_cog_embed``,
     and ``_cog_for_subsystem`` are function-local to avoid an import
@@ -264,13 +278,14 @@ async def open_route(
     )
 
     if route.kind == "advanced":
-        visible_list = [
-            name
-            for name, meta in all_subsystems_sorted()
-            if name in visible_subsystems and not meta.get("parent_hub")
-        ]
+        visible_list = projection.advanced_subsystems()
         view = HelpPanelView(visible_list, page=0)
-        embed = _build_page_embed(opener.client, visible_list, 0, member_tier)
+        embed = _build_page_embed(
+            opener.client,
+            visible_list,
+            0,
+            projection.member_tier,
+        )
         return embed, view
 
     if route.kind == "hub":
@@ -278,6 +293,8 @@ async def open_route(
             return build_not_found_embed(route.key), None
         hub = get_hub(route.target)
         if hub is None:
+            return build_not_found_embed(route.key), None
+        if not projection.is_hub_advertised(hub.key):
             return build_not_found_embed(route.key), None
         cog = _cog_for_subsystem(opener.client, hub.key)
         if cog is None:
@@ -302,6 +319,8 @@ async def open_route(
     if route.kind == "subsystem":
         if route.target is None:
             return build_not_found_embed(route.key), None
+        if not projection.is_subsystem_advertised(route.target):
+            return build_not_found_embed(route.key), None
         cog = _cog_for_subsystem(opener.client, route.target)
         if cog is None:
             return build_not_found_embed(route.key), None
@@ -324,6 +343,10 @@ async def open_route(
             return build_not_found_embed(route.key), None
         cmd = opener.client.get_command(route.target)
         if cmd is None:
+            return build_not_found_embed(route.key), None
+        # Same display filter as the command-list embed (pre-seam, typed
+        # single-command help skipped it — audit §3 divergence).
+        if not is_command_displayable(cmd):
             return build_not_found_embed(route.key), None
         return build_single_command_embed(cmd, prefix), None
 
