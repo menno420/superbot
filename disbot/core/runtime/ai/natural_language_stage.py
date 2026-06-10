@@ -844,7 +844,15 @@ async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
     if req.task is AITask.BTD6_ANSWER:
         from services import btd6_context_service
 
-        ctx = await btd6_context_service.build(req.text)
+        # Channel identity enables the conversation-carryover fallback for
+        # entity-less follow-ups ("does IT make coins…"); the stage grounds
+        # BEFORE recording the triggering message, so the buffer holds
+        # exactly the prior turns here.
+        ctx = await btd6_context_service.build(
+            req.text,
+            guild_id=req.guild_id,
+            channel_id=req.channel_id,
+        )
         return FeatureFactsResult(facts=tuple(ctx.facts))
     if req.task in _VIDEO_TASKS:
         from services import youtube_context_service
