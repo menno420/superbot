@@ -86,13 +86,17 @@ async def test_read_caches_until_invalidated(monkeypatch):
         },
     ]
     reader = AsyncMock(return_value=rows)
+    home_reader = AsyncMock(return_value=None)  # no Q-0059 home row
     monkeypatch.setattr(db, "get_guild_rows", reader)
+    monkeypatch.setattr(db, "get_home_row", home_reader)
 
     first = await get_guild_help_overlay(42)
     assert first.get("subsystem", "xp").display_name == "Levels"
+    assert first.home is None
     second = await get_guild_help_overlay(42)
     assert second is first  # cached
     reader.assert_awaited_once()
+    home_reader.assert_awaited_once()
 
     invalidate_help_overlay_cache(42)
     third = await get_guild_help_overlay(42)
@@ -105,6 +109,7 @@ async def test_db_fault_degrades_to_empty_and_is_not_cached(monkeypatch):
 
     reader = AsyncMock(side_effect=RuntimeError("db down"))
     monkeypatch.setattr(db, "get_guild_rows", reader)
+    monkeypatch.setattr(db, "get_home_row", AsyncMock(return_value=None))
 
     overlay = await get_guild_help_overlay(42)
     assert overlay.is_empty  # Help renders defaults, never crashes
@@ -122,6 +127,7 @@ async def test_invalidate_all_clears_every_guild(monkeypatch):
 
     reader = AsyncMock(return_value=[])
     monkeypatch.setattr(db, "get_guild_rows", reader)
+    monkeypatch.setattr(db, "get_home_row", AsyncMock(return_value=None))
     await get_guild_help_overlay(1)
     await get_guild_help_overlay(2)
     invalidate_help_overlay_cache()

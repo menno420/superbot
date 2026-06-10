@@ -59,6 +59,30 @@ await bus.emit(event_name: str, **payload) -> None
 - **Single-process.**  The bus is in-process only.  Cross-shard event
   routing is a Phase Sc addition.
 
+### Delivery semantics — publish-accepted (RS05, decided 2026-06-10)
+
+`await bus.emit(...)` returning normally means **the bus accepted and
+dispatched the emission** — never that every subscriber succeeded
+(failures/timeouts are isolated per handler, by design). Every
+mutation-result flag derived from an emit (`audit_emitted`,
+`event_emitted`, …) carries exactly this **publish-accepted** meaning:
+the caller's DB state is authoritative either way, and the flag is
+diagnostic, not transactional. *Do not* rename these fields or change
+failure propagation casually — the #646 map priced that churn and this
+contract is the decided alternative.
+
+Subscriber outcomes are **observable**, not returned:
+
+- `bus.delivery_stats()` — per-event `{ok, error, timeout}` counts
+  (process-lifetime, in-memory);
+- the **`event_bus` diagnostics provider** (`!platform runtime`) —
+  handler counts per event + delivery stats + `failures_total`;
+- `event_handler_failures_total{event, kind}` (Prometheus, best-effort).
+
+A non-zero failure count means a subscriber (audit routing, server
+logging, cache invalidation, …) is dropping events — investigate the
+subscriber; the emitters are working as specified.
+
 ### Subsystem requirements
 
 1. **Cataloged emit.**  Add the event name to

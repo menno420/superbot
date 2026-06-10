@@ -81,6 +81,14 @@ class EventBus:
 
     def __init__(self) -> None:
         self._handlers: dict[str, list[Handler]] = defaultdict(list)
+        # RS05 delivery accounting (process-local, per event name):
+        # {"ok": n, "error": n, "timeout": n}. emit() stays
+        # **publish-accepted** (a subscriber failure never raises — the
+        # documented contract); these counters are how delivery outcomes
+        # become observable instead.
+        self._delivery_stats: dict[str, dict[str, int]] = defaultdict(
+            lambda: {"ok": 0, "error": 0, "timeout": 0},
+        )
 
     def on(self, event: str, handler: Handler) -> None:
         _check_catalogue(event, "on")
@@ -90,11 +98,26 @@ class EventBus:
         self._handlers[event] = [h for h in self._handlers[event] if h is not handler]
 
     async def emit(self, event: str, **payload: Any) -> None:
+        """Publish ``event`` to every subscriber — **publish-accepted**.
+
+        Returning normally means the bus accepted and dispatched the
+        emission; it does **not** mean every subscriber succeeded
+        (failures/timeouts are isolated per handler — RS05 contract,
+        ``docs/runtime_contracts.md`` §2). Result fields like
+        ``audit_emitted`` / ``event_emitted`` on mutation results carry
+        exactly this publish-accepted meaning. Subscriber outcomes are
+        observable via :meth:`delivery_stats`, the ``event_bus``
+        diagnostics provider, and ``event_handler_failures_total``.
+        """
         _check_catalogue(event, "emit")
+        stats = self._delivery_stats[event]
         for handler in list(self._handlers.get(event, [])):
             try:
                 await asyncio.wait_for(handler(**payload), timeout=_HANDLER_TIMEOUT)
+                stats["ok"] += 1
             except asyncio.TimeoutError:
+                stats["timeout"] += 1
+                _count_handler_failure(event, "timeout")
                 logger.error(
                     "Handler %r timed out (>%.1fs) for event %r — "
                     "handler detached for this emission; bus continues.",
@@ -103,6 +126,8 @@ class EventBus:
                     event,
                 )
             except Exception as exc:
+                stats["error"] += 1
+                _count_handler_failure(event, "error")
                 logger.error(
                     "Handler %r failed for event %r: %s",
                     handler,
@@ -119,5 +144,61 @@ class EventBus:
             if handlers
         }
 
+    def delivery_stats(self) -> dict[str, dict[str, int]]:
+        """Per-event subscriber outcomes since process start (RS05).
+
+        ``{event: {"ok": n, "error": n, "timeout": n}}`` — the observable
+        counterpart to emit's publish-accepted return. Process-lifetime,
+        in-memory (the same scope as the metrics counters).
+        """
+        return {event: dict(stats) for event, stats in self._delivery_stats.items()}
+
+
+def _count_handler_failure(event: str, kind: str) -> None:
+    """Best-effort ``event_handler_failures_total`` increment (RS05).
+
+    Deferred import + swallow, exactly like :func:`_check_catalogue`'s
+    metric — a metrics outage must never affect dispatch.
+    """
+    try:
+        from services import metrics
+
+        metrics.event_handler_failures_total.labels(event=event, kind=kind).inc()
+    except Exception:  # pragma: no cover — metric is best-effort
+        pass
+
 
 bus = EventBus()
+
+
+def _register_diagnostics_provider() -> None:
+    """Expose the bus on the ``!platform runtime`` surface (RS05).
+
+    The snapshot finally consumes :meth:`EventBus.registered_events`
+    (previously an accessor with zero consumers) plus the new delivery
+    stats. Registration failure is loud, not silent — a missing provider
+    is the RS04 no-op class this batch exists to kill.
+    """
+    try:
+        from services import diagnostics_service
+
+        def _snapshot() -> dict[str, Any]:
+            deliveries = bus.delivery_stats()
+            return {
+                "handlers_by_event": bus.registered_events(),
+                "deliveries": deliveries,
+                "failures_total": sum(
+                    s["error"] + s["timeout"] for s in deliveries.values()
+                ),
+            }
+
+        diagnostics_service.register("event_bus", _snapshot)
+    except Exception:  # noqa: BLE001 — never block core.events import
+        logger.warning(
+            "EventBus diagnostics provider registration failed — "
+            "!platform runtime will not show event delivery stats.",
+            exc_info=True,
+        )
+
+
+_register_diagnostics_provider()

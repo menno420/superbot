@@ -1,6 +1,11 @@
 # Consolidated implementation plan — 2026-06-10
 
-> **Status:** `plan` — **the one live execution queue**, produced by the 2026-06-10
+> **Status:** `historical` — **FULLY EXECUTED 2026-06-10** (every batch, 1–10:
+> #650 · #651 · #652+#671 · #654+#672 · #656 · #657+#659 · #661+#663/#664/#665
+> via #667 · #649 · #671+#681 · #672). The day-after queue lives in
+> `docs/current-state.md` ▶ (plan-first/gated items only: Help Phase 4 records ·
+> setup PR4 planning · AI §7.5 post-eval · further RS10 families under the
+> conformance ratchet). Kept as the decision/audit record — produced by the 2026-06-10
 > verification/reconciliation session. It reconciles the two untapped mapping PRs
 > (**#646** [runtime/services/workflows](untapped-runtime-services-workflows-map-2026-06-10.md) ·
 > **#647** [docs/tests/verification](untapped-docs-tests-verification-map-2026-06-10.md)),
@@ -139,10 +144,11 @@ services) without partitioning by module.
 > Batch 10 selections (wizard PR1–PR3 tranche verified shipped via #435 →
 > next = PR4 `/myprofile` planning; next AI family = §7.5 multi-entity
 > comparison, sequenced after the prod check).** **What remains live in
-> this plan:** **Batch 9's RS05 + RS10** (contract-first observability) and
-> the Help-lane **overlay editor UI** tail (audit Phase 5, tracked under
-> Batch 6's outcome notes); the two Batch-10-selected slices live in their
-> own plans' banners. Plus the owed maintainer-only items: the first real
+> this plan:** **Batch 9's RS05 + RS10** (contract-first observability) —
+> the Help-lane **overlay editor UI executed 2026-06-10** (plan #674 →
+> **PR A #677 + PR B #679**; Help audit Phase 4 records remain that lane's
+> only tail); the two Batch-10-selected slices live in their own plans'
+> banners. Plus the owed maintainer-only items: the first real
 > #633 workflow dispatch, the HLT-2 production live-tests, and the
 > announced thorough eval session.
 
@@ -419,7 +425,20 @@ in plan order (after the smaller batches), not immediately.
 - **Owed operational step (anytime):** the **first real dispatch** of the #633
   refresh workflow from the Actions tab (maintainer-driven).
 
-### Batch 9 — Observability & lifecycle hardening (RS05 · RS08 · RS10) — contract-first; **RS08 executed in #671** (2026-06-10)
+### Batch 9 — Observability & lifecycle hardening (RS05 · RS08 · RS10) — **COMPLETE** (RS08 in #671 · RS05+RS10 in #681, 2026-06-10)
+
+> RS05 outcome (#681): **publish-accepted decided as the contract** (Q-RS03 —
+> no renames; the map priced that churn). Documented in
+> `runtime_contracts.md` §2 "Delivery semantics"; subscriber outcomes are
+> observable instead — per-event `delivery_stats()`, the
+> `event_handler_failures_total{event,kind}` metric, and the `event_bus`
+> diagnostics provider on `!platform runtime` (first consumer of the
+> previously consumer-less `registered_events()`).
+> RS10 outcome (#681): the named worst family (economy — 4 views, 3 drifted
+> denial copies, silent-swallow timeouts) migrated onto BaseView; the
+> `test_view_base_class_conformance.py` ratchet shrank 17 → 13 and governs
+> the remaining families (settings selects · roles removes · mining · btd6)
+> as future bounded slices.
 
 - **RS08 — EXECUTED (PR #671):** the diagnostic builders' inline SQL moved to
   the tables' owning `utils/db` modules (`sessions.count_sessions_by_subsystem`,

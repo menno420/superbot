@@ -21,15 +21,17 @@ from services import shop_purchase_workflow
 from utils import db
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR, WARNING_COLOR
+from views.base import BaseView
 from views.navigation import attach_back_button, attach_back_target
 
 
-class _ShopView(discord.ui.View):
-    def __init__(self, user_id: int, guild_id: int):
-        super().__init__(timeout=120)
-        self.user_id = user_id
+class _ShopView(BaseView):
+    """Standalone shop — ownership/timeout/error handling from BaseView (RS10)."""
+
+    def __init__(self, author: discord.Member | discord.User, guild_id: int):
+        super().__init__(author, timeout=120)
+        self.user_id = author.id
         self.guild_id = guild_id
-        self.message: discord.Message | None = None
         options = [
             discord.SelectOption(
                 label=f"{d['emoji']} {name.replace('_', ' ').title()} — {d['price']:,} 🪙",
@@ -38,25 +40,7 @@ class _ShopView(discord.ui.View):
             )
             for name, d in SHOP_ITEMS.items()
         ]
-        self.add_item(_ShopSelect(user_id, guild_id, options, self))
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.user_id:
-            await interaction.response.send_message(
-                "This shop isn't for you.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        try:
-            if self.message:
-                await self.message.edit(view=self)
-        except Exception:
-            pass
+        self.add_item(_ShopSelect(author.id, guild_id, options, self))
 
 
 class _ShopSelect(discord.ui.Select):
@@ -138,14 +122,16 @@ class _ShopSelect(discord.ui.Select):
         await post_log_embed(interaction.client, gid, log_embed)
 
 
-class _ShopSubView(discord.ui.View):
-    """Shop sub-panel that edits the economy panel message — includes Back."""
+class _ShopSubView(BaseView):
+    """Shop sub-panel that edits the economy panel message — includes Back.
 
-    def __init__(self, user_id: int, guild_id: int):
-        super().__init__(timeout=120)
-        self.user_id = user_id
+    Ownership/timeout/error handling come from BaseView (RS10).
+    """
+
+    def __init__(self, author: discord.Member | discord.User, guild_id: int):
+        super().__init__(author, timeout=120)
+        self.user_id = author.id
         self.guild_id = guild_id
-        self.message: discord.Message | None = None
         options = [
             discord.SelectOption(
                 label=f"{d['emoji']} {name.replace('_', ' ').title()} — {d['price']:,} 🪙",
@@ -154,7 +140,7 @@ class _ShopSubView(discord.ui.View):
             )
             for name, d in SHOP_ITEMS.items()
         ]
-        self.add_item(_ShopPanelSelect(user_id, guild_id, options, self))
+        self.add_item(_ShopPanelSelect(author.id, guild_id, options, self))
 
         async def _build_parent(
             interaction: discord.Interaction,
@@ -177,24 +163,6 @@ class _ShopSubView(discord.ui.View):
             parent_builder=_build_parent,
             row=1,
         )
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.user_id:
-            await interaction.response.send_message(
-                "This panel isn't for you.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 class _ShopPanelSelect(discord.ui.Select):

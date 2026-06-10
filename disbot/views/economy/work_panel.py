@@ -26,34 +26,23 @@ from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR
+from views.base import BaseView
 from views.navigation import BackTarget, attach_back_button, chain_back
 
 
-class _WorkView(discord.ui.View):
-    def __init__(self, user_id: int, guild_id: int, available: list[str]):
-        super().__init__(timeout=60)
-        self.user_id = user_id
+class _WorkView(BaseView):
+    """Job dropdown — ownership/timeout/error handling from BaseView (RS10)."""
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        guild_id: int,
+        available: list[str],
+    ):
+        super().__init__(author, timeout=60)
+        self.user_id = author.id
         self.guild_id = guild_id
-        self.message: discord.Message | None = None
-        self.add_item(_JobSelect(user_id, guild_id, available, self))
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.user_id:
-            await interaction.response.send_message(
-                "This job menu isn't for you.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        try:
-            if self.message:
-                await self.message.edit(view=self)
-        except Exception:
-            pass
+        self.add_item(_JobSelect(author.id, guild_id, available, self))
 
 
 class _JobSelect(discord.ui.Select):
@@ -182,12 +171,12 @@ class _WorkSubView(_WorkView):
 
     def __init__(
         self,
-        user_id: int,
+        author: discord.Member | discord.User,
         guild_id: int,
         available: list[str],
         back_target: BackTarget | None = None,
     ):
-        super().__init__(user_id, guild_id, available)
+        super().__init__(author, guild_id, available)
         # AB2: propagate the hub's back chain (e.g. back-to-Help when opened via
         # !economymenu) so "↩ Back" rebuilds Economy with the chain re-attached.
         self._back_target = back_target
@@ -210,12 +199,13 @@ class _WorkSubView(_WorkView):
         )
 
 
-class _WorkResultView(discord.ui.View):
+class _WorkResultView(BaseView):
     """Result screen shown after a successful work transaction.
 
     Single Back-to-Economy button — replaces the previous pattern of
     disabling every child on ``_WorkSubView`` (which silently disabled
-    Back and left the user with no escape).
+    Back and left the user with no escape). Ownership/timeout/error
+    handling come from BaseView (RS10).
     """
 
     def __init__(
@@ -223,9 +213,7 @@ class _WorkResultView(discord.ui.View):
         author: discord.Member | discord.User,
         back_target: BackTarget | None = None,
     ):
-        super().__init__(timeout=60)
-        self._author = author
-        self.message: discord.Message | None = None
+        super().__init__(author, timeout=60)
         self._back_target = back_target
 
         async def _build_parent(
@@ -244,21 +232,3 @@ class _WorkResultView(discord.ui.View):
             parent_builder=chain_back(_build_parent, back_target),
             row=0,
         )
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self._author.id:
-            await interaction.response.send_message(
-                "This result screen isn't for you.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-    async def on_timeout(self):
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        try:
-            if self.message:
-                await self.message.edit(view=self)
-        except Exception:
-            pass

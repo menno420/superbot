@@ -31,10 +31,8 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
     {
         ("views/btd6/admin_panel.py", "BTD6AdminView"),
         ("views/btd6/strategy_review.py", "StrategyReviewView"),
-        ("views/economy/shop_panel.py", "_ShopSubView"),
-        ("views/economy/shop_panel.py", "_ShopView"),
-        ("views/economy/work_panel.py", "_WorkResultView"),
-        ("views/economy/work_panel.py", "_WorkView"),
+        # The economy family (4 views) migrated onto BaseView 2026-06-10
+        # (RS10 — consolidated plan Batch 9); the ratchet shrank 17 → 13.
         ("views/mining/mine_view.py", "MineView"),
         ("views/mining/mine_view.py", "_MineResultsView"),
         ("views/roles/management_panel.py", "_DeleteRoleView"),

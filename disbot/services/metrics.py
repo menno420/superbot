@@ -273,6 +273,16 @@ unknown_event_total = Counter(
     ["event", "op"],  # op: emit | on
 )
 
+event_handler_failures_total = Counter(
+    "event_handler_failures_total",
+    "EventBus subscriber failures (RS05). emit() is publish-accepted — a "
+    "failing/timed-out handler never raises into the emitter — so this "
+    "counter (plus the `event_bus` diagnostics provider) is how delivery "
+    "problems become visible. A non-zero count means a subscriber (audit "
+    "routing, server logging, cache invalidation, ...) is dropping events.",
+    ["event", "kind"],  # kind: error | timeout
+)
+
 identity_contract_findings_total = Counter(
     "identity_contract_findings_total",
     "Cumulative identity-contract findings detected during validation runs. "
