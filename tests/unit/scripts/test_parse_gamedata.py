@@ -1842,3 +1842,289 @@ def test_buffs_damage_modifier_support_drops_unmapped_tag(mod):
         }
     )
     assert "buffs" not in mod._map_tier(model)
+
+
+# --- ABR rounds + income sets (game-native ingestion) -------------------------
+
+
+def test_intify_whole_dollars_to_int(mod):
+    assert mod._intify(121.0) == 121 and isinstance(mod._intify(121.0), int)
+    assert mod._intify(1400.2) == 1400.2
+
+
+def test_bloon_label_prefixes_modifiers(mod):
+    names = {"lead": "Lead", "moab": "MOAB"}
+    assert mod._bloon_label("lead", ["camo"], names) == "Camo Lead"
+    assert mod._bloon_label("moab", ["fortified"], names) == "Fortified MOAB"
+    assert (
+        mod._bloon_label("lead", ["regrow", "camo", "fortified"], names)
+        == "Fortified Camo Regrow Lead"
+    )
+
+
+def _write_income_set(root: Path, thresholds, final) -> None:
+    (root / "IncomeSets").mkdir(parents=True, exist_ok=True)
+    (root / "IncomeSets" / "DefaultIncomeSet.json").write_text(
+        json.dumps(
+            {
+                "thresholds": [
+                    {"threshold": t, "multiplier": m} for t, m in thresholds
+                ],
+                "finalMultiplier": final,
+                "name": "DefaultIncomeSet",
+            }
+        ),
+        "utf-8",
+    )
+
+
+def test_income_bands_sorted_and_cash_per_pop_band_selection(mod, tmp_path):
+    _write_income_set(tmp_path, [(60, 0.5), (50, 1.0)], 0.02)  # unsorted on disk
+    bands, final = mod._income_bands(tmp_path)
+    assert bands == [(50, 1.0), (60, 0.5)] and final == 0.02
+    assert mod._cash_per_pop(50, bands, final) == 1.0  # inclusive threshold
+    assert mod._cash_per_pop(51, bands, final) == 0.5
+    assert mod._cash_per_pop(61, bands, final) == 0.02  # past last band -> final
+
+
+def test_build_abr_rounds_synthetic_dump(mod, tmp_path, monkeypatch):
+    # 3-round synthetic AlternateRoundSet: frames -> seconds, id decomposition,
+    # the unplayed r1-2 null cumulative, and the r3 Hard-start baseline.
+    _write_income_set(tmp_path, [(50, 1.0)], 0.02)
+    rounds_dir = tmp_path / "Rounds" / "AlternateRoundSet"
+    rounds_dir.mkdir(parents=True)
+    rows = {
+        1: [{"bloon": "Blue", "start": 0.0, "end": 1050.75, "count": 10}],
+        2: [],  # the empty-groups shape (DefaultSkipEveryOddRound has these)
+        3: [{"bloon": "MoabFortified", "start": 60.0, "end": 120.0, "count": 1}],
+    }
+    for n, groups in rows.items():
+        (rounds_dir / f"{n}.json").write_text(
+            json.dumps({"groups": groups, "emissions": [], "name": ""}),
+            "utf-8",
+        )
+    monkeypatch.setattr(mod, "_ABR_ROUND_COUNT", 3)
+    monkeypatch.setattr(mod, "_dump_version", lambda dump: "55.1")
+    payload = mod.build_abr_rounds(tmp_path)
+
+    assert payload["game_version"] == "55.1"
+    assert "AlternateRoundSet" in payload["source"]
+    r1, r2, r3 = payload["rounds"]
+    assert r1["groups"] == [
+        {
+            "bloon_id": "blue",
+            "count": 10,
+            "start": 0.0,
+            "duration": 17.51,  # 1050.75 frames / 60
+            "modifiers": [],
+        },
+    ]
+    assert r1["cumulative_cash"] is None and r2["cumulative_cash"] is None
+    assert r2["groups"] == [] and r2["rbe"] == 0
+    assert r3["groups"][0]["bloon_id"] == "moab"
+    assert r3["groups"][0]["modifiers"] == ["fortified"]
+    assert r3["groups"][0]["start"] == 1.0 and r3["groups"][0]["duration"] == 1.0
+    assert r3["roundset"] == "alternate"
+    # Cumulative baselines at round 3 with the $650 Hard start.
+    assert r3["cumulative_cash"] == mod._intify(
+        round(mod._ABR_STARTING_CASH + r3["cash"], 2)
+    )
+    # Fortified MOAB pulls the fortified RBE from committed bloons.json.
+    assert r3["rbe"] == 856
+
+
+# --- subtower mechanism tail + zone inclusive + new buff maps (2026-06-09) ----
+
+
+def _spawn_tm(name: str, **extra) -> dict:
+    node = {"$type": _t("TowerModel"), "name": name, "behaviors": []}
+    node.update(extra)
+    return node
+
+
+def test_morph_secondary_tower_model_emits_subtower(mod):
+    # Alchemist Total Transformation: towerModel is null, the morphed form
+    # lives in secondaryTowerModel (no named-reference morph exists in v55.1).
+    spawn = {
+        "$type": _t("MorphTowerModel"),
+        "towerModel": None,
+        "secondaryTowerModel": _spawn_tm("TransformedBaseMonkey", range=72.0),
+        "name": "MorphTowerModel_TransformingTonic",
+    }
+    model = _spawn_tm("Alchemist", behaviors=[spawn])
+    subs = mod._subtowers(model)
+    assert [s["name"] for s in subs] == ["TransformedBaseMonkey"]
+    assert subs[0]["range"] == 72.0
+
+
+def test_beast_handler_leash_emits_both_beasts(mod):
+    # Dual-path Beast Handler: the leash carries two embedded beasts at once.
+    spawn = {
+        "$type": _t("BeastHandlerLeashModel"),
+        "towerModel": _spawn_tm("Microraptor"),
+        "towerModelSecond": _spawn_tm("Gyrfalcon"),
+    }
+    model = _spawn_tm("BeastHandler", behaviors=[spawn])
+    assert [s["name"] for s in mod._subtowers(model)] == ["Microraptor", "Gyrfalcon"]
+
+
+def test_comanche_trance_and_tower_create_spawns_collected(mod):
+    model = _spawn_tm(
+        "X",
+        behaviors=[
+            {"$type": _t("ComancheDefenceModel"), "towerModel": _spawn_tm("ComancheDefenceHeli")},
+            {"$type": _t("TranceTotemSpawnerModel"), "tower": _spawn_tm("TranceTotem")},
+            {"$type": _t("TowerCreateTowerModel"), "towerModel": _spawn_tm("PermaPhoenix")},
+        ],
+    )
+    assert [s["name"] for s in mod._subtowers(model)] == [
+        "ComancheDefenceHeli",
+        "TranceTotem",
+        "PermaPhoenix",
+    ]
+
+
+def test_subtower_lifespan_falls_back_to_embedded_expire_model(mod):
+    # Marine/Lava Phoenix: the spawn has no (or a zero) towerLifetime — the
+    # window lives on the embedded model's own TowerExpireModel.
+    nested = _spawn_tm("Marine")
+    nested["behaviors"] = [{"$type": _t("TowerExpireModel"), "lifespan": 30.0}]
+    spawn = {"$type": _t("CreateTowerModel"), "tower": nested, "towerLifetime": 0.0}
+    subs = mod._subtowers(_spawn_tm("Heli", behaviors=[spawn]))
+    assert subs[0]["lifespan"] == 30.0
+    # A real spawn-side lifetime still wins (Phoenix 20s stays spawn-sourced).
+    timed = {"$type": _t("CreateTowerModel"), "tower": _spawn_tm("P"), "towerLifetime": 20.0}
+    assert mod._subtowers(_spawn_tm("W", behaviors=[timed]))[0]["lifespan"] == 20.0
+
+
+def test_nested_subtower_spawns_stay_unclaimed(mod):
+    # A minion's own spawn is not the parent's minion: the walker must not
+    # descend into any declared nested-model field (incl. secondaryTowerModel).
+    inner_spawn = {"$type": _t("CreateTowerModel"), "tower": _spawn_tm("InnerMinion")}
+    morphed = _spawn_tm("Morphed", behaviors=[inner_spawn])
+    spawn = {"$type": _t("MorphTowerModel"), "towerModel": None, "secondaryTowerModel": morphed}
+    subs = mod._subtowers(_spawn_tm("Outer", behaviors=[spawn]))
+    assert [s["name"] for s in subs] == ["Morphed"]
+
+
+def test_subtower_air_unit_attacks_emitted(mod):
+    # Mini-Comanche: the Ballistic Missile lives under AttackAirUnitModel.
+    nested = _spawn_tm("ComancheDefenceHeli")
+    nested["behaviors"] = [
+        {
+            "$type": _t("AttackAirUnitModel"),
+            "name": "AttackAirUnitModel_BallisticMissile_",
+            "weapons": [
+                {
+                    "$type": _t("WeaponModel"),
+                    "rate": 3.0,
+                    "projectile": {
+                        "$type": _t("ProjectileModel"),
+                        "name": "Explosion",
+                        "behaviors": [
+                            {"$type": _t("DamageModel"), "damage": 4.0},
+                        ],
+                    },
+                },
+            ],
+        },
+    ]
+    spawn = {"$type": _t("ComancheDefenceModel"), "towerModel": nested}
+    subs = mod._subtowers(_spawn_tm("HeliPilot", behaviors=[spawn]))
+    attacks = subs[0]["attacks"]
+    assert len(attacks) == 1 and attacks[0]["rate"] == 3.0
+
+
+def test_zone_inclusive_flag_captured_with_tag(mod):
+    # Obyn's totem: two SlowBloonsZones both tagged Moabs — one inclusive
+    # (MOABs), one exclusive (everything else). Dropping the flag inverts one.
+    model = _spawn_tm(
+        "Totem",
+        behaviors=[
+            {
+                "$type": _t("SlowBloonsZoneModel"),
+                "name": "SlowBloonsZoneModel_NonMoabs",
+                "speedScale": 0.6,
+                "zoneRadius": 32.0,
+                "bloonTag": "Moabs",
+                "inclusive": False,
+            },
+            {
+                "$type": _t("SlowBloonsZoneModel"),
+                "name": "SlowBloonsZoneModel_Moabs",
+                "speedScale": 0.8,
+                "zoneRadius": 32.0,
+                "bloonTag": "Moabs",
+                "inclusive": True,
+            },
+        ],
+    )
+    zones = mod._zones(model)
+    assert [(z["bloonTag"], z["inclusive"], z["speedScale"]) for z in zones] == [
+        ("Moabs", False, 0.6),
+        ("Moabs", True, 0.8),
+    ]
+
+
+def test_buffs_range_support_maps_additive_and_fraction(mod):
+    model = _spawn_tm(
+        "V",
+        behaviors=[
+            {
+                "$type": _t("RangeSupportModel"),
+                "name": "RangeSupportModel_",
+                "buffLocsName": "BiggerRadiusBuff",
+                "additive": 5.0,
+                "multiplier": 0.0,
+                "isGlobal": True,
+            },
+        ],
+    )
+    (buff,) = mod._buffs(model)
+    assert buff["rangeAdditive"] == 5.0
+    assert buff["rangePercentage"] == 0.0  # the zero cross-checks the mapping
+    assert buff["isGlobal"] is True
+
+
+def test_buffs_projectile_radius_and_bank_income(mod):
+    model = _spawn_tm(
+        "H",
+        behaviors=[
+            {
+                "$type": _t("ProjectileRadiusSupportModel"),
+                "name": "x",
+                "buffLocsName": "",
+                "mutatorId": "StrikerJonesProjectileRadiusBuff",
+                "multiplier": 1.1,
+            },
+            {
+                "$type": _t("BananaCashIncreaseSupportModel"),
+                "name": "y",
+                "buffLocsName": "BuffIconBenjamin",
+                "multiplier": 0.05,
+                "isGlobal": True,
+            },
+        ],
+    )
+    radius, bank = mod._buffs(model)
+    assert radius["radiusMultiplier"] == 1.1
+    assert radius["name"] == "StrikerJonesProjectileRadiusBuff"
+    assert bank["incomePercentage"] == 0.05
+
+
+def test_buffs_projectile_speed_fraction(mod):
+    # Q-0069 (owner-confirmed): Village Primary Training's 0.25 = +25%.
+    model = _spawn_tm(
+        "Village",
+        behaviors=[
+            {
+                "$type": _t("ProjectileSpeedSupportModel"),
+                "name": "z",
+                "buffLocsName": "PrimaryTrainingBuff",
+                "multiplier": 0.25,
+                "isGlobal": False,
+            },
+        ],
+    )
+    (buff,) = mod._buffs(model)
+    assert buff["projectileSpeedPercentage"] == 0.25

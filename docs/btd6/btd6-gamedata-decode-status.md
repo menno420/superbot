@@ -20,7 +20,18 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-08 — buff tail 9 → 11, Shinobi + Pop-and-Awe confirmed)
+## ⭐ Next session — start here (updated 2026-06-09 — **next = the towers cutover, owner-decided Q-0066**)
+
+> **2026-06-09 (PR #638, mapping-continuation session):** ABR + IncomeSets ingested
+> (`abr_rounds.json` / `income_sets.json`, roundset-aware tools); subtower spawn
+> mechanisms **7/7 complete**; buffs **15/38** (RangeSupport semantics pinned 4 ways ·
+> ProjectileRadius Striker-identity · BananaCashIncrease committed via benjamin
+> re-export · ProjectileSpeed owner-confirmed +25%, Q-0069); zones carry `inclusive`;
+> paragonDegreeData cross-checked exact. **Cutover decisions made (router §29):**
+> dedicated cutover session next (Q-0066) · Farm/Village get **full game-native tier
+> structures** (attack-suppressed for Farm; refined from "minimal" in a same-evening
+> re-ask — Q-0067) · per-tier beast names (Q-0068). Remaining buff/zone types are provably
+> unconfirmable pre-cutover — validate them at/after the cutover itself.
 
 ### Current state & next actions (READ FIRST)
 
@@ -82,10 +93,21 @@ works** (the traps we hit), and what is still un-decoded.
   stock/replenish cadence.
 - **Mapper** (`scripts/parse_gamedata.py`): faithful — `--audit` is
   **nothing-SUSPECT**, anchors pass. Decodes attacks/projectiles/sub-projectiles,
-  **subtowers** (2 of 4 mechanisms), **zones** (top-level, started), **buffs**
-  (**11 of 38** confirmed types in `_BUFF_FIELD_MAP` — incl. the
-  `VigilanteTowerBehaviorModel` lives-lost buff — each carrying its activation
-  `trigger`, which fixes the duration unit: seconds vs round-count).
+  **subtowers** (**all 7 spawn mechanisms as of 2026-06-09** — the "named-ref
+  morph" premise was wrong: Alchemist's morph is an embedded
+  `secondaryTowerModel`; Beast Handler leash carries up to two beasts;
+  Mini-Comanche / TranceTotem / PermaPhoenix-class spawns wired; subtower
+  lifespans fall back to the embedded `TowerExpireModel` — Marine 30 s, Lava
+  Phoenix 20 s, both committed-confirmed), **zones** (top-level + nested in
+  subtowers, now incl. the meaning-disambiguating `inclusive` flag — Obyn's
+  totem pair), **buffs** (**14 of 38** confirmed types in `_BUFF_FIELD_MAP` —
+  2026-06-09 added `RangeSupportModel` (fraction semantics pinned by 4
+  independent committed confirmations), `ProjectileRadiusSupportModel`
+  (Striker identity) and `BananaCashIncreaseSupportModel` (Benjamin prose;
+  buffs now committed via hero re-export) — each carrying its activation
+  `trigger` where one applies. Air-unit attacks (`AttackAirUnitModel`) emit
+  for **subtowers only** (Mini-Comanche missile verified); widening them to
+  base towers is cutover-scope.
 
 **Do next (ordered; correctness over speed — the maintainer's standing rule):**
 1. **Buff decode tail (11 → 38).** The 2026-06-08 pass added **two** types the
@@ -1213,10 +1235,10 @@ must not be treated as done. Verified against the v55 dump on 2026-06-03.
 
 | Item | Done | Missing |
 |---|---|---|
-| **Subtowers** (`subtowers[]`) | 3 spawn models: `AbilityCreateTower`/`CreateTower`/`MorphTower`(embedded) → Phoenix, Sentry, Spectre, totems, UAV | `MorphTowerModel` **named-ref** (Alchemist "Transformed Monkey") + `BeastHandlerPetModel` (Beast Handler) — 2 of ~4 mechanisms |
-| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); now also the Heli **MOAB-Shove** per-blimp caps via `_ZONE_RENAME` (`*PushSpeedScaleCap` → `multiplierFor{Moab,Bfb,Zomg}`, verified exact vs committed). `_zone_text` renders Ice slow, Druid thorn-bonus **and** MOAB-Shove (negative = shoved backward, maintainer-confirmed). Wired into `_map_tier`, audit-safe (internal names) | the rest of the 28 types' specific effect fields; zones nested inside sub-towers; curated display names (not in the dump — stay wiki-owned); MOAB-Shove **DDT** cap (no dump field — curated mirror of ZOMG, maintainer to confirm at cutover) |
+| **Subtowers** (`subtowers[]`) | **All 7 spawn mechanisms (2026-06-09)**: `AbilityCreateTower`/`CreateTower`/`MorphTower` (embedded **and** Alchemist's `secondaryTowerModel` — no named-ref morph exists in v55.1; `TransformedMonkey*.json` are orphans) + `BeastHandlerLeash` (`towerModel`+`towerModelSecond`, dual beasts) + `ComancheDefence` + `TowerCreateTower` (PermaPhoenix, Corvus Spirit) + `TranceTotemSpawner`. Lifespan falls back to the embedded `TowerExpireModel` (Marine 30 s / Lava Phoenix 20 s, committed-confirmed). Subtower-scoped `AttackAirUnitModel` emission (Mini-Comanche missile rate 3 / Explosion 4, committed-confirmed). All confirmable values verified vs committed: Alchemist 72/0.03/10/2, Beast tiers, Trance totem, PermaPhoenix 5/8 | Beast Handler bird-path `GyrfalconPatternModel` (grab/pattern combat needs a bespoke reader — committed "Grab" attack stays curated); `FindDeploymentLocationModel` deliberately unwired (duplicate Marine); per-tier beast display names vs committed "Beast" = maintainer call at cutover; base-tower `AttackAirUnitModel` widening = cutover-scope |
+| **Zones** (`zones[]`) — **started** | `_zones()` emits every top-level `*ZoneModel` as `{kind, name, + decodable numbers}` (e.g. Ice Arctic Wind → `speedScale 0.6`, `zoneRadius 25`); now also the Heli **MOAB-Shove** per-blimp caps via `_ZONE_RENAME` (`*PushSpeedScaleCap` → `multiplierFor{Moab,Bfb,Zomg}`, verified exact vs committed). `_zone_text` renders Ice slow, Druid thorn-bonus **and** MOAB-Shove (negative = shoved backward, maintainer-confirmed). Wired into `_map_tier`, audit-safe (internal names) | the rest of the 28 types' specific effect fields (per the SHA-pinned report §3a only `BuffBlowbackZone` (DEFER, hero not committed), `BonusCashZone` (Temple sacrifice-conditional) and `ActivateRangeSupportZone` (in-ability, value unconfirmed) carry numbers at all); curated display names (not in the dump — stay wiki-owned); MOAB-Shove **DDT** cap (no dump field — curated mirror of ZOMG, maintainer to confirm at cutover). *(2026-06-09: zones nested in sub-towers verified emitting — Obyn's totem is the only catalog case — and the meaning-disambiguating `inclusive` flag is now captured: Obyn's two same-tag SlowBloonsZones are False = non-MOABs ×0.6 / True = MOABs ×0.8; without the flag the exclusive zone reads inverted.)* |
 | **Projectile flattening completeness** | spawn-model coverage (under-emission 177→111) | 111 attacks still differ in projectile count vs wiki; flattening *style* (naming/grouping) differs |
-| **Buffs** (`buffs[]`) — **started (11 of 38)** | `_buffs()` decodes eleven types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (Desperado lives-lost: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`), `SupportShinobiTacticsModel` (Ninja, `multiplier 0.92`→`rateMultiplier`) and `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative`+tag→`damageAdditiveForBad`). See `_BUFF_FIELD_MAP` / `_BUFF_DAMAGE_MODIFIER_TYPES` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 27 buff types — each needs same-tier confirmation before its number is written, and (2026-06-08 finding) **none of the remaining types lands on a committed combat tower with a `buffs[]` to confirm against**: they are hero-only (separate `map_hero` path), on economy/support towers with **no committed tiers** (Village/Farm — blocked, maintainer call), or paragon `base` nodes. `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
+| **Buffs** (`buffs[]`) — **started (14 of 38)** | `_buffs()` decodes eleven types **confirmed exact against committed wiki values on a matching tier**: `RateSupportModel`, `PoplustSupportModel`, `SubCommanderSupportModel`, `PiercePercentageSupportModel`, `TradeEmpireBuffModel`, `PlacementAreaTypeRangeBuffModel`, `StartOfRoundRateBuffModel`, `PrinceOfDarknessZombieBuffModel`, `VigilanteTowerBehaviorModel` (Desperado lives-lost: frame→seconds windows + `cashOnLeakMultiplier` + `trigger`), `SupportShinobiTacticsModel` (Ninja, `multiplier 0.92`→`rateMultiplier`) and `DamageModifierSupportModel` (Mortar Pop-and-Awe, nested `damageAddative`+tag→`damageAdditiveForBad`); **2026-06-09:** `RangeSupportModel` (additive→`rangeAdditive`, multiplier→`rangePercentage` — the old ambiguity pinned by 4 independent committed confirmations: Mermonkey conch identity, Ninja-paragon identity, Etienne 10%/20% prose, Obyn +5 prose), `ProjectileRadiusSupportModel` (multiplier→`radiusMultiplier`, Striker L7 identity ×1.1) and `BananaCashIncreaseSupportModel` (multiplier→`incomePercentage`, Benjamin L5 +5% / L9 12% prose — **committed** via the benjamin.json re-export, rendered by the new `_BUFF_FIELDS` rows). See `_BUFF_FIELD_MAP` / `_BUFF_DAMAGE_MODIFIER_TYPES` / `_BUFF_TRIGGER`. Wired into `_map_tier`, audit-safe (internal names) | the other 27 buff types — each needs same-tier confirmation before its number is written, and (2026-06-08 finding) **none of the remaining types lands on a committed combat tower with a `buffs[]` to confirm against**: they are hero-only (separate `map_hero` path), on economy/support towers with **no committed tiers** (Village/Farm — blocked, maintainer call), or paragon `base` nodes. `SCHEMA_FIRST` types (projectile-speed/radius, freeze-duration, banana-cash) also need a new renderer field. The discovery harness is a lead generator; vet each candidate against the committed value (it is the arbiter, not semantic priors) |
 | **Numeric overlay applied** | 3 files (Desperado range, mermonkey xp, ace cost), uniquely-keyed only | per-projectile/ability values cannot be safely overlaid (wiki↔dump name mismatch) |
 
 ### 🔴 Not started
@@ -1495,17 +1517,32 @@ Verified **deeply**: `Towers/` (attacks, projectiles, abilities, subtowers,
 damage modifiers, costs/upgrades) and `Upgrades/` + `textTable.json` linkage.
 
 **Not examined / only counted — do not assume:**
-- **Domains never opened:** `Achievements/`, `Artifacts/`, `BloonOverlays/`,
-  `GeraldoItems/`, `Knowledge/`, `Maps/`, `Mods/`, `Skins/`, `TrophyStoreItems/`.
-- **Only counted / single-sample (structure not mapped):** `Rounds/` (5181
-  files, counted), `IncomeSets/` (7, counted), `Powers/` (1 sampled), `Bloons/`
-  (Bloonarius sampled + the `BloonModel` field list seen via the inventory tool;
-  not all 235 bloons verified, children/immunity decode unverified).
-- **Loose files unread:** `frontierData.json`, `rogueData.json`, `resources.json`.
-  `paragonDegreeData.json` is *referenced* (we derive degrees) but never
-  cross-checked against the dump's constants.
-- **Within `Towers/` (examined domain) still undecoded:** the 12 **zone** + 37
-  **buff** model types (identified, fields not extracted); status-effect /
+- **Domains never opened (cosmetic-skip; verdicts stand):** `Achievements/`,
+  `BloonOverlays/`, `Skins/`, `TrophyStoreItems/`. *(The rest of the old
+  "never opened" list has since been ingested: `GeraldoItems/`, `Knowledge/`,
+  `Maps/`, `Mods/` — see the ⭐ top section.)* `Artifacts/` was spot-checked
+  2026-06-09: it carries **real gameplay modifiers** (rate/damage behavior
+  models), but exclusively for the Rogue Legends / Frontier spin-off modes —
+  skip stands on scope, not on "cosmetic".
+- **Only counted (structure not mapped):** `Rounds/` (5,181 files across 46
+  round-set folders incl. `AlternateRoundSet`), `IncomeSets/` (7).
+- **Loose files — triaged 2026-06-09:** `frontierData.json` = Frontier event
+  meta-mode balance (121 keys; no main-game boss scaling — the old dictionary
+  label was wrong); `rogueData.json` = Rogue Legends spin-off balance;
+  `resources.json` = a 19,260-entry GUID→asset-path lookup, zero stat content.
+  All three: skip on scope. **`paragonDegreeData.json` is now CROSS-CHECKED
+  (2026-06-09):** `paragon_degrees.power_for_degree` matches the dump's
+  `powerDegreeRequirements` **100/100 exactly** (incl. 0 @ d1, 200,000 @ d100),
+  and all 12 scalar caps/divisors + the scaling-formula constants match
+  `paragon_math` / `paragon_degrees`. Known, accepted edge: the offline
+  fallback `paragon_math.threshold` replicates the live Paragon-API *floor*
+  where the game *rounds* — 48 boundaries sit exactly 1 power low (e.g. d6:
+  API 3407 vs game 3408). Display path is game-exact; only the API-replica
+  fallback carries the 1-power edge (kept API-faithful on purpose).
+  `POWER_PER_TOTEM = 2000` has no dump counterpart — still unverified.
+- **Within `Towers/` (examined domain) still undecoded:** the **28 zone + 38
+  buff** model types' remaining effect fields (the SHA-pinned inventory report
+  §3 is the live worklist; 11 buff types are decoded); status-effect /
   targeting / income behavior models beyond what `_map_tier` reads.
 
 ## Freshness

@@ -38,10 +38,13 @@ _ASSET_NOISE = {
 # Loose top-level files carry their own meaning; they are not entity domains.
 _LOOSE_FILES = {
     "textTable.json": "every display string + description (names & tooltips)",
-    "paragonDegreeData.json": "universal paragon degree-scaling constants",
-    "frontierData.json": "Boss Bloon / Legends scaling data",
-    "rogueData.json": "Rogue Legends mode data",
-    "resources.json": "asset/resource references",
+    "paragonDegreeData.json": (
+        "universal paragon degree-scaling constants (cross-checked exact vs "
+        "utils.btd6.paragon_degrees 100/100, 2026-06-09)"
+    ),
+    "frontierData.json": "Frontier event meta-mode balance (not main-game boss scaling)",
+    "rogueData.json": "Rogue Legends spin-off balance (out of main-game scope)",
+    "resources.json": "GUID→asset-path lookup (zero stat content)",
 }
 
 # Fetch status per domain — does ``parse_gamedata.py`` (or a derived pipeline)
@@ -76,7 +79,11 @@ _INGEST_STATUS: dict[str, tuple[str, str]] = {
         "monkey_knowledge.json: name, category, description, MM cost, investment",
     ),
     "Achievements": ("⬜", "not ingested"),
-    "Artifacts": ("⬜", "not ingested (Rogue Legends artifacts)"),
+    "Artifacts": (
+        "⬜",
+        "not ingested — Rogue Legends/Frontier artifacts carry real modifiers "
+        "but are spin-off-mode-only (out of main-game scope)",
+    ),
     "Mods": (
         "🟡",
         "mode rules sourced into modes.json (--modes): cash/lives verified + "

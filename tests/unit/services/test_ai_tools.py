@@ -731,6 +731,20 @@ async def test_btd6_round_cash_single_round_and_structured_errors():
     assert (await h["btd6_round_cash"]({"round_start": "x"}))["found"] is False
 
 
+async def test_btd6_round_tools_thread_the_abr_roundset():
+    # roundset='abr' selects the game-sourced Alternate Bloons Rounds sidecar;
+    # omitting it stays byte-identical to the pre-ABR behaviour.
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    comp = await h["btd6_round_composition"]({"round_start": 40, "roundset": "abr"})
+    assert comp["found"] is True and comp["roundset"] == "alternate"
+    assert comp["rounds"][0]["groups"] == [{"bloon": "moab", "count": 1}]
+    cash = await h["btd6_round_cash"]({"round_start": 3, "round_end": 80, "roundset": "abr"})
+    assert cash["found"] is True and cash["roundset"] == "alternate"
+    assert "round 3" in cash["assumptions"]
+    default = await h["btd6_round_cash"]({"round_start": 50, "round_end": 60})
+    assert default["roundset"] == "default" and default["range_cash"] == 19840
+
+
 def test_btd6_round_cash_grounds_a_btd6_answer():
     # Its results are deterministic BTD6 facts, so the tool is intentionally on
     # the grounding allowlist (joins the faithfulness ledger). The subset drift
@@ -1193,7 +1207,10 @@ async def test_btd6_answerability_reports_inventory_and_gaps():
     assert by_name["towers"]["item_count"] > 0
     assert by_name["round_cash"]["kind"] == "calculation"
     # Known gaps are stated explicitly so the model never overclaims them.
-    assert by_name["alternate_round_sets"]["kind"] == "unsupported"
+    # (ABR graduated to a fixture in the same release — abr_rounds.json — so
+    # the remaining round-set gap names the quest/Rogue/Frontier sets.)
+    assert by_name["abr_rounds"]["kind"] == "deterministic_fixture"
+    assert by_name["other_round_sets"]["kind"] == "unsupported"
     assert by_name["achievements"]["kind"] == "unsupported"
     # Deterministic: a repeat call returns the identical payload.
     assert out == await handler({})

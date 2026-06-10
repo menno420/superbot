@@ -342,6 +342,14 @@ SUBSYSTEMS + HUBS + command-surface ledger + panel declarations/live availabilit
 
 ## 11. Phased implementation roadmap
 
+> **Phase 0's bounded reconciliation shipped 2026-06-09 in PR #642** (execution-plan
+> Lane 8): the surface-map preamble counts are true again (10 hubs · 29 subsystems ·
+> 36 loaded extensions · 28 define `build_help_menu_view`) **and pinned to the live
+> registries by test**, and a 28-test characterization net pins the five render paths
+> (Home · Advanced · typed routes · generic embed · dedicated panels) as they behave
+> today. The projection contract (rest of Phase 0) and Phases 1+ — catalogue,
+> projection read model, then the Q-0055–Q-0059 overlay — remain queued.
+
 | Phase | Goal and likely files | Dependencies / off-limits | Migration / reset | Verification | Recommended next agent |
 |---|---|---|---|---|---|
 | **0 — mapping/docs/current-behavior pins** | Reconcile `help-command-surface-map.md` counts/Spotlight state; add tests for Home ignoring scope visibility/direct-route behavior as explicit current findings; define projection contract | Owner answers below; coordinate adaptive P1B/P1C; no runtime change | None | docs checks + targeted Help/hub/access tests | **Codex mapping**, then GPT/manual review |

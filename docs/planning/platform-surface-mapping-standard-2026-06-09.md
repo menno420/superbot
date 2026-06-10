@@ -534,11 +534,11 @@ rewrite none of them.**
 Pre-allocated paths (stable, undated filenames; each agent records its actual
 date + HEAD inside the doc header, badge `> **Status:** \`audit\``):
 
-- **Agent A output** — `docs/planning/platform-mapping-a-user-surface.md`
+- **Agent A output** — [`platform-mapping-a-user-surface.md`](platform-mapping-a-user-surface.md)
   *(Agent A: when the doc lands, convert this line's path into a markdown link
   — that link is what keeps your doc reachable for `check_docs.py`.)*
 
-- **Agent B output** — `docs/planning/platform-mapping-b-admin-surface.md`
+- **Agent B output** — [`docs/planning/platform-mapping-b-admin-surface.md`](platform-mapping-b-admin-surface.md)
   *(Agent B: same — convert this line's path into a markdown link in your PR.)*
 
 ### 5.6 Required checks for mapping-only PRs
@@ -800,3 +800,24 @@ The follow-up Claude session (full envelope, plan-then-execute):
    binding docs (`one-fact-one-home` — the durable rules' homes are
    `command-integration-standard.md` / `hub-ui-standard.md` /
    `architecture.md`, not this dated plan).
+
+### 7.1 Reconciliation note for the merge session (2026-06-10)
+
+Both mapping agents ran from a pre-#641 snapshot and imported this standard
+from PR #641's then-open head; their branches were reconciled 2026-06-10
+(this file = the merged #641 version + the agents' §5.5 output links; mapping
+content untouched). What the merge session must know:
+
+- **Both reports cite HEAD `560e351`.** Everything merged after it post-dates
+  the mapping and must be delta'd before implementing: **#640 (Lane 7 —
+  settings-hub actionable groups + >25 reachability) directly changes Agent
+  B's settings-hub records** (FIND-B02 territory); **#642 (Lane 8 — help-map
+  count pins + the five render-path characterization tests)** lands the net
+  FIND-B08 routes to; re-check **#638** (BTD6 data) live.
+- The agents' in-doc owner questions (**Q-A01–Q-A03 · Q-B01–Q-B02**) still
+  need routing to `docs/owner/maintainer-question-router.md` as proper
+  Q-blocks — that is §7 step 1, not yet done.
+- Verification debt: Agent A's container could not run pytest (no
+  `discord`/`asyncpg` available there), and neither mapping PR had CI runs at
+  reconciliation time — treat each PR's own green `code-quality` run as the
+  remaining merge gate.

@@ -2826,12 +2826,72 @@ order.
 (`docs/planning/multi-lane-execution-plan-2026-06-09.md`) + one line in
 `docs/planning/consolidated-productive-session-plan-2026-06-09.md` §7.
 
+## 29. BTD6 cutover decisions — answered 2026-06-09 (data-mapping continuation session)
+
+> Asked as one structured round at the end of the dump-mapping continuation
+> (PR #638: ABR + income sets ingested; subtower tail 7/7; buffs 14→15/38).
+> All four answers were the recommended options. Answer scope: posture/sequencing
+> for the towers cutover — nothing here changes committed combat numbers today.
+
+### Q-0066 — Towers `--all` cutover: dedicated session
+
+**Area:** BTD6 data / cutover
+**Type:** Sequencing sign-off
+**Priority:** High (the cutover is the remaining decode end-goal)
+**Status:** Answered (2026-06-09) — **Routed** → `docs/btd6/btd6-gamedata-decode-status.md` step 5d + `docs/roadmap.md` BTD6 section
+
+**Maintainer answer (verbatim, 2026-06-09):** "Yes — dedicated session" — the next
+BTD6 session executes the `--all` cutover end-to-end (game-native committed stats,
+name joins via the name guard, the ~25 value-pinned test updates, maintainer
+reviews the full diff). All confirmable pre-cutover decode work is done as of
+PR #638.
+
+### Q-0067 — Farm/Village get minimal tier structures at the cutover
+
+**Area:** BTD6 data / schema
+**Type:** Schema decision (unblocks the income-multiplier class)
+**Priority:** Medium
+**Status:** Answered (2026-06-09) — **Routed** → decode-status step 5d (cutover scope) + the blocked income-multiplier item
+
+**Maintainer answer (verbatim, 2026-06-09, two rounds):** first round: "Yes —
+minimal tiers at cutover"; **re-asked the same evening with refined options and
+the final answer SUPERSEDES it: "Full tier structure"** — Banana Farm + Monkey
+Village get the same game-native tier nodes as every other tower at the cutover
+(with attack suppression for Farm's nominal `AttackModel`), not a buffs-only
+shape. The prose-confirmed Central Market ×1.1 (+10% Merchantman income), Banana
+Central ×1.25 and the Village Primary Training auras land as structured,
+renderable buffs inside ordinary tier nodes — one tower-file shape, no second
+schema to maintain.
+
+### Q-0068 — Beast Handler subtowers adopt per-tier game names at cutover
+
+**Area:** BTD6 data / naming
+**Type:** Curated→curated rename approval (name guard allows it deliberately)
+**Priority:** Low
+**Status:** Answered (2026-06-09) — **Routed** → decode-status step 5c notes
+
+**Maintainer answer (verbatim, 2026-06-09):** "Per-tier game names" — committed
+"Beast" labels become the game's own per-tier names (Piranha → Barracuda → Great
+White → Orca → Megalodon; Microraptor line; Gyrfalcon → … → Pouākai) at the
+cutover, making per-tier beast questions answerable by name.
+
+### Q-0069 — Projectile-speed buff semantics: multiplier 0.25 = +25%
+
+**Area:** BTD6 data / decode semantics
+**Type:** Gameplay-knowledge confirmation (the committed data had no pinning value)
+**Priority:** Low
+**Status:** Answered (2026-06-09) — **Routed** → `parse_gamedata._BUFF_FIELD_MAP` comment + decode-status; **implemented same session** (PR #638: `ProjectileSpeedSupportModel.multiplier → projectileSpeedPercentage`, rendered "+25% projectile speed")
+
+**Maintainer answer (verbatim, 2026-06-09):** "Yes, +25%" — Village Primary
+Training's projectile-speed buff (and Ezili's totem variant) is a fraction like
+the RangeSupport family, not a true multiplier.
 ---
 
 ## 30. Settings preset posture — 2026-06-10
 
-> Numbering note: **Q-0066–Q-0069 are reserved by the in-flight #638 draft** (its §29
-> block); this section starts at Q-0070 so that branch merges without renumbering.
+> Numbering note: **Q-0066–Q-0069 belong to the #638 block** (§29 above; merged
+> 2026-06-10); this section was numbered Q-0070 in parallel so both landed without
+> renumbering (the Q-0060 accept-and-reconcile policy working as designed).
 
 ### Q-0070 — Should every setting offer defined presets (+ manual entry + preset-then-edit)?
 
