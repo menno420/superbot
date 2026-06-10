@@ -13,18 +13,39 @@ plan).  New writes go to the real guild_id.
 ``user_id`` retains its legacy ``TEXT`` type from the pre-DB JSON era;
 converting it to BIGINT is a separate concern flagged by the audit and
 explicitly NOT bundled into this PR.
+
+RS02 (Q-0071): the write primitives take an optional ``conn`` so
+``services/mining_workflow.py`` can compose them inside ONE
+workflow-owned transaction.  With ``conn`` given a primitive must never
+open its own transaction — the caller owns commit/rollback.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from utils.db import pool
 
+if TYPE_CHECKING:
+    import asyncpg
 
-async def get_mining_inventory(user_id: str, guild_id: int) -> dict[str, int]:
+_UPSERT_ITEM_SQL = """INSERT INTO mining_inventory (user_id, guild_id, item_name, quantity)
+           VALUES ($1, $2, $3, GREATEST(0, $4))
+           ON CONFLICT (user_id, guild_id, item_name)
+           DO UPDATE SET quantity = GREATEST(0, mining_inventory.quantity + $4)"""
+
+
+async def get_mining_inventory(
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> dict[str, int]:
     rows = await pool.fetchall(
         "SELECT item_name, quantity FROM mining_inventory "
         "WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
+        conn=conn,
     )
     return {r["item_name"]: r["quantity"] for r in rows}
 
@@ -34,6 +55,8 @@ async def update_mining_item(
     guild_id: int,
     item_name: str,
     delta: int,
+    *,
+    conn: asyncpg.Connection | None = None,
 ) -> None:
     """Add or subtract *delta* of *item_name* for *(user_id, guild_id)*.
 
@@ -41,11 +64,9 @@ async def update_mining_item(
     ``(user_id, guild_id, item_name)`` makes the upsert per-guild.
     """
     await pool.execute(
-        """INSERT INTO mining_inventory (user_id, guild_id, item_name, quantity)
-           VALUES ($1, $2, $3, GREATEST(0, $4))
-           ON CONFLICT (user_id, guild_id, item_name)
-           DO UPDATE SET quantity = GREATEST(0, mining_inventory.quantity + $4)""",
+        _UPSERT_ITEM_SQL,
         (user_id, guild_id, item_name, delta),
+        conn=conn,
     )
 
 
@@ -53,25 +74,30 @@ async def apply_inventory_deltas(
     user_id: str,
     guild_id: int,
     deltas: dict[str, int],
+    *,
+    conn: asyncpg.Connection | None = None,
 ) -> None:
     """Apply several item deltas in ONE transaction (crafting's atomicity fix).
 
     A multi-item craft previously issued one upsert per material — a failure
     mid-way could consume half a recipe (the §6.5 robustness nit).  Quantities
     clamp to 0 exactly like :func:`update_mining_item`.
+
+    With *conn* given (a workflow-owned transaction) the upserts run on that
+    connection directly and NO inner transaction is opened — nesting would
+    let a sub-leg commit independently of the caller (Q-0071 violation).
     """
     if not deltas:
         return
-    p = pool.get()
-    async with p.acquire() as conn, conn.transaction():
+    if conn is not None:
         for item_name, delta in deltas.items():
-            await conn.execute(
-                """INSERT INTO mining_inventory
-                       (user_id, guild_id, item_name, quantity)
-                   VALUES ($1, $2, $3, GREATEST(0, $4))
-                   ON CONFLICT (user_id, guild_id, item_name)
-                   DO UPDATE SET
-                       quantity = GREATEST(0, mining_inventory.quantity + $4)""",
+            await conn.execute(_UPSERT_ITEM_SQL, user_id, guild_id, item_name, delta)
+        return
+    p = pool.get()
+    async with p.acquire() as own_conn, own_conn.transaction():
+        for item_name, delta in deltas.items():
+            await own_conn.execute(
+                _UPSERT_ITEM_SQL,
                 user_id,
                 guild_id,
                 item_name,
@@ -83,6 +109,8 @@ async def set_mining_inventory(
     user_id: str,
     guild_id: int,
     inventory: dict[str, int],
+    *,
+    conn: asyncpg.Connection | None = None,
 ) -> None:
     """Overwrite the entire inventory for *(user_id, guild_id)*.
 
@@ -90,19 +118,34 @@ async def set_mining_inventory(
     guild's inventory for the user — a real "cross-guild wipe bomb"
     triggered by the ``!reset_inventory`` admin command.
     """
-    p = pool.get()
-    async with p.acquire() as conn:
+    rows = [(user_id, guild_id, k, v) for k, v in inventory.items() if v > 0]
+    if conn is not None:
         await conn.execute(
             "DELETE FROM mining_inventory WHERE user_id=$1 AND guild_id=$2",
             user_id,
             guild_id,
         )
-        if inventory:
+        if rows:
             await conn.executemany(
                 "INSERT INTO mining_inventory "
                 "(user_id, guild_id, item_name, quantity) "
                 "VALUES ($1, $2, $3, $4)",
-                [(user_id, guild_id, k, v) for k, v in inventory.items() if v > 0],
+                rows,
+            )
+        return
+    p = pool.get()
+    async with p.acquire() as own_conn:
+        await own_conn.execute(
+            "DELETE FROM mining_inventory WHERE user_id=$1 AND guild_id=$2",
+            user_id,
+            guild_id,
+        )
+        if rows:
+            await own_conn.executemany(
+                "INSERT INTO mining_inventory "
+                "(user_id, guild_id, item_name, quantity) "
+                "VALUES ($1, $2, $3, $4)",
+                rows,
             )
 
 

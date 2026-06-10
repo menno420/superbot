@@ -209,8 +209,10 @@ subsystems:
       - disbot/cogs/rps_tournament_cog.py
       - disbot/cogs/deathmatch/
       - disbot/cogs/deathmatch_cog.py
-      - disbot/cogs/mining/
       - disbot/cogs/mining_cog.py
+      - disbot/utils/mining/
+      - disbot/services/mining_workflow.py
+      - disbot/services/game_xp_service.py
       - disbot/cogs/counting/
       - disbot/views/blackjack/
       - disbot/views/rps/

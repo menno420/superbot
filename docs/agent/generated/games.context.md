@@ -1,7 +1,7 @@
 # Agent Context Pack — Games
 
 > **Status:** `reference` — generated orientation aid (NOT source of truth).
-> Generated: 2026-06-08 · Subsystem key: `games`
+> Generated: 2026-06-10 · Subsystem key: `games`
 
 > **NOT SOURCE OF TRUTH.** This file is generated from `docs/agent/index.yml`.
 > Canonical docs listed under *Binding docs* always win over this pack.
@@ -31,8 +31,10 @@
 - disbot/cogs/rps_tournament_cog.py
 - disbot/cogs/deathmatch/
 - disbot/cogs/deathmatch_cog.py
-- disbot/cogs/mining/
 - disbot/cogs/mining_cog.py
+- disbot/utils/mining/
+- disbot/services/mining_workflow.py
+- disbot/services/game_xp_service.py
 - disbot/cogs/counting/
 - disbot/views/blackjack/
 - disbot/views/rps/

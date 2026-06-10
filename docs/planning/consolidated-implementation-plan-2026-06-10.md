@@ -128,7 +128,18 @@ Batches 1+2 touch disjoint files and may run as parallel sessions
 Batches 5→6 are strictly sequential; Batch 3 should not run beside 1 (both touch
 services) without partitioning by module.
 
-### Batch 1 — Low-risk runtime truth/clarity (RS04 · RS09 · RS13 · RS14 · RS16 · RS11-rename) — executed in **#650** (2026-06-10, verify merged)
+> **Queue state (2026-06-10 end-of-day verification,
+> [`../audits/past-day-verification-2026-06-10.md`](../audits/past-day-verification-2026-06-10.md)):
+> Batches 1–8 are all executed and merged** (#650 · #651 · #652 · #654 · #656 ·
+> #657+#659 · #661+#663/#664/#665-via-#667 · #649). **What remains live in this
+> plan:** the **RS07 chain-service slice** (Batch 3's optional third slice — still
+> open), the **Batch 4 pointer-classification tail**, **Batch 9**
+> (contract-first observability), **Batch 10** (planning-only selections), and
+> the Help-lane **overlay editor UI** tail (audit Phase 5, tracked under
+> Batch 6's outcome notes). Plus the owed maintainer-only items: the first real
+> #633 workflow dispatch and the HLT-2 production live-tests.
+
+### Batch 1 — Low-risk runtime truth/clarity (RS04 · RS09 · RS13 · RS14 · RS16 · RS11-rename) — executed in **#650** (2026-06-10, merged — verified 2026-06-10 EOD)
 
 > Outcome notes: RS04 = no-op hook **deleted** (no binding read cache exists —
 > contract + 2 pinning tests); RS09 = shell **deleted** (consumer proof in the PR);
@@ -253,7 +264,7 @@ services) without partitioning by module.
 - **Then:** Phase 3 convergence (Q-0063) → Phase 4 structured editors/presets
   (Q-0070) → Phase 5 Setup/Settings convergence (own planning session first).
 
-### Batch 5 — Adaptive P1C: Access Map + Help Preview staff-hub subpanels (ADP-2) — executed in **#656** (2026-06-10, verify merged)
+### Batch 5 — Adaptive P1C: Access Map + Help Preview staff-hub subpanels (ADP-2) — executed in **#656** (2026-06-10, merged — verified 2026-06-10 EOD)
 
 > Outcome notes: both subpanels shipped in `views/server_management/access_map.py`
 > as the first `project_access_map` consumers (Q-0032: hub buttons only, no new
@@ -278,7 +289,7 @@ services) without partitioning by module.
 - **Stop:** any mutation affordance; any denial-copy *wiring* (ADP-3 stays gated on
   the owner's markup of the #632 table).
 
-### Batch 6 — Help projection seam (HLP-2/DT05/B01), then overlay (HLP-3) — seam **merged #657**; overlay executed in **#659** (2026-06-10, verify merged)
+### Batch 6 — Help projection seam (HLP-2/DT05/B01), then overlay (HLP-3) — seam **merged #657**; overlay **merged #659** (2026-06-10 — verified 2026-06-10 EOD)
 
 > **HLP-3 outcome notes (#659, same session — the #657 merge cleared its
 > gate):** migration 064 `help_overlay` + sole-writer DB module + the
@@ -328,7 +339,7 @@ services) without partitioning by module.
 - **Risk/rollback:** medium; behavior changes are the *point* — characterize first.
 - **Stop:** overlay mutation work before the seam is merged + smoke-tested.
 
-### Batch 7 — Mutation-path hardening (RS01 → RS02) — decisions answered 2026-06-10
+### Batch 7 — Mutation-path hardening (RS01 → RS02) — **COMPLETE** (#661 + #663/#664/#665, landed via #667, 2026-06-10)
 
 **Q-0071 answered: A** — the **domain workflow service owns ONE DB transaction**
 (coins + inventory commit or roll back together; rule now in `docs/ownership.md`
@@ -339,10 +350,21 @@ in plan order (after the smaller batches), not immediately.
 > **Execution record (2026-06-10, mining-finalization session):** **RS01 executed
 > in PR #661** (`services/shop_purchase_workflow.py` + conn-aware primitives +
 > `db.transaction()` + the view-write invariant; live-verified incl. the
-> concurrent double-click). RS02 follows in the same session as its two staged
-> PRs (workshop first, then market/remaining writers + ratchet), per the staging
-> below — the maintainer-commissioned mining/tool/gear finalization plan pulled
-> this batch forward of the remaining smaller batches.
+> concurrent double-click). **RS02 stage 1 executed in PR #663**
+> (characterize → relocate the pure domain to `utils/mining/` → conn-aware
+> mining primitives → `services/mining_workflow.py` owning the workshop ops,
+> one transaction each; the three views→cogs allowlist entries deleted).
+> **RS02 stage 2 executed in PR #664**: market
+> sell/sell-all/buy (both legs atomic), the action writers mine/harvest/
+> explore (loot + wear in one transaction), use/equip/unequip, descent, and
+> admin writes all converged; `cogs/mining/` deleted; the AST write-boundary
+> ratchet landed (`test_mining_write_boundary.py`); recipes.json reconciled to
+> the item catalog under the new alignment lint. **RS01 + RS02 = Batch 7
+> COMPLETE** — the maintainer-commissioned mining/tool/gear finalization plan
+> pulled this batch forward of the remaining smaller batches. *(Merge
+> mechanics: the stacked bases didn't auto-retarget, so #663/#664/#665 merged
+> into their parent branches; the content reached `main` via the same-day
+> completion PR **#667** — content-verified on main 2026-06-10 EOD.)*
 
 - **Objective:** close the two-commit purchase hole first (smallest high-value
   slice), then converge mining writes behind workflow services.
@@ -362,7 +384,7 @@ in plan order (after the smaller batches), not immediately.
 - **Stop:** any schema change beyond transaction plumbing; any leg committed
   separately from a cog/view.
 
-### Batch 8 — BTD6 `--all` towers cutover — dedicated session (decisions already routed)
+### Batch 8 — BTD6 `--all` towers cutover — **EXECUTED** (#649, 2026-06-10; post-cutover verification #655, decode waves #653/#655)
 
 - **Objective:** execute the routed cutover: game-native committed stats,
   Farm/Village full tier structures (attack-suppressed), per-tier beast names,
@@ -410,7 +432,7 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 | SET-6 dual-write seam | constraint, unchanged | canary: "projection failed" diagnostics |
 | HLP-1 (Lane 8) | **shipped #642** | — |
 | HLP-2 projection seam | **merged #657** (2026-06-10) | — |
-| HLP-3 overlay store + seam | **executed #659** (2026-06-10, verify merged) | editor UI (audit Phase 5) + Phase 4 records remain the Help-lane tail |
+| HLP-3 overlay store + seam | **merged #659** (2026-06-10) | editor UI (audit Phase 5) + Phase 4 records remain the Help-lane tail |
 | ADP-1 (Lane 2) | **shipped #632** | — |
 | ADP-2 P1C | **Batch 5** | Q-0032 |
 | ADP-3 denial-copy wiring | **gated** | owner's markup of the #632 table (Q-0036) |
@@ -419,9 +441,9 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 | Answerability Phases 4/5 | **gated** | settings-UI ask · dashboard schema acceptance |
 | BTD-1 (Lane 5) | **shipped #633** | first real dispatch still owed |
 | BTD-2 pointers | **Batch 4** | Q-0064 (answered) |
-| BTD-3 cutover | **Batch 8** | dedicated session |
-| GME-1 mining frontier | **Q-0072** → Batch 7-adjacent | structures · game-XP · workshop-boundary |
-| GME-2 duels wear | queued (games lane) | Q-0054 (answered) — small slice when games activates |
+| BTD-3 cutover | **shipped #649** (Batch 8 executed 2026-06-10) | post-cutover backlog: decode-status ⭐ |
+| GME-1 mining frontier | **shipped** — workshop boundary + game-XP (#663–#665 via #667) | next: structures §7.5, then skill tree §7.4 |
+| GME-2 duels wear | **shipped #665** (via #667) | Q-0054 closed |
 | GME-3 pets | later | keystones + balance review + promotion |
 | GME-4 ease quick-wins | later | light-session candidates |
 | SRV-1 PR13 AI layer | **gated** | AI per-exposure; SRV-2 (PR14) **shipped #584** |
@@ -455,11 +477,15 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 
 ## §8 Next recommended agent
 
-**Sonnet implementation session(s), starting with Batch 1 + Batch 2** (small,
-source-verified, test-covered; parallel-safe as two sessions per
-`ai-project-workflow.md` §9). No further mapping is needed — the campaign is
-complete and verified, and **all four §31 decisions are answered**. **Opus/Fable
-planning** is warranted only for Batch 7's transaction design (Q-0071=A decided
-the shape; the staged design still deserves a planning pass) and Batch 10's
-selections. Codex fits bounded verification prep (e.g. Batch 2's generated
-inventory) if used.
+*(Rewritten 2026-06-10 EOD — the original §8 recommended starting Batch 1+2;
+all of Batches 1–8 have since executed and been verified merged. Full
+recommendation + alternates:
+[`../audits/past-day-verification-2026-06-10.md`](../audits/past-day-verification-2026-06-10.md) §6.)*
+
+The implementation-ready remainder of this queue: the **RS07 chain-service
+slice** (bounded, decision-free), the **Batch 4 pointer-classification tail**,
+and **Batch 9's RS08 read-model extraction** — all Sonnet-sized. **Batch 10 +
+the Batch 9 RS05 event-semantics contract** want an Opus/Fable planning pass.
+The **mining structures slice (§7.5 Forge/Vault/Home)** is the games-lane next
+move on the new write boundary (games folio routes it). The Help **overlay
+editor UI** (audit Phase 5) is the Help-lane tail — UI-heavy, plan-first.

@@ -63,11 +63,12 @@ writes must come from the owning cog or a shared service.
 | `moderation`   | `warnings`, `mod_logs`                         | `services/moderation_service.py` (preferred); `utils/db/moderation.py` direct for read-only / legacy callers |
 | `xp`           | `xp.xp`, `xp.level`, `xp.messages`, `xp.last_xp` | `services/xp_service.py` |
 | `economy`      | `economy`, `job_progress`, `economy_audit_log`   | `services/economy_service.py` |
+| `game_xp`      | `game_xp` (shared cross-game progression — separate from chat XP) | `services/game_xp_service.py` (central award policy + daily soft cap; events emitted by the owning workflow after commit); reads direct via `utils/db/games/game_xp.py`. No stored level — derived from `SUM(xp)` via the chat-XP curve |
 | `inventory`    | `inventory`                                    | direct via `utils/db/inventory.py`; **shop purchases** (coins + item, one transaction) via `services/shop_purchase_workflow.py` (Q-0071/RS01) |
 | `cleanup`      | `prohibited_words`                             | direct via `utils/db/moderation.py` |
 | `chain`        | `chain_channels`                               | direct via `utils/db/games/chain.py` |
 | `counting`     | `counting_state`                               | direct via `utils/db/games/counting.py` |
-| `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear` | direct via `utils/db/games/mining*.py`; the market/repair **coin** legs via economy_service (`mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`) |
+| `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear` | **all writes via `services/mining_workflow.py`** (RS02 complete) — one transaction per operation; coin legs via `economy_service.{debit,credit}_in_txn` with reasons `mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`, events after commit; **reads** stay direct via `utils/db/games/mining*.py`. AST-fenced: `tests/unit/invariants/test_mining_write_boundary.py` |
 | `deathmatch`   | `deathmatch_stats`                             | direct via `utils/db/games/deathmatch.py` |
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |
@@ -101,6 +102,25 @@ writes must come from the owning cog or a shared service.
   are the no-event coin legs for any future domain workflow (mining follows —
   RS02). View-level purchase writes are AST-fenced
   (`tests/unit/invariants/test_no_view_level_purchase_writes.py`).
+- **Shipped (RS02 stage 1, 2026-06-10):** `services/mining_workflow.py` owns the
+  mining **workshop** operations (Q-0072=C — the densest multi-write
+  invariants): `wear_tick` (wear + break-consume + unequip + last-broken in one
+  transaction), `repair` (coin debit + wear clear atomically, event after
+  commit), `craft` (materials + product), `quick_craft` (craft + auto-equip +
+  marker clear). The pure mining domain relocated to `utils/mining/`
+  (helper-policy: shared by services *and* views); the conn-aware
+  `utils/db/games/mining*.py` primitives never self-transact when given a
+  workflow connection.
+- **Shipped (RS02 stage 2, 2026-06-10):** the convergence is complete —
+  `mining_workflow` also owns market `sell`/`sell_all`/`buy` (inventory leg +
+  coin leg in one transaction), the action writers `mine`/`harvest`/`explore`
+  (loot grant + wear tick atomically), `use_item`/`equip`/`unequip`,
+  `descend`/`ascend`, and the admin writes. `cogs/mining/` is deleted; the
+  AST ratchet (`test_mining_write_boundary.py`) keeps any new direct mining
+  write out of cogs/views (reads stay free). recipes.json was reconciled to
+  the item catalog (curated-economy owner decision; the alignment lint
+  `tests/unit/utils/test_recipes_catalog_alignment.py` governs all future
+  content).
 
 ---
 

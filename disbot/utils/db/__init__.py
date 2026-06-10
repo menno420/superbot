@@ -82,6 +82,14 @@ from utils.db.games.deathmatch import (
     get_deathmatch_stats,
     update_deathmatch,
 )
+from utils.db.games.game_xp import (
+    add_game_xp,
+    get_game_xp,
+    get_game_xp_row,
+    get_total_xp,
+    top_game_xp,
+    top_total_xp,
+)
 from utils.db.games.mining import (
     apply_inventory_deltas,
     get_all_mining_totals,
@@ -102,6 +110,8 @@ from utils.db.games.mining_gear_wear import (
 from utils.db.games.mining_player_state import (
     get_depth,
     get_last_broken,
+    get_max_depth,
+    record_depth,
     set_depth,
     set_last_broken,
 )
@@ -274,6 +284,15 @@ __all__ = [
     # games
     "delete_chain_channel",
     "get_all_chain_channels",
+    # game_xp (shared cross-game progression)
+    "add_game_xp",
+    "get_game_xp",
+    "get_game_xp_row",
+    "get_total_xp",
+    "top_game_xp",
+    "top_total_xp",
+    "get_max_depth",
+    "record_depth",
     "get_all_mining_totals",
     "get_chain_channel",
     "get_counting_state",

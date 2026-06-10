@@ -1,7 +1,7 @@
 # Agent Context Pack — BTD6 Data / Tools
 
 > **Status:** `reference` — generated orientation aid (NOT source of truth).
-> Generated: 2026-06-08 · Subsystem key: `btd6`
+> Generated: 2026-06-10 · Subsystem key: `btd6`
 
 > **NOT SOURCE OF TRUTH.** This file is generated from `docs/agent/index.yml`.
 > Canonical docs listed under *Binding docs* always win over this pack.

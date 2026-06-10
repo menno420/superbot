@@ -393,8 +393,9 @@ auto-equip; materials+product move in one transaction). Wear is keyed by item *n
 durability column on `mining_equipment` was a free-repair exploit — corrected). The hub
 also gained the §6.3 **live overview** embed (location · tool+durability · light · net
 worth · broken-gear hint). The remaining sinks (**structures** Forge/Vault/Home, **respec**)
-are next; combat gear has durability maxes but **no wear path yet** — **duels ticking
-weapon/armor wear is owner-approved and queued as its own later slice (Q-0054)**.
+are next. **Duels-wear shipped 2026-06-10** (Q-0054 closed): a finished PvP deathmatch
+ticks each human fighter's weapon + armor once (`ACTION_DUEL`), so combat gear is fully
+in the craft→break→repair loop.
 
 ### 7.6 Profile & identity (the spine, in detail)
 

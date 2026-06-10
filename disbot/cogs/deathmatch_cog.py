@@ -6,7 +6,9 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import BucketType, cooldown
 
+from services import mining_workflow
 from utils import db, equipment
+from utils.mining import workshop as mining_workshop
 
 # Base duel constants — the floor every fighter starts from before equipped
 # combat gear (utils.equipment.EffectiveStats) tilts it.
@@ -61,6 +63,32 @@ class _Duel:
 
     def defend(self, player_id: int) -> None:
         self.defense[player_id] = True
+
+
+async def _tick_duel_gear_wear(
+    guild_id: int,
+    *fighters: discord.Member,
+) -> list[str]:
+    """Q-0054: a finished PvP duel wears each fighter's weapon + armor once.
+
+    Bot fighters are skipped (bot duels grant nothing, so there is no
+    farming vector and nothing to wear).  Returns the fighters' wear notes
+    (break / nearly-worn warnings) for the final duel embed.
+    """
+    notes: list[str] = []
+    for member in fighters:
+        if getattr(member, "bot", False):
+            continue
+        equipped = await db.get_equipment(str(member.id), guild_id)
+        report = await mining_workflow.wear_tick(
+            member.id,
+            guild_id,
+            action=mining_workshop.ACTION_DUEL,
+            depth=0,
+            equipped=equipped,
+        )
+        notes.extend(f"{member.display_name}: {note}" for note in report.notes)
+    return notes
 
 
 class _DuelView(discord.ui.View):
@@ -122,14 +150,22 @@ class _DuelView(discord.ui.View):
             loser_id=duel.turn.id,
             guild_id=self.ctx.guild.id if self.ctx.guild else 0,
         )
+        wear_notes = await _tick_duel_gear_wear(
+            self.ctx.guild.id if self.ctx.guild else 0,
+            duel.player1,
+            duel.player2,
+        )
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
+        description = (
+            f"{duel.turn.mention} took too long to respond.\n"
+            f"🏆 {opponent.mention} wins by default!"
+        )
+        if wear_notes:
+            description += "\n\n" + "\n".join(wear_notes)
         embed = discord.Embed(
             title="⚔️ Deathmatch — Timeout",
-            description=(
-                f"{duel.turn.mention} took too long to respond.\n"
-                f"🏆 {opponent.mention} wins by default!"
-            ),
+            description=description,
             color=discord.Color.orange(),
         )
         if self.message:
@@ -183,18 +219,26 @@ class _DuelView(discord.ui.View):
                 loser_id=loser.id,
                 guild_id=self.ctx.guild.id if self.ctx.guild else 0,
             )
+            wear_notes = await _tick_duel_gear_wear(
+                self.ctx.guild.id if self.ctx.guild else 0,
+                duel.player1,
+                duel.player2,
+            )
             for item in self.children:
                 item.disabled = True  # type: ignore[attr-defined]
+            description = (
+                f"{action_text}\n\n"
+                f"**{duel.player1.display_name}** — "
+                f"{max(duel.player1_hp, 0)}/{duel.player1_max_hp} HP\n"
+                f"**{duel.player2.display_name}** — "
+                f"{max(duel.player2_hp, 0)}/{duel.player2_max_hp} HP\n\n"
+                f"🏆 {winner.mention} wins!"
+            )
+            if wear_notes:
+                description += "\n\n" + "\n".join(wear_notes)
             embed = discord.Embed(
                 title="⚔️ Deathmatch Ended",
-                description=(
-                    f"{action_text}\n\n"
-                    f"**{duel.player1.display_name}** — "
-                    f"{max(duel.player1_hp, 0)}/{duel.player1_max_hp} HP\n"
-                    f"**{duel.player2.display_name}** — "
-                    f"{max(duel.player2_hp, 0)}/{duel.player2_max_hp} HP\n\n"
-                    f"🏆 {winner.mention} wins!"
-                ),
+                description=description,
                 color=discord.Color.gold(),
             )
             await interaction.response.edit_message(embed=embed, view=self)

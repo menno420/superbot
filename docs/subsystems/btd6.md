@@ -1,7 +1,9 @@
 # BTD6 data / tools subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + ADR-006 + current state win.
-> **Last updated:** 2026-06-06.
+> **Last updated:** 2026-06-10 (ADR-006 wording fix; the 2026-06-10 cutover/
+> decode/answerability campaign lives in `btd6-gamedata-decode-status.md` ⭐ +
+> `docs/current-state.md` — this folio routes, it does not restate).
 
 ## What & where
 
@@ -15,8 +17,11 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
 
 - **ADR-006** (`docs/decisions/006-btd6-data-provenance-ownership.md`) binds the
   provenance object, owner-per-fact-type matrix, hybrid storage choice, and source
-  registry linkage. Extraction remains paused until a follow-on docs/schema PR
-  implements that contract.
+  registry linkage. The schema is **implemented**
+  (`docs/btd6/btd6-provenance-schema.md`) and extraction runs against the
+  decode-status backlog under that contract *(stale "extraction remains paused"
+  wording corrected 2026-06-10 — the v55.1 cutover + decode campaign, #649–#668,
+  shipped under the implemented schema)*.
 - Provider/provenance checks, caching/source-health clarity, and AI behavior/config
   correctness are gates, not optional polish. `docs/current-state.md` owns the global
   gate wording.

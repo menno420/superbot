@@ -1,4 +1,5 @@
-"""Tests for cogs.mining.market — sell/buy prices + audited orchestration.
+"""Tests for the mining market seam — pure pricing (utils.mining.market) +
+the RS02 workflow orchestration (services.mining_workflow) — sell/buy prices + audited orchestration.
 
 The orchestration tests mock the economy seam and the mining CRUD so they pin
 the *contract* (coins move through economy_service; the inventory side is
@@ -8,12 +9,37 @@ without a real DB.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
-from cogs.mining import items, market
+from services import mining_workflow
 from services.economy_service import InsufficientFundsError
+from utils.mining import items, market
+
+
+@pytest.fixture(autouse=True)
+def _null_workflow_transaction():
+    """db.transaction() becomes a pass-through — primitives are mocked here."""
+    from contextlib import asynccontextmanager
+    from unittest.mock import MagicMock
+
+    @asynccontextmanager
+    async def _txn():
+        yield MagicMock(name="test_conn")
+
+    with (
+        patch("services.mining_workflow.db.transaction", _txn),
+        patch(
+            "services.mining_workflow.game_xp_service.award",
+            AsyncMock(return_value=None),
+        ),
+        patch(
+            "services.mining_workflow.game_xp_service.emit_award_events",
+            AsyncMock(),
+        ),
+    ):
+        yield
 
 # ---------------------------------------------------------------------------
 # Pure pricing
@@ -63,23 +89,23 @@ def test_total_sale_value_sums_only_resources():
 @pytest.mark.asyncio
 async def test_apply_sell_removes_ore_then_credits_coins():
     with patch(
-        "cogs.mining.market.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"diamond": 5},
     ), patch(
-        "cogs.mining.market.db.update_mining_item",
+        "services.mining_workflow.db.update_mining_item",
         new_callable=AsyncMock,
     ) as mock_remove, patch(
-        "cogs.mining.market.economy_service.credit",
+        "services.mining_workflow.economy_service.credit_in_txn",
         new_callable=AsyncMock,
         return_value=999,
     ) as mock_credit:
-        result = await market.apply_sell(123, 7, "diamond", 3)
+        result = await mining_workflow.sell(123, 7, "diamond", 3)
     coins = items.item_value("diamond") * 3
     assert result.ok
-    mock_remove.assert_awaited_once_with("123", 7, "diamond", -3)
+    mock_remove.assert_awaited_once_with("123", 7, "diamond", -3, conn=ANY)
     args, kwargs = mock_credit.await_args
-    assert args[2] == coins
+    assert args[3] == coins  # args[0] is the workflow's transaction conn
     assert kwargs["reason"] == market.SELL_REASON
     assert result.coins_delta == coins
     assert result.new_balance == 999
@@ -87,7 +113,7 @@ async def test_apply_sell_removes_ore_then_credits_coins():
 
 @pytest.mark.asyncio
 async def test_apply_sell_rejects_nonsellable_before_any_io():
-    result = await market.apply_sell(1, 1, "pickaxe", 1)
+    result = await mining_workflow.sell(1, 1, "pickaxe", 1)
     assert not result.ok
     assert "can't sell" in result.message.lower()
 
@@ -95,14 +121,14 @@ async def test_apply_sell_rejects_nonsellable_before_any_io():
 @pytest.mark.asyncio
 async def test_apply_sell_rejects_insufficient_quantity_without_crediting():
     with patch(
-        "cogs.mining.market.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"iron": 2},
     ), patch(
-        "cogs.mining.market.economy_service.credit",
+        "services.mining_workflow.economy_service.credit_in_txn",
         new_callable=AsyncMock,
     ) as mock_credit:
-        result = await market.apply_sell(1, 1, "iron", 5)
+        result = await mining_workflow.sell(1, 1, "iron", 5)
     assert not result.ok
     mock_credit.assert_not_awaited()  # never mint coins for ore you don't have
 
@@ -110,18 +136,18 @@ async def test_apply_sell_rejects_insufficient_quantity_without_crediting():
 @pytest.mark.asyncio
 async def test_apply_sell_all_sells_only_resources_in_one_credit():
     with patch(
-        "cogs.mining.market.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"stone": 4, "diamond": 1, "pickaxe": 1},
     ), patch(
-        "cogs.mining.market.db.update_mining_item",
+        "services.mining_workflow.db.update_mining_item",
         new_callable=AsyncMock,
     ) as mock_remove, patch(
-        "cogs.mining.market.economy_service.credit",
+        "services.mining_workflow.economy_service.credit_in_txn",
         new_callable=AsyncMock,
         return_value=500,
     ) as mock_credit:
-        result = await market.apply_sell_all(1, 1)
+        result = await mining_workflow.sell_all(1, 1)
     assert result.ok
     removed = {call.args[2] for call in mock_remove.await_args_list}
     assert "pickaxe" not in removed  # tools are never sold
@@ -132,14 +158,14 @@ async def test_apply_sell_all_sells_only_resources_in_one_credit():
 @pytest.mark.asyncio
 async def test_apply_sell_all_empty_inventory():
     with patch(
-        "cogs.mining.market.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"pickaxe": 1},  # only non-sellable items
     ), patch(
-        "cogs.mining.market.economy_service.credit",
+        "services.mining_workflow.economy_service.credit_in_txn",
         new_callable=AsyncMock,
     ) as mock_credit:
-        result = await market.apply_sell_all(1, 1)
+        result = await mining_workflow.sell_all(1, 1)
     assert not result.ok
     mock_credit.assert_not_awaited()
 
@@ -152,42 +178,42 @@ async def test_apply_sell_all_empty_inventory():
 @pytest.mark.asyncio
 async def test_apply_buy_debits_then_grants_item():
     with patch(
-        "cogs.mining.market.economy_service.debit",
+        "services.mining_workflow.economy_service.debit_in_txn",
         new_callable=AsyncMock,
         return_value=40,
     ) as mock_debit, patch(
-        "cogs.mining.market.db.update_mining_item",
+        "services.mining_workflow.db.update_mining_item",
         new_callable=AsyncMock,
     ) as mock_add:
-        result = await market.apply_buy(123, 7, "iron sword")
+        result = await mining_workflow.buy(123, 7, "iron sword")
     assert result.ok
     args, kwargs = mock_debit.await_args
-    assert args[2] == market.GEAR_SHOP["iron sword"]
+    assert args[3] == market.GEAR_SHOP["iron sword"]  # args[0] is the conn
     assert kwargs["reason"] == market.BUY_REASON
-    mock_add.assert_awaited_once_with("123", 7, "iron sword", 1)
+    mock_add.assert_awaited_once_with("123", 7, "iron sword", 1, conn=ANY)
 
 
 @pytest.mark.asyncio
 async def test_apply_buy_insufficient_funds_grants_nothing():
     with patch(
-        "cogs.mining.market.economy_service.debit",
+        "services.mining_workflow.economy_service.debit_in_txn",
         new_callable=AsyncMock,
         side_effect=InsufficientFundsError("nope"),
     ), patch(
-        "cogs.mining.market.db.get_coins",
+        "services.mining_workflow.db.get_coins",
         new_callable=AsyncMock,
         return_value=5,
     ), patch(
-        "cogs.mining.market.db.update_mining_item",
+        "services.mining_workflow.db.update_mining_item",
         new_callable=AsyncMock,
     ) as mock_add:
-        result = await market.apply_buy(1, 1, "armor")
+        result = await mining_workflow.buy(1, 1, "armor")
     assert not result.ok
     mock_add.assert_not_awaited()  # no free item when you can't pay
 
 
 @pytest.mark.asyncio
 async def test_apply_buy_unknown_item_before_any_io():
-    result = await market.apply_buy(1, 1, "spaceship")
+    result = await mining_workflow.buy(1, 1, "spaceship")
     assert not result.ok
     assert "isn't for sale" in result.message.lower()

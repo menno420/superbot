@@ -49,8 +49,13 @@ hiding is never execution denial (HLP-4).
 * :func:`project_help_with_execution` — the enriched form: composes
   :func:`services.access_projection.project_access_map` so routing /
   command-access / availability denials surface as their non-hiding states.
-  Operator surfaces (Help Preview, the HLP-3 overlay editor) consume this;
-  the live render paths do not need it to decide visibility.
+  Built for operator surfaces (Help Preview, the future HLP-3 overlay
+  editor) — but as of 2026-06-10 it has **no production caller**: the #656
+  Help Preview predates this seam and still re-derives Help truth from
+  `project_access_map` axes directly (mislabeling governance hides as
+  "locked", ignoring overlay state). Migrating that panel here is the open
+  fix — see `docs/audits/past-day-verification-2026-06-10.md` §4. The live
+  render paths do not need this form to decide visibility.
 
 The projection owns **no policy**: every hide traces to governance or a
 static presentation rule, and every lock state carries the owning axis's
