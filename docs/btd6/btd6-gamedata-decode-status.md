@@ -20,7 +20,26 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-10 — **the towers cutover is DONE (PR #649); next = the post-cutover decode backlog below**)
+## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) + POST-CUTOVER-VERIFIED (#655); next = the decode backlog below**)
+
+> **2026-06-10 (PR #655, the post-cutover verification session): everything
+> re-verified against the dump at the cutover SHA** (`4e22e586`, v55.1) —
+> anchors PASS · audit 76 CLEAN / 9 DELTA / 0 SUSPECT (DELTAs = the
+> carry-forwards) · **full regeneration byte-identical** (every flag, idempotent)
+> · default-rounds parity re-proven **140/140** · all **2,022** menu embeds
+> (towers×tiers, heroes×levels, paragons, crosspaths, lists) render in-limits ·
+> 43-probe deterministic AI-tool battery green · clean live boot (36 cogs, 0
+> errors). Fixed in the same PR: the **mode `rules` block was dark data**
+> (now serialized by `btd6_mode_lookup` + rendered by the modes embed via the
+> shared `utils/btd6/mode_rules.py` — the modes-cutover "teed-up follow-up" is
+> closed); **`!btd6 diagnostics` 400'd** (the 86-map field hit Discord's
+> 1024-char cap — counts-only now, every-field-≤1024 pinned by test); the
+> **stale `game_version` stamp class** (root cause: overlays only re-stamped on
+> a value change — they now re-stamp on every verified run; `towers`/`heroes`/
+> `rounds` bumped to 55.1 on audit/parity evidence, so `btd6_answerability` now
+> reports 55.1, matching the stats labels); and the **absolute-container-path
+> leak** in `data_source_label()` (now `local:disbot/data/btd6`). Session log
+> below; new answerability gaps routed into the backlog (items 5–6).
 
 > **2026-06-10 (PR #649, the Q-0066 dedicated cutover session): every committed
 > stats file is game-native v55.1** — 25 towers, 17 heroes, 13 paragons,
@@ -73,7 +92,24 @@ works** (the traps we hit), and what is still un-decoded.
 4. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
    per-tier beast names ("what does the Orca do?"), Farm/Village answers
    (Wall Street income, discounts, MIB), Spectre/Mini Sun Avatar minions, and
-   the "BTD6 game data 55.1" source label.
+   the "BTD6 game data 55.1" source label. *(+ from #655: the modes panel's
+   new 📋 rules lines, and `!btd6 diagnostics` — previously failed to send.)*
+5. **Deterministic-Ask domain gaps (menu answerability, found by #655):** the
+   panel **Ask** button / `!btd6 ask` without an AI key routes only
+   tower/hero/map/mode/round intents — **bloons, powers, Monkey Knowledge,
+   bosses, and round-range cash** answer "No BTD6 entities recognised" even
+   though the AI tools (and `btd6_context_service.build`) answer all of them
+   deterministically. Root-cause direction: let `answer_question` fall back to
+   the same context-service facts the `btd6_lookup` tool uses, rather than
+   growing a second intent router. A product-shaped lift — plan before build.
+6. **Resolution/label polish (found by #655, smaller):** (a) minion *names*
+   don't resolve directly — "mini sun avatar" lands on the Sun Avatar upgrade;
+   the stats live under the parent tier's subtowers (answerable via "sun
+   temple minions"); a subtower-name → parent-tier alias layer fixes recall.
+   (b) Catalog/bloon facts still carry the internal-ish `fixture/btd6_data`
+   label while stats facts say "BTD6 game data 55.1". (c)
+   `btd6_context_service` `source_summary` says "data.ninjakiwi.com (Tier 1)"
+   even on fixture-only answers — a faithfulness wart.
 
 ### Current state & next actions (READ FIRST)
 
@@ -312,6 +348,37 @@ decision.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-10 (post-cutover verification, PR #655)
+
+The maintainer's ask: verify everything is correctly fetched from the dump and
+answerable via the AI **and** the menu. Method + durable findings:
+
+- **Fidelity method that worked:** re-clone the dump (same SHA `4e22e586` as
+  the cutover) → anchors → audit → **re-run every generator/overlay flag and
+  demand `git status` come back clean**. The byte-identity check is the
+  strongest cheap test we have — it caught the one real data drift
+  (maps.json's missed 55.1 stamp) that the audit can't see (the audit compares
+  values, not metadata).
+- **Surface method that worked:** drive the real builders, not samples —
+  all 1,600 tower-tier + 340 hero-level + 52 paragon + 25 crosspath + 5 list
+  embeds through `utils/btd6/stats_embed.py` with a Discord-limits validator,
+  and every BTD6 AI tool handler with pinned-value probes. One real send-bug
+  fell out (`!btd6 diagnostics` 86-map field 1,059 > 1,024 — Discord 400s
+  oversized fields, it does not truncate). Embed-limit validation belongs in
+  any future render-surface test.
+- **The "0 corrections" trap:** an overlay that only writes on value changes
+  silently lets `game_version` rot one version behind on every
+  values-didn't-change re-pull (bloons/modes sat at 55.0 after the 55.1
+  verification; the answerability tool told users "game 55.0"). Verified-at-a-
+  version IS information — overlays now re-stamp every verified run.
+- **Probe your probes:** 8 of my first battery's 9 "failures" were my own
+  wrong argument shapes / comma-formatted expectations, not product bugs.
+  Diff a failing probe against the tool spec before believing it.
+- **Dark-data check is cheap and high-yield:** "is the ingested field
+  serialized by the tool AND rendered by the embed?" — the modes `rules` block
+  failed both halves (now fixed + pinned both places). When ingesting new
+  structured data, land the surface wiring (or a backlog entry) in the same PR.
 
 ### Session log — 2026-06-10 (THE TOWERS CUTOVER — Q-0066/Q-0067/Q-0068, PR #649)
 
