@@ -1,13 +1,19 @@
 # Consolidated productive-session plan — 2026-06-09
 
-> **Status:** `plan` — **reasoning + verification record, NOT the execution pointer.**
-> The execution pointer is the multi-lane scoreboard
-> ([`multi-lane-execution-plan-2026-06-09.md`](multi-lane-execution-plan-2026-06-09.md));
-> this doc records *why* the queue looks the way it does, reconciles the 2026-06-09
-> audit burst (#625/#627/#628) against live truth, and hands the next implementation
-> session its prompt. Source-verified at main HEAD `b0c2d07` (the #625 merge).
+> **Status:** `historical` — **queue superseded 2026-06-10.** The scoreboard it fed
+> completed (all 8 lanes shipped) and its §5 gated tail was carried — item by item,
+> with the verified #646/#647 mapping batches — into the one live queue:
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md)
+> (its carried-items table maps every §3/§5 ID to a batch / gate / shipped PR#).
+> Kept as the 2026-06-09 reasoning + verification + decision record. Note: its §3
+> SRV-2 row ("then PR14 unified hub") was already stale at write time — #584 had
+> merged the hub on 2026-06-08.
+>
+> *(Original header:)* reasoning + verification record, NOT the execution pointer;
+> reconciles the 2026-06-09 audit burst (#625/#627/#628) against live truth.
+> Source-verified at main HEAD `b0c2d07` (the #625 merge).
 > Source and merged PRs win over this file.
-> **Last updated:** 2026-06-09.
+> **Last updated:** 2026-06-10 (re-badged historical; content frozen as of 2026-06-09).
 
 ## §1 Verification snapshot
 

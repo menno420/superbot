@@ -7,9 +7,12 @@
 >
 > ---
 >
-> **📦 PR1–PR9 shipped (through 2026-06-06).** This document is the live **scope reference**
-> for the PR sequence; for *what has actually landed and what is next*, read the
-> status tracker: **`docs/planning/server-management-status-2026-06-05.md`**.
+> **📦 Shipped through PR14 (2026-06-08, #584) — the initiative is structurally
+> complete; only PR13's gated AI generation layer remains** *(header updated
+> 2026-06-10; it previously stopped at "PR1–PR9 shipped")*. This document is the
+> **scope reference** for the PR sequence; for *what has actually landed and what
+> is next*, read the status tracker:
+> **`docs/planning/server-management-status-2026-06-05.md`**.
 > Shipped: **PR1** moderation convergence (#521), **PR2** role feasibility +
 > `MultiRoleSelector` (#522, selectors-only slice), **PR3 + PR4** lifecycle contract +
 > `ChannelLifecycleService` channel rename/move/delete (#523, the `.delete`/`.edit`

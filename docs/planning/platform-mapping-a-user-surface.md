@@ -1,6 +1,12 @@
 # Platform mapping A — user surface
 
 > **Status:** `audit` — run 2026-06-09 at HEAD `560e35198c46e5d624344b73e94d17dd16d77dcd`. Mapping-only report for Agent A’s user-facing scope. The binding standard was read from live PR #641 because it was not present at this checkout; its pre-allocated Agent A link is included in this branch.
+>
+> **Post-campaign note (2026-06-10):** the live-PR claims in this report are
+> **mapping-time state** — #638–#645 (including #640/#641/#642, named "open" below)
+> have all merged. Finding dispositions + the live queue:
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md)
+> (Q-A01 → router **Q-0073**; Q-A02/Q-A03 held at their recommended defaults).
 
 ## Executive summary
 

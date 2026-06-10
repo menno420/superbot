@@ -1,6 +1,12 @@
 # Multi-lane autonomous execution plan — 2026-06-09
 
-> **Status:** `plan` — the **launch pad for the autonomous multi-lane test session**
+> **Status:** `historical` — **COMPLETE 2026-06-10: all 8 lanes shipped**
+> (Lane 1 #626 · 2 #632 · 3 #634 · 4 #639 · 5 #633 · 6 #631 · 7 #640 · 8 #642).
+> No longer an execution pointer — the live queue is
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md);
+> kept as the scoreboard record + per-lane executor notes.
+>
+> *(Original header below.)* The **launch pad for the autonomous multi-lane test session**
 > and the **one canonical execution pointer** (cross-session scoreboard).
 > Lanes 1–6 were decided + gate-lifted in the 2026-06-09 interview (router §22 /
 > Q-0044–Q-0051); nothing in them needs a new owner decision unless marked. **Lanes 7–8
@@ -250,9 +256,11 @@
 
 Run the standing END protocol (journal → END) + tick this scoreboard. *(The previous
 tail named the mining Workshop/durability slice + mother-panel live overview as the
-next frontier — those shipped in **#624**, before Lane 1 even landed.)* When every lane
-above is done, the gated tail + next frontier live in
-[`consolidated-productive-session-plan-2026-06-09.md`](consolidated-productive-session-plan-2026-06-09.md)
-§5: Settings Phase 2/3 planning behind **Q-0063/Q-0064** · help overlay behind
-**Q-0055–Q-0059** · adaptive P1C promotion · mining structures / game-XP service —
-see `docs/current-state.md` ▶ Next action.
+next frontier — those shipped in **#624**, before Lane 1 even landed.)*
+
+**Every lane above is done (2026-06-10).** The gated tail that used to live in the
+06-09 consolidated plan §5 was carried — with the verified mapping batches from
+**#646/#647** — into the one live queue:
+[`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md)
+(see its carried-items table for the §5 → batch mapping) — and
+`docs/current-state.md` ▶ Next action.

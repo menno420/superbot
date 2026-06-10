@@ -8,8 +8,9 @@
 > **Sequencing superseded (2026-06-09):** the current settings *build order* is the
 > source-verified Phase 0–6 roadmap in
 > [`docs/planning/settings-cog-centralization-audit-2026-06-09.md`](../planning/settings-cog-centralization-audit-2026-06-09.md)
-> §11 (Phases 0+1 queued as scoreboard **Lane 7** via
-> [`docs/planning/consolidated-productive-session-plan-2026-06-09.md`](../planning/consolidated-productive-session-plan-2026-06-09.md)).
+> §11 — Phases 0+1 **shipped 2026-06-09 (#640)**; **Phase 2 is next**, as Batch 4 of
+> [`docs/planning/consolidated-implementation-plan-2026-06-10.md`](../planning/consolidated-implementation-plan-2026-06-10.md)
+> *(pointer updated 2026-06-10; it previously said "queued as scoreboard Lane 7")*.
 > This file stays the architecture reference for the three lanes + ownership invariants.
 
 Architecture summary and 15-milestone implementation sequence for the **Global

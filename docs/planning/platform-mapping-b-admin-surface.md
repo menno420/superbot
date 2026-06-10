@@ -3,6 +3,14 @@
 > **Status:** `audit` — run 2026-06-10 at HEAD `560e35198c46e5d624344b73e94d17dd16d77dcd` (source baseline includes merged PR #639).
 >
 > Mapping-only Agent B report under the [platform-surface mapping standard](platform-surface-mapping-standard-2026-06-09.md). Source and merged PRs win. Live GitHub was verified through the GitHub API because `gh` and a git remote are unavailable.
+>
+> **Post-campaign note (2026-06-10):** the live-PR claims in this report are
+> **mapping-time state** — #638–#645 (including #638/#640/#641/#642, named "open"
+> below) have all merged; FIND-B02/FIND-B08's "live PR owns it" framing is therefore
+> shipped history. Finding dispositions + the live queue:
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md)
+> (Q-B01 → router **Q-0074**; Q-B02 held at no-behavior-change pending a
+> migration/deprecation posture).
 
 ## Executive summary
 
