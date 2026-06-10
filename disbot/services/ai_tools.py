@@ -1014,6 +1014,12 @@ def _mode_dict(entry: Any) -> dict[str, Any]:
     difficulties = getattr(entry, "difficulties", ())
     if difficulties:
         out["difficulties"] = list(difficulties)
+    # Game-sourced structured rules (the modes cutover): start/end rounds,
+    # cost/speed/income multipliers, locked towers, no-continue/sell/MK flags.
+    # Without this the ingested block is dark to the model.
+    rules = getattr(entry, "rules", None)
+    if rules:
+        out["rules"] = dict(rules)
     return out
 
 

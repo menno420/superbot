@@ -768,6 +768,13 @@ async def test_btd6_mode_lookup_single_and_roster():
     assert chimps["found"] is True
     assert chimps["mode"]["starting_lives"] == 1
     assert chimps["mode"]["restrictions"]
+    # The game-sourced structured rules block must reach the model — it was
+    # ingested at the modes cutover but stayed dark until serialized here.
+    rules = chimps["mode"]["rules"]
+    assert rules["start_round"] == 6 and rules["end_round"] == 100
+    assert rules["no_continues"] and rules["no_selling"]
+    assert rules["no_monkey_knowledge"]
+    assert rules["locked_towers"] == ["BananaFarm"]
     roster = await h["btd6_mode_lookup"]({})
     assert roster["found"] is True and roster["count"] == len(roster["modes"]) >= 2
 

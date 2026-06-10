@@ -88,6 +88,18 @@ def test_diagnostics_embed_lists_entities():
     assert {"Towers", "Heroes", "Maps", "Modes", "Rounds tracked"} <= names
 
 
+def test_diagnostics_embed_fields_fit_discord_limits():
+    # Regression: the Maps field once joined all 86 map names (1059 chars) and
+    # Discord 400s any field over 1024 — !btd6 diagnostics failed to send.
+    # Counts-only keeps it bounded; the full roster lives in build_maps_embed.
+    embed = build_diagnostics_embed()
+    for field in embed.fields:
+        assert len(field.value or "") <= 1024, field.name
+    maps_field = next(f for f in embed.fields if f.name == "Maps")
+    assert "loaded" in maps_field.value
+    assert "Beginner" in maps_field.value
+
+
 def test_towers_embed_has_entries():
     embed = build_towers_embed()
     assert isinstance(embed, discord.Embed)
@@ -98,6 +110,17 @@ def test_modes_embed_has_entries():
     embed = build_modes_embed()
     assert isinstance(embed, discord.Embed)
     assert len(embed.fields) >= 2
+
+
+def test_modes_embed_renders_game_sourced_rules():
+    # The structured rules block (modes cutover) must be user-visible, not
+    # dark data: CHIMPS' field carries the shared formatter's clause line.
+    embed = build_modes_embed()
+    chimps = next(f for f in embed.fields if "CHIMPS" in (f.name or ""))
+    assert "📋" in (chimps.value or "")
+    assert "rounds 6–100" in chimps.value
+    assert "no continues" in chimps.value
+    assert len(chimps.value) <= 1024
 
 
 def test_test_intent_embed_renders_resolver_state():

@@ -392,9 +392,15 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
+      "buffs": [
         {
-          "kind": "CashbackZone"
+          "kind": "CashbackZone",
+          "name": "Sellback rate buff",
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
+          "isGlobal": false,
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -403,15 +409,7 @@
       "targetTypeStrong": true,
       "cashPerRound": 500,
       "code": "004",
-      "crosspath": "0-0-4",
-      "buffs": [
-        {
-          "name": "Sellback rate buff",
-          "maxStacks": 3,
-          "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
-        }
-      ]
+      "crosspath": "0-0-4"
     },
     "005": {
       "placeableOnLand": false,
@@ -462,11 +460,6 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
-        {
-          "kind": "CashbackZone"
-        }
-      ],
       "buffs": [
         {
           "kind": "TradeEmpireBuff",
@@ -481,10 +474,13 @@
           "maxStacks": 20
         },
         {
+          "kind": "CashbackZone",
           "name": "Sellback rate buff",
-          "maxStacks": 3,
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
           "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -864,9 +860,15 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
+      "buffs": [
         {
-          "kind": "CashbackZone"
+          "kind": "CashbackZone",
+          "name": "Sellback rate buff",
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
+          "isGlobal": false,
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -875,15 +877,7 @@
       "targetTypeStrong": true,
       "cashPerRound": 500,
       "code": "014",
-      "crosspath": "0-1-4",
-      "buffs": [
-        {
-          "name": "Sellback rate buff",
-          "maxStacks": 3,
-          "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
-        }
-      ]
+      "crosspath": "0-1-4"
     },
     "015": {
       "placeableOnLand": false,
@@ -957,11 +951,6 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
-        {
-          "kind": "CashbackZone"
-        }
-      ],
       "buffs": [
         {
           "kind": "TradeEmpireBuff",
@@ -976,10 +965,13 @@
           "maxStacks": 20
         },
         {
+          "kind": "CashbackZone",
           "name": "Sellback rate buff",
-          "maxStacks": 3,
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
           "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -1389,9 +1381,15 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
+      "buffs": [
         {
-          "kind": "CashbackZone"
+          "kind": "CashbackZone",
+          "name": "Sellback rate buff",
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
+          "isGlobal": false,
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -1400,15 +1398,7 @@
       "targetTypeStrong": true,
       "cashPerRound": 500,
       "code": "024",
-      "crosspath": "0-2-4",
-      "buffs": [
-        {
-          "name": "Sellback rate buff",
-          "maxStacks": 3,
-          "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
-        }
-      ]
+      "crosspath": "0-2-4"
     },
     "025": {
       "placeableOnLand": false,
@@ -1488,11 +1478,6 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
-        {
-          "kind": "CashbackZone"
-        }
-      ],
       "buffs": [
         {
           "kind": "TradeEmpireBuff",
@@ -1507,10 +1492,13 @@
           "maxStacks": 20
         },
         {
+          "kind": "CashbackZone",
           "name": "Sellback rate buff",
-          "maxStacks": 3,
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
           "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -2952,9 +2940,15 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
+      "buffs": [
         {
-          "kind": "CashbackZone"
+          "kind": "CashbackZone",
+          "name": "Sellback rate buff",
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
+          "isGlobal": false,
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -2963,15 +2957,7 @@
       "targetTypeStrong": true,
       "cashPerRound": 500,
       "code": "104",
-      "crosspath": "1-0-4",
-      "buffs": [
-        {
-          "name": "Sellback rate buff",
-          "maxStacks": 3,
-          "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
-        }
-      ]
+      "crosspath": "1-0-4"
     },
     "105": {
       "placeableOnLand": false,
@@ -3022,11 +3008,6 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
-        {
-          "kind": "CashbackZone"
-        }
-      ],
       "buffs": [
         {
           "kind": "TradeEmpireBuff",
@@ -3041,10 +3022,13 @@
           "maxStacks": 20
         },
         {
+          "kind": "CashbackZone",
           "name": "Sellback rate buff",
-          "maxStacks": 3,
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
           "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -3857,9 +3841,15 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
+      "buffs": [
         {
-          "kind": "CashbackZone"
+          "kind": "CashbackZone",
+          "name": "Sellback rate buff",
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
+          "isGlobal": false,
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,
@@ -3868,15 +3858,7 @@
       "targetTypeStrong": true,
       "cashPerRound": 500,
       "code": "204",
-      "crosspath": "2-0-4",
-      "buffs": [
-        {
-          "name": "Sellback rate buff",
-          "maxStacks": 3,
-          "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
-        }
-      ]
+      "crosspath": "2-0-4"
     },
     "205": {
       "placeableOnLand": false,
@@ -3927,11 +3909,6 @@
           "filterInvisible": false
         }
       ],
-      "zones": [
-        {
-          "kind": "CashbackZone"
-        }
-      ],
       "buffs": [
         {
           "kind": "TradeEmpireBuff",
@@ -3946,10 +3923,13 @@
           "maxStacks": 20
         },
         {
+          "kind": "CashbackZone",
           "name": "Sellback rate buff",
-          "maxStacks": 3,
+          "cashbackZoneMultiplier": 0.04,
+          "cashbackMaxPercent": 0.95,
           "isGlobal": false,
-          "cashbackZoneMultiplier": 0.04
+          "maxStacks": 3,
+          "maxStackSize": 3
         }
       ],
       "targetTypeFirst": true,

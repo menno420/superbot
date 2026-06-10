@@ -190,6 +190,7 @@
         "kind": "RateSupport",
         "rateMultiplier": 0.9,
         "isGlobal": true,
+        "onlyAffectParagon": true,
         "maxStackSize": 0
       },
       {

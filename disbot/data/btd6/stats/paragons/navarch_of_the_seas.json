@@ -897,23 +897,23 @@
         "count": 3
       }
     ],
-    "zones": [
-      {
-        "kind": "CashbackZone"
-      }
-    ],
     "buffs": [
       {
         "kind": "FlagshipAttackSpeedIncrease",
+        "name": "Flagship buff",
         "rateMultiplier": 0.85,
         "isGlobal": true,
-        "maxStackSize": 0
+        "maxStackSize": 0,
+        "maxStacks": 0
       },
       {
         "kind": "FlagshipAttackSpeedIncrease",
+        "name": "Flagship buff",
         "rateMultiplier": 0.85,
         "isGlobal": true,
-        "maxStackSize": 0
+        "onlyAffectParagon": true,
+        "maxStackSize": 0,
+        "maxStacks": 0
       },
       {
         "kind": "TradeEmpireBuff",
@@ -928,16 +928,13 @@
         "maxStacks": 40
       },
       {
-        "name": "Flagship buff",
-        "maxStacks": 0,
-        "isGlobal": true,
-        "rateMultiplier": 0.85
-      },
-      {
+        "kind": "CashbackZone",
         "name": "Sellback rate buff",
-        "maxStacks": 1,
+        "cashbackZoneMultiplier": 0.12,
+        "cashbackMaxPercent": 0.95,
         "isGlobal": false,
-        "cashbackZoneMultiplier": 0.12
+        "maxStacks": 1,
+        "maxStackSize": 1
       }
     ],
     "targetTypeFirst": true,
