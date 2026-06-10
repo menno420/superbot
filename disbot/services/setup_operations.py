@@ -1443,16 +1443,14 @@ async def _apply_set_cog_routing(
     """Persist a cog-routing draft via :mod:`services.command_routing`.
 
     Reads the enabled flag from ``op.metadata["enabled"]`` (the wizard
-    section stages it as a "true"/"false" string), and routes through
-    the existing :func:`services.command_routing.set_policy`
-    primitive.  Emits ``audit.action_recorded`` so the apply is visible
-    in the audit channel.
+    section stages it as a "true"/"false" string), validates the scope,
+    and hands off to :func:`services.command_routing.set_policy` — the
+    canonical routing mutation owner, which performs the write, emits
+    ``audit.action_recorded`` with the real previous value, and returns
+    the typed result this arm consumes.  The dispatcher owns only
+    draft-shape validation/coercion here, not mutation or audit.
     """
-    import uuid
-    from datetime import datetime, timezone
-
     from services import command_routing
-    from services.audit_events import emit_audit_action
 
     scope_kind = (op.target_kind or "").strip().lower()
     if scope_kind not in _ROUTING_SCOPE_TYPES:
@@ -1487,8 +1485,7 @@ async def _apply_set_cog_routing(
     scope_id = op.target_id if scope_kind != "guild" else None
     actor_id = getattr(actor, "id", None)
 
-    mutation_id = str(uuid.uuid4())
-    await command_routing.set_policy(
+    result = await command_routing.set_policy(
         guild_id=guild.id,
         scope_type=scope_kind,
         scope_id=scope_id,
@@ -1496,27 +1493,11 @@ async def _apply_set_cog_routing(
         enabled=enabled,
         actor_id=actor_id,
     )
-    # Routing rows don't ship through a full mutation pipeline yet —
-    # surface the apply via the canonical audit event so dashboards
-    # and the audit channel still see it.
-    await emit_audit_action(
-        mutation_id=mutation_id,
-        subsystem="cog_routing",
-        mutation_type="set_cog_routing",
-        target=f"{scope_kind}:{scope_id if scope_id is not None else 'guild'}:{cog_name}",
-        scope=scope_kind,
-        guild_id=guild.id,
-        prev_value=None,
-        new_value="enabled" if enabled else "disabled",
-        actor_id=actor_id,
-        actor_type="user",
-        occurred_at=datetime.now(tz=timezone.utc),
-    )
     return SetupOperationResult(
         status="applied",
         operation=op,
         label=label,
-        mutation_id=mutation_id,
+        mutation_id=result.mutation_id,
     )
 
 

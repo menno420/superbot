@@ -58,7 +58,7 @@ writes must come from the owning cog or a shared service.
 | `help`         | (none — read-only on registry + governance)  | n/a |
 | `diagnostic`   | (uses `logs` for queries)                    | n/a |
 | `general`      | (loads `data/json/general_content.json`)      | n/a |
-| `role`         | `role_thresholds`, `reaction_roles`            | role create/edit/delete via `services/role_lifecycle_service.py`; `role_thresholds` **writes** via the audited `services/role_automation.set_{time,xp}_threshold` seam (P0C, #592 — drift-fenced; see the "Role-threshold writes — NORMALIZED" note in the Known-drift list below); reads + `reaction_roles` direct via `utils/db/roles.py`. Time/XP tiers are **id-keyed dual-read** (migration 056: nullable `role_id`/`display_name`; resolved id-first, normalized-name fallback) and tier removal uses the field-specific `clear_role_time_threshold` / `clear_role_xp_threshold` — never the destructive full-row delete |
+| `role`         | `role_thresholds`, `reaction_roles`            | role create/edit/delete via `services/role_lifecycle_service.py`; `role_thresholds` **writes** via the audited `services/role_automation` seam — `set_{time,xp}_threshold` (P0C, #592) **and** the field-specific `clear_{time,xp}_threshold` (Batch 3/RS06, 2026-06-10) — drift-fenced; see the "Role-threshold writes — NORMALIZED" note in the Known-drift list below; reads + `reaction_roles` direct via `utils/db/roles.py`. Time/XP tiers are **id-keyed dual-read** (migration 056: nullable `role_id`/`display_name`; resolved id-first, normalized-name fallback) and tier removal stays field-specific — never the destructive full-row delete |
 | `moderation`   | `warnings`, `mod_logs`                         | `services/moderation_service.py` (preferred); `utils/db/moderation.py` direct for read-only / legacy callers |
 | `xp`           | `xp.xp`, `xp.level`, `xp.messages`, `xp.last_xp` | `services/xp_service.py` |
 | `economy`      | `economy`, `job_progress`, `economy_audit_log`   | `services/economy_service.py` |
@@ -106,6 +106,7 @@ writes must come from the owning cog or a shared service.
 | `capability_execution_overrides` | `GovernanceMutationPipeline` | only the pipeline. |
 | `governance_audit_log` | `GovernanceMutationPipeline` | append-only via the pipeline; never updated or deleted. |
 | `governance_templates` | `governance.templates` | only the template API. |
+| `command_routing_policy` | `services/command_routing.py` (`set_policy` — owns the old-value read, `audit.action_recorded` emission with real `prev_value`, and the typed `RoutingMutationResult`; Batch 3/RS03, 2026-06-10) | only the service — direct `utils.db.command_routing` imports outside it fail `tests/unit/invariants/test_no_direct_command_routing_writes.py`. The setup dispatcher's `set_cog_routing` arm consumes the result; it no longer owns mutation IDs or audit. |
 | `economy_audit_log` | `services/economy_service.py` | append-only inside the service. |
 | `game_state` | `services/game_state_service.py` | only the service.  JSONB payload per (guild, user, channel, subsystem). |
 | `schema_migrations` | `utils/db/migrations.py` | only the migration runner. |
@@ -368,8 +369,12 @@ per-surface map in
   cache). The single canonical seam a future profile/routine draft compiles into now
   exists. The convergence is locked by
   `tests/unit/invariants/test_no_direct_role_threshold_writes.py` — its allowlist is
-  now **empty**, so *any* direct `utils.db.roles.set_role_threshold*` call from the
-  role command/view surface fails CI.
+  now **empty**, so *any* direct threshold-primitive call from the role command/view
+  surface fails CI. **Widened 2026-06-10 (Batch 3, RS06):** the three field-specific
+  *clear* sites (both remove-selects + `!unsetrole`) converged onto the new audited
+  `role_automation.clear_{time,xp}_threshold` methods (old-value read → clear →
+  XP-cache invalidate → audit emit), and the invariant now fences **every** threshold
+  mutation primitive — setters, clears, and the full-row `remove_role_threshold`.
 - ⏳ **Channel create/edit lifecycle — still mixed.** Several channel create/edit
   paths mix direct Discord calls with `ChannelLifecycleService`; this must converge on
   a canonical audited writer **before** any profile/routine is allowed to drive channel

@@ -812,6 +812,107 @@ async def set_xp_threshold(
     return mutation_id
 
 
+async def _threshold_row(guild_id: int, role_name: str) -> dict | None:
+    """Return the stored threshold row for ``role_name``, or ``None``.
+
+    Exact-name match: every clear caller passes the stored ``role_name``
+    (panel selects are built from the rows; the legacy command resolves
+    the stored name before calling).
+    """
+    from utils.db import roles as roles_db
+
+    rows = await roles_db.get_role_thresholds(guild_id)
+    return next((r for r in rows if r["role_name"] == role_name), None)
+
+
+async def clear_time_threshold(
+    *,
+    guild_id: int,
+    role_name: str,
+    actor_id: int | None,
+    actor_type: str = "user",
+) -> str:
+    """Clear a role's *time* tier (field-specific; preserves any XP tier).
+
+    The audited counterpart to :func:`set_time_threshold` for removals:
+    reads the old row (real ``prev_value`` + id-keyed audit target),
+    clears via the field-specific
+    :func:`utils.db.roles.clear_role_time_threshold` (the row drops only
+    when no XP tier remains), refreshes the F-1 XP-role cache (the drop
+    can remove a row the cache derives from), then emits the audit
+    companion.  Returns the ``mutation_id``.
+    """
+    import uuid
+
+    from utils.db import roles as roles_db
+    from utils.guild_config_accessors import invalidate_xp_threshold_roles
+
+    old = await _threshold_row(guild_id, role_name)
+    mutation_id = str(uuid.uuid4())
+    await roles_db.clear_role_time_threshold(guild_id, role_name)
+    invalidate_xp_threshold_roles(guild_id)
+    role_id = old.get("role_id") if old else None
+    prev_days = old.get("days_required") if old else None
+    await emit_audit_action(
+        mutation_id=mutation_id,
+        subsystem="role_automation",
+        mutation_type="clear_time_threshold",
+        target=f"role:{role_id}" if role_id is not None else f"role:{role_name}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=f"{prev_days}d" if prev_days is not None else None,
+        new_value=None,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=datetime.now(tz=timezone.utc),
+    )
+    return mutation_id
+
+
+async def clear_xp_threshold(
+    *,
+    guild_id: int,
+    role_name: str,
+    actor_id: int | None,
+    actor_type: str = "user",
+) -> str:
+    """Clear a role's *XP* automation (field-specific; preserves any time tier).
+
+    The audited counterpart to :func:`set_xp_threshold` for removals:
+    reads the old row (real ``prev_value`` + id-keyed audit target),
+    clears via the field-specific
+    :func:`utils.db.roles.clear_role_xp_threshold` (the row drops only
+    when no time tier remains), invalidates the XP-threshold cache so
+    the live XP listener picks the change up, then emits the audit
+    companion.  Returns the ``mutation_id``.
+    """
+    import uuid
+
+    from utils.db import roles as roles_db
+    from utils.guild_config_accessors import invalidate_xp_threshold_roles
+
+    old = await _threshold_row(guild_id, role_name)
+    mutation_id = str(uuid.uuid4())
+    await roles_db.clear_role_xp_threshold(guild_id, role_name)
+    invalidate_xp_threshold_roles(guild_id)
+    role_id = old.get("role_id") if old else None
+    prev_level = old.get("level_required") if old else None
+    await emit_audit_action(
+        mutation_id=mutation_id,
+        subsystem="role_automation",
+        mutation_type="clear_xp_threshold",
+        target=f"role:{role_id}" if role_id is not None else f"role:{role_name}",
+        scope="guild",
+        guild_id=guild_id,
+        prev_value=f"L{prev_level}" if prev_level is not None else None,
+        new_value=None,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=datetime.now(tz=timezone.utc),
+    )
+    return mutation_id
+
+
 __all__ = [
     "ApplyError",
     "ApplyResult",
@@ -820,6 +921,8 @@ __all__ = [
     "RoleThreshold",
     "apply",
     "check_preflight",
+    "clear_time_threshold",
+    "clear_xp_threshold",
     "compute_assignments",
     "explain_assignment_for",
     "set_time_threshold",

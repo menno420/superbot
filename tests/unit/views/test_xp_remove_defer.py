@@ -6,7 +6,8 @@ window expired and the admin saw "Interaction Failed". The fix wraps
 the write in `safe_defer(ephemeral=True)` so the reply routes through
 `safe_followup` once the write completes. (PR5 switched the write from
 `set_role_xp_threshold` to the field-specific `clear_role_xp_threshold`;
-the ACK ordering is unchanged.)
+Batch 3 (RS06) moved the clear behind the audited
+`role_automation.clear_xp_threshold` seam; the ACK ordering is unchanged.)
 """
 
 from __future__ import annotations
@@ -42,8 +43,9 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
         order.append(f"defer(ephemeral={ephemeral})")
         return True
 
-    async def _set(*_a, **_kw):
-        order.append("clear_role_xp_threshold")
+    async def _clear(*_a, **_kw):
+        order.append("clear_xp_threshold")
+        return "mutation-id"
 
     async def _followup(*_a, **_kw):
         order.append("followup")
@@ -58,17 +60,22 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
             "views.roles.xp_roles_panel.safe_followup",
             AsyncMock(side_effect=_followup),
         ),
-        patch("views.roles.xp_roles_panel.db") as mock_db,
+        patch(
+            "views.roles.xp_roles_panel.role_automation.clear_xp_threshold",
+            AsyncMock(side_effect=_clear),
+        ) as clear,
         patch("views.roles.xp_roles_panel.invalidate_xp_threshold_roles") as inval,
     ):
-        mock_db.clear_role_xp_threshold = AsyncMock(side_effect=_set)
         await _XpRemoveSelect.callback(select, interaction)
 
     assert order == [
         "defer(ephemeral=True)",
-        "clear_role_xp_threshold",
+        "clear_xp_threshold",
         "followup",
     ], order
+    assert clear.await_args.kwargs["guild_id"] == 99
+    assert clear.await_args.kwargs["role_name"] == "Veteran"
+    assert clear.await_args.kwargs["actor_id"] == 1
     defer.assert_awaited_once()
     inval.assert_called_once_with(99)
     select._panel._rerender.assert_awaited_once()

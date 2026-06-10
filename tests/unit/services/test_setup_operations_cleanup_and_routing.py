@@ -9,9 +9,10 @@ Review uses:
   handles the atomic DB write + governance audit row +
   ``audit.action_recorded`` event.
 * ``set_cog_routing`` goes through
-  :func:`services.command_routing.set_policy`, with an
-  ``audit.action_recorded`` event emitted alongside so the apply is
-  visible in the audit channel.
+  :func:`services.command_routing.set_policy` — since Batch 3 (RS03)
+  the **service** owns the mutation_id, the old-value read, and the
+  ``audit.action_recorded`` emission; the dispatcher only validates the
+  draft shape and consumes the typed ``RoutingMutationResult``.
 
 The tests stay asyncpg-free by patching the canonical writers.
 """
@@ -23,6 +24,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from services.command_routing import RoutingMutationResult
 from services.setup_operations import (
     _KNOWN_KINDS,
     SetupOperation,
@@ -38,6 +40,22 @@ def _guild(guild_id: int = 1, owner_id: int = 99):
 
 def _actor(actor_id: int = 99):
     return SimpleNamespace(id=actor_id)
+
+
+def _routing_result(**overrides) -> RoutingMutationResult:
+    """A realistic service result for mocked ``set_policy`` calls."""
+    base: dict = {
+        "mutation_id": "rm-test-1",
+        "guild_id": 1,
+        "scope_type": "guild",
+        "scope_id": None,
+        "cog_name": "games",
+        "old_enabled": None,
+        "new_enabled": False,
+        "audit_emitted": True,
+    }
+    base.update(overrides)
+    return RoutingMutationResult(**base)
 
 
 # ---------------------------------------------------------------------------
@@ -284,7 +302,7 @@ async def test_set_cog_routing_routes_through_command_routing_service():
     with (
         patch(
             "services.command_routing.set_policy",
-            new_callable=AsyncMock,
+            AsyncMock(return_value=_routing_result()),
         ) as set_policy,
         patch(
             "services.audit_events.emit_audit_action",
@@ -303,9 +321,9 @@ async def test_set_cog_routing_routes_through_command_routing_service():
     assert kwargs["actor_id"] == 99
     assert len(batch.applied) == 1
     assert batch.applied[0].status == "applied"
-    # The dispatcher generates a mutation_id even though routing rows
-    # don't ship through a full mutation pipeline.
-    assert batch.applied[0].mutation_id
+    # The mutation_id is owned by the routing service (Batch 3, RS03) and
+    # surfaced through the dispatcher result unchanged.
+    assert batch.applied[0].mutation_id == "rm-test-1"
 
 
 @pytest.mark.asyncio
@@ -320,7 +338,7 @@ async def test_set_cog_routing_default_enabled_true_when_metadata_missing():
     with (
         patch(
             "services.command_routing.set_policy",
-            new_callable=AsyncMock,
+            AsyncMock(return_value=_routing_result(new_enabled=True)),
         ) as set_policy,
         patch(
             "services.audit_events.emit_audit_action",
@@ -342,7 +360,7 @@ async def test_set_cog_routing_handles_bool_enabled_metadata():
     with (
         patch(
             "services.command_routing.set_policy",
-            new_callable=AsyncMock,
+            AsyncMock(return_value=_routing_result()),
         ) as set_policy,
         patch(
             "services.audit_events.emit_audit_action",
@@ -363,7 +381,11 @@ async def test_set_cog_routing_passes_scope_id_for_non_guild_scopes():
     with (
         patch(
             "services.command_routing.set_policy",
-            new_callable=AsyncMock,
+            AsyncMock(
+                return_value=_routing_result(
+                    scope_type="channel", scope_id=555, cog_name="economy",
+                ),
+            ),
         ) as set_policy,
         patch(
             "services.audit_events.emit_audit_action",
@@ -377,9 +399,16 @@ async def test_set_cog_routing_passes_scope_id_for_non_guild_scopes():
 
 
 @pytest.mark.asyncio
-async def test_set_cog_routing_emits_audit_action_event():
-    """Routing apply must surface in the canonical audit stream so the
-    audit channel and audit-row dashboards see it.
+async def test_set_cog_routing_audit_is_owned_by_the_routing_service():
+    """The dispatcher must NOT emit its own routing audit (Batch 3, RS03).
+
+    Audit emission — with the real previous value — lives inside
+    ``services.command_routing.set_policy``; the dispatcher consumes the
+    typed result.  With ``set_policy`` mocked out, no
+    ``audit.action_recorded`` emission may originate from the dispatcher
+    (the pre-Batch-3 arm emitted one itself, with ``prev_value=None``).
+    The emission content itself is pinned in
+    ``tests/unit/services/test_command_routing.py``.
     """
     op = SetupOperation(
         kind="set_cog_routing", subsystem="cog_routing",
@@ -389,22 +418,20 @@ async def test_set_cog_routing_emits_audit_action_event():
     with (
         patch(
             "services.command_routing.set_policy",
-            new_callable=AsyncMock,
+            AsyncMock(
+                return_value=_routing_result(
+                    scope_type="channel", scope_id=999, mutation_id="rm-svc-7",
+                ),
+            ),
         ),
         patch(
             "services.audit_events.emit_audit_action",
             new_callable=AsyncMock,
         ) as emit,
     ):
-        await apply_operations([op], guild=_guild(), actor=_actor())
-    emit.assert_awaited_once()
-    kwargs = emit.await_args.kwargs
-    assert kwargs["subsystem"] == "cog_routing"
-    assert kwargs["mutation_type"] == "set_cog_routing"
-    assert kwargs["scope"] == "channel"
-    assert kwargs["guild_id"] == 1
-    assert kwargs["actor_id"] == 99
-    assert kwargs["new_value"] == "disabled"
+        batch = await apply_operations([op], guild=_guild(), actor=_actor())
+    emit.assert_not_awaited()
+    assert batch.applied[0].mutation_id == "rm-svc-7"
 
 
 @pytest.mark.asyncio
