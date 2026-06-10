@@ -1,10 +1,10 @@
 {
   "hero_id": "gwendolin",
   "canonical": "Gwendolin",
-  "game_version": "52.2",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "base_cost": 725,
-  "cost_chimps": null,
+  "cost_chimps": 725,
   "levels": {
     "1": {
       "placeableOnLand": true,
@@ -12,6 +12,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -21,7 +23,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 2,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -29,7 +31,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -39,7 +40,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 200,
-              "lifespan": 1
+              "lifespan": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -51,8 +53,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -66,6 +66,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -75,7 +77,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 3,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -83,7 +85,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -93,7 +94,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 200,
-              "lifespan": 1
+              "lifespan": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -105,8 +107,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -120,6 +120,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -129,7 +131,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 3,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -137,7 +139,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -147,7 +148,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 200,
-              "lifespan": 1
+              "lifespan": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -159,61 +161,54 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 20,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 15,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.2,
-                  "clearHitBloonsInterval": 0.2
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 3,
       "description": "Cocktail of Fire: Hurls a flask of flammable liquid, burning Bloons that pass through the fire."
     },
@@ -223,6 +218,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -231,6 +228,27 @@
           "fireWithoutTarget": false,
           "fireBetweenRounds": false,
           "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 1,
+              "filterInvisible": true
+            },
             {
               "name": "Heat It Up",
               "pierce": 100,
@@ -240,8 +258,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 38,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -250,8 +266,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -260,71 +275,57 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 20,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 15,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.2,
-                  "clearHitBloonsInterval": 0.2
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 4,
       "description": "Heat it up - Every 40 attacks Gwendolin creates a powerful blast wave of fire that pops Bloons and adds fire to nearby Monkeys’ attacks."
     },
@@ -334,6 +335,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -343,7 +346,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -351,7 +354,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -361,7 +363,27 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 200,
-              "lifespan": 1
+              "lifespan": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 38,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -370,71 +392,57 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 20,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 15,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.2,
-                  "clearHitBloonsInterval": 0.2
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 5,
       "description": "Increased popping power. 10% improved attack speed and radius for Ring of Fire, Signal Flare and Dragon's Breath."
     },
@@ -444,6 +452,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -453,7 +463,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -461,7 +471,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -472,24 +481,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 1,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 3.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 3.05
                 }
               ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 38,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -498,71 +515,57 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 20,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 15,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.2,
-                  "clearHitBloonsInterval": 0.2
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 6,
       "description": "Attacks cause a burn effect on target Bloon."
     },
@@ -572,117 +575,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
-      "attacks": [
-        {
-          "name": "Attack",
-          "rate": 0.5,
-          "eject": "-1.3, 15, 9",
-          "fireWithoutTarget": false,
-          "fireBetweenRounds": false,
-          "projectiles": [
-            {
-              "name": "Heat It Up",
-              "pierce": 100,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 43,
-              "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 3,
-              "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "count": 1,
-          "targetTypes": "Depends on targeting option",
-          "range": 38,
-          "attackThroughWalls": false,
-          "framesBeforeRetarget": 0,
-          "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
-        }
-      ],
       "footprintRadius": 7,
       "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Cocktail of Fire",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 40,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOfftrack": true
-            }
-          ]
-        }
-      ],
-      "level": 7,
-      "description": "Heat it up has increased radius, Cocktail of Fire is more effective."
-    },
-    "8": {
-      "placeableOnLand": true,
-      "placeableOnWater": false,
-      "placeableOnTrack": false,
-      "range": 38,
-      "towerSelectionMenuThemeId": "SelectPointInput",
       "attacks": [
         {
           "name": "Attack",
@@ -692,7 +586,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -700,7 +594,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -711,27 +604,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 1,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 3.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 3.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 43,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -740,80 +638,68 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 40,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
             }
           ]
         }
       ],
-      "level": 8,
-      "description": "Shoots 2 blasts of fire per shot."
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 7,
+      "description": "Heat it up has increased radius, Cocktail of Fire is more effective."
     },
-    "9": {
+    "8": {
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -823,7 +709,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -831,7 +717,129 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 200,
+              "lifespan": 1,
               "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 3.05
+                }
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 43,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 38,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Cocktail of Fire",
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 8,
+      "description": "Shoots 2 blasts of fire per shot."
+    },
+    "9": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 38,
+      "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.5,
+          "eject": "-1.3, 15, 9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -842,27 +850,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 1,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 2,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 4.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 43,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -871,71 +884,57 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 40,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 38,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 9,
       "description": "Initial hit per blast pops 1 extra layer. Gains increased burn damage and duration for every level."
     },
@@ -945,6 +944,8 @@
       "placeableOnTrack": false,
       "range": 38,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -954,7 +955,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -962,7 +963,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -973,27 +973,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 1,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 5.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 3,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 5.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 43,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1002,29 +1007,55 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
+        {
+          "name": "Cocktail of Fire",
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
+        },
         {
           "name": "Firestorm",
           "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
           "projectiles": [
             {
               "name": "Projectile",
@@ -1035,26 +1066,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 8.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 2,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 0.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 5,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1063,11 +1074,16 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             },
             {
-              "name": "MOAB projectile",
+              "name": "Projectile",
               "pierce": 9999999,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1075,26 +1091,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 1,
-                  "lifespan": 8.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 15,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutNonMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 20,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1103,19 +1099,21 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 10,
       "description": "Firestorm: Sets the whole screen alight, burning all Bloons and granting the Heat It Up buff to all Monkeys."
     },
@@ -1125,6 +1123,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1134,29 +1134,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Heat It Up",
-              "pierce": 100,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 46,
-              "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 3,
-              "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            },
-            {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1164,7 +1142,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1175,27 +1152,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 1,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 6.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 4,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 6.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1204,71 +1186,113 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
+        },
+        {
+          "name": "Firestorm",
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
+            },
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 11,
       "description": "Increased attack range, and Cocktail of Fire is more effective."
     },
@@ -1278,6 +1302,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1287,29 +1313,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Heat It Up",
-              "pierce": 100,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 46,
-              "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 10,
-              "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            },
-            {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1317,7 +1321,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1328,27 +1331,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 1,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 7.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 5,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 7.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1357,71 +1365,113 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
+        },
+        {
+          "name": "Firestorm",
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
+            },
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 12,
       "description": "Increased attack speed and increases damage of Heat it Up."
     },
@@ -1431,6 +1481,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1440,7 +1492,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1448,7 +1500,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1459,27 +1510,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 8.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 6,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 8.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1488,71 +1544,113 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 1,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
+        },
+        {
+          "name": "Firestorm",
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
+            },
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 13,
       "description": "Greatly increased popping power, plus projectiles move faster and last longer."
     },
@@ -1562,6 +1660,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1571,7 +1671,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1579,7 +1679,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1590,27 +1689,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 9.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 7,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 9.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1619,91 +1723,119 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 2,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1,
-                  "effects": [
-                    {
-                      "name": "Damage over time",
-                      "layers": 1,
-                      "lifespan": 10.05,
-                      "glueLevel": 0,
-                      "applyOnlyIfDamaged": false,
-                      "chance": 0,
-                      "filterOutNonMoabs": true,
-                      "damage": 5,
-                      "damage_type": "Fire",
-                      "cannot_pop": "Cannot damage Purple",
-                      "immuneBloonProperties": 8,
-                      "interval": 1,
-                      "initialDelay": 0,
-                      "triggerImmediate": false,
-                      "distributeToChildren": true
-                    }
-                  ],
-                  "filterOutNonMoabs": true
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Firestorm",
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
+            },
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 14,
       "description": "Cocktail of Fire does extra damage and sets MOAB class Bloons alight."
     },
@@ -1713,6 +1845,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1722,29 +1856,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Heat It Up",
-              "pierce": 100,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 46,
-              "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 20,
-              "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            },
-            {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1752,7 +1864,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Fire",
@@ -1763,27 +1874,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 8,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 10.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1792,91 +1908,119 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 2,
-                  "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1,
-                  "effects": [
-                    {
-                      "name": "Damage over time",
-                      "layers": 1,
-                      "lifespan": 10.05,
-                      "glueLevel": 0,
-                      "applyOnlyIfDamaged": false,
-                      "chance": 0,
-                      "filterOutNonMoabs": true,
-                      "damage": 5,
-                      "damage_type": "Fire",
-                      "cannot_pop": "Cannot damage Purple",
-                      "immuneBloonProperties": 8,
-                      "interval": 1,
-                      "initialDelay": 0,
-                      "triggerImmediate": false,
-                      "distributeToChildren": true
-                    }
-                  ],
-                  "filterOutNonMoabs": true
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Firestorm",
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
+            },
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 8.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 15,
       "description": "Increased attack speed and increases damage of Heat it Up."
     },
@@ -1886,6 +2030,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1895,29 +2041,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Heat It Up",
-              "pierce": 100,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 46,
-              "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 20,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            },
-            {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1925,7 +2049,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -1936,27 +2059,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 11.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 9,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 11.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1965,96 +2093,61 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 2,
-                  "maxDamage": 0,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1,
-                  "effects": [
-                    {
-                      "name": "Damage over time",
-                      "layers": 1,
-                      "lifespan": 10.05,
-                      "glueLevel": 0,
-                      "applyOnlyIfDamaged": false,
-                      "chance": 0,
-                      "filterOutNonMoabs": true,
-                      "damage": 5,
-                      "damage_type": "Normal",
-                      "cannot_pop": "Can damage any Bloon type",
-                      "immuneBloonProperties": 0,
-                      "interval": 1,
-                      "initialDelay": 0,
-                      "triggerImmediate": false,
-                      "distributeToChildren": true
-                    }
-                  ],
-                  "filterOutNonMoabs": true
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             }
           ]
         },
         {
           "name": "Firestorm",
           "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
           "projectiles": [
             {
               "name": "Projectile",
@@ -2065,26 +2158,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 5,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 0.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 5,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2093,11 +2166,16 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             },
             {
-              "name": "MOAB projectile",
+              "name": "Projectile",
               "pierce": 9999999,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2105,26 +2183,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 1,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 20,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutNonMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 20,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2133,19 +2191,21 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "buffs": [
-            {
-              "name": "Pierce buff",
-              "lifespan": 8,
-              "pierceAdditive": 1
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 16,
       "description": "Firestorm has increased duration and does more damage. Purple Bloons are no longer immune to Gwendolin's attacks."
     },
@@ -2155,6 +2215,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2164,7 +2226,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -2172,7 +2234,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2183,178 +2244,14 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 12.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 10,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 12.05
                 }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
-            }
-          ],
-          "count": 1,
-          "targetTypes": "Depends on targeting option",
-          "range": 41,
-          "attackThroughWalls": false,
-          "framesBeforeRetarget": 0,
-          "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
+              ]
             },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
-            }
-          ]
-        }
-      ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Firestorm",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 9999999,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 9999999,
-              "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 5,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 0.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutMoabs": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 5,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            },
-            {
-              "name": "MOAB projectile",
-              "pierce": 9999999,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 9999999,
-              "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 1,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 20,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutNonMoabs": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 20,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
-            }
-          ]
-        }
-      ],
-      "level": 17,
-      "description": "Heat it up empowers affected Monkeys to pop 1 extra layer, and do +2 damage to Lead Bloons."
-    },
-    "18": {
-      "placeableOnLand": true,
-      "placeableOnWater": false,
-      "placeableOnTrack": false,
-      "range": 41,
-      "towerSelectionMenuThemeId": "SelectPointInput",
-      "attacks": [
-        {
-          "name": "Attack",
-          "rate": 0.15,
-          "eject": "-1.3, 16, 10",
-          "fireWithoutTarget": false,
-          "fireBetweenRounds": false,
-          "projectiles": [
             {
               "name": "Heat It Up",
               "pierce": 100,
@@ -2364,9 +2261,7 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 46,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "filterBloonIfDamageType": "Purple",
-              "damage": 30,
+              "damage": 20,
               "maxDamage": 0,
               "damage_type": "Normal",
               "cannot_pop": "Can damage any Bloon type",
@@ -2374,50 +2269,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            },
-            {
-              "name": "Projectile",
-              "pierce": 8,
-              "maxPierce": 0,
-              "ignoreBlockers": false,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 2,
-              "vsBlockerRadius": 0,
-              "filterInvisible": true,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "speed": 250,
-              "lifespan": 1.25,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 13.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 11,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "count": 2,
-              "spreadLength": 6,
-              "offset": -3
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -2426,35 +2278,61 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
+        {
+          "name": "Cocktail of Fire",
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            }
+          ]
+        },
         {
           "name": "Firestorm",
           "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
           "projectiles": [
             {
               "name": "Projectile",
@@ -2465,26 +2343,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 5,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 0.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 5,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2493,11 +2351,16 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             },
             {
-              "name": "MOAB projectile",
+              "name": "Projectile",
               "pierce": 9999999,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2505,26 +2368,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 1,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 20,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutNonMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 20,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2533,34 +2376,32 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             }
           ]
         }
       ],
-      "level": 18,
-      "description": "Increased attack speed and increases damage of Heat it Up. 20% improved attack speed and radius for Ring of Fire, Signal Flare and Dragon's Breath."
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 17,
+      "description": "Heat it up empowers affected Monkeys to pop 1 extra layer, and do +2 damage to Lead Bloons."
     },
-    "19": {
+    "18": {
       "placeableOnLand": true,
       "placeableOnWater": false,
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2570,7 +2411,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -2578,7 +2419,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2589,27 +2429,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 14.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 12,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 13.05
                 }
-              ],
-              "count": 3,
-              "spreadLength": 6,
-              "offset": -6
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -2618,35 +2463,61 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
+        {
+          "name": "Cocktail of Fire",
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            }
+          ]
+        },
         {
           "name": "Firestorm",
           "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
           "projectiles": [
             {
               "name": "Projectile",
@@ -2657,26 +2528,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 5,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 0.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 5,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2685,11 +2536,16 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             },
             {
-              "name": "MOAB projectile",
+              "name": "Projectile",
               "pierce": 9999999,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2697,26 +2553,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 1,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 20,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutNonMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 20,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2725,25 +2561,206 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "level": 18,
+      "description": "Increased attack speed and increases damage of Heat it Up. 20% improved attack speed and radius for Ring of Fire, Signal Flare and Dragon's Breath."
+    },
+    "19": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 41,
+      "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 0.15,
+          "eject": "-1.3, 16, 10",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 8,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 250,
+              "lifespan": 1.25,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 14.05
+                }
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 41,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": true
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Cocktail of Fire",
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Firestorm",
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            },
+            {
+              "name": "Projectile",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 9999999,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 19,
       "description": "Shoots 3 blasts of fire per shot."
     },
@@ -2753,6 +2770,8 @@
       "placeableOnTrack": false,
       "range": 41,
       "towerSelectionMenuThemeId": "SelectPointInput",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2762,7 +2781,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -2770,7 +2789,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2781,27 +2799,32 @@
               "ignoreImmunityDestroy": false,
               "speed": 250,
               "lifespan": 1.25,
+              "filterInvisible": true,
               "effects": [
                 {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 15.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": true,
-                  "chance": 0,
-                  "damage": 13,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Fire",
+                  "lifespan": 15.05
                 }
-              ],
-              "count": 3,
-              "spreadLength": 6,
-              "offset": -6
+              ]
+            },
+            {
+              "name": "Heat It Up",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 46,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -2810,102 +2833,61 @@
           "attackThroughWalls": false,
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
-          "filterInvisible": true,
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
-            }
-          ]
+          "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Cocktail of Fire",
           "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
+          "projectiles": [
             {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Projectile",
-                  "pierce": 60,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 20,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "damage": 5,
-                  "maxDamage": 0,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "rounds": 9999999,
-                  "lifespan": 12,
-                  "refreshPierceInterval": 0.1,
-                  "clearHitBloonsInterval": 0.1,
-                  "effects": [
-                    {
-                      "name": "Damage over time",
-                      "layers": 1,
-                      "lifespan": 10.05,
-                      "glueLevel": 0,
-                      "applyOnlyIfDamaged": false,
-                      "chance": 0,
-                      "filterOutNonMoabs": true,
-                      "damage": 8,
-                      "damage_type": "Normal",
-                      "cannot_pop": "Can damage any Bloon type",
-                      "immuneBloonProperties": 0,
-                      "interval": 1,
-                      "initialDelay": 0,
-                      "triggerImmediate": false,
-                      "distributeToChildren": true
-                    }
-                  ],
-                  "filterOutNonMoabs": true
-                }
-              ],
-              "count": 1,
-              "targetTypes": "Locked / Track or Default",
-              "range": 41,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
               "filterInvisible": false,
-              "filterOfftrack": true
+              "effects": [
+                {
+                  "name": "CocktailOfFire",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "FireSplash",
+              "pierce": 60,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 20,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             }
           ]
         },
         {
           "name": "Firestorm",
           "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
           "projectiles": [
             {
               "name": "Projectile",
@@ -2916,26 +2898,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 9999999,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 15,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 0.5,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 10,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2944,11 +2906,16 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             },
             {
-              "name": "MOAB projectile",
+              "name": "Projectile",
               "pierce": 9999999,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2956,26 +2923,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 9999999,
               "vsBlockerRadius": 0,
-              "effects": [
-                {
-                  "name": "Damage over time",
-                  "layers": 1,
-                  "lifespan": 10.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 30,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
-                  "interval": 1,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
-                }
-              ],
-              "filterOutNonMoabs": true,
-              "filterBloonIfDamageType": "Purple",
               "damage": 50,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2984,25 +2931,21 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.05
-            }
-          ],
-          "buffs": [
-            {
-              "name": "Damage buff",
-              "lifespan": 8,
-              "damageAdditive": 1
-            },
-            {
-              "name": "Damage bonus buff",
-              "lifespan": 8,
-              "pierceAdditive": 2,
-              "damageAdditiveForLeadOrDdt": 2
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Fire",
+                  "lifespan": 10.05
+                }
+              ]
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 20,
       "description": "Firestorm does hugely increased damage."
     }

@@ -143,22 +143,28 @@ long tail is tower-specific (`ObynBuffModel`, `EziliSupportModel`,
 `MonkeyFanClubModel`, `TradeEmpireBuffModel`, …) — map the common core well,
 emit a name-only node (via `buffLocsName`) for the tail.
 
-## Cutover plan (phased)
+## Cutover plan (phased) — **EXECUTED through the towers/heroes/paragons cutover (PR #649, 2026-06-10)**
 
 1. **Game-native names + descriptions in the mapper** — ability `displayName`,
    upgrade `LocsKey` → name/description. ✅ Generated heroes re-emitted with real
    ability names.
-2. **Subtowers** — common spawn models → minion stats. ✅ **(this PR)** Generated
-   heroes (obyn/etienne/ezili) re-emitted with their totems/UAV.
-3. **Zones + buffs** — map per the table above (+ the alchemist/beast subtower
-   tail). This *completes the structural map* and unblocks the cutover.
-4. **Towers cutover** — adopt `parse_gamedata.py --all` output as the committed
-   tower stats (game-native ids/structure/values), do the runtime adaptations
-   above, update value-pinned tests. Audit (`--audit`) gates the numbers.
-3. **Heroes + paragons cutover** + wire `textTable` descriptions into grounding
-   and the detail UI (answers "what does upgrade/ability X do?" from the game).
-4. **Bloons / bosses** from `BloonModel`; then the other domains as needed.
+2. **Subtowers** — common spawn models → minion stats. ✅ All 7 spawn mechanisms
+   (#638); `CreateTypedTowerModel` (engineer tier-4 sentries) remains the one
+   carried-forward gap.
+3. **Zones + buffs** — ✅ enough for the cutover (15/38 buff types + presence
+   flags decoded; game-native zone emission with `inclusive`); the undecoded
+   tail is preserved via the cutover merge's carry-forwards.
+4. **Towers cutover** — ✅ **PR #649**: `parse_gamedata.py --all` output IS the
+   committed stats, written through the cutover merge (`cutover_payload`:
+   curated names/keys/cards preserved, set-level name guard across all 55
+   entities), runtime adaptations done, value-pinned tests updated.
+   Post-cutover `--audit`: 76 CLEAN · 9 DELTA · 0 SUSPECT.
+5. **Heroes + paragons cutover** — ✅ same PR: all 17 heroes one provenance;
+   all 13 paragons' combat bases module-exact (curated cost/name/xp metadata
+   kept; the two article-prose bases re-sourced from game data).
+6. **Bloons / bosses** — ✅ earlier (`--bloons` children/immunity/health/speed
+   overlay; `--bosses` catalog); remaining domains per the coverage map.
 
-Until a phase lands, the conservative overlay (`--overlay`) keeps the
-uniquely-keyed numbers (cost/range/xp) current without touching the wiki
-structure.
+The conservative `--overlay` remains for spot refreshes, but the canonical
+refresh is now a full `--all` re-run (idempotent — the merge re-derives the
+same file; the #633 manual-dispatch workflow drives it per game patch).

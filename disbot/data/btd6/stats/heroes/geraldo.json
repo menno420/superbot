@@ -1,10 +1,10 @@
 {
   "hero_id": "geraldo",
   "canonical": "Geraldo",
-  "game_version": "47.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "base_cost": 750,
-  "cost_chimps": null,
+  "cost_chimps": 750,
   "levels": {
     "1": {
       "placeableOnLand": true,
@@ -12,6 +12,8 @@
       "placeableOnTrack": false,
       "range": 40,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -21,6 +23,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 4,
               "maxPierce": 0,
@@ -29,17 +50,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -51,8 +70,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -66,6 +83,8 @@
       "placeableOnTrack": false,
       "range": 40,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -75,6 +94,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 4,
               "maxPierce": 0,
@@ -83,17 +121,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -105,8 +141,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -120,6 +154,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -129,6 +165,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 4,
               "maxPierce": 0,
@@ -137,17 +192,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -159,8 +212,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -174,6 +225,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -183,6 +236,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 4,
               "maxPierce": 0,
@@ -191,17 +263,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -213,8 +283,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -228,6 +296,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -237,6 +307,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 4,
               "maxPierce": 0,
@@ -245,17 +334,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -267,8 +354,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -282,6 +367,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -291,6 +378,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 4,
               "maxPierce": 0,
@@ -299,17 +405,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -321,8 +425,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -336,6 +438,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -345,6 +449,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 9,
               "maxPierce": 0,
@@ -353,17 +476,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -375,8 +496,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -390,6 +509,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -399,6 +520,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 9,
               "maxPierce": 0,
@@ -407,17 +547,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 10,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -429,8 +567,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -444,6 +580,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -453,6 +591,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 9,
               "maxPierce": 0,
@@ -461,17 +618,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -483,8 +638,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -498,6 +651,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -507,6 +662,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 9,
               "maxPierce": 0,
@@ -515,17 +689,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -537,8 +709,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -552,6 +722,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -561,6 +733,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -569,17 +760,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -591,8 +780,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -606,6 +793,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -615,6 +804,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -623,17 +831,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -645,8 +851,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -660,6 +864,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -669,6 +875,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -677,17 +902,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -699,8 +922,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -714,6 +935,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -723,6 +946,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -731,17 +973,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -753,8 +993,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -768,6 +1006,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -777,6 +1017,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -785,17 +1044,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -807,8 +1064,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -822,6 +1077,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -831,6 +1088,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -839,17 +1115,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -861,8 +1135,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -876,6 +1148,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -885,6 +1159,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -893,17 +1186,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -915,8 +1206,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -930,6 +1219,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -939,6 +1230,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 19,
               "maxPierce": 0,
@@ -947,17 +1257,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 13,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -969,8 +1277,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -984,6 +1290,8 @@
       "placeableOnTrack": false,
       "range": 48,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -993,6 +1301,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 24,
               "maxPierce": 0,
@@ -1001,17 +1328,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 18,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 4,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1023,8 +1348,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -1038,6 +1361,8 @@
       "placeableOnTrack": false,
       "range": 48,
       "towerSelectionMenuThemeId": "Geraldo",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1047,6 +1372,25 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "LightningProj",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 9,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            },
+            {
               "name": "Explosion",
               "pierce": 24,
               "maxPierce": 0,
@@ -1055,17 +1399,15 @@
               "canCollisionBeBlockedByMapLos": true,
               "radius": 18,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 9,
               "maxDamage": 0,
               "damage_type": "Energy",
               "cannot_pop": "Cannot damage Lead, Purple, or Glass",
-              "immuneBloonProperties": 9,
+              "immuneBloonProperties": 73,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 1,
-              "lifespan": 0.1
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1077,8 +1419,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,

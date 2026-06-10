@@ -545,7 +545,9 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
     if pstats is None or not pstats.has_combat_stats:
         return []
 
-    src = "bloonswiki article prose" if pstats.is_prose_sourced else "bloonswiki"
+    # Paragon base combat is game-sourced since the v55.1 cutover (the degree
+    # 1-100 scaling curve remains the wiki-replica noted below).
+    src = "bloonswiki article prose" if pstats.is_prose_sourced else "BTD6 game data"
     lines: list[str] = []
     base_bits = _paragon_main_bits(pstats.base, 1) or _normal_stat_bits(
         btd6_stats_service.normal_stats(pstats.base),
@@ -620,7 +622,7 @@ def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_tower_stats normal] {canonical} {name} ({crosspath}): "
-                f"{_sanitise(', '.join(bits))} (source: bloonswiki)",
+                f"{_sanitise(', '.join(bits))} (source: BTD6 game data)",
             ),
         )
     return lines
@@ -663,8 +665,8 @@ _HERO_LEVEL_CODES_ALL: tuple[str, ...] = tuple(str(n) for n in range(1, 21))
 def _render_hero_stats(hero_id: str, canonical: str) -> list[str]:
     """Per-level headline stats as ``[btd6_hero_stats normal]`` grounding lines.
 
-    Returns nothing for heroes without a stats module (the prose-only majority);
-    only the ~6 heroes with a bloonswiki module produce lines here.
+    Every hero has a game-data stats file since the v55.1 cutover; a hero
+    without one (or without combat stats) still returns nothing.
     """
     from services import btd6_stats_service
 
@@ -683,7 +685,7 @@ def _render_hero_stats(hero_id: str, canonical: str) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_hero_stats normal] {canonical} Level {code}: "
-                f"{_sanitise(', '.join(bits))} (source: bloonswiki)",
+                f"{_sanitise(', '.join(bits))} (source: BTD6 game data)",
             ),
         )
     return lines
@@ -765,7 +767,8 @@ def _render_tower_crosspath(tower_id: str, canonical: str, code: str) -> list[st
         lines.append(
             _cap(
                 f"[btd6_tower_stats normal] {canonical} {name} "
-                f"({pretty}): {_sanitise(', '.join(bits))} (source: bloonswiki)",
+                f"({pretty}): {_sanitise(', '.join(bits))} "
+                "(source: BTD6 game data)",
             ),
         )
     # The headline stats above omit buff/zone effects, and the upgrade-detail path
@@ -775,7 +778,7 @@ def _render_tower_crosspath(tower_id: str, canonical: str, code: str) -> list[st
         lines.append(
             _cap(
                 f"[btd6_tower_stats effect] {canonical} {name} "
-                f"({pretty}): {_sanitise(effect)} (source: bloonswiki)",
+                f"({pretty}): {_sanitise(effect)} (source: BTD6 game data)",
             ),
         )
     return lines

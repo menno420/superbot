@@ -3,71 +3,187 @@
   "tower_id": "ice_monkey",
   "canonical": "Herald of Everfrost",
   "tower_canonical": "Ice Monkey",
-  "game_version": "54.0",
-  "source": "bloonswiki.com article prose (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 300000,
   "cost_chimps": null,
   "xp": 750000,
   "base": {
+    "placeableOnLand": true,
+    "placeableOnWater": true,
+    "placeableOnTrack": false,
     "range": 46,
+    "towerSelectionMenuThemeId": "Default",
+    "footprintRadius": 6,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
-        "name": "Ice Lance Beam",
+        "name": "Attack",
         "rate": 4,
+        "eject": "0, 8.1, 8",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
         "projectiles": [
           {
-            "name": "Ice Beam",
+            "name": "BaseProjectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 0,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          },
+          {
+            "name": "BeamHitProjectile",
             "pierce": 500,
             "maxPierce": 0,
-            "damage": 600,
-            "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForBoss": 6000,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
             "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 600,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForBoss": 6000,
+            "filterInvisible": false,
             "effects": [
               {
-                "name": "Freeze",
-                "damage": 600,
-                "damage_type": "Normal",
-                "cannot_pop": null,
+                "name": "Icicles",
+                "lifespan": 1.5
+              },
+              {
+                "name": "Ice",
                 "lifespan": 10
               }
             ]
           },
           {
-            "name": "Ice Shards",
-            "pierce": 25,
+            "name": "ShardSpawnerSpawner",
+            "pierce": 9999999,
             "maxPierce": 0,
-            "damage": 25,
-            "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForMoabs": 50,
-            "damageModifierForBoss": 125,
-            "radius": 5,
-            "speed": 350
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 0,
+            "vsBlockerRadius": 0,
+            "speed": 150,
+            "lifespan": 4,
+            "filterInvisible": false
           },
           {
-            "name": "Icicles",
-            "damage": 10,
+            "name": "ShardSpawner",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 2,
+            "filterInvisible": false
+          },
+          {
+            "name": "Shard",
+            "pierce": 25,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 0,
+            "damage": 25,
+            "maxDamage": -1,
             "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForMoabs": 40,
-            "damageModifierForBoss": 300,
-            "lifespan": 1.5
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 50,
+            "damageModifierForBoss": 125,
+            "filterInvisible": false
+          },
+          {
+            "name": "SnowstormProjectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 9999999,
+            "vsBlockerRadius": 0,
+            "damage": 10,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "Ice",
+                "lifespan": 10
+              },
+              {
+                "name": "Permafrost",
+                "lifespan": 9999999
+              },
+              {
+                "name": "Ice",
+                "lifespan": 10
+              },
+              {
+                "name": "IceParagon",
+                "lifespan": 9999999
+              }
+            ]
           }
-        ]
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 46,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      }
+    ],
+    "abilities": [
+      {
+        "name": "Eclipse of Fimbulwinter",
+        "cooldown": 90
+      }
+    ],
+    "zones": [
+      {
+        "kind": "SlowBloonsZone",
+        "speedScale": 0.1,
+        "speedChange": 0,
+        "zoneRadius": 46,
+        "bloonTag": "Moabs",
+        "inclusive": false
       },
       {
-        "name": "Snowstorm Roar",
-        "projectiles": [
-          {
-            "name": "Snowstorm",
-            "damage": 10,
-            "damage_type": "Normal",
-            "cannot_pop": null
-          }
-        ]
+        "kind": "SlowBloonsZone",
+        "speedScale": 0.55,
+        "speedChange": 0,
+        "zoneRadius": 46,
+        "bloonTag": "Moabs",
+        "inclusive": true
       }
-    ]
+    ],
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true
   }
 }

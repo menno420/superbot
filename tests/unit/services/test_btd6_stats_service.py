@@ -110,12 +110,18 @@ def test_normal_stats_surfaces_income():
     assert any("Cash crate" in s for s in ns.specials)
 
 
-def test_economy_tower_has_costs_but_no_combat_stats():
+def test_economy_tower_has_costs_and_tiers_but_no_attacks():
+    # Since the Q-0067 cutover the Farm has full game-native tiers (abilities,
+    # buffs, income) — but its nominal banana "attack" is suppressed, so no
+    # tier carries combat numbers.
     farm = svc.get_tower_stats("banana_farm")
     assert farm is not None
     assert farm.base_cost == 1250
-    assert farm.has_combat_stats is False
-    assert farm.tier_codes() == ()
+    assert farm.has_combat_stats is True
+    assert farm.tier_codes()[0] == "000"
+    base = svc.normal_stats(farm.tier("000"))
+    assert base.damage is None and base.cooldown is None
+    assert all(t.get("attacks") == [] for t in farm.tiers.values())
 
 
 # --- crosspaths (reconstructed) + back-compat ---------------------------------
@@ -137,12 +143,20 @@ def test_crosspaths_for_base_or_crosspath_is_empty():
 
 
 def test_old_style_16_tier_file_back_compat():
-    # Beast Handler's module exposes no crosspath deltas — a real 16-tier file.
-    # The service must degrade gracefully, not assume crosspath data exists.
+    # No committed file is 16-tier any more (the cutover gave Beast Handler its
+    # full 64, incl. dual-beast crosspaths) — keep the degrade path pinned with
+    # a synthetic single-path-only stats object.
+    import dataclasses
+
     bh = svc.get_tower_stats("beast_handler")
     assert bh is not None and bh.has_combat_stats
     assert bh.tier_codes()[0] == "000"
-    assert bh.crosspaths_for("100") == ()
+    assert "320" in bh.tiers  # dual-beast crosspaths are real data now
+    sparse = dataclasses.replace(
+        bh,
+        tiers={c: t for c, t in bh.tiers.items() if not tier_codes.is_crosspath(c)},
+    )
+    assert sparse.crosspaths_for("100") == ()
 
 
 def test_normal_stats_works_on_a_crosspath_node():
@@ -199,7 +213,9 @@ def test_paragon_stats_at_degree_gives_nonlinear_per_attack_breakdown():
     # components that a single "DPS" number hides).
     assert len(s.attacks) == 3
     main = s.attacks[0]
-    assert {p[0] for p in main.projectiles} >= {"Projectile", "Explosion"}
+    # Game-native names since the cutover: the direct hit is "MainProjectile"
+    # (200), the explosion is "Projectile" (300).
+    assert {p[0] for p in main.projectiles} >= {"MainProjectile", "Projectile"}
     # Cooldown is the sqrt curve, NOT linear interpolation (~0.49s).
     assert abs(main.cooldown - 0.4215) < 0.001
     # rough_dps is only an estimate (sum of all projectiles / cooldown), > 0.

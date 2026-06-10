@@ -108,7 +108,7 @@ class MiningCog(commands.Cog):
         )
         view.message = await ctx.send(embed=embed, view=view)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
         from cogs.mining.rewards import roll_harvest_amount
@@ -121,7 +121,12 @@ class MiningCog(commands.Cog):
             f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!",
         )
 
-    @commands.command(name="mineinv", aliases=["mineinventory"], hidden=True)
+    @commands.command(
+        name="mineinv",
+        aliases=["mineinventory"],
+        hidden=True,
+        extras={"classification": "legacy_duplicate"},
+    )
     async def mineinv(self, ctx):
         """Show your unified inventory (compatibility alias for !inventory)."""
         cmd = ctx.bot.get_command("inventory")
@@ -130,7 +135,11 @@ class MiningCog(commands.Cog):
         else:
             await ctx.send("❌ Inventory system not loaded.", delete_after=10)
 
-    @commands.command(name="minestats", hidden=True)
+    @commands.command(
+        name="minestats",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     async def stats(self, ctx):
         """Shows your total mining items and number of unique items."""
         user_id = str(ctx.author.id)
@@ -155,7 +164,11 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- build / crafting
 
-    @commands.command(hidden=True, aliases=["craft"])
+    @commands.command(
+        hidden=True,
+        aliases=["craft"],
+        extras={"classification": "panel_action"},
+    )
     async def build(self, ctx, *, structure: str = None):
         """Build / craft an item from recipes (one shared, atomic implementation).
 
@@ -170,7 +183,7 @@ class MiningCog(commands.Cog):
             logger.exception("build command failed")
             await ctx.send("An unexpected error occurred while trying to build.")
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def buildlist(self, ctx):
         """Shows all craftable structures from recipes.json."""
         try:
@@ -198,7 +211,7 @@ class MiningCog(commands.Cog):
                 "An unexpected error occurred while listing buildable structures.",
             )
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def buildable(self, ctx):
         """Lists only what the user can currently build based on their inventory."""
         user_id = str(ctx.author.id)
@@ -223,7 +236,7 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- explore / use
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def explore(self, ctx):
         """Discover random events or items (driven by your gear and depth)."""
         user_id = str(ctx.author.id)
@@ -250,7 +263,7 @@ class MiningCog(commands.Cog):
             message += "\n" + "\n".join(wear.notes)
         await ctx.send(message)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "hidden"})
     async def use(self, ctx, *, item: str = None):
         """Use a special item from your inventory (e.g., torch, dynamite)."""
         if not item:
@@ -276,7 +289,7 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- gear / equipment
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "hidden"})
     async def equip(self, ctx, *, item: str = None):
         """Equip a tool, light, or charm so its stats apply to your character."""
         if not item:
@@ -295,7 +308,7 @@ class MiningCog(commands.Cog):
             f"{ctx.author.mention} equipped **{item.title()}** in the **{slot}** slot.",
         )
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "hidden"})
     async def unequip(self, ctx, *, slot: str = None):
         """Clear an equipment slot (tool / light / charm)."""
         if not slot:
@@ -310,7 +323,7 @@ class MiningCog(commands.Cog):
         await db.unequip_slot(str(ctx.author.id), ctx.guild.id, slot)
         await ctx.send(f"{ctx.author.mention} cleared the **{slot}** slot.")
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "hidden"})
     async def gear(self, ctx):
         """Show your equipped gear, its condition, and the stats it grants."""
         user_id = str(ctx.author.id)
@@ -348,7 +361,12 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name="character", aliases=["profile", "char"], hidden=True)
+    @commands.command(
+        name="character",
+        aliases=["profile", "char"],
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     async def character(self, ctx):
         """Show your full mining character — location, gear, stats, wealth."""
         # cogs→views is allowed; the builder aggregates the existing owners.
@@ -363,7 +381,7 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- world / descent
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def descend(self, ctx):
         """Descend one mining band deeper (gated by your equipped light)."""
         user_id = str(ctx.author.id)
@@ -382,7 +400,7 @@ class MiningCog(commands.Cog):
             f"{ctx.author.mention} descended to {world.describe_position(new_depth)}.",
         )
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def ascend(self, ctx):
         """Climb one mining band back toward the surface."""
         user_id = str(ctx.author.id)
@@ -399,7 +417,7 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- market
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def sell(self, ctx, item: str = None, amount: int = 1):
         """Sell raw resources for coins (e.g. `!sell diamond 5`)."""
         if not item:
@@ -409,13 +427,17 @@ class MiningCog(commands.Cog):
         result = await market.apply_sell(ctx.author.id, ctx.guild.id, item, amount)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
-    @commands.command(name="sellall", hidden=True)
+    @commands.command(
+        name="sellall",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     async def sell_all(self, ctx):
         """Sell every raw resource in your inventory for coins."""
         result = await market.apply_sell_all(ctx.author.id, ctx.guild.id)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def buy(self, ctx, *, item: str = None):
         """Buy gear with coins (e.g. `!buy iron sword`)."""
         if not item:
@@ -423,7 +445,11 @@ class MiningCog(commands.Cog):
         result = await market.apply_buy(ctx.author.id, ctx.guild.id, item)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
-    @commands.command(name="market", hidden=True)
+    @commands.command(
+        name="market",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     async def market_cmd(self, ctx):
         """Show the mining market — sellable resources + the gear shop."""
         inventory = await db.get_mining_inventory(str(ctx.author.id), ctx.guild.id)
@@ -455,7 +481,11 @@ class MiningCog(commands.Cog):
 
     # ---------------------------------------------------------- workshop
 
-    @commands.command(name="workshop", hidden=True)
+    @commands.command(
+        name="workshop",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     async def workshop_cmd(self, ctx):
         """Open the workshop — repair worn gear, craft replacements."""
         # cogs→views is allowed; one builder shared with the hub button.
@@ -468,7 +498,7 @@ class MiningCog(commands.Cog):
         view = await MiningWorkshopView.create(ctx.author, ctx.guild.id)
         await ctx.send(embed=embed, view=view)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def repair(self, ctx, *, item: str = None):
         """Repair a worn gear item for coins (e.g. `!repair pickaxe`)."""
         if not item:
@@ -478,7 +508,11 @@ class MiningCog(commands.Cog):
         result = await workshop.apply_repair(ctx.author.id, ctx.guild.id, item)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
-    @commands.command(name="quickcraft", hidden=True)
+    @commands.command(
+        name="quickcraft",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     async def quick_craft(self, ctx):
         """Re-craft the last gear item that broke and equip it."""
         result = await workshop.apply_quick_craft(ctx.author.id, ctx.guild.id)

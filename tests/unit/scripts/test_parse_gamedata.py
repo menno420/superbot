@@ -1588,10 +1588,12 @@ def test_buffs_poplust_maps_percent_increase_fields(mod):
 
 
 def test_unconfirmed_buff_types_emit_nothing(mod):
-    # PierceSupportModel is deferred (not yet confirmed vs wiki) → no guess.
+    # MonkeyFanClubModel is deferred (not yet confirmed vs wiki) → no guess.
+    # (PierceSupportModel, the old example here, was confirmed at the Q-0067
+    # cutover via Village Primary Training prose and now emits.)
     model = _tower_model()
     model["behaviors"].append(
-        {"$type": _t("PierceSupportModel"), "pierce": 3.0, "buffLocsName": "X"}
+        {"$type": _t("MonkeyFanClubModel"), "damage": 3.0, "buffLocsName": "X"}
     )
     assert "buffs" not in mod._map_tier(model)
 
@@ -2128,3 +2130,291 @@ def test_buffs_projectile_speed_fraction(mod):
     )
     (buff,) = mod._buffs(model)
     assert buff["projectileSpeedPercentage"] == 0.25
+
+
+# --- towers cutover (Q-0066/Q-0067/Q-0068) -----------------------------------
+
+
+def test_emission_spawned_projectiles_collected(mod):
+    # Prince of Darkness reanimates BFBs from weapon.emission.alternateProjectile
+    # (damage 100, committed-confirmed) — a spawn location the old walker missed.
+    model = _tower_model()
+    model["behaviors"][0]["weapons"][0]["emission"] = {
+        "$type": _t("EmissionModel"),
+        "alternateProjectile": _projectile(name="ProjectileBfb", damage=100.0),
+    }
+    tier = mod._map_tier(model)
+    names = [p["name"] for p in tier["attacks"][0]["projectiles"]]
+    assert "ProjectileBfb" in names
+
+
+def test_effect_name_prefers_semantic_markers(mod):
+    # A stun is a SlowModel with multiplier 0 — the game stamps the semantics
+    # on overlayType / mutationId; the class name alone would mislabel it.
+    assert mod._effect_name({"overlayType": "Stun", "name": ""}) == "Stun"
+    assert mod._effect_name({"mutationId": "Stun:Strong", "name": ""}) == "Stun"
+    assert (
+        mod._effect_name({"$type": _t("SlowModel"), "name": "SlowModel_Glue_"})
+        == "Glue"
+    )
+
+
+def test_visual_only_effects_are_not_emitted(mod):
+    # A CreateEffectOn… node with no semantic marker and no model name is a
+    # purely visual spawn — emitting its class name would leak an internal
+    # string into the Pro view.
+    proj = _projectile()
+    proj["behaviors"].append(
+        {"$type": _t("CreateEffectOnExpireModel"), "lifespan": 0.5, "name": ""}
+    )
+    proj["behaviors"].append(
+        {
+            "$type": _t("SlowModel"),
+            "overlayType": "Stun",
+            "lifespan": 2.0,
+            "name": "",
+        }
+    )
+    cleaned = mod._clean_projectile(proj)
+    assert [e["name"] for e in cleaned["effects"]] == ["Stun"]
+
+
+def test_buff_flag_types_emit_presence_flags(mod):
+    # Village Radar Scanner (camo grant) / MIB (all damage types): the model's
+    # presence is the effect — prose-pinned, no number to mis-map.
+    model = _tower_model()
+    model["behaviors"] += [
+        {"$type": _t("VisibilitySupportModel"), "buffLocsName": "RadarScannerBuff"},
+        {"$type": _t("DamageTypeSupportModel"), "buffLocsName": "MibBuff"},
+    ]
+    buffs = mod._map_tier(model)["buffs"]
+    assert buffs[0]["grantsCamoDetection"] is True
+    assert buffs[1]["grantsAllDamageTypes"] is True
+
+
+def test_income_aura_buffs_decode_as_true_multipliers(mod):
+    # Q-0067: Central Market x1.1 (+10% prose), Banana Central x1.25,
+    # Monkey City incomeModifier 1.2 — true multipliers, never fractions.
+    model = _tower_model()
+    model["behaviors"] += [
+        {
+            "$type": _t("CentralMarketBuffModel"),
+            "multiplier": 1.1,
+            "maxStackSize": 10,
+            "isGlobalRange": True,
+            "buffLocsName": "CentralMarketBuff",
+        },
+        {"$type": _t("BananaCentralBuffModel"), "multiplier": 1.25},
+        {"$type": _t("MonkeyCityIncomeSupportModel"), "incomeModifier": 1.2},
+    ]
+    buffs = mod._map_tier(model)["buffs"]
+    assert [b.get("incomeMultiplier") for b in buffs] == [1.1, 1.25, 1.2]
+    # isGlobalRange spells the shared global flag — normalised to isGlobal.
+    assert buffs[0]["isGlobal"] is True and buffs[0]["maxStackSize"] == 10
+
+
+def test_nominal_attack_suppression_keeps_damaging_attacks(mod, tmp_path):
+    # Q-0067: Farm/Village nominal AttackModels (banana spawner, empty
+    # SharedAttack) are suppressed; a damaging attack (Village 5-x-x Mega
+    # Ballista) stays.
+    dump = tmp_path / "dump"
+    tdir = dump / "Towers" / "MonkeyVillage"
+    tdir.mkdir(parents=True)
+    base = _tower_model(attacks=[_attack(_projectile(damage=None))])
+    (tdir / "MonkeyVillage.json").write_text(json.dumps(base))
+    ballista = _tower_model(attacks=[_attack(_projectile(damage=10.0))])
+    (tdir / "MonkeyVillage-500.json").write_text(json.dumps(ballista))
+    res = mod.map_tower(dump, "monkey_village", "MonkeyVillage", "55.1")
+    assert res.payload["tiers"]["000"]["attacks"] == []
+    assert res.payload["tiers"]["500"]["attacks"][0]["projectiles"][0]["damage"] == 10
+
+
+def test_cutover_renames_and_drops_internal_effect_names(mod):
+    payload = {
+        "tiers": {
+            "030": {
+                "zones": [
+                    {"kind": "SlowBloonsZone", "name": "SlowBloonsZoneModel"},
+                    {"kind": "BountyHunterZone", "name": "Desperado-040"},
+                ],
+                "subtowers": [{"name": "KeepMe"}],
+            },
+        },
+    }
+    report = mod._apply_name_policy(payload, "ice_monkey")
+    zones = payload["tiers"]["030"]["zones"]
+    assert zones[0]["name"] == "Arctic Wind"
+    assert "name" not in zones[1]  # unmapped internal id stripped
+    assert payload["tiers"]["030"]["subtowers"][0]["name"] == "KeepMe"
+    assert report
+
+
+def test_cutover_rename_disambiguates_by_kind(mod):
+    # Mermonkey's totem stamps two different effects with one internal id.
+    payload = {
+        "tiers": {
+            "004": {
+                "buffs": [
+                    {"kind": "RangeSupport", "name": "NaturesClarityBuff"},
+                    {
+                        "kind": "AbilityCooldownScaleSupport",
+                        "name": "NaturesClarityBuff",
+                    },
+                ],
+            },
+        },
+    }
+    mod._apply_name_policy(payload, "mermonkey")
+    names = [b["name"] for b in payload["tiers"]["004"]["buffs"]]
+    assert names == ["Range buff", "Ability cooldown buff"]
+
+
+def test_cutover_preserves_paragon_keys_costs_and_curated_fields(mod):
+    payload = {
+        "tower_id": "heli_pilot",
+        "upgrades": [{"path": 1, "tier": 4, "name": "Operation: X"}],
+        "tiers": {
+            "003": {
+                "zones": [
+                    {
+                        "kind": "MoabShoveZone",
+                        "name": "MoabShoveZoneModel",
+                        "multiplierForMoab": -0.3,
+                        "multiplierForZomg": 0.75,
+                    },
+                ],
+            },
+        },
+    }
+    committed = {
+        "paragon_cost": 1000,
+        "paragon_name": "X Paragon",
+        "upgrades": [
+            {"path": 1, "tier": 4, "name": "Operation: X", "cost": 3300, "xp": 8000},
+        ],
+        "tiers": {
+            "003": {
+                "zones": [
+                    {
+                        "name": "MOAB Shove",
+                        "radius": 42,
+                        "multiplierForMoab": -0.3,
+                        "multiplierForDdt": 0.75,
+                    },
+                ],
+            },
+        },
+    }
+    mod.cutover_payload(payload, committed, "heli_pilot")
+    assert payload["paragon_cost"] == 1000 and payload["paragon_name"] == "X Paragon"
+    card = payload["upgrades"][0]
+    assert card["cost"] == 3300 and card["xp"] == 8000
+    zone = payload["tiers"]["003"]["zones"][0]
+    # curated name restored + absent curated scalars transplanted (DDT mirror,
+    # radius) without touching mapped values.
+    assert zone["name"] == "MOAB Shove"
+    assert zone["multiplierForDdt"] == 0.75 and zone["radius"] == 42
+    assert zone["multiplierForMoab"] == -0.3
+
+
+def test_cutover_restores_committed_upgrade_names(mod):
+    # The dump's upgrade ids are internal for several towers
+    # ("Buccaneer-Faster Shooting"); curated names are the resolver vocabulary.
+    payload = {
+        "tower_id": "monkey_buccaneer",
+        "upgrades": [
+            {"path": 1, "tier": 1, "name": "Buccaneer-Faster Shooting", "cost": 350},
+        ],
+        "tiers": {},
+    }
+    committed = {
+        "upgrades": [{"path": 1, "tier": 1, "name": "Faster Shooting", "cost": 350}],
+        "tiers": {},
+    }
+    mod.cutover_payload(payload, committed, "monkey_buccaneer")
+    assert payload["upgrades"][0]["name"] == "Faster Shooting"
+
+
+def test_cutover_carryforward_reinjects_undecodable_entries(mod):
+    # Druid's thorn zones have no top-level model in v55.1 — committed entries
+    # carry forward verbatim on their tiers.
+    payload = {"tower_id": "druid", "tiers": {"050": {}}, "upgrades": []}
+    committed = {
+        "tiers": {
+            "050": {
+                "zones": [
+                    {"name": "Thorn zone (close)", "damage": 1},
+                    {"name": "Thorn zone (middle)", "damage": 1},
+                    {"name": "Thorn zone (far)", "damage": 2},
+                ],
+            },
+        },
+        "upgrades": [],
+    }
+    mod.cutover_payload(payload, committed, "druid")
+    names = [z["name"] for z in payload["tiers"]["050"]["zones"]]
+    assert names == ["Thorn zone (close)", "Thorn zone (middle)", "Thorn zone (far)"]
+
+
+def test_cutover_guard_raises_on_lost_curated_name(mod):
+    payload = {"tower_id": "ninja_monkey", "tiers": {"030": {"buffs": []}}}
+    committed = {
+        "tiers": {"030": {"buffs": [{"name": "Some Curated Buff"}]}},
+    }
+    with pytest.raises(mod.NameDowngradeError):
+        mod.cutover_payload(payload, committed, "ninja_monkey")
+
+
+def test_cutover_guard_allows_owner_approved_retirements(mod):
+    # Q-0068: "Beast" retires in favour of the per-tier game names.
+    payload = {"tower_id": "beast_handler", "tiers": {"100": {"subtowers": []}}}
+    committed = {"tiers": {"100": {"subtowers": [{"name": "Beast"}]}}}
+    mod.cutover_payload(payload, committed, "beast_handler")  # no raise
+
+
+def test_beast_subtowers_adopt_per_tier_upgrade_names(mod):
+    # Q-0068: the leash model keeps the base internal name at every tier; the
+    # per-tier names are the path's upgrade names.
+    payload = {
+        "tower_id": "beast_handler",
+        "upgrades": [
+            {"path": 1, "tier": 3, "name": "Great White"},
+            {"path": 2, "tier": 2, "name": "Adasaurus"},
+        ],
+        "tiers": {
+            "320": {
+                "subtowers": [{"name": "Piranha"}, {"name": "Microraptor"}],
+            },
+        },
+    }
+    mod.cutover_payload(payload, None, "beast_handler")
+    names = [s["name"] for s in payload["tiers"]["320"]["subtowers"]]
+    assert names == ["Great White", "Adasaurus"]
+
+
+def test_upgrades_for_synthesizes_colon_id_cards(mod, tmp_path):
+    # "Operation: Dart Storm" has no Upgrades/<id>.json (':' is
+    # Windows-illegal, the exporter skipped it) — identity comes from the
+    # state-file reference + textTable; cost/xp stay for the merge to fill.
+    dump = tmp_path / "dump"
+    tdir = dump / "Towers" / "MonkeyAce"
+    tdir.mkdir(parents=True)
+    (dump / "textTable.json").write_text(
+        json.dumps(
+            {
+                "Operation: Dart Storm": "Operation: Dart Storm",
+                "Operation: Dart Storm Description": "Shoots 16 darts per volley.",
+            }
+        )
+    )
+    state = _tower_model()
+    state["upgrades"] = [
+        {"tower": "MonkeyAce-400", "upgrade": "Operation: Dart Storm"},
+    ]
+    (tdir / "MonkeyAce-300.json").write_text(json.dumps(state))
+    cards = mod._upgrades_for(tdir, dump)
+    (card,) = cards
+    assert card["path"] == 1 and card["tier"] == 4
+    assert card["name"] == "Operation: Dart Storm"
+    assert card["description"] == "Shoots 16 darts per volley."
+    assert "cost" not in card

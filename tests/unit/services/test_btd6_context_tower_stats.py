@@ -26,7 +26,7 @@ def test_combat_tower_emits_tagged_stat_lines():
     lines = ctx._render_fixture_tower(ds.get_tower("bomb_shooter"))
     stat_lines = [ln for ln in lines if "[btd6_tower_stats normal]" in ln]
     assert len(stat_lines) == 16  # base + 15 single-path tiers
-    assert all("source: bloonswiki" in ln for ln in stat_lines)
+    assert all("source: BTD6 game data" in ln for ln in stat_lines)
     assert any("Bloon Crush" in ln and "Normal" in ln for ln in stat_lines)
     # Grounding stays bounded: only single-path tiers reach the model, never the
     # ~48 reconstructed crosspaths (which would bloat the prompt).
@@ -47,9 +47,14 @@ def test_income_and_infinity_render():
     assert "9999999" not in sof
 
 
-def test_economy_tower_emits_no_combat_stat_lines():
+def test_economy_tower_emits_income_but_no_damage_lines():
+    # Since the Q-0067 cutover the Farm has full game-native tiers: its nominal
+    # banana "attack" is suppressed (no damage/pierce lines), while real
+    # economy facts ground (Wall Street's $4,000/round, the IMF Loan ability).
     lines = ctx._render_fixture_tower(ds.get_tower("banana_farm"))
-    assert not [ln for ln in lines if "btd6_tower_stats" in ln]
+    stat_lines = [ln for ln in lines if "btd6_tower_stats" in ln]
+    assert not [ln for ln in stat_lines if "dmg" in ln or "pierce" in ln]
+    assert any("Income $4,000/round" in ln for ln in stat_lines)
 
 
 # --- regression: the lead-immunity + camo-detection facts were extracted by
@@ -78,7 +83,7 @@ def test_hero_with_module_emits_per_level_stat_lines():
     stat_lines = [ln for ln in lines if "[btd6_hero_stats normal]" in ln]
     assert any("Level 1" in ln for ln in stat_lines)
     assert any("Level 20" in ln for ln in stat_lines)
-    assert all("source: bloonswiki" in ln for ln in stat_lines)
+    assert all("source: BTD6 game data" in ln for ln in stat_lines)
 
 
 def test_game_data_hero_grounds_cost_and_per_level_stat_lines():

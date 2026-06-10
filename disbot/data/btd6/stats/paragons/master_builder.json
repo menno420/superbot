@@ -3,8 +3,8 @@
   "tower_id": "engineer_monkey",
   "canonical": "Master Builder",
   "tower_canonical": "Engineer Monkey",
-  "game_version": "54.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 650000,
   "cost_chimps": null,
   "xp": 750000,
@@ -14,11 +14,13 @@
     "placeableOnTrack": false,
     "range": 60,
     "towerSelectionMenuThemeId": "Default",
+    "footprintRadius": 7,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
-        "name": "Nail gun",
-        "rate": 1.5,
-        "eject": "-9.7, 23, 10.1 (1)<br>-13.1, 10, 28.2 (2)<br>13.1, 10, 28.2 (3)",
+        "name": "AttackNailgunR",
+        "rate": 2,
+        "eject": "-9.7, 23, 10.1",
         "fireWithoutTarget": false,
         "fireBetweenRounds": false,
         "projectiles": [
@@ -31,22 +33,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 2,
             "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Stun (weak Paragon)",
-                "layers": 0,
-                "glueLevel": 0,
-                "isUnique": false,
-                "dontRefreshDuration": true,
-                "cascadeMutators": false,
-                "removeMutatorIfNotMatching": false,
-                "matchLayersWithDamage": true,
-                "mutationId": "Stun:ParagonWeak",
-                "lifespan": 5,
-                "multiplier": 0
-              }
-            ],
-            "filterInvisible": false,
             "damage": 300,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -55,12 +41,107 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForBoss": 300,
             "speed": 375,
-            "lifespan": 0.1867
+            "lifespan": 0.18666667,
+            "damageModifierForBoss": 100,
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "Pin",
+                "lifespan": 5
+              }
+            ]
           }
         ],
-        "count": 3,
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "AttackNailgunBackR",
+        "rate": 2,
+        "eject": "-13.1, 10, 28.2",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 15,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 300,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 375,
+            "lifespan": 0.18666667,
+            "damageModifierForBoss": 100,
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "Pin",
+                "lifespan": 5
+              }
+            ]
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "AttackNailgunBackL",
+        "rate": 2,
+        "eject": "13.1, 10, 28.2",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 15,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 300,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 375,
+            "lifespan": 0.18666667,
+            "damageModifierForBoss": 100,
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "Pin",
+                "lifespan": 5
+              }
+            ]
+          }
+        ],
+        "count": 1,
         "targetTypes": "Depends on targeting option",
         "range": 60,
         "attackThroughWalls": false,
@@ -71,50 +152,12 @@
     ],
     "abilities": [
       {
-        "name": "Mega Sentry",
-        "cooldown": 20,
-        "maxActivationsPerRound": -1,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "attacks": [
-          {
-            "name": "Spawner",
-            "rate": 99999,
-            "eject": "0, 0, 0",
-            "fireWithoutTarget": false,
-            "fireBetweenRounds": false,
-            "count": 1,
-            "targetTypes": "",
-            "range": 60,
-            "attackThroughWalls": true,
-            "framesBeforeRetarget": 0
-          }
-        ]
+        "name": "SentryParagonSpawner",
+        "cooldown": 20
       },
       {
-        "name": "Power Glove",
-        "cooldown": 60,
-        "maxActivationsPerRound": -1,
-        "canActivateBetweenRounds": true,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "buffs": [
-          {
-            "name": "Buff",
-            "lifespan": 60,
-            "lifespanModifierForParagons": 0.25,
-            "rateMultiplier": 0.6,
-            "rangeMultiplierForVillages": 1.15,
-            "maxStackSize": 1
-          },
-          {
-            "name": "Zone buff",
-            "lifespan": 30,
-            "rateMultiplier": 0.6,
-            "rangeMultiplierForVillages": 1.15,
-            "maxStackSize": 1,
-            "range": 30
-          }
-        ]
+        "name": "Paragon Overclock",
+        "cooldown": 60
       }
     ],
     "subtowers": [
@@ -517,8 +560,6 @@
         "targetTypeStrong": true
       }
     ],
-    "footprintRadius": 7,
-    "doesntBlockTowerPlacement": false,
     "targetTypeFirst": true,
     "targetTypeLast": true,
     "targetTypeClose": true,

@@ -157,17 +157,29 @@ class UtilityCog(commands.Cog):
                 embed.set_thumbnail(url=guild.icon.url)
         await ctx.send(embed=embed)
 
-    @commands.command(name="serverinfo", hidden=True)
+    @commands.command(
+        name="serverinfo",
+        hidden=True,
+        extras={"classification": "legacy_duplicate"},
+    )
     async def serverinfo(self, ctx):
         """Alias for !info server."""
         await ctx.invoke(self.info, target="server")
 
-    @commands.command(name="userinfo", hidden=True)
+    @commands.command(
+        name="userinfo",
+        hidden=True,
+        extras={"classification": "legacy_duplicate"},
+    )
     async def userinfo(self, ctx, member: discord.Member = None):
         """Alias for !info user [@member]."""
         await ctx.invoke(self.info, target="user", member=member)
 
-    @commands.command(name="avatar", hidden=True)
+    @commands.command(
+        name="avatar",
+        hidden=True,
+        extras={"classification": "hidden"},
+    )
     async def avatar(self, ctx, member: discord.Member = None):
         """Display a user's avatar."""
         member = member or ctx.author

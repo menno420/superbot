@@ -1,7 +1,7 @@
 {
   "hero_id": "silas",
   "canonical": "Silas",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 850,
   "cost_chimps": 850,
@@ -68,6 +68,14 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        }
+      ],
+      "zones": [
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -139,6 +147,14 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        }
+      ],
+      "zones": [
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -216,6 +232,14 @@
         {
           "name": "Frostbite",
           "cooldown": 30
+        }
+      ],
+      "zones": [
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -307,12 +331,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -330,6 +350,14 @@
         {
           "name": "Frostbite",
           "cooldown": 30
+        }
+      ],
+      "zones": [
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -421,12 +449,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -444,6 +468,18 @@
         {
           "name": "Frostbite",
           "cooldown": 30
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -535,12 +571,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -558,6 +590,18 @@
         {
           "name": "Frostbite",
           "cooldown": 30
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -649,12 +693,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -676,6 +716,18 @@
         {
           "name": "Frozen Cascade",
           "cooldown": 60
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
         }
       ],
       "targetTypeFirst": true,
@@ -767,12 +819,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -794,6 +842,27 @@
         {
           "name": "Frozen Cascade",
           "cooldown": 60
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -885,12 +954,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -912,6 +977,27 @@
         {
           "name": "Frozen Cascade",
           "cooldown": 60
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1003,12 +1089,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1034,6 +1116,27 @@
         {
           "name": "Frozen Burial",
           "cooldown": 90
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1125,12 +1228,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1156,6 +1255,37 @@
         {
           "name": "Frozen Burial",
           "cooldown": 90
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1247,12 +1377,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1278,6 +1404,37 @@
         {
           "name": "Frozen Burial",
           "cooldown": 90
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1369,12 +1526,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1400,6 +1553,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 90
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1491,12 +1680,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1522,6 +1707,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 90
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1613,12 +1834,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1644,6 +1861,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 75
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1735,12 +1988,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1766,6 +2015,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 75
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1857,12 +2142,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -1888,6 +2169,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 75
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.8,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.9,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1979,12 +2296,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -2010,6 +2323,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 75
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.7,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2101,12 +2450,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -2132,6 +2477,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 75
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.7,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2223,12 +2604,8 @@
               "filterInvisible": false,
               "effects": [
                 {
-                  "name": "FreezeModel",
+                  "name": "Ice",
                   "lifespan": 3
-                },
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 1.4
                 }
               ]
             }
@@ -2254,6 +2631,42 @@
         {
           "name": "Frozen Burial",
           "cooldown": 75
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 9999999
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.15,
+          "tierCap": 5
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.7,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": false
+        },
+        {
+          "kind": "SlowBloonsZone",
+          "speedScale": 0.85,
+          "speedChange": 0,
+          "zoneRadius": 30,
+          "bloonTag": "Moabs",
+          "inclusive": true
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": true,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,

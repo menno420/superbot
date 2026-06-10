@@ -334,7 +334,12 @@ class Deathmatch(commands.Cog):
         view = DeathmatchPanelView(interaction.user)
         return build_deathmatch_overview_embed(), view
 
-    @commands.command(name="dm_challenge", aliases=["deathmatch", "challenge", "dm"])
+    @commands.command(
+        name="dm_challenge",
+        aliases=["deathmatch", "challenge", "dm"],
+        # Fluency spellings, deliberately advertised — not legacy.
+        extras={"alias_classification": "power_user_shortcut"},
+    )
     @cooldown(1, 30, BucketType.user)
     async def challenge(self, ctx: commands.Context, opponent: discord.Member):
         """Challenge another user to a deathmatch duel."""

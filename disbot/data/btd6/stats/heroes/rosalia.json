@@ -1,7 +1,7 @@
 {
   "hero_id": "rosalia",
   "canonical": "Rosalia",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 875,
   "cost_chimps": 875,
@@ -24,6 +24,43 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "-1.8, 11.38, 10",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "targetTypeFirst": true,
@@ -51,6 +88,76 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "targetTypeFirst": true,
@@ -78,12 +185,120 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -111,12 +326,120 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 3,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -144,12 +467,147 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -177,12 +635,154 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -210,16 +810,158 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
           "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -247,16 +989,159 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
           "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -284,16 +1169,159 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
           "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -321,12 +1349,148 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -334,7 +1498,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -362,12 +1565,148 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 3,
+              "maxPierce": 3,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -375,7 +1714,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -403,12 +1781,148 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Energy",
+              "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+              "immuneBloonProperties": 73,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 10,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 3,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 12,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 25,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 100,
+              "lifespan": 1.05,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -416,7 +1930,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -444,12 +1997,196 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 10,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 5,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -457,7 +2194,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -485,12 +2261,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 10,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 1,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -498,7 +2459,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -526,12 +2526,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 30,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 6,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 4,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 45
+          "cooldown": 45,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -539,7 +2724,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -567,12 +2791,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 30,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 6,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 4,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -580,7 +2989,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 60
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -608,12 +3056,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 30,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 6,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 4,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -621,7 +3254,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 60
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -649,12 +3321,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 30,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 6,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 4,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -662,7 +3519,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 60
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -690,12 +3586,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 15,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 45,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 6,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 4,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -703,7 +3784,46 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 60
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1500,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,
@@ -731,12 +3851,197 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": false
+        },
+        {
+          "name": "Attack",
+          "rate": 1,
+          "eject": "0, 0, 0",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "EnergyProjectile",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "damage": 15,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 300,
+              "lifespan": 0.35,
+              "damageModifierForMoabs": 45,
+              "filterInvisible": true
+            },
+            {
+              "name": "GrenadeProjectile",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "speed": 300,
+              "lifespan": 0.35,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 4,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 6,
+              "filterInvisible": true
+            },
+            {
+              "name": "Cluster",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 15,
+              "vsBlockerRadius": 0,
+              "damage": 2,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 4,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastProjectile",
+              "pierce": 200,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 10,
+              "vsBlockerRadius": 0,
+              "speed": 100,
+              "lifespan": 0.6,
+              "pushAmount": 10,
+              "pushMultiplierForMoab": 0.5,
+              "pushMultiplierForBfb": 0.25,
+              "pushMultiplierForZomg": 0,
+              "pushMultiplierForDdt": 1,
+              "pushOnlyIfDamaged": false,
+              "filterInvisible": true
+            },
+            {
+              "name": "PalmBlastExplosion",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 30,
+              "vsBlockerRadius": 0,
+              "damage": 70,
+              "maxDamage": 0,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "LaserShock",
+                  "lifespan": 9
+                }
+              ]
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 40,
+          "attackThroughWalls": false,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 60,
+          "filterInvisible": true
         }
       ],
       "abilities": [
         {
           "name": "Scatter Missile",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "OriginProjectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "ScatterExplosion",
+              "pierce": 30,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 18,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 5,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 1
+                }
+              ]
+            }
+          ]
         },
         {
           "name": "Flight Boost",
@@ -744,7 +4049,51 @@
         },
         {
           "name": "Kinetic Charge",
-          "cooldown": 60
+          "cooldown": 60,
+          "projectiles": [
+            {
+              "name": "KineticChargeProjectile",
+              "pierce": 9999999,
+              "maxPierce": 9999999,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "Explosion",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": true,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 4000,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 0
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.3,
+          "tierCap": 0
         }
       ],
       "targetTypeFirst": true,

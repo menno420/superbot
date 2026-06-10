@@ -1,8 +1,8 @@
 {
   "hero_id": "adora",
   "canonical": "Adora",
-  "game_version": "52.2",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "base_cost": 1000,
   "cost_chimps": 1000,
   "levels": {
@@ -12,6 +12,8 @@
       "placeableOnTrack": false,
       "range": 45,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -21,7 +23,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 5,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -29,24 +31,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 0,
-              "count": 1,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -58,8 +51,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -73,6 +64,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -82,7 +75,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 5,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -90,24 +83,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 0,
-              "count": 1,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -119,8 +103,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -134,6 +116,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -143,7 +127,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 5,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -151,24 +135,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 0,
-              "count": 1,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -180,34 +155,16 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 0,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 10
-            }
-          ]
-        }
-      ],
       "level": 3,
       "description": "The Long Arm of Light: Greatly increases attack range and power for a short time & damages all Bloon Types."
     },
@@ -217,6 +174,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -226,7 +185,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 5,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -234,24 +193,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 30,
-              "count": 2,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -263,34 +213,16 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 0,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 10
-            }
-          ]
-        }
-      ],
       "level": 4,
       "description": "Shoots double Divine Bolts."
     },
@@ -300,6 +232,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -309,7 +243,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -317,24 +251,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 30,
-              "count": 2,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -346,34 +271,16 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 0,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 10
-            }
-          ]
-        }
-      ],
       "level": 5,
       "description": "Divine bolts pierce through more Bloons."
     },
@@ -383,6 +290,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -392,7 +301,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -400,24 +309,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 60,
-              "count": 3,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -429,34 +329,16 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 0,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 10
-            }
-          ]
-        }
-      ],
       "level": 6,
       "description": "Shoots 3 Divine Bolts at a time."
     },
@@ -466,6 +348,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -475,7 +359,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -483,24 +367,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 60,
-              "count": 3,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -512,28 +387,20 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Blood Sacrifice",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": true,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "lifespan": 10,
-              "maxStackSize": 15
-            }
-          ]
-        }
-      ],
       "level": 7,
       "description": "Blood Sacrifice: Sacrifice a targeted Tower to grant Adora large amounts of XP and boost her attack range and rate of fire for a short time."
     },
@@ -543,6 +410,8 @@
       "placeableOnTrack": false,
       "range": 49,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -552,7 +421,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -560,24 +429,15 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 90,
-              "count": 4,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -589,28 +449,20 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Blood Sacrifice",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": true,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "lifespan": 10,
-              "maxStackSize": 15
-            }
-          ]
-        }
-      ],
       "level": 8,
       "description": "Shoots 4 Divine Bolts at a time."
     },
@@ -620,6 +472,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -629,7 +483,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -637,25 +491,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 90,
-              "count": 4,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 1
+              "damageModifierForFortified": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -667,28 +512,20 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Blood Sacrifice",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": true,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "lifespan": 10,
-              "maxStackSize": 15
-            }
-          ]
-        }
-      ],
       "level": 9,
       "description": "Increased attack range and increased damage to Fortified Bloons."
     },
@@ -698,6 +535,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -707,7 +546,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -715,25 +554,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 90,
-              "count": 4,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 1
+              "damageModifierForFortified": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -745,19 +575,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
-          "name": "Ball of Light sub-tower",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -768,6 +597,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -785,19 +616,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 3,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 3,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -805,18 +633,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 10,
       "description": "Ball of Light: Brings forth a powerful ball of energy to strike down the Bloons."
     },
@@ -826,6 +657,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -835,7 +668,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -843,25 +676,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 90,
-              "count": 4,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 1
+              "damageModifierForFortified": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -873,19 +697,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
-          "name": "Ball of Light sub-tower",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -896,6 +719,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -913,19 +738,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 3,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 3,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -933,18 +755,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 11,
       "description": "Adora increases attack speed."
     },
@@ -954,6 +779,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -963,7 +790,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -971,25 +798,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 120,
-              "count": 5,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 1
+              "damageModifierForFortified": 1,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1001,19 +819,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
-          "name": "Ball of Light sub-tower",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1024,6 +841,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1041,19 +860,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 3,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 3,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1061,18 +877,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 12,
       "description": "Shoots 5 Divine Bolts at a time."
     },
@@ -1082,6 +901,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1091,7 +912,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1099,25 +920,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 120,
-              "count": 5,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 2
+              "damageModifierForFortified": 2,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1129,19 +941,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
-          "name": "Ball of Light sub-tower",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1152,6 +963,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1169,19 +982,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 3,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 3,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1189,18 +999,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 13,
       "description": "Divine Bolts pierce through even more Bloons. Increased damage to Fortified Bloons."
     },
@@ -1210,6 +1023,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1219,7 +1034,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1227,25 +1042,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 150,
-              "count": 6,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 2
+              "damageModifierForFortified": 2,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1257,19 +1063,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
-          "name": "Ball of Light sub-tower",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1280,6 +1085,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1297,19 +1104,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 3,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 3,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1317,18 +1121,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 14,
       "description": "Shoots 6 Divine Bolts at a time."
     },
@@ -1338,6 +1145,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1347,7 +1156,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1355,25 +1164,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 150,
-              "count": 6,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 2
+              "damageModifierForFortified": 2,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1385,19 +1185,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
-          "name": "Ball of Light sub-tower",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1408,6 +1207,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1425,19 +1226,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 5,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 5,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1445,18 +1243,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 15,
       "description": "Divine Bolts burn through an extra Bloon layer, plus Ball of Light deals more damage."
     },
@@ -1466,6 +1267,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1475,7 +1278,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1483,25 +1286,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 150,
-              "count": 6,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 2
+              "damageModifierForFortified": 2,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1513,32 +1307,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 2,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 15
-            }
-          ]
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1549,6 +1329,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1566,19 +1348,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 5,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 5,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1586,18 +1365,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 16,
       "description": "Long Arm of Light becomes even more deadly."
     },
@@ -1607,6 +1389,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1616,7 +1400,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1624,25 +1408,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 150,
-              "count": 6,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 2
+              "damageModifierForFortified": 2,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1654,32 +1429,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 2,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 15
-            }
-          ]
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1690,6 +1451,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1707,19 +1470,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 5,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 5,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1727,18 +1487,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 17,
       "description": "Adora increases attack speed even more."
     },
@@ -1748,6 +1511,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1757,7 +1522,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1765,25 +1530,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 210,
-              "count": 8,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 2
+              "damageModifierForFortified": 2,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1795,32 +1551,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 2,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 15
-            }
-          ]
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1831,6 +1573,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1848,19 +1592,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 5,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 5,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -1868,18 +1609,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 18,
       "description": "Shoots 8 Divine Bolts at a time."
     },
@@ -1889,6 +1633,8 @@
       "placeableOnTrack": false,
       "range": 59,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1898,7 +1644,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1906,25 +1652,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 210,
-              "count": 8,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 3
+              "damageModifierForFortified": 3,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -1936,32 +1673,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "The Long Arm of Light",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "damageAdditive": 2,
-              "pierceMultiplier": 2,
-              "rangeMultiplier": 2,
-              "radiusMultiplier": 1.5,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "lifespan": 15
-            }
-          ]
+          "cooldown": 45
+        },
+        {
+          "name": "Blood Sacrifice",
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -1972,6 +1695,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -1989,19 +1714,16 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
                   "damage": 5,
                   "maxDamage": 0,
-                  "damage_type": "Fire",
-                  "cannot_pop": "Cannot damage Purple",
-                  "immuneBloonProperties": 8,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
                   "damageModifierForFortified": 5,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -2009,18 +1731,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 12,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 12
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 19,
       "description": "Increased attack range. Increased damage to Fortified Bloons."
     },
@@ -2030,6 +1755,8 @@
       "placeableOnTrack": false,
       "range": 59,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2039,7 +1766,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 11,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2047,25 +1774,16 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "angle": 210,
-              "count": 8,
-              "filterInvisible": true,
               "damage": 2,
               "maxDamage": 0,
-              "damage_type": "Fire",
-              "cannot_pop": "Cannot damage Purple",
-              "immuneBloonProperties": 8,
+              "damage_type": "Plasma",
+              "cannot_pop": "Cannot damage Purple or Glass",
+              "immuneBloonProperties": 72,
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rotation": 9,
-              "speed": 70,
-              "maxSpeed": 360,
-              "acceleration": 20,
-              "accelerateInAngle": 5,
-              "startDeceleratingIfAngleGreaterThan": 30,
-              "lifespan": 1.5,
-              "damageModifierForFortified": 3
+              "damageModifierForFortified": 3,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -2077,26 +1795,18 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
+          "name": "The Long Arm of Light",
+          "cooldown": 45
+        },
+        {
           "name": "Blood Sacrifice",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": true,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "lifespan": 60,
-              "maxStackSize": 40
-            }
-          ]
+          "cooldown": 30
+        },
+        {
+          "name": "Ball of Light",
+          "cooldown": 60
         }
       ],
       "subtowers": [
@@ -2107,6 +1817,8 @@
           "placeableOnTrack": false,
           "range": 9999999,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
           "attacks": [
             {
               "name": "Attack",
@@ -2124,9 +1836,7 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 1,
                   "vsBlockerRadius": 0,
-                  "speed": 0,
-                  "filterInvisible": true,
-                  "damage": 15,
+                  "damage": 20,
                   "maxDamage": 0,
                   "damage_type": "Normal",
                   "cannot_pop": "Can damage any Bloon type",
@@ -2134,9 +1844,8 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForFortified": 15,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "damageModifierForFortified": 20,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -2144,18 +1853,21 @@
               "range": 2000,
               "attackThroughWalls": true,
               "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 0,
-          "doesntBlockTowerPlacement": false,
-          "lifespan": 15,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 15
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 20,
       "description": "Ball of Light is greatly improved, plus increased rate of fire, range, and duration buffs from Sacrifices."
     }

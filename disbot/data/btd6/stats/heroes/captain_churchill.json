@@ -1,7 +1,7 @@
 {
   "hero_id": "captain_churchill",
   "canonical": "CaptainChurchill",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 2000,
   "cost_chimps": 2000,
