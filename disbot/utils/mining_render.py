@@ -1,19 +1,14 @@
 """Optional image rendering for mining cards (foundation).
 
-Renders an inventory / exploration "card" as a PNG.  Pillow is an
-**optional** dependency: this module lazy-imports it and degrades
-gracefully (``render_inventory_card`` returns ``None``) when it is not
-installed, so importing this module never breaks the bot and the project
-gains no hard dependency.
+Renders mining cards (inventory / character stat card) as PNGs.
+``Pillow`` is pinned in ``requirements.txt``, but this module still
+lazy-imports it and degrades gracefully (renderers return ``None``) so a
+broken/absent install can never take panels down — callers always keep
+their embed fallback.
 
-> To activate image rendering in production, add ``Pillow`` to
-> ``requirements.txt``.  That one-line dependency decision is deliberately
-> left to the maintainer — until then the helper is dormant and any
-> caller should fall back to an embed when it returns ``None``.
-
-The layout math (:func:`build_card_spec`) is pure and fully unit-tested
-regardless of whether Pillow is present; only the final pixel-pushing in
-:func:`render_inventory_card` needs the library.
+The layout math (:func:`build_card_spec` / :func:`build_stat_card_spec`)
+is pure and fully unit-tested regardless of whether Pillow is present;
+only the final pixel-pushing needs the library.
 """
 
 from __future__ import annotations
@@ -121,6 +116,82 @@ def render_inventory_card(spec: CardSpec) -> bytes | None:
     return buffer.getvalue()
 
 
+@dataclass(frozen=True)
+class StatCardSpec:
+    """The character stat card (§7.6 "stat-card first, zero custom art"):
+    a title line and free-form text rows (label, value, color).
+    """
+
+    title: str
+    rows: tuple[tuple[str, str, tuple[int, int, int]], ...]
+    footer: str = ""
+    width: int = 460
+    row_height: int = 30
+    padding: int = 18
+    header_height: int = 46
+
+    @property
+    def height(self) -> int:
+        body = max(len(self.rows), 1) * self.row_height
+        footer_h = self.row_height if self.footer else 0
+        return self.header_height + body + footer_h + self.padding * 2
+
+
+_ACCENT = (130, 200, 255)
+_VALUE_COLOR = (235, 235, 235)
+
+
+def build_stat_card_spec(
+    name: str,
+    *,
+    level: int,
+    xp_bar: str,
+    location: str,
+    deepest: str,
+    gear_lines: list[tuple[str, str]],
+    coins: int,
+    net_worth: int,
+) -> StatCardSpec:
+    """Compose the character stat card spec (pure — no Discord, no DB)."""
+    rows: list[tuple[str, str, tuple[int, int, int]]] = [
+        ("Game level", f"{level}  {xp_bar}", _ACCENT),
+        ("Location", location, _VALUE_COLOR),
+        ("Deepest", deepest, _VALUE_COLOR),
+    ]
+    for slot, value in gear_lines:
+        rows.append((slot.title(), value, _KIND_COLOR["tool"]))
+    rows.append(("Coins", f"{coins} c", _KIND_COLOR["treasure"]))
+    rows.append(("Net worth", str(net_worth), _KIND_COLOR["treasure"]))
+    return StatCardSpec(
+        title=f"{name} — Level {level}",
+        rows=tuple(rows),
+        footer="SuperBot mining character",
+    )
+
+
+def render_stat_card(spec: StatCardSpec) -> bytes | None:
+    """Render *spec* to PNG bytes, or ``None`` if Pillow is unavailable."""
+    try:
+        from PIL import Image, ImageDraw  # lazy: degrade gracefully
+    except Exception:  # noqa: BLE001 — any import failure → graceful no-op
+        return None
+
+    img = Image.new("RGB", (spec.width, spec.height), _BG)
+    draw = ImageDraw.Draw(img)
+    pad = spec.padding
+    draw.text((pad, pad), spec.title, fill=_TITLE_COLOR)
+    y = spec.header_height + pad
+    for label, value, color in spec.rows:
+        draw.text((pad, y), f"{label}:", fill=(150, 150, 150))
+        draw.text((pad + 110, y), value, fill=color)
+        y += spec.row_height
+    if spec.footer:
+        draw.text((pad, y), spec.footer, fill=(120, 120, 120))
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
 def pillow_available() -> bool:
     """Return True when Pillow can be imported (image rendering is live)."""
     try:
@@ -136,5 +207,8 @@ __all__ = [
     "CardSpec",
     "build_card_spec",
     "render_inventory_card",
+    "StatCardSpec",
+    "build_stat_card_spec",
+    "render_stat_card",
     "pillow_available",
 ]

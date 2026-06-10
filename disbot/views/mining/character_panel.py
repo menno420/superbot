@@ -91,4 +91,50 @@ async def build_character_embed(
     return embed
 
 
-__all__ = ["build_character_embed"]
+async def build_character_card(
+    user_id: int,
+    guild_id: int,
+    *,
+    name: str,
+) -> bytes | None:
+    """The §7.6 PIL stat card (zero custom art), or None without Pillow.
+
+    Composes from the same owners as the embed; callers always keep the
+    embed and treat the card as an additive attachment.
+    """
+    from utils.mining_render import build_stat_card_spec, render_stat_card
+
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    wear = await db.get_gear_wear(suid, guild_id)
+    depth = await db.get_depth(suid, guild_id)
+    max_depth = await db.get_max_depth(suid, guild_id)
+    coins = await db.get_coins(user_id, guild_id)
+    level, into, needed = await game_xp_service.level_info(guild_id, user_id)
+
+    gear_lines: list[tuple[str, str]] = []
+    for slot in equipment.SLOTS:
+        item = equipped.get(slot)
+        if not item:
+            continue
+        value = item.title()
+        maximum = equipment.max_durability(item)
+        if maximum is not None:
+            value += f" ({wear.get(item, maximum)}/{maximum})"
+        gear_lines.append((slot, value))
+
+    spec = build_stat_card_spec(
+        name,
+        level=level,
+        xp_bar=workshop.durability_bar(into, needed),
+        location=world.describe_position(depth),
+        deepest=world.describe_position(max_depth),
+        gear_lines=gear_lines,
+        coins=coins,
+        net_worth=items.total_value(inventory),
+    )
+    return render_stat_card(spec)
+
+
+__all__ = ["build_character_embed", "build_character_card"]

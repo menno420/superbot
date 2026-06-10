@@ -120,6 +120,35 @@ async def build_overview_embed(
     return embed
 
 
+async def _send_inventory_card(
+    interaction: discord.Interaction,
+    inventory: dict[str, int],
+) -> None:
+    """Send the PIL inventory card as an ephemeral follow-up (additive —
+    the embed already rendered; a missing/broken Pillow changes nothing).
+    """
+    import io
+
+    from utils.mining_render import build_card_spec, render_inventory_card
+
+    spec = build_card_spec(
+        f"{interaction.user.display_name}'s Mining Inventory",
+        items.sort_inventory(inventory),
+        classify_kind=lambda n: items.classify(n).value,
+        footer=f"Net worth: {items.total_value(inventory)}",
+    )
+    png = render_inventory_card(spec)
+    if png is None:
+        return
+    try:
+        await interaction.followup.send(
+            file=discord.File(io.BytesIO(png), filename="inventory.png"),
+            ephemeral=True,
+        )
+    except discord.HTTPException:
+        pass  # the embed already served the data
+
+
 @register
 class MiningHubView(PersistentView):
     """Persistent, stateless mining hub panel."""
@@ -274,6 +303,8 @@ class MiningHubView(PersistentView):
                 ),
             )
         await safe_edit(interaction, embed=embed, view=self)
+        if inventory:
+            await _send_inventory_card(interaction, inventory)
 
     @discord.ui.button(
         label="📊 Stats",

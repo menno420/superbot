@@ -90,7 +90,8 @@ _DEPTH_SCALED = {"mine", "explore"}
 @dataclass(frozen=True)
 class GameXpAward:
     """Result of one award — carries everything the caller needs to render
-    an inline note and to emit the post-commit events."""
+    an inline note and to emit the post-commit events.
+    """
 
     guild_id: int
     user_id: int
@@ -166,7 +167,8 @@ async def award(
 
 async def emit_award_events(award_result: GameXpAward) -> None:
     """Emit the catalogued events for one award — AFTER the owning
-    transaction has committed (never inside it)."""
+    transaction has committed (never inside it).
+    """
     await bus.emit(
         EVT_GAME_XP_AWARDED,
         guild_id=award_result.guild_id,

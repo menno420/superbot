@@ -32,10 +32,14 @@ LOW_DURABILITY_WARN = 5
 # (depth > 0): your light burns down in the mine, not in daylight.
 ACTION_MINE = "mine"
 ACTION_EXPLORE = "explore"
+ACTION_DUEL = "duel"
 WEAR_PLAN: dict[str, tuple[tuple[str, bool], ...]] = {
     # Each entry pairs a slot with its underground-only flag.
     ACTION_MINE: ((equipment.TOOL, False), (equipment.LIGHT, True)),
     ACTION_EXPLORE: ((equipment.LIGHT, True), (equipment.CHARM, False)),
+    # Q-0054: combat gear joins the craft→break→repair loop — a PvP duel
+    # ticks each fighter's weapon + armor once (never underground-gated).
+    ACTION_DUEL: ((equipment.WEAPON, False), (equipment.ARMOR, False)),
 }
 
 
@@ -130,6 +134,7 @@ __all__ = [
     "LOW_DURABILITY_WARN",
     "ACTION_MINE",
     "ACTION_EXPLORE",
+    "ACTION_DUEL",
     "WEAR_PLAN",
     "WearReport",
     "CraftableGear",

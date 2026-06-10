@@ -9,7 +9,7 @@ import discord
 import pytest
 
 from utils.mining.loadout import best_loadout
-from views.mining.gear_panel import MiningGearView, _UNEQUIP_SENTINEL
+from views.mining.gear_panel import _UNEQUIP_SENTINEL, MiningGearView
 from views.mining.main_panel import MiningHubView
 
 _AUTHOR = SimpleNamespace(id=1, display_name="Digger")

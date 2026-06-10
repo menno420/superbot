@@ -82,9 +82,7 @@ async def build_recipe_embed(
             f"{mat} {min(inventory.get(mat, 0), qty)}/{qty}"
             for mat, qty in sorted(materials.items())
         )
-        craftable = all(
-            inventory.get(mat, 0) >= qty for mat, qty in materials.items()
-        )
+        craftable = all(inventory.get(mat, 0) >= qty for mat, qty in materials.items())
         embed.add_field(
             name=f"{'✅' if craftable else '▫️'} {name.title()}",
             value=have_lines,
@@ -142,8 +140,7 @@ class _RecipeSelect(discord.ui.Select):
                 emoji=(
                     "✅"
                     if all(
-                        inventory.get(mat, 0) >= qty
-                        for mat, qty in materials.items()
+                        inventory.get(mat, 0) >= qty for mat, qty in materials.items()
                     )
                     else None
                 ),

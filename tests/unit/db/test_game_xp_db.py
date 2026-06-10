@@ -24,9 +24,12 @@ async def test_add_game_xp_single_upsert_with_day_rollover():
     query, params = mock_fetch.await_args.args
     flat = " ".join(query.split())
     assert "ON CONFLICT (user_id, guild_id, game) DO UPDATE" in flat
-    assert "xp = game_xp.xp + $4" in flat
+    assert "xp = game_xp.xp + $4::bigint" in flat
     # Day rollover: same day accumulates, a new day restarts at the amount.
-    assert "CASE WHEN game_xp.day = $5 THEN game_xp.day_xp + $4 ELSE $4 END" in flat
+    assert (
+        "CASE WHEN game_xp.day = $5 THEN game_xp.day_xp + $4::int ELSE $4::int END"
+        in flat
+    )
     assert "RETURNING xp" in flat
     assert params == (1, 99, "mining", 5, _TODAY)
 

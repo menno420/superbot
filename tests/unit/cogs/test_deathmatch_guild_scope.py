@@ -64,7 +64,11 @@ async def test_duel_timeout_records_result_under_originating_guild():
     with patch(
         "cogs.deathmatch_cog.Deathmatch.update_leaderboard",
         new_callable=AsyncMock,
-    ) as mock_update:
+    ) as mock_update, patch(
+        "cogs.deathmatch_cog._tick_duel_gear_wear",
+        new_callable=AsyncMock,
+        return_value=[],
+    ):
         # turn == player1, so on timeout player1 loses to player2.
         await view.on_timeout()
 

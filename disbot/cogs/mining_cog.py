@@ -199,9 +199,7 @@ class MiningCog(commands.Cog):
         try:
             if structure is None:
                 return await ctx.invoke(self.bot.get_command("buildlist"))
-            structure = (
-                resolve_item_name(structure, load_recipes()) or structure
-            )
+            structure = resolve_item_name(structure, load_recipes()) or structure
             result = await mining_workflow.craft(ctx.author.id, ctx.guild.id, structure)
             await ctx.send(f"{ctx.author.mention} {result.message}")
         except Exception:
@@ -363,15 +361,31 @@ class MiningCog(commands.Cog):
     )
     async def character(self, ctx):
         """Show your full mining character — location, gear, stats, wealth."""
+        import io
+
         # cogs→views is allowed; the builder aggregates the existing owners.
-        from views.mining.character_panel import build_character_embed
+        from views.mining.character_panel import (
+            build_character_card,
+            build_character_embed,
+        )
 
         embed = await build_character_embed(
             ctx.author.id,
             ctx.guild.id,
             name=ctx.author.display_name,
         )
-        await ctx.send(embed=embed)
+        png = await build_character_card(
+            ctx.author.id,
+            ctx.guild.id,
+            name=ctx.author.display_name,
+        )
+        if png is not None:
+            await ctx.send(
+                embed=embed,
+                file=discord.File(io.BytesIO(png), filename="character.png"),
+            )
+        else:
+            await ctx.send(embed=embed)
 
     # ---------------------------------------------------------- world / descent
 

@@ -54,13 +54,15 @@ async def add_game_xp(
     One upsert with day-rollover: ``day_xp`` accumulates while ``day``
     matches and restarts at *amount* on a new day.
     """
+    # $4 feeds both xp (BIGINT) and day_xp (INTEGER) — the explicit casts
+    # keep asyncpg's parameter-type deduction unambiguous.
     row = await pool.fetchone(
         """INSERT INTO game_xp (user_id, guild_id, game, xp, day, day_xp)
-           VALUES ($1, $2, $3, $4, $5, $4)
+           VALUES ($1, $2, $3, $4::bigint, $5, $4::int)
            ON CONFLICT (user_id, guild_id, game) DO UPDATE SET
-               xp = game_xp.xp + $4,
+               xp = game_xp.xp + $4::bigint,
                day_xp = CASE WHEN game_xp.day = $5
-                             THEN game_xp.day_xp + $4 ELSE $4 END,
+                             THEN game_xp.day_xp + $4::int ELSE $4::int END,
                day = $5,
                updated_at = now()
            RETURNING xp""",

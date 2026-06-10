@@ -82,6 +82,14 @@ from utils.db.games.deathmatch import (
     get_deathmatch_stats,
     update_deathmatch,
 )
+from utils.db.games.game_xp import (
+    add_game_xp,
+    get_game_xp,
+    get_game_xp_row,
+    get_total_xp,
+    top_game_xp,
+    top_total_xp,
+)
 from utils.db.games.mining import (
     apply_inventory_deltas,
     get_all_mining_totals,
@@ -98,14 +106,6 @@ from utils.db.games.mining_gear_wear import (
     clear_gear_wear,
     get_gear_wear,
     set_gear_wear,
-)
-from utils.db.games.game_xp import (
-    add_game_xp,
-    get_game_xp,
-    get_game_xp_row,
-    get_total_xp,
-    top_game_xp,
-    top_total_xp,
 )
 from utils.db.games.mining_player_state import (
     get_depth,
