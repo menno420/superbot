@@ -162,6 +162,19 @@ class ParagonStats:
         """True when the base was transcribed from article prose, not a module."""
         return "prose" in self.source.lower()
 
+    @property
+    def income_per_round(self) -> int | None:
+        """End-of-round cash generation, or None for combat-only paragons.
+
+        Decoded from the dump's ``PerRoundCashBonusTowerModel`` (Navarch of
+        the Seas: $3,200/round); lives on the degree-independent base node, so
+        it holds at every degree.
+        """
+        value = self.base.get("cashPerRound")
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return int(value) if value > 0 else None
+        return None
+
     def degree(self, degree: int) -> paragon_degrees.DegreeRow:
         """Degree-dependent stats (power, boss multiplier, scaled cells)."""
         return paragon_degrees.degree_row(self.base, degree)
@@ -504,7 +517,12 @@ def resolve_paragon(query: str) -> str | None:
         paragon_id = _paragon_index().get(getattr(tower, "id", ""))
         if paragon_id:
             return paragon_id
-    return None
+    # Last: the canonical colloquial-shorthand resolver ("navarch", "mmmf",
+    # "boat") — exact-key only, so a long sentence can't false-positive.
+    from utils.btd6 import paragon_math
+
+    resolved = paragon_math.resolve_paragon(query)
+    return resolved.paragon_id if resolved is not None else None
 
 
 def reset_cache() -> None:

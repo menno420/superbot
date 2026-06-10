@@ -189,9 +189,16 @@ provenance schema is implemented.
   In parallel, **#653 (wave 1)** decoded thorn rings + 4-x-x sentries + the
   **banana economy** (bananaValue/bank capacity+interest as specials) —
   reconciled at the merge.
-  **Next:** decode-status ⭐ item 3 (the buff/zone tail), the #655
-  answerability-gap items (5–6) — plus the maintainer's live spot-check of
-  the new surfaces.
+- **Answerability tail (2026-06-10)** — items 5+6d in **#658** (deterministic
+  Ask parity · Pro views render Effects/Minions · Striker fraction fix);
+  items **6a–c + the Navarch "no coins" routing fix in #662** (the live wrong
+  answer was **routing, not data**: name-resolution miss → 0 facts, the
+  cap-truncated income sentence, no paragon income/effect grounding leg —
+  fixed across grounding/menus/AI tool, + minion-name grounding, the Pouākai
+  diacritic tokenizer fix, honest dataset source labels).
+  **Next:** decode-status ⭐ item 3 (buff/zone tail — demand-driven), the
+  maintainer's live spot-check (item 4); item 7 captures the
+  conversation-grounding follow-up idea.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.

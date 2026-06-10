@@ -26,6 +26,7 @@ deliberately self-contained and behaviour-neutral on its own.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass
 
 from services.btd6_data_service import get_dataset
@@ -118,8 +119,15 @@ _CURATED_ALIASES: dict[str, str] = {
 
 
 def _tokens(text: str) -> list[str]:
-    """Lowercase alphanumeric word tokens."""
-    return [t for t in re.split(r"[^a-z0-9]+", (text or "").lower()) if t]
+    """Lowercase alphanumeric word tokens, diacritics folded.
+
+    Folding matters both ways: the indexed surface "Pouākai" used to split on
+    the non-ASCII letter into ``pou|kai``, so neither the curated spelling nor
+    the way users actually type it ("pouakai") could ever match.
+    """
+    folded = unicodedata.normalize("NFKD", text or "")
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
+    return [t for t in re.split(r"[^a-z0-9]+", folded.lower()) if t]
 
 
 def _contains_subsequence(haystack: list[str], needle: list[str]) -> bool:

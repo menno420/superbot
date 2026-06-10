@@ -19,9 +19,11 @@ from __future__ import annotations
 
 import logging
 import re
+import unicodedata
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
 
 from utils.btd6 import coverage as cov
@@ -35,6 +37,9 @@ from utils.btd6.grounding_format import sanitise as _sanitise_helper
 logger = logging.getLogger("bot.services.btd6_context")
 
 _DEFAULT_SOURCE_SUMMARY = "data.ninjakiwi.com (Tier 1)"
+# Fixture-only answers (no NK-sourced DB rows) must not claim the NK API as
+# their source — answerability item 6c; the dataset label is the honest one.
+_DATASET_SOURCE_SUMMARY = "local BTD6 dataset (game data + curated)"
 _FALLBACK_SOURCE_SUMMARY = "no btd6_facts rows for intent"
 
 # Crosspath codes mentioned in a query, e.g. "0-2-5" or "025". Bounded by
@@ -79,6 +84,23 @@ def _sanitise(value: object) -> str:
     that read this name continue to behave identically.
     """
     return _sanitise_helper(value, cap=_FACT_TEXT_CAP)
+
+
+def _dataset_label() -> str:
+    """Source label for facts from the local committed dataset.
+
+    Replaces the internal-ish ``fixture/btd6_data`` (a repo path-ism users saw
+    verbatim, answerability item 6b) with the same vocabulary the stats facts
+    use ("BTD6 game data 55.1"). Never raises — a label must not be able to
+    suppress the fact it labels.
+    """
+    try:
+        from services import btd6_data_service
+
+        version = btd6_data_service.get_dataset().game_version
+    except Exception:  # noqa: BLE001 — defensive
+        return "BTD6 dataset"
+    return f"BTD6 dataset, game v{version}" if version else "BTD6 dataset"
 
 
 # Body keys (in priority order) we try as the human-readable headline.
@@ -300,9 +322,9 @@ def _render_fixture_tower(entry: Any) -> list[str]:
     meta = " | ".join(p for p in [cost_str, cat_str] if p)
     lines.append(
         (
-            _cap(f"[btd6_tower] {canonical} — {meta} (source: fixture/btd6_data)")
+            _cap(f"[btd6_tower] {canonical} — {meta} (source: {_dataset_label()})")
             if meta
-            else _cap(f"[btd6_tower] {canonical} (source: fixture/btd6_data)")
+            else _cap(f"[btd6_tower] {canonical} (source: {_dataset_label()})")
         ),
     )
 
@@ -324,14 +346,14 @@ def _render_fixture_tower(entry: Any) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_tower] {canonical} {path_name} upgrades: "
-                f"{upgrades_str} (source: fixture/btd6_data)",
+                f"{upgrades_str} (source: {_dataset_label()})",
             ),
         )
 
     if description:
         lines.append(
             _cap(
-                f"[btd6_tower] {canonical} — {description} (source: fixture/btd6_data)",
+                f"[btd6_tower] {canonical} — {description} (source: {_dataset_label()})",
             ),
         )
 
@@ -403,7 +425,7 @@ def _render_tower_costs(tower_id: str, canonical: str) -> list[str]:
     base = {d: per[d]["base_cost"] for d in diffs}
     lines = [
         _cap(
-            f"[btd6_cost] {canonical} pricing — Medium from fixture/btd6_data; "
+            f"[btd6_cost] {canonical} pricing — Medium from {_dataset_label()}; "
             "Easy/Hard/Impoppable = Medium ×0.85/1.08/1.20 rounded to $5; "
             "'to reach' = tower base + all earlier tiers on that path.",
         ),
@@ -540,6 +562,7 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
     """
     from services import btd6_stats_service
     from utils.btd6 import paragon_degrees
+    from utils.btd6.effect_lines import tier_effect_lines
 
     pstats = btd6_stats_service.get_paragon_stats_by_tower(tower_id)
     if pstats is None or not pstats.has_combat_stats:
@@ -587,6 +610,29 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
             "gain most. Boss-damage steps every 20 degrees (1.0 to 2.0), 2.25 "
             "at Degree 100.",
         ),
+    )
+    # Degree-independent extras. Income + buff/zone auras were committed
+    # (Navarch's cashPerRound 3200, its Trade Empire / Flagship / sellback
+    # buffs) but no paragon grounding line ever rendered them — the model,
+    # told only about the tower path's income, confidently answered that the
+    # paragon "makes no coins" (live miss, 2026-06-10). Towers surface income
+    # via specials and heroes via [btd6_hero_buff]; this is the paragon leg.
+    income = pstats.income_per_round
+    if income is not None:
+        lines.append(
+            _cap(
+                f"[btd6_paragon_stats normal] {name} income: generates "
+                f"${income:,} at the end of each round (degree-independent; "
+                f"source: {src})",
+            ),
+        )
+    effects: list[str] = []
+    for effect in tier_effect_lines(pstats.base):
+        if effect and effect not in effects:
+            effects.append(effect)
+    lines.extend(
+        _cap(f"[btd6_paragon_stats effect] {name}: {_sanitise(effect)} (source: {src})")
+        for effect in effects
     )
     return lines
 
@@ -797,9 +843,9 @@ def _render_fixture_hero(entry: Any) -> list[str]:
     cost_str = f"base cost: {cost} (medium difficulty)" if cost else ""
     lines.append(
         (
-            _cap(f"[btd6_hero] {canonical} — {cost_str} (source: fixture/btd6_data)")
+            _cap(f"[btd6_hero] {canonical} — {cost_str} (source: {_dataset_label()})")
             if cost_str
-            else _cap(f"[btd6_hero] {canonical} (source: fixture/btd6_data)")
+            else _cap(f"[btd6_hero] {canonical} (source: {_dataset_label()})")
         ),
     )
 
@@ -812,13 +858,13 @@ def _render_fixture_hero(entry: Any) -> list[str]:
             if summary:
                 ab_str += f" — {summary}"
             lines.append(
-                _cap(f"[btd6_hero] {canonical} {ab_str} (source: fixture/btd6_data)"),
+                _cap(f"[btd6_hero] {canonical} {ab_str} (source: {_dataset_label()})"),
             )
 
     if description:
         lines.append(
             _cap(
-                f"[btd6_hero] {canonical} — {description} (source: fixture/btd6_data)",
+                f"[btd6_hero] {canonical} — {description} (source: {_dataset_label()})",
             ),
         )
 
@@ -906,9 +952,9 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     lines.append(
         _cap(
             (
-                f"[btd6_bloon] {canonical} — {meta} (source: fixture/btd6_data)"
+                f"[btd6_bloon] {canonical} — {meta} (source: {_dataset_label()})"
                 if meta
-                else f"[btd6_bloon] {canonical} (source: fixture/btd6_data)"
+                else f"[btd6_bloon] {canonical} (source: {_dataset_label()})"
             ),
         ),
     )
@@ -937,14 +983,14 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_bloon] {canonical} — {' | '.join(stat_bits)} "
-                "(source: fixture/btd6_data)",
+                f"(source: {_dataset_label()})",
             ),
         )
 
     if description:
         lines.append(
             _cap(
-                f"[btd6_bloon] {canonical} — {description} (source: fixture/btd6_data)",
+                f"[btd6_bloon] {canonical} — {description} (source: {_dataset_label()})",
             ),
         )
 
@@ -989,9 +1035,9 @@ def _render_fixture_round(entry: Any) -> list[str]:
     lines = [
         _cap(
             (
-                f"[btd6_round] Round {number} — {headline} (source: fixture/btd6_data)"
+                f"[btd6_round] Round {number} — {headline} (source: {_dataset_label()})"
                 if headline
-                else f"[btd6_round] Round {number} (source: fixture/btd6_data)"
+                else f"[btd6_round] Round {number} (source: {_dataset_label()})"
             ),
         ),
     ]
@@ -1016,7 +1062,7 @@ def _render_fixture_round(entry: Any) -> list[str]:
         lines.append(
             _cap(
                 f"[btd6_round] Round {number} composition — "
-                f"{_sanitise(', '.join(parts))} (source: fixture/btd6_data)",
+                f"{_sanitise(', '.join(parts))} (source: {_dataset_label()})",
             ),
         )
 
@@ -1024,7 +1070,7 @@ def _render_fixture_round(entry: Any) -> list[str]:
     if summary and not summary[0].isdigit():
         lines.append(
             _cap(
-                f"[btd6_round] Round {number} — {summary} (source: fixture/btd6_data)",
+                f"[btd6_round] Round {number} — {summary} (source: {_dataset_label()})",
             ),
         )
     return lines
@@ -1471,7 +1517,7 @@ def _entity_roster_facts(message_text: str) -> list[str]:
             _cap(
                 f"[btd6_map] BTD6 has {len(maps)} maps total: {diff_str}. "
                 f"{water} have water (naval towers placeable), "
-                f"{len(maps) - water} are land-only. (source: fixture/btd6_data)",
+                f"{len(maps) - water} are land-only. (source: {_dataset_label()})",
             ),
         )
     return out
@@ -1679,6 +1725,21 @@ def _map_roster_reply(text: str, maps: list) -> str:
     return f"**BTD6 Maps ({len(maps)})** by difficulty:\n{grouped(maps)}"
 
 
+_PARAGON_NAME_FILLERS = frozenset({"the", "of"})
+
+
+def _squash_paragon_name(text: str) -> str:
+    """Lowercase, strip punctuation, and drop filler words ("the"/"of").
+
+    Users drop articles when naming paragons — the live miss was "navarch of
+    seas" failing the exact-substring match against "Navarch of the Seas" and
+    leaving the question with ZERO grounding (2026-06-10 screenshot). This
+    normalises both sides of the match without loosening to fuzzy matching.
+    """
+    tokens = re.sub(r"[^a-z0-9]+", " ", text.lower()).split()
+    return " ".join(t for t in tokens if t not in _PARAGON_NAME_FILLERS)
+
+
 def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
     """Ground a paragon named directly (e.g. "what are Glaive Dominus's stats?").
 
@@ -1692,18 +1753,42 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
     from utils.btd6 import paragon_math
 
     text = (message_text or "").lower()
+    squashed = _squash_paragon_name(text)
     out: list[str] = []
     grounded: set[str] = set(resolved_tower_ids)
     for paragon in paragon_math.PARAGONS:
-        # Strip a parenthetical (e.g. "… (B.O.M.B.)") and match the bare name.
+        # Strip a parenthetical (e.g. "… (B.O.M.B.)") and match the bare name —
+        # exactly, then article-tolerantly ("navarch of seas").
         name = paragon.name.split(" (")[0].strip().lower()
-        if not name or name not in text:
+        if not name:
+            continue
+        if name not in text and _squash_paragon_name(name) not in squashed:
             continue
         pstats = btd6_stats_service.get_paragon_stats(paragon.paragon_id)
         if pstats is None or pstats.tower_id in grounded:
             continue
         grounded.add(pstats.tower_id)
         out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
+
+    # Shorthand the way players actually talk ("ice paragon", "boat paragon",
+    # "navarch"): when the text says "paragon", try each word/word-pair against
+    # the canonical shorthand resolver (tower names + curated aliases). Gating
+    # on the keyword keeps generic alias words ("ice", "sub", "boat") from
+    # grounding paragons in ordinary chat.
+    if "paragon" in text:
+        tokens = squashed.split()
+        candidates = tokens + [
+            " ".join(pair) for pair in zip(tokens, tokens[1:], strict=False)
+        ]
+        for candidate in candidates:
+            resolved = paragon_math.resolve_paragon(candidate)
+            if resolved is None:
+                continue
+            pstats = btd6_stats_service.get_paragon_stats(resolved.paragon_id)
+            if pstats is None or pstats.tower_id in grounded:
+                continue
+            grounded.add(pstats.tower_id)
+            out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
 
     # A paragon ABILITY named directly (e.g. "Spikeageddon cooldown", "what does
     # Final Strike do") — the names are distinctive, so a full-name substring
@@ -1713,6 +1798,202 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
         if pstats is None or pstats.tower_id in grounded:
             continue
         if any(ab.name and ab.name.lower() in text for ab in pstats.abilities):
+            grounded.add(pstats.tower_id)
+            out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Minion / sub-tower name grounding (answerability item 6a)
+# ---------------------------------------------------------------------------
+
+# Minion names that are generic English words — matching them whole-word in
+# ordinary chat would false-positive ("my plane leaves at 9"). Their stats stay
+# reachable through the owning tier ("sun temple minions", "carrier flagship").
+_MINION_NAME_STOPLIST = frozenset({"plane", "marine", "sentry", "tree", "beast"})
+
+# How many matched minion names get the full owner grounding per message.
+_MINION_MATCH_CAP = 2
+
+
+def _fold_match_text(text: str) -> str:
+    """Lowercase, fold diacritics, normalise punctuation to spaces.
+
+    The match vocabulary the index and the message share — "Pouākai",
+    "pouakai" and "Mini-Comanche"/"mini comanche" all land on one spelling.
+    """
+    folded = unicodedata.normalize("NFKD", text or "")
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", folded.lower()).split())
+
+
+@lru_cache(maxsize=1)
+def _minion_name_index() -> dict[str, tuple[str, str, str, str]]:
+    """Map a folded minion name -> (kind, owner_id, code, display_name).
+
+    Walks every stats file's ``subtowers`` (tower tiers, hero levels, paragon
+    bases). Names that collide with an existing entity/upgrade vocabulary are
+    skipped — the colliding owner already grounds them (beast names ARE their
+    tier's upgrade-card names since the cutover; "Spectre" is the Ace upgrade).
+    Owner preference: a tower tier (richest grounding: the upgrade card) over
+    a hero/paragon, single-path codes over crosspaths, lowest code/level.
+    """
+    from services import btd6_data_service, btd6_stats_service, btd6_upgrade_service
+    from utils.btd6 import paragon_math
+
+    taken: set[str] = set()
+    try:
+        dataset = btd6_data_service.get_dataset()
+        for entry in (*dataset.towers, *dataset.heroes, *dataset.bloons):
+            taken.add(_fold_match_text(entry.canonical))
+            taken.update(_fold_match_text(a) for a in entry.aliases)
+        for upgrade in btd6_upgrade_service.all_upgrades():
+            taken.add(_fold_match_text(upgrade.canonical))
+    except Exception:  # noqa: BLE001 — defensive; an empty guard set is safer
+        logger.debug("minion index: vocabulary guard unavailable", exc_info=True)
+    taken.update(_fold_match_text(p.name) for p in paragon_math.PARAGONS)
+
+    def _candidate_rank(kind: str, code: str) -> tuple[int, int, str]:
+        # tier < hero < paragon; single-path/base tier codes before crosspaths.
+        kind_rank = {"tier": 0, "hero": 1, "paragon": 2}[kind]
+        crosspath = 0
+        if kind == "tier":
+            crosspath = (
+                0 if tier_codes.is_base(code) or tier_codes.is_single_path(code) else 1
+            )
+        return (kind_rank, crosspath, code)
+
+    best: dict[str, tuple[tuple[int, int, str], str, str, str, str]] = {}
+
+    def _consider(kind: str, owner_id: str, code: str, node: dict[str, Any]) -> None:
+        for sub in node.get("subtowers", []) or []:
+            if not isinstance(sub, dict):
+                continue
+            display = str(sub.get("name") or "").strip()
+            folded = _fold_match_text(display)
+            if not folded or folded in taken or folded in _MINION_NAME_STOPLIST:
+                continue
+            rank = _candidate_rank(kind, code)
+            prev = best.get(folded)
+            if prev is None or rank < prev[0]:
+                best[folded] = (rank, kind, owner_id, code, display)
+
+    try:
+        dataset = btd6_data_service.get_dataset()
+        for tower in dataset.towers:
+            stats = btd6_stats_service.get_tower_stats(getattr(tower, "id", ""))
+            if stats is None:
+                continue
+            for code in stats.tier_codes():
+                tier = stats.tier(code)
+                if isinstance(tier, dict):
+                    _consider("tier", stats.tower_id, code, tier)
+        for hero in dataset.heroes:
+            stats = btd6_stats_service.get_hero_stats(getattr(hero, "id", ""))
+            if stats is None:
+                continue
+            for code in stats.levels or ():
+                level = stats.level(code)
+                if isinstance(level, dict):
+                    _consider("hero", getattr(hero, "id", ""), code, level)
+        for paragon_id in btd6_stats_service.list_paragon_ids():
+            pstats = btd6_stats_service.get_paragon_stats(paragon_id)
+            if pstats is not None:
+                _consider("paragon", paragon_id, "base", pstats.base)
+    except Exception:  # noqa: BLE001 — defensive
+        logger.debug("minion index: stats walk failed", exc_info=True)
+
+    return {
+        folded: (kind, owner_id, code, display)
+        for folded, (_rank, kind, owner_id, code, display) in best.items()
+    }
+
+
+def _subtower_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list[str]:
+    """Ground a minion named directly ("what does the Mini Sun Avatar do?").
+
+    Minion stats live under the owning tier/level/paragon's ``subtowers`` —
+    nothing keyed on the minion's own name, so these questions either drew a
+    blank ("Crushing Sentry", "UAV") or mis-resolved to a similarly-named
+    upgrade ("Mini Sun Avatar" landed on Sun Avatar, the wrong tier). Emits a
+    resolution line naming the owner, then the owner's grounding.
+    """
+    from services import btd6_stats_service, btd6_upgrade_detail_service
+    from utils.btd6.effect_lines import tier_effect_lines
+
+    folded_text = f" {_fold_match_text(message_text)} "
+    if len(folded_text) <= 2:
+        return []
+    matches = [
+        (folded, owner)
+        for folded, owner in _minion_name_index().items()
+        if f" {folded} " in folded_text
+    ]
+    # Longest first, and drop a match embedded in a longer one (a hypothetical
+    # "sun avatar" minion must not also fire inside "mini sun avatar").
+    matches.sort(key=lambda m: len(m[0]), reverse=True)
+    kept: list[tuple[str, tuple[str, str, str, str]]] = []
+    for folded, owner in matches:
+        if any(f" {folded} " in f" {longer} " for longer, _ in kept):
+            continue
+        kept.append((folded, owner))
+
+    out: list[str] = []
+    grounded: set[str] = set(resolved_tower_ids)
+    for _folded, (kind, owner_id, code, display) in kept[:_MINION_MATCH_CAP]:
+        if kind == "tier":
+            detail = btd6_upgrade_detail_service.get_upgrade_detail(
+                f"{owner_id}:{code}",
+            )
+            if detail is None:
+                continue
+            pretty = tier_codes.format_code(code)
+            out.append(
+                _cap(
+                    f"[btd6_minion] {display} is a minion spawned by "
+                    f"{detail.identity.tower_name}'s {detail.identity.canonical} "
+                    f"({pretty}) — its stats are under that upgrade "
+                    f"(source: BTD6 game data)",
+                ),
+            )
+            out.extend(btd6_upgrade_detail_service.render_upgrade_grounding(detail))
+        elif kind == "hero":
+            stats = btd6_stats_service.get_hero_stats(owner_id)
+            if stats is None:
+                continue
+            node = stats.level(code) or {}
+            sub = next(
+                (
+                    s
+                    for s in node.get("subtowers", []) or []
+                    if isinstance(s, dict) and str(s.get("name") or "") == display
+                ),
+                None,
+            )
+            bits: list[str] = []
+            if sub is not None:
+                bits = _normal_stat_bits(btd6_stats_service.normal_stats(sub))
+                # A support minion's effect lives in its buffs/zones, not its
+                # attacks (Etienne's UAV grants Camo detection).
+                bits.extend(tier_effect_lines(sub))
+            tail = f": {_sanitise(', '.join(bits))}" if bits else ""
+            out.append(
+                _cap(
+                    f"[btd6_minion] {display} is summoned by the hero "
+                    f"{stats.canonical} (from Level {code}){tail} "
+                    f"(source: BTD6 game data)",
+                ),
+            )
+        else:  # paragon
+            pstats = btd6_stats_service.get_paragon_stats(owner_id)
+            if pstats is None or pstats.tower_id in grounded:
+                continue
+            out.append(
+                _cap(
+                    f"[btd6_minion] {display} is spawned by the paragon "
+                    f"{pstats.canonical} (source: BTD6 game data)",
+                ),
+            )
             grounded.add(pstats.tower_id)
             out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
     return out
@@ -1990,6 +2271,7 @@ async def build(message_text: str) -> BTD6Context:
     """
     facts: list[str] = []
     live_rows: list[dict[str, Any]] = []
+    nk_rows_present = False
     confidence = 0.0
     source_summary = _FALLBACK_SOURCE_SUMMARY
 
@@ -2014,6 +2296,7 @@ async def build(message_text: str) -> BTD6Context:
             # leaderboard facts.
             live_rows = await _fetch_live_entity_rows(intent)
             rows = rows + live_rows
+            nk_rows_present = bool(rows)
             for row in rows:
                 facts.append(_render_fact(row))
             # PR 2: tower/hero active-event restriction lines.
@@ -2059,6 +2342,18 @@ async def build(message_text: str) -> BTD6Context:
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
         facts.extend(_paragon_roster_facts(message_text))
         facts.extend(_entity_roster_facts(message_text))
+
+        # Pass 3b2: a minion/sub-tower named directly ("Mini Sun Avatar",
+        # "Crushing Sentry", "UAV") — its stats live under the owning tier /
+        # hero level / paragon, keyed by nothing the resolver knows. Isolated
+        # like the other passes.
+        try:
+            facts.extend(_subtower_name_facts(message_text, resolved_tower_ids))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: minion-name grounding unavailable (%s)",
+                exc,
+            )
 
         # Pass 3e: powers / Monkey Knowledge / bosses named in the text —
         # the three fixture catalogs the pipeline never grounded (their
@@ -2116,7 +2411,12 @@ async def build(message_text: str) -> BTD6Context:
         facts.extend(_coverage_freshness_signals(intent, live_rows))
 
     if facts:
-        source_summary = _DEFAULT_SOURCE_SUMMARY
+        # NK-sourced DB rows (live or stored) → the Tier-1 summary; a
+        # fixture/dataset-only answer must say so (item 6c) — its per-fact
+        # labels and its headline source now agree.
+        source_summary = (
+            _DEFAULT_SOURCE_SUMMARY if nk_rows_present else _DATASET_SOURCE_SUMMARY
+        )
     return BTD6Context(
         facts=tuple(facts),
         source_summary=source_summary,

@@ -383,7 +383,7 @@ CASES: list[EvalCase] = [
                 "found": True,
                 "facts": [
                     "[btd6_bloon] Purple Bloon — immune to Fire, Energy, "
-                    "Plasma (source: fixture/btd6_data)",
+                    "Plasma (source: BTD6 dataset, game v55.1)",
                 ],
             },
         },
@@ -491,7 +491,7 @@ CASES: list[EvalCase] = [
                 "found": True,
                 "facts": [
                     "[btd6_tower] Dart Monkey — base cost: 200 (medium "
-                    "difficulty) (source: fixture/btd6_data)",
+                    "difficulty) (source: BTD6 dataset, game v55.1)",
                 ],
             },
             "btd6_difficulty_cost": {

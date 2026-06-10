@@ -20,7 +20,33 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards ALL DECODED (#653 wave 1 + #655) · banana economy DONE (#653); next = backlog item 3, the buff/zone tail**)
+## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards DECODED (#653+#655) · Ask parity + dark renders (#658) · items 6a–c + the Navarch routing fix (#662); next = item 3 (demand-driven) + item 4 (maintainer spot-check)**)
+
+> **2026-06-10 (PR #662 — the Navarch live miss + items 6a–c):** the first
+> *demand-driven* item-3-style question arrived via screenshot ("does the
+> navarch of seas paragon make coins" → bot said NO) — and the diagnosis is
+> the important part: **the data was never missing; the routing was.**
+> Committed `navarch_of_the_seas.json` carried `cashPerRound: 3200`
+> (the dump's `PerRoundCashBonusTowerModel` = end-of-round cash) + the Trade
+> Empire/Flagship/sellback buffs since the cutover. Three routing layers
+> failed: (1) "navarch of **seas**" (article dropped) failed the exact
+> substring match in `_paragon_name_facts` → **zero grounding facts** → the
+> model freelanced a confident "no income"; (2) even named exactly, the
+> curated description's income sentence is its LAST sentence and the 240-char
+> fact cap truncates precisely it; (3) the paragon grounding rendered only
+> the primary-attack headline — no income line, no effect lines (towers
+> ground income via specials, heroes via `[btd6_hero_buff]`; paragons had no
+> leg). Fixed end-to-end: article-tolerant + "paragon"-keyword-gated
+> shorthand name matching (via `paragon_math.resolve_paragon` — "boat
+> paragon" works), a dedicated `[btd6_paragon_stats normal] … income` line,
+> per-effect `[btd6_paragon_stats effect]` lines via `tier_effect_lines`,
+> `Income $X/round` on the `_stat_node_embed` head (Pro tier / hero level /
+> paragon base menu views were all income-dark), `income_per_round` on the
+> `btd6_paragon_stats_at_degree` AI tool, and `(affects paragons only)` for
+> the structural `onlyAffectParagon` aura split. **Known remaining gap (not
+> this PR):** the follow-up turn "does **it** make coins…" grounds nothing —
+> grounding is per-message; conversation-entity carryover is its own idea
+> (routed below as backlog item 7).
 
 > **2026-06-10 (PR #655 continuation — in parallel, #653's wave 1 decoded
 > thorn rings / 4-x-x sentries / banana economy; reconciled at the merge):
@@ -127,35 +153,32 @@ works** (the traps we hit), and what is still un-decoded.
    of the refusal. Round-range cash stays AI-tool-only (the one deliberate
    remainder — a deterministic range-cash intent is its own small slice if
    ever wanted).
-6. **Resolution/label polish (found by #655, smaller; a–c are the live
-   items — turn-key notes from the 2026-06-10 pre-handoff scout below):**
-   (a) minion *names*
-   don't resolve directly — "mini sun avatar" lands on the Sun Avatar upgrade;
-   the stats live under the parent tier's subtowers (answerable via "sun
-   temple minions"); a subtower-name → parent-tier alias layer fixes recall.
-   *Scouted design:* a new `_subtower_name_facts(message_text,
-   resolved_tower_ids)` pass in `btd6_context_service` mirroring
-   `_paragon_name_facts` — build a cached index {minion name → owning
-   (tower_id, tier_code)} by walking the stats files' `subtowers` (+ paragon
-   `base`), match whole-word in text, ground the owning tier via
-   `btd6_upgrade_detail_service.get_upgrade_detail(f"{tower_id}:{code}")` →
-   `render_upgrade_grounding`. **Guards needed:** skip names colliding with
-   tower/hero/bloon/upgrade names (e.g. "Spectre" is also an Ace upgrade) and
-   stoplist generic single words ("Plane", "Marine"); "Orca"/"Pouākai"/
-   "Mini Sun Avatar"/"Crushing Sentry" are the headline wins.
-   (b) Catalog/bloon facts still carry the internal-ish `fixture/btd6_data`
-   label while stats facts say "BTD6 game data 55.1". (c)
-   `btd6_context_service` `source_summary` says "data.ninjakiwi.com (Tier 1)"
-   even on fixture-only answers — a faithfulness wart.
-   *Scouted (2026-06-10):* (b) is **18 literal sites** in
-   `btd6_context_service.py` + pins in `tests/evals/cases.py` (lines ~386/494)
-   — replace with one lazy helper (e.g. "BTD6 dataset, game v{game_version()}")
-   and update the eval pins; (c) is `_DEFAULT_SOURCE_SUMMARY` applied whenever
-   ANY facts exist (`build()` tail, ~line 2119) — branch on the existing
-   `live_rows` variable instead (live rows → NK Tier-1 summary; fixture-only →
-   a dataset summary); pins to update:
-   `test_btd6_ai_service_grounding_pin.py:71`,
-   `test_btd6_live_events_command.py:441`. ~~(d)
+6. **Resolution/label polish — a–c DONE 2026-06-10 (PR #662, with the
+   Navarch routing fix above):**
+   ~~(a) minion *names* don't resolve directly~~ — **DONE**: the scouted
+   `_subtower_name_facts` pass (context-service Pass 3b2) over a cached
+   {folded minion name → (kind, owner, code)} index of every stats file's
+   `subtowers` (tower tiers + hero levels + paragon bases). Both scouted
+   guards held: entity/upgrade-vocabulary collisions skip (beast names ARE
+   their tier's upgrade cards since the cutover, so "Orca" stays Pass-3c's;
+   "Spectre" is the Ace upgrade), generic English words are stoplisted
+   ("Plane"/"Marine"/"Sentry"/"Tree"/"Beast"). "Mini Sun Avatar" now grounds
+   Sun Temple 4-0-0 (was mis-landing on Sun Avatar); "Crushing Sentry" + the
+   typed sentries ground Sentry Expert; Etienne's UAV renders its buff
+   effect ("grants Camo detection" — a support minion has no attack, so the
+   hero-minion line renders `tier_effect_lines` too). **Bonus root-cause
+   find:** "Pouākai" was unmatchable typed EITHER way — the upgrade
+   tokenizer split the non-ASCII letter into `pou|kai`; `_tokens` now
+   NFKD-folds diacritics on both index and query sides.
+   ~~(b) the internal-ish `fixture/btd6_data` label~~ — **DONE**: one lazy
+   `_dataset_label()` helper → "BTD6 dataset, game v55.1" across all 18
+   sites; eval mock pins updated.
+   ~~(c) `source_summary` claims "data.ninjakiwi.com (Tier 1)" on
+   fixture-only answers~~ — **DONE**: `build()` branches on whether any
+   NK-sourced DB rows actually grounded (sharper than the scouted
+   `live_rows` check — stored `fetch_for_intent` rows are NK-sourced too);
+   fixture-only answers summarise as "local BTD6 dataset (game data +
+   curated)". ~~(d)
    hero-level `buffs` and paragon `subtowers` render on no surface~~ —
    **DONE 2026-06-10 (the #658 session)**: `tier_effect_lines` + the buff/zone
    renderers moved to `utils/btd6/effect_lines.py` (helper-policy: needed by
@@ -166,6 +189,16 @@ works** (the traps we hit), and what is still un-decoded.
    Striker's Bomb-buff fractions carried the dump's misleading `*Multiplier`
    names and rendered as ×0.25/×0.05 *reductions* — remapped to the
    `*Percentage` family (+25% pierce, +5% range) with transplant-skips.
+7. **Conversation-entity grounding for follow-up turns (idea, not started).**
+   Grounding is built from the current message only
+   (`natural_language_stage._gather_feature_facts` → `build(req.text)`), so a
+   follow-up like "does **it** make coins at the end of round" (the second
+   message in the 2026-06-10 Navarch screenshot) grounds ZERO facts and the
+   model answers from conversation memory — the faithfulness framing then
+   makes it sound verified. A fix would carry the previous turn's resolved
+   entities (or the bot's own last-named entities) into the grounding build.
+   Cross-cutting (AI pipeline, not BTD6-only) — needs its own small design
+   pass before code.
 
 ### Current state & next actions (READ FIRST)
 
@@ -404,6 +437,45 @@ decision.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-10 (the Navarch routing diagnosis + items 6a–c, PR #662)
+
+The maintainer's ask: continue the decode lane AND diagnose the screenshot's
+wrong answer ("does the navarch of seas paragon make coins" → "no") as
+*missing data or missing routing*. The ⭐ entry carries the what; durable
+how/why:
+
+- **Diagnose by replaying the exact text, not the cleaned-up version.** The
+  probe `build("does the navarch of seas paragon make coins")` returned **0
+  facts** — the single highest-information measurement of the session. With
+  the article restored it returned 7 facts (still no income). One probe
+  separated "resolution failed" from "rendering failed"; every fix followed
+  from those two numbers. Grep-reading the grounding code alone would have
+  found layer 3 but missed layer 1 (the one that actually fired live).
+- **A confident wrong answer needs grounding-shaped absence, not just absence.**
+  The model's two answers *sounded* sourced ("Based on the verified data…")
+  while holding zero facts; the instruction stack's faithfulness framing
+  styles ungrounded prose too. Worth remembering when triaging the next
+  "the bot said X wrongly" report: check what grounding the message
+  actually produced before blaming data.
+- **"Decoded" has three ends, and each surface misses independently.** The
+  same `cashPerRound` was: grounded for towers (specials), grounded for
+  heroes (specials), invisible for paragons (headline-only renderer); shown
+  on the normal menu view, dark on every `_stat_node_embed` view. When
+  adding a field, grep every renderer family — the #655 "dark-data check"
+  now has a fourth member (paragon grounding) in its checklist.
+- **The cap eats the last sentence first.** Curated descriptions put the
+  punchline ("It also generates cash like a Trade Empire.") at the end —
+  exactly what `_cap` truncates. Structured facts beat prose tails; if a
+  fact matters, give it its own line.
+- **Survey before stoplist.** The 6a guards were designed off a 5-minute
+  walk of every real subtower name (41 names) — which showed beast names
+  are upgrade names (collision guard does the work, no alias table needed)
+  and surfaced the Pouākai tokenizer split nobody had reported. The scout's
+  sketch was right but the data made the design decisions.
+- **Verification:** 12 + 10 new tests (incl. the screenshot text verbatim);
+  full CI mirror green (8,672 passed); arch strict 0 errors; clean live
+  boot; the deterministic Ask path returns the income fact.
 
 ### Session log — 2026-06-10 (the carry-forward decode pass, PR #655 continuation)
 

@@ -174,6 +174,11 @@ def _stat_node_embed(
         head.append(f"Range {node['range']} units")
     if node.get("footprintRadius") is not None:
         head.append(f"Footprint {node['footprintRadius']} units")
+    # End-of-round income (Trade Empire $800, Navarch $3,200, Benjamin's
+    # levels…) — same wording as the normal view's specials; without this the
+    # Pro/paragon/hero views render an income tower as pure combat.
+    if node.get("cashPerRound"):
+        head.append(f"Income ${_num(node['cashPerRound'])}/round")
     if head:
         embed.description = " · ".join(head)
 
