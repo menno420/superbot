@@ -27,6 +27,20 @@ engine + "Story Actions" view as the concrete Q-0040-compliant AI-DM mechanism
 (AG-08/AG-09), and the ≤3-clicks/2-minute UX laws as checkable invariants
 (AG-01).
 
+## Decisions + grooming (after the capture)
+
+One structured-choices round (protocol 6a) → **Q-0078** (router §34), all four
+answered: **one-way ascent** difficulty switching (T-3) · **both pet paths**
+(T-1; pets plan amended in place) · the **4-button Help Home** layout (T-4) ·
+next planning targets = **RPG survival design + help home/navigation**. The
+grooming move executed the first pick:
+`docs/planning/rpg-survival-difficulty-design-2026-06-10.md` (difficulty
+contract D1, lazy-clock energy/hunger D2/D3, fishing/cooking D3/D4,
+encounters D4, death-as-rescue D5, duel-XP quick-win D6; P1–P5 phasing;
+gates G1–G3; Easy-mode byte-identical as the headline pin). The
+help-home/navigation plan is the named next grooming target, sequenced with
+the Help lane's overlay editor UI.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →
@@ -43,9 +57,8 @@ engine + "Story Actions" view as the concrete Q-0040-compliant AI-DM mechanism
 - **Decisions made alone:** numbered the vision delta (V/AG/T scheme) and
   flagged tensions instead of silently merging the pets vision into the pets
   plan; deferred all promotion decisions to owner picks (routing rule).
-- **Weak point:** the routing ledger's "suggested next steps" are my judgment
-  — the owner's actual cluster priorities were captured via the end-of-session
-  structured-choices round (see Q-0078 in the router if answered).
+- **Weak point:** the survival plan's contract-table numbers are placeholders
+  by design (gate G2 owner-confirm) — don't read them as decided balance.
 - **One change that would have helped:** a one-line "owner-voice capture
   template" in ideas/README (sections: owner-voice · dedup map · new items ·
   response · tensions · routing) — this session derived it; next drop should

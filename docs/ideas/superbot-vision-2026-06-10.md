@@ -249,8 +249,9 @@ section is new work** — it's the ground the vision stands on.
   (encounter-prevention, treasure-sense). Proposed reconcile: eggs stay the
   *common* path; the AG-08 rescue template becomes the *rare/unique-species* path;
   party cap grows 1 → 3 across the plan's phases; V-09's buffs implement as
-  AG-07 table modifiers tuned small. **Needs an owner pick before the pets plan
-  promotes.**
+  AG-07 table modifiers tuned small. **✅ Answered (Q-0078, 2026-06-10): "Both
+  paths" — the proposed reconcile approved as written; the pets plan keeps its
+  P1–P4 shape and gains the rescue path + 1→3 party growth as future phases.**
 - **T-2 — Energy vs. "active sessions, idle parked" (§7.2) and "not annoying".**
   An action budget is a *throttle* on the active play the owner chose. The saving
   grammar: Easy mode has **no energy at all** (today's behavior unchanged — the
@@ -260,7 +261,9 @@ section is new work** — it's the ground the vision stands on.
 - **T-3 — Difficulty switching.** Leaderboards (#665) become incomparable if
   players hop difficulties freely. Candidate rules: one-way ascent (easy→medium→
   hard) · free switch with per-difficulty board flags · locked at creation ·
-  seasonal reset (AG-13). **Owner pick needed at design time.**
+  seasonal reset (AG-13). **✅ Answered (Q-0078, 2026-06-10): one-way ascent —
+  upgrade anytime, never downgrade; board entries carry a difficulty flag
+  (⭐/⭐⭐/⭐⭐⭐).**
 - **T-4 — Help Home restructure vs. the in-flight Help lane.** The overlay editor
   UI plan (2 PRs) is queued on the same surface. Sequence V-03 *after or with* it,
   on the same projection seam — not as a parallel fork. The 10-hub → 4-button
@@ -268,13 +271,21 @@ section is new work** — it's the ground the vision stands on.
   games + btd6 + economy-as-player; 🧭 Server & Info = utility + community; 🙋 My
   Stuff = profile/prefs/reminders/tickets (needs V-04); ⚙️ Manage = settings +
   server-management + moderation + admin + diagnostics, governance-gated).
+  **✅ Answered (Q-0078, 2026-06-10): the 4-button mapping approved as proposed;
+  sequencing after/with the overlay editor UI stands.**
 - **T-5 — AI DM scope creep risk.** V-10 is inside Q-0040's posture, but every
   concrete piece (panel push, Story Actions, auto-continue) **writes, costs money,
   and adds UI** — Q-0048's standing lift does *not* cover it. AG-08/AG-09 are the
   plan-shaped path; nothing ships without the per-exposure lift + the bounded-
   authority decision Q-0040 already names.
 
-## 6. Routing ledger (state: captured → routed)
+## 6. Routing ledger (state: captured → routed; Q-0078 picks applied 2026-06-10)
+
+> **Q-0078 (2026-06-10):** the owner picked **RPG survival design** and **Help
+> home + navigation** as the next planning targets. The survival design is
+> structured: [`../planning/rpg-survival-difficulty-design-2026-06-10.md`](../planning/rpg-survival-difficulty-design-2026-06-10.md).
+> The help-home/navigation plan is the next grooming target (sequenced with the
+> Help lane's overlay editor UI). Per-user prefs and AI DM v1 stay captured.
 
 | Item | Owning lane / home | Rough size | Suggested next step |
 |---|---|---|---|

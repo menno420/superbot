@@ -114,6 +114,14 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
   arc; [loose-ends-audit](planning/loose-ends-audit-roadmap.md) is the source audit (its L1–L6
   sequence is superseded by mother-hub).
+- **Later (planning target — Q-0078)** — the **4-button Help Home + panel
+  navigation doctrine** from the owner's vision statement
+  ([superbot-vision](ideas/superbot-vision-2026-06-10.md) V-02/V-03 + AG-01/AG-03):
+  Play · Server & Info · My Stuff · Manage top level (layout decided Q-0078),
+  update-in-place + mother/help links on every panel, one-active-panel + summon,
+  and the ≤3-clicks reachability invariant. Owner-picked as a next planning
+  target; **sequence with/after the Help overlay editor UI plan** on the same
+  projection seam (capture-doc T-4) — structure into its own plan before building.
 - **Later** — [command-expansion-backlog](building-roadmap/command-expansion-backlog.md)
   and [admin-powers config-coverage](building-roadmap/admin-powers-config-coverage.md):
   backlogs — cross-check source before pulling one.
@@ -251,6 +259,16 @@ accepted, not a target).
   pets from exploration drops + a care-loop coin/ore sink + tiny non-P2W perks; the
   owner's ⭐ pick from the 2026-06-09 fun/ease brainstorm (Q-0053). Gate: Wave-1
   keystone slices (Workshop + durability) + balance review + owner promotion.
+  **Amended 2026-06-10 (Q-0078 "both paths"):** quest-rescue joins as the
+  rare-species path once the quest engine exists; party cap grows 1→3 later.
+- **Later** — [**RPG survival & difficulty design**](planning/rpg-survival-difficulty-design-2026-06-10.md):
+  difficulty modes (Easy ≡ today's game, byte-identical) + energy/health/hunger +
+  fishing/cooking + biome×difficulty encounters + hard-mode death-as-rescue; from the
+  owner's vision statement ([superbot-vision](ideas/superbot-vision-2026-06-10.md)
+  V-05…V-08), picked as a planning target in **Q-0078** (one-way-ascent switching
+  decided there). Gates: sequencing behind §7.5 structures / §7.4 skill tree + the
+  owner numbers-confirm (plan G1/G2). Its D6 (duel XP both sides) is a standalone
+  quick-win.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
 
@@ -285,7 +303,10 @@ privacy/provenance/moderation review before any public surface.
   written product-vision statement + agent response: 2-minute setup KPI, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
   difficulty/survival/energy, story pets, AI-as-panel-orchestrator (inside the Q-0040
-  posture); routing ledger inside, tensions T-1…T-5 flagged for owner picks.
+  posture); routing ledger inside. **Owner picks recorded same day (Q-0078):**
+  one-way-ascent difficulty · both pet paths · the 4-button layout · next planning
+  targets = RPG survival design (structured →
+  [plan](planning/rpg-survival-difficulty-design-2026-06-10.md)) + help home/navigation.
 - [fun-and-ease-brainstorm](ideas/fun-and-ease-brainstorm-2026-06-09.md) — 24
   dedup-verified fun + ease-of-use ideas (social/competition, ambient delight, member
   UX); owner picks recorded (Q-0053; pets structured → a games-lane plan).

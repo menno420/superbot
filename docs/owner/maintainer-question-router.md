@@ -3175,3 +3175,53 @@ surface-only (current after #676 — recommended until the drift recurs),
 
 **Suggested destination after answer:** `docs/subsystems/btd6.md` data-lane
 note + `btd6_cog.cog_load` (if (b)/(c): implement beside the drift warning).
+
+## 34. Product-vision capture session decisions — 2026-06-10
+
+> Asked and answered live (structured choices, one round) during the
+> vision-ideation capture session (PR #680); the capture doc is
+> [`../ideas/superbot-vision-2026-06-10.md`](../ideas/superbot-vision-2026-06-10.md)
+> (items V-01…V-12 / AG-01…AG-15, tensions T-1…T-5).
+
+### Q-0078 — Vision-capture routing picks (difficulty switching · pets reconcile · help home layout · next planning targets)
+
+**Area:** Games / Help-interface / product routing
+**Type:** Product posture + planning-queue selection (batched structured choices)
+**Priority:** Medium (each answer unblocks its lane's design work; nothing was implementation-gated this session)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** → capture doc §5/§6 updated; RPG survival design structured into [`../planning/rpg-survival-difficulty-design-2026-06-10.md`](../planning/rpg-survival-difficulty-design-2026-06-10.md); roadmap rows updated
+
+**Question (4 sub-questions, one round):** (1) Can a player change RPG
+difficulty after starting (T-3)? (2) How do the vision's story pets reconcile
+with the existing egg-based pets plan (T-1)? (3) Which top-level Help Home
+button layout (T-4)? (4) Which idea clusters become the next planning targets?
+
+**Maintainer answers (2026-06-10, all four verbatim from the structured round):**
+
+1. **Difficulty switching = "One-way ascent"** — start anywhere; may move
+   easy→medium→hard at any time, never back down; leaderboard entries carry a
+   difficulty flag (⭐/⭐⭐/⭐⭐⭐). *(The recommended option.)*
+2. **Pets = "Both paths"** — eggs stay the common acquisition (existing pets
+   plan unchanged in shape); quest-rescue becomes the rare/unique-species path
+   once the quest engine exists; party cap grows 1→3 across phases; the
+   vision's journey buffs (scout / gold-sense) implement as small
+   encounter-table modifiers. *(The recommended option.)*
+3. **Help Home = "4 buttons"** — 🎮 Play (games·btd6·economy) · 🧭 Server &
+   Info (utility·community·stats·tickets) · 🙋 My Stuff (profile·my
+   settings·reminders — needs the per-user prefs feature, V-04) · ⚙️ Manage
+   (settings·server-mgmt·moderation·admin·diagnostics, staff-visible only).
+   *(The recommended option.)*
+4. **Next planning targets = "RPG survival design" + "Help home +
+   navigation"** (two picks). Per-user preferences and AI DM v1 stay
+   captured-only for now.
+
+*Answer scope:* product **posture + planning-queue** decisions. Nothing here
+approves implementation: the survival design doc and the help-home/navigation
+plan each still promote through `docs/ideas/README.md` gates, and the Help
+work sequences with the in-flight Help lane (overlay editor UI plan) per
+capture-doc T-4. The pets answer **amends the pets plan's future phases**
+(party 1→3, rescue path) without changing its P1–P4 shape.
+
+**Routed to:** capture doc §5 (T-1/T-3/T-4 marked answered) + §6 ledger;
+`docs/planning/rpg-survival-difficulty-design-2026-06-10.md` (new, the
+grooming move); `docs/roadmap.md` games + interface lanes;
+`docs/planning/pets-companions-plan-2026-06-09.md` (amendment note).
