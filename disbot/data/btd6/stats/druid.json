@@ -2058,38 +2058,9 @@
           ]
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "cashPerRound": 1000,
-      "code": "050",
-      "crosspath": "0-5-0",
       "zones": [
         {
-          "name": "Thorn zone (far)",
-          "damage": 2,
-          "damage_type": "Sharp",
-          "cannot_pop": "Cannot damage Lead or frozen",
-          "immuneBloonProperties": 17,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 8
-        },
-        {
-          "name": "Thorn zone (middle)",
-          "damage": 1,
-          "damage_type": "Sharp",
-          "cannot_pop": "Cannot damage Lead or frozen",
-          "immuneBloonProperties": 17,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 4,
-          "radius": 100
-        },
-        {
+          "kind": "DamageOverTimeZone",
           "name": "Thorn zone (close)",
           "damage": 1,
           "damage_type": "Sharp",
@@ -2097,11 +2068,43 @@
           "immuneBloonProperties": 17,
           "interval": 0.5,
           "initialDelay": 0,
-          "distributeToChildren": true,
           "damageModifierForCeramicOrMoabs": 14,
-          "radius": 50
+          "radius": 50,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (middle)",
+          "damage": 1,
+          "damage_type": "Sharp",
+          "cannot_pop": "Cannot damage Lead or frozen",
+          "immuneBloonProperties": 17,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 4,
+          "radius": 100,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (far)",
+          "damage": 2,
+          "damage_type": "Sharp",
+          "cannot_pop": "Cannot damage Lead or frozen",
+          "immuneBloonProperties": 17,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 8,
+          "distributeToChildren": true
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "cashPerRound": 1000,
+      "code": "050",
+      "crosspath": "0-5-0"
     },
     "051": {
       "placeableOnLand": true,
@@ -2254,38 +2257,9 @@
           ]
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "cashPerRound": 1000,
-      "code": "051",
-      "crosspath": "0-5-1",
       "zones": [
         {
-          "name": "Thorn zone (far)",
-          "damage": 2,
-          "damage_type": "Sharp",
-          "cannot_pop": "Cannot damage Lead or frozen",
-          "immuneBloonProperties": 17,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 8
-        },
-        {
-          "name": "Thorn zone (middle)",
-          "damage": 1,
-          "damage_type": "Sharp",
-          "cannot_pop": "Cannot damage Lead or frozen",
-          "immuneBloonProperties": 17,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 4,
-          "radius": 100
-        },
-        {
+          "kind": "DamageOverTimeZone",
           "name": "Thorn zone (close)",
           "damage": 1,
           "damage_type": "Sharp",
@@ -2293,11 +2267,43 @@
           "immuneBloonProperties": 17,
           "interval": 0.5,
           "initialDelay": 0,
-          "distributeToChildren": true,
           "damageModifierForCeramicOrMoabs": 14,
-          "radius": 50
+          "radius": 50,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (middle)",
+          "damage": 1,
+          "damage_type": "Sharp",
+          "cannot_pop": "Cannot damage Lead or frozen",
+          "immuneBloonProperties": 17,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 4,
+          "radius": 100,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (far)",
+          "damage": 2,
+          "damage_type": "Sharp",
+          "cannot_pop": "Cannot damage Lead or frozen",
+          "immuneBloonProperties": 17,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 8,
+          "distributeToChildren": true
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "cashPerRound": 1000,
+      "code": "051",
+      "crosspath": "0-5-1"
     },
     "052": {
       "placeableOnLand": true,
@@ -2450,38 +2456,9 @@
           ]
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "cashPerRound": 1000,
-      "code": "052",
-      "crosspath": "0-5-2",
       "zones": [
         {
-          "name": "Thorn zone (far)",
-          "damage": 2,
-          "damage_type": "Sharp",
-          "cannot_pop": "Cannot damage Lead or frozen",
-          "immuneBloonProperties": 17,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 8
-        },
-        {
-          "name": "Thorn zone (middle)",
-          "damage": 1,
-          "damage_type": "Sharp",
-          "cannot_pop": "Cannot damage Lead or frozen",
-          "immuneBloonProperties": 17,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 4,
-          "radius": 100
-        },
-        {
+          "kind": "DamageOverTimeZone",
           "name": "Thorn zone (close)",
           "damage": 1,
           "damage_type": "Sharp",
@@ -2489,11 +2466,43 @@
           "immuneBloonProperties": 17,
           "interval": 0.5,
           "initialDelay": 0,
-          "distributeToChildren": true,
           "damageModifierForCeramicOrMoabs": 14,
-          "radius": 50
+          "radius": 50,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (middle)",
+          "damage": 1,
+          "damage_type": "Sharp",
+          "cannot_pop": "Cannot damage Lead or frozen",
+          "immuneBloonProperties": 17,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 4,
+          "radius": 100,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (far)",
+          "damage": 2,
+          "damage_type": "Sharp",
+          "cannot_pop": "Cannot damage Lead or frozen",
+          "immuneBloonProperties": 17,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 8,
+          "distributeToChildren": true
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "cashPerRound": 1000,
+      "code": "052",
+      "crosspath": "0-5-2"
     },
     "100": {
       "placeableOnLand": true,
@@ -3347,38 +3356,9 @@
           ]
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "cashPerRound": 1000,
-      "code": "150",
-      "crosspath": "1-5-0",
       "zones": [
         {
-          "name": "Thorn zone (far)",
-          "damage": 2,
-          "damage_type": "Normal",
-          "cannot_pop": "Can damage any Bloon type",
-          "immuneBloonProperties": 0,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 8
-        },
-        {
-          "name": "Thorn zone (middle)",
-          "damage": 1,
-          "damage_type": "Normal",
-          "cannot_pop": "Can damage any Bloon type",
-          "immuneBloonProperties": 0,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 4,
-          "radius": 100
-        },
-        {
+          "kind": "DamageOverTimeZone",
           "name": "Thorn zone (close)",
           "damage": 1,
           "damage_type": "Normal",
@@ -3386,11 +3366,43 @@
           "immuneBloonProperties": 0,
           "interval": 0.5,
           "initialDelay": 0,
-          "distributeToChildren": true,
           "damageModifierForCeramicOrMoabs": 14,
-          "radius": 50
+          "radius": 50,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (middle)",
+          "damage": 1,
+          "damage_type": "Normal",
+          "cannot_pop": "Can damage any Bloon type",
+          "immuneBloonProperties": 0,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 4,
+          "radius": 100,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (far)",
+          "damage": 2,
+          "damage_type": "Normal",
+          "cannot_pop": "Can damage any Bloon type",
+          "immuneBloonProperties": 0,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 8,
+          "distributeToChildren": true
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "cashPerRound": 1000,
+      "code": "150",
+      "crosspath": "1-5-0"
     },
     "200": {
       "placeableOnLand": true,
@@ -4453,38 +4465,9 @@
           ]
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "cashPerRound": 1000,
-      "code": "250",
-      "crosspath": "2-5-0",
       "zones": [
         {
-          "name": "Thorn zone (far)",
-          "damage": 2,
-          "damage_type": "Normal",
-          "cannot_pop": "Can damage any Bloon type",
-          "immuneBloonProperties": 0,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 8
-        },
-        {
-          "name": "Thorn zone (middle)",
-          "damage": 1,
-          "damage_type": "Normal",
-          "cannot_pop": "Can damage any Bloon type",
-          "immuneBloonProperties": 0,
-          "interval": 0.5,
-          "initialDelay": 0,
-          "distributeToChildren": true,
-          "damageModifierForCeramicOrMoabs": 4,
-          "radius": 100
-        },
-        {
+          "kind": "DamageOverTimeZone",
           "name": "Thorn zone (close)",
           "damage": 1,
           "damage_type": "Normal",
@@ -4492,11 +4475,43 @@
           "immuneBloonProperties": 0,
           "interval": 0.5,
           "initialDelay": 0,
-          "distributeToChildren": true,
           "damageModifierForCeramicOrMoabs": 14,
-          "radius": 50
+          "radius": 50,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (middle)",
+          "damage": 1,
+          "damage_type": "Normal",
+          "cannot_pop": "Can damage any Bloon type",
+          "immuneBloonProperties": 0,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 4,
+          "radius": 100,
+          "distributeToChildren": true
+        },
+        {
+          "kind": "DamageOverTimeZone",
+          "name": "Thorn zone (far)",
+          "damage": 2,
+          "damage_type": "Normal",
+          "cannot_pop": "Can damage any Bloon type",
+          "immuneBloonProperties": 0,
+          "interval": 0.5,
+          "initialDelay": 0,
+          "damageModifierForCeramicOrMoabs": 8,
+          "distributeToChildren": true
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "cashPerRound": 1000,
+      "code": "250",
+      "crosspath": "2-5-0"
     },
     "300": {
       "placeableOnLand": true,

@@ -69,3 +69,18 @@ active lane, not a new product idea).
 **Resume point:** decode-status ⭐ header. The maintainer owes a live
 spot-check of the new surfaces (item 4 there); PR #649 review = the full data
 diff.
+
+## Wave 2 (same session, post-merge): decode wave 1 of the backlog
+
+After #649 merged, executed the top of the post-cutover backlog (follow-up PR):
+druid thorn rings decoded from `SpiritOfTheForestModel` (the committed values
+reproduced exactly at 0-5-0; 150/250 get the genuine v55.1 ibp=0 → Normal
+damage type — the staleness the carryforward had preserved), engineer tier-4
+typed sentries via `CreateTypedTowerModel` (4 names + 25s expire == committed),
+and the banana economy lifted off the suppressed banana attack (CashModel +
+BankModel → tier fields + specials: "Bananas worth $300", "Bank $7,000
+capacity, +15% interest/round" — every number prose-pinned). Both decoded
+carry-forwards removed from `_CUTOVER_CARRYFORWARD`; guard stayed 55/55.
+Process note: the absent-scalar transplant quietly re-added committed
+`distributeToChildren` onto the decoded thorn zones — the merge layers compose
+the way they were designed to.

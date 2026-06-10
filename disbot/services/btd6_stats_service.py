@@ -607,6 +607,23 @@ def _collect_specials(
             add(f"Income {_money(node['cashPerRound'])}/round")
         if node.get("cashMinimum"):
             add(f"Cash crate {_money(node['cashMinimum'])}")
+        # Banana Farm economy (tier-level fields the cutover lifts off the
+        # suppressed banana attack's CashModel / the BankModel — prose-pinned).
+        if node.get("bananaValue"):
+            value = _money(node["bananaValue"])
+            if node.get("bananaValueMax"):
+                value += f"-{_money(node['bananaValueMax'])}"
+            add(f"Bananas worth {value}")
+        if node.get("bananaBonusMultiplier"):
+            add(f"+{round(node['bananaBonusMultiplier'] * 100)}% banana value")
+        if node.get("bankCapacity"):
+            interest = node.get("bankInterest")
+            tail = (
+                f", +{round(interest * 100)}% interest/round"
+                if isinstance(interest, (int, float)) and interest
+                else ""
+            )
+            add(f"Bank {_money(node['bankCapacity'])} capacity{tail}")
         if node.get("damageToBad"):
             add(f"Ability: {_money(node['damageToBad'])} to BADs/Bosses")
         elif "cooldown" in node and node.get("cooldown"):

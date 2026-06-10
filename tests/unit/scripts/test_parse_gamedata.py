@@ -2336,24 +2336,25 @@ def test_cutover_restores_committed_upgrade_names(mod):
 
 
 def test_cutover_carryforward_reinjects_undecodable_entries(mod):
-    # Druid's thorn zones have no top-level model in v55.1 — committed entries
-    # carry forward verbatim on their tiers.
-    payload = {"tower_id": "druid", "tiers": {"050": {}}, "upgrades": []}
+    # Sub Energizer's auras have no clean decode yet (SubmergeModel sits
+    # neutrally on every submerged tier) — committed entries carry forward
+    # verbatim on their tiers. (Druid's thorn zones, the original example
+    # here, were decoded 2026-06-10.)
+    payload = {"tower_id": "monkey_sub", "tiers": {"050": {}}, "upgrades": []}
     committed = {
         "tiers": {
             "050": {
-                "zones": [
-                    {"name": "Thorn zone (close)", "damage": 1},
-                    {"name": "Thorn zone (middle)", "damage": 1},
-                    {"name": "Thorn zone (far)", "damage": 2},
+                "buffs": [
+                    {"name": "Ability cooldown buff", "abilityCooldownMultiplier": 1.2},
+                    {"name": "Ability cooldown buff (global)", "isGlobal": True},
                 ],
             },
         },
         "upgrades": [],
     }
-    mod.cutover_payload(payload, committed, "druid")
-    names = [z["name"] for z in payload["tiers"]["050"]["zones"]]
-    assert names == ["Thorn zone (close)", "Thorn zone (middle)", "Thorn zone (far)"]
+    mod.cutover_payload(payload, committed, "monkey_sub")
+    names = [b["name"] for b in payload["tiers"]["050"]["buffs"]]
+    assert names == ["Ability cooldown buff", "Ability cooldown buff (global)"]
 
 
 def test_cutover_guard_raises_on_lost_curated_name(mod):
@@ -2418,3 +2419,112 @@ def test_upgrades_for_synthesizes_colon_id_cards(mod, tmp_path):
     assert card["name"] == "Operation: Dart Storm"
     assert card["description"] == "Shoots 16 darts per volley."
     assert "cost" not in card
+
+
+# --- post-cutover decode wave 1 (2026-06-10) ---------------------------------
+
+
+def test_sotf_thorn_rings_decode(mod):
+    # Spirit of the Forest: three DamageOverTimeZones nested on the SOTF model
+    # (additive == the committed damageModifierForCeramicOrMoabs; radii on the
+    # parent; far is unbounded).
+    def ring(additive, damage, ibp=17):
+        return {
+            "$type": _t("DamageOverTimeZoneModel"),
+            "range": 0.0,
+            "behaviorModel": {
+                "$type": _t("DamageOverTimeCustomModel"),
+                "damage": damage,
+                "additive": additive,
+                "interval": 0.5,
+                "initialDelay": 0.0,
+                "immuneBloonProperties": ibp,
+            },
+        }
+
+    model = _tower_model()
+    model["behaviors"].append(
+        {
+            "$type": _t("SpiritOfTheForestModel"),
+            "closeRange": 50.0,
+            "middleRange": 100.0,
+            "damageOverTimeZoneModelClose": ring(14.0, 1.0),
+            "damageOverTimeZoneModelMiddle": ring(4.0, 1.0),
+            "damageOverTimeZoneModelFar": ring(8.0, 2.0, ibp=0),
+        }
+    )
+    zones = mod._map_tier(model)["zones"]
+    names = [z["name"] for z in zones]
+    assert names == [
+        "SpiritOfTheForestClose",
+        "SpiritOfTheForestMiddle",
+        "SpiritOfTheForestFar",
+    ]
+    close, middle, far = zones
+    assert close["damageModifierForCeramicOrMoabs"] == 14
+    assert close["radius"] == 50 and middle["radius"] == 100
+    assert "radius" not in far
+    assert far["damage"] == 2 and far["interval"] == 0.5
+    assert far["damage_type"] == "Normal"  # ibp 0 = pops everything
+    assert close["damage_type"] == "Sharp"
+
+
+def test_typed_sentry_subtowers_decode(mod):
+    # Engineer Sentry Expert: four typed sentries embedded on the spawner
+    # projectile's CreateTypedTowerModel.
+    def sentry(name):
+        return {
+            "$type": "Il2CppAssets.Scripts.Models.Towers.TowerModel, Assembly-CSharp",
+            "name": name,
+            "behaviors": [{"$type": _t("TowerExpireModel"), "lifespan": 25.0}],
+        }
+
+    proj = _projectile()
+    proj["behaviors"].append(
+        {
+            "$type": _t("CreateTypedTowerModel"),
+            "crushingTower": sentry("SentryCrushing"),
+            "boomTower": sentry("SentryBoom"),
+            "coldTower": sentry("SentryCold"),
+            "energyTower": sentry("SentryEnergy"),
+        }
+    )
+    model = _tower_model(attacks=[_attack(proj)])
+    subs = mod._map_tier(model)["subtowers"]
+    assert [s["name"] for s in subs] == [
+        "SentryCrushing",
+        "SentryBoom",
+        "SentryCold",
+        "SentryEnergy",
+    ]
+    assert all(s["lifespan"] == 25 for s in subs)
+
+
+def test_farm_income_extraction(mod, tmp_path):
+    # Farm economy lifts off the (suppressed) banana attack's CashModel and
+    # the BankModel — prose-pinned fields.
+    dump = tmp_path / "dump"
+    tdir = dump / "Towers" / "BananaFarm"
+    tdir.mkdir(parents=True)
+    proj = _projectile(damage=None)
+    proj["behaviors"].append(
+        {
+            "$type": _t("CashModel"),
+            "minimum": 45.0,
+            "maximum": 45.0,
+            "salvage": 0.5,
+            "bonusMultiplier": 0.25,
+        }
+    )
+    base = _tower_model(attacks=[_attack(proj)])
+    base["behaviors"].append(
+        {"$type": _t("BankModel"), "capacity": 7000.0, "interest": 0.15}
+    )
+    (tdir / "BananaFarm.json").write_text(json.dumps(base))
+    res = mod.map_tower(dump, "banana_farm", "BananaFarm", "55.1")
+    tier = res.payload["tiers"]["000"]
+    assert tier["attacks"] == []  # nominal banana attack suppressed
+    assert tier["bananaValue"] == 45
+    assert tier["bananaSalvageValue"] == 0.5
+    assert tier["bananaBonusMultiplier"] == 0.25
+    assert tier["bankCapacity"] == 7000 and tier["bankInterest"] == 0.15

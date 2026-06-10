@@ -242,3 +242,14 @@ def test_resolve_paragon_by_name_and_tower():
     assert svc.resolve_paragon("wizard") == "magus_perfectus"
     assert svc.resolve_paragon("Monkey Ace") == "goliath_doomship"
     assert svc.resolve_paragon("not a tower") is None
+
+
+def test_farm_economy_specials_surface():
+    # Post-cutover decode wave (2026-06-10): banana value / bonus / bank terms
+    # lift off the suppressed banana attack and surface as specials.
+    farm = svc.get_tower_stats("banana_farm")
+    base = svc.normal_stats(farm.tier("000"))
+    assert "Bananas worth $20" in base.specials
+    bank = svc.normal_stats(farm.tier("030"))
+    assert "Bank $7,000 capacity, +15% interest/round" in bank.specials
+    assert "+25% banana value" in bank.specials
