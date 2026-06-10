@@ -281,6 +281,11 @@ privacy/provenance/moderation review before any public surface.
 > requires the gates in [`ideas/README.md`](ideas/README.md). Do not treat anything here as
 > a priority.
 
+- [superbot-vision-2026-06-10](ideas/superbot-vision-2026-06-10.md) — the maintainer's
+  written product-vision statement + agent response: 2-minute setup KPI, panel
+  navigation doctrine, 4-button help home, per-user preferences, RPG
+  difficulty/survival/energy, story pets, AI-as-panel-orchestrator (inside the Q-0040
+  posture); routing ledger inside, tensions T-1…T-5 flagged for owner picks.
 - [fun-and-ease-brainstorm](ideas/fun-and-ease-brainstorm-2026-06-09.md) — 24
   dedup-verified fun + ease-of-use ideas (social/competition, ambient delight, member
   UX); owner picks recorded (Q-0053; pets structured → a games-lane plan).
