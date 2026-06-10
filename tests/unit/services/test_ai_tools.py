@@ -1207,7 +1207,10 @@ async def test_btd6_answerability_reports_inventory_and_gaps():
     assert by_name["towers"]["item_count"] > 0
     assert by_name["round_cash"]["kind"] == "calculation"
     # Known gaps are stated explicitly so the model never overclaims them.
-    assert by_name["alternate_round_sets"]["kind"] == "unsupported"
+    # (ABR graduated to a fixture in the same release — abr_rounds.json — so
+    # the remaining round-set gap names the quest/Rogue/Frontier sets.)
+    assert by_name["abr_rounds"]["kind"] == "deterministic_fixture"
+    assert by_name["other_round_sets"]["kind"] == "unsupported"
     assert by_name["achievements"]["kind"] == "unsupported"
     # Deterministic: a repeat call returns the identical payload.
     assert out == await handler({})
