@@ -177,7 +177,7 @@ class TestProcessChainMessage:
                 return_value={"word": "good", "word_limit": 0},
             ),
             patch(
-                "cogs.chain_cog.db.increment_chain_count",
+                "cogs.chain_cog.chain_service.record_chain_progress",
                 new_callable=AsyncMock,
             ) as inc,
             patch(
