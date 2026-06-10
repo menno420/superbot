@@ -1,7 +1,7 @@
 {
   "hero_id": "etienne",
   "canonical": "Etienne",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 650,
   "cost_chimps": 650,
@@ -55,6 +55,15 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -87,6 +96,15 @@
         {
           "name": "Drone Swarm",
           "cooldown": 70
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -123,6 +141,15 @@
           "cooldown": 70
         }
       ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -155,6 +182,15 @@
         {
           "name": "Drone Swarm",
           "cooldown": 70
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -191,6 +227,15 @@
           "cooldown": 55
         }
       ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": false,
       "targetTypeClose": false,
@@ -223,6 +268,15 @@
         {
           "name": "Drone Swarm",
           "cooldown": 55
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -298,11 +352,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -378,11 +461,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -462,11 +574,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -546,11 +687,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -630,11 +800,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -714,11 +913,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -798,11 +1026,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -882,11 +1139,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -966,11 +1252,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.2,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1050,11 +1365,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.2,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1134,11 +1478,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.2,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1218,11 +1591,40 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "projectiles": [],
+              "count": 0,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.2,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1302,11 +1704,77 @@
           "towerSelectionMenuThemeId": "Default",
           "footprintRadius": 0,
           "doesntBlockTowerPlacement": false,
-          "attacks": [],
+          "attacks": [
+            {
+              "name": "Attack",
+              "rate": 0.6,
+              "eject": "0, 15.9, -3.6",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "UCAVMissile",
+                  "pierce": 1,
+                  "maxPierce": 1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 200,
+                  "lifespan": 2.25,
+                  "filterInvisible": false
+                },
+                {
+                  "name": "Explosion",
+                  "pierce": 25,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 20,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Explosion",
+                  "cannot_pop": "Cannot damage Black",
+                  "immuneBloonProperties": 2,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": false
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 2000,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": false
+            }
+          ],
+          "buffs": [
+            {
+              "kind": "VisibilitySupport",
+              "grantsCamoDetection": true,
+              "isGlobal": true,
+              "maxStackSize": 0
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
           "targetTypeStrong": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.2,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,

@@ -37,7 +37,7 @@
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
 | **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batch 1** low-risk runtime truth/clarity → **Batch 2** surface-classification invariant → **Batch 3** service-boundary fixes → **Batch 4** Settings **Phase 2** declaration coverage (Q-0064 BTD6 rows ride along) → **Batch 5** Adaptive **P1C** → **Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
-| **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 `--all` towers cutover (dedicated session — Q-0066–Q-0069 answered) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover itself **shipped 2026-06-10, PR #649** — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
@@ -164,19 +164,24 @@ dedicated decision** for any action capability.
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
   Map: [ai-service-integration-map](ai/ai-service-integration-map.md).
 
-### 🎈 BTD6 data / tools — **Now** (extraction resumed; cutover is the next session)
+### 🎈 BTD6 data / tools — **Now** (THE CUTOVER IS DONE — post-cutover decode backlog)
 
 Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · ADR-006
-provenance schema is implemented; extraction resumed against the decode-status backlog.
+provenance schema is implemented.
 
-- **Now (resumed — #638 merged 2026-06-10)** — ABR rounds + income sets
-  ingested game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
-  subtower mechanisms 7/7; buffs 15/38 confirmed (the rest are provably unconfirmable
-  pre-cutover). **Next: the dedicated `--all` towers-cutover session (owner decisions
-  Q-0066–Q-0069, router §29)** — game-native committed stats, Farm/Village **full**
-  tier structures (attack-suppressed), per-tier beast names, name-guard joins, ~25
-  value-pinned test updates.
-  Status: [decode-status](btd6/btd6-gamedata-decode-status.md).
+- **Shipped (2026-06-10 — PR #649, the Q-0066 dedicated cutover session; verify
+  merge)** — **every committed stats file is game-native v55.1**: 25 towers +
+  17 heroes + 13 paragons via `parse_gamedata.py --all` through the new cutover
+  merge layer (curated names preserved + set-level name guard); Q-0067
+  (Farm/Village full tiers + decoded income auras) and Q-0068 (per-tier beast
+  names) executed in the same pass; source labels now read "BTD6 game data".
+  **Next:** the post-cutover decode backlog (carried-forward mechanisms, banana
+  economy, the buff/zone tail) — ⭐ header of
+  [decode-status](btd6/btd6-gamedata-decode-status.md) — plus the maintainer's
+  live spot-check of the new surfaces.
+- **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
+  game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
+  subtower mechanisms 7/7; buffs 15/38 confirmed.
 - **Built (Q-0049 — #633, merged 2026-06-09)** — the
   "fetch-everything-on-update" data refresh is a committed **manual-dispatch GitHub
   Actions workflow** (`workflow_dispatch` only, no schedule): one-click refresh after a

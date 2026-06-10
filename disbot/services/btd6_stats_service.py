@@ -534,14 +534,29 @@ def _iter_dicts(node: Any) -> Any:
             yield from _iter_dicts(value)
 
 
-# Prince of Darkness fires projectiles literally named "MOAB" / "BFB" — popped
-# blimps reanimated as allies, and the only bloon-class-named projectiles in the
-# dataset. Their stored "damage" is the reanimated minion's, not the tower's own
-# hit, so counting BFB's 100 as Prince of Darkness's headline damage misleads.
-# The headline skips them; the full reanimation breakdown lives in
-# btd6_upgrade_detail_service. (Druid's 9,999,999 Vine sentinel is intentional —
-# it renders as "∞" for the instant-kill — and is deliberately left untouched.)
-_REANIMATED_MINION_NAMES = frozenset({"moab", "bfb", "zomg", "ddt", "bad"})
+# Prince of Darkness fires projectiles that ARE reanimated blimps — the only
+# bloon-class-named projectiles in the dataset. Their stored "damage" is the
+# reanimated minion's, not the tower's own hit, so counting BFB's 100 as Prince
+# of Darkness's headline damage misleads. The headline skips them; the full
+# reanimation breakdown lives in btd6_upgrade_detail_service. Both name
+# generations are listed: the wiki-era labels ("MOAB"/"BFB") and the game-native
+# v55.1 projectile ids ("ProjectileMoab"/"ProjectileBfb") the cutover adopted.
+# (Druid's 9,999,999 Vine sentinel is intentional — it renders as "∞" for the
+# instant-kill — and is deliberately left untouched.)
+_REANIMATED_MINION_NAMES = frozenset(
+    {
+        "moab",
+        "bfb",
+        "zomg",
+        "ddt",
+        "bad",
+        "projectilemoab",
+        "projectilebfb",
+        "projectilezomg",
+        "projectileddt",
+        "projectilebad",
+    },
+)
 
 
 def _is_own_attack_damage(proj: dict[str, Any]) -> bool:

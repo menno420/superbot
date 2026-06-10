@@ -224,6 +224,20 @@ _BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
     ("cashPerRoundPerMechantship", "+${}/round per Merchantman", 1),
     ("cashPerRoundPerFavouredTrades", "+${}/round per Favored Trades", 1),
     ("cashbackZoneMultiplier", "+{}% sellback value", 100),
+    # Farm/Village economy + aura tiers (the Q-0067 cutover lift). The income
+    # auras are TRUE multipliers (Central Market x1.1 = +10%, Banana Central
+    # x1.25, Monkey City x1.2), unlike the fraction-encoded *Percentage rows.
+    ("incomeMultiplier", "x{} income", 1),
+    ("cashPerPopMultiplier", "x{} cash per pop", 1),
+    ("abilityCooldownSpeedScale", "x{} ability recharge rate", 1),
+    ("freeUpgradeTiers", "free upgrades up to tier {}", 1),
+)
+
+# Presence-flag buff effects (no number — the model's presence is the effect):
+# Village Radar Scanner camo grant, Monkey Intelligence Bureau's all-types pop.
+_BUFF_FLAG_TEXT: tuple[tuple[str, str], ...] = (
+    ("grantsCamoDetection", "grants Camo detection"),
+    ("grantsAllDamageTypes", "attacks can pop all Bloon types"),
 )
 
 
@@ -299,6 +313,7 @@ def _buff_text(buff: dict[str, Any]) -> str:
         if isinstance(buff.get(field), (int, float))
         and not isinstance(buff.get(field), bool)
     ]
+    parts += [text for field, text in _BUFF_FLAG_TEXT if buff.get(field) is True]
     name = str(buff.get("name") or "").strip()
     body = ", ".join(parts) if parts else "buff"
     clause = _buff_trigger_clause(buff)
@@ -316,8 +331,22 @@ def _buff_text(buff: dict[str, Any]) -> str:
     return f"{name}: {body}" if name else body
 
 
+def _slow_zone_subject(zone: dict[str, Any]) -> str:
+    """Who a game-native slow zone affects, from its tag + ``inclusive`` flag.
+
+    ``inclusive`` True = bloons WITH the tag, False = everything WITHOUT it
+    (Obyn's totem pairs two same-tag zones; without the flag the exclusive one
+    reads inverted — see the parser's ``_zones``). No tag = everything.
+    """
+    tag = str(zone.get("bloonTag") or "")
+    inclusive = zone.get("inclusive")
+    if tag in ("Moab", "Moabs"):
+        return "MOABs" if inclusive is True else "non-MOAB bloons"
+    return "bloons"
+
+
 def _zone_text(zone: dict[str, Any]) -> str:
-    name = str(zone.get("name") or "Zone")
+    name = str(zone.get("name") or "").strip()
     dmg = zone.get("damage")
     dtype = zone.get("damage_type")
     interval = zone.get("interval")
@@ -336,12 +365,33 @@ def _zone_text(zone: dict[str, Any]) -> str:
     moab_slow = _num_field(zone, "multiplierForMoabs")
     if moab_slow is not None:
         bits.append(f"MOABs to x{_fmt_buff_num(moab_slow)} speed")
+    # Game-native slow zones (the cutover shape): ``speedScale`` + an optional
+    # bloon tag whose ``inclusive`` flag picks the subject (Ice 0-5-0 carries
+    # one zone per subject: non-MOABs x0.4 + MOABs x0.7).
+    speed_scale = _num_field(zone, "speedScale")
+    if speed_scale is not None:
+        bits.append(
+            f"slows {_slow_zone_subject(zone)} to x{_fmt_buff_num(speed_scale)} speed",
+        )
     # Druid Thorn zone: flat bonus damage vs Ceramic/MOAB-class.
     cmoab = _num_field(zone, "damageModifierForCeramicOrMoabs")
     if cmoab is not None:
         bits.append(f"+{_fmt_buff_num(cmoab)} damage vs Ceramic/MOAB")
+    # Village discount aura: a fraction (0.1 = 10% off) capped by upgrade tier
+    # (Monkey Business: "10% discount … tier 3 or less" — prose-pinned).
+    discount = _num_field(zone, "discountMultiplier")
+    if discount is not None:
+        cap = _num_field(zone, "tierCap")
+        tail = f" on upgrades up to tier {_fmt_buff_num(cap)}" if cap else ""
+        bits.append(f"{_fmt_buff_num(discount * 100)}% discount{tail}")
     bits.extend(_moab_shove_bits(zone))
-    return f"{name} ({', '.join(bits)})" if bits else name
+    if not bits:
+        # A structural zone with no decoded effect and no curated label is
+        # nothing a user can read — suppress the line entirely (callers filter
+        # empty strings) rather than surface a bare internal marker.
+        return name
+    label = name or "Zone"
+    return f"{label} ({', '.join(bits)})"
 
 
 # Heli Pilot "MOAB Shove" (0-0-3+) per-blimp speed caps, maintainer-confirmed
@@ -423,7 +473,8 @@ def get_upgrade_detail(upgrade_id: str) -> UpgradeDetail | None:
         subtowers=tuple(_subtower(s) for s in tier.get("subtowers", [])),
         abilities=tuple(_ability(a) for a in tier.get("abilities", [])),
         buffs=tuple(_buff_text(b) for b in tier.get("buffs", [])),
-        zones=tuple(_zone_text(z) for z in tier.get("zones", [])),
+        # Structural zones with no decoded effect render as "" — drop them.
+        zones=tuple(text for z in tier.get("zones", []) if (text := _zone_text(z))),
         description=description,
     )
 
@@ -505,7 +556,14 @@ def render_upgrade_grounding(detail: UpgradeDetail) -> list[str]:
     idy = detail.identity
     name = idy.canonical
     path = _PATH_LABEL.get(idy.path, idy.path)
-    src = f" (source: bloonswiki{f' {detail.game_version}' if detail.game_version else ''})"
+    # Per-tier stats are game-sourced since the v55.1 towers cutover; the label
+    # carries the stats file's own game_version so a successful answer can
+    # never contradict the refusal stamp (the old "bloonswiki 54.0 vs 55.0"
+    # label trap from the decode-status provenance note).
+    src = (
+        " (source: BTD6 game data"
+        f"{f' {detail.game_version}' if detail.game_version else ''})"
+    )
     cost = f", cost ${idy.cost:,}" if idy.cost else ""
     lines = [
         _cap(
@@ -573,7 +631,11 @@ def tier_effect_lines(tier: dict[str, Any]) -> list[str]:
     upgrade path uses, so the phrasing stays identical.
     """
     out = [_buff_text(b) for b in tier.get("buffs", []) if isinstance(b, dict)]
-    out += [_zone_text(z) for z in tier.get("zones", []) if isinstance(z, dict)]
+    out += [
+        text
+        for z in tier.get("zones", [])
+        if isinstance(z, dict) and (text := _zone_text(z))
+    ]
     return out
 
 

@@ -1,10 +1,10 @@
 {
   "hero_id": "sauda",
   "canonical": "Sauda",
-  "game_version": "52.2",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "base_cost": 600,
-  "cost_chimps": null,
+  "cost_chimps": 600,
   "levels": {
     "1": {
       "placeableOnLand": true,
@@ -12,6 +12,8 @@
       "placeableOnTrack": false,
       "range": 23,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -21,7 +23,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 3,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -29,7 +31,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 16.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -38,9 +39,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 1,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -52,8 +51,6 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -67,6 +64,8 @@
       "placeableOnTrack": false,
       "range": 23,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -76,7 +75,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -84,7 +83,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 16.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -93,9 +91,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 1,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -107,8 +103,6 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -122,6 +116,8 @@
       "placeableOnTrack": false,
       "range": 23,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -131,7 +127,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -139,7 +135,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 16.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -148,9 +143,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 1,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -162,69 +155,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 6.5
-            },
-            {
-              "name": "Impact",
-              "pierce": 30,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 20,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 60,
-              "rounds": 0,
-              "lifespan": 0.1
-            }
-          ]
-        }
-      ],
       "level": 3,
       "description": "Leaping Sword Attack: Sauda's dramatic Lead popping leap attack slams down on her targeted Bloons."
     },
@@ -234,6 +174,8 @@
       "placeableOnTrack": false,
       "range": 23,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -243,7 +185,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -251,7 +193,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 16.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -260,9 +201,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 2,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -274,47 +213,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 7
-            }
-          ]
-        }
-      ],
       "level": 4,
       "description": "Sauda's swords slice through 2 layers of Bloons."
     },
@@ -324,6 +232,8 @@
       "placeableOnTrack": false,
       "range": 23,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -333,7 +243,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -341,7 +251,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 16.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -350,9 +259,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 2,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -364,47 +271,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 7.5
-            }
-          ]
-        }
-      ],
       "level": 5,
       "description": "Sauda attacks faster."
     },
@@ -414,6 +290,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -423,7 +301,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -431,7 +309,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -440,9 +317,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 2,
-              "rounds": 0,
-              "lifespan": 0.05
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -454,47 +329,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 6,
       "description": "Increased attack range and popping power."
     },
@@ -504,6 +348,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -513,7 +359,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -521,7 +367,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Shatter",
@@ -530,15 +375,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 2,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -550,81 +387,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 8.5,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            },
-            {
-              "name": "Impact",
-              "pierce": 30,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 20,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 60,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForStun": 10,
-              "damageModifierForStunMoabs": 10,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 7,
       "description": "Sauda preys on the Bloons' weakness, doing extra damage if they are stunned, and she can now pop frozen Bloons."
     },
@@ -634,6 +406,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -643,7 +417,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -651,7 +425,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 2,
               "maxDamage": 0,
               "damage_type": "Shatter",
@@ -660,15 +433,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 2,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -680,53 +445,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 9,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 8,
       "description": "Sauda attacks even faster."
     },
@@ -736,6 +464,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -745,7 +475,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -753,7 +483,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Shatter",
@@ -762,48 +491,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -817,53 +513,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 9.5,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 9,
       "description": "Bloon Bleed: Sauda pops through 3 layers of Bloon with each strike, and causes a slow damage over time effect."
     },
@@ -873,6 +532,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -882,7 +543,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -890,7 +551,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Shatter",
@@ -899,48 +559,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -954,91 +581,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 10,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        },
-        {
-          "name": "Sword Charge",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 400,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 19.5,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 30,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForStun": 15,
-              "damageModifierForStunMoabs": 15,
-              "damageModifierForTagged": 0,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 19999.998,
-              "speed": 500
-            }
-          ]
-        }
-      ],
       "level": 10,
       "description": "Sword Charge: Sauda slides along the whole track, devastating Bloons as she goes."
     },
@@ -1048,6 +604,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1057,7 +615,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1065,7 +623,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Shatter",
@@ -1074,48 +631,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -1129,119 +653,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 2,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 10.5,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            },
-            {
-              "name": "Impact",
-              "pierce": 30,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 20,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 60,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForStun": 10,
-              "damageModifierForStunMoabs": 10,
-              "damageModifierForTagged": 10,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        },
-        {
-          "name": "Sword Charge",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 400,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 19.5,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 30,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForStun": 15,
-              "damageModifierForStunMoabs": 15,
-              "damageModifierForTagged": 15,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 19999.998,
-              "speed": 500
-            }
-          ]
-        }
-      ],
       "level": 11,
       "description": "Sauda inflicts extra damage to any Bloon slowed, immobilized, or taking damage over time from other monkeys."
     },
@@ -1251,6 +676,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1260,7 +687,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1268,7 +695,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Shatter",
@@ -1277,48 +703,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 2,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -1332,81 +725,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 3,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 11,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 22,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            },
-            {
-              "name": "Impact",
-              "pierce": 50,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 40,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 140,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForStun": 20,
-              "damageModifierForStunMoabs": 20,
-              "damageModifierForTagged": 20,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 12,
       "description": "Leaping Sword Attack increases greatly in power."
     },
@@ -1416,6 +748,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1425,7 +759,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1433,7 +767,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -1442,48 +775,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -1497,53 +797,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 3,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 11.5,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 22,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 13,
       "description": "Enchanted blades do more damage and allow Sauda to damage all Bloons."
     },
@@ -1553,6 +820,8 @@
       "placeableOnTrack": false,
       "range": 26,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1562,7 +831,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1570,7 +839,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 19.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -1579,48 +847,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -1634,53 +869,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 3,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 12,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 22,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 14,
       "description": "Sauda attacks even faster, and Sword Charge sweeps all track paths two times!"
     },
@@ -1690,6 +892,8 @@
       "placeableOnTrack": false,
       "range": 29,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1699,7 +903,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1707,7 +911,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 22.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -1716,48 +919,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -1771,119 +941,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 4,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 12.5,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 26,
-              "damageModifierForTagged": 4,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            },
-            {
-              "name": "Impact",
-              "pierce": 50,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 80,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 140,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForStun": 40,
-              "damageModifierForStunMoabs": 40,
-              "damageModifierForTagged": 40,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        },
-        {
-          "name": "Sword Charge",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 400,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 22.5,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 30,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForStun": 15,
-              "damageModifierForStunMoabs": 15,
-              "damageModifierForTagged": 15,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 19999.998,
-              "speed": 500
-            }
-          ]
-        }
-      ],
       "level": 15,
       "description": "Increased attack range and popping power, and Leaping Sword Attack deals more damage."
     },
@@ -1893,6 +964,8 @@
       "placeableOnTrack": false,
       "range": 29,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1902,7 +975,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -1910,7 +983,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 22.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 3,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -1919,48 +991,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 3,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 3,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 2,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 1,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 4.05,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 19,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 4.05
                 }
               ]
             }
@@ -1974,91 +1013,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 4,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 13,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 26,
-              "damageModifierForTagged": 4,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        },
-        {
-          "name": "Sword Charge",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 400,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 22.5,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 60,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForStun": 30,
-              "damageModifierForStunMoabs": 30,
-              "damageModifierForTagged": 30,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 19999.998,
-              "speed": 500
-            }
-          ]
-        }
-      ],
       "level": 16,
       "description": "Sword Charge greatly increased damage."
     },
@@ -2068,6 +1036,8 @@
       "placeableOnTrack": false,
       "range": 29,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2077,7 +1047,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2085,7 +1055,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 22.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 4,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2094,48 +1063,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 4,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 10,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 40,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 }
               ]
             }
@@ -2149,53 +1085,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 4,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 13.5,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 26,
-              "damageModifierForTagged": 4,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 17,
       "description": "Sauda's sword attacks slice through many Bloon layers at once."
     },
@@ -2205,6 +1108,8 @@
       "placeableOnTrack": false,
       "range": 29,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2214,7 +1119,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2222,7 +1127,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 22.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 4,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2231,48 +1135,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 4,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 10,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 40,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 }
               ]
             }
@@ -2286,53 +1157,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 4,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 14,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 26,
-              "damageModifierForTagged": 4,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 0,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 0
-            }
-          ]
-        }
-      ],
       "level": 18,
       "description": "Sauda's swords attack with a blur of speed."
     },
@@ -2342,6 +1180,8 @@
       "placeableOnTrack": false,
       "range": 29,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2351,7 +1191,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2359,7 +1199,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 22.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 4,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2368,48 +1207,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 4,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 10,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 40,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 }
               ]
             }
@@ -2423,119 +1229,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 4,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 14.5,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 26,
-              "damageModifierForTagged": 4,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8
-            },
-            {
-              "name": "Impact",
-              "pierce": 50,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 80,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 140,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForStun": 40,
-              "damageModifierForStunMoabs": 40,
-              "damageModifierForTagged": 40,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8
-            }
-          ]
-        },
-        {
-          "name": "Sword Charge",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 400,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 22.5,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 60,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForStun": 30,
-              "damageModifierForStunMoabs": 30,
-              "damageModifierForTagged": 30,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 19999.998,
-              "speed": 500
-            }
-          ]
-        }
-      ],
       "level": 19,
       "description": "Enchanted Blades do extra damage to Regrow, Fortified, and Camo Bloons."
     },
@@ -2545,6 +1252,8 @@
       "placeableOnTrack": false,
       "range": 29,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -2554,7 +1263,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 8,
               "maxPierce": 0,
               "ignoreBlockers": true,
@@ -2562,7 +1271,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 22.5,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 4,
               "maxDamage": 0,
               "damage_type": "Normal",
@@ -2571,48 +1279,15 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "damageModifierForCeramicOrFortifiedOrMoabs": 4,
-              "rounds": 0,
-              "lifespan": 0.05,
-              "damageModifierForStun": 4,
-              "damageModifierForStunMoabs": 18,
-              "damageModifierForTagged": 3,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8,
+              "filterInvisible": false,
               "effects": [
                 {
-                  "name": "Bloon Bleed",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "damage": 10,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 },
                 {
-                  "name": "Bloon Bleed (MOAB-Class)",
-                  "layers": 9999999,
-                  "lifespan": 6,
-                  "glueLevel": 0,
-                  "applyOnlyIfDamaged": false,
-                  "chance": 0,
-                  "filterOutNonMoabs": true,
-                  "damage": 40,
-                  "damage_type": "Normal",
-                  "cannot_pop": "Can damage any Bloon type",
-                  "immuneBloonProperties": 0,
-                  "interval": 2,
-                  "initialDelay": 0,
-                  "triggerImmediate": false,
-                  "distributeToChildren": true
+                  "name": "Bleed",
+                  "lifespan": 6
                 }
               ]
             }
@@ -2626,119 +1301,20 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Leaping Sword Attack",
+          "cooldown": 30
+        },
+        {
+          "name": "Sword Charge",
+          "cooldown": 45
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Leaping Sword Attack",
-          "cooldown": 30,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Track projectile",
-              "pierce": 5,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 6,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "refreshPierceInterval": 0.1,
-              "clearHitBloonsInterval": 0.2,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 15,
-              "damageModifierForStun": 6,
-              "damageModifierForStunMoabs": 34,
-              "damageModifierForTagged": 6,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8
-            },
-            {
-              "name": "Impact",
-              "pierce": 70,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 15,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 350,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForMoabs": 140,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForStun": 175,
-              "damageModifierForStunMoabs": 175,
-              "damageModifierForTagged": 175,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8
-            }
-          ]
-        },
-        {
-          "name": "Sword Charge",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "projectiles": [
-            {
-              "name": "Projectile",
-              "pierce": 1400,
-              "maxPierce": 0,
-              "ignoreBlockers": true,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 22.5,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 200,
-              "maxDamage": 0,
-              "damage_type": "Normal",
-              "cannot_pop": "Can damage any Bloon type",
-              "immuneBloonProperties": 0,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "damageModifierForStun": 100,
-              "damageModifierForStunMoabs": 100,
-              "damageModifierForTagged": 100,
-              "damageModifierForTaggedMoabs": 0,
-              "damageModifierForCamoOrRegrowOrFortified": 2,
-              "damageModifierForCamoOrRegrowOrFortifiedMoabs": 8,
-              "destroyProjectileIfTowerDestroyed": true,
-              "rounds": 9999999,
-              "lifespan": 19999.998,
-              "speed": 500
-            }
-          ]
-        }
-      ],
       "level": 20,
       "description": "More powerful Sword Charge sweeps all track paths three times! Leaping Sword power greatly increased."
     }

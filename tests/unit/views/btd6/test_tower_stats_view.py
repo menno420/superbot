@@ -68,7 +68,18 @@ def test_pro_button_added_for_combat_tower():
     assert any(isinstance(c, discord.ui.Button) for c in view.children)
 
 
-def test_pro_button_skipped_for_economy_tower():
+def test_pro_button_added_for_economy_tower_since_cutover():
+    # The Farm has full game-native tiers since the Q-0067 cutover (abilities,
+    # buffs, income — attacks suppressed), so the Pro view is real data now.
+    view = discord.ui.View()
+    attach_pro_stats_button(view, "banana_farm", detail_rebuilder=None)  # type: ignore[arg-type]
+    assert any(isinstance(c, discord.ui.Button) for c in view.children)
+
+
+def test_pro_button_skipped_for_tower_without_stats_file(monkeypatch):
+    from services import btd6_stats_service
+
+    monkeypatch.setattr(btd6_stats_service, "get_tower_stats", lambda _tid: None)
     view = discord.ui.View()
     attach_pro_stats_button(view, "banana_farm", detail_rebuilder=None)  # type: ignore[arg-type]
     assert [c for c in view.children if isinstance(c, discord.ui.Button)] == []

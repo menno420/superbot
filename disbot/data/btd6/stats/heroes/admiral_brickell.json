@@ -1,7 +1,7 @@
 {
   "hero_id": "admiral_brickell",
   "canonical": "AdmiralBrickell",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 900,
   "cost_chimps": 900,
@@ -109,13 +109,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "Explosion",
@@ -256,13 +250,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "Explosion",
@@ -403,13 +391,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "Explosion",
@@ -556,13 +538,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "Explosion",
@@ -709,13 +685,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "Explosion",
@@ -862,13 +832,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "Explosion",
@@ -1015,13 +979,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -1172,13 +1130,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -1217,6 +1169,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1329,13 +1289,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -1374,6 +1328,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1486,13 +1448,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 200,
               "lifespan": 0.3,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -1535,6 +1491,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1647,13 +1611,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -1696,6 +1654,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1808,13 +1774,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -1857,6 +1817,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1969,13 +1937,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2018,6 +1980,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2130,13 +2100,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2179,6 +2143,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2291,13 +2263,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2340,6 +2306,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2452,13 +2426,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2501,6 +2469,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2613,13 +2589,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2662,6 +2632,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2774,13 +2752,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2823,6 +2795,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2935,13 +2915,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -2984,6 +2958,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -3096,13 +3078,7 @@
               "ignoreImmunityDestroy": false,
               "speed": 300,
               "lifespan": 0.2,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             },
             {
               "name": "Explosion",
@@ -3145,6 +3121,14 @@
         {
           "name": "Blast Chain Ability",
           "cooldown": 45
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,

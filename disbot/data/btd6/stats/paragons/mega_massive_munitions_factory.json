@@ -3,8 +3,8 @@
   "tower_id": "spike_factory",
   "canonical": "Mega Massive Munitions Factory",
   "tower_canonical": "Spike Factory",
-  "game_version": "52.2",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 750000,
   "cost_chimps": null,
   "xp": 1000000,
@@ -14,6 +14,8 @@
     "placeableOnTrack": false,
     "range": 42,
     "towerSelectionMenuThemeId": "ActionButton",
+    "footprintRadius": 8,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
         "name": "Attack",
@@ -37,17 +39,33 @@
             "cannot_pop": "Can damage any Bloon type",
             "immuneBloonProperties": 0,
             "distributeToChildren": true,
-            "damageModifierForMoabs": 480,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "clearHitBloonsInterval": 0.001,
-            "expireProjectileOnBossSpawned": true,
-            "destroyProjectileIfTowerDestroyed": true,
-            "rounds": 4,
-            "lifespan": 300
+            "damageModifierForMoabs": 480,
+            "filterInvisible": false
           },
           {
-            "name": "Mini-explosion",
+            "name": "MiniSpike",
+            "pierce": 10,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 6,
+            "vsBlockerRadius": 0,
+            "damage": 40,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 100,
+            "filterInvisible": false
+          },
+          {
+            "name": "SmallExplosion",
             "pierce": 30,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -63,36 +81,8 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForCeramicExceptCAS": 240,
             "damageModifierForFortified": 240,
-            "rounds": 0,
-            "lifespan": 0.1
-          },
-          {
-            "name": "Mini-spike",
-            "pierce": 10,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 6,
-            "vsBlockerRadius": 0,
-            "count": 10,
-            "damage": 40,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "damageModifierForMoabs": 100,
-            "rounds": 1,
-            "minLifespan": 9,
-            "maxLifespan": 11,
-            "clearHitBloonsInterval": 0.001,
-            "expireProjectileOnBossSpawned": true,
-            "destroyProjectileIfTowerDestroyed": true
+            "filterInvisible": false
           }
         ],
         "count": 1,
@@ -101,107 +91,22 @@
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
         "sharedGridRange": 0,
-        "filterInvisible": true
+        "filterInvisible": false
       }
     ],
     "abilities": [
       {
         "name": "Controlled Burst",
-        "cooldown": 15,
-        "maxActivationsPerRound": 1,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "buffs": [
-          {
-            "name": "Buff",
-            "rateMultiplier": 0.25,
-            "damageAdditive": 0,
-            "lifespan": 15,
-            "radiusPercentage": 0
-          }
-        ]
+        "cooldown": 15
       },
       {
         "name": "Spikeageddon",
-        "cooldown": 75,
-        "maxActivationsPerRound": -1,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "projectiles": [
-          {
-            "name": "Projectile",
-            "pierce": 1,
-            "maxPierce": 1,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 6,
-            "vsBlockerRadius": 0,
-            "damage": 0,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "clearHitBloonsInterval": 0.001,
-            "expireProjectileOnBossSpawned": true,
-            "rounds": 4,
-            "lifespan": 400
-          },
-          {
-            "name": "Mini-spike",
-            "pierce": 10,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 6,
-            "vsBlockerRadius": 0,
-            "count": 3,
-            "damage": 100,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "damageModifierForMoabs": 250,
-            "damageModifierForFortified": 50,
-            "clearHitBloonsInterval": 0.001,
-            "expireProjectileOnBossSpawned": true,
-            "rounds": 4,
-            "lifespan": 300
-          },
-          {
-            "name": "Mini-explosion",
-            "pierce": 120,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 150,
-            "vsBlockerRadius": 0,
-            "damage": 10000,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "damageModifierForFortified": 5000,
-            "damageModifierForMoabs": 25000,
-            "rounds": 0,
-            "lifespan": 0.1
-          }
-        ]
+        "cooldown": 75
       }
     ],
     "zones": [
       {
+        "kind": "SpikeParagonDamageZone",
         "name": "Carpet of Spikes",
         "radius": 2000,
         "damage": 30,
@@ -216,12 +121,9 @@
         "damageModifierForMoabs": 300
       }
     ],
-    "footprintRadius": 8,
-    "doesntBlockTowerPlacement": false,
-    "targetTypeTrack": true,
-    "targetTypeTargetSelectedPoint": true,
-    "targetTypeAutoTrack": true,
-    "targetTypeCloseTrack": true,
-    "targetTypeSmartTrack": true
+    "targetTypeFirst": false,
+    "targetTypeLast": false,
+    "targetTypeClose": false,
+    "targetTypeStrong": false
   }
 }

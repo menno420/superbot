@@ -1,8 +1,8 @@
 {
   "hero_id": "quincy",
   "canonical": "Quincy",
-  "game_version": "46.3",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "base_cost": 540,
   "cost_chimps": 540,
   "levels": {
@@ -12,6 +12,8 @@
       "placeableOnTrack": false,
       "range": 50,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -21,7 +23,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 3,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -29,7 +31,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -39,12 +40,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 50,
-              "bounceMinDistance": 0,
-              "maxBounces": 3,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close"
+              "lifespan": 0.5714286,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -56,8 +53,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -71,6 +66,8 @@
       "placeableOnTrack": false,
       "range": 50,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -80,7 +77,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -88,7 +85,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -98,12 +94,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 50,
-              "bounceMinDistance": 0,
-              "maxBounces": 4,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close"
+              "lifespan": 0.5714286,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -115,8 +107,6 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -130,6 +120,8 @@
       "placeableOnTrack": false,
       "range": 50,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -139,7 +131,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -147,7 +139,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -157,12 +148,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 50,
-              "bounceMinDistance": 0,
-              "maxBounces": 4,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close"
+              "lifespan": 0.5714286,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -174,29 +161,16 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 3,
       "description": "Rapid Shot: Triple attack speed for a short time."
     },
@@ -206,6 +180,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -215,7 +191,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -223,7 +199,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": true,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -233,12 +208,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 4,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close"
+              "lifespan": 0.5714286,
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -250,29 +221,16 @@
           "filterInvisible": true
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 4,
       "description": "Slightly longer range."
     },
@@ -282,6 +240,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -291,7 +251,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -299,7 +259,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -309,12 +268,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 4,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close"
+              "lifespan": 0.5714286,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -326,29 +281,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 5,
       "description": "Uses his sharp eyesight to shoot Camo Bloons."
     },
@@ -358,6 +300,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -367,7 +311,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 4,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -375,7 +319,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -385,15 +328,8 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 4,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2
+              "lifespan": 0.5714286,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -405,29 +341,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 6,
       "description": "Shoots 2 arrows at a time."
     },
@@ -437,6 +360,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -445,6 +370,48 @@
           "fireWithoutTarget": false,
           "fireBetweenRounds": false,
           "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "filterInvisible": false
+            },
             {
               "name": "Explosion",
               "pierce": 10,
@@ -462,8 +429,7 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.1
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -475,29 +441,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 7,
       "description": "Fires exploding arrows every 3rd shot."
     },
@@ -507,6 +460,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -515,6 +470,50 @@
           "fireWithoutTarget": false,
           "fireBetweenRounds": false,
           "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 4,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
             {
               "name": "Explosion",
               "pierce": 10,
@@ -532,39 +531,8 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForMoabs": 2
-            },
-            {
-              "name": "Projectile",
-              "pierce": 4,
-              "maxPierce": 0,
-              "ignoreBlockers": false,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 0,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 1,
-              "maxDamage": 0,
-              "damage_type": "Sharp",
-              "cannot_pop": "Cannot damage Lead or frozen",
-              "immuneBloonProperties": 17,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 4,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 2
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -576,29 +544,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 8,
       "description": "Arrows do triple damage to MOAB-Class Bloons."
     },
@@ -608,6 +563,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -617,7 +574,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -625,7 +582,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -635,16 +591,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 6,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 2
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -656,29 +647,16 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
-            {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 8
-            }
-          ]
-        }
-      ],
       "level": 9,
       "description": "Base attack bounces to up to 6 targets."
     },
@@ -688,6 +666,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -697,7 +677,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -705,7 +685,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -715,16 +694,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 6,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 2
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -736,63 +750,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Storm of Arrows",
-          "cooldown": 70,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Area",
-                  "pierce": 9999999,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 100,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "filterWithChance": 0.05,
-                  "damage": 6,
-                  "maxDamage": 0,
-                  "damage_type": "Sharp",
-                  "cannot_pop": "Cannot damage Lead or frozen",
-                  "immuneBloonProperties": 17,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 6,
-                  "rounds": 0,
-                  "lifespan": 3,
-                  "clearHitBloonsInterval": 0.05
-                }
-              ],
-              "count": 1,
-              "targetTypes": "First / Last / Close / Strong",
-              "range": 9999999,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOutOffscreen": true
-            }
-          ],
-          "lifespan": 0
-        }
-      ],
       "level": 10,
       "description": "Storm of Arrows: Covers a large area in a deadly rain of arrows."
     },
@@ -802,6 +806,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -811,7 +817,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 6,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -819,7 +825,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -829,16 +834,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 6,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 2
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 6,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -850,63 +890,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Storm of Arrows",
-          "cooldown": 70,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Area",
-                  "pierce": 9999999,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 100,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "filterWithChance": 0.05,
-                  "damage": 6,
-                  "maxDamage": 0,
-                  "damage_type": "Sharp",
-                  "cannot_pop": "Cannot damage Lead or frozen",
-                  "immuneBloonProperties": 17,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 6,
-                  "rounds": 0,
-                  "lifespan": 3,
-                  "clearHitBloonsInterval": 0.05
-                }
-              ],
-              "count": 1,
-              "targetTypes": "First / Last / Close / Strong",
-              "range": 9999999,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOutOffscreen": true
-            }
-          ],
-          "lifespan": 0
-        }
-      ],
       "level": 11,
       "description": "Increased attack speed."
     },
@@ -916,6 +946,8 @@
       "placeableOnTrack": false,
       "range": 52,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -925,7 +957,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 7,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -933,7 +965,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -943,16 +974,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 52,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 2
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -964,63 +1030,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 60
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Storm of Arrows",
-          "cooldown": 70,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Area",
-                  "pierce": 9999999,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 100,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "filterWithChance": 0.05,
-                  "damage": 6,
-                  "maxDamage": 0,
-                  "damage_type": "Sharp",
-                  "cannot_pop": "Cannot damage Lead or frozen",
-                  "immuneBloonProperties": 17,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 6,
-                  "rounds": 0,
-                  "lifespan": 3,
-                  "clearHitBloonsInterval": 0.05
-                }
-              ],
-              "count": 1,
-              "targetTypes": "First / Last / Close / Strong",
-              "range": 9999999,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOutOffscreen": true
-            }
-          ],
-          "lifespan": 0
-        }
-      ],
       "level": 12,
       "description": "Each arrow gets more popping power."
     },
@@ -1030,6 +1086,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1039,7 +1097,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 7,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1047,7 +1105,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -1057,16 +1114,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 2
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 2,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1078,29 +1170,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
+          "cooldown": 60
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
             {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 12
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 13,
       "description": "Small range increase and Rapid Shot lasts longer."
     },
@@ -1110,6 +1226,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1118,6 +1236,50 @@
           "fireWithoutTarget": false,
           "fireBetweenRounds": false,
           "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
             {
               "name": "Explosion",
               "pierce": 10,
@@ -1135,39 +1297,8 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForMoabs": 3
-            },
-            {
-              "name": "Projectile",
-              "pierce": 7,
-              "maxPierce": 0,
-              "ignoreBlockers": false,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 0,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 1,
-              "maxDamage": 0,
-              "damage_type": "Sharp",
-              "cannot_pop": "Cannot damage Lead or frozen",
-              "immuneBloonProperties": 17,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 3
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1179,29 +1310,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Rapid Shot",
-          "cooldown": 60,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
+          "cooldown": 60
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
             {
-              "name": "Buff",
-              "rateMultiplier": 0.3333,
-              "damageAdditive": 0,
-              "lifespan": 12
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 14,
       "description": "Arrows do quad damage to MOAB-Class Bloons."
     },
@@ -1211,6 +1366,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1220,6 +1377,50 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
+              "name": "BaseProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
               "name": "Explosion",
               "pierce": 10,
               "maxPierce": 0,
@@ -1236,39 +1437,8 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForMoabs": 3
-            },
-            {
-              "name": "Projectile",
-              "pierce": 7,
-              "maxPierce": 0,
-              "ignoreBlockers": false,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 0,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 1,
-              "maxDamage": 0,
-              "damage_type": "Sharp",
-              "cannot_pop": "Cannot damage Lead or frozen",
-              "immuneBloonProperties": 17,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 3
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1280,29 +1450,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Rapid Shot",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
+          "cooldown": 45
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
             {
-              "name": "Buff",
-              "rateMultiplier": 0.25,
-              "damageAdditive": 0,
-              "lifespan": 12
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 15,
       "description": "Rapid Shot becomes x4 attack speed and cooldown is reduced."
     },
@@ -1312,6 +1506,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1320,6 +1516,50 @@
           "fireWithoutTarget": false,
           "fireBetweenRounds": false,
           "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.5714286,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
             {
               "name": "Explosion",
               "pierce": 10,
@@ -1337,39 +1577,8 @@
               "distributeToChildren": true,
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
-              "rounds": 0,
-              "lifespan": 0.1,
-              "damageModifierForMoabs": 3
-            },
-            {
-              "name": "Projectile",
-              "pierce": 7,
-              "maxPierce": 0,
-              "ignoreBlockers": false,
-              "usePointCollisionWithBloons": false,
-              "canCollisionBeBlockedByMapLos": false,
-              "radius": 0,
-              "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "damage": 1,
-              "maxDamage": 0,
-              "damage_type": "Sharp",
-              "cannot_pop": "Cannot damage Lead or frozen",
-              "immuneBloonProperties": 17,
-              "distributeToChildren": true,
-              "overrideDistributeBlocker": false,
-              "ignoreImmunityDestroy": false,
-              "speed": 420,
-              "lifespan": 0.5714,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 3
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1381,29 +1590,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Rapid Shot",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
+          "cooldown": 45
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
             {
-              "name": "Buff",
-              "rateMultiplier": 0.25,
-              "damageAdditive": 0,
-              "lifespan": 12
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 16,
       "description": "More increased attack speed."
     },
@@ -1413,6 +1646,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1422,7 +1657,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 7,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1430,7 +1665,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -1440,16 +1674,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.7143,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 3
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1461,29 +1730,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
       "abilities": [
         {
           "name": "Rapid Shot",
-          "cooldown": 45,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "buffs": [
+          "cooldown": 45
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 70,
+          "projectiles": [
             {
-              "name": "Buff",
-              "rateMultiplier": 0.25,
-              "damageAdditive": 0,
-              "lifespan": 12
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
             }
           ]
         }
       ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
       "level": 17,
       "description": "Arrows last 25% longer. Fires exploding arrows every 2nd shot."
     },
@@ -1493,6 +1786,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1502,7 +1797,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 7,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1510,7 +1805,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -1520,16 +1814,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.7143,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 7,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 2,
-              "damageModifierForMoabs": 3
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 7,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1541,64 +1870,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 45
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 55,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Storm of Arrows",
-          "cooldown": 55,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Area",
-                  "pierce": 9999999,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 100,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "filterWithChance": 0.075,
-                  "damage": 6,
-                  "maxDamage": 0,
-                  "damage_type": "Sharp",
-                  "cannot_pop": "Cannot damage Lead or frozen",
-                  "immuneBloonProperties": 17,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 6,
-                  "rounds": 0,
-                  "lifespan": 3,
-                  "clearHitBloonsInterval": 0.05,
-                  "damageModifierForCeramicExceptCAS": 18
-                }
-              ],
-              "count": 1,
-              "targetTypes": "First / Last / Close / Strong",
-              "range": 9999999,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOutOffscreen": true
-            }
-          ],
-          "lifespan": 0
-        }
-      ],
       "level": 18,
       "description": "Quincy attacks faster and Storm of Arrows is greatly enhanced."
     },
@@ -1608,6 +1926,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1617,7 +1937,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 9,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1625,7 +1945,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -1635,16 +1954,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.7143,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 9,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 3,
-              "damageModifierForMoabs": 3
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 9,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1656,64 +2010,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 45
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 55,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 6,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 6,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Storm of Arrows",
-          "cooldown": 55,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Area",
-                  "pierce": 9999999,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 100,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "filterWithChance": 0.075,
-                  "damage": 6,
-                  "maxDamage": 0,
-                  "damage_type": "Sharp",
-                  "cannot_pop": "Cannot damage Lead or frozen",
-                  "immuneBloonProperties": 17,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 6,
-                  "rounds": 0,
-                  "lifespan": 3,
-                  "clearHitBloonsInterval": 0.05,
-                  "damageModifierForCeramicExceptCAS": 18
-                }
-              ],
-              "count": 1,
-              "targetTypes": "First / Last / Close / Strong",
-              "range": 9999999,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOutOffscreen": true
-            }
-          ],
-          "lifespan": 0
-        }
-      ],
       "level": 19,
       "description": "Shoots 3 arrows at a time, and each arrow gets even more popping power."
     },
@@ -1723,6 +2066,8 @@
       "placeableOnTrack": false,
       "range": 54,
       "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 7,
+      "doesntBlockTowerPlacement": false,
       "attacks": [
         {
           "name": "Attack",
@@ -1732,7 +2077,7 @@
           "fireBetweenRounds": false,
           "projectiles": [
             {
-              "name": "Projectile",
+              "name": "BaseProjectile",
               "pierce": 9,
               "maxPierce": 0,
               "ignoreBlockers": false,
@@ -1740,7 +2085,6 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 0,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
               "damage": 1,
               "maxDamage": 0,
               "damage_type": "Sharp",
@@ -1750,16 +2094,51 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "speed": 420,
-              "lifespan": 0.7143,
-              "bounceDistance": 54,
-              "bounceMinDistance": 0,
-              "maxBounces": 9,
-              "bounceDelay": 0,
-              "bounceTargeting": "Close",
-              "angle": 10,
-              "offset": 0,
-              "count": 3,
-              "damageModifierForMoabs": 3
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "ExplodingProjectile",
+              "pierce": 9,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 0,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 420,
+              "lifespan": 0.71428573,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
+            },
+            {
+              "name": "Explosion",
+              "pierce": 10,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 25.7,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Explosion",
+              "cannot_pop": "Cannot damage Black",
+              "immuneBloonProperties": 2,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 3,
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -1771,64 +2150,53 @@
           "filterInvisible": false
         }
       ],
-      "footprintRadius": 7,
-      "doesntBlockTowerPlacement": false,
+      "abilities": [
+        {
+          "name": "Rapid Shot",
+          "cooldown": 45
+        },
+        {
+          "name": "Storm of Arrows",
+          "cooldown": 55,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 2,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false
+            },
+            {
+              "name": "Area",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 100,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForMoabs": 10,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
-      "abilities": [
-        {
-          "name": "Storm of Arrows",
-          "cooldown": 55,
-          "maxActivationsPerRound": -1,
-          "canActivateBetweenRounds": false,
-          "restrictAbilityAfterMaxRoundTimer": false,
-          "attacks": [
-            {
-              "name": "Attack",
-              "eject": "0, 0, 0",
-              "fireWithoutTarget": false,
-              "fireBetweenRounds": false,
-              "projectiles": [
-                {
-                  "name": "Area",
-                  "pierce": 9999999,
-                  "maxPierce": 0,
-                  "ignoreBlockers": true,
-                  "usePointCollisionWithBloons": false,
-                  "canCollisionBeBlockedByMapLos": false,
-                  "radius": 100,
-                  "vsBlockerRadius": 0,
-                  "filterInvisible": false,
-                  "filterWithChance": 0.1,
-                  "damage": 10,
-                  "maxDamage": 0,
-                  "damage_type": "Sharp",
-                  "cannot_pop": "Cannot damage Lead or frozen",
-                  "immuneBloonProperties": 17,
-                  "distributeToChildren": true,
-                  "overrideDistributeBlocker": false,
-                  "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 10,
-                  "rounds": 0,
-                  "lifespan": 3,
-                  "clearHitBloonsInterval": 0.05,
-                  "damageModifierForCeramicExceptCAS": 24
-                }
-              ],
-              "count": 1,
-              "targetTypes": "First / Last / Close / Strong",
-              "range": 9999999,
-              "attackThroughWalls": true,
-              "framesBeforeRetarget": 0,
-              "filterInvisible": false,
-              "filterOutOffscreen": true
-            }
-          ],
-          "lifespan": 0
-        }
-      ],
       "level": 20,
       "description": "Quincy attacks even faster. Storm of Arrows deals more damage per arrow and fires even more arrows."
     }

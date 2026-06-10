@@ -3,8 +3,8 @@
   "tower_id": "wizard_monkey",
   "canonical": "Magus Perfectus",
   "tower_canonical": "Wizard Monkey",
-  "game_version": "51.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 800000,
   "cost_chimps": null,
   "xp": 1000000,
@@ -14,9 +14,11 @@
     "placeableOnTrack": false,
     "range": 80,
     "towerSelectionMenuThemeId": "MagusPerfectus",
+    "footprintRadius": 7,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
-        "name": "Arcane Spike",
+        "name": "Attack Arcane Spike",
         "rate": 0.275,
         "eject": "0, 10.3, 13.4",
         "fireWithoutTarget": false,
@@ -31,7 +33,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 6,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "damage": 100,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -40,21 +41,14 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 1.4,
             "damageModifierForMoabs": 300,
             "damageModifierForBoss": 150,
-            "seekDistance": 80,
-            "trackNewTargets": true,
-            "constantlyAquireNewTarget": false,
-            "maxSeekAngle": 360,
-            "ignoreSeekAngle": false,
-            "overrideRotation": false,
-            "useLifetimeAsDistance": false,
-            "turnRate": 360,
-            "speed": 200,
-            "lifespan": 1.4
+            "filterInvisible": false
           },
           {
-            "name": "Undead Bloon",
+            "name": "ZombieBloonProjectile",
             "pierce": 50,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -62,7 +56,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 3,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "damage": 150,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -72,8 +65,7 @@
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
             "damageModifierForBoss": 150,
-            "speed": 25,
-            "lifespan": 16
+            "filterInvisible": false
           }
         ],
         "count": 1,
@@ -85,7 +77,7 @@
         "filterInvisible": false
       },
       {
-        "name": "Draining Beam",
+        "name": "Attack Draining Beam",
         "rate": 0.05,
         "eject": "0, 10.3, 13.4",
         "fireWithoutTarget": false,
@@ -100,8 +92,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 6,
             "vsBlockerRadius": 0,
-            "speed": 0,
-            "filterInvisible": false,
             "damage": 100,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -110,8 +100,7 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "rounds": 0,
-            "lifespan": 0.05
+            "filterInvisible": false
           }
         ],
         "count": 1,
@@ -119,11 +108,11 @@
         "range": 120,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
-        "filterInvisible": false,
-        "rateMin": 0.05
+        "sharedGridRange": 0,
+        "filterInvisible": false
       },
       {
-        "name": "Flame cascade",
+        "name": "Attack Flamethrower",
         "rate": 0.1,
         "eject": "0, 10.3, 13.4",
         "fireWithoutTarget": false,
@@ -138,10 +127,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 8,
             "vsBlockerRadius": 0,
-            "count": 2,
-            "spreadLength": 5,
-            "offset": -2.5,
-            "filterInvisible": false,
             "damage": 500,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -150,9 +135,10 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForBoss": 1000,
             "speed": 200,
-            "lifespan": 1.4
+            "lifespan": 1.4,
+            "damageModifierForBoss": 800,
+            "filterInvisible": false
           }
         ],
         "count": 1,
@@ -160,10 +146,11 @@
         "range": 80,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
         "filterInvisible": false
       },
       {
-        "name": "Walls of Fire",
+        "name": "Attack Walls of Fire",
         "rate": 6.5,
         "eject": "0, 10.3, 13.4",
         "fireWithoutTarget": false,
@@ -178,12 +165,12 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 4,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "speed": 200,
-            "lifespan": 1
+            "lifespan": 1,
+            "filterInvisible": false
           },
           {
-            "name": "Ground projectile",
+            "name": "GroundProjectile",
             "pierce": 60,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -191,7 +178,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 15,
             "vsBlockerRadius": 0,
-            "filterInvisible": true,
             "damage": 25,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -200,11 +186,7 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "refreshPierceInterval": 0.1,
-            "clearHitBloonsInterval": 0.1,
-            "destroyProjectileIfTowerDestroyed": true,
-            "rounds": 0,
-            "lifespan": 9
+            "filterInvisible": true
           }
         ],
         "count": 1,
@@ -213,102 +195,23 @@
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
         "sharedGridRange": 0,
-        "filterInvisible": false
+        "filterInvisible": true
       }
     ],
     "abilities": [
       {
         "name": "Arcane Metamorphosis",
-        "cooldown": 90,
-        "maxActivationsPerRound": -1,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false
+        "cooldown": 90
       },
       {
         "name": "Phoenix Rebirth",
-        "cooldown": 40,
-        "maxActivationsPerRound": 0,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "projectiles": [
-          {
-            "name": "ZOMG",
-            "pierce": 200,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 10,
-            "vsBlockerRadius": 0,
-            "filterInvisible": false,
-            "damage": 8000,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "damageModifierForBoss": 8000,
-            "speed": 25,
-            "lifespan": 10,
-            "rounds": 9999999
-          },
-          {
-            "name": "BFB",
-            "pierce": 50,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 10,
-            "vsBlockerRadius": 0,
-            "filterInvisible": false,
-            "damage": 1400,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "speed": 25,
-            "lifespan": 7,
-            "rounds": 9999999
-          },
-          {
-            "name": "Projectile",
-            "pierce": 9999999,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 100,
-            "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Damage over time",
-                "layers": 9999999,
-                "lifespan": 30.05,
-                "glueLevel": 0,
-                "applyOnlyIfDamaged": false,
-                "chance": 0,
-                "damage": 3500,
-                "damage_type": "Fire",
-                "cannot_pop": "Cannot damage Purple",
-                "immuneBloonProperties": 8,
-                "interval": 0.5,
-                "initialDelay": 0,
-                "triggerImmediate": false,
-                "distributeToChildren": true
-              }
-            ],
-            "rounds": 0,
-            "lifespan": 0.1
-          }
-        ]
+        "cooldown": 40
       }
     ],
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true,
     "subtowers": [
       {
         "name": "Phoenix",
@@ -400,12 +303,6 @@
         "doesntBlockTowerPlacement": false,
         "targetTypeFirst": true
       }
-    ],
-    "footprintRadius": 7,
-    "doesntBlockTowerPlacement": false,
-    "targetTypeFirst": true,
-    "targetTypeLast": true,
-    "targetTypeClose": true,
-    "targetTypeStrong": true
+    ]
   }
 }
