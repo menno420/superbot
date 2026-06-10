@@ -337,3 +337,23 @@ def test_editor_copy_says_display_only():
     from views.help.editor import _HIDDEN_NOTE
 
     assert "still executable" in _HIDDEN_NOTE
+
+
+@pytest.mark.asyncio
+async def test_modal_buttons_never_defer_first():
+    """``send_modal`` must be the FIRST response on the interaction — a
+    deferred modal silently dies (Discord rejects it after a defer). The
+    merged editor behaves correctly; this pins the dead-modal regression
+    class so a future "defer everything up front" refactor can't break
+    Rename/Re-describe. (Salvaged from the parallel PR A build, #678.)"""
+    view = HelpEntityEditorView(MagicMock(id=1), GUILD, "subsystem", "economy")
+    for label in ("✏️ Rename…", "📝 Re-describe…"):
+        button = next(
+            c
+            for c in view.children
+            if isinstance(c, discord.ui.Button) and c.label == label
+        )
+        interaction = _interaction()
+        await button.callback(interaction)
+        interaction.response.send_modal.assert_awaited_once()
+        interaction.response.defer.assert_not_awaited()

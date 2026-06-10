@@ -189,3 +189,33 @@ crossbow-master cumulative cost ✅ · **the remaining-cash composition ✅**
 ($650 + $37,660 − $21,500 = $16,810 — composed correctly without the §7.5
 workflow; better than predicted) · capability meta-question ❌ (the typo +
 possible pre-#675 timing) → the floor now catches it deterministically.
+
+---
+
+## Continuation 4 (same session): the PR A collision — #678 closed superseded, deltas salvaged (PR #680)
+
+This session built plan-PR-A in parallel with **another session executing the
+same queue item** (`claude/charming-hypatia-91gy69`): theirs merged first as
+**#677** and continued straight into **PR B (#679, the Q-0059 Home builder)**.
+My #678 hit a merge conflict against their merged editor; diff review showed
+the implementations equivalent on every contract (same custom_id, capability,
+schema shape, toggle-to-inherit, one-write-per-action AST pin, display-only
+copy) and theirs strictly ahead (PR B included). **Resolution: #678 closed as
+superseded; branch reset onto main; the two genuine deltas salvaged:**
+
+1. The settings subsystem page now renders declared **Domain configuration**
+   destinations (`_domain_panels_block`) — absent in the merged version, so
+   cleanup/help groups landed on pages that never said where their config
+   lives.
+2. The **modal-no-defer pin** — the merged editor behaves correctly but the
+   dead-modal regression class was unpinned.
+
+**Q-0060 recurrence data point (the answer's own revisit trigger):** this was
+the first *accidental* same-item parallel execution — the queue names items
+but nothing claims them. Cost: one duplicate PR A (~1 focused build), cleanly
+reconciled. If it recurs, the Q-0060 alternative (a tiny active-sessions
+ledger) earns its keep; noted in the journal + under Q-0060.
+
+**Lesson for the log:** before starting any implementation slice, check live
+GitHub for open PRs touching the same plan — `list_pull_requests` is one
+call; my #678 build started while #677 sat open and reviewable.

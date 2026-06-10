@@ -2629,6 +2629,13 @@ collision rules as the documented resolution method. The active-sessions ledger 
 is revisited only if deliberately-parallel sessions become routine. *Not decided:*
 nothing about CI/branch mechanics — this is purely the docs-hotspot write policy.
 
+**Recurrence note (2026-06-10, the #677/#678 collision):** first *accidental*
+same-item parallel execution — two sessions built the Help-editor plan's PR A
+simultaneously (nothing claims queue items); cost = one duplicate build, cleanly
+reconciled (#678 closed superseded, deltas salvaged). One more accidental
+recurrence is the evidence bar for revisiting option (b); interim mitigation is
+the journal rule "check open PRs before starting an implementation slice".
+
 **Question:** Two sessions ran concurrently on 2026-06-09 and collided on the doc
 hotspots (router numbers, current-state, roadmap) — resolved cleanly via the §9
 conventions, but at ~a small feature's worth of context. Options: **(a)** keep

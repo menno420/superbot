@@ -132,6 +132,29 @@ def _resources_block(subsystem: str) -> list[str]:
     return out
 
 
+def _domain_panels_block(subsystem: str) -> list[str]:
+    """The subsystem's declared domain-config destinations (Settings Phase 2).
+
+    A ``DomainPanelSpec`` is *why* a group like cleanup or help is actionable
+    at all, yet the page never said where that configuration lives — the
+    operator landed on "*none declared*" scalars and a guess. Read-only:
+    discovery text straight from the declaration.
+    """
+    from core.runtime.subsystem_schema import get_schema
+
+    schema = get_schema(subsystem)
+    if schema is None or not schema.domain_panels:
+        return []
+    return [
+        (
+            f"**{panel.name}** — {panel.description}"
+            if panel.description
+            else f"**{panel.name}**"
+        )
+        for panel in schema.domain_panels
+    ]
+
+
 def _related_commands_block(subsystem: str) -> list[str]:
     """List the subsystem's entry_points so the operator can jump to
     the existing cog panel (e.g. ``!xpmenu``).  Read-only — this is
@@ -203,6 +226,14 @@ async def build_subsystem_embed(
         embed.add_field(
             name="Provisionable resources",
             value=_truncate("\n".join(resource_lines)),
+            inline=False,
+        )
+
+    domain_lines = _domain_panels_block(subsystem)
+    if domain_lines:
+        embed.add_field(
+            name="Domain configuration",
+            value=_truncate("\n".join(domain_lines)),
             inline=False,
         )
 
