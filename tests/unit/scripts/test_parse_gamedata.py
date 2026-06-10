@@ -823,6 +823,71 @@ def test_overlay_modes_attaches_rules_and_corrects_scalars(mod, tmp_path, monkey
     assert payload["mode_rules_source"]
 
 
+def test_overlay_modes_restamps_game_version_on_verified_run(mod, tmp_path, monkeypatch):
+    # A verified run IS the version claim: the stamp must move to the dump's
+    # version even with 0 corrections (modes.json sat at 55.0 after a
+    # values-didn't-change 55.1 verification pass).
+    dump = tmp_path / "dump"
+    _write(dump / "Mods" / "Impoppable.json", {"mutatorMods": []})
+    data_root = tmp_path / "data"
+    _write(
+        data_root / "modes.json",
+        {
+            "data_version": "3.0",
+            "game_version": "55.0",
+            "source": "curated",
+            "modes": [],
+        },
+    )
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    monkeypatch.setattr(mod, "_dump_version", lambda _dump: "55.9")
+    mod.overlay_modes(dump, dry_run=False)
+    payload = json.loads((data_root / "modes.json").read_text())
+    assert payload["game_version"] == "55.9"
+
+
+def test_overlay_bloons_restamps_game_version_on_verified_run(mod, tmp_path, monkeypatch):
+    # Same re-stamp rule as overlay_modes — and a gitless dump (no derivable
+    # version) must leave the stamp untouched rather than blank it.
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Bloons" / "Ceramic" / "Ceramic.json",
+        _bloon_model("Ceramic", health=10, speed=62.5),
+    )
+    data_root = tmp_path / "data"
+    bloons_payload = {
+        "data_version": "1.0",
+        "game_version": "55.0",
+        "source": "wiki",
+        "bloons": [
+            {
+                "id": "ceramic",
+                "canonical": "Ceramic",
+                "properties": [],
+                "health": 10,
+                "speed": 62.5,
+                "rbe": 104,
+                "immune_to": [],
+                "children_list": [],
+            },
+        ],
+    }
+    _write(data_root / "bloons.json", bloons_payload)
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    monkeypatch.setattr(mod, "_dump_version", lambda _dump: "55.9")
+    report = mod.overlay_bloons(dump, dry_run=False)
+    assert report == {}  # values already correct — a pure verification run
+    payload = json.loads((data_root / "bloons.json").read_text())
+    assert payload["game_version"] == "55.9"
+
+    # No derivable version → stamp untouched.
+    _write(data_root / "bloons.json", bloons_payload)
+    monkeypatch.setattr(mod, "_dump_version", lambda _dump: "")
+    mod.overlay_bloons(dump, dry_run=False)
+    payload = json.loads((data_root / "bloons.json").read_text())
+    assert payload["game_version"] == "55.0"
+
+
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(

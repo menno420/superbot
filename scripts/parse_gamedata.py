@@ -3404,6 +3404,12 @@ def overlay_bloons(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
     ]
     payload["game_sourced_fields_source"] = _SOURCE
     payload.pop("children_immunity_source", None)
+    # A verified run IS the version claim: re-stamp even with 0 corrections,
+    # or the stamp rots one game version behind every values-didn't-change
+    # re-pull (bloons sat at 55.0 after the 55.1 verification pass).
+    version = _dump_version(dump)
+    if version:
+        payload["game_version"] = version
     if not dry_run:
         _write(path, payload)
     return report
@@ -3543,6 +3549,11 @@ def overlay_modes(dump: Path, *, dry_run: bool) -> dict[str, list[str]]:
         report[mode["id"]] = changes
 
     payload["mode_rules_source"] = _SOURCE
+    # Same re-stamp rule as overlay_bloons: verification at a version is the
+    # version claim, independent of whether any value moved.
+    version = _dump_version(dump)
+    if version:
+        payload["game_version"] = version
     if not dry_run:
         _write(path, payload)
     return report

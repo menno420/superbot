@@ -895,7 +895,10 @@ def data_source_label() -> str:
     label = getattr(_PROVIDER, "source_label", None)
     if label is not None:
         return label()
-    return f"local:{DATA_ROOT}"
+    # Repo-relative tail only: the absolute container path is environment
+    # noise and leaks the host layout into user-facing surfaces (the
+    # diagnostics embed + the btd6_answerability AI tool).
+    return f"local:{'/'.join(DATA_ROOT.parts[-3:])}"
 
 
 async def seed_postgres_from_files(root: Path | None = None) -> int:
