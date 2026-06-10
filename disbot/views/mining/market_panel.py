@@ -99,7 +99,7 @@ class MiningMarketView(HubView):
             discord.SelectOption(label=f"{name.title()} — {price} 🪙", value=name)
             for name, price in market.shop_listing()
         ]
-        self.add_item(_MiningBuySelect(author.id, guild_id, options))
+        self.add_item(_MiningBuySelect(author.id, guild_id, options[:25]))
 
     @discord.ui.button(
         label="💰 Sell All Ore",

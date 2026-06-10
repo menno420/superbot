@@ -131,6 +131,11 @@ def max_durability(item_name: str) -> int | None:
     return MAX_DURABILITY.get(item_name.lower())
 
 
+def gear_names() -> tuple[str, ...]:
+    """Every equippable item name (for fuzzy resolution / pickers)."""
+    return tuple(_GEAR)
+
+
 def slot_for(item_name: str) -> str | None:
     """The slot *item_name* equips into, or None if it is not equippable."""
     entry = _GEAR.get(item_name.lower())
@@ -173,6 +178,7 @@ __all__ = [
     "STAT_LABELS",
     "MAX_DURABILITY",
     "max_durability",
+    "gear_names",
     "slot_for",
     "is_equippable",
     "item_stats",

@@ -179,6 +179,11 @@ TOOL_LADDERS: dict[str, tuple[str, ...]] = {
 }
 
 
+def catalog_names() -> tuple[str, ...]:
+    """Every catalogued item name (for fuzzy resolution / pickers)."""
+    return tuple(_CATALOG)
+
+
 def lookup(name: str) -> ItemDef | None:
     """Return the :class:`ItemDef` for *name*, or None if unknown."""
     return _CATALOG.get(name.lower())
@@ -282,6 +287,7 @@ __all__ = [
     "ItemKind",
     "ItemDef",
     "TOOL_LADDERS",
+    "catalog_names",
     "lookup",
     "classify",
     "is_tool",

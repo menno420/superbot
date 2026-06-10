@@ -57,6 +57,8 @@ _ACTIONS_GUIDE = (
     "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
     "(deeper = richer, gated by your light)\n"
     "**🛒 Market** — sell ore for coins, buy gear\n"
+    "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
+    "**📖 Recipes** — browse and craft by category\n"
     "**🧍 Character** — your full character overview"
 )
 
@@ -443,6 +445,62 @@ class MiningHubView(PersistentView):
         await safe_edit(interaction, embed=embed, view=view)
 
     @discord.ui.button(
+        label="🧰 Gear",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:gear",
+        row=3,
+    )
+    async def gear_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.gear_panel import MiningGearView, build_gear_embed
+
+        embed = await build_gear_embed(interaction.user.id, interaction.guild_id)
+        view = await MiningGearView.create(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
+        label="📖 Recipes",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:recipes",
+        row=3,
+    )
+    async def recipes_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.recipe_browser import (
+            MiningRecipeBrowserView,
+            build_recipe_embed,
+        )
+
+        embed = await build_recipe_embed(interaction.user.id, interaction.guild_id)
+        view = await MiningRecipeBrowserView.create(
+            interaction.user,
+            interaction.guild_id,
+        )
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
         label="🧍 Character",
         style=discord.ButtonStyle.grey,
         custom_id="mining:character",
@@ -493,10 +551,15 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
         # One shared craft implementation (atomic materials+product
         # transaction) serves this modal, !build/!craft, and the Workshop
         # panel — services/mining_workflow.py (RS02).
+        from utils.mining.names import resolve_item_name
+        from utils.mining.recipes import load_recipes
+
+        wanted = self.structure.value
+        wanted = resolve_item_name(wanted, load_recipes()) or wanted
         result = await mining_workflow.craft(
             interaction.user.id,
             interaction.guild_id,
-            self.structure.value,
+            wanted,
         )
         await interaction.response.send_message(
             f"{interaction.user.mention} {result.message}",

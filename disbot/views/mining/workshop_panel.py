@@ -182,7 +182,9 @@ class MiningWorkshopView(HubView):
             and (cost := workshop.repair_cost(item, remaining)) is not None
         ]
         if repair_options:
-            view.add_item(_RepairSelect(author.id, guild_id, repair_options))
+            view.add_item(
+                _RepairSelect(author.id, guild_id, repair_options[:25]),
+            )
 
         craft_options = [
             discord.SelectOption(
@@ -195,7 +197,7 @@ class MiningWorkshopView(HubView):
             for g in workshop.craftable_gear(load_recipes(), inventory)
         ]
         if craft_options:
-            view.add_item(_CraftSelect(author.id, guild_id, craft_options))
+            view.add_item(_CraftSelect(author.id, guild_id, craft_options[:25]))
 
         if not last_broken:
             view.quick_craft_btn.disabled = True
