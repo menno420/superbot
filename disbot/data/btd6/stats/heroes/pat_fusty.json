@@ -1,7 +1,7 @@
 {
   "hero_id": "pat_fusty",
   "canonical": "PatFusty",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 800,
   "cost_chimps": 800,
@@ -60,13 +60,7 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "damageModifierForCeramic": 2,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                }
-              ]
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -139,13 +133,7 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "damageModifierForCeramic": 2,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                }
-              ]
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -218,13 +206,7 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "damageModifierForCeramic": 2,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                }
-              ]
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -303,13 +285,7 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "damageModifierForCeramic": 2,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                }
-              ]
+              "filterInvisible": true
             }
           ],
           "count": 1,
@@ -388,13 +364,7 @@
               "overrideDistributeBlocker": false,
               "ignoreImmunityDestroy": false,
               "damageModifierForCeramic": 2,
-              "filterInvisible": true,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                }
-              ]
+              "filterInvisible": true
             },
             {
               "name": "ProjectileSlap",
@@ -493,11 +463,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -599,11 +565,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -705,11 +667,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -811,11 +769,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -917,11 +871,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -960,7 +910,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1027,11 +1004,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -1070,7 +1043,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1137,11 +1137,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.3
                 }
               ]
@@ -1180,7 +1176,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1247,11 +1270,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1290,7 +1309,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1357,11 +1403,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1400,7 +1442,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1467,11 +1536,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1510,7 +1575,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1577,11 +1669,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1620,7 +1708,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1687,11 +1802,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1730,7 +1841,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1797,11 +1935,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1840,7 +1974,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -1907,11 +2068,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -1950,7 +2107,34 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 1,
+              "maxPierce": 1,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,
@@ -2017,11 +2201,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "CreateEffectOnExhaustFractionModel",
-                  "lifespan": 1
-                },
-                {
-                  "name": "SlowModel",
+                  "name": "Stun",
                   "lifespan": 0.5
                 }
               ]
@@ -2060,7 +2240,59 @@
         },
         {
           "name": "Big Squeeze",
-          "cooldown": 20
+          "cooldown": 20,
+          "projectiles": [
+            {
+              "name": "ProjectileSqueeze",
+              "pierce": 4,
+              "maxPierce": 4,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 9999999,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": false,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            },
+            {
+              "name": "SqueezeStun",
+              "pierce": 40,
+              "maxPierce": 0,
+              "ignoreBlockers": false,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true,
+              "effects": [
+                {
+                  "name": "Stun",
+                  "lifespan": 6
+                }
+              ]
+            }
+          ]
         }
       ],
       "targetTypeFirst": true,

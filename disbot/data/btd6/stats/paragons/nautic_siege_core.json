@@ -3,8 +3,8 @@
   "tower_id": "monkey_sub",
   "canonical": "Nautic Siege Core",
   "tower_canonical": "Monkey Sub",
-  "game_version": "46.3",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 400000,
   "cost_chimps": null,
   "xp": 1000000,
@@ -14,11 +14,13 @@
     "placeableOnTrack": false,
     "range": 52,
     "towerSelectionMenuThemeId": "MonkeySub",
+    "footprintRadius": 7,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
         "name": "Attack",
         "rate": 0.15,
-        "eject": "4.5, 18, 20 (side 1)<br>0, 19.5, 20 (side 2)<br>-4.5, 19, 20 (side 3)",
+        "eject": "0, 0, 0",
         "fireWithoutTarget": false,
         "fireBetweenRounds": false,
         "projectiles": [
@@ -31,7 +33,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 2,
             "vsBlockerRadius": 0,
-            "count": 1,
             "damage": 40,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -40,21 +41,14 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
+            "speed": 170,
+            "lifespan": 2.9411764,
             "damageModifierForMoabs": 160,
             "damageModifierForBoss": 200,
-            "speed": 170,
-            "lifespan": 2.9412,
-            "seekDistance": 9999,
-            "trackNewTargets": true,
-            "constantlyAquireNewTarget": false,
-            "maxSeekAngle": 180,
-            "ignoreSeekAngle": false,
-            "overrideRotation": false,
-            "useLifetimeAsDistance": true,
-            "turnRate": 360
+            "filterInvisible": false
           },
           {
-            "name": "Airburst dart",
+            "name": "AirburstSplit",
             "pierce": 9,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -62,9 +56,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 12,
             "vsBlockerRadius": 0,
-            "angle": 0,
-            "offset": 0,
-            "count": 3,
             "damage": 40,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -73,10 +64,11 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
+            "speed": 340,
+            "lifespan": 0.27941176,
             "damageModifierForMoabs": 80,
             "damageModifierForBoss": 100,
-            "speed": 340,
-            "lifespan": 0.2794
+            "filterInvisible": false
           }
         ],
         "count": 1,
@@ -85,17 +77,17 @@
         "attackThroughWalls": false,
         "framesBeforeRetarget": 0,
         "sharedGridRange": 0,
-        "isSharedRangeEnabled": true
+        "filterInvisible": false
       },
       {
-        "name": "Pulse (damage)",
+        "name": "SubmergedAttack_SubmergeAttack",
         "rate": 0.28,
         "eject": "0, 0, 0",
         "fireWithoutTarget": true,
         "fireBetweenRounds": false,
         "projectiles": [
           {
-            "name": "Projectile",
+            "name": "Pulse",
             "pierce": 1000,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -103,16 +95,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 52,
             "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Radiation",
-                "layers": 9999999,
-                "isUnique": true,
-                "mutationId": "ReactorDamage",
-                "lifespan": 0.28
-              }
-            ],
-            "filterOutReactorDamageParagon": true,
             "damage": 250,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -123,162 +105,28 @@
             "ignoreImmunityDestroy": false,
             "damageModifierForCeramic": 250,
             "damageModifierForBoss": 250,
-            "rounds": 1,
-            "lifespan": 0.1,
-            "cleanseRegen": true,
-            "cleanseCamo": true,
-            "cleanseLead": false,
-            "cleanseFortified": false,
-            "cleanseOnlyIfDamaged": false,
-            "cleanseExcludeList": "",
-            "cleanseExplicitList": ""
+            "filterInvisible": false
           }
         ],
         "count": 1,
-        "targetTypes": "",
+        "targetTypes": "Depends on targeting option",
         "range": 2000,
         "attackThroughWalls": false,
         "framesBeforeRetarget": 0,
-        "rateMin": 0.28
-      }
-    ],
-    "projectiles": [
-      {
-        "name": "Pre-emptive missile",
-        "pierce": 1,
-        "maxPierce": 1,
-        "ignoreBlockers": true,
-        "usePointCollisionWithBloons": false,
-        "canCollisionBeBlockedByMapLos": false,
-        "radius": 30,
-        "vsBlockerRadius": 0,
-        "filterAllExceptTarget": true,
-        "damage": 1000,
-        "maxDamage": 0,
-        "damage_type": "Normal",
-        "cannot_pop": "Can damage any Bloon type",
-        "immuneBloonProperties": 0,
-        "distributeToChildren": true,
-        "overrideDistributeBlocker": false,
-        "ignoreImmunityDestroy": false,
-        "damageModifierForCeramic": 1000,
-        "damageModifierForBoss": 20000,
-        "rounds": 1,
-        "lifespan": 0.1
-      },
-      {
-        "name": "Explosion",
-        "pierce": 10,
-        "maxPierce": 0,
-        "ignoreBlockers": true,
-        "usePointCollisionWithBloons": false,
-        "canCollisionBeBlockedByMapLos": false,
-        "radius": 12,
-        "vsBlockerRadius": 0,
-        "damage": 350,
-        "maxDamage": 0,
-        "damage_type": "Normal",
-        "cannot_pop": "Can damage any Bloon type",
-        "immuneBloonProperties": 0,
-        "distributeToChildren": true,
-        "overrideDistributeBlocker": false,
-        "ignoreImmunityDestroy": false,
-        "rounds": 1,
-        "lifespan": 0.1
+        "sharedGridRange": 0,
+        "filterInvisible": false
       }
     ],
     "abilities": [
       {
-        "name": "Ability",
-        "cooldown": 240,
-        "maxActivationsPerRound": 0,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "projectiles": [
-          {
-            "name": "Explosion",
-            "pierce": 30,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 60,
-            "vsBlockerRadius": 0,
-            "damage": 60000,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "rounds": 1,
-            "lifespan": 0.05
-          },
-          {
-            "name": "Aftershock",
-            "pierce": 120,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 180,
-            "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Stun (strong)",
-                "layers": 9999999,
-                "glueLevel": 0,
-                "isUnique": true,
-                "dontRefreshDuration": false,
-                "cascadeMutators": false,
-                "removeMutatorIfNotMatching": false,
-                "matchLayersWithDamage": false,
-                "mutationId": "Stun:Strong",
-                "lifespan": 15,
-                "multiplier": 0
-              }
-            ],
-            "damage": 15000,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "rounds": 1,
-            "lifespan": 0.05
-          },
-          {
-            "name": "Fallout",
-            "pierce": 60,
-            "maxPierce": 0,
-            "ignoreBlockers": true,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 15,
-            "vsBlockerRadius": 0,
-            "count": 5,
-            "damage": 10,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": false,
-            "ignoreImmunityDestroy": false,
-            "damageModifierForMoabs": 90,
-            "rounds": 9999999,
-            "lifespan": 36,
-            "refreshPierceInterval": 0.1,
-            "clearHitBloonsInterval": 0.1,
-            "destroyProjectileIfTowerDestroyed": true
-          }
-        ],
-        "pauseAllOtherAttacks": 15.05
+        "name": "Final Strike",
+        "cooldown": 240
       }
     ],
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true,
     "buffs": [
       {
         "name": "Ability cooldown buff",
@@ -319,12 +167,6 @@
         "heroXpMultiplier": 5,
         "filterInSets": "Hero"
       }
-    ],
-    "footprintRadius": 7,
-    "doesntBlockTowerPlacement": false,
-    "targetTypeFirst": true,
-    "targetTypeLast": true,
-    "targetTypeClose": true,
-    "targetTypeStrong": true
+    ]
   }
 }

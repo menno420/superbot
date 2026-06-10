@@ -1,7 +1,7 @@
 {
   "hero_id": "obyn_greenfoot",
   "canonical": "ObynGreenfoot",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 650,
   "cost_chimps": 650,
@@ -107,6 +107,14 @@
           "filterInvisible": true
         }
       ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
@@ -164,7 +172,36 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 50,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -251,7 +288,28 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 50,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -277,10 +335,37 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.85,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -352,13 +437,7 @@
               "canCollisionBeBlockedByMapLos": false,
               "radius": 2,
               "vsBlockerRadius": 0,
-              "filterInvisible": false,
-              "effects": [
-                {
-                  "name": "CreateEffectOnExpireModel",
-                  "lifespan": 0
-                }
-              ]
+              "filterInvisible": false
             }
           ],
           "count": 1,
@@ -373,7 +452,28 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 50,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -399,10 +499,43 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.85,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -489,7 +622,28 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 50,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -515,10 +669,43 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.85,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -605,7 +792,28 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -631,10 +839,43 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.85,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -721,7 +962,28 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -747,10 +1009,49 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -837,7 +1138,28 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -863,10 +1185,49 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -953,11 +1314,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -983,10 +1397,49 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1073,11 +1526,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1103,10 +1609,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1193,11 +1751,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1223,10 +1834,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1313,11 +1976,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1343,10 +2059,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1433,11 +2201,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1463,10 +2284,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.6,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.8,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1553,11 +2426,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Sharp",
+              "cannot_pop": "Cannot damage Lead or frozen",
+              "immuneBloonProperties": 17,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1583,10 +2509,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.4,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1673,11 +2651,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1703,10 +2734,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.4,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1793,11 +2876,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1823,10 +2959,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.4,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -1913,11 +3101,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -1943,10 +3184,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.4,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2033,11 +3326,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -2063,10 +3409,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.4,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2153,11 +3551,64 @@
       "abilities": [
         {
           "name": "Brambles",
-          "cooldown": 30
+          "cooldown": 30,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 500,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 14,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": false
+            }
+          ]
         },
         {
           "name": "Wall of Trees",
-          "cooldown": 75
+          "cooldown": 75,
+          "projectiles": [
+            {
+              "name": "Collidable",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 4,
+              "vsBlockerRadius": 0,
+              "filterInvisible": false,
+              "effects": [
+                {
+                  "name": "TreeExhaust",
+                  "lifespan": 0
+                }
+              ]
+            },
+            {
+              "name": "Full",
+              "pierce": 9999999,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 5,
+              "vsBlockerRadius": 0,
+              "cashMinimum": 300,
+              "cashMaximum": 300,
+              "filterInvisible": false
+            }
+          ]
         }
       ],
       "subtowers": [
@@ -2183,10 +3634,62 @@
               "filterInvisible": false
             }
           ],
+          "zones": [
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.4,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": false
+            },
+            {
+              "kind": "SlowBloonsZone",
+              "speedScale": 0.7,
+              "speedChange": 0,
+              "zoneRadius": 32,
+              "bloonTag": "Moabs",
+              "inclusive": true
+            }
+          ],
           "targetTypeFirst": false,
           "targetTypeLast": false,
           "targetTypeClose": false,
-          "targetTypeStrong": false
+          "targetTypeStrong": false,
+          "lifespan": 15
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.5,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,

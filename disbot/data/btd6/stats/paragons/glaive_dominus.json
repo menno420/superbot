@@ -3,8 +3,8 @@
   "tower_id": "boomerang_monkey",
   "canonical": "Glaive Dominus",
   "tower_canonical": "Boomerang Monkey",
-  "game_version": "53.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 375000,
   "cost_chimps": null,
   "xp": 500000,
@@ -14,6 +14,8 @@
     "placeableOnTrack": false,
     "range": 60,
     "towerSelectionMenuThemeId": "AmbidextrousRangs",
+    "footprintRadius": 7,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
         "name": "Attack",
@@ -31,26 +33,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 15,
             "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Damage over time",
-                "layers": 1,
-                "lifespan": 15.1,
-                "glueLevel": 0,
-                "applyOnlyIfDamaged": true,
-                "chance": 0,
-                "filterOutNonMoabs": true,
-                "damage": 750,
-                "damage_type": "Normal",
-                "cannot_pop": "Can damage any Bloon type",
-                "immuneBloonProperties": 0,
-                "interval": 1,
-                "initialDelay": 0,
-                "triggerImmediate": false,
-                "distributeToChildren": true
-              }
-            ],
-            "filterInvisible": false,
             "damage": 25,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -59,14 +41,27 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
+            "speed": 300,
+            "lifespan": 2,
             "damageModifierForBoss": 50,
-            "bounceDistance": 9999999,
-            "bounceMinDistance": 0,
-            "maxBounces": 9999999,
-            "bounceDelay": 0.05,
-            "bounceTargeting": "Close",
-            "speed": 297.5,
-            "lifespan": 2
+            "filterInvisible": false
+          },
+          {
+            "name": "MoabDot",
+            "pierce": 1,
+            "maxPierce": 1,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 5,
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "BoomerangMoabRicochet",
+                "lifespan": 15.1
+              }
+            ]
           }
         ],
         "count": 1,
@@ -78,7 +73,7 @@
         "filterInvisible": false
       },
       {
-        "name": "Orbital glaives",
+        "name": "OrbitAttack",
         "rate": 0.1,
         "eject": "0, 0, 0",
         "fireWithoutTarget": true,
@@ -93,7 +88,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 50,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "damage": 42,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -105,19 +99,19 @@
             "damageModifierForCeramic": 20,
             "damageModifierForMoabs": 20,
             "damageModifierForBoss": 150,
-            "rounds": 1,
-            "lifespan": 0.05
+            "filterInvisible": false
           }
         ],
         "count": 1,
-        "targetTypes": "",
+        "targetTypes": "Depends on targeting option",
         "range": 9999999,
         "attackThroughWalls": false,
         "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
         "filterInvisible": false
       },
       {
-        "name": "MOAB Press",
+        "name": "MOABPressAttack",
         "rate": 3,
         "eject": "-3.47, 15, 12",
         "fireWithoutTarget": false,
@@ -132,22 +126,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 10,
             "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Stun (Paragon)",
-                "layers": 1,
-                "glueLevel": 0,
-                "isUnique": true,
-                "dontRefreshDuration": true,
-                "cascadeMutators": true,
-                "removeMutatorIfNotMatching": false,
-                "matchLayersWithDamage": false,
-                "mutationId": "Slow:MoabPressStunParagon",
-                "multiplierForMoabs": 0,
-                "lifespanForMoabs": 0.25
-              }
-            ],
-            "filterInvisible": false,
             "damage": 1,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -157,14 +135,13 @@
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
             "damageModifierForMoabs": 19,
-            "clearHitBloonsInterval": 0.1,
             "pushAmount": 1,
-            "pushTag": "Moabs",
             "pushMultiplierForMoab": 1,
             "pushMultiplierForBfb": 0.5,
             "pushMultiplierForZomg": 0.25,
             "pushMultiplierForDdt": 0.25,
-            "pushOnlyIfDamaged": false
+            "pushOnlyIfDamaged": false,
+            "filterInvisible": false
           },
           {
             "name": "Explosion",
@@ -175,25 +152,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 50,
             "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Damage over time",
-                "layers": 9999999,
-                "lifespan": 4,
-                "glueLevel": 0,
-                "applyOnlyIfDamaged": false,
-                "chance": 0,
-                "damage": 500,
-                "damage_type": "Normal",
-                "cannot_pop": "Can damage any Bloon type",
-                "immuneBloonProperties": 0,
-                "interval": 1,
-                "initialDelay": 0,
-                "triggerImmediate": false,
-                "distributeToChildren": true
-              }
-            ],
-            "filterInvisible": false,
             "damage": 2500,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -203,50 +161,44 @@
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
             "damageModifierForBoss": 4000,
-            "rounds": 0,
-            "lifespan": 0.1
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "Fire",
+                "lifespan": 4
+              }
+            ]
           }
         ],
         "count": 1,
-        "targetTypes": "First / Last / Close / Strong",
+        "targetTypes": "Depends on targeting option",
         "range": 100,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
-        "filterInvisible": false,
-        "filterOutNonMoabs": true
+        "sharedGridRange": 0,
+        "filterInvisible": false
       }
     ],
     "abilities": [
       {
-        "name": "Ability",
-        "cooldown": 45,
-        "maxActivationsPerRound": 9999999,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "buffs": [
-          {
-            "name": "Buff",
-            "maxStackSize": 10,
-            "durationPerStack": 3,
-            "stacksLostPerDuration": 1,
-            "rateMultiplierPerStack": 0.9
-          }
-        ]
+        "name": "Overcharge",
+        "cooldown": 45
       }
     ],
     "buffs": [
       {
-        "name": "Buff",
-        "isGlobal": true,
-        "customRadius": 0,
-        "appliesToOwningTower": false,
-        "maxStackSize": 0,
+        "kind": "RateSupport",
         "rateMultiplier": 0.9,
-        "filterInSets": "Primary"
+        "isGlobal": true,
+        "maxStackSize": 0
+      },
+      {
+        "kind": "RateSupport",
+        "rateMultiplier": 0.9,
+        "isGlobal": true,
+        "maxStackSize": 0
       }
     ],
-    "footprintRadius": 7,
-    "doesntBlockTowerPlacement": false,
     "targetTypeFirst": true,
     "targetTypeLast": true,
     "targetTypeClose": true,

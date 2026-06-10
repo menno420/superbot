@@ -1,12 +1,10 @@
 {
   "tower_id": "monkey_village",
-  "canonical": "Monkey Village",
-  "game_version": "",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "canonical": "MonkeyVillage",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "base_cost": 1200,
   "category": "support",
-  "paragon_cost": null,
-  "paragon_name": null,
   "upgrades": [
     {
       "path": 1,
@@ -129,5 +127,3434 @@
       "description": "Absorbs all nearby Banana Farms and their income, freeing up space for new Monkeys."
     }
   ],
-  "tiers": {}
+  "tiers": {
+    "000": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "000",
+      "crosspath": "0-0-0"
+    },
+    "001": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "001",
+      "crosspath": "0-0-1"
+    },
+    "002": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "002",
+      "crosspath": "0-0-2"
+    },
+    "003": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "003",
+      "crosspath": "0-0-3"
+    },
+    "004": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "004",
+      "crosspath": "0-0-4"
+    },
+    "005": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "005",
+      "crosspath": "0-0-5"
+    },
+    "010": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "010",
+      "crosspath": "0-1-0"
+    },
+    "011": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "011",
+      "crosspath": "0-1-1"
+    },
+    "012": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "012",
+      "crosspath": "0-1-2"
+    },
+    "013": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "013",
+      "crosspath": "0-1-3"
+    },
+    "014": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 50
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "014",
+      "crosspath": "0-1-4"
+    },
+    "015": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 50
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "015",
+      "crosspath": "0-1-5"
+    },
+    "020": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "020",
+      "crosspath": "0-2-0"
+    },
+    "021": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "021",
+      "crosspath": "0-2-1"
+    },
+    "022": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "022",
+      "crosspath": "0-2-2"
+    },
+    "023": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "023",
+      "crosspath": "0-2-3"
+    },
+    "024": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 50
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "024",
+      "crosspath": "0-2-4"
+    },
+    "025": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 50,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 50
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "025",
+      "crosspath": "0-2-5"
+    },
+    "030": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "030",
+      "crosspath": "0-3-0"
+    },
+    "031": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "031",
+      "crosspath": "0-3-1"
+    },
+    "032": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "032",
+      "crosspath": "0-3-2"
+    },
+    "040": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Call to Arms",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "040",
+      "crosspath": "0-4-0"
+    },
+    "041": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Call to Arms",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "041",
+      "crosspath": "0-4-1"
+    },
+    "042": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Call to Arms",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "042",
+      "crosspath": "0-4-2"
+    },
+    "050": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Homeland Defense",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "050",
+      "crosspath": "0-5-0"
+    },
+    "051": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Homeland Defense",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "051",
+      "crosspath": "0-5-1"
+    },
+    "052": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 40,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Homeland Defense",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        },
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 40
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "052",
+      "crosspath": "0-5-2"
+    },
+    "100": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "100",
+      "crosspath": "1-0-0"
+    },
+    "101": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "101",
+      "crosspath": "1-0-1"
+    },
+    "102": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "102",
+      "crosspath": "1-0-2"
+    },
+    "103": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "103",
+      "crosspath": "1-0-3"
+    },
+    "104": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "104",
+      "crosspath": "1-0-4"
+    },
+    "105": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "105",
+      "crosspath": "1-0-5"
+    },
+    "110": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "110",
+      "crosspath": "1-1-0"
+    },
+    "120": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "120",
+      "crosspath": "1-2-0"
+    },
+    "130": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "130",
+      "crosspath": "1-3-0"
+    },
+    "140": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Call to Arms",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "140",
+      "crosspath": "1-4-0"
+    },
+    "150": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Homeland Defense",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "150",
+      "crosspath": "1-5-0"
+    },
+    "200": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "200",
+      "crosspath": "2-0-0"
+    },
+    "201": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "201",
+      "crosspath": "2-0-1"
+    },
+    "202": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "202",
+      "crosspath": "2-0-2"
+    },
+    "203": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "203",
+      "crosspath": "2-0-3"
+    },
+    "204": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "204",
+      "crosspath": "2-0-4"
+    },
+    "205": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 58,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "CashIncrease",
+          "cashPerPopMultiplier": 1.5
+        },
+        {
+          "kind": "MonkeyCityIncomeSupport",
+          "incomeMultiplier": 1.2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "205",
+      "crosspath": "2-0-5"
+    },
+    "210": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "210",
+      "crosspath": "2-1-0"
+    },
+    "220": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "220",
+      "crosspath": "2-2-0"
+    },
+    "230": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "230",
+      "crosspath": "2-3-0"
+    },
+    "240": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Call to Arms",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "240",
+      "crosspath": "2-4-0"
+    },
+    "250": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "abilities": [
+        {
+          "name": "Homeland Defense",
+          "cooldown": 45
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "DamageTypeSupport",
+          "grantsAllDamageTypes": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "250",
+      "crosspath": "2-5-0"
+    },
+    "300": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "300",
+      "crosspath": "3-0-0"
+    },
+    "301": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "301",
+      "crosspath": "3-0-1"
+    },
+    "302": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "302",
+      "crosspath": "3-0-2"
+    },
+    "310": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "310",
+      "crosspath": "3-1-0"
+    },
+    "320": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 48,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 48
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "320",
+      "crosspath": "3-2-0"
+    },
+    "400": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.15,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "400",
+      "crosspath": "4-0-0"
+    },
+    "401": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.15,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "401",
+      "crosspath": "4-0-1"
+    },
+    "402": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.15,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "402",
+      "crosspath": "4-0-2"
+    },
+    "410": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 55
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.15,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "410",
+      "crosspath": "4-1-0"
+    },
+    "420": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 55
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.15,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": false,
+      "targetTypeLast": false,
+      "targetTypeClose": false,
+      "targetTypeStrong": false,
+      "code": "420",
+      "crosspath": "4-2-0"
+    },
+    "500": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 3,
+          "eject": "0, 8.18, 26.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 11.25,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 400,
+              "lifespan": 2.5,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 9999999,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 3,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "500",
+      "crosspath": "5-0-0"
+    },
+    "501": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 3,
+          "eject": "0, 8.18, 26.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 11.25,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 400,
+              "lifespan": 2.5,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 9999999,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 3,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "501",
+      "crosspath": "5-0-1"
+    },
+    "502": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 3,
+          "eject": "0, 8.18, 26.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 11.25,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 400,
+              "lifespan": 2.5,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 9999999,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "zones": [
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.1,
+          "tierCap": 3
+        },
+        {
+          "kind": "DiscountZone",
+          "discountMultiplier": 0.05,
+          "tierCap": 3
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 3,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "502",
+      "crosspath": "5-0-2"
+    },
+    "510": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 3,
+          "eject": "0, 8.18, 26.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 11.25,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 400,
+              "lifespan": 2.5,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 9999999,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 55
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 3,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "510",
+      "crosspath": "5-1-0"
+    },
+    "520": {
+      "placeableOnLand": true,
+      "placeableOnWater": false,
+      "placeableOnTrack": false,
+      "range": 55,
+      "towerSelectionMenuThemeId": "Default",
+      "footprintRadius": 11,
+      "doesntBlockTowerPlacement": false,
+      "attacks": [
+        {
+          "name": "Attack",
+          "rate": 3,
+          "eject": "0, 8.18, 26.9",
+          "fireWithoutTarget": false,
+          "fireBetweenRounds": false,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 11.25,
+              "vsBlockerRadius": 0,
+              "damage": 10,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "speed": 400,
+              "lifespan": 2.5,
+              "filterInvisible": false
+            }
+          ],
+          "count": 1,
+          "targetTypes": "Depends on targeting option",
+          "range": 9999999,
+          "attackThroughWalls": true,
+          "framesBeforeRetarget": 0,
+          "sharedGridRange": 0,
+          "filterInvisible": false
+        }
+      ],
+      "zones": [
+        {
+          "kind": "AddBehaviorToBloonInZone",
+          "zoneRadius": 55
+        }
+      ],
+      "buffs": [
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RateSupport",
+          "rateMultiplier": 0.85,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "VisibilitySupport",
+          "grantsCamoDetection": true,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "PierceSupport",
+          "pierceAdditive": 3,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "ProjectileSpeedSupport",
+          "projectileSpeedPercentage": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 0,
+          "rangePercentage": 0.1,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "FreeUpgradeSupport",
+          "freeUpgradeTiers": 2,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "AbilityCooldownScaleSupport",
+          "abilityCooldownSpeedScale": 1.25,
+          "isGlobal": false,
+          "maxStackSize": 0
+        },
+        {
+          "kind": "RangeSupport",
+          "rangeAdditive": 5,
+          "rangePercentage": 0,
+          "isGlobal": false,
+          "maxStackSize": 0
+        }
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "520",
+      "crosspath": "5-2-0"
+    }
+  },
+  "paragon_cost": null,
+  "paragon_name": null
 }

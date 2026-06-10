@@ -3,8 +3,8 @@
   "tower_id": "monkey_ace",
   "canonical": "Goliath Doomship",
   "tower_canonical": "Monkey Ace",
-  "game_version": "46.3",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 900000,
   "cost_chimps": null,
   "xp": 1000000,
@@ -14,6 +14,7 @@
     "placeableOnTrack": false,
     "range": 22,
     "towerSelectionMenuThemeId": "MonkeyAce",
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
         "name": "Attack",
@@ -23,7 +24,7 @@
         "fireBetweenRounds": false,
         "projectiles": [
           {
-            "name": "Projectile",
+            "name": "MainProjectile",
             "pierce": 35,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -31,10 +32,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 3,
             "vsBlockerRadius": 0,
-            "angle": 360,
-            "offset": 0,
-            "count": 12,
-            "filterInvisible": false,
             "damage": 200,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -43,12 +40,13 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForBoss": 200,
             "speed": 150,
-            "lifespan": 3
+            "lifespan": 3,
+            "damageModifierForBoss": 200,
+            "filterInvisible": false
           },
           {
-            "name": "Explosion",
+            "name": "Projectile",
             "pierce": 1,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -56,7 +54,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 3,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "damage": 300,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -66,12 +63,11 @@
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
             "damageModifierForBoss": 300,
-            "rounds": 0,
-            "lifespan": 0.05
+            "filterInvisible": false
           }
         ],
         "count": 1,
-        "targetTypes": "",
+        "targetTypes": "Depends on targeting option",
         "range": 22,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
@@ -79,14 +75,14 @@
         "filterInvisible": false
       },
       {
-        "name": "Seeking attack",
+        "name": "Attack-Seeking",
         "rate": 0.66,
         "eject": "0, 17.1, -16",
         "fireWithoutTarget": true,
         "fireBetweenRounds": false,
         "projectiles": [
           {
-            "name": "Projectile",
+            "name": "MainProjectile",
             "pierce": 1,
             "maxPierce": 1,
             "ignoreBlockers": true,
@@ -94,11 +90,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 3,
             "vsBlockerRadius": 0,
-            "angle": 360,
-            "offset": 22.5,
-            "count": 8,
-            "filterInvisible": false,
-            "filterAllExceptTarget": true,
             "damage": 200,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -107,20 +98,13 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForBoss": 200,
             "speed": 150,
             "lifespan": 3,
-            "seekDistance": 9999999,
-            "trackNewTargets": true,
-            "constantlyAquireNewTarget": false,
-            "maxSeekAngle": 360,
-            "ignoreSeekAngle": true,
-            "overrideRotation": false,
-            "useLifetimeAsDistance": false,
-            "turnRate": 160
+            "damageModifierForBoss": 200,
+            "filterInvisible": false
           },
           {
-            "name": "Explosion",
+            "name": "Projectile",
             "pierce": 35,
             "maxPierce": 0,
             "ignoreBlockers": true,
@@ -128,7 +112,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 3,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "damage": 300,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -138,21 +121,19 @@
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
             "damageModifierForBoss": 300,
-            "rounds": 0,
-            "lifespan": 3.5
+            "filterInvisible": false
           }
         ],
         "count": 1,
-        "targetTypes": "Strong",
+        "targetTypes": "Depends on targeting option",
         "range": 22,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
         "sharedGridRange": 0,
-        "filterInvisible": false,
-        "filterOutNonMoabs": true
+        "filterInvisible": false
       },
       {
-        "name": "Forward attack",
+        "name": "Attack-RedTippedDarts",
         "rate": 0.11,
         "eject": "0, 17.1, -16",
         "fireWithoutTarget": false,
@@ -167,10 +148,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 5,
             "vsBlockerRadius": 0,
-            "count": 2,
-            "spreadLength": 3,
-            "offset": -1.5,
-            "filterInvisible": false,
             "damage": 150,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -179,82 +156,30 @@
             "distributeToChildren": false,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForBoss": 150,
             "speed": 350,
-            "lifespan": 1.2857,
-            "seekDistance": 9999999,
-            "trackNewTargets": false,
-            "constantlyAquireNewTarget": false,
-            "maxSeekAngle": 45,
-            "ignoreSeekAngle": true,
-            "overrideRotation": false,
-            "useLifetimeAsDistance": false,
-            "turnRate": 90
+            "lifespan": 1.2857143,
+            "damageModifierForBoss": 150,
+            "filterInvisible": false
           }
         ],
         "count": 1,
-        "targetTypes": "Strong",
+        "targetTypes": "Depends on targeting option",
         "range": 9999999,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
-        "filterInvisible": false,
-        "filterBloonsToWithinAngle": 60
+        "sharedGridRange": 0,
+        "filterInvisible": false
       }
     ],
     "abilities": [
       {
-        "name": "Ability",
-        "cooldown": 60,
-        "maxActivationsPerRound": -1,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "projectiles": [
-          {
-            "name": "Explosion",
-            "pierce": 150,
-            "maxPierce": 0,
-            "ignoreBlockers": false,
-            "usePointCollisionWithBloons": false,
-            "canCollisionBeBlockedByMapLos": false,
-            "radius": 50,
-            "vsBlockerRadius": 0,
-            "effects": [
-              {
-                "name": "Stun (strong)",
-                "layers": 9999999,
-                "glueLevel": 0,
-                "isUnique": true,
-                "dontRefreshDuration": false,
-                "cascadeMutators": false,
-                "removeMutatorIfNotMatching": false,
-                "matchLayersWithDamage": false,
-                "mutationId": "Stun:Strong",
-                "lifespan": 8,
-                "multiplier": 0
-              }
-            ],
-            "filterInvisible": false,
-            "damage": 30000,
-            "maxDamage": 0,
-            "damage_type": "Normal",
-            "cannot_pop": "Can damage any Bloon type",
-            "immuneBloonProperties": 0,
-            "distributeToChildren": true,
-            "overrideDistributeBlocker": true,
-            "ignoreImmunityDestroy": false,
-            "rounds": 0,
-            "lifespan": 0.05
-          }
-        ]
+        "name": "Carpet Bomb",
+        "cooldown": 60
       }
     ],
-    "footprintX": 28,
-    "footprintY": 18,
-    "doesntBlockTowerPlacement": false,
-    "speed": 40,
-    "targetTypeCircle": true,
-    "targetTypeFigureInfinite": true,
-    "targetTypeFigureEight": true,
-    "targetTypeCentered": true
+    "targetTypeFirst": false,
+    "targetTypeLast": false,
+    "targetTypeClose": false,
+    "targetTypeStrong": false
   }
 }

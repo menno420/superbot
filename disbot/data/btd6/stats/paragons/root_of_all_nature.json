@@ -3,71 +3,156 @@
   "tower_id": "druid",
   "canonical": "Root of all Nature",
   "tower_canonical": "Druid",
-  "game_version": "54.0",
-  "source": "bloonswiki.com article prose (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 475000,
   "cost_chimps": null,
   "xp": 750000,
   "base": {
-    "range": 60,
+    "placeableOnLand": true,
+    "placeableOnWater": false,
+    "placeableOnTrack": false,
+    "range": 50,
+    "towerSelectionMenuThemeId": "Default",
+    "footprintRadius": 7,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
-        "name": "Electrified Thorns",
+        "name": "Attack",
         "rate": 0.5,
-        "count": 7,
+        "eject": "0, 7.48, 9.64",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
         "projectiles": [
           {
-            "name": "Electrified Thorn",
+            "name": "BaseProjectile",
             "pierce": 3,
             "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 0,
+            "vsBlockerRadius": 0,
             "damage": 55,
+            "maxDamage": 0,
             "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForBoss": 110,
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
             "speed": 300,
-            "lifespan": 0.6667
+            "lifespan": 0.6666667,
+            "damageModifierForBoss": 110,
+            "filterInvisible": false
           }
-        ]
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 50,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
       },
       {
-        "name": "Sentient Forest — Inner zone",
+        "name": "Spawner",
+        "rate": 10,
+        "eject": "0, 7.48, 9.64",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
         "projectiles": [
           {
-            "name": "Inner zone vines",
-            "damage": 30,
-            "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForCeramic": 300,
-            "damageModifierForMoabs": 300
+            "name": "Projectile",
+            "pierce": 1,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
           }
-        ]
-      },
-      {
-        "name": "Sentient Forest — Middle zone",
-        "projectiles": [
-          {
-            "name": "Middle zone vines",
-            "damage": 15,
-            "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForCeramic": 150,
-            "damageModifierForMoabs": 150
-          }
-        ]
-      },
-      {
-        "name": "Sentient Forest — Outer zone",
-        "projectiles": [
-          {
-            "name": "Outer zone vines",
-            "damage": 10,
-            "damage_type": "Normal",
-            "cannot_pop": null,
-            "damageModifierForCeramic": 100,
-            "damageModifierForMoabs": 100
-          }
-        ]
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 150,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
       }
-    ]
+    ],
+    "abilities": [
+      {
+        "name": "Jungle's Bounty",
+        "cooldown": 0
+      },
+      {
+        "name": "Primordial Wrath",
+        "cooldown": 9
+      }
+    ],
+    "subtowers": [
+      {
+        "name": "Tree",
+        "placeableOnLand": true,
+        "placeableOnWater": false,
+        "placeableOnTrack": false,
+        "range": 40,
+        "towerSelectionMenuThemeId": "Default",
+        "footprintRadius": 1,
+        "doesntBlockTowerPlacement": true,
+        "attacks": [
+          {
+            "name": "Attack",
+            "rate": 18,
+            "eject": "0, 7.48, 9.64",
+            "fireWithoutTarget": false,
+            "fireBetweenRounds": false,
+            "projectiles": [
+              {
+                "name": "Projectile",
+                "pierce": 20,
+                "maxPierce": 0,
+                "ignoreBlockers": false,
+                "usePointCollisionWithBloons": false,
+                "canCollisionBeBlockedByMapLos": false,
+                "radius": 16,
+                "vsBlockerRadius": 0,
+                "damage": 20,
+                "maxDamage": 0,
+                "damage_type": "Normal",
+                "cannot_pop": "Can damage any Bloon type",
+                "immuneBloonProperties": 0,
+                "distributeToChildren": true,
+                "overrideDistributeBlocker": false,
+                "ignoreImmunityDestroy": false,
+                "speed": 35,
+                "lifespan": 2.857143,
+                "damageModifierForBoss": 80,
+                "filterInvisible": false
+              }
+            ],
+            "count": 1,
+            "targetTypes": "Depends on targeting option",
+            "range": 40,
+            "attackThroughWalls": false,
+            "framesBeforeRetarget": 0,
+            "sharedGridRange": 0,
+            "filterInvisible": false
+          }
+        ],
+        "targetTypeFirst": true,
+        "targetTypeLast": true,
+        "targetTypeClose": true,
+        "targetTypeStrong": true,
+        "lifespan": 60
+      }
+    ],
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true
   }
 }

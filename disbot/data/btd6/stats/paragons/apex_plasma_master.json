@@ -3,8 +3,8 @@
   "tower_id": "dart_monkey",
   "canonical": "Apex Plasma Master",
   "tower_canonical": "Dart Monkey",
-  "game_version": "52.2",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 150000,
   "cost_chimps": null,
   "xp": 500000,
@@ -14,6 +14,8 @@
     "placeableOnTrack": false,
     "range": 85,
     "towerSelectionMenuThemeId": "Default",
+    "footprintRadius": 6,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
         "name": "Attack",
@@ -31,10 +33,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 9,
             "vsBlockerRadius": 0,
-            "count": 3,
-            "spreadLength": 16,
-            "offset": -16,
-            "filterInvisible": false,
             "damage": 25,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -43,16 +41,20 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForCeramic": 75,
-            "damageModifierForBoss": 60,
             "speed": 450,
             "lifespan": 1,
-            "expireProjectileAtScreenEdge": true,
-            "blockerCollisionRebound": true,
-            "clearCollidedWith": true
+            "damageModifierForCeramic": 75,
+            "damageModifierForBoss": 60,
+            "filterInvisible": false,
+            "effects": [
+              {
+                "name": "EndExplosion",
+                "lifespan": 0
+              }
+            ]
           },
           {
-            "name": "Mini-projectile",
+            "name": "JuggernautProjectile",
             "pierce": 200,
             "maxPierce": 0,
             "ignoreBlockers": false,
@@ -60,10 +62,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 7,
             "vsBlockerRadius": 0,
-            "angle": 360,
-            "offset": 0,
-            "count": 6,
-            "filterInvisible": false,
             "damage": 25,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -72,12 +70,11 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
-            "damageModifierForCeramic": 90,
-            "damageModifierForBoss": 60,
             "speed": 450,
             "lifespan": 1,
-            "blockerCollisionRebound": true,
-            "clearCollidedWith": true
+            "damageModifierForCeramic": 90,
+            "damageModifierForBoss": 60,
+            "filterInvisible": false
           }
         ],
         "count": 1,
@@ -89,8 +86,6 @@
         "filterInvisible": false
       }
     ],
-    "footprintRadius": 6,
-    "doesntBlockTowerPlacement": false,
     "targetTypeFirst": true,
     "targetTypeLast": true,
     "targetTypeClose": true,

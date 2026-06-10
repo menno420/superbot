@@ -164,7 +164,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.05,
           "isGlobal": true,
           "maxStackSize": 0
@@ -208,7 +207,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.05,
           "isGlobal": true,
           "maxStackSize": 0
@@ -287,7 +285,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.05,
           "isGlobal": true,
           "maxStackSize": 0
@@ -366,7 +363,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.05,
           "isGlobal": true,
           "maxStackSize": 0
@@ -445,7 +441,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -528,7 +523,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -611,7 +605,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -694,7 +687,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -777,7 +769,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -860,7 +851,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -943,7 +933,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -1026,7 +1015,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -1109,7 +1097,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -1192,7 +1179,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -1275,7 +1261,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0
@@ -1358,7 +1343,6 @@
       "buffs": [
         {
           "kind": "BananaCashIncreaseSupport",
-          "name": "BuffIconBenjamin",
           "incomePercentage": 0.12,
           "isGlobal": true,
           "maxStackSize": 0

@@ -1,7 +1,7 @@
 {
   "hero_id": "corvus",
   "canonical": "Corvus",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "BTD Mod Helper game data export",
   "base_cost": 1325,
   "cost_chimps": 1325,
@@ -45,7 +45,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -58,6 +58,107 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": true
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 4,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 7,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -106,7 +207,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -119,6 +220,107 @@
           "framesBeforeRetarget": 0,
           "sharedGridRange": 0,
           "filterInvisible": true
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -167,7 +369,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -185,7 +387,129 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 40
+          "cooldown": 40,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -234,7 +558,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -252,7 +576,129 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 39.5
+          "cooldown": 39.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -301,7 +747,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -319,7 +765,129 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 39
+          "cooldown": 39,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -368,7 +936,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -386,7 +954,164 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 38.5
+          "cooldown": 38.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -435,7 +1160,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -535,11 +1260,168 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 38
+          "cooldown": 38,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
           "cooldown": 20
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -588,7 +1470,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -688,11 +1570,205 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 37.5
+          "cooldown": 37.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
           "cooldown": 20
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 3,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -741,7 +1817,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -841,11 +1917,206 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 37
+          "cooldown": 37,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
           "cooldown": 20
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -894,7 +2165,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -994,7 +2265,28 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 36.5
+          "cooldown": 36.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 20,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1002,7 +2294,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1051,7 +2538,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -1151,7 +2638,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 36
+          "cooldown": 36,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1159,7 +2668,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 5,
+                  "maxPierce": 5,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1208,7 +2912,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -1308,7 +3012,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 35.5
+          "cooldown": 35.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1316,7 +3042,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1365,7 +3286,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -1465,7 +3386,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 35
+          "cooldown": 35,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1473,7 +3416,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1522,7 +3660,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -1622,7 +3760,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 34.5
+          "cooldown": 34.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1630,7 +3790,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 10,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 5,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1679,7 +4034,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -1779,7 +4134,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 34
+          "cooldown": 34,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1787,7 +4164,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 50,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 50,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 10,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 5,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 50,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1836,7 +4408,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -1936,7 +4508,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 33.5
+          "cooldown": 33.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -1944,7 +4538,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 58,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 58,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 20,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 5,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 58,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -1993,7 +4782,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -2093,7 +4882,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 33
+          "cooldown": 33,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -2101,7 +4912,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 58,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 58,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 20,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 5,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 58,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 8,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 1,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 4,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -2150,7 +5156,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -2250,7 +5256,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 32.5
+          "cooldown": 32.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -2258,7 +5286,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 58,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 58,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 20,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 5,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 58,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 16,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 10,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -2307,7 +5530,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -2407,7 +5630,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 32
+          "cooldown": 32,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -2415,7 +5660,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 58,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 58,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 20,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 5,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 58,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 16,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 10,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,
@@ -2464,7 +5904,7 @@
               "filterInvisible": true,
               "effects": [
                 {
-                  "name": "AddBehaviorToBloonModel",
+                  "name": "SpiritWalkerHaunt",
                   "lifespan": 9999999
                 }
               ]
@@ -2564,7 +6004,29 @@
       "abilities": [
         {
           "name": "Soul Harvest",
-          "cooldown": 31.5
+          "cooldown": 31.5,
+          "projectiles": [
+            {
+              "name": "BaseProjectile",
+              "pierce": 20,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 60,
+              "vsBlockerRadius": 0,
+              "damage": 30,
+              "maxDamage": 0,
+              "damage_type": "Normal",
+              "cannot_pop": "Can damage any Bloon type",
+              "immuneBloonProperties": 0,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "damageModifierForCeramic": 10,
+              "filterInvisible": true
+            }
+          ]
         },
         {
           "name": "Spirit Walk",
@@ -2572,7 +6034,202 @@
         },
         {
           "name": "Dark Ritual",
-          "cooldown": 90
+          "cooldown": 90,
+          "projectiles": [
+            {
+              "name": "Projectile",
+              "pierce": 100,
+              "maxPierce": 0,
+              "ignoreBlockers": true,
+              "usePointCollisionWithBloons": false,
+              "canCollisionBeBlockedByMapLos": false,
+              "radius": 58,
+              "vsBlockerRadius": 0,
+              "damage": 1,
+              "maxDamage": 0,
+              "damage_type": "Fire",
+              "cannot_pop": "Cannot damage Purple",
+              "immuneBloonProperties": 8,
+              "distributeToChildren": true,
+              "overrideDistributeBlocker": false,
+              "ignoreImmunityDestroy": false,
+              "filterInvisible": true
+            }
+          ]
+        }
+      ],
+      "subtowers": [
+        {
+          "name": "SpiritTower",
+          "placeableOnLand": true,
+          "placeableOnWater": false,
+          "placeableOnTrack": false,
+          "range": 58,
+          "towerSelectionMenuThemeId": "Corvus",
+          "footprintRadius": 0,
+          "doesntBlockTowerPlacement": false,
+          "attacks": [
+            {
+              "name": "Attack_SpiritAttack",
+              "rate": 1,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": true,
+              "projectiles": [
+                {
+                  "name": "MainProjectile",
+                  "pierce": 6,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 8,
+                  "vsBlockerRadius": 0,
+                  "damage": 40,
+                  "maxDamage": 0,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": true,
+                  "damageModifierForMoabs": 10,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 58,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "StormAttack_Storm",
+              "rate": 0.12,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 16,
+                  "maxPierce": -1,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 2,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": -1,
+                  "damage_type": "Energy",
+                  "cannot_pop": "Cannot damage Lead, Purple, or Glass",
+                  "immuneBloonProperties": 73,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "speed": 100,
+                  "lifespan": 0.6,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 999,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "SpearAttack_Spear",
+              "rate": 2.5,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": false,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 10,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 4,
+                  "vsBlockerRadius": 0,
+                  "speed": 250,
+                  "lifespan": 1.6,
+                  "filterInvisible": true
+                },
+                {
+                  "name": "Lightning",
+                  "pierce": 4,
+                  "maxPierce": 4,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 0,
+                  "vsBlockerRadius": 0,
+                  "damage": 10,
+                  "maxDamage": 0,
+                  "damage_type": "Plasma",
+                  "cannot_pop": "Cannot damage Purple or Glass",
+                  "immuneBloonProperties": 72,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 60,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            },
+            {
+              "name": "EmberAttack_Ember",
+              "rate": 1.2,
+              "eject": "0, 0, 0",
+              "fireWithoutTarget": true,
+              "fireBetweenRounds": false,
+              "projectiles": [
+                {
+                  "name": "Projectile",
+                  "pierce": 10,
+                  "maxPierce": 0,
+                  "ignoreBlockers": true,
+                  "usePointCollisionWithBloons": false,
+                  "canCollisionBeBlockedByMapLos": false,
+                  "radius": 15,
+                  "vsBlockerRadius": 0,
+                  "damage": 2,
+                  "maxDamage": 0,
+                  "damage_type": "Fire",
+                  "cannot_pop": "Cannot damage Purple",
+                  "immuneBloonProperties": 8,
+                  "distributeToChildren": true,
+                  "overrideDistributeBlocker": false,
+                  "ignoreImmunityDestroy": false,
+                  "filterInvisible": true
+                }
+              ],
+              "count": 1,
+              "targetTypes": "Depends on targeting option",
+              "range": 0,
+              "attackThroughWalls": true,
+              "framesBeforeRetarget": 0,
+              "sharedGridRange": 0,
+              "filterInvisible": true
+            }
+          ],
+          "targetTypeFirst": false,
+          "targetTypeLast": false,
+          "targetTypeClose": false,
+          "targetTypeStrong": true
         }
       ],
       "targetTypeFirst": true,

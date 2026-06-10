@@ -3,8 +3,8 @@
   "tower_id": "monkey_buccaneer",
   "canonical": "Navarch of the Seas",
   "tower_canonical": "Monkey Buccaneer",
-  "game_version": "51.0",
-  "source": "bloonswiki.com (CC BY-NC-SA)",
+  "game_version": "55.1",
+  "source": "BTD Mod Helper game data export",
   "cost": 550000,
   "cost_chimps": null,
   "xp": 750000,
@@ -14,9 +14,11 @@
     "placeableOnTrack": false,
     "range": 60,
     "towerSelectionMenuThemeId": "Default",
+    "footprintRadius": 8,
+    "doesntBlockTowerPlacement": false,
     "attacks": [
       {
-        "name": "Cannonball attack",
+        "name": "TurretRight1",
         "rate": 0.25,
         "eject": "0, 5, 5",
         "fireWithoutTarget": false,
@@ -31,12 +33,9 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 5,
             "vsBlockerRadius": 0,
-            "count": 3,
-            "spreadLength": 6,
-            "offset": -6,
-            "filterInvisible": false,
             "speed": 200,
-            "lifespan": 0.6
+            "lifespan": 0.7,
+            "filterInvisible": false
           },
           {
             "name": "Explosion",
@@ -47,7 +46,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 40,
             "vsBlockerRadius": 0,
-            "filterInvisible": false,
             "damage": 60,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -58,26 +56,8 @@
             "ignoreImmunityDestroy": false,
             "damageModifierForMoabs": 60,
             "damageModifierForBoss": 80,
-            "rounds": 0,
-            "lifespan": 0.05
-          }
-        ],
-        "count": 6,
-        "targetTypes": "Depends on targeting option",
-        "range": 60,
-        "attackThroughWalls": false,
-        "framesBeforeRetarget": 0,
-        "sharedGridRange": 0,
-        "filterInvisible": false,
-        "filterBloonsToWithinAngle": 180
-      },
-      {
-        "name": "Grape attack",
-        "rate": 0.25,
-        "eject": "0, 5, 5",
-        "fireWithoutTarget": false,
-        "fireBetweenRounds": false,
-        "projectiles": [
+            "filterInvisible": false
+          },
           {
             "name": "Projectile",
             "pierce": 10,
@@ -87,10 +67,6 @@
             "canCollisionBeBlockedByMapLos": false,
             "radius": 2,
             "vsBlockerRadius": 0,
-            "angle": 90,
-            "offset": 0,
-            "count": 6,
-            "filterInvisible": false,
             "damage": 25,
             "maxDamage": 0,
             "damage_type": "Normal",
@@ -99,103 +75,705 @@
             "distributeToChildren": true,
             "overrideDistributeBlocker": false,
             "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 0.6,
             "damageModifierForMoabs": 30,
             "damageModifierForBoss": 30,
-            "speed": 200,
-            "lifespan": 0.6
+            "filterInvisible": false
           }
         ],
-        "count": 6,
+        "count": 2,
         "targetTypes": "Depends on targeting option",
         "range": 60,
         "attackThroughWalls": false,
         "framesBeforeRetarget": 0,
         "sharedGridRange": 0,
-        "filterInvisible": false,
-        "filterBloonsToWithinAngle": 180
+        "filterInvisible": false
       },
       {
-        "name": "Plane spawner",
+        "name": "TurretRight2",
+        "rate": 0.25,
+        "eject": "0, 5, 5",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 1,
+            "maxPierce": 1,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 0,
+            "speed": 200,
+            "lifespan": 0.7,
+            "filterInvisible": false
+          },
+          {
+            "name": "Explosion",
+            "pierce": 28,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 40,
+            "vsBlockerRadius": 0,
+            "damage": 60,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 60,
+            "damageModifierForBoss": 80,
+            "filterInvisible": false
+          },
+          {
+            "name": "Projectile",
+            "pierce": 10,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 25,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 0.6,
+            "damageModifierForMoabs": 30,
+            "damageModifierForBoss": 30,
+            "filterInvisible": false
+          }
+        ],
+        "count": 2,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "TurretRight3",
+        "rate": 0.25,
+        "eject": "0, 5, 5",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 1,
+            "maxPierce": 1,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 0,
+            "speed": 200,
+            "lifespan": 0.7,
+            "filterInvisible": false
+          },
+          {
+            "name": "Explosion",
+            "pierce": 28,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 40,
+            "vsBlockerRadius": 0,
+            "damage": 60,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 60,
+            "damageModifierForBoss": 80,
+            "filterInvisible": false
+          },
+          {
+            "name": "Projectile",
+            "pierce": 10,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 25,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 0.6,
+            "damageModifierForMoabs": 30,
+            "damageModifierForBoss": 30,
+            "filterInvisible": false
+          }
+        ],
+        "count": 2,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "TurretLeft1",
+        "rate": 0.25,
+        "eject": "0, 5, 5",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 1,
+            "maxPierce": 1,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 0,
+            "speed": 200,
+            "lifespan": 0.7,
+            "filterInvisible": false
+          },
+          {
+            "name": "Explosion",
+            "pierce": 28,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 40,
+            "vsBlockerRadius": 0,
+            "damage": 60,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 60,
+            "damageModifierForBoss": 80,
+            "filterInvisible": false
+          },
+          {
+            "name": "Projectile",
+            "pierce": 10,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 25,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 0.6,
+            "damageModifierForMoabs": 30,
+            "damageModifierForBoss": 30,
+            "filterInvisible": false
+          }
+        ],
+        "count": 2,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "TurretLeft2",
+        "rate": 0.25,
+        "eject": "0, 5, 5",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 1,
+            "maxPierce": 1,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 0,
+            "speed": 200,
+            "lifespan": 0.7,
+            "filterInvisible": false
+          },
+          {
+            "name": "Explosion",
+            "pierce": 28,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 40,
+            "vsBlockerRadius": 0,
+            "damage": 60,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 60,
+            "damageModifierForBoss": 80,
+            "filterInvisible": false
+          },
+          {
+            "name": "Projectile",
+            "pierce": 10,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 25,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 0.6,
+            "damageModifierForMoabs": 30,
+            "damageModifierForBoss": 30,
+            "filterInvisible": false
+          }
+        ],
+        "count": 2,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "TurretLeft3",
+        "rate": 0.25,
+        "eject": "0, 5, 5",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 1,
+            "maxPierce": 1,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 5,
+            "vsBlockerRadius": 0,
+            "speed": 200,
+            "lifespan": 0.7,
+            "filterInvisible": false
+          },
+          {
+            "name": "Explosion",
+            "pierce": 28,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 40,
+            "vsBlockerRadius": 0,
+            "damage": 60,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "damageModifierForMoabs": 60,
+            "damageModifierForBoss": 80,
+            "filterInvisible": false
+          },
+          {
+            "name": "Projectile",
+            "pierce": 10,
+            "maxPierce": 0,
+            "ignoreBlockers": false,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 2,
+            "vsBlockerRadius": 0,
+            "damage": 25,
+            "maxDamage": 0,
+            "damage_type": "Normal",
+            "cannot_pop": "Can damage any Bloon type",
+            "immuneBloonProperties": 0,
+            "distributeToChildren": true,
+            "overrideDistributeBlocker": false,
+            "ignoreImmunityDestroy": false,
+            "speed": 200,
+            "lifespan": 0.6,
+            "damageModifierForMoabs": 30,
+            "damageModifierForBoss": 30,
+            "filterInvisible": false
+          }
+        ],
+        "count": 2,
+        "targetTypes": "Depends on targeting option",
+        "range": 60,
+        "attackThroughWalls": false,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Plane Spawner",
         "rate": 1.25,
         "eject": "0, -10, 3.5",
         "fireWithoutTarget": true,
         "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 0,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 0,
+            "vsBlockerRadius": 0,
+            "speed": 0,
+            "lifespan": "NaN",
+            "filterInvisible": false
+          }
+        ],
         "count": 1,
-        "targetTypes": "",
+        "targetTypes": "Depends on targeting option",
         "range": 0,
         "attackThroughWalls": true,
-        "framesBeforeRetarget": 0
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
       },
       {
-        "name": "Grappling hooks",
+        "name": "Grapple1",
         "rate": 0.06,
-        "eject": "7, 21, 3.5 (1)<br>-7, 21, 3.5 (2)<br>14.5, 7, 3.5 (3)<br>7, -6, 3.5 (4)<br>-7, -6, 3.5 (5)<br>-14.5, 7, 3.5 (6)<br>-11.3, 15.8, 3.5 (7)<br>11.3, 15.8, 3.5 (8)<br>11.3, 2.7, 3.5 (9)<br>-11.3, 2.7, 3.5 (10)",
+        "eject": "7, 21, 3.5",
         "fireWithoutTarget": false,
         "fireBetweenRounds": false,
-        "count": 10,
-        "targetTypes": "Grapplable",
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
         "range": 9999999,
         "attackThroughWalls": true,
         "framesBeforeRetarget": 0,
-        "filterOutBoss": true
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple2",
+        "rate": 0.06,
+        "eject": "-7, 21, 3.5",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple3",
+        "rate": 0.06,
+        "eject": "14.5, 7, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple4",
+        "rate": 0.06,
+        "eject": "7, -6, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple5",
+        "rate": 0.06,
+        "eject": "-7, -6, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple6",
+        "rate": 0.06,
+        "eject": "-14.5, 7, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple7",
+        "rate": 0.06,
+        "eject": "-11.3, 15.8, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple8",
+        "rate": 0.06,
+        "eject": "11.3, 15.8, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple9",
+        "rate": 0.06,
+        "eject": "11.3, 2.7, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
+      },
+      {
+        "name": "Grapple10",
+        "rate": 0.06,
+        "eject": "-11.3, 2.7, 3.5000005",
+        "fireWithoutTarget": false,
+        "fireBetweenRounds": false,
+        "projectiles": [
+          {
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
+          }
+        ],
+        "count": 1,
+        "targetTypes": "Depends on targeting option",
+        "range": 9999999,
+        "attackThroughWalls": true,
+        "framesBeforeRetarget": 0,
+        "sharedGridRange": 0,
+        "filterInvisible": false
       }
     ],
     "abilities": [
       {
-        "name": "Ability",
+        "name": "Large BAD Harpoon",
         "cooldown": 30,
-        "maxActivationsPerRound": 2,
-        "canActivateBetweenRounds": false,
-        "restrictAbilityAfterMaxRoundTimer": false,
-        "attacks": [
+        "projectiles": [
           {
-            "name": "Grappling hook",
-            "eject": "0, 0, 3.5",
-            "fireWithoutTarget": false,
-            "fireBetweenRounds": false,
-            "count": 1,
-            "targetTypes": "Grapplable",
-            "range": 9999999,
-            "attackThroughWalls": true,
-            "framesBeforeRetarget": 0,
-            "filterOutBoss": true
+            "name": "Projectile",
+            "pierce": 9999999,
+            "maxPierce": 0,
+            "ignoreBlockers": true,
+            "usePointCollisionWithBloons": false,
+            "canCollisionBeBlockedByMapLos": false,
+            "radius": 4,
+            "vsBlockerRadius": 0,
+            "filterInvisible": false
           }
         ]
       }
     ],
-    "buffs": [
-      {
-        "name": "Flagship buff",
-        "maxStacks": 0,
-        "isGlobal": true,
-        "rateMultiplier": 0.85
-      },
-      {
-        "name": "Trade Empire buff",
-        "maxStacks": 40,
-        "isGlobal": true,
-        "cashPerRoundPerMechantship": 10,
-        "cashPerRoundPerFavouredTrades": 20,
-        "damageAdditive": 10,
-        "damageAdditiveForCeramic": 10,
-        "damageAdditiveForMoabs": 10
-      },
-      {
-        "name": "Sellback rate buff",
-        "maxStacks": 1,
-        "isGlobal": false,
-        "cashbackZoneMultiplier": 0.12
-      }
-    ],
-    "footprintRadius": 8,
-    "doesntBlockTowerPlacement": false,
-    "minTimeBetweenHooks": 1,
-    "hookreloadTime": 10,
-    "cashPerRound": 3200,
-    "targetTypeFirst": true,
-    "targetTypeLast": true,
-    "targetTypeClose": true,
-    "targetTypeStrong": true,
     "subtowers": [
       {
         "name": "Plane",
@@ -204,6 +782,8 @@
         "placeableOnTrack": false,
         "range": 200,
         "towerSelectionMenuThemeId": "Default",
+        "footprintRadius": 6,
+        "doesntBlockTowerPlacement": true,
         "attacks": [
           {
             "name": "Attack",
@@ -221,7 +801,6 @@
                 "canCollisionBeBlockedByMapLos": false,
                 "radius": 4,
                 "vsBlockerRadius": 0,
-                "filterInvisible": false,
                 "damage": 44,
                 "maxDamage": 0,
                 "damage_type": "Normal",
@@ -230,9 +809,10 @@
                 "distributeToChildren": true,
                 "overrideDistributeBlocker": false,
                 "ignoreImmunityDestroy": false,
-                "damageModifierForBoss": 44,
                 "speed": 600,
-                "lifespan": 0.6667
+                "lifespan": 0.73333335,
+                "damageModifierForBoss": 44,
+                "filterInvisible": false
               }
             ],
             "count": 1,
@@ -240,10 +820,11 @@
             "range": 9999999,
             "attackThroughWalls": true,
             "framesBeforeRetarget": 0,
+            "sharedGridRange": 0,
             "filterInvisible": false
           },
           {
-            "name": "Radial attack",
+            "name": "Attack Radial",
             "rate": 1.8,
             "eject": "0, 10, 0",
             "fireWithoutTarget": false,
@@ -258,26 +839,9 @@
                 "canCollisionBeBlockedByMapLos": false,
                 "radius": 5,
                 "vsBlockerRadius": 0,
-                "angle": 360,
-                "offset": 0,
-                "count": 4,
-                "filterInvisible": false,
-                "filterOutNonMoabs": true,
-                "seekDistance": 9999999,
-                "trackNewTargets": true,
-                "constantlyAquireNewTarget": false,
-                "maxSeekAngle": 360,
-                "ignoreSeekAngle": true,
-                "overrideRotation": false,
-                "useLifetimeAsDistance": false,
-                "turnRate": 25,
-                "acceleration": 160,
-                "maxSpeed": 400,
-                "turnRateChange": 160,
-                "maxTurnRate": 400,
-                "decelerate": false,
                 "speed": 25,
-                "lifespan": 24
+                "lifespan": 24,
+                "filterInvisible": false
               },
               {
                 "name": "Explosion",
@@ -288,8 +852,6 @@
                 "canCollisionBeBlockedByMapLos": false,
                 "radius": 30,
                 "vsBlockerRadius": 0,
-                "filterInvisible": false,
-                "filterOutNonMoabs": true,
                 "damage": 200,
                 "maxDamage": 0,
                 "damage_type": "Normal",
@@ -299,20 +861,22 @@
                 "overrideDistributeBlocker": false,
                 "ignoreImmunityDestroy": false,
                 "damageModifierForBoss": 200,
-                "rounds": 0,
-                "lifespan": 0.05
+                "filterInvisible": false
               }
             ],
             "count": 1,
-            "targetTypes": "",
+            "targetTypes": "Depends on targeting option",
             "range": 9999999,
             "attackThroughWalls": true,
             "framesBeforeRetarget": 0,
-            "filterOutNonMoabs": true
+            "sharedGridRange": 0,
+            "filterInvisible": false
           }
         ],
-        "footprintRadius": 6,
-        "doesntBlockTowerPlacement": true,
+        "targetTypeFirst": true,
+        "targetTypeLast": true,
+        "targetTypeClose": true,
+        "targetTypeStrong": true,
         "lifespan": 9999999,
         "speed": 50,
         "turningSpeed": 0.025,
@@ -330,12 +894,56 @@
         "loopChancePerSecondPassed": 0.015,
         "loopRadius": 36.6,
         "loopModelScale": 1.5,
-        "targetTypeFirst": true,
-        "targetTypeClose": true,
-        "targetTypeLast": true,
-        "targetTypeStrong": true,
         "count": 3
       }
-    ]
+    ],
+    "zones": [
+      {
+        "kind": "CashbackZone"
+      }
+    ],
+    "buffs": [
+      {
+        "kind": "FlagshipAttackSpeedIncrease",
+        "rateMultiplier": 0.85,
+        "isGlobal": true,
+        "maxStackSize": 0
+      },
+      {
+        "kind": "FlagshipAttackSpeedIncrease",
+        "rateMultiplier": 0.85,
+        "isGlobal": true,
+        "maxStackSize": 0
+      },
+      {
+        "kind": "TradeEmpireBuff",
+        "name": "Trade Empire buff",
+        "cashPerRoundPerMechantship": 10,
+        "cashPerRoundPerFavouredTrades": 20,
+        "damageAdditive": 10,
+        "damageAdditiveForCeramic": 10,
+        "damageAdditiveForMoabs": 10,
+        "isGlobal": true,
+        "maxStackSize": 40,
+        "maxStacks": 40
+      },
+      {
+        "name": "Flagship buff",
+        "maxStacks": 0,
+        "isGlobal": true,
+        "rateMultiplier": 0.85
+      },
+      {
+        "name": "Sellback rate buff",
+        "maxStacks": 1,
+        "isGlobal": false,
+        "cashbackZoneMultiplier": 0.12
+      }
+    ],
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true,
+    "cashPerRound": 3200
   }
 }
