@@ -193,6 +193,80 @@ class MiningProvider(RankProvider):
         return None, None
 
 
+class GameXpProvider(RankProvider):
+    """The shared cross-game progression track (game_xp_service)."""
+
+    name = "gamexp"
+    display_title = "🎮 Game Level Leaderboard"
+    select_label = "Game Level"
+    select_emoji = "🎮"
+    empty_hint = (
+        "No game XP earned yet. Play `!mine`, craft gear, or explore to "
+        "start levelling."
+    )
+
+    @staticmethod
+    def _render(total: int) -> str:
+        level, _, _ = db.level_progress(total)
+        return f"Level {level} ({total} XP)"
+
+    async def top(self, guild: discord.Guild) -> list[RankEntry]:
+        rows = await db.top_total_xp(guild.id)
+        return [
+            RankEntry(
+                label=(
+                    f"**{resources.member_display(guild, user_id)}** "
+                    f"— {self._render(total)}"
+                ),
+            )
+            for user_id, total in rows[:10]
+        ]
+
+    async def member_rank(
+        self,
+        guild: discord.Guild,
+        user_id: int,
+    ) -> tuple[int | None, str | None]:
+        rows = await db.top_total_xp(guild.id, limit=200)
+        for i, (uid, total) in enumerate(rows):
+            if uid == user_id:
+                return i + 1, self._render(total)
+        return None, None
+
+
+class CraftingProvider(RankProvider):
+    """Crafting-game XP (the old ``crafting_top`` leaderboard, reborn)."""
+
+    name = "crafting"
+    display_title = "🔧 Crafting Leaderboard"
+    select_label = "Crafting"
+    select_emoji = "🔧"
+    empty_hint = "No crafting XP yet. Craft or repair gear at the 🔧 Workshop."
+
+    async def top(self, guild: discord.Guild) -> list[RankEntry]:
+        rows = await db.top_game_xp(guild.id, "crafting")
+        return [
+            RankEntry(
+                label=(
+                    f"**{resources.member_display(guild, user_id)}** "
+                    f"— {xp} crafting XP"
+                ),
+            )
+            for user_id, xp in rows[:10]
+        ]
+
+    async def member_rank(
+        self,
+        guild: discord.Guild,
+        user_id: int,
+    ) -> tuple[int | None, str | None]:
+        rows = await db.top_game_xp(guild.id, "crafting", limit=200)
+        for i, (uid, xp) in enumerate(rows):
+            if uid == user_id:
+                return i + 1, f"{xp} crafting XP"
+        return None, None
+
+
 class DeathmatchProvider(RankProvider):
     name = "deathmatch"
     display_title = "⚔️ Deathmatch Leaderboard"
@@ -323,6 +397,8 @@ _PROVIDERS: dict[str, RankProvider] = {
         XpProvider(),
         CoinsProvider(),
         MiningProvider(),
+        GameXpProvider(),
+        CraftingProvider(),
         DeathmatchProvider(),
         RpsProvider(),
         CountingProvider(),
@@ -336,6 +412,11 @@ ALIASES: dict[str, str] = {
     "rankings": "xp",
     "minelb": "mining",
     "miningleaderboard": "mining",
+    "gxp": "gamexp",
+    "gamelevel": "gamexp",
+    "game_xp": "gamexp",
+    "crafting_top": "crafting",
+    "craftlb": "crafting",
     "dm_leaderboard": "deathmatch",
     "dm_lb": "deathmatch",
     "board": "deathmatch",

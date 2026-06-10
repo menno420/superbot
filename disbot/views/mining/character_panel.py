@@ -7,15 +7,16 @@ coins (the economy), and inventory net worth (``utils.mining.items``).  It reads
 from each existing owner, so it grows for free as game-XP / skills / titles land.
 
 Shared by the ``!character`` command and the hub's Character button — one builder,
-no duplicate composition.  Cog-domain modules are lazy-imported (views→cogs rule).
+no duplicate composition.
 """
 
 from __future__ import annotations
 
 import discord
 
+from services import game_xp_service
 from utils import db, equipment
-from utils.mining import items, world
+from utils.mining import items, workshop, world
 from utils.ui_constants import MINING_COLOR
 
 
@@ -31,7 +32,9 @@ async def build_character_embed(
     equipped = await db.get_equipment(suid, guild_id)
     wear = await db.get_gear_wear(suid, guild_id)
     depth = await db.get_depth(suid, guild_id)
+    max_depth = await db.get_max_depth(suid, guild_id)
     coins = await db.get_coins(user_id, guild_id)
+    level, into, needed = await game_xp_service.level_info(guild_id, user_id)
     stats = equipment.compute_stats(equipped)
 
     def _gear_line(slot: str) -> str:
@@ -50,7 +53,18 @@ async def build_character_embed(
     )
     embed.add_field(
         name="📍 Location",
-        value=world.describe_position(depth),
+        value=(
+            f"{world.describe_position(depth)}\n"
+            f"Deepest: {world.describe_position(max_depth)}"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="🎮 Game Level",
+        value=(
+            f"Level **{level}** — "
+            f"{workshop.durability_bar(into, needed)} XP to next"
+        ),
         inline=False,
     )
     embed.add_field(

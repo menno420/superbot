@@ -174,12 +174,15 @@ class MiningHubView(PersistentView):
             interaction.user.id,
             interaction.guild_id,
         )
+        description = (
+            f"{interaction.user.mention} chopped wood and collected "
+            f"**{result.amount}x wood**!"
+        )
+        if result.xp_note:
+            description += "\n" + result.xp_note
         embed = discord.Embed(
             title="⛏️ Mining Hub",
-            description=(
-                f"{interaction.user.mention} chopped wood and collected "
-                f"**{result.amount}x wood**!"
-            ),
+            description=description,
             color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
@@ -211,6 +214,8 @@ class MiningHubView(PersistentView):
         )
         if result.wear.notes:
             description += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            description += "\n" + result.xp_note
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=description,
@@ -365,6 +370,8 @@ class MiningHubView(PersistentView):
                 f"{interaction.user.mention} descended to "
                 f"**{world.describe_position(result.depth)}**."
             )
+            if result.xp_note:
+                description += "\n" + result.xp_note
             color = SUCCESS_COLOR
         embed = discord.Embed(
             title="⛏️ Mining Hub",

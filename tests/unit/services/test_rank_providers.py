@@ -42,11 +42,13 @@ def _guild() -> MagicMock:
 # ---------------------------------------------------------------------------
 
 
-def test_registry_exposes_six_canonical_categories():
+def test_registry_exposes_canonical_categories():
     assert set(provider_names()) == {
         "xp",
         "coins",
         "mining",
+        "gamexp",
+        "crafting",
         "deathmatch",
         "rps",
         "counting",

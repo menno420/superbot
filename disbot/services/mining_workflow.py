@@ -33,7 +33,7 @@ import logging
 from dataclasses import dataclass
 
 from core.events import bus
-from services import economy_service
+from services import economy_service, game_xp_service
 from utils import db, equipment
 from utils.mining import market, rewards, workshop, world
 from utils.mining.exploration import explore_from_state
@@ -52,6 +52,8 @@ class MineResult:
     amount: int
     depth: int
     wear: WearReport
+    #: Inline level-up notice (set only when the award crossed a level).
+    xp_note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -59,6 +61,7 @@ class HarvestResult:
     """One harvest — the rolled wood amount."""
 
     amount: int
+    xp_note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -70,6 +73,7 @@ class ExploreActionResult:
     amount: int
     depth: int
     wear: WearReport
+    xp_note: str | None = None
 
 
 @dataclass(frozen=True)
@@ -79,6 +83,7 @@ class DescentResult:
     moved: bool
     depth: int
     hint: str | None = None
+    xp_note: str | None = None
 
 
 async def wear_tick(
@@ -194,6 +199,13 @@ async def repair(user_id: int, guild_id: int, item: str) -> TradeResult:
                 actor_id=user_id,
             )
             await db.clear_gear_wear(suid, guild_id, item, conn=conn)
+            xp = await game_xp_service.award(
+                guild_id,
+                user_id,
+                game=game_xp_service.GAME_CRAFTING,
+                action="repair",
+                conn=conn,
+            )
     except economy_service.InsufficientFundsError:
         balance = await db.get_coins(user_id, guild_id)
         return TradeResult(
@@ -209,13 +221,15 @@ async def repair(user_id: int, guild_id: int, item: str) -> TradeResult:
         new_balance=new_balance,
         reason=workshop.REPAIR_REASON,
     )
-    return TradeResult(
-        True,
+    message = (
         f"Repaired **{item}** to full durability for **{cost}** 🪙. "
-        f"Balance: **{new_balance}** 🪙.",
-        -cost,
-        new_balance,
+        f"Balance: **{new_balance}** 🪙."
     )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+        if xp.leveled_up:
+            message += "\n" + xp.note
+    return TradeResult(True, message, -cost, new_balance)
 
 
 def _resolve_recipe(item: str) -> dict[str, int] | TradeResult:
@@ -268,7 +282,19 @@ async def craft(user_id: int, guild_id: int, item: str) -> TradeResult:
     deltas[item] = deltas.get(item, 0) + 1
     async with db.transaction() as conn:
         await db.apply_inventory_deltas(suid, guild_id, deltas, conn=conn)
-    return TradeResult(True, f"Crafted **{item}**!")
+        xp = await game_xp_service.award(
+            guild_id,
+            user_id,
+            game=game_xp_service.GAME_CRAFTING,
+            action="craft",
+            conn=conn,
+        )
+    message = f"Crafted **{item}**!"
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+        if xp.leveled_up:
+            message += "\n" + xp.note
+    return TradeResult(True, message)
 
 
 async def quick_craft(user_id: int, guild_id: int) -> TradeResult:
@@ -456,7 +482,23 @@ async def mine(user_id: int, guild_id: int) -> MineResult:
             if candidates
             else WearReport()
         )
-    return MineResult(found=found, amount=amount, depth=depth, wear=report)
+        xp = await game_xp_service.award(
+            guild_id,
+            user_id,
+            game=game_xp_service.GAME_MINING,
+            action="mine",
+            depth=depth,
+            conn=conn,
+        )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+    return MineResult(
+        found=found,
+        amount=amount,
+        depth=depth,
+        wear=report,
+        xp_note=xp.note if xp is not None and xp.leveled_up else None,
+    )
 
 
 async def harvest(user_id: int, guild_id: int) -> HarvestResult:
@@ -464,8 +506,21 @@ async def harvest(user_id: int, guild_id: int) -> HarvestResult:
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     amount = rewards.roll_harvest_amount(has_axe=inventory.get("axe", 0) > 0)
-    await db.update_mining_item(suid, guild_id, "wood", amount)
-    return HarvestResult(amount=amount)
+    async with db.transaction() as conn:
+        await db.update_mining_item(suid, guild_id, "wood", amount, conn=conn)
+        xp = await game_xp_service.award(
+            guild_id,
+            user_id,
+            game=game_xp_service.GAME_MINING,
+            action="harvest",
+            conn=conn,
+        )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+    return HarvestResult(
+        amount=amount,
+        xp_note=xp.note if xp is not None and xp.leveled_up else None,
+    )
 
 
 async def explore(user_id: int, guild_id: int) -> ExploreActionResult:
@@ -489,12 +544,23 @@ async def explore(user_id: int, guild_id: int) -> ExploreActionResult:
             if candidates
             else WearReport()
         )
+        xp = await game_xp_service.award(
+            guild_id,
+            user_id,
+            game=game_xp_service.GAME_MINING,
+            action="explore",
+            depth=depth,
+            conn=conn,
+        )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
     return ExploreActionResult(
         text=text,
         item=item,
         amount=amount,
         depth=depth,
         wear=report,
+        xp_note=xp.note if xp is not None and xp.leveled_up else None,
     )
 
 
@@ -562,8 +628,24 @@ async def descend(user_id: int, guild_id: int) -> DescentResult:
     new_depth = world.descend(depth, stats)
     if new_depth == depth:
         return DescentResult(moved=False, depth=depth, hint=world.descend_hint(stats))
-    await db.set_depth(suid, guild_id, new_depth)
-    return DescentResult(moved=True, depth=new_depth)
+    xp = None
+    async with db.transaction() as conn:
+        await db.set_depth(suid, guild_id, new_depth, conn=conn)
+        if await db.record_depth(suid, guild_id, new_depth, conn=conn):
+            xp = await game_xp_service.award(
+                guild_id,
+                user_id,
+                game=game_xp_service.GAME_MINING,
+                action="depth_record",
+                conn=conn,
+            )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+    return DescentResult(
+        moved=True,
+        depth=new_depth,
+        xp_note=xp.note if xp is not None and xp.leveled_up else None,
+    )
 
 
 async def ascend(user_id: int, guild_id: int) -> DescentResult:

@@ -22,7 +22,7 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
-from services import mining_workflow
+from services import game_xp_service, mining_workflow
 from utils import db, equipment
 from utils.mining import market, workshop, world
 from utils.mining.items import total_value
@@ -102,10 +102,13 @@ class MiningCog(commands.Cog):
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
         result = await mining_workflow.harvest(ctx.author.id, ctx.guild.id)
-        await ctx.send(
+        message = (
             f"{ctx.author.mention} chopped wood and collected "
-            f"{result.amount}x wood!",
+            f"{result.amount}x wood!"
         )
+        if result.xp_note:
+            message += "\n" + result.xp_note
+        await ctx.send(message)
 
     @commands.command(
         name="mineinv",
@@ -134,6 +137,11 @@ class MiningCog(commands.Cog):
         unique_items = len(inventory)
 
         depth = await db.get_depth(user_id, ctx.guild.id)
+        max_depth = await db.get_max_depth(user_id, ctx.guild.id)
+        level, into, needed = await game_xp_service.level_info(
+            ctx.guild.id,
+            ctx.author.id,
+        )
         embed = discord.Embed(
             title=f"{ctx.author.name}'s Mining Stats",
             color=MINING_COLOR,
@@ -143,9 +151,18 @@ class MiningCog(commands.Cog):
             value=world.describe_position(depth),
             inline=False,
         )
+        embed.add_field(
+            name="🎮 Game Level",
+            value=f"Level **{level}** — {workshop.durability_bar(into, needed)} XP",
+            inline=False,
+        )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
         embed.add_field(name="Net Worth", value=str(total_value(inventory)))
+        embed.add_field(
+            name="Deepest",
+            value=world.describe_position(max_depth),
+        )
         await ctx.send(embed=embed)
 
     # ---------------------------------------------------------- build / crafting
@@ -232,6 +249,8 @@ class MiningCog(commands.Cog):
         )
         if result.wear.notes:
             message += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            message += "\n" + result.xp_note
         await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
@@ -335,10 +354,13 @@ class MiningCog(commands.Cog):
                 f"{ctx.author.mention} can't descend any deeper. {result.hint}",
             )
             return
-        await ctx.send(
+        message = (
             f"{ctx.author.mention} descended to "
-            f"{world.describe_position(result.depth)}.",
+            f"{world.describe_position(result.depth)}."
         )
+        if result.xp_note:
+            message += "\n" + result.xp_note
+        await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def ascend(self, ctx):
