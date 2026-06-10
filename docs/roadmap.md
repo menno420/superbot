@@ -93,6 +93,10 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   re-verify in-flight PR state live before launching the agents (#639/Lane 4
   merged 2026-06-09; #638 was still an open draft at the late-2026-06-09
   reconciliation).
+- **Next** — [untapped runtime/services/workflows map](planning/untapped-runtime-services-workflows-map-2026-06-10.md)
+  (2026-06-10, Codex): the below-the-surface seam audit behind the mapping
+  campaign (mutation ownership, cache/event invalidation gaps, helper
+  duplication) — input to the merge/implementation session.
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
