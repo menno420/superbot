@@ -287,6 +287,13 @@ def test_buff_projectile_radius_fields_render():
     )
 
 
+def test_buff_projectile_speed_percentage_renders_whole_percent():
+    # Q-0069: fraction in data, percent on screen.
+    assert "+25% projectile speed" in det._buff_text(
+        {"name": "Primary Training", "projectileSpeedPercentage": 0.25},
+    )
+
+
 def test_buff_bank_income_percentage_renders_whole_percent():
     # Benjamin's Bank Hack: fraction in data (0.05 / 0.12), percent on screen.
     assert "+5% income" in det._buff_text(

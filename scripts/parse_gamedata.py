@@ -722,6 +722,13 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     # (committed-prose-confirmed), rendered x100 like the other *Percentage
     # fields.
     "BananaCashIncreaseSupportModel": {"multiplier": "incomePercentage"},
+    # Projectile-speed aura (Village Primary Training 3-0-0+, Ezili's totem).
+    # multiplier 0.25 is a FRACTION (+25%), not a true multiplier: pinned by
+    # the owner's gameplay confirmation (Q-0069, 2026-06-09 — a x0.25
+    # slowdown reading is absurd for a buff) on the same encoding pattern the
+    # four RangeSupport confirmations established. Rendered x100 like the
+    # other *Percentage fields.
+    "ProjectileSpeedSupportModel": {"multiplier": "projectileSpeedPercentage"},
 }
 
 # Buffs whose effect is a *nested* ``damageModifierModel`` (tag bonus), not a

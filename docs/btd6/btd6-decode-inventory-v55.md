@@ -155,7 +155,7 @@ The 'stat-based effect' half of the goal. These `$type`s are **inline behaviors 
 | `StartOfRoundRateBuffModel` | 41 | yes (modifier) | via owning upgrade | SAFE_WRITE |
 | `AddBehaviorToTowerSupportModel` | 39 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `DroneSupportModel` | 38 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |
-| `ProjectileSpeedSupportModel` | 30 | yes (multiplier) | yes (buffLocsName) | SCHEMA_FIRST |
+| `ProjectileSpeedSupportModel` | 30 | yes (multiplier) | yes (buffLocsName) | SAFE_WRITE |
 | `HeatItUpDamageBuffModel` | 28 | geometry-only | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `MonkeyCityIncomeSupportModel` | 26 | no (name/flag only) | yes (buffLocsName) | DESCRIPTION_ONLY |
 | `DamageSupportModel` | 20 | no (name/flag only) | yes (model name) | DESCRIPTION_ONLY |

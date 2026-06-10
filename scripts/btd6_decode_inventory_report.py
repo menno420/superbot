@@ -216,8 +216,8 @@ _DECODE_CLASS: dict[str, str] = {
     "StartOfRoundRateBuffModel": "SAFE_WRITE",  # decoded since PR #501 (was stale)
     "ProjectileRadiusSupportModel": "SAFE_WRITE",  # -> radiusMultiplier (Striker)
     "BananaCashIncreaseSupportModel": "SAFE_WRITE",  # -> incomePercentage (Benjamin)
+    "ProjectileSpeedSupportModel": "SAFE_WRITE",  # -> projectileSpeedPercentage (Q-0069)
     # SCHEMA_FIRST — real number, no committed buff-schema field yet
-    "ProjectileSpeedSupportModel": "SCHEMA_FIRST",  # 0.25 fraction-vs-x unpinned
     "FreezeDurationSupportModel": "SCHEMA_FIRST",  # Silas; no confirming number
     "CentralMarketBuffModel": "SCHEMA_FIRST",  # economy (blocked: Farm has no tiers)
     "BananaCentralBuffModel": "SCHEMA_FIRST",  # economy (no committed number at all)

@@ -211,6 +211,9 @@ _BUFF_FIELDS: tuple[tuple[str, str, int], ...] = (
     # Benjamin's Bank Hack: banks earn +N% income (a fraction in data, like
     # the other *Percentage fields; L5 0.05, L9 0.12 — prose-confirmed).
     ("incomePercentage", "+{}% income", 100),
+    # Projectile-speed aura (Village Primary Training, Ezili totem): fraction,
+    # owner-confirmed +25% reading (Q-0069).
+    ("projectileSpeedPercentage", "+{}% projectile speed", 100),
     # Cash / economy buffs. These were decoded into committed data
     # (TradeEmpireBuffModel, Bucc 0-0-5) but had no render field here, so the
     # renderer surfaced only the damage bonus and silently dropped the income —

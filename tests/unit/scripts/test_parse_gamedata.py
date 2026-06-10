@@ -2110,3 +2110,21 @@ def test_buffs_projectile_radius_and_bank_income(mod):
     assert radius["radiusMultiplier"] == 1.1
     assert radius["name"] == "StrikerJonesProjectileRadiusBuff"
     assert bank["incomePercentage"] == 0.05
+
+
+def test_buffs_projectile_speed_fraction(mod):
+    # Q-0069 (owner-confirmed): Village Primary Training's 0.25 = +25%.
+    model = _spawn_tm(
+        "Village",
+        behaviors=[
+            {
+                "$type": _t("ProjectileSpeedSupportModel"),
+                "name": "z",
+                "buffLocsName": "PrimaryTrainingBuff",
+                "multiplier": 0.25,
+                "isGlobal": False,
+            },
+        ],
+    )
+    (buff,) = mod._buffs(model)
+    assert buff["projectileSpeedPercentage"] == 0.25

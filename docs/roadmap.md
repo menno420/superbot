@@ -37,7 +37,7 @@
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
 | **Next** | Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · **Settings hub actionable-groups + >25 reachability** and **Help counts + characterization tests** (scoreboard Lanes 7–8, appended 2026-06-09 — position Q-0065) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(the Q-0025 scaffold → Spotlight registration shipped, **#626**)* |
-| **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 `--all` towers cutover (dedicated session — Q-0066; extraction itself resumed 2026-06-09, see the BTD6 section) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
@@ -138,14 +138,18 @@ dedicated decision** for any action capability.
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
   Map: [ai-service-integration-map](ai/ai-service-integration-map.md).
 
-### 🎈 BTD6 data / tools — **Later** (gated on ADR-006)
+### 🎈 BTD6 data / tools — **Now** (extraction resumed; cutover is the next session)
 
-Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · **Gate:** the
-**ADR-006** provenance schema must be implemented before extraction resumes.
+Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · ADR-006
+provenance schema is implemented; extraction resumed against the decode-status backlog.
 
-- **Later** — restart extraction only after the provenance schema, source-registry owner
-  matrix, safe migrations, and observable cache/source-health are in place. Status:
-  [decode-status](btd6/btd6-gamedata-decode-status.md).
+- **Now (resumed 2026-06-09 — PR #638, verify merge)** — ABR rounds + income sets
+  ingested game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
+  subtower mechanisms 7/7; buffs 15/38 confirmed (the rest are provably unconfirmable
+  pre-cutover). **Next: the dedicated `--all` towers-cutover session (owner decisions
+  Q-0066–Q-0069, router §29)** — game-native committed stats, Farm/Village minimal
+  tiers, per-tier beast names, name-guard joins, ~25 value-pinned test updates.
+  Status: [decode-status](btd6/btd6-gamedata-decode-status.md).
 - **Built (2026-06-09, Q-0049 — PR #633, scoreboard Lane 5; verify merge)** — the
   "fetch-everything-on-update" data refresh is a committed **manual-dispatch GitHub
   Actions workflow** (`workflow_dispatch` only, no schedule): one-click refresh after a
