@@ -1,6 +1,6 @@
 # Production deployment — Railway
 
-> **Status:** `living` — operational facts about where production runs and how code
+> **Status:** `living-ledger` — operational facts about where production runs and how code
 > reaches it. Facts verified 2026-06-10 (the build-outage session, PR #685).
 > Maintainer owns the Railway dashboard; agents have **no** Railway access — changes
 > land repo-side (this doc, `.python-version`, `Procfile`) or via the maintainer.
