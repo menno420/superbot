@@ -137,6 +137,11 @@ class LeaderboardCog(commands.Cog, name="Leaderboard"):  # type: ignore[call-arg
             "countlb",
             "counting_leaderboard",
         ],
+        # Q-A03 (held default, 2026-06-10): the per-game compatibility
+        # aliases stay callable but are legacy routes — `!leaderboard
+        # <category>` is the canonical spelling.  Display integration
+        # rides the Help projection seam (consolidated plan Batch 6).
+        extras={"alias_classification": "legacy_duplicate"},
     )
     async def leaderboard(self, ctx: commands.Context, category: str = ""):
         """Show a leaderboard.  !leaderboard [xp|coins|mining|deathmatch|rps|counting]

@@ -366,25 +366,41 @@ class RoleCog(commands.Cog):
 
     # ------------------------------------------------------------------ compatibility aliases (hidden)
 
-    @commands.command(name="rolemenu", hidden=True)
+    @commands.command(
+        name="rolemenu",
+        hidden=True,
+        extras={"classification": "legacy_duplicate"},
+    )
     async def rolemenu(self, ctx: commands.Context) -> None:
         """Open the role hub (use !roles instead)."""
         await ctx.invoke(self.roles_hub)
 
-    @commands.command(name="rolecreator", hidden=True)
+    @commands.command(
+        name="rolecreator",
+        hidden=True,
+        extras={"classification": "legacy_duplicate"},
+    )
     @commands.has_permissions(manage_roles=True)
     async def rolecreator(self, ctx: commands.Context) -> None:
         """Open the role hub (use !roles instead)."""
         await ctx.invoke(self.roles_hub)
 
-    @commands.command(name="assignroles", hidden=True)
+    @commands.command(
+        name="assignroles",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @commands.has_permissions(administrator=True)
     async def assign_roles_cmd(self, ctx: commands.Context) -> None:
         """Manually run time-based role assignment for all members."""
         await ctx.send("🔄 Running role assignment…")
         await self._assign_roles(ctx.guild, ctx)
 
-    @commands.command(name="createrole", hidden=True)
+    @commands.command(
+        name="createrole",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @commands.has_permissions(manage_roles=True)
     async def createrole(
         self,
@@ -419,7 +435,11 @@ class RoleCog(commands.Cog):
         else:
             await ctx.send(f"❌ Could not create role: {result.first_error}")
 
-    @commands.command(name="deleterole", hidden=True)
+    @commands.command(
+        name="deleterole",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @commands.has_permissions(manage_roles=True)
     async def deleterole(self, ctx: commands.Context, *, role: discord.Role) -> None:
         """Delete a role by name or mention."""
@@ -436,7 +456,11 @@ class RoleCog(commands.Cog):
         else:
             await ctx.send(f"❌ Could not delete **{name}**: {result.first_error}")
 
-    @commands.command(name="setrole", hidden=True)
+    @commands.command(
+        name="setrole",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @commands.has_permissions(administrator=True)
     async def setrole(
         self,
@@ -465,7 +489,11 @@ class RoleCog(commands.Cog):
             f"✅ Role **{store_name}** will be assigned after **{days}** day(s).",
         )
 
-    @commands.command(name="unsetrole", hidden=True)
+    @commands.command(
+        name="unsetrole",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @commands.has_permissions(administrator=True)
     async def unsetrole(self, ctx: commands.Context, *, role_name: str) -> None:
         """Remove a role from time-based assignment."""
@@ -486,14 +514,22 @@ class RoleCog(commands.Cog):
         invalidate_xp_threshold_roles(ctx.guild.id)
         await ctx.send(f"✅ Removed **{match}** from time-based assignment.")
 
-    @commands.command(name="debugroles", hidden=True)
+    @commands.command(
+        name="debugroles",
+        hidden=True,
+        extras={"classification": "internal_admin"},
+    )
     @commands.has_permissions(administrator=True)
     async def debug_roles(self, ctx: commands.Context) -> None:
         """Print all role names for verification."""
         names = [r.name for r in ctx.guild.roles]
         await ctx.send(f"Roles: {', '.join(names)}")
 
-    @commands.command(name="refreshmembers", hidden=True)
+    @commands.command(
+        name="refreshmembers",
+        hidden=True,
+        extras={"classification": "internal_admin"},
+    )
     @commands.has_permissions(administrator=True)
     async def refresh_members(self, ctx: commands.Context) -> None:
         """Force-fetch all members from Discord."""

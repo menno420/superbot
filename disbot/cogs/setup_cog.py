@@ -113,6 +113,7 @@ class SetupCog(commands.Cog):
     @app_commands.command(
         name="setup-hub",
         description="Open the legacy section-list hub (compat).",
+        extras={"classification": "legacy_duplicate"},
     )
     @app_commands.default_permissions(administrator=True)
     @app_commands.checks.has_permissions(administrator=True)

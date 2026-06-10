@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ast
+from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -9,7 +11,9 @@ import pytest
 
 from core.runtime import command_surface_ledger as ledger_mod
 from core.runtime.command_surface_ledger import (
+    ALIAS_DELIBERATION_THRESHOLD,
     CLASSIFICATIONS,
+    HIDDEN_ROUTE_CLASSIFICATIONS,
     CommandSurfaceEntry,
     CommandSurfaceLedger,
     LedgerFindings,
@@ -863,3 +867,458 @@ class TestClassificationIngestion:
             visibility_tier="user",
         )
         assert is_hidden_from_help(entry) is False
+
+
+# ---------------------------------------------------------------------------
+# DT04 — deliberateness rules at build time (runtime half of the invariant)
+# ---------------------------------------------------------------------------
+
+
+class TestDeliberatenessFindings:
+    """``findings.unclassified_entry_points`` reports surface/classification
+    contradictions: Discord-hidden routes without a valid hidden-route
+    classification, and alias piles without a declared disposition."""
+
+    def test_hidden_without_declaration_is_unclassified_finding(self):
+        cmd = _make_cmd("warn", cog_name="ModerationCog")
+        cmd.hidden = True
+        cmd.extras = None
+        ledger = build_ledger(_make_bot(cmd))
+        assert "hidden:warn" in ledger.findings.unclassified_entry_points
+        assert ledger.entries[0].discord_hidden is True
+        assert ledger.entries[0].classification_declared is False
+
+    def test_hidden_with_hidden_route_classification_is_clean(self):
+        for cls in sorted(HIDDEN_ROUTE_CLASSIFICATIONS):
+            cmd = _make_cmd("warn", cog_name="ModerationCog")
+            cmd.hidden = True
+            cmd.extras = {"classification": cls}
+            ledger = build_ledger(_make_bot(cmd))
+            assert ledger.findings.unclassified_entry_points == (), cls
+            assert ledger.entries[0].classification == cls
+            assert ledger.entries[0].classification_declared is True
+
+    def test_hidden_with_visible_only_classification_is_a_contradiction(self):
+        """``primary_entrypoint`` / ``power_user_shortcut`` are by contract
+        *visible* surface classifications — declaring one on a Discord-hidden
+        command is the exact drift class FIND-B04 found, so it stays a
+        finding even though it is an explicit declaration."""
+        for cls in sorted(set(CLASSIFICATIONS) - HIDDEN_ROUTE_CLASSIFICATIONS):
+            cmd = _make_cmd("warn", cog_name="ModerationCog")
+            cmd.hidden = True
+            cmd.extras = {"classification": cls}
+            ledger = build_ledger(_make_bot(cmd))
+            assert "hidden:warn" in ledger.findings.unclassified_entry_points, cls
+
+    def test_mock_hidden_attribute_does_not_read_as_hidden(self):
+        """``discord_hidden`` requires the literal ``True`` — an arbitrary
+        truthy attribute (a test double, a future non-bool) must not flip
+        a command hidden."""
+        cmd = _make_cmd("daily", cog_name="EconomyCog")  # cmd.hidden = MagicMock
+        ledger = build_ledger(_make_bot(cmd))
+        assert ledger.entries[0].discord_hidden is False
+        assert ledger.findings.unclassified_entry_points == ()
+
+    def test_alias_pile_without_disposition_is_unclassified_finding(self):
+        aliases = tuple(f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD))
+        cmd = _make_cmd("leaderboard", cog_name="LeaderboardCog", aliases=aliases)
+        cmd.extras = None
+        ledger = build_ledger(_make_bot(cmd))
+        assert "aliases:leaderboard" in ledger.findings.unclassified_entry_points
+        assert ledger.entries[0].alias_classification is None
+
+    def test_alias_pile_with_disposition_is_clean(self):
+        aliases = tuple(f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD + 2))
+        cmd = _make_cmd("leaderboard", cog_name="LeaderboardCog", aliases=aliases)
+        cmd.extras = {"alias_classification": "legacy_duplicate"}
+        ledger = build_ledger(_make_bot(cmd))
+        assert ledger.findings.unclassified_entry_points == ()
+        assert ledger.entries[0].alias_classification == "legacy_duplicate"
+        # The command's own classification is untouched by the alias
+        # disposition — `!leaderboard` itself stays primary.
+        assert ledger.entries[0].classification == "primary_entrypoint"
+
+    def test_below_threshold_aliases_need_no_disposition(self):
+        aliases = tuple(
+            f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD - 1)
+        )
+        cmd = _make_cmd("balance", cog_name="EconomyCog", aliases=aliases)
+        cmd.extras = None
+        ledger = build_ledger(_make_bot(cmd))
+        assert ledger.findings.unclassified_entry_points == ()
+
+    def test_invalid_alias_classification_is_not_a_declaration(self):
+        aliases = tuple(f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD))
+        cmd = _make_cmd("leaderboard", cog_name="LeaderboardCog", aliases=aliases)
+        cmd.extras = {"alias_classification": "garbage"}
+        ledger = build_ledger(_make_bot(cmd))
+        assert ledger.entries[0].alias_classification is None
+        assert "aliases:leaderboard" in ledger.findings.unclassified_entry_points
+
+    def test_slash_entries_carry_declared_flag_and_never_hidden(self):
+        cmd = _make_slash_cmd("setup-hub", cog_name="DiagnosticCog")
+        cmd.extras = {"classification": "legacy_duplicate"}
+        bot = _make_bot_with_tree(slash_cmds=(cmd,))
+        ledger = build_ledger(bot)
+        slash = ledger.slash_entries[0]
+        assert slash.classification == "legacy_duplicate"
+        assert slash.classification_declared is True
+        assert slash.discord_hidden is False
+        assert slash.alias_classification is None
+
+    def test_findings_are_sorted_and_prefixed(self):
+        hidden_cmd = _make_cmd("zzz", cog_name="EconomyCog")
+        hidden_cmd.hidden = True
+        hidden_cmd.extras = None
+        pile_cmd = _make_cmd(
+            "aaa",
+            cog_name="EconomyCog",
+            aliases=tuple(f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD)),
+        )
+        pile_cmd.extras = None
+        ledger = build_ledger(_make_bot(hidden_cmd, pile_cmd))
+        assert ledger.findings.unclassified_entry_points == (
+            "aliases:aaa",
+            "hidden:zzz",
+        )
+        # The diagnostics provider surfaces the bucket count.
+        snap = ledger_mod._snapshot()
+        assert snap["findings"]["unclassified_entry_points"] == 2
+
+
+# ---------------------------------------------------------------------------
+# DT04 — surface-classification completeness invariant (static CI mirror)
+# ---------------------------------------------------------------------------
+#
+# ``build_ledger`` reports contradictions on whatever bot is *running*;
+# CI never boots the bot, so this section enforces the same rules over
+# the cog sources by AST.  The population is generated from the
+# decorator declarations themselves — never from a prose inventory —
+# so adding a command automatically enrolls it.
+#
+# Rules (mirrors of the runtime rules in ``_compute_findings``):
+#   V — every ``extras`` classification literal is canonical (a typo
+#       silently falls back to the default at runtime; CI fails loud).
+#   H — every ``hidden=True`` route declares WHY it is hidden with a
+#       classification from HIDDEN_ROUTE_CLASSIFICATIONS.
+#   A — every alias pile (>= ALIAS_DELIBERATION_THRESHOLD) declares an
+#       ``alias_classification`` disposition.
+#   S — the top-level slash surface (``@app_commands.command`` +
+#       ``app_commands.Group`` namespaces) matches the reviewed pin
+#       below, so a new slash route is a deliberate decision.
+#
+# Escape hatch: a route that must deviate goes in the explicit
+# exception sets below ("<file>:<command>"), with a reviewed reason —
+# never by weakening a rule.
+#
+# Convention enforced by construction: declare ``extras`` as an inline
+# dict literal on the decorator.  An extras value built dynamically is
+# invisible to this mirror and reads as "no declaration".
+
+_DISBOT_ROOT = Path(ledger_mod.__file__).resolve().parents[2]
+
+# Explicit, reviewed exceptions to rules H and A.  Keys are
+# "<file basename>:<command name>".  Empty by design — prefer a real
+# classification; an entry here must say why one cannot exist.
+HIDDEN_ROUTE_EXCEPTIONS: frozenset[str] = frozenset()
+ALIAS_PILE_EXCEPTIONS: frozenset[str] = frozenset()
+
+# Rule S pin — every top-level slash namespace, mapped to its declared
+# extras classification (None = deliberately ledger-default, i.e. a
+# primary entrypoint).  Compared exactly in both directions: adding,
+# removing, renaming, or reclassifying a top-level slash route updates
+# this map in the same PR.
+EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
+    # @app_commands.command
+    "admin": None,
+    "aimenu": None,
+    "btd6menu": None,
+    "community": None,
+    "economy": None,
+    "games": None,
+    "help": None,
+    "moderation": None,
+    "platform": None,
+    "server-management": None,
+    "settings": None,
+    "setup": None,
+    "setup-delegate": None,
+    "setup-depth": None,
+    "setup-hub": "legacy_duplicate",  # FIND-B07: explicit compat UI
+    "setup-reset": None,
+    "setup-skip": None,
+    "setup-status": None,
+    "setup-undelegate": None,
+    "setup-unskip": None,
+    "utility": None,
+    # app_commands.Group namespaces (their subcommands ride the
+    # group's surface decision; extend the pin per-subcommand only if
+    # a group ever needs one classified individually)
+    "ai": None,
+    "btd6": None,
+    "btd6events": None,
+    "btd6ops": None,
+    "btd6ref": None,
+    "btd6strat": None,
+}
+
+
+@dataclass(frozen=True)
+class _DeclaredRoute:
+    """One command/group declaration as written in source."""
+
+    file: str  # basename, e.g. "mining_cog.py"
+    line: int
+    name: str
+    kind: str  # "prefix" | "slash" | "slash-group" | "slash-sub"
+    hidden: bool
+    alias_count: int
+    # Raw literals as written (NOT validated/defaulted) — ``None``
+    # means the key is absent or its value is not an inline string
+    # literal, both of which count as "no declaration".
+    classification: str | None
+    alias_classification: str | None
+
+    @property
+    def key(self) -> str:
+        return f"{self.file}:{self.name}"
+
+
+def _const(node: object) -> object:
+    return node.value if isinstance(node, ast.Constant) else None
+
+
+def _extract_route(
+    node: ast.AsyncFunctionDef | ast.FunctionDef,
+    dec: ast.Call,
+    kind: str,
+    file: str,
+) -> _DeclaredRoute:
+    name = node.name
+    hidden = False
+    alias_count = 0
+    classification: str | None = None
+    alias_classification: str | None = None
+    for kw in dec.keywords:
+        if kw.arg == "name" and isinstance(_const(kw.value), str):
+            name = _const(kw.value)  # type: ignore[assignment]
+        elif kw.arg == "hidden":
+            hidden = _const(kw.value) is True
+        elif kw.arg == "aliases" and isinstance(kw.value, (ast.List, ast.Tuple)):
+            alias_count = len(kw.value.elts)
+        elif kw.arg == "extras" and isinstance(kw.value, ast.Dict):
+            for k, v in zip(kw.value.keys, kw.value.values):
+                if _const(k) == "classification":
+                    raw = _const(v)
+                    classification = raw if isinstance(raw, str) else None
+                elif _const(k) == "alias_classification":
+                    raw = _const(v)
+                    alias_classification = raw if isinstance(raw, str) else None
+    return _DeclaredRoute(
+        file=file,
+        line=dec.lineno,
+        name=name,
+        kind=kind,
+        hidden=hidden,
+        alias_count=alias_count,
+        classification=classification,
+        alias_classification=alias_classification,
+    )
+
+
+def _enumerate_declared_routes() -> list[_DeclaredRoute]:
+    """AST-walk every command-bearing source for command declarations.
+
+    Scope: ``disbot/cogs/**/*.py`` plus ``disbot/bot1.py`` (the one
+    bot-level command, ``!force``).  Handles ``@commands.command`` /
+    ``@commands.group``, prefix-group subcommands (``@<grp>.command``),
+    top-level ``@app_commands.command``, ``app_commands.Group``
+    assignments, and app-group subcommands (``@<app_grp>.command``).
+    """
+    sources = sorted((_DISBOT_ROOT / "cogs").rglob("*.py"))
+    sources.append(_DISBOT_ROOT / "bot1.py")
+    routes: list[_DeclaredRoute] = []
+    for path in sources:
+        tree = ast.parse(path.read_text())
+        file = path.name
+
+        # Pass 1 — app-command group assignments in this module
+        # (``x = app_commands.Group(name=...)``): each is a top-level
+        # slash namespace, and its variable name marks ``@x.command``
+        # decorators as slash subcommands.
+        app_group_vars: set[str] = set()
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)):
+                continue
+            f = node.value.func
+            if not (
+                isinstance(f, ast.Attribute)
+                and f.attr == "Group"
+                and isinstance(f.value, ast.Name)
+                and f.value.id == "app_commands"
+            ):
+                continue
+            group_name = None
+            for kw in node.value.keywords:
+                if kw.arg == "name" and isinstance(_const(kw.value), str):
+                    group_name = _const(kw.value)
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    app_group_vars.add(target.id)
+            if group_name is not None:
+                routes.append(
+                    _DeclaredRoute(
+                        file=file,
+                        line=node.lineno,
+                        name=group_name,  # type: ignore[arg-type]
+                        kind="slash-group",
+                        hidden=False,
+                        alias_count=0,
+                        classification=None,
+                        alias_classification=None,
+                    ),
+                )
+
+        # Pass 2 — decorated command callbacks.
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                continue
+            for dec in node.decorator_list:
+                if not isinstance(dec, ast.Call):
+                    continue
+                f = dec.func
+                if not (
+                    isinstance(f, ast.Attribute) and f.attr in ("command", "group")
+                ):
+                    continue
+                base = f.value.id if isinstance(f.value, ast.Name) else ""
+                if base == "app_commands":
+                    kind = "slash"
+                elif base in app_group_vars:
+                    kind = "slash-sub"
+                else:
+                    # ``commands`` itself, a prefix-group object
+                    # (``platform_grp`` …), or the bot instance.
+                    kind = "prefix"
+                routes.append(_extract_route(node, dec, kind, file))
+    return routes
+
+
+class TestSurfaceClassificationCompleteness:
+    @pytest.fixture(scope="class")
+    def routes(self) -> list[_DeclaredRoute]:
+        return _enumerate_declared_routes()
+
+    def test_enumeration_sees_known_sentinels(self, routes):
+        """Self-check: a broken walker must fail HERE, not silently pass
+        the rules over an empty population.  Sentinels, not counts —
+        counts rot, declarations don't."""
+        by_key = {r.key: r for r in routes}
+        chop = by_key["mining_cog.py:chop"]
+        assert chop.hidden is True
+        assert chop.classification == "panel_action"
+        hub = by_key["setup_cog.py:setup-hub"]
+        assert hub.kind == "slash"
+        assert hub.classification == "legacy_duplicate"
+        lb = by_key["leaderboard_cog.py:leaderboard"]
+        assert lb.alias_count >= ALIAS_DELIBERATION_THRESHOLD
+        assert lb.alias_classification == "legacy_duplicate"
+        force = by_key["bot1.py:force"]
+        assert force.kind == "prefix"
+        # ai_cog declares BOTH a prefix group `!ai` and a slash group
+        # `/ai` — disambiguate by kind (by_key keeps only one).
+        assert any(
+            r.key == "ai_cog.py:ai" and r.kind == "slash-group" for r in routes
+        )
+        # Generous sanity floor — NOT an inventory pin (the real
+        # surface is ~3× this); guards against a walk that silently
+        # enumerates one directory level.
+        assert len(routes) > 100
+
+    def test_every_extras_classification_literal_is_canonical(self, routes):
+        """Rule V — at runtime an unknown literal silently falls back to
+        the default; in CI it fails loud, so a typo cannot demote a
+        deliberate declaration to an accidental default."""
+        offenders = [
+            f"{r.file}:{r.line} {r.name} classification={r.classification!r}"
+            for r in routes
+            if r.classification is not None and r.classification not in CLASSIFICATIONS
+        ] + [
+            f"{r.file}:{r.line} {r.name} "
+            f"alias_classification={r.alias_classification!r}"
+            for r in routes
+            if r.alias_classification is not None
+            and r.alias_classification not in CLASSIFICATIONS
+        ]
+        assert not offenders, (
+            "Non-canonical classification literal(s) — fix the typo or add "
+            f"the value to Classification first:\n  " + "\n  ".join(offenders)
+        )
+
+    def test_every_discord_hidden_route_declares_why(self, routes):
+        """Rule H — FIND-A01/A05/B04: a ``hidden=True`` command without a
+        deliberate hidden-route classification is unclassifiable drift."""
+        offenders = [
+            f"{r.file}:{r.line} {r.name} (classification={r.classification!r})"
+            for r in routes
+            if r.hidden
+            and r.classification not in HIDDEN_ROUTE_CLASSIFICATIONS
+            and r.key not in HIDDEN_ROUTE_EXCEPTIONS
+        ]
+        assert not offenders, (
+            "Discord-hidden command(s) without a hidden-route classification."
+            "\nDeclare WHY each is hidden, e.g. "
+            'extras={"classification": "panel_action"} '
+            f"(valid: {sorted(HIDDEN_ROUTE_CLASSIFICATIONS)}), or add a "
+            "reviewed entry to HIDDEN_ROUTE_EXCEPTIONS:\n  "
+            + "\n  ".join(offenders)
+        )
+
+    def test_every_alias_pile_declares_a_disposition(self, routes):
+        """Rule A — FIND-A04/Q-A03: a command carrying
+        ALIAS_DELIBERATION_THRESHOLD or more aliases is a compatibility
+        surface and must say what its aliases are."""
+        offenders = [
+            f"{r.file}:{r.line} {r.name} ({r.alias_count} aliases)"
+            for r in routes
+            if r.alias_count >= ALIAS_DELIBERATION_THRESHOLD
+            and r.alias_classification not in CLASSIFICATIONS
+            and r.key not in ALIAS_PILE_EXCEPTIONS
+        ]
+        assert not offenders, (
+            "Alias pile(s) without a declared disposition.\nDeclare e.g. "
+            'extras={"alias_classification": "legacy_duplicate"} (compat '
+            'routes) or "power_user_shortcut" (advertised fluency), or add '
+            "a reviewed entry to ALIAS_PILE_EXCEPTIONS:\n  "
+            + "\n  ".join(offenders)
+        )
+
+    def test_top_level_slash_surface_is_pinned(self, routes):
+        """Rule S — FIND-B07: the top-level slash surface is small and
+        every route on it is a deliberate decision.  Exact two-way
+        comparison: a stale pin fails just like a missing one."""
+        actual = {
+            r.name: r.classification
+            for r in routes
+            if r.kind in ("slash", "slash-group")
+        }
+        assert actual == EXPECTED_SLASH_SURFACE, (
+            "Top-level slash surface drifted from the pin.\n"
+            f"Unexpected/changed: "
+            f"{ {k: v for k, v in actual.items() if EXPECTED_SLASH_SURFACE.get(k, '∅') != v} }\n"
+            f"Missing: {sorted(set(EXPECTED_SLASH_SURFACE) - set(actual))}\n"
+            "Update EXPECTED_SLASH_SURFACE in the same PR that changes "
+            "the slash surface."
+        )
+
+    def test_static_rules_match_runtime_constants(self):
+        """The mirror cannot drift from the module: both rules read their
+        thresholds/sets from command_surface_ledger itself."""
+        assert ALIAS_DELIBERATION_THRESHOLD >= 2
+        assert HIDDEN_ROUTE_CLASSIFICATIONS < set(CLASSIFICATIONS)
+        # The two visible-surface classifications are exactly the ones a
+        # hidden route may NOT declare.
+        assert set(CLASSIFICATIONS) - HIDDEN_ROUTE_CLASSIFICATIONS == {
+            "primary_entrypoint",
+            "power_user_shortcut",
+        }
