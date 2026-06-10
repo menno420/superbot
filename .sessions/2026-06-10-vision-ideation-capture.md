@@ -155,6 +155,26 @@ Calibration: this is the second same-day instance of the owner moving
 
 ## Brainstorm round 3: "can the bot test itself?" → idea captured
 
+## Brainstorm round 5: the open-world federation + competitive mining (V-13/V-14)
+
+Two new owner statements captured into the vision doc §3: **V-13** — the
+multi-ecosystem open world (mining = foundation ecosystem because "it has all
+the variables in one section"; ecosystems connected-but-separate; maybe
+per-ecosystem currencies; shared tools; light cross-investment) and **V-14** —
+competitive feature-mining research endorsed (tear down the big bots'
+catalogs, filter the best, route through the conveyor). A four-question
+structured-choice round was put to the owner same turn (ecosystem #2 identity
+· currency model · cross-investment strength vs Q-0087's never-mandatory rule
+· research scope) — **answered same turn (Q-0090):** research-decided
+ecosystem #2 (V-14 = gateway) · local no-exchange currencies · medium
+cross-links (special optional tools only, Q-0087-bounded) · game/economy
+bots first. Round-5 tail: **V-15 — migrate game stats from incumbent bots**
+(direct API where exposed; level-channel history parsing as the bot-agnostic
+fallback; draft-lane import; rider on the V-14 teardown to catalog export/API
+surfaces). Also noted: he predicted the emotion-pushback before it came
+(and once predicted an Opus 4.8 reply nearly verbatim — the pattern-reader
+reading the pattern-machines).
+
 ## Brainstorm round 4: the owner-voice self-description + Q-0089
 
 The owner shared a personal self-portrait (inventor identity since childhood —

@@ -157,6 +157,50 @@ section is new work** — it's the ground the vision stands on.
 - **V-12 — "Don't make me think" as the design bar.** The bot feels smart: correct
   guesses about server layout, obvious next actions, no dead ends. (The qualitative
   umbrella over V-01/V-02/V-03; AG-01 makes slices of it measurable.)
+- **V-13 — Multi-ecosystem open world (added 2026-06-10, brainstorm round 5).**
+  Owner-voice: mining is "one of a couple of ecosystems, that should be connected
+  but also separate, maybe they would get some different currency but the tools
+  are the same, and for some tools maybe you'd need to invest a little time in
+  another section… the mining is only going to be one part of the open world
+  system, it just now be the main focus because it has all the variables in one
+  section, so it makes the best foundation to lay the open world idea on top."
+  Architecture intent: **federated ecosystems on one character/tool substrate** —
+  per-ecosystem currencies (maybe), shared tool identity, deliberate light
+  cross-investment links, mining as the proving ground whose patterns (energy,
+  ladders, workshop seams, game-XP) get *extracted into the substrate* for
+  ecosystems #2+. **Answered same night (Q-0090, router §37):** ecosystem #2 =
+  **research-decided** (the V-14 teardown picks it from evidence) · currencies =
+  **local per-ecosystem, no exchange** (main coins stay the one universal
+  layer; no arbitrage, sinks stay local) · cross-links = **medium, special
+  tools only** (a few advanced *optional/prestige* tools may require "a little
+  time" in another ecosystem; **no core capability may be gated this way** —
+  the Q-0087 boundary).
+- **V-15 — Migrate game stats from existing bots (added 2026-06-10, round 5
+  tail).** Owner-voice: "it should also be easily possible to migrate game
+  stats from existing bots, and at least the XP/LVL should be automatically
+  fetchable from either player stats directly or from the dedicated LVL
+  channel if it exists." The adoption weapon for the Q-0080 public goal — a
+  server switching to SuperBot keeps its members' levels. Two fetch paths as
+  stated: (a) **direct stats** where the incumbent exposes them (e.g. public
+  leaderboard APIs — availability/ToS per bot must be verified), (b) the
+  **level-channel fallback** — parse the announcement channel's history ("GG
+  @user, you reached level 12") to reconstruct levels bot-agnostically.
+  Design notes for the future plan: level-preserving vs XP-preserving curve
+  mapping is a real choice; import is a compound generated write → **draft
+  lane** (SetupOperation preview + admin confirm, audited); ToS/privacy
+  review per source bot. **Scope rider on the V-14 gateway session:** the
+  teardown should also catalog each bot's export/API surface — that catalog
+  *is* the migration design's input.
+- **V-14 — Competitive feature mining (added 2026-06-10, brainstorm round 5).**
+  Owner-endorsed research direction: systematically tear down the big bots'
+  ("thousands of features") catalogs, "filter out some of the best ideas and
+  combine them into another branch of the bot" — a deep-research session
+  producing a verified, dedup-mapped candidate list routed through the normal
+  idea conveyor (nothing auto-approved). **Answered same night (Q-0090): scope =
+  game & economy bots first** (Dank Memer / EPIC RPG / OwO / idle bots), and the
+  session is **elevated to gateway status — its findings decide ecosystem #2**
+  of the V-13 open world (owner's pick: "let the research decide"). Queued on
+  the roadmap session queue.
 
 ## 4. Agent response — what I'd add to make it the best bot ever (AG-xx)
 

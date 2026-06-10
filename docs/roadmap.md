@@ -61,7 +61,10 @@
 > secret) · 3) **Postgres backup posture** — design + automate
 > ([operations/production-deployment.md](operations/production-deployment.md)
 > §Backups is the landing page) · 4) **Help home / navigation plan** (its editor-UI
-> gate cleared via #677/#679). Build-ready alternates: myprofile PR A ·
+> gate cleared via #677/#679) · 5) **V-14 competitive teardown — game/economy bots
+> first** (Q-0090 **gateway**: its findings *decide ecosystem #2* of the V-13
+> open-world federation; deep-research, verified + dedup-mapped through the
+> conveyor). Build-ready alternates: myprofile PR A ·
 > survival **P0 balance-simulation harness (Q-0087)** · duel-XP quick-win.
 
 ---
