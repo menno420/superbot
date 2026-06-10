@@ -79,6 +79,52 @@ conversation: #681 merged mid-chat and this branch absorbed it (the §9
 same-line current-state UNION, ~2 min). PR #680 then merged by the agent —
 the grant's first exercise.
 
+## Production incident (same conversation): Railway build outage → PR #685
+
+Answering the post-merge "what else is useful" backups question, the owner
+reported the bot down on Railway ("missing python") with the build log
+attached. Diagnosis from the log: **no repo-side Python pin existed**, so
+railpack's floating default (`3.13` → latest patch) resolved to brand-new
+CPython **3.13.14**, which python-build-standalone hasn't published binaries
+for yet (latest pbs release `20260602`; asset probe: 3.13.14 → 404,
+3.13.13 → **200**) → `mise install` fails, three consecutive deploy builds
+dead. Postgres Online throughout — bot-offline only, no data impact.
+
+Fix (PR #685, merged + auto-deployed same hour): **`.python-version` =
+`3.13.13`** (railpack reads mise-compatible version files; CI/local pin 3.10
+explicitly and never read it) + the first **`docs/operations/production-deployment.md`**
+(Railway facts incl. auto-deploy-on-merge — which means Q-0084 merges DO
+reach prod; restarts/verification stay the owner's — pin bump procedure,
+incident log, **backups = OPEN**, the live discussion). **Q-0085 routed
+open** (router §36): CI 3.10 vs prod 3.13 interpreter drift — recommend
+aligning CI up to 3.13 in its own session, owner picks.
+
+Process note: the owner's hosting answer (Railway + native PG) was the first
+answer to the backups discussion — the posture design (snapshots vs. offsite
+pg_dump, retention, restore drill) is still the open thread; the new doc's
+Backups section is its landing page.
+
+CI lessons from this PR (both now in the journal QR): CI runs
+`check_docs --strict` (badge errors pass plain `check_docs` locally — bit
+this PR once) and the top-level-docs ratchet has a **hard pytest twin**
+(`test_repo_top_level_docs_within_ratchet`, budget 16) — bit it twice;
+resolved by creating `docs/operations/` rather than bumping the budget.
+
+## Post-incident owner round (same conversation)
+
+Four answers while the fix's CI ran: (1) **Q-0086 committed** — AI provider
+keys into agent session env; joint live-test mode = owner drives Discord,
+agent watches test-bot logs + fixes live (router §36, incl. standing
+secrets-handling rules). (2) **ChatGPT template rework = owner's own action
+item** (Q-0084 addendum). (3) Real-user signal status: ~none yet beyond BTD6
+AI testing — the owner himself walks all commands across multiple servers and
+has a private list of **unreported behavior inconsistencies** ("not important
+yet") — standing invite recorded to drop them any session. (4) **Commissioned:
+the untested-surface testing checklist** (all commands/prompts neither
+auto-testable nor explicitly live-tested) — routed onto the roadmap's new
+**Recommended session queue** block (with backup posture + help-home plan).
+Session continued into a capabilities brainstorm at the owner's request.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →
