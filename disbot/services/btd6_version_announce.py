@@ -8,8 +8,15 @@ embed to every guild that configured an announcement channel
 
 This module also *owns* that setting's read/write (mirroring
 :mod:`services.btd6_ct_team_service` for ``BTD6_CT_GROUP_ID``) so no raw
-key string leaks into cogs. The channel is configured with the
-``!btd6ops announcechannel`` admin command.
+key string leaks into cogs.
+
+Channel source precedence (Settings Phase 2 / Q-0064): the first-class
+``btd6.version_announce_channel`` **binding** wins when bound (set through
+the canonical binding flow with a native channel selector); the legacy KV
+pointer written by ``!btd6ops announcechannel`` is the fallback lane.
+Write-path convergence (retiring the KV lane) is settings Phase 3
+territory — until then the typed command keeps working and warns when a
+binding shadows it.
 
 The subscribe-once + captured-bot pattern mirrors
 :mod:`services.server_logging`: ``setup(bot)`` is called from
@@ -41,8 +48,38 @@ _SUBSCRIBED = False
 # ---------------------------------------------------------------------------
 
 
+async def binding_channel_id(guild_id: int) -> int | None:
+    """The ``btd6.version_announce_channel`` binding target, or ``None``.
+
+    Settings Phase 2 (Q-0064): a bound channel takes precedence over the
+    legacy KV pointer. Read failures degrade to ``None`` (the KV lane
+    keeps working) — one guild's bad binding row must not kill
+    announcements platform-wide.
+    """
+    from core.runtime.bindings import get_binding
+
+    try:
+        value = await get_binding(guild_id, "btd6", "version_announce_channel")
+    except Exception:  # noqa: BLE001 — degrade to the legacy KV lane
+        logger.warning(
+            "btd6 announce: binding read failed for guild %s; "
+            "falling back to the legacy KV pointer",
+            guild_id,
+            exc_info=True,
+        )
+        return None
+    return value.target_id
+
+
 async def get_channel_id(guild_id: int) -> str:
-    """The configured announcement channel id for ``guild_id`` (``""`` if unset)."""
+    """The *effective* announcement channel id for ``guild_id`` (``""`` unset).
+
+    Binding-first (see the module docstring's precedence note); the legacy
+    ``BTD6_VERSION_ANNOUNCEMENT_CHANNEL`` KV pointer is the fallback.
+    """
+    bound = await binding_channel_id(guild_id)
+    if bound is not None:
+        return str(bound)
     return await db.get_setting(guild_id, BTD6_VERSION_ANNOUNCEMENT_CHANNEL, "")
 
 
@@ -142,6 +179,21 @@ async def _resolve_channel(
 ) -> discord.TextChannel | discord.Thread | None:
     # Lazy import keeps this service free of a core.runtime import at load.
     from core.runtime.guild_resources import resolve_settings_channel
+
+    # Binding-first (Q-0064): a bound version_announce_channel wins.
+    bound = await binding_channel_id(guild.id)
+    if bound is not None:
+        getter = getattr(guild, "get_channel_or_thread", None) or guild.get_channel
+        channel = getter(bound)
+        if isinstance(channel, (discord.TextChannel, discord.Thread)):
+            return channel
+        logger.warning(
+            "btd6 announce: bound channel %s not found/usable in guild %s; "
+            "announcement skipped (fix or clear the binding)",
+            bound,
+            getattr(guild, "id", "?"),
+        )
+        return None
 
     try:
         channel = await resolve_settings_channel(

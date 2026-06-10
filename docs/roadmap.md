@@ -36,7 +36,7 @@
 | Horizon | Items |
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–3 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice still open — verify merges) → **Batch 4** Settings **Phase 2** declaration coverage (Q-0064 BTD6 rows ride along) → **Batch 5** Adaptive **P1C** → **Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–4 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice open · Batch 4 declaration-coverage core + Q-0064 BTD6 rows, pointer-classification tail open — verify merges) → **Batch 5** Adaptive **P1C** → **Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
 | **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover itself **shipped 2026-06-10, PR #649** — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -75,11 +75,12 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   actionable-groups-only hub (`actionable_settings_groups()`, 11 live groups) +
   paginated >25-option reachability + per-guild routing availability markers.
   Sequencing home: [settings audit §11](planning/settings-cog-centralization-audit-2026-06-09.md).
-- **Next** — settings audit **Phase 2** (declaration/coverage map: real domain-panel
-  registrations replacing the Phase 1 `DOMAIN_CONFIG_SUBSYSTEMS` seam; **Q-0064**
-  BTD6 announcement-channel binding + CT guided flow) — **Batch 4 of the
-  [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** —
-  then **Phase 3** duplicate-path convergence (**Q-0063** converge-gradually — router §27).
+- **Phase 2 core executed 2026-06-10** (consolidated-plan Batch 4 — verify merged):
+  real domain-panel registrations (`DomainPanelSpec`) replaced the Phase 1
+  `DOMAIN_CONFIG_SUBSYSTEMS` seam (+ DT06 coverage invariant); **Q-0064** BTD6
+  announcement-channel binding + CT guided flow landed with it. Open tail:
+  pointer-migration classification rows; then **Phase 3** duplicate-path
+  convergence (**Q-0063** converge-gradually — router §27).
 - **Now (Phase 1 active)** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md):
   P0 + P1A + P1B shipped (#588/#589/#591/#592/#632); **P1C next** (staff-hub
   subpanels, Q-0032 — Batch 5 of the consolidated plan). *(Horizon corrected

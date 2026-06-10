@@ -1,9 +1,16 @@
-"""BTD6 SubsystemSchema (M4).
+"""BTD6 SubsystemSchema.
 
-M4 lands the first BTD6 binding: ``btd6.strategy_submission_channel``.
+M4 landed the first BTD6 binding: ``btd6.strategy_submission_channel``.
 The central natural-language stage still decides whether the user
 may talk naturally; this binding decides whether a message in the
 bound channel is treated as a strategy intake rather than a question.
+
+Settings Phase 2 (Q-0064, 2026-06-09) promoted the **version-announcement
+channel** to a first-class binding: ``services.btd6_version_announce``
+reads the binding first and falls back to the legacy
+``BTD6_VERSION_ANNOUNCEMENT_CHANNEL`` KV pointer (the typed
+``!btd6ops announcechannel`` command still writes the KV lane — write-path
+convergence is settings Phase 3 territory).
 """
 
 from __future__ import annotations
@@ -27,6 +34,18 @@ BTD6_BINDINGS: tuple[BindingSpec, ...] = (
             "routed into the BTD6 strategy review pipeline. Leave "
             "unbound to disable the strategy-intake path; admins can "
             "still submit strategies via the dedicated command."
+        ),
+        capability_required=_CAPABILITY,
+    ),
+    BindingSpec(
+        name="version_announce_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel where new BTD6 game versions are announced. When "
+            "bound it takes precedence over the legacy "
+            "`!btd6ops announcechannel` pointer; leave both unset to "
+            "disable announcements."
         ),
         capability_required=_CAPABILITY,
     ),
