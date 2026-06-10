@@ -825,6 +825,46 @@ def _render_fixture_hero(entry: Any) -> list[str]:
     hero_id = getattr(entry, "id", "")
     lines.extend(_render_hero_stats(hero_id, canonical))
     lines.extend(_render_hero_descriptions(hero_id, canonical))
+    lines.extend(_render_hero_buffs(hero_id, canonical))
+    return lines
+
+
+def _render_hero_buffs(hero_id: str, canonical: str) -> list[str]:
+    """Per-level buff/zone aura lines, emitted only where the set CHANGES.
+
+    Hero levels carry decoded ``buffs``/``zones`` (Striker's explosive
+    attack-speed aura, Etienne's range aura…) that no grounding line ever
+    rendered — fully decoded but invisible (#655 answerability item 6d).
+    Change-only emission keeps it bounded: Striker yields three lines
+    (L4 ×0.9 → L8 +Bomb buff → L18 ×0.81), not twenty.
+    """
+    from services import btd6_stats_service
+    from utils.btd6.effect_lines import tier_effect_lines
+
+    stats = btd6_stats_service.get_hero_stats(hero_id)
+    if stats is None:
+        return []
+    lines: list[str] = []
+    previous: frozenset[str] = frozenset()
+    for code in sorted(stats.levels or (), key=int):
+        node = stats.level(code)
+        if node is None:
+            continue
+        rendered = tier_effect_lines(node)
+        # Compare as a SET: the decoded buff list's order shifts between
+        # levels (L8 vs L10 carry identical auras in a different order),
+        # and an order-only "change" would double-emit.
+        current = frozenset(rendered)
+        if rendered and current != previous:
+            lines.append(
+                _cap(
+                    f"[btd6_hero_buff] {canonical} Level {code} auras: "
+                    f"{_sanitise('; '.join(sorted(rendered)))} "
+                    "(source: BTD6 game data)",
+                ),
+            )
+        if rendered:
+            previous = current
     return lines
 
 

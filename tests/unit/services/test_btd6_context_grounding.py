@@ -680,3 +680,18 @@ async def test_boss_named_in_text_grounds_catalog_fact():
     ctx = await btd6_context_service.build("tell me about bloonarius")
     boss_lines = [f for f in ctx.facts if f.startswith("[btd6_boss]")]
     assert any("Bloonarius (boss bloon)" in f for f in boss_lines)
+
+
+@pytest.mark.asyncio
+async def test_hero_buff_auras_ground_change_only():
+    # Striker's decoded hero auras were invisible (#655 item 6d): emit one
+    # line per CHANGE in the aura set (order-insensitive), not one per level.
+    ctx = await btd6_context_service.build("striker jones buffs")
+    lines = [f for f in ctx.facts if f.startswith("[btd6_hero_buff]")]
+    assert lines, "expected hero aura grounding lines"
+    assert len(lines) <= 8  # change-only, never one-per-level spam
+    assert any("x0.9 attack cooldown" in f for f in lines)
+    assert any("+25% pierce" in f for f in lines)  # fraction semantics fix
+    # A hero with no decoded auras stays silent.
+    ctx = await btd6_context_service.build("quincy stats")
+    assert not [f for f in ctx.facts if f.startswith("[btd6_hero_buff]")]
