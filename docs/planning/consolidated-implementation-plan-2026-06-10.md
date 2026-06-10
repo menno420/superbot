@@ -278,7 +278,22 @@ services) without partitioning by module.
 - **Stop:** any mutation affordance; any denial-copy *wiring* (ADP-3 stays gated on
   the owner's markup of the #632 table).
 
-### Batch 6 — Help projection seam (HLP-2/DT05/B01), then overlay (HLP-3) — seam executed in **#657** (2026-06-10, verify merged)
+### Batch 6 — Help projection seam (HLP-2/DT05/B01), then overlay (HLP-3) — seam **merged #657**; overlay executed in **#659** (2026-06-10, verify merged)
+
+> **HLP-3 outcome notes (#659, same session — the #657 merge cleared its
+> gate):** migration 064 `help_overlay` + sole-writer DB module + the
+> audited `help_overlay_mutation` seam (admin gate · write-time
+> catalogue-key validation · partial-edit merge · per-field/full reset ·
+> cache invalidation · `audit.action_recorded`) + the cached fault-tolerant
+> read model, flowing through the HLP-2 projection into all five render
+> paths (hide parity with governance hides; renames as presentations with
+> defaults riding along, Q-0058; orphans reported, never rendered;
+> no-rows = byte-identical, pinned). Q-0055 display-only = an import fence
+> on admission paths. The `help_cog` 800-LOC ceiling forced the sanctioned
+> decomposition (`cogs/help/panels.py`). **Open Help-lane tail:** the
+> overlay **editor UI** (audit Phase 5, incl. the Q-0059 embed-builder Home
+> message — preview mandatory) and Phase 4 command/panel-action records
+> (Q-0057 rider).
 
 > Outcome notes: `services/help_catalogue.py` (stable-keyed inventory; four
 > drift-finding kinds pinned empty) + `services/help_projection.py` (the
@@ -386,8 +401,8 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 | SET-5 Phase 5 convergence | later | own planning session first |
 | SET-6 dual-write seam | constraint, unchanged | canary: "projection failed" diagnostics |
 | HLP-1 (Lane 8) | **shipped #642** | — |
-| HLP-2 projection seam | **executed #657** (2026-06-10, verify merged) | — |
-| HLP-3 overlay/editor | next in the Help lane | Q-0055–Q-0059 answered; activation once #657 merged + smoked |
+| HLP-2 projection seam | **merged #657** (2026-06-10) | — |
+| HLP-3 overlay store + seam | **executed #659** (2026-06-10, verify merged) | editor UI (audit Phase 5) + Phase 4 records remain the Help-lane tail |
 | ADP-1 (Lane 2) | **shipped #632** | — |
 | ADP-2 P1C | **Batch 5** | Q-0032 |
 | ADP-3 denial-copy wiring | **gated** | owner's markup of the #632 table (Q-0036) |
@@ -415,8 +430,10 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
   production check** (no sandbox provider key).
 - **Governance setup section** — deferred (Q-0008/Q-0011); a new scope decision
   reopens it, nothing else.
-- **Help overlay (HLP-3)** — after the Batch 6 seam (#657) is merged +
-  smoke-tested only; decisions Q-0055–Q-0059 are all answered.
+- **Help overlay (HLP-3)** — gate cleared and **executed 2026-06-10 (#659**,
+  after #657 merged + smoked**)**; the remaining gated Help piece is the
+  overlay **editor UI** (audit Phase 5 — its slice carries the Q-0059
+  embed-builder Home message, whose answer makes preview mandatory).
 - **Production-only health verification (HLT-2)** — maintainer live-tests; sandbox
   results must not be reported as live verification (DT14).
 - **Owner decisions — all four ANSWERED (structured choices, 2026-06-10; router
