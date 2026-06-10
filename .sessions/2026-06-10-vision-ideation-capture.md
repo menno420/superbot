@@ -173,6 +173,16 @@ in-conversation). Also confirmed: the owner's remembered old fishing cog is
 **pre-GitHub** — no repo archaeology needed (verified: zero fishing code in
 history; the only grep hit is the idiom "fish out" in a comment).
 
+Round-7 tail: the owner's **asset pack surfaced** (PythonAnywhere screenshots
+— 6 families × 5 tiers + base character, 2025-08-10, naming manifest-ready;
+flat-color placeholder style) → V-16 updated with the tier↔ore forge-chain
+insight + the slot-mapping question flagged for the build session. A live
+**sprites-as-code demo** (PIL pixel-art pickaxe, 3 palette tiers, composited
+paper-doll) was generated in-session and sent to the owner — answering "can
+Claude create images": no diffusion art, but procedural sprite generation +
+image *reading* both work, and parametric palette-swap variants scale with
+the catalog where hand-drawn assets can't.
+
 ## Brainstorm round 5: the open-world federation + competitive mining (V-13/V-14)
 
 Two new owner statements captured into the vision doc §3: **V-13** — the

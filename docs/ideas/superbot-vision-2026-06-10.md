@@ -205,10 +205,25 @@ section is new work** — it's the ground the vision stands on.
   fishing lands). Prerequisite/sibling slice: the ⚔️/🛡️ **combat gear item
   families** (slots are reserved-but-empty today — `utils/equipment.py`
   docstring; duels already read damage/defense, so items matter the moment
-  they exist). **Gating decision (owner's, asked 2026-06-11): art
-  direction** — programmatic pixel-art vs AI-generated sprite sheet vs
-  owner-provided assets. Gear-picker stat-preview polish rides along
-  (gear_panel `_ItemSelect` options are label-only today).
+  they exist). **Owner assets EXIST (seen 2026-06-11, screenshots):** a full
+  pack on his PythonAnywhere (`temp/`, dated 2025-08-10 — pre-GitHub era):
+  `base_character.png` + **6 item families × 5 tiers** (helmet, chestplate,
+  leggings, boots, shield, sword × bronze/silver/gold/iron/diamond) — naming
+  already manifest-shaped (`{item}_{tier}.png`). Samples seen: flat-color
+  placeholder style (stick-figure base, solid-cyan items). Two design facts
+  that fall out: (a) **tier names align with mining ores** → forge recipes
+  (smelt ore → craft tier gear) are the natural obtain-path — the federation's
+  first in-ecosystem crafting chain designs itself; (b) his 6 families vs the
+  current 5-slot model (weapon/armor) → **slot-mapping is the build session's
+  first structured-choice round** (one armor slot w/ set pieces vs sub-slots;
+  `equipment.py` slots are data-extensible). **Art direction:** owner's pack =
+  the taxonomy authority; agent can regenerate visuals procedurally
+  (sprites-as-code demo'd live 2026-06-11 — palette-swap tiers from one
+  template) — v1 may ship his assets as-is and reskin later, owner picks
+  per-family. Next concrete step: owner drops the pack (zip) into any
+  session / commits it; agent builds manifest + compositor around it.
+  Gear-picker stat-preview polish rides along (gear_panel `_ItemSelect`
+  options are label-only today).
 - **V-14 — Competitive feature mining (added 2026-06-10, brainstorm round 5).**
   Owner-endorsed research direction: systematically tear down the big bots'
   ("thousands of features") catalogs, "filter out some of the best ideas and
