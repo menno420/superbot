@@ -256,3 +256,54 @@ standing rules:
 5. **When a conflict still lands** (same-lane parallel work, or both sides edited
    the thin header), resolution stays **UNION, second-to-merge reconciles**
    (Q-0060) — now a one-bullet merge instead of a mega-line rewrite.
+
+## 10. Session lifecycle & continuation — the self-driving foundation (Q-0088)
+
+> **Status:** designed 2026-06-10; the bounded-session *protocol* **activates
+> when the Stage 0 continuation workflow lands** (the owner's explicit
+> conditional). Until then, the context-budget guidance and the
+> no-unguided-PRs rule apply as journal guidance.
+
+**Why (owner-stated, Q-0088):** two observed failure modes of unbounded
+sessions — (1) *runaway tails*: a session the owner believed finished kept
+producing unguided PRs (one built a duplicate function — the #678-class
+collision); (2) *long-context degradation*: output quality noticeably drops
+past ~700–800K context. The owner's target operating model: he adds ideas and
+strict function/UX guidelines; the system handles the rest in **bounded,
+chained** sessions.
+
+**The bounded-session protocol (once active):**
+
+1. A session takes **~2 substantial tasks** (or one large one) from the
+   standing queue (`current-state` ▶ Next action / roadmap session queue /
+   its prompt), plus the standing END duties (ledgers, session log, grooming
+   pass when capacity remains).
+2. **Wrap before ~700K context.** Approaching the budget mid-task: finish the
+   task, then hand off — never start the next one.
+3. **No unguided PRs past declared scope.** New work discovered late goes
+   into the **handoff** (roadmap queue / ▶ Next action / an idea file), not
+   into the session. A webhook/babysit loop ends when its PR merges.
+4. **The handoff baton is what we already maintain** — `.sessions/` log +
+   `current-state` ▶ Next action + the roadmap session queue. The protocol
+   adds only the discipline that every session *ends by sharpening the baton*
+   (explicit next-2-tasks recommendation), which most sessions already do.
+
+**The continuation mechanism (staged):**
+
+- **Stage 0 — one-click continuation:** a `workflow_dispatch` GitHub Action
+  that boots a **fresh** Claude Code session (fresh context — the fix for the
+  700K problem) with a fixed prompt: *"Read the orientation chain and the
+  newest handoff; execute the recommended next ~2 tasks under the bounded
+  protocol."* No schedule, no surprise spend — the owner presses Run.
+  Requires (owner-side): the Anthropic API key as a repo Actions secret and a
+  per-run budget choice. Build is queued on the roadmap session queue.
+- **Stage 1 — the scheduled caretaker:** the same workflow on a cron (e.g.
+  nightly): smoke probes on the test bot, eval-checklist automatable rows,
+  one grooming move, small fixes merged green, morning report. Promotes only
+  after Stage 0 has produced several clean runs (router-granted, the Q-0048
+  tier pattern).
+- **Already true today (no build needed):** Railway auto-deploys every merge
+  (`operations/production-deployment.md`), Q-0084 lets agents merge green
+  work, and `.sessions/` handoffs exist — Stage 0 is the only missing link in
+  a complete loop: *handoff → fresh session → bounded work → green merge →
+  auto-deploy → sharpened handoff*.

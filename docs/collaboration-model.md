@@ -53,8 +53,14 @@ words: it arrives "ultimately", as the implementation backlog thins). The path
 there is graduated, router-granted trust tiers (the Q-0048 pattern). **First
 tier granted same day (Q-0084): agents merge their own session PRs when the
 work is done** — main-synced, CI-green, merge-commit; see CLAUDE.md § Session
-& plan workflow for the envelope. **Deploy / prod-checks remain the owner's**;
-further gates stand until the next tier is explicitly granted.
+& plan workflow for the envelope. **Same-day correction (Q-0088): the
+foundation starts now, small** — the owner's stated role converges to *ideas
++ strict function/UX guidelines*; the first foundation piece is the
+bounded-session protocol + staged session continuation
+(`owner/ai-project-workflow.md` §10 — bounded ≈2-task sessions wrapping
+before ~700K context, handoff baton, one-click then scheduled fresh-context
+continuation). **Deploy / prod-checks remain the owner's**; further gates
+stand until the next tier is explicitly granted.
 
 **Two rules keep that loop honest:**
 

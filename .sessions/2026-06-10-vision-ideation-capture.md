@@ -125,6 +125,34 @@ auto-testable nor explicitly live-tested) — routed onto the roadmap's new
 **Recommended session queue** block (with backup posture + help-home plan).
 Session continued into a capabilities brainstorm at the owner's request.
 
+## Brainstorm round 2 (same conversation): Q-0087 + Q-0088
+
+The capabilities menu (game simulation · nightly caretaker · verified
+research · screenshot testing) landed; the owner's reply produced two
+routed decisions:
+
+- **Q-0087 — balance philosophy + simulation methodology** (router §37):
+  casual minutes/day must earn real capability progress; grinder rewards are
+  real but never mandatory-feeling for capability. Survival plan amended —
+  new **D0** (binding philosophy), new **P0** (the simulation harness:
+  casual-curve / grinder-surplus / capability-gap bands as CI-pinned tests),
+  G2 takes sim outputs. Screenshots: already his standing habit — no change.
+  Monetization: unchanged posture; he expects a platform migration off
+  Railway if it ever monetizes (T-6 context note).
+- **Q-0088 — the self-driving correction** (router §37): foundation now,
+  small — his role converges to ideas + strict function/UX guidelines. Two
+  problems on record: runaway unguided session tails (built a duplicate
+  function once — #678-class) and ~700–800K context degradation. Design
+  routed to **workflow §10**: bounded ≈2-task sessions wrapping before ~700K
+  + handoff baton + staged continuation (Stage 0 one-click
+  `workflow_dispatch` fresh-context session → Stage 1 cron caretaker);
+  protocol activates when Stage 0 lands (his conditional honored). Journal QR
+  carries the context-budget + no-unguided-PRs guidance immediately.
+
+Calibration: this is the second same-day instance of the owner moving
+*further* than his earlier stated position once shown a concrete mechanism
+(Q-0084 merge grant, now Q-0088) — consistent with the §35 calibration note.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →
