@@ -194,6 +194,19 @@ section is new work** — it's the ground the vision stands on.
 - **V-16 — The rendered character: paper-doll gear display (added 2026-06-11,
   round 7).** Owner-voice: "the goal should be to actually render a base
   character and show/display the equipped items on the correct positions."
+  **This is a RESTORATION, not an invention (Discord screenshots, April
+  2025):** the ancestor bot (minebot, same Galaxy Bot identity) **already
+  rendered it** — `/gear` returned "Menno420's Gear / Defense · Damage" with
+  the base-character image in the embed; the armor items were live inventory
+  entries whose names **exactly match the PNG pack** (`boots_gold`,
+  `helmet_iron`, `chestplate_diamond`, …). The original compositor lives in
+  minebot's `helpers/pil_helper.py` on PythonAnywhere — port/modernize it
+  rather than reinvent. Ancestor features SuperBot hasn't reclaimed yet
+  (design-document value): **directional mining** (Mine Up/Forward/Down
+  buttons), axes/shovels as tool families, crafting intermediates
+  (planks/sticks), and **structures-as-items** (wooden house, diamond throne,
+  gold statue, "giant fortress ×4" in live inventories — direct ancestry for
+  the §7.5 structures slice).
   Not a richer text embed — an **image**: base character sprite + equipped
   items composited at per-slot anchor positions (tool→hand, light→belt/head,
   charm→neck, weapon→off-hand, armor→torso). Build notes: the **PIL pipeline

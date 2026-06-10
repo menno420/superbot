@@ -173,6 +173,38 @@ in-conversation). Also confirmed: the owner's remembered old fishing cog is
 **pre-GitHub** — no repo archaeology needed (verified: zero fishing code in
 history; the only grep hit is the idiom "fish out" in a comment).
 
+Round-7 tail 2: the owner shared Discord screenshots of **minebot — SuperBot's
+direct ancestor** (March–April 2025, PythonAnywhere `/home/menno/minebot/`,
+27 files; same **Galaxy Bot** identity that is now SuperBot's test bot):
+gear/multiequip/unequip commands (the system today's `gear_panel.py`
+docstring credits as "the old EquipSlotView + MultiEquipView"), a
+`pil_helper.py` (his original render code — may encode intended anchor
+positions for V-16; **owner instruction: when zipping the asset pack, include
+`helpers/` too**), a `!debug` panel with a **Dependencies view** (cog→helper
+import edges — the conceptual ancestor of CodeGraph/context_map), and a
+**`chop` command — woodcutting existed** as a second gathering activity.
+Design echo routed: the survival plan's campfire (P3) has no fuel source
+named — chop/wood is the natural one (open-item line added). No fishing
+commands visible in the ancestor — the ghost cog predates even minebot or
+never existed as committed code.
+
+Round-7 tail 3 (the crown jewel): a second screenshot batch proved **V-16 is
+a restoration** — minebot's `/gear` already rendered the base character image
+with Defense/Damage stats (April 2025); armor item names in live inventories
+match the PNG pack exactly; `pil_helper.py` = the original compositor (port,
+don't reinvent). Ancestor breadth not yet reclaimed by SuperBot, recorded in
+V-16 as design-document material: directional mining (Up/Forward/Down),
+axes/shovels, planks/sticks intermediates, structures-as-items (wooden house
+/ diamond throne / gold statue / giant fortress — §7.5 ancestry).
+
+Owner observation worth promoting someday into "why this system exists"
+(verbatim): looking at his old debug command's many inconsistent shapes —
+"look how many diffrent shapes my debug command had back then, that's the
+direct result of coding in chats without repo access." The pre-repo era's
+fossil record: every chat reinvented the panel because no chat could see the
+last one's work. The entire current workflow (one source of truth + agent
+orientation + routed memory) is the cure for exactly this.
+
 Round-7 tail: the owner's **asset pack surfaced** (PythonAnywhere screenshots
 — 6 families × 5 tiers + base character, 2025-08-10, naming manifest-ready;
 flat-color placeholder style) → V-16 updated with the tier↔ore forge-chain
