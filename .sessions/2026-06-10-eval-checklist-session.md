@@ -108,3 +108,50 @@ bounded home-only columns; `set_home_message`; Home render consumption
   (3) staff-hub button beside 👁 Help Preview so edit + verify sit together.
 - **Flagged for maintainer:** none blocking — the plan executes on existing
   authority once an implementation session picks it up.
+
+---
+
+## Continuation 2 (same session): the live walk fired — ride-along fixes (PR #675)
+
+The maintainer started the walk and screenshots arrived in real time. The
+ride-along role the audit prescribed became the session's main work.
+
+**Triage sequence that worked:** every refusal stamped "(55.0)" → that
+version string is read live from `towers.json`, whose 55.1 stamp landed in
+**#655 (same day)** → the prod deploy predated the whole day's burst →
+"redeploy first" was the time-critical call (the empty boss roster + stale
+version were yesterday's code, not bugs). After redeploy, "(55.1)" refusals
+confirmed the **real** current-main bugs; the Railway log nailed the floor
+mechanism live (`btd6_faithfulness: blocked … numbers=['2440','2440','12200']`
+— the verifier blocking the model's own derived arithmetic, 5×2,440).
+
+**Shipped (PR #675):** (1) deterministic meta-floor — capability questions
+("what do you know about btd6") get a code-built answerability summary, the
+roster-floor pattern extended; + the broadened #639 clause; (2) qualifier-
+tolerant `find_boss` ("tier 4 elite lych") + per-tier HP grounding + the
+Elite-not-in-dataset honesty note; (3) crosspath VALIDITY rules in the
+guidance block (the model had denied crosspathing exists, live); (4) the
+`!restart` relaunch bug — `main()` exited 0 with a restart pending, Railway's
+on-failure policy never relaunched; pending restart now exits 42, startup
+crash exits 1 (also fell through to 0 before). 12 tests pin the exact live
+phrasings. Checklist gained **Step 0: verify the build** + live-walk deltas
+(Tier 1.1 round-cash **PASSED**).
+
+**Context delta (continuation 2):**
+
+- **Needed but not pointed to:** nothing in docs says *where the prod bot
+  runs or how it deploys* (Railway, auto-deploy-on-main-merge, on-failure
+  restart policy). Diagnosing both the stale deploy and the !restart bug
+  required inferring it from a screenshot + log. → Routed: a short
+  "production deployment" note belongs in the journal Runbook or a folio.
+- **Discovered by hand:** the faithfulness floor's refusal is the answer of
+  last resort for EVERY healthy-but-ungroundable BTD6 turn — meta-questions
+  included; the answer-guidance block taught crosspath *notation* but not
+  *validity*; `main()` had no exit-code contract at all.
+- **Decisions made alone:** meta detection anchored on a btd6/bloons token
+  (precision over recall — general "what can you do" stays with the catalog
+  tool); RESTART_EXIT_CODE=42 (≠0 done, ≠1 crash); Elite HP honesty note
+  rather than silently applying the user's multiplier.
+- **Weak point:** the §7.5 composition family ("cash left after buying
+  N towers") now has live acceptance cases but still no workflow — expect
+  honest partials there until §7.5 ships.
