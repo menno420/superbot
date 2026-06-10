@@ -538,7 +538,7 @@ date + HEAD inside the doc header, badge `> **Status:** \`audit\``):
   *(Agent A: when the doc lands, convert this line's path into a markdown link
   — that link is what keeps your doc reachable for `check_docs.py`.)*
 
-- **Agent B output** — `docs/planning/platform-mapping-b-admin-surface.md`
+- **Agent B output** — [`docs/planning/platform-mapping-b-admin-surface.md`](platform-mapping-b-admin-surface.md)
   *(Agent B: same — convert this line's path into a markdown link in your PR.)*
 
 ### 5.6 Required checks for mapping-only PRs
