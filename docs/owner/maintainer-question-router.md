@@ -2957,7 +2957,16 @@ only after Phase 4 ships its preset infrastructure.
 **Type:** Architecture ownership decision
 **Priority:** High (blocks consolidated-plan **Batch 7** — the economy purchase
 two-commit fix, then mining workflow convergence)
-**Status:** Open (structured choices offered 2026-06-10)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+`docs/ownership.md` § "Cross-domain transactions" + consolidated plan Batch 7
+
+**Maintainer answer (structured choices, 2026-06-10): A — the domain workflow
+service owns ONE DB transaction** calling transaction-aware primitives; coins +
+inventory commit or roll back together.
+*Answer scope:* mutation-architecture ownership for coin+inventory workflows
+(purchase, mining market/repair). It does not start Batch 7 by itself — the batch
+runs in its plan order; primitives gaining transaction-awareness is in-scope
+plumbing, not a schema change.
 
 **Question (context):** Verified (#646 FIND-RS01/RS02/RS11): a shop purchase debits
 coins via the audited `economy_service`, then grants the item via a **separate**
@@ -2985,7 +2994,14 @@ rule) + consolidated-plan Batch 7 design.
 **Type:** Product sequencing (merges the maps' Q-DT04 + Q-RS02 with GME-1)
 **Priority:** Medium-high (the active games lane is ambiguous without it — docs
 currently advertise two different "next" slices)
-**Status:** Open (structured choices offered 2026-06-10)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+roadmap games row + current-state lane 1 + consolidated plan Batch 7
+
+**Maintainer answer (structured choices, 2026-06-10): C — the workshop-workflow
+service boundary first** (FIND-RS02); structures and the game-XP service follow on
+the safer base.
+*Answer scope:* sequencing only — structures (§7.5) and game-XP (§7.4) stay queued
+behind the boundary slice, and the duels-wear slice (Q-0054) is unaffected.
 
 **Question (context):** Wave 1 shipped through Workshop+durability (#624). The
 roadmap/brainstorm name **structures** (Forge/Vault/Home, §7.5 sinks) *or* the
@@ -3012,7 +3028,14 @@ consolidated-plan Batch 7/`Q-0072` notes.
 **Type:** Ownership routing decision (mapping Q-A01 / Q-DT01 — FIND-A02)
 **Priority:** Medium (blocks moving/re-projecting the command; Settings Phase 2 can
 proceed without it)
-**Status:** Open (structured choices offered 2026-06-10)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+consolidated plan Batch 4 (projection rides Settings Phase 2/3)
+
+**Maintainer answer (structured choices, 2026-06-10): B — keep the Economy
+implementation but project it into Settings** (it appears in the Settings hub like
+any binding; the typed command stays) until a migration/deprecation plan is approved.
+*Answer scope:* no command move, no behavior change — a Settings-hub projection row
+only. A future full move (option A) would need its own migration plan + a fresh ask.
 
 **Question (context):** Economy owns `!setlogchannel`, a platform-binding-shaped
 channel pointer that bypasses the canonical bindings/selector surface (#643
@@ -3036,7 +3059,15 @@ whether a migration + compatibility tests are in scope for Settings Phase 2/3.
 **Area:** Admin hub / registry metadata / command access
 **Type:** Display-vs-execution posture (mapping Q-B01 / Q-DT02 — FIND-B03)
 **Priority:** Medium (blocks FIND-B03 implementation only)
-**Status:** Open (structured choices offered 2026-06-10)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+consolidated plan Batch 2 (Admin-row classification follows this posture)
+
+**Maintainer answer (structured choices, 2026-06-10): A — make registry/Admin-Help
+placement administrator-visible** (after a quick source-backed inventory), keeping
+owner-only checks on the genuinely dangerous actions.
+*Answer scope:* display/placement posture only — no execution-admission loosening;
+the inventory step decides which actions stay owner-checked, pinned by a
+placement-tier == admission-tier test when implemented.
 
 **Question (context):** Admin registry/Help metadata presents owner-tier while some
 admin routes are administrator-admitted — display placement and execution admission

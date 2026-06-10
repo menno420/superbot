@@ -35,9 +35,9 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice = owner pick Q-0072**: structures · game-XP service · workshop-workflow boundary) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
 | **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batch 1** low-risk runtime truth/clarity → **Batch 2** surface-classification invariant → **Batch 3** service-boundary fixes → **Batch 4** Settings **Phase 2** declaration coverage (Q-0064 BTD6 rows ride along) → **Batch 5** Adaptive **P1C** → **Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
-| **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; gates **Q-0071**/Q-0072) · BTD6 `--all` towers cutover (dedicated session — Q-0066–Q-0069 answered) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 `--all` towers cutover (dedicated session — Q-0066–Q-0069 answered) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
@@ -197,11 +197,12 @@ accepted, not a target).
   stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
   Character overview (#610), and the audited **Workshop + durability** keystone with
   the **mother-panel live overview** (#624, merged 2026-06-09 — brainstorm §7.5/§6.3;
-  migration 063, tuning = Q-0054). **Next slice = owner pick (Q-0072):** functional
-  **structures** (Forge/Vault/Home — the remaining §7.5 sinks) · Wave 2's **game-XP
-  service** (§7.4) · or the **workshop-workflow service boundary first** (mapping
-  FIND-RS02 recommends it before more mining writes land). The owner-approved
-  **duels-tick-weapon/armor-wear** slice (Q-0054) stays queued alongside.
+  migration 063, tuning = Q-0054). **Next slice — Q-0072 answered (2026-06-10): the
+  workshop-workflow service boundary first** (mapping FIND-RS02 — hardens the
+  densest mutation path before more mining writes land); functional **structures**
+  (§7.5 sinks) and Wave 2's **game-XP service** (§7.4) follow on the safer base.
+  The owner-approved **duels-tick-weapon/armor-wear** slice (Q-0054) stays queued
+  alongside.
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded

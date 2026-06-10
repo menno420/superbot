@@ -95,3 +95,14 @@ Kept-active / updated / annotated / re-badged ledger:
   by the journal's "verify cross-agent output" rule — this session adds: *when two
   agents disagree, read the disputed lines yourself; when they agree, still spot-check
   one load-bearing claim.*
+
+## End-of-session structured-choices round (Q-0061 protocol)
+
+The maintainer answered all four §31 questions — **all recommended options**:
+**Q-0071 = A** (domain workflow service owns one DB transaction — rule added to
+`docs/ownership.md`) · **Q-0072 = C** (mining: workshop-workflow boundary first) ·
+**Q-0073 = B** (`setlogchannel` projected into Settings, no move) · **Q-0074 = A**
+(Admin placement administrator-visible after inventory). Recorded verbatim in the
+router; conclusions routed to ownership.md, the consolidated plan (Batch 7 now
+decision-cleared, §7, §8), roadmap (games row + at-a-glance), and current-state
+(▶ + lane 1). Batch 7 still runs in plan order — answered ≠ reordered.

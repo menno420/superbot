@@ -252,23 +252,31 @@ services) without partitioning by module.
 - **Risk/rollback:** medium; behavior changes are the *point* — characterize first.
 - **Stop:** overlay mutation work before the seam is merged + smoke-tested.
 
-### Batch 7 — Mutation-path hardening (RS01 → RS02) — gated on Q-0071 (and Q-0072 for mining)
+### Batch 7 — Mutation-path hardening (RS01 → RS02) — decisions answered 2026-06-10
+
+**Q-0071 answered: A** — the **domain workflow service owns ONE DB transaction**
+(coins + inventory commit or roll back together; rule now in `docs/ownership.md`
+§ "Cross-domain transactions"). **Q-0072 answered: C** — mining's first slice is
+the **workshop-workflow service boundary**. The batch is decision-cleared; it runs
+in plan order (after the smaller batches), not immediately.
 
 - **Objective:** close the two-commit purchase hole first (smallest high-value
   slice), then converge mining writes behind workflow services.
-- **RS01 slice:** purchase workflow service (one transaction or
-  compensation-refund per the Q-0071 answer); both `shop_panel.py` callbacks
-  consume it; invariant prevents view-level purchase writes; concurrency +
-  failure-injection tests. Files: `disbot/services/economy_service.py` or a new
-  bounded purchase module, `disbot/views/economy/shop_panel.py`,
-  `disbot/utils/db/inventory.py`, `docs/ownership.md`.
-- **RS02 program (staged, separate PRs):** characterize → extract one workflow
-  (Q-0072 may pick workshop first — densest multi-write invariant) → ratchet
-  direct writes down per area (market/workshop/exploration), command/panel parity
-  tests throughout.
+- **RS01 slice:** purchase **workflow service owning one transaction** (Q-0071=A;
+  DB primitives gain transaction-awareness as in-scope plumbing); both
+  `shop_panel.py` callbacks consume it; invariant prevents view-level purchase
+  writes; concurrency + failure-injection tests. Files:
+  `disbot/services/economy_service.py` or a new bounded purchase module,
+  `disbot/views/economy/shop_panel.py`, `disbot/utils/db/inventory.py`,
+  `docs/ownership.md`.
+- **RS02 program (staged, separate PRs):** characterize → extract the **workshop**
+  workflow first (Q-0072=C — densest multi-write invariant) → ratchet direct
+  writes down per area (market/exploration follow), command/panel parity tests
+  throughout. Structures (§7.5) and game-XP (§7.4) land after, on the safer base.
 - **Risk/rollback:** high (balances/items); migration-aware tests mandatory;
   never bundle mining into the RS01 PR.
-- **Stop:** Q-0071 unanswered ⇒ the batch does not start.
+- **Stop:** any schema change beyond transaction plumbing; any leg committed
+  separately from a cog/view.
 
 ### Batch 8 — BTD6 `--all` towers cutover — dedicated session (decisions already routed)
 
@@ -349,18 +357,22 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 - **Help overlay** — after the Batch 6 seam only.
 - **Production-only health verification (HLT-2)** — maintainer live-tests; sandbox
   results must not be reported as live verification (DT14).
-- **Open owner decisions:** **Q-0071** (cross-domain transaction ownership — blocks
-  Batch 7) · **Q-0072** (mining next slice) · **Q-0073** (`setlogchannel`
-  ownership — blocks FIND-A02 movement; safe default: project into Settings,
-  no behavior change) · **Q-0074** (Admin tier vs routes — blocks FIND-B03).
-  Held-at-default, nothing blocked: Q-A02 · Q-A03 (Batch 2 implements its
-  default) · Q-B02/Q-DT03.
+- **Owner decisions — all four ANSWERED (structured choices, 2026-06-10; router
+  §31):** **Q-0071 = A** (domain workflow service owns one transaction — rule in
+  `docs/ownership.md`) · **Q-0072 = C** (workshop-workflow boundary first) ·
+  **Q-0073 = B** (`setlogchannel` projected into Settings, no move — rides
+  Batch 4/Phase 2-3) · **Q-0074 = A** (Admin placement administrator-visible
+  after a source inventory; owner-only checks stay on dangerous actions — Batch 2
+  classifies Admin rows accordingly). Held-at-default, nothing blocked:
+  Q-A02 · Q-A03 (Batch 2 implements its default) · Q-B02/Q-DT03.
 
 ## §8 Next recommended agent
 
 **Sonnet implementation session(s), starting with Batch 1 + Batch 2** (small,
 source-verified, test-covered; parallel-safe as two sessions per
 `ai-project-workflow.md` §9). No further mapping is needed — the campaign is
-complete and verified. **Opus/Fable planning** is warranted only for Batch 7's
-transaction design (after Q-0071) and Batch 10's selections. Codex fits bounded
-verification prep (e.g. Batch 2's generated inventory) if used.
+complete and verified, and **all four §31 decisions are answered**. **Opus/Fable
+planning** is warranted only for Batch 7's transaction design (Q-0071=A decided
+the shape; the staged design still deserves a planning pass) and Batch 10's
+selections. Codex fits bounded verification prep (e.g. Batch 2's generated
+inventory) if used.
