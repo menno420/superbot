@@ -268,6 +268,18 @@ def _locked_reason(reason_code: str | None) -> tuple[LockedReason, str | None]:
     return _GENERIC_DENIAL, None
 
 
+def safe_locked_reason(reason_code: str | None) -> LockedReason:
+    """Public read-only lookup: stable reason code → user-safe copy.
+
+    For surfaces that carry only the code (e.g. a ``HelpDecision`` from
+    :func:`services.help_projection.project_help_with_execution`) and need
+    the renderable ``safe_text``. Same fallback contract as the internal
+    resolver: an unmapped code yields the generic denial, never a crash or
+    an internal string.
+    """
+    return _locked_reason(reason_code)[0]
+
+
 # ---------------------------------------------------------------------------
 # Feature inventory adapter
 # ---------------------------------------------------------------------------
@@ -573,4 +585,5 @@ __all__ = [
     "feature_inventory",
     "project_access_map",
     "resolve_feature_access",
+    "safe_locked_reason",
 ]
