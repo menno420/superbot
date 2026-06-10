@@ -314,9 +314,13 @@ In a throwaway channel, via `!chainmenu`:
 - [ ] Typed routes: `!help economy`, `!help games`, `!help admin` — each
       lands on the right hub panel; a subsystem hidden for you behaves as
       **not found** (it shouldn't leak existence).
-- [ ] Note: the overlay (hide/rename) has **no editor UI yet** — that's the
-      next Help slice. Today it's only visible through Help Preview; nothing
-      for you to click-edit.
+- [ ] **Help editor (PRs #677/#679 — shipped after this checklist's first
+      walk):** Server Management hub → `✏️ Help editor` → hide a subsystem,
+      rename another → `!help` as a member reflects both → 👁 Help Preview
+      agrees → `🏠 Home message` → edit title/body, pick a color → **Save
+      should be locked until you Preview** → save → `!help` shows your
+      custom frame → Reset all → everything back to default. Every write
+      lands in the audit log.
 
 ---
 

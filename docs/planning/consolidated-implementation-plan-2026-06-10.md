@@ -139,10 +139,11 @@ services) without partitioning by module.
 > Batch 10 selections (wizard PR1–PR3 tranche verified shipped via #435 →
 > next = PR4 `/myprofile` planning; next AI family = §7.5 multi-entity
 > comparison, sequenced after the prod check).** **What remains live in
-> this plan:** **Batch 9's RS05 + RS10** (contract-first observability) and
-> the Help-lane **overlay editor UI** tail (audit Phase 5, tracked under
-> Batch 6's outcome notes); the two Batch-10-selected slices live in their
-> own plans' banners. Plus the owed maintainer-only items: the first real
+> this plan:** **Batch 9's RS05 + RS10** (contract-first observability) —
+> the Help-lane **overlay editor UI executed 2026-06-10** (plan #674 →
+> **PR A #677 + PR B #679**; Help audit Phase 4 records remain that lane's
+> only tail); the two Batch-10-selected slices live in their own plans'
+> banners. Plus the owed maintainer-only items: the first real
 > #633 workflow dispatch, the HLT-2 production live-tests, and the
 > announced thorough eval session.
 

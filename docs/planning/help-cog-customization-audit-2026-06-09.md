@@ -381,6 +381,14 @@ SUBSYSTEMS + HUBS + command-surface ledger + panel declarations/live availabilit
 > — 2 PRs (A: editor on the shipped seam, no migration · B: the Q-0059
 > Home embed builder, migration widening the 064 CHECK as its header
 > pre-plans).
+> **Phase 5 EXECUTED same day: PR A = #677** (the hide/rename/re-describe
+> editor — staff-hub `✏️ Help editor` button + the Settings-hub "Help
+> appearance" domain group; every action one audited `help_overlay_mutation`
+> call; live round-trip verified) **· PR B = #679** (migration 067 `'home'`
+> + the Q-0059 Home embed builder with **mandatory preview**, the shared
+> `home_embed_frame` composer, mention suppression, byte-identical default
+> pinned). **The remaining Help-lane tail is Phase 4's command/panel-action
+> records only** (Q-0057 rider).
 
 | Phase | Goal and likely files | Dependencies / off-limits | Migration / reset | Verification | Recommended next agent |
 |---|---|---|---|---|---|
