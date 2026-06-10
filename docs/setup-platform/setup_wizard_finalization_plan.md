@@ -12,8 +12,9 @@
 > `tests/unit/invariants/test_setup_advisor_readonly.py`). The §3 "broken /
 > incomplete" list and §10's PR1–PR3 text below are the *historical* analysis
 > that drove that tranche — do not re-execute them. **What remains is PR4
-> (`/myprofile` per-user foundation — the selected next slice; run its own
-> planning session against §6 + the resolved decisions first), PR5 (visibility
+> (`/myprofile` per-user foundation — its planning session ran 2026-06-10:
+> [`../planning/myprofile-foundation-plan-2026-06-10.md`](../planning/myprofile-foundation-plan-2026-06-10.md),
+> ready to execute), PR5 (visibility
 > bridge), and PR6 (migration cleanup, gated on fallback=0).**
 >
 > When this doc disagrees with a source file, **the source file wins** — open a PR
