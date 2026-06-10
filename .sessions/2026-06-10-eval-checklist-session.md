@@ -192,7 +192,7 @@ possible pre-#675 timing) → the floor now catches it deterministically.
 
 ---
 
-## Continuation 4 (same session): the PR A collision — #678 closed superseded, deltas salvaged (PR #680)
+## Continuation 4 (same session): the PR A collision — #678 closed superseded, deltas salvaged (PR #682)
 
 This session built plan-PR-A in parallel with **another session executing the
 same queue item** (`claude/charming-hypatia-91gy69`): theirs merged first as
