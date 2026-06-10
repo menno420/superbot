@@ -207,20 +207,23 @@ provenance schema is implemented.
 Folio: [games](subsystems/games.md) · **Boundary:** ADR-002 (game state not restart-safe —
 accepted, not a target).
 
-- **Now (active lane)** — the **mining character platform** (Wave 1, from the
-  [mining brainstorm](ideas/mining_exploration_brainstorm.md) §7 vision). Shipped: explore
-  wiring + equipment seam (#606, incl. the
-  [wire-exploration plan](planning/mining-wire-exploration-plan.md)), "The Descent"
-  persistent depth (#607), combat gear → deathmatch via the shared `utils/equipment.py`
-  stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
-  Character overview (#610), and the audited **Workshop + durability** keystone with
-  the **mother-panel live overview** (#624, merged 2026-06-09 — brainstorm §7.5/§6.3;
-  migration 063, tuning = Q-0054). **Next slice — Q-0072 answered (2026-06-10): the
-  workshop-workflow service boundary first** (mapping FIND-RS02 — hardens the
-  densest mutation path before more mining writes land); functional **structures**
-  (§7.5 sinks) and Wave 2's **game-XP service** (§7.4) follow on the safer base.
-  The owner-approved **duels-tick-weapon/armor-wear** slice (Q-0054) stays queued
-  alongside.
+- **Now (active lane)** — the **mining character platform** (from the
+  [mining brainstorm](ideas/mining_exploration_brainstorm.md) §7 vision). Wave-1 chain
+  shipped #606–#610 + #624 (explore wiring + equipment seam, persistent Descent, combat
+  gear → deathmatch, market loop, Character overview, Workshop + durability keystone).
+  **The 2026-06-10 finalization session executed Batch 7 + the Wave-2 seed as a 4-PR
+  stack (verify merges live): #661 → #663 → #664 → #665** — the Q-0071/Q-0072 write
+  boundary is **complete** (every mining write through `services/mining_workflow.py`,
+  one transaction per op, AST-fenced; pure domain in `utils/mining/`), recipes are
+  catalog-reconciled under an alignment lint (Q-0075), the **shared game-XP track**
+  exists (migrations 064/065: awards atomic with their actions, daily soft cap, shared
+  derived level, `gamexp`/`crafting` leaderboards, depth records), the **deeper
+  ladders** land (gold/diamond tiers — the diamond lantern finally unlocks MAGMA),
+  the Gear panel / Recipe browser / fuzzy names / `!fastmine` modernize the old UX,
+  **duels tick weapon/armor wear (Q-0054 closed)**, and the §7.6 PIL inventory +
+  stat cards ship (Q-0076). **Next slice: functional structures (§7.5
+  Forge/Vault/Home sinks)**, then the **§7.4 capped skill tree** (its `game_xp`
+  substrate + `EffectiveStats` merge point are now in place).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
