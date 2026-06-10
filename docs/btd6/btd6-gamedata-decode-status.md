@@ -189,16 +189,17 @@ works** (the traps we hit), and what is still un-decoded.
    Striker's Bomb-buff fractions carried the dump's misleading `*Multiplier`
    names and rendered as ×0.25/×0.05 *reductions* — remapped to the
    `*Percentage` family (+25% pierce, +5% range) with transplant-skips.
-7. **Conversation-entity grounding for follow-up turns (idea, not started).**
-   Grounding is built from the current message only
-   (`natural_language_stage._gather_feature_facts` → `build(req.text)`), so a
-   follow-up like "does **it** make coins at the end of round" (the second
-   message in the 2026-06-10 Navarch screenshot) grounds ZERO facts and the
-   model answers from conversation memory — the faithfulness framing then
-   makes it sound verified. A fix would carry the previous turn's resolved
-   entities (or the bot's own last-named entities) into the grounding build.
-   Cross-cutting (AI pipeline, not BTD6-only) — needs its own small design
-   pass before code.
+7. **Conversation-entity grounding for follow-up turns — structured into a
+   plan 2026-06-10:**
+   [`../planning/btd6-conversation-grounding-plan-2026-06-10.md`](../planning/btd6-conversation-grounding-plan-2026-06-10.md)
+   (carryover entity resolution at the `_gather_feature_facts` seam over the
+   existing `ai_conversation_service` buffer; zero-entity gate; labeled
+   carryover facts). Not implementation-approved yet. The original gap:
+   grounding is built from the current message only, so a follow-up like
+   "does **it** make coins at the end of round" (the second message in the
+   2026-06-10 Navarch screenshot) grounds ZERO facts and the model answers
+   from conversation memory — the faithfulness framing then makes it sound
+   verified. Diagnose any instance with `scripts/btd6_probe.py "<text>"`.
 
 ### Current state & next actions (READ FIRST)
 

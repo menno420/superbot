@@ -197,8 +197,9 @@ provenance schema is implemented.
   fixed across grounding/menus/AI tool, + minion-name grounding, the Pouākai
   diacritic tokenizer fix, honest dataset source labels).
   **Next:** decode-status ⭐ item 3 (buff/zone tail — demand-driven), the
-  maintainer's live spot-check (item 4); item 7 captures the
-  conversation-grounding follow-up idea.
+  maintainer's live spot-check (item 4); item 7 is now a structured
+  [conversation-carryover grounding plan](planning/btd6-conversation-grounding-plan-2026-06-10.md)
+  (not approved). Triage tool: `scripts/btd6_probe.py "<exact user text>"`.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.
