@@ -167,6 +167,40 @@ async def test_get_binding_handles_unknown_status_string_gracefully():
     assert bv.status is ResourceStatus.UNRESOLVED
 
 
+@pytest.mark.asyncio
+async def test_get_binding_is_uncached_every_call_hits_the_db():
+    """Binding reads have NO process-level cache — each call consults the DB.
+
+    This is the property that lets ``BindingMutationPipeline`` ship
+    without a cache-invalidation step (a committed write is immediately
+    visible to the next read).  If a read cache is ever added to this
+    accessor, the pipeline must gain post-commit invalidation — and this
+    test must change to observe that invalidation across set/clear.
+    """
+
+    def _row(target_id: int, version: int) -> dict:
+        return {
+            "guild_id": 1,
+            "subsystem": "xp",
+            "binding_name": "announce_channel",
+            "kind": "channel",
+            "target_id": target_id,
+            "status": "bound",
+            "last_validated_at": None,
+            "last_updated_at": datetime.now(timezone.utc),
+            "version": version,
+        }
+
+    mock_get_one = AsyncMock(side_effect=[_row(42, 1), _row(77, 2)])
+    with patch("core.runtime.bindings.bindings_db.get_one", mock_get_one):
+        first = await get_binding(1, "xp", "announce_channel")
+        second = await get_binding(1, "xp", "announce_channel")
+
+    assert mock_get_one.await_count == 2
+    assert first.target_id == 42
+    assert second.target_id == 77  # the fresh DB state, not a memoized copy
+
+
 def test_diagnostics_provider_returns_taxonomy():
     from services import diagnostics_service
 

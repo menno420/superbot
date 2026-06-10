@@ -645,6 +645,35 @@ def test_diagnostics_provider_is_registered_at_import_time():
     assert "customization_catalogue" in diagnostics_service.registered_names()
 
 
+def test_panels_by_source_counts_expose_fallback_dependence():
+    """The snapshot's per-source counts make curated/regex dependence visible.
+
+    One known_list panel (modmenu) + one regex_fallback panel (oremenu) +
+    one help_hook synthetic panel — each must be counted under its source,
+    and ledger_extras must be absent (the deprecated ``@panel_command``
+    decorator has zero adopters, so the source is empty in production).
+    """
+    from services import diagnostics_service
+
+    cog = _FakeCog("ModerationCog", has_help_hook=True)
+    bot = _FakeBot(cogs={"ModerationCog": cog})
+    _inject_ledger(
+        _make_ledger(
+            _entry("modmenu", "ModerationCog", "moderation"),
+            _entry("oremenu", "MiningCog", "mining"),
+        ),
+    )
+    cat = build_catalogue(bot=bot)
+    snap = diagnostics_service.snapshot("customization_catalogue")
+
+    assert snap["panels_by_source"]["known_list"] == 1
+    assert snap["panels_by_source"]["regex_fallback"] == 1
+    assert snap["panels_by_source"]["help_hook"] == 1
+    assert "ledger_extras" not in snap["panels_by_source"]
+    # The counts are the catalogue's own panels, not an independent tally.
+    assert sum(snap["panels_by_source"].values()) == len(cat.panels())
+
+
 # ---------------------------------------------------------------------------
 # @panel_command decorator
 # ---------------------------------------------------------------------------

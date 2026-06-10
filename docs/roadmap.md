@@ -99,8 +99,8 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   (#647) — all merged; findings verified + reconciled 2026-06-10.
 - **Next** — **implement the verified mapping batches**: the one active queue is the
   [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)
-  (Batch 1 low-risk runtime truth/clarity + Batch 2 surface-classification
-  invariant first).
+  (Batch 1 low-risk runtime truth/clarity — executed in #650, verify merged — +
+  Batch 2 surface-classification invariant first).
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the

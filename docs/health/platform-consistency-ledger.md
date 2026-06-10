@@ -60,14 +60,14 @@ the doctrine.
 |---|---|
 | Owner package | ✅ `core/resources/` |
 | DB tables | ✅ `resource_validation_cache` (migration 020/021) |
-| Mutation authority | 🟡 `core/resources/mutation.py` shell (provisioning is post-Phase 2) |
+| Mutation authority | ✅ `services/resource_provisioning.py` `ResourceProvisioningPipeline` (live; the unimplemented Phase 2a `core/resources/mutation.py` shell was retired 2026-06-10) |
 | Read authority | ✅ `core/resources/discovery.py` (`list_resources`, `resolve_resource`, `validate_resource`) |
 | Cache authority | ✅ `resource_validation_cache` + `utils/db/resource_cache.py` (`delete_for_guild` available) |
 | Event authority | ❌ no `EVT_RESOURCE_*` events yet — diagnostics-driven for now |
 | Diagnostics surface | ✅ `!platform resources` (+ `core/resources/__init__.py` registers a provider) |
 | Teardown hook | 🚧 wired in PR-1: `resource_cache.delete_for_guild` |
 | Status semantics | ✅ `ResourceStatus.BOUND` is **structural-only** — not permission-ready (`core/resources/status.py:83`) |
-| Wizard consumer | reads only; wizard never mutates resources directly. Provisioning runtime is post-Phase 2. |
+| Wizard consumer | reads only; wizard never mutates resources directly — provisioning ops route through `ResourceProvisioningPipeline`. |
 
 ### Bindings — subsystem → resource intent
 
@@ -75,9 +75,9 @@ the doctrine.
 |---|---|
 | Owner package | ✅ `core/runtime/bindings.py` + `services/binding_mutation.py` |
 | DB tables | ✅ `subsystem_bindings`, `binding_audit_log` (migration 022) |
-| Mutation authority | ✅ `BindingMutationPipeline` (7-step contract; `services/binding_mutation.py`) |
+| Mutation authority | ✅ `BindingMutationPipeline` (6-step contract; `services/binding_mutation.py`) |
 | Read authority | ✅ `core.runtime.bindings.get_binding` returning `BindingValue` |
-| Cache authority | ✅ `guild_config` namespace `subsystem.binding_name` |
+| Cache authority | — none by design (2026-06-10): `get_binding` hits the DB on every read; no binding read cache exists, so the pipeline has no invalidation step |
 | Event authority | ✅ `EVT_BINDING_CHANGED = "bindings.changed"` (zero consumers today) |
 | Diagnostics surface | ✅ `!platform bindings` (per-subsystem histogram + status counts) |
 | Teardown hook | 🚧 wired in PR-1: `delete_active_bindings_for_guild` (audit preserved) |

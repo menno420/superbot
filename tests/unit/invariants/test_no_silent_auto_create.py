@@ -15,10 +15,6 @@ calls.  Each call must originate from one of:
   * The pipeline's helper layer (:mod:`core.runtime.guild_resources`
     and the older :mod:`utils.channels`) — pure infrastructure with
     no policy logic.  The pipeline composes these helpers.
-  * The :class:`core.resources.mutation.ResourceMutationPipeline`
-    stub from Phase 2a (raises NotImplementedError; superseded by
-    the new pipeline but kept on the allowlist until a future
-    cleanup PR removes it).
   * Explicitly grandfathered legacy paths — cogs and views that
     today create resources directly.  Each entry is a per-subsystem
     S10 migration candidate.
@@ -71,9 +67,6 @@ _ALLOWED_PATHS = {
     # contract, not these helpers.
     _DISBOT / "core" / "runtime" / "guild_resources.py",
     _DISBOT / "utils" / "channels.py",
-    # Phase 2a stub — raises NotImplementedError; superseded by S4.5.
-    # Future cleanup PR may remove this file.
-    _DISBOT / "core" / "resources" / "mutation.py",
     # Audited manual-role creator (server-management PR5).  The role-domain
     # sibling of the provisioning pipeline: it owns operator-driven role
     # create/edit/delete with manageability checks + audit + event, so it is

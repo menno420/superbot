@@ -82,7 +82,7 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
 
     with (
         patch(
-            "views.economy.work_panel.db.get_economy",
+            "views.economy.work_panel.db.ensure_and_get_economy",
             new_callable=AsyncMock,
             return_value=eco_row,
         ),

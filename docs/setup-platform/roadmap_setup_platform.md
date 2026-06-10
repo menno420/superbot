@@ -9,6 +9,12 @@
 > `services.setup_operations`. Treat the phases below as **direction**, not a
 > checklist of existing features — cross-check `docs/AGENT_ORIENTATION.md` and
 > the source before assuming any phase is implemented.
+>
+> **Naming note (2026-06-10):** the `ResourceMutationPipeline` referenced
+> throughout (the P2a shell that P7.5 was to fill in) was **retired
+> un-implemented** — resource provisioning shipped instead as
+> `services/resource_provisioning.py::ResourceProvisioningPipeline` (S4.5).
+> Read every `ResourceMutationPipeline` mention below as that live pipeline.
 
 ## Context
 

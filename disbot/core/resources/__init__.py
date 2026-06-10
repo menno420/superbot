@@ -19,10 +19,12 @@ Package layout:
 * :mod:`core.resources.role_service` — role-specific operations (consumes
   the Phase 1d :class:`~governance.scopes.GovernanceScope` enum +
   :mod:`governance.role_templates` for template matching).
-* :mod:`core.resources.mutation` — :class:`ResourceMutationPipeline`
-  shell.  The 6-step contract mirrors
-  :class:`~governance.writes.GovernanceMutationPipeline`; actual create /
-  delete behaviour lands in Phase 7.5's provisioning runtime.
+
+This package is the **read/validation substrate only** — resource
+creation/deletion (mutation) is owned by
+:class:`services.resource_provisioning.ResourceProvisioningPipeline`.
+(The unimplemented Phase 2a ``core.resources.mutation`` shell was
+retired 2026-06-10 once the live pipeline superseded it.)
 
 Public exports below are re-exported for convenience.  Consumers MAY
 import directly from the submodule for clarity (e.g.
@@ -40,7 +42,6 @@ from __future__ import annotations
 from core.resources import (  # noqa: F401 — re-exported
     channel_service,
     discovery,
-    mutation,
     role_service,
     status,
     types,
@@ -65,7 +66,6 @@ __all__ = [
     "ThreadResource",
     "channel_service",
     "discovery",
-    "mutation",
     "role_service",
     "status",
     "types",
@@ -96,7 +96,6 @@ def _resources_snapshot() -> dict[str, object]:
             "discovery",
             "channel_service",
             "role_service",
-            "mutation",
         ],
     }
 

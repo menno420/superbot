@@ -52,7 +52,7 @@ _EXPECTED_PUBLIC = [
     "get_coins",
     "add_coins",
     "set_coins",
-    "get_economy",
+    "ensure_and_get_economy",
     "claim_daily_if_ready",
     "set_daily_claim",
     "set_last_worked",

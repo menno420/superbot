@@ -203,7 +203,7 @@ class EconomyCog(commands.Cog):
         """Claim your daily reward. Higher streaks unlock better odds!"""
         uid, gid = ctx.author.id, ctx.guild.id
         now = int(time.time())
-        row = await db.get_economy(uid, gid)
+        row = await db.ensure_and_get_economy(uid, gid)
         last = row["last_daily"]
         streak = row["daily_streak"]
 
@@ -268,7 +268,7 @@ class EconomyCog(commands.Cog):
     async def work(self, ctx: commands.Context):
         """Open the job selector and earn coins + XP (1 h cooldown)."""
         uid, gid = ctx.author.id, ctx.guild.id
-        row = await db.get_economy(uid, gid)
+        row = await db.ensure_and_get_economy(uid, gid)
 
         on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
         if on_cd:

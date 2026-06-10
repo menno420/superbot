@@ -52,8 +52,8 @@ from utils.db.anchors import (
 from utils.db.economy import (
     add_coins,
     claim_daily_if_ready,
+    ensure_and_get_economy,
     get_coins,
-    get_economy,
     get_job_times,
     increment_job,
     set_coins,
@@ -217,8 +217,8 @@ __all__ = [
     # economy
     "add_coins",
     "claim_daily_if_ready",
+    "ensure_and_get_economy",
     "get_coins",
-    "get_economy",
     "get_job_times",
     "increment_job",
     "set_coins",

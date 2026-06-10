@@ -640,3 +640,98 @@ async def test_set_ai_binding_rejects_undeclared_name(_ai_schema):
             42,
             actor,
         )
+
+
+# ---------------------------------------------------------------------------
+# No-cache contract: committed writes are immediately visible to readers
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_set_and_clear_visible_to_reads_without_invalidation(_xp_schema):
+    """Cache observation across set/clear: there is nothing to invalidate.
+
+    The pipeline deliberately has no cache-invalidation step (module
+    docstring): binding reads (``core.runtime.bindings.get_binding``) hit
+    the DB on every call. Simulate the DB row store under the mocked
+    primitives and verify a reader observes each commit immediately —
+    the property that makes the missing step correct. If a binding read
+    cache is ever introduced, this test must change to observe explicit
+    post-commit invalidation.
+    """
+    from core.runtime.bindings import get_binding as read_binding
+
+    store: dict[tuple[int, str, str], dict] = {}
+
+    async def fake_get_one(guild_id, subsystem, binding_name):
+        return store.get((guild_id, subsystem, binding_name))
+
+    async def fake_upsert(**kw):
+        from datetime import datetime, timezone
+
+        key = (kw["guild_id"], kw["subsystem"], kw["binding_name"])
+        prev = store.get(key)
+        store[key] = {
+            "guild_id": kw["guild_id"],
+            "subsystem": kw["subsystem"],
+            "binding_name": kw["binding_name"],
+            "kind": kw["kind"],
+            "target_id": kw["target_id"],
+            "status": kw["status"],
+            "last_validated_at": None,
+            "last_updated_at": datetime.now(timezone.utc),
+            "version": (prev["version"] + 1) if prev else 1,
+        }
+
+    async def fake_clear(**kw):
+        from datetime import datetime, timezone
+
+        key = (kw["guild_id"], kw["subsystem"], kw["binding_name"])
+        row = store[key]
+        row["target_id"] = None
+        row["status"] = "unresolved"
+        row["last_updated_at"] = datetime.now(timezone.utc)
+        row["version"] += 1
+
+    pipeline = BindingMutationPipeline()
+    actor = _admin_actor()
+    guild = _guild()
+
+    with patch(
+        "core.runtime.bindings.bindings_db.get_one",
+        AsyncMock(side_effect=fake_get_one),
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(side_effect=fake_upsert),
+    ), patch(
+        "services.binding_mutation.bindings_db.clear_with_audit",
+        AsyncMock(side_effect=fake_clear),
+    ), patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ):
+        # Never bound: a reader sees the unresolved default.
+        before = await read_binding(1, "xp", "announce_channel")
+        assert before.target_id is None
+        assert before.status is ResourceStatus.UNRESOLVED
+
+        # set → the very next uncached read sees the committed target.
+        await pipeline.set_binding(
+            guild, "xp", "announce_channel", BindingKind.CHANNEL, 42, actor,
+        )
+        after_set = await read_binding(1, "xp", "announce_channel")
+        assert after_set.target_id == 42
+        assert after_set.status is ResourceStatus.BOUND
+
+        # clear → the very next uncached read sees the cleared slot
+        # (last_updated_at survives, distinguishing cleared from never-bound).
+        await pipeline.clear_binding(
+            guild, "xp", "announce_channel", BindingKind.CHANNEL, actor,
+        )
+        after_clear = await read_binding(1, "xp", "announce_channel")
+        assert after_clear.target_id is None
+        assert after_clear.status is ResourceStatus.UNRESOLVED
+        assert after_clear.last_updated_at is not None

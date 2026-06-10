@@ -63,7 +63,7 @@ class EconomyPanelView(PersistentView):
 
         uid, gid = interaction.user.id, interaction.guild_id
         now = int(time.time())
-        row = await db.get_economy(uid, gid)
+        row = await db.ensure_and_get_economy(uid, gid)
         last = row["last_daily"]
         streak = row["daily_streak"]
 
@@ -129,7 +129,7 @@ class EconomyPanelView(PersistentView):
             return
 
         uid, gid = interaction.user.id, interaction.guild_id
-        row = await db.get_economy(uid, gid)
+        row = await db.ensure_and_get_economy(uid, gid)
 
         on_cd, secs = check_cooldown(row["last_worked"], _WORK_COOLDOWN)
         if on_cd:
