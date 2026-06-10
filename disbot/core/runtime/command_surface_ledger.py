@@ -25,12 +25,24 @@ Public surface:
     CommandSurfaceEntry      — frozen dataclass per command
     Classification           — Literal of canonical classification values
     CLASSIFICATIONS          — tuple of all canonical classification values
+    HIDDEN_ROUTE_CLASSIFICATIONS — classifications valid on a Discord-hidden route
+    ALIAS_DELIBERATION_THRESHOLD — alias count requiring an alias disposition
     RouterPrefixEntry        — frozen dataclass per registered router prefix
     LedgerFindings           — frozen dataclass with orphan/duplicate buckets
     CommandSurfaceLedger     — frozen aggregate snapshot
     build_ledger(bot)        — walks the live surface, caches, returns ledger
     get_cached_ledger()      — last-built ledger, or None if not built
     cog_name_to_subsystem(s) — normalise a cog class name to a SUBSYSTEMS key
+
+Completeness invariant (DT04, consolidated plan 2026-06-10 Batch 2):
+``build_ledger`` reports every route whose *surface contradicts its
+classification state* in ``findings.unclassified_entry_points`` — a
+Discord-hidden command without a deliberate hidden-route
+classification, or an alias pile (>= ALIAS_DELIBERATION_THRESHOLD)
+without a declared alias disposition.  The static mirror of the same
+rules runs in CI over the cog sources
+(``tests/unit/runtime/test_command_surface_ledger.py``), so the
+finding bucket stays empty by construction.
 
 Diagnostics provider name: ``"command_surface_ledger"``.
 """
@@ -87,6 +99,32 @@ Classification = Literal[
 # any classification registry added by PR-06c.
 CLASSIFICATIONS: tuple[Classification, ...] = get_args(Classification)
 
+# Completeness invariant (DT04) — the two deliberateness rules.
+#
+# A command hidden via Discord's ``hidden=True`` decorator flag must say
+# *why* it is hidden by declaring one of these classifications.  The
+# default ``primary_entrypoint`` contradicts a hidden surface (a route
+# cannot be both the canonical operator entrypoint and invisible), and
+# ``power_user_shortcut`` is by contract a *visible* fluency spelling —
+# so neither is acceptable on a hidden route.
+HIDDEN_ROUTE_CLASSIFICATIONS: frozenset[Classification] = frozenset(
+    {
+        "panel_action",
+        "legacy_duplicate",
+        "internal_admin",
+        "hidden",
+        "deprecated",
+    },
+)
+
+# A command carrying this many aliases (or more) is an alias *pile* —
+# a compatibility/fluency surface in its own right — and must declare a
+# deliberate alias disposition via ``extras["alias_classification"]``
+# (e.g. the leaderboard's nine legacy per-game aliases, Q-A03).  One or
+# two abbreviation aliases (``!bal``, ``!lb``) stay below the line and
+# share their command's classification implicitly.
+ALIAS_DELIBERATION_THRESHOLD = 3
+
 
 @dataclass(frozen=True)
 class CommandSurfaceEntry:
@@ -105,6 +143,18 @@ class CommandSurfaceEntry:
     # per-cog declarations (decorator or metadata map) and surfaces
     # the unclassified set as a finding.
     classification: Classification = "primary_entrypoint"
+    # DT04 — deliberateness metadata.  ``classification_declared`` is
+    # True only when the cog carried a *valid* explicit
+    # ``extras["classification"]`` (a silent fallback to the default is
+    # not a declaration).  ``discord_hidden`` mirrors the prefix
+    # decorator's ``hidden=True`` flag so consumers can see when the
+    # Discord surface and the ledger classification disagree.
+    # ``alias_classification`` is the declared disposition of the
+    # entry's aliases (``extras["alias_classification"]``) — ``None``
+    # means the aliases share the command's own classification.
+    classification_declared: bool = False
+    discord_hidden: bool = False
+    alias_classification: Classification | None = None
 
 
 @dataclass(frozen=True)
@@ -124,11 +174,13 @@ class LedgerFindings:
     duplicate_alias_names: tuple[str, ...] = ()
     undeclared_entry_points: tuple[str, ...] = ()
     router_prefix_unknown: tuple[str, ...] = ()
-    # PR-06a: populated by PR-06c once per-cog classification metadata
-    # exists.  Empty in PR-06a because the default classification
-    # (``primary_entrypoint``) means every command is considered
-    # classified out of the box.  Reserved here so the dataclass shape
-    # is stable across the PR-06a → PR-06c sequence.
+    # DT04: routes whose surface contradicts their classification
+    # state — ``hidden:<name>`` (Discord-hidden without a valid
+    # hidden-route classification) and ``aliases:<name>`` (alias pile
+    # without a declared alias disposition).  Kept empty by the static
+    # CI mirror of the same rules; a non-empty bucket on a live bot
+    # means a cog drifted past the invariant (e.g. a hot-loaded
+    # extension CI never saw).
     unclassified_entry_points: tuple[str, ...] = ()
 
     @property
@@ -248,6 +300,26 @@ def _reset_for_tests() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _declared_classification(
+    cmd: object,
+    key: str = "classification",
+) -> Classification | None:
+    """Return the *valid* declared classification under ``extras[key]``.
+
+    ``None`` means "no deliberate declaration" — the key is absent,
+    extras is not a dict, or the value is not a canonical
+    classification.  (The static CI invariant fails loudly on invalid
+    literals so a typo cannot silently demote to ``None`` here.)
+    """
+    extras = getattr(cmd, "extras", None)
+    if not isinstance(extras, dict):
+        return None
+    raw = extras.get(key)
+    if raw in CLASSIFICATIONS:
+        return raw  # type: ignore[return-value]
+    return None
+
+
 def _classification_from_command(cmd: object) -> Classification:
     """Read ``cmd.extras["classification"]`` if present.
 
@@ -258,13 +330,7 @@ def _classification_from_command(cmd: object) -> Classification:
     so PR-06c is purely additive — every existing command keeps its
     default identity unless its cog opts in.
     """
-    extras = getattr(cmd, "extras", None)
-    if not isinstance(extras, dict):
-        return "primary_entrypoint"
-    raw = extras.get("classification")
-    if raw in CLASSIFICATIONS:
-        return raw  # type: ignore[return-value]
-    return "primary_entrypoint"
+    return _declared_classification(cmd) or "primary_entrypoint"
 
 
 def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
@@ -295,6 +361,7 @@ def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
             cmd.qualified_name,
             subsystem,
         )
+        declared = _declared_classification(cmd)
         entries.append(
             CommandSurfaceEntry(
                 name=cmd.qualified_name,
@@ -305,7 +372,15 @@ def _walk_commands(bot: object) -> list[CommandSurfaceEntry]:
                 parent_group=parent_name,
                 is_declared=is_declared,
                 kind="prefix",
-                classification=_classification_from_command(cmd),
+                classification=declared or "primary_entrypoint",
+                classification_declared=declared is not None,
+                # ``is True`` keeps test doubles (MagicMock attributes)
+                # from reading as hidden; a real Command carries a bool.
+                discord_hidden=getattr(cmd, "hidden", False) is True,
+                alias_classification=_declared_classification(
+                    cmd,
+                    key="alias_classification",
+                ),
             ),
         )
     return entries
@@ -371,6 +446,7 @@ def _walk_slash_commands(bot: object) -> list[CommandSurfaceEntry]:
             qualified_name,
             subsystem,
         )
+        declared = _declared_classification(cmd)
         entries.append(
             CommandSurfaceEntry(
                 name=qualified_name,
@@ -381,7 +457,12 @@ def _walk_slash_commands(bot: object) -> list[CommandSurfaceEntry]:
                 parent_group=parent_name,
                 is_declared=is_declared,
                 kind="slash",
-                classification=_classification_from_command(cmd),
+                classification=declared or "primary_entrypoint",
+                classification_declared=declared is not None,
+                # Slash commands have no Discord ``hidden`` flag and no
+                # aliases; both deliberateness rules are prefix-only.
+                discord_hidden=False,
+                alias_classification=None,
             ),
         )
     return entries
@@ -560,12 +641,36 @@ def _compute_findings(
         sorted(p.prefix for p in router_prefixes if p.subsystem is None),
     )
 
+    # DT04 completeness invariant — a route whose surface contradicts
+    # its classification state.  Two rules (the static CI mirror in
+    # tests/unit/runtime/test_command_surface_ledger.py enforces the
+    # same two over the cog sources):
+    #
+    # * ``hidden:<name>``  — Discord-hidden command without a valid
+    #   hidden-route classification (absent, invalid, or a visible-only
+    #   value like the default ``primary_entrypoint``).
+    # * ``aliases:<name>`` — alias pile (>= ALIAS_DELIBERATION_THRESHOLD)
+    #   without a declared ``alias_classification`` disposition.
+    unclassified: list[str] = []
+    for e in entries:
+        if e.discord_hidden and not (
+            e.classification_declared
+            and e.classification in HIDDEN_ROUTE_CLASSIFICATIONS
+        ):
+            unclassified.append(f"hidden:{e.name}")
+        if (
+            len(e.aliases) >= ALIAS_DELIBERATION_THRESHOLD
+            and e.alias_classification is None
+        ):
+            unclassified.append(f"aliases:{e.name}")
+
     return LedgerFindings(
         orphan_cog_subsystems=tuple(sorted(orphans)),
         duplicate_command_names=dup_names,
         duplicate_alias_names=tuple(sorted(dup_aliases)),
         undeclared_entry_points=tuple(undeclared),
         router_prefix_unknown=unknown_prefixes,
+        unclassified_entry_points=tuple(sorted(unclassified)),
     )
 
 
@@ -664,10 +769,12 @@ _register_diagnostics()
 
 
 __all__ = [
+    "ALIAS_DELIBERATION_THRESHOLD",
     "CLASSIFICATIONS",
     "Classification",
     "CommandSurfaceEntry",
     "CommandSurfaceLedger",
+    "HIDDEN_ROUTE_CLASSIFICATIONS",
     "LedgerFindings",
     "RouterPrefixEntry",
     "build_ledger",

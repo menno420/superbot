@@ -118,7 +118,11 @@ class ModerationCog(commands.Cog):
     # ``tests/unit/invariants/test_no_direct_moderation_writes.py``.
     # ------------------------------------------------------------------
 
-    @commands.command(name="warn", hidden=True)
+    @commands.command(
+        name="warn",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.warn.apply", "manage_roles")
     async def warn(self, ctx, member: Member, *, reason=""):
         """Warn a user. Escalates at the configured threshold (default: timeout)."""
@@ -141,7 +145,11 @@ class ModerationCog(commands.Cog):
         for line in render_warn_outcome_lines(member.mention, reason, outcome):
             await ctx.send(line)
 
-    @commands.command(name="timeout", hidden=True)
+    @commands.command(
+        name="timeout",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.timeout.apply", "moderate_members")
     async def timeout(self, ctx, member: Member, duration: int):
         """Timeout a member for a given number of minutes."""
@@ -163,7 +171,11 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to timeout: {e}")
 
-    @commands.command(name="kick", hidden=True)
+    @commands.command(
+        name="kick",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.kick.apply", "kick_members")
     async def kick(self, ctx, member: Member, *, reason=""):
         """Kick a member from the server."""
@@ -191,7 +203,11 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to kick: {e}")
 
-    @commands.command(name="ban", hidden=True)
+    @commands.command(
+        name="ban",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.ban.apply", "ban_members")
     async def ban(self, ctx, member: Member, *, reason=""):
         """Ban a member from the server."""
@@ -220,7 +236,11 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to ban: {e}")
 
-    @commands.command(name="unban", hidden=True)
+    @commands.command(
+        name="unban",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.ban.remove", "ban_members")
     async def unban(self, ctx, user_id: int):
         """Unban a user by their Discord user ID."""
@@ -247,7 +267,11 @@ class ModerationCog(commands.Cog):
         except discord.HTTPException as e:
             await ctx.send(f"❌ Failed to unban: {e}")
 
-    @commands.command(name="clearwarnings", hidden=True)
+    @commands.command(
+        name="clearwarnings",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.warn.apply", "manage_roles")
     async def clearwarnings(self, ctx, member: Member):
         """Clear all warnings for a member."""
@@ -258,7 +282,11 @@ class ModerationCog(commands.Cog):
         )
         await ctx.send(f"✅ Warnings cleared for {member.mention}.")
 
-    @commands.command(name="modlogs", hidden=True)
+    @commands.command(
+        name="modlogs",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
     @_require_mod("moderation.log.view", "manage_roles")
     async def modlogs(self, ctx, member: Member):
         """Show moderation log history for a member."""

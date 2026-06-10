@@ -152,7 +152,19 @@ services) without partitioning by module.
   tests) before renaming. Revert = restore module.
 - **Stop:** if the resource shell has a live consumer, deprecate instead of delete.
 
-### Batch 2 — Surface-classification completeness invariant (DT04: FIND-A01/A05/B04/B07) — ready
+### Batch 2 — Surface-classification completeness invariant (DT04: FIND-A01/A05/B04/B07) — SHIPPED PR #651 (2026-06-10)
+
+> **Status:** executed 2026-06-10 (parallel session beside Batch 1), **PR #651** —
+> verify merge state on live GitHub. The invariant runs twice: at build time
+> (`findings.unclassified_entry_points` now populated — hidden-route +
+> alias-pile rules) and as a static AST mirror in
+> `tests/unit/runtime/test_command_surface_ledger.py` (incl. the two-way
+> top-level slash-surface pin + the canonical-literal guard). All 40 hidden
+> routes, both alias piles (leaderboard → legacy per **Q-A03**, deathmatch →
+> power_user_shortcut), and `/setup-hub` → legacy_duplicate (B07 — the slash
+> walker already ingested `extras`; no new seam was needed) are declared.
+> Classification-only; Help output byte-identical; alias *display* integration
+> deliberately deferred to Batch 6's projection seam.
 
 - **Objective:** every surfaced/hidden/panel-action/slash-legacy/alias route has a
   *deliberate* ledger classification or an explicit exception — drift can't recur
