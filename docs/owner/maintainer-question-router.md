@@ -3603,6 +3603,33 @@ ideas; this rule *generates new* ones — both run at END.
 "what changed in your bot yesterday" summary built from merged PR titles,
 so the owner experiences the network's velocity as a product feature.
 
+## 38. Gap-analysis round — 2026-06-11 (owner probe: "what's still missing?")
+
+### Q-0091 — Cross-server character identity: per-guild, global, or hybrid?
+
+**Area:** Games / open-world architecture / public-bot posture (Q-0080)
+**Type:** Architectural product decision — currently *unasked anywhere*
+**Priority:** High-before-ecosystem-#2 (re-keying tables later = migration nightmare)
+**Status:** **Open** — awaiting owner
+
+**Context:** every game table is keyed `(user, guild)` — a player's character
+exists per server. Public-bot era makes this the biggest invisible decision:
+
+1. **Per-guild (status quo):** every server a fresh start — clean local
+   economies, equal-start PvP preserved, zero migration; progression doesn't
+   travel, players restart everywhere.
+2. **Global identity:** progression travels with the player; but server
+   economies bleed (a whale arrives pre-rich), equal-start dies, and the
+   per-guild balance story (Q-0087 bands) fractures.
+3. **Hybrid** *(agent lean)*: **local progression** (levels, wealth, gear —
+   per-guild like today) + **global veneer** (cosmetics, titles,
+   collection-log completion, account-level achievements travel). Preserves
+   every economy invariant while giving players a portable identity. Maps
+   cleanly onto Q-0039 cosmetic-only monetization later.
+
+**Sequencing:** decide before ecosystem #2 multiplies the keyed tables; the
+full gap list is [`ideas/gap-analysis-2026-06-11.md`](../ideas/gap-analysis-2026-06-11.md).
+
 ### Q-0090 — Open-world federation round: ecosystem #2, currencies, cross-links, research scope
 
 **Area:** Games / open-world architecture (V-13) + research direction (V-14)

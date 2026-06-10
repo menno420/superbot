@@ -23,6 +23,13 @@ Current broad captures:
 > beats occasional brilliance). Substantial ones land here as files; small ones
 > live in their session log's 💡 flag. The grooming pass then moves them.
 
+- [`gap-analysis-2026-06-11.md`](./gap-analysis-2026-06-11.md) — six
+  dedup-verified blind spots from the owner's "what's still missing?" probe:
+  cross-server character identity (**Q-0091**, the public-era architectural
+  question) · per-user data export/erasure (V-15's mirror) · owner alerting /
+  dead-man's switch · session telemetry (quantify the self-improvement loop) ·
+  AI spend metering (the Q-0082 instrument) · toolchain rot watch (live
+  example: the Node-20 actions deprecation, forced 2026-06-16).
 - [`bot-self-test-walker-2026-06-10.md`](./bot-self-test-walker-2026-06-10.md) —
   owner idea (brainstorm round 3): **the bot tests itself** — an owner-gated
   in-process walker that synthetically invokes every ledger-listed command
