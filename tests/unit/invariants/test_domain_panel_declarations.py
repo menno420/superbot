@@ -35,9 +35,11 @@ _COGS_DIR = _REPO_ROOT / "disbot" / "cogs"
 # The deliberate contract: subsystems whose Settings group is a domain-config
 # destination. Audit §4 verified cleanup as the one real domain-panel group
 # (governance cleanup-policy tables + dedicated panel; empty scalar page).
+# help joined 2026-06-10 (the overlay editor — help audit Phase 5 PR A:
+# "Help appearance" routes to the staff-hub editor over the #659 seam).
 # Adding a subsystem here requires a real DomainPanelSpec declaration in its
 # cogs/<subsystem>/schemas.py — and vice versa.
-_EXPECTED_DOMAIN_PANELS: frozenset[str] = frozenset({"cleanup"})
+_EXPECTED_DOMAIN_PANELS: frozenset[str] = frozenset({"cleanup", "help"})
 
 
 @pytest.fixture()

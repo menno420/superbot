@@ -189,3 +189,37 @@ crossbow-master cumulative cost ✅ · **the remaining-cash composition ✅**
 ($650 + $37,660 − $21,500 = $16,810 — composed correctly without the §7.5
 workflow; better than predicted) · capability meta-question ❌ (the typo +
 possible pre-#675 timing) → the floor now catches it deterministically.
+
+---
+
+## Continuation 4 (same session): Help editor PR A built + live-verified (PR #677)
+
+With the eval steady (4 PRs merged) the session resumed the queue item the
+screenshots had interrupted — **plan §5 PR A**, same-day execution of the
+morning's own plan doc:
+
+- `views/help/editor.py` — home (override counts) → kind picker (paginated,
+  Q-0058 labels: custom label + default · stable key, 🙈 prefix) → per-entity
+  editor (hide-toggle-to-inherit · rename/re-describe modals · per-field +
+  entity + guild reset w/ confirm). Every action = exactly ONE
+  `set_overlay_fields`/`reset_guild_overlay` call (AST-pinned: no `utils.db`
+  import); admin floor re-checked per interaction (access_map pattern);
+  modals never deferred first.
+- Entry points: staff-hub `✏️ Help editor` (row 2, beside 👁 Help Preview —
+  edit + verify together) + `cogs/help/schemas.py` "Help appearance"
+  `DomainPanelSpec` (capability `help.settings.configure`; actionable
+  taxonomy 12 → 13; domain-panel invariant updated {cleanup} → {cleanup,
+  help}). Bonus generic fix: the settings subsystem page now renders
+  declared **Domain configuration** destinations (cleanup's group no longer
+  lands on bare "*none declared*").
+- 12 new tests + hub custom_id pin; CI mirror green; arch 0 errors; clean
+  boot (catalogue findings 53 → 52 — the schema resolved a schema-less
+  finding); **live Postgres round-trip through the real callbacks**: hide →
+  row · rename via modal submit · Help Preview shows the overlay-hidden
+  bucket · reset-all → 0 rows.
+- Bonus live proof: the crashed first boot attempt (Postgres down) exited
+  **code 1** — the #675 exit-code contract observed working.
+
+**Open after this:** the editor's **PR B** (Q-0059 Home embed builder — plan
+§4.3) · Batch 9 RS05/RS10 · setup PR4 planning · §7.5 (eval Tier-1 sign-off
+still the gate; three of its four live questions already passed).

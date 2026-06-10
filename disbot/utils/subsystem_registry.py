@@ -677,6 +677,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "ui_priority": 1,
         "capabilities": [
             "help.menu.view",
+            "help.settings.configure",
         ],
     },
     "diagnostic": {

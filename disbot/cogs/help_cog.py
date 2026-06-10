@@ -286,6 +286,12 @@ class HelpCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_load(self) -> None:
+        from cogs.help.schemas import register_schemas
+
+        # Settings Phase 2 — declares the Help-appearance domain panel.
+        register_schemas()
+
     @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
     @commands.command(name="help", aliases=["hilfe"])
     async def help_command(self, ctx: commands.Context, *, category: str = None):

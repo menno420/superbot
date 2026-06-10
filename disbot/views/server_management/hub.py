@@ -311,6 +311,35 @@ class ServerManagementHubView(PersistentView):
         await safe_edit(interaction, embed=embed, view=sub_view)
 
     @discord.ui.button(
+        label="✏️ Help editor",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+        custom_id="server_management:help_editor",
+    )
+    async def help_editor_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Open the Help overlay editor (audit Phase 5 PR A) — beside the
+        Preview on purpose: edit and verify live next to each other.
+        """
+        from views.help.editor import HelpEditorHomeView, build_editor_home_embed
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "The hub is only available inside a server.",
+                ephemeral=True,
+            )
+            return
+        if not await safe_defer(interaction):
+            return
+        embed = await build_editor_home_embed(interaction.guild.id)
+        sub_view = HelpEditorHomeView(interaction.user)
+        _attach_back_to_hub(sub_view)
+        await safe_edit(interaction, embed=embed, view=sub_view)
+
+    @discord.ui.button(
         label="🔄 Refresh",
         style=discord.ButtonStyle.secondary,
         row=2,

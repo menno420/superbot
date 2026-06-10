@@ -40,6 +40,7 @@ _BUTTON_IDS = {
     "server_management:setup",
     "server_management:access_map",
     "server_management:help_preview",
+    "server_management:help_editor",  # audit Phase 5 PR A — the overlay editor
     "server_management:refresh",
 }
 

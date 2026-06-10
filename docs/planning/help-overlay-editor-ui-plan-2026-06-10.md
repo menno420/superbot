@@ -1,9 +1,13 @@
 # Help overlay editor UI — implementation plan (audit Phase 5)
 
-> **Status:** `plan` — ready to execute (all owner decisions answered; no open
-> gates). Produced by the 2026-06-10 eval-support session as the queue's
-> "Help overlay editor UI (plan-first)" item — [help audit](help-cog-customization-audit-2026-06-09.md)
-> Phase 5. Two PRs; PR A has no migration and rides entirely on shipped seams.
+> **Status:** `plan` — **PR A EXECUTED same day (2026-06-10, PR #677)**: the
+> editor (`views/help/editor.py`), both entry points (staff-hub `✏️ Help
+> editor` button · the "Help appearance" domain panel — taxonomy 12 → 13),
+> 12 pinning tests, live Postgres round-trip (hide → rename → preview agrees
+> → reset-all byte-identical). **Open: PR B** (§4.3 — the Q-0059 Home embed
+> builder; migration widening the 064 CHECK; mandatory preview). Produced by
+> the eval-support session as the queue's "plan-first" item — [help
+> audit](help-cog-customization-audit-2026-06-09.md) Phase 5.
 
 ## 1. Goal
 
