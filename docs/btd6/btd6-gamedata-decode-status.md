@@ -42,35 +42,36 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Post-cutover decode backlog (the new "do next", ordered)
 
-1. **Decode the carried-forward mechanisms** (each preserved verbatim from the
-   wiki-era data because the dump models it somewhere the walkers don't reach —
-   `parse_gamedata._CUTOVER_CARRYFORWARD` is the authoritative list):
-   - Druid thorn rings: nested on `SpiritOfTheForestModel`
-     (`damageOverTimeZoneModelFar/Middle/Close` + `closeRange`/`middleRange`).
-     **Known staleness carried:** raw v55.1 has `immuneBloonProperties` **0** on
-     150/250 (committed carries 17 on all five tiers) — fix lands with the decode.
-   - Engineer typed sentries: tier-4's `CreateTypedTowerModel` holds four
-     embedded TowerModels under `crushingTower`/`boomTower`/`coldTower`/
-     `energyTower`; the paragon's triple `SentryParagonChild` similarly.
+> **Wave 1 executed 2026-06-10 (same-day follow-up PR):** druid thorn rings
+> (`SpiritOfTheForestModel` per-ring fields — incl. the genuine v55.1
+> `immuneBloonProperties` 0 on 150/250, now committed as Normal damage type),
+> engineer tier-4 typed sentries (`CreateTypedTowerModel` joined
+> `_SUBTOWER_SPAWN_TYPES`), and the **banana economy** (tier-level
+> `bananaValue`/`bananaValueMax`/`bananaSalvageValue`/`bananaBonusMultiplier` +
+> `bankCapacity`/`bankInterest`, lifted off the suppressed banana attack's
+> `CashModel` + the `BankModel`, surfaced as specials — "Bananas worth $300",
+> "Bank $7,000 capacity, +15% interest/round"). Both carry-forwards removed;
+> `_CUTOVER_CARRYFORWARD` now holds only the items below.
+
+1. **Decode the remaining carried-forward mechanisms**
+   (`parse_gamedata._CUTOVER_CARRYFORWARD` is the authoritative list):
    - Sub Energizer: the effect lives on `SubmergeModel` itself
      (`abilityCooldownSpeedScale`/`…Global`/`heroXpScale`) which sits
      *neutrally* (1.0) on every submerged tier — needs neutral-value filtering
-     + a local/global split.
+     + a local/global split (committed models it as TWO entries).
    - Bucc sellback: `CashbackZoneModel` carries `cashbackZoneMultiplier` 0.04 /
      `cashbackMaxPercent` 0.95 / maxStacks 3 — committed models it as a buff;
      zone-ification needs a renderer/test migration.
+   - Engineer **paragon** color sentries: mapped emits three identical
+     `SentryParagonChild` nodes vs the four committed typed paragons.
    - Magus Perfectus' phoenix: no spawn model the subtower walker resolves.
-2. **Banana-economy decode (new answerability):** banana value lives on the
-   banana projectile's `CashModel` (`minimum`/`maximum` 20→1200, `salvage`,
-   `bonusMultiplier` 0.25) and banks on `BankModel` (`capacity` 7000/10000,
-   `interest` 0.15) — all prose-confirmable; would answer "how much is a
-   banana / BRF crate / bank capacity".
-3. **Remaining buff/zone `$type` tail** — the pre-cutover "unconfirmable"
+   - Striker Jones: "Attack speed buff" / "Bomb Shooter buff" (hero levels).
+2. **Remaining buff/zone `$type` tail** — the pre-cutover "unconfirmable"
    blocker is gone in a new sense: committed data *is* the dump now, so new
    decodes are confirmed by **upgrade-prose / owner gameplay knowledge**, not a
    committed diff. Pick from the SHA-pinned report §3 ranking as questions
    surface.
-4. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
+3. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
    per-tier beast names ("what does the Orca do?"), Farm/Village answers
    (Wall Street income, discounts, MIB), Spectre/Mini Sun Avatar minions, and
    the "BTD6 game data 55.1" source label.

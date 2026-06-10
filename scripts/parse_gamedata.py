@@ -554,6 +554,17 @@ _SUBTOWER_SPAWN_TYPES: dict[str, tuple[str, ...]] = {
     "ComancheDefenceModel": ("towerModel",),
     "TowerCreateTowerModel": ("towerModel",),
     "TranceTotemSpawnerModel": ("tower",),
+    # Engineer Sentry Expert (4-x-x): the spawner projectile picks one of four
+    # typed sentries, embedded under per-type fields (names SentryCrushing /
+    # SentryBoom / SentryCold / SentryEnergy, each with a 25 s TowerExpireModel
+    # — committed-confirmed). Decoded post-cutover (2026-06-10); the committed
+    # typed entries were carried forward until then.
+    "CreateTypedTowerModel": (
+        "crushingTower",
+        "boomTower",
+        "coldTower",
+        "energyTower",
+    ),
 }
 
 
@@ -673,6 +684,61 @@ _ZONE_RENAME: dict[str, str] = {
 }
 
 
+# Spirit of the Forest's three thorn rings: the DamageOverTimeZoneModels are
+# NOT top-level behaviors — they hang off SpiritOfTheForestModel under these
+# per-ring fields, with the combat numbers on a nested DamageOverTimeCustomModel
+# (``additive`` == the committed damageModifierForCeramicOrMoabs — 14/4/8 vs the
+# committed thorn zones, verified exact at the 2026-06-10 decode) and the ring
+# radii on the parent (closeRange 50 / middleRange 100; far is unbounded).
+_SOTF_RING_FIELDS: tuple[tuple[str, str, str | None], ...] = (
+    ("damageOverTimeZoneModelClose", "SpiritOfTheForestClose", "closeRange"),
+    ("damageOverTimeZoneModelMiddle", "SpiritOfTheForestMiddle", "middleRange"),
+    ("damageOverTimeZoneModelFar", "SpiritOfTheForestFar", None),
+)
+
+
+def _sotf_zones(behavior: dict) -> list[dict]:
+    """SpiritOfTheForestModel → the three thorn-ring zone entries."""
+    from utils.btd6.damage_types import decode_damage_type
+
+    out: list[dict] = []
+    for field_name, internal_name, range_field in _SOTF_RING_FIELDS:
+        ring = behavior.get(field_name)
+        if not isinstance(ring, dict):
+            continue
+        custom = ring.get("behaviorModel")
+        if not isinstance(custom, dict):
+            continue
+        entry: dict = {
+            "kind": "DamageOverTimeZone",
+            "name": internal_name,
+        }
+        if isinstance(custom.get("damage"), (int, float)):
+            entry["damage"] = _num(custom["damage"])
+        ibp = custom.get("immuneBloonProperties")
+        if isinstance(ibp, int):
+            dt = decode_damage_type(ibp)
+            entry["damage_type"] = dt.name
+            if dt.cannot_pop:
+                entry["cannot_pop"] = dt.cannot_pop
+            entry["immuneBloonProperties"] = ibp
+        for src, dst in (("interval", "interval"), ("initialDelay", "initialDelay")):
+            value = custom.get(src)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                entry[dst] = _num(value)
+        # The bonus is the ADDITIVE (the same damageAddative-not-multiplier
+        # family as projectile tag bonuses); committed schema field name kept.
+        additive = custom.get("additive")
+        if isinstance(additive, (int, float)) and additive:
+            entry["damageModifierForCeramicOrMoabs"] = _num(additive)
+        if range_field is not None:
+            radius = behavior.get(range_field)
+            if isinstance(radius, (int, float)) and not isinstance(radius, bool):
+                entry["radius"] = _num(radius)
+        out.append(entry)
+    return out
+
+
 def _zones(model: dict) -> list[dict]:
     """Start of zone decoding: each ``*ZoneModel`` in the tier's top-level
     behaviors → a structured entry (kind + internal name + any decodable
@@ -684,6 +750,9 @@ def _zones(model: dict) -> list[dict]:
         if not isinstance(behavior, dict):
             continue
         short = _short_type(behavior)
+        if short == "SpiritOfTheForestModel":
+            out.extend(_sotf_zones(behavior))
+            continue
         if not short.endswith("ZoneModel"):
             continue
         entry: dict = {
@@ -1237,6 +1306,55 @@ def _read_upgrade(dump: Path, upgrade_id: Any) -> dict | None:
         return None
 
 
+def _walk_dicts(node: Any) -> Any:
+    """Yield every dict in a raw model tree (depth-first)."""
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from _walk_dicts(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _walk_dicts(value)
+
+
+def _farm_income(model: dict) -> dict:
+    """Banana Farm's economy numbers, lifted to the tier node (Farm-scoped —
+    its nominal attack is suppressed at the cutover, so the banana projectile's
+    ``CashModel`` would otherwise vanish with it).
+
+    Every field is prose-pinned against the committed upgrade descriptions:
+    CashModel min/max == BRF "worth $300 each" · ``salvage`` 0.5 == EZ Collect
+    "auto-collect for half value" · ``bonusMultiplier`` 0.25 == Valuable
+    Bananas "worth 25% more cash" · BankModel ``interest`` 0.15 == Monkey Bank
+    "earns 15% interest each round".
+    """
+    out: dict = {}
+    for node in _walk_dicts(model):
+        short = _short_type(node)
+        if short == "CashModel" and "bananaValue" not in out:
+            minimum = node.get("minimum")
+            maximum = node.get("maximum")
+            if isinstance(minimum, (int, float)):
+                out["bananaValue"] = _num(minimum)
+            if isinstance(maximum, (int, float)) and maximum != minimum:
+                out["bananaValueMax"] = _num(maximum)
+            salvage = node.get("salvage")
+            if isinstance(salvage, (int, float)) and salvage:
+                out["bananaSalvageValue"] = _num(salvage)
+            bonus = node.get("bonusMultiplier")
+            if isinstance(bonus, (int, float)) and bonus:
+                out["bananaBonusMultiplier"] = _num(bonus)
+        elif short == "BankModel" and "bankCapacity" not in out:
+            for src, dst in (
+                ("capacity", "bankCapacity"),
+                ("interest", "bankInterest"),
+            ):
+                value = node.get(src)
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    out[dst] = _num(value)
+    return out
+
+
 def map_tower(dump: Path, tower_id: str, canonical: str, version: str) -> MapResult:
     folder = _pascal(canonical)
     tdir = dump / "Towers" / folder
@@ -1255,11 +1373,15 @@ def map_tower(dump: Path, tower_id: str, canonical: str, version: str) -> MapRes
             continue  # skip -Paragon and any non-tier file
         model = json.loads(fp.read_text("utf-8"))
         node = _map_tier(model)
+        if tower_id == "banana_farm":
+            node.update(_farm_income(model))
         node["code"] = code
         node["crosspath"] = "-".join(code)
         tiers[code] = node
     # base file is the 000 tier
     base_node = _map_tier(base)
+    if tower_id == "banana_farm":
+        base_node.update(_farm_income(base))
     base_node["code"] = "000"
     base_node["crosspath"] = "0-0-0"
     tiers["000"] = base_node
@@ -1874,11 +1996,30 @@ _CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
     "adora": {"BallOfLightTower": "Ball of Light"},
     "alchemist": {"TransformedBaseMonkey": "Transformed Monkey"},
     "desperado": {"BuffIconVigilante": "Nomad buff"},
-    "druid": {"PoplustBuff": "Poplust buff"},
+    "druid": {
+        "PoplustBuff": "Poplust buff",
+        # Spirit of the Forest thorn rings (decoded 2026-06-10 from
+        # SpiritOfTheForestModel's per-ring fields).
+        "SpiritOfTheForestClose": "Thorn zone (close)",
+        "SpiritOfTheForestMiddle": "Thorn zone (middle)",
+        "SpiritOfTheForestFar": "Thorn zone (far)",
+    },
+    "druid:paragon": {
+        # Root of all Nature's base carries the same SOTF thorn rings.
+        "SpiritOfTheForestClose": "Thorn zone (close)",
+        "SpiritOfTheForestMiddle": "Thorn zone (middle)",
+        "SpiritOfTheForestFar": "Thorn zone (far)",
+    },
     "engineer_monkey": {
         "StartOfRoundRateBuff": "Start-of-round buff",
         # The 5-x-x Sentry Champion's spawned sentry — the committed label.
         "SentryParagon": "Champion Sentry",
+        # Sentry Expert's four typed sentries (decoded 2026-06-10 from
+        # CreateTypedTowerModel) — the committed labels.
+        "SentryCrushing": "Crushing Sentry",
+        "SentryBoom": "Boom Sentry",
+        "SentryCold": "Cold Sentry",
+        "SentryEnergy": "Energy Sentry",
     },
     "heli_pilot": {
         "MoabShoveZoneModel": "MOAB Shove",
@@ -1972,26 +2113,9 @@ _CUTOVER_NAME_RETIREMENTS: dict[str, frozenset[str]] = {
 # cutover would regress live answers. Decode notes live in
 # btd6-gamedata-decode-status.md (post-cutover backlog).
 _CUTOVER_CARRYFORWARD: dict[str, frozenset[tuple[str, str]]] = {
-    # Spirit of the Forest's three thorn rings (close/middle/far) — the zone
-    # damage model is not a top-level *ZoneModel in v55.1.
-    "druid": frozenset(
-        {
-            ("zones", "Thorn zone (close)"),
-            ("zones", "Thorn zone (middle)"),
-            ("zones", "Thorn zone (far)"),
-        },
-    ),
-    # Sentry Expert's four typed sentries: the dump selects them via an
-    # external reference the subtower walker doesn't resolve (no embedded
-    # towerModel on the 4-x-x spawner).
-    "engineer_monkey": frozenset(
-        {
-            ("subtowers", "Crushing Sentry"),
-            ("subtowers", "Boom Sentry"),
-            ("subtowers", "Cold Sentry"),
-            ("subtowers", "Energy Sentry"),
-        },
-    ),
+    # (Druid's thorn rings and Engineer's tier-4 typed sentries were carried
+    # forward at the cutover and DECODED 2026-06-10 — see _SOTF_RING_FIELDS and
+    # CreateTypedTowerModel in _SUBTOWER_SPAWN_TYPES.)
     "engineer_monkey:paragon": frozenset(
         {
             ("subtowers", "Red Sentry Paragon"),
