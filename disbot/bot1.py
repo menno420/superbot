@@ -1273,8 +1273,31 @@ async def main() -> None:
             )
 
 
+# `!restart` exit contract: a clean exit 0 tells on-failure restart policies
+# (Railway/Heroku-style supervisors — our prod) the process is DONE, so the
+# bot never came back after `!restart` released the lock (live, 2026-06-10).
+# A pending restart therefore exits nonzero on purpose so the platform
+# relaunches us; a crash exits 1 (it used to fall through to 0 as well).
+# Plain shutdown stays exit 0 — that one really is "done".
+RESTART_EXIT_CODE = 42
+
+
+def _exit_code_after_main(*, crashed: bool) -> int:
+    """The process exit code once ``main()`` has finished or raised."""
+    if crashed:
+        return 1
+    if _lifecycle.restart_requested():
+        return RESTART_EXIT_CODE
+    return 0
+
+
 if __name__ == "__main__":
+    import sys
+
+    _crashed = False
     try:
         asyncio.run(main())
     except Exception as exc:
         logger.error("Critical startup error: %s", exc, exc_info=True)
+        _crashed = True
+    sys.exit(_exit_code_after_main(crashed=_crashed))

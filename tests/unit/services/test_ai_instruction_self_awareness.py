@@ -50,3 +50,15 @@ def test_advertised_tools_exist_in_the_registry():
     specs = ai_tools.all_tool_specs()
     for name in _SELF_AWARENESS_TOOLS:
         assert name in specs, name
+
+
+def test_task_contract_routes_broadened_btd6_meta_phrasings():
+    """The 2026-06-10 live miss: only two exact example phrasings routed to
+    'btd6_answerability', so "what can you tell me about btd6" fell through
+    to the no-data refusal. The clause must carry the phrasing family and
+    forbid the refusal for capability questions outright."""
+    tc = instr._TASK_CONTRACT.lower()
+    assert "what can you tell me about btd6?" in tc
+    assert "what (kind of things) do you know about btd6?" in tc
+    assert "never answer a capability/meta question with" in tc
+    assert "'i don't have verified btd6 data' refusal" in tc

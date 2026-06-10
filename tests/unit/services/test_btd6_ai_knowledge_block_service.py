@@ -312,3 +312,28 @@ async def test_source_status_block_never_leaks_internals(monkeypatch):
     assert not re.search(r"_by\b", rendered)
     assert "path_template" not in rendered
     assert "path_params" not in rendered
+
+
+# ---------------------------------------------------------------------------
+# Crosspath validity rules (live miss, 2026-06-10)
+# ---------------------------------------------------------------------------
+
+
+def test_answer_guidance_block_carries_crosspath_validity_rules():
+    """The guidance block fired on "five 0-2-4 dart monkeys" yet the model
+    still claimed a tower "can only upgrade ONE path" and called 0-2-4
+    invalid — the block taught notation but not validity. Pin the rules."""
+    text = svc._btd6_answer_guidance_block().text
+    assert "up to TWO" in text
+    assert "only ONE path may go above tier 2" in text
+    assert "0-2-4" in text
+    assert "2-2-2" in text  # named as invalid
+    assert "base cost plus every purchased upgrade" in text
+
+
+@pytest.mark.asyncio
+async def test_guidance_block_fires_for_dash_crosspath_question():
+    blocks = await svc.gather_btd6_bot_knowledge_blocks(
+        user_text="five 0-2-4 dart monkeys by round 60 at medium",
+    )
+    assert any(b.kind == "bot_btd6_answer_guidance" for b in blocks)

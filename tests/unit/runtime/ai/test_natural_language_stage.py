@@ -1629,3 +1629,37 @@ async def test_btd6_roster_answer_is_served_when_grounded(monkeypatch, stub_serv
     assert "verified BTD6 data" not in sent  # NOT the refusal floor
     assert "Quincy" in sent and "Silas" in sent  # the real roster is served
     assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_btd6_meta_question_serves_answerability_summary(
+    monkeypatch, stub_services
+):
+    """"What kind of things do you know about btd6" (live miss 2026-06-10):
+    the model's capability description carries counts the ledger can't ground,
+    so the guard blocks it — the floor must serve the deterministic
+    answerability summary, never the version-stamped refusal (which answers
+    the wrong question)."""
+    from services import ai_gateway
+
+    _route_btd6(monkeypatch)
+    _stub_facts(monkeypatch, ())
+
+    async def fake_execute(_request):
+        return _make_response(
+            text="I know about 99 towers, 88 heroes and 77 maps in BTD6."
+        )
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "<@bot> what kind of things do you know about btd6"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    sent = _sent_text(msg)
+    assert "99 towers" not in sent  # the hallucinated counts never ship
+    assert "verified BTD6 data" not in sent  # NOT the no-data refusal
+    assert "What I know about BTD6" in sent  # the code-built summary is served
+    assert "towers (25)" in sent
+    assert stub_services[-1]["decision"] == "replied"
+    assert stub_services[-1]["reason_code"] is PolicyDenialReason.NONE

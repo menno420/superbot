@@ -487,7 +487,14 @@ def _btd6_answer_guidance_block() -> BotKnowledgeBlock:
             "specific upgrade or crosspath (e.g. '4-0-0', 'top path tier 4', or an "
             "upgrade name like 'Bloon Liquefier'), answer about THAT specific "
             "upgrade/crosspath only — report its stats and do not list the other "
-            "tiers unless asked."
+            "tiers unless asked. Crosspath VALIDITY rules (BTD6 game rules — never "
+            "contradict these): every tower has three upgrade paths and CAN buy "
+            "upgrades in up to TWO of them at once, but only ONE path may go above "
+            "tier 2. So 0-2-4, 5-2-0, 2-0-4 are all valid single-tower builds; "
+            "3-3-0, 0-3-3 and 2-2-2 are not. Never claim a tower can only upgrade "
+            "one path, and never call a two-path build like 0-2-4 invalid. The "
+            "total cost of a crosspathed tower = its base cost plus every purchased "
+            "upgrade on both chosen paths (cumulative per path)."
         ),
     )
 

@@ -1737,6 +1737,101 @@ def _map_roster_reply(text: str, maps: list) -> str:
     return f"**BTD6 Maps ({len(maps)})** by difficulty:\n{grouped(maps)}"
 
 
+# A capability/meta ask about the bot's BTD6 knowledge. Anchored on a
+# btd6/bloons token on purpose: the floor only handles BTD6-routed messages,
+# and requiring the anchor keeps entity questions ("do you know how much the
+# navarch earns?") out of the meta path. Verb/object shapes cover the four
+# live-miss phrasings (2026-06-10 screenshots): "what kind of things do you
+# know about btd6", "list all the things that you know about btd6", "what
+# can you tell me about btd6", "what can we ask this bot about btd6".
+_META_ANCHOR_RE = re.compile(r"\bbtd\s?6\b|\bbloons\b", re.I)
+_META_SHAPE_RES = (
+    re.compile(r"\b(?:do|can|does)\s+(?:you|we|i|this bot)\b.{0,40}\bknow\b", re.I),
+    re.compile(r"\bknow\s+about\b", re.I),
+    re.compile(r"\bcan\s+(?:you|this bot)\s+tell\s+(?:me|us)\s+about\b", re.I),
+    re.compile(r"\bcan\s+(?:we|i)\s+ask\b", re.I),
+    re.compile(r"\bwhat\s+(?:btd\s?6\s+)?(?:data|questions?|topics?)\b", re.I),
+    re.compile(r"\bwhat\s+can\s+you\s+(?:do|answer|help)\b", re.I),
+)
+# An entity-stats shape ("how much/many …", "what is the hp of …") is a real
+# question even when it also says "do you know" — never serve it the meta
+# summary; let it reach the model/refusal with its own grounding.
+_META_EXCLUDE_RE = re.compile(
+    r"\bhow\s+(?:much|many)\b|\bwhat\s+is\s+the\b|\bstats?\s+(?:of|for)\b",
+    re.I,
+)
+
+
+def deterministic_meta_reply(message_text: str) -> str | None:
+    """A code-built "what BTD6 do you know?" answer, or ``None``.
+
+    The same floor pattern as :func:`deterministic_roster_reply`, for
+    capability/meta questions: the model's own capability description trips
+    the faithfulness guard (its counts/names are not in the fact ledger), so
+    a healthy meta ask kept ending in the version-stamped no-data refusal —
+    the wrong answer to "what do you know about btd6?" (live, 2026-06-10).
+    Built from the introspection read model, so it *is* the source.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    if not _META_ANCHOR_RE.search(text):
+        return None
+    if _META_EXCLUDE_RE.search(text):
+        return None
+    if not any(r.search(text) for r in _META_SHAPE_RES):
+        return None
+
+    from services import ai_introspection_service
+
+    snap = ai_introspection_service.build_btd6_answerability()
+    if not snap.available:
+        return None
+
+    fixtures = [d for d in snap.domains if d.kind == "deterministic_fixture"]
+    calculations = [d for d in snap.domains if d.kind == "calculation"]
+    live = [d for d in snap.domains if d.kind == "live"]
+    unsupported = [d for d in snap.domains if d.kind == "unsupported"]
+
+    def _label(d: Any) -> str:
+        name = d.name.replace("_", " ")
+        return f"{name} ({d.item_count})" if d.item_count else name
+
+    lines = [
+        f"**What I know about BTD6** (game version {snap.game_version}, "
+        f"{snap.source_label}):",
+        "📚 **Verified data:** " + ", ".join(_label(d) for d in fixtures) + ".",
+    ]
+    if calculations:
+        lines.append(
+            "🧮 **Calculations:** "
+            + "; ".join(
+                f"{d.name.replace('_', ' ')} — {d.note}" if d.note else d.name
+                for d in calculations
+            ),
+        )
+    if live:
+        lines.append(
+            "📡 **Live:** "
+            + "; ".join(
+                f"{d.name.replace('_', ' ')} — {d.note}" if d.note else d.name
+                for d in live
+            ),
+        )
+    if unsupported:
+        lines.append(
+            "🚫 **Not covered:** "
+            + ", ".join(d.name.replace("_", " ") for d in unsupported)
+            + ".",
+        )
+    lines.append(
+        "Ask about a specific tower, hero, paragon, boss, round, or map — "
+        "or try `!btd6menu` for the browsable panels.",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
 _PARAGON_NAME_FILLERS = frozenset({"the", "of"})
 
 # Paragon shorthand distinctive enough to ground WITHOUT the word "paragon"
@@ -2111,6 +2206,34 @@ def _catalog_facts(message_text: str) -> list[str]:
         if boss.tiers:
             line += f" | {len(boss.tiers)} tier(s) on record"
         out.append(line)
+        # The HP numbers themselves — the live "base HP of Lych per tier"
+        # miss (2026-06-10): the teaser line above told the model the tiers
+        # exist without giving any figure, so a healthy answer had nothing
+        # to ground and the faithfulness floor refused. Single bounded line
+        # per named boss (≤5 tiers).
+        tier_bits = []
+        for t in boss.tiers:
+            tier = t.get("tier") if isinstance(t, dict) else getattr(t, "tier", None)
+            hp = t.get("health") if isinstance(t, dict) else getattr(t, "health", None)
+            spd = t.get("speed") if isinstance(t, dict) else getattr(t, "speed", None)
+            if tier is None or hp is None:
+                continue
+            bit = f"T{tier} {hp:,} HP"
+            if spd is not None:
+                bit += f" (speed {spd})"
+            tier_bits.append(bit)
+        if tier_bits:
+            out.append(
+                f"[btd6_boss] {boss.canonical} per-tier base health "
+                "(standard difficulty, single-player): " + " · ".join(tier_bits),
+            )
+        if "elite" in text:
+            out.append(
+                f"[btd6_boss] Elite {boss.canonical} health is NOT in the "
+                "dataset — only standard-tier health is on record. If the "
+                "user supplies their own Elite modifier, apply it as THEIR "
+                "premise and say the base figures are the verified part.",
+            )
     return out
 
 

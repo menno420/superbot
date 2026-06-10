@@ -1268,7 +1268,11 @@ def find_boss(name: str) -> BossEntry | None:
 
     Exact id or canonical match wins; otherwise a single case-insensitive
     substring of a canonical name is accepted, and an ambiguous one returns
-    ``None`` (the same fuzzy contract as :func:`find_geraldo_item`).
+    ``None`` (the same fuzzy contract as :func:`find_geraldo_item`). A query
+    that *contains* exactly one boss name as a word also resolves — the model
+    passes the user's phrasing verbatim, so "tier 4 elite lych" must find
+    Lych (the qualifier-tolerance class the paragon resolver learned from
+    "navarch of seas"; live miss 2026-06-10).
     """
     direct = get_boss(name)
     if direct is not None:
@@ -1281,7 +1285,18 @@ def find_boss(name: str) -> BossEntry | None:
     if exact:
         return exact[0]
     partial = [b for b in bosses if needle in b.canonical.lower()]
-    return partial[0] if len(partial) == 1 else None
+    if partial:
+        return partial[0] if len(partial) == 1 else None
+    needle_tokens = [t.strip(".,!?;:()'\"") for t in needle.split()]
+    contained: list[BossEntry] = []
+    for b in bosses:
+        words = b.canonical.lower().split()
+        n = len(words)
+        if n and any(
+            needle_tokens[i : i + n] == words for i in range(len(needle_tokens) - n + 1)
+        ):
+            contained.append(b)
+    return contained[0] if len(contained) == 1 else None
 
 
 def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
