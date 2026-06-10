@@ -2838,7 +2838,7 @@ order.
 **Area:** BTD6 data / cutover
 **Type:** Sequencing sign-off
 **Priority:** High (the cutover is the remaining decode end-goal)
-**Status:** Answered (2026-06-09) — **Routed** → `docs/btd6/btd6-gamedata-decode-status.md` step 5d + `docs/roadmap.md` BTD6 section
+**Status:** Answered (2026-06-09) — **EXECUTED 2026-06-10 (PR #649: all 25 towers + 17 heroes + 13 paragons game-native v55.1 via the cutover merge; name guard green 55/55; full CI mirror 8543 passed)**
 
 **Maintainer answer (verbatim, 2026-06-09):** "Yes — dedicated session" — the next
 BTD6 session executes the `--all` cutover end-to-end (game-native committed stats,
@@ -2851,7 +2851,7 @@ PR #638.
 **Area:** BTD6 data / schema
 **Type:** Schema decision (unblocks the income-multiplier class)
 **Priority:** Medium
-**Status:** Answered (2026-06-09) — **Routed** → decode-status step 5d (cutover scope) + the blocked income-multiplier item
+**Status:** Answered (2026-06-09) — **EXECUTED 2026-06-10 (PR #649: Farm/Village 0 → 64 committed tiers each; nominal attacks suppressed damage-based — Village's Mega Ballista kept; Central Market ×1.1 / Banana Central ×1.25 / Monkey City ×1.2 + discounts/camo/MIB/pierce/cash-per-pop decoded, each prose-pinned)**
 
 **Maintainer answer (verbatim, 2026-06-09, two rounds):** first round: "Yes —
 minimal tiers at cutover"; **re-asked the same evening with refined options and
@@ -2868,7 +2868,7 @@ schema to maintain.
 **Area:** BTD6 data / naming
 **Type:** Curated→curated rename approval (name guard allows it deliberately)
 **Priority:** Low
-**Status:** Answered (2026-06-09) — **Routed** → decode-status step 5c notes
+**Status:** Answered (2026-06-09) — **EXECUTED 2026-06-10 (PR #649: beast subtowers carry per-tier names derived from the path's upgrade cards — the leash model keeps the base name at every tier, so Piranha→…→Megalodon / Microraptor line / Gyrfalcon→…→Pouākai come from upgrade names; "Beast" retired via the guard's approved-retirements list)**
 
 **Maintainer answer (verbatim, 2026-06-09):** "Per-tier game names" — committed
 "Beast" labels become the game's own per-tier names (Piranha → Barracuda → Great

@@ -37,7 +37,7 @@
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
 | **Next** | Adaptive **P1C** (staff-hub subpanels — Q-0032; tier path shipped #632) · Settings **Phase 2** (declaration/coverage map; Q-0064 BTD6 binding+guided flow) · Help **projection seam → Q-0055–Q-0059 overlay** (design-ready; lands on the #642 characterization net) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(shipped out of this row 2026-06-09: the Q-0025 scaffold → Spotlight registration **#626**, the Q-0049 BTD6 refresh workflow **#633**, settings hub actionable-groups + >25 reachability **#640** — Lane 7, Help counts + characterization net **#642** — Lane 8)* |
-| **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 `--all` towers cutover (dedicated session — Q-0066; extraction itself resumed 2026-06-09, see the BTD6 section) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover itself **shipped 2026-06-10, PR #649** — see the BTD6 section) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
@@ -156,19 +156,24 @@ dedicated decision** for any action capability.
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
   Map: [ai-service-integration-map](ai/ai-service-integration-map.md).
 
-### 🎈 BTD6 data / tools — **Now** (extraction resumed; cutover is the next session)
+### 🎈 BTD6 data / tools — **Now** (THE CUTOVER IS DONE — post-cutover decode backlog)
 
 Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · ADR-006
-provenance schema is implemented; extraction resumed against the decode-status backlog.
+provenance schema is implemented.
 
-- **Now (resumed 2026-06-09 — PR #638, verify merge)** — ABR rounds + income sets
-  ingested game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
-  subtower mechanisms 7/7; buffs 15/38 confirmed (the rest are provably unconfirmable
-  pre-cutover). **Next: the dedicated `--all` towers-cutover session (owner decisions
-  Q-0066–Q-0069, router §29)** — game-native committed stats, Farm/Village **full**
-  tier structures (attack-suppressed), per-tier beast names, name-guard joins, ~25
-  value-pinned test updates.
-  Status: [decode-status](btd6/btd6-gamedata-decode-status.md).
+- **Shipped (2026-06-10 — PR #649, the Q-0066 dedicated cutover session; verify
+  merge)** — **every committed stats file is game-native v55.1**: 25 towers +
+  17 heroes + 13 paragons via `parse_gamedata.py --all` through the new cutover
+  merge layer (curated names preserved + set-level name guard); Q-0067
+  (Farm/Village full tiers + decoded income auras) and Q-0068 (per-tier beast
+  names) executed in the same pass; source labels now read "BTD6 game data".
+  **Next:** the post-cutover decode backlog (carried-forward mechanisms, banana
+  economy, the buff/zone tail) — ⭐ header of
+  [decode-status](btd6/btd6-gamedata-decode-status.md) — plus the maintainer's
+  live spot-check of the new surfaces.
+- **Earlier (2026-06-09 — PR #638)** — ABR rounds + income sets ingested
+  game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
+  subtower mechanisms 7/7; buffs 15/38 confirmed.
 - **Built (2026-06-09, Q-0049 — PR #633, scoreboard Lane 5; verify merge)** — the
   "fetch-everything-on-update" data refresh is a committed **manual-dispatch GitHub
   Actions workflow** (`workflow_dispatch` only, no schedule): one-click refresh after a
