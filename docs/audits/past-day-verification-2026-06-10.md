@@ -257,6 +257,10 @@ read-model extraction (bounded, read-only).
 
 ## 6. Recommended next session
 
+> **2026-06-10 (later):** this walk now has its working doc —
+> [`production-eval-checklist-2026-06-10.md`](production-eval-checklist-2026-06-10.md)
+> (exact commands + expected results, tiered; Tier 1 = the AI loops).
+
 **Best next session — maintainer live-walk + targeted fixes (manual review +
 Sonnet support).** The single highest-value action is not agent work: the
 maintainer spends ~15–20 minutes in production walking the day's new surfaces
