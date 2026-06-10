@@ -1,10 +1,10 @@
 """Mining market panel — sell ore / buy gear (the economy loop UI).
 
-An ephemeral child of the mining hub.  The actual money + inventory moves live
-in :mod:`cogs.mining.market` (one audited implementation, shared with the
-``!sell`` / ``!buy`` commands); this view is just the buttons + select that call
-it.  ``cogs.mining.market`` is lazy-imported inside handlers because
-``views → cogs`` at module level is a layer-rule error.
+An ephemeral child of the mining hub.  The actual money + inventory moves
+live in :mod:`services.mining_workflow` (one transaction per operation —
+Q-0071 — shared with the ``!sell`` / ``!buy`` commands); this view is just
+the buttons + select that call it.  Pure pricing/listing helpers come from
+:mod:`utils.mining.market`.
 """
 
 from __future__ import annotations
@@ -12,7 +12,9 @@ from __future__ import annotations
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services import mining_workflow
 from utils import db
+from utils.mining import market
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
 
@@ -24,8 +26,6 @@ async def build_market_embed(
     note: str = "",
 ) -> discord.Embed:
     """Build the market embed: what you can sell, the gear shop, your balance."""
-    from cogs.mining import market
-
     inventory = await db.get_mining_inventory(str(user_id), guild_id)
     balance = await db.get_coins(user_id, guild_id)
     sellables = market.sellable_inventory(inventory)
@@ -73,9 +73,11 @@ class _MiningBuySelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
             return
-        from cogs.mining import market
-
-        result = await market.apply_buy(self._user_id, self._guild_id, self.values[0])
+        result = await mining_workflow.buy(
+            self._user_id,
+            self._guild_id,
+            self.values[0],
+        )
         embed = await build_market_embed(
             self._user_id,
             self._guild_id,
@@ -93,8 +95,6 @@ class MiningMarketView(HubView):
     def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
         super().__init__(author)
         self.guild_id = guild_id
-        from cogs.mining import market
-
         options = [
             discord.SelectOption(label=f"{name.title()} — {price} 🪙", value=name)
             for name, price in market.shop_listing()
@@ -113,9 +113,7 @@ class MiningMarketView(HubView):
     ):
         if not await safe_defer(interaction):
             return
-        from cogs.mining import market
-
-        result = await market.apply_sell_all(self._author.id, self.guild_id)
+        result = await mining_workflow.sell_all(self._author.id, self.guild_id)
         embed = await build_market_embed(
             self._author.id,
             self.guild_id,

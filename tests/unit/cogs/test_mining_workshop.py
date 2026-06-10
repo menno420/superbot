@@ -13,11 +13,10 @@ from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
-from cogs.mining import market
 from services import mining_workflow
 from services.economy_service import InsufficientFundsError
 from utils import equipment
-from utils.mining import workshop
+from utils.mining import market, workshop
 
 # ---------------------------------------------------------------------------
 # Pure helpers

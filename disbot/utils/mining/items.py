@@ -131,6 +131,12 @@ _CATALOG: dict[str, ItemDef] = {
         value=12,
         stackable=False,
     ),
+    "giant fortress": ItemDef(
+        "giant fortress",
+        ItemKind.STRUCTURE,
+        value=150,
+        stackable=False,
+    ),
 }
 
 # Tool upgrade ladder — the spine of a future crafting progression.  Each

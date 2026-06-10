@@ -66,7 +66,7 @@ writes must come from the owning cog or a shared service.
 | `cleanup`      | `prohibited_words`                             | direct via `utils/db/moderation.py` |
 | `chain`        | `chain_channels`                               | direct via `utils/db/games/chain.py` |
 | `counting`     | `counting_state`                               | direct via `utils/db/games/counting.py` |
-| `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear` | **workshop writes** (wear tick / repair / craft / quick-craft) via `services/mining_workflow.py` — one transaction per operation, repair's coin leg via `economy_service.debit_in_txn` (RS02 stage 1); remaining writes still direct via `utils/db/games/mining*.py` until RS02 stage 2 (market sell/buy coin legs via economy_service: `mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`) |
+| `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear` | **all writes via `services/mining_workflow.py`** (RS02 complete) — one transaction per operation; coin legs via `economy_service.{debit,credit}_in_txn` with reasons `mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`, events after commit; **reads** stay direct via `utils/db/games/mining*.py`. AST-fenced: `tests/unit/invariants/test_mining_write_boundary.py` |
 | `deathmatch`   | `deathmatch_stats`                             | direct via `utils/db/games/deathmatch.py` |
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |
@@ -108,8 +108,17 @@ writes must come from the owning cog or a shared service.
   marker clear). The pure mining domain relocated to `utils/mining/`
   (helper-policy: shared by services *and* views); the conn-aware
   `utils/db/games/mining*.py` primitives never self-transact when given a
-  workflow connection. Stage 2 converges market sell/buy + the remaining
-  single writers and adds the full AST write-boundary ratchet.
+  workflow connection.
+- **Shipped (RS02 stage 2, 2026-06-10):** the convergence is complete —
+  `mining_workflow` also owns market `sell`/`sell_all`/`buy` (inventory leg +
+  coin leg in one transaction), the action writers `mine`/`harvest`/`explore`
+  (loot grant + wear tick atomically), `use_item`/`equip`/`unequip`,
+  `descend`/`ascend`, and the admin writes. `cogs/mining/` is deleted; the
+  AST ratchet (`test_mining_write_boundary.py`) keeps any new direct mining
+  write out of cogs/views (reads stay free). recipes.json was reconciled to
+  the item catalog (curated-economy owner decision; the alignment lint
+  `tests/unit/utils/test_recipes_catalog_alignment.py` governs all future
+  content).
 
 ---
 

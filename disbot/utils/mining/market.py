@@ -3,8 +3,7 @@
 The *pure* half of the market (RS02 split): what an ore sells for, what
 gear costs, and the typed :class:`TradeResult` every mining operation
 returns.  No I/O — the money/inventory orchestration lives in
-``services/mining_workflow.py`` (workshop ops) and, until RS02 stage 2,
-``cogs/mining/market.py`` (sell/buy).
+``services/mining_workflow.py`` (one transaction per operation).
 
 Sell prices reuse :func:`utils.mining.items.item_value` so "what an ore
 is worth" has a single source of truth; the gear shop is a small,

@@ -9,7 +9,7 @@ Games covers the Games hub and playable/actionable flows for blackjack, RPS and
 RPS tournaments, deathmatch, mining, counting/chain, and their economy rewards.
 Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 `disbot/cogs/blackjack/`, `disbot/views/blackjack/`,
-`disbot/cogs/rps_tournament/`, `disbot/views/rps/`, `disbot/cogs/mining/`,
+`disbot/cogs/rps_tournament/`, `disbot/views/rps/`, `disbot/utils/mining/`, `disbot/services/mining_workflow.py`,
 `disbot/views/mining/`, `disbot/services/game_state_service.py`,
 `disbot/services/economy_service.py`, and `disbot/utils/db/games/`.
 
@@ -37,10 +37,15 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 - Blackjack has solo/PvP/tournament flows; RPS has solo/PvP/tournament persistence;
   mining owns its item/recipe/reward/exploration loop plus a typed inventory and a
   persistent depth/biome "Descent" (Surface→Magma; `mining_player_state`, descent gated
-  by equipped-light `depth_access`, pure logic in `cogs/mining/world.py`). These mining
-  writes are **direct-lane game state** by design (`docs/ownership.md`; RC-8A ledger),
-  not an audited-service gap. Economy is a dependency for bets/rewards, not a place for
-  game cogs/views to duplicate balance writes.
+  by equipped-light `depth_access`, pure logic in `utils/mining/world.py`). **Mining
+  writes route through `services/mining_workflow.py`** (RS02, Q-0071/Q-0072): one DB
+  transaction per operation, coin legs via `economy_service.{debit,credit}_in_txn`,
+  events after commit, AST-fenced by `tests/unit/invariants/test_mining_write_boundary.py`
+  (reads stay direct via `utils/db/games/mining*.py`). The pure mining domain (items
+  taxonomy, recipes, loot, world, exploration, pricing, durability helpers) lives in
+  **`utils/mining/`** — shared by the service, the cog, and the views. Economy is a
+  dependency for bets/rewards, not a place for game cogs/views to duplicate balance
+  writes.
 - **Cross-game character stats: `utils/equipment.py`** is the shared, pure gear→stats
   read model (`EffectiveStats` + the gear catalogue + `compute_stats`). Equipment is
   guild-scoped game state in `mining_equipment` (`utils/db/games/`); one `!equip`/
@@ -48,12 +53,14 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   `depth_access`; **deathmatch reads `damage`/`defense`/`max_health`** from each fighter's
   equipped combat gear (weapon/armor) — a small, fair edge tunable in `_GEAR`. Add a new
   game's stat dependency by reading the block, never by importing another game's items.
-- **Mining economy loop: `cogs/mining/market.py`** — sell raw resources for coins
-  (faucet, reusing `items.item_value`) and buy gear with coins (sink), closing the
-  mine→sell→upgrade→descend loop. The one mining path that touches money: coins move
-  **only** through the audited `services.economy_service` (`credit`/`debit` → audit row +
-  balance event); the inventory side stays direct-lane. Surfaced via `!sell`/`!sellall`/
-  `!buy`/`!market` and a Market panel on the hub.
+- **Mining economy loop** — sell raw resources for coins (faucet, reusing
+  `items.item_value`) and buy gear with coins (sink), closing the
+  mine→sell→upgrade→descend loop. Pricing is pure (`utils/mining/market.py`); the
+  money+inventory moves are `mining_workflow.sell`/`sell_all`/`buy` — **both legs in
+  one transaction** (`mining:sell_ore`/`mining:buy_gear` audit reasons). Surfaced via
+  `!sell`/`!sellall`/`!buy`/`!market` and a Market panel on the hub. The recipe
+  catalog is reconciled to the item taxonomy (curated economy, owner decision
+  2026-06-10) and self-governing via `tests/unit/utils/test_recipes_catalog_alignment.py`.
 - **Character overview: `views/mining/character_panel.py`** — a read-only profile embed
   (`!character`/`!profile` + a hub Character button) that **aggregates, owns nothing**:
   position, equipped gear + `EffectiveStats`, coins, and inventory net worth, each read from

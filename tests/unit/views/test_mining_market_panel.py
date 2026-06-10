@@ -26,7 +26,7 @@ def test_market_view_has_buy_select_sell_and_back():
 
 
 def test_buy_select_lists_the_gear_shop():
-    from cogs.mining import market
+    from utils.mining import market
 
     view = MiningMarketView(SimpleNamespace(id=1), guild_id=2)
     select = next(c for c in view.children if isinstance(c, discord.ui.Select))
