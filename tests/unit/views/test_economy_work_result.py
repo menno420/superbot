@@ -58,7 +58,7 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     # callback path then reads through patched DB / service helpers,
     # so the real-vs-patched JOBS distinction does not affect the
     # post-completion view swap that this test pins.
-    sub_view = _WorkSubView(user_id=1, guild_id=2, available=["janitor"])
+    sub_view = _WorkSubView(MagicMock(id=1), guild_id=2, available=["janitor"])
     select = next(c for c in sub_view.children if isinstance(c, _JobSelect))
     select._values = ["janitor"]  # type: ignore[attr-defined]
 
@@ -234,7 +234,7 @@ async def test_work_subview_back_re_attaches_grandparent_chain():
         custom_id="help:back",
     )
     sub = _WorkSubView(
-        user_id=1, guild_id=2, available=["janitor"], back_target=grandparent
+        MagicMock(id=1), guild_id=2, available=["janitor"], back_target=grandparent
     )
     # stored for further-down propagation (e.g. the result view)
     assert sub._back_target is grandparent

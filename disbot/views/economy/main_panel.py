@@ -163,7 +163,7 @@ class EconomyPanelView(PersistentView):
         embed.set_footer(text="Pick a job from the dropdown, or click ↩ Back.")
 
         work_view = _WorkSubView(
-            uid,
+            interaction.user,
             gid,
             available,
             back_target=getattr(self, "_back_target", None),
@@ -179,8 +179,8 @@ class EconomyPanelView(PersistentView):
     async def shop_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         from views.economy.shop_panel import _ShopSubView
 
-        uid, gid = interaction.user.id, interaction.guild_id
-        shop_view = _ShopSubView(uid, gid)
+        gid = interaction.guild_id
+        shop_view = _ShopSubView(interaction.user, gid)
         # AB2: propagate this panel's back target (e.g. back-to-Help)
         # so the shop's Back button rebuilds Economy with the chain
         # re-attached.
