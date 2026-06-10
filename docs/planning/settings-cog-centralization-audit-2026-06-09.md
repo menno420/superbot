@@ -359,9 +359,20 @@ Settings and Setup should share definitions, validation, editor hints, and effec
 > announcechannel` warns when shadowed) and the CT group is a **guided flow**
 > (parse → preview → confirm via `views/btd6/ct_group_flow.py`). Q-0073-B
 > verified satisfied as-is (economy's log channel already projects — scalar +
-> binding declared); per-subsystem pointer-migration *classification* beyond
-> these rows remains open Phase 2 tail, and duplicate-path convergence is
-> Phase 3 (Q-0063 converge-gradually).
+> binding declared).
+> **Phase 2 pointer tail CLOSED 2026-06-10 (consolidated plan Batch 4 complete,
+> PR #672):** the **proof_channel** §4 promotion shipped — channel binding +
+> OPTIONAL `proof` resource requirement declared (`cogs/proof_channel/schemas.py`),
+> binding-first read with the name-`proof` legacy fallback, new
+> `proof_channel.settings.configure` capability, and the subsystem now joins the
+> actionable-group taxonomy (12 groups; the "11" above was Phase-1-time truth).
+> The **logging** rows were verified already satisfied: all seven channel
+> bindings declared (S7a/9a), `server_logging.resolve_log_channel` is
+> binding-first with the legacy scalars as the documented fallback lane, and the
+> arbitration/backfill adapters are the classified migration machinery — no
+> unclassified pointer presentation remains. Duplicate-path **convergence**
+> (retiring legacy KV write/read lanes) stays Phase 3 (Q-0063
+> converge-gradually).
 
 | Phase | Goal / expected files | Dependencies and blocked/off-limits scope | Risk | Verification | Recommended next agent |
 |---|---|---|---|---|---|
