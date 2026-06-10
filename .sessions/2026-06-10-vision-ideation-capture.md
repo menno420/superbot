@@ -153,6 +153,21 @@ Calibration: this is the second same-day instance of the owner moving
 *further* than his earlier stated position once shown a concrete mechanism
 (Q-0084 merge grant, now Q-0088) — consistent with the §35 calibration note.
 
+## Brainstorm round 3: "can the bot test itself?" → idea captured
+
+Owner idea (his own invention, articulated without coding background): every
+command fired in sequence via temporary event-based actions + AI prompts
+injected "at system level" per event. Captured + technically corrected into
+[`docs/ideas/bot-self-test-walker-2026-06-10.md`](../docs/ideas/bot-self-test-walker-2026-06-10.md):
+in-process synthetic invocation (bots ignore bot messages — Discord-level
+self-driving is impossible), driver loop over the command-surface ledger
+instead of event chaining, EventBus as assertion witness, governance
+audience simulation (Q-0045) for tiered walks, scratch test guild +
+lifecycle wipe, AI eval mode through the real pipeline using the Q-0086
+keys, permanent owner-gated infrastructure rather than temporary. Routed:
+ideas README + roadmap queue item 1 pointer (the walker is the checklist
+session's automation follow-on and the Stage 1 caretaker's probe set).
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →
