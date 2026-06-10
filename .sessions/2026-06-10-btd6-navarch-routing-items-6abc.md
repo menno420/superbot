@@ -83,3 +83,21 @@ decode-status §"Session log — the Navarch routing diagnosis + items 6a–c".
 WAS such a demand), item 4 is the maintainer's live spot-check (now including
 the Navarch income answer + minion names), item 7 is the captured
 conversation-grounding idea. PR #662 review = the diff.
+
+## Continuation (same session, after #662 merged)
+
+- **Mid-session ledger conflict** (#659 merged to main while #662 was open):
+  resolved by the per-lane UNION convention — main's Consolidated-batches
+  bullet + this lane's BTD6 bullet; the Last-updated chain composed newest
+  (#662) → theirs (#659/#657) verbatim. Full CI mirror re-run on the merged
+  tree before pushing the resolution. The convention worked exactly as
+  documented; nothing was lost on either side.
+- **#662 merged.** Follow-up slice (new PR): built `scripts/btd6_probe.py` —
+  the "one change that would have helped" from the interview above (the
+  grounding replay was written inline four times during the diagnosis); 3
+  tests; provenance header carries the verify-before-trusting note. And the
+  **grooming move (Q-0015)**: item 7 structured from idea → plan —
+  `docs/planning/btd6-conversation-grounding-plan-2026-06-10.md` (carryover
+  entity resolution at the `_gather_feature_facts` seam over the existing
+  `ai_conversation_service` deque; zero-entity gate; labeled carryover
+  facts) — source-verified seams, not approved for implementation.
