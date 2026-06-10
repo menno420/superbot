@@ -46,6 +46,7 @@ TOOLSET_BTD6_LIVE = "btd6_live"
 TOOLSET_SERVER_CONTEXT_BASIC = "server_context_basic"
 TOOLSET_SERVER_CONTEXT_SENSITIVE = "server_context_sensitive"
 TOOLSET_DIAGNOSTICS = "diagnostics"
+TOOLSET_SELF_AWARENESS = "self_awareness"
 
 # --- Scope ordering (canonical home; re-exported by ai_tools as _scope_allows) ----
 
@@ -136,6 +137,22 @@ CATALOGUE: dict[str, AIToolMetadata] = {
     "get_guild_ai_config": _server(TOOLSET_SERVER_CONTEXT_SENSITIVE),
     "recent_audit": _server(TOOLSET_SERVER_CONTEXT_SENSITIVE),
     "diagnostics_health_snapshot": _server(TOOLSET_DIAGNOSTICS),
+    # --- Self-awareness / introspection (answerability Phase 3, Q-0047) ---
+    # Read-only, audience-tiered-at-construction views over
+    # ``services.ai_introspection_service``. ``btd6_answerability`` carries the
+    # btd6 grounding domain (and so the ``btd6_`` name prefix the grounding
+    # invariant demands): the fixture counts / versions it reports must be able
+    # to ground a BTD6 answer, or the faithfulness number-guard would block the
+    # very replies the tool exists to serve. The catalog/policy tools are meta
+    # views, never BTD6 facts.
+    "get_ai_tool_catalog": AIToolMetadata(
+        toolsets=frozenset({TOOLSET_SELF_AWARENESS}),
+    ),
+    "get_ai_policy_explanation": AIToolMetadata(
+        toolsets=frozenset({TOOLSET_SELF_AWARENESS}),
+        freshness="live",
+    ),
+    "btd6_answerability": _btd6(TOOLSET_SELF_AWARENESS, TOOLSET_BTD6_REFERENCE),
 }
 
 

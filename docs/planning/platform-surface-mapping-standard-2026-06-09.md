@@ -125,8 +125,9 @@ Mapping recommendations must align with these answered owner decisions
 
 ### 2.4 In-flight and queued work (verify live before mapping)
 
-Open draft PRs at the time of writing — **provisional surfaces; do not absorb,
-do not propose conflicting reorganizations**:
+In-flight state at the late-2026-06-09 reconciliation (re-verify live) — for
+anything still open: **provisional surfaces; do not absorb, do not propose
+conflicting reorganizations**:
 
 - **#638 — BTD6 game-data mapping continuation** (ABR/income-set ingestion,
   decode-tail extensions). Touches `parse_gamedata`, `btd6_data_service`,
@@ -134,12 +135,15 @@ do not propose conflicting reorganizations**:
   → The BTD6 **command/panel surface** may still be mapped; mark the BTD6
   **data-service layer and AI-tool internals** `provisional(#638)` and skip
   recommendations there.
-- **#639 — AI answerability Phase 3** (Lane 4, Q-0047): three self-awareness
-  tools registered in `ai_tools.build_registry` + `ai_tool_catalogue` + the
-  instruction stack. → The AI **cog/panel/policy-UI surface** may still be
-  mapped; mark the **AI tool registry/catalogue/instruction stack and
-  `ai_introspection_service`** `provisional(#639)` and skip recommendations
-  there.
+- **#639 — AI answerability Phase 3** (Lane 4, Q-0047) — **merged
+  2026-06-09, after this standard's baseline verification**: three
+  self-awareness tools registered in `ai_tools.build_registry` +
+  `ai_tool_catalogue` + the instruction stack. → The AI cog/panel/policy-UI
+  surface maps normally; for the **AI tool registry/catalogue/instruction
+  stack and `ai_introspection_service`**, map the **landed #639 state** (it
+  post-dates the §2 baseline commit) rather than treating it as drift, and
+  keep recommendations there `blocked-by-gate(AI per-exposure)` unless
+  Q-0048's standing lift clearly covers them.
 
 Queued, owner-sequenced lanes (map the current state, but **route findings to
 the lane instead of recommending parallel work**):
@@ -488,10 +492,12 @@ architecture, **start from the two prior audits and verify/delta** — do not
 re-derive what they already mapped; your job there is the §3 records + what
 changed since.
 
-**Provisional carve-out:** AI cog/panel/policy-UI surface is mappable; the AI
-tool registry/catalogue/instruction-stack internals are `provisional(#639)`.
-The governance **setup section** is deferred (Q-0008/Q-0011) — map the current
-state, verdict `blocked-by-gate`.
+**Carve-out:** AI cog/panel/policy-UI surface maps normally. The AI tool
+registry/catalogue/instruction-stack internals changed in **#639 (merged
+2026-06-09, post-baseline)** — map the landed state, and keep recommendations
+there `blocked-by-gate(AI per-exposure)` unless Q-0048's standing lift clearly
+covers them. The governance **setup section** is deferred (Q-0008/Q-0011) —
+map the current state, verdict `blocked-by-gate`.
 
 **Must NOT map:** every Agent A subsystem (§5.1).
 
@@ -583,9 +589,10 @@ Context
   you must follow exactly (§3), the consistency target you judge against (§4),
   your scope partition and conflict rules (§5), and your output path (§5.5).
 - Then read `docs/current-state.md` and re-verify open PRs on live GitHub.
-  Expected in-flight: #638 (BTD6 game-data) and #639 (AI self-awareness tools).
-  If GitHub is unreachable from your environment, record the limitation and use
-  the standard's §2.4 list marked "unverified-live".
+  Expected: #638 (BTD6 game-data) in flight as a draft; #639 (AI self-awareness
+  tools) merged 2026-06-09. If GitHub is unreachable from your environment,
+  record the limitation and use the standard's §2.4 list marked
+  "unverified-live".
 - Prior art to compose with, not re-derive:
   `docs/planning/help-cog-customization-audit-2026-06-09.md` (#627),
   `docs/planning/settings-cog-centralization-audit-2026-06-09.md` (#625),
@@ -680,9 +687,10 @@ Context
   the consistency target (§4), your partition + conflict rules (§5), your
   output path (§5.5).
 - Then read `docs/current-state.md` and re-verify open PRs on live GitHub.
-  Expected in-flight: #638 (BTD6 game-data) and #639 (AI self-awareness tools —
-  touches ai_tools/ai_tool_catalogue/instruction stack). If GitHub is
-  unreachable, record the limitation and use §2.4 marked "unverified-live".
+  Expected: #638 (BTD6 game-data) in flight as a draft; #639 (AI self-awareness
+  tools — touched ai_tools/ai_tool_catalogue/instruction stack) merged
+  2026-06-09. If GitHub is unreachable, record the limitation and use §2.4
+  marked "unverified-live".
 - Your two cornerstone inputs already map your stacks in depth — verify and
   delta them rather than re-deriving:
   `docs/planning/settings-cog-centralization-audit-2026-06-09.md` (#625) and
@@ -716,10 +724,12 @@ Scope
   touches exactly: your output doc, your one pre-allocated line in the
   standard's §5.5 (convert your path to a markdown link), and your `.sessions/`
   log.
-- AI: map the cog/panel/policy-UI surface; the AI tool
-  registry/catalogue/instruction-stack internals are provisional(#639) —
-  describe, don't recommend. The governance setup section is deferred
-  (Q-0008/Q-0011): map current state, verdict blocked-by-gate.
+- AI: map the cog/panel/policy-UI surface normally. The AI tool
+  registry/catalogue/instruction-stack internals changed in #639 (merged
+  2026-06-09, post-baseline) — map the landed state; recommendations there
+  stay blocked-by-gate(AI per-exposure) unless Q-0048's standing lift clearly
+  covers them. The governance setup section is deferred (Q-0008/Q-0011): map
+  current state, verdict blocked-by-gate.
 - Settings hub display correctness and help-map counts/characterization tests
   are owned by queued Lanes 7–8: map current state, verdict
   blocked-by-gate(Lane 7|8) instead of proposing parallel work. Help-consumes-

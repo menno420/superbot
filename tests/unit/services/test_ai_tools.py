@@ -48,6 +48,9 @@ def test_build_registry_returns_specs_and_matching_handlers():
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
         "btd6_ct_team_status",
+        "btd6_answerability",
+        "get_ai_tool_catalog",
+        "get_ai_policy_explanation",
     }
     assert set(registry.handlers) == spec_names
     assert isinstance(registry.specs, tuple)
@@ -369,6 +372,9 @@ def test_admin_scope_offers_all_read_only_tools():
         "btd6_paragon_requirements",
         "btd6_paragon_stats_at_degree",
         "btd6_ct_team_status",
+        "btd6_answerability",
+        "get_ai_tool_catalog",
+        "get_ai_policy_explanation",
         "get_guild_ai_config",
         "recent_audit",
     }
@@ -994,3 +1000,207 @@ async def test_diagnostics_tool_fresh_selects_async_lane(monkeypatch):
     await handler({})
     await handler({"fresh": True})
     assert calls == {"cached": 1, "async": 1}
+
+
+# --- self-awareness tools (answerability Phase 3, Q-0047) ---------------
+#
+# Audience tiering is enforced at CONSTRUCTION (the registry bakes the request
+# scope into each handler); the tools are read-only and deterministic over the
+# #616 introspection read model. These tests pin both properties per tier.
+
+
+async def test_ai_tool_catalog_is_tier_filtered_at_construction():
+    import json
+
+    user_handler = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers[
+        "get_ai_tool_catalog"
+    ]
+    out = await user_handler({})
+
+    assert out["audience"] == "user"
+    names = {t["name"] for t in out["tools"]}
+    assert "btd6_round_cash" in names
+    assert all(t["read_only"] for t in out["tools"])
+    # Higher-tier tools are counted, never named — anywhere in the payload.
+    encoded = json.dumps(out)
+    assert "get_guild_ai_config" not in encoded
+    assert "recent_audit" not in encoded
+    assert "diagnostics_health_snapshot" not in encoded
+    assert out["hidden_above_scope"] >= 3
+    assert out["total_visible"] == len(out["tools"])
+    # Purposes are one-line summaries, not full spec descriptions (token bound).
+    assert all(len(t["purpose"]) <= 160 for t in out["tools"])
+
+
+async def test_ai_tool_catalog_admin_gains_admin_tools_not_platform():
+    import json
+
+    admin_handler = build_registry(
+        scope=AIScope.ADMIN, guild_id=1, actor_id=2
+    ).handlers["get_ai_tool_catalog"]
+    out = await admin_handler({})
+
+    assert out["audience"] == "admin"
+    names = {t["name"] for t in out["tools"]}
+    assert {"get_guild_ai_config", "recent_audit"} <= names
+    assert "diagnostics_health_snapshot" not in json.dumps(out)
+
+
+async def test_ai_tool_catalog_is_deterministic_and_read_only():
+    handler = build_registry(scope=AIScope.ADMIN, guild_id=1, actor_id=2).handlers[
+        "get_ai_tool_catalog"
+    ]
+    assert await handler({}) == await handler({})
+
+
+def _policy_decision(**overrides):
+    from core.runtime.ai.contracts import PolicyDenialReason
+    from services import ai_natural_language_policy as nlp
+
+    o = {
+        "allowed": True,
+        "reason_code": PolicyDenialReason.NONE,
+        "effective_mode": "mention",
+        "effective_source": "channel",
+        "precedence_trace": ("guild_ai_gate: AI enabled=true",),
+        **overrides,
+    }
+    return nlp.PolicyDecision(
+        allowed=o["allowed"],
+        reason_code=o["reason_code"],
+        effective_min_level=2,
+        effective_cooldown=30,
+        effective_mode=o["effective_mode"],
+        effective_source=o["effective_source"],
+        precedence_trace=o["precedence_trace"],
+    )
+
+
+def _patch_policy_owners(monkeypatch, *, audit_rows):
+    """Patch the resolver + permission snapshot + audit the explanation composes."""
+    from unittest.mock import AsyncMock
+
+    from services import ai_decision_audit_service
+    from services import ai_natural_language_policy as nlp
+    from services import ai_permission_service
+
+    resolve = AsyncMock(return_value=_policy_decision())
+    monkeypatch.setattr(nlp, "resolve", resolve)
+    monkeypatch.setattr(
+        ai_permission_service,
+        "snapshot",
+        AsyncMock(return_value=SimpleNamespace(level=5, is_fresh_user=False)),
+    )
+    query = AsyncMock(return_value=audit_rows)
+    monkeypatch.setattr(ai_decision_audit_service, "query", query)
+    return resolve, query
+
+
+async def test_ai_policy_explanation_binds_asker_and_channel(monkeypatch):
+    resolve, query = _patch_policy_owners(monkeypatch, audit_rows=[])
+    member = SimpleNamespace(roles=(SimpleNamespace(id=11), SimpleNamespace(id=22)))
+    channel = SimpleNamespace(id=777, category_id=55)
+
+    handler = build_registry(
+        scope=AIScope.USER,
+        guild_id=1,
+        actor_id=3,
+        member=member,
+        channel=channel,
+    ).handlers["get_ai_policy_explanation"]
+    out = await handler({})
+
+    # The MessageContext is bound at construction to the asking user/channel —
+    # the model has no argument to point it anywhere else.
+    ctx = resolve.await_args.args[0]
+    assert (ctx.guild_id, ctx.channel_id, ctx.category_id) == (1, 777, 55)
+    assert (ctx.user_id, ctx.user_level, ctx.is_fresh_user) == (3, 5, False)
+    assert ctx.user_role_ids == (11, 22)
+    assert ctx.is_mention is True
+    # USER tier: no precedence trace is built and cross-user audit is never read.
+    assert resolve.await_args.kwargs == {"dry_run": False}
+    query.assert_not_awaited()
+    assert out["allowed"] is True
+    assert out["effective_mode"] == "mention"
+    assert out["effective_source"] == "channel"
+    assert out["effective_cooldown_seconds"] == 30
+    assert out["channel_id"] == 777
+    assert out["precedence_trace"] == []
+    assert out["recent_decisions"] == []
+
+
+async def test_ai_policy_explanation_admin_gains_trace_and_history(monkeypatch):
+    resolve, query = _patch_policy_owners(
+        monkeypatch,
+        audit_rows=[
+            {
+                "decision": "denied",
+                "reason_code": "cooldown_active",
+                "task": "general.nl_answer",
+                "created_at": "2026-06-09T12:00:00",
+            },
+        ],
+    )
+    channel = SimpleNamespace(id=777, category_id=None)
+
+    handler = build_registry(
+        scope=AIScope.ADMIN,
+        guild_id=1,
+        actor_id=3,
+        channel=channel,
+    ).handlers["get_ai_policy_explanation"]
+    out = await handler({})
+
+    assert resolve.await_args.kwargs == {"dry_run": True}
+    query.assert_awaited_once()
+    assert out["precedence_trace"] == ["guild_ai_gate: AI enabled=true"]
+    assert out["recent_decisions"] == [
+        {
+            "decision": "denied",
+            "reason_code": "cooldown_active",
+            "task": "general.nl_answer",
+            "at": "2026-06-09T12:00:00",
+        },
+    ]
+
+
+async def test_ai_policy_explanation_tolerates_missing_channel(monkeypatch):
+    resolve, _query = _patch_policy_owners(monkeypatch, audit_rows=[])
+
+    handler = build_registry(scope=AIScope.USER, guild_id=1, actor_id=3).handlers[
+        "get_ai_policy_explanation"
+    ]
+    out = await handler({})
+
+    ctx = resolve.await_args.args[0]
+    assert ctx.channel_id == 0 and ctx.category_id is None
+    assert out["channel_id"] is None  # explanation is guild-level, said honestly
+
+
+async def test_btd6_answerability_reports_inventory_and_gaps():
+    import json
+
+    handler = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers[
+        "btd6_answerability"
+    ]
+    out = await handler({})
+
+    json.dumps(out)  # JSON-serialisable payload
+    assert out["available"] is True
+    assert out["data_version"]
+    by_name = {d["name"]: d for d in out["domains"]}
+    assert by_name["towers"]["kind"] == "deterministic_fixture"
+    assert by_name["towers"]["item_count"] > 0
+    assert by_name["round_cash"]["kind"] == "calculation"
+    # Known gaps are stated explicitly so the model never overclaims them.
+    assert by_name["alternate_round_sets"]["kind"] == "unsupported"
+    assert by_name["achievements"]["kind"] == "unsupported"
+    # Deterministic: a repeat call returns the identical payload.
+    assert out == await handler({})
+
+
+def test_btd6_answerability_joins_the_grounding_ledger():
+    # Its counts/versions must be able to ground a BTD6 answer — on the
+    # BTD6_ANSWER path every number in a reply is checked against the ledger,
+    # so an unledgered inventory would block the very replies it serves.
+    assert "btd6_answerability" in ai_tools.BTD6_GROUNDING_TOOL_NAMES
