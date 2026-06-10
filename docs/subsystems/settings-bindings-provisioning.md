@@ -72,6 +72,12 @@ Do not create a generic "configuration" write path that collapses the three lane
 New preset or setup conveniences are candidates only when they reuse the canonical
 mutation/provisioning services and preserve operator confirmation.
 
+- [`docs/ideas/settings-presets-and-ai-template-advisor.md`](../ideas/settings-presets-and-ai-template-advisor.md) —
+  the AI template/preset advisor (captured only, gated). Note: its §1 — the
+  **presets + preset-then-edit + manual-entry everywhere** posture — is a
+  *decided* owner posture (**Q-0070**, 2026-06-10), routed into the settings
+  audit's Phase 4 row; only the advisor itself is an idea.
+
 ## Next candidates
 
 1. Select an inconsistency from `docs/health/platform-consistency-ledger.md`; verify the
