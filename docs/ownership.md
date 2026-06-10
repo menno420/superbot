@@ -82,6 +82,16 @@ writes must come from the owning cog or a shared service.
   must route through `economy_service`.  Readers may use
   `db.get_coins` / `utils/db/economy.get_coins` directly.
 
+### Cross-domain transactions (owner decision Q-0071, 2026-06-10)
+
+- A workflow that must atomically span **coins + a domain inventory** (shop
+  purchase, mining market/repair) is owned by a **domain workflow service**
+  that holds **one DB transaction** and calls transaction-aware low-level
+  primitives — coins and inventory commit or roll back together. Neither leg
+  is committed separately from a cog/view (the FIND-RS01 two-commit purchase
+  shape is the anti-pattern this rule closes). Implementation route:
+  `docs/planning/consolidated-implementation-plan-2026-06-10.md` Batch 7.
+
 ---
 
 ## Platform ownership

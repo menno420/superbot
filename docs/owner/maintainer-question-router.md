@@ -2938,3 +2938,149 @@ the bar for any new setting's editor design.
 **Suggested destination after answer:** settings audit §7 + §11 Phase 4 (done — pointer
 added 2026-06-10); the AI template-advisor slice promotes via the ideas-file lifecycle
 only after Phase 4 ships its preset infrastructure.
+
+---
+
+## 31. Untapped-map reconciliation batch — 2026-06-10
+
+> Source: the two merged Codex mapping audits (**#646** runtime/services/workflows ·
+> **#647** docs/tests/verification), reconciled in PR #648. These four are the
+> *blocking-grade* questions from that work; the maps' remaining question candidates
+> (Q-A02 · Q-A03 · Q-B02/Q-DT03) are **held at their map-recommended / no-change
+> defaults** — nothing is blocked on them (dispositions:
+> [`../planning/consolidated-implementation-plan-2026-06-10.md`](../planning/consolidated-implementation-plan-2026-06-10.md) §7,
+> mapping standard §7.1).
+
+### Q-0071 — Who owns a workflow that atomically spans coins + a domain inventory?
+
+**Area:** Economy / inventory / mining (mutation architecture)
+**Type:** Architecture ownership decision
+**Priority:** High (blocks consolidated-plan **Batch 7** — the economy purchase
+two-commit fix, then mining workflow convergence)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+`docs/ownership.md` § "Cross-domain transactions" + consolidated plan Batch 7
+
+**Maintainer answer (structured choices, 2026-06-10): A — the domain workflow
+service owns ONE DB transaction** calling transaction-aware primitives; coins +
+inventory commit or roll back together.
+*Answer scope:* mutation-architecture ownership for coin+inventory workflows
+(purchase, mining market/repair). It does not start Batch 7 by itself — the batch
+runs in its plan order; primitives gaining transaction-awareness is in-scope
+plumbing, not a schema change.
+
+**Question (context):** Verified (#646 FIND-RS01/RS02/RS11): a shop purchase debits
+coins via the audited `economy_service`, then grants the item via a **separate**
+direct `db.add_item` commit — a failure between the two charges the user without the
+item; mining market/repair flows have the same split shape. `docs/ownership.md` makes
+`economy_service` the sole *coin* writer and inventory direct-lane, but no owner is
+defined for the **cross-domain transaction**.
+
+- **A (recommended, both maps):** the **domain workflow service** (e.g. a purchase
+  workflow) owns ONE DB transaction and calls transaction-aware low-level primitives —
+  coins + inventory commit or roll back together.
+- **B:** `economy_service` grows to own all coin+inventory transactions.
+- **C:** keep separate commits; add compensation/refund handling only.
+
+**Why agents need this:** it decides where the new purchase/mining workflow modules
+live, what the DB primitives must accept (an external transaction/connection), and
+what the "no view-level purchase writes" invariant fences.
+
+**Suggested destination after answer:** `docs/ownership.md` (cross-domain transaction
+rule) + consolidated-plan Batch 7 design.
+
+### Q-0072 — Mining: which slice is next?
+
+**Area:** Games / mining character platform (active lane)
+**Type:** Product sequencing (merges the maps' Q-DT04 + Q-RS02 with GME-1)
+**Priority:** Medium-high (the active games lane is ambiguous without it — docs
+currently advertise two different "next" slices)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+roadmap games row + current-state lane 1 + consolidated plan Batch 7
+
+**Maintainer answer (structured choices, 2026-06-10): C — the workshop-workflow
+service boundary first** (FIND-RS02); structures and the game-XP service follow on
+the safer base.
+*Answer scope:* sequencing only — structures (§7.5) and game-XP (§7.4) stay queued
+behind the boundary slice, and the duels-wear slice (Q-0054) is unaffected.
+
+**Question (context):** Wave 1 shipped through Workshop+durability (#624). The
+roadmap/brainstorm name **structures** (Forge/Vault/Home, §7.5 sinks) *or* the
+**game-XP service** (Wave 2, §7.4) as next; mapping FIND-RS02 found mining's
+multi-step writes are orchestrated directly from cogs/views (partial-commit risk —
+workshop has the densest multi-write invariant) and recommends a **workflow service
+boundary first**.
+
+- **A:** functional **structures** (Forge/Vault/Home) — the next player-visible sinks.
+- **B:** the **game-XP service** — the first Wave-2 platform layer.
+- **C (recommended):** the **workshop-workflow service boundary first** (FIND-RS02) —
+  hardens the densest mutation path before more mining writes land; A/B follow on a
+  safer base. Pairs with the Q-0071 answer for the coin legs.
+
+**Why agents need this:** two sessions could otherwise pick incompatible "next"
+slices or skip the characterization the chosen slice needs.
+
+**Suggested destination after answer:** games folio + roadmap games row +
+consolidated-plan Batch 7/`Q-0072` notes.
+
+### Q-0073 — `!setlogchannel`: Economy-owned, Settings-projected, or moved?
+
+**Area:** Settings / bindings vs Economy (ownership seam)
+**Type:** Ownership routing decision (mapping Q-A01 / Q-DT01 — FIND-A02)
+**Priority:** Medium (blocks moving/re-projecting the command; Settings Phase 2 can
+proceed without it)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+consolidated plan Batch 4 (projection rides Settings Phase 2/3)
+
+**Maintainer answer (structured choices, 2026-06-10): B — keep the Economy
+implementation but project it into Settings** (it appears in the Settings hub like
+any binding; the typed command stays) until a migration/deprecation plan is approved.
+*Answer scope:* no command move, no behavior change — a Settings-hub projection row
+only. A future full move (option A) would need its own migration plan + a fresh ask.
+
+**Question (context):** Economy owns `!setlogchannel`, a platform-binding-shaped
+channel pointer that bypasses the canonical bindings/selector surface (#643
+FIND-A02).
+
+- **A (Agent A's pick):** move/reroute it through the platform **binding owner**,
+  keeping a compatibility alias.
+- **B (recommended safe default):** keep the Economy implementation but **project it
+  into Settings** (it appears in the Settings hub like any binding; typed command
+  stays) until a migration/deprecation plan is approved.
+- **C:** keep as-is, typed-only.
+
+**Why agents need this:** decides mutation ownership, Help/Settings placement, and
+whether a migration + compatibility tests are in scope for Settings Phase 2/3.
+
+**Suggested destination after answer:** settings audit §11 (Phase 2 or 3 row) +
+`docs/ownership.md` if moved.
+
+### Q-0074 — Admin surface: metadata tier vs administrator-admitted routes?
+
+**Area:** Admin hub / registry metadata / command access
+**Type:** Display-vs-execution posture (mapping Q-B01 / Q-DT02 — FIND-B03)
+**Priority:** Medium (blocks FIND-B03 implementation only)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
+consolidated plan Batch 2 (Admin-row classification follows this posture)
+
+**Maintainer answer (structured choices, 2026-06-10): A — make registry/Admin-Help
+placement administrator-visible** (after a quick source-backed inventory), keeping
+owner-only checks on the genuinely dangerous actions.
+*Answer scope:* display/placement posture only — no execution-admission loosening;
+the inventory step decides which actions stay owner-checked, pinned by a
+placement-tier == admission-tier test when implemented.
+
+**Question (context):** Admin registry/Help metadata presents owner-tier while some
+admin routes are administrator-admitted — display placement and execution admission
+disagree (#644 FIND-B03).
+
+- **A (recommended, Agent B's pick):** make registry/Admin-Help placement
+  **administrator-visible** (after a quick source-backed inventory) while keeping
+  owner-only checks on the genuinely dangerous actions.
+- **B:** make the entire Admin panel owner-only.
+- **C:** split owner-only controls from admin tools into separate surfaces first.
+
+**Why agents need this:** Help/registry tiering and admission checks must agree
+before classification work (consolidated-plan Batch 2) touches the Admin rows.
+
+**Suggested destination after answer:** governance/access docs + the Admin hub
+registry metadata + a pinning test that placement tier == admission tier.

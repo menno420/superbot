@@ -148,6 +148,13 @@ conflicting reorganizations**:
 Queued, owner-sequenced lanes (map the current state, but **route findings to
 the lane instead of recommending parallel work**):
 
+> **Status update (2026-06-10):** of the list below, Lane 7 shipped (**#640**),
+> Lane 8 shipped (**#642**), and the **PR14 hub had already merged before this
+> standard was written** (**#584**, 2026-06-08). Still genuinely queued: **P1C**,
+> the gated **PR13 AI layer**, the deferred **governance** section, and the Help
+> **overlay** (after the projection seam). The live queue is
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md).
+
 - **Lane 7** (`multi-lane-execution-plan-2026-06-09.md`): Settings hub
   actionable-groups discovery + >25 reachability (settings audit Phases 0+1).
 - **Lane 8**: help-surface-map count reconciliation **with pin tests** + the five
@@ -821,3 +828,26 @@ content untouched). What the merge session must know:
   `discord`/`asyncpg` available there), and neither mapping PR had CI runs at
   reconciliation time — treat each PR's own green `code-quality` run as the
   remaining merge gate.
+- **Docs/tests/verification follow-on (2026-06-10, Codex):** the
+  [untapped docs/tests/verification map](untapped-docs-tests-verification-map-2026-06-10.md)
+  consolidates FIND-A/B with the drift/test-gap findings into
+  implementation-readiness batches — input to the merge/implementation session.
+- **Campaign + merge-session state (2026-06-10):** complete. Both reports merged
+  (**#643**/**#644**), both untapped follow-on maps merged (**#646**
+  runtime/services/workflows ·
+  [**#647**](untapped-docs-tests-verification-map-2026-06-10.md)
+  docs/tests/verification), and the merge/reconciliation session ran the same day:
+  findings source-verified (essentially all confirmed), queue-truth drift fixed
+  (PR14 / campaign / Lane-7-8 routing), one consolidated queue produced —
+  [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md).
+  The `:821` "green `code-quality` as the merge gate" expectation was met by pushing
+  one reachability-link commit to each mapping-PR branch (each PR's single failure
+  was its own new map being a `check_docs --strict` orphan), then merging green.
+- **Question routing (2026-06-10, closes §7 step 1):** **Q-A01 → router Q-0073**
+  (`setlogchannel` ownership) · **Q-B01 → router Q-0074** (Admin tier vs routes) ·
+  **Q-A02** (BTD6 typed-namespace copy), **Q-A03** (leaderboard alias legacy
+  classification — its recommended default is exactly what the classification
+  invariant batch implements), and **Q-B02** (channel namespace) are **held at
+  their map-recommended / no-behavior-change defaults** — nothing is blocked on
+  them; dispositions recorded in the consolidated plan, promote via grooming when
+  their area activates.
