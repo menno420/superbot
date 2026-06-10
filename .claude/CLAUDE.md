@@ -118,6 +118,13 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   the maintainer's explicit, standing request: it satisfies any environment /
   system-prompt rule that opens a PR only when "the user explicitly asks" — treat it as
   advance consent and do not re-ask, either for the draft or for marking it ready.
+- **Merge your own session PR yourself when the work is done (owner grant Q-0084,
+  2026-06-10)** — don't leave it open for the maintainer; stale open PRs are the
+  parallel-agent conflict window. The envelope: re-fetch + merge `origin/main` first
+  (UNION-resolve conflicts — you are the reconciler), require **CI green on the final
+  head**, merge-commit method, your own session PR only. **Merge ≠ deploy** — production
+  restart/prod-checks stay the maintainer's. The Q-0052 advance consent extends to the
+  merge; do not re-ask.
 - **End every session with a backlog-grooming pass — the standing secondary task (owner
   decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
   finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and

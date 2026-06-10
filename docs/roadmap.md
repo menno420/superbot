@@ -36,9 +36,16 @@
 | Horizon | Items |
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** — **Batch 7 + the Wave-2 seed shipped 2026-06-10** (#661 + #663/#664/#665 via **#667**: full write boundary, shared game-XP, deeper ladders, gear/recipe UX, duels wear, PIL cards); **next slice: structures §7.5 (Forge/Vault/Home)**, then the §7.4 skill tree · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; P1C **merged #656**; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 declaration-coverage core · #656 adaptive P1C · #657+#659 Help seam + overlay · Batch 7 mining stack via #667 · #649 cutover → **#671** (RS07 + Batch 9's RS08 + the Help-Preview Tier-2 fix) → **#672** (Batch 4 pointer tail COMPLETE — proof-channel declaration; logging verified satisfied — + the Batch 10 selections: setup PR4 planning next · AI §7.5 after the prod check) → → the Help overlay **editor UI executed** (plan → **PR A #677 + PR B #679**, 2026-06-10 — editor + the Q-0059 Home builder w/ mandatory preview) → **#681** (Batch 9 COMPLETE — RS05 publish-accepted contract + `event_bus` observability · RS10 economy family, ratchet 17→13) → **the consolidated plan is FULLY EXECUTED**; remaining (plan-first/gated): Help audit Phase 4 records · health/diagnostics production live-tests (owed; the **[eval checklist](audits/production-eval-checklist-2026-06-10.md)** scripts the maintainer's walk, §4.5 now incl. the editor) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 declaration-coverage core · #656 adaptive P1C · #657+#659 Help seam + overlay · Batch 7 mining stack via #667 · #649 cutover → **#671** (RS07 + Batch 9's RS08 + the Help-Preview Tier-2 fix) → **#672** (Batch 4 pointer tail COMPLETE — proof-channel declaration; logging verified satisfied — + the Batch 10 selections: setup PR4 planning next · AI §7.5 after the prod check) → the Help overlay **editor UI executed** (plan → **PR A #677 + PR B #679**, 2026-06-10 — editor + the Q-0059 Home builder w/ mandatory preview) → **#681** (Batch 9 COMPLETE — RS05 publish-accepted contract + `event_bus` observability · RS10 economy family, ratchet 17→13) → **the consolidated plan is FULLY EXECUTED**; remaining (plan-first/gated): Help audit Phase 4 records · health/diagnostics production live-tests (owed; the **[eval checklist](audits/production-eval-checklist-2026-06-10.md)** scripts the maintainer's walk, §4.5 now incl. the editor) |
 | **Later** | BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover **shipped #649**; verification #655; answerability tail #658/#662/#668 — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
+
+> **Standing posture (router §35, 2026-06-10):** the end-state is a **public
+> bot** (Q-0080 — every new plan inherits stranger-grade onboarding/abuse/cost
+> filters) · the flagship RPG is **solo core + co-op overlays** (Q-0081) · AI
+> spend = **owner-set hard ceiling, visible graceful degrade** (Q-0082) · the
+> workflow converges toward **full self-driving — explicitly not near-term**
+> (Q-0083).
 
 ---
 
@@ -117,6 +124,16 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
   arc; [loose-ends-audit](planning/loose-ends-audit-roadmap.md) is the source audit (its L1–L6
   sequence is superseded by mother-hub).
+- **Later (planning target — Q-0078)** — the **4-button Help Home + panel
+  navigation doctrine** from the owner's vision statement
+  ([superbot-vision](ideas/superbot-vision-2026-06-10.md) V-02/V-03 + AG-01/AG-03):
+  Play · Server & Info · My Stuff · Manage top level (layout decided Q-0078),
+  update-in-place + mother/help links on every panel, one-active-panel + summon,
+  and the ≤3-clicks reachability invariant (navigation depth — per-panel
+  button caps rejected, Q-0079). Owner-picked as a next planning
+  target; its sequencing gate — the Help overlay editor UI — **cleared 2026-06-10**
+  (the editor shipped as **#677 + #679**), so it is ready to structure into its own
+  plan on the same projection seam (capture-doc T-4) before building.
 - **Later** — [command-expansion-backlog](building-roadmap/command-expansion-backlog.md)
   and [admin-powers config-coverage](building-roadmap/admin-powers-config-coverage.md):
   backlogs — cross-check source before pulling one.
@@ -254,6 +271,16 @@ accepted, not a target).
   pets from exploration drops + a care-loop coin/ore sink + tiny non-P2W perks; the
   owner's ⭐ pick from the 2026-06-09 fun/ease brainstorm (Q-0053). Gate: Wave-1
   keystone slices (Workshop + durability) + balance review + owner promotion.
+  **Amended 2026-06-10 (Q-0078 "both paths"):** quest-rescue joins as the
+  rare-species path once the quest engine exists; party cap grows 1→3 later.
+- **Later** — [**RPG survival & difficulty design**](planning/rpg-survival-difficulty-design-2026-06-10.md):
+  difficulty modes (Easy ≡ today's game, byte-identical) + energy/health/hunger +
+  fishing/cooking + biome×difficulty encounters + hard-mode death-as-rescue; from the
+  owner's vision statement ([superbot-vision](ideas/superbot-vision-2026-06-10.md)
+  V-05…V-08), picked as a planning target in **Q-0078** (one-way-ascent switching
+  decided there). Gates: sequencing behind §7.5 structures / §7.4 skill tree + the
+  owner numbers-confirm (plan G1/G2). Its D6 (duel XP both sides) is a standalone
+  quick-win.
 
 ### 📺 Media / YouTube — **Later** (needs an approved plan)
 
@@ -284,6 +311,14 @@ privacy/provenance/moderation review before any public surface.
 > requires the gates in [`ideas/README.md`](ideas/README.md). Do not treat anything here as
 > a priority.
 
+- [superbot-vision-2026-06-10](ideas/superbot-vision-2026-06-10.md) — the maintainer's
+  written product-vision statement + agent response: 2-minute setup KPI, panel
+  navigation doctrine, 4-button help home, per-user preferences, RPG
+  difficulty/survival/energy, story pets, AI-as-panel-orchestrator (inside the Q-0040
+  posture); routing ledger inside. **Owner picks recorded same day (Q-0078):**
+  one-way-ascent difficulty · both pet paths · the 4-button layout · next planning
+  targets = RPG survival design (structured →
+  [plan](planning/rpg-survival-difficulty-design-2026-06-10.md)) + help home/navigation.
 - [fun-and-ease-brainstorm](ideas/fun-and-ease-brainstorm-2026-06-09.md) — 24
   dedup-verified fun + ease-of-use ideas (social/competition, ambient delight, member
   UX); owner picks recorded (Q-0053; pets structured → a games-lane plan).

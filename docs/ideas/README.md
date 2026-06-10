@@ -18,6 +18,13 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
+  maintainer's written **product vision statement** (2-minute setup, panel
+  navigation doctrine, 4-button help home, per-user preferences, RPG
+  difficulty/survival/energy design, story pets, AI-as-panel-orchestrator) +
+  the agent's creative response (AG-01…AG-15), dedup-mapped against every
+  existing capture/plan/decision, with flagged tensions (T-1…T-5) and a routing
+  ledger. **Newest owner-voice capture — read alongside the 2026-06-08 one.**
 - [`fun-and-ease-brainstorm-2026-06-09.md`](./fun-and-ease-brainstorm-2026-06-09.md) —
   24 dedup-verified new ideas for "more fun + easier to use" (social/competition layer,
   ambient delight, member UX), each grep-checked against docs *and* source before

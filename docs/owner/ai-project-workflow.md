@@ -212,6 +212,11 @@ one agent each. Empirical result: **zero code conflicts, one mechanical docs con
   push. A last-moment sync usually absorbs it; when the other PR merges *after* your final
   push anyway, the **second-to-merge agent owns the reconciliation** — a ~2-minute UNION
   resolve. That is the designed cost: accept-and-reconcile (Q-0060), no locks.
+- **Merge your own PR when done — yourself (owner grant Q-0084, 2026-06-10).** Don't
+  leave a finished PR open for the owner: sync main, get CI green on the final head,
+  merge (merge-commit), and the *next* agent starts from your work instead of
+  conflicting with it. Stale open PRs are the conflict window this whole section
+  exists to fight; prompt merges are what let the owner run more agents in parallel.
 - **Skip the standing backlog-grooming secondary task in a parallel session** — two agents
   grooming `docs/ideas/` simultaneously is an avoidable collision on a shared tracker;
   the next solo session picks it back up.

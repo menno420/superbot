@@ -3175,3 +3175,254 @@ surface-only (current after #676 — recommended until the drift recurs),
 
 **Suggested destination after answer:** `docs/subsystems/btd6.md` data-lane
 note + `btd6_cog.cog_load` (if (b)/(c): implement beside the drift warning).
+
+## 34. Product-vision capture session decisions — 2026-06-10
+
+> Asked and answered live (structured choices, one round) during the
+> vision-ideation capture session (PR #680); the capture doc is
+> [`../ideas/superbot-vision-2026-06-10.md`](../ideas/superbot-vision-2026-06-10.md)
+> (items V-01…V-12 / AG-01…AG-15, tensions T-1…T-5).
+
+### Q-0078 — Vision-capture routing picks (difficulty switching · pets reconcile · help home layout · next planning targets)
+
+**Area:** Games / Help-interface / product routing
+**Type:** Product posture + planning-queue selection (batched structured choices)
+**Priority:** Medium (each answer unblocks its lane's design work; nothing was implementation-gated this session)
+**Status:** Answered (structured choices, 2026-06-10) — **Routed** → capture doc §5/§6 updated; RPG survival design structured into [`../planning/rpg-survival-difficulty-design-2026-06-10.md`](../planning/rpg-survival-difficulty-design-2026-06-10.md); roadmap rows updated
+
+**Question (4 sub-questions, one round):** (1) Can a player change RPG
+difficulty after starting (T-3)? (2) How do the vision's story pets reconcile
+with the existing egg-based pets plan (T-1)? (3) Which top-level Help Home
+button layout (T-4)? (4) Which idea clusters become the next planning targets?
+
+**Maintainer answers (2026-06-10, all four verbatim from the structured round):**
+
+1. **Difficulty switching = "One-way ascent"** — start anywhere; may move
+   easy→medium→hard at any time, never back down; leaderboard entries carry a
+   difficulty flag (⭐/⭐⭐/⭐⭐⭐). *(The recommended option.)*
+2. **Pets = "Both paths"** — eggs stay the common acquisition (existing pets
+   plan unchanged in shape); quest-rescue becomes the rare/unique-species path
+   once the quest engine exists; party cap grows 1→3 across phases; the
+   vision's journey buffs (scout / gold-sense) implement as small
+   encounter-table modifiers. *(The recommended option.)*
+3. **Help Home = "4 buttons"** — 🎮 Play (games·btd6·economy) · 🧭 Server &
+   Info (utility·community·stats·tickets) · 🙋 My Stuff (profile·my
+   settings·reminders — needs the per-user prefs feature, V-04) · ⚙️ Manage
+   (settings·server-mgmt·moderation·admin·diagnostics, staff-visible only).
+   *(The recommended option.)*
+4. **Next planning targets = "RPG survival design" + "Help home +
+   navigation"** (two picks). Per-user preferences and AI DM v1 stay
+   captured-only for now.
+
+*Answer scope:* product **posture + planning-queue** decisions. Nothing here
+approves implementation: the survival design doc and the help-home/navigation
+plan each still promote through `docs/ideas/README.md` gates, and the Help
+work sequences with the in-flight Help lane (overlay editor UI plan) per
+capture-doc T-4. The pets answer **amends the pets plan's future phases**
+(party 1→3, rescue path) without changing its P1–P4 shape.
+
+**Routed to:** capture doc §5 (T-1/T-3/T-4 marked answered) + §6 ledger;
+`docs/planning/rpg-survival-difficulty-design-2026-06-10.md` (new, the
+grooming move); `docs/roadmap.md` games + interface lanes;
+`docs/planning/pets-companions-plan-2026-06-09.md` (amendment note).
+
+### Q-0079 — "Cleaner UX" clarified: no per-panel button caps; better-defined buttons over removal
+
+**Area:** Help-interface / UX doctrine (V-03, V-12, AG-01)
+**Type:** Owner correction of a captured idea (unprompted statement, follow-up to Q-0078)
+**Priority:** Medium (binds the help-home/navigation plan before it is structured)
+**Status:** Answered (owner statement, 2026-06-10) — **Routed** → capture doc §1/§3/§4/§6 notes; roadmap interface row
+
+**Owner statement (2026-06-10, verbatim):** "the 3 buttons per panel is never
+going to work, but we can definitely aim for a cleaner UX, with less or better
+defined buttons, tho we can't just remove buttons because almost all of them
+are actually useful." *(In response to the agent's closing pitch for AG-01's
+"≤3-clicks check" as a CI invariant; he affirmed the captured ideas overall.)*
+
+**Durable conclusions:**
+
+1. **No numeric per-panel button budget — ever.** Panels keep every useful
+   button, and almost all existing buttons are useful. Any future UX lint that
+   counts buttons per panel is rejected posture.
+2. **The vision's "3" is navigation depth.** "Maximum of 3 buttons to reach
+   any game, setting, or action" (capture doc §1 / V-03) means **presses from
+   Help Home** — an aim to design toward, not a cap on how many buttons a
+   panel may show.
+3. **"Cleaner UX" = fewer *or better-defined* buttons.** The levers are
+   clearer labels, grouping, row order/placement, and consistent conventions.
+   Removing a button is allowed only when that specific button is genuinely
+   redundant — never to satisfy a quota.
+4. **AG-01 bounded accordingly.** If promoted, the CI-checkable UX invariants
+   are (a) reachability **depth** over the help projection / hub registry and
+   (c) zero-dead-buttons. A button-count check is out.
+
+**Routed to:** capture doc (`../ideas/superbot-vision-2026-06-10.md`) §1
+owner-voice clarification + V-03 + AG-01 + §6 ledger row; `docs/roadmap.md`
+interface planning row. The help-home/navigation plan (the named next grooming
+target) inherits these as design constraints.
+
+## 35. Deep product-posture round — 2026-06-10 (same session, agent-initiated)
+
+> The owner asked the agent to pose its own highest-value questions ("specific
+> or maybe even very broad … questions that I would possibly really need to
+> think about"). One structured round, four areas — each checked against the
+> router + idea docs first as genuinely undecided. (A fifth candidate — bot
+> personality — was dropped before asking: owner-vision-2026-06-08 §16 already
+> decided it: **funny/sarcastic, dry wit, consistent across all commands**.)
+
+### Q-0080 — Distribution ambition: is SuperBot ever for servers the owner doesn't run?
+
+**Area:** Product / platform posture
+**Type:** Owner posture decision (agent-initiated deep round)
+**Priority:** High (a design filter every future plan inherits)
+**Status:** Answered (2026-06-10) — **Routed** → roadmap posture line; capture doc §5 (T-6) + §6
+
+**Question:** Technical multi-tenancy is law (owner-vision §9: no
+single-server assumptions), but the *ambition* was undecided: should SuperBot
+ever run on servers the owner doesn't control — up to a public listing?
+
+**Answer (2026-06-10): "Public bot is the goal."** Anyone can invite it one
+day; multi-tenant hardening, per-guild AI budgets, onboarding polish, and
+abuse-resistance are first-class concerns, not nice-to-haves.
+
+**Durable conclusions:**
+
+1. **V-01's 2-minute setup is for strangers** — it is the public bot's front
+   door, not a convenience for the owner's own installs; its KPI weight rises.
+2. **No feature may assume a trusted/home guild.** Per-guild scoping stays
+   law; new surfaces consider rate-limiting/abuse-resistance at design time.
+3. **Every AI feature needs a per-guild cost story** (Q-0082 + tension T-6);
+   per-guild opt-in, off by default (Q-0040) is confirmed as the public-scale
+   posture, not just caution.
+4. **Nothing is promoted by this answer** — it is a design filter, not a
+   workstream. A dedicated public-readiness audit is a future grooming
+   candidate once the RPG survival layer + Help Home land.
+
+### Q-0081 — Flagship RPG core: solo-alongside or shared world?
+
+**Area:** Games / character platform / quest engine
+**Type:** Owner posture decision (agent-initiated deep round)
+**Priority:** High (the queued quest-engine/AI-DM plan forks on it)
+**Status:** Answered (2026-06-10) — **Routed** → survival plan posture note; future quest-engine plan inherits
+
+**Question:** Is the flagship RPG ultimately a *solo* adventure played
+alongside others (own world-state; leaderboards; opt-in co-op moments) — or
+one *shared persistent world* per server where players deplete, discover, and
+trigger events affecting everyone?
+
+**Answer (2026-06-10): "Solo core + co-op moments"** *(the recommended
+option)*. Each player owns their world-state forever; multiplayer — duels,
+expeditions (AG-10), party quest sessions, server-wide events — is an opt-in
+overlay on the solo core.
+
+**Durable conclusions:**
+
+1. **The quest engine / AI-DM plan is single-party first.** Shared state, if
+   any, lives only inside opt-in session/overlay scopes — never in the
+   persistent world.
+2. Mining's "personal position, per-guild seed" is confirmed as the
+   **end-state shape**, not just v1 caution; shared dig-sites stay a separate
+   bounded overlay if ever built.
+3. Server-wide *events* on solo worlds (one shared scoreboard, communal
+   moments) remain compatible overlays — they ride the solo core.
+
+### Q-0082 — AI spend posture: what do the budget caps protect?
+
+**Area:** AI lane / product economics
+**Type:** Owner posture decision (agent-initiated deep round)
+**Priority:** Medium-high (binds the AI-DM plan's budget gates; compounds with Q-0080)
+**Status:** Answered (2026-06-10) — **Routed** → capture doc §5 (T-6) + §6; the AI-DM plan cites it when structured
+
+**Question:** The cost *mechanism* is decided (Q-0040: budget-capped seams,
+degrade-closed, never silent overspend) — but no number or posture exists for
+what the caps protect. What is the spend posture?
+
+**Answer (2026-06-10): "Hard ceiling, graceful degrade"** *(the recommended
+option)*. The owner names a comfortable €/month; per-guild and global caps
+derive from it; at the cap, AI features visibly rest ("the storyteller is
+sleeping") until reset.
+
+**Durable conclusions:**
+
+1. **One owner-set global ceiling → derived per-guild budgets.** Predictable
+   forever; no silent growth.
+2. **The € figure itself is still owed** — set it right after the first real
+   prod measurements (the model-loop prod check is already pending). Until
+   then: conservative low caps.
+3. **Degradation is visible and in-world** (storyteller-resting copy), never
+   silent — matches Q-0040's "never silent overspend".
+4. Public ambition (Q-0080) × cosmetic-only donations (Q-0039) × a fixed
+   ceiling = **tension T-6** (capture doc §5): at public scale this forces
+   default-off AI + tiny per-guild budgets + heavy caching; if AI ever proves
+   core to the public product, Q-0039 is the lever to revisit — owner's call,
+   flagged so nobody resolves it silently.
+
+### Q-0083 — Workflow autonomy end-state: how self-driving does the system get?
+
+**Area:** Collaboration model / agent ecosystem
+**Type:** Owner north-star decision (agent-initiated deep round)
+**Priority:** Medium (orients tooling/health/deploy work; changes nothing today)
+**Status:** Answered + clarified (2026-06-10) — **Routed** → collaboration-model north-star note; bot-awareness lane cites it when resumed
+
+**Question:** Today agents build and push; the owner merges, deploys,
+prod-checks; a 3am breakage waits for his next session. How self-driving
+should the system ultimately become — for breakage and for green mergeable
+work?
+
+**Answer (2026-06-10): "Full self-driving is the goal."** The bot detects its
+own issues, spawns its own fix sessions, merges green work, deploys with
+canary + auto-rollback; the owner steers by vision drops and vetoes.
+
+**Owner clarification (same conversation, verbatim):** "just to be clear,
+completely self driving is not yet a near term goal, but ultimately there
+will not be much else left to do if I keep implementing at the current
+speed."
+
+**Durable conclusions:**
+
+1. **End-state, not a grant.** Nothing changes today: agents do not merge or
+   deploy; the owner remains the merge/deploy/prod-check gate.
+2. **The path is graduated trust** — the Q-0048 standing-lift pattern
+   generalized into a ladder: autonomy tiers get proposed area-by-area through
+   this router as track record accumulates; each tier is its own owner
+   decision.
+3. **Arrival is demand-driven, not scheduled.** Full self-driving becomes
+   relevant as the implementation backlog thins ("not much else left to do").
+   Design health/deploy/tooling work so the system *could* get there
+   (bot-awareness plan, canary/rollback ideas align) without promoting it now.
+
+### Q-0084 — Merge autonomy granted: agents merge their own session PRs when done
+
+**Area:** Collaboration model / agent ecosystem — the **first granted Q-0083 trust tier**
+**Type:** Owner grant (unprompted, same conversation as Q-0083)
+**Priority:** High (changes every session's end protocol immediately)
+**Status:** Granted (2026-06-10) — **Routed** → CLAUDE.md session workflow; collaboration-model north-star note; ai-project-workflow §9
+
+**Owner statement (2026-06-10, verbatim):** "I do think claude agents should
+be able to merge, because now there are still often problems with merge
+conflicts when multiple agents are working, and I try to keep only 1 or 2
+agents active at the same time but I have too many ideas that I want to
+discuss and plan and execute, so it would be great if agents would merge
+their PRs whenever they feel like they are done."
+
+**The grant:** an agent **merges its own session PR itself** when it judges
+the work done — no waiting for the owner. Motivation: stale open PRs are the
+parallel-agent conflict window; prompt merges shrink it, which is what lets
+the owner run more agents at once (his stated goal — more ideas in flight).
+
+**The envelope (the existing quality bar, no new ceremony):**
+
+1. **CI green on the final head** — never merge red or unverified.
+2. **Re-fetch + merge `origin/main` first** (the §9 END-protocol sync);
+   UNION-resolve conflicts — the merging agent is the reconciler.
+3. **Merge-commit method** (repo convention on `main`).
+4. **Scope: your own session PR** (or one you were explicitly asked to
+   drive). Draft → ready → merge replaces draft → ready → wait.
+5. **Merge ≠ deploy.** Production restart / prod-checks / live eval items
+   remain the owner's — Q-0083's other gates are unchanged by this tier.
+6. The grant covers *completion*, not *scope approval*: if you're genuinely
+   unsure the work is wanted (not whether it's green), the existing act-vs-ask
+   rules still apply before merging.
+
+**First exercise:** PR #680 (this conversation) — main re-synced (#681
+absorbed, current-state same-line UNION), then merged by the agent.
