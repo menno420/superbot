@@ -48,6 +48,9 @@ def db(monkeypatch):
         upsert_row=AsyncMock(),
         delete_row=AsyncMock(return_value=True),
         delete_guild_rows=AsyncMock(return_value=3),
+        get_home_row=AsyncMock(return_value=None),
+        upsert_home_row=AsyncMock(),
+        delete_home_row=AsyncMock(return_value=True),
         invalidate=lambda *a, **k: mocks.invalidated.append(a),
         invalidated=[],
         audit=AsyncMock(return_value=True),
@@ -56,6 +59,9 @@ def db(monkeypatch):
     monkeypatch.setattr(db_module, "upsert_row", mocks.upsert_row)
     monkeypatch.setattr(db_module, "delete_row", mocks.delete_row)
     monkeypatch.setattr(db_module, "delete_guild_rows", mocks.delete_guild_rows)
+    monkeypatch.setattr(db_module, "get_home_row", mocks.get_home_row)
+    monkeypatch.setattr(db_module, "upsert_home_row", mocks.upsert_home_row)
+    monkeypatch.setattr(db_module, "delete_home_row", mocks.delete_home_row)
     monkeypatch.setattr(
         read_model,
         "invalidate_help_overlay_cache",
@@ -271,3 +277,78 @@ def test_unset_sentinel_is_module_stable():
     """UNSET must be identity-stable so partial edits are unambiguous."""
     assert mutation.UNSET is UNSET
     assert UNSET is not None
+
+
+# ---------------------------------------------------------------------------
+# set_home_message (Q-0059 — migration 067, PR B)
+# ---------------------------------------------------------------------------
+
+GUILD = 4242
+
+
+@pytest.mark.asyncio
+async def test_set_home_message_writes_merged_fields_and_audits(db):
+    result = await mutation.set_home_message(
+        GUILD,
+        actor=_admin(),
+        title="Welcome!",
+        color=0x57F287,
+    )
+
+    db.upsert_home_row.assert_awaited_once()
+    kwargs = db.upsert_home_row.await_args.kwargs
+    assert kwargs["home_title"] == "Welcome!"
+    assert kwargs["home_body"] is None  # UNSET field stays at its prev (None)
+    assert kwargs["home_color"] == 0x57F287
+    assert result.entity_kind == "home" and result.entity_key == "home"
+    assert db.invalidated  # cache invalidated
+    assert db.audit.await_args.kwargs["target"] == "home:home"
+
+
+@pytest.mark.asyncio
+async def test_set_home_message_unset_keeps_existing_field(db):
+    db.get_home_row.return_value = {
+        "home_title": "Old title",
+        "home_body": "Old body",
+        "home_color": None,
+    }
+    await mutation.set_home_message(GUILD, actor=_admin(), title="New title")
+
+    kwargs = db.upsert_home_row.await_args.kwargs
+    assert kwargs["home_title"] == "New title"
+    assert kwargs["home_body"] == "Old body"  # untouched
+
+
+@pytest.mark.asyncio
+async def test_set_home_message_all_none_deletes_row(db):
+    db.get_home_row.return_value = {
+        "home_title": "T",
+        "home_body": None,
+        "home_color": None,
+    }
+    result = await mutation.set_home_message(GUILD, actor=_admin(), title=None)
+
+    db.delete_home_row.assert_awaited_once()
+    db.upsert_home_row.assert_not_awaited()
+    assert result.new is None
+
+
+@pytest.mark.asyncio
+async def test_set_home_message_bounds(db):
+    with pytest.raises(mutation.InvalidHelpOverlayValueError):
+        await mutation.set_home_message(GUILD, actor=_admin(), title="x" * 257)
+    with pytest.raises(mutation.InvalidHelpOverlayValueError):
+        await mutation.set_home_message(GUILD, actor=_admin(), body="x" * 2001)
+    with pytest.raises(mutation.InvalidHelpOverlayValueError):
+        await mutation.set_home_message(GUILD, actor=_admin(), color=0x1000000)
+    with pytest.raises(mutation.InvalidHelpOverlayValueError):
+        await mutation.set_home_message(GUILD, actor=_admin(), color=True)
+    db.upsert_home_row.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_set_home_message_requires_admin(db):
+    with pytest.raises(mutation.UnauthorizedHelpOverlayMutationError):
+        await mutation.set_home_message(GUILD, actor=_member(), title="nope")
+    db.upsert_home_row.assert_not_awaited()
+    db.audit.assert_not_awaited()
