@@ -20,7 +20,33 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) + POST-CUTOVER-VERIFIED (#655); next = the decode backlog below**)
+## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED + CARRY-FORWARDS ALL DECODED (#655); next = backlog item 2, banana economy**)
+
+> **2026-06-10 (PR #655 continuation, the carry-forward decode pass):
+> `_CUTOVER_CARRYFORWARD` is EMPTY — every #649 carry-forward is now
+> mapper-decoded, and the audit reads 91 CLEAN · 0 DELTA · 0 SUSPECT** (was
+> 76/9/0; the mapper now reproduces 100% of every committed file). Decoded,
+> each committed-identity-verified at the decode site in `parse_gamedata.py`:
+> druid thorn rings (`SpiritOfTheForestModel` nested DoT zones — incl. **new**
+> Root-of-All-Nature paragon rings 10/15/30 dmg the wiki never had), engineer
+> typed sentries (`CreateTypedTowerModel`; paragon
+> `CreateSequencedTypedTowerCurrentIndexModel` towers[] + deduped deployed
+> child — sentries gained real per-type combat + 25s/19s lifespans), sub
+> Energizer/paragon (`SubmergeModel` neutral-filtered local/global/paragon
+> split + `MonkeySubParagonSupportModel` whose `*Bonus*` fields are **additive
+> +1 == committed totals**), bucc sellback (`CashbackZoneModel` decoded as the
+> committed-schema buff + **new** `cashbackMaxPercent` 0.95; the value-less
+> zone husk is gone), striker's two hero auras (`RateSupportExplosiveModel` /
+> `RateSupportBombExpertModel` — the dump also **fills committed holes**:
+> attack-speed on L7–17, Bomb-Shooter on L18+), and Magus' phoenix
+> (`TowerCreateParagonTowerModel` — five combat-identical skins dedupe to
+> one). The bucc-paragon Flagship carried-duplicate collapsed into two honest
+> entries split by the new structural `onlyAffectParagon` flag. Striker's
+> "150/250 staleness" note below was itself stale — committed already carried
+> the correct 0-immune-props split, re-verified against the dump. *(Found
+> during the pass, pre-existing, routed to item 6: hero-level `buffs` and
+> paragon `subtowers` render on no AI/menu surface yet — the new sentry/thorn
+> data DOES surface via tower-upgrade facts.)*
 
 > **2026-06-10 (PR #655, the post-cutover verification session): everything
 > re-verified against the dump at the cutover SHA** (`4e22e586`, v55.1) —
@@ -61,24 +87,14 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Post-cutover decode backlog (the new "do next", ordered)
 
-1. **Decode the carried-forward mechanisms** (each preserved verbatim from the
-   wiki-era data because the dump models it somewhere the walkers don't reach —
-   `parse_gamedata._CUTOVER_CARRYFORWARD` is the authoritative list):
-   - Druid thorn rings: nested on `SpiritOfTheForestModel`
-     (`damageOverTimeZoneModelFar/Middle/Close` + `closeRange`/`middleRange`).
-     **Known staleness carried:** raw v55.1 has `immuneBloonProperties` **0** on
-     150/250 (committed carries 17 on all five tiers) — fix lands with the decode.
-   - Engineer typed sentries: tier-4's `CreateTypedTowerModel` holds four
-     embedded TowerModels under `crushingTower`/`boomTower`/`coldTower`/
-     `energyTower`; the paragon's triple `SentryParagonChild` similarly.
-   - Sub Energizer: the effect lives on `SubmergeModel` itself
-     (`abilityCooldownSpeedScale`/`…Global`/`heroXpScale`) which sits
-     *neutrally* (1.0) on every submerged tier — needs neutral-value filtering
-     + a local/global split.
-   - Bucc sellback: `CashbackZoneModel` carries `cashbackZoneMultiplier` 0.04 /
-     `cashbackMaxPercent` 0.95 / maxStacks 3 — committed models it as a buff;
-     zone-ification needs a renderer/test migration.
-   - Magus Perfectus' phoenix: no spawn model the subtower walker resolves.
+1. ~~**Decode the carried-forward mechanisms**~~ — **DONE 2026-06-10 (PR #655
+   continuation)**: all of druid thorn rings (+ the paragon's, new), engineer
+   typed sentries + paragon roster, sub Energizer + paragon support, bucc
+   sellback (as the committed-schema buff, husk removed) + paragon Flagship
+   dedup, striker's two hero auras (+ dump fills the committed L7–17 /
+   L18+ holes), Magus' phoenix (5 skins → 1). `_CUTOVER_CARRYFORWARD` is
+   empty; audit 91 CLEAN · 0 DELTA · 0 SUSPECT. Evidence comments live at
+   each decode site; the ⭐ entry above is the summary.
 2. **Banana-economy decode (new answerability):** banana value lives on the
    banana projectile's `CashModel` (`minimum`/`maximum` 20→1200, `salvage`,
    `bonusMultiplier` 0.25) and banks on `BankModel` (`capacity` 7000/10000,
@@ -109,7 +125,14 @@ works** (the traps we hit), and what is still un-decoded.
    (b) Catalog/bloon facts still carry the internal-ish `fixture/btd6_data`
    label while stats facts say "BTD6 game data 55.1". (c)
    `btd6_context_service` `source_summary` says "data.ninjakiwi.com (Tier 1)"
-   even on fixture-only answers — a faithfulness wart.
+   even on fixture-only answers — a faithfulness wart. (d) *(decode pass)*
+   **hero-level `buffs` and paragon `subtowers` render on no surface**: tower
+   tiers render zones/buffs/subtowers via `tier_effect_lines` + the minion
+   facts, but the hero grounding/embeds skip the `buffs` array (Striker's
+   auras, now fully decoded, are invisible — as the carried versions were)
+   and the paragon embeds skip `subtowers` (the four Master-Builder sentries
+   / Magus' phoenix stats reach no user). Renderer work across both surfaces;
+   needs its own evidence pass over the 17 heroes + 13 paragons.
 
 ### Current state & next actions (READ FIRST)
 
@@ -348,6 +371,42 @@ decision.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-10 (the carry-forward decode pass, PR #655 continuation)
+
+Backlog item 1 executed end-to-end in the same session as the verification
+pass (maintainer: "you can continue"). The ⭐ entry carries the what; durable
+how/why:
+
+- **Evidence-first per mechanism, then one implementation pass.** Each of the
+  six mechanisms got its dump model inspected and value-compared against the
+  committed entries *before* any code: that's what surfaced the two premise
+  corrections (the backlog's "raw v55.1 has ibp 0 on 150/250, committed
+  carries 17" claim was inverted — committed already had the split; "the
+  paragon's triple SentryParagonChild" was actually towers[] holding three
+  *distinct* colour sentries with the child nested inside each) and the one
+  semantic transform (`MonkeySubParagonSupportModel`'s `*Bonus*` fields are
+  additive: +1 == committed totals, six field confirmations).
+- **The transplant mechanism quietly finished the job.** Committed-only
+  annotations (`filterInBaseTowerId`, the paragon global buff's neutral
+  `heroXpMultiplier: 1`) rode `_transplant_absent_fields` onto the decoded
+  entries by name-match — no carry-forward needed for a curated string on a
+  decoded entry.
+- **Scope dedupe, never blanket.** The first dedupe (name-excluded key over
+  *every* spawn) collapsed the four typed sentries and the two beasts in
+  minimal test fixtures — real entities differ in combat, but the hermetic
+  tests exposed the latent class. Final shape: dedupe only
+  `TowerCreateParagonTowerModel` lists (per-degree skins) and the sequenced
+  spawner's nested children.
+- **Decode wins over carried data, visibly:** striker gains the attack-speed
+  aura on L7–17 and Bomb-Shooter on L18+ (committed holes the dump fills);
+  sentries gain real per-type combat (Shatter/Explosion/Cold/Plasma) +
+  expiry lifespans (25s typed / 19s Modified); Root of All Nature gains its
+  thorn rings (10/15/30 dmg) — none of this existed in the wiki rows.
+- **The audit is now a true mirror**: 91 CLEAN · 0 DELTA · 0 SUSPECT — with
+  the carry-forward layer empty, any future nonzero DELTA is a real dump
+  change (or a mapper regression), not expected noise. The inventory report
+  regenerated to match.
 
 ### Session log — 2026-06-10 (post-cutover verification, PR #655)
 

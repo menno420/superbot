@@ -554,6 +554,22 @@ _SUBTOWER_SPAWN_TYPES: dict[str, tuple[str, ...]] = {
     "ComancheDefenceModel": ("towerModel",),
     "TowerCreateTowerModel": ("towerModel",),
     "TranceTotemSpawnerModel": ("tower",),
+    # Engineer 4-x-x Sentry Expert: the four typed sentries are embedded
+    # TowerModels on the sentry-spawner projectile (2026-06-10 decode pass).
+    "CreateTypedTowerModel": (
+        "crushingTower",
+        "boomTower",
+        "coldTower",
+        "energyTower",
+    ),
+    # Engineer paragon's sentry-pad ability: ``towers`` is a LIST of the
+    # three colour sentries (Green/Red/Blue); each nests a CreateTowerModel
+    # deploying the identical "SentryParagonChild" — handled (deduped) in
+    # ``_subtowers`` so the committed fourth roster entry survives.
+    "CreateSequencedTypedTowerCurrentIndexModel": ("towers",),
+    # Magus Perfectus' phoenix: ``towerModels`` lists five DarkPhoenixV1–V5
+    # variants (per-degree skins) verified combat-identical — deduped to one.
+    "TowerCreateParagonTowerModel": ("towerModels",),
 }
 
 
@@ -590,42 +606,92 @@ def _clean_subtower_name(nested: dict) -> str:
     return head if head and tail.isdigit() else name
 
 
+def _map_spawned_tower(spawn: dict, nested: dict) -> dict:
+    """One embedded TowerModel → a cleaned subtower node (+ lifespan)."""
+    node: dict = {"name": _clean_subtower_name(nested)}
+    node.update(_map_tier(nested, _subtower=True))
+    for src, dst in (
+        ("towerLifetime", "lifespan"),
+        ("towerLifetimeFrames", None),
+    ):
+        if dst and src in spawn:
+            node[dst] = _num(spawn[src])
+    # Persistent spawns carry their window on the embedded model's own
+    # TowerExpireModel, not the spawn (Heli's Marine 30s, Wizard's Lava
+    # Phoenix 20s — both committed-confirmed). Only fill when the spawn
+    # gave no (or a zero) lifespan, so timed spawns keep their value.
+    if not node.get("lifespan"):
+        for behavior in nested.get("behaviors", []) or []:
+            if (
+                isinstance(behavior, dict)
+                and _short_type(behavior) == "TowerExpireModel"
+            ):
+                value = behavior.get("lifespan")
+                if isinstance(value, (int, float)) and value:
+                    node["lifespan"] = _num(value)
+                break
+    return node
+
+
 def _subtowers(model: dict) -> list[dict]:
     """Spawned sub-towers ("minions") as cleaned tier nodes + their lifespan.
 
     Each nested ``TowerModel`` is mapped like any tier (its attacks/abilities),
     so questions like "Prince of Darkness minion pierce" resolve. ``_subtower``
     short-circuits the recursion so a minion's own (rare) spawns don't nest.
+
+    A spawn field may hold one TowerModel or a LIST of them (the engineer
+    paragon's three colour sentries; Magus' five phoenix skins). Dedupe is
+    **scoped**, never blanket: only ``TowerCreateParagonTowerModel`` list
+    entries (per-degree skins, combat-identical, differing only by name) and
+    the sequenced spawner's nested deployed children (three copies of one
+    sentry) collapse; every other spawn keeps historical one-entry-per-model
+    behaviour (two same-stat beasts must never merge).
     """
+
+    def _dedupe(nodes: list[dict]) -> list[dict]:
+        seen: set[str] = set()
+        kept: list[dict] = []
+        for node in nodes:
+            # Key excludes the display name — the variants differ only there.
+            key = json.dumps(
+                {k: v for k, v in node.items() if k != "name"},
+                sort_keys=True,
+                default=str,
+            )
+            if key not in seen:
+                seen.add(key)
+                kept.append(node)
+        return kept
+
     out: list[dict] = []
     for spawn in _find_spawn_models(model):
-        for field_name in _SUBTOWER_SPAWN_TYPES[_short_type(spawn)]:
-            nested = spawn.get(field_name)
-            if not isinstance(nested, dict):
-                continue
-            node: dict = {"name": _clean_subtower_name(nested)}
-            node.update(_map_tier(nested, _subtower=True))
-            for src, dst in (
-                ("towerLifetime", "lifespan"),
-                ("towerLifetimeFrames", None),
+        short = _short_type(spawn)
+        spawn_nodes: list[dict] = []
+        for field_name in _SUBTOWER_SPAWN_TYPES[short]:
+            value = spawn.get(field_name)
+            nested_list = value if isinstance(value, list) else [value]
+            for nested in nested_list:
+                if isinstance(nested, dict):
+                    spawn_nodes.append(_map_spawned_tower(spawn, nested))
+        if short == "TowerCreateParagonTowerModel":
+            spawn_nodes = _dedupe(spawn_nodes)
+        if short == "CreateSequencedTypedTowerCurrentIndexModel":
+            # The colour sentries each deploy an identical child sentry via a
+            # nested CreateTowerModel. Committed treats that child as part of
+            # this tower's roster ("Modified Sentry Paragon"), so emit it —
+            # deduped — alongside its parents rather than losing it to the
+            # minion-spawns-don't-nest rule.
+            child_nodes: list[dict] = []
+            for nested_spawn in _find_spawn_models(
+                [spawn.get(f) for f in _SUBTOWER_SPAWN_TYPES[short]],
             ):
-                if dst and src in spawn:
-                    node[dst] = _num(spawn[src])
-            # Persistent spawns carry their window on the embedded model's own
-            # TowerExpireModel, not the spawn (Heli's Marine 30s, Wizard's Lava
-            # Phoenix 20s — both committed-confirmed). Only fill when the spawn
-            # gave no (or a zero) lifespan, so timed spawns keep their value.
-            if not node.get("lifespan"):
-                for behavior in nested.get("behaviors", []) or []:
-                    if (
-                        isinstance(behavior, dict)
-                        and _short_type(behavior) == "TowerExpireModel"
-                    ):
-                        value = behavior.get("lifespan")
-                        if isinstance(value, (int, float)) and value:
-                            node["lifespan"] = _num(value)
-                        break
-            out.append(node)
+                for field_name in _SUBTOWER_SPAWN_TYPES[_short_type(nested_spawn)]:
+                    child = nested_spawn.get(field_name)
+                    if isinstance(child, dict):
+                        child_nodes.append(_map_spawned_tower(nested_spawn, child))
+            spawn_nodes += _dedupe(child_nodes)
+        out.extend(spawn_nodes)
     return out
 
 
@@ -673,6 +739,58 @@ _ZONE_RENAME: dict[str, str] = {
 }
 
 
+def _thorn_zones(sotf: dict) -> list[dict]:
+    """Spirit of the Forest's three thorn rings (Druid x5x), decoded from the
+    ``SpiritOfTheForestModel``'s nested ``damageOverTimeZoneModel{Far,Middle,
+    Close}`` → committed-schema zone entries. Verified field-identical against
+    the committed wiki-era entries on all five tiers (050/051/052/150/250),
+    including the path-1 crosspaths' ``immuneBloonProperties`` 0 (Avatar of
+    Wrath line pops everything; the rest are Sharp/17). Ranges live on the
+    SotF model itself: close=``closeRange``, middle=``middleRange``, far=∞
+    (no radius field, matching committed).
+    """
+    from utils.btd6.damage_types import decode_damage_type
+
+    out: list[dict] = []
+    radii = {"Close": sotf.get("closeRange"), "Middle": sotf.get("middleRange")}
+    for ring in ("Far", "Middle", "Close"):  # committed order
+        zone = sotf.get(f"damageOverTimeZoneModel{ring}")
+        if not isinstance(zone, dict):
+            continue
+        bm = zone.get("behaviorModel")
+        if not isinstance(bm, dict):
+            continue
+        entry: dict = {
+            "kind": "DamageOverTimeZone",
+            # The mutatorId is the stable per-ring discriminator
+            # ("SpiritOfTheForestFar"/"...Medium"/"...Close"); the curated
+            # rename maps it to "Thorn zone (far/middle/close)".
+            "name": str(zone.get("mutatorId") or f"SpiritOfTheForest{ring}"),
+            "damage": _num(bm.get("damage", 0)),
+        }
+        ibp = bm.get("immuneBloonProperties")
+        if isinstance(ibp, int):
+            dt = decode_damage_type(ibp)
+            entry["damage_type"] = dt.name
+            entry["cannot_pop"] = dt.cannot_pop
+            entry["immuneBloonProperties"] = ibp
+        entry["interval"] = _num(bm.get("interval", 0))
+        entry["initialDelay"] = _num(bm.get("initialDelay", 0))
+        entry["distributeToChildren"] = bool(bm.get("distributeToChildren", False))
+        # The nested tag bonus: additive vs the Ceramic+Moabs pair is the
+        # committed ``damageModifierForCeramicOrMoabs`` (14/4/8 close/mid/far).
+        # Only that exact tag set has a committed schema field — never guess.
+        tags = set(bm.get("bloonTagsList") or [])
+        additive = bm.get("additive")
+        if tags == {"Ceramic", "Moabs"} and isinstance(additive, (int, float)):
+            entry["damageModifierForCeramicOrMoabs"] = _num(additive)
+        radius = radii.get(ring)
+        if isinstance(radius, (int, float)) and radius:
+            entry["radius"] = _num(radius)
+        out.append(entry)
+    return out
+
+
 def _zones(model: dict) -> list[dict]:
     """Start of zone decoding: each ``*ZoneModel`` in the tier's top-level
     behaviors → a structured entry (kind + internal name + any decodable
@@ -684,6 +802,14 @@ def _zones(model: dict) -> list[dict]:
         if not isinstance(behavior, dict):
             continue
         short = _short_type(behavior)
+        if short == "SpiritOfTheForestModel":
+            out.extend(_thorn_zones(behavior))
+            continue
+        if short == "CashbackZoneModel":
+            # Modelled as a zone in the dump but a *buff* in the committed
+            # schema (the renderer's cashbackZoneMultiplier) — decoded in
+            # ``_buffs``; skipping here prevents a value-less zone husk.
+            continue
         if not short.endswith("ZoneModel"):
             continue
         entry: dict = {
@@ -861,6 +987,32 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     # {rateMultiplier 0.8, isGlobal} == dump {attackSpeedIncrease 0.8,
     # isGlobalRange} — identity.
     "FlagshipAttackSpeedIncreaseModel": {"attackSpeedIncrease": "rateMultiplier"},
+    # Buccaneer Favored Trades sellback aura (x-x-4; paragon carries a
+    # stronger copy). A *zone* in the dump but a buff in the committed
+    # schema — `_zones` skips it, this map owns it. Committed bucc 004
+    # {cashbackZoneMultiplier 0.04, maxStacks 3} == dump identity (paragon
+    # 0.12 / 1); ``cashbackMaxPercent`` 0.95 (sell back up to 95%) is new
+    # decoded information the wiki rows never carried.
+    "CashbackZoneModel": {
+        "cashbackZoneMultiplier": "cashbackZoneMultiplier",
+        "cashbackMaxPercent": "cashbackMaxPercent",
+    },
+    # Striker Jones' two carried-forward hero auras, both committed-identity
+    # (2026-06-10 decode pass):
+    #   * RateSupportExplosiveModel.multiplier 0.9 (L4+) / 0.81 (L18+) ==
+    #     committed "Attack speed buff" rateMultiplier (global, explosive
+    #     towers only — the filter is the model *type*; the committed
+    #     filterInBaseTowerId annotation rides the cutover transplant).
+    #     Bonus correction: the dump carries the buff on L7–17 too, where the
+    #     committed wiki rows had a hole.
+    #   * RateSupportBombExpertModel {rangeMultiplier 0.05, pierceMultiplier
+    #     0.25} == committed "Bomb Shooter buff" (L8+) — fraction semantics
+    #     (+5% range, +25% pierce), field-name identity.
+    "RateSupportExplosiveModel": {"multiplier": "rateMultiplier"},
+    "RateSupportBombExpertModel": {
+        "rangeMultiplier": "rangeMultiplier",
+        "pierceMultiplier": "pierceMultiplier",
+    },
 }
 
 # Effect-flag buffs: the model's *presence* is the whole effect (no number to
@@ -910,6 +1062,105 @@ _BUFF_TRIGGER: dict[str, str] = {
 }
 
 
+def _submerge_buffs(submerge: dict) -> list[dict]:
+    """Sub top-path submerge auras, decoded off the ``SubmergeModel`` itself.
+
+    The model sits on *every* submerged tier with neutral (1.0) values — only
+    a non-neutral scale is an effect, so each field is neutral-filtered
+    (Sub 300 emits nothing; committed 3xx agrees). Verified committed-identity
+    on every tier that has the effect (2026-06-10 decode pass):
+      * 4xx ``abilityCooldownSpeedScale`` 1.15 == committed "Ability cooldown
+        buff" (local; recharge-rate semantics, bigger = faster — the same
+        prose-pinned direction as AbilityCooldownScaleSupportModel);
+      * 5xx local 1.2 + ``abilityCooldownSpeedScaleGlobal`` 1.2 with
+        ``heroXpScale`` 1.5 == committed local + "(global)" pair;
+      * the paragon adds ``abilityCooldownSpeedScaleParagon`` 1.1 (0.0 on
+        non-paragon tiers = absent, not "frozen cooldowns") == committed
+        "(Paragon)" entry, and nests ``monkeySubParagonSupportModel`` whose
+        ``*Bonus*Multiplier`` fields are **additive bonuses** (+1 = the
+        committed totals: sub dmg 6→x7 / pierce 2→x3, hero dmg 5→x6 /
+        pierce 2→x3 — four confirmations) while ``heroRateMultiplier`` 1.3 /
+        ``heroXpMultiplier`` 5 are direct == committed "Sub buff"/"Hero buff".
+    Names are stable synthetic ids (the model's own ``buffLocsName`` exists
+    only on the paragon copy, so it cannot key all tiers); the curated rename
+    table maps them to the committed labels.
+    """
+
+    def _scale(field: str) -> float | None:
+        value = submerge.get(field)
+        if isinstance(value, (int, float)) and value not in (0.0, 1.0):
+            return float(value)
+        return None
+
+    out: list[dict] = []
+    local = _scale("abilityCooldownSpeedScale")
+    if local is not None:
+        out.append(
+            {
+                "kind": "SubmergeSupport",
+                "name": "SubmergeSupport",
+                "abilityCooldownMultiplier": _num(local),
+                "isGlobal": False,
+            },
+        )
+    global_scale = _scale("abilityCooldownSpeedScaleGlobal")
+    if global_scale is not None:
+        entry: dict = {
+            "kind": "SubmergeSupport",
+            "name": "SubmergeSupportGlobal",
+            "abilityCooldownMultiplier": _num(global_scale),
+            "isGlobal": True,
+        }
+        hero_xp = _scale("heroXpScale")
+        if hero_xp is not None:
+            entry["heroXpMultiplier"] = _num(hero_xp)
+        out.append(entry)
+    paragon_scale = _scale("abilityCooldownSpeedScaleParagon")
+    if paragon_scale is not None:
+        out.append(
+            {
+                "kind": "SubmergeSupport",
+                "name": "SubmergeSupportParagon",
+                "abilityCooldownMultiplier": _num(paragon_scale),
+                "isGlobal": False,
+                "filterOutNonParagon": True,
+            },
+        )
+    support = submerge.get("monkeySubParagonSupportModel")
+    if isinstance(support, dict):
+        sub_dmg = support.get("subBonusDamageMultiplier")
+        sub_pierce = support.get("subBonusPierceMultiplier")
+        if isinstance(sub_dmg, (int, float)) and isinstance(sub_pierce, (int, float)):
+            out.append(
+                {
+                    "kind": "MonkeySubParagonSupport",
+                    "name": "MonkeySubParagonSupportSub",
+                    "pierceMultiplier": _num(sub_pierce + 1),
+                    "damageMultiplier": _num(sub_dmg + 1),
+                    "isGlobal": bool(support.get("isGlobal", False)),
+                },
+            )
+        hero_dmg = support.get("heroBonusDamageMultiplier")
+        hero_pierce = support.get("heroBonusPierceMultiplier")
+        if isinstance(hero_dmg, (int, float)) and isinstance(hero_pierce, (int, float)):
+            entry = {
+                "kind": "MonkeySubParagonSupport",
+                "name": "MonkeySubParagonSupportHero",
+                "pierceMultiplier": _num(hero_pierce + 1),
+                "damageMultiplier": _num(hero_dmg + 1),
+                "isGlobal": bool(support.get("isGlobal", False)),
+            }
+            for src, dst in (
+                ("heroRateMultiplier", "rateMultiplier"),
+                ("heroXpMultiplier", "heroXpMultiplier"),
+            ):
+                value = support.get(src)
+                if isinstance(value, (int, float)) and value != 1.0:
+                    entry[dst] = _num(value)
+            out.append(entry)
+    return out
+
+
 def _buffs(model: dict) -> list[dict]:
     """Start of buff decoding: each confirmed ``*SupportModel``/``*BuffModel`` in
     the tier's top-level behaviors → a structured entry with its decoded effect
@@ -923,6 +1174,9 @@ def _buffs(model: dict) -> list[dict]:
         if not isinstance(behavior, dict):
             continue
         short = _short_type(behavior)
+        if short == "SubmergeModel":
+            out.extend(_submerge_buffs(behavior))
+            continue
         field_map = _BUFF_FIELD_MAP.get(short)
         nested_tag = short in _BUFF_DAMAGE_MODIFIER_TYPES
         flags = _BUFF_FLAG_TYPES.get(short)
@@ -972,6 +1226,12 @@ def _buffs(model: dict) -> list[dict]:
             # Several aura models spell the flag ``isGlobalRange`` (Trade
             # Empire, Flagship, Echosense, Central Market) — same meaning.
             entry["isGlobal"] = bool(behavior["isGlobalRange"])
+        # Structural copy like isGlobal: the Bucc paragon ships TWO Flagship
+        # aura instances — one buffing everything, one paragon-only extra —
+        # identical in every emitted number; this flag is the only honest
+        # discriminator between them.
+        if behavior.get("onlyAffectParagon"):
+            entry["onlyAffectParagon"] = True
         # Stack cap — a faithful structural copy of the dump's own field (no
         # transform, like ``isGlobal``). Two names encode the same concept:
         # ``maxStacks`` on most towers, ``maxStackSize`` on Sniper/Ninja/Mermonkey.
@@ -1874,11 +2134,37 @@ _CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
     "adora": {"BallOfLightTower": "Ball of Light"},
     "alchemist": {"TransformedBaseMonkey": "Transformed Monkey"},
     "desperado": {"BuffIconVigilante": "Nomad buff"},
-    "druid": {"PoplustBuff": "Poplust buff"},
+    "druid": {
+        "PoplustBuff": "Poplust buff",
+        # Spirit of the Forest thorn rings (keyed by the zone mutatorId —
+        # note the game spells the middle ring "Medium").
+        "SpiritOfTheForestClose": "Thorn zone (close)",
+        "SpiritOfTheForestMedium": "Thorn zone (middle)",
+        "SpiritOfTheForestFar": "Thorn zone (far)",
+    },
+    "druid:paragon": {
+        # Root of All Nature carries the same three rings (10/15/30 dmg —
+        # new decoded data; the wiki rows never had the paragon's thorns).
+        "SpiritOfTheForestClose": "Thorn zone (close)",
+        "SpiritOfTheForestMedium": "Thorn zone (middle)",
+        "SpiritOfTheForestFar": "Thorn zone (far)",
+    },
     "engineer_monkey": {
         "StartOfRoundRateBuff": "Start-of-round buff",
         # The 5-x-x Sentry Champion's spawned sentry — the committed label.
         "SentryParagon": "Champion Sentry",
+        # The 4-x-x typed sentries (CreateTypedTowerModel embeds).
+        "SentryCrushing": "Crushing Sentry",
+        "SentryBoom": "Boom Sentry",
+        "SentryCold": "Cold Sentry",
+        "SentryEnergy": "Energy Sentry",
+    },
+    "engineer_monkey:paragon": {
+        "SentryParagonGreen": "Green Sentry Paragon",
+        "SentryParagonRed": "Red Sentry Paragon",
+        "SentryParagonBlue": "Blue Sentry Paragon",
+        # The deployed child sentry the three colours share (deduped).
+        "SentryParagonChild": "Modified Sentry Paragon",
     },
     "heli_pilot": {
         "MoabShoveZoneModel": "MOAB Shove",
@@ -1901,12 +2187,28 @@ _CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
         "TradeEmpireBuff": "Trade Empire buff",
         "CarrierFlagShipBuff": "Flagship buff",
         "BuccaneerPlane": "Plane",
+        # x-x-4 Favored Trades sellback aura (CashbackZoneModel buffLocsName).
+        "BuffIconBuccaneerxx4": "Sellback rate buff",
     },
     "monkey_buccaneer:paragon": {
         "TradeEmpireParagonBuff": "Trade Empire buff",
         "BuccaneerParagonPlane": "Plane",
+        "BuffIconBuccaneerxx4": "Sellback rate buff",
+        # Two instances on the paragon: everyone + the onlyAffectParagon extra.
+        "CarrierFlagShipBuff": "Flagship buff",
     },
-    "monkey_sub": {"SubCommanderBuff": "Sub Commander buff"},
+    "monkey_sub": {
+        "SubCommanderBuff": "Sub Commander buff",
+        "SubmergeSupport": "Ability cooldown buff",
+        "SubmergeSupportGlobal": "Ability cooldown buff (global)",
+    },
+    "monkey_sub:paragon": {
+        "SubmergeSupport": "Ability cooldown buff",
+        "SubmergeSupportGlobal": "Ability cooldown buff (global)",
+        "SubmergeSupportParagon": "Ability cooldown buff (Paragon)",
+        "MonkeySubParagonSupportSub": "Sub buff",
+        "MonkeySubParagonSupportHero": "Hero buff",
+    },
     "ninja_monkey": {"ShinobiTacticsBuff": "Shinobi Tactics"},
     "ninja_monkey:paragon": {
         "ShinobiTacticsBuff": "Shinobi Tactics",
@@ -1920,6 +2222,11 @@ _CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
         "StrikerJonesProjectileRadiusBuff": "Projectile radius buff",
         # L5+: bloons in radius lose their Black-damage resistance.
         "AddBehaviorToBloonInZoneModel": "Black resistance modifier",
+        # L4+ explosive-towers attack-speed aura (buffLocsName) and the
+        # L8+ Bomb Shooter range/pierce aura (type-name fallback — its
+        # buffLocsName is empty in the dump).
+        "ArtilleryCommanderBuff": "Attack speed buff",
+        "RateSupportBombExpert": "Bomb Shooter buff",
     },
     "super_monkey": {
         # Sun Temple / True Sun God sacrifice minions — readable labels for
@@ -1938,6 +2245,13 @@ _CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
         # (committed "Phoenix": mapped PermaPhoenix, no lifespan — permanent).
         "LordPhoenix": "Lava Phoenix",
         "PermaPhoenix": "Phoenix",
+    },
+    "wizard_monkey:paragon": {
+        # Magus' phoenix: TowerCreateParagonTowerModel lists five
+        # combat-identical per-degree skins; the dedupe keeps the first.
+        # If a dump reorder ever surfaces V2 first, the rename misses and
+        # the name guard hard-stops — re-pin deliberately then.
+        "DarkPhoenixV1": "Phoenix",
     },
 }
 
@@ -1967,85 +2281,20 @@ _CUTOVER_NAME_RETIREMENTS: dict[str, frozenset[str]] = {
 }
 
 # Committed entries the mapper cannot yet reproduce from the dump — carried
-# forward verbatim (matched by name, per tier). Each is real, previously
-# verified data whose dump mechanism is still undecoded; dropping it at the
-# cutover would regress live answers. Decode notes live in
-# btd6-gamedata-decode-status.md (post-cutover backlog).
-_CUTOVER_CARRYFORWARD: dict[str, frozenset[tuple[str, str]]] = {
-    # Spirit of the Forest's three thorn rings (close/middle/far) — the zone
-    # damage model is not a top-level *ZoneModel in v55.1.
-    "druid": frozenset(
-        {
-            ("zones", "Thorn zone (close)"),
-            ("zones", "Thorn zone (middle)"),
-            ("zones", "Thorn zone (far)"),
-        },
-    ),
-    # Sentry Expert's four typed sentries: the dump selects them via an
-    # external reference the subtower walker doesn't resolve (no embedded
-    # towerModel on the 4-x-x spawner).
-    "engineer_monkey": frozenset(
-        {
-            ("subtowers", "Crushing Sentry"),
-            ("subtowers", "Boom Sentry"),
-            ("subtowers", "Cold Sentry"),
-            ("subtowers", "Energy Sentry"),
-        },
-    ),
-    "engineer_monkey:paragon": frozenset(
-        {
-            ("subtowers", "Red Sentry Paragon"),
-            ("subtowers", "Green Sentry Paragon"),
-            ("subtowers", "Blue Sentry Paragon"),
-            ("subtowers", "Modified Sentry Paragon"),
-        },
-    ),
-    # Energizer's ability-cooldown auras live on the SubmergeModel itself
-    # (abilityCooldownSpeedScale / …Global / heroXpScale), which also sits
-    # neutrally on every submerged tier — a clean decode needs neutral-value
-    # filtering + a local/global split, deferred post-cutover.
-    "monkey_sub": frozenset(
-        {
-            ("buffs", "Ability cooldown buff"),
-            ("buffs", "Ability cooldown buff (global)"),
-        },
-    ),
-    "monkey_sub:paragon": frozenset(
-        {
-            ("buffs", "Ability cooldown buff"),
-            ("buffs", "Ability cooldown buff (global)"),
-            ("buffs", "Ability cooldown buff (Paragon)"),
-            ("buffs", "Sub buff"),
-            ("buffs", "Hero buff"),
-        },
-    ),
-    # The x-x-4 sellback aura: committed as a buff carrying the renderer's
-    # cashbackZoneMultiplier; the dump models it as a CashbackZoneModel whose
-    # numbers the zone walker doesn't emit yet (zone-ification is a
-    # post-cutover item).
-    "monkey_buccaneer": frozenset({("buffs", "Sellback rate buff")}),
-    "monkey_buccaneer:paragon": frozenset(
-        {
-            ("buffs", "Flagship buff"),
-            ("buffs", "Sellback rate buff"),
-        },
-    ),
-    "striker_jones": frozenset(
-        {
-            ("buffs", "Attack speed buff"),
-            ("buffs", "Bomb Shooter buff"),
-        },
-    ),
-    # Magus Perfectus' phoenix — no spawn model the subtower walker resolves.
-    "wizard_monkey:paragon": frozenset({("subtowers", "Phoenix")}),
-}
+# forward verbatim (matched by name, per tier). EMPTY since the 2026-06-10
+# decode pass: every #649 carry-forward (druid thorn rings, engineer typed
+# sentries incl. the paragon roster, sub Energizer/paragon-support auras,
+# bucc sellback + paragon Flagship, striker's two hero auras, Magus' phoenix)
+# is now mapper-decoded — see the per-mechanism evidence comments at each
+# decode site. The machinery stays: it is the safety valve for any future
+# dump shape the walkers can't reach yet.
+_CUTOVER_CARRYFORWARD: dict[str, frozenset[tuple[str, str]]] = {}
 
 # Mapped entries dropped at the merge — only where a curated carry-forward
-# supersedes them and the mapped entry would be unlabelable noise (three
-# identical "SentryParagonChild" nodes vs the four committed typed paragons).
-_CUTOVER_ENTRY_DROPS: dict[str, frozenset[tuple[str, str]]] = {
-    "engineer_monkey:paragon": frozenset({("subtowers", "SentryParagonChild")}),
-}
+# supersedes them and the mapped entry would be unlabelable noise. Empty since
+# the 2026-06-10 decode pass (the former SentryParagonChild drop is now the
+# decoded, deduped "Modified Sentry Paragon").
+_CUTOVER_ENTRY_DROPS: dict[str, frozenset[tuple[str, str]]] = {}
 
 _EFFECT_CLASSES = ("zones", "buffs", "subtowers")
 

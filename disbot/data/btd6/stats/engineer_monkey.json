@@ -6608,12 +6608,6 @@
           "filterInvisible": false
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "code": "400",
-      "crosspath": "4-0-0",
       "subtowers": [
         {
           "name": "Crushing Sentry",
@@ -6622,6 +6616,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -6639,7 +6635,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Shatter",
@@ -6648,11 +6643,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForCeramic": 4,
-                  "blockerCollisionRebound": true,
-                  "clearCollidedWith": true,
                   "speed": 150,
-                  "lifespan": 1
+                  "lifespan": 1,
+                  "damageModifierForCeramic": 4,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -6664,13 +6658,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Boom Sentry",
@@ -6679,6 +6671,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -6696,9 +6690,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -6709,7 +6703,6 @@
                   "canCollisionBeBlockedByMapLos": true,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 4,
                   "maxDamage": 0,
                   "damage_type": "Explosion",
@@ -6718,8 +6711,7 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 1,
-                  "lifespan": 0.1
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -6731,13 +6723,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Cold Sentry",
@@ -6746,6 +6736,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -6763,9 +6755,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -6776,36 +6768,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "effects": [
-                    {
-                      "name": "Freeze",
-                      "layers": 2,
-                      "lifespan": 1.5,
-                      "multiplier": 0,
-                      "canFreezeMoabs": false,
-                      "mutationId": "Ice:Regular:Freeze",
-                      "cascadeMutators": true,
-                      "applyAfterDamage": false
-                    },
-                    {
-                      "name": "Permafrost",
-                      "layers": 2,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": true,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Permafrost:Normal",
-                      "lifespan": 9999999,
-                      "multiplier": 0.5
-                    }
-                  ],
-                  "filterInvisible": true,
-                  "filterOutMoabs": true,
-                  "filterMutatedTarget": "Frozen",
-                  "filterBloonIfDamageType": "Lead",
-                  "filterOutFrozen": true,
                   "damage": 1,
                   "maxDamage": -1,
                   "damage_type": "Cold",
@@ -6814,8 +6776,17 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true,
+                  "effects": [
+                    {
+                      "name": "Ice",
+                      "lifespan": 1.5
+                    },
+                    {
+                      "name": "Permafrost",
+                      "lifespan": 9999999
+                    }
+                  ]
                 }
               ],
               "count": 1,
@@ -6824,18 +6795,14 @@
               "attackThroughWalls": false,
               "framesBeforeRetarget": 0,
               "sharedGridRange": 0,
-              "filterInvisible": true,
-              "filterOutMoabs": true,
-              "filterOutFrozen": true
+              "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Energy Sentry",
@@ -6844,6 +6811,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -6861,7 +6830,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Energy",
@@ -6870,9 +6838,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 2,
                   "speed": 280,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "damageModifierForMoabs": 2,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -6884,15 +6853,19 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "400",
+      "crosspath": "4-0-0"
     },
     "401": {
       "placeableOnLand": true,
@@ -6968,12 +6941,6 @@
           "filterInvisible": false
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "code": "401",
-      "crosspath": "4-0-1",
       "subtowers": [
         {
           "name": "Crushing Sentry",
@@ -6982,6 +6949,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -6999,7 +6968,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Shatter",
@@ -7008,11 +6976,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForCeramic": 4,
-                  "blockerCollisionRebound": true,
-                  "clearCollidedWith": true,
                   "speed": 150,
-                  "lifespan": 1
+                  "lifespan": 1,
+                  "damageModifierForCeramic": 4,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7024,13 +6991,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Boom Sentry",
@@ -7039,6 +7004,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7056,9 +7023,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -7069,7 +7036,6 @@
                   "canCollisionBeBlockedByMapLos": true,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 4,
                   "maxDamage": 0,
                   "damage_type": "Explosion",
@@ -7078,8 +7044,7 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 1,
-                  "lifespan": 0.1
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7091,13 +7056,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Cold Sentry",
@@ -7106,6 +7069,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7123,9 +7088,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -7136,36 +7101,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "effects": [
-                    {
-                      "name": "Freeze",
-                      "layers": 2,
-                      "lifespan": 1.5,
-                      "multiplier": 0,
-                      "canFreezeMoabs": false,
-                      "mutationId": "Ice:Regular:Freeze",
-                      "cascadeMutators": true,
-                      "applyAfterDamage": false
-                    },
-                    {
-                      "name": "Permafrost",
-                      "layers": 2,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": true,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Permafrost:Normal",
-                      "lifespan": 9999999,
-                      "multiplier": 0.5
-                    }
-                  ],
-                  "filterInvisible": true,
-                  "filterOutMoabs": true,
-                  "filterMutatedTarget": "Frozen",
-                  "filterBloonIfDamageType": "Lead",
-                  "filterOutFrozen": true,
                   "damage": 1,
                   "maxDamage": -1,
                   "damage_type": "Cold",
@@ -7174,8 +7109,17 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true,
+                  "effects": [
+                    {
+                      "name": "Ice",
+                      "lifespan": 1.5
+                    },
+                    {
+                      "name": "Permafrost",
+                      "lifespan": 9999999
+                    }
+                  ]
                 }
               ],
               "count": 1,
@@ -7184,18 +7128,14 @@
               "attackThroughWalls": false,
               "framesBeforeRetarget": 0,
               "sharedGridRange": 0,
-              "filterInvisible": true,
-              "filterOutMoabs": true,
-              "filterOutFrozen": true
+              "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Energy Sentry",
@@ -7204,6 +7144,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7221,7 +7163,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Energy",
@@ -7230,9 +7171,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 2,
                   "speed": 280,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "damageModifierForMoabs": 2,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7244,15 +7186,19 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "401",
+      "crosspath": "4-0-1"
     },
     "402": {
       "placeableOnLand": true,
@@ -7328,12 +7274,6 @@
           "filterInvisible": false
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "code": "402",
-      "crosspath": "4-0-2",
       "subtowers": [
         {
           "name": "Crushing Sentry",
@@ -7342,6 +7282,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7359,7 +7301,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Shatter",
@@ -7368,26 +7309,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForCeramic": 4,
-                  "blockerCollisionRebound": true,
-                  "clearCollidedWith": true,
                   "speed": 150,
                   "lifespan": 1,
-                  "effects": [
-                    {
-                      "name": "Stun",
-                      "layers": 3,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": false,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Stun:Weak",
-                      "lifespan": 1,
-                      "multiplier": 0
-                    }
-                  ]
+                  "damageModifierForCeramic": 4,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7399,13 +7324,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Boom Sentry",
@@ -7414,6 +7337,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7431,9 +7356,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -7444,7 +7369,6 @@
                   "canCollisionBeBlockedByMapLos": true,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 4,
                   "maxDamage": 0,
                   "damage_type": "Explosion",
@@ -7453,23 +7377,7 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 1,
-                  "lifespan": 0.1,
-                  "effects": [
-                    {
-                      "name": "Stun",
-                      "layers": 3,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": false,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Stun:Weak",
-                      "lifespan": 1,
-                      "multiplier": 0
-                    }
-                  ]
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7481,13 +7389,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Cold Sentry",
@@ -7496,6 +7402,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7513,9 +7421,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -7526,36 +7434,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "effects": [
-                    {
-                      "name": "Freeze",
-                      "layers": 2,
-                      "lifespan": 1.5,
-                      "multiplier": 0,
-                      "canFreezeMoabs": false,
-                      "mutationId": "Ice:Regular:Freeze",
-                      "cascadeMutators": true,
-                      "applyAfterDamage": false
-                    },
-                    {
-                      "name": "Permafrost",
-                      "layers": 2,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": true,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Permafrost:Normal",
-                      "lifespan": 9999999,
-                      "multiplier": 0.5
-                    }
-                  ],
-                  "filterInvisible": true,
-                  "filterOutMoabs": true,
-                  "filterMutatedTarget": "Frozen",
-                  "filterBloonIfDamageType": "Lead",
-                  "filterOutFrozen": true,
                   "damage": 1,
                   "maxDamage": -1,
                   "damage_type": "Cold",
@@ -7564,8 +7442,17 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true,
+                  "effects": [
+                    {
+                      "name": "Ice",
+                      "lifespan": 1.5
+                    },
+                    {
+                      "name": "Permafrost",
+                      "lifespan": 9999999
+                    }
+                  ]
                 }
               ],
               "count": 1,
@@ -7574,18 +7461,14 @@
               "attackThroughWalls": false,
               "framesBeforeRetarget": 0,
               "sharedGridRange": 0,
-              "filterInvisible": true,
-              "filterOutMoabs": true,
-              "filterOutFrozen": true
+              "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Energy Sentry",
@@ -7594,6 +7477,8 @@
           "placeableOnTrack": false,
           "range": 50,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7611,7 +7496,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Energy",
@@ -7620,24 +7504,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 2,
                   "speed": 280,
                   "lifespan": 0.6,
-                  "effects": [
-                    {
-                      "name": "Stun",
-                      "layers": 3,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": false,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Stun:Weak",
-                      "lifespan": 1,
-                      "multiplier": 0
-                    }
-                  ]
+                  "damageModifierForMoabs": 2,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7649,15 +7519,19 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "402",
+      "crosspath": "4-0-2"
     },
     "410": {
       "placeableOnLand": true,
@@ -7733,12 +7607,6 @@
           "filterInvisible": false
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "code": "410",
-      "crosspath": "4-1-0",
       "subtowers": [
         {
           "name": "Crushing Sentry",
@@ -7747,6 +7615,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7764,7 +7634,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Shatter",
@@ -7773,11 +7642,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForCeramic": 4,
-                  "blockerCollisionRebound": true,
-                  "clearCollidedWith": true,
                   "speed": 150,
-                  "lifespan": 1
+                  "lifespan": 1,
+                  "damageModifierForCeramic": 4,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7789,13 +7657,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Boom Sentry",
@@ -7804,6 +7670,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7821,9 +7689,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -7834,7 +7702,6 @@
                   "canCollisionBeBlockedByMapLos": true,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 4,
                   "maxDamage": 0,
                   "damage_type": "Explosion",
@@ -7843,8 +7710,7 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 1,
-                  "lifespan": 0.1
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -7856,13 +7722,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Cold Sentry",
@@ -7871,6 +7735,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7888,9 +7754,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -7901,36 +7767,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "effects": [
-                    {
-                      "name": "Freeze",
-                      "layers": 2,
-                      "lifespan": 1.5,
-                      "multiplier": 0,
-                      "canFreezeMoabs": false,
-                      "mutationId": "Ice:Regular:Freeze",
-                      "cascadeMutators": true,
-                      "applyAfterDamage": false
-                    },
-                    {
-                      "name": "Permafrost",
-                      "layers": 2,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": true,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Permafrost:Normal",
-                      "lifespan": 9999999,
-                      "multiplier": 0.5
-                    }
-                  ],
-                  "filterInvisible": true,
-                  "filterOutMoabs": true,
-                  "filterMutatedTarget": "Frozen",
-                  "filterBloonIfDamageType": "Lead",
-                  "filterOutFrozen": true,
                   "damage": 1,
                   "maxDamage": -1,
                   "damage_type": "Cold",
@@ -7939,8 +7775,17 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 0,
-                  "lifespan": 0.05
+                  "filterInvisible": true,
+                  "effects": [
+                    {
+                      "name": "Ice",
+                      "lifespan": 1.5
+                    },
+                    {
+                      "name": "Permafrost",
+                      "lifespan": 9999999
+                    }
+                  ]
                 }
               ],
               "count": 1,
@@ -7949,18 +7794,14 @@
               "attackThroughWalls": false,
               "framesBeforeRetarget": 0,
               "sharedGridRange": 0,
-              "filterInvisible": true,
-              "filterOutMoabs": true,
-              "filterOutFrozen": true
+              "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Energy Sentry",
@@ -7969,6 +7810,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -7986,7 +7829,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Energy",
@@ -7995,9 +7837,10 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 2,
                   "speed": 280,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "damageModifierForMoabs": 2,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -8009,15 +7852,19 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "410",
+      "crosspath": "4-1-0"
     },
     "420": {
       "placeableOnLand": true,
@@ -8095,12 +7942,6 @@
           "filterInvisible": false
         }
       ],
-      "targetTypeFirst": true,
-      "targetTypeLast": true,
-      "targetTypeClose": true,
-      "targetTypeStrong": true,
-      "code": "420",
-      "crosspath": "4-2-0",
       "subtowers": [
         {
           "name": "Crushing Sentry",
@@ -8109,6 +7950,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -8126,7 +7969,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Shatter",
@@ -8135,13 +7977,12 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForCeramic": 4,
-                  "blockerCollisionRebound": true,
-                  "clearCollidedWith": true,
                   "speed": 150,
                   "lifespan": 1,
+                  "damageModifierForCeramic": 4,
                   "damageModifierForFortified": 1,
-                  "damageModifierForMoabs": 1
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -8153,13 +7994,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Boom Sentry",
@@ -8168,6 +8007,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -8185,9 +8026,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -8198,7 +8039,6 @@
                   "canCollisionBeBlockedByMapLos": true,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 4,
                   "maxDamage": 0,
                   "damage_type": "Explosion",
@@ -8207,10 +8047,9 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 1,
-                  "lifespan": 0.1,
                   "damageModifierForFortified": 1,
-                  "damageModifierForMoabs": 1
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -8222,13 +8061,11 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Cold Sentry",
@@ -8237,6 +8074,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -8254,9 +8093,9 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 4,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "speed": 180,
-                  "lifespan": 0.6
+                  "lifespan": 0.6,
+                  "filterInvisible": true
                 },
                 {
                   "name": "Explosion",
@@ -8267,36 +8106,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 18,
                   "vsBlockerRadius": 0,
-                  "effects": [
-                    {
-                      "name": "Freeze",
-                      "layers": 2,
-                      "lifespan": 1.5,
-                      "multiplier": 0,
-                      "canFreezeMoabs": false,
-                      "mutationId": "Ice:Regular:Freeze",
-                      "cascadeMutators": true,
-                      "applyAfterDamage": false
-                    },
-                    {
-                      "name": "Permafrost",
-                      "layers": 2,
-                      "glueLevel": 0,
-                      "isUnique": true,
-                      "dontRefreshDuration": false,
-                      "cascadeMutators": true,
-                      "removeMutatorIfNotMatching": false,
-                      "matchLayersWithDamage": false,
-                      "mutationId": "Permafrost:Normal",
-                      "lifespan": 9999999,
-                      "multiplier": 0.5
-                    }
-                  ],
-                  "filterInvisible": true,
-                  "filterOutMoabs": true,
-                  "filterMutatedTarget": "Frozen",
-                  "filterBloonIfDamageType": "Lead",
-                  "filterOutFrozen": true,
                   "damage": 1,
                   "maxDamage": -1,
                   "damage_type": "Cold",
@@ -8305,10 +8114,19 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "rounds": 0,
-                  "lifespan": 0.05,
                   "damageModifierForFortified": 1,
-                  "damageModifierForMoabs": 1
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true,
+                  "effects": [
+                    {
+                      "name": "Ice",
+                      "lifespan": 1.5
+                    },
+                    {
+                      "name": "Permafrost",
+                      "lifespan": 9999999
+                    }
+                  ]
                 }
               ],
               "count": 1,
@@ -8317,18 +8135,14 @@
               "attackThroughWalls": false,
               "framesBeforeRetarget": 0,
               "sharedGridRange": 0,
-              "filterInvisible": true,
-              "filterOutMoabs": true,
-              "filterOutFrozen": true
+              "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         },
         {
           "name": "Energy Sentry",
@@ -8337,6 +8151,8 @@
           "placeableOnTrack": false,
           "range": 54,
           "towerSelectionMenuThemeId": "Default",
+          "footprintRadius": 4,
+          "doesntBlockTowerPlacement": true,
           "attacks": [
             {
               "name": "Attack",
@@ -8354,7 +8170,6 @@
                   "canCollisionBeBlockedByMapLos": false,
                   "radius": 5,
                   "vsBlockerRadius": 0,
-                  "filterInvisible": true,
                   "damage": 2,
                   "maxDamage": 0,
                   "damage_type": "Energy",
@@ -8363,10 +8178,11 @@
                   "distributeToChildren": true,
                   "overrideDistributeBlocker": false,
                   "ignoreImmunityDestroy": false,
-                  "damageModifierForMoabs": 3,
                   "speed": 280,
                   "lifespan": 0.6,
-                  "damageModifierForFortified": 1
+                  "damageModifierForFortified": 1,
+                  "damageModifierForMoabs": 1,
+                  "filterInvisible": true
                 }
               ],
               "count": 1,
@@ -8378,15 +8194,19 @@
               "filterInvisible": true
             }
           ],
-          "footprintRadius": 4,
-          "doesntBlockTowerPlacement": true,
-          "lifespan": 25,
           "targetTypeFirst": true,
           "targetTypeLast": true,
           "targetTypeClose": true,
-          "targetTypeStrong": true
+          "targetTypeStrong": true,
+          "lifespan": 25
         }
-      ]
+      ],
+      "targetTypeFirst": true,
+      "targetTypeLast": true,
+      "targetTypeClose": true,
+      "targetTypeStrong": true,
+      "code": "420",
+      "crosspath": "4-2-0"
     },
     "500": {
       "placeableOnLand": true,

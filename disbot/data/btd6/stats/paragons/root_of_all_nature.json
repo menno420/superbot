@@ -150,6 +150,46 @@
         "lifespan": 60
       }
     ],
+    "zones": [
+      {
+        "kind": "DamageOverTimeZone",
+        "name": "Thorn zone (far)",
+        "damage": 10,
+        "damage_type": "Normal",
+        "cannot_pop": "Can damage any Bloon type",
+        "immuneBloonProperties": 0,
+        "interval": 0.5,
+        "initialDelay": 0,
+        "distributeToChildren": true,
+        "damageModifierForCeramicOrMoabs": 100
+      },
+      {
+        "kind": "DamageOverTimeZone",
+        "name": "Thorn zone (middle)",
+        "damage": 15,
+        "damage_type": "Normal",
+        "cannot_pop": "Can damage any Bloon type",
+        "immuneBloonProperties": 0,
+        "interval": 0.5,
+        "initialDelay": 0,
+        "distributeToChildren": true,
+        "damageModifierForCeramicOrMoabs": 150,
+        "radius": 100
+      },
+      {
+        "kind": "DamageOverTimeZone",
+        "name": "Thorn zone (close)",
+        "damage": 30,
+        "damage_type": "Normal",
+        "cannot_pop": "Can damage any Bloon type",
+        "immuneBloonProperties": 0,
+        "interval": 0.5,
+        "initialDelay": 0,
+        "distributeToChildren": true,
+        "damageModifierForCeramicOrMoabs": 300,
+        "radius": 50
+      }
+    ],
     "targetTypeFirst": true,
     "targetTypeLast": true,
     "targetTypeClose": true,

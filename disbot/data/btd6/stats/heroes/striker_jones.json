@@ -375,23 +375,24 @@
           ]
         }
       ],
+      "buffs": [
+        {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "level": 4,
-      "description": "All Bomb Shooters and Mortar Monkeys on screen shoot 10% faster.",
-      "buffs": [
-        {
-          "name": "Attack speed buff",
-          "isGlobal": true,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rateMultiplier": 0.9,
-          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
-        }
-      ]
+      "description": "All Bomb Shooters and Mortar Monkeys on screen shoot 10% faster."
     },
     "5": {
       "placeableOnLand": true,
@@ -512,23 +513,24 @@
           "chance": 0.5
         }
       ],
+      "buffs": [
+        {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "level": 5,
-      "description": "Makes all Black Bloons less resistant to explosive damage from all Monkeys.",
-      "buffs": [
-        {
-          "name": "Attack speed buff",
-          "isGlobal": true,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rateMultiplier": 0.9,
-          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
-        }
-      ]
+      "description": "Makes all Black Bloons less resistant to explosive damage from all Monkeys."
     },
     "6": {
       "placeableOnLand": true,
@@ -649,23 +651,24 @@
           "chance": 0.5
         }
       ],
+      "buffs": [
+        {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "level": 6,
-      "description": "Blast radius and pops for Jones' normal attacks increases greatly.",
-      "buffs": [
-        {
-          "name": "Attack speed buff",
-          "isGlobal": true,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rateMultiplier": 0.9,
-          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
-        }
-      ]
+      "description": "Blast radius and pops for Jones' normal attacks increases greatly."
     },
     "7": {
       "placeableOnLand": true,
@@ -791,6 +794,13 @@
         }
       ],
       "buffs": [
+        {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
         {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
@@ -934,20 +944,28 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportBombExpert",
+          "name": "Bomb Shooter buff",
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
+        },
+        {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
           "isGlobal": true,
           "maxStackSize": 0
-        },
-        {
-          "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
         }
       ],
       "targetTypeFirst": true,
@@ -1082,20 +1100,28 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportBombExpert",
+          "name": "Bomb Shooter buff",
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
+        },
+        {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
           "isGlobal": true,
           "maxStackSize": 0
-        },
-        {
-          "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
         }
       ],
       "targetTypeFirst": true,
@@ -1234,6 +1260,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -1241,13 +1274,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -1386,6 +1420,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -1393,13 +1434,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -1538,6 +1580,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -1545,13 +1594,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -1690,6 +1740,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -1697,13 +1754,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -1842,6 +1900,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -1849,13 +1914,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -1994,6 +2060,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -2001,13 +2074,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -2146,6 +2220,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -2153,13 +2234,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -2298,6 +2380,13 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.9,
+          "isGlobal": true,
+          "maxStackSize": 0
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -2305,13 +2394,14 @@
           "maxStackSize": 0
         },
         {
+          "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "isGlobal": false,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
           "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false
         }
       ],
       "targetTypeFirst": true,
@@ -2450,6 +2540,16 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.81,
+          "isGlobal": true,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -2457,13 +2557,12 @@
           "maxStackSize": 0
         },
         {
-          "name": "Attack speed buff",
-          "isGlobal": true,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rateMultiplier": 0.81,
-          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+          "kind": "RateSupportBombExpert",
+          "name": "Bomb Shooter buff",
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2602,6 +2701,16 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.81,
+          "isGlobal": true,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -2609,13 +2718,12 @@
           "maxStackSize": 0
         },
         {
-          "name": "Attack speed buff",
-          "isGlobal": true,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rateMultiplier": 0.81,
-          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+          "kind": "RateSupportBombExpert",
+          "name": "Bomb Shooter buff",
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,
@@ -2754,6 +2862,16 @@
       ],
       "buffs": [
         {
+          "kind": "RateSupportExplosive",
+          "name": "Attack speed buff",
+          "rateMultiplier": 0.81,
+          "isGlobal": true,
+          "maxStackSize": 0,
+          "customRadius": 0,
+          "appliesToOwningTower": false,
+          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+        },
+        {
           "kind": "ProjectileRadiusSupport",
           "name": "Projectile radius buff",
           "radiusMultiplier": 1.1,
@@ -2761,13 +2879,12 @@
           "maxStackSize": 0
         },
         {
-          "name": "Attack speed buff",
-          "isGlobal": true,
-          "customRadius": 0,
-          "appliesToOwningTower": false,
-          "maxStackSize": 0,
-          "rateMultiplier": 0.81,
-          "filterInBaseTowerId": "Bomb Shooter, Mortar Monkey"
+          "kind": "RateSupportBombExpert",
+          "name": "Bomb Shooter buff",
+          "rangeMultiplier": 0.05,
+          "pierceMultiplier": 0.25,
+          "isGlobal": false,
+          "maxStackSize": 0
         }
       ],
       "targetTypeFirst": true,

@@ -5161,19 +5161,20 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.15,
+          "isGlobal": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "400",
-      "crosspath": "4-0-0",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.15
-        }
-      ]
+      "crosspath": "4-0-0"
     },
     "401": {
       "placeableOnLand": false,
@@ -5268,19 +5269,20 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.15,
+          "isGlobal": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "401",
-      "crosspath": "4-0-1",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.15
-        }
-      ]
+      "crosspath": "4-0-1"
     },
     "402": {
       "placeableOnLand": false,
@@ -5396,19 +5398,20 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.15,
+          "isGlobal": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "402",
-      "crosspath": "4-0-2",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.15
-        }
-      ]
+      "crosspath": "4-0-2"
     },
     "410": {
       "placeableOnLand": false,
@@ -5503,19 +5506,20 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.15,
+          "isGlobal": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "410",
-      "crosspath": "4-1-0",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.15
-        }
-      ]
+      "crosspath": "4-1-0"
     },
     "420": {
       "placeableOnLand": false,
@@ -5610,19 +5614,20 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.15,
+          "isGlobal": false
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "420",
-      "crosspath": "4-2-0",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.15
-        }
-      ]
+      "crosspath": "4-2-0"
     },
     "500": {
       "placeableOnLand": false,
@@ -5718,25 +5723,27 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": false
+        },
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff (global)",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": true,
+          "heroXpMultiplier": 1.5
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "500",
-      "crosspath": "5-0-0",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.2
-        },
-        {
-          "name": "Ability cooldown buff (global)",
-          "isGlobal": true,
-          "abilityCooldownMultiplier": 1.2,
-          "heroXpMultiplier": 1.5
-        }
-      ]
+      "crosspath": "5-0-0"
     },
     "501": {
       "placeableOnLand": false,
@@ -5832,25 +5839,27 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": false
+        },
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff (global)",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": true,
+          "heroXpMultiplier": 1.5
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "501",
-      "crosspath": "5-0-1",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.2
-        },
-        {
-          "name": "Ability cooldown buff (global)",
-          "isGlobal": true,
-          "abilityCooldownMultiplier": 1.2,
-          "heroXpMultiplier": 1.5
-        }
-      ]
+      "crosspath": "5-0-1"
     },
     "502": {
       "placeableOnLand": false,
@@ -5967,25 +5976,27 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": false
+        },
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff (global)",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": true,
+          "heroXpMultiplier": 1.5
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "502",
-      "crosspath": "5-0-2",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.2
-        },
-        {
-          "name": "Ability cooldown buff (global)",
-          "isGlobal": true,
-          "abilityCooldownMultiplier": 1.2,
-          "heroXpMultiplier": 1.5
-        }
-      ]
+      "crosspath": "5-0-2"
     },
     "510": {
       "placeableOnLand": false,
@@ -6081,25 +6092,27 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": false
+        },
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff (global)",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": true,
+          "heroXpMultiplier": 1.5
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "510",
-      "crosspath": "5-1-0",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.2
-        },
-        {
-          "name": "Ability cooldown buff (global)",
-          "isGlobal": true,
-          "abilityCooldownMultiplier": 1.2,
-          "heroXpMultiplier": 1.5
-        }
-      ]
+      "crosspath": "5-1-0"
     },
     "520": {
       "placeableOnLand": false,
@@ -6195,25 +6208,27 @@
           "filterInvisible": false
         }
       ],
+      "buffs": [
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": false
+        },
+        {
+          "kind": "SubmergeSupport",
+          "name": "Ability cooldown buff (global)",
+          "abilityCooldownMultiplier": 1.2,
+          "isGlobal": true,
+          "heroXpMultiplier": 1.5
+        }
+      ],
       "targetTypeFirst": true,
       "targetTypeLast": true,
       "targetTypeClose": true,
       "targetTypeStrong": true,
       "code": "520",
-      "crosspath": "5-2-0",
-      "buffs": [
-        {
-          "name": "Ability cooldown buff",
-          "isGlobal": false,
-          "abilityCooldownMultiplier": 1.2
-        },
-        {
-          "name": "Ability cooldown buff (global)",
-          "isGlobal": true,
-          "abilityCooldownMultiplier": 1.2,
-          "heroXpMultiplier": 1.5
-        }
-      ]
+      "crosspath": "5-2-0"
     }
   },
   "paragon_cost": 400000,

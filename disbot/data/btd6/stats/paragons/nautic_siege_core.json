@@ -123,50 +123,55 @@
         "cooldown": 240
       }
     ],
-    "targetTypeFirst": true,
-    "targetTypeLast": true,
-    "targetTypeClose": true,
-    "targetTypeStrong": true,
     "buffs": [
       {
+        "kind": "SubmergeSupport",
         "name": "Ability cooldown buff",
-        "isGlobal": false,
-        "abilityCooldownMultiplier": 1.3
+        "abilityCooldownMultiplier": 1.3,
+        "isGlobal": false
       },
       {
+        "kind": "SubmergeSupport",
         "name": "Ability cooldown buff (global)",
-        "isGlobal": true,
         "abilityCooldownMultiplier": 1.2,
+        "isGlobal": true,
         "heroXpMultiplier": 1
       },
       {
+        "kind": "SubmergeSupport",
         "name": "Ability cooldown buff (Paragon)",
-        "isGlobal": false,
         "abilityCooldownMultiplier": 1.1,
+        "isGlobal": false,
         "filterOutNonParagon": true
       },
       {
+        "kind": "MonkeySubParagonSupport",
         "name": "Sub buff",
+        "pierceMultiplier": 3,
+        "damageMultiplier": 7,
         "isGlobal": false,
         "customRadius": 0,
         "appliesToOwningTower": false,
         "maxStackSize": 0,
-        "pierceMultiplier": 3,
-        "damageMultiplier": 7,
         "filterInBaseTowerId": "Monkey Sub"
       },
       {
+        "kind": "MonkeySubParagonSupport",
         "name": "Hero buff",
+        "pierceMultiplier": 3,
+        "damageMultiplier": 6,
         "isGlobal": false,
+        "rateMultiplier": 1.3,
+        "heroXpMultiplier": 5,
         "customRadius": 0,
         "appliesToOwningTower": false,
         "maxStackSize": 0,
-        "pierceMultiplier": 3,
-        "damageMultiplier": 6,
-        "rateMultiplier": 1.3,
-        "heroXpMultiplier": 5,
         "filterInSets": "Hero"
       }
-    ]
+    ],
+    "targetTypeFirst": true,
+    "targetTypeLast": true,
+    "targetTypeClose": true,
+    "targetTypeStrong": true
   }
 }

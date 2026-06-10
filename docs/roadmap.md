@@ -175,15 +175,19 @@ provenance schema is implemented.
   merge layer (curated names preserved + set-level name guard); Q-0067
   (Farm/Village full tiers + decoded income auras) and Q-0068 (per-tier beast
   names) executed in the same pass; source labels now read "BTD6 game data".
-- **Post-cutover verification (2026-06-10 — PR #655)** — dump fidelity
-  re-proven (byte-identical regeneration, rounds parity 140/140), all 2,022
-  menu embeds + the AI tool battery green; fixed: mode-rules dark data (now on
-  both surfaces), the `!btd6 diagnostics` 400, the version-stamp-rot class
-  (everything reports 55.1), the container-path leak.
-  **Next:** the post-cutover decode backlog (carried-forward mechanisms, banana
-  economy, the buff/zone tail, the #655 answerability-gap items) — ⭐ header of
-  [decode-status](btd6/btd6-gamedata-decode-status.md) — plus the maintainer's
-  live spot-check of the new surfaces.
+- **Post-cutover verification + carry-forward decode pass (2026-06-10 — PR
+  #655)** — dump fidelity re-proven (byte-identical regeneration, rounds
+  parity 140/140), all 2,022 menu embeds + the AI tool battery green; fixed:
+  mode-rules dark data (now on both surfaces), the `!btd6 diagnostics` 400,
+  the version-stamp-rot class (everything reports 55.1), the container-path
+  leak. Then **every #649 carry-forward decoded** (`_CUTOVER_CARRYFORWARD`
+  empty; audit **91 CLEAN / 0 DELTA / 0 SUSPECT**) — druid + paragon thorn
+  rings, engineer typed-sentry rosters, sub Energizer/paragon support, bucc
+  sellback + Flagship dedup, striker auras (+ dump fills committed holes),
+  Magus phoenix.
+  **Next:** decode-status ⭐ item 2 (banana economy), the buff/zone tail, the
+  #655 answerability-gap items (5–6) — plus the maintainer's live spot-check
+  of the new surfaces.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.

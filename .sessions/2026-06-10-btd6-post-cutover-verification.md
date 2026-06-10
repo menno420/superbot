@@ -71,3 +71,27 @@ groomed in place. No new `docs/ideas/` entries warranted.
 **Resume point:** decode-status ⭐ — backlog item 1 (carried-forward mechanism
 decodes; the original plan for this session, untouched) or item 5 if the
 maintainer wants menu answerability parity first. PR #655 review = the diff.
+
+## Continuation (same session): the carry-forward decode pass
+
+The maintainer said "you can continue" → executed decode-status backlog
+item 1 end-to-end in the same PR: **all six carried-forward mechanisms are
+now mapper-decoded and `_CUTOVER_CARRYFORWARD` is empty; the audit reads
+91 CLEAN · 0 DELTA · 0 SUSPECT** (the mapper reproduces 100% of every
+committed file). Per-mechanism evidence + premise corrections + the additive
+`*Bonus*`+1 transform live in decode-status' decode-pass session log; new
+data shipped along the way (druid-paragon thorn rings, sentry combat +
+lifespans, striker L7–17/L18+ hole fills, `cashbackMaxPercent`).
+
+Additional process learnings:
+- **Hermetic minimal fixtures catch what real-data regen can't:** the
+  blanket name-excluded dedupe looked fine on real data (all real variants
+  differ in combat) — the bare test fixtures collapsed and exposed the
+  latent class. Scope a dedupe to the structures that need it.
+- **The backlog's own notes needed source-verification** (two premise
+  corrections above) — "verify cross-agent output" applies to your own
+  prior session's backlog notes too.
+
+**Resume point (updated):** decode-status ⭐ item 2 (banana-economy decode)
+is the next decode slice; items 5–6 (deterministic-Ask domains; hero-buff /
+paragon-subtower surfaces + label polish) are the answerability lane.
