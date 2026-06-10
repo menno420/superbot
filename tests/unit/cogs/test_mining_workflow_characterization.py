@@ -17,22 +17,22 @@ from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
-from cogs.mining import market as market_mod
 from services import mining_workflow
 from services.economy_service import InsufficientFundsError
+from utils.mining import market as market_mod
 from utils.mining import workshop as workshop_mod
 
 # Current owners — the RS02 extraction updates these (and only these).
 _WS = "services.mining_workflow"
-_MK = "cogs.mining.market"
+_MK = "services.mining_workflow"
 
 craft = mining_workflow.craft
 repair = mining_workflow.repair
 quick_craft = mining_workflow.quick_craft
 wear_tick = mining_workflow.wear_tick
-buy = market_mod.apply_buy
-sell = market_mod.apply_sell
-sell_all = market_mod.apply_sell_all
+buy = mining_workflow.buy
+sell = mining_workflow.sell
+sell_all = mining_workflow.sell_all
 
 
 ACTION_MINE = workshop_mod.ACTION_MINE
@@ -412,7 +412,7 @@ async def test_sell_messages_and_reason():
         ),
         patch(f"{_MK}.db.update_mining_item", new_callable=AsyncMock),
         patch(
-            f"{_MK}.economy_service.credit",
+            f"{_MK}.economy_service.credit_in_txn",
             new_callable=AsyncMock,
             return_value=115,
         ) as credit,
@@ -443,7 +443,7 @@ async def test_sell_all_messages():
         ),
         patch(f"{_MK}.db.update_mining_item", new_callable=AsyncMock) as remove,
         patch(
-            f"{_MK}.economy_service.credit",
+            f"{_MK}.economy_service.credit_in_txn",
             new_callable=AsyncMock,
             return_value=109,
         ),
@@ -464,7 +464,7 @@ async def test_buy_messages_and_reason():
 
     with (
         patch(
-            f"{_MK}.economy_service.debit",
+            f"{_MK}.economy_service.debit_in_txn",
             new_callable=AsyncMock,
             side_effect=InsufficientFundsError("no"),
         ),
@@ -475,7 +475,7 @@ async def test_buy_messages_and_reason():
 
     with (
         patch(
-            f"{_MK}.economy_service.debit",
+            f"{_MK}.economy_service.debit_in_txn",
             new_callable=AsyncMock,
             return_value=90,
         ) as debit,
@@ -488,7 +488,7 @@ async def test_buy_messages_and_reason():
         "Use `!equip torch` to wear it."
     )
     assert debit.await_args.kwargs["reason"] == "mining:buy_gear"
-    grant.assert_awaited_once_with("1", 99, "torch", 1)
+    grant.assert_awaited_once_with("1", 99, "torch", 1, conn=ANY)
 
 
 # ---------------------------------------------------------------------------

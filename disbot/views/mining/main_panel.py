@@ -31,8 +31,6 @@ from core.runtime.persistent_views import PersistentView, register
 from services import mining_workflow
 from utils import db, equipment
 from utils.mining import items, workshop, world
-from utils.mining.exploration import explore_from_state
-from utils.mining.rewards import roll_harvest_amount
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
@@ -172,16 +170,15 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        gid = interaction.guild_id
-        inventory = await db.get_mining_inventory(user_id, gid)
-        wood_amount = roll_harvest_amount(has_axe=inventory.get("axe", 0) > 0)
-        await db.update_mining_item(user_id, gid, "wood", wood_amount)
+        result = await mining_workflow.harvest(
+            interaction.user.id,
+            interaction.guild_id,
+        )
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=(
                 f"{interaction.user.mention} chopped wood and collected "
-                f"**{wood_amount}x wood**!"
+                f"**{result.amount}x wood**!"
             ),
             color=SUCCESS_COLOR,
         )
@@ -204,34 +201,20 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        gid = interaction.guild_id
-        inventory = await db.get_mining_inventory(user_id, gid)
-        equipped = await db.get_equipment(user_id, gid)
-        depth = await db.get_depth(user_id, gid)
-        text, item, amount = explore_from_state(
-            equipped,
-            inventory,
-            biome=world.biome_for_depth(depth),
-        )
-        if item:
-            await db.update_mining_item(user_id, gid, item, amount)
-        wear = await mining_workflow.wear_tick(
+        result = await mining_workflow.explore(
             interaction.user.id,
-            gid,
-            action=workshop.ACTION_EXPLORE,
-            depth=depth,
-            equipped=equipped,
+            interaction.guild_id,
         )
         description = (
-            f"{interaction.user.mention} {text}\n_{world.describe_position(depth)}_"
+            f"{interaction.user.mention} {result.text}\n"
+            f"_{world.describe_position(result.depth)}_"
         )
-        if wear.notes:
-            description += "\n" + "\n".join(wear.notes)
+        if result.wear.notes:
+            description += "\n" + "\n".join(result.wear.notes)
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=description,
-            color=SUCCESS_COLOR if amount >= 0 else ERROR_COLOR,
+            color=SUCCESS_COLOR if result.amount >= 0 else ERROR_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
@@ -367,22 +350,20 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        gid = interaction.guild_id
-        depth = await db.get_depth(user_id, gid)
-        stats = equipment.compute_stats(await db.get_equipment(user_id, gid))
-        new_depth = world.descend(depth, stats)
-        if new_depth == depth:
+        result = await mining_workflow.descend(
+            interaction.user.id,
+            interaction.guild_id,
+        )
+        if not result.moved:
             description = (
                 f"{interaction.user.mention} can't descend any deeper.\n"
-                f"_{world.descend_hint(stats)}_"
+                f"_{result.hint}_"
             )
             color = ERROR_COLOR
         else:
-            await db.set_depth(user_id, gid, new_depth)
             description = (
                 f"{interaction.user.mention} descended to "
-                f"**{world.describe_position(new_depth)}**."
+                f"**{world.describe_position(result.depth)}**."
             )
             color = SUCCESS_COLOR
         embed = discord.Embed(
@@ -409,18 +390,17 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        user_id = str(interaction.user.id)
-        gid = interaction.guild_id
-        depth = await db.get_depth(user_id, gid)
-        new_depth = world.ascend(depth)
-        if new_depth == depth:
+        result = await mining_workflow.ascend(
+            interaction.user.id,
+            interaction.guild_id,
+        )
+        if not result.moved:
             description = f"{interaction.user.mention} is already at the **Surface**."
             color = MINING_COLOR
         else:
-            await db.set_depth(user_id, gid, new_depth)
             description = (
                 f"{interaction.user.mention} climbed up to "
-                f"**{world.describe_position(new_depth)}**."
+                f"**{world.describe_position(result.depth)}**."
             )
             color = SUCCESS_COLOR
         embed = discord.Embed(

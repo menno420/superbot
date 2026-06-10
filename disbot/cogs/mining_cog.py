@@ -3,8 +3,8 @@
 Domain logic, UI components, and modals have moved to their own
 modules per ``docs/architecture.md`` §"Subsystem decomposition":
 
-    cogs/mining/recipes.py      — JSON recipe loader
-    cogs/mining/rewards.py      — loot tables (pure functions)
+    utils/mining/                — pure domain (items, rewards, world, recipes…)
+    services/mining_workflow.py — the audited write boundary (RS02)
     views/mining/mine_view.py   — !mine ephemeral 3-button view
     views/mining/main_panel.py  — MiningHubView (PersistentView) + _BuildModal
 
@@ -21,12 +21,10 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import market
 from core.runtime import panel_manager
 from services import mining_workflow
 from utils import db, equipment
-from utils.mining import workshop, world
-from utils.mining.exploration import explore_from_state
+from utils.mining import market, workshop, world
 from utils.mining.items import total_value
 from utils.mining.recipes import load_recipes
 from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
@@ -49,16 +47,6 @@ class MiningCog(commands.Cog):
         if ctx.guild is None:
             raise commands.NoPrivateMessage()
         return True
-
-    async def update_inventory(
-        self,
-        user_id,
-        guild_id: int,
-        item,
-        amount: int = 1,
-    ) -> None:
-        """Delegate to the DB CRUD helper (S4.1 retained for command paths)."""
-        await db.update_mining_item(str(user_id), guild_id, item, amount)
 
     # ------------------------------------------------------------------ commands
 
@@ -113,14 +101,10 @@ class MiningCog(commands.Cog):
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
-        from utils.mining.rewards import roll_harvest_amount
-
-        user_id = str(ctx.author.id)
-        inventory = await db.get_mining_inventory(user_id, ctx.guild.id)
-        wood_amount = roll_harvest_amount(has_axe=inventory.get("axe", 0) > 0)
-        await self.update_inventory(ctx.author.id, ctx.guild.id, "wood", wood_amount)
+        result = await mining_workflow.harvest(ctx.author.id, ctx.guild.id)
         await ctx.send(
-            f"{ctx.author.mention} chopped wood and collected {wood_amount}x wood!",
+            f"{ctx.author.mention} chopped wood and collected "
+            f"{result.amount}x wood!",
         )
 
     @commands.command(
@@ -241,28 +225,13 @@ class MiningCog(commands.Cog):
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def explore(self, ctx):
         """Discover random events or items (driven by your gear and depth)."""
-        user_id = str(ctx.author.id)
-        gid = ctx.guild.id
-        inventory = await db.get_mining_inventory(user_id, gid)
-        equipped = await db.get_equipment(user_id, gid)
-        depth = await db.get_depth(user_id, gid)
-        text, item, amount = explore_from_state(
-            equipped,
-            inventory,
-            biome=world.biome_for_depth(depth),
+        result = await mining_workflow.explore(ctx.author.id, ctx.guild.id)
+        message = (
+            f"{ctx.author.mention} {result.text}\n"
+            f"_{world.describe_position(result.depth)}_"
         )
-        if item:
-            await self.update_inventory(user_id, gid, item, amount)
-        wear = await mining_workflow.wear_tick(
-            ctx.author.id,
-            gid,
-            action=workshop.ACTION_EXPLORE,
-            depth=depth,
-            equipped=equipped,
-        )
-        message = f"{ctx.author.mention} {text}\n_{world.describe_position(depth)}_"
-        if wear.notes:
-            message += "\n" + "\n".join(wear.notes)
+        if result.wear.notes:
+            message += "\n" + "\n".join(result.wear.notes)
         await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
@@ -270,24 +239,10 @@ class MiningCog(commands.Cog):
         """Use a special item from your inventory (e.g., torch, dynamite)."""
         if not item:
             return await ctx.send("Please specify an item to use, e.g. `!use torch`.")
-
-        user_id = str(ctx.author.id)
-        gid = ctx.guild.id
-        item = item.lower()
-
-        inventory = await db.get_mining_inventory(user_id, gid)
-        if inventory.get(item, 0) < 1:
-            return await ctx.send(f"You don't have **{item}** to use.")
-
-        if item == "torch":
-            message = "You light a torch and peer into the darkness..."
-        elif item == "dynamite":
-            message = "You ignite dynamite and blow a new path in the mine!"
-        else:
-            message = f"You used **{item}**, but nothing special happened."
-
-        await self.update_inventory(user_id, gid, item, -1)
-        await ctx.send(f"{ctx.author.mention} {message}")
+        result = await mining_workflow.use_item(ctx.author.id, ctx.guild.id, item)
+        if not result.ok:
+            return await ctx.send(result.message)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
 
     # ---------------------------------------------------------- gear / equipment
 
@@ -296,19 +251,10 @@ class MiningCog(commands.Cog):
         """Equip a tool, light, or charm so its stats apply to your character."""
         if not item:
             return await ctx.send("Specify what to equip, e.g. `!equip iron pickaxe`.")
-        item = item.strip().lower()
-        slot = equipment.slot_for(item)
-        if slot is None:
-            return await ctx.send(f"**{item.title()}** can't be equipped.")
-        user_id = str(ctx.author.id)
-        gid = ctx.guild.id
-        inventory = await db.get_mining_inventory(user_id, gid)
-        if inventory.get(item, 0) < 1:
-            return await ctx.send(f"You don't own a **{item.title()}** to equip.")
-        await db.equip_item(user_id, gid, slot, item)
-        await ctx.send(
-            f"{ctx.author.mention} equipped **{item.title()}** in the **{slot}** slot.",
-        )
+        result = await mining_workflow.equip(ctx.author.id, ctx.guild.id, item)
+        if not result.ok:
+            return await ctx.send(result.message)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
     async def unequip(self, ctx, *, slot: str = None):
@@ -317,13 +263,10 @@ class MiningCog(commands.Cog):
             return await ctx.send(
                 f"Specify a slot to clear: {', '.join(equipment.SLOTS)}.",
             )
-        slot = slot.strip().lower()
-        if slot not in equipment.SLOTS:
-            return await ctx.send(
-                f"Unknown slot **{slot}**. Slots: {', '.join(equipment.SLOTS)}.",
-            )
-        await db.unequip_slot(str(ctx.author.id), ctx.guild.id, slot)
-        await ctx.send(f"{ctx.author.mention} cleared the **{slot}** slot.")
+        result = await mining_workflow.unequip(ctx.author.id, ctx.guild.id, slot)
+        if not result.ok:
+            return await ctx.send(result.message)
+        await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
     async def gear(self, ctx):
@@ -386,35 +329,27 @@ class MiningCog(commands.Cog):
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def descend(self, ctx):
         """Descend one mining band deeper (gated by your equipped light)."""
-        user_id = str(ctx.author.id)
-        gid = ctx.guild.id
-        depth = await db.get_depth(user_id, gid)
-        stats = equipment.compute_stats(await db.get_equipment(user_id, gid))
-        new_depth = world.descend(depth, stats)
-        if new_depth == depth:
+        result = await mining_workflow.descend(ctx.author.id, ctx.guild.id)
+        if not result.moved:
             await ctx.send(
-                f"{ctx.author.mention} can't descend any deeper. "
-                f"{world.descend_hint(stats)}",
+                f"{ctx.author.mention} can't descend any deeper. {result.hint}",
             )
             return
-        await db.set_depth(user_id, gid, new_depth)
         await ctx.send(
-            f"{ctx.author.mention} descended to {world.describe_position(new_depth)}.",
+            f"{ctx.author.mention} descended to "
+            f"{world.describe_position(result.depth)}.",
         )
 
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def ascend(self, ctx):
         """Climb one mining band back toward the surface."""
-        user_id = str(ctx.author.id)
-        gid = ctx.guild.id
-        depth = await db.get_depth(user_id, gid)
-        new_depth = world.ascend(depth)
-        if new_depth == depth:
+        result = await mining_workflow.ascend(ctx.author.id, ctx.guild.id)
+        if not result.moved:
             await ctx.send(f"{ctx.author.mention} is already at the Surface.")
             return
-        await db.set_depth(user_id, gid, new_depth)
         await ctx.send(
-            f"{ctx.author.mention} climbed up to {world.describe_position(new_depth)}.",
+            f"{ctx.author.mention} climbed up to "
+            f"{world.describe_position(result.depth)}.",
         )
 
     # ---------------------------------------------------------- market
@@ -426,7 +361,7 @@ class MiningCog(commands.Cog):
             return await ctx.send(
                 "Specify what to sell, e.g. `!sell iron 10` — or `!sellall`.",
             )
-        result = await market.apply_sell(ctx.author.id, ctx.guild.id, item, amount)
+        result = await mining_workflow.sell(ctx.author.id, ctx.guild.id, item, amount)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(
@@ -436,7 +371,7 @@ class MiningCog(commands.Cog):
     )
     async def sell_all(self, ctx):
         """Sell every raw resource in your inventory for coins."""
-        result = await market.apply_sell_all(ctx.author.id, ctx.guild.id)
+        result = await mining_workflow.sell_all(ctx.author.id, ctx.guild.id)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(hidden=True, extras={"classification": "panel_action"})
@@ -444,7 +379,7 @@ class MiningCog(commands.Cog):
         """Buy gear with coins (e.g. `!buy iron sword`)."""
         if not item:
             return await ctx.send("Specify what to buy — see `!market` for the shop.")
-        result = await market.apply_buy(ctx.author.id, ctx.guild.id, item)
+        result = await mining_workflow.buy(ctx.author.id, ctx.guild.id, item)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(
@@ -528,7 +463,11 @@ class MiningCog(commands.Cog):
         if not ctx.author.guild_permissions.administrator:
             return await ctx.send("You don't have permission to do that.")
 
-        await db.set_mining_inventory(str(member.id), ctx.guild.id, {})
+        await mining_workflow.admin_reset(
+            member.id,
+            ctx.guild.id,
+            actor_id=ctx.author.id,
+        )
         await ctx.send(f"{member.name}'s inventory has been reset.")
 
     @commands.command()
@@ -538,7 +477,13 @@ class MiningCog(commands.Cog):
             return await ctx.send("You don't have permission to do that.")
 
         item = item.lower()
-        await db.update_mining_item(str(member.id), ctx.guild.id, item, amount)
+        await mining_workflow.admin_grant(
+            member.id,
+            ctx.guild.id,
+            item,
+            amount,
+            actor_id=ctx.author.id,
+        )
         await ctx.send(f"Gave {amount}x **{item}** to {member.name}.")
 
 

@@ -8,13 +8,19 @@ primitives.  Neither leg is ever committed separately from a cog/view
 emission happens **after commit**, never inside the transaction (the
 ``economy_service.transfer`` precedent).
 
-Stage 1 (this module's birth) owns the **workshop** operations — the
-densest multi-write invariants (Q-0072=C): the wear tick (break =
-clear wear + consume + unequip + remember-for-quick-craft, atomically),
-repair (coin debit + wear clear in one transaction), craft (materials +
-product in one transaction), and quick-craft (craft + auto-equip +
-marker clear in one transaction).  Stage 2 converges the market
-(sell/buy) and the remaining single writers behind this seam.
+Stage 1 owned the **workshop** operations — the densest multi-write
+invariants (Q-0072=C): the wear tick (break = clear wear + consume +
+unequip + remember-for-quick-craft, atomically), repair (coin debit +
+wear clear in one transaction), craft (materials + product in one
+transaction), and quick-craft (craft + auto-equip + marker clear in one
+transaction).  Stage 2 (this revision) converges everything else: the
+market (sell / sell-all / buy — inventory leg + coin leg atomically),
+the action writers (mine / harvest / explore — loot grant + wear tick
+in one transaction), equip / unequip / use, descent, and the admin
+writes.  ``cogs/mining/`` is gone; views and the cog call only this
+service, and the AST ratchet
+(``tests/unit/invariants/test_mining_write_boundary.py``) keeps any new
+direct write out of cogs/views.
 
 User-visible messages are pinned byte-identical by
 ``tests/unit/cogs/test_mining_workflow_characterization.py`` — the
@@ -24,16 +30,55 @@ extraction changed transaction boundaries, never copy.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
 from core.events import bus
 from services import economy_service
 from utils import db, equipment
-from utils.mining import workshop
+from utils.mining import market, rewards, workshop, world
+from utils.mining.exploration import explore_from_state
 from utils.mining.market import TradeResult
 from utils.mining.recipes import load_recipes
 from utils.mining.workshop import WearReport
 
 logger = logging.getLogger("bot.mining_workflow")
+
+
+@dataclass(frozen=True)
+class MineResult:
+    """One mining swing — the rolled loot plus the wear it caused."""
+
+    found: str
+    amount: int
+    depth: int
+    wear: WearReport
+
+
+@dataclass(frozen=True)
+class HarvestResult:
+    """One harvest — the rolled wood amount."""
+
+    amount: int
+
+
+@dataclass(frozen=True)
+class ExploreActionResult:
+    """One exploration roll — outcome text/loot plus the wear it caused."""
+
+    text: str
+    item: str | None
+    amount: int
+    depth: int
+    wear: WearReport
+
+
+@dataclass(frozen=True)
+class DescentResult:
+    """A descend/ascend attempt — call sites own the copy (cog ≠ panel)."""
+
+    moved: bool
+    depth: int
+    hint: str | None = None
 
 
 async def wear_tick(
@@ -52,44 +97,66 @@ async def wear_tick(
     in ONE transaction (pre-RS02 these were four separate commits; a
     mid-break failure could consume the item but leave it equipped).
     """
-    plan = workshop.WEAR_PLAN.get(action, ())
+    candidates = _wear_candidates(action, depth, equipped)
+    if not candidates:
+        return WearReport()
+
     suid = str(user_id)
-    candidates = [
+    wear = await db.get_gear_wear(suid, guild_id)
+    async with db.transaction() as conn:
+        return await _apply_wear_writes(conn, suid, guild_id, candidates, wear)
+
+
+def _wear_candidates(
+    action: str,
+    depth: int,
+    equipped: dict[str, str],
+) -> list[tuple[str, str]]:
+    """The (slot, item) pairs that wear for *action* at *depth* (pure)."""
+    plan = workshop.WEAR_PLAN.get(action, ())
+    return [
         (slot, item)
         for slot, underground_only in plan
         if (item := equipped.get(slot))
         and (not underground_only or depth > 0)
         and equipment.max_durability(item) is not None
     ]
-    if not candidates:
-        return WearReport()
 
-    wear = await db.get_gear_wear(suid, guild_id)
+
+async def _apply_wear_writes(
+    conn,
+    suid: str,
+    guild_id: int,
+    candidates: list[tuple[str, str]],
+    wear: dict[str, int],
+) -> WearReport:
+    """The wear writes, on a caller-owned connection (shared by wear_tick /
+    mine / explore so an action's loot grant and its wear commit together).
+    """
     broke: list[str] = []
     notes: list[str] = []
-    async with db.transaction() as conn:
-        for slot, item in candidates:
-            maximum = equipment.max_durability(item)
-            if maximum is None:  # filtered above; guard keeps the type narrow
-                continue
-            remaining = wear.get(item, maximum) - 1
-            if remaining <= 0:
-                await db.clear_gear_wear(suid, guild_id, item, conn=conn)
-                await db.update_mining_item(suid, guild_id, item, -1, conn=conn)
-                await db.unequip_slot(suid, guild_id, slot, conn=conn)
-                await db.set_last_broken(suid, guild_id, item, conn=conn)
-                broke.append(item)
+    for slot, item in candidates:
+        maximum = equipment.max_durability(item)
+        if maximum is None:  # filtered by _wear_candidates; narrows the type
+            continue
+        remaining = wear.get(item, maximum) - 1
+        if remaining <= 0:
+            await db.clear_gear_wear(suid, guild_id, item, conn=conn)
+            await db.update_mining_item(suid, guild_id, item, -1, conn=conn)
+            await db.unequip_slot(suid, guild_id, slot, conn=conn)
+            await db.set_last_broken(suid, guild_id, item, conn=conn)
+            broke.append(item)
+            notes.append(
+                f"💥 Your **{item}** broke! Re-craft or repair gear at the "
+                f"🔧 Workshop.",
+            )
+        else:
+            await db.set_gear_wear(suid, guild_id, item, remaining, conn=conn)
+            if remaining <= workshop.LOW_DURABILITY_WARN:
                 notes.append(
-                    f"💥 Your **{item}** broke! Re-craft or repair gear at the "
-                    f"🔧 Workshop.",
+                    f"⚠️ Your **{item}** is nearly worn out "
+                    f"({remaining}/{maximum}) — repair it at the 🔧 Workshop.",
                 )
-            else:
-                await db.set_gear_wear(suid, guild_id, item, remaining, conn=conn)
-                if remaining <= workshop.LOW_DURABILITY_WARN:
-                    notes.append(
-                        f"⚠️ Your **{item}** is nearly worn out "
-                        f"({remaining}/{maximum}) — repair it at the 🔧 Workshop.",
-                    )
     return WearReport(broke=tuple(broke), notes=tuple(notes))
 
 
@@ -240,9 +307,332 @@ async def quick_craft(user_id: int, guild_id: int) -> TradeResult:
     return TradeResult(True, message)
 
 
+# ---------------------------------------------------------------------------
+# Market — sell / sell-all / buy (coin leg + inventory leg, one transaction)
+# ---------------------------------------------------------------------------
+
+
+async def sell(user_id: int, guild_id: int, item: str, qty: int) -> TradeResult:
+    """Sell *qty* of *item* (a resource) for coins — both legs atomic."""
+    item = item.strip().lower()
+    price = market.sell_price(item)
+    if price is None:
+        return TradeResult(
+            False,
+            f"You can't sell **{item}** — only raw resources sell.",
+        )
+    if qty <= 0:
+        return TradeResult(False, "Amount to sell must be a positive number.")
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    have = inventory.get(item, 0)
+    if have < qty:
+        return TradeResult(False, f"You only have **{have}× {item}** to sell.")
+    coins = price * qty
+    async with db.transaction() as conn:
+        await db.update_mining_item(suid, guild_id, item, -qty, conn=conn)
+        new_balance = await economy_service.credit_in_txn(
+            conn,
+            guild_id,
+            user_id,
+            coins,
+            reason=market.SELL_REASON,
+            actor_id=user_id,
+        )
+    await _emit_balance(guild_id, user_id, coins, new_balance, market.SELL_REASON)
+    return TradeResult(
+        True,
+        f"Sold **{qty}× {item}** for **{coins}** 🪙. Balance: **{new_balance}** 🪙.",
+        coins,
+        new_balance,
+    )
+
+
+async def sell_all(user_id: int, guild_id: int) -> TradeResult:
+    """Sell every sellable resource — all removals + one credit, atomic."""
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    sellables = market.sellable_inventory(inventory)
+    if not sellables:
+        return TradeResult(False, "You have no resources to sell — go mine some!")
+    total = sum(qty * price for _, qty, price in sellables)
+    async with db.transaction() as conn:
+        for name, qty, _ in sellables:
+            await db.update_mining_item(suid, guild_id, name, -qty, conn=conn)
+        new_balance = await economy_service.credit_in_txn(
+            conn,
+            guild_id,
+            user_id,
+            total,
+            reason=market.SELL_REASON,
+            actor_id=user_id,
+        )
+    await _emit_balance(guild_id, user_id, total, new_balance, market.SELL_REASON)
+    sold = ", ".join(f"{qty}× {name}" for name, qty, _ in sellables)
+    return TradeResult(
+        True,
+        f"Sold {sold} for **{total}** 🪙. Balance: **{new_balance}** 🪙.",
+        total,
+        new_balance,
+    )
+
+
+async def buy(user_id: int, guild_id: int, item: str) -> TradeResult:
+    """Buy one *item* from the gear shop — debit + grant atomic."""
+    item = item.strip().lower()
+    price = market.buy_price(item)
+    if price is None:
+        return TradeResult(
+            False,
+            f"**{item}** isn't for sale. Check `!market` for stock.",
+        )
+    try:
+        async with db.transaction() as conn:
+            new_balance = await economy_service.debit_in_txn(
+                conn,
+                guild_id,
+                user_id,
+                price,
+                reason=market.BUY_REASON,
+                actor_id=user_id,
+            )
+            await db.update_mining_item(str(user_id), guild_id, item, 1, conn=conn)
+    except economy_service.InsufficientFundsError:
+        balance = await db.get_coins(user_id, guild_id)
+        return TradeResult(
+            False,
+            f"**{item}** costs **{price}** 🪙 — you only have **{balance}** 🪙.",
+        )
+    await _emit_balance(guild_id, user_id, -price, new_balance, market.BUY_REASON)
+    return TradeResult(
+        True,
+        f"Bought **{item}** for **{price}** 🪙. Balance: **{new_balance}** 🪙. "
+        f"Use `!equip {item}` to wear it.",
+        -price,
+        new_balance,
+    )
+
+
+async def _emit_balance(
+    guild_id: int,
+    user_id: int,
+    delta: int,
+    new_balance: int,
+    reason: str,
+) -> None:
+    """EVT_BALANCE_CHANGED, after the owning transaction committed."""
+    await bus.emit(
+        economy_service.EVT_BALANCE_CHANGED,
+        guild_id=guild_id,
+        user_id=user_id,
+        delta=delta,
+        new_balance=new_balance,
+        reason=reason,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Actions — mine / harvest / explore (loot grant + wear in one transaction)
+# ---------------------------------------------------------------------------
+
+
+async def mine(user_id: int, guild_id: int) -> MineResult:
+    """One mining swing: roll loot, grant it, and tick wear — atomically."""
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    depth = await db.get_depth(suid, guild_id)
+    found, amount = rewards.roll_mine_loot(
+        has_pickaxe=inventory.get("pickaxe", 0) > 0,
+        depth=depth,
+        multiplier=rewards.mine_multiplier(equipped, inventory),
+    )
+    candidates = _wear_candidates(workshop.ACTION_MINE, depth, equipped)
+    wear = await db.get_gear_wear(suid, guild_id) if candidates else {}
+    async with db.transaction() as conn:
+        await db.update_mining_item(suid, guild_id, found, amount, conn=conn)
+        report = (
+            await _apply_wear_writes(conn, suid, guild_id, candidates, wear)
+            if candidates
+            else WearReport()
+        )
+    return MineResult(found=found, amount=amount, depth=depth, wear=report)
+
+
+async def harvest(user_id: int, guild_id: int) -> HarvestResult:
+    """Chop wood (doubled with an axe in the inventory) and grant it."""
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    amount = rewards.roll_harvest_amount(has_axe=inventory.get("axe", 0) > 0)
+    await db.update_mining_item(suid, guild_id, "wood", amount)
+    return HarvestResult(amount=amount)
+
+
+async def explore(user_id: int, guild_id: int) -> ExploreActionResult:
+    """One exploration roll: outcome + loot grant + wear — atomically."""
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    depth = await db.get_depth(suid, guild_id)
+    text, item, amount = explore_from_state(
+        equipped,
+        inventory,
+        biome=world.biome_for_depth(depth),
+    )
+    candidates = _wear_candidates(workshop.ACTION_EXPLORE, depth, equipped)
+    wear = await db.get_gear_wear(suid, guild_id) if candidates else {}
+    async with db.transaction() as conn:
+        if item:
+            await db.update_mining_item(suid, guild_id, item, amount, conn=conn)
+        report = (
+            await _apply_wear_writes(conn, suid, guild_id, candidates, wear)
+            if candidates
+            else WearReport()
+        )
+    return ExploreActionResult(
+        text=text,
+        item=item,
+        amount=amount,
+        depth=depth,
+        wear=report,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Loadout — use / equip / unequip
+# ---------------------------------------------------------------------------
+
+
+async def use_item(user_id: int, guild_id: int, item: str) -> TradeResult:
+    """Consume one *item* from the inventory (flavor only, for now)."""
+    item = item.strip().lower()
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    if inventory.get(item, 0) < 1:
+        return TradeResult(False, f"You don't have **{item}** to use.")
+    if item == "torch":
+        message = "You light a torch and peer into the darkness..."
+    elif item == "dynamite":
+        message = "You ignite dynamite and blow a new path in the mine!"
+    else:
+        message = f"You used **{item}**, but nothing special happened."
+    await db.update_mining_item(suid, guild_id, item, -1)
+    return TradeResult(True, message)
+
+
+async def equip(user_id: int, guild_id: int, item: str) -> TradeResult:
+    """Equip *item* into its slot (ownership + slot validation centralized)."""
+    item = item.strip().lower()
+    slot = equipment.slot_for(item)
+    if slot is None:
+        return TradeResult(False, f"**{item.title()}** can't be equipped.")
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    if inventory.get(item, 0) < 1:
+        return TradeResult(False, f"You don't own a **{item.title()}** to equip.")
+    await db.equip_item(suid, guild_id, slot, item)
+    return TradeResult(
+        True,
+        f"equipped **{item.title()}** in the **{slot}** slot.",
+    )
+
+
+async def unequip(user_id: int, guild_id: int, slot: str) -> TradeResult:
+    """Clear an equipment *slot*."""
+    slot = slot.strip().lower()
+    if slot not in equipment.SLOTS:
+        return TradeResult(
+            False,
+            f"Unknown slot **{slot}**. Slots: {', '.join(equipment.SLOTS)}.",
+        )
+    await db.unequip_slot(str(user_id), guild_id, slot)
+    return TradeResult(True, f"cleared the **{slot}** slot.")
+
+
+# ---------------------------------------------------------------------------
+# Descent — depth moves (gating stays in utils.mining.world)
+# ---------------------------------------------------------------------------
+
+
+async def descend(user_id: int, guild_id: int) -> DescentResult:
+    """Move one band deeper if the equipped light allows it."""
+    suid = str(user_id)
+    depth = await db.get_depth(suid, guild_id)
+    stats = equipment.compute_stats(await db.get_equipment(suid, guild_id))
+    new_depth = world.descend(depth, stats)
+    if new_depth == depth:
+        return DescentResult(moved=False, depth=depth, hint=world.descend_hint(stats))
+    await db.set_depth(suid, guild_id, new_depth)
+    return DescentResult(moved=True, depth=new_depth)
+
+
+async def ascend(user_id: int, guild_id: int) -> DescentResult:
+    """Climb one band toward the surface."""
+    suid = str(user_id)
+    depth = await db.get_depth(suid, guild_id)
+    new_depth = world.ascend(depth)
+    if new_depth == depth:
+        return DescentResult(moved=False, depth=depth)
+    await db.set_depth(suid, guild_id, new_depth)
+    return DescentResult(moved=True, depth=new_depth)
+
+
+# ---------------------------------------------------------------------------
+# Admin
+# ---------------------------------------------------------------------------
+
+
+async def admin_grant(
+    user_id: int,
+    guild_id: int,
+    item: str,
+    amount: int,
+    *,
+    actor_id: int,
+) -> None:
+    """Admin grant of *amount*× *item* (logged for traceability)."""
+    logger.info(
+        "mining admin_grant: actor=%s -> user=%s guild=%s %sx %s",
+        actor_id,
+        user_id,
+        guild_id,
+        amount,
+        item,
+    )
+    await db.update_mining_item(str(user_id), guild_id, item.lower(), amount)
+
+
+async def admin_reset(user_id: int, guild_id: int, *, actor_id: int) -> None:
+    """Admin reset of a user's mining inventory in ONE guild (logged)."""
+    logger.info(
+        "mining admin_reset: actor=%s -> user=%s guild=%s",
+        actor_id,
+        user_id,
+        guild_id,
+    )
+    await db.set_mining_inventory(str(user_id), guild_id, {})
+
+
 __all__ = [
+    "MineResult",
+    "HarvestResult",
+    "ExploreActionResult",
+    "DescentResult",
     "wear_tick",
     "repair",
     "craft",
     "quick_craft",
+    "sell",
+    "sell_all",
+    "buy",
+    "mine",
+    "harvest",
+    "explore",
+    "use_item",
+    "equip",
+    "unequip",
+    "descend",
+    "ascend",
+    "admin_grant",
+    "admin_reset",
 ]

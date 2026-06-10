@@ -93,28 +93,17 @@ async def test_handle_mine_swaps_to_results_view_not_none():
     interaction.message.id = 12345
     interaction.followup.edit_message = AsyncMock()
 
+    from services.mining_workflow import MineResult
+    from utils.mining.workshop import WearReport
+
     with patch(
         "views.mining.mine_view.safe_defer",
         new_callable=AsyncMock,
         return_value=True,
     ), patch(
-        "views.mining.mine_view.db.get_mining_inventory",
+        "views.mining.mine_view.mining_workflow.mine",
         new_callable=AsyncMock,
-        return_value={"pickaxe": 1},
-    ), patch(
-        "views.mining.mine_view.db.get_equipment",
-        new_callable=AsyncMock,
-        return_value={},  # nothing equipped → no durability wear path
-    ), patch(
-        "views.mining.mine_view.db.get_depth",
-        new_callable=AsyncMock,
-        return_value=0,
-    ), patch(
-        "views.mining.mine_view.db.update_mining_item",
-        new_callable=AsyncMock,
-    ), patch(
-        "views.mining.mine_view.roll_mine_loot",
-        return_value=("stone", 5),
+        return_value=MineResult(found="stone", amount=5, depth=0, wear=WearReport()),
     ):
         await view._handle_mine(interaction, "left")
 

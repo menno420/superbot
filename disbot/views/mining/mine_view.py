@@ -25,9 +25,7 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
-from utils import db
-from utils.mining import workshop, world
-from utils.mining.rewards import mine_multiplier, roll_mine_loot
+from utils.mining import world
 from utils.ui_constants import MINING_COLOR
 
 logger = logging.getLogger("bot.views.mining.mine_view")
@@ -98,31 +96,14 @@ class MineView(discord.ui.View):
         if not await safe_defer(interaction):
             return
 
-        user_id = str(self.user_id)
-        inventory = await db.get_mining_inventory(user_id, self.guild_id)
-        equipped = await db.get_equipment(user_id, self.guild_id)
-        depth = await db.get_depth(user_id, self.guild_id)
-        found, amount = roll_mine_loot(
-            has_pickaxe=inventory.get("pickaxe", 0) > 0,
-            depth=depth,
-            multiplier=mine_multiplier(equipped, inventory),
-        )
-
-        await db.update_mining_item(user_id, self.guild_id, found, amount)
-        wear = await mining_workflow.wear_tick(
-            self.user_id,
-            self.guild_id,
-            action=workshop.ACTION_MINE,
-            depth=depth,
-            equipped=equipped,
-        )
+        result = await mining_workflow.mine(self.user_id, self.guild_id)
 
         description = (
-            f"{interaction.user.mention} mined **{amount}x {found}** "
-            f"by going {direction} in {world.describe_position(depth)}!"
+            f"{interaction.user.mention} mined **{result.amount}x {result.found}** "
+            f"by going {direction} in {world.describe_position(result.depth)}!"
         )
-        if wear.notes:
-            description += "\n" + "\n".join(wear.notes)
+        if result.wear.notes:
+            description += "\n" + "\n".join(result.wear.notes)
         result_embed = discord.Embed(
             title="⛏️ Mined!",
             description=description,
