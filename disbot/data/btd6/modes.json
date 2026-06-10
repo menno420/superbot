@@ -1,6 +1,6 @@
 {
   "data_version": "3.0",
-  "game_version": "55.0",
+  "game_version": "55.1",
   "source": "Curated from the in-game difficulty/mode select screens (rules are gameplay code, not exported in the Mod Helper dump)",
   "modes": [
     {

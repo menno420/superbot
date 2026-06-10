@@ -19,6 +19,7 @@ import discord
 from services import btd6_data_service, btd6_knowledge_service
 from services.btd6_resolver_service import resolve
 from utils.btd6.freshness_render import BUCKET_EMOJI as _BUCKET_EMOJI
+from utils.btd6.mode_rules import summarize_mode_rules
 from utils.btd6.response_embed import response_to_embed
 
 # Useful-first display order for the Live facts block. Kinds not in
@@ -172,9 +173,26 @@ def build_diagnostics_embed() -> discord.Embed:
         value=", ".join(h.canonical for h in btd6_knowledge_service.list_heroes()),
         inline=False,
     )
+    # Counts only: the full 86-name roster blew Discord's 1024-char field cap
+    # (the send 400s, it does not truncate), and the names already have one
+    # canonical home — build_maps_embed, grouped by difficulty.
+    maps = btd6_knowledge_service.list_maps()
+    by_difficulty: dict[str, int] = {}
+    for game_map in maps:
+        by_difficulty[game_map.difficulty] = (
+            by_difficulty.get(game_map.difficulty, 0) + 1
+        )
     embed.add_field(
         name="Maps",
-        value=", ".join(m.canonical for m in btd6_knowledge_service.list_maps()),
+        value=(
+            f"{len(maps)} loaded — "
+            + " · ".join(
+                f"{d} {by_difficulty[d]}"
+                for d in _MAP_DIFFICULTY_ORDER
+                if d in by_difficulty
+            )
+            + " (full list: the 🗺️ Maps panel)"
+        ),
         inline=False,
     )
     embed.add_field(
@@ -279,6 +297,9 @@ def build_modes_embed() -> discord.Embed:
         value = mode.description
         if mode.restrictions:
             value += "\n• " + "\n• ".join(mode.restrictions)
+        rule_clauses = summarize_mode_rules(getattr(mode, "rules", {}) or {})
+        if rule_clauses:
+            value += f"\n📋 {'; '.join(rule_clauses)}"
         embed.add_field(name=f"{mode.canonical}{tag}", value=value[:1024], inline=False)
     for mod in modifiers:
         embed.add_field(

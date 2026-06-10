@@ -20,7 +20,53 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-10 — **the towers cutover is DONE (PR #649); next = the post-cutover decode backlog below**)
+## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards ALL DECODED (#653 wave 1 + #655) · banana economy DONE (#653); next = backlog item 3, the buff/zone tail**)
+
+> **2026-06-10 (PR #655 continuation — in parallel, #653's wave 1 decoded
+> thorn rings / 4-x-x sentries / banana economy; reconciled at the merge):
+> `_CUTOVER_CARRYFORWARD` is EMPTY — every #649 carry-forward is now
+> mapper-decoded, and the audit reads 91 CLEAN · 0 DELTA · 0 SUSPECT** (was
+> 76/9/0; the mapper now reproduces 100% of every committed file). Decoded,
+> each committed-identity-verified at the decode site in `parse_gamedata.py`:
+> druid thorn rings (`SpiritOfTheForestModel` nested DoT zones — incl. **new**
+> Root-of-All-Nature paragon rings 10/15/30 dmg the wiki never had), engineer
+> typed sentries (`CreateTypedTowerModel`; paragon
+> `CreateSequencedTypedTowerCurrentIndexModel` towers[] + deduped deployed
+> child — sentries gained real per-type combat + 25s/19s lifespans), sub
+> Energizer/paragon (`SubmergeModel` neutral-filtered local/global/paragon
+> split + `MonkeySubParagonSupportModel` whose `*Bonus*` fields are **additive
+> +1 == committed totals**), bucc sellback (`CashbackZoneModel` decoded as the
+> committed-schema buff + **new** `cashbackMaxPercent` 0.95; the value-less
+> zone husk is gone), striker's two hero auras (`RateSupportExplosiveModel` /
+> `RateSupportBombExpertModel` — the dump also **fills committed holes**:
+> attack-speed on L7–17, Bomb-Shooter on L18+), and Magus' phoenix
+> (`TowerCreateParagonTowerModel` — five combat-identical skins dedupe to
+> one). The bucc-paragon Flagship carried-duplicate collapsed into two honest
+> entries split by the new structural `onlyAffectParagon` flag. The druid
+> "150/250 staleness" note below was itself stale — committed already carried
+> the correct 0-immune-props split, re-verified against the dump. *(Found
+> during the pass, pre-existing, routed to item 6: hero-level `buffs` and
+> paragon `subtowers` render on no AI/menu surface yet — the new sentry/thorn
+> data DOES surface via tower-upgrade facts.)*
+
+> **2026-06-10 (PR #655, the post-cutover verification session): everything
+> re-verified against the dump at the cutover SHA** (`4e22e586`, v55.1) —
+> anchors PASS · audit 76 CLEAN / 9 DELTA / 0 SUSPECT (DELTAs = the
+> carry-forwards) · **full regeneration byte-identical** (every flag, idempotent)
+> · default-rounds parity re-proven **140/140** · all **2,022** menu embeds
+> (towers×tiers, heroes×levels, paragons, crosspaths, lists) render in-limits ·
+> 43-probe deterministic AI-tool battery green · clean live boot (36 cogs, 0
+> errors). Fixed in the same PR: the **mode `rules` block was dark data**
+> (now serialized by `btd6_mode_lookup` + rendered by the modes embed via the
+> shared `utils/btd6/mode_rules.py` — the modes-cutover "teed-up follow-up" is
+> closed); **`!btd6 diagnostics` 400'd** (the 86-map field hit Discord's
+> 1024-char cap — counts-only now, every-field-≤1024 pinned by test); the
+> **stale `game_version` stamp class** (root cause: overlays only re-stamped on
+> a value change — they now re-stamp on every verified run; `towers`/`heroes`/
+> `rounds` bumped to 55.1 on audit/parity evidence, so `btd6_answerability` now
+> reports 55.1, matching the stats labels); and the **absolute-container-path
+> leak** in `data_source_label()` (now `local:disbot/data/btd6`). Session log
+> below; new answerability gaps routed into the backlog (items 5–6).
 
 > **2026-06-10 (PR #649, the Q-0066 dedicated cutover session): every committed
 > stats file is game-native v55.1** — 25 towers, 17 heroes, 13 paragons,
@@ -42,31 +88,28 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Post-cutover decode backlog (the new "do next", ordered)
 
-> **Wave 1 executed 2026-06-10 (same-day follow-up PR):** druid thorn rings
-> (`SpiritOfTheForestModel` per-ring fields — incl. the genuine v55.1
-> `immuneBloonProperties` 0 on 150/250, now committed as Normal damage type),
-> engineer tier-4 typed sentries (`CreateTypedTowerModel` joined
-> `_SUBTOWER_SPAWN_TYPES`), and the **banana economy** (tier-level
-> `bananaValue`/`bananaValueMax`/`bananaSalvageValue`/`bananaBonusMultiplier` +
-> `bankCapacity`/`bankInterest`, lifted off the suppressed banana attack's
-> `CashModel` + the `BankModel`, surfaced as specials — "Bananas worth $300",
-> "Bank $7,000 capacity, +15% interest/round"). Both carry-forwards removed;
-> `_CUTOVER_CARRYFORWARD` now holds only the items below.
+> **Wave 1 executed 2026-06-10 (#653, the parallel same-day session):** druid
+> thorn rings + engineer tier-4 typed sentries + the **banana economy**
+> (tier-level `bananaValue`/`bananaValueMax`/`bananaSalvageValue`/
+> `bananaBonusMultiplier` + `bankCapacity`/`bankInterest`, lifted off the
+> suppressed banana attack's `CashModel` + the `BankModel`, surfaced as
+> specials — "Bananas worth $300", "Bank $7,000 capacity, +15%
+> interest/round"). The #655 pass then decoded the rest (below) and the two
+> thorn/sentry implementations were reconciled at the merge (mutatorId-keyed
+> ring names, committed far/middle/close order, the Ceramic+Moabs tag gate).
 
-1. **Decode the remaining carried-forward mechanisms**
-   (`parse_gamedata._CUTOVER_CARRYFORWARD` is the authoritative list):
-   - Sub Energizer: the effect lives on `SubmergeModel` itself
-     (`abilityCooldownSpeedScale`/`…Global`/`heroXpScale`) which sits
-     *neutrally* (1.0) on every submerged tier — needs neutral-value filtering
-     + a local/global split (committed models it as TWO entries).
-   - Bucc sellback: `CashbackZoneModel` carries `cashbackZoneMultiplier` 0.04 /
-     `cashbackMaxPercent` 0.95 / maxStacks 3 — committed models it as a buff;
-     zone-ification needs a renderer/test migration.
-   - Engineer **paragon** color sentries: mapped emits three identical
-     `SentryParagonChild` nodes vs the four committed typed paragons.
-   - Magus Perfectus' phoenix: no spawn model the subtower walker resolves.
-   - Striker Jones: "Attack speed buff" / "Bomb Shooter buff" (hero levels).
-2. **Remaining buff/zone `$type` tail** — the pre-cutover "unconfirmable"
+1. ~~**Decode the carried-forward mechanisms**~~ — **DONE 2026-06-10 (#653
+   wave 1 + the #655 completion)**: druid thorn rings (+ the paragon's, new),
+   engineer typed sentries (4-x-x) **and** the paragon roster
+   (Green/Red/Blue + the deduped "Modified" child), sub Energizer + paragon
+   support, bucc sellback (as the committed-schema buff, husk removed) +
+   paragon Flagship dedup, striker's two hero auras (+ dump fills the
+   committed L7–17 / L18+ holes), Magus' phoenix (5 skins → 1).
+   `_CUTOVER_CARRYFORWARD` is empty; audit 91 CLEAN · 0 DELTA · 0 SUSPECT.
+   Evidence comments live at each decode site.
+2. ~~**Banana-economy decode**~~ — **DONE 2026-06-10 (#653 wave 1)**, see
+   above; answers "how much is a banana / BRF crate / bank capacity".
+3. **Remaining buff/zone `$type` tail** — the pre-cutover "unconfirmable"
    blocker is gone in a new sense: committed data *is* the dump now, so new
    decodes are confirmed by **upgrade-prose / owner gameplay knowledge**, not a
    committed diff. Pick from the SHA-pinned report §3 ranking as questions
@@ -74,7 +117,31 @@ works** (the traps we hit), and what is still un-decoded.
 3. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
    per-tier beast names ("what does the Orca do?"), Farm/Village answers
    (Wall Street income, discounts, MIB), Spectre/Mini Sun Avatar minions, and
-   the "BTD6 game data 55.1" source label.
+   the "BTD6 game data 55.1" source label. *(+ from #655: the modes panel's
+   new 📋 rules lines, and `!btd6 diagnostics` — previously failed to send.)*
+5. **Deterministic-Ask domain gaps (menu answerability, found by #655):** the
+   panel **Ask** button / `!btd6 ask` without an AI key routes only
+   tower/hero/map/mode/round intents — **bloons, powers, Monkey Knowledge,
+   bosses, and round-range cash** answer "No BTD6 entities recognised" even
+   though the AI tools (and `btd6_context_service.build`) answer all of them
+   deterministically. Root-cause direction: let `answer_question` fall back to
+   the same context-service facts the `btd6_lookup` tool uses, rather than
+   growing a second intent router. A product-shaped lift — plan before build.
+6. **Resolution/label polish (found by #655, smaller):** (a) minion *names*
+   don't resolve directly — "mini sun avatar" lands on the Sun Avatar upgrade;
+   the stats live under the parent tier's subtowers (answerable via "sun
+   temple minions"); a subtower-name → parent-tier alias layer fixes recall.
+   (b) Catalog/bloon facts still carry the internal-ish `fixture/btd6_data`
+   label while stats facts say "BTD6 game data 55.1". (c)
+   `btd6_context_service` `source_summary` says "data.ninjakiwi.com (Tier 1)"
+   even on fixture-only answers — a faithfulness wart. (d) *(decode pass)*
+   **hero-level `buffs` and paragon `subtowers` render on no surface**: tower
+   tiers render zones/buffs/subtowers via `tier_effect_lines` + the minion
+   facts, but the hero grounding/embeds skip the `buffs` array (Striker's
+   auras, now fully decoded, are invisible — as the carried versions were)
+   and the paragon embeds skip `subtowers` (the four Master-Builder sentries
+   / Magus' phoenix stats reach no user). Renderer work across both surfaces;
+   needs its own evidence pass over the 17 heroes + 13 paragons.
 
 ### Current state & next actions (READ FIRST)
 
@@ -313,6 +380,73 @@ decision.
 - Buff/zone `name`s are the dump's **internal** ids → audit aligns by name and
   ignores them (keeps `--audit` nothing-SUSPECT); never downgrade a curated name.
 - `python3.10 scripts/check_quality.py --full` before pushing.
+
+### Session log — 2026-06-10 (the carry-forward decode pass, PR #655 continuation)
+
+Backlog item 1 executed end-to-end in the same session as the verification
+pass (maintainer: "you can continue"). The ⭐ entry carries the what; durable
+how/why:
+
+- **Evidence-first per mechanism, then one implementation pass.** Each of the
+  six mechanisms got its dump model inspected and value-compared against the
+  committed entries *before* any code: that's what surfaced the two premise
+  corrections (the backlog's "raw v55.1 has ibp 0 on 150/250, committed
+  carries 17" claim was inverted — committed already had the split; "the
+  paragon's triple SentryParagonChild" was actually towers[] holding three
+  *distinct* colour sentries with the child nested inside each) and the one
+  semantic transform (`MonkeySubParagonSupportModel`'s `*Bonus*` fields are
+  additive: +1 == committed totals, six field confirmations).
+- **The transplant mechanism quietly finished the job.** Committed-only
+  annotations (`filterInBaseTowerId`, the paragon global buff's neutral
+  `heroXpMultiplier: 1`) rode `_transplant_absent_fields` onto the decoded
+  entries by name-match — no carry-forward needed for a curated string on a
+  decoded entry.
+- **Scope dedupe, never blanket.** The first dedupe (name-excluded key over
+  *every* spawn) collapsed the four typed sentries and the two beasts in
+  minimal test fixtures — real entities differ in combat, but the hermetic
+  tests exposed the latent class. Final shape: dedupe only
+  `TowerCreateParagonTowerModel` lists (per-degree skins) and the sequenced
+  spawner's nested children.
+- **Decode wins over carried data, visibly:** striker gains the attack-speed
+  aura on L7–17 and Bomb-Shooter on L18+ (committed holes the dump fills);
+  sentries gain real per-type combat (Shatter/Explosion/Cold/Plasma) +
+  expiry lifespans (25s typed / 19s Modified); Root of All Nature gains its
+  thorn rings (10/15/30 dmg) — none of this existed in the wiki rows.
+- **The audit is now a true mirror**: 91 CLEAN · 0 DELTA · 0 SUSPECT — with
+  the carry-forward layer empty, any future nonzero DELTA is a real dump
+  change (or a mapper regression), not expected noise. The inventory report
+  regenerated to match.
+
+### Session log — 2026-06-10 (post-cutover verification, PR #655)
+
+The maintainer's ask: verify everything is correctly fetched from the dump and
+answerable via the AI **and** the menu. Method + durable findings:
+
+- **Fidelity method that worked:** re-clone the dump (same SHA `4e22e586` as
+  the cutover) → anchors → audit → **re-run every generator/overlay flag and
+  demand `git status` come back clean**. The byte-identity check is the
+  strongest cheap test we have — it caught the one real data drift
+  (maps.json's missed 55.1 stamp) that the audit can't see (the audit compares
+  values, not metadata).
+- **Surface method that worked:** drive the real builders, not samples —
+  all 1,600 tower-tier + 340 hero-level + 52 paragon + 25 crosspath + 5 list
+  embeds through `utils/btd6/stats_embed.py` with a Discord-limits validator,
+  and every BTD6 AI tool handler with pinned-value probes. One real send-bug
+  fell out (`!btd6 diagnostics` 86-map field 1,059 > 1,024 — Discord 400s
+  oversized fields, it does not truncate). Embed-limit validation belongs in
+  any future render-surface test.
+- **The "0 corrections" trap:** an overlay that only writes on value changes
+  silently lets `game_version` rot one version behind on every
+  values-didn't-change re-pull (bloons/modes sat at 55.0 after the 55.1
+  verification; the answerability tool told users "game 55.0"). Verified-at-a-
+  version IS information — overlays now re-stamp every verified run.
+- **Probe your probes:** 8 of my first battery's 9 "failures" were my own
+  wrong argument shapes / comma-formatted expectations, not product bugs.
+  Diff a failing probe against the tool spec before believing it.
+- **Dark-data check is cheap and high-yield:** "is the ingested field
+  serialized by the tool AND rendered by the embed?" — the modes `rules` block
+  failed both halves (now fixed + pinned both places). When ingesting new
+  structured data, land the surface wiring (or a backlog entry) in the same PR.
 
 ### Session log — 2026-06-10 (THE TOWERS CUTOVER — Q-0066/Q-0067/Q-0068, PR #649)
 

@@ -170,16 +170,28 @@ dedicated decision** for any action capability.
 Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · ADR-006
 provenance schema is implemented.
 
-- **Shipped (2026-06-10 — PR #649, the Q-0066 dedicated cutover session; verify
-  merge)** — **every committed stats file is game-native v55.1**: 25 towers +
+- **Shipped (2026-06-10 — PR #649, merged, the Q-0066 dedicated cutover
+  session)** — **every committed stats file is game-native v55.1**: 25 towers +
   17 heroes + 13 paragons via `parse_gamedata.py --all` through the new cutover
   merge layer (curated names preserved + set-level name guard); Q-0067
   (Farm/Village full tiers + decoded income auras) and Q-0068 (per-tier beast
   names) executed in the same pass; source labels now read "BTD6 game data".
-  **Next:** the post-cutover decode backlog (carried-forward mechanisms, banana
-  economy, the buff/zone tail) — ⭐ header of
-  [decode-status](btd6/btd6-gamedata-decode-status.md) — plus the maintainer's
-  live spot-check of the new surfaces.
+- **Post-cutover verification + carry-forward decode pass (2026-06-10 — PR
+  #655)** — dump fidelity re-proven (byte-identical regeneration, rounds
+  parity 140/140), all 2,022 menu embeds + the AI tool battery green; fixed:
+  mode-rules dark data (now on both surfaces), the `!btd6 diagnostics` 400,
+  the version-stamp-rot class (everything reports 55.1), the container-path
+  leak. Then **every #649 carry-forward decoded** (`_CUTOVER_CARRYFORWARD`
+  empty; audit **91 CLEAN / 0 DELTA / 0 SUSPECT**) — druid + paragon thorn
+  rings, engineer typed-sentry rosters, sub Energizer/paragon support, bucc
+  sellback + Flagship dedup, striker auras (+ dump fills committed holes),
+  Magus phoenix.
+  In parallel, **#653 (wave 1)** decoded thorn rings + 4-x-x sentries + the
+  **banana economy** (bananaValue/bank capacity+interest as specials) —
+  reconciled at the merge.
+  **Next:** decode-status ⭐ item 3 (the buff/zone tail), the #655
+  answerability-gap items (5–6) — plus the maintainer's live spot-check of
+  the new surfaces.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.

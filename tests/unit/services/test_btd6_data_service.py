@@ -586,3 +586,13 @@ def test_invalid_bloon_category_fails(tmp_path):
         encoding="utf-8",
     )
     _expect_validation_error(staged, match="category 'not_a_category'")
+
+
+def test_data_source_label_fallback_is_repo_relative():
+    """The no-provider-label fallback must not leak the host's absolute path
+    into user-facing surfaces (diagnostics embed, btd6_answerability tool)."""
+    from services import btd6_data_service
+
+    label = btd6_data_service.data_source_label()
+    if label.startswith("local:"):
+        assert label == "local:disbot/data/btd6"

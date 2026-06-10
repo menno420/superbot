@@ -810,7 +810,9 @@ def test_overlay_modes_attaches_rules_and_corrects_scalars(mod, tmp_path, monkey
     assert report["impoppable"] == []  # rules attached, no scalar correction
     assert "standard" not in report  # unmapped → untouched
 
-    written = {m["id"]: m for m in json.loads((data_root / "modes.json").read_text())["modes"]}
+    written = {
+        m["id"]: m for m in json.loads((data_root / "modes.json").read_text())["modes"]
+    }
     assert written["sandbox"]["starting_lives"] == 999999
     assert written["impoppable"]["rules"] == {
         "start_round": 6,
@@ -821,6 +823,75 @@ def test_overlay_modes_attaches_rules_and_corrects_scalars(mod, tmp_path, monkey
     assert "rules" not in written["standard"]
     payload = json.loads((data_root / "modes.json").read_text())
     assert payload["mode_rules_source"]
+
+
+def test_overlay_modes_restamps_game_version_on_verified_run(
+    mod, tmp_path, monkeypatch
+):
+    # A verified run IS the version claim: the stamp must move to the dump's
+    # version even with 0 corrections (modes.json sat at 55.0 after a
+    # values-didn't-change 55.1 verification pass).
+    dump = tmp_path / "dump"
+    _write(dump / "Mods" / "Impoppable.json", {"mutatorMods": []})
+    data_root = tmp_path / "data"
+    _write(
+        data_root / "modes.json",
+        {
+            "data_version": "3.0",
+            "game_version": "55.0",
+            "source": "curated",
+            "modes": [],
+        },
+    )
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    monkeypatch.setattr(mod, "_dump_version", lambda _dump: "55.9")
+    mod.overlay_modes(dump, dry_run=False)
+    payload = json.loads((data_root / "modes.json").read_text())
+    assert payload["game_version"] == "55.9"
+
+
+def test_overlay_bloons_restamps_game_version_on_verified_run(
+    mod, tmp_path, monkeypatch
+):
+    # Same re-stamp rule as overlay_modes — and a gitless dump (no derivable
+    # version) must leave the stamp untouched rather than blank it.
+    dump = tmp_path / "dump"
+    _write(
+        dump / "Bloons" / "Ceramic" / "Ceramic.json",
+        _bloon_model("Ceramic", health=10, speed=62.5),
+    )
+    data_root = tmp_path / "data"
+    bloons_payload = {
+        "data_version": "1.0",
+        "game_version": "55.0",
+        "source": "wiki",
+        "bloons": [
+            {
+                "id": "ceramic",
+                "canonical": "Ceramic",
+                "properties": [],
+                "health": 10,
+                "speed": 62.5,
+                "rbe": 104,
+                "immune_to": [],
+                "children_list": [],
+            },
+        ],
+    }
+    _write(data_root / "bloons.json", bloons_payload)
+    monkeypatch.setattr(mod, "_DATA_ROOT", data_root)
+    monkeypatch.setattr(mod, "_dump_version", lambda _dump: "55.9")
+    report = mod.overlay_bloons(dump, dry_run=False)
+    assert report == {}  # values already correct — a pure verification run
+    payload = json.loads((data_root / "bloons.json").read_text())
+    assert payload["game_version"] == "55.9"
+
+    # No derivable version → stamp untouched.
+    _write(data_root / "bloons.json", bloons_payload)
+    monkeypatch.setattr(mod, "_dump_version", lambda _dump: "")
+    mod.overlay_bloons(dump, dry_run=False)
+    payload = json.loads((data_root / "bloons.json").read_text())
+    assert payload["game_version"] == "55.0"
 
 
 def test_map_monkey_knowledge_uses_category_folder(mod, tmp_path):
@@ -891,7 +962,11 @@ def test_mk_effect_multiple_mutators_become_multiple_factors(mod):
     raw = {
         "mod": _mk_mod(
             {"$type": _t("LivesModModel"), "percentBonus": 0.25},
-            {"$type": _t("CashModModel"), "percentBonus": 0.25, "bonusMultiplierBuff": 0.0},
+            {
+                "$type": _t("CashModModel"),
+                "percentBonus": 0.25,
+                "bonusMultiplierBuff": 0.0,
+            },
         ),
     }
     assert mod._mk_effect(raw) == {
@@ -980,7 +1055,9 @@ def test_map_bosses_reads_roster_tiers_and_derives_immunity(mod, tmp_path):
     boss = rows[0]
     assert boss["id"] == "dreadbloon"
     assert boss["canonical"] == "Dreadbloon"
-    assert boss["tagline"] == "From Deep Within the Dark Earth... — the Armored Behemoth!"
+    assert (
+        boss["tagline"] == "From Deep Within the Dark Earth... — the Armored Behemoth!"
+    )
     # Bullets + newlines collapse into one readable grounded line.
     assert boss["description"] == "Dreadbloon has Lead properties. Tough."
     # bloonProperties bit 1 (Lead) → the Lead immunity set, via the shared inverter.
@@ -1974,9 +2051,15 @@ def test_comanche_trance_and_tower_create_spawns_collected(mod):
     model = _spawn_tm(
         "X",
         behaviors=[
-            {"$type": _t("ComancheDefenceModel"), "towerModel": _spawn_tm("ComancheDefenceHeli")},
+            {
+                "$type": _t("ComancheDefenceModel"),
+                "towerModel": _spawn_tm("ComancheDefenceHeli"),
+            },
             {"$type": _t("TranceTotemSpawnerModel"), "tower": _spawn_tm("TranceTotem")},
-            {"$type": _t("TowerCreateTowerModel"), "towerModel": _spawn_tm("PermaPhoenix")},
+            {
+                "$type": _t("TowerCreateTowerModel"),
+                "towerModel": _spawn_tm("PermaPhoenix"),
+            },
         ],
     )
     assert [s["name"] for s in mod._subtowers(model)] == [
@@ -1995,7 +2078,11 @@ def test_subtower_lifespan_falls_back_to_embedded_expire_model(mod):
     subs = mod._subtowers(_spawn_tm("Heli", behaviors=[spawn]))
     assert subs[0]["lifespan"] == 30.0
     # A real spawn-side lifetime still wins (Phoenix 20s stays spawn-sourced).
-    timed = {"$type": _t("CreateTowerModel"), "tower": _spawn_tm("P"), "towerLifetime": 20.0}
+    timed = {
+        "$type": _t("CreateTowerModel"),
+        "tower": _spawn_tm("P"),
+        "towerLifetime": 20.0,
+    }
     assert mod._subtowers(_spawn_tm("W", behaviors=[timed]))[0]["lifespan"] == 20.0
 
 
@@ -2004,7 +2091,11 @@ def test_nested_subtower_spawns_stay_unclaimed(mod):
     # descend into any declared nested-model field (incl. secondaryTowerModel).
     inner_spawn = {"$type": _t("CreateTowerModel"), "tower": _spawn_tm("InnerMinion")}
     morphed = _spawn_tm("Morphed", behaviors=[inner_spawn])
-    spawn = {"$type": _t("MorphTowerModel"), "towerModel": None, "secondaryTowerModel": morphed}
+    spawn = {
+        "$type": _t("MorphTowerModel"),
+        "towerModel": None,
+        "secondaryTowerModel": morphed,
+    }
     subs = mod._subtowers(_spawn_tm("Outer", behaviors=[spawn]))
     assert [s["name"] for s in subs] == ["Morphed"]
 
@@ -2335,26 +2426,34 @@ def test_cutover_restores_committed_upgrade_names(mod):
     assert payload["upgrades"][0]["name"] == "Faster Shooting"
 
 
-def test_cutover_carryforward_reinjects_undecodable_entries(mod):
-    # Sub Energizer's auras have no clean decode yet (SubmergeModel sits
-    # neutrally on every submerged tier) — committed entries carry forward
-    # verbatim on their tiers. (Druid's thorn zones, the original example
-    # here, were decoded 2026-06-10.)
-    payload = {"tower_id": "monkey_sub", "tiers": {"050": {}}, "upgrades": []}
+def test_cutover_carryforward_reinjects_undecodable_entries(mod, monkeypatch):
+    # The table is EMPTY since the 2026-06-10 decode pass (every #649 entry is
+    # now mapper-decoded) — the machinery stays as the safety valve for any
+    # future dump shape the walkers can't reach, so pin it via a patched table.
+    assert mod._CUTOVER_CARRYFORWARD == {}
+    monkeypatch.setattr(
+        mod,
+        "_CUTOVER_CARRYFORWARD",
+        {"druid": frozenset({("zones", "Thorn zone (close)")})},
+    )
+    payload = {"tower_id": "druid", "tiers": {"050": {}}, "upgrades": []}
     committed = {
         "tiers": {
             "050": {
-                "buffs": [
-                    {"name": "Ability cooldown buff", "abilityCooldownMultiplier": 1.2},
-                    {"name": "Ability cooldown buff (global)", "isGlobal": True},
+                "zones": [
+                    {"name": "Thorn zone (close)", "damage": 1},
+                    {"name": "Thorn zone (middle)", "damage": 1},
                 ],
             },
         },
         "upgrades": [],
     }
-    mod.cutover_payload(payload, committed, "monkey_sub")
-    names = [b["name"] for b in payload["tiers"]["050"]["buffs"]]
-    assert names == ["Ability cooldown buff", "Ability cooldown buff (global)"]
+    with pytest.raises(mod.NameDowngradeError):
+        # Re-injection covers only the listed entry; the unlisted middle zone
+        # is genuinely lost and the guard must say so loudly.
+        mod.cutover_payload(payload, committed, "druid")
+    names = [z["name"] for z in payload["tiers"]["050"]["zones"]]
+    assert names == ["Thorn zone (close)"]
 
 
 def test_cutover_guard_raises_on_lost_curated_name(mod):
@@ -2421,52 +2520,236 @@ def test_upgrades_for_synthesizes_colon_id_cards(mod, tmp_path):
     assert "cost" not in card
 
 
-# --- post-cutover decode wave 1 (2026-06-10) ---------------------------------
+# --- the 2026-06-10 carry-forward decode pass (former _CUTOVER_CARRYFORWARD) -
 
 
-def test_sotf_thorn_rings_decode(mod):
-    # Spirit of the Forest: three DamageOverTimeZones nested on the SOTF model
-    # (additive == the committed damageModifierForCeramicOrMoabs; radii on the
-    # parent; far is unbounded).
-    def ring(additive, damage, ibp=17):
+def test_thorn_zones_decoded_from_spirit_of_the_forest(mod):
+    # Druid x5x: three DamageOverTimeZone rings nested on the SotF model,
+    # verified field-identical vs committed on all five tiers. Field shape
+    # mirrors the real Druid-050 (additive vs the Ceramic+Moabs tag pair).
+    def ring(mutator, damage, additive, ibp):
         return {
             "$type": _t("DamageOverTimeZoneModel"),
-            "range": 0.0,
+            "mutatorId": mutator,
             "behaviorModel": {
                 "$type": _t("DamageOverTimeCustomModel"),
-                "damage": damage,
+                "bloonTagsList": ["Ceramic", "Moabs"],
                 "additive": additive,
+                "damage": damage,
+                "immuneBloonProperties": ibp,
                 "interval": 0.5,
                 "initialDelay": 0.0,
-                "immuneBloonProperties": ibp,
+                "distributeToChildren": True,
             },
         }
 
-    model = _tower_model()
-    model["behaviors"].append(
-        {
-            "$type": _t("SpiritOfTheForestModel"),
-            "closeRange": 50.0,
-            "middleRange": 100.0,
-            "damageOverTimeZoneModelClose": ring(14.0, 1.0),
-            "damageOverTimeZoneModelMiddle": ring(4.0, 1.0),
-            "damageOverTimeZoneModelFar": ring(8.0, 2.0, ibp=0),
-        }
-    )
-    zones = mod._map_tier(model)["zones"]
-    names = [z["name"] for z in zones]
-    assert names == [
-        "SpiritOfTheForestClose",
-        "SpiritOfTheForestMiddle",
+    sotf = {
+        "$type": _t("SpiritOfTheForestModel"),
+        "closeRange": 50.0,
+        "middleRange": 100.0,
+        "damageOverTimeZoneModelClose": ring("SpiritOfTheForestClose", 1.0, 14.0, 17),
+        "damageOverTimeZoneModelMiddle": ring("SpiritOfTheForestMedium", 1.0, 4.0, 17),
+        "damageOverTimeZoneModelFar": ring("SpiritOfTheForestFar", 2.0, 8.0, 17),
+    }
+    zones = mod._zones({"behaviors": [sotf]})
+    assert [z["name"] for z in zones] == [
         "SpiritOfTheForestFar",
+        "SpiritOfTheForestMedium",
+        "SpiritOfTheForestClose",
     ]
-    close, middle, far = zones
-    assert close["damageModifierForCeramicOrMoabs"] == 14
-    assert close["radius"] == 50 and middle["radius"] == 100
-    assert "radius" not in far
-    assert far["damage"] == 2 and far["interval"] == 0.5
-    assert far["damage_type"] == "Normal"  # ibp 0 = pops everything
-    assert close["damage_type"] == "Sharp"
+    far, middle, close = zones
+    assert far["damage"] == 2 and "radius" not in far
+    assert middle["damageModifierForCeramicOrMoabs"] == 4 and middle["radius"] == 100
+    assert close["damageModifierForCeramicOrMoabs"] == 14 and close["radius"] == 50
+    for z in zones:
+        assert z["damage_type"] == "Sharp"
+        assert z["cannot_pop"] == "Cannot damage Lead or frozen"
+        assert z["immuneBloonProperties"] == 17
+        assert z["interval"] == 0.5 and z["initialDelay"] == 0
+        assert z["distributeToChildren"] is True
+
+    # An unmapped tag set must never invent the CeramicOrMoabs field, and the
+    # path-1 crosspaths' ibp 0 reads Normal / pops-anything.
+    other = ring("SpiritOfTheForestFar", 2.0, 8.0, 0)
+    other["behaviorModel"]["bloonTagsList"] = ["Fortified"]
+    zones = mod._zones(
+        {"behaviors": [{**sotf, "damageOverTimeZoneModelFar": other}]},
+    )
+    assert "damageModifierForCeramicOrMoabs" not in zones[0]
+    assert zones[0]["damage_type"] == "Normal"
+
+
+def test_cashback_zone_decodes_as_buff_not_zone(mod):
+    # Bucc x-x-4 Favored Trades: a *ZoneModel in the dump, a buff in the
+    # committed schema. The zone walker must skip it (no value-less husk).
+    cashback = {
+        "$type": _t("CashbackZoneModel"),
+        "cashbackZoneMultiplier": 0.04,
+        "cashbackMaxPercent": 0.95,
+        "maxStacks": 3,
+        "maxStackSize": 3,
+        "buffLocsName": "BuffIconBuccaneerxx4",
+        "isGlobalRange": False,
+    }
+    model = {"behaviors": [cashback]}
+    assert mod._zones(model) == []
+    (buff,) = mod._buffs(model)
+    assert buff["name"] == "BuffIconBuccaneerxx4"
+    assert buff["cashbackZoneMultiplier"] == 0.04
+    assert buff["cashbackMaxPercent"] == 0.95
+    assert buff["maxStacks"] == 3 and buff["isGlobal"] is False
+
+
+def test_submerge_buffs_neutral_filtered_and_split(mod):
+    # Sub 3xx: all-neutral SubmergeModel emits nothing.
+    neutral = {
+        "$type": _t("SubmergeModel"),
+        "abilityCooldownSpeedScale": 1.0,
+        "abilityCooldownSpeedScaleGlobal": 1.0,
+        "abilityCooldownSpeedScaleParagon": 0.0,
+        "heroXpScale": 1.0,
+    }
+    assert mod._buffs({"behaviors": [neutral]}) == []
+
+    # Sub 5xx: local + global (with hero XP); names are the stable synthetic
+    # ids the curated rename table maps to the committed labels.
+    energizer = dict(
+        neutral,
+        abilityCooldownSpeedScale=1.2,
+        abilityCooldownSpeedScaleGlobal=1.2,
+        heroXpScale=1.5,
+    )
+    local, global_ = mod._buffs({"behaviors": [energizer]})
+    assert local["name"] == "SubmergeSupport"
+    assert local["abilityCooldownMultiplier"] == 1.2 and local["isGlobal"] is False
+    assert global_["name"] == "SubmergeSupportGlobal"
+    assert global_["isGlobal"] is True and global_["heroXpMultiplier"] == 1.5
+
+    # The paragon: + the paragon-only scale and the nested support model,
+    # whose *Bonus* fields are additive (+1 == committed totals) while
+    # rate/xp are direct.
+    paragon = dict(
+        neutral,
+        abilityCooldownSpeedScale=1.3,
+        abilityCooldownSpeedScaleGlobal=1.2,
+        abilityCooldownSpeedScaleParagon=1.1,
+        monkeySubParagonSupportModel={
+            "$type": _t("MonkeySubParagonSupportModel"),
+            "subBonusDamageMultiplier": 6.0,
+            "subBonusPierceMultiplier": 2.0,
+            "heroBonusDamageMultiplier": 5.0,
+            "heroBonusPierceMultiplier": 2.0,
+            "heroRateMultiplier": 1.3,
+            "heroXpMultiplier": 5.0,
+            "isGlobal": False,
+        },
+    )
+    buffs = {b["name"]: b for b in mod._buffs({"behaviors": [paragon]})}
+    assert buffs["SubmergeSupportParagon"]["abilityCooldownMultiplier"] == 1.1
+    assert buffs["SubmergeSupportParagon"]["filterOutNonParagon"] is True
+    sub = buffs["MonkeySubParagonSupportSub"]
+    assert sub["damageMultiplier"] == 7 and sub["pierceMultiplier"] == 3
+    hero = buffs["MonkeySubParagonSupportHero"]
+    assert hero["damageMultiplier"] == 6 and hero["pierceMultiplier"] == 3
+    assert hero["rateMultiplier"] == 1.3 and hero["heroXpMultiplier"] == 5
+
+
+def test_striker_rate_support_models_decode(mod):
+    explosive = {
+        "$type": _t("RateSupportExplosiveModel"),
+        "multiplier": 0.9,
+        "buffLocsName": "ArtilleryCommanderBuff",
+        "isGlobal": True,
+        "maxStackSize": 0,
+    }
+    bomb_expert = {
+        "$type": _t("RateSupportBombExpertModel"),
+        "rangeMultiplier": 0.05,
+        "pierceMultiplier": 0.25,
+        "buffLocsName": "",
+        "isGlobal": False,
+    }
+    speed, bomb = mod._buffs({"behaviors": [explosive, bomb_expert]})
+    assert speed["name"] == "ArtilleryCommanderBuff"
+    assert speed["rateMultiplier"] == 0.9 and speed["isGlobal"] is True
+    # Empty buffLocsName falls back to the type name — the rename table's key.
+    assert bomb["name"] == "RateSupportBombExpert"
+    assert bomb["rangeMultiplier"] == 0.05 and bomb["pierceMultiplier"] == 0.25
+
+
+def test_only_affect_paragon_flag_copied(mod):
+    # Bucc paragon ships two number-identical Flagship instances; the flag is
+    # the only honest discriminator.
+    def flagship(paragon_only):
+        return {
+            "$type": _t("FlagshipAttackSpeedIncreaseModel"),
+            "attackSpeedIncrease": 0.85,
+            "isGlobalRange": True,
+            "onlyAffectParagon": paragon_only,
+        }
+
+    everyone, paragon_only = mod._buffs(
+        {"behaviors": [flagship(False), flagship(True)]},
+    )
+    assert "onlyAffectParagon" not in everyone
+    assert paragon_only["onlyAffectParagon"] is True
+
+
+def test_typed_sentries_decode_from_typed_tower_model(mod):
+    # Engineer 4-x-x: four embedded TowerModels on the typed spawner.
+    spawn = {
+        "$type": _t("CreateTypedTowerModel"),
+        "crushingTower": _spawn_tm("SentryCrushing"),
+        "boomTower": _spawn_tm("SentryBoom"),
+        "coldTower": _spawn_tm("SentryCold"),
+        "energyTower": _spawn_tm("SentryEnergy"),
+    }
+    names = [s["name"] for s in mod._subtowers(_spawn_tm("Eng", behaviors=[spawn]))]
+    assert names == ["SentryCrushing", "SentryBoom", "SentryCold", "SentryEnergy"]
+
+
+def test_paragon_tower_list_variants_dedupe_to_one(mod):
+    # Magus' phoenix: five per-degree skins, combat-identical, differing only
+    # by name — the dedupe (name-excluded key) keeps the first.
+    variants = [_spawn_tm(f"DarkPhoenixV{i}", range=50.0) for i in range(1, 6)]
+    spawn = {"$type": _t("TowerCreateParagonTowerModel"), "towerModels": variants}
+    subs = mod._subtowers(_spawn_tm("Magus", behaviors=[spawn]))
+    assert [s["name"] for s in subs] == ["DarkPhoenixV1"]
+    # Distinct combat survives on its own (the colour sentries' case).
+    variants[1]["range"] = 70.0
+    subs = mod._subtowers(_spawn_tm("Magus", behaviors=[spawn]))
+    assert [s["name"] for s in subs] == ["DarkPhoenixV1", "DarkPhoenixV2"]
+
+
+def test_sequenced_typed_towers_emit_list_and_deduped_child(mod):
+    # Engineer paragon: towers[] holds the three colour sentries (distinct
+    # rates); each nests a CreateTowerModel deploying an identical child —
+    # the child joins the roster once.
+    def colour(name, rate):
+        tower = _spawn_tm(name, range=70.0)
+        child = _spawn_tm("SentryParagonChild", range=50.0)
+        tower["behaviors"] = [
+            {
+                "$type": _t("AttackModel"),
+                "weapons": [{"$type": _t("WeaponModel"), "rate": rate}],
+            },
+            {"$type": _t("CreateTowerModel"), "tower": child},
+        ]
+        return tower
+
+    spawn = {
+        "$type": _t("CreateSequencedTypedTowerCurrentIndexModel"),
+        "towers": [colour("SentryParagonGreen", 0.2), colour("SentryParagonRed", 0.05)],
+    }
+    subs = mod._subtowers(_spawn_tm("EngParagon", behaviors=[spawn]))
+    assert [s["name"] for s in subs] == [
+        "SentryParagonGreen",
+        "SentryParagonRed",
+        "SentryParagonChild",
+    ]
+
+
+# --- decode wave 1 (#653) integration tests kept at the merge ---------------
 
 
 def test_typed_sentry_subtowers_decode(mod):
