@@ -34,9 +34,17 @@ async def test_build_character_embed_aggregates_every_owner():
         new_callable=AsyncMock,
         return_value=2,
     ), patch(
+        "views.mining.character_panel.db.get_max_depth",
+        new_callable=AsyncMock,
+        return_value=2,
+    ), patch(
         "views.mining.character_panel.db.get_coins",
         new_callable=AsyncMock,
         return_value=150,
+    ), patch(
+        "views.mining.character_panel.game_xp_service.level_info",
+        new_callable=AsyncMock,
+        return_value=(3, 40, 145),
     ):
         embed = await build_character_embed(123, 7, name="Digger")
 
@@ -49,3 +57,5 @@ async def test_build_character_embed_aggregates_every_owner():
     assert "+6" in blob  # iron sword damage
     assert "150" in blob  # coins
     assert "24" in blob  # net worth = diamond value (12) × 2
+    assert "Level **3**" in blob  # shared game level (game_xp_service)
+    assert "Deepest" in blob  # the 065 depth record

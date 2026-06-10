@@ -306,18 +306,6 @@ known_violations:
     import: cogs.deathmatch_cog
     reason: Deathmatch panel imports the cog directly.
     ticket: arch-fix-13
-  - file: views/mining/main_panel.py
-    import: cogs.mining.recipes
-    reason: Mining panel imports recipes from the cog.
-    ticket: arch-fix-13
-  - file: views/mining/main_panel.py
-    import: cogs.mining.rewards
-    reason: Mining panel imports rewards from the cog.
-    ticket: arch-fix-13
-  - file: views/mining/mine_view.py
-    import: cogs.mining.rewards
-    reason: Mine view imports rewards from the cog.
-    ticket: arch-fix-13
   - file: views/moderation/modals.py
     import: cogs.moderation._helpers
     reason: Moderation modals import helpers from the cog.

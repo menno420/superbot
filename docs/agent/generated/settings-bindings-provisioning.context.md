@@ -1,7 +1,7 @@
 # Agent Context Pack — Settings / Bindings / Provisioning
 
 > **Status:** `reference` — generated orientation aid (NOT source of truth).
-> Generated: 2026-06-08 · Subsystem key: `settings-bindings-provisioning`
+> Generated: 2026-06-10 · Subsystem key: `settings-bindings-provisioning`
 
 > **NOT SOURCE OF TRUTH.** This file is generated from `docs/agent/index.yml`.
 > Canonical docs listed under *Binding docs* always win over this pack.

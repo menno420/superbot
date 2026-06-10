@@ -1,7 +1,7 @@
 # Agent Context Pack — Media / YouTube
 
 > **Status:** `reference` — generated orientation aid (NOT source of truth).
-> Generated: 2026-06-08 · Subsystem key: `media-youtube`
+> Generated: 2026-06-10 · Subsystem key: `media-youtube`
 
 > **NOT SOURCE OF TRUTH.** This file is generated from `docs/agent/index.yml`.
 > Canonical docs listed under *Binding docs* always win over this pack.

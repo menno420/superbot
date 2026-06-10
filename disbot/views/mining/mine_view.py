@@ -1,7 +1,7 @@
 """!mine button view — extracted from ``cogs/mining_cog.py`` (S4.1).
 
 A 30-second ephemeral view with three Mine Left/Right/Down buttons.
-On click, rolls loot via ``cogs.mining.rewards.roll_mine_loot`` and
+On click, rolls loot via ``utils.mining.rewards.roll_mine_loot`` and
 updates the user's mining inventory via the shared DB helper.
 
 Decoupled from the cog: the previous nested ``MiningCog.MineView``
@@ -23,9 +23,9 @@ import logging
 
 import discord
 
-from cogs.mining.rewards import roll_mine_loot
 from core.runtime.interaction_helpers import safe_defer, safe_edit
-from utils import db
+from services import mining_workflow
+from utils.mining import world
 from utils.ui_constants import MINING_COLOR
 
 logger = logging.getLogger("bot.views.mining.mine_view")
@@ -96,36 +96,16 @@ class MineView(discord.ui.View):
         if not await safe_defer(interaction):
             return
 
-        # Lazy import: cogs-layer domain logic — views must not import cogs at
-        # module level (layer rule; the rewards import above is tracked debt).
-        from cogs.mining import workshop, world
-        from cogs.mining.rewards import mine_multiplier
-
-        user_id = str(self.user_id)
-        inventory = await db.get_mining_inventory(user_id, self.guild_id)
-        equipped = await db.get_equipment(user_id, self.guild_id)
-        depth = await db.get_depth(user_id, self.guild_id)
-        found, amount = roll_mine_loot(
-            has_pickaxe=inventory.get("pickaxe", 0) > 0,
-            depth=depth,
-            multiplier=mine_multiplier(equipped, inventory),
-        )
-
-        await db.update_mining_item(user_id, self.guild_id, found, amount)
-        wear = await workshop.apply_wear(
-            self.user_id,
-            self.guild_id,
-            action=workshop.ACTION_MINE,
-            depth=depth,
-            equipped=equipped,
-        )
+        result = await mining_workflow.mine(self.user_id, self.guild_id)
 
         description = (
-            f"{interaction.user.mention} mined **{amount}x {found}** "
-            f"by going {direction} in {world.describe_position(depth)}!"
+            f"{interaction.user.mention} mined **{result.amount}x {result.found}** "
+            f"by going {direction} in {world.describe_position(result.depth)}!"
         )
-        if wear.notes:
-            description += "\n" + "\n".join(wear.notes)
+        if result.wear.notes:
+            description += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            description += "\n" + result.xp_note
         result_embed = discord.Embed(
             title="⛏️ Mined!",
             description=description,

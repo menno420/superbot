@@ -1,4 +1,4 @@
-"""Tests for cogs.mining.exploration — pure, loadout-aware engine.
+"""Tests for utils.mining.exploration — pure, loadout-aware engine.
 
 These exercise eligibility gating, loadout scaling, and the legacy-tuple
 compatibility shim with an injected RNG so every assertion is stable.
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import random
 
-from cogs.mining import exploration as exp
+from utils.mining import exploration as exp
 
 
 def _rng() -> random.Random:
@@ -17,7 +17,7 @@ def _rng() -> random.Random:
 
 def test_biome_order_is_canonical_depth_mapping():
     # BIOME_ORDER is the shallow→deep ordering; _BIOME_DEPTH derives from it so
-    # the index of a biome equals its integer depth.  cogs.mining.world reuses
+    # the index of a biome equals its integer depth.  utils.mining.world reuses
     # BIOME_ORDER, so this is the single source of truth for both modules.
     assert len(exp.BIOME_ORDER) == len(exp.Biome)
     for depth, biome in enumerate(exp.BIOME_ORDER):
@@ -57,8 +57,8 @@ def test_deeper_biome_includes_shallower_outcomes():
 def test_mining_power_doubles_ore_gain():
     # abandoned_camp grants gold; mining_power 2 (a pickaxe) doubles a positive
     # ore gain, and 4 (an iron pickaxe) triples it.
-    from cogs.mining.exploration import _scale_amount
     from utils.equipment import EffectiveStats
+    from utils.mining.exploration import _scale_amount
 
     outcome = next(o for o in exp.CATALOG if o.key == "abandoned_camp")
     base = _scale_amount(outcome, EffectiveStats())
@@ -67,8 +67,8 @@ def test_mining_power_doubles_ore_gain():
 
 
 def test_penalties_are_never_scaled():
-    from cogs.mining.exploration import _scale_amount
     from utils.equipment import EffectiveStats
+    from utils.mining.exploration import _scale_amount
 
     hazard = next(o for o in exp.CATALOG if o.key == "monster_ambush")
     # Negative amount stays exactly as authored — gear protects gains only.
@@ -79,8 +79,8 @@ def test_penalties_are_never_scaled():
 
 
 def test_loot_bonus_adds_flat_extra():
-    from cogs.mining.exploration import _scale_amount
     from utils.equipment import EffectiveStats
+    from utils.mining.exploration import _scale_amount
 
     # secret_chest gives wood (not ore): loot_bonus still adds a flat +1.
     outcome = next(o for o in exp.CATALOG if o.key == "secret_chest")

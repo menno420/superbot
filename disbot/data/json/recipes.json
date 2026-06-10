@@ -1,144 +1,33 @@
 {
-    "wooden planks": {
-        "wood": 1
-    },
-    "crafting table": {
-        "wooden planks": 4
-    },
-    "stick": {
-        "wooden planks": 1
-    },
-    "wooden sword": {
-        "wooden planks": 2,
-        "stick": 1
-    },
-    "wooden pickaxe": {
-        "wooden planks": 3,
-        "stick": 2
-    },
-    "wooden shovel": {
-        "wooden planks": 1,
-        "stick": 2
-    },
-    "wooden axe": {
-        "wooden planks": 3,
-        "stick": 2
-    },
-    "stone sword": {
-        "stone": 2,
-        "stick": 1
-    },
-    "stone pickaxe": {
-        "stone": 3,
-        "stick": 2
-    },
-    "stone shovel": {
-        "stone": 1,
-        "stick": 2
-    },
-    "stone axe": {
-        "stone": 3,
-        "stick": 2
-    },
-    "furnace": {
-        "stone": 8
-    },
-    "iron sword": {
-        "iron": 2,
-        "stick": 1
+    "pickaxe": {
+        "wood": 2,
+        "stone": 3
     },
     "iron pickaxe": {
         "iron": 3,
-        "stick": 2
-    },
-    "iron shovel": {
-        "iron": 1,
-        "stick": 2
-    },
-    "iron axe": {
-        "iron": 3,
-        "stick": 2
-    },
-    "iron door": {
-        "iron": 6
-    },
-    "iron golem": {
-        "iron": 36,
-        "pumpkin": 1
-    },
-    "bucket": {
-        "iron": 3
-    },
-    "shears": {
-        "iron": 2
-    },
-    "gold sword": {
-        "gold": 2,
-        "stick": 1
-    },
-    "gold pickaxe": {
-        "gold": 3,
-        "stick": 2
-    },
-    "diamond sword": {
-        "diamond": 2,
-        "stick": 1
-    },
-    "diamond pickaxe": {
-        "diamond": 3,
-        "stick": 2
-    },
-    "diamond shovel": {
-        "diamond": 1,
-        "stick": 2
-    },
-    "diamond axe": {
-        "diamond": 3,
-        "stick": 2
-    },
-    "diamond armor": {
-        "diamond": 24
+        "wood": 2
     },
     "torch": {
         "wood": 2
     },
-    "chest": {
-        "wooden planks": 8
+    "lantern": {
+        "iron": 2,
+        "gold": 1
     },
-    "ladder": {
-        "stick": 7
+    "sword": {
+        "wood": 1,
+        "stone": 2
     },
-    "bow": {
-        "stick": 3,
-        "string": 3
-    },
-    "arrow": {
-        "stick": 1,
-        "feather": 1,
-        "flint": 1
+    "iron sword": {
+        "iron": 2,
+        "wood": 1
     },
     "shield": {
-        "wooden planks": 6,
+        "wood": 6,
         "iron": 1
     },
-    "anvil": {
-        "iron": 31
-    },
-    "bookshelf": {
-        "wooden planks": 6,
-        "book": 3
-    },
-    "enchantment table": {
-        "diamond": 2,
-        "obsidian": 4,
-        "book": 1
-    },
-    "nether portal": {
-        "obsidian": 10
-    },
-    "golden apple": {
-        "apple": 1,
-        "gold": 8
+    "armor": {
+        "iron": 4
     },
     "stone hut": {
         "stone": 5
@@ -146,30 +35,36 @@
     "wooden house": {
         "wood": 8
     },
+    "gold statue": {
+        "gold": 4
+    },
+    "diamond throne": {
+        "diamond": 6
+    },
     "giant fortress": {
         "stone": 50,
         "wood": 30,
         "iron": 10
     },
-    "diamond throne": {
-        "diamond": 6
+    "gold pickaxe": {
+        "gold": 4,
+        "wood": 2
     },
-    "gold statue": {
-        "gold": 4
+    "diamond pickaxe": {
+        "diamond": 3,
+        "gold": 1,
+        "wood": 2
     },
-    "sword": {
-        "wood": 1,
-        "stone": 2
+    "diamond lantern": {
+        "diamond": 2,
+        "iron": 2
     },
-    "armor": {
-        "iron": 4
+    "diamond sword": {
+        "diamond": 2,
+        "wood": 1
     },
-    "pickaxe": {
-        "wood": 2,
-        "stone": 3
-    },
-    "lantern": {
-        "iron": 2,
-        "gold": 1
+    "diamond armor": {
+        "diamond": 4,
+        "iron": 2
     }
 }

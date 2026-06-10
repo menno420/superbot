@@ -1,0 +1,258 @@
+"""Mining gear panel — slot-by-slot equipping UI (the old EquipSlotView +
+MultiEquipView, modernized onto selects).
+
+An ephemeral child of the mining hub (the ``workshop_panel`` pattern):
+built via an async factory because the selects depend on the player's
+inventory/equipment, and rebuilt after every action.  All writes go
+through :mod:`services.mining_workflow` (``equip``/``unequip``); the
+"Equip Best" button is the modern MULTIEQUIP — one click fills every
+slot with the strongest owned gear (pure ``utils.mining.loadout``).
+"""
+
+from __future__ import annotations
+
+import discord
+
+from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services import mining_workflow
+from utils import db, equipment
+from utils.mining import workshop
+from utils.mining.loadout import best_loadout
+from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
+from views.base import HubView
+
+_UNEQUIP_SENTINEL = "__unequip__"
+
+_SLOT_EMOJI = {
+    equipment.TOOL: "🧰",
+    equipment.LIGHT: "💡",
+    equipment.CHARM: "🍀",
+    equipment.WEAPON: "⚔️",
+    equipment.ARMOR: "🛡️",
+}
+
+
+async def build_gear_embed(
+    user_id: int,
+    guild_id: int,
+    *,
+    note: str = "",
+) -> discord.Embed:
+    """The gear panel embed: every slot's item + condition, and the stats."""
+    suid = str(user_id)
+    equipped = await db.get_equipment(suid, guild_id)
+    wear = await db.get_gear_wear(suid, guild_id)
+    stats = equipment.compute_stats(equipped)
+
+    embed = discord.Embed(title="🧰 Gear", color=MINING_COLOR)
+    if note:
+        embed.description = note
+    lines = []
+    for slot in equipment.SLOTS:
+        item = equipped.get(slot)
+        if not item:
+            lines.append(f"{_SLOT_EMOJI.get(slot, '•')} **{slot.title()}**: —")
+            continue
+        line = f"{_SLOT_EMOJI.get(slot, '•')} **{slot.title()}**: {item.title()}"
+        maximum = equipment.max_durability(item)
+        if maximum is not None:
+            line += f" {workshop.durability_bar(wear.get(item, maximum), maximum)}"
+        lines.append(line)
+    embed.add_field(name="Slots", value="\n".join(lines), inline=False)
+    bonuses = equipment.describe_stats(stats)
+    embed.add_field(
+        name="📊 Stats",
+        value=(
+            "\n".join(f"{label}: +{value}" for label, value in bonuses)
+            if bonuses
+            else "No bonuses yet — equip some gear!"
+        ),
+        inline=False,
+    )
+    embed.set_footer(
+        text="Pick a slot, then an item  •  !equip <item> · !unequip <slot>",
+    )
+    return embed
+
+
+class _SlotSelect(discord.ui.Select):
+    """Step 1 — pick the slot to manage."""
+
+    def __init__(self, equipped: dict[str, str], wear: dict[str, int]) -> None:
+        options = []
+        for slot in equipment.SLOTS:
+            item = equipped.get(slot)
+            description = "empty"
+            if item:
+                description = item.title()
+                maximum = equipment.max_durability(item)
+                if maximum is not None:
+                    description += f" ({wear.get(item, maximum)}/{maximum})"
+            options.append(
+                discord.SelectOption(
+                    label=slot.title(),
+                    value=slot,
+                    description=description[:100],
+                    emoji=_SLOT_EMOJI.get(slot),
+                ),
+            )
+        super().__init__(placeholder="Pick a slot to manage…", options=options, row=0)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction):
+            return
+        view: MiningGearView = self.view  # type: ignore[assignment]
+        new_view = await MiningGearView.create(
+            view._author,
+            view.guild_id,
+            slot=self.values[0],
+        )
+        embed = await build_gear_embed(view._author.id, view.guild_id)
+        await safe_edit(interaction, embed=embed, view=new_view)
+        view.stop()
+
+
+class _ItemSelect(discord.ui.Select):
+    """Step 2 — pick the owned item to equip into the chosen slot."""
+
+    def __init__(self, slot: str, owned: list[str]) -> None:
+        self._slot = slot
+        options = [
+            discord.SelectOption(label=item.title(), value=item)
+            for item in owned[:24]  # 24 + the unequip sentinel ≤ 25 (Discord cap)
+        ]
+        options.append(
+            discord.SelectOption(
+                label="— Unequip slot —",
+                value=_UNEQUIP_SENTINEL,
+                emoji="✖️",
+            ),
+        )
+        super().__init__(
+            placeholder=f"Equip into the {slot} slot…",
+            options=options,
+            row=1,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction):
+            return
+        view: MiningGearView = self.view  # type: ignore[assignment]
+        if self.values[0] == _UNEQUIP_SENTINEL:
+            result = await mining_workflow.unequip(
+                view._author.id,
+                view.guild_id,
+                self._slot,
+            )
+        else:
+            result = await mining_workflow.equip(
+                view._author.id,
+                view.guild_id,
+                self.values[0],
+            )
+        await _rerender(interaction, view, result)
+
+
+async def _rerender(
+    interaction: discord.Interaction,
+    view: MiningGearView,
+    result,
+) -> None:
+    """Rebuild the panel after an action (equipment changed under it)."""
+    note = ("✅ " if result.ok else "❌ ") + result.message
+    embed = await build_gear_embed(view._author.id, view.guild_id, note=note)
+    embed.color = SUCCESS_COLOR if result.ok else ERROR_COLOR
+    new_view = await MiningGearView.create(view._author, view.guild_id)
+    await safe_edit(interaction, embed=embed, view=new_view)
+    view.stop()
+
+
+class MiningGearView(HubView):
+    """Slot picker → item picker → Equip Best; a child of the mining hub."""
+
+    SUBSYSTEM = "mining"
+
+    def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
+        super().__init__(author)
+        self.guild_id = guild_id
+
+    @classmethod
+    async def create(
+        cls,
+        author: discord.Member | discord.User,
+        guild_id: int,
+        *,
+        slot: str | None = None,
+    ) -> MiningGearView:
+        """Async factory — the selects depend on the player's current state."""
+        view = cls(author, guild_id)
+        suid = str(author.id)
+        inventory = await db.get_mining_inventory(suid, guild_id)
+        equipped = await db.get_equipment(suid, guild_id)
+        wear = await db.get_gear_wear(suid, guild_id)
+        view.add_item(_SlotSelect(equipped, wear))
+        if slot is not None:
+            owned = sorted(
+                item
+                for item, qty in inventory.items()
+                if qty > 0 and equipment.slot_for(item) == slot
+            )
+            view.add_item(_ItemSelect(slot, owned))
+        return view
+
+    @discord.ui.button(
+        label="✨ Equip Best (all slots)",
+        style=discord.ButtonStyle.success,
+        row=2,
+    )
+    async def equip_best_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        if not await safe_defer(interaction):
+            return
+        inventory = await db.get_mining_inventory(str(self._author.id), self.guild_id)
+        picks = best_loadout(inventory)
+        if not picks:
+            from utils.mining.market import TradeResult
+
+            await _rerender(
+                interaction,
+                self,
+                TradeResult(False, "You own no equippable gear yet."),
+            )
+            return
+        equipped_lines = []
+        for slot, item in sorted(picks.items()):
+            result = await mining_workflow.equip(
+                self._author.id,
+                self.guild_id,
+                item,
+            )
+            if result.ok:
+                equipped_lines.append(f"**{slot}** → {item.title()}")
+        from utils.mining.market import TradeResult
+
+        await _rerender(
+            interaction,
+            self,
+            TradeResult(True, "Equipped your best gear: " + ", ".join(equipped_lines)),
+        )
+
+    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=2)
+    async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        # Late import keeps the module-load graph acyclic (the hub imports this).
+        from views.mining.main_panel import MiningHubView, build_overview_embed
+
+        embed = await build_overview_embed(
+            self._author.id,
+            self.guild_id,
+            name=getattr(self._author, "display_name", None),
+        )
+        view = MiningHubView()
+        await interaction.response.edit_message(embed=embed, view=view)
+        self.stop()
+
+
+__all__ = ["MiningGearView", "build_gear_embed"]
