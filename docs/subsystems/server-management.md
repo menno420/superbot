@@ -1,7 +1,7 @@
 # Server management subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + the status tracker win.
-> **Last updated:** 2026-06-10 (#656 Access Map/Help Preview subpanels recorded).
+> **Last updated:** 2026-06-10 (#671 Help Preview migrated onto the Help projection seam; earlier same day: #656 subpanels recorded).
 
 ## What & where
 
@@ -138,9 +138,12 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   **gated PR13 AI template layer**. **2026-06-10 (#656, adaptive-platform P1C):** the hub
   gained the read-only **Access Map + Help Preview staff subpanels**
   (`views/server_management/access_map.py` — display-only, AST-pinned; first
-  `project_access_map` consumers). *Known drift (EOD verification §4): the Help
-  Preview predates the #657 Help projection seam and re-derives Help truth from
-  access axes — migrate it onto `project_help_with_execution` in a Help-lane slice.*
+  `project_access_map` consumers). The EOD verification's Tier-2 drift (the Help
+  Preview predated the #657 projection seam and re-derived Help truth from raw
+  access axes) was **resolved same day in PR #671**: the preview now consumes
+  `project_help_with_execution` — governance hides render as Hidden, overlay
+  hides/renames render, and orphaned overlay rows are reported here (its first
+  operator reporter).
 - Known UX follow-ups: moderation member quicksearch via `discord.ui.UserSelect`
   (`unban` remains ID-based); bulk **Clear missing** on time/XP panels; selector-ize
   Edit Role.

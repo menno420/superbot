@@ -131,13 +131,15 @@ services) without partitioning by module.
 > **Queue state (2026-06-10 end-of-day verification,
 > [`../audits/past-day-verification-2026-06-10.md`](../audits/past-day-verification-2026-06-10.md)):
 > Batches 1–8 are all executed and merged** (#650 · #651 · #652 · #654 · #656 ·
-> #657+#659 · #661+#663/#664/#665-via-#667 · #649). **What remains live in this
-> plan:** the **RS07 chain-service slice** (Batch 3's optional third slice — still
-> open), the **Batch 4 pointer-classification tail**, **Batch 9**
-> (contract-first observability), **Batch 10** (planning-only selections), and
-> the Help-lane **overlay editor UI** tail (audit Phase 5, tracked under
-> Batch 6's outcome notes). Plus the owed maintainer-only items: the first real
-> #633 workflow dispatch and the HLT-2 production live-tests.
+> #657+#659 · #661+#663/#664/#665-via-#667 · #649). **The queue-remainder
+> session (PR #671, same day) then executed the RS07 chain-service slice,
+> Batch 9's RS08 read-model slice, and the EOD audit's Tier-2 Help-Preview
+> fix.** **What remains live in this plan:** the **Batch 4
+> pointer-classification tail**, **Batch 9's RS05 + RS10** (contract-first
+> observability), **Batch 10** (planning-only selections), and the Help-lane
+> **overlay editor UI** tail (audit Phase 5, tracked under Batch 6's outcome
+> notes). Plus the owed maintainer-only items: the first real #633 workflow
+> dispatch and the HLT-2 production live-tests.
 
 ### Batch 1 — Low-risk runtime truth/clarity (RS04 · RS09 · RS13 · RS14 · RS16 · RS11-rename) — executed in **#650** (2026-06-10, merged — verified 2026-06-10 EOD)
 
@@ -201,16 +203,23 @@ services) without partitioning by module.
 - **Stop:** any classification that would *change execution access* — that is
   governance, not ledger work.
 
-### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — shipped in **#652** (2026-06-10; **RS07 still open**)
+### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — shipped in **#652**; **RS07 executed in #671** (both 2026-06-10 — batch COMPLETE)
 
 > Outcome notes: RS03 = `set_policy` owns old-value read + audit (real
 > `prev_value`) + typed `RoutingMutationResult`, with a new import-fence
 > invariant; RS17 = dispatcher arm thinned to validation + result consumption;
 > RS06 = audited `clear_{time,xp}_threshold` seam methods + the three direct
 > clear sites migrated + the threshold fence widened to clears/full-row
-> remove. **RS07 (chain service extraction) was deferred** — optional slice,
-> new-service design; it remains the only open item in this batch. Details:
-> PR #652 + `.sessions/2026-06-10-batch3-service-boundaries.md`.
+> remove. **RS07 executed in the queue-remainder session (PR #671):**
+> `services/chain_service.py` on the same Batch 3 pattern (typed
+> `ChainMutationResult`, old-value read, audit with real `prev_value`; the
+> `chain_count` increment rides the service unaudited so the table has one
+> writing module), cog + all four modals converted, repo-wide AST fence
+> (`test_chain_write_boundary.py`), `ownership.md` + exception-ledger rows
+> updated; a latent bug fixed en route (chain-create no longer resets a
+> limit-only row's `word_limit`). Details: PR #652 +
+> `.sessions/2026-06-10-batch3-service-boundaries.md`; PR #671 +
+> `.sessions/2026-06-10-queue-remainder-rs07-rs08-help-preview.md`.
 
 - **Objective:** writes and their audit live in the domain owner, not the caller.
 - **Files:** `disbot/services/command_routing.py` (typed mutation result; audit
@@ -396,12 +405,19 @@ in plan order (after the smaller batches), not immediately.
 - **Owed operational step (anytime):** the **first real dispatch** of the #633
   refresh workflow from the Actions tab (maintainer-driven).
 
-### Batch 9 — Observability & lifecycle hardening (RS05 · RS08 · RS10) — contract-first
+### Batch 9 — Observability & lifecycle hardening (RS05 · RS08 · RS10) — contract-first; **RS08 executed in #671** (2026-06-10)
 
-- **RS08 (ready):** extract the diagnostic embed builders' raw SQL
-  (`cogs/diagnostic/_platform_embeds.py`, `_helpers.py`) into bounded read-only
-  service read models; embeds become render-only; keep the diagnostics read-only
-  invariant.
+- **RS08 — EXECUTED (PR #671):** the diagnostic builders' inline SQL moved to
+  the tables' owning `utils/db` modules (`sessions.count_sessions_by_subsystem`,
+  `anchors.count_active_anchors_by_subsystem`,
+  `migrations.applied_migration_versions` / `list_public_tables`) — the
+  repo's established read-model home for per-table aggregates (the same file
+  already consumed `bindings_db.count_by_status` etc., so no new `services/`
+  wrapper layer was invented; "service read models" disposition note).
+  `cogs/xp/_helpers._build_rank_embed` finished its never-completed migration
+  onto `services/rank_providers.member_rank`. Class closed by a new invariant:
+  `tests/unit/invariants/test_no_raw_sql_in_cogs.py` (no fetch/execute call
+  with a SQL literal under `cogs/` or `views/`).
 - **RS10 (bounded):** migrate one view family at a time onto
   `views/base.py` ownership/timeout handling (characterize denial copy + timeout
   edit failure first; preserve genuinely multiplayer views).
@@ -477,15 +493,19 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 
 ## §8 Next recommended agent
 
-*(Rewritten 2026-06-10 EOD — the original §8 recommended starting Batch 1+2;
-all of Batches 1–8 have since executed and been verified merged. Full
-recommendation + alternates:
+*(Rewritten 2026-06-10 (second pass) — the EOD rewrite's implementation-ready
+remainder (RS07 · RS08 · the Help-Preview Tier-2 fix) has since executed in
+**PR #671**. Full recommendation + alternates:
 [`../audits/past-day-verification-2026-06-10.md`](../audits/past-day-verification-2026-06-10.md) §6.)*
 
-The implementation-ready remainder of this queue: the **RS07 chain-service
-slice** (bounded, decision-free), the **Batch 4 pointer-classification tail**,
-and **Batch 9's RS08 read-model extraction** — all Sonnet-sized. **Batch 10 +
-the Batch 9 RS05 event-semantics contract** want an Opus/Fable planning pass.
-The **mining structures slice (§7.5 Forge/Vault/Home)** is the games-lane next
-move on the new write boundary (games folio routes it). The Help **overlay
-editor UI** (audit Phase 5) is the Help-lane tail — UI-heavy, plan-first.
+The single highest-value next action remains the **maintainer's production
+live-walk** (audit §6 — the unverified-surface debt: mining panels, Help
+overlay round-trip, the #634/#639 AI loops, BTD6 live answers). For agent
+work: the **Batch 4 pointer-classification tail** (bounded, Sonnet-sized);
+**Batch 10 + the Batch 9 RS05 event-semantics contract** want an Opus/Fable
+planning pass; **RS10** (view-family timeout/ownership convergence) is
+bounded once characterized. The **mining structures slice (§7.5
+Forge/Vault/Home)** is the games-lane next move on the new write boundary
+(games folio routes it) — but mind the audit §5 caution that mining balance
+is untested by play. The Help **overlay editor UI** (audit Phase 5) is the
+Help-lane tail — UI-heavy, plan-first.
