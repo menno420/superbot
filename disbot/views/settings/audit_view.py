@@ -117,7 +117,10 @@ class _BackToHubButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction) -> None:
         from views.settings.hub import SettingsHubView
 
-        view = SettingsHubView(interaction.user)
+        view = await SettingsHubView.create(
+            interaction.user,
+            interaction.guild_id,
+        )
         await interaction.response.edit_message(
             embed=SettingsHubView.build_embed(),
             view=view,
