@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from services.btd6_data_service import HeroEntry, MapEntry, ModeEntry
+from services.btd6_data_service import BloonEntry, HeroEntry, MapEntry, ModeEntry
 from services.btd6_knowledge_service import (
     RoundFact,
     TowerFact,
@@ -262,16 +262,94 @@ def for_round(fact: RoundFact) -> BTD6Response:
     )
 
 
+def for_bloon(bloon: BloonEntry) -> BTD6Response:
+    """Deterministic bloon answer — health/RBE/speed + what it pops into.
+
+    The resolver has matched bloons for a while, but ``deterministic_answer``
+    had no branch for them, so "what does a ceramic pop into" fell through to
+    the unresolved refusal (found by the #655 answerability verification).
+    """
+    stat_bits: list[str] = []
+    if bloon.health is not None:
+        fortified = (
+            f" ({bloon.health_fortified} fortified)"
+            if bloon.health_fortified is not None
+            else ""
+        )
+        stat_bits.append(f"Health: {bloon.health}{fortified}")
+    if bloon.rbe is not None:
+        fortified = (
+            f" ({bloon.rbe_fortified} fortified)"
+            if bloon.rbe_fortified is not None
+            else ""
+        )
+        stat_bits.append(f"RBE: {bloon.rbe}{fortified}")
+    if bloon.speed is not None:
+        stat_bits.append(f"Speed: {bloon.speed:g}")
+    options: list[str] = []
+    if bloon.children:
+        options.append(f"Pops into: {bloon.children}")
+    if bloon.immune_to:
+        options.append(f"Immune to: {', '.join(bloon.immune_to)}")
+    if bloon.properties:
+        options.append(f"Properties: {', '.join(bloon.properties)}")
+    return BTD6Response(
+        title=f"{bloon.canonical} — bloon ({bloon.category})",
+        short_answer=bloon.description,
+        why_it_matters=" · ".join(stat_bits),
+        recommended_options=tuple(options),
+        confidence="high",
+        sources=(_source_label(),),
+        follow_up="Ask about a specific round to see where this bloon appears.",
+    )
+
+
+def for_reference_facts(facts: tuple[str, ...]) -> BTD6Response:
+    """Facts-led answer for queries no entity intent matches but the shared
+    grounding pipeline (``btd6_context_service``) answered anyway — powers,
+    Monkey Knowledge, bosses, Geraldo items, CT relics…
+
+    Without this, the menu's Ask path showed the right facts under a
+    "couldn't find anything" headline (the #655 verification's item-5 gap);
+    the AI tool path had no such problem because the model reads the facts
+    directly. The first fact leads; the renderer's Live-data field carries
+    the full list.
+    """
+    headline = facts[0]
+    # Strip the machine-ish "[btd6_kind]" routing prefix from the headline —
+    # the full prefixed lines still render in the Live-data field.
+    if headline.startswith("[") and "] " in headline:
+        headline = headline.split("] ", 1)[1]
+    return BTD6Response(
+        title="BTD6 reference",
+        short_answer=headline,
+        why_it_matters=(
+            f"Matched {len(facts)} verified fact(s) from the BTD6 dataset "
+            "(full list below)."
+        ),
+        confidence="medium",
+        sources=(_source_label(),),
+        live_facts=facts,
+    )
+
+
+# The one string the unresolved path is recognised by (``answer_question``
+# upgrades an unresolved response to ``for_reference_facts`` when grounding
+# found facts anyway) — never compare against a literal copy of the title.
+UNRESOLVED_TITLE = "No BTD6 entities recognised"
+
+
 def for_unresolved(intent: ResolvedIntent) -> BTD6Response:
     return BTD6Response(
-        title="No BTD6 entities recognised",
+        title=UNRESOLVED_TITLE,
         short_answer=(
-            "I couldn't find a tower, hero, map, mode, or round in your message."
+            "I couldn't find a tower, hero, map, mode, round, or bloon "
+            "in your message."
         ),
         why_it_matters=(
             f"Confidence: {intent.confidence:.2f}. Try mentioning a tower "
-            "by name (e.g. ``Dart Monkey``), a map, or a round number "
-            "like ``round 63``."
+            "by name (e.g. ``Dart Monkey``), a map, a bloon, a power, or a "
+            "round number like ``round 63``."
         ),
         confidence="low",
         sources=(_source_label(),),

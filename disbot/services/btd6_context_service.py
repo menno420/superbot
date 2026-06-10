@@ -1678,6 +1678,86 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
     return out
 
 
+def _catalog_facts(message_text: str) -> list[str]:
+    """Ground powers / Monkey Knowledge / bosses named in the text.
+
+    These three fixture catalogs were reachable only through their dedicated
+    AI tools (``btd6_power_lookup`` / ``btd6_monkey_knowledge_lookup`` /
+    ``btd6_boss_lookup``) — the shared grounding pipeline never matched them,
+    so the deterministic Ask path (and a single ``btd6_lookup`` call) drew a
+    blank on "what does Super Monkey Storm do" (#655 answerability item 5).
+
+    Matching mirrors ``_paragon_name_facts``: case-insensitive full-name
+    substring. Boss and power names are distinctive coinages; Monkey
+    Knowledge names are often generic English ("More Cash"), so MK
+    additionally requires the text to mention knowledge / MK — the way
+    users actually ask about an MK point.
+    """
+    try:
+        from services import btd6_data_service
+
+        dataset = btd6_data_service.get_dataset()
+    except Exception:  # noqa: BLE001 — defensive
+        return []
+
+    text = (message_text or "").lower()
+    if not text:
+        return []
+    out: list[str] = []
+
+    def _effect_summary(effect: dict[str, Any]) -> str:
+        import json
+
+        return json.dumps(effect, sort_keys=True, separators=(",", ":"))
+
+    for power in dataset.powers:
+        name = power.canonical.strip().lower()
+        if not name or name not in text:
+            continue
+        bits = [f"cost: {power.monkey_money_cost} Monkey Money"]
+        if power.quantity:
+            bits.append(f"max {power.quantity} per game")
+        if power.between_rounds:
+            bits.append("usable between rounds")
+        out.append(
+            f"[btd6_power] {power.canonical} (power) — {power.description} "
+            f"({'; '.join(bits)})",
+        )
+        if power.effect:
+            out.append(
+                f"[btd6_power] {power.canonical} — decoded effect: "
+                f"{_effect_summary(power.effect)}",
+            )
+
+    if "knowledge" in text or re.search(r"\bmk\b", text):
+        for entry in dataset.monkey_knowledge:
+            name = entry.canonical.strip().lower()
+            if not name or name not in text:
+                continue
+            line = (
+                f"[btd6_knowledge] {entry.canonical} ({entry.category} tree, "
+                f"Monkey Knowledge) — {entry.description}"
+            )
+            if entry.effect:
+                line += f" | decoded effect: {_effect_summary(entry.effect)}"
+            if entry.prerequisites:
+                line += f" | requires: {', '.join(entry.prerequisites)}"
+            out.append(line)
+
+    for boss in dataset.bosses:
+        name = boss.canonical.strip().lower()
+        if not name or name not in text:
+            continue
+        blurb = boss.tagline or boss.description
+        line = f"[btd6_boss] {boss.canonical} (boss bloon) — {blurb}"
+        if boss.immune_to:
+            line += f" | immune to: {', '.join(boss.immune_to)}"
+        if boss.tiers:
+            line += f" | {len(boss.tiers)} tier(s) on record"
+        out.append(line)
+    return out
+
+
 def _fixture_facts_for_intent(intent: Any) -> list[str]:
     """Return fixture-sourced grounding lines for any tower/hero/bloon in ``intent``.
 
@@ -1939,6 +2019,18 @@ async def build(message_text: str) -> BTD6Context:
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
         facts.extend(_paragon_roster_facts(message_text))
         facts.extend(_entity_roster_facts(message_text))
+
+        # Pass 3e: powers / Monkey Knowledge / bosses named in the text —
+        # the three fixture catalogs the pipeline never grounded (their
+        # dedicated AI tools were the only path; the deterministic Ask had
+        # none). Isolated like the other passes.
+        try:
+            facts.extend(_catalog_facts(message_text))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: catalog grounding unavailable (%s)",
+                exc,
+            )
 
         # Pass 3c: upgrade grounding — an upgrade named in the text by name,
         # abbreviation / nickname (PMFC / POD / BEZ / Prince of Darkness), or
