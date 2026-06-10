@@ -134,14 +134,17 @@ works** (the traps we hit), and what is still un-decoded.
    (b) Catalog/bloon facts still carry the internal-ish `fixture/btd6_data`
    label while stats facts say "BTD6 game data 55.1". (c)
    `btd6_context_service` `source_summary` says "data.ninjakiwi.com (Tier 1)"
-   even on fixture-only answers — a faithfulness wart. (d) *(decode pass)*
-   **hero-level `buffs` and paragon `subtowers` render on no surface**: tower
-   tiers render zones/buffs/subtowers via `tier_effect_lines` + the minion
-   facts, but the hero grounding/embeds skip the `buffs` array (Striker's
-   auras, now fully decoded, are invisible — as the carried versions were)
-   and the paragon embeds skip `subtowers` (the four Master-Builder sentries
-   / Magus' phoenix stats reach no user). Renderer work across both surfaces;
-   needs its own evidence pass over the 17 heroes + 13 paragons.
+   even on fixture-only answers — a faithfulness wart. ~~(d)
+   hero-level `buffs` and paragon `subtowers` render on no surface~~ —
+   **DONE 2026-06-10 (the #658 session)**: `tier_effect_lines` + the buff/zone
+   renderers moved to `utils/btd6/effect_lines.py` (helper-policy: needed by
+   services AND utils), the shared Pro body (`_stat_node_embed`) now renders
+   **🌀 Effects + 🤖 Minions** on tower/hero/paragon views (whole-bullet
+   truncation, ∞-sentinel reads "permanent"), and the hero grounding emits
+   change-only `[btd6_hero_buff]` aura lines. Found + fixed in the same pass:
+   Striker's Bomb-buff fractions carried the dump's misleading `*Multiplier`
+   names and rendered as ×0.25/×0.05 *reductions* — remapped to the
+   `*Percentage` family (+25% pierce, +5% range) with transplant-skips.
 
 ### Current state & next actions (READ FIRST)
 

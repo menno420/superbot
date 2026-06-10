@@ -2674,7 +2674,10 @@ def test_striker_rate_support_models_decode(mod):
     assert speed["rateMultiplier"] == 0.9 and speed["isGlobal"] is True
     # Empty buffLocsName falls back to the type name — the rename table's key.
     assert bomb["name"] == "RateSupportBombExpert"
-    assert bomb["rangeMultiplier"] == 0.05 and bomb["pierceMultiplier"] == 0.25
+    # Fractions land on the *Percentage schema family (+5% range, +25% pierce);
+    # the dump's Multiplier field names are misleading (a x0.05 range aura is
+    # absurd) and rendered as reductions when kept verbatim.
+    assert bomb["rangePercentage"] == 0.05 and bomb["piercePercentage"] == 0.25
 
 
 def test_only_affect_paragon_flag_copied(mod):
