@@ -11,8 +11,11 @@
 > callbacks (Decision #2 resolved: no registry needed — the get_cog lookup keeps
 > the `views → cogs` boundary clean without a provider). Setup routes to its
 > reusable `open_wizard_from_slash` entry (Decision #3 — the wizard owns its
-> session). The hub cog is **not** a `SUBSYSTEMS` entry (Decision #1: a new thin
-> cog, but deliberately not a governed subsystem — see the tracker). The
+> session). **Decision #1 was reversed in-build (owner decision Q-0016):** the hub
+> *was* registered as a first-class `servermanagement` `SUBSYSTEMS` + `HUBS` entry —
+> an unregistered `PersistentView` proved to be an auto-heal identity-contract
+> orphan (see #584 + the tracker's PR14 subsection); the "not a `SUBSYSTEMS` entry"
+> text below is the pre-build plan, not what shipped. The
 > restart-restoration live-check remains for the maintainer's bot.
 >
 > This is the **last** server-management PR (the implementation plan's PR14). It

@@ -1,6 +1,14 @@
 # Untapped Docs / Tests / Verification Map — 2026-06-10
 
 > **Status:** `audit`
+>
+> **Merged as #647 (2026-06-10) and reconciled the same day.** §2's "zero open PRs"
+> is a mapping-time fact — the open set at mapping time was this PR and its sibling
+> **#646** themselves. The drift findings were verified (FIND-DT01 split verdict:
+> the tracker's *header* was stale, its *body* already recorded PR14 shipped) and
+> the queue-truth fixes landed 2026-06-10; per-finding dispositions, the Batch→phase
+> mapping, and the Q-DT01–Q-DT04 routing live in
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md).
 
 **Mapped at:** `ed6269767c5614894fb3cdce2985d6487dc981b4`  
 **Scope:** Documentation, tests, plans, verification debt, and implementation-readiness after platform mapping.  

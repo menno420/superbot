@@ -1,7 +1,7 @@
 # SuperBot — Implementation Roadmap
 
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
-> what order" index. **Last updated:** 2026-06-09.
+> what order" index. **Last updated:** 2026-06-10.
 >
 > **What this is:** a thin router over the detailed plans. Each row is a one-line
 > description + a link to the **authoritative plan** and the area **folio** — it restates
@@ -35,30 +35,32 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | Adaptive **P1C** (staff-hub subpanels — Q-0032; tier path shipped #632) · Settings **Phase 2** (declaration/coverage map; Q-0064 BTD6 binding+guided flow) · Help **projection seam → Q-0055–Q-0059 overlay** (design-ready; lands on the #642 characterization net) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(shipped out of this row 2026-06-09: the Q-0025 scaffold → Spotlight registration **#626**, the Q-0049 BTD6 refresh workflow **#633**, settings hub actionable-groups + >25 reachability **#640** — Lane 7, Help counts + characterization net **#642** — Lane 8)* |
-| **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 `--all` towers cutover (dedicated session — Q-0066; extraction itself resumed 2026-06-09, see the BTD6 section) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice = owner pick Q-0072**: structures · game-XP service · workshop-workflow boundary) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batch 1** low-risk runtime truth/clarity → **Batch 2** surface-classification invariant → **Batch 3** service-boundary fixes → **Batch 4** Settings **Phase 2** declaration coverage (Q-0064 BTD6 rows ride along) → **Batch 5** Adaptive **P1C** → **Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
+| **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; gates **Q-0071**/Q-0072) · BTD6 `--all` towers cutover (dedicated session — Q-0066–Q-0069 answered) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
 
 ## By area
 
-### 🛡️ Server management — **Now** (active lane)
+### 🛡️ Server management — **structurally complete** (gated tail only)
 
 Folio: [server-management](subsystems/server-management.md) · **authoritative sequence:**
 [status tracker](planning/server-management-status-2026-06-05.md)
 
-- **Now** — **PR13 AI** template layer. (PR13's **deterministic** role-templates slice
-  shipped 2026-06-08; PR10 moderation config, PR11 moderation + roles setup sections, and
-  PR12 setup diagnostics & repair all shipped; PR11's governance setup section is deferred —
-  owner decision Q-0008.)
-- **Next** — the unified **Server Management Hub** (PR14, last;
-  [plan](planning/server-management-pr14-hub-plan.md)) → the deferred governance setup section
-  (capability overrides + command-access, Q-0011).
+- **Shipped through PR14** *(routing corrected 2026-06-10 — this page queued the hub
+  long after it merged)*: the unified **Server Management Hub** merged **2026-06-08 via
+  #584** ([plan](planning/server-management-pr14-hub-plan.md), executed/`historical`);
+  PR10 moderation config (all six slices), PR11 moderation + roles setup sections,
+  PR12 setup diagnostics & repair, and PR13's **deterministic** role-templates slice
+  all shipped before it.
+- **Later (gated)** — the **PR13 AI generation layer** ("Generate with AI" role
+  templates; AI per-exposure gate) → the deferred **governance** setup section
+  (capability overrides + command-access — owner decisions Q-0008/Q-0011).
 - Plans (context, not sequence): [roadmap](planning/server-management-roadmap-2026-06-05.md)
   (target architecture) · [implementation-plan](planning/server-management-implementation-plan-2026-06-05.md)
-  (PR scope; PR1–9 shipped).
+  (PR scope; shipped through PR14 — the tracker is authoritative).
 
 ### ⚙️ Settings / bindings / provisioning — **Next**
 
@@ -75,28 +77,30 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   Sequencing home: [settings audit §11](planning/settings-cog-centralization-audit-2026-06-09.md).
 - **Next** — settings audit **Phase 2** (declaration/coverage map: real domain-panel
   registrations replacing the Phase 1 `DOMAIN_CONFIG_SUBSYSTEMS` seam; **Q-0064**
-  BTD6 announcement-channel binding + CT guided flow), then **Phase 3** duplicate-path
-  convergence (**Q-0063** converge-gradually — router §27).
-- **Later** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md): one source-grounded orchestration roadmap; Phase 0 identity/read-model foundations and owner questions precede product mutation.
+  BTD6 announcement-channel binding + CT guided flow) — **Batch 4 of the
+  [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** —
+  then **Phase 3** duplicate-path convergence (**Q-0063** converge-gradually — router §27).
+- **Now (Phase 1 active)** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md):
+  P0 + P1A + P1B shipped (#588/#589/#591/#592/#632); **P1C next** (staff-hub
+  subpanels, Q-0032 — Batch 5 of the consolidated plan). *(Horizon corrected
+  2026-06-10: this row said "Later" while the at-a-glance table said P1C "Next".)*
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
 
 ### 🖥️ Building / interface (Discord-native UI) — **Next**
 
-- **Next** — **platform-surface mapping campaign** (2026-06-09): two parallel
-  Codex mapping agents (A: user surface · B: admin/platform surface) map every
-  subsystem/command/panel/service against the
-  [mapping standard](planning/platform-surface-mapping-standard-2026-06-09.md)
-  (verified baseline · schema · split · copy-paste prompts), then one
-  merge/implementation session lands the consistency fixes. Mapping-only;
-  Lanes 7–8 / adaptive P1C keep their queued scopes. Gate: #641 merged +
-  re-verify in-flight PR state live before launching the agents (#639/Lane 4
-  merged 2026-06-09; #638 was still an open draft at the late-2026-06-09
-  reconciliation).
-- **Next** — [untapped runtime/services/workflows map](planning/untapped-runtime-services-workflows-map-2026-06-10.md)
-  (2026-06-10, Codex): the below-the-surface seam audit behind the mapping
-  campaign (mutation ownership, cache/event invalidation gaps, helper
-  duplication) — input to the merge/implementation session.
+- **Complete (2026-06-10)** — the **platform-surface mapping campaign**: the
+  [mapping standard](planning/platform-surface-mapping-standard-2026-06-09.md) (#641),
+  Agent A's [user-surface map](planning/platform-mapping-a-user-surface.md) (#643),
+  Agent B's [admin-surface map](planning/platform-mapping-b-admin-surface.md) (#644),
+  and the two follow-on **untapped maps** —
+  [runtime/services/workflows](planning/untapped-runtime-services-workflows-map-2026-06-10.md)
+  (#646) · [docs/tests/verification](planning/untapped-docs-tests-verification-map-2026-06-10.md)
+  (#647) — all merged; findings verified + reconciled 2026-06-10.
+- **Next** — **implement the verified mapping batches**: the one active queue is the
+  [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)
+  (Batch 1 low-risk runtime truth/clarity + Batch 2 surface-classification
+  invariant first).
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
@@ -165,7 +169,7 @@ dedicated decision** for any action capability.
 Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · ADR-006
 provenance schema is implemented; extraction resumed against the decode-status backlog.
 
-- **Now (resumed 2026-06-09 — PR #638, verify merge)** — ABR rounds + income sets
+- **Now (resumed — #638 merged 2026-06-10)** — ABR rounds + income sets
   ingested game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed (the rest are provably unconfirmable
   pre-cutover). **Next: the dedicated `--all` towers-cutover session (owner decisions
@@ -173,7 +177,7 @@ provenance schema is implemented; extraction resumed against the decode-status b
   tier structures (attack-suppressed), per-tier beast names, name-guard joins, ~25
   value-pinned test updates.
   Status: [decode-status](btd6/btd6-gamedata-decode-status.md).
-- **Built (2026-06-09, Q-0049 — PR #633, scoreboard Lane 5; verify merge)** — the
+- **Built (Q-0049 — #633, merged 2026-06-09)** — the
   "fetch-everything-on-update" data refresh is a committed **manual-dispatch GitHub
   Actions workflow** (`workflow_dispatch` only, no schedule): one-click refresh after a
   game update, no unattended fetches, output is a reviewable PR (never a push to main).
@@ -191,12 +195,13 @@ accepted, not a target).
   [wire-exploration plan](planning/mining-wire-exploration-plan.md)), "The Descent"
   persistent depth (#607), combat gear → deathmatch via the shared `utils/equipment.py`
   stat seam (#608), the sell-ore/buy-gear market economy loop (#609), and the read-only
-  Character overview (#610), and — built 2026-06-09 (verify the PR merged on live
-  GitHub) — the audited **Workshop + durability** keystone (brainstorm §7.5; migration
-  063, tuning = Q-0054) with the **mother-panel live overview** (§6.3). **Next Wave-1
-  slices:** functional **structures** (Forge/Vault/Home — the remaining §7.5 sinks),
-  the owner-approved **duels-tick-weapon/armor-wear** slice (Q-0054), then Wave 2's
-  **game-XP service** (§7.4).
+  Character overview (#610), and the audited **Workshop + durability** keystone with
+  the **mother-panel live overview** (#624, merged 2026-06-09 — brainstorm §7.5/§6.3;
+  migration 063, tuning = Q-0054). **Next slice = owner pick (Q-0072):** functional
+  **structures** (Forge/Vault/Home — the remaining §7.5 sinks) · Wave 2's **game-XP
+  service** (§7.4) · or the **workshop-workflow service boundary first** (mapping
+  FIND-RS02 recommends it before more mining writes land). The owner-approved
+  **duels-tick-weapon/armor-wear** slice (Q-0054) stays queued alongside.
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded

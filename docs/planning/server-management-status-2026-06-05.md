@@ -10,12 +10,13 @@
 > for PR8+PR9, then for **PR10's first–fifth slices** — config-backed moderation
 > behaviour, require-reason, bot-readiness diagnostics, configurable warn escalation,
 > the post-action message cleanup sweep, and the optional public moderation log).
-> **Body is current through PR12** (setup diagnostics & repair, built 2026-06-07;
-> PR11's moderation + roles slices merged via #570 — verify the PR12 merge status
-> against live GitHub). **PR10 is COMPLETE** (all six slices shipped, incl.
+> **Body is current through PR14** (the unified Server Management Hub, built
+> 2026-06-08, merged via **#584** — server management is **structurally complete**).
+> **PR10 is COMPLETE** (all six slices shipped, incl.
 > moderator/trusted roles + capabilities, ADR-008). PR11's **governance** section is
 > deferred (owner decision Q-0008); **PR13's deterministic role-templates slice was
-> built 2026-06-08** (its AI generation layer + PR14 remain queued) — the "Shipped" +
+> built 2026-06-08** and **only its gated AI generation layer remains queued**
+> *(header corrected 2026-06-10 — it previously still queued PR14)* — the "Shipped" +
 > "Remaining queue" sections below are authoritative. PR13 also fixed a latent PR11
 > regression (the roles section's `set_role_threshold` op could never be staged — the
 > DB op-kind gate + CHECK were never widened; migration 059 closes it).

@@ -1,6 +1,13 @@
 # Untapped Runtime / Services / Workflows Map — 2026-06-10
 
 > **Status:** `audit` — mapping-only runtime/services/workflows report.
+>
+> **Merged as #646 (2026-06-10) and reconciled the same day.** §2's "no open PRs"
+> is a mapping-time fact — the open set at mapping time was this PR and its sibling
+> **#647** themselves. The findings below were **independently source-verified
+> (essentially all confirmed)**; per-finding dispositions, batch order, and the
+> Q-RS01–Q-RS03 routing live in
+> [`consolidated-implementation-plan-2026-06-10.md`](consolidated-implementation-plan-2026-06-10.md).
 
 **Mapped at:** `ed6269767c5614894fb3cdce2985d6487dc981b4`
 **Scope:** Runtime, services, helpers, workflows, mutation paths, observability, and ownership seams behind the already-mapped platform surface.

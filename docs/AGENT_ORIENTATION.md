@@ -341,7 +341,8 @@ cross-check the source and the consistency ledger first.
   maintainer decisions. **PR ordering superseded after #523** — read the status
   tracker / implementation plan for sequence.
 - `docs/planning/server-management-implementation-plan-2026-06-05.md` — per-PR scope
-  detail (PR1→PR14; PR1–PR9 shipped). Pair with the status tracker.
+  detail (PR1→PR14 — **all shipped through PR14/#584 except the gated PR13 AI
+  layer**; the status tracker is authoritative). Pair with the status tracker.
 - `docs/planning/superbot-ideas-lab-2026-06-05.md` — brainstorm backlog
   (advisory, **except** its §2 "operating decisions" and §6 "rejection ledger",
   which are binding "do-not-propose"). Read before proposing new
