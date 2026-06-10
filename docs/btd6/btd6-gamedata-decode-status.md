@@ -189,17 +189,22 @@ works** (the traps we hit), and what is still un-decoded.
    Striker's Bomb-buff fractions carried the dump's misleading `*Multiplier`
    names and rendered as ×0.25/×0.05 *reductions* — remapped to the
    `*Percentage` family (+25% pierce, +5% range) with transplant-skips.
-7. **Conversation-entity grounding for follow-up turns — structured into a
-   plan 2026-06-10:**
-   [`../planning/btd6-conversation-grounding-plan-2026-06-10.md`](../planning/btd6-conversation-grounding-plan-2026-06-10.md)
-   (carryover entity resolution at the `_gather_feature_facts` seam over the
-   existing `ai_conversation_service` buffer; zero-entity gate; labeled
-   carryover facts). Not implementation-approved yet. The original gap:
-   grounding is built from the current message only, so a follow-up like
-   "does **it** make coins at the end of round" (the second message in the
-   2026-06-10 Navarch screenshot) grounds ZERO facts and the model answers
-   from conversation memory — the faithfulness framing then makes it sound
-   verified. Diagnose any instance with `scripts/btd6_probe.py "<text>"`.
+7. ~~**Conversation-entity grounding for follow-up turns**~~ — **slice 1
+   SHIPPED 2026-06-10** (same day it was planned:
+   [`../planning/btd6-conversation-grounding-plan-2026-06-10.md`](../planning/btd6-conversation-grounding-plan-2026-06-10.md)):
+   a zero-fact `build()` with channel identity (the NL mention path) grounds
+   the newest recent conversation turn that resolves entities — typically
+   the bot's own previous answer — labeled `[btd6_carryover]`; reads the
+   conversation buffer's default floor only (never more history than the
+   model prompt sees); Ask/tool callers byte-identical. The screenshot's
+   turn-2 "does **it** make coins at the end of round" is the regression
+   pin. **Same-pass sweep fixes:** ranking questions ("best paragon",
+   "strongest tower") now ground the verified rosters (they grounded ZERO —
+   the model ranked from memory), and hyper-distinctive bare shorthand
+   ("navarch", "doomship", "everfrost", "magus", "mmmf") grounds without
+   the "paragon" keyword. Remaining tail (plan §4): the eval-harness pin;
+   any wider carryover window once real usage exists. Diagnose any new
+   instance with `scripts/btd6_probe.py "<text>"`.
 
 ### Current state & next actions (READ FIRST)
 

@@ -1360,6 +1360,13 @@ _ROSTER_INTENT = (
     "each paragon",
     "name the paragon",
     "name all paragon",
+    # Ranking questions ("best paragon?") got ZERO grounding (2026-06-10
+    # sweep) — the model ranked from memory with invented names. The roster
+    # pins the 13 real candidates; the ranking itself stays the model's
+    # clearly-subjective call.
+    "best paragon",
+    "strongest paragon",
+    "top paragon",
 )
 
 
@@ -1416,6 +1423,11 @@ _ENTITY_ROSTER_VERBS = (
     "what heroes",
     "what towers",
     "each ",
+    # Ranking questions ("strongest tower?") — same grounding rationale as
+    # the paragon roster's best/strongest/top entries (2026-06-10 sweep).
+    "best ",
+    "strongest ",
+    "top ",
 )
 
 
@@ -1727,6 +1739,14 @@ def _map_roster_reply(text: str, maps: list) -> str:
 
 _PARAGON_NAME_FILLERS = frozenset({"the", "of"})
 
+# Paragon shorthand distinctive enough to ground WITHOUT the word "paragon"
+# in the message — coined/rare words with no ordinary-chat collision. Generic
+# alias words (ice / boat / sub / root / …) must NOT join this set; they stay
+# behind the "paragon" keyword gate.
+_DISTINCTIVE_PARAGON_WORDS = frozenset(
+    {"navarch", "doomship", "everfrost", "magus", "mmmf"},
+)
+
 
 def _squash_paragon_name(text: str) -> str:
     """Lowercase, strip punctuation, and drop filler words ("the"/"of").
@@ -1765,6 +1785,21 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
         if name not in text and _squash_paragon_name(name) not in squashed:
             continue
         pstats = btd6_stats_service.get_paragon_stats(paragon.paragon_id)
+        if pstats is None or pstats.tower_id in grounded:
+            continue
+        grounded.add(pstats.tower_id)
+        out.extend(_render_paragon(pstats.tower_id, pstats.tower_canonical))
+
+    # A hyper-distinctive paragon word stands alone — "navarch" / "doomship"
+    # is unambiguous even without the word "paragon" (the bare-name probe
+    # grounded ZERO facts, 2026-06-10 sweep). Generic alias words ("ice",
+    # "boat", "sub") stay behind the keyword gate below.
+    squashed_tokens = frozenset(squashed.split())
+    for word in _DISTINCTIVE_PARAGON_WORDS & squashed_tokens:
+        resolved = paragon_math.resolve_paragon(word)
+        if resolved is None:
+            continue
+        pstats = btd6_stats_service.get_paragon_stats(resolved.paragon_id)
         if pstats is None or pstats.tower_id in grounded:
             continue
         grounded.add(pstats.tower_id)
@@ -2250,7 +2285,44 @@ def _coverage_freshness_signals(
     return signals
 
 
-async def build(message_text: str) -> BTD6Context:
+async def _conversation_carryover_facts(guild_id: int, channel_id: int) -> list[str]:
+    """Ground the newest recent conversation turn that resolves BTD6 entities.
+
+    Deterministic, read-only, no new state: scans the existing per-channel
+    ``ai_conversation_service`` deque **with its default window** — grounding
+    deliberately never reads more history than the model prompt's always-on
+    floor can see. Each candidate turn is grounded through this module's own
+    ``build`` (entity-bearing text → its full grounding, identical to what
+    the original question got), with channel identity omitted so the
+    fallback can never recurse. Plan:
+    ``docs/planning/btd6-conversation-grounding-plan-2026-06-10.md``.
+    """
+    from services import ai_conversation_service
+
+    turns = ai_conversation_service.recent_turns(guild_id, channel_id)
+    for turn in reversed(turns):  # newest first
+        text = (getattr(turn, "text", "") or "").strip()
+        if not text:
+            continue
+        prior = await build(text)
+        if not prior.facts:
+            continue
+        label = (
+            "[btd6_carryover] The user's latest message names no BTD6 entity; "
+            "the facts below are grounded from the recent conversation "
+            "(most recent turn that named one). If the user appears to mean a "
+            "different subject, ask instead of assuming."
+        )
+        return [label, *prior.facts]
+    return []
+
+
+async def build(
+    message_text: str,
+    *,
+    guild_id: int | None = None,
+    channel_id: int | None = None,
+) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
     Four passes, each isolated so one failure cannot suppress the others:
@@ -2268,6 +2340,16 @@ async def build(message_text: str) -> BTD6Context:
     4. Coverage + freshness signals — appends the same data-limit copy users
        see, plus a freshness flag for live-event kinds, so the model states
        limits and won't answer stale/missing live-event questions from memory.
+
+    With ``guild_id`` + ``channel_id`` (the natural-language mention path), a
+    zero-fact build falls back to **conversation carryover**: a follow-up
+    like "does *it* make coins at the end of round" names no entity, so the
+    passes above ground nothing and the model would answer from memory while
+    sounding sourced (the 2026-06-10 Navarch screenshot, turn 2). The
+    fallback grounds the newest recent turn that resolves BTD6 entities —
+    typically the bot's own previous answer — labeled ``[btd6_carryover]``
+    so the model can hedge. Callers without channel identity (the Ask
+    command, the ``btd6_lookup`` tool) keep today's behaviour exactly.
     """
     facts: list[str] = []
     live_rows: list[dict[str, Any]] = []
@@ -2409,6 +2491,15 @@ async def build(message_text: str) -> BTD6Context:
         # stack wraps the whole bundle as untrusted data). Paired with the
         # _TASK_CONTRACT live-event directive.
         facts.extend(_coverage_freshness_signals(intent, live_rows))
+
+    if not facts and guild_id is not None and channel_id is not None:
+        try:
+            facts = await _conversation_carryover_facts(guild_id, channel_id)
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: carryover grounding unavailable (%s)",
+                exc,
+            )
 
     if facts:
         # NK-sourced DB rows (live or stored) → the Tier-1 summary; a

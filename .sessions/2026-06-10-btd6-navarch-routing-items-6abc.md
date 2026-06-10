@@ -84,6 +84,27 @@ WAS such a demand), item 4 is the maintainer's live spot-check (now including
 the Navarch income answer + minion names), item 7 is the captured
 conversation-grounding idea. PR #662 review = the diff.
 
+## Continuation 2 (same session, after #666 merged — "anything else you can do?")
+
+The maintainer asked what could ship without his testing. Three moves:
+- **Item 7 slice 1 implemented** (the screenshot's turn-2 failure): zero-fact
+  `build()` with channel identity grounds the newest entity-bearing recent
+  turn via the existing `ai_conversation_service` floor (never more history
+  than the model prompt sees), labeled `[btd6_carryover]`; NL stage passes
+  guild/channel ids; Ask/tool callers byte-identical. The plan's first §4
+  question resolved in-code: gate = zero facts total. 9 tests incl. the
+  verbatim two-turn screenshot sequence + topic-switch + no-ids pins.
+- **Proactive probe sweep** (~60 questions across paragon/income/minion/
+  common families): only 3 zero-fact classes remained — ranking questions
+  ("best paragon"/"strongest tower" → roster verbs extended) and bare
+  distinctive shorthand ("navarch" → `_DISTINCTIVE_PARAGON_WORDS`, no
+  generic words). Both fixed + pinned same pass. UAV/Ball-of-Light "thin"
+  results judged correct-as-is.
+- **Process flag:** one mypy red from a `tokens` set/list name collision
+  between my two passes in `_paragon_name_facts` — caught by the full
+  mirror, renamed. Sweep-before-spot-check is cheap (~2 min) and found
+  every remaining class; candidate habit for any future grounding change.
+
 ## Continuation (same session, after #662 merged)
 
 - **Mid-session ledger conflict** (#659 merged to main while #662 was open):
