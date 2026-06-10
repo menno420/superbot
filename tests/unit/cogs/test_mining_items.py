@@ -48,7 +48,10 @@ def test_total_value_sums_and_ignores_nonpositive():
 
 def test_next_tool_upgrade_ladder():
     assert items.next_tool_upgrade("pickaxe") == "iron pickaxe"
-    assert items.next_tool_upgrade("iron pickaxe") is None  # top of ladder
+    assert items.next_tool_upgrade("iron pickaxe") == "gold pickaxe"
+    assert items.next_tool_upgrade("gold pickaxe") == "diamond pickaxe"
+    assert items.next_tool_upgrade("diamond pickaxe") is None  # top of ladder
+    assert items.next_tool_upgrade("lantern") == "diamond lantern"
     assert items.next_tool_upgrade("torch") == "lantern"
     assert items.next_tool_upgrade("gold") is None  # not on a ladder
 

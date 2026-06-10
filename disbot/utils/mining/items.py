@@ -113,6 +113,36 @@ _CATALOG: dict[str, ItemDef] = {
     # Structures are built via recipes rather than mined.
     "stone hut": ItemDef("stone hut", ItemKind.STRUCTURE, value=10, stackable=False),
     "iron pickaxe": ItemDef("iron pickaxe", ItemKind.TOOL, tier=2, value=15),
+    # Deeper ladders (owner decision 2026-06-10): gold/diamond tiers with
+    # full stats/durability/prices — the diamond lantern unlocks MAGMA.
+    "gold pickaxe": ItemDef("gold pickaxe", ItemKind.TOOL, tier=3, value=30),
+    "diamond pickaxe": ItemDef(
+        "diamond pickaxe",
+        ItemKind.TOOL,
+        tier=4,
+        value=60,
+    ),
+    "diamond lantern": ItemDef(
+        "diamond lantern",
+        ItemKind.TOOL,
+        tier=3,
+        value=45,
+        tags=frozenset({"light"}),
+    ),
+    "diamond sword": ItemDef(
+        "diamond sword",
+        ItemKind.TOOL,
+        tier=3,
+        value=40,
+        tags=frozenset({"weapon"}),
+    ),
+    "diamond armor": ItemDef(
+        "diamond armor",
+        ItemKind.TOOL,
+        tier=3,
+        value=55,
+        tags=frozenset({"armor"}),
+    ),
     "gold statue": ItemDef(
         "gold statue",
         ItemKind.STRUCTURE,
@@ -142,8 +172,10 @@ _CATALOG: dict[str, ItemDef] = {
 # Tool upgrade ladder — the spine of a future crafting progression.  Each
 # entry maps a tool family to its ordered tiers (lowest → highest).
 TOOL_LADDERS: dict[str, tuple[str, ...]] = {
-    "pickaxe": ("pickaxe", "iron pickaxe"),
-    "light": ("torch", "lantern"),
+    "pickaxe": ("pickaxe", "iron pickaxe", "gold pickaxe", "diamond pickaxe"),
+    "light": ("torch", "lantern", "diamond lantern"),
+    "weapon": ("sword", "iron sword", "diamond sword"),
+    "armor": ("shield", "armor", "diamond armor"),
 }
 
 

@@ -78,19 +78,27 @@ STAT_LABELS: dict[str, str] = {
 
 # Which slot each gear item fits, and the stats it contributes.
 _GEAR: dict[str, tuple[str, EffectiveStats]] = {
-    # Mining gear → mining stats.
+    # Mining gear → mining stats.  The "deeper ladders" tiers (gold/diamond,
+    # 2026-06-10 owner decision: curated economy + deeper ladders) extend each
+    # family; the diamond lantern's depth_access=3 is what makes MAGMA — and
+    # its magma-only finds — reachable at all (no earlier light reached it).
     "pickaxe": (TOOL, EffectiveStats(mining_power=2)),
     "iron pickaxe": (TOOL, EffectiveStats(mining_power=4)),
+    "gold pickaxe": (TOOL, EffectiveStats(mining_power=6)),
+    "diamond pickaxe": (TOOL, EffectiveStats(mining_power=8, luck=1)),
     "torch": (LIGHT, EffectiveStats(light_radius=1, depth_access=1)),
     "lantern": (LIGHT, EffectiveStats(light_radius=2, depth_access=2)),
+    "diamond lantern": (LIGHT, EffectiveStats(light_radius=3, depth_access=3)),
     "lucky charm": (CHARM, EffectiveStats(luck=1, loot_bonus=1)),
     # Combat gear → deathmatch stats.  Deliberately a SMALL, fair edge over the
     # base 100 HP / 15-damage duel — gear tilts a fight, it does not decide it
     # (a bare fighter still wins on crits + good defends).  Tune here.
     "sword": (WEAPON, EffectiveStats(damage=3)),
     "iron sword": (WEAPON, EffectiveStats(damage=6)),
+    "diamond sword": (WEAPON, EffectiveStats(damage=10)),
     "shield": (ARMOR, EffectiveStats(defense=2, max_health=10)),
     "armor": (ARMOR, EffectiveStats(defense=4, max_health=20)),
+    "diamond armor": (ARMOR, EffectiveStats(defense=7, max_health=35)),
 }
 
 
@@ -103,13 +111,18 @@ _GEAR: dict[str, tuple[str, EffectiveStats]] = {
 MAX_DURABILITY: dict[str, int] = {
     "pickaxe": 60,
     "iron pickaxe": 150,
+    "gold pickaxe": 220,
+    "diamond pickaxe": 400,
     "torch": 40,
     "lantern": 100,
+    "diamond lantern": 180,
     "lucky charm": 80,
     "sword": 60,
     "iron sword": 150,
+    "diamond sword": 150,
     "shield": 90,
     "armor": 120,
+    "diamond armor": 200,
 }
 
 

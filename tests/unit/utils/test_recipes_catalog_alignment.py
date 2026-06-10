@@ -37,6 +37,12 @@ _EXPECTED_RECIPES = {
     "gold statue",
     "diamond throne",
     "giant fortress",
+    # Deeper ladders (2026-06-10)
+    "gold pickaxe",
+    "diamond pickaxe",
+    "diamond lantern",
+    "diamond sword",
+    "diamond armor",
 }
 
 
