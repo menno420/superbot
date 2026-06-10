@@ -149,3 +149,56 @@ def test_paragon_degree_embed_clamps_out_of_range():
     stats = svc.get_paragon_stats("glaive_dominus")
     assert paragon_degree_label(100) in build_paragon_degree_embed(stats, 999).title
     assert paragon_degree_label(1) in build_paragon_degree_embed(stats, 0).title
+
+
+# --- effects + minions on the shared Pro body (#655 answerability item 6d) ---
+
+
+def test_stat_node_embed_renders_effects_and_minions():
+    from utils.btd6.stats_embed import build_pro_tier_embed
+
+    class _Stats:
+        canonical = "Test Tower"
+        game_version = "55.1"
+        upgrades = ()
+
+        def tier(self, code):
+            return {
+                "range": 50,
+                "buffs": [{"name": "Test buff", "rateMultiplier": 0.9}],
+                "zones": [{"name": "Test zone", "damage": 2, "interval": 0.5}],
+                "subtowers": [
+                    {
+                        "name": "Mini",
+                        "attacks": [
+                            {
+                                "rate": 1.0,
+                                "projectiles": [{"damage": 3.0, "pierce": 5.0}],
+                            },
+                        ],
+                        "lifespan": 25,
+                    },
+                    {"name": "Forever Pet", "lifespan": 9999999},
+                ],
+            }
+
+    embed = build_pro_tier_embed(_Stats(), "100")
+    fields = {f.name: f.value for f in embed.fields}
+    assert "🌀 Effects" in fields
+    assert "Test buff: x0.9 attack cooldown" in fields["🌀 Effects"]
+    assert "Test zone (2 dmg, every 0.5s)" in fields["🌀 Effects"]
+    assert "🤖 Minions" in fields
+    assert "**Mini**" in fields["🤖 Minions"]
+    assert "25s lifespan" in fields["🤖 Minions"]
+    # The 9,999,999 sentinel reads "permanent", never "∞s lifespan".
+    assert "permanent" in fields["🤖 Minions"]
+    assert "∞s" not in fields["🤖 Minions"]
+
+
+def test_bullet_block_truncates_whole_bullets():
+    from utils.btd6.stats_embed import _bullet_block
+
+    lines = [f"line {i} " + "x" * 100 for i in range(20)]
+    value = _bullet_block(lines)
+    assert len(value) <= 1024
+    assert "more)" in value  # honest drop count, no mid-line cut

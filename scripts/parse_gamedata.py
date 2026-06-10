@@ -1010,11 +1010,16 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     #     committed wiki rows had a hole.
     #   * RateSupportBombExpertModel {rangeMultiplier 0.05, pierceMultiplier
     #     0.25} == committed "Bomb Shooter buff" (L8+) — fraction semantics
-    #     (+5% range, +25% pierce), field-name identity.
+    #     (+5% range, +25% pierce). The dump's field names SAY Multiplier but
+    #     the values are additive fractions (a x0.05 range aura is absurd), so
+    #     they map onto the *Percentage schema family (rendered x100) — the
+    #     committed wiki-era rows kept the colliding Multiplier names and the
+    #     renderer read them as x0.25/x0.05 reductions once hero buffs became
+    #     visible (#655 item 6d).
     "RateSupportExplosiveModel": {"multiplier": "rateMultiplier"},
     "RateSupportBombExpertModel": {
-        "rangeMultiplier": "rangeMultiplier",
-        "pierceMultiplier": "pierceMultiplier",
+        "rangeMultiplier": "rangePercentage",
+        "pierceMultiplier": "piercePercentage",
     },
 }
 
@@ -2319,6 +2324,11 @@ _CUTOVER_TRANSPLANT_SKIP: frozenset[tuple[str, str, str, str]] = frozenset(
         # The committed wiki row gave the *permanent* WLP phoenix a 20s
         # lifespan; the dump's PermaPhoenix correctly has none.
         ("wizard_monkey", "subtowers", "Phoenix", "lifespan"),
+        # Striker's Bomb buff fractions moved to the *Percentage schema family
+        # (the wiki-era Multiplier names rendered as x0.25/x0.05 reductions);
+        # without the skip the old fields ride the transplant back in forever.
+        ("striker_jones", "buffs", "Bomb Shooter buff", "rangeMultiplier"),
+        ("striker_jones", "buffs", "Bomb Shooter buff", "pierceMultiplier"),
     },
 )
 

@@ -20,6 +20,7 @@ import discord
 
 from utils.btd6 import tier_codes
 from utils.btd6.damage_types import DAMAGE_MODIFIER_LABELS
+from utils.btd6.effect_lines import tier_effect_lines
 
 # Damage-modifier field -> short label (the bloon class the bonus applies to).
 # Shared with the AI grounding renderer via the single source in damage_types.
@@ -197,10 +198,68 @@ def _stat_node_embed(
             inline=False,
         )
 
+    # Buff/zone effects + spawned minions were menu-dark on every Pro view
+    # (towers showed them only via upgrade cards; heroes and paragons not at
+    # all — #655 answerability item 6d). Same shared wording the AI grounding
+    # uses (utils.btd6.effect_lines).
+    effect_lines = tier_effect_lines(node)
+    if effect_lines:
+        embed.add_field(
+            name="🌀 Effects",
+            value=_bullet_block(effect_lines),
+            inline=False,
+        )
+    minion_lines = [
+        _format_subtower(sub)
+        for sub in node.get("subtowers", [])
+        if isinstance(sub, dict)
+    ]
+    if minion_lines:
+        embed.add_field(
+            name="🤖 Minions",
+            value=_bullet_block(minion_lines),
+            inline=False,
+        )
+
     if not embed.fields:
         embed.description = empty_msg
     embed.set_footer(text=f"BTD6 stats v{game_version}")
     return embed
+
+
+def _bullet_block(lines: list[str], cap: int = 1024) -> str:
+    """Bulleted field value bounded to Discord's per-field cap.
+
+    Whole bullets only — a mid-line cut reads like data corruption; the
+    drop count keeps the truncation honest.
+    """
+    out: list[str] = []
+    used = 0
+    for index, line in enumerate(lines):
+        bullet = f"• {line}"
+        # Reserve room for a potential "… (+N more)" tail.
+        if used + len(bullet) + 1 > cap - 16:
+            out.append(f"… (+{len(lines) - index} more)")
+            break
+        out.append(bullet)
+        used += len(bullet) + 1
+    return "\n".join(out) or "—"
+
+
+def _format_subtower(sub: dict[str, Any]) -> str:
+    """One spawned minion as ``name — headline (lifespan)``."""
+    bits = [_headline(sub)]
+    lifespan = sub.get("lifespan")
+    if isinstance(lifespan, (int, float)) and lifespan:
+        # The 9,999,999 sentinel means permanent (same convention _num
+        # renders as ∞ elsewhere) — "∞s lifespan" reads like broken data.
+        if lifespan >= 9_999_999:
+            bits.append("permanent")
+        else:
+            bits.append(f"{_num(lifespan)}s lifespan")
+    body = " · ".join(bit for bit in bits if bit and bit != "—")
+    name = str(sub.get("name") or "Minion")
+    return f"**{name}** — {body}" if body else f"**{name}**"
 
 
 def build_pro_tier_embed(stats: Any, code: str) -> discord.Embed:

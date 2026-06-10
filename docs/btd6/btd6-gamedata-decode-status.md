@@ -119,29 +119,53 @@ works** (the traps we hit), and what is still un-decoded.
    (Wall Street income, discounts, MIB), Spectre/Mini Sun Avatar minions, and
    the "BTD6 game data 55.1" source label. *(+ from #655: the modes panel's
    new 📋 rules lines, and `!btd6 diagnostics` — previously failed to send.)*
-5. **Deterministic-Ask domain gaps (menu answerability, found by #655):** the
-   panel **Ask** button / `!btd6 ask` without an AI key routes only
-   tower/hero/map/mode/round intents — **bloons, powers, Monkey Knowledge,
-   bosses, and round-range cash** answer "No BTD6 entities recognised" even
-   though the AI tools (and `btd6_context_service.build`) answer all of them
-   deterministically. Root-cause direction: let `answer_question` fall back to
-   the same context-service facts the `btd6_lookup` tool uses, rather than
-   growing a second intent router. A product-shaped lift — plan before build.
-6. **Resolution/label polish (found by #655, smaller):** (a) minion *names*
+5. ~~**Deterministic-Ask domain gaps (menu answerability)**~~ — **DONE
+   2026-06-10 (PR #658, merged)**: `deterministic_answer` gained the missing
+   bloon branch (`for_bloon`, lowest precedence); powers/MK/bosses ground via
+   the new context-service **Pass 3e** (MK keyword-gated); no-intent answers
+   lead with the facts (`for_reference_facts` via `UNRESOLVED_TITLE`) instead
+   of the refusal. Round-range cash stays AI-tool-only (the one deliberate
+   remainder — a deterministic range-cash intent is its own small slice if
+   ever wanted).
+6. **Resolution/label polish (found by #655, smaller; a–c are the live
+   items — turn-key notes from the 2026-06-10 pre-handoff scout below):**
+   (a) minion *names*
    don't resolve directly — "mini sun avatar" lands on the Sun Avatar upgrade;
    the stats live under the parent tier's subtowers (answerable via "sun
    temple minions"); a subtower-name → parent-tier alias layer fixes recall.
+   *Scouted design:* a new `_subtower_name_facts(message_text,
+   resolved_tower_ids)` pass in `btd6_context_service` mirroring
+   `_paragon_name_facts` — build a cached index {minion name → owning
+   (tower_id, tier_code)} by walking the stats files' `subtowers` (+ paragon
+   `base`), match whole-word in text, ground the owning tier via
+   `btd6_upgrade_detail_service.get_upgrade_detail(f"{tower_id}:{code}")` →
+   `render_upgrade_grounding`. **Guards needed:** skip names colliding with
+   tower/hero/bloon/upgrade names (e.g. "Spectre" is also an Ace upgrade) and
+   stoplist generic single words ("Plane", "Marine"); "Orca"/"Pouākai"/
+   "Mini Sun Avatar"/"Crushing Sentry" are the headline wins.
    (b) Catalog/bloon facts still carry the internal-ish `fixture/btd6_data`
    label while stats facts say "BTD6 game data 55.1". (c)
    `btd6_context_service` `source_summary` says "data.ninjakiwi.com (Tier 1)"
-   even on fixture-only answers — a faithfulness wart. (d) *(decode pass)*
-   **hero-level `buffs` and paragon `subtowers` render on no surface**: tower
-   tiers render zones/buffs/subtowers via `tier_effect_lines` + the minion
-   facts, but the hero grounding/embeds skip the `buffs` array (Striker's
-   auras, now fully decoded, are invisible — as the carried versions were)
-   and the paragon embeds skip `subtowers` (the four Master-Builder sentries
-   / Magus' phoenix stats reach no user). Renderer work across both surfaces;
-   needs its own evidence pass over the 17 heroes + 13 paragons.
+   even on fixture-only answers — a faithfulness wart.
+   *Scouted (2026-06-10):* (b) is **18 literal sites** in
+   `btd6_context_service.py` + pins in `tests/evals/cases.py` (lines ~386/494)
+   — replace with one lazy helper (e.g. "BTD6 dataset, game v{game_version()}")
+   and update the eval pins; (c) is `_DEFAULT_SOURCE_SUMMARY` applied whenever
+   ANY facts exist (`build()` tail, ~line 2119) — branch on the existing
+   `live_rows` variable instead (live rows → NK Tier-1 summary; fixture-only →
+   a dataset summary); pins to update:
+   `test_btd6_ai_service_grounding_pin.py:71`,
+   `test_btd6_live_events_command.py:441`. ~~(d)
+   hero-level `buffs` and paragon `subtowers` render on no surface~~ —
+   **DONE 2026-06-10 (the #658 session)**: `tier_effect_lines` + the buff/zone
+   renderers moved to `utils/btd6/effect_lines.py` (helper-policy: needed by
+   services AND utils), the shared Pro body (`_stat_node_embed`) now renders
+   **🌀 Effects + 🤖 Minions** on tower/hero/paragon views (whole-bullet
+   truncation, ∞-sentinel reads "permanent"), and the hero grounding emits
+   change-only `[btd6_hero_buff]` aura lines. Found + fixed in the same pass:
+   Striker's Bomb-buff fractions carried the dump's misleading `*Multiplier`
+   names and rendered as ×0.25/×0.05 *reductions* — remapped to the
+   `*Percentage` family (+25% pierce, +5% range) with transplant-skips.
 
 ### Current state & next actions (READ FIRST)
 
