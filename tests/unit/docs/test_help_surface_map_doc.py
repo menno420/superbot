@@ -91,9 +91,7 @@ def test_doc_lists_every_committed_hub(doc_text):
     backticks (the doc's table convention).
     """
     for hub in HUBS:
-        assert f"`{hub.key}`" in doc_text, (
-            f"hub {hub.key!r} missing from inventory doc"
-        )
+        assert f"`{hub.key}`" in doc_text, f"hub {hub.key!r} missing from inventory doc"
 
 
 def test_doc_lists_every_subsystem_key(doc_text):
@@ -101,9 +99,61 @@ def test_doc_lists_every_subsystem_key(doc_text):
     inventory table. Match by key wrapped in backticks.
     """
     for key in SUBSYSTEMS:
-        assert f"`{key}`" in doc_text, (
-            f"subsystem {key!r} missing from inventory doc"
+        assert f"`{key}`" in doc_text, f"subsystem {key!r} missing from inventory doc"
+
+
+def _hook_defining_extension_count() -> tuple[int, int]:
+    """(extensions defining ``build_help_menu_view``, total extensions).
+
+    An extension "defines the hook" when its module — or any module in its
+    package — contains a ``def build_help_menu_view(`` definition. Mirrors
+    how the doc's routing summary counts them.
+    """
+    import config
+
+    defn = re.compile(r"def build_help_menu_view\(")
+    have = 0
+    for ext in config.INITIAL_EXTENSIONS:
+        rel = ext.replace(".", "/")
+        module_path = DISBOT_ROOT / f"{rel}.py"
+        paths = (
+            [module_path]
+            if module_path.exists()
+            else list((DISBOT_ROOT / rel).rglob("*.py"))
         )
+        source = "\n".join(p.read_text(encoding="utf-8") for p in paths if p.exists())
+        have += bool(defn.search(source))
+    return have, len(config.INITIAL_EXTENSIONS)
+
+
+def test_preamble_counts_match_live_registries(doc_text):
+    """The reconciled preamble counts are pinned to the live registries so
+    they cannot rot silently again (Lane 8 reconciliation: the doc carried
+    "9 hubs" while 10 were registered, and "26 cogs / 25 of 26 expose the
+    hook" from a config two growth-waves old).
+    """
+    import config
+
+    hubs_claim = re.search(r"(\d+) hubs in `disbot/utils/hub_registry\.py`", doc_text)
+    assert hubs_claim, "surface map no longer states the hub count"
+    assert int(hubs_claim.group(1)) == len(HUBS)
+
+    subs_claim = re.search(
+        r"(\d+) registered subsystems in `utils/subsystem_registry\.py`",
+        doc_text,
+    )
+    assert subs_claim, "surface map no longer states the subsystem count"
+    assert int(subs_claim.group(1)) == len(SUBSYSTEMS)
+
+    ext_claims = re.findall(r"(\d+) loaded extensions", doc_text)
+    assert ext_claims, "surface map no longer states the extension count"
+    for claim in ext_claims:
+        assert int(claim) == len(config.INITIAL_EXTENSIONS)
+
+    hook_claim = re.search(r"(\d+) of the (\d+) loaded extensions", doc_text)
+    assert hook_claim, "surface map no longer states the hook coverage"
+    have, total = _hook_defining_extension_count()
+    assert (int(hook_claim.group(1)), int(hook_claim.group(2))) == (have, total)
 
 
 def test_doc_panel_hook_classes_exist_in_source(doc_text, disbot_source):
