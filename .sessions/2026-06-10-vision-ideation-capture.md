@@ -48,6 +48,23 @@ genuine redundancy — almost all current buttons are useful. The vision's "≤3
 is navigation depth only. Routed into the capture doc (§1/V-03/AG-01/§6) +
 the roadmap interface row; binds the upcoming help-home/navigation plan.
 
+## Deep-questions round (owner-requested, agent-initiated)
+
+The owner asked the agent to pose its own highest-value questions. Checked
+the router + idea docs first and dropped one candidate before asking (bot
+personality — owner-vision-2026-06-08 §16 already decided funny/sarcastic,
+consistent across all commands). One structured round → **Q-0080–Q-0083**
+(router §35): **public bot is the goal** · **solo-core RPG + co-op overlays**
+· **hard-ceiling AI spend** (€ figure owed after first prod measurements) ·
+**full-self-driving workflow end-state** (owner clarified live: *not* a
+near-term goal — it arrives as the backlog thins). New tension **T-6**
+(public scale × cosmetic-only donations × fixed ceiling) captured in §5.
+
+Calibration note for future agents: on two of the four (Q-0080 distribution,
+Q-0083 autonomy) the owner chose **further than the recommended safe option**
+— he aims at the ambitious end-state and stages the path, rather than hedging
+the destination. Weight recommendation framing accordingly.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →

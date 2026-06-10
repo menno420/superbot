@@ -40,6 +40,13 @@
 | **Later** | BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover **shipped #649**; verification #655; answerability tail #658/#662/#668 — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
+> **Standing posture (router §35, 2026-06-10):** the end-state is a **public
+> bot** (Q-0080 — every new plan inherits stranger-grade onboarding/abuse/cost
+> filters) · the flagship RPG is **solo core + co-op overlays** (Q-0081) · AI
+> spend = **owner-set hard ceiling, visible graceful degrade** (Q-0082) · the
+> workflow converges toward **full self-driving — explicitly not near-term**
+> (Q-0083).
+
 ---
 
 ## By area

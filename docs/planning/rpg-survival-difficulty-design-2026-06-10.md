@@ -35,6 +35,12 @@ health + hunger + energy; Hard turns the same systems into an intense,
 high-reward experience. PvP is explicitly outside difficulty (equal-start
 arenas, V-08).
 
+**Q-0081 (2026-06-10) pins the core shape: solo core + co-op moments.** Each
+player owns their world-state; multiplayer (duels, expeditions, party quest
+sessions, server-wide events) is an opt-in *overlay* — so every system below
+is designed single-player-first, and the future quest-engine plan inherits
+single-party as its first constraint.
+
 ## Design
 
 ### D1 — The difficulty contract (V-05 + Q-0078)

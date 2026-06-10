@@ -45,6 +45,15 @@ ships a feature **and** leaves the workflow sharper is the ideal session, not an
 over-reaching one. Over many slightly-different sessions, all feeding the same
 shared memory, the system converges on *exactly the right context per task*.
 
+**North star (Q-0083, 2026-06-10):** the owner's declared end-state for this
+workflow is **full self-driving** — the bot detecting its own issues, spawning
+its own fix sessions, merging green work, deploying with canary + rollback,
+steered by vision drops and vetoes. Explicitly **not a near-term goal** (his
+words: it arrives "ultimately", as the implementation backlog thins). The path
+there is graduated, router-granted trust tiers (the Q-0048 pattern); **nothing
+about today's gates changes until a tier is explicitly granted** — agents do
+not merge or deploy.
+
 **Two rules keep that loop honest:**
 
 - **Autonomy boundary — docs free, config asks.** You have **free rein to

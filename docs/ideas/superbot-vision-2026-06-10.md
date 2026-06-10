@@ -290,6 +290,15 @@ section is new work** — it's the ground the vision stands on.
   and adds UI** — Q-0048's standing lift does *not* cover it. AG-08/AG-09 are the
   plan-shaped path; nothing ships without the per-exposure lift + the bounded-
   authority decision Q-0040 already names.
+- **T-6 — Public scale × cosmetic-only donations × hard AI ceiling
+  (Q-0080 × Q-0039 × Q-0082, added 2026-06-10).** A public bot's AI cost grows
+  with guild count, while revenue is pinned ~zero (cosmetic-only, no bot-side
+  billing) and the ceiling is fixed. Resolution grammar already in place: AI
+  default-off per guild (Q-0040), tiny derived per-guild budgets, heavy
+  caching/templates, visible in-world degradation ("the storyteller is
+  sleeping"). If AI features ever prove core to the public product, Q-0039 is
+  the lever to revisit — owner's call, flagged here so nobody resolves it
+  silently.
 
 ## 6. Routing ledger (state: captured → routed; Q-0078 picks applied 2026-06-10)
 
@@ -298,6 +307,15 @@ section is new work** — it's the ground the vision stands on.
 > structured: [`../planning/rpg-survival-difficulty-design-2026-06-10.md`](../planning/rpg-survival-difficulty-design-2026-06-10.md).
 > The help-home/navigation plan is the next grooming target (sequenced with the
 > Help lane's overlay editor UI). Per-user prefs and AI DM v1 stay captured.
+>
+> **Q-0080–Q-0083 (2026-06-10, same session — agent-initiated deep round):**
+> distribution ambition = **public bot is the goal** (Q-0080, a design filter
+> every new plan inherits) · flagship RPG = **solo core + co-op moments**
+> (Q-0081, binds the quest-engine plan single-party-first) · AI spend =
+> **hard ceiling, graceful degrade** (Q-0082; the € figure is owed after the
+> first prod measurements) · workflow end-state = **full self-driving,
+> explicitly not near-term** (Q-0083). New tension **T-6** (§5). Details:
+> router §35.
 
 | Item | Owning lane / home | Rough size | Suggested next step |
 |---|---|---|---|

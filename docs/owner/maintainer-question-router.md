@@ -3260,3 +3260,133 @@ are actually useful." *(In response to the agent's closing pitch for AG-01's
 owner-voice clarification + V-03 + AG-01 + §6 ledger row; `docs/roadmap.md`
 interface planning row. The help-home/navigation plan (the named next grooming
 target) inherits these as design constraints.
+
+## 35. Deep product-posture round — 2026-06-10 (same session, agent-initiated)
+
+> The owner asked the agent to pose its own highest-value questions ("specific
+> or maybe even very broad … questions that I would possibly really need to
+> think about"). One structured round, four areas — each checked against the
+> router + idea docs first as genuinely undecided. (A fifth candidate — bot
+> personality — was dropped before asking: owner-vision-2026-06-08 §16 already
+> decided it: **funny/sarcastic, dry wit, consistent across all commands**.)
+
+### Q-0080 — Distribution ambition: is SuperBot ever for servers the owner doesn't run?
+
+**Area:** Product / platform posture
+**Type:** Owner posture decision (agent-initiated deep round)
+**Priority:** High (a design filter every future plan inherits)
+**Status:** Answered (2026-06-10) — **Routed** → roadmap posture line; capture doc §5 (T-6) + §6
+
+**Question:** Technical multi-tenancy is law (owner-vision §9: no
+single-server assumptions), but the *ambition* was undecided: should SuperBot
+ever run on servers the owner doesn't control — up to a public listing?
+
+**Answer (2026-06-10): "Public bot is the goal."** Anyone can invite it one
+day; multi-tenant hardening, per-guild AI budgets, onboarding polish, and
+abuse-resistance are first-class concerns, not nice-to-haves.
+
+**Durable conclusions:**
+
+1. **V-01's 2-minute setup is for strangers** — it is the public bot's front
+   door, not a convenience for the owner's own installs; its KPI weight rises.
+2. **No feature may assume a trusted/home guild.** Per-guild scoping stays
+   law; new surfaces consider rate-limiting/abuse-resistance at design time.
+3. **Every AI feature needs a per-guild cost story** (Q-0082 + tension T-6);
+   per-guild opt-in, off by default (Q-0040) is confirmed as the public-scale
+   posture, not just caution.
+4. **Nothing is promoted by this answer** — it is a design filter, not a
+   workstream. A dedicated public-readiness audit is a future grooming
+   candidate once the RPG survival layer + Help Home land.
+
+### Q-0081 — Flagship RPG core: solo-alongside or shared world?
+
+**Area:** Games / character platform / quest engine
+**Type:** Owner posture decision (agent-initiated deep round)
+**Priority:** High (the queued quest-engine/AI-DM plan forks on it)
+**Status:** Answered (2026-06-10) — **Routed** → survival plan posture note; future quest-engine plan inherits
+
+**Question:** Is the flagship RPG ultimately a *solo* adventure played
+alongside others (own world-state; leaderboards; opt-in co-op moments) — or
+one *shared persistent world* per server where players deplete, discover, and
+trigger events affecting everyone?
+
+**Answer (2026-06-10): "Solo core + co-op moments"** *(the recommended
+option)*. Each player owns their world-state forever; multiplayer — duels,
+expeditions (AG-10), party quest sessions, server-wide events — is an opt-in
+overlay on the solo core.
+
+**Durable conclusions:**
+
+1. **The quest engine / AI-DM plan is single-party first.** Shared state, if
+   any, lives only inside opt-in session/overlay scopes — never in the
+   persistent world.
+2. Mining's "personal position, per-guild seed" is confirmed as the
+   **end-state shape**, not just v1 caution; shared dig-sites stay a separate
+   bounded overlay if ever built.
+3. Server-wide *events* on solo worlds (one shared scoreboard, communal
+   moments) remain compatible overlays — they ride the solo core.
+
+### Q-0082 — AI spend posture: what do the budget caps protect?
+
+**Area:** AI lane / product economics
+**Type:** Owner posture decision (agent-initiated deep round)
+**Priority:** Medium-high (binds the AI-DM plan's budget gates; compounds with Q-0080)
+**Status:** Answered (2026-06-10) — **Routed** → capture doc §5 (T-6) + §6; the AI-DM plan cites it when structured
+
+**Question:** The cost *mechanism* is decided (Q-0040: budget-capped seams,
+degrade-closed, never silent overspend) — but no number or posture exists for
+what the caps protect. What is the spend posture?
+
+**Answer (2026-06-10): "Hard ceiling, graceful degrade"** *(the recommended
+option)*. The owner names a comfortable €/month; per-guild and global caps
+derive from it; at the cap, AI features visibly rest ("the storyteller is
+sleeping") until reset.
+
+**Durable conclusions:**
+
+1. **One owner-set global ceiling → derived per-guild budgets.** Predictable
+   forever; no silent growth.
+2. **The € figure itself is still owed** — set it right after the first real
+   prod measurements (the model-loop prod check is already pending). Until
+   then: conservative low caps.
+3. **Degradation is visible and in-world** (storyteller-resting copy), never
+   silent — matches Q-0040's "never silent overspend".
+4. Public ambition (Q-0080) × cosmetic-only donations (Q-0039) × a fixed
+   ceiling = **tension T-6** (capture doc §5): at public scale this forces
+   default-off AI + tiny per-guild budgets + heavy caching; if AI ever proves
+   core to the public product, Q-0039 is the lever to revisit — owner's call,
+   flagged so nobody resolves it silently.
+
+### Q-0083 — Workflow autonomy end-state: how self-driving does the system get?
+
+**Area:** Collaboration model / agent ecosystem
+**Type:** Owner north-star decision (agent-initiated deep round)
+**Priority:** Medium (orients tooling/health/deploy work; changes nothing today)
+**Status:** Answered + clarified (2026-06-10) — **Routed** → collaboration-model north-star note; bot-awareness lane cites it when resumed
+
+**Question:** Today agents build and push; the owner merges, deploys,
+prod-checks; a 3am breakage waits for his next session. How self-driving
+should the system ultimately become — for breakage and for green mergeable
+work?
+
+**Answer (2026-06-10): "Full self-driving is the goal."** The bot detects its
+own issues, spawns its own fix sessions, merges green work, deploys with
+canary + auto-rollback; the owner steers by vision drops and vetoes.
+
+**Owner clarification (same conversation, verbatim):** "just to be clear,
+completely self driving is not yet a near term goal, but ultimately there
+will not be much else left to do if I keep implementing at the current
+speed."
+
+**Durable conclusions:**
+
+1. **End-state, not a grant.** Nothing changes today: agents do not merge or
+   deploy; the owner remains the merge/deploy/prod-check gate.
+2. **The path is graduated trust** — the Q-0048 standing-lift pattern
+   generalized into a ladder: autonomy tiers get proposed area-by-area through
+   this router as track record accumulates; each tier is its own owner
+   decision.
+3. **Arrival is demand-driven, not scheduled.** Full self-driving becomes
+   relevant as the implementation backlog thins ("not much else left to do").
+   Design health/deploy/tooling work so the system *could* get there
+   (bot-awareness plan, canary/rollback ideas align) without promoting it now.
