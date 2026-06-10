@@ -1748,8 +1748,13 @@ _META_ANCHOR_RE = re.compile(r"\bbtd\s?6\b|\bbloons\b", re.I)
 _META_SHAPE_RES = (
     re.compile(r"\b(?:do|can|does)\s+(?:you|we|i|this bot)\b.{0,40}\bknow\b", re.I),
     re.compile(r"\bknow\s+about\b", re.I),
-    re.compile(r"\bcan\s+(?:you|this bot)\s+tell\s+(?:me|us)\s+about\b", re.I),
-    re.compile(r"\bcan\s+(?:we|i)\s+ask\b", re.I),
+    # No auxiliary-verb requirement: "what CSN you tell me about btd6" (live
+    # typo, 2026-06-10) must still match — "you tell me/us about" + the BTD6
+    # anchor is unambiguous on a floored BTD6-routed message.
+    re.compile(r"\b(?:you|this bot)\s+tell\s+(?:me|us)\s+about\b", re.I),
+    # "ask" must target the bot ("ask you / this bot / the bot / it"), not a
+    # third party ("can I ask a friend to play btd6" is a social turn).
+    re.compile(r"\bask\s+(?:you|it|this\s+bot|the\s+bot)\b", re.I),
     re.compile(r"\bwhat\s+(?:btd\s?6\s+)?(?:data|questions?|topics?)\b", re.I),
     re.compile(r"\bwhat\s+can\s+you\s+(?:do|answer|help)\b", re.I),
 )

@@ -909,6 +909,13 @@ async def seed_postgres_from_files(root: Path | None = None) -> int:
     the number of blobs seeded. Requires the DB pool to be initialised — it is,
     once the bot is running, so this powers the ``!btd6ops seed-data`` command as
     well as ``scripts/seed_btd6_data.py``.
+
+    **Self-applying:** after seeding, the active provider is re-warmed and the
+    dataset cache dropped, so the new data is served immediately — no restart.
+    (Live miss 2026-06-10: seed-data wrote the blobs but the process kept
+    serving the old warmed copy; the operator had to know to restart, and the
+    restart command had its own relaunch bug. One command now means one
+    outcome.)
     """
     import hashlib
     import json
@@ -928,7 +935,51 @@ async def seed_postgres_from_files(root: Path | None = None) -> int:
         ).hexdigest()
         await btd6_data.upsert_blob(name, body, sha)
         seeded += 1
+    if seeded:
+        await warm_provider()
+        reset_cache()
     return seeded
+
+
+def bundled_game_version() -> str | None:
+    """The ``game_version`` carried by the *committed* fixture files, or ``None``.
+
+    Reads ``towers.json`` (the version-of-record fixture) through a fresh
+    ``FileRawProvider`` regardless of the active backend, so callers can
+    detect drift between what the repo ships and what the store serves.
+    """
+    try:
+        body = FileRawProvider().load("towers.json")
+    except Exception:  # noqa: BLE001 — absent files = no bundled version
+        return None
+    if not isinstance(body, dict):
+        return None
+    version = str(body.get("game_version") or "").strip()
+    return version or None
+
+
+def served_data_drift() -> tuple[str, str] | None:
+    """``(served, bundled)`` when the active store lags the bundled files.
+
+    ``None`` when the file backend is active (it cannot drift), when either
+    version is unknown, or when they agree. The repo's data PRs update the
+    bundled files only — a postgres/cloud store keeps serving its old copy
+    until re-seeded, which is exactly the invisible state this surfaces
+    (live, 2026-06-10: code auto-deployed at 55.1 while the blob store still
+    served 55.0 and an eval chased ghosts).
+    """
+    if isinstance(_PROVIDER, FileRawProvider):
+        return None
+    bundled = bundled_game_version()
+    if not bundled:
+        return None
+    try:
+        served = str(get_dataset().game_version or "").strip()
+    except Exception:  # noqa: BLE001 — unloadable dataset = no comparison
+        return None
+    if not served or served == bundled:
+        return None
+    return served, bundled
 
 
 def _load_file(name: str) -> dict[str, Any]:

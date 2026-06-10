@@ -155,3 +155,37 @@ phrasings. Checklist gained **Step 0: verify the build** + live-walk deltas
 - **Weak point:** the §7.5 composition family ("cash left after buying
   N towers") now has live acceptance cases but still no workflow — expect
   honest partials there until §7.5 ships.
+
+---
+
+## Continuation 3 (same session): the 55.0 mystery corrected + the data lane fixed (PR #676)
+
+**Correction of continuation 2:** the "prod deploy predated the burst" claim
+was WRONG — the maintainer challenged it ("my bot auto-deploys every merge")
+and the Railway log proves a new container (the #674 auto-deploy) served a
+"(55.0)" answer at 18:36. The stale thing was the **data, not the code**:
+prod runs `BTD6_DATA_BACKEND=postgres`, fixtures come from `btd6_data_blobs`
+(warmed at boot), and **merged data PRs never refresh that table**. The
+maintainer's own `!btd6ops seed-data` (18:43) is what flipped 55.0 → 55.1;
+the restart they correctly tried next died on the exit-0 bug. Lesson
+recorded: when a hypothesis contradicts a platform behavior the owner
+states, re-derive from the logs before asserting — the "(55.0) on the NEW
+container" line was sitting in the evidence the whole time.
+
+**Shipped (PR #676):** seed-data is now **self-applying** (re-warm + cache
+drop — one command, immediate effect); **drift surfacing** (boot-log warning
++ `!btd6 status` ⚠️ Data-drift field when the store lags the bundled files);
+seed-embed copy rewritten; checklist Step 0 corrected to the data-lane
+truth; prod-operations note added to the BTD6 folio + journal Runbook;
+**Q-0077** (auto-seed-on-boot posture) routed. Plus the post-restart
+screenshots' one holdout: "What **csn** you tell me about btd6" (typo) slips
+the meta-detector's `can you tell` shape — the tell/ask shapes are now
+auxiliary-verb-free and target-anchored ("ask **you/this bot**", so "ask a
+friend" stays out), pinned by the typo'd phrasing in the test matrix.
+
+**Post-restart screenshot verdicts (after seed + manual redeploy):** Navarch
+income ✅ (the #662 fix live-verified: $3,200/round + Trade Empire lines) ·
+crossbow-master cumulative cost ✅ · **the remaining-cash composition ✅**
+($650 + $37,660 − $21,500 = $16,810 — composed correctly without the §7.5
+workflow; better than predicted) · capability meta-question ❌ (the typo +
+possible pre-#675 timing) → the floor now catches it deterministically.

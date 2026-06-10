@@ -3143,3 +3143,35 @@ paper-doll stays Wave 3.
 **Suggested destination after answer:** done — brainstorm §7.6 stays the
 visual-roadmap home; `docs/subsystems/games.md` records the shipped card
 seam.
+
+## 33. Production data-lane batch — 2026-06-10 (eval session live findings)
+
+### Q-0077 — Should the BTD6 blob store auto-sync from the bundled files at boot?
+
+**Area:** BTD6 data lane / production operations
+**Type:** Operational posture (boot-time DB write)
+**Priority:** Medium (the drift class is now *surfaced* — this decides whether it also self-heals)
+**Status:** Open
+
+**Question:** Production serves BTD6 fixtures from the `btd6_data_blobs`
+Postgres table (`BTD6_DATA_BACKEND=postgres`), so a data PR updates the
+bundled files but the store keeps serving its old copy until someone runs
+`!btd6ops seed-data` — this silently confused the 2026-06-10 eval ("(55.0)"
+stamps, empty boss roster, on current code). PR #676 makes the drift loud
+(boot log warning + a `!btd6 status` ⚠️ field) and makes seed-data apply
+immediately. Should the bot go further and **auto-seed at boot when the
+bundled files are newer than the store** (true zero-touch: merge → deploy →
+data current)?
+
+**Why it needs the owner:** auto-seed is a **DB write at boot** and would
+overwrite a blob store that was *deliberately* seeded with newer data than
+the repo (the refresh-workflow direction). Options: **(a)** keep
+surface-only (current after #676 — recommended until the drift recurs),
+**(b)** auto-seed only when the bundled version is strictly newer,
+**(c)** auto-seed whenever versions differ.
+
+**Safe default until answered:** (a) — loud surfacing, manual seed-data
+(now one command, immediate effect).
+
+**Suggested destination after answer:** `docs/subsystems/btd6.md` data-lane
+note + `btd6_cog.cog_load` (if (b)/(c): implement beside the drift warning).
