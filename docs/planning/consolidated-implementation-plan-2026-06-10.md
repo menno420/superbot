@@ -253,7 +253,7 @@ services) without partitioning by module.
 - **Then:** Phase 3 convergence (Q-0063) → Phase 4 structured editors/presets
   (Q-0070) → Phase 5 Setup/Settings convergence (own planning session first).
 
-### Batch 5 — Adaptive P1C: Access Map + Help Preview staff-hub subpanels (ADP-2) — executed (2026-06-10, verify merged)
+### Batch 5 — Adaptive P1C: Access Map + Help Preview staff-hub subpanels (ADP-2) — executed in **#656** (2026-06-10, verify merged)
 
 > Outcome notes: both subpanels shipped in `views/server_management/access_map.py`
 > as the first `project_access_map` consumers (Q-0032: hub buttons only, no new
