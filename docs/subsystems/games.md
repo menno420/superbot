@@ -46,6 +46,19 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   **`utils/mining/`** — shared by the service, the cog, and the views. Economy is a
   dependency for bets/rewards, not a place for game cogs/views to duplicate balance
   writes.
+- **Shared game-XP track: `services/game_xp_service.py`** (Wave 2 seed, 2026-06-10) —
+  the second XP track (chat XP keeps driving auto-roles untouched): guild-scoped
+  `game_xp` rows per game, central award policy (XP ≈ effort/risk; money moves award 0),
+  per-game daily soft cap, **shared level derived from `SUM(xp)`** via the chat curve
+  (prestige + leaderboard, never content gates). A new game awards XP by calling
+  `game_xp_service.award(...)` inside its workflow transaction and emitting the
+  catalogued `game_xp.*` events after commit. Leaderboards: `gamexp` + `crafting`
+  rank providers.
+- **Duels tick combat-gear wear (Q-0054, shipped 2026-06-10):** a finished PvP
+  deathmatch wears each human fighter's weapon + armor once
+  (`ACTION_DUEL` in `utils/mining/workshop.py`, applied via
+  `mining_workflow.wear_tick` at the win/timeout paths; bot duels excluded) —
+  combat gear is now fully in the craft→break→repair loop.
 - **Cross-game character stats: `utils/equipment.py`** is the shared, pure gear→stats
   read model (`EffectiveStats` + the gear catalogue + `compute_stats`). Equipment is
   guild-scoped game state in `mining_equipment` (`utils/db/games/`); one `!equip`/
@@ -63,9 +76,12 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   2026-06-10) and self-governing via `tests/unit/utils/test_recipes_catalog_alignment.py`.
 - **Character overview: `views/mining/character_panel.py`** — a read-only profile embed
   (`!character`/`!profile` + a hub Character button) that **aggregates, owns nothing**:
-  position, equipped gear + `EffectiveStats`, coins, and inventory net worth, each read from
-  its existing owner. The brainstorm §7.6 stat-card seed (no PIL yet); it grows for free as
-  game-XP / skills / titles land.
+  position + deepest record, game level + XP bar, equipped gear + `EffectiveStats`, coins,
+  and net worth. **The §7.6 PIL stat card shipped 2026-06-10** (`utils/mining_render.py`
+  `build_stat_card_spec`/`render_stat_card`, attached by `!character`; embed fallback
+  always), alongside the inventory PNG card on the hub Inventory button. The gear UI is
+  `views/mining/gear_panel.py` (slot→item selects + ✨ Equip Best) and the categorized
+  crafting UI is `views/mining/recipe_browser.py` (paginated past 25 recipes).
 - Known game UX follow-ups are not stability failures; cite the accepted #535
   baseline rather than claiming a fresh live retest.
 

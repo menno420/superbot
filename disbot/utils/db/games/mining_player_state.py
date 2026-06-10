@@ -86,3 +86,44 @@ async def set_last_broken(
         (user_id, guild_id, item_name),
         conn=conn,
     )
+
+
+async def get_max_depth(
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> int:
+    """The deepest band this player has ever reached (0 = never left Surface)."""
+    row = await pool.fetchone(
+        "SELECT max_depth FROM mining_player_state WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+        conn=conn,
+    )
+    return row["max_depth"] if row else 0
+
+
+async def record_depth(
+    user_id: str,
+    guild_id: int,
+    depth: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> bool:
+    """Raise ``max_depth`` to *depth* if it beats the record; True on a record.
+
+    One conditional upsert decides and writes together (no read-then-write
+    race): a fresh row at depth ≥ 1 and a beaten record both return a row;
+    an unbeaten record updates nothing and returns none.
+    """
+    row = await pool.fetchone(
+        """INSERT INTO mining_player_state (user_id, guild_id, max_depth)
+           VALUES ($1, $2, GREATEST(0, $3))
+           ON CONFLICT (user_id, guild_id) DO UPDATE
+             SET max_depth = $3, updated_at = now()
+             WHERE mining_player_state.max_depth < $3
+           RETURNING max_depth""",
+        (user_id, guild_id, depth),
+        conn=conn,
+    )
+    return row is not None

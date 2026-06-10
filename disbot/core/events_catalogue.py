@@ -56,6 +56,10 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "xp.awarded",
         "xp.level_up",
         "xp.reset",
+        # ── Game XP (services/game_xp_service.py — the shared cross-game
+        # progression track, separate from chat XP by design) ─────────────
+        "game_xp.awarded",
+        "game_xp.level_up",
         # ── Moderation (services/moderation_service.py) ──────────────────
         "moderation.action_taken",
         # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────

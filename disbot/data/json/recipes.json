@@ -45,5 +45,26 @@
         "stone": 50,
         "wood": 30,
         "iron": 10
+    },
+    "gold pickaxe": {
+        "gold": 4,
+        "wood": 2
+    },
+    "diamond pickaxe": {
+        "diamond": 3,
+        "gold": 1,
+        "wood": 2
+    },
+    "diamond lantern": {
+        "diamond": 2,
+        "iron": 2
+    },
+    "diamond sword": {
+        "diamond": 2,
+        "wood": 1
+    },
+    "diamond armor": {
+        "diamond": 4,
+        "iron": 2
     }
 }

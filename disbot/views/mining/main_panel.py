@@ -57,6 +57,8 @@ _ACTIONS_GUIDE = (
     "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
     "(deeper = richer, gated by your light)\n"
     "**🛒 Market** — sell ore for coins, buy gear\n"
+    "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
+    "**📖 Recipes** — browse and craft by category\n"
     "**🧍 Character** — your full character overview"
 )
 
@@ -118,6 +120,35 @@ async def build_overview_embed(
     return embed
 
 
+async def _send_inventory_card(
+    interaction: discord.Interaction,
+    inventory: dict[str, int],
+) -> None:
+    """Send the PIL inventory card as an ephemeral follow-up (additive —
+    the embed already rendered; a missing/broken Pillow changes nothing).
+    """
+    import io
+
+    from utils.mining_render import build_card_spec, render_inventory_card
+
+    spec = build_card_spec(
+        f"{interaction.user.display_name}'s Mining Inventory",
+        items.sort_inventory(inventory),
+        classify_kind=lambda n: items.classify(n).value,
+        footer=f"Net worth: {items.total_value(inventory)}",
+    )
+    png = render_inventory_card(spec)
+    if png is None:
+        return
+    try:
+        await interaction.followup.send(
+            file=discord.File(io.BytesIO(png), filename="inventory.png"),
+            ephemeral=True,
+        )
+    except discord.HTTPException:
+        pass  # the embed already served the data
+
+
 @register
 class MiningHubView(PersistentView):
     """Persistent, stateless mining hub panel."""
@@ -174,12 +205,15 @@ class MiningHubView(PersistentView):
             interaction.user.id,
             interaction.guild_id,
         )
+        description = (
+            f"{interaction.user.mention} chopped wood and collected "
+            f"**{result.amount}x wood**!"
+        )
+        if result.xp_note:
+            description += "\n" + result.xp_note
         embed = discord.Embed(
             title="⛏️ Mining Hub",
-            description=(
-                f"{interaction.user.mention} chopped wood and collected "
-                f"**{result.amount}x wood**!"
-            ),
+            description=description,
             color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
@@ -211,6 +245,8 @@ class MiningHubView(PersistentView):
         )
         if result.wear.notes:
             description += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            description += "\n" + result.xp_note
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=description,
@@ -267,6 +303,8 @@ class MiningHubView(PersistentView):
                 ),
             )
         await safe_edit(interaction, embed=embed, view=self)
+        if inventory:
+            await _send_inventory_card(interaction, inventory)
 
     @discord.ui.button(
         label="📊 Stats",
@@ -365,6 +403,8 @@ class MiningHubView(PersistentView):
                 f"{interaction.user.mention} descended to "
                 f"**{world.describe_position(result.depth)}**."
             )
+            if result.xp_note:
+                description += "\n" + result.xp_note
             color = SUCCESS_COLOR
         embed = discord.Embed(
             title="⛏️ Mining Hub",
@@ -436,6 +476,62 @@ class MiningHubView(PersistentView):
         await safe_edit(interaction, embed=embed, view=view)
 
     @discord.ui.button(
+        label="🧰 Gear",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:gear",
+        row=3,
+    )
+    async def gear_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.gear_panel import MiningGearView, build_gear_embed
+
+        embed = await build_gear_embed(interaction.user.id, interaction.guild_id)
+        view = await MiningGearView.create(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
+        label="📖 Recipes",
+        style=discord.ButtonStyle.grey,
+        custom_id="mining:recipes",
+        row=3,
+    )
+    async def recipes_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.recipe_browser import (
+            MiningRecipeBrowserView,
+            build_recipe_embed,
+        )
+
+        embed = await build_recipe_embed(interaction.user.id, interaction.guild_id)
+        view = await MiningRecipeBrowserView.create(
+            interaction.user,
+            interaction.guild_id,
+        )
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
         label="🧍 Character",
         style=discord.ButtonStyle.grey,
         custom_id="mining:character",
@@ -486,10 +582,15 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
         # One shared craft implementation (atomic materials+product
         # transaction) serves this modal, !build/!craft, and the Workshop
         # panel — services/mining_workflow.py (RS02).
+        from utils.mining.names import resolve_item_name
+        from utils.mining.recipes import load_recipes
+
+        wanted = self.structure.value
+        wanted = resolve_item_name(wanted, load_recipes()) or wanted
         result = await mining_workflow.craft(
             interaction.user.id,
             interaction.guild_id,
-            self.structure.value,
+            wanted,
         )
         await interaction.response.send_message(
             f"{interaction.user.mention} {result.message}",

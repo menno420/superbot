@@ -22,10 +22,11 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
-from services import mining_workflow
+from services import game_xp_service, mining_workflow
 from utils import db, equipment
 from utils.mining import market, workshop, world
-from utils.mining.items import total_value
+from utils.mining.items import catalog_names, total_value
+from utils.mining.names import resolve_item_name
 from utils.mining.recipes import load_recipes
 from utils.ui_constants import MINING_COLOR, SUCCESS_COLOR
 
@@ -98,14 +99,35 @@ class MiningCog(commands.Cog):
         )
         view.message = await ctx.send(embed=embed, view=view)
 
+    @commands.command(
+        name="fastmine",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def fastmine(self, ctx):
+        """One quick mining swing — no buttons (the old !fastmine, reborn)."""
+        result = await mining_workflow.mine(ctx.author.id, ctx.guild.id)
+        message = (
+            f"{ctx.author.mention} mined **{result.amount}x {result.found}** "
+            f"in {world.describe_position(result.depth)}!"
+        )
+        if result.wear.notes:
+            message += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            message += "\n" + result.xp_note
+        await ctx.send(message)
+
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def chop(self, ctx):
         """Chop wood. If you have an 'axe', you'll collect double."""
         result = await mining_workflow.harvest(ctx.author.id, ctx.guild.id)
-        await ctx.send(
+        message = (
             f"{ctx.author.mention} chopped wood and collected "
-            f"{result.amount}x wood!",
+            f"{result.amount}x wood!"
         )
+        if result.xp_note:
+            message += "\n" + result.xp_note
+        await ctx.send(message)
 
     @commands.command(
         name="mineinv",
@@ -134,6 +156,11 @@ class MiningCog(commands.Cog):
         unique_items = len(inventory)
 
         depth = await db.get_depth(user_id, ctx.guild.id)
+        max_depth = await db.get_max_depth(user_id, ctx.guild.id)
+        level, into, needed = await game_xp_service.level_info(
+            ctx.guild.id,
+            ctx.author.id,
+        )
         embed = discord.Embed(
             title=f"{ctx.author.name}'s Mining Stats",
             color=MINING_COLOR,
@@ -143,9 +170,18 @@ class MiningCog(commands.Cog):
             value=world.describe_position(depth),
             inline=False,
         )
+        embed.add_field(
+            name="🎮 Game Level",
+            value=f"Level **{level}** — {workshop.durability_bar(into, needed)} XP",
+            inline=False,
+        )
         embed.add_field(name="Total Items Collected", value=str(total_items))
         embed.add_field(name="Unique Items", value=str(unique_items))
         embed.add_field(name="Net Worth", value=str(total_value(inventory)))
+        embed.add_field(
+            name="Deepest",
+            value=world.describe_position(max_depth),
+        )
         await ctx.send(embed=embed)
 
     # ---------------------------------------------------------- build / crafting
@@ -163,6 +199,7 @@ class MiningCog(commands.Cog):
         try:
             if structure is None:
                 return await ctx.invoke(self.bot.get_command("buildlist"))
+            structure = resolve_item_name(structure, load_recipes()) or structure
             result = await mining_workflow.craft(ctx.author.id, ctx.guild.id, structure)
             await ctx.send(f"{ctx.author.mention} {result.message}")
         except Exception:
@@ -189,6 +226,9 @@ class MiningCog(commands.Cog):
                 title="Available Structures",
                 description="\n".join(recipe_lines),
                 color=SUCCESS_COLOR,
+            )
+            embed.set_footer(
+                text="Tip: !minemenu → 📖 Recipes browses and crafts by category.",
             )
             await ctx.send(embed=embed)
         except Exception:
@@ -232,6 +272,8 @@ class MiningCog(commands.Cog):
         )
         if result.wear.notes:
             message += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            message += "\n" + result.xp_note
         await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
@@ -239,6 +281,7 @@ class MiningCog(commands.Cog):
         """Use a special item from your inventory (e.g., torch, dynamite)."""
         if not item:
             return await ctx.send("Please specify an item to use, e.g. `!use torch`.")
+        item = resolve_item_name(item, catalog_names()) or item
         result = await mining_workflow.use_item(ctx.author.id, ctx.guild.id, item)
         if not result.ok:
             return await ctx.send(result.message)
@@ -251,6 +294,7 @@ class MiningCog(commands.Cog):
         """Equip a tool, light, or charm so its stats apply to your character."""
         if not item:
             return await ctx.send("Specify what to equip, e.g. `!equip iron pickaxe`.")
+        item = resolve_item_name(item, equipment.gear_names()) or item
         result = await mining_workflow.equip(ctx.author.id, ctx.guild.id, item)
         if not result.ok:
             return await ctx.send(result.message)
@@ -304,6 +348,9 @@ class MiningCog(commands.Cog):
             ),
             inline=False,
         )
+        embed.set_footer(
+            text="Tip: !minemenu → 🧰 Gear equips with clicks (and ✨ Equip Best).",
+        )
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -314,15 +361,31 @@ class MiningCog(commands.Cog):
     )
     async def character(self, ctx):
         """Show your full mining character — location, gear, stats, wealth."""
+        import io
+
         # cogs→views is allowed; the builder aggregates the existing owners.
-        from views.mining.character_panel import build_character_embed
+        from views.mining.character_panel import (
+            build_character_card,
+            build_character_embed,
+        )
 
         embed = await build_character_embed(
             ctx.author.id,
             ctx.guild.id,
             name=ctx.author.display_name,
         )
-        await ctx.send(embed=embed)
+        png = await build_character_card(
+            ctx.author.id,
+            ctx.guild.id,
+            name=ctx.author.display_name,
+        )
+        if png is not None:
+            await ctx.send(
+                embed=embed,
+                file=discord.File(io.BytesIO(png), filename="character.png"),
+            )
+        else:
+            await ctx.send(embed=embed)
 
     # ---------------------------------------------------------- world / descent
 
@@ -335,10 +398,13 @@ class MiningCog(commands.Cog):
                 f"{ctx.author.mention} can't descend any deeper. {result.hint}",
             )
             return
-        await ctx.send(
+        message = (
             f"{ctx.author.mention} descended to "
-            f"{world.describe_position(result.depth)}.",
+            f"{world.describe_position(result.depth)}."
         )
+        if result.xp_note:
+            message += "\n" + result.xp_note
+        await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "panel_action"})
     async def ascend(self, ctx):
@@ -361,6 +427,7 @@ class MiningCog(commands.Cog):
             return await ctx.send(
                 "Specify what to sell, e.g. `!sell iron 10` — or `!sellall`.",
             )
+        item = resolve_item_name(item, catalog_names()) or item
         result = await mining_workflow.sell(ctx.author.id, ctx.guild.id, item, amount)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
@@ -379,6 +446,7 @@ class MiningCog(commands.Cog):
         """Buy gear with coins (e.g. `!buy iron sword`)."""
         if not item:
             return await ctx.send("Specify what to buy — see `!market` for the shop.")
+        item = resolve_item_name(item, market.GEAR_SHOP) or item
         result = await mining_workflow.buy(ctx.author.id, ctx.guild.id, item)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
@@ -442,6 +510,7 @@ class MiningCog(commands.Cog):
             return await ctx.send(
                 "Specify what to repair, e.g. `!repair pickaxe` — or `!workshop`.",
             )
+        item = resolve_item_name(item, equipment.MAX_DURABILITY) or item
         result = await mining_workflow.repair(ctx.author.id, ctx.guild.id, item)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 

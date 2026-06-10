@@ -47,11 +47,12 @@ def test_mining_hub_view_action_buttons_still_present():
 
 
 def test_mining_hub_view_button_count_after_overview_removal():
-    """Eleven action buttons, no Overview: the six core actions (Mine /
+    """Thirteen action buttons, no Overview: the six core actions (Mine /
     Harvest / Explore / Inventory / Stats / Build), Workshop, the two
-    depth-navigation buttons (Descend / Ascend), Market, and Character. The
-    count is pinned so an accidental no-op control can't creep back in.
+    depth-navigation buttons (Descend / Ascend), Market, Gear, Recipes, and
+    Character. The count is pinned so an accidental no-op control can't
+    creep back in.
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 11
+    assert len(buttons) == 13

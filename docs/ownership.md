@@ -62,6 +62,7 @@ writes must come from the owning cog or a shared service.
 | `moderation`   | `warnings`, `mod_logs`                         | `services/moderation_service.py` (preferred); `utils/db/moderation.py` direct for read-only / legacy callers |
 | `xp`           | `xp.xp`, `xp.level`, `xp.messages`, `xp.last_xp` | `services/xp_service.py` |
 | `economy`      | `economy`, `job_progress`, `economy_audit_log`   | `services/economy_service.py` |
+| `game_xp`      | `game_xp` (shared cross-game progression — separate from chat XP) | `services/game_xp_service.py` (central award policy + daily soft cap; events emitted by the owning workflow after commit); reads direct via `utils/db/games/game_xp.py`. No stored level — derived from `SUM(xp)` via the chat-XP curve |
 | `inventory`    | `inventory`                                    | direct via `utils/db/inventory.py`; **shop purchases** (coins + item, one transaction) via `services/shop_purchase_workflow.py` (Q-0071/RS01) |
 | `cleanup`      | `prohibited_words`                             | direct via `utils/db/moderation.py` |
 | `chain`        | `chain_channels`                               | direct via `utils/db/games/chain.py` |

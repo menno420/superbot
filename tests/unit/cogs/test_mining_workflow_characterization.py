@@ -54,7 +54,17 @@ def _null_workflow_transaction():
     async def _txn():
         yield MagicMock(name="characterization_conn")
 
-    with patch("services.mining_workflow.db.transaction", _txn):
+    with (
+        patch("services.mining_workflow.db.transaction", _txn),
+        patch(
+            "services.mining_workflow.game_xp_service.award",
+            AsyncMock(return_value=None),
+        ),
+        patch(
+            "services.mining_workflow.game_xp_service.emit_award_events",
+            AsyncMock(),
+        ),
+    ):
         yield
 
 # ---------------------------------------------------------------------------

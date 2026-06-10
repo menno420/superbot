@@ -34,6 +34,13 @@ GEAR_SHOP: dict[str, int] = {
     "iron pickaxe": 60,
     "armor": 70,
     "lucky charm": 80,
+    # Deeper ladders (2026-06-10) — priced well above material sell value so
+    # crafting stays the cheaper path and selling-then-buying never profits.
+    "gold pickaxe": 140,
+    "diamond sword": 180,
+    "diamond lantern": 200,
+    "diamond armor": 250,
+    "diamond pickaxe": 320,
 }
 
 

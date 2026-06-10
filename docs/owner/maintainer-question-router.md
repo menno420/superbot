@@ -3084,3 +3084,57 @@ before classification work (consolidated-plan Batch 2) touches the Admin rows.
 
 **Suggested destination after answer:** governance/access docs + the Admin hub
 registry metadata + a pinning test that placement tier == admission tier.
+
+## §32 — Mining/tool/gear finalization session decisions (2026-06-10)
+
+> Asked and answered live (structured choices) during the mining-finalization
+> planning session; recorded here so the canonical home isn't the plan file.
+
+### Q-0075 — recipes.json ↔ item catalog: trim, extend, or both lanes?
+
+**Area:** Mining / crafting content
+**Type:** Product taste (content scope)
+**Priority:** High at the time (blocked the RS02 recipe reconciliation)
+**Status:** Answered (structured choices, 2026-06-10) — **Executed** →
+RS02 stage 2 (trim + alignment lint) and PR 3 (the new tiers)
+
+**Maintainer answer (structured choices, 2026-06-10): "Curated economy +
+deeper ladders" (the recommended option).** The item catalog
+(`utils/mining/items.py`) is the single source of truth; recipes whose
+outputs are real mining-game items stay; the tool ladders get **new
+in-economy tiers** (gold/diamond pickaxe, a depth-3 light, stronger combat
+gear — each with stats, durability, shop/repair prices); the
+Minecraft-flavor leftovers (furnace, enchantment table, bow, golden apple,
+shovels…) are trimmed.
+*Answer scope:* content direction for the mining economy; the alignment
+lint (`tests/unit/utils/test_recipes_catalog_alignment.py`) governs all
+future additions.
+
+**Question (context):** the legacy `recipes.json` carried 47
+Minecraft-style recipes; ~25 products were unknown to the catalog
+(unclassified, non-equippable, valueless) and 7 used unobtainable
+materials. Options were (A) curated trim + deeper ladders, (B) integrate
+the full 47-recipe tree, (C) curated gear + legacy recipes as trophies.
+
+**Suggested destination after answer:** done — `docs/subsystems/games.md`
+(economy loop bullet) + the alignment lint.
+
+### Q-0076 — How much PIL visual work in the finalization session?
+
+**Area:** Mining / profile visuals (brainstorm §7.6)
+**Type:** Scope (visual roadmap pacing)
+**Priority:** Medium
+**Status:** Answered (structured choices, 2026-06-10) — **Executed** → PR 3
+
+**Maintainer answer (structured choices, 2026-06-10): "Inventory card +
+stat card" (the recommended option).** Wire the existing tested
+`utils/mining_render.py` inventory-card renderer into the Inventory panel
+AND add a PIL **stat card** for `!character` (level/XP bar + gear +
+durability + net worth, zero custom art, graceful embed fallback). The
+paper-doll stays Wave 3.
+*Answer scope:* this session's visual slice only; the §7.6 visual roadmap
+(stat card → paper-doll) is unchanged.
+
+**Suggested destination after answer:** done — brainstorm §7.6 stays the
+visual-roadmap home; `docs/subsystems/games.md` records the shipped card
+seam.

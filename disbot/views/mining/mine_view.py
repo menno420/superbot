@@ -104,6 +104,8 @@ class MineView(discord.ui.View):
         )
         if result.wear.notes:
             description += "\n" + "\n".join(result.wear.notes)
+        if result.xp_note:
+            description += "\n" + result.xp_note
         result_embed = discord.Embed(
             title="⛏️ Mined!",
             description=description,
