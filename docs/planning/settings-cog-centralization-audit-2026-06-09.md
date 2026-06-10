@@ -347,10 +347,21 @@ Settings and Setup should share definitions, validation, editor hints, and effec
 > discovery rule is `services/customization_catalogue.actionable_settings_groups()`
 > (the §6 inclusion rule — editable scalar / binding / resource / declared domain
 > panel; live taxonomy = **11 groups**, exactly §4/§5), with select pagination past
-> the 25-option cap and per-guild routing availability markers. Domain-config
-> inclusion is the declared `DOMAIN_CONFIG_SUBSYSTEMS = {"cleanup"}` table — a
-> Phase 1 seam that **Phase 2 replaces with real registrations**. Phases 2/3
-> directions are decided (Q-0063 converge-gradually · Q-0064 binding+guided flow).
+> the 25-option cap and per-guild routing availability markers.
+> **Phase 2's declaration-coverage core shipped 2026-06-10 (consolidated plan
+> Batch 4 — verify merged):** domain-config inclusion is now **declared per
+> subsystem** (`DomainPanelSpec` on the subsystem's own `SubsystemSchema`,
+> registered in cog_load — cleanup is the first real registration); the Phase 1
+> `DOMAIN_CONFIG_SUBSYSTEMS` table is retired, and the declared set is pinned by
+> `tests/unit/invariants/test_domain_panel_declarations.py` (DT06). The decided
+> Q-0064 BTD6 rows landed with it: `btd6.version_announce_channel` is a
+> first-class binding (binding-first read, legacy KV fallback; `!btd6ops
+> announcechannel` warns when shadowed) and the CT group is a **guided flow**
+> (parse → preview → confirm via `views/btd6/ct_group_flow.py`). Q-0073-B
+> verified satisfied as-is (economy's log channel already projects — scalar +
+> binding declared); per-subsystem pointer-migration *classification* beyond
+> these rows remains open Phase 2 tail, and duplicate-path convergence is
+> Phase 3 (Q-0063 converge-gradually).
 
 | Phase | Goal / expected files | Dependencies and blocked/off-limits scope | Risk | Verification | Recommended next agent |
 |---|---|---|---|---|---|

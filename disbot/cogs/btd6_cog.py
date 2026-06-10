@@ -144,7 +144,12 @@ class BTD6Cog(commands.Cog):
     @btd6_group.command(name="ctteam")  # type: ignore[arg-type]
     async def btd6_ctteam(self, ctx: commands.Context, *, arg: str = "") -> None:
         """View or set this server's CT team (paste the bracket group id / URL)."""
-        await ctx.send(embed=await _builders.handle_ctteam(ctx, arg))
+        embed, view = await _builders.handle_ctteam(ctx, arg)
+        if view is None:
+            await ctx.send(embed=embed)
+            return
+        message = await ctx.send(embed=embed, view=view)
+        view.message = message  # disable-on-timeout edits the right message
 
     @commands.command(name="btd6menu")
     async def btd6menu(self, ctx: commands.Context) -> None:

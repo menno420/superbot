@@ -89,8 +89,10 @@ class Cleanup(commands.Cog):
         self.whitelisted_channels = _config.CLEANUP_WHITELIST_CHANNELS
 
     async def cog_load(self) -> None:
+        from cogs.cleanup.schemas import register_schemas
         from core.runtime import message_pipeline
 
+        register_schemas()  # Settings Phase 2 — declares the domain panel.
         message_pipeline.register(CleanupStage(self))
 
     async def cog_unload(self) -> None:

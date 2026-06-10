@@ -220,7 +220,18 @@ services) without partitioning by module.
   properly). `docs/ownership.md` updates ride the same PR.
 - **Stop:** any schema change; any new mutation path that bypasses the audited seam.
 
-### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — ready
+### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core executed (2026-06-10, same session as Batch 3; verify merged)
+
+> Outcome notes: `DomainPanelSpec` + `SubsystemSchema.domain_panels` replace the
+> curated `DOMAIN_CONFIG_SUBSYSTEMS` frozenset (cleanup = first real
+> registration; coverage invariant `test_domain_panel_declarations.py` pins the
+> declared set — DT06 closed). Q-0064 rows landed: `btd6.version_announce_channel`
+> binding (binding-first read, KV fallback, shadow warning on the typed command)
+> + the CT-group guided flow (parse → preview → confirm,
+> `views/btd6/ct_group_flow.py`). Q-0073-B verified already satisfied (economy
+> log channel projects via its declared scalar + binding). **Open Phase 2 tail:**
+> per-subsystem pointer-migration classification (proof/logging rows) — ride a
+> later slice; the dual-write seam stays untouched (Phase 3).
 
 - **Objective:** real per-domain panel registrations replace the curated
   `DOMAIN_CONFIG_SUBSYSTEMS` frozenset (`customization_catalogue.py:239`), with an

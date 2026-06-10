@@ -509,13 +509,16 @@ def get_cached_catalogue() -> CustomizationCatalogue | None:
 # ---------------------------------------------------------------------------
 
 
-# Subsystems whose real configuration lives in a dedicated, canonical domain
-# panel rather than scalar settings / bindings / resources (audit §4: cleanup's
-# governance policy tables + structured panel; its scalar Settings page is
-# empty). Declared here, not discovered — settings Phase 2 replaces this table
-# with real per-domain registrations. Adding a name here only affects
-# *discovery*; the domain's own panel/services stay the mutation owner.
-DOMAIN_CONFIG_SUBSYSTEMS: frozenset[str] = frozenset({"cleanup"})
+# Settings Phase 2 (consolidated plan Batch 4): domain-config inclusion is
+# DECLARED per subsystem — a ``DomainPanelSpec`` on the subsystem's own
+# ``SubsystemSchema`` (registered in its cog_load, e.g.
+# ``cogs/cleanup/schemas.py``) — not curated here. The Phase 1
+# ``DOMAIN_CONFIG_SUBSYSTEMS`` frozenset this replaced is gone; the
+# declaration set is pinned by
+# ``tests/unit/invariants/test_domain_panel_declarations.py`` so adding or
+# dropping a domain group is a deliberate, test-visible act. Declaring one
+# only affects *discovery*; the domain's panel/services stay the mutation
+# owner.
 
 
 @dataclass(frozen=True)
@@ -561,7 +564,8 @@ def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
     Live composition (no snapshot staleness): reads the identity manifest
     (``utils.subsystem_registry.SUBSYSTEMS``), the live schema declarations
     (``core.runtime.subsystem_schema.all_schemas``), and the declared
-    domain-config table above. Inclusion rule (audit §6):
+    per-schema ``domain_panels`` declarations (Settings Phase 2 — see the
+    note above). Inclusion rule (audit §6):
 
     * ``visibility_mode='internal'`` never appears;
     * otherwise the subsystem needs at least one actionable surface —
@@ -592,7 +596,7 @@ def actionable_settings_groups() -> tuple[ActionableGroup, ...]:
         )
         bindings = len(schema.bindings) if schema is not None else 0
         resources = len(schema.resource_requirements) if schema is not None else 0
-        domain_panel = name in DOMAIN_CONFIG_SUBSYSTEMS
+        domain_panel = bool(schema.domain_panels) if schema is not None else False
         if not (editable or bindings or resources or domain_panel):
             continue
         groups.append(
@@ -717,7 +721,6 @@ __all__: list[str] = [
     "CustomizationCatalogue",
     "CustomizationEntry",
     "CustomizationFindings",
-    "DOMAIN_CONFIG_SUBSYSTEMS",
     "KNOWN_PANEL_COMMANDS",
     "PanelDeclaration",
     "actionable_settings_groups",

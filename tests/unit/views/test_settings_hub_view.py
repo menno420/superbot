@@ -34,7 +34,6 @@ from core.runtime.subsystem_schema import (
 )
 from services import command_routing
 from services.customization_catalogue import (
-    DOMAIN_CONFIG_SUBSYSTEMS,
     actionable_settings_groups,
     group_availability,
 )
@@ -135,9 +134,14 @@ def test_groups_include_bindings_only_subsystem():
 
 def test_groups_include_declared_domain_config_subsystem():
     """Cleanup has no scalar/binding/resource declarations — it appears via
-    the declared domain-config table (audit §4: domain group linked to its
-    canonical panel, never an empty scalar page)."""
-    assert "cleanup" in DOMAIN_CONFIG_SUBSYSTEMS
+    its schema's ``domain_panels`` declaration (Settings Phase 2; audit §4:
+    domain group linked to its canonical panel, never an empty scalar page).
+    Registers the REAL cleanup schema so the test pins the shipped
+    declaration, not a synthetic one."""
+    from cogs.cleanup.schemas import CLEANUP_CONFIG_SCHEMA
+
+    assert CLEANUP_CONFIG_SCHEMA.domain_panels  # the real declaration exists
+    schema_mod.register(CLEANUP_CONFIG_SCHEMA)
     groups = {g.subsystem: g for g in actionable_settings_groups()}
     assert "cleanup" in groups
     assert groups["cleanup"].has_domain_panel is True
@@ -306,9 +310,13 @@ def test_unavailable_group_renders_marker_but_stays_reachable():
 
 
 async def test_create_reads_guild_routing_for_labels(monkeypatch):
+    from cogs.cleanup.schemas import CLEANUP_CONFIG_SCHEMA
+
     schema_mod.register(
         SubsystemSchema(subsystem="xp", settings=(_editable_spec(),)),
     )
+    # Phase 2: cleanup is a group via its domain-panel declaration.
+    schema_mod.register(CLEANUP_CONFIG_SCHEMA)
     monkeypatch.setattr(
         command_routing,
         "list_for_guild",
@@ -360,12 +368,16 @@ def test_hub_embed_has_title_and_inventory_field():
 
 
 def test_hub_inventory_reflects_registered_settings_and_groups():
+    from cogs.cleanup.schemas import CLEANUP_CONFIG_SCHEMA
+
     schema_mod.register(
         SubsystemSchema(
             subsystem="xp",
             settings=(_editable_spec("xp_min"), _editable_spec("xp_max")),
         ),
     )
+    # Phase 2: cleanup is a group via its domain-panel declaration.
+    schema_mod.register(CLEANUP_CONFIG_SCHEMA)
     settings_registry.build_registry()
     embed = SettingsHubView.build_embed()
     inventory = next(f.value for f in embed.fields if f.name == "Inventory")
