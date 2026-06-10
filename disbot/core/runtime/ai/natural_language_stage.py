@@ -1006,21 +1006,28 @@ async def _serve_btd6_floor(
     For a clear roster-LIST request ("list all heroes", "list all towers") send
     the deterministic, code-built roster — the model cannot restate 17+ costs
     verbatim, so a single mismatch refused the whole list; the roster *is* the
-    source, so it always answers. Otherwise send the version-stamped no-data
-    refusal. Returns the ``(decision, reason_code)`` to audit.
+    source, so it always answers. A capability/meta ask ("what do you know
+    about btd6?") gets the deterministic answerability summary for the same
+    reason — the model's own capability description trips the guard, so a
+    healthy meta question kept ending in the no-data refusal, which is the
+    wrong answer to it (live miss, 2026-06-10). Otherwise send the
+    version-stamped no-data refusal. Returns the ``(decision, reason_code)``
+    to audit.
     """
-    roster: str | None = None
+    floor_reply: str | None = None
     try:
         from services import btd6_context_service
 
-        roster = btd6_context_service.deterministic_roster_reply(raw_text)
+        floor_reply = btd6_context_service.deterministic_roster_reply(raw_text)
+        if not floor_reply:
+            floor_reply = btd6_context_service.deterministic_meta_reply(raw_text)
     except Exception:
-        logger.warning("btd6 deterministic roster build failed", exc_info=True)
+        logger.warning("btd6 deterministic floor build failed", exc_info=True)
 
-    if roster:
+    if floor_reply:
         try:
             reference = message.to_reference(fail_if_not_exists=False)
-            for index, chunk in enumerate(_split_for_discord(roster)):
+            for index, chunk in enumerate(_split_for_discord(floor_reply)):
                 await message.channel.send(
                     chunk,
                     allowed_mentions=discord.AllowedMentions.none(),
@@ -1028,7 +1035,7 @@ async def _serve_btd6_floor(
                 )
         except discord.HTTPException:
             logger.warning(
-                "btd6 roster send failed for message=%s",
+                "btd6 floor send failed for message=%s",
                 getattr(message, "id", None),
                 exc_info=True,
             )

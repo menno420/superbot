@@ -596,3 +596,21 @@ def test_data_source_label_fallback_is_repo_relative():
     label = btd6_data_service.data_source_label()
     if label.startswith("local:"):
         assert label == "local:disbot/data/btd6"
+
+
+def test_find_boss_resolves_qualifier_wrapped_names():
+    """The model passes the user's phrasing verbatim — "tier 4 elite lych"
+    must find Lych (the navarch-of-seas qualifier class; live miss
+    2026-06-10: the tool said "unknown boss" with the data loaded)."""
+    from services import btd6_data_service
+
+    assert btd6_data_service.find_boss("tier 4 elite lych").canonical == "Lych"
+    assert (
+        btd6_data_service.find_boss("the elite bloonarius event").canonical
+        == "Bloonarius"
+    )
+    assert btd6_data_service.find_boss("what about vortex?").canonical == "Vortex"
+    # Plain partials and exact names keep working.
+    assert btd6_data_service.find_boss("lych").canonical == "Lych"
+    # No boss named → None, never a guess.
+    assert btd6_data_service.find_boss("tier 4 elite") is None

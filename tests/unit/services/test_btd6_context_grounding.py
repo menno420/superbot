@@ -695,3 +695,65 @@ async def test_hero_buff_auras_ground_change_only():
     # A hero with no decoded auras stays silent.
     ctx = await btd6_context_service.build("quincy stats")
     assert not [f for f in ctx.facts if f.startswith("[btd6_hero_buff]")]
+
+
+# ---------------------------------------------------------------------------
+# Capability/meta floor + boss per-tier health (live misses, 2026-06-10)
+# ---------------------------------------------------------------------------
+
+
+def test_deterministic_meta_reply_answers_capability_questions():
+    """All four live-miss phrasings get the code-built answerability summary —
+    the model's own capability description trips the faithfulness guard, so a
+    healthy meta ask used to end in the version-stamped refusal."""
+    for question in (
+        "What kind of things do you know about btd6",
+        "List all the things that you know about btd6",
+        "what can you tell me about btd6",
+        "wait what things can we ask this bot about btd6?",
+    ):
+        reply = btd6_context_service.deterministic_meta_reply(question)
+        assert reply is not None, question
+        assert "What I know about BTD6" in reply
+        assert "towers (25)" in reply  # counts are code-built, never recalled
+        assert "Not covered" in reply  # explicit gaps stay honest
+        assert len(reply) <= 1900
+
+
+def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
+    """Entity/stats questions and non-BTD6 meta questions never get the
+    summary — they keep their own grounding (or the general catalog tool)."""
+    for question in (
+        "do you know how much the navarch earns?",  # entity, no btd6 anchor
+        "how much hp does a tier 4 elite lych have in btd6",  # stats shape
+        "what do you know about cooking",  # off-domain
+        "tell me about quincy",  # plain entity
+        "what can we ask you",  # general — get_ai_tool_catalog owns it
+    ):
+        assert btd6_context_service.deterministic_meta_reply(question) is None, (
+            question
+        )
+
+
+@pytest.mark.asyncio
+async def test_boss_per_tier_health_grounds():
+    """"Base HP of Lych per tier" must ground the figures, not the teaser —
+    the old fact said "5 tier(s) on record" with no number, so a healthy
+    answer had nothing to ground and the floor refused (live, 2026-06-10)."""
+    ctx = await btd6_context_service.build("what is the base hp of lych per tier")
+    boss_lines = [f for f in ctx.facts if f.startswith("[btd6_boss]")]
+    health = [f for f in boss_lines if "per-tier base health" in f]
+    assert health, boss_lines
+    assert "T1 14,000 HP" in health[0]
+    assert "T5" in health[0]
+
+
+@pytest.mark.asyncio
+async def test_boss_elite_questions_get_the_honesty_note():
+    """Elite health is not in the dataset — saying so beats freelancing a
+    multiplier as if it were data."""
+    ctx = await btd6_context_service.build("how much hp does a tier 4 elite lych have")
+    notes = [f for f in ctx.facts if "Elite Lych health is NOT in the dataset" in f]
+    assert notes
+    plain = await btd6_context_service.build("lych hp per tier")
+    assert not any("NOT in the dataset" in f for f in plain.facts)

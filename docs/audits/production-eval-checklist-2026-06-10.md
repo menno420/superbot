@@ -23,6 +23,38 @@ Discord's pace, image quality, and whether the game *feels* right.
 
 ---
 
+## Step 0 — verify the build (learned live, 2026-06-10 evening)
+
+- [ ] `!btd6 status` shows **game version 55.1**. The first walk ran on a
+      pre-#655 deploy that stamped "(55.0)" — the empty boss roster and the
+      stale version in refusals were *yesterday's code*, not today's bugs.
+- [ ] After any `!restart`: confirm the bot actually comes back. On the old
+      build `!restart` exited 0 and Railway (on-failure policy) never
+      relaunched it — fixed by the restart exit-code change (PR #675): once
+      *that* is deployed, `!restart` exits nonzero and relaunches. Until then
+      use a Railway redeploy instead.
+
+### Live-walk deltas (first pass, 2026-06-10 evening — fixes in PR #675)
+
+- ✅ **Tier 1.1 PASSED:** rounds 1–77 = $84,632.40 / cumulative $85,282.40
+  with the $650 start (maintainer screenshot) — correct.
+- 🔧 **Meta-questions** ("what (kind of things) do you know about btd6",
+  "list all the things you know about btd6", "what can you tell me about
+  btd6"): were floored to the version-stamped refusal. Now answered
+  **deterministically** — expect a "**What I know about BTD6**" summary
+  (domains + counts + explicit gaps) even when the model freelances.
+- 🔧 **"tier 4 elite lych" / "base HP of Lych per tier":** boss resolution is
+  qualifier-tolerant now and per-tier HP grounds (T1 14,000 → T5). Elite HP
+  is **not in the dataset** — expect the bot to say the base figures are the
+  verified part and treat your +125% as your premise.
+- 🔧 **Crosspath nonsense** ("you can only upgrade ONE path", "0-2-4 is
+  invalid"): the guidance block now carries the validity rules — re-ask a
+  0-2-4 question and report any repeat of the one-path claim.
+- ⏳ **"five 0-2-4 dart monkeys by round 60 — what's left?"** (cash − N×cost
+  composition): genuinely the next AI family (**§7.5**, sequenced after this
+  eval) — these screenshots are its acceptance cases. Expect honest partial
+  answers until §7.5 ships, but no more invented game rules.
+
 ## Tier 1 — AI model loops (only you can test these; they gate AI §7.5)
 
 The sandbox has no provider key, so every "model loop" below has been tested
