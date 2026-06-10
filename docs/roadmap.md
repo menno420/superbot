@@ -35,9 +35,9 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; **P1C executed 2026-06-10 in #656** — verify merged; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–6 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice open · #654 declaration-coverage core + Q-0064 BTD6 rows, pointer-classification tail open · #656 adaptive P1C subpanels · **#657 Help projection seam, merged** — all five render paths on one `HelpProjection`, + the Q-0074 admin-tier fix · **#659 HLP-3 guild overlay** — store + audited mutation seam + render integration; verify merge) → **next: Batch 7** mutation hardening (decision-cleared) · the Help overlay **editor UI** (audit Phase 5, incl. the Q-0059 embed-builder Home message) · health/diagnostics production live-tests (owed) |
-| **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover itself **shipped 2026-06-10, PR #649** — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** — **Batch 7 + the Wave-2 seed shipped 2026-06-10** (#661 + #663/#664/#665 via **#667**: full write boundary, shared game-XP, deeper ladders, gear/recipe UX, duels wear, PIL cards); **next slice: structures §7.5 (Forge/Vault/Home)**, then the §7.4 skill tree · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; P1C **merged #656**; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 declaration-coverage core · #656 adaptive P1C · #657+#659 Help seam + overlay · Batch 7 mining stack via #667 · #649 cutover → **remaining: RS07 chain-service slice · Batch 4 pointer tail · Batch 9** (contract-first observability) **· Batch 10** (planning) · the Help overlay **editor UI** (audit Phase 5, incl. the Q-0059 embed-builder Home message) · health/diagnostics production live-tests (owed) |
+| **Later** | BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover **shipped #649**; verification #655; answerability tail #658/#662/#668 — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 ---
@@ -75,15 +75,15 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   actionable-groups-only hub (`actionable_settings_groups()`, 11 live groups) +
   paginated >25-option reachability + per-guild routing availability markers.
   Sequencing home: [settings audit §11](planning/settings-cog-centralization-audit-2026-06-09.md).
-- **Phase 2 core executed 2026-06-10** (consolidated-plan Batch 4 — verify merged):
+- **Phase 2 core merged 2026-06-10 (#654**, consolidated-plan Batch 4):
   real domain-panel registrations (`DomainPanelSpec`) replaced the Phase 1
   `DOMAIN_CONFIG_SUBSYSTEMS` seam (+ DT06 coverage invariant); **Q-0064** BTD6
   announcement-channel binding + CT guided flow landed with it. Open tail:
   pointer-migration classification rows; then **Phase 3** duplicate-path
   convergence (**Q-0063** converge-gradually — router §27).
-- **Now (Phase 1 active)** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md):
+- **Phase 1 complete** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md):
   P0 + P1A + P1B + P1C shipped (#588/#589/#591/#592/#632 + the 2026-06-10
-  Batch 5 subpanels, #656 — verify merged; Q-0032 hub-buttons-only honored). **P2 next** (own planning first). *(Horizon corrected
+  Batch 5 subpanels, **merged #656**; Q-0032 hub-buttons-only honored). **P2 next** (own planning first). *(Horizon corrected
   2026-06-10: this row said "Later" while the at-a-glance table said P1C "Next".)*
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
@@ -100,8 +100,9 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   (#647) — all merged; findings verified + reconciled 2026-06-10.
 - **Next** — **implement the verified mapping batches**: the one active queue is the
   [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)
-  (Batch 1 low-risk runtime truth/clarity — executed in #650, verify merged — +
-  Batch 2 surface-classification invariant first).
+  — **Batches 1–8 all executed + merged 2026-06-10**; what remains is the RS07
+  chain-service slice, the Batch 4 pointer tail, Batch 9 (contract-first), and
+  Batch 10 (planning).
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
@@ -196,10 +197,14 @@ provenance schema is implemented.
   cap-truncated income sentence, no paragon income/effect grounding leg —
   fixed across grounding/menus/AI tool, + minion-name grounding, the Pouākai
   diacritic tokenizer fix, honest dataset source labels).
-  **Next:** decode-status ⭐ item 3 (buff/zone tail — demand-driven), the
-  maintainer's live spot-check (item 4); item 7 is now a structured
+  **Item 7 slice 1 shipped same day (#668)** — zero-fact questions now ground
+  the conversation's entity via labeled `[btd6_carryover]` facts, + the
+  zero-fact sweep fixes (ranking rosters · bare distinctive shorthand); the
   [conversation-carryover grounding plan](planning/btd6-conversation-grounding-plan-2026-06-10.md)
-  (not approved). Triage tool: `scripts/btd6_probe.py "<exact user text>"`.
+  carries the remaining unapproved tail (eval-harness pin · wider window).
+  **Next:** decode-status ⭐ item 3 (buff/zone tail — demand-driven), the
+  maintainer's live spot-check (item 4). Triage tool (#666):
+  `scripts/btd6_probe.py "<exact user text>"`.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.
@@ -220,7 +225,7 @@ accepted, not a target).
   shipped #606–#610 + #624 (explore wiring + equipment seam, persistent Descent, combat
   gear → deathmatch, market loop, Character overview, Workshop + durability keystone).
   **The 2026-06-10 finalization session executed Batch 7 + the Wave-2 seed as a 4-PR
-  stack (verify merges live): #661 → #663 → #664 → #665** — the Q-0071/Q-0072 write
+  stack — all merged, landed on `main` via #667: #661 → #663 → #664 → #665** — the Q-0071/Q-0072 write
   boundary is **complete** (every mining write through `services/mining_workflow.py`,
   one transaction per op, AST-fenced; pure domain in `utils/mining/`), recipes are
   catalog-reconciled under an alignment lint (Q-0075), the **shared game-XP track**
@@ -261,7 +266,7 @@ privacy/provenance/moderation review before any public surface.
 - **Existing plans** — [server-management/setup/access/routine extension routing](planning/server-management-extension-routing-2026-06-08.md): announcements, anti-spam, availability, explanations, analytics; gate: authoritative trackers and privacy/AI decisions.
 - **Someday / Later** — [integrations/media/voice/website](planning/integrations-media-voice-website-roadmap-2026-06-08.md): provider alerts, activity, voice, and web projection; gate: privacy/security/moderation review (Q-0041/Q-0042 answered 2026-06-09: YouTube-first posture; staged Someday website).
 - **Later** — [UX/discoverability/mobile-first](planning/ux-discoverability-mobile-roadmap-2026-06-08.md): help, changelog, copy, and mobile conformance through existing UI standards; gate: authoritative interface sequencing and copy/release-manifest decisions.
-- **Next (editor UI only)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): the **seam (#657, merged) and the HLP-3 overlay store/mutation/render integration (#659 — verify merged) shipped 2026-06-10** (audit Phases 1+2+3); the remaining pieces are the **overlay editor UI** (audit Phase 5 — settings/setup integration, carrying the Q-0059 embed-builder Home message whose preview is mandatory) and Phase 4 command/panel-action records (Q-0057 rider: no ordering until stable action identities).
+- **Next (editor UI only)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): the **seam (#657) and the HLP-3 overlay store/mutation/render integration (#659) both merged 2026-06-10** (audit Phases 1+2+3); the remaining pieces are the **overlay editor UI** (audit Phase 5 — settings/setup integration, carrying the Q-0059 embed-builder Home message whose preview is mandatory) and Phase 4 command/panel-action records (Q-0057 rider: no ordering until stable action identities).
 - Routing ledger: [idea-to-roadmap inventory](planning/idea-roadmap-inventory-2026-06-08.md).
 
 ## Someday / ideas (NOT approved — capture only)
