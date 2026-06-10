@@ -152,6 +152,19 @@ async def build_status_embed() -> discord.Embed:
         value=f"`{btd6_data_service.data_source_label()}`",
         inline=False,
     )
+    drift = btd6_data_service.served_data_drift()
+    if drift is not None:
+        served, bundled = drift
+        embed.add_field(
+            name="⚠️ Data drift",
+            value=(
+                f"The deployed files carry **{bundled}** but this store is "
+                f"serving **{served}** — data PRs do not refresh a "
+                "postgres/cloud store. Run `!btd6ops seed-data` to update "
+                "(applies immediately, no restart)."
+            ),
+            inline=False,
+        )
     from utils.btd6.context_footer import append_context_footer
 
     return append_context_footer(embed, "btd6_status:global")

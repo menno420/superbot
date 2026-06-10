@@ -23,16 +23,21 @@ Discord's pace, image quality, and whether the game *feels* right.
 
 ---
 
-## Step 0 — verify the build (learned live, 2026-06-10 evening)
+## Step 0 — verify the build AND the data (learned live, 2026-06-10 evening)
 
-- [ ] `!btd6 status` shows **game version 55.1**. The first walk ran on a
-      pre-#655 deploy that stamped "(55.0)" — the empty boss roster and the
-      stale version in refusals were *yesterday's code*, not today's bugs.
+- [ ] `!btd6 status` shows **game version 55.1** and no **⚠️ Data drift**
+      field. *(Corrected diagnosis:* the first walk's "(55.0)" stamps were
+      **not** a stale code deploy — auto-deploy worked; the Railway log shows
+      the new container serving them. Production runs
+      `BTD6_DATA_BACKEND=postgres`, so BTD6 fixtures come from the
+      `btd6_data_blobs` table, and **data PRs never refresh that store** —
+      it served the old blobs until `!btd6ops seed-data` ran. Since PR #676,
+      seed-data **applies immediately** (no restart) and both boot logs and
+      `!btd6 status` surface the drift loudly.)*
 - [ ] After any `!restart`: confirm the bot actually comes back. On the old
       build `!restart` exited 0 and Railway (on-failure policy) never
-      relaunched it — fixed by the restart exit-code change (PR #675): once
-      *that* is deployed, `!restart` exits nonzero and relaunches. Until then
-      use a Railway redeploy instead.
+      relaunched it — fixed by the restart exit-code change (PR #675):
+      `!restart` now exits nonzero and relaunches.
 
 ### Live-walk deltas (first pass, 2026-06-10 evening — fixes in PR #675)
 

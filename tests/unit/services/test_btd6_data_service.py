@@ -614,3 +614,71 @@ def test_find_boss_resolves_qualifier_wrapped_names():
     assert btd6_data_service.find_boss("lych").canonical == "Lych"
     # No boss named → None, never a guess.
     assert btd6_data_service.find_boss("tier 4 elite") is None
+
+
+# ---------------------------------------------------------------------------
+# Data-lane drift + self-applying seed (live miss, 2026-06-10)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_seed_postgres_from_files_reloads_the_live_dataset(monkeypatch):
+    """Seeding must re-warm the provider + drop the dataset cache — the live
+    miss was seed-data writing blobs while the process kept serving the old
+    warmed copy until a (broken) restart."""
+    from services import btd6_data_service as svc
+    from utils.db import btd6_data
+
+    upserts: list[str] = []
+
+    async def _fake_upsert(name, body, sha):
+        upserts.append(name)
+
+    warmed: list[bool] = []
+
+    async def _fake_warm():
+        warmed.append(True)
+        return True
+
+    resets: list[bool] = []
+
+    monkeypatch.setattr(btd6_data, "upsert_blob", _fake_upsert)
+    monkeypatch.setattr(svc, "warm_provider", _fake_warm)
+    monkeypatch.setattr(svc, "reset_cache", lambda: resets.append(True))
+
+    count = await svc.seed_postgres_from_files()
+    assert count == len(upserts) > 0
+    assert warmed and resets  # the new data is served immediately
+
+
+def test_served_data_drift_reports_a_lagging_store(monkeypatch):
+    """A non-file store serving an older game version than the bundled files
+    is exactly the invisible state that confused the 2026-06-10 eval."""
+    from services import btd6_data_service as svc
+
+    class _DummyStore:  # not a FileRawProvider → drift applies
+        pass
+
+    class _DummyDataset:
+        game_version = "55.0"
+
+    monkeypatch.setattr(svc, "_PROVIDER", _DummyStore())
+    monkeypatch.setattr(svc, "bundled_game_version", lambda: "55.1")
+    monkeypatch.setattr(svc, "get_dataset", lambda: _DummyDataset())
+    assert svc.served_data_drift() == ("55.0", "55.1")
+
+    # Agreement → no drift.
+    _DummyDataset.game_version = "55.1"
+    assert svc.served_data_drift() is None
+
+
+def test_served_data_drift_is_silent_for_the_file_backend(monkeypatch):
+    """The file provider serves the bundled files directly — it cannot drift,
+    and the bundled version itself must parse from the committed fixture."""
+    from services import btd6_data_service as svc
+    from services.btd6_data_provider import FileRawProvider
+
+    monkeypatch.setattr(svc, "_PROVIDER", FileRawProvider())
+    assert svc.served_data_drift() is None
+    bundled = svc.bundled_game_version()
+    assert bundled and bundled[0].isdigit()

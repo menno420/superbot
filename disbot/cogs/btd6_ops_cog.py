@@ -90,14 +90,20 @@ async def _seed_embed() -> discord.Embed:
             ),
             color=discord.Color.orange(),
         )
+    served = ""
+    try:
+        served = btd6_data_service.get_dataset().game_version
+    except Exception:  # noqa: BLE001 — version is decoration on the receipt
+        pass
+    serving_line = f"\n**Now serving:** game version `{served}`." if served else ""
     return discord.Embed(
         title="🌱 BTD6 data seeded",
         description=(
-            f"Upserted **{count}** blobs into the `btd6_data_blobs` table.\n\n"
-            "**Next steps:**\n"
-            "1. In Railway → your bot service → **Variables**, add "
-            "`BTD6_DATA_BACKEND` = `postgres` (the service redeploys).\n"
-            "2. Run `!btd6 status` — it should read "
+            f"Upserted **{count}** blobs into the `btd6_data_blobs` table and "
+            f"**reloaded the live dataset** — the new data is being served "
+            f"now; no restart needed.{serving_line}\n\n"
+            "First-time setup only: set `BTD6_DATA_BACKEND` = `postgres` in "
+            "Railway → Variables, then confirm `!btd6 status` reads "
             "`Data source: postgres (…)`.\n\n"
             "Safe to re-run any time (it upserts)."
         ),

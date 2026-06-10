@@ -106,6 +106,22 @@ class BTD6Cog(commands.Cog):
             )
             return
 
+        # Data PRs update the bundled files only — a postgres/cloud store
+        # keeps serving its old copy until re-seeded, invisibly (live,
+        # 2026-06-10: code auto-deployed at 55.1 while the blob store served
+        # 55.0). Surface the drift loudly at every boot; `!btd6 status`
+        # shows the same warning.
+        drift = btd6_data_service.served_data_drift()
+        if drift is not None:
+            served, bundled = drift
+            logger.warning(
+                "BTD6 data drift: the deployed files carry %s but the active "
+                "store serves %s — run `!btd6ops seed-data` to update "
+                "(applies immediately, no restart needed).",
+                bundled,
+                served,
+            )
+
         await btd6_ingestion_supervisor.start_supervisor()
 
     async def cog_unload(self) -> None:

@@ -710,6 +710,9 @@ def test_deterministic_meta_reply_answers_capability_questions():
         "What kind of things do you know about btd6",
         "List all the things that you know about btd6",
         "what can you tell me about btd6",
+        # The live typo (2026-06-10, "csn"): the tell-shape must not depend
+        # on the auxiliary verb being spelled right.
+        "What csn you tell me about btd6",
         "wait what things can we ask this bot about btd6?",
     ):
         reply = btd6_context_service.deterministic_meta_reply(question)
@@ -729,6 +732,7 @@ def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
         "what do you know about cooking",  # off-domain
         "tell me about quincy",  # plain entity
         "what can we ask you",  # general — get_ai_tool_catalog owns it
+        "can I ask a friend to play btd6 with me",  # ask targets a 3rd party
     ):
         assert btd6_context_service.deterministic_meta_reply(question) is None, (
             question

@@ -45,6 +45,15 @@ files, `disbot/services/btd6_*`, `disbot/views/btd6/`, `disbot/utils/db/btd6_*`,
 - Existing UI direction is visible in live-event, tower, hero, leaderboard, strategy,
   CT-map, and paragon browser/calculator views. Paragon and other env-gated paths may
   run degraded in the sandbox; do not call them broken or production-verified.
+- **Production data lane (learned live 2026-06-10):** prod runs
+  `BTD6_DATA_BACKEND=postgres` — fixtures are served from the `btd6_data_blobs`
+  table (warmed once at boot), **not** the repo files, so a merged data PR does
+  NOT change what prod serves until `!btd6ops seed-data` runs. Since PR #676
+  seed-data **applies immediately** (re-warms + drops the dataset cache; no
+  restart), and version drift between bundled files and the store is surfaced
+  in the boot log + a `!btd6 status` ⚠️ field. Auto-seed-on-boot is **Q-0077
+  (open)**. Code deploys themselves are Railway auto-deploy-on-merge;
+  `!restart` exits nonzero since PR #675 so the platform relaunches it.
 
 ## Plans / pending approval
 
