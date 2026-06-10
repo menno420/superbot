@@ -587,6 +587,7 @@ SUBSYSTEMS: dict[str, dict] = {
             "proof_channel.access.grant",
             "proof_channel.access.revoke",
             "proof_channel.access.timed",
+            "proof_channel.settings.configure",
         ],
     },
     "utility": {
