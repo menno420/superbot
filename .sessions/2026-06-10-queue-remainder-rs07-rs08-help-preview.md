@@ -85,3 +85,58 @@ The consolidated plan §5 banner is current: Batch 4 pointer tail · Batch 9
 RS05/RS10 · Batch 10 (planning) · Help overlay editor UI (plan-first) — plus
 the maintainer-only production walk, which the audit (and this session)
 consider the single highest-value next action.
+
+---
+
+## Continuation (same session): Batch 4 complete + Batch 10 selections — PR #672
+
+After #671 merged the maintainer said "continue with the plan" (+ confirmed
+most commands working live; a dedicated eval session is coming). Picked the
+two remaining non-observability queue items; deliberately did NOT pick
+mining structures (waits for the eval/balance pass) or RS05/RS10 (own
+focused session).
+
+**Shipped (PR #672):**
+
+1. **Batch 4 pointer tail → COMPLETE** — proof_channel promoted per audit §4:
+   `cogs/proof_channel/schemas.py` (channel binding + OPTIONAL `proof`
+   resource requirement), `proof_channel.settings.configure` capability,
+   binding-first `get_proof_channel` with the name-`proof` legacy fallback
+   (the Q-0064 pattern), panel/commands/modals async-converted; subsystem now
+   an actionable Settings-hub group (taxonomy 11 → 12). Logging rows
+   **verified satisfied** (7 bindings declared; `resolve_log_channel`
+   binding-first; adapters classified) — disposition recorded, no code
+   needed. Verified: identity contract clean at boot (STRICT=on); live
+   Postgres binding round-trip (unbound→fallback · bound→wins ·
+   deleted→degrade).
+2. **Batch 10 → EXECUTED** — DT09: the wizard plan's PR1–PR3 tranche was
+   **already shipped via #435** (attribution, readiness rollup +
+   SETUP_PREFLIGHT_DIFF surfaced, flag-manager labels, advisor wire-in w/
+   read-only invariant); the plan's "🟢 active" header was exactly the
+   stale-status drift DT09 predicted → re-badged; **PR4 `/myprofile`
+   selected** (planning session first). DT10: **§7.5 multi-entity
+   comparison** selected (deterministic rank/diff + typed comparison
+   evidence on the #634 template; profile-gated; **after the prod check**).
+
+**Context delta (continuation):**
+
+- **Discovered by hand:** the wizard finalization tranche being long-shipped
+  (#435) — nothing routed to that fact; the plan's stale "🟢 active" header
+  actively misled (now fixed at the source). Lesson: a `plan`-badged doc's
+  *status header* is load-bearing; DT09-style re-verification before
+  trusting any pre-2026-06 plan remains worth its cost.
+- **Verification gotchas (smoke-script-side, not code):** binding rows use
+  status `'bound'` (CHECK-constrained) + UUID mutation ids; the audit table
+  is `binding_audit_log`. Worth knowing for future binding live-smokes.
+- **Decisions made alone:** binding name `proof_channel` (self-describing in
+  binding lists, matching `mod_channel` idiom); OPTIONAL provisioning
+  priority (niche feature — info-only in readiness); §7.5 sequenced after
+  the prod check (a second unverified AI family shouldn't stack on an
+  unverified template).
+- **Flagged for maintainer:** the eval session can now also click the
+  Settings hub → proof_channel group (new) and `!prizemenu` (read path
+  changed to binding-first; behavior identical while unbound).
+
+**Open after continuation:** Batch 9 RS05/RS10 · Help overlay editor UI
+(plan-first) · setup PR4 planning session · AI §7.5 (post-prod-check) ·
+the maintainer's eval session.

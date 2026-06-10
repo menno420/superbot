@@ -50,6 +50,20 @@ health-diagnostics roadmap is already delivered
 > `btd6_grounded_strict`); the compatible default never reaches it — **default byte-identical,
 > pinned by wiring tests**. Model-loop behaviour needs the maintainer's **production check**
 > (no provider key in the sandbox). Remaining §7 scope + §12.1 stay deferred.
+> **Next §7 family SELECTED (consolidated-plan Batch 10 / DT10, 2026-06-10): §7.5
+> multi-entity comparison** — the deterministic resolve-candidates → shared-assumption
+> validation → bounded fan-out → normalize → deterministic rank/diff helper, with a typed
+> comparison-evidence contract on the #634 template (the model explains a deterministic
+> ranking, never compares prose). Selected because it covers the highest-frequency
+> *unserved* live question shape ("X or Y — which is better/cheaper?") and every leg is
+> deterministic/read-only (Q-0048 tool posture), while activation stays profile-gated +
+> default-byte-identical exactly like #634. **Sequencing:** implement after the
+> maintainer's production check of the #634/#639 model loops (announced as the next
+> dedicated eval session) — the verify/synthesize template should be confirmed live before
+> a second family stacks on it. Acceptance bar for the slice: deterministic tests for the
+> rank/diff helper; a comparison-evidence contract test; wiring tests pinning the
+> compatible default byte-identical; refusal paths for unresolvable candidates /
+> mismatched assumptions.
 
 ## 1. Executive recommendation
 

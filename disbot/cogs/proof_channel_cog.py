@@ -21,12 +21,51 @@ class ProofChannelCog(commands.Cog):
         # track timed prize tasks so they can be cancelled if needed
         self._timed_tasks: dict[int, asyncio.Task] = {}
 
+    async def cog_load(self) -> None:
+        from cogs.proof_channel.schemas import register_schemas
+
+        register_schemas()  # Settings Phase 2 — declares the channel binding.
+
     def cog_unload(self):
         """Cancel auto-unlock tasks so a reload doesn't leave winners locked out."""
         tasks.cancel_by_prefix("proof:")
         self._timed_tasks.clear()
 
-    def get_proof_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
+    async def get_proof_channel(
+        self,
+        guild: discord.Guild,
+    ) -> discord.TextChannel | None:
+        """The guild's proof channel — binding-first (Settings Phase 2).
+
+        A bound ``proof_channel.proof_channel`` wins; the legacy lookup of
+        a channel literally named ``proof`` is the fallback lane, so
+        existing guilds keep working unbound. A binding read failure
+        degrades to the name lookup (one bad row must not kill prize
+        commands).
+        """
+        from core.runtime.bindings import get_binding
+
+        bound_id: int | None = None
+        try:
+            value = await get_binding(guild.id, "proof_channel", "proof_channel")
+            bound_id = value.target_id  # None when the slot was never bound
+        except Exception:  # noqa: BLE001 — degrade to the name-based lane
+            logger.warning(
+                "proof channel: binding read failed for guild %s; "
+                "falling back to the name-based lookup",
+                guild.id,
+                exc_info=True,
+            )
+        if bound_id is not None:
+            channel = guild.get_channel(bound_id)
+            if isinstance(channel, discord.TextChannel):
+                return channel
+            logger.warning(
+                "proof channel: bound channel %s missing/non-text in guild %s; "
+                "falling back to the name-based lookup",
+                bound_id,
+                guild.id,
+            )
         return resources.resolve_channel(guild, name="proof")  # type: ignore[return-value]
 
     async def _lock_for_winner(
@@ -59,7 +98,7 @@ class ProofChannelCog(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def start_prize_claim(self, ctx, winner: discord.Member):
         """Grant a winner exclusive access to #proof.  Usage: +prize @winner"""
-        ch = self.get_proof_channel(ctx.guild)
+        ch = await self.get_proof_channel(ctx.guild)
         if not ch:
             await ctx.send(
                 "Channel '#proof' not found. Please create one first.",
@@ -76,7 +115,7 @@ class ProofChannelCog(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def end_prize_claim(self, ctx):
         """End the prize session and make #proof read-only again.  Usage: -prize"""
-        ch = self.get_proof_channel(ctx.guild)
+        ch = await self.get_proof_channel(ctx.guild)
         if not ch:
             await ctx.send("Channel '#proof' not found.", delete_after=10)
             return
@@ -90,7 +129,7 @@ class ProofChannelCog(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def prize_status(self, ctx):
         """Show current #proof channel permissions."""
-        ch = self.get_proof_channel(ctx.guild)
+        ch = await self.get_proof_channel(ctx.guild)
         if not ch:
             await ctx.send("Channel '#proof' not found.", delete_after=10)
             return
@@ -108,7 +147,7 @@ class ProofChannelCog(commands.Cog):
     async def prize_menu(self, ctx):
         """Open the interactive prize channel management panel."""
         view = _PrizeManagerView(ctx, self)
-        await send_panel(ctx, embed=view.build_embed(), view=view)
+        await send_panel(ctx, embed=await view.build_embed(), view=view)
 
     async def build_help_menu_view(
         self,
@@ -116,13 +155,13 @@ class ProofChannelCog(commands.Cog):
     ) -> tuple[discord.Embed, discord.ui.View]:
         """Help-menu direct-navigation hook (returns the prize channel panel)."""
         view = _PrizeManagerView(help_ctx_shim(interaction), self)
-        return view.build_embed(), view
+        return await view.build_embed(), view
 
     @commands.command(name="timedprize")
     @commands.has_permissions(manage_channels=True)
     async def start_timed_prize_claim(self, ctx, winner: discord.Member, duration: int):
         """Grant timed access to #proof; auto-unlocks after duration minutes.  Usage: timedprize @winner <minutes>"""
-        ch = self.get_proof_channel(ctx.guild)
+        ch = await self.get_proof_channel(ctx.guild)
         if not ch:
             await ctx.send("Channel '#proof' not found.", delete_after=10)
             return
@@ -173,7 +212,7 @@ class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: 
                 ephemeral=True,
             )
             return
-        ch = self.cog.get_proof_channel(interaction.guild)
+        ch = await self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
                 "Channel '#proof' not found.",
@@ -210,7 +249,7 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
             )
             return
         duration = int(self.duration_input.value)
-        ch = self.cog.get_proof_channel(interaction.guild)
+        ch = await self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
                 "Channel '#proof' not found.",
@@ -250,8 +289,8 @@ class _PrizeManagerView(HubView):
         self.ctx = ctx
         self.cog = cog
 
-    def build_embed(self) -> discord.Embed:
-        ch = self.cog.get_proof_channel(self.ctx.guild)
+    async def build_embed(self) -> discord.Embed:
+        ch = await self.cog.get_proof_channel(self.ctx.guild)
         embed = discord.Embed(
             title="🏆 Prize Channel Manager",
             color=ECONOMY_COLOR,
@@ -283,7 +322,7 @@ class _PrizeManagerView(HubView):
 
     @discord.ui.button(label="🔒 End Session", style=discord.ButtonStyle.danger, row=0)
     async def btn_end(self, interaction: discord.Interaction, _: discord.ui.Button):
-        ch = self.cog.get_proof_channel(interaction.guild)
+        ch = await self.cog.get_proof_channel(interaction.guild)
         if not ch:
             await interaction.response.send_message(
                 "Channel '#proof' not found.",
@@ -293,7 +332,7 @@ class _PrizeManagerView(HubView):
         if task := self.cog._timed_tasks.pop(interaction.guild_id, None):
             task.cancel()
         await self.cog._unlock(ch)
-        embed = self.build_embed()
+        embed = await self.build_embed()
         embed.description = f"✅ {ch.mention} is now read-only for everyone."
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -303,7 +342,10 @@ class _PrizeManagerView(HubView):
         row=1,
     )
     async def btn_refresh(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+        await interaction.response.edit_message(
+            embed=await self.build_embed(),
+            view=self,
+        )
 
 
 def _format_overwrites(overwrites: dict) -> str:

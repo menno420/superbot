@@ -134,12 +134,17 @@ services) without partitioning by module.
 > #657+#659 · #661+#663/#664/#665-via-#667 · #649). **The queue-remainder
 > session (PR #671, same day) then executed the RS07 chain-service slice,
 > Batch 9's RS08 read-model slice, and the EOD audit's Tier-2 Help-Preview
-> fix.** **What remains live in this plan:** the **Batch 4
-> pointer-classification tail**, **Batch 9's RS05 + RS10** (contract-first
-> observability), **Batch 10** (planning-only selections), and the Help-lane
-> **overlay editor UI** tail (audit Phase 5, tracked under Batch 6's outcome
-> notes). Plus the owed maintainer-only items: the first real #633 workflow
-> dispatch and the HLT-2 production live-tests.
+> fix; its continuation (PR #672) completed the Batch 4 pointer tail
+> (proof-channel declaration; logging verified satisfied) and ran the
+> Batch 10 selections (wizard PR1–PR3 tranche verified shipped via #435 →
+> next = PR4 `/myprofile` planning; next AI family = §7.5 multi-entity
+> comparison, sequenced after the prod check).** **What remains live in
+> this plan:** **Batch 9's RS05 + RS10** (contract-first observability) and
+> the Help-lane **overlay editor UI** tail (audit Phase 5, tracked under
+> Batch 6's outcome notes); the two Batch-10-selected slices live in their
+> own plans' banners. Plus the owed maintainer-only items: the first real
+> #633 workflow dispatch, the HLT-2 production live-tests, and the
+> announced thorough eval session.
 
 ### Batch 1 — Low-risk runtime truth/clarity (RS04 · RS09 · RS13 · RS14 · RS16 · RS11-rename) — executed in **#650** (2026-06-10, merged — verified 2026-06-10 EOD)
 
@@ -240,7 +245,16 @@ services) without partitioning by module.
   properly). `docs/ownership.md` updates ride the same PR.
 - **Stop:** any schema change; any new mutation path that bypasses the audited seam.
 
-### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core shipped in **#654** (2026-06-10)
+### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core shipped in **#654**; pointer tail closed in **#672** (both 2026-06-10 — batch COMPLETE)
+
+> Tail outcome notes (#672): **proof_channel** promoted per audit §4 — channel
+> binding + OPTIONAL `proof` resource requirement declared
+> (`cogs/proof_channel/schemas.py`), binding-first read with the name-`proof`
+> legacy fallback, `proof_channel.settings.configure` capability registered,
+> subsystem joins the actionable-group taxonomy (now 12 groups). **logging**
+> verified already satisfied (seven bindings declared; `resolve_log_channel`
+> binding-first; adapters = classified migration machinery). Convergence stays
+> Phase 3 (Q-0063).
 
 > Outcome notes: `DomainPanelSpec` + `SubsystemSchema.domain_panels` replace the
 > curated `DOMAIN_CONFIG_SUBSYSTEMS` frozenset (cleanup = first real
@@ -426,7 +440,21 @@ in plan order (after the smaller batches), not immediately.
   may land first, renames need cross-service churn budget).
 - **Risk:** medium for event API; low for read-model extraction.
 
-### Batch 10 — Next-slice selection/planning (DT09 · DT10 · DT15) — planning-only
+### Batch 10 — Next-slice selection/planning (DT09 · DT10 · DT15) — **EXECUTED in #672** (2026-06-10; DT15 stays event-driven)
+
+> Outcome notes: **DT09** — the wizard plan's PR1–PR3 finalization tranche was
+> found **already shipped via #435** (arbitration attribution + readiness
+> rollup · flag-manager labels · the PR3 advisor wire-in with its read-only
+> invariant); the plan's "🟢 active / implementation-ready" header was the
+> stale-status drift DT09 predicted — re-badged, with **PR4 `/myprofile`
+> foundation selected as the setup lane's next slice** (own planning session
+> against plan §6 + resolved decisions first). **DT10** — next §7 family =
+> **§7.5 multi-entity comparison** (deterministic rank/diff + typed
+> comparison-evidence contract on the #634 template; profile-gated, default
+> byte-identical; sequenced **after the maintainer's production check** of the
+> #634/#639 loops — rationale + acceptance bar in the orchestration plan's
+> banner). **DT15** unchanged by design: characterize a terminal-state pin
+> when a game slice next activates.
 
 - Re-verify `setup-platform/setup_wizard_finalization_plan.md` against shipped
   source and publish **one bounded finalization slice** with acceptance tests

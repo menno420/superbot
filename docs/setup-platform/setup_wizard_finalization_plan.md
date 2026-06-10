@@ -1,9 +1,20 @@
 # Setup Wizard — Finalization Analysis & Plan
 
-> **Status:** `plan` — 🟢 active. Repo-state analysis of the *shipped* guild setup
-> wizard plus the implementation-ready PR sequence to finalize it. This is the
-> "PR-12 — setup wizard plan refresh (plan only)" anticipated by
-> `docs/health/platform-consistency-ledger.md`.
+> **Status:** `plan` — **finalization tranche COMPLETE; PR4–PR6 are the designed
+> future roadmap.** Source-verified 2026-06-10 (consolidated-plan **Batch 10 /
+> DT09** re-verification): the PR1–PR3 tranche this plan sequenced **shipped via
+> #435** — PR1 (config-arbitration fallback *attribution* + the
+> `services/wizard_finalization.py` readiness rollup, incl.
+> `SETUP_PREFLIGHT_DIFF` surfaced as a visible env-only gate), PR2 (flag-manager
+> friendly labels + operator/internal split), and PR3 (the AI advisor wired as
+> the optional read-only review action — `services/setup_advisor_review.py`,
+> mutation-safety pinned by
+> `tests/unit/invariants/test_setup_advisor_readonly.py`). The §3 "broken /
+> incomplete" list and §10's PR1–PR3 text below are the *historical* analysis
+> that drove that tranche — do not re-execute them. **What remains is PR4
+> (`/myprofile` per-user foundation — the selected next slice; run its own
+> planning session against §6 + the resolved decisions first), PR5 (visibility
+> bridge), and PR6 (migration cleanup, gated on fallback=0).**
 >
 > When this doc disagrees with a source file, **the source file wins** — open a PR
 > to reconcile. Authored 2026-05-31 against `main` @ commit `370cf4b`.

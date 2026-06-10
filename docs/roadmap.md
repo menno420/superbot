@@ -36,7 +36,7 @@
 | Horizon | Items |
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** — **Batch 7 + the Wave-2 seed shipped 2026-06-10** (#661 + #663/#664/#665 via **#667**: full write boundary, shared game-XP, deeper ladders, gear/recipe UX, duels wear, PIL cards); **next slice: structures §7.5 (Forge/Vault/Home)**, then the §7.4 skill tree · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; P1C **merged #656**; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 declaration-coverage core · #656 adaptive P1C · #657+#659 Help seam + overlay · Batch 7 mining stack via #667 · #649 cutover → the **RS07 chain-service slice + Batch 9's RS08 read-model slice + the Help-Preview Tier-2 fix shipped same day in PR #671** → **remaining: Batch 4 pointer tail · Batch 9's RS05/RS10** (contract-first observability) **· Batch 10** (planning) · the Help overlay **editor UI** (audit Phase 5, incl. the Q-0059 embed-builder Home message) · health/diagnostics production live-tests (owed) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 declaration-coverage core · #656 adaptive P1C · #657+#659 Help seam + overlay · Batch 7 mining stack via #667 · #649 cutover → **#671** (RS07 + Batch 9's RS08 + the Help-Preview Tier-2 fix) → **#672** (Batch 4 pointer tail COMPLETE — proof-channel declaration; logging verified satisfied — + the Batch 10 selections: setup PR4 planning next · AI §7.5 after the prod check) → **remaining: Batch 9's RS05/RS10** (contract-first observability) · the Help overlay **editor UI** (audit Phase 5, incl. the Q-0059 embed-builder Home message) · health/diagnostics production live-tests (owed) |
 | **Later** | BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover **shipped #649**; verification #655; answerability tail #658/#662/#668 — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -66,8 +66,12 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
 
 Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisioning.md)
 
-- **Next** — **setup-wizard finalization** ([plan](setup-platform/setup_wizard_finalization_plan.md), active):
-  finish the shipped scan/draft/review/provisioning flow.
+- **Next** — **setup `/myprofile` foundation (wizard plan PR4)** — the
+  finalization tranche (PR1–PR3) was **verified already shipped via #435**
+  (Batch 10 / DT09 re-verification, PR #672; the
+  [plan](setup-platform/setup_wizard_finalization_plan.md)'s banner carries the
+  evidence). PR4 is the selected next slice — run its own planning session
+  against the plan's §6 + resolved decisions first.
 - **Next** — settings coverage: pick a *verified* inconsistency from the
   [consistency ledger](health/platform-consistency-ledger.md); the three-lane model is
   [settings-customization-roadmap](setup-platform/settings-customization-roadmap.md).
@@ -100,10 +104,11 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   (#647) — all merged; findings verified + reconciled 2026-06-10.
 - **Next** — **implement the verified mapping batches**: the one active queue is the
   [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)
-  — **Batches 1–8 all executed + merged 2026-06-10**; the **RS07 chain-service
-  slice + Batch 9's RS08 read-model slice shipped in PR #671** (same day); what
-  remains is the Batch 4 pointer tail, Batch 9's RS05/RS10 (contract-first), and
-  Batch 10 (planning).
+  — **Batches 1–8 all executed + merged 2026-06-10**; **#671** added RS07 +
+  Batch 9's RS08 + the Help-Preview Tier-2 fix, and **#672** completed the
+  Batch 4 pointer tail (proof-channel declaration) + the Batch 10 selections;
+  what remains is Batch 9's RS05/RS10 (contract-first) and the Help overlay
+  editor UI.
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
