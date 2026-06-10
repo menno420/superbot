@@ -305,6 +305,14 @@ services) without partitioning by module.
 the **workshop-workflow service boundary**. The batch is decision-cleared; it runs
 in plan order (after the smaller batches), not immediately.
 
+> **Execution record (2026-06-10, mining-finalization session):** **RS01 executed
+> in PR #661** (`services/shop_purchase_workflow.py` + conn-aware primitives +
+> `db.transaction()` + the view-write invariant; live-verified incl. the
+> concurrent double-click). RS02 follows in the same session as its two staged
+> PRs (workshop first, then market/remaining writers + ratchet), per the staging
+> below — the maintainer-commissioned mining/tool/gear finalization plan pulled
+> this batch forward of the remaining smaller batches.
+
 - **Objective:** close the two-commit purchase hole first (smallest high-value
   slice), then converge mining writes behind workflow services.
 - **RS01 slice:** purchase **workflow service owning one transaction** (Q-0071=A;
