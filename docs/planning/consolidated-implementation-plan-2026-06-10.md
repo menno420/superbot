@@ -190,7 +190,7 @@ services) without partitioning by module.
 - **Stop:** any classification that would *change execution access* — that is
   governance, not ledger work.
 
-### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — executed in **#652** (2026-06-10, verify merged; **RS07 still open**)
+### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — shipped in **#652** (2026-06-10; **RS07 still open**)
 
 > Outcome notes: RS03 = `set_policy` owns old-value read + audit (real
 > `prev_value`) + typed `RoutingMutationResult`, with a new import-fence
@@ -220,7 +220,7 @@ services) without partitioning by module.
   properly). `docs/ownership.md` updates ride the same PR.
 - **Stop:** any schema change; any new mutation path that bypasses the audited seam.
 
-### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core executed (2026-06-10, same session as Batch 3; verify merged)
+### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core shipped in **#654** (2026-06-10)
 
 > Outcome notes: `DomainPanelSpec` + `SubsystemSchema.domain_panels` replace the
 > curated `DOMAIN_CONFIG_SUBSYSTEMS` frozenset (cleanup = first real
