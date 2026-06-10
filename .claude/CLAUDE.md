@@ -134,6 +134,15 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   route them so **every idea eventually becomes implemented or discussed — never orphaned**.
   Full mechanism (intake → map → route → groom → outcome): `docs/ideas/README.md`. An agent
   should always have a next thing to do.
+- **Contribute one new idea per session — mandatory session ender (owner directive Q-0089,
+  2026-06-10).** Distinct from grooming (which *moves existing* ideas): before writing the
+  session log, add **one new idea you genuinely believe in** — for the bot or for the agent
+  network/workflow, any size (embed wording → new cog → refactor → new memory doc).
+  Dedup-grep `docs/ideas/` + the roadmap first; record it in the session log under a
+  `💡 Session idea` flag with one line of why it's worth having; substantial ones get an
+  idea file + README index entry. Forced filler is worse than none — the owner wants
+  *consistent genuine generation* ("if agents did this consistently, you're pretty much
+  guaranteed to eventually come up with a good idea"), not ceremony.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges
