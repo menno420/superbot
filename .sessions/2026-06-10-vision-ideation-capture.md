@@ -65,6 +65,20 @@ Q-0083 autonomy) the owner chose **further than the recommended safe option**
 — he aims at the ambitious end-state and stages the path, rather than hedging
 the destination. Weight recommendation framing accordingly.
 
+## Merge-autonomy grant (Q-0084)
+
+Mid-conversation the owner granted the first Q-0083 trust tier, verbatim in
+the router: **agents merge their own session PRs when they judge the work
+done** (motivation: parallel-agent merge conflicts — stale open PRs are the
+window; prompt merges let him run more agents at once). Envelope: re-sync
+`origin/main` first (UNION-resolve; merging agent reconciles) · CI green on
+the final head · merge-commit · own-PR scope · **merge ≠ deploy**. Routed:
+CLAUDE.md §Session workflow (SESSION_WORKFLOW block) · collaboration-model
+north-star note · ai-project-workflow §9. Live proof during the very same
+conversation: #681 merged mid-chat and this branch absorbed it (the §9
+same-line current-state UNION, ~2 min). PR #680 then merged by the agent —
+the grant's first exercise.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →

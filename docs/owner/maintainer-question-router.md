@@ -3390,3 +3390,39 @@ speed."
    relevant as the implementation backlog thins ("not much else left to do").
    Design health/deploy/tooling work so the system *could* get there
    (bot-awareness plan, canary/rollback ideas align) without promoting it now.
+
+### Q-0084 — Merge autonomy granted: agents merge their own session PRs when done
+
+**Area:** Collaboration model / agent ecosystem — the **first granted Q-0083 trust tier**
+**Type:** Owner grant (unprompted, same conversation as Q-0083)
+**Priority:** High (changes every session's end protocol immediately)
+**Status:** Granted (2026-06-10) — **Routed** → CLAUDE.md session workflow; collaboration-model north-star note; ai-project-workflow §9
+
+**Owner statement (2026-06-10, verbatim):** "I do think claude agents should
+be able to merge, because now there are still often problems with merge
+conflicts when multiple agents are working, and I try to keep only 1 or 2
+agents active at the same time but I have too many ideas that I want to
+discuss and plan and execute, so it would be great if agents would merge
+their PRs whenever they feel like they are done."
+
+**The grant:** an agent **merges its own session PR itself** when it judges
+the work done — no waiting for the owner. Motivation: stale open PRs are the
+parallel-agent conflict window; prompt merges shrink it, which is what lets
+the owner run more agents at once (his stated goal — more ideas in flight).
+
+**The envelope (the existing quality bar, no new ceremony):**
+
+1. **CI green on the final head** — never merge red or unverified.
+2. **Re-fetch + merge `origin/main` first** (the §9 END-protocol sync);
+   UNION-resolve conflicts — the merging agent is the reconciler.
+3. **Merge-commit method** (repo convention on `main`).
+4. **Scope: your own session PR** (or one you were explicitly asked to
+   drive). Draft → ready → merge replaces draft → ready → wait.
+5. **Merge ≠ deploy.** Production restart / prod-checks / live eval items
+   remain the owner's — Q-0083's other gates are unchanged by this tier.
+6. The grant covers *completion*, not *scope approval*: if you're genuinely
+   unsure the work is wanted (not whether it's green), the existing act-vs-ask
+   rules still apply before merging.
+
+**First exercise:** PR #680 (this conversation) — main re-synced (#681
+absorbed, current-state same-line UNION), then merged by the agent.
