@@ -164,3 +164,26 @@ async def test_paragon_stats_tool_omits_income_when_absent():
     result = await _btd6_paragon_stats_at_degree({"paragon": "apex"})
     assert result["found"] is True
     assert "income_per_round" not in result
+
+
+# ---------------------------------------------------------------------------
+# Source-label faithfulness (answerability items 6b + 6c)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_fixture_facts_carry_dataset_label_not_repo_path():
+    """Item 6b: users saw the repo path-ism ``fixture/btd6_data`` verbatim."""
+    ctx = await btd6_context_service.build("dart monkey")
+    labelled = [f for f in ctx.facts if "(source: BTD6 dataset, game v" in f]
+    assert labelled, f"no dataset-labelled facts in: {ctx.facts[:4]!r}"
+    assert not any("fixture/btd6_data" in f for f in ctx.facts)
+
+
+@pytest.mark.asyncio
+async def test_fixture_only_answer_does_not_claim_nk_api():
+    """Item 6c: a dataset-only answer must not be summarised as the NK API."""
+    ctx = await btd6_context_service.build("dart monkey")
+    assert ctx.facts  # fixture grounding fired
+    assert ctx.source_summary == btd6_context_service._DATASET_SOURCE_SUMMARY
+    assert "ninjakiwi" not in ctx.source_summary
