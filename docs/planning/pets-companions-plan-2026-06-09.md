@@ -17,6 +17,15 @@
 
 ## Context and objective
 
+> **Amendment (Q-0078, 2026-06-10):** the owner's vision statement
+> ([`../ideas/superbot-vision-2026-06-10.md`](../ideas/superbot-vision-2026-06-10.md)
+> V-09) adds a second acquisition path and a party system, reconciled as **"both
+> paths"**: eggs stay the common acquisition (P1–P4 below unchanged); **quest-rescue**
+> becomes the rare/unique-species path once the quest engine exists (vision AG-08);
+> the travel-party cap grows **1 → 3** across later phases; journey buffs
+> (scout = encounter-prevention chance, gold-sense = treasure find) implement as
+> small **encounter-table modifiers** (vision AG-07), not raw stat multipliers.
+
 Pets give the mining character platform a **recurring emotional hook** plus the
 economy's most-wanted mechanic: a **likeable coin/ore sink** (owner-vision §15 wants
 sinks; the Workshop+durability slice is the keystone sink — pets are the *charming*

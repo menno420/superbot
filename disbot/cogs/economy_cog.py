@@ -300,7 +300,7 @@ class EconomyCog(commands.Cog):
         embed.add_field(name="Coins", value=f"{xp_row.get('coins', 0)} 🪙", inline=True)
         embed.set_footer(text="Pick a job from the dropdown.")
 
-        view = _WorkView(ctx.author.id, ctx.guild.id, available)
+        view = _WorkView(ctx.author, ctx.guild.id, available)
         msg = await ctx.send(embed=embed, view=view)
         view.message = msg
 
@@ -309,7 +309,7 @@ class EconomyCog(commands.Cog):
     @commands.command(name="shop")
     async def shop(self, ctx: commands.Context):
         """Browse and buy items from the shop."""
-        view = _ShopView(ctx.author.id, ctx.guild.id)
+        view = _ShopView(ctx.author, ctx.guild.id)
         msg = await ctx.send(embed=_shop_embed(), view=view)
         view.message = msg
 

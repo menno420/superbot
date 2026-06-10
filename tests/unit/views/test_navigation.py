@@ -738,7 +738,7 @@ async def test_shop_subview_back_btn_re_attaches_origin_on_rebuild():
     """
     from views.economy.shop_panel import _ShopSubView
 
-    shop_view = _ShopSubView(user_id=1, guild_id=42)
+    shop_view = _ShopSubView(MagicMock(id=1), guild_id=42)
     # Mimic the propagation that EconomyPanelView.shop_btn does.
     shop_view._back_target = BackTarget(  # type: ignore[attr-defined]
         builder=_stub_builder,
@@ -776,7 +776,7 @@ async def test_shop_subview_back_btn_with_no_origin_omits_chain():
     """
     from views.economy.shop_panel import _ShopSubView
 
-    shop_view = _ShopSubView(user_id=1, guild_id=42)
+    shop_view = _ShopSubView(MagicMock(id=1), guild_id=42)
     # No _back_target propagated.
 
     interaction = _interaction()

@@ -434,6 +434,13 @@ abstraction before its first concrete use.
 
 ### 7.8 Still-open threads (next brainstorm — not yet decided)
 
+> **2026-06-10 update:** the owner's new vision statement
+> ([`superbot-vision-2026-06-10.md`](superbot-vision-2026-06-10.md)) answers several
+> of these threads in owner-voice and opens the deferred survival layer: difficulty
+> modes (V-05), energy (V-06), fishing/cooking (V-07), PvP XP-both-sides (V-08),
+> story pets (V-09, tension T-1 vs. the pets plan), and the AI quest/story layer
+> (V-10). Read it before re-opening any thread below.
+
 - **PvP shape** — matchmade arena vs. challenge-a-friend **coin-wager duels** vs. gear straight into
   the existing deathmatch. *(Weapons — sword/bow/dagger — get their purpose here, or from PvE.)*
   **Update 2026-06-09:** the "gear into the existing deathmatch" leg **shipped** — equipped
