@@ -190,7 +190,7 @@ services) without partitioning by module.
 - **Stop:** any classification that would *change execution access* — that is
   governance, not ledger work.
 
-### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — executed in **#652** (2026-06-10, verify merged; **RS07 still open**)
+### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — shipped in **#652** (2026-06-10; **RS07 still open**)
 
 > Outcome notes: RS03 = `set_policy` owns old-value read + audit (real
 > `prev_value`) + typed `RoutingMutationResult`, with a new import-fence
@@ -220,7 +220,7 @@ services) without partitioning by module.
   properly). `docs/ownership.md` updates ride the same PR.
 - **Stop:** any schema change; any new mutation path that bypasses the audited seam.
 
-### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core executed (2026-06-10, same session as Batch 3; verify merged)
+### Batch 4 — Settings Phase 2: declaration coverage (DT06 + BTD-2/Q-0064) — core shipped in **#654** (2026-06-10)
 
 > Outcome notes: `DomainPanelSpec` + `SubsystemSchema.domain_panels` replace the
 > curated `DOMAIN_CONFIG_SUBSYSTEMS` frozenset (cleanup = first real
@@ -253,7 +253,14 @@ services) without partitioning by module.
 - **Then:** Phase 3 convergence (Q-0063) → Phase 4 structured editors/presets
   (Q-0070) → Phase 5 Setup/Settings convergence (own planning session first).
 
-### Batch 5 — Adaptive P1C: Access Map + Help Preview staff-hub subpanels (ADP-2) — design-ready
+### Batch 5 — Adaptive P1C: Access Map + Help Preview staff-hub subpanels (ADP-2) — executed in **#656** (2026-06-10, verify merged)
+
+> Outcome notes: both subpanels shipped in `views/server_management/access_map.py`
+> as the first `project_access_map` consumers (Q-0032: hub buttons only, no new
+> command names; Q-0045 declared-tier simulation with the §16.4 limit label;
+> authority re-checked per interaction; display-only pinned by a
+> mutation-import test). Live-smoked (clean boot, hub registers).
+> The Help projection seam (Batch 6) can now build on this lane as planned.
 
 - **Objective:** the read-only operator surface over `services/access_projection`
   (#589) + the #632 tier-input path: staff-hub **subpanels, no new command names**

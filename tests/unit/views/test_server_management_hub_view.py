@@ -38,6 +38,8 @@ _BUTTON_IDS = {
     "server_management:roles",
     "server_management:cleanup",
     "server_management:setup",
+    "server_management:access_map",
+    "server_management:help_preview",
     "server_management:refresh",
 }
 
