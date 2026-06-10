@@ -305,6 +305,25 @@ def _projectile_filters_invisible(proj: dict) -> bool:
     return False
 
 
+def _effect_name(eff: dict) -> str:
+    """A status effect's *semantic* name, from the model's own discriminators.
+
+    A stun is stored as a ``SlowModel`` with ``multiplier 0`` — the model class
+    alone would mislabel it ("SlowModel"), but the game stamps the semantics on
+    the node itself: ``overlayType: "Stun"`` / ``mutationId: "Stun:Strong"``
+    (Bomb 5-0-0 Bloon Crush, committed-confirmed as the wiki's "Stun 2s"). The
+    runtime's stun detection keys on ``"Stun" in name``, so prefer those
+    game-authored markers over the empty/internal ``name`` field.
+    """
+    overlay = eff.get("overlayType")
+    if isinstance(overlay, str) and overlay and overlay != "None":
+        return overlay
+    mutation = eff.get("mutationId")
+    if isinstance(mutation, str) and mutation:
+        return mutation.split(":", 1)[0]
+    return _clean_name(eff.get("name"), _short_type(eff))
+
+
 def _clean_effects(proj: dict) -> list[dict]:
     """Named child effects a projectile creates (``CreateEffect…`` / status models).
 
@@ -321,7 +340,13 @@ def _clean_effects(proj: dict) -> list[dict]:
         "FreezeModel",
         "StunModel",
     ):
-        node: dict = {"name": _clean_name(eff.get("name"), _short_type(eff))}
+        name = _effect_name(eff)
+        if name == _short_type(eff):
+            # No semantic marker and no model name — a purely visual spawn
+            # (hundreds of CreateEffectOn… nodes roster-wide). Emitting the
+            # class name would leak an internal string into the Pro view.
+            continue
+        node: dict = {"name": name}
         if "lifespan" in eff:
             node["lifespan"] = _num(eff["lifespan"])
         out.append(node)
@@ -361,6 +386,14 @@ def _clean_attack(attack: dict, index: int) -> dict:
             if isinstance(behavior, dict):
                 for child in _spawned_projectiles(behavior):
                     projectiles.extend(_collect_projectiles(child))
+        # …and via its emission model: Prince of Darkness reanimates BFBs from
+        # ``weapon.emission.alternateProjectile`` (ProjectileBfb, damage 100 —
+        # committed-confirmed). Same structural rule as ``_spawned_projectiles``:
+        # detect children by their own ``$type``, whatever the field name.
+        emission = w.get("emission")
+        if isinstance(emission, dict):
+            for child in _spawned_projectiles(emission):
+                projectiles.extend(_collect_projectiles(child))
     out["projectiles"] = _dedupe_projectiles(projectiles)
     # ``count`` (projectiles per shot) has no single reliable source in the dump
     # — ``len(weapons)`` and the per-weapon ``emission.count`` each diverge from
@@ -559,6 +592,11 @@ _ZONE_NUMERIC_FIELDS: tuple[str, ...] = (
     "radius",
     "range",
     "lifespan",
+    # Village Monkey Business discount aura (x-x-1+): committed prose pins both
+    # numbers — "Provides 10% discount ... tier 3 or less" == discountMultiplier
+    # 0.1 (a fraction) + tierCap 3.
+    "discountMultiplier",
+    "tierCap",
 )
 
 
@@ -729,6 +767,59 @@ _BUFF_FIELD_MAP: dict[str, dict[str, str]] = {
     # four RangeSupport confirmations established. Rendered x100 like the
     # other *Percentage fields.
     "ProjectileSpeedSupportModel": {"multiplier": "projectileSpeedPercentage"},
+    # ----- Farm/Village economy + aura tiers (the Q-0067 cutover lift:
+    # Banana Farm + Monkey Village get full game-native tier structures, so
+    # these previously-unconfirmable types now land as ordinary buffs).
+    # Income auras are TRUE multipliers (>1), unlike the fraction-encoded
+    # *Percentage families — each pinned by committed upgrade prose:
+    #   * CentralMarketBuffModel.multiplier 1.1 == Central Market "gives
+    #     Merchantmen +10% income" (Farm 0-0-4+; stacks to 10).
+    #   * BananaCentralBuffModel.multiplier 1.25 == Banana Central buffing
+    #     BRFs +25% (Farm 5-x-x; the owner round itself stated x1.25, Q-0067).
+    #   * MonkeyCityIncomeSupportModel.incomeModifier 1.2 == Monkey City
+    #     "increases ... cash generation in radius" (Village x-x-4+, +20%).
+    "CentralMarketBuffModel": {"multiplier": "incomeMultiplier"},
+    "BananaCentralBuffModel": {"multiplier": "incomeMultiplier"},
+    "MonkeyCityIncomeSupportModel": {"incomeModifier": "incomeMultiplier"},
+    # Village Primary Training aura (3-0-0+): "All Primary Monkeys in radius
+    # get more range, pierce and projectile speed" — the model's ``pierce``
+    # is the flat additive (+1), same self-evident field shape as
+    # SubCommanderSupportModel.pierceIncrease.
+    "PierceSupportModel": {"pierce": "pierceAdditive"},
+    # Village Monkey Town (x-x-3+): "All Monkeys within the radius ... get
+    # extra cash per Bloon pop" — multiplier 1.5 is the cash-per-pop scale
+    # (+50%), a true multiplier like the income auras above.
+    "CashIncreaseModel": {"multiplier": "cashPerPopMultiplier"},
+    # Village Primary Mentoring (4-0-0+): "reduced ability cooldowns" — the
+    # scale (1.15) is a recharge-RATE multiplier (direction pinned by the
+    # prose: bigger = recharges faster), kept verbatim, never inverted into a
+    # cooldown fraction we'd have to derive.
+    "AbilityCooldownScaleSupportModel": {
+        "abilityCooldownSpeedScale": "abilityCooldownSpeedScale",
+    },
+    # Village Primary Mentoring/Expertise: "get tier 1 upgrades for free" /
+    # tier 2 at 5-0-0 — ``upgrade`` is the free-tier ceiling.
+    "FreeUpgradeSupportModel": {"upgrade": "freeUpgradeTiers"},
+    # Mermonkey Echosense aura (x-x-2+): committed "Echosense Network"
+    # {rangePercentage 0.075, maxStackSize 10, isGlobal} == dump
+    # {rangeMultiplier 0.075, maxStackSize 10, isGlobalRange} — identity on
+    # every field (2026-06-10 cutover evidence pass).
+    "SupportStackingRangeModel": {"rangeMultiplier": "rangePercentage"},
+    # Carrier Flagship platform aura (5-x-x): committed "Flagship buff"
+    # {rateMultiplier 0.8, isGlobal} == dump {attackSpeedIncrease 0.8,
+    # isGlobalRange} — identity.
+    "FlagshipAttackSpeedIncreaseModel": {"attackSpeedIncrease": "rateMultiplier"},
+}
+
+# Effect-flag buffs: the model's *presence* is the whole effect (no number to
+# decode, so nothing to mis-map). Each pinned by committed upgrade prose:
+#   * VisibilitySupportModel — Village Radar Scanner 0-2-0+ "Allows all
+#     Monkeys in the radius to attack Camo Bloons".
+#   * DamageTypeSupportModel — Village Monkey Intelligence Bureau 0-3-0+
+#     "allowing nearby Monkeys to pop all Bloon types".
+_BUFF_FLAG_TYPES: dict[str, dict[str, bool]] = {
+    "VisibilitySupportModel": {"grantsCamoDetection": True},
+    "DamageTypeSupportModel": {"grantsAllDamageTypes": True},
 }
 
 # Buffs whose effect is a *nested* ``damageModifierModel`` (tag bonus), not a
@@ -782,7 +873,8 @@ def _buffs(model: dict) -> list[dict]:
         short = _short_type(behavior)
         field_map = _BUFF_FIELD_MAP.get(short)
         nested_tag = short in _BUFF_DAMAGE_MODIFIER_TYPES
-        if field_map is None and not nested_tag:
+        flags = _BUFF_FLAG_TYPES.get(short)
+        if field_map is None and not nested_tag and flags is None:
             continue  # type not yet confirmed — deferred, never guess a number
         entry: dict = {
             "kind": short[: -len("Model")],
@@ -790,6 +882,8 @@ def _buffs(model: dict) -> list[dict]:
             or behavior.get("mutatorId")
             or short[: -len("Model")],
         }
+        if flags:
+            entry.update(flags)
         trigger = _BUFF_TRIGGER.get(short)
         if trigger:
             entry["trigger"] = trigger
@@ -822,6 +916,10 @@ def _buffs(model: dict) -> list[dict]:
                 entry[schema_field] = _num(value / 60.0)  # frames → seconds
         if "isGlobal" in behavior:
             entry["isGlobal"] = bool(behavior["isGlobal"])
+        elif "isGlobalRange" in behavior:
+            # Several aura models spell the flag ``isGlobalRange`` (Trade
+            # Empire, Flagship, Echosense, Central Market) — same meaning.
+            entry["isGlobal"] = bool(behavior["isGlobalRange"])
         # Stack cap — a faithful structural copy of the dump's own field (no
         # transform, like ``isGlobal``). Two names encode the same concept:
         # ``maxStacks`` on most towers, ``maxStackSize`` on Sniper/Ninja/Mermonkey.
@@ -981,6 +1079,10 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
     """
     names: list[str] = []
     seen: set[str] = set()
+    # (path, tier) derived from each state-file reference: the entry's target
+    # ``tower`` code is the source state's code with one digit bumped to the
+    # upgrade's tier — the fallback identity for ids with no Upgrades/ file.
+    derived: dict[str, tuple[int, int]] = {}
     for fp in sorted(tdir.glob("*.json")):
         if fp.stem.endswith("-Paragon"):
             continue
@@ -988,18 +1090,46 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
             data = json.loads(fp.read_text("utf-8"))
         except Exception:  # noqa: BLE001, S112
             continue
+        src_code = fp.stem.rsplit("-", 1)[-1]
+        if len(src_code) != 3 or not src_code.isdigit():
+            src_code = "000"  # the base <Folder>.json state
         for entry in data.get("upgrades", []) or []:
             if not isinstance(entry, dict):
                 continue
             name = entry.get("upgrade")
-            if isinstance(name, str) and name and name not in seen:
+            if not (isinstance(name, str) and name):
+                continue
+            if name not in seen:
                 seen.add(name)
                 names.append(name)
+            if name not in derived:
+                target = str(entry.get("tower") or "")
+                tcode = target.rsplit("-", 1)[-1]
+                if len(tcode) == 3 and tcode.isdigit():
+                    for i, (a, b) in enumerate(zip(src_code, tcode)):
+                        if a != b:
+                            derived[name] = (i + 1, int(b))
+                            break
     tt = _text_table(dump)
     out: list[dict] = []
     for name in names:
         up = _read_upgrade(dump, name)
         if up is None:
+            # An upgrade id containing a Windows-illegal filename character has
+            # NO ``Upgrades/<id>.json`` in the dump — the exporter skips it
+            # (the ':' in "Operation: Dart Storm" / "Necromancer: Unpopped
+            # Army"; the historical 373/375 description gap). Identity is still
+            # fully game-derivable: path/tier from the state-file reference,
+            # name + description from textTable. cost/xp are NOT in the dump
+            # for these two — the cutover merge preserves them from the
+            # committed card, so the card never silently drops.
+            if name in derived:
+                dpath, dtier = derived[name]
+                entry = {"path": dpath, "tier": dtier, "name": name}
+                description = tt.get(f"{name} Description")
+                if isinstance(description, str) and description:
+                    entry["description"] = description
+                out.append(entry)
             continue
         path = up.get("path")
         tier = up.get("tier")
@@ -1080,6 +1210,22 @@ def map_tower(dump: Path, tower_id: str, canonical: str, version: str) -> MapRes
     base_node["code"] = "000"
     base_node["crosspath"] = "0-0-0"
     tiers["000"] = base_node
+
+    if tower_id in _SUPPRESS_NOMINAL_ATTACKS:
+        # Economy towers' nominal AttackModels are spawners, not attacks
+        # (Q-0067 — see _SUPPRESS_NOMINAL_ATTACKS). Keep any attack that
+        # actually damages: Village 5-x-x's Mega Ballista (damage 10) is real
+        # and stays; the banana spawner / empty SharedAttack / Monkeyopolis
+        # banana attack carry no DamageModel and go.
+        for node in tiers.values():
+            node["attacks"] = [
+                attack
+                for attack in node.get("attacks", [])
+                if any(
+                    isinstance(p, dict) and p.get("damage")
+                    for p in attack.get("projectiles", [])
+                )
+            ]
 
     payload = {
         "tower_id": tower_id,
@@ -1620,6 +1766,538 @@ def overlay_payload(committed: dict, mapped: dict, version: str) -> list[str]:
     # the mutated payload back to be written to disk.
     assert_names_preserved(names_before, collect_names(committed), label="overlay")
     return changes
+
+
+# ---------------------------------------------------------------------------
+# Towers cutover (Q-0066) — adopt the mapper's game-native output as the
+# committed stats, while carrying forward the few things the dump cannot
+# express. The merge below is what `--all` / `--tower` / `--hero` write.
+#
+# What stays curated at the cutover (and why):
+#   * top-level keys the mapper doesn't emit (`paragon_cost` / `paragon_name`
+#     — the dump's paragon `cost` is the base monkey's placement cost);
+#   * the cost/xp of the two Upgrades/-fileless cards (the ':' ids — see
+#     `_upgrades_for`);
+#   * zone/buff/subtower *display names*: the dump's are internal ids
+#     (`SlowBloonsZoneModel`, `BuffIconVigilante`), and internal strings must
+#     never reach users (the standing name rule). `_CURATED_EFFECT_NAMES` maps
+#     internal id → curated label per entity; an unmapped zone/buff loses its
+#     `name` key entirely (the renderer shows the effect body, label-free)
+#     rather than surfacing an internal string. Subtowers keep their mapped
+#     name unless renamed — theirs come from `towerModel.name` / displayName,
+#     which is display-grade ("Phoenix", "Piranha", "UAV").
+#   * Heli's MOAB-Shove `multiplierForDdt` — not in the dump (verified
+#     exhaustively 2026-06-08); the committed value is the maintainer-confirmed
+#     ZOMG-mirror, so it transplants onto the same-tier shove zone.
+#
+# `_assert_cutover_names` is the cutover-shaped name guard: every curated
+# zone/buff/subtower/upgrade name in the committed file must survive the merge
+# (set-level, per entity — the structure is wholly rebuilt, so the positional
+# `assert_names_preserved` cannot apply), unless the rename was owner-approved
+# (`_CUTOVER_NAME_RETIREMENTS`, e.g. Q-0068's "Beast" → per-tier game names).
+# ---------------------------------------------------------------------------
+
+# Towers whose nominal AttackModel is suppressed at the cutover (Q-0067):
+# Banana Farm's "attack" is the banana spawner (rate 0.05, pierce 9999999,
+# no DamageModel), Monkey Village's is an empty "SharedAttack" with zero
+# projectiles. Neither attacks in game; emitting them would give economy
+# towers a bogus combat headline. Abilities (IMF Loan, Call to Arms…) and
+# buffs/zones are kept — only `attacks` is emptied.
+_SUPPRESS_NOMINAL_ATTACKS: frozenset[str] = frozenset(
+    {"banana_farm", "monkey_village"},
+)
+
+# Internal id → curated display name, per entity. Tower files and their
+# paragon file are scoped separately ("<tower_id>" vs "<tower_id>:paragon").
+# Applied to every zones[]/buffs[]/subtowers[] entry (incl. nested in
+# subtowers) at the cutover merge. A key may be the bare internal name or
+# "Kind:InternalName" when one internal name covers two different effects
+# (Mermonkey's totem stamps RangeSupport AND AbilityCooldownScaleSupport with
+# the same "NaturesClarityBuff"). Sources: the pre-cutover committed wiki
+# labels, verified side-by-side on the same tier; plus readable labels for
+# hero minions that never had a curated name. Two internals may share one
+# curated label (Ice's two slow zones are both the wiki's "Arctic Wind").
+_CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
+    "adora": {"BallOfLightTower": "Ball of Light"},
+    "alchemist": {"TransformedBaseMonkey": "Transformed Monkey"},
+    "desperado": {"BuffIconVigilante": "Nomad buff"},
+    "druid": {"PoplustBuff": "Poplust buff"},
+    "engineer_monkey": {
+        "StartOfRoundRateBuff": "Start-of-round buff",
+        # The 5-x-x Sentry Champion's spawned sentry — the committed label.
+        "SentryParagon": "Champion Sentry",
+    },
+    "heli_pilot": {
+        "MoabShoveZoneModel": "MOAB Shove",
+        "ComancheDefenceHeli": "Mini-Comanche",
+    },
+    "ice_monkey": {
+        "SlowBloonsZoneModel": "Arctic Wind",
+        "SlowMoabs": "Arctic Wind",
+    },
+    "mermonkey": {
+        "BuffMermonkeyPierce": "Pierce buff",
+        "BuffMermonkeyRange": "Echosense Network",
+        "PlacementAreaTypeRangeBuff": "Buff when in water",
+        "TranceTotem": "Trance totem",
+        # The totem's two auras share one internal id — split by kind.
+        "RangeSupport:NaturesClarityBuff": "Range buff",
+        "AbilityCooldownScaleSupport:NaturesClarityBuff": "Ability cooldown buff",
+    },
+    "monkey_buccaneer": {
+        "TradeEmpireBuff": "Trade Empire buff",
+        "CarrierFlagShipBuff": "Flagship buff",
+        "BuccaneerPlane": "Plane",
+    },
+    "monkey_buccaneer:paragon": {
+        "TradeEmpireParagonBuff": "Trade Empire buff",
+        "BuccaneerParagonPlane": "Plane",
+    },
+    "monkey_sub": {"SubCommanderBuff": "Sub Commander buff"},
+    "ninja_monkey": {"ShinobiTacticsBuff": "Shinobi Tactics"},
+    "ninja_monkey:paragon": {
+        "ShinobiTacticsBuff": "Shinobi Tactics",
+        "RadarScannerBuff": "Camo buff",
+        "RangeSupport": "Range buff",
+    },
+    "sniper_monkey": {"EliteSniperBuff": "Attack speed buff"},
+    "spike_factory": {"StartOfRoundRateBuff": "Start-of-round buff"},
+    "spike_factory:paragon": {"SpikeParagonDamageZoneModel": "Carpet of Spikes"},
+    "striker_jones": {
+        "StrikerJonesProjectileRadiusBuff": "Projectile radius buff",
+        # L5+: bloons in radius lose their Black-damage resistance.
+        "AddBehaviorToBloonInZoneModel": "Black resistance modifier",
+    },
+    "super_monkey": {
+        # Sun Temple / True Sun God sacrifice minions — readable labels for
+        # the game's internal tower-model ids.
+        "SpectreA": "Spectre",
+        "SpectreC": "Spectre",
+        "SpectreVA": "Spectre",
+        "SpectreVC": "Spectre",
+        "SunAvatarMini": "Mini Sun Avatar",
+        "TrueSunAvatarMini": "Mini Sun Avatar",
+    },
+    "wizard_monkey": {
+        "PrinceOfDarknessBuff": "Undead Bloon buff",
+        # 0-5-0 Wizard Lord Phoenix spawns both: the ability's big phoenix
+        # (committed "Lava Phoenix", 20s, dmg 20/50) and the permanent one
+        # (committed "Phoenix": mapped PermaPhoenix, no lifespan — permanent).
+        "LordPhoenix": "Lava Phoenix",
+        "PermaPhoenix": "Phoenix",
+    },
+}
+
+# Fields the absent-scalar transplant must NOT copy back: each is a committed
+# value the cutover deliberately corrects, not curated-only data.
+_CUTOVER_TRANSPLANT_SKIP: frozenset[tuple[str, str, str, str]] = frozenset(
+    {
+        # The committed wiki row gave the *permanent* WLP phoenix a 20s
+        # lifespan; the dump's PermaPhoenix correctly has none.
+        ("wizard_monkey", "subtowers", "Phoenix", "lifespan"),
+    },
+)
+
+# Committed curated names allowed to NOT survive the cutover — each entry is an
+# owner decision or a deliberate label retirement, never a silent loss.
+_CUTOVER_NAME_RETIREMENTS: dict[str, frozenset[str]] = {
+    # Q-0068 (2026-06-09): "Beast" labels become the game's own per-tier beast
+    # names (Piranha → … → Megalodon; Microraptor line; Gyrfalcon line).
+    "beast_handler": frozenset({"Beast"}),
+    # A literal "Buff" is not a curated label worth preserving — the effect
+    # body (decoded fields) carries the information, label-free.
+    "boomerang_monkey:paragon": frozenset({"Buff"}),
+    "mortar_monkey": frozenset({"Buff"}),
+    # The #638 hero re-export committed the dump's internal buff-icon id as a
+    # name; the cutover name policy now strips internal ids instead.
+    "benjamin": frozenset({"BuffIconBenjamin"}),
+}
+
+# Committed entries the mapper cannot yet reproduce from the dump — carried
+# forward verbatim (matched by name, per tier). Each is real, previously
+# verified data whose dump mechanism is still undecoded; dropping it at the
+# cutover would regress live answers. Decode notes live in
+# btd6-gamedata-decode-status.md (post-cutover backlog).
+_CUTOVER_CARRYFORWARD: dict[str, frozenset[tuple[str, str]]] = {
+    # Spirit of the Forest's three thorn rings (close/middle/far) — the zone
+    # damage model is not a top-level *ZoneModel in v55.1.
+    "druid": frozenset(
+        {
+            ("zones", "Thorn zone (close)"),
+            ("zones", "Thorn zone (middle)"),
+            ("zones", "Thorn zone (far)"),
+        },
+    ),
+    # Sentry Expert's four typed sentries: the dump selects them via an
+    # external reference the subtower walker doesn't resolve (no embedded
+    # towerModel on the 4-x-x spawner).
+    "engineer_monkey": frozenset(
+        {
+            ("subtowers", "Crushing Sentry"),
+            ("subtowers", "Boom Sentry"),
+            ("subtowers", "Cold Sentry"),
+            ("subtowers", "Energy Sentry"),
+        },
+    ),
+    "engineer_monkey:paragon": frozenset(
+        {
+            ("subtowers", "Red Sentry Paragon"),
+            ("subtowers", "Green Sentry Paragon"),
+            ("subtowers", "Blue Sentry Paragon"),
+            ("subtowers", "Modified Sentry Paragon"),
+        },
+    ),
+    # Energizer's ability-cooldown auras live on the SubmergeModel itself
+    # (abilityCooldownSpeedScale / …Global / heroXpScale), which also sits
+    # neutrally on every submerged tier — a clean decode needs neutral-value
+    # filtering + a local/global split, deferred post-cutover.
+    "monkey_sub": frozenset(
+        {
+            ("buffs", "Ability cooldown buff"),
+            ("buffs", "Ability cooldown buff (global)"),
+        },
+    ),
+    "monkey_sub:paragon": frozenset(
+        {
+            ("buffs", "Ability cooldown buff"),
+            ("buffs", "Ability cooldown buff (global)"),
+            ("buffs", "Ability cooldown buff (Paragon)"),
+            ("buffs", "Sub buff"),
+            ("buffs", "Hero buff"),
+        },
+    ),
+    # The x-x-4 sellback aura: committed as a buff carrying the renderer's
+    # cashbackZoneMultiplier; the dump models it as a CashbackZoneModel whose
+    # numbers the zone walker doesn't emit yet (zone-ification is a
+    # post-cutover item).
+    "monkey_buccaneer": frozenset({("buffs", "Sellback rate buff")}),
+    "monkey_buccaneer:paragon": frozenset(
+        {
+            ("buffs", "Flagship buff"),
+            ("buffs", "Sellback rate buff"),
+        },
+    ),
+    "striker_jones": frozenset(
+        {
+            ("buffs", "Attack speed buff"),
+            ("buffs", "Bomb Shooter buff"),
+        },
+    ),
+    # Magus Perfectus' phoenix — no spawn model the subtower walker resolves.
+    "wizard_monkey:paragon": frozenset({("subtowers", "Phoenix")}),
+}
+
+# Mapped entries dropped at the merge — only where a curated carry-forward
+# supersedes them and the mapped entry would be unlabelable noise (three
+# identical "SentryParagonChild" nodes vs the four committed typed paragons).
+_CUTOVER_ENTRY_DROPS: dict[str, frozenset[tuple[str, str]]] = {
+    "engineer_monkey:paragon": frozenset({("subtowers", "SentryParagonChild")}),
+}
+
+_EFFECT_CLASSES = ("zones", "buffs", "subtowers")
+
+
+def _iter_effect_nodes(payload: dict) -> Any:
+    """Yield every tier/level/base node that can carry zones/buffs/subtowers,
+    including subtower nodes themselves (Obyn's totem carries its own zones).
+    """
+    containers = []
+    for key in ("tiers", "levels"):
+        value = payload.get(key)
+        if isinstance(value, dict):
+            containers.extend(v for v in value.values() if isinstance(v, dict))
+    base = payload.get("base")
+    if isinstance(base, dict):
+        containers.append(base)
+    for node in containers:
+        yield node
+        for sub in node.get("subtowers", []) or []:
+            if isinstance(sub, dict):
+                yield sub
+
+
+def _collect_effect_names(payload: dict) -> set[str]:
+    """Every zone/buff/subtower display name in a payload (curated or not)."""
+    out: set[str] = set()
+    for node in _iter_effect_nodes(payload):
+        for cls in _EFFECT_CLASSES:
+            for entry in node.get(cls, []) or []:
+                if isinstance(entry, dict) and _is_curated_name(entry.get("name")):
+                    out.add(str(entry["name"]))
+    return out
+
+
+def _apply_name_policy(payload: dict, entity_id: str) -> list[str]:
+    """Rename / strip internal effect names + drop superseded entries, in place."""
+    renames = _CURATED_EFFECT_NAMES.get(entity_id, {})
+    drops = _CUTOVER_ENTRY_DROPS.get(entity_id, frozenset())
+    report: list[str] = []
+    for node in _iter_effect_nodes(payload):
+        for cls in _EFFECT_CLASSES:
+            entries = node.get(cls)
+            if not isinstance(entries, list):
+                continue
+            kept: list = []
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    kept.append(entry)
+                    continue
+                name = entry.get("name")
+                if isinstance(name, str) and (cls, name) in drops:
+                    report.append(f"{cls}: {name!r} dropped (curated supersedes)")
+                    continue
+                kept.append(entry)
+                if not isinstance(name, str):
+                    continue
+                curated = renames.get(f"{entry.get('kind')}:{name}") or renames.get(
+                    name,
+                )
+                if curated is not None:
+                    if curated != name:
+                        entry["name"] = curated
+                        report.append(f"{cls}: {name!r} → {curated!r}")
+                elif cls != "subtowers":
+                    # Unmapped zone/buff names are internal ids — drop the key
+                    # so no internal string can reach a user; the effect body
+                    # still renders. Subtowers keep their (display-grade) name.
+                    del entry["name"]
+                    report.append(f"{cls}: {name!r} (internal) dropped")
+            if len(kept) != len(entries):
+                node[cls] = kept
+    return report
+
+
+def _paired_nodes(payload: dict, committed: dict) -> Any:
+    """Yield (merged node, committed node) pairs aligned by container key
+    (tier code / hero level / "base"), then nested subtowers by name.
+    """
+    for key in ("tiers", "levels"):
+        pc, cc = payload.get(key), committed.get(key)
+        if isinstance(pc, dict) and isinstance(cc, dict):
+            for code, pnode in pc.items():
+                cnode = cc.get(code)
+                if isinstance(pnode, dict) and isinstance(cnode, dict):
+                    yield pnode, cnode
+    pbase, cbase = payload.get("base"), committed.get("base")
+    if isinstance(pbase, dict) and isinstance(cbase, dict):
+        yield pbase, cbase
+
+
+def _carryforward_entries(payload: dict, committed: dict, entity_id: str) -> list[str]:
+    """Re-inject committed entries the mapper cannot reproduce (by name, per
+    tier) — see ``_CUTOVER_CARRYFORWARD``.
+    """
+    wanted = _CUTOVER_CARRYFORWARD.get(entity_id, frozenset())
+    if not wanted:
+        return []
+    report: list[str] = []
+    for pnode, cnode in _paired_nodes(payload, committed):
+        for cls in _EFFECT_CLASSES:
+            # Walk the committed list in order so re-injected entries keep
+            # their original relative order (close/middle/far, not set order).
+            sources = [
+                e
+                for e in cnode.get(cls, []) or []
+                if isinstance(e, dict) and (cls, e.get("name")) in wanted
+            ]
+            if not sources:
+                continue
+            existing = {
+                e.get("name")
+                for e in pnode.get(cls, []) or []
+                if isinstance(e, dict)
+            }
+            added = [e for e in sources if e.get("name") not in existing]
+            if not added:
+                continue
+            pnode.setdefault(cls, []).extend(json.loads(json.dumps(added)))
+            report += [f"{cls}: {e.get('name')!r} carried forward" for e in added]
+    return report
+
+
+def _transplant_absent_fields(
+    payload: dict,
+    committed: dict,
+    entity_id: str,
+) -> list[str]:
+    """Copy committed *scalar* fields absent from the matching merged entry.
+
+    Joined by (container, class, display name) after renames, so only entries
+    we positively identified inherit. This is how curated-only values the dump
+    cannot express survive: Heli's ``multiplierForDdt`` (the
+    maintainer-confirmed ZOMG-mirror), Shinobi's ``piercePercentage`` (the
+    wiki's +8% — a different mechanism than the rate model we decode), the
+    phoenix's movement ``speed``. Never overwrites a mapped value; never
+    copies dicts/lists (committed combat structure stays game-native);
+    ``_CUTOVER_TRANSPLANT_SKIP`` excludes fields the cutover corrects.
+    """
+    report: list[str] = []
+    for pnode, cnode in _paired_nodes(payload, committed):
+        for cls in _EFFECT_CLASSES:
+            cmap: dict[str, dict] = {}
+            for e in cnode.get(cls, []) or []:
+                if isinstance(e, dict) and _is_curated_name(e.get("name")):
+                    cmap.setdefault(str(e["name"]), e)
+            for entry in pnode.get(cls, []) or []:
+                if not isinstance(entry, dict):
+                    continue
+                name = str(entry.get("name") or "")
+                prior = cmap.get(name)
+                if prior is None:
+                    continue
+                for field_name, value in prior.items():
+                    if field_name in entry or isinstance(value, (dict, list)):
+                        continue
+                    if (entity_id, cls, name, field_name) in _CUTOVER_TRANSPLANT_SKIP:
+                        continue
+                    entry[field_name] = value
+                    report.append(f"{cls} {name!r}: {field_name} carried")
+    return report
+
+
+# Beast Handler path digit → which beast the leash equips (the embedded
+# towerModel keeps the base internal name at every tier).
+_BEAST_PATHS = {"Piranha": 1, "Microraptor": 2, "Gyrfalcon": 3}
+
+
+def _beast_subtower_names(payload: dict) -> list[str]:
+    """Q-0068: beast subtowers adopt the game's per-tier names at the cutover.
+
+    The dump's embedded leash model is named ``Piranha``/``Microraptor``/
+    ``Gyrfalcon`` at *every* tier — the per-tier names (Barracuda, Orca,
+    Megalodon, Pouākai…) exist only as the path's upgrade names. So: read the
+    tier code's digit for the beast's path and label the subtower with that
+    upgrade's (post-restore, curated) name.
+    """
+    report: list[str] = []
+    upgrade_names = {
+        (u.get("path"), u.get("tier")): str(u.get("name"))
+        for u in payload.get("upgrades", []) or []
+        if isinstance(u, dict) and _is_curated_name(u.get("name"))
+    }
+    for code, node in (payload.get("tiers") or {}).items():
+        if not isinstance(node, dict):
+            continue
+        for sub in node.get("subtowers", []) or []:
+            if not isinstance(sub, dict):
+                continue
+            path = _BEAST_PATHS.get(str(sub.get("name")))
+            if path is None:
+                continue
+            tier = int(code[path - 1]) if len(code) == 3 and code.isdigit() else 0
+            curated = upgrade_names.get((path, tier))
+            if tier >= 1 and curated:
+                if curated != sub["name"]:
+                    report.append(f"subtowers: {sub['name']!r} → {curated!r} ({code})")
+                    sub["name"] = curated
+    return report
+
+
+def _restore_upgrade_names(payload: dict, committed: dict) -> list[str]:
+    """Committed upgrade names win at the cutover (joined by (path, tier)).
+
+    The dump's per-upgrade ``name`` field is an internal id for several towers
+    (Buccaneer's whole roster is "Buccaneer-Faster Shooting"…), and the
+    curated names are the resolver vocabulary (towers.json upgrade_paths +
+    aliases) — renaming them would desync the catalog from the stats files.
+    """
+    report: list[str] = []
+    committed_cards = {
+        (u.get("path"), u.get("tier")): u
+        for u in committed.get("upgrades", []) or []
+        if isinstance(u, dict) and _is_curated_name(u.get("name"))
+    }
+    for card in payload.get("upgrades", []) or []:
+        if not isinstance(card, dict):
+            continue
+        prior = committed_cards.get((card.get("path"), card.get("tier")))
+        if prior is None:
+            continue
+        if card.get("name") != prior["name"]:
+            report.append(f"upgrade name {card.get('name')!r} → {prior['name']!r}")
+            card["name"] = prior["name"]
+    return report
+
+
+def _fill_upgrade_costs(payload: dict, committed: dict) -> list[str]:
+    """Fill cost/xp (from the committed card) for mapper upgrades lacking them
+    — the Upgrades/-fileless ':' ids whose price is not in the dump.
+    """
+    report: list[str] = []
+    committed_cards = {
+        (u.get("path"), u.get("tier")): u
+        for u in committed.get("upgrades", []) or []
+        if isinstance(u, dict)
+    }
+    for card in payload.get("upgrades", []) or []:
+        if not isinstance(card, dict) or "cost" in card:
+            continue
+        prior = committed_cards.get((card.get("path"), card.get("tier")))
+        if prior is None:
+            continue
+        for key in ("cost", "xp"):
+            if key in prior:
+                card[key] = prior[key]
+        report.append(
+            f"upgrades[{card.get('path')}-{card.get('tier')}]: cost/xp preserved",
+        )
+    return report
+
+
+def _assert_cutover_names(payload: dict, committed: dict, entity_id: str) -> None:
+    """The cutover-shaped name guard (set-level; structure is wholly rebuilt).
+
+    Every curated zone/buff/subtower name and every upgrade name in the
+    committed file must still exist somewhere in the merged payload, minus the
+    owner-approved retirements. Hard stop otherwise.
+    """
+    retired = _CUTOVER_NAME_RETIREMENTS.get(entity_id, frozenset())
+    missing = sorted(
+        _collect_effect_names(committed) - _collect_effect_names(payload) - retired,
+    )
+    committed_upgrades = {
+        str(u["name"])
+        for u in committed.get("upgrades", []) or []
+        if isinstance(u, dict) and _is_curated_name(u.get("name"))
+    }
+    payload_upgrades = {
+        str(u["name"])
+        for u in payload.get("upgrades", []) or []
+        if isinstance(u, dict) and _is_curated_name(u.get("name"))
+    }
+    missing += [f"upgrade {n!r}" for n in sorted(committed_upgrades - payload_upgrades)]
+    if missing:
+        raise NameDowngradeError(
+            f"cutover {entity_id}: {len(missing)} curated name(s) would be lost:\n  "
+            + "\n  ".join(missing),
+        )
+
+
+def cutover_payload(payload: dict, committed: dict | None, entity_id: str) -> list[str]:
+    """Merge curated-only content into a freshly mapped payload, in place.
+
+    ``committed`` is the existing committed file (None on a first-ever map —
+    nothing curated to preserve). Returns the merge report.
+    """
+    report = _apply_name_policy(payload, entity_id)
+    if committed is None:
+        if entity_id == "beast_handler":
+            report += _beast_subtower_names(payload)
+        return report
+    for key, value in committed.items():
+        if key not in payload:
+            payload[key] = value
+            report.append(f"top-level {key!r} preserved")
+    report += _fill_upgrade_costs(payload, committed)
+    report += _restore_upgrade_names(payload, committed)
+    if entity_id == "beast_handler":
+        # After the name restore so per-tier beast labels use the curated
+        # upgrade spellings ("Pouākai", not the dump's ascii fallback).
+        report += _beast_subtower_names(payload)
+    report += _carryforward_entries(payload, committed, entity_id)
+    report += _transplant_absent_fields(payload, committed, entity_id)
+    _assert_cutover_names(payload, committed, entity_id)
+    return report
 
 
 # ---------------------------------------------------------------------------
@@ -3308,24 +3986,38 @@ def main(argv: list[str] | None = None) -> int:
             "nothing to do: pass --tower / --hero / --all / --validate-anchors",
         )
 
+    def committed_at(dest: Path) -> dict | None:
+        if not dest.exists():
+            return None
+        try:
+            return json.loads(dest.read_text("utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+
     for tid in targets_towers:
         if tid not in towers:
             raise SystemExit(f"unknown tower id {tid!r} (not in towers.json)")
         res = map_tower(dump, tid, towers[tid], version)
         all_warnings += [f"{tid}: {w}" for w in res.warnings]
-        emit(res.payload, _STATS_DIR / f"{tid}.json")
+        dest = _STATS_DIR / f"{tid}.json"
+        cutover_payload(res.payload, committed_at(dest), tid)
+        emit(res.payload, dest)
         par = map_paragon(dump, tid, towers[tid], version, existing_paragons)
         if par is not None:
             stem, par_res = par
             all_warnings += [f"{tid} paragon: {w}" for w in par_res.warnings]
-            emit(par_res.payload, _STATS_DIR / "paragons" / f"{stem}.json")
+            pdest = _STATS_DIR / "paragons" / f"{stem}.json"
+            cutover_payload(par_res.payload, committed_at(pdest), f"{tid}:paragon")
+            emit(par_res.payload, pdest)
 
     for hid in targets_heroes:
         if hid not in heroes:
             raise SystemExit(f"unknown hero id {hid!r} (not in heroes.json)")
         res = map_hero(dump, hid, heroes[hid], version)
         all_warnings += [f"{hid}: {w}" for w in res.warnings]
-        emit(res.payload, _STATS_DIR / "heroes" / f"{hid}.json")
+        dest = _STATS_DIR / "heroes" / f"{hid}.json"
+        cutover_payload(res.payload, committed_at(dest), hid)
+        emit(res.payload, dest)
 
     if all_warnings:
         print(f"\n{len(all_warnings)} warning(s):")
