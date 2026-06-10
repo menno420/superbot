@@ -65,7 +65,11 @@
 > 2026-06-10/11 in-conversation** (the [dossier](ideas/competitive-teardown-2026-06-10.md):
 > 30 scored harvest candidates, retention engines, V-15 surfaces live-verified;
 > **ecosystem-#2 verdict = fishing, owner ratification pending**); remaining work =
-> structure the top harvest picks into plans through the conveyor. Build-ready
+> structure the top harvest picks into plans through the conveyor · 6) **the
+> gear-lane slice (V-16)**: combat-gear item families (⚔️/🛡️ slots are
+> reserved-but-empty today; duels already read the stats) + the **paper-doll
+> character renderer** (PIL compositor over a sprite manifest — gated on the
+> owner's art-direction pick) + gear-picker stat previews. Build-ready
 > alternates: myprofile PR A · survival **P0 balance-simulation harness (Q-0087)**
 > · duel-XP quick-win.
 
