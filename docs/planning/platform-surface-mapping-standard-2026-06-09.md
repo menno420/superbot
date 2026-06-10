@@ -821,3 +821,7 @@ content untouched). What the merge session must know:
   `discord`/`asyncpg` available there), and neither mapping PR had CI runs at
   reconciliation time — treat each PR's own green `code-quality` run as the
   remaining merge gate.
+- **Docs/tests/verification follow-on (2026-06-10, Codex):** the
+  [untapped docs/tests/verification map](untapped-docs-tests-verification-map-2026-06-10.md)
+  consolidates FIND-A/B with the drift/test-gap findings into
+  implementation-readiness batches — input to the merge/implementation session.
