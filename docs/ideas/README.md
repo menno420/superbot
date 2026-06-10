@@ -18,6 +18,13 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`bot-self-test-walker-2026-06-10.md`](./bot-self-test-walker-2026-06-10.md) —
+  owner idea (brainstorm round 3): **the bot tests itself** — an owner-gated
+  in-process walker that synthetically invokes every ledger-listed command
+  (EventBus as witness, governance audience simulation, scratch test guild)
+  + an AI eval mode running scripted prompts through the real pipeline
+  (Q-0086 keys). Pairs with the commissioned untested-surface testing
+  checklist; candidate probe set for the workflow-§10 Stage 1 caretaker.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
