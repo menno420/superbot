@@ -178,7 +178,7 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        view = MineView(interaction.user.id, interaction.guild_id)
+        view = MineView(interaction.user, interaction.guild_id)
         await interaction.response.edit_message(
             embed=_build_mine_prompt_embed(),
             view=view,
