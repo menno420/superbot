@@ -212,7 +212,16 @@
 > admin · **embed-builder** Home message — so the overlay is design-ready (structured
 > storage), sequenced **after** this lane + the projection seam.
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#642** (2026-06-09, same session as Lanes 4+7). *Executor notes:*
+  (1) the true counts were further from the doc than the lane brief assumed — not just
+  "9→10 hubs" but "26 cogs"→**36 loaded extensions / 29 subsystems**, and the hook-coverage
+  claim was stale in two places at two different ages ("23 of 24" and "25 of 26"; truth:
+  **28 of 36**, the 8 exceptions named in the doc). (2) The counts are now **pinned to the
+  live registries by test** (`test_preamble_counts_match_live_registries`) — the rot class
+  is closed, not just corrected this once. (3) The five-path characterization net (28
+  tests) pins two quirks worth knowing: hub names shadow same-named subsystems in route
+  priority (`games`/`settings`/`economy` resolve to the hub), and the `diagnostic` hub
+  routes through `build_platform_help_menu_view`, not the generic hook.
 - **Goal:** reconcile `docs/help-command-surface-map.md` preamble counts (10 hubs;
   post-#626 cog/subsystem counts) **together with its pin tests**, and add
   current-behavior **characterization tests** for the five Help render paths (Home ·
