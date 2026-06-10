@@ -73,12 +73,12 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
 
 Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisioning.md)
 
-- **Next** — **setup `/myprofile` foundation (wizard plan PR4)** — the
-  finalization tranche (PR1–PR3) was **verified already shipped via #435**
-  (Batch 10 / DT09 re-verification, PR #672; the
-  [plan](setup-platform/setup_wizard_finalization_plan.md)'s banner carries the
-  evidence). PR4 is the selected next slice — run its own planning session
-  against the plan's §6 + resolved decisions first.
+- **Next** — **setup `/myprofile` foundation (wizard plan PR4)** — **plan ready
+  2026-06-10:** [myprofile-foundation-plan](planning/myprofile-foundation-plan-2026-06-10.md)
+  (PR A read-only card, zero writes · PR B the participation pipeline's first
+  UI consumer · PR C onboarding **gated** on an owner decision; Q-0080
+  stranger-grade envelope applied). The finalization tranche (PR1–PR3) was
+  verified already shipped via #435 (DT09, PR #672).
 - **Next** — settings coverage: pick a *verified* inconsistency from the
   [consistency ledger](health/platform-consistency-ledger.md); the three-lane model is
   [settings-customization-roadmap](setup-platform/settings-customization-roadmap.md).
