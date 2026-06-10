@@ -1755,7 +1755,9 @@ def _paragon_name_facts(message_text: str, resolved_tower_ids: set[str]) -> list
     # grounding paragons in ordinary chat.
     if "paragon" in text:
         tokens = squashed.split()
-        candidates = tokens + [" ".join(pair) for pair in zip(tokens, tokens[1:])]
+        candidates = tokens + [
+            " ".join(pair) for pair in zip(tokens, tokens[1:], strict=False)
+        ]
         for candidate in candidates:
             resolved = paragon_math.resolve_paragon(candidate)
             if resolved is None:
