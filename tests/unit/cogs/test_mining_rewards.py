@@ -1,4 +1,4 @@
-"""Tests for cogs.mining.rewards — extracted pure functions (S4.1).
+"""Tests for utils.mining.rewards — extracted pure functions (S4.1).
 
 These were inline inside the pre-decomposition ``cogs/mining_cog.py``
 listener and were untestable without a Discord mock harness.  After
@@ -11,7 +11,7 @@ import random
 
 import pytest
 
-from cogs.mining import rewards
+from utils.mining import rewards
 
 
 @pytest.fixture(autouse=True)

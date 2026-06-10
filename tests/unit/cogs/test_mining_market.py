@@ -12,8 +12,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from cogs.mining import items, market
+from cogs.mining import market
 from services.economy_service import InsufficientFundsError
+from utils.mining import items
 
 # ---------------------------------------------------------------------------
 # Pure pricing

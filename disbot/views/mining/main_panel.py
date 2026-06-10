@@ -26,15 +26,18 @@ from __future__ import annotations
 
 import discord
 
-from cogs.mining.rewards import roll_harvest_amount
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
+from services import mining_workflow
 from utils import db, equipment
+from utils.mining import items, workshop, world
+from utils.mining.exploration import explore_from_state
+from utils.mining.rewards import roll_harvest_amount
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
-# Display labels for the typed Inventory panel, keyed by ItemKind.value so this
-# module need not import the cogs-layer ItemKind enum (views→cogs layer rule).
+# Display labels for the typed Inventory panel, keyed by ItemKind.value
+# (string keys keep this rendering table independent of the enum).
 _KIND_LABELS: dict[str, str] = {
     "resource": "⛏️ Resources",
     "tool": "🛠️ Tools",
@@ -73,9 +76,6 @@ async def build_overview_embed(
     the stateless :meth:`MiningHubView.build_embed` remains the fallback for
     restore paths with no player context.
     """
-    # Lazy import: cogs-layer domain logic (views→cogs layer rule).
-    from cogs.mining import items, workshop, world
-
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     equipped = await db.get_equipment(suid, guild_id)
@@ -204,13 +204,6 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: the exploration engine is game-domain logic that lives
-        # in cogs/, and views must not import cogs at module level (layer
-        # rule).  A later step relocates the pure engine to a shared layer so
-        # this can become a plain import (mining_exploration_brainstorm §7.4).
-        from cogs.mining import workshop, world
-        from cogs.mining.exploration import explore_from_state
-
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
         inventory = await db.get_mining_inventory(user_id, gid)
@@ -223,7 +216,7 @@ class MiningHubView(PersistentView):
         )
         if item:
             await db.update_mining_item(user_id, gid, item, amount)
-        wear = await workshop.apply_wear(
+        wear = await mining_workflow.wear_tick(
             interaction.user.id,
             gid,
             action=workshop.ACTION_EXPLORE,
@@ -263,11 +256,6 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: the item taxonomy is game-domain logic in cogs/, and
-        # views must not import cogs at module level (layer rule, as in
-        # explore_btn above).
-        from cogs.mining import items
-
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
         embed = discord.Embed(
@@ -313,9 +301,6 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: cogs-layer taxonomy (layer rule — see explore_btn).
-        from cogs.mining import items
-
         user_id = str(interaction.user.id)
         inventory = await db.get_mining_inventory(user_id, interaction.guild_id)
         total_items = sum(inventory.values())
@@ -382,10 +367,6 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: cogs-layer domain logic (layer rule — see explore_btn).
-        # equipment now lives in utils/ (module-level import above).
-        from cogs.mining import world
-
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
         depth = await db.get_depth(user_id, gid)
@@ -428,9 +409,6 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: cogs-layer domain logic (layer rule — see explore_btn).
-        from cogs.mining import world
-
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
         depth = await db.get_depth(user_id, gid)
@@ -525,12 +503,10 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
                 ephemeral=True,
             )
             return
-        # Lazy import: cogs-layer domain logic (views→cogs layer rule).  One
-        # shared craft implementation (atomic materials+product transaction)
-        # serves this modal, !build/!craft, and the Workshop panel.
-        from cogs.mining import workshop
-
-        result = await workshop.apply_craft(
+        # One shared craft implementation (atomic materials+product
+        # transaction) serves this modal, !build/!craft, and the Workshop
+        # panel — services/mining_workflow.py (RS02).
+        result = await mining_workflow.craft(
             interaction.user.id,
             interaction.guild_id,
             self.structure.value,

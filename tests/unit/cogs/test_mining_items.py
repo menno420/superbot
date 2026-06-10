@@ -1,8 +1,8 @@
-"""Tests for cogs.mining.items — pure item taxonomy."""
+"""Tests for utils.mining.items — pure item taxonomy."""
 
 from __future__ import annotations
 
-from cogs.mining import items
+from utils.mining import items
 
 
 def test_classify_known_kinds():

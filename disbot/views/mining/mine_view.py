@@ -1,7 +1,7 @@
 """!mine button view — extracted from ``cogs/mining_cog.py`` (S4.1).
 
 A 30-second ephemeral view with three Mine Left/Right/Down buttons.
-On click, rolls loot via ``cogs.mining.rewards.roll_mine_loot`` and
+On click, rolls loot via ``utils.mining.rewards.roll_mine_loot`` and
 updates the user's mining inventory via the shared DB helper.
 
 Decoupled from the cog: the previous nested ``MiningCog.MineView``
@@ -23,9 +23,11 @@ import logging
 
 import discord
 
-from cogs.mining.rewards import roll_mine_loot
 from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services import mining_workflow
 from utils import db
+from utils.mining import workshop, world
+from utils.mining.rewards import mine_multiplier, roll_mine_loot
 from utils.ui_constants import MINING_COLOR
 
 logger = logging.getLogger("bot.views.mining.mine_view")
@@ -96,11 +98,6 @@ class MineView(discord.ui.View):
         if not await safe_defer(interaction):
             return
 
-        # Lazy import: cogs-layer domain logic — views must not import cogs at
-        # module level (layer rule; the rewards import above is tracked debt).
-        from cogs.mining import workshop, world
-        from cogs.mining.rewards import mine_multiplier
-
         user_id = str(self.user_id)
         inventory = await db.get_mining_inventory(user_id, self.guild_id)
         equipped = await db.get_equipment(user_id, self.guild_id)
@@ -112,7 +109,7 @@ class MineView(discord.ui.View):
         )
 
         await db.update_mining_item(user_id, self.guild_id, found, amount)
-        wear = await workshop.apply_wear(
+        wear = await mining_workflow.wear_tick(
             self.user_id,
             self.guild_id,
             action=workshop.ACTION_MINE,

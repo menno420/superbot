@@ -308,10 +308,14 @@ in plan order (after the smaller batches), not immediately.
 > **Execution record (2026-06-10, mining-finalization session):** **RS01 executed
 > in PR #661** (`services/shop_purchase_workflow.py` + conn-aware primitives +
 > `db.transaction()` + the view-write invariant; live-verified incl. the
-> concurrent double-click). RS02 follows in the same session as its two staged
-> PRs (workshop first, then market/remaining writers + ratchet), per the staging
-> below — the maintainer-commissioned mining/tool/gear finalization plan pulled
-> this batch forward of the remaining smaller batches.
+> concurrent double-click). **RS02 stage 1 executed in the follow-up PR**
+> (characterize → relocate the pure domain to `utils/mining/` → conn-aware
+> mining primitives → `services/mining_workflow.py` owning the workshop ops,
+> one transaction each; the three views→cogs allowlist entries deleted). RS02
+> stage 2 (market + remaining writers + the full ratchet) ships as the next PR
+> in the same session, per the staging below — the maintainer-commissioned
+> mining/tool/gear finalization plan pulled this batch forward of the
+> remaining smaller batches.
 
 - **Objective:** close the two-commit purchase hole first (smallest high-value
   slice), then converge mining writes behind workflow services.

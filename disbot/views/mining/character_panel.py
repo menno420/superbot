@@ -1,9 +1,9 @@
 """Character overview — a read-only profile of the whole mining character.
 
 The seed of the brainstorm §7.6 "Profile & identity" card (stat-card-first, zero
-art): one embed that **aggregates, owns nothing** — position (``cogs.mining.world``),
+art): one embed that **aggregates, owns nothing** — position (``utils.mining.world``),
 equipped gear + its :class:`~utils.equipment.EffectiveStats` (``utils.equipment``),
-coins (the economy), and inventory net worth (``cogs.mining.items``).  It reads
+coins (the economy), and inventory net worth (``utils.mining.items``).  It reads
 from each existing owner, so it grows for free as game-XP / skills / titles land.
 
 Shared by the ``!character`` command and the hub's Character button — one builder,
@@ -15,6 +15,7 @@ from __future__ import annotations
 import discord
 
 from utils import db, equipment
+from utils.mining import items, world
 from utils.ui_constants import MINING_COLOR
 
 
@@ -25,8 +26,6 @@ async def build_character_embed(
     name: str | None = None,
 ) -> discord.Embed:
     """Compose the read-only character overview for *user_id* in *guild_id*."""
-    from cogs.mining import items, world
-
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     equipped = await db.get_equipment(suid, guild_id)

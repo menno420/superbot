@@ -1,6 +1,6 @@
 """Mining structure recipes — JSON-loaded with safe defaults (S4.1).
 
-Extracted from the pre-decomposition ``cogs/mining_cog.py``.  The loader
+Extracted from the pre-decomposition ``cogs/mining_cog.py`` (now under ``utils/mining`` — RS02).  The loader
 normalises every key to lowercase, skips malformed entries, and falls
 back to a hard-coded default if the JSON file is missing or invalid.
 """
@@ -11,7 +11,7 @@ import json
 import logging
 import os
 
-logger = logging.getLogger("bot.cogs.mining.recipes")
+logger = logging.getLogger("bot.utils.mining.recipes")
 
 # Path to the JSON recipes file shipped under disbot/data/json/.  Kept
 # identical to the pre-S4.1 location so deployed data files Just Work.
