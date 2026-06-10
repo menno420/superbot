@@ -343,6 +343,15 @@ Settings and Setup should share definitions, validation, editor hints, and effec
 
 ## 11. Phased implementation roadmap
 
+> **Phases 0+1 shipped 2026-06-09 in PR #640** (execution-plan Lane 7): the hub's
+> discovery rule is `services/customization_catalogue.actionable_settings_groups()`
+> (the §6 inclusion rule — editable scalar / binding / resource / declared domain
+> panel; live taxonomy = **11 groups**, exactly §4/§5), with select pagination past
+> the 25-option cap and per-guild routing availability markers. Domain-config
+> inclusion is the declared `DOMAIN_CONFIG_SUBSYSTEMS = {"cleanup"}` table — a
+> Phase 1 seam that **Phase 2 replaces with real registrations**. Phases 2/3
+> directions are decided (Q-0063 converge-gradually · Q-0064 binding+guided flow).
+
 | Phase | Goal / expected files | Dependencies and blocked/off-limits scope | Risk | Verification | Recommended next agent |
 |---|---|---|---|---|---|
 | **0 — reconciliation and test targets** | Confirm owner answers; document live group taxonomy; add failing/target tests for actionable-only discovery, no truncation, AI source alignment. Expected: this plan, router, `tests/unit/views/test_settings_hub_view.py`, registry/catalogue tests. | Review the existing partial-projection contract; no runtime behavior change yet. | Low | Docs strict; source inventory script; target-test review. | **Opus planning/revision**, then GPT/manual review |

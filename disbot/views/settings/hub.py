@@ -5,9 +5,15 @@ Hub-and-spoke navigation:
 * Header embed shows global counters (registered subsystems, declared
   settings, declared bindings, declared resource requirements,
   customization findings).
-* A Discord ``Select`` lists every subsystem whose schema is
-  registered, sorted by ``ui_priority``.  Picking a subsystem
-  replaces the panel with a :class:`~views.settings.subsystem_view.SubsystemSettingsView`,
+* A Discord ``Select`` lists the **actionable** settings groups
+  (settings audit §6 inclusion rule, Lane 7): subsystems declaring an
+  editable scalar, a binding, a provisionable resource, or a registered
+  domain-config panel — computed by
+  :func:`services.customization_catalogue.actionable_settings_groups`.
+  Router-only / internal / empty subsystems never appear, and groups
+  beyond Discord's 25-option cap are reached through page-nav buttons
+  instead of being silently truncated. Picking a subsystem replaces the
+  panel with a :class:`~views.settings.subsystem_view.SubsystemSettingsView`,
   which hosts the scalar edit + reset widgets.
 * Four buttons open diagnostic sub-panels:
   Needs setup / Invalid settings / Missing bindings / Recent changes.
@@ -15,18 +21,24 @@ Hub-and-spoke navigation:
 The hub itself is navigation-only — it never mutates state.  Write
 behaviour lives one level down in the subsystem drill-down's edit/reset
 widgets (see the read-only invariant allowlist in
-``tests/unit/invariants/test_settings_cog_read_only.py``).
+``tests/unit/invariants/test_settings_cog_read_only.py``); domain
+config (cleanup, command access, …) stays with its own canonical
+panel/services — the hub only *routes* there.
 
 The hub depends on three S0–S4 catalogues:
 
 * :mod:`core.runtime.settings_registry` (S1) for declared settings
-* :mod:`services.customization_catalogue` (S2) for help/panel
-  cross-discoverability findings
+* :mod:`services.customization_catalogue` (S2) for the actionable-group
+  discovery rule + help/panel cross-discoverability findings
 * :mod:`core.runtime.subsystem_schema` for declared bindings and
   resource requirements
 
-Each is read-only and already cached at startup; the hub never
-mutates them.
+Each is read-only; the hub never mutates them. Build the hub with
+:meth:`SettingsHubView.create` where a guild id is available — it
+pre-reads per-guild availability (cog routing) so gated groups carry a
+"routed off" marker while staying reachable (an admin may configure a
+feature before enabling it; every edit callback still re-checks
+authority at execution time).
 """
 
 from __future__ import annotations
@@ -43,46 +55,23 @@ logger = logging.getLogger("bot.views.settings.hub")
 
 _DISCORD_SELECT_OPTION_LIMIT = 25
 
-
-def _candidate_subsystems() -> list[tuple[str, dict]]:
-    """Return subsystems sorted by ``ui_priority`` then name.
-
-    Includes every subsystem with a registered schema *or* declared
-    capabilities; excludes ``visibility_mode='internal'`` entries
-    because they should not surface in operator-facing UI.
-    """
-    from core.runtime.subsystem_schema import all_schemas
-
-    schemas = all_schemas()
-    out: list[tuple[str, dict]] = []
-    for name, meta in SUBSYSTEMS.items():
-        if meta.get("visibility_mode", "normal") == "internal":
-            continue
-        # Show every subsystem.  Even those without a schema are
-        # surfaced so the operator sees the gap explicitly; the
-        # subsystem page renders an empty-state message.
-        out.append((name, meta))
-    # Sort: subsystems with schemas first, then by ui_priority ascending,
-    # then alphabetically by display_name.
-    out.sort(
-        key=lambda kv: (
-            kv[0] not in schemas,
-            kv[1].get("ui_priority", 99),
-            kv[1].get("display_name", kv[0]),
-        ),
-    )
-    return out
+# Availability marker rendered in front of a gated group's description.
+_UNAVAILABLE_PREFIX = "⛔"
 
 
 def _build_header_embed() -> discord.Embed:
     """Build the hub header embed with global counters."""
     from core.runtime.settings_registry import get_cached_registry
     from core.runtime.subsystem_schema import all_schemas
-    from services.customization_catalogue import get_cached_catalogue
+    from services.customization_catalogue import (
+        actionable_settings_groups,
+        get_cached_catalogue,
+    )
 
     schemas = all_schemas()
     registry = get_cached_registry()
     catalogue = get_cached_catalogue()
+    groups = actionable_settings_groups()
 
     bindings_total = sum(len(s.bindings) for s in schemas.values())
     resources_total = sum(len(s.resource_requirements) for s in schemas.values())
@@ -93,15 +82,16 @@ def _build_header_embed() -> discord.Embed:
         title="⚙️ Settings Manager",
         description=(
             "Browse platform settings, bindings, resource requirements, "
-            "and recent audit history.  Use the dropdown to drill into a "
-            "subsystem (scalar edit + reset live on the subsystem page); "
-            "use the buttons for cross-cutting diagnostics."
+            "and recent audit history.  The dropdown lists every group "
+            "with something configurable (scalar edit + reset live on the "
+            "group's page); use the buttons for cross-cutting diagnostics."
         ),
         color=discord.Color.blurple(),
     )
     embed.add_field(
         name="Inventory",
         value=(
+            f"`groups`: {len(groups)}  ·  "
             f"`subsystems`: {len(SUBSYSTEMS)}  ·  "
             f"`schemas`: {len(schemas)}\n"
             f"`settings`: {settings_total}  ·  "
@@ -128,26 +118,53 @@ def _build_header_embed() -> discord.Embed:
     return embed
 
 
-class _SubsystemSelect(discord.ui.Select):
-    """Drop-down listing every subsystem.  Picking one swaps the panel."""
+def _page_count(total: int) -> int:
+    return max(1, -(-total // _DISCORD_SELECT_OPTION_LIMIT))
 
-    def __init__(self, options: list[tuple[str, dict]]):
+
+def _option_description(group, availability: dict[str, str]) -> str | None:
+    """Group description with the availability marker in front when gated."""
+    label = availability.get(group.subsystem)
+    base = group.description
+    if label:
+        base = (
+            f"{_UNAVAILABLE_PREFIX} {label} · {base}"
+            if base
+            else f"{_UNAVAILABLE_PREFIX} {label}"
+        )
+    return base[:100] or None
+
+
+class _SubsystemSelect(discord.ui.Select):
+    """Drop-down listing one page of actionable settings groups."""
+
+    def __init__(
+        self,
+        groups: tuple,
+        availability: dict[str, str],
+        page: int,
+    ):
+        pages = _page_count(len(groups))
+        start = page * _DISCORD_SELECT_OPTION_LIMIT
         select_options: list[discord.SelectOption] = []
-        for name, meta in options[:_DISCORD_SELECT_OPTION_LIMIT]:
+        for group in groups[start : start + _DISCORD_SELECT_OPTION_LIMIT]:
             select_options.append(
                 discord.SelectOption(
-                    label=meta.get("display_name", name)[:100],
-                    value=name,
-                    description=str(meta.get("description", ""))[:100] or None,
-                    emoji=meta.get("emoji") or None,
+                    label=group.display_name[:100],
+                    value=group.subsystem,
+                    description=_option_description(group, availability),
+                    emoji=group.emoji,
                 ),
             )
+        placeholder = "Open a settings group…"
+        if pages > 1:
+            placeholder = f"Open a settings group… (page {page + 1}/{pages})"
         super().__init__(
-            placeholder="Open a subsystem…",
+            placeholder=placeholder,
             min_values=1,
             max_values=1,
             options=select_options
-            or [discord.SelectOption(label="(no subsystems)", value="_none")],
+            or [discord.SelectOption(label="(no settings groups)", value="_none")],
             custom_id="settings_hub.subsystem_select",
         )
 
@@ -155,7 +172,7 @@ class _SubsystemSelect(discord.ui.Select):
         name = self.values[0]
         if name == "_none":
             await interaction.response.send_message(
-                "No subsystems registered.",
+                "No settings groups registered.",
                 ephemeral=True,
             )
             return
@@ -169,6 +186,34 @@ class _SubsystemSelect(discord.ui.Select):
         view = SubsystemSettingsView(interaction.user, name)
         embed = await build_subsystem_embed(interaction, name)
         await interaction.response.edit_message(embed=embed, view=view)
+
+
+class _GroupPageButton(discord.ui.Button):
+    """Page-nav for >25 groups — replaces the old silent first-25 truncation.
+
+    Rebuilds the hub at the target page with the same author + availability
+    (no re-read needed; both ride the view instance).
+    """
+
+    def __init__(self, *, delta: int, page: int, pages: int) -> None:
+        prev = delta < 0
+        super().__init__(
+            label="◀ Prev groups" if prev else "More groups ▶",
+            style=discord.ButtonStyle.secondary,
+            custom_id="settings_hub.page_prev" if prev else "settings_hub.page_next",
+            disabled=(page + delta) < 0 or (page + delta) >= pages,
+            row=3,
+        )
+        self._delta = delta
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        current = self.view
+        view = SettingsHubView(
+            interaction.user,
+            availability=current._availability,
+            page=current._page + self._delta,
+        )
+        await interaction.response.edit_message(view=view)
 
 
 class _OpenNeedsSetup(discord.ui.Button):
@@ -283,16 +328,59 @@ class _OpenCommandAccess(discord.ui.Button):
 
 
 class SettingsHubView(HubView):
-    """Top-level navigation for the Settings Manager (S5)."""
+    """Top-level navigation for the Settings Manager (S5).
 
-    def __init__(self, author: discord.Member | discord.User):
+    The plain constructor builds the hub without per-guild availability
+    labels (back-compat for callers with no guild context); prefer
+    :meth:`create`, which pre-reads them.
+    """
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        *,
+        availability: dict[str, str] | None = None,
+        page: int = 0,
+    ):
         super().__init__(author)
-        self.add_item(_SubsystemSelect(_candidate_subsystems()))
+        from services.customization_catalogue import actionable_settings_groups
+
+        groups = actionable_settings_groups()
+        pages = _page_count(len(groups))
+        self._availability = availability or {}
+        self._page = max(0, min(page, pages - 1))
+        self.add_item(_SubsystemSelect(groups, self._availability, self._page))
         self.add_item(_OpenNeedsSetup())
         self.add_item(_OpenInvalid())
         self.add_item(_OpenMissingBindings())
         self.add_item(_OpenAudit())
         self.add_item(_OpenCommandAccess())
+        if pages > 1:
+            self.add_item(_GroupPageButton(delta=-1, page=self._page, pages=pages))
+            self.add_item(_GroupPageButton(delta=1, page=self._page, pages=pages))
+
+    @classmethod
+    async def create(
+        cls,
+        author: discord.Member | discord.User,
+        guild_id: int | None,
+    ) -> SettingsHubView:
+        """Build the hub with actor-aware availability labels for ``guild_id``.
+
+        Availability is supplementary by contract (a failed/absent read
+        renders the same hub without labels), so this never raises for
+        availability reasons and ``guild_id=None`` degrades cleanly.
+        """
+        availability: dict[str, str] = {}
+        if guild_id is not None:
+            from services.customization_catalogue import (
+                actionable_settings_groups,
+                group_availability,
+            )
+
+            names = [g.subsystem for g in actionable_settings_groups()]
+            availability = await group_availability(guild_id, names)
+        return cls(author, availability=availability)
 
     @staticmethod
     def build_embed() -> discord.Embed:
