@@ -278,7 +278,23 @@ services) without partitioning by module.
 - **Stop:** any mutation affordance; any denial-copy *wiring* (ADP-3 stays gated on
   the owner's markup of the #632 table).
 
-### Batch 6 — Help projection seam (HLP-2/DT05/B01), then overlay (HLP-3) — after Batch 5
+### Batch 6 — Help projection seam (HLP-2/DT05/B01), then overlay (HLP-3) — seam executed in **#657** (2026-06-10, verify merged)
+
+> Outcome notes: `services/help_catalogue.py` (stable-keyed inventory; four
+> drift-finding kinds pinned empty) + `services/help_projection.py` (the
+> audit-§9 reason-coded `HelpProjection`; only `display_hidden`/
+> `governance_hidden` hide — lock states stay advertised, HLP-4) shipped,
+> and **all five render paths consume the one projection**: Home gained
+> host-subsystem governance awareness, typed/dropdown routes now check
+> their target (hidden ⇒ the same not-found as nonexistent), the
+> single-command route applies the shared display filter, and the
+> Advanced dropdown re-checks at click time. **Q-0074 executed in the same
+> PR** (admin `visibility_tier` owner → administrator; placement ==
+> admission pinned via the catalogue `tier_mismatch` finding). Net
+> extended to 29 tests + 26 new contract tests; dead `build_overview_embed`
+> deleted. **HLP-3 (the overlay) remains the open tail of this batch** —
+> all decisions answered; activation gated on #657 merged + smoke-tested.
+> Details: PR #657 + `.sessions/2026-06-10-batch6-help-projection-seam.md`.
 
 - **Objective:** one effective-access projection consumed by **all five** Help
   render paths (today: five filter sets; the #642 characterization net pins the
@@ -370,8 +386,8 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
 | SET-5 Phase 5 convergence | later | own planning session first |
 | SET-6 dual-write seam | constraint, unchanged | canary: "projection failed" diagnostics |
 | HLP-1 (Lane 8) | **shipped #642** | — |
-| HLP-2 projection seam | **Batch 6** | after Batch 5 (P1C) |
-| HLP-3 overlay/editor | after Batch 6 | Q-0055–Q-0059 answered; activation only |
+| HLP-2 projection seam | **executed #657** (2026-06-10, verify merged) | — |
+| HLP-3 overlay/editor | next in the Help lane | Q-0055–Q-0059 answered; activation once #657 merged + smoked |
 | ADP-1 (Lane 2) | **shipped #632** | — |
 | ADP-2 P1C | **Batch 5** | Q-0032 |
 | ADP-3 denial-copy wiring | **gated** | owner's markup of the #632 table (Q-0036) |
@@ -399,7 +415,8 @@ Every queued ID from the superseded plan, so nothing silently vanishes:
   production check** (no sandbox provider key).
 - **Governance setup section** — deferred (Q-0008/Q-0011); a new scope decision
   reopens it, nothing else.
-- **Help overlay** — after the Batch 6 seam only.
+- **Help overlay (HLP-3)** — after the Batch 6 seam (#657) is merged +
+  smoke-tested only; decisions Q-0055–Q-0059 are all answered.
 - **Production-only health verification (HLT-2)** — maintainer live-tests; sandbox
   results must not be reported as live verification (DT14).
 - **Owner decisions — all four ANSWERED (structured choices, 2026-06-10; router

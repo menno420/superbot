@@ -240,8 +240,20 @@ A member-facing sibling of the staff Access Map: one ephemeral "what can I do in
 channel?" answer (which features respond here, where the others live). Reuses the
 shipped `services/access_projection.py` (P1A) read model and must follow the
 locked-reason copy posture (Q-0036).
-**Size S-M · Risk low · Route:** groom into the Adaptive Setup/Access lane **after**
-P1C ships its staff surfaces (don't fork that lane's sequencing).
+**Size S-M · Risk low · Route — UNBLOCKED 2026-06-10 (groomed):** its stated gate
+("after P1C ships its staff surfaces") cleared — P1C shipped the staff Access Map +
+Help Preview in **#656**, and the Batch 6 Help projection seam (**#657**) added the
+exact read path this idea needs: `services/help_projection.project_help_with_execution`
+already buckets every feature into shown / routed-off / command-locked / hidden with
+user-safe reason codes (`LockedReason.safe_text` only — the Q-0036 posture is built
+into the model). Remaining design surface is genuinely small: entry point (a member
+command like `!whatworks` vs a Help-Home button), and whether hidden features are
+listed at all for members (recommend: no — show allowed + locked-with-reason only,
+matching the not-found posture the seam shipped). **Next destination:** a small slice
+in the Adaptive Setup/Access lane after P2, or a standalone quick-win PR once the
+maintainer picks the entry point. Still requires the Q-0036 denial-copy wiring state
+to be respected (copy is live in `_SAFE_TEXT` but the *denial-path* wiring awaits the
+maintainer's #632 markup — this read-only surface may consume the safe text directly).
 
 ### C7. Slash autocomplete arguments ⌨️
 Autocomplete for item/game/category names on the existing slash front doors (shop
@@ -277,7 +289,7 @@ only — no per-sub-action commands (rejection ledger).
 | C3 | `!play` quick-launcher | S | low | | captured → quick-win candidate |
 | C4 | Persistent reminders | S-M | low | ⭐ ease pick | captured → **top quick-win candidate** (silent-loss fix) |
 | C5 | Mining hub discoverability | S | low | | captured → quick-win (active mining lane) |
-| C6 | "What works here?" guide | S-M | low | | captured → groom into Adaptive lane after P1C |
+| C6 | "What works here?" guide | S-M | low | | **unblocked 2026-06-10** (P1C #656 + Help seam #657 supply the read path) → small Adaptive-lane slice or standalone quick-win; entry-point pick is the only open question |
 | C7 | Slash autocomplete | S | low | | captured → groom into interface lane |
 
 **No-orphan guarantee:** every row has a state and a next destination. Grooming

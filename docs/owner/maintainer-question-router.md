@@ -3059,8 +3059,13 @@ whether a migration + compatibility tests are in scope for Settings Phase 2/3.
 **Area:** Admin hub / registry metadata / command access
 **Type:** Display-vs-execution posture (mapping Q-B01 / Q-DT02 — FIND-B03)
 **Priority:** Medium (blocks FIND-B03 implementation only)
-**Status:** Answered (structured choices, 2026-06-10) — **Routed** →
-consolidated plan Batch 2 (Admin-row classification follows this posture)
+**Status:** Answered (structured choices, 2026-06-10) — **EXECUTED 2026-06-10
+in PR #657** (consolidated plan Batch 6 rode it along): `admin` subsystem
+`visibility_tier` owner → administrator (source-backed inventory in the PR:
+`!adminmenu`/stats are `has_permissions(administrator=True)` routes; cog
+load/unload/reload + slash sync keep `commands.is_owner()` execution checks).
+Placement == admission is pinned by the help-catalogue `tier_mismatch`
+finding (`tests/unit/services/test_help_catalogue.py`) for **every** hub.
 
 **Maintainer answer (structured choices, 2026-06-10): A — make registry/Admin-Help
 placement administrator-visible** (after a quick source-backed inventory), keeping
