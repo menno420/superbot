@@ -1,9 +1,15 @@
 # Help overlay editor UI — implementation plan (audit Phase 5)
 
-> **Status:** `plan` — ready to execute (all owner decisions answered; no open
-> gates). Produced by the 2026-06-10 eval-support session as the queue's
-> "Help overlay editor UI (plan-first)" item — [help audit](help-cog-customization-audit-2026-06-09.md)
+> **Status:** `plan` — **EXECUTED same day: PR A = #677 · PR B = #679**
+> (both live-verified on real Postgres — editor round-trip incl. the
+> hide/rename → live-Help agreement, and the Home builder's
+> stage → mandatory-preview → save → byte-identical reset). Produced by the
+> 2026-06-10 eval-support session as the queue's "Help overlay editor UI
+> (plan-first)" item — [help audit](help-cog-customization-audit-2026-06-09.md)
 > Phase 5. Two PRs; PR A has no migration and rides entirely on shipped seams.
+> As-built deviations: none of substance — the §4 design shipped as written
+> (the Home builder lives in `views/help/home_builder.py` beside the editor;
+> Reset-all's copy was extended to mention the Home message it also clears).
 
 ## 1. Goal
 

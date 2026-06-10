@@ -230,10 +230,17 @@ def build_categories_overview_embed(
     """
     if projection is None:
         projection = HelpProjection.registry_defaults(member_tier or "user")
+    # Q-0059: the guild's Home message customizes the frame (title /
+    # description / color) via one shared composer — absence renders the
+    # byte-identical default (pinned). Mentions are suppressed in the frame.
+    from services.help_overlay import home_embed_frame
+
+    home = projection.overlay.home if projection.overlay is not None else None
+    title, body, color = home_embed_frame(home, default_color=UTILITY_COLOR.value)
     embed = discord.Embed(
-        title="📚 Help Menu",
-        description="Pick a category from the dropdown below.",
-        color=UTILITY_COLOR,
+        title=title,
+        description=body,
+        color=discord.Color(color),
     )
 
     for hub in projection.visible_hubs():

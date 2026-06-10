@@ -587,6 +587,30 @@ class HelpEditorHomeView(_EditorViewBase):
             view=picker,
         )
 
+    @discord.ui.button(
+        label="🏠 Home message",
+        style=discord.ButtonStyle.primary,
+        row=0,
+    )
+    async def home_message_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        from views.help.home_builder import (
+            HomeMessageBuilderView,
+            build_builder_embed,
+        )
+
+        builder = await HomeMessageBuilderView.from_current(
+            interaction.user,
+            self.guild_id,
+        )
+        await interaction.response.edit_message(
+            embed=build_builder_embed(builder),
+            view=builder,
+        )
+
     @discord.ui.button(label="🗑 Reset all…", style=discord.ButtonStyle.danger, row=1)
     async def reset_all_btn(
         self,
@@ -596,9 +620,10 @@ class HelpEditorHomeView(_EditorViewBase):
         embed = discord.Embed(
             title="Reset ALL Help customizations?",
             description=(
-                "Every hide, rename, and re-description in this server will "
-                "be removed and Help returns to its defaults. This cannot be "
-                "undone (the audit log keeps the history)."
+                "Every hide, rename, re-description, and the custom Home "
+                "message in this server will be removed and Help returns to "
+                "its defaults. This cannot be undone (the audit log keeps "
+                "the history)."
             ),
             color=discord.Color.red(),
         )

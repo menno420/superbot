@@ -678,3 +678,44 @@ def test_overlay_absent_keeps_render_paths_byte_identical():
     assert [(f.name, f.value) for f in bare_home.fields] == [
         (f.name, f.value) for f in empty_home.fields
     ]
+    # Q-0059 frame: absent home row keeps the default frame byte-identical.
+    assert bare_home.title == empty_home.title == "📚 Help Menu"
+    assert bare_home.description == empty_home.description
+    assert bare_home.color == empty_home.color
+
+
+def test_home_message_customizes_the_home_frame():
+    """Q-0059 (migration 067): a home row swaps title/body/color; hub
+    fields are untouched; stored mentions render suppressed."""
+    from services.help_overlay import GuildHelpOverlay, HomeMessage
+
+    vis = VisibilityResult(
+        visible_subsystems=_ALL_VISIBLE,
+        member_tier="administrator",
+        resolved_from={},
+        traces={},
+    )
+    default = HelpProjection.from_visibility(vis)
+    custom = HelpProjection.from_visibility(
+        vis,
+        overlay=GuildHelpOverlay(
+            guild_id=1,
+            home=HomeMessage(
+                title="Welcome to @everyone's server",
+                body="Start here!",
+                color=0x57F287,
+            ),
+        ),
+    )
+
+    default_home = build_categories_overview_embed(projection=default)
+    custom_home = build_categories_overview_embed(projection=custom)
+
+    assert "Welcome to" in custom_home.title
+    assert "@everyone" not in custom_home.title  # mention suppression
+    assert custom_home.description == "Start here!"
+    assert custom_home.color.value == 0x57F287
+    # The category fields themselves are identical — only the frame changed.
+    assert [(f.name, f.value) for f in custom_home.fields] == [
+        (f.name, f.value) for f in default_home.fields
+    ]

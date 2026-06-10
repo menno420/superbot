@@ -22,17 +22,81 @@ logger = logging.getLogger("bot.db.help_overlay")
 
 
 async def get_guild_rows(guild_id: int) -> list[dict[str, Any]]:
-    """All overlay rows for ``guild_id`` (empty list = no deviations)."""
+    """All hub/subsystem overlay rows for ``guild_id`` (empty = defaults).
+
+    The ``home`` row (migration 067 — the Q-0059 Home message) is a
+    different shape and deliberately excluded; read it via
+    :func:`get_home_row`.
+    """
     rows = await pool.get().fetch(
         """
         SELECT entity_kind, entity_key, display_hidden, display_name,
                description, updated_by, updated_at
           FROM help_overlay
-         WHERE guild_id = $1
+         WHERE guild_id = $1 AND entity_kind <> 'home'
         """,
         guild_id,
     )
     return [dict(r) for r in rows]
+
+
+async def get_home_row(guild_id: int) -> dict[str, Any] | None:
+    """The guild's Q-0059 Home-message row, or ``None`` (default Home)."""
+    row = await pool.get().fetchrow(
+        """
+        SELECT home_title, home_body, home_color, updated_by, updated_at
+          FROM help_overlay
+         WHERE guild_id = $1 AND entity_kind = 'home' AND entity_key = 'home'
+        """,
+        guild_id,
+    )
+    return dict(row) if row else None
+
+
+async def upsert_home_row(
+    guild_id: int,
+    *,
+    home_title: str | None,
+    home_body: str | None,
+    home_color: int | None,
+    updated_by: int | None,
+) -> None:
+    """Write the guild's full Home-message state (NULL field = default).
+
+    The mutation service merges partial edits first and calls
+    :func:`delete_home_row` instead when every field becomes NULL.
+    """
+    await pool.get().execute(
+        """
+        INSERT INTO help_overlay
+            (guild_id, entity_kind, entity_key,
+             home_title, home_body, home_color, updated_by)
+        VALUES ($1, 'home', 'home', $2, $3, $4, $5)
+        ON CONFLICT (guild_id, entity_kind, entity_key) DO UPDATE
+           SET home_title = EXCLUDED.home_title,
+               home_body  = EXCLUDED.home_body,
+               home_color = EXCLUDED.home_color,
+               updated_by = EXCLUDED.updated_by,
+               updated_at = now()
+        """,
+        guild_id,
+        home_title,
+        home_body,
+        home_color,
+        updated_by,
+    )
+
+
+async def delete_home_row(guild_id: int) -> bool:
+    """Remove the guild's Home-message row. Returns ``True`` if it existed."""
+    status = await pool.get().execute(
+        """
+        DELETE FROM help_overlay
+         WHERE guild_id = $1 AND entity_kind = 'home' AND entity_key = 'home'
+        """,
+        guild_id,
+    )
+    return status == "DELETE 1"
 
 
 async def get_row(
@@ -122,8 +186,11 @@ async def delete_guild_rows(guild_id: int) -> int:
 
 __all__ = [
     "delete_guild_rows",
+    "delete_home_row",
     "delete_row",
     "get_guild_rows",
+    "get_home_row",
     "get_row",
+    "upsert_home_row",
     "upsert_row",
 ]

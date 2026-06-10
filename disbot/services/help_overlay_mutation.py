@@ -228,6 +228,94 @@ async def set_overlay_fields(
     )
 
 
+async def set_home_message(
+    guild_id: int,
+    *,
+    actor: Any,
+    title: str | None = UNSET,
+    body: str | None = UNSET,
+    color: int | None = UNSET,
+) -> HelpOverlayMutationResult:
+    """Set / reset the Q-0059 Help-Home message (partial edit).
+
+    Same contract as :func:`set_overlay_fields`: pass a value to
+    override, ``None`` to reset that field to the default, or omit
+    (``UNSET``) to leave it untouched. A row whose fields all become
+    ``None`` is deleted — absence renders the byte-identical default
+    Home. Bounds are enforced here (migration 067's CHECKs are the
+    backstop): title ≤ 256, body ≤ 2000, color in Discord's 24-bit space.
+    """
+    from services import help_overlay as read_model
+    from services.help_overlay import (
+        MAX_HOME_BODY_LEN,
+        MAX_HOME_COLOR,
+        MAX_HOME_TITLE_LEN,
+        HomeMessage,
+    )
+    from utils.db import help_overlay as db
+
+    actor_id = _check_admin(actor)
+    if title is not UNSET:
+        title = _check_text("home_title", title, MAX_HOME_TITLE_LEN)
+    if body is not UNSET:
+        body = _check_text("home_body", body, MAX_HOME_BODY_LEN)
+    if color is not UNSET and color is not None:
+        if not isinstance(color, int) or isinstance(color, bool):
+            raise InvalidHelpOverlayValueError("home_color must be an int or None")
+        if not 0 <= color <= MAX_HOME_COLOR:
+            raise InvalidHelpOverlayValueError(
+                f"home_color must be within 0..{MAX_HOME_COLOR:#x}, got {color:#x}",
+            )
+
+    current = await db.get_home_row(guild_id)
+    prev = HomeMessage(
+        title=current["home_title"] if current else None,
+        body=current["home_body"] if current else None,
+        color=current["home_color"] if current else None,
+    )
+    merged = HomeMessage(
+        title=prev.title if title is UNSET else title,
+        body=prev.body if body is UNSET else body,
+        color=prev.color if color is UNSET else color,
+    )
+
+    def _as_fields(msg: HomeMessage) -> dict[str, Any]:
+        return {"title": msg.title, "body": msg.body, "color": msg.color}
+
+    if merged.is_noop:
+        await db.delete_home_row(guild_id)
+        new_fields: dict[str, Any] | None = None
+    else:
+        await db.upsert_home_row(
+            guild_id,
+            home_title=merged.title,
+            home_body=merged.body,
+            home_color=merged.color,
+            updated_by=actor_id,
+        )
+        new_fields = _as_fields(merged)
+
+    read_model.invalidate_help_overlay_cache(guild_id)
+    mutation_id = uuid.uuid4().hex
+    audit_emitted = await _emit_audit(
+        mutation_id=mutation_id,
+        guild_id=guild_id,
+        target="home:home",
+        prev_value=repr(_as_fields(prev)) if current else None,
+        new_value=repr(new_fields) if new_fields is not None else None,
+        actor_id=actor_id,
+    )
+    return HelpOverlayMutationResult(
+        mutation_id=mutation_id,
+        guild_id=guild_id,
+        entity_kind="home",
+        entity_key="home",
+        prev=_as_fields(prev) if current else None,
+        new=new_fields,
+        audit_emitted=audit_emitted,
+    )
+
+
 async def reset_guild_overlay(
     guild_id: int,
     *,
@@ -303,5 +391,6 @@ __all__ = [
     "InvalidHelpOverlayValueError",
     "UnauthorizedHelpOverlayMutationError",
     "reset_guild_overlay",
+    "set_home_message",
     "set_overlay_fields",
 ]
