@@ -2486,7 +2486,7 @@ queued), `docs/roadmap.md` games section (queued slice).
 **Area:** Help / governance / command access
 **Type:** Product + architecture boundary
 **Priority:** High (blocks Help-overlay mutation semantics)
-**Status:** Answered (structured choices, 2026-06-09) — **Routed** → help audit §6/§9 + the future Help overlay mutation contract
+**Status:** Answered (structured choices, 2026-06-09) — **EXECUTED 2026-06-10 in PR #659** (HLP-3): the overlay can only set `display_hidden`; an import fence pins that no admission path (`command_access` / `command_routing` / `governance`) consults it — `tests/unit/services/test_help_overlay.py`
 
 **Maintainer answer (2026-06-09, structured choices):** **Display-only** — hiding changes
 presentation only; execution stays governed by command access / routing / governance /
@@ -2514,7 +2514,7 @@ separate explicit command-access/routing/governance action and confirmation.
 **Area:** Help / settings / shared panels
 **Type:** Product presentation scope
 **Priority:** High (blocks overlay/read-model scope)
-**Status:** Answered (structured choices, 2026-06-09) — **Routed** → future Help Catalogue/Projection contract + help audit §9
+**Status:** Answered (structured choices, 2026-06-09) — **EXECUTED 2026-06-10 in PR #659** (HLP-3): overlay renames flow as `HubPresentation`/`SubsystemPresentation` consumed by Help surfaces exclusively; settings/setup/audit/diagnostics keep stable names
 
 **Maintainer answer (2026-06-09, structured choices):** **Help-only** (the
 recommendation as written) — custom names render in Help surfaces only; stable/default
@@ -2564,7 +2564,7 @@ panel/action identities exist.
 **Area:** Help / diagnostics / operator UX
 **Type:** Product safety and explainability
 **Priority:** Medium
-**Status:** Answered (structured choices, 2026-06-09) — **Routed** → Help overlay diagnostics / audit rendering / reset UX (help audit)
+**Status:** Answered (structured choices, 2026-06-09) — **EXECUTED 2026-06-10 in PR #659** (HLP-3): every presentation carries `default_display_name`/`default_*` + the stable key alongside the custom label, so admin/debug surfaces can render custom + default + key
 
 **Maintainer answer (2026-06-09, structured choices):** **Custom + default** (the
 recommendation as written) — public Help shows the custom label; admin/debug/audit

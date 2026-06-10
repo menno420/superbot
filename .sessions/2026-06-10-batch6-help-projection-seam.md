@@ -84,3 +84,64 @@ characterization net, per the help audit §9 contract + §11 internal order
 - Next in lane: **HLP-3 overlay** (Q-0055–Q-0059 answered) once #657 is
   merged + smoked; then audit finding-4 metadata moves (Home copy / alias
   tables → catalogue).
+
+---
+
+## Part 2 (same session) — HLP-3 guild overlay (PR #659)
+
+**#657 merged mid-session** (after a `current-state.md` conflict with the
+parallel #655 BTD6 session — resolved by UNION: my Batch-6 fragments + their
+newer cutover-verification fragment). The merge cleared HLP-3's only gate, so
+the session continued into the overlay per Batch 6's own "then HLP-3" tail.
+
+### Shipped (audit Phase 3, exactly)
+
+- **Migration 064 `help_overlay`** — guild × {hub, subsystem} ×
+  {display_hidden, display_name, description}; absence = inherit;
+  store-only-deviations; `entity_kind` CHECK as the schema contract.
+- **`utils/db/help_overlay.py`** (sole writer) ·
+  **`services/help_overlay.py`** (per-guild cached read model; DB fault ⇒
+  registry defaults, never a crash; orphans preserved) ·
+  **`services/help_overlay_mutation.py`** (audited seam mirroring
+  `ai_orchestration_mutation`: admin gate → write-time catalogue-key
+  validation → bounds → `UNSET`-vs-`None` partial merge → upsert /
+  all-None-deletes → cache invalidation → `emit_audit_action`).
+- **Projection integration:** overlay hide ⇒ `display_hidden`
+  (`overlay_hidden`), `governance_hidden` keeps precedence (truthful
+  explanations), lock states yield to the guild's display choice;
+  `HubPresentation`/`SubsystemPresentation` carry effective + default
+  fields (Q-0058); `orphaned_overrides` on the projection; `project_help`
+  = the one-call render entry. No overlay ⇒ byte-identical (pinned).
+- **Renderers:** `_resolve_projection` (one cog seam, 7 sites collapsed);
+  presentations consumed by Home rows, both dropdowns, page embeds, and
+  cog-embed titles.
+- **Decomposition (forced):** the cog hit 840 LOC → views + page embed
+  moved to `cogs/help/panels.py` (F-3 convention); re-exports + late-bound
+  helper imports preserved every test patch-seam. 840 → 443 lines.
+
+### Decisions made alone (flagging)
+
+- **Overlay hide beats lock states for display** (a routed-off feature the
+  guild hides is hidden, not shown-as-locked) while governance hides keep
+  their own state — explanations stay truthful, display stays the guild's.
+- **Q-0059 home message deferred with the editor** — its answer makes
+  preview *mandatory*; shipping a write path without the preview surface
+  would violate the decision's floor.
+- **Mutation service authority = `guild_permissions.administrator`**
+  (the `ai_orchestration_mutation` precedent), not a tier resolve — the
+  editor UI will re-check at callback time per the views rules.
+
+### Context delta (part 2)
+
+- **Discovered by hand:** the cog-size ceiling fired mid-feature (840) —
+  the journal rule "check a cog's LOC before adding" exists but the real
+  lesson is the *decomposition escape hatch*: `cogs/<sub>/` helpers are
+  exempt by the invariant's own design, and late-bound imports preserve
+  patch seams. Also: `patch("cogs.help_cog.X")` seams constrain where
+  moved code may resolve names — late-binding is the compatible pattern.
+- **Route excess:** none — part 1's context carried part 2 almost free.
+- **Weak point:** the overlay has storage + seam + render flow but **no
+  operator surface yet** (deliberate — audit Phase 5); until the editor
+  ships, only the maintainer can exercise it via code. The C6 idea and
+  the editor slice both now have their read/write paths ready.
+

@@ -198,8 +198,10 @@ async def test_help_panel_view_resolve_visible_excludes_hub_children(
     )
 
     view = help_cog.HelpPanelView(visible_list=list(SUBSYSTEMS.keys()), page=0)
-    visible_list, member_tier = await view._resolve_visible(interaction)
-    assert member_tier == "owner"
+    # HLP-3: _resolve_visible now returns the fresh projection (renames need
+    # presentations downstream), not just the bare tier.
+    visible_list, projection = await view._resolve_visible(interaction)
+    assert projection.member_tier == "owner"
     for child in _hub_children():
         assert child not in visible_list, child
     assert "games" in visible_list
