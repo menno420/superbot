@@ -61,11 +61,13 @@
 > secret) · 3) **Postgres backup posture** — design + automate
 > ([operations/production-deployment.md](operations/production-deployment.md)
 > §Backups is the landing page) · 4) **Help home / navigation plan** (its editor-UI
-> gate cleared via #677/#679) · 5) **V-14 competitive teardown — game/economy bots
-> first** (Q-0090 **gateway**: its findings *decide ecosystem #2* of the V-13
-> open-world federation; deep-research, verified + dedup-mapped through the
-> conveyor). Build-ready alternates: myprofile PR A ·
-> survival **P0 balance-simulation harness (Q-0087)** · duel-XP quick-win.
+> gate cleared via #677/#679) · 5) **V-14 competitive teardown — research EXECUTED
+> 2026-06-10/11 in-conversation** (the [dossier](ideas/competitive-teardown-2026-06-10.md):
+> 30 scored harvest candidates, retention engines, V-15 surfaces live-verified;
+> **ecosystem-#2 verdict = fishing, owner ratification pending**); remaining work =
+> structure the top harvest picks into plans through the conveyor. Build-ready
+> alternates: myprofile PR A · survival **P0 balance-simulation harness (Q-0087)**
+> · duel-XP quick-win.
 
 ---
 

@@ -199,8 +199,14 @@ section is new work** — it's the ground the vision stands on.
   idea conveyor (nothing auto-approved). **Answered same night (Q-0090): scope =
   game & economy bots first** (Dank Memer / EPIC RPG / OwO / idle bots), and the
   session is **elevated to gateway status — its findings decide ecosystem #2**
-  of the V-13 open world (owner's pick: "let the research decide"). Queued on
-  the roadmap session queue.
+  of the V-13 open world (owner's pick: "let the research decide"). **Research
+  executed the same night** (three parallel agents, same conversation):
+  **[the teardown dossier](competitive-teardown-2026-06-10.md)** — ~95
+  documented features, 30 scored harvest candidates, retention-engine
+  analysis, V-15 surfaces verified live. **Ecosystem-#2 verdict: FISHING**
+  (Dank Memer's own flagship-expansion choice + collection-bot psychology
+  proven at scale + highest SuperBot fit via the cooking→energy cross-link) —
+  **owner ratification pending** (asked in-conversation).
 
 ## 4. Agent response — what I'd add to make it the best bot ever (AG-xx)
 
