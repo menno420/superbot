@@ -3,8 +3,12 @@
 ``_ShopView``      — standalone (used by !shop prefix command).
 ``_ShopSubView``   — wrapped in the economy panel flow with a Back button.
 ``_ShopSelect`` / ``_ShopPanelSelect`` — the item-picker dropdowns
-(one each for the two contexts; both perform an audited debit through
-``services.economy_service`` and persist the inventory write).
+(one each for the two contexts; both purchase through the atomic
+``services.shop_purchase_workflow`` — coins + inventory in one
+transaction, Q-0071).  The ``has_item``/``get_coins`` pre-checks here
+are cosmetic fast-paths only; the workflow re-decides authoritatively
+inside its transaction, so a raced click renders an error instead of
+double-charging.
 """
 
 from __future__ import annotations
@@ -13,7 +17,7 @@ import discord
 
 from cogs.economy._helpers import SHOP_ITEMS, _build_economy_embed
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
-from services import economy_service
+from services import shop_purchase_workflow
 from utils import db
 from utils.helpers import post_log_embed
 from utils.ui_constants import SUCCESS_COLOR, WARNING_COLOR
@@ -89,18 +93,35 @@ class _ShopSelect(discord.ui.Select):
         if not await safe_defer(interaction):
             return
 
-        new_bal = await economy_service.debit(
+        result = await shop_purchase_workflow.purchase_unique_item(
             gid,
             uid,
+            item_name,
             data["price"],
-            reason=f"shop:{item_name}",
             actor_id=uid,
         )
-        await db.add_item(uid, gid, item_name)
+        if result.already_owned:
+            await safe_followup(
+                interaction,
+                f"You already own a **{item_name}**!",
+                ephemeral=True,
+            )
+            return
+        if result.insufficient:
+            await safe_followup(
+                interaction,
+                f"❌ Need **{data['price']:,}** 🪙 — "
+                f"you only have **{result.balance:,}** 🪙.",
+                ephemeral=True,
+            )
+            return
 
         embed = discord.Embed(
             title=f"✅ Purchased: {data['emoji']} {item_name.replace('_', ' ').title()}",
-            description=f"**-{data['price']:,}** 🪙  |  New balance: **{new_bal:,}** 🪙",
+            description=(
+                f"**-{data['price']:,}** 🪙  |  "
+                f"New balance: **{result.new_balance:,}** 🪙"
+            ),
             color=SUCCESS_COLOR,
         )
         await safe_followup(interaction, embed=embed)
@@ -208,19 +229,34 @@ class _ShopPanelSelect(discord.ui.Select):
         if not await safe_defer(interaction):
             return
 
-        new_bal = await economy_service.debit(
+        result = await shop_purchase_workflow.purchase_unique_item(
             gid,
             uid,
+            item_name,
             data["price"],
-            reason=f"shop:{item_name}",
             actor_id=uid,
         )
-        await db.add_item(uid, gid, item_name)
+        if result.already_owned:
+            await safe_followup(
+                interaction,
+                f"You already own a **{item_name}**!",
+                ephemeral=True,
+            )
+            return
+        if result.insufficient:
+            await safe_followup(
+                interaction,
+                f"❌ Need **{data['price']:,}** 🪙 — "
+                f"you only have **{result.balance:,}** 🪙.",
+                ephemeral=True,
+            )
+            return
 
         embed = discord.Embed(
             title=f"✅ Purchased: {data['emoji']} {item_name.replace('_', ' ').title()}",
             description=(
-                f"**-{data['price']:,}** 🪙  |  New balance: **{new_bal:,}** 🪙\n\n"
+                f"**-{data['price']:,}** 🪙  |  "
+                f"New balance: **{result.new_balance:,}** 🪙\n\n"
                 "Click **↩ Back** to return to the economy panel."
             ),
             color=SUCCESS_COLOR,

@@ -62,7 +62,7 @@ writes must come from the owning cog or a shared service.
 | `moderation`   | `warnings`, `mod_logs`                         | `services/moderation_service.py` (preferred); `utils/db/moderation.py` direct for read-only / legacy callers |
 | `xp`           | `xp.xp`, `xp.level`, `xp.messages`, `xp.last_xp` | `services/xp_service.py` |
 | `economy`      | `economy`, `job_progress`, `economy_audit_log`   | `services/economy_service.py` |
-| `inventory`    | `inventory`                                    | direct via `utils/db/inventory.py` |
+| `inventory`    | `inventory`                                    | direct via `utils/db/inventory.py`; **shop purchases** (coins + item, one transaction) via `services/shop_purchase_workflow.py` (Q-0071/RS01) |
 | `cleanup`      | `prohibited_words`                             | direct via `utils/db/moderation.py` |
 | `chain`        | `chain_channels`                               | direct via `utils/db/games/chain.py` |
 | `counting`     | `counting_state`                               | direct via `utils/db/games/counting.py` |
@@ -91,6 +91,15 @@ writes must come from the owning cog or a shared service.
   is committed separately from a cog/view (the FIND-RS01 two-commit purchase
   shape is the anti-pattern this rule closes). Implementation route:
   `docs/planning/consolidated-implementation-plan-2026-06-10.md` Batch 7.
+- **Shipped (RS01, 2026-06-10):** `services/shop_purchase_workflow.py` owns the
+  shop purchase (`shop:<item>` audit reasons) — one `db.transaction()` wraps the
+  conditional `try_grant_unique_item` upsert + `economy_service.debit_in_txn`;
+  `EVT_BALANCE_CHANGED` emits after commit. The plumbing is reusable: the
+  `utils/db/pool.py` primitives take an optional `conn=`, `db.transaction()`
+  yields the workflow connection, and `economy_service.{debit,credit}_in_txn`
+  are the no-event coin legs for any future domain workflow (mining follows —
+  RS02). View-level purchase writes are AST-fenced
+  (`tests/unit/invariants/test_no_view_level_purchase_writes.py`).
 
 ---
 

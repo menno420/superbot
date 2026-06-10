@@ -29,14 +29,27 @@ Public API
 All amounts are non-negative.  ``debit`` and ``transfer`` raise
 :class:`InsufficientFundsError` when the user cannot afford the move
 unless ``allow_overdraft=True`` is passed.
+
+Workflow legs (Q-0071)
+----------------------
+``debit_in_txn`` / ``credit_in_txn`` are the transaction-aware variants
+for **domain workflow services** that must commit a coin leg atomically
+with a domain-inventory leg (shop purchase, mining market/repair).  They
+write balance + audit on the caller's connection and **emit no event** —
+the owning workflow emits ``EVT_BALANCE_CHANGED`` after its transaction
+commits (the :func:`transfer` precedent).
 """
 
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from core.events import bus
 from utils import db
+
+if TYPE_CHECKING:
+    import asyncpg
 
 logger = logging.getLogger("bot.economy_service")
 
@@ -109,6 +122,73 @@ async def debit(
         delta=-amount,
         new_balance=new_balance,
         reason=reason,
+    )
+    return new_balance
+
+
+async def debit_in_txn(
+    conn: asyncpg.Connection,
+    guild_id: int,
+    user_id: int,
+    amount: int,
+    *,
+    reason: str,
+    actor_id: int | None = None,
+) -> int:
+    """Debit inside a caller-owned transaction; return the new balance.
+
+    The conditional UPDATE decides affordability and writes in one
+    statement (no read-then-write race); :class:`InsufficientFundsError`
+    is raised without writing anything when the balance is short — the
+    owning workflow's transaction rolls every other leg back with it.
+    Emits **no event**: the workflow emits after commit.
+    """
+    if amount <= 0:
+        msg = f"debit amount must be positive, got {amount}"
+        raise ValueError(msg)
+    new_balance = await db.try_debit_coins(user_id, guild_id, amount, conn=conn)
+    if new_balance is None:
+        current = await db.get_coins(user_id, guild_id, conn=conn)
+        raise InsufficientFundsError(
+            f"user={user_id} has {current} coins, needs {amount}",
+        )
+    await db.insert_economy_audit(
+        guild_id,
+        user_id,
+        actor_id,
+        -amount,
+        new_balance,
+        reason,
+        conn=conn,
+    )
+    return new_balance
+
+
+async def credit_in_txn(
+    conn: asyncpg.Connection,
+    guild_id: int,
+    user_id: int,
+    amount: int,
+    *,
+    reason: str,
+    actor_id: int | None = None,
+) -> int:
+    """Credit inside a caller-owned transaction; return the new balance.
+
+    Emits **no event**: the owning workflow emits after commit.
+    """
+    if amount <= 0:
+        msg = f"credit amount must be positive, got {amount}"
+        raise ValueError(msg)
+    new_balance = await db.credit_coins(user_id, guild_id, amount, conn=conn)
+    await db.insert_economy_audit(
+        guild_id,
+        user_id,
+        actor_id,
+        amount,
+        new_balance,
+        reason,
+        conn=conn,
     )
     return new_balance
 
@@ -283,9 +363,11 @@ async def _audit(
     reason: str,
 ) -> None:
     """Append a row to economy_audit_log."""
-    await db.execute(
-        """INSERT INTO economy_audit_log
-             (guild_id, user_id, actor_id, delta, new_balance, reason)
-           VALUES ($1, $2, $3, $4, $5, $6)""",
-        (guild_id, user_id, actor_id, delta, new_balance, reason),
+    await db.insert_economy_audit(
+        guild_id,
+        user_id,
+        actor_id,
+        delta,
+        new_balance,
+        reason,
     )

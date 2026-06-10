@@ -37,7 +37,7 @@ class TestCredit:
                 return_value=150,
             ),
             patch(
-                "services.economy_service.db.execute",
+                "services.economy_service.db.insert_economy_audit",
                 new_callable=AsyncMock,
             ) as audit,
             patch(
@@ -50,8 +50,7 @@ class TestCredit:
             )
             assert new_bal == 150
             audit.assert_awaited_once()
-            audit_args = audit.call_args.args
-            assert audit_args[1] == (1, 42, None, 50, 150, "daily")
+            assert audit.call_args.args == (1, 42, None, 50, 150, "daily")
             emit.assert_awaited_once_with(
                 EVT_BALANCE_CHANGED,
                 guild_id=1,
@@ -103,7 +102,7 @@ class TestDebit:
                 return_value=0,
             ),
             patch(
-                "services.economy_service.db.execute",
+                "services.economy_service.db.insert_economy_audit",
                 new_callable=AsyncMock,
             ),
             patch(
@@ -134,7 +133,7 @@ class TestDebit:
                 return_value=80,
             ),
             patch(
-                "services.economy_service.db.execute",
+                "services.economy_service.db.insert_economy_audit",
                 new_callable=AsyncMock,
             ) as audit,
             patch(
@@ -147,7 +146,7 @@ class TestDebit:
             )
             assert new_bal == 80
             # negative delta in audit row
-            assert audit.call_args.args[1] == (1, 2, None, -20, 80, "shop:potion")
+            assert audit.call_args.args == (1, 2, None, -20, 80, "shop:potion")
             assert emit.call_args.kwargs["delta"] == -20
 
 
@@ -204,7 +203,7 @@ class TestBetAndSettle:
                 return_value=200,
             ),
             patch(
-                "services.economy_service.db.execute",
+                "services.economy_service.db.insert_economy_audit",
                 new_callable=AsyncMock,
             ),
             patch(
@@ -252,7 +251,10 @@ async def test_refund_credits_amount_with_reason_attribution():
             new_callable=AsyncMock,
             return_value=750,
         ) as add_coins,
-        patch("services.economy_service.db.execute", new_callable=AsyncMock),
+        patch(
+            "services.economy_service.db.insert_economy_audit",
+            new_callable=AsyncMock,
+        ),
         patch(
             "services.economy_service.bus.emit",
             new_callable=AsyncMock,
