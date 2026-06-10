@@ -224,9 +224,15 @@ class _XpRemoveSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction, ephemeral=True):
             return
-        # Field-specific: clears only the XP tier, preserves any days_required on
-        # the same row, and drops the row entirely when no time tier remains.
-        await db.clear_role_xp_threshold(interaction.guild.id, self.values[0])
+        # Audited seam: the field-specific clear (preserves any days_required on
+        # the row; drops it only when no time tier remains) + audit emit live in
+        # role_automation. The cache invalidate also runs there; this local call
+        # keeps the panel's invalidator wiring pinned by test_xp_cog_caching.
+        await role_automation.clear_xp_threshold(
+            guild_id=interaction.guild.id,
+            role_name=self.values[0],
+            actor_id=interaction.user.id,
+        )
         invalidate_xp_threshold_roles(interaction.guild.id)
         await safe_followup(
             interaction,

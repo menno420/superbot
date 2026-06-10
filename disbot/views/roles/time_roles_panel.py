@@ -253,10 +253,15 @@ class _TimeRemoveSelect(discord.ui.Select):
         super().__init__(placeholder="Choose a threshold to remove…", options=options)
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        await db.clear_role_time_threshold(interaction.guild.id, self.values[0])
-        # Field-specific: clears only the time tier and preserves any XP config
-        # on the row (the row is dropped only when no automation remains).
-        # Refresh the cached XP-role list in case the row was deleted.
+        # Audited seam: the field-specific clear (preserves any XP config on the
+        # row; drops it only when no automation remains) + audit emit live in
+        # role_automation. The cache invalidate also runs there; this local call
+        # keeps the panel's invalidator wiring pinned by test_xp_cog_caching.
+        await role_automation.clear_time_threshold(
+            guild_id=interaction.guild.id,
+            role_name=self.values[0],
+            actor_id=interaction.user.id,
+        )
         invalidate_xp_threshold_roles(interaction.guild.id)
         await interaction.response.send_message(
             f"✅ Removed **{self.values[0]}** from auto-assignment.",

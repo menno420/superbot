@@ -190,7 +190,16 @@ services) without partitioning by module.
 - **Stop:** any classification that would *change execution access* — that is
   governance, not ledger work.
 
-### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — ready
+### Batch 3 — Service-boundary fixes (RS03 · RS06 · RS17; RS07 optional) — executed in **#652** (2026-06-10, verify merged; **RS07 still open**)
+
+> Outcome notes: RS03 = `set_policy` owns old-value read + audit (real
+> `prev_value`) + typed `RoutingMutationResult`, with a new import-fence
+> invariant; RS17 = dispatcher arm thinned to validation + result consumption;
+> RS06 = audited `clear_{time,xp}_threshold` seam methods + the three direct
+> clear sites migrated + the threshold fence widened to clears/full-row
+> remove. **RS07 (chain service extraction) was deferred** — optional slice,
+> new-service design; it remains the only open item in this batch. Details:
+> PR #652 + `.sessions/2026-06-10-batch3-service-boundaries.md`.
 
 - **Objective:** writes and their audit live in the domain owner, not the caller.
 - **Files:** `disbot/services/command_routing.py` (typed mutation result; audit

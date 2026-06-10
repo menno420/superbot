@@ -138,3 +138,133 @@ async def test_set_xp_threshold_writes_invalidates_and_audits():
     assert ekw["target"] == "role:777"
     assert ekw["new_value"] == "L25"
     assert ekw["mutation_id"] == mid
+
+
+# ---------------------------------------------------------------------------
+# Audited clear seam (Batch 3, RS06) — the field-specific removals route
+# through the service: old-value read for the audit row, canonical clear
+# primitive, XP-cache invalidation, audit emit, mutation_id returned.
+# ---------------------------------------------------------------------------
+
+
+def _clear_patches(old_rows):
+    return (
+        patch(
+            "utils.db.roles.get_role_thresholds",
+            AsyncMock(return_value=old_rows),
+        ),
+        patch(
+            "utils.guild_config_accessors.invalidate_xp_threshold_roles",
+        ),
+        patch(
+            "services.role_automation.emit_audit_action",
+            new_callable=AsyncMock,
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_clear_time_threshold_clears_invalidates_and_audits():
+    old_rows = [
+        {
+            "role_name": "Veteran",
+            "days_required": 7,
+            "level_required": None,
+            "xp_auto_assign": False,
+            "role_id": 555,
+            "display_name": "Veteran",
+        },
+    ]
+    get_mock, inval_mock, emit_mock = _clear_patches(old_rows)
+    with (
+        get_mock,
+        patch(
+            "utils.db.roles.clear_role_time_threshold",
+            new_callable=AsyncMock,
+        ) as clearer,
+        inval_mock as inval,
+        emit_mock as emit,
+    ):
+        mid = await role_automation.clear_time_threshold(
+            guild_id=1,
+            role_name="Veteran",
+            actor_id=99,
+        )
+
+    assert mid
+    clearer.assert_awaited_once_with(1, "Veteran")
+    # The row may drop entirely (no XP tier left) — the cache must refresh.
+    inval.assert_called_once_with(1)
+    emit.assert_awaited_once()
+    ekw = emit.await_args.kwargs
+    assert ekw["subsystem"] == "role_automation"
+    assert ekw["mutation_type"] == "clear_time_threshold"
+    assert ekw["target"] == "role:555"  # id-keyed from the stored row
+    assert ekw["prev_value"] == "7d"  # the real old tier, not None
+    assert ekw["new_value"] is None
+    assert ekw["mutation_id"] == mid
+
+
+@pytest.mark.asyncio
+async def test_clear_xp_threshold_clears_invalidates_and_audits():
+    old_rows = [
+        {
+            "role_name": "Sage",
+            "days_required": 0,
+            "level_required": 20,
+            "xp_auto_assign": True,
+            "role_id": None,  # name-keyed legacy row
+            "display_name": None,
+        },
+    ]
+    get_mock, inval_mock, emit_mock = _clear_patches(old_rows)
+    with (
+        get_mock,
+        patch(
+            "utils.db.roles.clear_role_xp_threshold",
+            new_callable=AsyncMock,
+        ) as clearer,
+        inval_mock as inval,
+        emit_mock as emit,
+    ):
+        mid = await role_automation.clear_xp_threshold(
+            guild_id=1,
+            role_name="Sage",
+            actor_id=99,
+        )
+
+    assert mid
+    clearer.assert_awaited_once_with(1, "Sage")
+    inval.assert_called_once_with(1)
+    ekw = emit.await_args.kwargs
+    assert ekw["mutation_type"] == "clear_xp_threshold"
+    assert ekw["target"] == "role:Sage"  # name fallback when no id captured
+    assert ekw["prev_value"] == "L20"
+    assert ekw["new_value"] is None
+
+
+@pytest.mark.asyncio
+async def test_clear_threshold_tolerates_missing_row():
+    """Clearing a tier whose row vanished (race/legacy) still clears,
+    invalidates, and audits — with prev_value=None and a name-keyed target."""
+    get_mock, inval_mock, emit_mock = _clear_patches(old_rows=[])
+    with (
+        get_mock,
+        patch(
+            "utils.db.roles.clear_role_time_threshold",
+            new_callable=AsyncMock,
+        ) as clearer,
+        inval_mock,
+        emit_mock as emit,
+    ):
+        mid = await role_automation.clear_time_threshold(
+            guild_id=1,
+            role_name="Ghost",
+            actor_id=99,
+        )
+
+    assert mid
+    clearer.assert_awaited_once_with(1, "Ghost")
+    ekw = emit.await_args.kwargs
+    assert ekw["target"] == "role:Ghost"
+    assert ekw["prev_value"] is None

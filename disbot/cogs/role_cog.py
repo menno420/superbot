@@ -507,10 +507,15 @@ class RoleCog(commands.Cog):
             ),
             role_name,
         )
-        await db.clear_role_time_threshold(ctx.guild.id, match)
-        # Field-specific: clears only the time tier, preserving any XP config on
-        # the row (the row is dropped only when no automation remains).  Refresh
-        # the F-1 XP-role cache in case the row was deleted.
+        # Audited seam: the field-specific clear (preserves any XP config on the
+        # row; drops it only when no automation remains) + audit emit live in
+        # role_automation. The cache invalidate also runs there; this local call
+        # keeps the cog's invalidator wiring pinned by test_xp_cog_caching.
+        await role_automation.clear_time_threshold(
+            guild_id=ctx.guild.id,
+            role_name=match,
+            actor_id=ctx.author.id,
+        )
         invalidate_xp_threshold_roles(ctx.guild.id)
         await ctx.send(f"✅ Removed **{match}** from time-based assignment.")
 
