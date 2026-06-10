@@ -25,8 +25,6 @@ import shutil
 import discord
 from discord.ext import commands
 
-from utils import db
-
 # ---------------------------------------------------------------------------
 # Data directories (mirror the cog's pre-stabilization layout exactly)
 # ---------------------------------------------------------------------------
@@ -223,22 +221,21 @@ async def build_check_database_embed() -> discord.Embed:
         "chain_channels",
         "counting_state",
     }
+    from utils.db.migrations import (
+        applied_migration_versions,
+        list_public_tables,
+        migration_versions_on_disk,
+    )
+
     try:
-        rows = await db.fetchall(
-            "SELECT tablename FROM pg_tables WHERE schemaname='public'",
-            (),
-        )
-        existing = {r["tablename"] for r in rows}
-        applied_rows = await db.fetchall("SELECT version FROM schema_migrations", ())
-        applied = {r["version"] for r in applied_rows}
+        existing = await list_public_tables()
+        applied = await applied_migration_versions()
     except Exception as exc:
         return discord.Embed(
             title="Database Schema Check",
             description=f"❌ Could not query database: {exc}",
             color=discord.Color.red(),
         )
-
-    from utils.db.migrations import migration_versions_on_disk
 
     on_disk = migration_versions_on_disk()
     pending = on_disk - applied

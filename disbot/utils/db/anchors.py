@@ -57,6 +57,20 @@ async def upsert_panel_anchor(
     return dict(row)
 
 
+async def count_active_anchors_by_subsystem() -> list[dict]:
+    """Active (non-stale) anchor counts per subsystem, busiest first.
+
+    The ``!platform anchors`` diagnostic read model (RS08 — the SQL used
+    to live inline in ``cogs/diagnostic/_platform_embeds.py``). Rows are
+    ``[{"subsystem", "n"}, ...]``.
+    """
+    rows = await pool.get().fetch(
+        "SELECT subsystem, COUNT(*) AS n FROM panel_anchors "
+        "WHERE NOT is_stale GROUP BY subsystem ORDER BY n DESC",
+    )
+    return [dict(r) for r in rows]
+
+
 async def get_panel_anchor_by_message(message_id: int) -> dict | None:
     row = await pool.get().fetchrow(
         "SELECT * FROM panel_anchors WHERE message_id = $1 AND NOT is_stale",

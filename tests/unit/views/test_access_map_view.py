@@ -20,6 +20,7 @@ from services.access_projection import (
     AxisOutcome,
     LockedReason,
 )
+from services.help_projection import HelpDecision, HelpEntryState
 from views.server_management.access_map import (
     SIMULATION_LIMIT_NOTE,
     AccessMapView,
@@ -137,27 +138,150 @@ async def test_access_map_embed_buckets_and_labels():
     assert sim.value == SIMULATION_LIMIT_NOTE
 
 
+def _help_decision(
+    key: str,
+    state: HelpEntryState,
+    *,
+    reason_code: str | None = None,
+) -> HelpDecision:
+    return HelpDecision(key=key, kind="subsystem", state=state, reason_code=reason_code)
+
+
+def _projection(
+    subsystems: tuple[HelpDecision, ...],
+    *,
+    presentations: dict[str, object] | None = None,
+    orphans: tuple[HelpDecision, ...] = (),
+) -> MagicMock:
+    """A HelpProjection stand-in exposing what the preview consumes."""
+    projection = MagicMock()
+    projection.subsystems = subsystems
+    projection.orphaned_overrides = orphans
+    projection.subsystem_presentation = lambda key: (presentations or {}).get(key)
+    return projection
+
+
 @pytest.mark.asyncio
 async def test_help_preview_buckets_advertised_locked_hidden():
-    decisions = (
-        _decision("economy"),  # shown + allow → advertised
-        _decision("ai", "deny", help_state="shown"),  # shown + deny → locked
-        _decision("admin", help_state="hidden"),  # hidden
+    """The preview consumes the Help projection seam (Tier-2 fix,
+    2026-06-10): buckets come from reason-coded ``HelpEntryState``, not
+    re-derived access axes — and the projection runs on the Q-0045
+    declared-tier context."""
+    projection = _projection(
+        (
+            _help_decision("economy", HelpEntryState.SHOWN),
+            _help_decision(
+                "ai",
+                HelpEntryState.ROUTED_OFF,
+                reason_code="routing_disabled",
+            ),
+            _help_decision(
+                "admin",
+                HelpEntryState.GOVERNANCE_HIDDEN,
+                reason_code="subsystem_hidden",
+            ),
+        ),
     )
     with patch(
-        "views.server_management.access_map.project_access_map",
-        AsyncMock(return_value=decisions),
-    ):
+        "views.server_management.access_map.project_help_with_execution",
+        AsyncMock(return_value=projection),
+    ) as proj:
         embed = await build_help_preview_embed(99, 5, "trusted")
 
+    ctx = proj.await_args.args[0]
+    assert ctx.member is None and ctx.member_tier == "trusted"  # Q-0045 path
     names = [f.name for f in embed.fields]
     assert any(n.startswith("📣 Advertised (1)") for n in names)
     assert any(n.startswith("🔒 Shown as locked (1)") for n in names)
     assert any(n.startswith("🙈 Hidden (1)") for n in names)
     locked = next(f for f in embed.fields if f.name.startswith("🔒"))
-    assert "This feature is turned off here." in locked.value
+    assert "This feature is turned off here." in locked.value  # safe_text only
     assert "Trusted user" in embed.description
     assert any(f.value == SIMULATION_LIMIT_NOTE for f in embed.fields)
+
+
+@pytest.mark.asyncio
+async def test_help_preview_governance_deny_is_hidden_not_locked():
+    """THE Tier-2 case: a governance-denied subsystem must render in the
+    Hidden bucket (live Help hides it) — the pre-seam panel showed it as
+    "Shown as locked"."""
+    projection = _projection(
+        (
+            _help_decision(
+                "admin",
+                HelpEntryState.GOVERNANCE_HIDDEN,
+                reason_code="subsystem_hidden",
+            ),
+        ),
+    )
+    with patch(
+        "views.server_management.access_map.project_help_with_execution",
+        AsyncMock(return_value=projection),
+    ):
+        embed = await build_help_preview_embed(99, 5, "user")
+
+    locked_fields = [f for f in embed.fields if f.name.startswith("🔒")]
+    assert not any("admin" in f.value for f in locked_fields)
+    hidden = next(f for f in embed.fields if f.name.startswith("🙈"))
+    assert "admin" in hidden.value and "(governance)" in hidden.value
+
+
+@pytest.mark.asyncio
+async def test_help_preview_renders_overlay_hide_and_rename():
+    """HLP-3 overlay state renders: a display-hidden subsystem lands in
+    Hidden annotated *(overlay)*, and a renamed one shows its custom name
+    beside the stable key (the pre-seam panel ignored the overlay)."""
+    presentation = MagicMock()
+    presentation.display_name = "Bank"
+    presentation.default_display_name = "Economy"
+    projection = _projection(
+        (
+            _help_decision("economy", HelpEntryState.SHOWN),
+            _help_decision(
+                "counting",
+                HelpEntryState.DISPLAY_HIDDEN,
+                reason_code="overlay_hidden",
+            ),
+        ),
+        presentations={"economy": presentation},
+    )
+    with patch(
+        "views.server_management.access_map.project_help_with_execution",
+        AsyncMock(return_value=projection),
+    ):
+        embed = await build_help_preview_embed(99, 5, "user")
+
+    advertised = next(f for f in embed.fields if f.name.startswith("📣"))
+    assert "economy →“Bank”" in advertised.value
+    hidden = next(f for f in embed.fields if f.name.startswith("🙈"))
+    assert "counting" in hidden.value and "(overlay)" in hidden.value
+
+
+@pytest.mark.asyncio
+async def test_help_preview_reports_orphaned_overlay_rows():
+    """The preview is the operator surface the HLP-3 orphan contract
+    names: rows for retired catalogue keys are reported, never rendered
+    as entries."""
+    orphan = HelpDecision(
+        key="retired_subsystem",
+        kind="subsystem",
+        state=HelpEntryState.ORPHANED_OVERRIDE,
+        reason_code="unknown_key",
+    )
+    projection = _projection(
+        (_help_decision("economy", HelpEntryState.SHOWN),),
+        orphans=(orphan,),
+    )
+    with patch(
+        "views.server_management.access_map.project_help_with_execution",
+        AsyncMock(return_value=projection),
+    ):
+        embed = await build_help_preview_embed(99, 5, "user")
+
+    orphan_field = next(f for f in embed.fields if f.name.startswith("⚠️ Orphaned"))
+    assert "retired_subsystem" in orphan_field.value
+    advertised = next(f for f in embed.fields if f.name.startswith("📣"))
+    assert "retired_subsystem" not in advertised.value
 
 
 # ---------------------------------------------------------------------------

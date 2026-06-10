@@ -13,7 +13,7 @@ from core.runtime.message_pipeline import (
     MessagePipelineContext,
     StageResult,
 )
-from services import moderation_service
+from services import chain_service, moderation_service
 from utils import db
 from views.base import HubView, interaction_is_admin, send_panel
 
@@ -97,17 +97,24 @@ class ChainCog(commands.Cog):
             return
 
         target_channel = channel or ctx.channel
-        channel_id = target_channel.id
 
-        existing = await db.get_chain_channel(channel_id)
-        if existing and existing.get("word"):
+        result = await chain_service.create_chain(
+            guild_id=ctx.guild.id,
+            channel_id=target_channel.id,
+            word=word,
+            actor_id=ctx.author.id,
+        )
+        if result.status == "already_exists":
             await ctx.send(f"❌ A chain is already active in {target_channel.mention}.")
             return
-
-        await db.set_chain_channel(channel_id, ctx.guild.id, word.lower())
+        if result.status == "invalid":
+            await ctx.send(
+                "❌ Please specify the word to enforce in the chain.\n**Usage:** `!chain create [channel] <word>`",
+            )
+            return
 
         await ctx.send(
-            f"✅ Chain created in {target_channel.mention}. Only the word `{word}` is allowed in this channel.",
+            f"✅ Chain created in {target_channel.mention}. Only the word `{result.new_value}` is allowed in this channel.",
         )
 
     @create_chain.error
@@ -131,14 +138,15 @@ class ChainCog(commands.Cog):
         **Usage:** `!chain delete [channel]`
         """
         target_channel = channel or ctx.channel
-        channel_id = target_channel.id
 
-        existing = await db.get_chain_channel(channel_id)
-        if not existing:
+        result = await chain_service.delete_chain(
+            guild_id=ctx.guild.id,
+            channel_id=target_channel.id,
+            actor_id=ctx.author.id,
+        )
+        if not result.applied:
             await ctx.send(f"❌ No active chain found in {target_channel.mention}.")
             return
-
-        await db.delete_chain_channel(channel_id)
 
         await ctx.send(f"✅ Chain deleted from {target_channel.mention}.")
 
@@ -174,16 +182,18 @@ class ChainCog(commands.Cog):
             return
 
         target_channel = channel or ctx.channel
-        channel_id = target_channel.id
 
-        existing = await db.get_chain_channel(channel_id)
-        if not existing:
+        result = await chain_service.set_word_limit(
+            guild_id=ctx.guild.id,
+            channel_id=target_channel.id,
+            limit=limit,
+            actor_id=ctx.author.id,
+        )
+        if result.status == "not_found":
             await ctx.send(
                 f"❌ No active chain found in {target_channel.mention}. Create one first with `!chain create`.",
             )
             return
-
-        await db.set_chain_limit(channel_id, limit)
 
         await ctx.send(
             f"✅ Word limit of {limit} has been set in {target_channel.mention}.",
@@ -210,15 +220,19 @@ class ChainCog(commands.Cog):
         **Usage:** `!chain removelimit [channel]`
         """
         target_channel = channel or ctx.channel
-        channel_id = target_channel.id
 
-        existing = await db.get_chain_channel(channel_id)
-        if existing and existing.get("word_limit"):
-            await db.set_chain_limit(channel_id, 0)
+        result = await chain_service.set_word_limit(
+            guild_id=ctx.guild.id,
+            channel_id=target_channel.id,
+            limit=0,
+            actor_id=ctx.author.id,
+        )
+        if result.applied:
             await ctx.send(
                 f"✅ Word limit has been removed from {target_channel.mention}.",
             )
         else:
+            # not_found / no_change — nothing was set, matching legacy copy.
             await ctx.send(f"ℹ️ No word limit is set in {target_channel.mention}.")
 
     @remove_limit.error
@@ -320,7 +334,7 @@ class ChainCog(commands.Cog):
             delete_message = True
 
         if not delete_message:
-            await db.increment_chain_count(message.channel.id)
+            await chain_service.record_chain_progress(message.channel.id)
             return False  # Message is allowed
 
         # Compose the human-readable warning + audit reason.
@@ -410,17 +424,26 @@ class _CreateChainModal(discord.ui.Modal, title="Create Chain"):  # type: ignore
                 ephemeral=True,
             )
             return
-        word = self.word_input.value.lower().strip()
-        existing = await db.get_chain_channel(channel.id)
-        if existing and existing.get("word"):
+        result = await chain_service.create_chain(
+            guild_id=interaction.guild_id,
+            channel_id=channel.id,
+            word=self.word_input.value,
+            actor_id=interaction.user.id,
+        )
+        if result.status == "already_exists":
             await interaction.response.send_message(
                 f"❌ A chain is already active in {channel.mention}.",
                 ephemeral=True,
             )
             return
-        await db.set_chain_channel(channel.id, interaction.guild_id, word)
+        if result.status == "invalid":
+            await interaction.response.send_message(
+                "❌ Please provide a non-empty word.",
+                ephemeral=True,
+            )
+            return
         await interaction.response.send_message(
-            f"✅ Chain created in {channel.mention}. Only `{word}` is allowed.",
+            f"✅ Chain created in {channel.mention}. Only `{result.new_value}` is allowed.",
             ephemeral=True,
         )
 
@@ -444,14 +467,17 @@ class _DeleteChainModal(discord.ui.Modal, title="Delete Chain"):  # type: ignore
                 ephemeral=True,
             )
             return
-        existing = await db.get_chain_channel(channel.id)
-        if not existing:
+        result = await chain_service.delete_chain(
+            guild_id=interaction.guild_id,
+            channel_id=channel.id,
+            actor_id=interaction.user.id,
+        )
+        if not result.applied:
             await interaction.response.send_message(
                 f"❌ No active chain found in {channel.mention}.",
                 ephemeral=True,
             )
             return
-        await db.delete_chain_channel(channel.id)
         await interaction.response.send_message(
             f"✅ Chain deleted from {channel.mention}.",
             ephemeral=True,
@@ -488,14 +514,18 @@ class _SetLimitModal(discord.ui.Modal, title="Set Word Limit"):  # type: ignore[
             )
             return
         limit = int(self.limit_input.value.strip())
-        existing = await db.get_chain_channel(channel.id)
-        if not existing:
+        result = await chain_service.set_word_limit(
+            guild_id=interaction.guild_id,
+            channel_id=channel.id,
+            limit=limit,
+            actor_id=interaction.user.id,
+        )
+        if result.status == "not_found":
             await interaction.response.send_message(
                 f"❌ No active chain in {channel.mention}. Create one first.",
                 ephemeral=True,
             )
             return
-        await db.set_chain_limit(channel.id, limit)
         if limit == 0:
             await interaction.response.send_message(
                 f"✅ Word limit removed from {channel.mention}.",
@@ -527,14 +557,19 @@ class _ClearLimitModal(discord.ui.Modal, title="Clear Word Limit"):  # type: ign
                 ephemeral=True,
             )
             return
-        existing = await db.get_chain_channel(channel.id)
-        if not existing or not existing.get("word_limit"):
+        result = await chain_service.set_word_limit(
+            guild_id=interaction.guild_id,
+            channel_id=channel.id,
+            limit=0,
+            actor_id=interaction.user.id,
+        )
+        if not result.applied:
+            # not_found / no_change — nothing was set, matching legacy copy.
             await interaction.response.send_message(
                 f"ℹ️ No word limit is set in {channel.mention}.",
                 ephemeral=True,
             )
             return
-        await db.set_chain_limit(channel.id, 0)
         await interaction.response.send_message(
             f"✅ Word limit removed from {channel.mention}.",
             ephemeral=True,

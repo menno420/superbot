@@ -111,6 +111,28 @@ def migration_versions_on_disk() -> set[int]:
     }
 
 
+async def applied_migration_versions() -> set[int]:
+    """Versions recorded in ``schema_migrations`` (applied on this DB).
+
+    The diagnostic schema check compares this against
+    :func:`migration_versions_on_disk` to report "migrations applied N/N"
+    (RS08 — the query used to live inline in ``cogs/diagnostic/_helpers.py``).
+    """
+    rows = await pool.fetchall("SELECT version FROM schema_migrations", ())
+    return {r["version"] for r in rows}
+
+
+async def list_public_tables() -> set[str]:
+    """Names of every table in the ``public`` schema (read-only catalog
+    query for the diagnostic schema check).
+    """
+    rows = await pool.fetchall(
+        "SELECT tablename FROM pg_tables WHERE schemaname='public'",
+        (),
+    )
+    return {r["tablename"] for r in rows}
+
+
 async def ensure_migrations_table() -> None:
     await pool.get().execute(
         """CREATE TABLE IF NOT EXISTS schema_migrations (

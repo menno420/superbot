@@ -108,7 +108,11 @@ Severity tiers per `docs/owner/agent-workflow-spec.md` §3.3.
 
 ### Tier 2 — important improvement
 
-- **The #656 Help Preview re-derives Help truth outside the #657 projection
+- ✅ **RESOLVED same day (PR #671):** the preview was rebuilt on
+  `project_help_with_execution` exactly as prescribed below, with the
+  governance-deny + overlay-state test cases added (and the orphan-report
+  contract got its first consumer). Original finding preserved:
+  **The #656 Help Preview re-derives Help truth outside the #657 projection
   seam** (`disbot/views/server_management/access_map.py`,
   `build_help_preview_embed` :149-179). Its "hidden" bucket keys only off the
   ledger-classification help axis, so a **governance-denied** subsystem shows
@@ -271,12 +275,12 @@ stacking on.
    boundary makes this safe now). The natural games-lane continuation.
 2. **RS07 chain-service extraction + Batch 9 RS08 read-model extraction** —
    Sonnet, one session, both bounded and decision-free. Closes the last named
-   service-boundary hole + starts Batch 9.
+   service-boundary hole + starts Batch 9. *(✅ EXECUTED same day, PR #671.)*
 3. **Help-lane completion slice** — first migrate the #656 Help Preview onto
    `project_help_with_execution` (the §4 Tier-2 drift; seam exists, zero new
-   contract design), then the overlay **editor UI** (audit Phase 5, Q-0059
-   embed builder) — Fable/Opus planning first for the editor (UI-heavy,
-   preview mandatory).
+   contract design) *(✅ the migration EXECUTED same day, PR #671)*, then the
+   overlay **editor UI** (audit Phase 5, Q-0059 embed builder) — Fable/Opus
+   planning first for the editor (UI-heavy, preview mandatory).
 4. **Batch 10 planning round** (wizard-finalization slice selection + next AI
    §7 family selection) — Opus/Fable planning-only; produces the next two
    implementation prompts.

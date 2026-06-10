@@ -36,6 +36,12 @@ from services.access_projection import (
     AccessContext,
     AccessDecision,
     project_access_map,
+    safe_locked_reason,
+)
+from services.help_projection import (
+    HelpEntryState,
+    HelpProjection,
+    project_help_with_execution,
 )
 from utils.ui_constants import ADMIN_COLOR
 from views.base import BaseView, interaction_is_admin
@@ -146,6 +152,25 @@ async def build_access_map_embed(
     return embed, decisions
 
 
+def _subsystem_label(projection: HelpProjection, key: str) -> str:
+    """The stable key, plus the guild's overlay rename when one applies
+    (Q-0058: operator surfaces show custom + stable key together).
+    """
+    presentation = projection.subsystem_presentation(key)
+    if presentation is not None and presentation.display_name != (
+        presentation.default_display_name
+    ):
+        return f"{key} →“{presentation.display_name}”"
+    return key
+
+
+# Which sub-bucket a hiding state renders as (annotation after the key).
+_HIDDEN_ANNOTATION = {
+    HelpEntryState.GOVERNANCE_HIDDEN: "governance",
+    HelpEntryState.DISPLAY_HIDDEN: "display",
+}
+
+
 async def build_help_preview_embed(
     guild_id: int,
     channel_id: int | None,
@@ -153,30 +178,37 @@ async def build_help_preview_embed(
 ) -> discord.Embed:
     """Render what Help advertises to a simulated ``tier`` audience (§6.3).
 
-    Buckets per §16.4's honest rendering: **advertised** (help shows it and
-    the audience may use it), **shown as locked** (help shows it but an axis
-    denies — with the user-safe reason only), **hidden** (help does not show
-    it to this audience).
+    Consumes :func:`services.help_projection.project_help_with_execution`
+    — the same reason-coded model live Help renders from — so the panel
+    can never disagree with Help about what hides (the pre-#657 version
+    re-derived buckets from raw access axes and mislabeled
+    governance-hidden subsystems as "locked"; past-day audit Tier-2,
+    2026-06-10). Buckets per §16.4's honest rendering: **advertised**
+    (``shown``), **shown as locked** (advertised but an execution axis
+    denies — ``routed_off`` / ``command_locked`` / ``unavailable``, with
+    the user-safe reason only), **hidden** (``governance_hidden`` /
+    ``display_hidden``, including HLP-3 overlay hides). Overlay renames
+    render inline; orphaned overlay rows are reported here — the operator
+    surface the HLP-3 orphan contract names.
     """
-    decisions = await project_access_map(
+    projection = await project_help_with_execution(
         _simulated_context(guild_id, channel_id, tier),
     )
     advertised: list[str] = []
     locked_lines: list[str] = []
     hidden: list[str] = []
-    for d in decisions:
-        help_axis = next(
-            (o for o in d.source_chain if o.axis.value == "help"),
-            None,
-        )
-        help_shown = help_axis is not None and help_axis.state == "shown"
-        if not help_shown:
-            hidden.append(d.feature)
-        elif d.effective == "deny":
-            reason = d.reason.safe_text if d.reason else "locked"
-            locked_lines.append(f"🔒 **{d.feature}** — {reason}")
-        else:
-            advertised.append(d.feature)
+    for d in projection.subsystems:
+        label = _subsystem_label(projection, d.key)
+        if d.state is HelpEntryState.SHOWN:
+            advertised.append(label)
+        elif d.advertised:  # routed_off / command_locked / unavailable
+            reason = safe_locked_reason(d.reason_code)
+            locked_lines.append(f"🔒 **{label}** — {reason.safe_text}")
+        else:  # governance_hidden / display_hidden (incl. overlay hides)
+            annotation = _HIDDEN_ANNOTATION.get(d.state, d.state.value)
+            if d.reason_code == "overlay_hidden":
+                annotation = "overlay"
+            hidden.append(f"{label} *({annotation})*")
 
     embed = discord.Embed(
         title="👁 Help Preview",
@@ -196,6 +228,16 @@ async def build_help_preview_embed(
     _chunk_field(embed, f"🔒 Shown as locked ({len(locked_lines)})", locked_lines)
     if hidden:
         _chunk_field(embed, f"🙈 Hidden ({len(hidden)})", ["· ".join(hidden)])
+    if projection.orphaned_overrides:
+        orphan_keys = ", ".join(f"`{o.key}`" for o in projection.orphaned_overrides)
+        _chunk_field(
+            embed,
+            f"⚠️ Orphaned overlay rows ({len(projection.orphaned_overrides)})",
+            [
+                f"{orphan_keys} — overlay entries for retired catalogue keys; "
+                "never rendered by Help. Clean up via the Help overlay reset.",
+            ],
+        )
     embed.add_field(name="Simulation limits", value=SIMULATION_LIMIT_NOTE, inline=False)
     embed.set_footer(text="Read-only preview · simulated audience")
     return embed
