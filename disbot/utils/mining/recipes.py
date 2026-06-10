@@ -24,7 +24,7 @@ RECIPES_FILE = os.path.join(
 
 DEFAULT_RECIPES: dict[str, dict[str, int]] = {
     "stone hut": {"stone": 5},
-    "iron pickaxe": {"iron": 3, "wood": 1},
+    "iron pickaxe": {"iron": 3, "wood": 2},  # keep in lockstep with recipes.json
     "gold statue": {"gold": 4},
     "diamond throne": {"diamond": 6},
     "wooden house": {"wood": 8},

@@ -1,4 +1,4 @@
-"""game_xp CRUD — the shared cross-game progression track (migration 064).
+"""game_xp CRUD — the shared cross-game progression track (migration 065).
 
 One row per ``(user_id, guild_id, game)``: per-game XP attribution and the
 per-game daily-soft-cap counter.  The player's **shared level** derives from

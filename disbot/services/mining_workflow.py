@@ -330,6 +330,17 @@ async def quick_craft(user_id: int, guild_id: int) -> TradeResult:
                 await db.equip_item(suid, guild_id, slot, last, conn=conn)
                 message = f"Crafted **{last}** and equipped it in the **{slot}** slot!"
         await db.set_last_broken(suid, guild_id, None, conn=conn)
+        xp = await game_xp_service.award(
+            guild_id,
+            user_id,
+            game=game_xp_service.GAME_CRAFTING,
+            action="quick_craft",
+            conn=conn,
+        )
+    if xp is not None:
+        await game_xp_service.emit_award_events(xp)
+        if xp.leveled_up:
+            message += "\n" + xp.note
     return TradeResult(True, message)
 
 
