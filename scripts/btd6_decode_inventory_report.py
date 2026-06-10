@@ -72,10 +72,11 @@ _DOMAIN_META: dict[str, dict[str, str]] = {
         "descriptions now wired inline into stats (373/375) + grounding.",
     },
     "Bloons": {
-        "extracted": "partial",
-        "verdict": "ingest-later",
-        "reason": "bosses live here (Bloonarius sampled = 20k HP); 235 bloons "
-        "counted, children/immunity decode unverified. Still wiki-sourced.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "children/immune_to/health/speed/fortified-health cut over "
+        "to game data (--bloons, game_sourced_fields marker); bosses ingested "
+        "from Bloons/<boss>/ via --bosses. rbe stays derived; prose wiki-curated.",
     },
     "Rounds": {
         "extracted": "no",
@@ -88,14 +89,17 @@ _DOMAIN_META: dict[str, dict[str, str]] = {
         "reason": "7 IncomeSetModels for economy income; counted, not mapped.",
     },
     "Powers": {
-        "extracted": "no",
-        "verdict": "ingest-later",
-        "reason": "27 consumable powers; one sampled, structure not mapped.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "--powers builds powers.json (25 of 27; Rogue/seasonal "
+        "excluded) with decoded effect factors + filled {0} placeholders.",
     },
     "Mods": {
-        "extracted": "no",
-        "verdict": "ingest-later",
-        "reason": "game-mode rule mods (CHIMPS etc.); not opened.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "--modes overlays per-mode structured rules blocks "
+        "(cash/lives/rounds/cost + restrictions) onto modes.json from "
+        "Mods/<mode>.json mutatorMods; taxonomy/prose stay curated.",
     },
     "Achievements": {
         "extracted": "no",
@@ -105,7 +109,9 @@ _DOMAIN_META: dict[str, dict[str, str]] = {
     "Artifacts": {
         "extracted": "no",
         "verdict": "cosmetic-skip",
-        "reason": "Rogue Legends artifacts; dictionary marks skip.",
+        "reason": "Rogue Legends/Frontier artifacts+traits; real gameplay "
+        "modifiers but spin-off-mode-only — out of main-game scope (pairs "
+        "with rogueData.json; revisit only on a scope expansion).",
     },
     "BloonOverlays": {
         "extracted": "no",
@@ -113,10 +119,11 @@ _DOMAIN_META: dict[str, dict[str, str]] = {
         "reason": "bloon sprite overlays; cosmetic.",
     },
     "Bosses": {
-        "extracted": "no",
-        "verdict": "cosmetic-skip",
-        "reason": "boss *cosmetic* data (music/sprites); the HP/stats live in "
-        "Bloons/ (see decode-status). Dictionary marks skip.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "--bosses builds bosses.json from Bosses/ + Bloons/<boss>/ "
+        "(the HP/stats carrier); the folder's own music/sprite files stay "
+        "cosmetic.",
     },
     "Buffs": {
         "extracted": "no",
@@ -125,19 +132,22 @@ _DOMAIN_META: dict[str, dict[str, str]] = {
         "inline in tower models. Dictionary marks skip.",
     },
     "GeraldoItems": {
-        "extracted": "no",
-        "verdict": "cosmetic-skip",
-        "reason": "Geraldo shop item presentation; dictionary marks skip.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "--geraldo builds geraldo_items.json (16 items: cash cost, "
+        "unlock level, stock/replenish cadence + structured effect factors).",
     },
     "Knowledge": {
-        "extracted": "no",
-        "verdict": "cosmetic-skip",
-        "reason": "monkey-knowledge tree; dictionary marks skip.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "--knowledge builds monkey_knowledge.json (134 entries, "
+        "119 with structured effect factors decoded from mod.mutatorMods).",
     },
     "Maps": {
-        "extracted": "no",
-        "verdict": "cosmetic-skip",
-        "reason": "map metadata; dictionary marks skip.",
+        "extracted": "yes",
+        "verdict": "ingest-now",
+        "reason": "--maps rebuilds maps.json from Maps/ folders (86 player "
+        "maps, all difficulties, has_water; curated removables preserved).",
     },
     "Skins": {
         "extracted": "no",
@@ -200,20 +210,22 @@ _DECODE_CLASS: dict[str, str] = {
     "PierceSupportModel": "SAFE_WRITE",  # pierce -> pierceAdditive
     "RateSupportModel": "SAFE_WRITE",  # multiplier -> rateMultiplier (x-cooldown)
     "PoplustSupportModel": "SAFE_WRITE",  # *PercentIncrease -> *Percentage (verified)
+    # 2026-06-09 evidence pass — semantics pinned by committed values, mapped
+    # in _BUFF_FIELD_MAP (see each entry's confirmation note there):
+    "RangeSupportModel": "SAFE_WRITE",  # additive/multiplier -> rangeAdditive/%
+    "StartOfRoundRateBuffModel": "SAFE_WRITE",  # decoded since PR #501 (was stale)
+    "ProjectileRadiusSupportModel": "SAFE_WRITE",  # -> radiusMultiplier (Striker)
+    "BananaCashIncreaseSupportModel": "SAFE_WRITE",  # -> incomePercentage (Benjamin)
+    "ProjectileSpeedSupportModel": "SAFE_WRITE",  # -> projectileSpeedPercentage (Q-0069)
     # SCHEMA_FIRST — real number, no committed buff-schema field yet
-    "ProjectileSpeedSupportModel": "SCHEMA_FIRST",
-    "ProjectileRadiusSupportModel": "SCHEMA_FIRST",
-    "FreezeDurationSupportModel": "SCHEMA_FIRST",
-    "BananaCashIncreaseSupportModel": "SCHEMA_FIRST",  # economy
-    "CentralMarketBuffModel": "SCHEMA_FIRST",  # economy
-    "BananaCentralBuffModel": "SCHEMA_FIRST",  # economy
-    "BonusCashZoneModel": "SCHEMA_FIRST",  # economy zone
+    "FreezeDurationSupportModel": "SCHEMA_FIRST",  # Silas; no confirming number
+    "CentralMarketBuffModel": "SCHEMA_FIRST",  # economy (blocked: Farm has no tiers)
+    "BananaCentralBuffModel": "SCHEMA_FIRST",  # economy (no committed number at all)
+    "BonusCashZoneModel": "SCHEMA_FIRST",  # Temple zone: sacrifice-conditional
     # DEFER — ambiguous magnitude/semantics until examples prove them
-    "RangeSupportModel": "DEFER",  # multiplier is an ambiguous fraction
-    "StartOfRoundRateBuffModel": "DEFER",  # bare "modifier"
-    "BrickellFreezeMinesAbilityBuffModel": "DEFER",  # niche
-    "BuffBlowbackZoneModel": "DEFER",  # knockback magnitude
-    "ActivateRangeSupportZoneModel": "DEFER",  # timed activated zone
+    "BrickellFreezeMinesAbilityBuffModel": "DEFER",  # bare multiplier 0.25 ambiguous
+    "BuffBlowbackZoneModel": "DEFER",  # knockback magnitude (hero not committed)
+    "ActivateRangeSupportZoneModel": "DEFER",  # inside AbilityModel; value unconfirmed
 }
 
 

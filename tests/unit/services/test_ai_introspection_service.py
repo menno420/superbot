@@ -101,7 +101,7 @@ def test_btd6_answerability_inventories_fixture_domains():
     by_name = {d.name: d for d in snap.domains}
 
     # Real fixtures ship in the repo — counts are positive and reflect the dataset.
-    for domain in ("towers", "heroes", "rounds", "bloons", "bosses"):
+    for domain in ("towers", "heroes", "rounds", "abr_rounds", "bloons", "bosses"):
         assert by_name[domain].kind == "deterministic_fixture"
         assert (by_name[domain].item_count or 0) > 0
 
@@ -112,12 +112,16 @@ def test_btd6_answerability_distinguishes_calculation_live_unsupported():
 
     assert by_name["round_cash"].kind == "calculation"
     assert by_name["ct_team_status"].kind == "live"
+    # ABR graduated from the unsupported list to a fixture (abr_rounds.json);
+    # the remaining round-set gap names the quest/Rogue/Frontier sets.
+    assert by_name["abr_rounds"].kind == "deterministic_fixture"
+    assert "alternate_round_sets" not in by_name
     # Known gaps are named explicitly so an answer never overclaims them.
-    assert by_name["alternate_round_sets"].kind == "unsupported"
+    assert by_name["other_round_sets"].kind == "unsupported"
     assert by_name["achievements"].kind == "unsupported"
     # Non-fixture domains carry no item_count (no false "we have N rows" implication).
     assert by_name["round_cash"].item_count is None
-    assert by_name["alternate_round_sets"].item_count is None
+    assert by_name["other_round_sets"].item_count is None
 
 
 def test_btd6_answerability_degrades_when_data_unavailable(monkeypatch):

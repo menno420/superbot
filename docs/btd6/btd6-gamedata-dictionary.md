@@ -43,20 +43,26 @@ knowing where, and which encoding to trust.
 | **Towers/** | 2093 | `TowerModel` | towers, heroes (per level), paragons; per-crosspath state files; attacks/projectiles/abilities/zones/buffs/subtowers inline | ✓ |
 | **Upgrades/** | 764 | `UpgradeModel` | per-upgrade `cost`/`xpCost`/`path`/`tier` + `LocsKey` (→ name & description). ~422 are player cards; the rest are hero-level internal entries | ✓ |
 | **Bloons/** | 235 | `BloonModel` | every bloon **incl. bosses** (`Bloons/Bloonarius/…`, `Blastapopoulos/`, `Diamondback/` w/ Elite tiers): `maxHealth`, `speed`, `radius`, `armourMultiplier`, `isMoab/isBoss/isCamo/…`, children via `SpawnBloonsActionModel` | ✓ |
-| **Powers/** | 27 | (mixed) | activated powers / placed-tower powers (Banana Farmer, Cash Drop…): `cost`, behaviors, `LocsKey` | ~ |
+| **Powers/** | 27 | (mixed) | activated powers / placed-tower powers (Banana Farmer, Cash Drop…): `cost`, behaviors, `LocsKey` | ✓ (`--powers` → `powers.json`, 25 of 27 + effect factors) |
 | **Rounds/** | 5181 | `RoundModel` | every round of **every mode** (not just standard 1–140): `BloonGroupModel` + `BloonEmissionModel` spawn timing | ~ |
 | **IncomeSets/** | 7 | `IncomeSetModel` | per-round cash curves (e.g. ABR `RoundThresholdMultiplier`s) | ~ |
-| **Knowledge/** | 134 | `KnowledgeModel` | Monkey Knowledge tree (meta-upgrade mods) | ✗ |
-| **Bosses/** | 7 | `BossData` | **cosmetic only** — portraits/music/icons + `LocsKey`. Boss *stats* are in **Bloons/**, not here | ✗ |
+| **Knowledge/** | 134 | `KnowledgeModel` | Monkey Knowledge tree (meta-upgrade mods) | ✓ (`--knowledge` → `monkey_knowledge.json`, 119/134 with effect factors) |
+| **Mods/** | 22 | mutator mods | per-mode rule mutators (cash/lives/rounds/cost, restrictions) | ✓ (`--modes` → `modes.json` structured `rules` blocks; taxonomy/prose stay curated) |
+| **Bosses/** | 7 | `BossData` | portraits/music/icons + `LocsKey` here; boss *stats* live in **Bloons/** | ✓ (`--bosses` → `bosses.json`, reading both) |
 | **Buffs/** | 91 | `BuffIndicatorModel` | **UI icons only** — buff *effects* are inline in the tower models | ✗ |
 | **Maps/** | 89 files (86 player) | `MapDetails` | map metadata: `difficulty` (== folder), `hasWater`, `theme`, `IsStandard` | ✓ (`--maps` → 86 player maps; 3 non-player `IsStandard=False` filtered: Blons, Base Editor Map, Protect the Yacht) |
-| **Artifacts/**, **GeraldoItems/** | 568, 16 | `ItemArtifactData` / mods | Rogue Legends artifacts, Geraldo's shop | ✗ |
-| **Achievements/**, **TrophyStoreItems/**, **Skins/**, **BloonOverlays/**, **Mods/** | — | — | cosmetics / achievements / game-mode mods | ✗ |
+| **GeraldoItems/** | 16 | mods | Geraldo's shop (cash cost, unlock level, stock cadence) | ✓ (`--geraldo` → `geraldo_items.json` + effect factors) |
+| **Artifacts/** | 568 | `ItemArtifactData` | Rogue Legends/Frontier artifacts+traits — real gameplay modifiers, but **spin-off-mode-only** | ✗ (out of main-game scope; pairs with `rogueData.json`) |
+| **Achievements/**, **TrophyStoreItems/**, **Skins/**, **BloonOverlays/** | — | — | cosmetics / achievements | ✗ |
 
-Loose files: **`textTable.json`** (12,127 keys — every name & description),
-`paragonDegreeData.json` (degree-scaling constants; we already derive these),
-`frontierData.json` (Boss/Legends scaling), `rogueData.json` (Rogue Legends),
-`resources.json` (asset refs).
+Loose files: **`textTable.json`** (12k+ keys — every name & description; live count
+in the SHA-pinned inventory report), `paragonDegreeData.json` (degree-scaling
+constants — **cross-checked exact vs our `paragon_degrees.power_for_degree`
+100/100 on 2026-06-09**; the offline `paragon_math.threshold` fallback floors
+where the game rounds, a known 48-boundary ×1-power edge), `frontierData.json`
+(**Frontier event meta-mode balance** — no main-game boss scaling, despite the
+old label), `rogueData.json` (Rogue Legends spin-off balance),
+`resources.json` (GUID→asset-path lookup; zero stat content).
 
 ## Where each thing we need lives
 

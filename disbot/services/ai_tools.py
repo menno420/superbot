@@ -809,16 +809,19 @@ async def _btd6_difficulty_cost(arguments: dict[str, Any]) -> dict[str, Any]:
 _BTD6_ROUND_COMPOSITION_SPEC = AIToolSpec(
     name="btd6_round_composition",
     description=(
-        "Exact BTD6 bloon composition for a round or a round RANGE (standard "
-        "rounds 1-140). Use for 'how many purples in rounds 35-70', 'what spawns "
-        "in round 63', 'which rounds have MOABs', 'RBE of round 80'. Pass "
-        "round_start (and round_end for a range). Pass a bloon (e.g. 'purple', "
-        "'ceramic', 'MOAB') to get its TOTAL across the range plus the per-round "
-        "counts; omit it for each round's full spawn list + RBE. Do not count or "
-        "sum yourself — this returns the exact totals. For 'heaviest / most / "
-        "which rounds have the most' questions, read the pre-ranked `heaviest` "
-        "(with a bloon, ranked by count) or `heaviest_by_rbe` (without, ranked "
-        "by RBE) — do NOT re-rank the per-round list yourself."
+        "Exact BTD6 bloon composition for a round or a round RANGE (rounds "
+        "1-140; standard by default, or Alternate Bloons Rounds via "
+        "roundset='abr'). Use for 'how many purples in rounds 35-70', 'what "
+        "spawns in round 63', 'what comes on ABR round 40', 'which rounds have "
+        "MOABs', 'RBE of round 80'. Pass round_start (and round_end for a "
+        "range). Pass a bloon (e.g. 'purple', 'ceramic', 'MOAB') to get its "
+        "TOTAL across the range plus the per-round counts; omit it for each "
+        "round's full spawn list + RBE. Do not count or sum yourself — this "
+        "returns the exact totals. For 'heaviest / most / which rounds have "
+        "the most' questions, read the pre-ranked `heaviest` (with a bloon, "
+        "ranked by count) or `heaviest_by_rbe` (without, ranked by RBE) — do "
+        "NOT re-rank the per-round list yourself. ABR answers carry a note: "
+        "the set is entered at round 3 (rounds 1-2 are never played)."
     ),
     parameters={
         "type": "object",
@@ -834,6 +837,11 @@ _BTD6_ROUND_COMPOSITION_SPEC = AIToolSpec(
             "bloon": {
                 "type": "string",
                 "description": "Bloon to count, e.g. 'purple', 'ceramic', 'MOAB'. Omit for full composition.",
+            },
+            "roundset": {
+                "type": "string",
+                "enum": ["default", "abr"],
+                "description": "Round set: 'default' (standard) or 'abr' (Alternate Bloons Rounds). Omit for standard.",
             },
         },
         "required": ["round_start"],
@@ -856,7 +864,8 @@ async def _btd6_round_composition(arguments: dict[str, Any]) -> dict[str, Any]:
     except (TypeError, ValueError):
         end = None
     bloon = str(arguments.get("bloon") or "").strip() or None
-    return btd6_data_service.round_composition(start, end, bloon)
+    roundset = str(arguments.get("roundset") or "default")
+    return btd6_data_service.round_composition(start, end, bloon, roundset=roundset)
 
 
 # --- btd6_round_cash ---------------------------------------------------------
@@ -864,18 +873,21 @@ async def _btd6_round_composition(arguments: dict[str, Any]) -> dict[str, Any]:
 _BTD6_ROUND_CASH_SPEC = AIToolSpec(
     name="btd6_round_cash",
     description=(
-        "BTD6 cash EARNED for a round or an inclusive round RANGE (standard "
-        "rounds 1-140, Medium difficulty, $650 start, no income towers). Use for "
-        "'how much cash from round 50 to 60', 'cash on round 80', 'money earned "
-        "rounds 1-40', 'cumulative cash by round 60'. Pass round_start (and "
-        "round_end for a range). The range is INCLUSIVE of both endpoints and the "
-        "returned range_cash IS the grounded answer — do NOT add the per-round "
-        "cash or subtract cumulative values yourself; this returns the exact "
-        "total. For a single round you get round_cash + cumulative_cash; for a "
-        "range you also get cumulative_before_start / cumulative_at_end. Standard "
-        "economy ONLY: it does not apply Double Cash, Half Cash, other "
-        "difficulties, or alternate round sets (ABR) — those come back as a "
-        "found=false reason, never a guessed number."
+        "BTD6 cash EARNED for a round or an inclusive round RANGE (rounds "
+        "1-140; standard/Medium $650 start by default, or Alternate Bloons "
+        "Rounds via roundset='abr' — Hard rules, entered at round 3, same "
+        "$650 start; no income towers either way). Use for 'how much cash "
+        "from round 50 to 60', 'cash on round 80', 'money earned rounds 1-40', "
+        "'ABR cash from 3 to 40', 'cumulative cash by round 60'. Pass "
+        "round_start (and round_end for a range). The range is INCLUSIVE of "
+        "both endpoints and the returned range_cash IS the grounded answer — "
+        "do NOT add the per-round cash or subtract cumulative values yourself; "
+        "this returns the exact total. For a single round you get round_cash + "
+        "cumulative_cash; for a range you also get cumulative_before_start / "
+        "cumulative_at_end. It does NOT apply Double Cash, Half Cash, or other "
+        "difficulties — those come back as a found=false reason, never a "
+        "guessed number. ABR cumulative totals start at round 3 (rounds 1-2 "
+        "are never played; results carry the note)."
     ),
     parameters={
         "type": "object",
@@ -887,6 +899,11 @@ _BTD6_ROUND_CASH_SPEC = AIToolSpec(
             "round_end": {
                 "type": "integer",
                 "description": "Last round of the range (inclusive); omit for one round.",
+            },
+            "roundset": {
+                "type": "string",
+                "enum": ["default", "abr"],
+                "description": "Round set: 'default' (standard) or 'abr' (Alternate Bloons Rounds). Omit for standard.",
             },
         },
         "required": ["round_start"],
@@ -908,7 +925,8 @@ async def _btd6_round_cash(arguments: dict[str, Any]) -> dict[str, Any]:
         end = int(raw_end) if raw_end is not None else None
     except (TypeError, ValueError):
         end = None
-    return btd6_data_service.round_cash(start, end)
+    roundset = str(arguments.get("roundset") or "default")
+    return btd6_data_service.round_cash(start, end, roundset=roundset)
 
 
 # --- btd6_map_lookup ---------------------------------------------------------

@@ -12,7 +12,7 @@
 | Domain | Files | Fetch | What we pull / why not |
 |---|---:|:---:|---|
 | `Achievements/` | 156 | ⬜ | not ingested |
-| `Artifacts/` | 568 | ⬜ | not ingested (Rogue Legends artifacts) |
+| `Artifacts/` | 568 | ⬜ | not ingested — Rogue Legends/Frontier artifacts carry real modifiers but are spin-off-mode-only (out of main-game scope) |
 | `BloonOverlays/` | 46 | ⬜ | cosmetic overlays; not ingested |
 | `Bloons/` | 235 | 🟡 | children/immunity/health/speed/health_fortified now game-data-sourced (--bloons); rbe (derived from health+children) + category/aliases still wiki |
 | `Bosses/` | 7 | ✅ | bosses.json: name, mechanic description, immunities, per-tier health/speed |
@@ -34,10 +34,10 @@
 | File | Fetch | Meaning |
 |---|:---:|---|
 | `textTable.json` | ✅ | every display string + description (names & tooltips) |
-| `paragonDegreeData.json` | 🟡 | universal paragon degree-scaling constants |
-| `frontierData.json` | ⬜ | Boss Bloon / Legends scaling data |
-| `rogueData.json` | ⬜ | Rogue Legends mode data |
-| `resources.json` | ⬜ | asset/resource references |
+| `paragonDegreeData.json` | 🟡 | universal paragon degree-scaling constants (cross-checked exact vs utils.btd6.paragon_degrees 100/100, 2026-06-09) |
+| `frontierData.json` | ⬜ | Frontier event meta-mode balance (not main-game boss scaling) |
+| `rogueData.json` | ⬜ | Rogue Legends spin-off balance (out of main-game scope) |
+| `resources.json` | ⬜ | GUID→asset-path lookup (zero stat content) |
 
 ## Per-domain detail
 
