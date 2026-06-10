@@ -287,3 +287,35 @@ def test_subsystem_view_does_not_import_mutation_pipelines():
                     if needle in alias.name:
                         offenders.append(alias.name)
     assert not offenders, f"subsystem_view imports mutation surfaces: {offenders}"
+
+
+@pytest.mark.asyncio
+async def test_embed_renders_declared_domain_panels(_isolated_state):
+    """A subsystem whose Settings group exists *because of* a DomainPanelSpec
+    (cleanup, help) must say where that configuration lives — before this
+    block the page showed bare "*none declared*" scalars and the operator had
+    to guess the destination. (Salvaged from the parallel PR A build, #678.)"""
+    from core.runtime.subsystem_schema import DomainPanelSpec
+
+    schema_mod.register(
+        SubsystemSchema(
+            subsystem="help",
+            domain_panels=(
+                DomainPanelSpec(
+                    name="Help appearance",
+                    description="Hide/rename in the Help editor.",
+                    capability_required="help.settings.configure",
+                ),
+            ),
+            version=1,
+        ),
+    )
+    embed = await build_subsystem_embed(_FakeInteraction(), "help")
+    fields = {f.name: f.value for f in embed.fields}
+    assert "Domain configuration" in fields
+    assert "Help appearance" in fields["Domain configuration"]
+    assert "Help editor" in fields["Domain configuration"]
+
+    # No declaration → no field (the block never invents destinations).
+    embed = await build_subsystem_embed(_FakeInteraction(), "xp")
+    assert "Domain configuration" not in {f.name for f in embed.fields}
