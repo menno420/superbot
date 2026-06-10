@@ -20,8 +20,8 @@ slice; this keeps position a stable, reversible game constant (one function,
 
 from __future__ import annotations
 
-from utils.mining.exploration import BIOME_ORDER, Biome
 from utils.equipment import EffectiveStats
+from utils.mining.exploration import BIOME_ORDER, Biome
 
 # Deepest reachable band index (MAGMA).  Position is clamped to [0, MAX_DEPTH].
 MAX_DEPTH: int = len(BIOME_ORDER) - 1

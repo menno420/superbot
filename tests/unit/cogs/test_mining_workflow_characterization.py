@@ -13,27 +13,49 @@ operation:  ``_WS`` (workshop ops) and ``_MK`` (market ops).
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
 from cogs.mining import market as market_mod
-from cogs.mining import workshop as workshop_mod
+from services import mining_workflow
 from services.economy_service import InsufficientFundsError
+from utils.mining import workshop as workshop_mod
 
 # Current owners — the RS02 extraction updates these (and only these).
-_WS = "cogs.mining.workshop"
+_WS = "services.mining_workflow"
 _MK = "cogs.mining.market"
 
-craft = workshop_mod.apply_craft
-repair = workshop_mod.apply_repair
-quick_craft = workshop_mod.apply_quick_craft
-wear_tick = workshop_mod.apply_wear
+craft = mining_workflow.craft
+repair = mining_workflow.repair
+quick_craft = mining_workflow.quick_craft
+wear_tick = mining_workflow.wear_tick
 buy = market_mod.apply_buy
 sell = market_mod.apply_sell
 sell_all = market_mod.apply_sell_all
 
+
 ACTION_MINE = workshop_mod.ACTION_MINE
+
+
+@pytest.fixture(autouse=True)
+def _null_workflow_transaction():
+    """Replace db.transaction() with a no-op context manager.
+
+    The workflow service wraps its writes in ONE db.transaction(); these
+    characterization tests patch the write primitives themselves, so the
+    transaction becomes a pass-through yielding a sentinel connection.
+    The conn= kwarg the primitives receive is asserted with mock.ANY.
+    """
+    from contextlib import asynccontextmanager
+    from unittest.mock import MagicMock
+
+    @asynccontextmanager
+    async def _txn():
+        yield MagicMock(name="characterization_conn")
+
+    with patch("services.mining_workflow.db.transaction", _txn):
+        yield
 
 # ---------------------------------------------------------------------------
 # Reason tags — economy_audit_log filter keys, byte-identical forever.
@@ -162,7 +184,7 @@ async def test_repair_insufficient_funds_message_and_no_wear_clear():
             return_value={"pickaxe": 30},  # cost: ceil(13 * 30/60) = 7
         ),
         patch(
-            f"{_WS}.economy_service.debit",
+            f"{_WS}.economy_service.debit_in_txn",
             new_callable=AsyncMock,
             side_effect=InsufficientFundsError("no"),
         ),
@@ -191,7 +213,7 @@ async def test_repair_success_message_costs_and_reason():
             return_value={"pickaxe": 30},
         ),
         patch(
-            f"{_WS}.economy_service.debit",
+            f"{_WS}.economy_service.debit_in_txn",
             new_callable=AsyncMock,
             return_value=93,
         ) as debit,
@@ -250,8 +272,8 @@ async def test_quick_craft_crafts_equips_and_clears_marker():
     assert result.message == (
         "Crafted **torch** and equipped it in the **light** slot!"
     )
-    equip.assert_awaited_once_with("1", 99, "light", "torch")
-    clear_last.assert_awaited_once_with("1", 99, None)
+    equip.assert_awaited_once_with("1", 99, "light", "torch", conn=ANY)
+    clear_last.assert_awaited_once_with("1", 99, None, conn=ANY)
 
 
 @pytest.mark.asyncio
@@ -311,10 +333,10 @@ async def test_wear_break_consumes_unequips_and_notes():
     assert report.notes == (
         "💥 Your **pickaxe** broke! Re-craft or repair gear at the 🔧 Workshop.",
     )
-    clear.assert_awaited_once_with("1", 99, "pickaxe")
-    consume.assert_awaited_once_with("1", 99, "pickaxe", -1)
-    unequip.assert_awaited_once_with("1", 99, "tool")
-    last.assert_awaited_once_with("1", 99, "pickaxe")
+    clear.assert_awaited_once_with("1", 99, "pickaxe", conn=ANY)
+    consume.assert_awaited_once_with("1", 99, "pickaxe", -1, conn=ANY)
+    unequip.assert_awaited_once_with("1", 99, "tool", conn=ANY)
+    last.assert_awaited_once_with("1", 99, "pickaxe", conn=ANY)
 
 
 @pytest.mark.asyncio
@@ -339,7 +361,7 @@ async def test_wear_low_durability_warning_note():
         "⚠️ Your **pickaxe** is nearly worn out (5/60) — repair it at the "
         "🔧 Workshop.",
     )
-    set_wear.assert_awaited_once_with("1", 99, "pickaxe", 5)
+    set_wear.assert_awaited_once_with("1", 99, "pickaxe", 5, conn=ANY)
 
 
 @pytest.mark.asyncio
@@ -485,11 +507,11 @@ async def test_repair_command_and_panel_share_one_implementation():
 
     async def _spy(user_id, guild_id, item):
         calls.append((user_id, guild_id, item))
-        from cogs.mining.market import TradeResult
+        from utils.mining.market import TradeResult
 
         return TradeResult(True, "ok")
 
-    with patch(f"{_WS}.apply_repair", AsyncMock(side_effect=_spy)):
+    with patch("services.mining_workflow.repair", AsyncMock(side_effect=_spy)):
         # Command path
         cog = cog_mod.MiningCog.__new__(cog_mod.MiningCog)
         ctx = AsyncMock()
@@ -524,11 +546,11 @@ async def test_craft_command_modal_and_panel_share_one_implementation():
 
     async def _spy(user_id, guild_id, item):
         calls.append((user_id, guild_id, item))
-        from cogs.mining.market import TradeResult
+        from utils.mining.market import TradeResult
 
         return TradeResult(True, "ok")
 
-    with patch(f"{_WS}.apply_craft", AsyncMock(side_effect=_spy)):
+    with patch("services.mining_workflow.craft", AsyncMock(side_effect=_spy)):
         cog = cog_mod.MiningCog.__new__(cog_mod.MiningCog)
         cog.bot = AsyncMock()
         ctx = AsyncMock()

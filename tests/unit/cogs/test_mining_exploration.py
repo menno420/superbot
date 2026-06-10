@@ -57,8 +57,8 @@ def test_deeper_biome_includes_shallower_outcomes():
 def test_mining_power_doubles_ore_gain():
     # abandoned_camp grants gold; mining_power 2 (a pickaxe) doubles a positive
     # ore gain, and 4 (an iron pickaxe) triples it.
-    from utils.mining.exploration import _scale_amount
     from utils.equipment import EffectiveStats
+    from utils.mining.exploration import _scale_amount
 
     outcome = next(o for o in exp.CATALOG if o.key == "abandoned_camp")
     base = _scale_amount(outcome, EffectiveStats())
@@ -67,8 +67,8 @@ def test_mining_power_doubles_ore_gain():
 
 
 def test_penalties_are_never_scaled():
-    from utils.mining.exploration import _scale_amount
     from utils.equipment import EffectiveStats
+    from utils.mining.exploration import _scale_amount
 
     hazard = next(o for o in exp.CATALOG if o.key == "monster_ambush")
     # Negative amount stays exactly as authored — gear protects gains only.
@@ -79,8 +79,8 @@ def test_penalties_are_never_scaled():
 
 
 def test_loot_bonus_adds_flat_extra():
-    from utils.mining.exploration import _scale_amount
     from utils.equipment import EffectiveStats
+    from utils.mining.exploration import _scale_amount
 
     # secret_chest gives wood (not ore): loot_bonus still adds a flat +1.
     outcome = next(o for o in exp.CATALOG if o.key == "secret_chest")

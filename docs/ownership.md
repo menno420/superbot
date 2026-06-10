@@ -66,7 +66,7 @@ writes must come from the owning cog or a shared service.
 | `cleanup`      | `prohibited_words`                             | direct via `utils/db/moderation.py` |
 | `chain`        | `chain_channels`                               | direct via `utils/db/games/chain.py` |
 | `counting`     | `counting_state`                               | direct via `utils/db/games/counting.py` |
-| `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear` | direct via `utils/db/games/mining*.py`; the market/repair **coin** legs via economy_service (`mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`) |
+| `mining`       | `mining_inventory`, `mining_equipment`, `mining_player_state`, `mining_gear_wear` | **workshop writes** (wear tick / repair / craft / quick-craft) via `services/mining_workflow.py` — one transaction per operation, repair's coin leg via `economy_service.debit_in_txn` (RS02 stage 1); remaining writes still direct via `utils/db/games/mining*.py` until RS02 stage 2 (market sell/buy coin legs via economy_service: `mining:sell_ore` / `mining:buy_gear` / `mining:repair_gear`) |
 | `deathmatch`   | `deathmatch_stats`                             | direct via `utils/db/games/deathmatch.py` |
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |
@@ -100,6 +100,16 @@ writes must come from the owning cog or a shared service.
   are the no-event coin legs for any future domain workflow (mining follows —
   RS02). View-level purchase writes are AST-fenced
   (`tests/unit/invariants/test_no_view_level_purchase_writes.py`).
+- **Shipped (RS02 stage 1, 2026-06-10):** `services/mining_workflow.py` owns the
+  mining **workshop** operations (Q-0072=C — the densest multi-write
+  invariants): `wear_tick` (wear + break-consume + unequip + last-broken in one
+  transaction), `repair` (coin debit + wear clear atomically, event after
+  commit), `craft` (materials + product), `quick_craft` (craft + auto-equip +
+  marker clear). The pure mining domain relocated to `utils/mining/`
+  (helper-policy: shared by services *and* views); the conn-aware
+  `utils/db/games/mining*.py` primitives never self-transact when given a
+  workflow connection. Stage 2 converges market sell/buy + the remaining
+  single writers and adds the full AST write-boundary ratchet.
 
 ---
 

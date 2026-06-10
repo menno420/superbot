@@ -21,7 +21,10 @@ if TYPE_CHECKING:
 
 
 async def get_gear_wear(
-    user_id: str, guild_id: int, *, conn: asyncpg.Connection | None = None
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
 ) -> dict[str, int]:
     """Return ``{item_name: remaining_durability}`` for the user's worn gear.
 

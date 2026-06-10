@@ -7,9 +7,9 @@ Deep) and is persistent, not consumed per descent.
 
 from __future__ import annotations
 
+from utils.equipment import EffectiveStats
 from utils.mining import world
 from utils.mining.exploration import BIOME_ORDER, Biome
-from utils.equipment import EffectiveStats
 
 
 def test_max_depth_is_deepest_band_index():

@@ -1,11 +1,11 @@
 """Mining workshop panel — repair worn gear, craft replacements (durability UI).
 
 An ephemeral child of the mining hub (mirrors ``market_panel``).  All
-durability / money / inventory moves live in :mod:`cogs.mining.workshop` (one
-implementation shared with the ``!repair`` / ``!craft`` / ``!quickcraft``
-commands); this view is just the buttons + selects that call it.
-``cogs.mining.workshop`` is lazy-imported inside handlers because
-``views → cogs`` at module level is a layer-rule error.
+durability / money / inventory moves live in
+:mod:`services.mining_workflow` (one transaction per operation — Q-0071 —
+shared with the ``!repair`` / ``!craft`` / ``!quickcraft`` commands); this
+view is just the buttons + selects that call it.  The pure pricing /
+listing helpers come from :mod:`utils.mining.workshop`.
 
 Because the repair/craft options depend on DB state, the view is built via the
 async :meth:`MiningWorkshopView.create` factory and rebuilt after every action
@@ -17,7 +17,9 @@ from __future__ import annotations
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services import mining_workflow
 from utils import db, equipment
+from utils.mining import workshop
 from utils.mining.recipes import load_recipes
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
@@ -30,8 +32,6 @@ async def build_workshop_embed(
     note: str = "",
 ) -> discord.Embed:
     """Build the workshop embed: gear condition, repair costs, craftable gear."""
-    from cogs.mining import workshop
-
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     equipped = await db.get_equipment(suid, guild_id)
@@ -99,9 +99,7 @@ class _RepairSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
             return
-        from cogs.mining import workshop
-
-        result = await workshop.apply_repair(
+        result = await mining_workflow.repair(
             self._user_id,
             self._guild_id,
             self.values[0],
@@ -124,9 +122,7 @@ class _CraftSelect(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
             return
-        from cogs.mining import workshop
-
-        result = await workshop.apply_craft(
+        result = await mining_workflow.craft(
             self._user_id,
             self._guild_id,
             self.values[0],
@@ -170,8 +166,6 @@ class MiningWorkshopView(HubView):
         guild_id: int,
     ) -> MiningWorkshopView:
         """Async factory — the selects depend on the player's current state."""
-        from cogs.mining import workshop
-
         view = cls(author, guild_id)
         suid = str(author.id)
         inventory = await db.get_mining_inventory(suid, guild_id)
@@ -219,9 +213,7 @@ class MiningWorkshopView(HubView):
     ):
         if not await safe_defer(interaction):
             return
-        from cogs.mining import workshop
-
-        result = await workshop.apply_quick_craft(self._author.id, self.guild_id)
+        result = await mining_workflow.quick_craft(self._author.id, self.guild_id)
         await _rerender(interaction, self, result)
 
     @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=2)

@@ -21,10 +21,11 @@ import logging
 import discord
 from discord.ext import commands
 
-from cogs.mining import market, workshop
+from cogs.mining import market
 from core.runtime import panel_manager
+from services import mining_workflow
 from utils import db, equipment
-from utils.mining import world
+from utils.mining import workshop, world
 from utils.mining.exploration import explore_from_state
 from utils.mining.items import total_value
 from utils.mining.recipes import load_recipes
@@ -178,7 +179,7 @@ class MiningCog(commands.Cog):
         try:
             if structure is None:
                 return await ctx.invoke(self.bot.get_command("buildlist"))
-            result = await workshop.apply_craft(ctx.author.id, ctx.guild.id, structure)
+            result = await mining_workflow.craft(ctx.author.id, ctx.guild.id, structure)
             await ctx.send(f"{ctx.author.mention} {result.message}")
         except Exception:
             logger.exception("build command failed")
@@ -252,7 +253,7 @@ class MiningCog(commands.Cog):
         )
         if item:
             await self.update_inventory(user_id, gid, item, amount)
-        wear = await workshop.apply_wear(
+        wear = await mining_workflow.wear_tick(
             ctx.author.id,
             gid,
             action=workshop.ACTION_EXPLORE,
@@ -506,7 +507,7 @@ class MiningCog(commands.Cog):
             return await ctx.send(
                 "Specify what to repair, e.g. `!repair pickaxe` — or `!workshop`.",
             )
-        result = await workshop.apply_repair(ctx.author.id, ctx.guild.id, item)
+        result = await mining_workflow.repair(ctx.author.id, ctx.guild.id, item)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
     @commands.command(
@@ -516,7 +517,7 @@ class MiningCog(commands.Cog):
     )
     async def quick_craft(self, ctx):
         """Re-craft the last gear item that broke and equip it."""
-        result = await workshop.apply_quick_craft(ctx.author.id, ctx.guild.id)
+        result = await mining_workflow.quick_craft(ctx.author.id, ctx.guild.id)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
     # ---------------------------------------------------------------- admin

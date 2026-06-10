@@ -24,8 +24,9 @@ import logging
 import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
+from services import mining_workflow
 from utils import db
-from utils.mining import world
+from utils.mining import workshop, world
 from utils.mining.rewards import mine_multiplier, roll_mine_loot
 from utils.ui_constants import MINING_COLOR
 
@@ -97,10 +98,6 @@ class MineView(discord.ui.View):
         if not await safe_defer(interaction):
             return
 
-        # Lazy import: the workshop orchestration still lives in cogs/ until
-        # the RS02 workflow service lands (views→cogs layer rule).
-        from cogs.mining import workshop
-
         user_id = str(self.user_id)
         inventory = await db.get_mining_inventory(user_id, self.guild_id)
         equipped = await db.get_equipment(user_id, self.guild_id)
@@ -112,7 +109,7 @@ class MineView(discord.ui.View):
         )
 
         await db.update_mining_item(user_id, self.guild_id, found, amount)
-        wear = await workshop.apply_wear(
+        wear = await mining_workflow.wear_tick(
             self.user_id,
             self.guild_id,
             action=workshop.ACTION_MINE,

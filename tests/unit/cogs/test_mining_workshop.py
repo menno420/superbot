@@ -1,4 +1,5 @@
-"""Tests for cogs.mining.workshop — durability, repair, crafting (the sink).
+"""Tests for the workshop seam — pure helpers (utils.mining.workshop) +
+the RS02 workflow orchestration (services.mining_workflow).
 
 The orchestration tests mock the economy seam and the mining CRUD so they pin
 the *contract* (repair coins move through economy_service; breaking consumes
@@ -8,17 +9,33 @@ moves materials + product in ONE atomic call) without a real DB.
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import ANY, AsyncMock, patch
 
 import pytest
 
-from cogs.mining import market, workshop
+from cogs.mining import market
+from services import mining_workflow
 from services.economy_service import InsufficientFundsError
 from utils import equipment
+from utils.mining import workshop
 
 # ---------------------------------------------------------------------------
 # Pure helpers
 # ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def _null_workflow_transaction():
+    """db.transaction() becomes a pass-through — primitives are mocked here."""
+    from contextlib import asynccontextmanager
+    from unittest.mock import MagicMock
+
+    @asynccontextmanager
+    async def _txn():
+        yield MagicMock(name="test_conn")
+
+    with patch("services.mining_workflow.db.transaction", _txn):
+        yield
 
 
 def test_every_wearing_item_is_equippable_with_positive_max():
@@ -99,15 +116,15 @@ def test_starter_gear_has_obtainable_recipes():
 def _wear_patches(wear: dict[str, int]):
     return (
         patch(
-            "cogs.mining.workshop.db.get_gear_wear",
+            "services.mining_workflow.db.get_gear_wear",
             new_callable=AsyncMock,
             return_value=wear,
         ),
-        patch("cogs.mining.workshop.db.set_gear_wear", new_callable=AsyncMock),
-        patch("cogs.mining.workshop.db.clear_gear_wear", new_callable=AsyncMock),
-        patch("cogs.mining.workshop.db.update_mining_item", new_callable=AsyncMock),
-        patch("cogs.mining.workshop.db.unequip_slot", new_callable=AsyncMock),
-        patch("cogs.mining.workshop.db.set_last_broken", new_callable=AsyncMock),
+        patch("services.mining_workflow.db.set_gear_wear", new_callable=AsyncMock),
+        patch("services.mining_workflow.db.clear_gear_wear", new_callable=AsyncMock),
+        patch("services.mining_workflow.db.update_mining_item", new_callable=AsyncMock),
+        patch("services.mining_workflow.db.unequip_slot", new_callable=AsyncMock),
+        patch("services.mining_workflow.db.set_last_broken", new_callable=AsyncMock),
     )
 
 
@@ -115,7 +132,7 @@ def _wear_patches(wear: dict[str, int]):
 async def test_apply_wear_ticks_equipped_tool():
     p_get, p_set, p_clear, p_inv, p_uneq, p_broken = _wear_patches({})
     with p_get, p_set as mock_set, p_clear, p_inv as mock_inv, p_uneq, p_broken:
-        report = await workshop.apply_wear(
+        report = await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_MINE,
@@ -123,7 +140,7 @@ async def test_apply_wear_ticks_equipped_tool():
             equipped={"tool": "pickaxe"},
         )
     assert not report.broke
-    mock_set.assert_awaited_once_with("1", 7, "pickaxe", 59)  # fresh 60 → 59
+    mock_set.assert_awaited_once_with("1", 7, "pickaxe", 59, conn=ANY)  # fresh 60 → 59
     mock_inv.assert_not_awaited()
 
 
@@ -133,7 +150,7 @@ async def test_apply_wear_breaks_at_zero_consuming_the_item():
     with p_get, p_set as mock_set, p_clear as mock_clear, p_inv as mock_inv, (
         p_uneq
     ) as mock_uneq, p_broken as mock_broken:
-        report = await workshop.apply_wear(
+        report = await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_MINE,
@@ -142,10 +159,10 @@ async def test_apply_wear_breaks_at_zero_consuming_the_item():
         )
     assert report.broke == ("pickaxe",)
     assert any("broke" in n for n in report.notes)
-    mock_clear.assert_awaited_once_with("1", 7, "pickaxe")
-    mock_inv.assert_awaited_once_with("1", 7, "pickaxe", -1)  # the sink
-    mock_uneq.assert_awaited_once_with("1", 7, "tool")
-    mock_broken.assert_awaited_once_with("1", 7, "pickaxe")
+    mock_clear.assert_awaited_once_with("1", 7, "pickaxe", conn=ANY)
+    mock_inv.assert_awaited_once_with("1", 7, "pickaxe", -1, conn=ANY)  # the sink
+    mock_uneq.assert_awaited_once_with("1", 7, "tool", conn=ANY)
+    mock_broken.assert_awaited_once_with("1", 7, "pickaxe", conn=ANY)
     mock_set.assert_not_awaited()
 
 
@@ -154,7 +171,7 @@ async def test_apply_wear_light_only_wears_underground():
     # At the surface the light does not tick; underground it does.
     p_get, p_set, p_clear, p_inv, p_uneq, p_broken = _wear_patches({})
     with p_get, p_set as mock_set, p_clear, p_inv, p_uneq, p_broken:
-        await workshop.apply_wear(
+        await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_MINE,
@@ -162,35 +179,35 @@ async def test_apply_wear_light_only_wears_underground():
             equipped={"light": "torch"},
         )
         mock_set.assert_not_awaited()
-        await workshop.apply_wear(
+        await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_MINE,
             depth=1,
             equipped={"light": "torch"},
         )
-        mock_set.assert_awaited_once_with("1", 7, "torch", 39)
+        mock_set.assert_awaited_once_with("1", 7, "torch", 39, conn=ANY)
 
 
 @pytest.mark.asyncio
 async def test_apply_wear_explore_ticks_charm_not_tool():
     p_get, p_set, p_clear, p_inv, p_uneq, p_broken = _wear_patches({})
     with p_get, p_set as mock_set, p_clear, p_inv, p_uneq, p_broken:
-        await workshop.apply_wear(
+        await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_EXPLORE,
             depth=0,
             equipped={"tool": "pickaxe", "charm": "lucky charm"},
         )
-    mock_set.assert_awaited_once_with("1", 7, "lucky charm", 79)
+    mock_set.assert_awaited_once_with("1", 7, "lucky charm", 79, conn=ANY)
 
 
 @pytest.mark.asyncio
 async def test_apply_wear_warns_when_nearly_broken():
     p_get, p_set, p_clear, p_inv, p_uneq, p_broken = _wear_patches({"pickaxe": 4})
     with p_get, p_set, p_clear, p_inv, p_uneq, p_broken:
-        report = await workshop.apply_wear(
+        report = await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_MINE,
@@ -204,10 +221,10 @@ async def test_apply_wear_warns_when_nearly_broken():
 async def test_apply_wear_skips_non_wearing_and_empty_slots_without_db():
     # No DB read at all when nothing equipped can wear (cheap fast path).
     with patch(
-        "cogs.mining.workshop.db.get_gear_wear",
+        "services.mining_workflow.db.get_gear_wear",
         new_callable=AsyncMock,
     ) as mock_get:
-        report = await workshop.apply_wear(
+        report = await mining_workflow.wear_tick(
             1,
             7,
             action=workshop.ACTION_MINE,
@@ -226,54 +243,54 @@ async def test_apply_wear_skips_non_wearing_and_empty_slots_without_db():
 @pytest.mark.asyncio
 async def test_apply_repair_debits_then_clears_wear():
     with patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"pickaxe": 1},
     ), patch(
-        "cogs.mining.workshop.db.get_gear_wear",
+        "services.mining_workflow.db.get_gear_wear",
         new_callable=AsyncMock,
         return_value={"pickaxe": 10},
     ), patch(
-        "cogs.mining.workshop.economy_service.debit",
+        "services.mining_workflow.economy_service.debit_in_txn",
         new_callable=AsyncMock,
         return_value=88,
     ) as mock_debit, patch(
-        "cogs.mining.workshop.db.clear_gear_wear",
+        "services.mining_workflow.db.clear_gear_wear",
         new_callable=AsyncMock,
     ) as mock_clear:
-        result = await workshop.apply_repair(123, 7, "pickaxe")
+        result = await mining_workflow.repair(123, 7, "pickaxe")
     assert result.ok
     args, kwargs = mock_debit.await_args
-    assert args[:2] == (7, 123)
-    assert args[2] == workshop.repair_cost("pickaxe", 10)
+    assert args[1:3] == (7, 123)  # args[0] is the workflow's transaction conn
+    assert args[3] == workshop.repair_cost("pickaxe", 10)
     assert kwargs["reason"] == workshop.REPAIR_REASON
-    mock_clear.assert_awaited_once_with("123", 7, "pickaxe")
+    mock_clear.assert_awaited_once_with("123", 7, "pickaxe", conn=ANY)
     assert result.new_balance == 88
 
 
 @pytest.mark.asyncio
 async def test_apply_repair_insufficient_funds_keeps_wear():
     with patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"pickaxe": 1},
     ), patch(
-        "cogs.mining.workshop.db.get_gear_wear",
+        "services.mining_workflow.db.get_gear_wear",
         new_callable=AsyncMock,
         return_value={"pickaxe": 10},
     ), patch(
-        "cogs.mining.workshop.economy_service.debit",
+        "services.mining_workflow.economy_service.debit_in_txn",
         new_callable=AsyncMock,
         side_effect=InsufficientFundsError(),
     ), patch(
-        "cogs.mining.workshop.db.get_coins",
+        "services.mining_workflow.db.get_coins",
         new_callable=AsyncMock,
         return_value=2,
     ), patch(
-        "cogs.mining.workshop.db.clear_gear_wear",
+        "services.mining_workflow.db.clear_gear_wear",
         new_callable=AsyncMock,
     ) as mock_clear:
-        result = await workshop.apply_repair(123, 7, "pickaxe")
+        result = await mining_workflow.repair(123, 7, "pickaxe")
     assert not result.ok
     mock_clear.assert_not_awaited()  # no free repair
 
@@ -281,24 +298,24 @@ async def test_apply_repair_insufficient_funds_keeps_wear():
 @pytest.mark.asyncio
 async def test_apply_repair_rejects_unworn_unowned_and_unwearing():
     with patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"pickaxe": 1},
     ), patch(
-        "cogs.mining.workshop.db.get_gear_wear",
+        "services.mining_workflow.db.get_gear_wear",
         new_callable=AsyncMock,
         return_value={},
     ):
-        full = await workshop.apply_repair(1, 7, "pickaxe")
+        full = await mining_workflow.repair(1, 7, "pickaxe")
         assert not full.ok and "full durability" in full.message
     with patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={},
     ):
-        unowned = await workshop.apply_repair(1, 7, "pickaxe")
+        unowned = await mining_workflow.repair(1, 7, "pickaxe")
         assert not unowned.ok and "don't own" in unowned.message
-    stone = await workshop.apply_repair(1, 7, "stone")
+    stone = await mining_workflow.repair(1, 7, "stone")
     assert not stone.ok and "doesn't wear" in stone.message
 
 
@@ -310,44 +327,44 @@ async def test_apply_repair_rejects_unworn_unowned_and_unwearing():
 @pytest.mark.asyncio
 async def test_apply_craft_moves_materials_and_product_in_one_call():
     with patch(
-        "cogs.mining.workshop.load_recipes",
+        "services.mining_workflow.load_recipes",
         return_value={"torch": {"wood": 2}},
     ), patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"wood": 5},
     ), patch(
-        "cogs.mining.workshop.db.apply_inventory_deltas",
+        "services.mining_workflow.db.apply_inventory_deltas",
         new_callable=AsyncMock,
     ) as mock_apply:
-        result = await workshop.apply_craft(1, 7, "Torch")
+        result = await mining_workflow.craft(1, 7, "Torch")
     assert result.ok
-    mock_apply.assert_awaited_once_with("1", 7, {"wood": -2, "torch": 1})
+    mock_apply.assert_awaited_once_with("1", 7, {"wood": -2, "torch": 1}, conn=ANY)
 
 
 @pytest.mark.asyncio
 async def test_apply_craft_rejects_missing_materials_without_writes():
     with patch(
-        "cogs.mining.workshop.load_recipes",
+        "services.mining_workflow.load_recipes",
         return_value={"torch": {"wood": 2}},
     ), patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"wood": 1},
     ), patch(
-        "cogs.mining.workshop.db.apply_inventory_deltas",
+        "services.mining_workflow.db.apply_inventory_deltas",
         new_callable=AsyncMock,
     ) as mock_apply:
-        result = await workshop.apply_craft(1, 7, "torch")
+        result = await mining_workflow.craft(1, 7, "torch")
     assert not result.ok
     mock_apply.assert_not_awaited()
 
 
 @pytest.mark.asyncio
 async def test_apply_craft_unknown_recipe_hints_market_for_shop_items():
-    with patch("cogs.mining.workshop.load_recipes", return_value={}):
-        buyable = await workshop.apply_craft(1, 7, "lucky charm")
-        unknown = await workshop.apply_craft(1, 7, "warp drive")
+    with patch("services.mining_workflow.load_recipes", return_value={}):
+        buyable = await mining_workflow.craft(1, 7, "lucky charm")
+        unknown = await mining_workflow.craft(1, 7, "warp drive")
     assert not buyable.ok and "Market" in buyable.message
     assert not unknown.ok and "buildlist" in unknown.message
 
@@ -360,55 +377,55 @@ async def test_apply_craft_unknown_recipe_hints_market_for_shop_items():
 @pytest.mark.asyncio
 async def test_apply_quick_craft_crafts_equips_and_clears_marker():
     with patch(
-        "cogs.mining.workshop.db.get_last_broken",
+        "services.mining_workflow.db.get_last_broken",
         new_callable=AsyncMock,
         return_value="torch",
     ), patch(
-        "cogs.mining.workshop.load_recipes",
+        "services.mining_workflow.load_recipes",
         return_value={"torch": {"wood": 2}},
     ), patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={"wood": 4},
     ), patch(
-        "cogs.mining.workshop.db.apply_inventory_deltas",
+        "services.mining_workflow.db.apply_inventory_deltas",
         new_callable=AsyncMock,
     ), patch(
-        "cogs.mining.workshop.db.get_equipment",
+        "services.mining_workflow.db.get_equipment",
         new_callable=AsyncMock,
         return_value={},  # light slot free → auto-equip
     ), patch(
-        "cogs.mining.workshop.db.equip_item",
+        "services.mining_workflow.db.equip_item",
         new_callable=AsyncMock,
     ) as mock_equip, patch(
-        "cogs.mining.workshop.db.set_last_broken",
+        "services.mining_workflow.db.set_last_broken",
         new_callable=AsyncMock,
     ) as mock_marker:
-        result = await workshop.apply_quick_craft(1, 7)
+        result = await mining_workflow.quick_craft(1, 7)
     assert result.ok
-    mock_equip.assert_awaited_once_with("1", 7, "light", "torch")
-    mock_marker.assert_awaited_once_with("1", 7, None)
+    mock_equip.assert_awaited_once_with("1", 7, "light", "torch", conn=ANY)
+    mock_marker.assert_awaited_once_with("1", 7, None, conn=ANY)
     assert "equipped" in result.message
 
 
 @pytest.mark.asyncio
 async def test_apply_quick_craft_keeps_marker_when_craft_fails():
     with patch(
-        "cogs.mining.workshop.db.get_last_broken",
+        "services.mining_workflow.db.get_last_broken",
         new_callable=AsyncMock,
         return_value="torch",
     ), patch(
-        "cogs.mining.workshop.load_recipes",
+        "services.mining_workflow.load_recipes",
         return_value={"torch": {"wood": 2}},
     ), patch(
-        "cogs.mining.workshop.db.get_mining_inventory",
+        "services.mining_workflow.db.get_mining_inventory",
         new_callable=AsyncMock,
         return_value={},  # no materials
     ), patch(
-        "cogs.mining.workshop.db.set_last_broken",
+        "services.mining_workflow.db.set_last_broken",
         new_callable=AsyncMock,
     ) as mock_marker:
-        result = await workshop.apply_quick_craft(1, 7)
+        result = await mining_workflow.quick_craft(1, 7)
     assert not result.ok
     mock_marker.assert_not_awaited()  # still re-offerable next time
 
@@ -416,10 +433,10 @@ async def test_apply_quick_craft_keeps_marker_when_craft_fails():
 @pytest.mark.asyncio
 async def test_apply_quick_craft_without_marker_is_a_friendly_noop():
     with patch(
-        "cogs.mining.workshop.db.get_last_broken",
+        "services.mining_workflow.db.get_last_broken",
         new_callable=AsyncMock,
         return_value=None,
     ):
-        result = await workshop.apply_quick_craft(1, 7)
+        result = await mining_workflow.quick_craft(1, 7)
     assert not result.ok
     assert isinstance(result, market.TradeResult)

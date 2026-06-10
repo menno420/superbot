@@ -28,8 +28,9 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.persistent_views import PersistentView, register
+from services import mining_workflow
 from utils import db, equipment
-from utils.mining import items, world
+from utils.mining import items, workshop, world
 from utils.mining.exploration import explore_from_state
 from utils.mining.rewards import roll_harvest_amount
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
@@ -75,10 +76,6 @@ async def build_overview_embed(
     the stateless :meth:`MiningHubView.build_embed` remains the fallback for
     restore paths with no player context.
     """
-    # Lazy import: the workshop orchestration still lives in cogs/ until the
-    # RS02 workflow service lands (views→cogs at module level is a layer rule).
-    from cogs.mining import workshop
-
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     equipped = await db.get_equipment(suid, guild_id)
@@ -207,10 +204,6 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: the workshop orchestration still lives in cogs/ until
-        # the RS02 workflow service lands (views→cogs layer rule).
-        from cogs.mining import workshop
-
         user_id = str(interaction.user.id)
         gid = interaction.guild_id
         inventory = await db.get_mining_inventory(user_id, gid)
@@ -223,7 +216,7 @@ class MiningHubView(PersistentView):
         )
         if item:
             await db.update_mining_item(user_id, gid, item, amount)
-        wear = await workshop.apply_wear(
+        wear = await mining_workflow.wear_tick(
             interaction.user.id,
             gid,
             action=workshop.ACTION_EXPLORE,
@@ -510,12 +503,10 @@ class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[
                 ephemeral=True,
             )
             return
-        # Lazy import: cogs-layer domain logic (views→cogs layer rule).  One
-        # shared craft implementation (atomic materials+product transaction)
-        # serves this modal, !build/!craft, and the Workshop panel.
-        from cogs.mining import workshop
-
-        result = await workshop.apply_craft(
+        # One shared craft implementation (atomic materials+product
+        # transaction) serves this modal, !build/!craft, and the Workshop
+        # panel — services/mining_workflow.py (RS02).
+        result = await mining_workflow.craft(
             interaction.user.id,
             interaction.guild_id,
             self.structure.value,

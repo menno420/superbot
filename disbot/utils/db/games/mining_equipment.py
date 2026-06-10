@@ -17,7 +17,10 @@ if TYPE_CHECKING:
 
 
 async def get_equipment(
-    user_id: str, guild_id: int, *, conn: asyncpg.Connection | None = None
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
 ) -> dict[str, str]:
     """Return ``{slot: item_name}`` for the user's equipped gear in a guild."""
     rows = await pool.fetchall(
@@ -49,7 +52,11 @@ async def equip_item(
 
 
 async def unequip_slot(
-    user_id: str, guild_id: int, slot: str, *, conn: asyncpg.Connection | None = None
+    user_id: str,
+    guild_id: int,
+    slot: str,
+    *,
+    conn: asyncpg.Connection | None = None,
 ) -> None:
     """Clear *slot* for the user in a guild."""
     await pool.execute(
