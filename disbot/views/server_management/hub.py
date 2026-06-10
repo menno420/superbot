@@ -243,6 +243,74 @@ class ServerManagementHubView(PersistentView):
         await open_wizard_from_slash(interaction)
 
     @discord.ui.button(
+        label="🔓 Access Map",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+        custom_id="server_management:access_map",
+    )
+    async def access_map_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Open the read-only Access Map subpanel (Adaptive P1C, Q-0032)."""
+        from views.server_management.access_map import (
+            AccessMapView,
+            build_access_map_embed,
+        )
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "The hub is only available inside a server.",
+                ephemeral=True,
+            )
+            return
+        if not await safe_defer(interaction):
+            return
+        embed, decisions = await build_access_map_embed(
+            interaction.guild.id,
+            getattr(interaction.channel, "id", None),
+            "user",
+        )
+        sub_view = AccessMapView(interaction.user, decisions, tier="user")
+        _attach_back_to_hub(sub_view)
+        await safe_edit(interaction, embed=embed, view=sub_view)
+
+    @discord.ui.button(
+        label="👁 Help Preview",
+        style=discord.ButtonStyle.secondary,
+        row=2,
+        custom_id="server_management:help_preview",
+    )
+    async def help_preview_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ) -> None:
+        """Open the read-only Help Preview subpanel (Adaptive P1C, Q-0032)."""
+        from views.server_management.access_map import (
+            HelpPreviewView,
+            build_help_preview_embed,
+        )
+
+        if interaction.guild is None:
+            await interaction.response.send_message(
+                "The hub is only available inside a server.",
+                ephemeral=True,
+            )
+            return
+        if not await safe_defer(interaction):
+            return
+        embed = await build_help_preview_embed(
+            interaction.guild.id,
+            getattr(interaction.channel, "id", None),
+            "user",
+        )
+        sub_view = HelpPreviewView(interaction.user, tier="user")
+        _attach_back_to_hub(sub_view)
+        await safe_edit(interaction, embed=embed, view=sub_view)
+
+    @discord.ui.button(
         label="🔄 Refresh",
         style=discord.ButtonStyle.secondary,
         row=2,
