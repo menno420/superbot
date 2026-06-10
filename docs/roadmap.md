@@ -35,7 +35,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **next: answerability P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
 | **Next** | Adaptive **P1C** (staff-hub subpanels — Q-0032; tier path shipped #632) · **Help counts + characterization tests** (scoreboard Lane 8 — position Q-0065) · Settings **Phase 2** (declaration/coverage map; Q-0064 BTD6 binding+guided flow) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(shipped out of this row 2026-06-09: the Q-0025 scaffold → Spotlight registration **#626**, the Q-0049 BTD6 refresh workflow **#633**, settings hub actionable-groups + >25 reachability **#640** — Lane 7)* |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 extraction (ADR-006) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -133,10 +133,14 @@ dedicated decision** for any action capability.
   **Next:** the remaining §7 workflow families + the §12.1 durable audit trace follow the
   proven template.
 - **Now (active lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md):
-  **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool) and **Phase 2
-  shipped** (#616 — the read-only introspection read model). **Next: Phase 3 (committed +
-  gate lifted, Q-0047)** — all three read-only self-awareness tools in one slice
-  (tools-available · policy-explanation · answerability-summary), audience-tiered.
+  **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool), **Phase 2
+  shipped** (#616 — the read-only introspection read model), and **Phase 3 shipped**
+  (**#639**, 2026-06-09, Q-0047 — execution-plan Lane 4): all three read-only
+  self-awareness tools in one slice (`get_ai_tool_catalog` · `get_ai_policy_explanation` ·
+  `btd6_answerability`), audience-tiered at construction; model loop awaits the
+  maintainer's prod check. **Next:** Phase 4 (AI settings UI) and Phase 5 (generated
+  answerability dashboard) stay gated — Phase 4 behind the settings foundation, both
+  behind their per-exposure asks.
 - **Later** — [ai-tool-capability-roadmap](ai/ai-tool-capability-roadmap.md) sequences the
   backlog onto that foundation · [ai-readiness-plan](ai/ai-readiness-plan.md) M2 (typed policy
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).

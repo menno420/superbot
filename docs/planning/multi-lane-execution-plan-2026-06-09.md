@@ -117,7 +117,16 @@
 
 ## Lane 4 — Answerability Phase 3: the three self-awareness tools (Q-0047, gate lifted)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#639** (2026-06-09). *Executor notes:* (1) the answerability tool is
+  named **`btd6_answerability`** (not the roadmap's `get_btd6_answerability_snapshot`
+  candidate): it must carry `grounding_domain="btd6"` so its counts/versions join the
+  faithfulness ledger — on the `BTD6_ANSWER` path **every number** in a reply is checked
+  against the ledger, and an unledgered inventory would block the very "what do you know"
+  replies it serves; the catalogue invariant pins grounding ⟺ the `btd6_*` name prefix.
+  (2) Audience tiering is **construction-time**: the registry bakes the request `AIScope`
+  into each handler; the tools take no scope/target arguments at all. (3) `build_registry`
+  gained an optional `channel=` param so the policy explanation binds to the asking
+  channel. Model loop flagged for the maintainer's prod check (no sandbox key).
 - **Goal:** expose the #616 read model as three read-only AI tools —
   tools-available · policy-explanation · answerability-summary — audience-tiered
   (AR-08) at construction.
