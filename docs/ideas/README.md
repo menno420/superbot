@@ -38,6 +38,11 @@ Current broad captures:
 - [`future-product-direction-2026-06-07.md`](./future-product-direction-2026-06-07.md) —
   source-aware future product direction across polish, extensions, reusable systems,
   and long-term expansions; capture-only, not a roadmap.
+- [`settings-presets-and-ai-template-advisor.md`](./settings-presets-and-ai-template-advisor.md) —
+  the **Q-0070 presets-everywhere posture** (decided — routed to settings-audit
+  Phase 4) + the **AI template/preset advisor** idea (modular prompt designs/styles
+  as AI-cog settings so the AI can suggest the right template per task; captured
+  only, gated).
 - [`ai-extra-tool-capability-ideas.md`](./ai-extra-tool-capability-ideas.md) — AI
   extra-tool capability backlog (capture only, not approved work).
 - [`mining_exploration_brainstorm.md`](./mining_exploration_brainstorm.md) — design-intent

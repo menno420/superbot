@@ -2885,3 +2885,56 @@ cutover, making per-tier beast questions answerable by name.
 **Maintainer answer (verbatim, 2026-06-09):** "Yes, +25%" — Village Primary
 Training's projectile-speed buff (and Ezili's totem variant) is a fraction like
 the RangeSupport family, not a true multiplier.
+---
+
+## 30. Settings preset posture — 2026-06-10
+
+> Numbering note: **Q-0066–Q-0069 belong to the #638 block** (§29 above; merged
+> 2026-06-10); this section was numbered Q-0070 in parallel so both landed without
+> renumbering (the Q-0060 accept-and-reconcile policy working as designed).
+
+### Q-0070 — Should every setting offer defined presets (+ manual entry + preset-then-edit)?
+
+**Area:** Settings / customization platform (all subsystems)
+**Type:** Product UX posture
+**Priority:** Medium (directs settings-audit Phase 4 — "structured editors / less text")
+**Status:** Answered (owner-stated in chat, 2026-06-10) — **Routed** → settings audit §7
+conversion table + §11 Phase 4; the AI-advisor part →
+[`../ideas/settings-presets-and-ai-template-advisor.md`](../ideas/settings-presets-and-ai-template-advisor.md)
+
+**Maintainer answer (2026-06-10, verbatim):** "Yes wherever possible everything should
+definitely have clear defined presets, aswell as an option for a custom AI design, this
+should be treated as an idea for later because it means we would need to hardcore multiple
+promt designs/styles as modular settings for the AI cog, so the AI can suggest the right
+kind if templates/presets for every task, there should also always be an option for a
+completely manual entry, aswell as an option to choose a preset and then edit from there"
+
+**Decoded posture (three requirements for every setting editor, wherever feasible):**
+
+1. **Clear defined presets** are the primary path.
+2. **Preset-then-edit** — choose a preset, then customize from it.
+3. **Completely manual entry** stays available, always.
+
+*Answer scope:* UX posture for settings editors only. It upgrades the settings audit §7
+"keep as plain text" rows (DM template, AI instruction body): even genuinely-authored-text
+settings should offer curated starting presets + preset-then-edit, with manual entry
+retained. It does **not** approve the AI part — the "custom AI design" / AI-suggested
+templates idea ("hardcode multiple prompt designs/styles as modular settings for the AI
+cog, so the AI can suggest the right kind of templates/presets for every task") is
+explicitly **an idea for later**, captured in the ideas file above, behind the AI
+per-exposure gates. It also does not reorder the settings lane — implementation home is
+settings-audit **Phase 4**, in its already-decided sequence.
+
+**Question (context):** Shown four live editor modals still requiring free-typed values
+(`moderation.warn_timeout_minutes` required-int modal, `ai.ai_default_model`,
+`moderation.dm_template`, `ai.ai_guild_instruction_profile`): should the platform
+end-state be presets-everywhere, and which fallbacks must always exist?
+
+**Why agents need this:** Phase 4 implementers need to know the target editor shape per
+setting class. Numeric/enum/pointer settings already had a structured-editor direction;
+this decides the authored-text class too (presets + edit-from-preset + manual), and sets
+the bar for any new setting's editor design.
+
+**Suggested destination after answer:** settings audit §7 + §11 Phase 4 (done — pointer
+added 2026-06-10); the AI template-advisor slice promotes via the ideas-file lifecycle
+only after Phase 4 ships its preset infrastructure.

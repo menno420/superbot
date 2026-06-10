@@ -234,6 +234,10 @@ privacy/provenance/moderation review before any public surface.
 - [fun-and-ease-brainstorm](ideas/fun-and-ease-brainstorm-2026-06-09.md) — 24
   dedup-verified fun + ease-of-use ideas (social/competition, ambient delight, member
   UX); owner picks recorded (Q-0053; pets structured → a games-lane plan).
+- [settings-presets-and-ai-template-advisor](ideas/settings-presets-and-ai-template-advisor.md) —
+  the AI template/preset advisor for settings (modular prompt designs the AI can
+  suggest per task); the presets-everywhere *posture* itself is decided (Q-0070 →
+  settings-audit Phase 4), only the advisor is Someday.
 - [future-product-direction](ideas/future-product-direction-2026-06-07.md) — source-aware
   future product direction (polish, extensions, reusable systems, long-term).
 - [ai-extra-tool-capability-ideas](ideas/ai-extra-tool-capability-ideas.md) — AI capability
