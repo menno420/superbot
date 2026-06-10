@@ -207,6 +207,8 @@ A condensed version of `docs/help-command-surface-map.md` and
 | deathmatch | `cogs/deathmatch_cog.py` (+ `cogs/deathmatch/`) | — | direct CRUD | `utils/db/games/deathmatch.py` |
 | diagnostic | `cogs/diagnostic_cog.py` (+ `cogs/diagnostic/`) | `views/diagnostic/` | `services/diagnostics_service.py` (read-only providers) | n/a |
 | economy | `cogs/economy_cog.py` (+ `cogs/economy/`) | `views/economy/` | `services/economy_service.py` | `utils/db/economy.py` |
+| four_twenty | `cogs/four_twenty_cog.py` | — | n/a (utility-hub child + passive stage) | n/a |
+| games | `cogs/games_cog.py` | `views/games/` | n/a (hub router — no game logic) | n/a |
 | general | `cogs/general_cog.py` | — | reads `data/json/general_content.json` | n/a |
 | help | `cogs/help_cog.py` (+ `cogs/help/`) | — | `cogs/help/route.py` (resolver) | n/a |
 | inventory | `cogs/inventory_cog.py` | — | direct CRUD | `utils/db/inventory.py` |
@@ -217,6 +219,7 @@ A condensed version of `docs/help-command-surface-map.md` and
 | proof_channel | `cogs/proof_channel_cog.py` | — | `services/economy_service.py` (coins) | n/a |
 | role | `cogs/role_cog.py` | `views/roles/` | role create/edit/delete via `services/role_lifecycle_service.py`; thresholds/reaction-roles direct CRUD | `utils/db/roles.py` |
 | rps_tournament | `cogs/rps_tournament_cog.py` (+ `cogs/rps_tournament/`) | `views/rps/` | direct CRUD + `economy_service` | `utils/db/games/rps.py` |
+| server_management | `cogs/server_management_cog.py` | `views/server_management/` | n/a (hub — composes setup/diagnostics/lifecycle services) | n/a |
 | settings | `cogs/settings_cog.py` (+ `cogs/settings/`) | `views/settings/` | `services/settings_mutation.py` | `utils/db/settings.py` |
 | setup | `cogs/setup_cog.py` (+ `cogs/setup/`) | `views/setup/` | `services/setup_operations.py` (+ companion services) | `utils/db/setup_session.py`, `utils/db/setup_draft.py` |
 | utility | `cogs/utility_cog.py` | — | n/a | n/a |
