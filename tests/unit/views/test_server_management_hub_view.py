@@ -40,6 +40,7 @@ _BUTTON_IDS = {
     "server_management:setup",
     "server_management:access_map",
     "server_management:help_preview",
+    "server_management:help_editor",
     "server_management:refresh",
 }
 
@@ -103,11 +104,7 @@ def test_view_constructs_with_no_args_for_restoration():
 
 def test_view_has_expected_button_custom_ids():
     view = ServerManagementHubView()
-    actual = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
-    }
+    actual = {c.custom_id for c in view.children if isinstance(c, discord.ui.Button)}
     assert actual == _BUTTON_IDS
 
 
@@ -187,8 +184,7 @@ async def test_open_manager_routes_and_attaches_back_button():
     back = [
         c
         for c in child_view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "server_management:back"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "server_management:back"
     ]
     assert len(back) == 1
 
@@ -272,11 +268,13 @@ async def test_setup_button_opens_wizard_entry():
 async def test_refresh_recomposes_in_place():
     view = ServerManagementHubView()
     interaction = _interaction()
-    with patch.object(
-        hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status())
-    ), patch.object(
-        hub_mod, "safe_defer", new=AsyncMock(return_value=True)
-    ), patch.object(hub_mod, "safe_edit", new=AsyncMock()) as mock_edit:
+    with (
+        patch.object(
+            hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status())
+        ),
+        patch.object(hub_mod, "safe_defer", new=AsyncMock(return_value=True)),
+        patch.object(hub_mod, "safe_edit", new=AsyncMock()) as mock_edit,
+    ):
         await _button(view, "server_management:refresh").callback(interaction)
     mock_edit.assert_awaited_once()
     _args, kwargs = mock_edit.call_args
@@ -327,9 +325,7 @@ def test_no_module_level_cogs_import():
     src = inspect.getsource(hub_mod)
     tree = ast.parse(src)
     for node in tree.body:  # module-level statements only
-        if isinstance(node, ast.ImportFrom) and (node.module or "").startswith(
-            "cogs"
-        ):
+        if isinstance(node, ast.ImportFrom) and (node.module or "").startswith("cogs"):
             pytest.fail(f"module-level cogs import: from {node.module}")
         if isinstance(node, ast.Import):
             for alias in node.names:

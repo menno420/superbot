@@ -35,9 +35,11 @@ _COGS_DIR = _REPO_ROOT / "disbot" / "cogs"
 # The deliberate contract: subsystems whose Settings group is a domain-config
 # destination. Audit §4 verified cleanup as the one real domain-panel group
 # (governance cleanup-policy tables + dedicated panel; empty scalar page).
+# help joined 2026-06-10 (help audit Phase 5): the "Help appearance" panel —
+# the HLP-3 overlay editor behind the audited help_overlay_mutation seam.
 # Adding a subsystem here requires a real DomainPanelSpec declaration in its
 # cogs/<subsystem>/schemas.py — and vice versa.
-_EXPECTED_DOMAIN_PANELS: frozenset[str] = frozenset({"cleanup"})
+_EXPECTED_DOMAIN_PANELS: frozenset[str] = frozenset({"cleanup", "help"})
 
 
 @pytest.fixture()
@@ -90,15 +92,14 @@ def test_domain_panel_declarations_are_well_formed(_registered_declared_schemas)
     for name, schema in _registered_declared_schemas.items():
         for spec in schema.domain_panels:
             assert name in SUBSYSTEMS, (
-                f"{name!r} declares a domain panel but is not a registered "
-                "subsystem"
+                f"{name!r} declares a domain panel but is not a registered " "subsystem"
             )
-            assert spec.name.strip(), (
-                f"{name!r} domain panel needs an operator-facing name"
-            )
-            assert spec.description.strip(), (
-                f"{name!r} domain panel needs a one-line description"
-            )
+            assert (
+                spec.name.strip()
+            ), f"{name!r} domain panel needs an operator-facing name"
+            assert (
+                spec.description.strip()
+            ), f"{name!r} domain panel needs a one-line description"
 
 
 def test_catalogue_consumes_the_declarations(_registered_declared_schemas):
