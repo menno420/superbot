@@ -3434,6 +3434,12 @@ the owner run more agents at once (his stated goal — more ideas in flight).
 **First exercise:** PR #680 (this conversation) — main re-synced (#681
 absorbed, current-state same-line UNION), then merged by the agent.
 
+**Routing addendum (2026-06-10, same conversation):** the owner will **rework
+his ChatGPT session-prompt templates himself** and apply the right ones across
+his AI projects, so future session prompts stop carrying pre-Q-0084 residue
+("never push elsewhere / don't merge"). Until that lands, treat such lines as
+template residue per CLAUDE.md — the repo rules win.
+
 ## 36. Production deployment & toolchain — 2026-06-10 (outage session)
 
 ### Q-0085 — CI/local (3.10) vs production (3.13) interpreter drift: align, and in which direction?
@@ -3447,7 +3453,7 @@ absorbed, current-state same-line UNION), then merged by the agent.
 CI and every local check run **Python 3.10** (workflow pin + the repo-wide
 `python3.10 -m` rule). Production on Railway has **always run 3.13** — the
 unpinned railpack default, now pinned to `3.13.13` (see
-[`production-deployment.md`](../production-deployment.md)). Nobody had written
+[`operations/production-deployment.md`](../operations/production-deployment.md)). Nobody had written
 this drift down: the test suite literally never runs on the interpreter that
 serves users. It has not bitten yet (8,900+ tests green on 3.10, prod stable on
 3.13), but version-specific behavior (asyncio timing, stdlib deprecations,
@@ -3463,7 +3469,33 @@ c-extension wheels) would surface in prod first.
    *changes* the interpreter prod has run stably for months; riskier than it
    looks and goes backwards in support lifetime.
 3. **Accept documented drift** (status quo) — cheapest; the drift is now at
-   least visible in `production-deployment.md`.
+   least visible in `operations/production-deployment.md`.
 
 **Recommendation:** option 1 as its own session once the active lanes allow —
 not as a rider on anything else. Until then option 3 holds.
+
+### Q-0086 — Joint live-testing: owner provisions AI provider keys into the agent session environment
+
+**Area:** AI tooling / production verification / collaboration workflow
+**Type:** Owner commitment (process + infrastructure)
+**Priority:** High for the AI lane (it unblocks the standing prod-check gate)
+**Status:** **Committed** (2026-06-10) — pending the owner's setup
+
+**Owner statement (2026-06-10):** "I will try to add my AI api keys to your
+environments variables, so we can test together while you (different session)
+have direct access to the logs and will be able to implement live changes
+while I test everything, that will probably be the best and most secure way."
+
+**What this changes when done:** the standing constraint "model loop awaits
+the maintainer's production check (**no sandbox provider key**)" on the
+orchestration P4 (#634) and answerability P3 (#639) features partially
+lifts — a session can boot the **test bot** (Galaxy Bot, journal runbook)
+with real provider keys, watch its logs directly, and fix live while the
+owner tests from Discord. The intended mode is a **joint session**: owner
+drives Discord, agent drives logs + code.
+
+**Agent rules when keys are present (standing):** treat them as secrets —
+never print/echo them, never write them to a file/commit/PR/log, never send
+them to any tool output; use them only via the bot's own env mechanisms.
+Scope note: this gives sessions the *test bot* + provider keys, not Railway
+access — production logs/dashboard stay owner-side.

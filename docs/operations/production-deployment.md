@@ -57,7 +57,7 @@
   (pinned in the workflows and every `python3.10 -m` rule); production runs
   **3.13** and always has (the unpinned default predates this doc). Alignment
   direction is an owner decision —
-  [`owner/maintainer-question-router.md`](owner/maintainer-question-router.md) §36.
+  [`owner/maintainer-question-router.md`](../owner/maintainer-question-router.md) §36.
 
 ## Backups — OPEN
 

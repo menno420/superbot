@@ -166,7 +166,7 @@ or read `docs/architecture.md` § "Ownership boundary" again).
 | A new resource creation flow | Use `services/resource_provisioning.py` (`ResourceProvisioningPipeline`) | `docs/setup-platform/resource-provisioning-overview.md` |
 | A new governance write | Use `governance/writes.py:GovernanceMutationPipeline` | `docs/ownership.md` INV-E |
 | A new helper (any kind) | Read `docs/helper-policy.md` **first**. The default answer is "inline it" or "put it in the cog's own package". | `docs/helper-policy.md` |
-| A production build/deploy config change | `.python-version` (interpreter pin — bump procedure in the doc) · `Procfile` (worker command) · Railway dashboard is maintainer-only (service vars, restarts) | `docs/production-deployment.md` |
+| A production build/deploy config change | `.python-version` (interpreter pin — bump procedure in the doc) · `Procfile` (worker command) · Railway dashboard is maintainer-only (service vars, restarts) | `docs/operations/production-deployment.md` |
 
 ---
 

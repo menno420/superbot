@@ -46,6 +46,18 @@
 > spend = **owner-set hard ceiling, visible graceful degrade** (Q-0082) · the
 > workflow converges toward **full self-driving — explicitly not near-term**
 > (Q-0083).
+>
+> **Recommended session queue (2026-06-10, owner-ack'd in the outage session):**
+> 1) **Untested-surface testing checklist** (owner-commissioned): enumerate every
+> command/prompt that automated tests *can't* verify and that hasn't been explicitly
+> live-tested, as a maintained checklist — extends
+> [production-eval-checklist](audits/production-eval-checklist-2026-06-10.md); pairs
+> with **Q-0086** joint live-testing (provider keys → session env) once the owner
+> sets it up · 2) **Postgres backup posture** — design + automate
+> ([operations/production-deployment.md](operations/production-deployment.md)
+> §Backups is the landing page) · 3) **Help home / navigation plan** (its editor-UI
+> gate cleared via #677/#679). Build-ready alternates: myprofile PR A ·
+> survival P1 · duel-XP quick-win.
 
 ---
 
