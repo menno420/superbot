@@ -3567,3 +3567,38 @@ once Stage 0 has proven itself. The protocol **activates when Stage 0
 lands** (his conditional, honored). Owner provides: the Anthropic API key as
 a repo secret + a per-run budget choice. Until activation, the ~700K
 guidance + no-unguided-PRs rule apply as journal guidance immediately.
+
+### Q-0089 — Mandatory session ender: every agent contributes ≥1 new idea
+
+**Area:** Collaboration model / agent ecosystem (session END protocol)
+**Type:** Owner directive (unprompted, brainstorm round 4)
+**Priority:** High (changes every session's END protocol immediately)
+**Status:** **Directed** (2026-06-10) — **Routed** → CLAUDE.md § Session & plan workflow (new bullet); journal END checklist + QR row; ideas README intake note
+
+**Owner statement (2026-06-10, verbatim core):** "I noticed that AIs don't
+really come up with many ideas or improvements themselves, while if they did,
+and they would do it consistently, then you are pretty much guaranteed to
+eventually come up with a good idea, so there I have another idea, we should
+make it a mandatory session ender for each agent to come up with 1 new idea
+for the bot or for the AI network, it can be anything as small as a change of
+wording in an embed, or as big as a whole new cog or function, or an
+architectural refractor, maybe a new document for the AI memory, the point
+is, I've been trying to get AI to be more creative and to be part of the
+improvement process."
+
+**The rule as installed:** at session END, before the log is written, the
+agent contributes **one new idea it genuinely believes in** — bot-facing or
+network/workflow-facing, any size (embed wording → new cog → refactor → new
+memory doc). Mechanics: dedup-grep `docs/ideas/` + the roadmap first (a
+duplicate doesn't count); capture it in the session log under a `💡 Session
+idea` flag with one line of *why it's worth having*; if it's substantial,
+give it an idea file / README index entry like any captured idea. Quality
+bar: a forced-feeling filler idea is worse than none — the owner's intent is
+**consistent generation**, volume-over-time, not ceremony; "genuinely
+believes in" is the filter. The grooming pass (Q-0015) *moves existing*
+ideas; this rule *generates new* ones — both run at END.
+
+**First execution:** this session's 💡 idea — the **owner's morning digest**
+(see the session log + ideas README): the bot/caretaker posts a daily
+"what changed in your bot yesterday" summary built from merged PR titles,
+so the owner experiences the network's velocity as a product feature.

@@ -18,6 +18,11 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+> **Standing intake note (Q-0089, 2026-06-10):** every session now *generates*
+> one new `💡 Session idea` at END (owner directive — consistent generation
+> beats occasional brilliance). Substantial ones land here as files; small ones
+> live in their session log's 💡 flag. The grooming pass then moves them.
+
 - [`bot-self-test-walker-2026-06-10.md`](./bot-self-test-walker-2026-06-10.md) —
   owner idea (brainstorm round 3): **the bot tests itself** — an owner-gated
   in-process walker that synthetically invokes every ledger-listed command

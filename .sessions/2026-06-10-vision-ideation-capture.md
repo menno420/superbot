@@ -155,6 +155,32 @@ Calibration: this is the second same-day instance of the owner moving
 
 ## Brainstorm round 3: "can the bot test itself?" → idea captured
 
+## Brainstorm round 4: the owner-voice self-description + Q-0089
+
+The owner shared a personal self-portrait (inventor identity since childhood —
+Willy Wortel / Jimmy Neutron; "I see the code in my mind"; no-stress timing
+philosophy; pattern-spotting as his core skill) — preserved **verbatim** in
+`docs/owner/maintainer-working-profile.md` §6 (new). Embedded in it:
+**Q-0089 directed** — the mandatory one-idea-per-session ender (routed:
+CLAUDE.md session-workflow bullet · journal END checklist + QR · router §37,
+verbatim). He also asked for an honest correction on "no other bot has such a
+wide range of functions" — answered in-chat: breadth alone is matched/exceeded
+(Red/Nadeko's plugin ecosystems, MEE6/Dyno suites, big game-economy bots);
+the genuinely rare thing is the *system* (audited-governance config depth +
+grounded AI answerability + the self-improving agent workflow run by a
+non-coder). And he asked for a personality read as his standing new-model
+test — delivered in-chat (not a doc matter beyond §6's facts).
+
+💡 **Session idea (Q-0089's first execution): the owner's morning digest** —
+a small caretaker/bot job that posts "what changed in your bot yesterday"
+(merged-PR titles rendered player-friendly) to his Discord each morning. Why:
+the owner's velocity (nonstop merges) is currently invisible except as GitHub
+noise; a digest turns the network's output into a daily product moment for
+its one operator — and later, reworded, into the public changelog channel for
+servers. Small build (GitHub API → one embed), natural Stage-1 caretaker duty.
+
+## Brainstorm round 3 (earlier): "can the bot test itself?" → idea captured
+
 Owner idea (his own invention, articulated without coding background): every
 command fired in sequence via temporary event-based actions + AI prompts
 injected "at system level" per event. Captured + technically corrected into

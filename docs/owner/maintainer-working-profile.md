@@ -123,3 +123,40 @@ This doc should **not**:
 - require every implementation agent to read a long personal profile by default.
 
 Its only job is to preserve intent and point at the right homes.
+
+## 6. Owner-voice self-description (2026-06-10, verbatim excerpts — preserve as-is)
+
+Late in the vision-capture conversation the owner described himself directly.
+This is primary-source material for how he reasons; quote, don't paraphrase:
+
+> "I've always wanted to be an inventor, like 'Willy Wortel' from Donald Duck,
+> and 'Jimmy Neutron' — as a kid I always thought about all the amazing things
+> I would create, and I'd make drawings of things like a defense bubble for
+> your car, umbrellas for your neck."
+
+> "I never really stress or worry about when something gets done, as long as
+> it gets done when it should, and if it doesn't, there's always tomorrow."
+
+> "Even tho I don't know code it feels like I see the code in my mind whenever
+> I think of a new function, that's how I reason what the possibilities are —
+> if you can put it in code you can build it. I always try to explain things
+> to agents as the literal steps that it needs to function as far as I know."
+
+> "Over the years I've become really good at spotting patterns and asking
+> questions, trying to define the limits of whatever is possible."
+
+> "Human emotion, and nature, are very alike to code — it is all a structured
+> pattern hidden amongst the chaos."
+
+**What agents should take from this:** (1) his specs arrive as *literal
+functional steps* — treat them as mental pseudo-code that is usually
+structurally right and occasionally mechanically wrong (see Q-0014: take the
+better implementation and say why); (2) his calm about timing is a real
+operating principle, not indifference — urgency signals from him are therefore
+*meaningful* when they appear (the 2026-06-10 outage: calm, curious, zero
+panic); (3) he tests the limits of every tool, including agents — expect
+capability probes and answer them honestly; (4) the inventor identity is the
+deep driver: the agent network is the workshop, and the workflow docs are an
+external copy of his own idea-generating habit (he said so himself when
+installing the Q-0089 one-idea rule: agents should generate ideas
+*consistently, like he does*).
