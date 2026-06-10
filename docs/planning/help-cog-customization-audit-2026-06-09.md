@@ -376,6 +376,11 @@ SUBSYSTEMS + HUBS + command-surface ledger + panel declarations/live availabilit
 > the Q-0059 embed-builder Home message, whose mandatory preview belongs
 > with the editor) and Phase 4's command/panel-action records (Q-0057
 > rider: no ordering until stable action identities).
+> **Phase 5 plan ready (2026-06-10):**
+> [`help-overlay-editor-ui-plan-2026-06-10.md`](help-overlay-editor-ui-plan-2026-06-10.md)
+> — 2 PRs (A: editor on the shipped seam, no migration · B: the Q-0059
+> Home embed builder, migration widening the 064 CHECK as its header
+> pre-plans).
 
 | Phase | Goal and likely files | Dependencies / off-limits | Migration / reset | Verification | Recommended next agent |
 |---|---|---|---|---|---|
