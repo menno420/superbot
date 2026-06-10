@@ -31,10 +31,14 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
     {
         ("views/btd6/admin_panel.py", "BTD6AdminView"),
         ("views/btd6/strategy_review.py", "StrategyReviewView"),
-        # The economy family (4 views) migrated onto BaseView 2026-06-10
-        # (RS10 — consolidated plan Batch 9); the ratchet shrank 17 → 13.
-        ("views/mining/mine_view.py", "MineView"),
-        ("views/mining/mine_view.py", "_MineResultsView"),
+        # RS10 migrations (consolidated plan Batch 9 + follow-ons): the
+        # economy family (4 views, 2026-06-10) and the mining family
+        # (2 views, same day) moved onto BaseView — ratchet 17 → 13 → 11.
+        # The remaining entries are NOT lifecycle duplication: the settings
+        # selects + roles removes are ephemeral capability/pipeline-gated
+        # follow-ups (no local interaction_check/on_timeout); btd6 panels
+        # carry bespoke admin checks; rank_view has a documented direct
+        # subclass reason. Migrate only with a concrete gain.
         ("views/roles/management_panel.py", "_DeleteRoleView"),
         ("views/roles/time_roles_panel.py", "_TimeRemoveView"),
         ("views/roles/xp_roles_panel.py", "_XpRemoveView"),

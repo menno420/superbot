@@ -27,6 +27,7 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
 from utils.mining import world
 from utils.ui_constants import MINING_COLOR
+from views.base import BaseView
 
 logger = logging.getLogger("bot.views.mining.mine_view")
 
@@ -43,26 +44,22 @@ def _build_mine_prompt_embed() -> discord.Embed:
     )
 
 
-class MineView(discord.ui.View):
-    """Mine Left / Mine Right / Mine Down buttons (30-second timeout)."""
+class MineView(BaseView):
+    """Mine Left / Mine Right / Mine Down buttons (30-second timeout).
 
-    def __init__(self, user_id: int, guild_id: int) -> None:
-        super().__init__(timeout=30)
-        self.user_id = user_id
+    Ownership/timeout/error handling come from BaseView (RS10) — another
+    user's click now gets the standard ephemeral denial instead of the
+    old silent False.
+    """
+
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        guild_id: int,
+    ) -> None:
+        super().__init__(author, timeout=30)
+        self.user_id = author.id
         self.guild_id = guild_id
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return interaction.user.id == self.user_id
-
-    async def on_timeout(self) -> None:
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        if self.message is not None:
-            try:
-                await self.message.edit(view=self)
-            except discord.HTTPException:
-                pass
 
     @discord.ui.button(label="Mine Left", style=discord.ButtonStyle.primary)
     async def mine_left(
@@ -117,7 +114,7 @@ class MineView(discord.ui.View):
                 "or use the buttons below to navigate."
             ),
         )
-        results_view = _MineResultsView(self.user_id, self.guild_id)
+        results_view = _MineResultsView(interaction.user, self.guild_id)
         await interaction.followup.edit_message(
             message_id=interaction.message.id,
             content=None,
@@ -128,31 +125,23 @@ class MineView(discord.ui.View):
         self.stop()
 
 
-class _MineResultsView(discord.ui.View):
+class _MineResultsView(BaseView):
     """Post-mine results view: Mine Again / Back to Mining Menu / Back to Help.
 
     Fixes the pre-PR-4 dead-end where the MineView was replaced with
     ``view=None`` after a single direction click, leaving the user
-    with no on-message way to continue.
+    with no on-message way to continue. Ownership/timeout/error handling
+    come from BaseView (RS10).
     """
 
-    def __init__(self, user_id: int, guild_id: int) -> None:
-        super().__init__(timeout=60)
-        self.user_id = user_id
+    def __init__(
+        self,
+        author: discord.Member | discord.User,
+        guild_id: int,
+    ) -> None:
+        super().__init__(author, timeout=60)
+        self.user_id = author.id
         self.guild_id = guild_id
-        self.message: discord.Message | None = None
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return interaction.user.id == self.user_id
-
-    async def on_timeout(self) -> None:
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        if self.message is not None:
-            try:
-                await self.message.edit(view=self)
-            except discord.HTTPException:
-                pass
 
     @discord.ui.button(
         label="⛏️ Mine Again",
@@ -164,7 +153,7 @@ class _MineResultsView(discord.ui.View):
         interaction: discord.Interaction,
         _: discord.ui.Button,
     ) -> None:
-        view = MineView(self.user_id, self.guild_id)
+        view = MineView(interaction.user, self.guild_id)
         await interaction.response.edit_message(
             embed=_build_mine_prompt_embed(),
             view=view,

@@ -55,7 +55,7 @@ def test_prompt_embed_describes_direction_choice():
 
 
 def test_results_view_has_three_navigation_buttons_on_row_zero():
-    view = _MineResultsView(user_id=1, guild_id=2)
+    view = _MineResultsView(MagicMock(id=1), guild_id=2)
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
     assert len(buttons) == 3
     rows = {b.row for b in buttons}
@@ -67,16 +67,21 @@ def test_results_view_has_three_navigation_buttons_on_row_zero():
 
 
 def test_results_view_locks_to_invoking_user():
-    view = _MineResultsView(user_id=42, guild_id=2)
+    view = _MineResultsView(MagicMock(id=42), guild_id=2)
     assert view.user_id == 42
 
 
 @pytest.mark.asyncio
 async def test_results_view_interaction_check_rejects_other_user():
-    view = _MineResultsView(user_id=42, guild_id=2)
+    view = _MineResultsView(MagicMock(id=42), guild_id=2)
     interaction = MagicMock()
     interaction.user.id = 99
+    interaction.response.send_message = AsyncMock()
+    # RS10: rejection now carries the standard ephemeral denial (the old
+    # hand-rolled check returned False silently).
     assert await view.interaction_check(interaction) is False
+    kwargs = interaction.response.send_message.await_args.kwargs
+    assert kwargs["ephemeral"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +91,7 @@ async def test_results_view_interaction_check_rejects_other_user():
 
 @pytest.mark.asyncio
 async def test_handle_mine_swaps_to_results_view_not_none():
-    view = MineView(user_id=1, guild_id=2)
+    view = MineView(MagicMock(id=1), guild_id=2)
     interaction = MagicMock()
     interaction.user.mention = "@user"
     interaction.message = MagicMock()
@@ -126,7 +131,7 @@ async def test_handle_mine_swaps_to_results_view_not_none():
 
 @pytest.mark.asyncio
 async def test_mine_again_button_swaps_to_fresh_mine_view():
-    results = _MineResultsView(user_id=1, guild_id=2)
+    results = _MineResultsView(MagicMock(id=1), guild_id=2)
     btn = _find_button(results, "Mine Again")
     interaction = MagicMock()
     interaction.user.id = 1
@@ -151,7 +156,7 @@ async def test_mine_again_button_swaps_to_fresh_mine_view():
 
 @pytest.mark.asyncio
 async def test_mining_menu_button_swaps_to_mining_hub_view():
-    results = _MineResultsView(user_id=1, guild_id=2)
+    results = _MineResultsView(MagicMock(id=1), guild_id=2)
     btn = _find_button(results, "Mining Menu")
     interaction = MagicMock()
     interaction.user.id = 1
@@ -188,7 +193,7 @@ async def test_help_button_opens_help_category_view():
     index). The legacy paginated subsystem list is reached only via
     the "All Commands / Advanced" entry inside that category view.
     """
-    results = _MineResultsView(user_id=1, guild_id=2)
+    results = _MineResultsView(MagicMock(id=1), guild_id=2)
     btn = _find_button(results, "Help")
     interaction = MagicMock()
     interaction.user.id = 1
@@ -234,7 +239,7 @@ async def test_help_button_opens_help_category_view():
 
 @pytest.mark.asyncio
 async def test_help_button_falls_back_on_governance_failure():
-    results = _MineResultsView(user_id=1, guild_id=2)
+    results = _MineResultsView(MagicMock(id=1), guild_id=2)
     btn = _find_button(results, "Help")
     interaction = MagicMock()
     interaction.user.id = 1
@@ -266,7 +271,7 @@ async def test_help_button_falls_back_on_governance_failure():
 
 @pytest.mark.asyncio
 async def test_help_button_bails_when_defer_fails():
-    results = _MineResultsView(user_id=1, guild_id=2)
+    results = _MineResultsView(MagicMock(id=1), guild_id=2)
     btn = _find_button(results, "Help")
     interaction = MagicMock()
     interaction.user.id = 1

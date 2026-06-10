@@ -88,7 +88,7 @@ class MiningCog(commands.Cog):
     @commands.command()
     async def mine(self, ctx):
         """Start mining with interactive buttons."""
-        view = MineView(ctx.author.id, ctx.guild.id)
+        view = MineView(ctx.author, ctx.guild.id)
         embed = discord.Embed(
             title="Mining",
             description=(
