@@ -79,6 +79,31 @@ conversation: #681 merged mid-chat and this branch absorbed it (the §9
 same-line current-state UNION, ~2 min). PR #680 then merged by the agent —
 the grant's first exercise.
 
+## Production incident (same conversation): Railway build outage → PR #685
+
+Answering the post-merge "what else is useful" backups question, the owner
+reported the bot down on Railway ("missing python") with the build log
+attached. Diagnosis from the log: **no repo-side Python pin existed**, so
+railpack's floating default (`3.13` → latest patch) resolved to brand-new
+CPython **3.13.14**, which python-build-standalone hasn't published binaries
+for yet (latest pbs release `20260602`; asset probe: 3.13.14 → 404,
+3.13.13 → **200**) → `mise install` fails, three consecutive deploy builds
+dead. Postgres Online throughout — bot-offline only, no data impact.
+
+Fix (PR #685, merged + auto-deployed same hour): **`.python-version` =
+`3.13.13`** (railpack reads mise-compatible version files; CI/local pin 3.10
+explicitly and never read it) + the first **`docs/production-deployment.md`**
+(Railway facts incl. auto-deploy-on-merge — which means Q-0084 merges DO
+reach prod; restarts/verification stay the owner's — pin bump procedure,
+incident log, **backups = OPEN**, the live discussion). **Q-0085 routed
+open** (router §36): CI 3.10 vs prod 3.13 interpreter drift — recommend
+aligning CI up to 3.13 in its own session, owner picks.
+
+Process note: the owner's hosting answer (Railway + native PG) was the first
+answer to the backups discussion — the posture design (snapshots vs. offsite
+pg_dump, retention, restore drill) is still the open thread; the new doc's
+Backups section is its landing page.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →

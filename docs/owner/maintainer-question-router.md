@@ -3433,3 +3433,37 @@ the owner run more agents at once (his stated goal — more ideas in flight).
 
 **First exercise:** PR #680 (this conversation) — main re-synced (#681
 absorbed, current-state same-line UNION), then merged by the agent.
+
+## 36. Production deployment & toolchain — 2026-06-10 (outage session)
+
+### Q-0085 — CI/local (3.10) vs production (3.13) interpreter drift: align, and in which direction?
+
+**Area:** Toolchain / CI parity / production deployment
+**Type:** Technical posture with owner-visible cost — needs an owner pick
+**Priority:** Medium (latent risk, not blocking; now documented and visible)
+**Status:** **Open** — awaiting owner
+
+**Context (discovered during the 2026-06-10 Railway build outage, PR #685):**
+CI and every local check run **Python 3.10** (workflow pin + the repo-wide
+`python3.10 -m` rule). Production on Railway has **always run 3.13** — the
+unpinned railpack default, now pinned to `3.13.13` (see
+[`production-deployment.md`](../production-deployment.md)). Nobody had written
+this drift down: the test suite literally never runs on the interpreter that
+serves users. It has not bitten yet (8,900+ tests green on 3.10, prod stable on
+3.13), but version-specific behavior (asyncio timing, stdlib deprecations,
+c-extension wheels) would surface in prod first.
+
+**Options:**
+
+1. **Align CI/local up to 3.13** *(recommended eventually)* — one planned
+   toolchain-migration session: workflow pins, `requirements-dev` wheels,
+   the `python3.10 -m` rule in CLAUDE.md/hooks/scripts/docs, sandbox env.
+   Cost: touches every check command; needs its own verification pass.
+2. **Pin prod down to 3.10** — matches the tested surface exactly, but
+   *changes* the interpreter prod has run stably for months; riskier than it
+   looks and goes backwards in support lifetime.
+3. **Accept documented drift** (status quo) — cheapest; the drift is now at
+   least visible in `production-deployment.md`.
+
+**Recommendation:** option 1 as its own session once the active lanes allow —
+not as a rider on anything else. Until then option 3 holds.
