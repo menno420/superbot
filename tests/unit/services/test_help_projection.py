@@ -15,6 +15,8 @@ These pin the projection contract the five Help render paths consume:
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+
 import pytest
 from discord.ext import commands
 
@@ -314,3 +316,192 @@ async def test_enrichment_unknown_projects_as_shown(monkeypatch):
 async def test_enrichment_requires_declared_tier():
     with pytest.raises(ValueError, match="member_tier"):
         await project_help_with_execution(AccessContext(guild_id=1))
+
+
+# ---------------------------------------------------------------------------
+# HLP-3 — guild overlay: display-hide, presentations, orphans, default-byte
+# ---------------------------------------------------------------------------
+
+
+def _overlay(*rows):
+    from services.help_overlay import GuildHelpOverlay
+
+    return GuildHelpOverlay(guild_id=1, rows=tuple(rows))
+
+
+def _row(kind: str, key: str, **kwargs):
+    from services.help_overlay import HelpOverlayRow
+
+    return HelpOverlayRow(entity_kind=kind, entity_key=key, **kwargs)
+
+
+def test_overlay_hide_is_display_hidden_and_hides():
+    overlay = _overlay(_row("subsystem", "xp", display_hidden=True))
+    projection = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=overlay)
+    decision = projection.subsystem_decision("xp")
+    assert decision.state is HelpEntryState.DISPLAY_HIDDEN
+    assert decision.reason_code == "overlay_hidden"
+    assert not decision.advertised
+    assert "xp" not in projection.advanced_subsystems()
+
+
+def test_overlay_hide_applies_to_hubs():
+    overlay = _overlay(_row("hub", "games", display_hidden=True))
+    projection = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=overlay)
+    assert projection.hub_decision("games").state is HelpEntryState.DISPLAY_HIDDEN
+    assert "games" not in {h.key for h in projection.visible_hubs()}
+    # The games SUBSYSTEM row is untouched — hub and subsystem entities are
+    # hidden independently (a hub hide does not cascade).
+    assert projection.is_subsystem_advertised("games")
+
+
+def test_governance_hidden_wins_over_overlay_hide():
+    """Truthful explanations: a governance-hidden entry stays
+    governance_hidden even when the overlay also hides it."""
+    overlay = _overlay(_row("subsystem", "ai", display_hidden=True))
+    projection = HelpProjection.from_visibility(
+        _vis(_ALL - {"ai"}, "administrator"),
+        overlay=overlay,
+    )
+    assert projection.subsystem_decision("ai").state is (
+        HelpEntryState.GOVERNANCE_HIDDEN
+    )
+
+
+def test_overlay_hide_false_or_inherit_changes_nothing():
+    overlay = _overlay(
+        _row("subsystem", "xp", display_hidden=False),
+        _row("subsystem", "economy", display_name="Bank"),  # rename only
+    )
+    projection = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=overlay)
+    assert projection.subsystem_decision("xp").state is HelpEntryState.SHOWN
+    assert projection.subsystem_decision("economy").state is HelpEntryState.SHOWN
+
+
+def test_presentations_apply_renames_and_carry_defaults():
+    """Q-0056 (Help-only names) + Q-0058 (custom + default + key)."""
+    overlay = _overlay(
+        _row("hub", "games", display_name="Arcade", description="Play stuff"),
+        _row("subsystem", "xp", display_name="Levels"),
+    )
+    projection = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=overlay)
+
+    hub = projection.hub_presentation("games")
+    assert hub.display_name == "Arcade"
+    assert hub.purpose == "Play stuff"
+    assert hub.default_display_name == "Games"
+    assert hub.renamed
+    assert hub.entry_command == "!games"  # not overridable
+
+    sub = projection.subsystem_presentation("xp")
+    assert sub.display_name == "Levels"
+    assert sub.default_display_name == SUBSYSTEMS["xp"]["display_name"]
+    assert sub.description == SUBSYSTEMS["xp"]["description"]  # inherited
+    assert sub.renamed
+
+    untouched = projection.subsystem_presentation("economy")
+    assert untouched.display_name == untouched.default_display_name
+    assert not untouched.renamed
+
+
+def test_visible_hubs_render_effective_presentations():
+    overlay = _overlay(_row("hub", "games", display_name="Arcade"))
+    projection = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=overlay)
+    games = next(h for h in projection.visible_hubs() if h.key == "games")
+    assert games.display_name == "Arcade"
+    assert games.default_display_name == "Games"
+
+
+def test_orphan_rows_are_reported_never_rendered():
+    overlay = _overlay(
+        _row("subsystem", "retired_thing", display_name="Old"),
+        _row("subsystem", "xp", display_hidden=True),
+    )
+    projection = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=overlay)
+    assert [d.key for d in projection.orphaned_overrides] == ["retired_thing"]
+    orphan = projection.orphaned_overrides[0]
+    assert orphan.state is HelpEntryState.ORPHANED_OVERRIDE
+    assert orphan.reason_code == "unknown_key"
+    # The live decision set is unaffected by the orphan…
+    assert projection.subsystem_decision("retired_thing") is None
+    assert "retired_thing" not in projection.advanced_subsystems()
+    # …while the valid row still applies.
+    assert not projection.is_subsystem_advertised("xp")
+
+
+def test_no_overlay_and_empty_overlay_render_byte_identical():
+    """The default-byte pin: absence of rows = the exact pre-HLP-3 output."""
+    from services.help_overlay import EMPTY_OVERLAY
+
+    bare = HelpProjection.from_visibility(_vis(_ALL, "user"))
+    empty = HelpProjection.from_visibility(_vis(_ALL, "user"), overlay=EMPTY_OVERLAY)
+    assert bare.hubs == empty.hubs
+    assert bare.subsystems == empty.subsystems
+    assert bare.orphaned_overrides == empty.orphaned_overrides == ()
+    assert [h.key for h in bare.visible_hubs()] == [h.key for h in empty.visible_hubs()]
+    for key in ("xp", "economy", "games"):
+        assert bare.subsystem_presentation(key) == empty.subsystem_presentation(key)
+
+
+async def test_project_help_composes_governance_and_overlay(monkeypatch):
+    """The one-call render entry fetches the guild overlay (cached) and the
+    governance result, then composes both."""
+    import governance
+    import services.help_overlay as overlay_model
+    from governance.models import GovernanceContext
+
+    overlay = _overlay(_row("subsystem", "xp", display_hidden=True))
+    monkeypatch.setattr(
+        governance,
+        "resolve_visibility",
+        AsyncMock(return_value=_vis(_ALL, "user")),
+    )
+    get_overlay = AsyncMock(return_value=overlay)
+    monkeypatch.setattr(overlay_model, "get_guild_help_overlay", get_overlay)
+
+    from services.help_projection import project_help
+
+    gctx = GovernanceContext(guild_id=42, channel_id=None, member=None)
+    projection = await project_help(gctx)
+    get_overlay.assert_awaited_once_with(42)
+    assert not projection.is_subsystem_advertised("xp")
+    assert projection.overlay is overlay
+
+
+async def test_enrichment_applies_overlay_hide_over_lock_states(monkeypatch):
+    """A guild's display-hide wins over advertise-locked: a routed-off but
+    overlay-hidden feature is hidden from Help (its execution explanation
+    stays with the owning policy)."""
+    import services.access_projection as ap
+    import services.help_overlay as overlay_model
+
+    async def fake_map(ctx):
+        return tuple(
+            (
+                _access_decision(
+                    name,
+                    "deny",
+                    AccessAxis.ROUTING,
+                    "routing_disabled",
+                )
+                if name == "games"
+                else _access_decision(name, "allow")
+            )
+            for name in SUBSYSTEMS
+        )
+
+    monkeypatch.setattr(ap, "project_access_map", fake_map)
+    monkeypatch.setattr(
+        overlay_model,
+        "get_guild_help_overlay",
+        AsyncMock(
+            return_value=_overlay(_row("subsystem", "games", display_hidden=True))
+        ),
+    )
+
+    projection = await project_help_with_execution(
+        AccessContext(guild_id=1, member_tier="user"),
+    )
+    decision = projection.subsystem_decision("games")
+    assert decision.state is HelpEntryState.DISPLAY_HIDDEN
+    assert decision.reason_code == "overlay_hidden"

@@ -17,8 +17,10 @@ marked below: every path now consumes one
 
 Where a pin encodes a quirk (e.g. hub names shadow same-named subsystems
 in route priority), that remains deliberate: changing it must be a
-conscious, test-visible decision. The Q-0055–Q-0059 overlay answers are
-design posture only — nothing here implements or assumes overlay storage.
+conscious, test-visible decision. The HLP-3 section at the end pins the
+guild overlay (Q-0055–Q-0059) flowing through the same seam: overlay
+hides behave exactly like governance hides at every render path, renames
+are presentation-only, and an absent overlay is byte-identical.
 """
 
 from __future__ import annotations
@@ -550,3 +552,129 @@ async def test_dedicated_panel_dispatch_respects_the_projection():
     assert view is None
     assert calls == []  # the builder was never invoked
     assert "No command or category named" in (embed.description or "")
+
+
+# ---------------------------------------------------------------------------
+# HLP-3 — the guild overlay flows through the same seam (hide + rename)
+# ---------------------------------------------------------------------------
+
+
+def _overlay_projection(visible: set[str], tier: str, *rows):
+    from services.help_overlay import GuildHelpOverlay, HelpOverlayRow
+
+    overlay = GuildHelpOverlay(
+        guild_id=1,
+        rows=tuple(HelpOverlayRow(**r) for r in rows),
+    )
+    return HelpProjection.from_visibility(
+        VisibilityResult(
+            visible_subsystems=visible,
+            member_tier=tier,
+            resolved_from={},
+            traces={},
+        ),
+        overlay=overlay,
+    )
+
+
+def test_home_hides_overlay_hidden_hub_and_renders_renames():
+    projection = _overlay_projection(
+        _ALL_VISIBLE,
+        "user",
+        {"entity_kind": "hub", "entity_key": "economy", "display_hidden": True},
+        {"entity_kind": "hub", "entity_key": "games", "display_name": "Arcade"},
+    )
+    embed = build_categories_overview_embed(projection=projection)
+    names = " ".join(f.name for f in embed.fields)
+    assert "Economy" not in names  # overlay display-hide
+    assert "Arcade" in names and "Games" not in names  # overlay rename
+    # The rename is presentation-only: the entry command stays canonical.
+    arcade_row = next(f for f in embed.fields if "Arcade" in f.name)
+    assert "`!games`" in arcade_row.value
+
+
+async def test_typed_route_treats_overlay_hidden_like_any_hidden_target():
+    """Hide unification: an overlay-hidden subsystem types as not-found —
+    the same fallback as governance-hidden and nonexistent names."""
+    cog = _StubCog([_command("xpmenu")], hook=_panel_pair("XP PANEL"))
+    bot = _bot(cogs={"XpCog": cog})
+
+    projection = _overlay_projection(
+        _ALL_VISIBLE,
+        "user",
+        {"entity_kind": "subsystem", "entity_key": "xp", "display_hidden": True},
+    )
+    embed, view = await open_route(
+        HelpRoute(key="xp", kind="subsystem", target="xp"),
+        _opener(bot),
+        projection=projection,
+    )
+    assert view is None
+    assert "No command or category named" in (embed.description or "")
+
+
+async def test_advanced_and_cog_embed_render_overlay_renames():
+    projection = _overlay_projection(
+        _ALL_VISIBLE,
+        "administrator",
+        {
+            "entity_kind": "subsystem",
+            "entity_key": "economy",
+            "display_name": "Bank",
+            "description": "Coins and trading",
+        },
+    )
+    # Path 2 — the Advanced page embed shows the effective name.
+    from cogs.help_cog import _build_page_embed
+
+    embed = _build_page_embed(
+        _bot(),
+        projection.advanced_subsystems(),
+        0,
+        "administrator",
+        projection=projection,
+    )
+    text = " ".join(f.value for f in embed.fields)
+    assert "**Bank** — Coins and trading" in text
+
+    # Path 4 — the command-list embed title takes the effective name.
+    cog = _StubCog([_command("economymenu", help="Open the menu.")])
+    cog_embed = build_cog_embed(cog, "!", "economy", projection=projection)
+    assert "Bank" in (cog_embed.title or "")
+
+
+def test_help_panel_view_options_render_overlay_renames():
+    projection = _overlay_projection(
+        _ALL_VISIBLE,
+        "administrator",
+        {"entity_kind": "subsystem", "entity_key": "economy", "display_name": "Bank"},
+    )
+    view = HelpPanelView(
+        projection.advanced_subsystems(),
+        page=0,
+        projection=projection,
+    )
+    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
+    by_value = {opt.value: opt.label for opt in select.options}
+    assert by_value["economy"] == "Bank"
+
+
+def test_overlay_absent_keeps_render_paths_byte_identical():
+    """Default-byte: a projection without overlay renders exactly like one
+    with an empty overlay across Home and Advanced."""
+    from services.help_overlay import EMPTY_OVERLAY
+
+    vis = VisibilityResult(
+        visible_subsystems=_ALL_VISIBLE,
+        member_tier="administrator",
+        resolved_from={},
+        traces={},
+    )
+    bare = HelpProjection.from_visibility(vis)
+    empty = HelpProjection.from_visibility(vis, overlay=EMPTY_OVERLAY)
+
+    bare_home = build_categories_overview_embed(projection=bare)
+    empty_home = build_categories_overview_embed(projection=empty)
+    assert [(f.name, f.value) for f in bare_home.fields] == [
+        (f.name, f.value) for f in empty_home.fields
+    ]

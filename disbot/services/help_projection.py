@@ -16,15 +16,17 @@ whatever their builder did. This module replaces those local filters with
  shown               advertised by Help
  display_hidden      presentation-level hide (ledger classification,
                      Discord-hidden/disabled command, ``panel_available``
-                     = False; later: the HLP-3 guild overlay)
+                     = False, or an HLP-3 guild-overlay hide — Q-0055:
+                     display-only, never execution)
  governance_hidden   governance says this audience cannot see it here
                      (tier floor or scope visibility) — hides
  routed_off          cog routing disables it here — **still advertised**
  command_locked      command access denies it here — **still advertised**
  unavailable         availability policy denies (future axis — §6.6)
  orphaned_override   an overlay row references a key the catalogue no
-                     longer knows (HLP-3 contract; cannot occur before
-                     overlay storage exists)
+                     longer knows — preserved + reported on
+                     ``HelpProjection.orphaned_overrides``, never rendered
+                     by Help, never a crash
 ==================  ========================================================
 
 Only ``display_hidden`` and ``governance_hidden`` hide an entry. Help
@@ -68,7 +70,7 @@ from typing import TYPE_CHECKING, Any, Literal
 if TYPE_CHECKING:  # pragma: no cover — typing only, keeps imports lazy
     from governance.models import GovernanceContext, VisibilityResult
     from services.access_projection import AccessContext
-    from utils.hub_registry import HubEntry
+    from services.help_overlay import GuildHelpOverlay
 
 logger = logging.getLogger("bot.services.help_projection")
 
@@ -121,18 +123,70 @@ class HelpDecision:
 
 
 @dataclass(frozen=True)
+class HubPresentation:
+    """A hub's *effective* display fields (registry defaults ± overlay).
+
+    Q-0056: custom names render in Help only — these presentations are
+    consumed by Help surfaces exclusively. Q-0058: the defaults ride along
+    (``default_display_name`` / ``default_purpose``) so admin/debug views
+    can show custom + default + stable key.
+    """
+
+    key: str
+    display_name: str
+    purpose: str
+    emoji: str
+    entry_command: str
+    default_display_name: str
+    default_purpose: str
+
+    @property
+    def renamed(self) -> bool:
+        return (
+            self.display_name != self.default_display_name
+            or self.purpose != self.default_purpose
+        )
+
+
+@dataclass(frozen=True)
+class SubsystemPresentation:
+    """A subsystem's *effective* display fields (registry defaults ± overlay)."""
+
+    key: str
+    display_name: str
+    description: str
+    emoji: str
+    default_display_name: str
+    default_description: str
+
+    @property
+    def renamed(self) -> bool:
+        return (
+            self.display_name != self.default_display_name
+            or self.description != self.default_description
+        )
+
+
+@dataclass(frozen=True)
 class HelpProjection:
     """The composed Help render model for one audience in one context.
 
     ``source`` records which construction path produced it:
     ``"governance"`` (live visibility), ``"registry_defaults"`` (static
     fallback), or ``"access_projection"`` (execution-enriched).
+
+    ``overlay`` is the guild's presentation-deviation store (HLP-3) — or
+    ``None``, which renders byte-identical registry defaults.
+    ``orphaned_overrides`` reports overlay rows whose keys the catalogue
+    no longer knows (operator surfaces only; Help never renders them).
     """
 
     member_tier: str
     hubs: tuple[HelpDecision, ...]
     subsystems: tuple[HelpDecision, ...]
     source: str = "governance"
+    overlay: GuildHelpOverlay | None = None
+    orphaned_overrides: tuple[HelpDecision, ...] = ()
 
     # -- accessors -----------------------------------------------------
 
@@ -142,18 +196,68 @@ class HelpProjection:
     def subsystem_decision(self, key: str) -> HelpDecision | None:
         return next((d for d in self.subsystems if d.key == key), None)
 
-    def visible_hubs(self) -> list[HubEntry]:
-        """Hub entries Help Home shows, in registry order."""
+    def hub_presentation(self, key: str) -> HubPresentation | None:
+        """Effective display fields for one hub (any visibility state)."""
         from services.help_catalogue import build_help_catalogue
 
-        catalogue = build_help_catalogue()
-        out: list[HubEntry] = []
+        row = build_help_catalogue().hub(key)
+        if row is None:
+            return None
+        override = self.overlay.get("hub", key) if self.overlay is not None else None
+        return HubPresentation(
+            key=key,
+            display_name=(
+                override.display_name
+                if override is not None and override.display_name is not None
+                else row.entry.display_name
+            ),
+            purpose=(
+                override.description
+                if override is not None and override.description is not None
+                else row.entry.purpose
+            ),
+            emoji=row.entry.emoji,
+            entry_command=row.entry.entry_command,
+            default_display_name=row.entry.display_name,
+            default_purpose=row.entry.purpose,
+        )
+
+    def subsystem_presentation(self, key: str) -> SubsystemPresentation | None:
+        """Effective display fields for one subsystem (any visibility state)."""
+        from services.help_catalogue import build_help_catalogue
+
+        row = build_help_catalogue().subsystem(key)
+        if row is None:
+            return None
+        override = (
+            self.overlay.get("subsystem", key) if self.overlay is not None else None
+        )
+        return SubsystemPresentation(
+            key=key,
+            display_name=(
+                override.display_name
+                if override is not None and override.display_name is not None
+                else row.display_name
+            ),
+            description=(
+                override.description
+                if override is not None and override.description is not None
+                else row.description
+            ),
+            emoji=row.emoji,
+            default_display_name=row.display_name,
+            default_description=row.description,
+        )
+
+    def visible_hubs(self) -> list[HubPresentation]:
+        """Hub presentations Help Home shows, in registry order."""
+        out: list[HubPresentation] = []
         for decision in self.hubs:
             if not decision.advertised:
                 continue
-            row = catalogue.hub(decision.key)
-            if row is not None:
-                out.append(row.entry)
+            presentation = self.hub_presentation(decision.key)
+            if presentation is not None:
+                out.append(presentation)
         return out
 
     def advanced_subsystems(self) -> list[str]:
@@ -182,12 +286,23 @@ class HelpProjection:
     # -- constructors ----------------------------------------------------
 
     @classmethod
-    def from_visibility(cls, vis_result: VisibilityResult) -> HelpProjection:
-        """Build from an already-resolved governance result (the hot path)."""
+    def from_visibility(
+        cls,
+        vis_result: VisibilityResult,
+        *,
+        overlay: GuildHelpOverlay | None = None,
+    ) -> HelpProjection:
+        """Build from an already-resolved governance result (the hot path).
+
+        ``overlay`` is the guild's HLP-3 presentation-deviation store
+        (``await services.help_overlay.get_guild_help_overlay(guild_id)``);
+        ``None`` or an empty overlay renders byte-identical defaults.
+        """
         return cls._compose(
             member_tier=vis_result.member_tier,
             visible_subsystems=frozenset(vis_result.visible_subsystems),
             source="governance",
+            overlay=overlay,
         )
 
     @classmethod
@@ -215,35 +330,42 @@ class HelpProjection:
         member_tier: str,
         visible_subsystems: frozenset[str],
         source: str,
+        overlay: GuildHelpOverlay | None = None,
     ) -> HelpProjection:
         from services.help_catalogue import build_help_catalogue
 
         catalogue = build_help_catalogue()
 
         subsystem_decisions = tuple(
-            HelpDecision(
-                key=row.key,
-                kind="subsystem",
-                state=(
-                    HelpEntryState.SHOWN
-                    if row.key in visible_subsystems
-                    else HelpEntryState.GOVERNANCE_HIDDEN
+            _apply_overlay_hide(
+                HelpDecision(
+                    key=row.key,
+                    kind="subsystem",
+                    state=(
+                        HelpEntryState.SHOWN
+                        if row.key in visible_subsystems
+                        else HelpEntryState.GOVERNANCE_HIDDEN
+                    ),
+                    reason_code=(
+                        None if row.key in visible_subsystems else "subsystem_hidden"
+                    ),
                 ),
-                reason_code=(
-                    None if row.key in visible_subsystems else "subsystem_hidden"
-                ),
+                overlay,
             )
             for row in catalogue.subsystems
         )
 
         hub_decisions = tuple(
-            _hub_decision(
-                hub_key=row.key,
-                minimum_tier=row.entry.minimum_tier,
-                panel_available=row.entry.panel_available,
-                host_subsystem=row.host_subsystem,
-                member_tier=member_tier,
-                visible_subsystems=visible_subsystems,
+            _apply_overlay_hide(
+                _hub_decision(
+                    hub_key=row.key,
+                    minimum_tier=row.entry.minimum_tier,
+                    panel_available=row.entry.panel_available,
+                    host_subsystem=row.host_subsystem,
+                    member_tier=member_tier,
+                    visible_subsystems=visible_subsystems,
+                ),
+                overlay,
             )
             for row in catalogue.hubs
         )
@@ -253,7 +375,64 @@ class HelpProjection:
             hubs=hub_decisions,
             subsystems=subsystem_decisions,
             source=source,
+            overlay=overlay,
+            orphaned_overrides=_orphaned_overrides(overlay, catalogue),
         )
+
+
+def _apply_overlay_hide(
+    decision: HelpDecision,
+    overlay: GuildHelpOverlay | None,
+) -> HelpDecision:
+    """Apply the guild overlay's display-hide to a non-hidden decision.
+
+    Q-0055 semantics: the overlay can only *add* a presentation hide
+    (``display_hidden`` with reason ``overlay_hidden``) on entries no
+    other rule already hides — it never reveals a governance-hidden entry
+    and never carries execution meaning. Policy states win over the
+    cosmetic hide so explanations stay truthful.
+    """
+    if overlay is None or not decision.advertised:
+        return decision
+    row = overlay.get(decision.kind, decision.key)
+    if row is None or row.display_hidden is not True:
+        return decision
+    return HelpDecision(
+        key=decision.key,
+        kind=decision.kind,
+        state=HelpEntryState.DISPLAY_HIDDEN,
+        reason_code="overlay_hidden",
+        detail="guild help overlay display-hide",
+    )
+
+
+def _orphaned_overrides(
+    overlay: GuildHelpOverlay | None,
+    catalogue: Any,
+) -> tuple[HelpDecision, ...]:
+    """Overlay rows whose keys the catalogue no longer knows (reported,
+    never rendered, never a crash — audit §9 orphan contract).
+    """
+    if overlay is None or overlay.is_empty:
+        return ()
+    orphans: list[HelpDecision] = []
+    for row in overlay.rows:
+        known = (
+            catalogue.hub(row.entity_key)
+            if row.entity_kind == "hub"
+            else catalogue.subsystem(row.entity_key)
+        )
+        if known is None:
+            orphans.append(
+                HelpDecision(
+                    key=row.entity_key,
+                    kind=row.entity_kind,  # type: ignore[arg-type]
+                    state=HelpEntryState.ORPHANED_OVERRIDE,
+                    reason_code="unknown_key",
+                    detail="overlay row references a retired catalogue entity",
+                ),
+            )
+    return tuple(orphans)
 
 
 def _hub_decision(
@@ -357,10 +536,18 @@ def is_command_displayable(cmd: Any) -> bool:
 
 
 async def project_help(gctx: GovernanceContext) -> HelpProjection:
-    """Resolve governance for ``gctx`` and project (non-cog consumers)."""
-    from governance import resolve_visibility
+    """The one-call render entry: governance + guild overlay → projection.
 
-    return HelpProjection.from_visibility(await resolve_visibility(gctx))
+    Every live Help render path uses this (HLP-2 + HLP-3): it resolves
+    governance for ``gctx`` and fetches the guild's cached presentation
+    overlay (empty for DMs / faults), then composes both.
+    """
+    from governance import resolve_visibility
+    from services.help_overlay import get_guild_help_overlay
+
+    vis_result = await resolve_visibility(gctx)
+    overlay = await get_guild_help_overlay(gctx.guild_id or None)
+    return HelpProjection.from_visibility(vis_result, overlay=overlay)
 
 
 # Maps an AccessDecision's deciding axis to the enriched entry state.
@@ -393,7 +580,9 @@ async def project_help_with_execution(ctx: AccessContext) -> HelpProjection:
             "(the declared-tier simulation input)",
         )
     from services.access_projection import project_access_map
+    from services.help_overlay import get_guild_help_overlay
 
+    overlay = await get_guild_help_overlay(ctx.guild_id)
     decisions = await project_access_map(ctx)
     state_by_subsystem: dict[str, HelpDecision] = {}
     for decision in decisions:
@@ -432,27 +621,33 @@ async def project_help_with_execution(ctx: AccessContext) -> HelpProjection:
 
     catalogue = build_help_catalogue()
     hub_decisions = tuple(
-        _hub_decision(
-            hub_key=row.key,
-            minimum_tier=row.entry.minimum_tier,
-            panel_available=row.entry.panel_available,
-            host_subsystem=row.host_subsystem,
-            member_tier=ctx.member_tier,
-            visible_subsystems=visible,
+        _apply_overlay_hide(
+            _hub_decision(
+                hub_key=row.key,
+                minimum_tier=row.entry.minimum_tier,
+                panel_available=row.entry.panel_available,
+                host_subsystem=row.host_subsystem,
+                member_tier=ctx.member_tier,
+                visible_subsystems=visible,
+            ),
+            overlay,
         )
         for row in catalogue.hubs
     )
     subsystem_decisions = tuple(
-        state_by_subsystem.get(
-            row.key,
-            # Defensive: a catalogue row the access map did not cover
-            # projects as shown (the model hides only verified denials).
-            HelpDecision(
-                key=row.key,
-                kind="subsystem",
-                state=HelpEntryState.SHOWN,
-                detail="not in access map",
+        _apply_overlay_hide(
+            state_by_subsystem.get(
+                row.key,
+                # Defensive: a catalogue row the access map did not cover
+                # projects as shown (the model hides only verified denials).
+                HelpDecision(
+                    key=row.key,
+                    kind="subsystem",
+                    state=HelpEntryState.SHOWN,
+                    detail="not in access map",
+                ),
             ),
+            overlay,
         )
         for row in catalogue.subsystems
     )
@@ -461,6 +656,8 @@ async def project_help_with_execution(ctx: AccessContext) -> HelpProjection:
         hubs=hub_decisions,
         subsystems=subsystem_decisions,
         source="access_projection",
+        overlay=overlay,
+        orphaned_overrides=_orphaned_overrides(overlay, catalogue),
     )
 
 
@@ -468,6 +665,8 @@ __all__ = [
     "HelpDecision",
     "HelpEntryState",
     "HelpProjection",
+    "HubPresentation",
+    "SubsystemPresentation",
     "command_display_state",
     "is_command_displayable",
     "project_help",

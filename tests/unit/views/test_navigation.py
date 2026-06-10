@@ -434,16 +434,23 @@ def test_help_cog_back_button_uses_shared_navigation_helper():
 
 def test_help_cog_back_button_rebuilds_category_view_via_governance():
     """S3: the help-specific builder kept inside ``help_cog`` must still
-    re-resolve governance at click time (so visibility/tier are fresh)
+    re-resolve the audience at click time (so visibility/tier are fresh)
     and must rebuild :class:`HelpCategoryView` — the new top of Help.
+
+    HLP-2/3: the click-time resolve goes through the cog's one projection
+    seam (``_resolve_projection`` = governance ``resolve_visibility`` +
+    the guild Help overlay), so this pins the builder calling the seam and
+    the seam containing the governance resolve.
     """
     import inspect
 
     from cogs import help_cog
 
     src = inspect.getsource(help_cog._attach_back_to_help_button)
-    # Governance is still resolved at click time.
-    assert "resolve_visibility" in src
+    # The audience is still resolved at click time — via the projection seam.
+    assert "_resolve_projection" in src
+    seam_src = inspect.getsource(help_cog._resolve_projection)
+    assert "resolve_visibility" in seam_src
     # The new top-of-Help is the category index, not the paginated list.
     assert "HelpCategoryView" in src
     assert "build_categories_overview_embed" in src
