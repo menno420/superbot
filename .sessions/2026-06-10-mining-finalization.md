@@ -1,6 +1,10 @@
 # 2026-06-10 — Mining & tool/gear finalization (4-PR stack)
 
-**PRs (stacked, each based on its predecessor; verify merges live):**
+**PRs (stacked, each based on its predecessor — all four merged 2026-06-10;
+the stacked bases didn't auto-retarget, so #663/#664/#665 merged into their
+parent branches and the content reached `main` via the completion PR
+[#667](https://github.com/menno420/superbot/pull/667). Lesson recorded below:
+base stacked PRs on `main` or delete branches on merge so GitHub retargets):**
 [#661](https://github.com/menno420/superbot/pull/661) RS01 atomic shop purchase →
 [#663](https://github.com/menno420/superbot/pull/663) RS02 stage 1 (relocate + workshop workflow) →
 [#664](https://github.com/menno420/superbot/pull/664) RS02 stage 2 (full write boundary + recipes reconciliation) →
