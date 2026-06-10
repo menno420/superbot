@@ -1,7 +1,16 @@
 # Integrations, Media, Voice, and Website — roadmap draft
 
 > **Status:** `plan` — planning/routing draft; not implementation approval.
-> **Horizon:** Later/Someday. **Owner decisions needed:** Q-0041 and Q-0042. **Media boundary:** ADR-007.
+> **Horizon:** Later/Someday. **Media boundary:** ADR-007.
+> **Owner decisions Q-0041 + Q-0042 — answered (2026-06-09, router):** **Q-0041:**
+> YouTube-alerts pilot first (ADR-007 seams) → Twitch on the same contract →
+> Spotify/Steam after an account-link consent decision; operator-owned keys, dual
+> opt-in, metadata-only bounded caches, fail-quiet degradation; voice behind its own
+> architecture review, speech recognition last (deferred, not dropped). **Q-0042:**
+> website = yes as a destination, staged (read-only companion via Discord OAuth2 first;
+> management later through the same audited services; no web-only authority; bot
+> process never serves the site); timing stays **Someday**. Both decide posture/order
+> only — implementation still needs the normal promotion path.
 
 ## Planning contract
 
@@ -47,6 +56,7 @@ Provider/account/config schemas must be additive and deletion-aware. Cache only 
 
 ## Open questions and next session
 
-- Q-0041 owns integration/voice privacy, credentials, moderation, retention, and degraded-provider posture.
-- Q-0042 owns website investment, authentication, and control-plane limits.
-- **Recommended next model/session:** Opus decision/revision after answers; Codex mapping-only until gates clear.
+- Q-0041 + Q-0042 answered (2026-06-09) — see the router entries for the full marked-up
+  answers (provider order, consent/retention/degradation detail, website staging).
+- **Recommended next model/session:** Opus decision/revision (answers now exist); Codex
+  mapping-only until gates clear.

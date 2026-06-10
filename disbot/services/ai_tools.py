@@ -1992,6 +1992,200 @@ def _make_btd6_ct_team_status(guild_id: int) -> ToolHandler:
     return handler
 
 
+# --- self-awareness tools (answerability Phase 3, Q-0047/Q-0048) -------
+#
+# Thin read-only wrappers over ``services.ai_introspection_service`` (the #616
+# read model). Audience filtering happens at CONSTRUCTION: each factory bakes
+# the caller's ``AIScope`` in, so the model can never ask for a higher tier —
+# there is no scope/audience tool argument at all. All three are deterministic
+# reads; none mutates settings, cooldown, or audit state. Imports are lazy
+# because ``ai_introspection_service`` imports this module (specs/catalogue).
+
+_AI_TOOL_CATALOG_SPEC = AIToolSpec(
+    name="get_ai_tool_catalog",
+    description=(
+        "List the tools YOU (this bot) can call for the asking user — your "
+        "live capability catalog: each tool's name, a one-line purpose, its "
+        "toolsets, and that it is read-only. Call this to answer 'what can "
+        "you do (here)?', 'what tools/capabilities do you have?', 'can you "
+        "look up X?'. The list is already filtered to the asker's permission "
+        "tier — higher-tier tools are counted in hidden_above_scope but "
+        "never named, so answer from the returned list only and do not "
+        "speculate about hidden tools. Every listed tool is read-only: you "
+        "can look things up but never change settings or perform actions."
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+# One-line purpose cap for the catalog payload. Full spec descriptions run to
+# paragraphs (the model already sees them verbatim as its tool specs); the
+# catalog answer needs a scannable line per tool, not a second copy of the
+# whole registry, or a single call would eat the token budget.
+_PURPOSE_SUMMARY_CHARS = 160
+
+
+def _one_line_purpose(purpose: str) -> str:
+    collapsed = " ".join(purpose.split())
+    if len(collapsed) <= _PURPOSE_SUMMARY_CHARS:
+        return collapsed
+    return collapsed[: _PURPOSE_SUMMARY_CHARS - 1].rstrip() + "…"
+
+
+def _make_ai_tool_catalog(scope: AIScope) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import ai_introspection_service
+
+        snap = ai_introspection_service.build_tool_catalog(scope)
+        return {
+            "audience": snap.audience,
+            "total_visible": snap.total_visible,
+            "hidden_above_scope": snap.hidden_above_scope,
+            "toolsets_present": list(snap.toolsets_present),
+            "tools": [
+                {
+                    "name": tool.name,
+                    "purpose": _one_line_purpose(tool.purpose),
+                    "min_scope": tool.min_scope,
+                    "toolsets": list(tool.toolsets),
+                    "read_only": tool.read_only,
+                    "grounds_btd6": tool.grounds_btd6,
+                }
+                for tool in snap.tools
+            ],
+            "note": (
+                "Read-only capability catalog, already filtered to the asking "
+                "user's permission tier; hidden_above_scope counts higher-tier "
+                "tools without naming them."
+            ),
+        }
+
+    return handler
+
+
+_AI_POLICY_EXPLANATION_SPEC = AIToolSpec(
+    name="get_ai_policy_explanation",
+    description=(
+        "Explain the bot's reply policy for THIS channel and the asking "
+        "user: whether a mentioning message is allowed right now, the "
+        "effective reply mode, which level of configuration decided it "
+        "(guild / category / channel / role), the minimum XP level, and the "
+        "cooldown — plus, for admins, the policy precedence trace and the "
+        "most recent allow/deny decisions in this channel. Call this for "
+        "'why didn't you reply (to me / to them)?', 'why can't you talk "
+        "here?', 'what are the AI reply rules here?'. Answer from the "
+        "returned fields; never guess at cooldowns, levels, or policy."
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+
+def _make_ai_policy_explanation(
+    guild_id: int,
+    actor_id: int,
+    scope: AIScope,
+    member: Any = None,
+    channel: Any = None,
+) -> ToolHandler:
+    async def handler(_arguments: dict[str, Any]) -> dict[str, Any]:
+        from services import ai_introspection_service
+        from services.ai_natural_language_policy import MessageContext
+
+        # The explanation is bound to the asking user in the asking channel —
+        # the model cannot point it at another member or channel. Evaluated as
+        # a mentioning message (the shape of the turn that invoked it), so the
+        # answer describes the rules in effect rather than re-litigating the
+        # current, already-allowed turn.
+        snap = await ai_permission_service.snapshot(guild_id, actor_id)
+        channel_id = int(getattr(channel, "id", 0) or 0)
+        raw_category_id = getattr(channel, "category_id", None)
+        ctx = MessageContext(
+            guild_id=guild_id,
+            channel_id=channel_id,
+            category_id=(int(raw_category_id) if raw_category_id is not None else None),
+            user_id=actor_id,
+            user_level=snap.level,
+            user_role_ids=tuple(
+                int(role.id) for role in (getattr(member, "roles", None) or ())
+            ),
+            is_mention=True,
+            is_fresh_user=snap.is_fresh_user,
+        )
+        explanation = await ai_introspection_service.build_policy_explanation(
+            ctx,
+            scope=scope,
+        )
+        return {
+            "audience": explanation.audience,
+            "channel_id": channel_id or None,
+            "allowed": explanation.allowed,
+            "reason_code": explanation.reason_code,
+            "effective_mode": explanation.effective_mode,
+            "effective_source": explanation.effective_source,
+            "effective_min_level": explanation.effective_min_level,
+            "effective_cooldown_seconds": explanation.effective_cooldown,
+            "precedence_trace": list(explanation.precedence_trace),
+            "recent_decisions": [
+                {
+                    "decision": row.decision,
+                    "reason_code": row.reason_code,
+                    "task": row.task,
+                    "at": row.at,
+                }
+                for row in explanation.recent_decisions
+            ],
+            "note": (
+                "Evaluated for the asking user in this channel as a "
+                "mentioning message; precedence_trace and recent_decisions "
+                "are admin-only and empty for regular users."
+            ),
+        }
+
+    return handler
+
+
+_BTD6_ANSWERABILITY_SPEC = AIToolSpec(
+    name="btd6_answerability",
+    description=(
+        "Inventory of the verified BTD6 data this bot can answer about: each "
+        "loaded data domain (towers, heroes, maps, rounds, bloons, bosses, "
+        "powers, Monkey Knowledge, Geraldo items, CT relics, …) with its item "
+        "count, the deterministic calculations (round cash, difficulty cost, "
+        "cumulative upgrade cost, paragon math), the live Ninja-Kiwi-backed "
+        "domain, and the EXPLICIT unsupported gaps (alternate round sets/ABR, "
+        "achievements, Rogue/Frontier, modified economy). Call this for 'what "
+        "BTD6 data do you know/have?', 'what BTD6 questions can you answer?', "
+        "'do you have X data?'. Quote counts and versions from the result, "
+        "and state unsupported areas from the returned gaps instead of "
+        "guessing or overclaiming."
+    ),
+    parameters=_NO_ARGS_SCHEMA,
+    min_scope=AIScope.USER,
+)
+
+
+async def _btd6_answerability(_arguments: dict[str, Any]) -> dict[str, Any]:
+    from services import ai_introspection_service
+
+    snap = ai_introspection_service.build_btd6_answerability()
+    return {
+        "available": snap.available,
+        "data_version": snap.data_version,
+        "game_version": snap.game_version,
+        "source": snap.source_label,
+        "domains": [
+            {
+                "name": domain.name,
+                "kind": domain.kind,
+                "item_count": domain.item_count,
+                "note": domain.note,
+            }
+            for domain in snap.domains
+        ],
+    }
+
+
 @dataclass(frozen=True)
 class ToolRegistry:
     """The tools offered for one request: specs (data) + live handlers."""
@@ -2045,9 +2239,12 @@ _ALL_TOOL_SPECS: tuple[AIToolSpec, ...] = (
     _PARAGON_REQUIREMENTS_SPEC,
     _BTD6_PARAGON_STATS_AT_DEGREE_SPEC,
     _BTD6_CT_TEAM_SPEC,
+    _BTD6_ANSWERABILITY_SPEC,
     _GUILD_AI_CONFIG_SPEC,
     _RECENT_AUDIT_SPEC,
     _DIAGNOSTICS_HEALTH_SPEC,
+    _AI_TOOL_CATALOG_SPEC,
+    _AI_POLICY_EXPLANATION_SPEC,
     _SERVER_OVERVIEW_SPEC,
     _SERVER_ROLES_SPEC,
     _SERVER_CHANNELS_SPEC,
@@ -2077,6 +2274,7 @@ def build_registry(
     guild: Any = None,
     member: Any = None,
     bot: Any = None,
+    channel: Any = None,
     enabled_toolsets: Collection[str] | None = None,
     disabled_tools: Collection[str] | None = None,
 ) -> ToolRegistry:
@@ -2108,6 +2306,11 @@ def build_registry(
     ``None``-tolerant, so callers without a client simply get a snapshot
     without the gateway subsystem. That tool is filtered out for every scope
     below ``PLATFORM_OWNER`` regardless.
+
+    ``channel`` (the live channel the request came from) binds the
+    ``get_ai_policy_explanation`` tool to the asking channel; ``None``-tolerant
+    — without it the explanation is evaluated with no channel-specific layer
+    (guild-level policy only).
     """
     from core.runtime.ai.feature_flags import ai_server_member_lookup_enabled
 
@@ -2136,9 +2339,21 @@ def build_registry(
         (_PARAGON_REQUIREMENTS_SPEC, _paragon_requirements),
         (_BTD6_PARAGON_STATS_AT_DEGREE_SPEC, _btd6_paragon_stats_at_degree),
         (_BTD6_CT_TEAM_SPEC, _make_btd6_ct_team_status(guild_id)),
+        (_BTD6_ANSWERABILITY_SPEC, _btd6_answerability),
         (_GUILD_AI_CONFIG_SPEC, _make_guild_ai_config(guild_id)),
         (_RECENT_AUDIT_SPEC, _make_recent_audit(guild_id)),
         (_DIAGNOSTICS_HEALTH_SPEC, _make_diagnostics_health(bot, guild_id)),
+        (_AI_TOOL_CATALOG_SPEC, _make_ai_tool_catalog(scope)),
+        (
+            _AI_POLICY_EXPLANATION_SPEC,
+            _make_ai_policy_explanation(
+                guild_id,
+                actor_id,
+                scope,
+                member=member,
+                channel=channel,
+            ),
+        ),
     ]
     if guild is not None:
         catalog.extend(

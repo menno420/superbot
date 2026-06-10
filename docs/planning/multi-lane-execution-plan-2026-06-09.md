@@ -117,7 +117,16 @@
 
 ## Lane 4 — Answerability Phase 3: the three self-awareness tools (Q-0047, gate lifted)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#639** (2026-06-09). *Executor notes:* (1) the answerability tool is
+  named **`btd6_answerability`** (not the roadmap's `get_btd6_answerability_snapshot`
+  candidate): it must carry `grounding_domain="btd6"` so its counts/versions join the
+  faithfulness ledger — on the `BTD6_ANSWER` path **every number** in a reply is checked
+  against the ledger, and an unledgered inventory would block the very "what do you know"
+  replies it serves; the catalogue invariant pins grounding ⟺ the `btd6_*` name prefix.
+  (2) Audience tiering is **construction-time**: the registry bakes the request `AIScope`
+  into each handler; the tools take no scope/target arguments at all. (3) `build_registry`
+  gained an optional `channel=` param so the policy explanation binds to the asking
+  channel. Model loop flagged for the maintainer's prod check (no sandbox key).
 - **Goal:** expose the #616 read model as three read-only AI tools —
   tools-available · policy-explanation · answerability-summary — audience-tiered
   (AR-08) at construction.
@@ -152,7 +161,13 @@
 
 ## Lane 6 — Vision draft-answers for Q-0038–Q-0042 (Q-0051; docs-only)
 
-- [ ] Shipped in PR: ____
+- [x] Shipped in PR: **#631** (2026-06-09, parallel-agent run — Lane 6 only), **and the
+  maintainer marked up all five same day** (structured-choices round in the PR session):
+  Q-0038/Q-0039/Q-0041/Q-0042 approved as drafted; **Q-0040 adjusted — bounded-menu DM
+  posture** (AI selects quest/reward/difficulty from pre-approved, hard-capped menus).
+  Answers + scopes recorded in the router; conclusions routed to the four roadmap
+  drafts, `docs/roadmap.md` gate lines, and the AI folio's first Q-0062 owner-voice
+  block. Posture only — implementation still needs per-lane promotion.
 - **Goal:** one drafted, concrete proposed answer per open vision question (clans
   identity · VIP fairness · AI dungeon-master posture · integrations/voice privacy ·
   web dashboard), each grounded in existing decisions + safe defaults, formatted so

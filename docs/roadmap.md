@@ -35,8 +35,8 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (P1B remainder + P1C — **unblocked**, Q-0045/Q-0036/Q-0032) · **AI tooling** (orchestration **P4 MVP slice** Q-0046 + answerability **P3 all-three-tools** Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | Adaptive P1B remainder + P1C (unblocked — Q-0045/Q-0036/Q-0032) · BTD6 manual-dispatch refresh workflow (Q-0049) · **Settings hub actionable-groups + >25 reachability** and **Help counts + characterization tests** (scoreboard Lanes 7–8, appended 2026-06-09 — position Q-0065) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(the Q-0025 scaffold → Spotlight registration shipped, **#626**)* |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview built 2026-06-09, PR #624; structures or game-XP next; tuning Q-0054) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Next** | Adaptive **P1C** (staff-hub subpanels — Q-0032; tier path shipped #632) · **Settings hub actionable-groups + >25 reachability** and **Help counts + characterization tests** (scoreboard Lanes 7–8, appended 2026-06-09 — position Q-0065) · Server-management **PR13 AI** template layer + Hub follow-ups (PR14) · health/diagnostics production live-tests (owed) — *(shipped out of this row 2026-06-09: the Q-0025 scaffold → Spotlight registration **#626**, the Q-0049 BTD6 manual-dispatch refresh workflow **#633**)* |
 | **Later** | Broad AI expansion beyond the active lanes (gated) · BTD6 `--all` towers cutover (dedicated session — Q-0066; extraction itself resumed 2026-06-09, see the BTD6 section) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -80,6 +80,16 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 
 ### 🖥️ Building / interface (Discord-native UI) — **Next**
 
+- **Next** — **platform-surface mapping campaign** (2026-06-09): two parallel
+  Codex mapping agents (A: user surface · B: admin/platform surface) map every
+  subsystem/command/panel/service against the
+  [mapping standard](planning/platform-surface-mapping-standard-2026-06-09.md)
+  (verified baseline · schema · split · copy-paste prompts), then one
+  merge/implementation session lands the consistency fixes. Mapping-only;
+  Lanes 7–8 / adaptive P1C keep their queued scopes. Gate: #641 merged +
+  re-verify in-flight PR state live before launching the agents (#639/Lane 4
+  merged 2026-06-09; #638 was still an open draft at the late-2026-06-09
+  reconciliation).
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
@@ -123,16 +133,21 @@ dedicated decision** for any action capability.
 
 - **Now (active lane)** — the **orchestration foundation**
   ([ai-complex-request-tool-orchestration-plan](ai/ai-complex-request-tool-orchestration-plan.md))
-  **Phases 1–3 shipped** (#612 catalogue+selector, #618 tool-choice+budgets, #619 typed
-  policy + the gate-lifted `ai:tools` operator UI). **Next: Phase 4 MVP (decided, Q-0046)**
-  — one vertical slice: the plan→execute→verify workflow for the round-cash question family
-  + one typed answer-with-evidence contract; remaining §7 contracts + the §12.1 audit trace
-  follow the proven template.
+  **Phases 1–4 MVP shipped** (#612 catalogue+selector, #618 tool-choice+budgets, #619 typed
+  policy + the gate-lifted `ai:tools` operator UI, **#634 the Phase 4 MVP slice** — the
+  round-cash plan→execute→verify workflow + the first typed answer-with-evidence contract,
+  profile-gated, default byte-identical; model loop awaits the maintainer's prod check).
+  **Next:** the remaining §7 workflow families + the §12.1 durable audit trace follow the
+  proven template.
 - **Now (active lane)** — [AI Cog Completion + BTD6 Answerability](planning/ai-btd6-answerability-roadmap-2026-06-09.md):
-  **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool) and **Phase 2
-  shipped** (#616 — the read-only introspection read model). **Next: Phase 3 (committed +
-  gate lifted, Q-0047)** — all three read-only self-awareness tools in one slice
-  (tools-available · policy-explanation · answerability-summary), audience-tiered.
+  **Phase 1A/1B shipped** (#612 — `btd6_round_cash`, gate lifted per-tool), **Phase 2
+  shipped** (#616 — the read-only introspection read model), and **Phase 3 shipped**
+  (**#639**, 2026-06-09, Q-0047 — execution-plan Lane 4): all three read-only
+  self-awareness tools in one slice (`get_ai_tool_catalog` · `get_ai_policy_explanation` ·
+  `btd6_answerability`), audience-tiered at construction; model loop awaits the
+  maintainer's prod check. **Next:** Phase 4 (AI settings UI) and Phase 5 (generated
+  answerability dashboard) stay gated — Phase 4 behind the settings foundation, both
+  behind their per-exposure asks.
 - **Later** — [ai-tool-capability-roadmap](ai/ai-tool-capability-roadmap.md) sequences the
   backlog onto that foundation · [ai-readiness-plan](ai/ai-readiness-plan.md) M2 (typed policy
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
@@ -196,13 +211,13 @@ privacy/provenance/moderation review before any public surface.
 
 ## Product-growth roadmap drafts — **Later / Someday** (not approved)
 
-- **Later** — [social/community/progression](planning/social-community-progression-roadmap-2026-06-08.md): guilds, achievements, profiles, leaderboards, and notifications; gate: Q-0038 + privacy/new-owner decision.
-- **Later** — [economy/marketplace/rewards](planning/economy-marketplace-rewards-roadmap-2026-06-08.md): trade, rewards, sinks, onboarding, and crafting; gate: economy-health review + Q-0039/chance-reward review.
+- **Later** — [social/community/progression](planning/social-community-progression-roadmap-2026-06-08.md): guilds, achievements, profiles, leaderboards, and notifications; gate: privacy/new-owner decision (Q-0038 answered 2026-06-09: server-scoped clans).
+- **Later** — [economy/marketplace/rewards](planning/economy-marketplace-rewards-roadmap-2026-06-08.md): trade, rewards, sinks, onboarding, and crafting; gate: economy-health review + chance-reward review (Q-0039 answered 2026-06-09: donation = cosmetic-only, no bot-side billing).
 - **Later** — [games/mining/idle growth](planning/games-mining-idle-roadmap-2026-06-08.md): poker, blackjack follow-ups, mining depth/co-op/idle; gate: ADR-002 + balance/ownership review.
-- **Later (fully gated)** — [AI product-extension routing](ai/ai-product-extension-routing-2026-06-08.md): DM/events/NL/tool ideas routed under the authoritative AI roadmap; gate: all AI readiness/orchestration/action decisions + Q-0040.
+- **Later (fully gated)** — [AI product-extension routing](ai/ai-product-extension-routing-2026-06-08.md): DM/events/NL/tool ideas routed under the authoritative AI roadmap; gate: all AI readiness/orchestration/action decisions (Q-0040 answered 2026-06-09: bounded-menu DM posture; building still needs its plan + per-exposure lift).
 - **Later (gated)** — [BTD6 product-extension routing](btd6/btd6-product-extension-routing-2026-06-08.md): rules/trivia, challenges, runs, leaderboards; gate: ADR-006/provenance/source-health.
 - **Existing plans** — [server-management/setup/access/routine extension routing](planning/server-management-extension-routing-2026-06-08.md): announcements, anti-spam, availability, explanations, analytics; gate: authoritative trackers and privacy/AI decisions.
-- **Someday / Later** — [integrations/media/voice/website](planning/integrations-media-voice-website-roadmap-2026-06-08.md): provider alerts, activity, voice, and web projection; gate: Q-0041/Q-0042 + privacy/security/moderation.
+- **Someday / Later** — [integrations/media/voice/website](planning/integrations-media-voice-website-roadmap-2026-06-08.md): provider alerts, activity, voice, and web projection; gate: privacy/security/moderation review (Q-0041/Q-0042 answered 2026-06-09: YouTube-first posture; staged Someday website).
 - **Later** — [UX/discoverability/mobile-first](planning/ux-discoverability-mobile-roadmap-2026-06-08.md): help, changelog, copy, and mobile conformance through existing UI standards; gate: authoritative interface sequencing and copy/release-manifest decisions.
 - **Later (decisions first)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): unify Help catalogue/projection before guild rename/hide/order customization; gate: Q-0055–Q-0059 + coordination with Adaptive Setup/Access P1B/P1C.
 - Routing ledger: [idea-to-roadmap inventory](planning/idea-roadmap-inventory-2026-06-08.md).
