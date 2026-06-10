@@ -226,7 +226,7 @@ async def _build_economy_embed(
 ) -> discord.Embed:
     """Build the economy overview embed for *user* (stateless, no ctx)."""
     uid = user.id
-    row = await db.get_economy(uid, guild_id)
+    row = await db.ensure_and_get_economy(uid, guild_id)
     xp_row = await db.get_xp(uid, guild_id)
     coins = await db.get_coins(uid, guild_id)
 

@@ -97,7 +97,7 @@ class _JobSelect(discord.ui.Select):
         if not await safe_defer(interaction):
             return
 
-        eco = await db.get_economy(uid, gid)
+        eco = await db.ensure_and_get_economy(uid, gid)
         on_cd, secs = check_cooldown(eco["last_worked"], _WORK_COOLDOWN)
         if on_cd:
             await safe_followup(

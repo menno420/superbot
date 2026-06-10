@@ -47,7 +47,14 @@ async def set_coins(user_id: int, guild_id: int, amount: int) -> None:
 # ---------------------------------------------------------------------------
 
 
-async def get_economy(user_id: int, guild_id: int) -> dict:
+async def ensure_and_get_economy(user_id: int, guild_id: int) -> dict:
+    """Ensure the ``economy`` row exists, then return it.
+
+    NOT a pure read — the name says so: a missing row is INSERTed
+    (with column defaults) before the SELECT, so calling this for a
+    user who has never used the economy creates their row. Renamed
+    from ``get_economy`` (2026-06-10), whose name hid the write.
+    """
     await pool.execute(
         "INSERT INTO economy (user_id, guild_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
         (user_id, guild_id),

@@ -1,12 +1,33 @@
-"""Centralized diagnostics registry — Phase S1.3.
+"""Process-local sync diagnostics registry (despite the broad name).
 
 State class: **process-local runtime** — see ``docs/architecture.md``
 §"State classification".
 
 A name-keyed registry of snapshot providers.  Each platform primitive
-registers a zero-arg callable that returns its current state snapshot
-(serializable: dict / dataclass / NamedTuple) suitable for display in
-the ``!platform <name>`` admin commands shipping in Phase S2.5.
+registers a zero-arg **synchronous** callable that returns its current
+in-process state snapshot (serializable: dict / dataclass /
+NamedTuple) for display in the ``!platform <name>`` admin commands.
+
+**Boundary — this module is NOT the whole diagnostics surface.** The
+name predates the later diagnostics owners; its actual scope is only
+the sync, I/O-free, process-local provider registry.  The adjacent
+seams it does *not* own:
+
+* **Async/aggregated operational health** —
+  :mod:`services.health_snapshot_service` (+
+  :mod:`services.health_contracts`,
+  :mod:`services.health_findings_service`): the ``!platform health``
+  and startup-health read models.
+* **Async/DB operator read models** — owned by their domain services
+  (e.g. :mod:`services.setup_diagnostics`,
+  :mod:`services.resource_health`).  A primitive that needs to
+  surface DB state registers a *process-local* summary here at most;
+  the DB query lives with the domain owner and is invoked from the
+  admin command directly.
+
+(A rename to ``runtime_diagnostics_registry`` would say this in the
+module path, but the import churn is wide — clarity note now, rename
+only as a dedicated pass.)
 
 The registry is intentionally read-only at admin command time —
 providers never mutate state; they only observe.  This means

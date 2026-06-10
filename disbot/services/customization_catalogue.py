@@ -16,24 +16,32 @@ Sources combined (all read-only):
 * live ``bot.cogs`` — cogs implementing ``build_help_menu_view`` (the
   canonical help direct-navigation hook).
 * live ``bot.walk_commands()`` — commands carrying ``extras["panel"] is
-  True`` (the :func:`panel_command` decorator landing alongside this
-  module).
+  True`` (the **deprecated** :func:`panel_command` decorator; zero
+  adopters in production — see the decorator's docstring).
 
 Panel-detection priority (authoritative first; regex is last-resort):
 
 1. ``ledger_extras`` — command tagged ``extras["panel"] = True`` via the
-   :func:`panel_command` decorator. Existing panel commands will gain
-   this tag in S5/S10; today no commands carry it.
+   :func:`panel_command` decorator. **Deprecated with zero adopters**:
+   no production command carries the tag, so this source is currently
+   always empty. Detection stays wired for compatibility, but do not
+   add new adopters.
 2. ``help_hook`` — cog implements ``build_help_menu_view``. A synthetic
    panel record with ``command="<build_help_menu_view>"`` is created.
-3. ``known_list`` — entries in :data:`KNOWN_PANEL_COMMANDS`. Curated
-   tuple covering cogs that predate the ``@panel_command`` decorator.
+3. ``known_list`` — entries in :data:`KNOWN_PANEL_COMMANDS`. **The
+   canonical panel-declaration mechanism today** — the
+   ``scripts/new_subsystem.py`` scaffold registers new panels here.
 4. ``regex_fallback`` — command name matches ``r".+menu$"``. Always
    surfaced as a ``regex_inferred_panels`` finding so operators can
    migrate it to an explicit declaration.
 
-(A future ``panel_registry`` source slots between (3) and (4) once the
-PanelRegistry primitive lands; not in S2 scope.)
+Per-source dependence is observable: the ``customization_catalogue``
+diagnostics snapshot reports ``panels_by_source`` counts, so an
+operator can see how much of the inventory rests on the curated list
+vs. the regex fallback. Settings Phase 2 (declaration coverage —
+consolidated plan Batch 4) replaces curated declaration with real
+per-domain registrations; that lane, not decorator adoption, is the
+successor to this scheme.
 
 Diagnostics provider name: ``"customization_catalogue"``.
 
@@ -65,9 +73,11 @@ _CATALOGUE_VERSION = 1
 _PANEL_REGEX = re.compile(r".+menu$")
 
 
-# Curated allowlist of (subsystem, command_name) pairs for cogs that
-# predate the ``@panel_command`` decorator. Newly-added panels SHOULD
-# use the decorator; this list is the floor.
+# Curated allowlist of (subsystem, command_name) pairs — the canonical
+# panel-declaration mechanism today. New panels register HERE (the
+# ``scripts/new_subsystem.py`` scaffold prints the snippet); the
+# ``@panel_command`` decorator that was meant to supersede this list is
+# deprecated with zero adopters.
 #
 # An entry here only counts as a panel when the command is actually
 # present in the live command surface ledger (i.e. the cog loaded
@@ -100,10 +110,20 @@ _C = TypeVar("_C")
 def panel_command(cmd: _C) -> _C:
     """Decorator marking a command as a subsystem panel entry point.
 
+    .. deprecated:: 2026-06-10
+        **Zero adopters; do not add new ones.** This decorator shipped
+        with S2 expecting S5/S10 to tag existing panels — that
+        migration never happened. The canonical declaration mechanism
+        is :data:`KNOWN_PANEL_COMMANDS` (maintained by the
+        ``scripts/new_subsystem.py`` scaffold), and Settings Phase 2's
+        per-domain registrations (consolidated plan Batch 4) are the
+        planned successor. The decorator and its ``ledger_extras``
+        detection stay functional so nothing breaks if a tag appears,
+        but they are no longer the recommended path.
+
     Sets ``cmd.extras["panel"] = True`` on the underlying command so
     :func:`build_catalogue` can detect it via the ``ledger_extras``
-    source. Future S5/S10 work tags existing panels with this; today
-    no commands carry it.
+    source.
 
     Usage — apply ABOVE ``@commands.command(...)`` so the decorator
     receives the :class:`~discord.ext.commands.Command` instance::

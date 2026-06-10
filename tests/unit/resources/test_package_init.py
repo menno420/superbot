@@ -36,7 +36,6 @@ def test_submodules_re_exported():
     from core.resources import (
         channel_service,
         discovery,
-        mutation,
         role_service,
         status,
         types,
@@ -44,7 +43,6 @@ def test_submodules_re_exported():
 
     assert resources.channel_service is channel_service
     assert resources.discovery is discovery
-    assert resources.mutation is mutation
     assert resources.role_service is role_service
     assert resources.status is status
     assert resources.types is types
@@ -62,7 +60,9 @@ def test_diagnostics_provider_registered():
     assert "discovery" in snap["submodules"]
     assert "channel_service" in snap["submodules"]
     assert "role_service" in snap["submodules"]
-    assert "mutation" in snap["submodules"]
+    # The unimplemented "mutation" shell was retired 2026-06-10; resource
+    # mutation is owned by services.resource_provisioning.
+    assert "mutation" not in snap["submodules"]
 
 
 def test_legacy_helpers_still_delegate():

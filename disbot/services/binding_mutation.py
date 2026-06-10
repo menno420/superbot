@@ -1,7 +1,7 @@
-"""Binding mutation pipeline — Phase 2b.
+"""Binding mutation pipeline.
 
 The canonical write path for ``subsystem_bindings``.  Mirrors the
-6-step contract from :class:`~governance.writes.GovernanceMutationPipeline`:
+step contract of :class:`~governance.writes.GovernanceMutationPipeline`:
 
   1. Input validation       — subsystem declared, binding declared,
                               kind matches the declared ``BindingSpec``
@@ -13,21 +13,33 @@ The canonical write path for ``subsystem_bindings``.  Mirrors the
   4. Read old value         — for the audit row
   5. DB write + audit       — single transaction via
                               :mod:`utils.db.bindings`
-  6. Cache invalidation     — guild_config namespace for this binding
-  7. Event emission         — EVT_BINDING_CHANGED
+  6. Event emission         — companion ``audit.action_recorded`` +
+                              EVT_BINDING_CHANGED, both best-effort
+
+There is deliberately **no cache-invalidation step**: binding reads
+(:func:`core.runtime.bindings.get_binding` →
+:func:`utils.db.bindings.get_one`) hit the DB on every call — no
+binding read cache exists anywhere in the process, so a committed
+write is immediately visible to the next read.  If a binding read
+cache is ever introduced, its invalidation belongs in this pipeline,
+after commit — copy the shape of
+:meth:`services.settings_mutation.SettingsMutationPipeline._invalidate_cache`.
 
 If event emission raises **after** a successful DB commit, the error
 is logged but not re-raised; the DB state is correct and the next
 event consumer will reconcile on its next read (mirrors
 :class:`GovernanceMutationPipeline`'s best-effort emission contract).
 
-Hard limits for Phase 2b:
+Boundary notes (source-verified):
 
-  * No setup wizard UI integration — that is Phase 7.
-  * No resource provisioning — :class:`~core.resources.mutation.ResourceMutationPipeline`
-    handles channel/role creation in Phase 7.5.
-  * No permission-aware target validation — Phase 4.5 hook
-    (:func:`core.resources.discovery.validate_resource_permissions`)
+  * Setup-wizard binding drafts apply through this pipeline —
+    :mod:`services.setup_operations` routes every ``bind_*`` op-kind
+    to :meth:`BindingMutationPipeline.set_binding`.
+  * Resource provisioning (channel/role creation) is owned by
+    :class:`services.resource_provisioning.ResourceProvisioningPipeline`,
+    which composes ``set_binding`` to bind what it creates.
+  * No permission-aware target validation yet —
+    :func:`core.resources.discovery.validate_resource_permissions`
     is still NotImplementedError.
   * Authority is capability-native (ADR-005 A1): resolved via
     :func:`governance.capability.actor_holds_capability` against
@@ -115,7 +127,7 @@ class BindingMutationPipeline:
     * :meth:`clear_binding` — clear an existing binding back to
       ``UNRESOLVED``.
 
-    Both methods follow the same 7-step contract documented in the
+    Both methods follow the same 6-step contract documented in the
     module docstring.  Callers MUST NOT touch
     :mod:`utils.db.bindings`'s mutation primitives directly; the
     pipeline is the only legitimate writer.
@@ -213,7 +225,7 @@ class BindingMutationPipeline:
             logger.exception(
                 "BindingMutationPipeline.clear_binding: DB transaction "
                 "failed for (guild=%d, subsystem=%r, binding=%r); "
-                "no cache invalidation, no event emission.",
+                "no event emission.",
                 guild.id,
                 subsystem,
                 binding_name,
@@ -248,7 +260,6 @@ class BindingMutationPipeline:
             new_status=ResourceStatus.UNRESOLVED.value,
             committed_at=committed_at,
         )
-        self._invalidate_cache(guild.id, subsystem, binding_name)
         return BindingMutationResult(
             mutation_id=mutation_id,
             guild_id=guild.id,
@@ -342,7 +353,11 @@ class BindingMutationPipeline:
         actor: discord.Member,
         action_label: str,
     ) -> BindingMutationResult:
-        """Steps 4-7: read-old, write+audit, invalidate, emit."""
+        """Steps 5-6: write+audit, then best-effort emission.
+
+        The old value (step 4) is read by the public methods and passed
+        in via ``old``.
+        """
         del action_label  # currently single shape; reserved for future actions
         mutation_id = str(uuid.uuid4())
         try:
@@ -363,7 +378,7 @@ class BindingMutationPipeline:
             logger.exception(
                 "BindingMutationPipeline._commit: DB transaction "
                 "failed for (guild=%d, subsystem=%r, binding=%r); "
-                "no cache invalidation, no event emission.",
+                "no event emission.",
                 guild.id,
                 subsystem,
                 binding_name,
@@ -398,7 +413,6 @@ class BindingMutationPipeline:
             new_status=new_status.value,
             committed_at=committed_at,
         )
-        self._invalidate_cache(guild.id, subsystem, binding_name)
         return BindingMutationResult(
             mutation_id=mutation_id,
             guild_id=guild.id,
@@ -410,28 +424,6 @@ class BindingMutationPipeline:
             new_status=new_status,
             committed_at=committed_at,
             event_emitted=event_emitted,
-        )
-
-    def _invalidate_cache(
-        self,
-        guild_id: int,
-        subsystem: str,
-        binding_name: str,
-    ) -> None:
-        """Step 6: invalidate the guild_config namespace for this binding.
-
-        Phase 2b does not write to ``guild_config`` for bindings yet —
-        that wiring lands in Phase 4c when binding values are read via
-        typed accessors instead of direct DB reads.  This method exists
-        as the documented hook so the wiring change is a one-line
-        addition.
-        """
-        logger.debug(
-            "BindingMutationPipeline: cache invalidation hook for "
-            "guild=%d subsystem=%r binding=%r (no-op until Phase 4c)",
-            guild_id,
-            subsystem,
-            binding_name,
         )
 
     async def _emit_event(
@@ -447,14 +439,13 @@ class BindingMutationPipeline:
         new_status: str,
         committed_at: datetime,
     ) -> bool:
-        """Step 7: best-effort event emission.
+        """Step 6: best-effort EVT_BINDING_CHANGED emission.
 
         Returns ``True`` if the event was emitted successfully; ``False``
         if emission raised.  Emission failures after a successful DB
         commit are logged and swallowed — the DB state is correct, and
-        Phase 4c's event-driven reconciliation will catch up on the
-        next emit (mirrors :class:`GovernanceMutationPipeline`'s
-        best-effort contract).
+        subscribers reconcile on their next read (mirrors
+        :class:`GovernanceMutationPipeline`'s best-effort contract).
         """
         from core.events import bus
 

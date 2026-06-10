@@ -8,6 +8,22 @@ Runs at startup from :func:`utils.db.pool.init`.  Three steps:
      ``disbot/migrations/`` that has not been recorded yet, under a
      Postgres advisory lock so concurrent bot instances cannot race.
 
+Responsibility split — this module owns two DIFFERENT things; do not
+let them blur:
+
+* **Bootstrap DDL** (``create_tables``) is a **frozen** reproduction of
+  the pre-migration-001 legacy schema, kept only so a fresh database
+  can initialise before the chain applies.  It must NEVER gain new
+  tables, columns, or indexes — a "new table in bootstrap" exists on
+  fresh installs but not on existing deploys (or vice versa), the
+  exact drift class the migration chain exists to prevent.
+* **The migration chain** (``run_migrations`` over
+  ``disbot/migrations/NNN_<snake>.sql``) is the ONLY place schema
+  changes ship — including changes to tables that ``create_tables``
+  bootstraps (``CREATE TABLE IF NOT EXISTS`` makes the bootstrap a
+  no-op on deploys where the table already exists, so a migration
+  altering a bootstrap table is safe and normal).
+
 The migration ordering MUST remain forward-only and additive.  Existing
 migrations are never edited; new schema changes ship as new files.
 """
@@ -170,6 +186,10 @@ async def create_tables() -> None:
     The original schema (everything before migration 001) is reproduced
     here so a fresh database can be initialised without manually
     running migrations.  Existing migrations are layered on top.
+
+    **Frozen** — see the module docstring's responsibility split: never
+    add new DDL here; every schema change (including to these tables)
+    ships as a new ``disbot/migrations/NNN_*.sql`` file.
     """
     p = pool.get()
     statements = [
