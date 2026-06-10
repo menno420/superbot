@@ -68,3 +68,43 @@ Linked from EOD audit §6 (its companion) + current-state Last-updated.
 Unchanged queue (Batch 9 RS05/RS10 · Help overlay editor UI plan-first ·
 setup PR4 planning · AI §7.5 post-prod-check) — plus the eval itself, now
 armed. This session stays live as the ride-along fixer for eval findings.
+
+---
+
+## Continuation (same session): Help overlay editor UI plan — PR #674
+
+#673 merged within minutes; while the maintainer walks the checklist, the
+session took the queue's next non-colliding item — the **Help overlay
+editor UI (plan-first)** — and produced
+`docs/planning/help-overlay-editor-ui-plan-2026-06-10.md`.
+
+**Why this item:** all owner decisions answered (Q-0055/56/58/59), zero
+overlap with the surfaces under eval (the editor *writes* through the
+#659-verified seam; the eval walks *read* paths), and the EOD audit lists
+it among "most ready for further work". RS05/RS10 still want their own
+focused session; setup PR4 planning needs the wizard plan re-read first.
+
+**Plan shape:** 2 PRs. **A** (low risk, no migration): `views/help/editor.py`
+on BaseView; entry points = staff-hub `✏️ Help editor` button +
+`cogs/help/schemas.py` `DomainPanelSpec` ("Help appearance", capability
+`help.settings.configure`, Settings taxonomy 12 → 13); every action = one
+`set_overlay_fields` call. **B** (medium): migration widening the 064
+`entity_kind` CHECK with `'home'` (exactly as 064's header pre-plans) +
+bounded home-only columns; `set_home_message`; Home render consumption
+(absence byte-identical, pinned); `HomeMessageBuilderView` with
+**Save-disabled-until-previewed** enforcement of Q-0059's mandatory preview.
+
+**Context delta (continuation):**
+
+- **Needed but not pointed to:** nothing — migration 064's header comment
+  literally pre-planned the Q-0059 widening, and `DomainPanelSpec`'s
+  docstring + the cleanup example made the Settings integration turn-key.
+  The substrate docs from #654/#657/#659 are exemplary; this plan mostly
+  *collects* decisions rather than making them.
+- **Decisions made alone:** (1) setup/final-review integration **deferred**
+  (audit marks it optional; direct-lane is the right lane for a focused,
+  reversible single-domain edit per `ownership.md` — revisit on ask);
+  (2) named colors only in the v1 color picker (no hex parsing);
+  (3) staff-hub button beside 👁 Help Preview so edit + verify sit together.
+- **Flagged for maintainer:** none blocking — the plan executes on existing
+  authority once an implementation session picks it up.
