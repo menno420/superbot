@@ -70,8 +70,13 @@ async def test_resolves_visibility_and_returns_category_view():
     ) as embed_builder:
         embed, view = await resolve_help_panel_state(interaction)
 
-    view_cls.assert_called_once_with("user")
-    embed_builder.assert_called_once_with("user")
+    # HLP-2: both the view and the embed are built from one projection
+    # carrying the governance result (tier + visible set), not a bare tier.
+    view_cls.assert_called_once()
+    projection = view_cls.call_args.kwargs["projection"]
+    assert projection.member_tier == "user"
+    assert projection.source == "governance"
+    embed_builder.assert_called_once_with(projection=projection)
     assert embed is fake_embed
     assert view is fake_view
 
@@ -82,9 +87,14 @@ async def test_admin_tier_yields_category_view_with_admin_options():
     category dropdown — verifies the tier flows through governance
     into the view constructor.
     """
+    from utils.subsystem_registry import SUBSYSTEMS
+
     interaction = _interaction()
     vis_result = MagicMock()
-    vis_result.visible_subsystems = set()
+    # HLP-2: Home consumes governance visibility, so the admin hubs only
+    # surface when their host subsystems are in the resolved visible set
+    # (pre-seam an empty set here went unnoticed — that was the gap).
+    vis_result.visible_subsystems = set(SUBSYSTEMS)
     vis_result.member_tier = "administrator"
 
     with patch(
@@ -98,7 +108,12 @@ async def test_admin_tier_yields_category_view_with_admin_options():
         embed, view = await resolve_help_panel_state(interaction)
 
     assert isinstance(view, HelpCategoryView)
-    assert view._member_tier == "administrator"  # type: ignore[attr-defined]
+    projection = view._projection  # type: ignore[attr-defined]
+    assert projection.member_tier == "administrator"
+    select = next(
+        c for c in view.children if isinstance(c, discord.ui.Select)
+    )
+    assert "admin" in {opt.value for opt in select.options}
 
 
 # ---------------------------------------------------------------------------

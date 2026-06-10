@@ -176,8 +176,10 @@ def test_view_has_no_individual_hub_child_options():
 
 def test_view_default_member_tier_is_user_when_unspecified():
     view = HelpCategoryView()
-    # Default tier is "user" — admin hubs must not surface.
-    assert view._member_tier == "user"  # type: ignore[attr-defined]
+    # Default audience is "user" — admin hubs must not surface. (HLP-2:
+    # the view holds a registry-defaults projection, not a bare tier.)
+    assert view._projection.member_tier == "user"  # type: ignore[attr-defined]
+    assert view._projection.source == "registry_defaults"  # type: ignore[attr-defined]
     select = _select(view)
     values = {opt.value for opt in select.options}
     assert "admin" not in values
@@ -231,7 +233,10 @@ async def test_selecting_hub_category_opens_host_cog_panel(monkeypatch):
     interaction.data = {"values": ["games"]}
 
     vis_result = MagicMock()
-    vis_result.visible_subsystems = set()
+    # HLP-2: the hub route checks its host subsystem against the
+    # projection at click time, so the target must be governance-visible
+    # (pre-seam an empty set here went unnoticed — that was the gap).
+    vis_result.visible_subsystems = {"games"}
     vis_result.member_tier = "owner"
 
     monkeypatch.setattr(

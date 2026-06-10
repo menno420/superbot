@@ -37,6 +37,17 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   table `HUB_PANEL_BUILDERS["diagnostic"] = "build_platform_help_menu_view"`
   routes hub → Platform Hub. Subsystem aliases `diagnostics`/`diag`
   resolve to the Diagnostics subsystem (not the Platform hub).
+- **Batch 6 (HLP-2, PR #657) — one effective-access seam.** Every Help
+  render path (Home hub index · Advanced browser · typed/dropdown
+  routes · command embeds · dedicated-panel dispatch) consumes
+  `services/help_projection.HelpProjection`. Consequences for every row
+  below: Home hides a hub whose host subsystem is governance-hidden in
+  scope (no longer tier-only); a typed/selected target the projection
+  hides renders the same not-found fallback as a nonexistent name; the
+  single-command route applies the same hidden/disabled/classification
+  filter as the command-list embed. Routing/command-access locks do
+  **not** hide — Help advertises locked features (the
+  `help_advertises_locked` diagnostic is the operator warning surface).
 
 ## 1. Mother hubs
 

@@ -345,10 +345,37 @@ SUBSYSTEMS + HUBS + command-surface ledger + panel declarations/live availabilit
 > **Phase 0's bounded reconciliation shipped 2026-06-09 in PR #642** (execution-plan
 > Lane 8): the surface-map preamble counts are true again (10 hubs · 29 subsystems ·
 > 36 loaded extensions · 28 define `build_help_menu_view`) **and pinned to the live
-> registries by test**, and a 28-test characterization net pins the five render paths
-> (Home · Advanced · typed routes · generic embed · dedicated panels) as they behave
-> today. The projection contract (rest of Phase 0) and Phases 1+ — catalogue,
-> projection read model, then the Q-0055–Q-0059 overlay — remain queued.
+> registries by test**, and a characterization net pins the five render paths
+> (Home · Advanced · typed routes · generic embed · dedicated panels).
+>
+> **Phases 1 + 2 shipped 2026-06-10 in PR #657** (consolidated plan **Batch 6** —
+> verify merged): `services/help_catalogue.py` (the stable-keyed inventory +
+> four registry-drift finding kinds, pinned empty) and
+> `services/help_projection.py` (the §9 reason-coded `HelpProjection` —
+> vocabulary exactly as specified below; only `display_hidden` /
+> `governance_hidden` hide; lock states stay advertised). **All five render
+> paths consume the one projection** — Home now respects host-subsystem
+> governance visibility, typed/dropdown routes check their target, the
+> single-command route applies the shared display filter, and
+> `HelpPanelView._on_select` re-resolves at click time. The Q-0074
+> admin-tier registry fix rode along (placement == admission tier, pinned
+> by the catalogue's `tier_mismatch` finding).
+>
+> **Phase 3 shipped 2026-06-10 in PR #659** (#657 merged the same day,
+> clearing the gate): migration 064 `help_overlay` (guild display-hide /
+> rename / re-describe per hub/subsystem, store-only-deviations) +
+> `services/help_overlay_mutation.py` (the audited seam: admin gate,
+> write-time catalogue-key validation, partial-edit merge, per-field +
+> full reset, cache invalidation, `audit.action_recorded`) +
+> `services/help_overlay.py` (cached fault-tolerant read model), flowing
+> through the HLP-2 projection into **all five render paths**
+> (presentations carry custom + default per Q-0058; orphans reported via
+> `orphaned_overrides`; no-rows = byte-identical, pinned). Q-0055's
+> display-only rule is an **import fence** on the admission paths.
+> **Next: Phase 5's editor UI** (settings/setup integration — including
+> the Q-0059 embed-builder Home message, whose mandatory preview belongs
+> with the editor) and Phase 4's command/panel-action records (Q-0057
+> rider: no ordering until stable action identities).
 
 | Phase | Goal and likely files | Dependencies / off-limits | Migration / reset | Verification | Recommended next agent |
 |---|---|---|---|---|---|

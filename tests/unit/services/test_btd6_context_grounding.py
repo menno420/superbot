@@ -296,9 +296,7 @@ async def test_build_grounds_upgrade_minion_pierce_detail():
     # Match the Necromancer *attack* line (the wiki-era "Reanimate"; game
     # names since the v55.1 cutover) — key off the per-attack "pierce" stat.
     reanimate = next(
-        line
-        for line in ctx.facts
-        if "Attack Necromancer" in line and "pierce" in line
+        line for line in ctx.facts if "Attack Necromancer" in line and "pierce" in line
     )
     assert "1 pierce" in reanimate
     assert "Undead Bloon buff" in blob
@@ -376,8 +374,7 @@ async def test_build_grounds_parent_tower_for_upgrade_only_query():
     ), ctx.facts
     # ...and now the parent Dart Monkey tower identity is grounded too.
     assert any(
-        f.startswith("[btd6_tower] Dart Monkey") and "base cost" in f
-        for f in ctx.facts
+        f.startswith("[btd6_tower] Dart Monkey") and "base cost" in f for f in ctx.facts
     ), ctx.facts
 
 
@@ -548,7 +545,9 @@ def test_deterministic_roster_reply_maps_water_land_removables():
     # 18 removables) so they can't be fabricated.
     r = btd6_context_service.deterministic_roster_reply
     count = r("how many maps have water")
-    assert count is not None and "67 have water" in count and "19 are land-only" in count
+    assert (
+        count is not None and "67 have water" in count and "19 are land-only" in count
+    )
     water = r("list all maps with water")
     assert water is not None and "67 of 86" in water and "Cubism" in water
     land = r("land-only maps")  # fires without a generic list verb
@@ -559,7 +558,9 @@ def test_deterministic_roster_reply_maps_water_land_removables():
     assert "Cargo" in rem and "Bazaar" in rem
     # Combined request returns both sections.
     both = r("list all maps with water and all maps with removables")
-    assert both is not None and "Maps with water" in both and "removable obstacles" in both
+    assert (
+        both is not None and "Maps with water" in both and "removable obstacles" in both
+    )
     # Strategy / opinion still reaches the model.
     assert r("which water map is best for beginners") is None
 
@@ -648,3 +649,49 @@ async def test_build_grounds_freeplay_round_cash():
     ctx = await btd6_context_service.build("round 81")
     line = next(f for f in ctx.facts if f.startswith("[btd6_round] Round 81"))
     assert "cash this round ~$5,366" in line
+
+
+# --- Pass 3e: powers / Monkey Knowledge / bosses catalog grounding ----------
+# (#655 answerability item 5: these three fixture catalogs were reachable only
+# through their dedicated AI tools; the shared pipeline never matched them.)
+
+
+@pytest.mark.asyncio
+async def test_power_named_in_text_grounds_catalog_fact():
+    ctx = await btd6_context_service.build("what does monkey boost do")
+    power_lines = [f for f in ctx.facts if f.startswith("[btd6_power]")]
+    assert any("Monkey Boost (power)" in f for f in power_lines)
+
+
+@pytest.mark.asyncio
+async def test_monkey_knowledge_requires_knowledge_keyword():
+    # MK names are generic English ("More Cash") — without the keyword the
+    # catalog must stay silent so strategy prose doesn't ground stray facts.
+    with_kw = await btd6_context_service.build("more cash monkey knowledge")
+    assert any(
+        f.startswith("[btd6_knowledge]") and "More Cash" in f for f in with_kw.facts
+    )
+    without_kw = await btd6_context_service.build("how to get more cash early")
+    assert not any(f.startswith("[btd6_knowledge]") for f in without_kw.facts)
+
+
+@pytest.mark.asyncio
+async def test_boss_named_in_text_grounds_catalog_fact():
+    ctx = await btd6_context_service.build("tell me about bloonarius")
+    boss_lines = [f for f in ctx.facts if f.startswith("[btd6_boss]")]
+    assert any("Bloonarius (boss bloon)" in f for f in boss_lines)
+
+
+@pytest.mark.asyncio
+async def test_hero_buff_auras_ground_change_only():
+    # Striker's decoded hero auras were invisible (#655 item 6d): emit one
+    # line per CHANGE in the aura set (order-insensitive), not one per level.
+    ctx = await btd6_context_service.build("striker jones buffs")
+    lines = [f for f in ctx.facts if f.startswith("[btd6_hero_buff]")]
+    assert lines, "expected hero aura grounding lines"
+    assert len(lines) <= 8  # change-only, never one-per-level spam
+    assert any("x0.9 attack cooldown" in f for f in lines)
+    assert any("+25% pierce" in f for f in lines)  # fraction semantics fix
+    # A hero with no decoded auras stays silent.
+    ctx = await btd6_context_service.build("quincy stats")
+    assert not [f for f in ctx.facts if f.startswith("[btd6_hero_buff]")]

@@ -946,8 +946,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -1102,8 +1102,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -1276,8 +1276,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -1436,8 +1436,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -1596,8 +1596,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -1756,8 +1756,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -1916,8 +1916,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -2076,8 +2076,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -2236,8 +2236,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -2396,8 +2396,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0,
           "customRadius": 0,
@@ -2559,8 +2559,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0
         }
@@ -2720,8 +2720,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0
         }
@@ -2881,8 +2881,8 @@
         {
           "kind": "RateSupportBombExpert",
           "name": "Bomb Shooter buff",
-          "rangeMultiplier": 0.05,
-          "pierceMultiplier": 0.25,
+          "rangePercentage": 0.05,
+          "piercePercentage": 0.25,
           "isGlobal": false,
           "maxStackSize": 0
         }

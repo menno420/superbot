@@ -223,7 +223,11 @@ async def test_help_button_opens_help_category_view():
     ) as edit:
         await btn.callback(interaction)
 
-    view_cls.assert_called_once_with("user")
+    # HLP-2: the view receives the audience projection built from the
+    # governance result, not a bare tier string.
+    view_cls.assert_called_once()
+    projection = view_cls.call_args.kwargs["projection"]
+    assert projection.member_tier == "user"
     edit.assert_awaited_once()
     assert edit.await_args.kwargs["view"] is fake_view
 

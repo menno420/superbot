@@ -1901,11 +1901,26 @@ async def _btd6_paragon_stats_at_degree(arguments: dict[str, Any]) -> dict[str, 
     stats = ss.paragon_stats_at_degree(paragon_id, degree)
     if stats is None:
         return {"found": False, "note": f"{paragon_id} has no computable attack"}
+    # Degree-independent end-of-round income (Navarch of the Seas $3,200) —
+    # without it the tool reads as pure combat and the model denies the income.
+    pstats = ss.get_paragon_stats(paragon_id)
+    income = pstats.income_per_round if pstats is not None else None
+    income_fields: dict[str, Any] = (
+        {
+            "income_per_round": income,
+            "income_note": (
+                "generates this cash at the end of each round, at every degree"
+            ),
+        }
+        if income is not None
+        else {}
+    )
     return {
         "found": True,
         "paragon": stats.canonical,
         "tower": stats.tower_canonical,
         "degree": stats.degree,
+        **income_fields,
         "attacks": [
             {
                 "name": atk.name,

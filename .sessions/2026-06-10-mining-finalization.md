@@ -23,7 +23,7 @@ splitting 2a/2b instead of recording a deviation).
   (one transaction per op; AST ratchet `test_mining_write_boundary.py`);
   `cogs/mining/` deleted; characterization net kept every message byte-identical.
 - recipes.json 47 → 13 curated (+5 new-tier recipes), alignment lint governs content.
-- Shared game-XP track (064/065): central award policy, daily soft cap, derived
+- Shared game-XP track (migrations 065/066 — renumbered around #659's 064_help_overlay): central award policy, daily soft cap, derived
   shared level, awards atomic with their actions, `gamexp`/`crafting` boards,
   depth records; level-ups render inline.
 - Deeper ladders incl. **diamond lantern → MAGMA finally reachable** (depth-3 was

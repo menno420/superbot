@@ -36,7 +36,7 @@
 | Horizon | Items |
 |---|---|
 | **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; **P1C executed 2026-06-10 in #656** — verify merged; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–5 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice open · #654 declaration-coverage core + Q-0064 BTD6 rows, pointer-classification tail open · #656 adaptive P1C subpanels — verify merges) → **next: Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–6 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice open · #654 declaration-coverage core + Q-0064 BTD6 rows, pointer-classification tail open · #656 adaptive P1C subpanels · **#657 Help projection seam, merged** — all five render paths on one `HelpProjection`, + the Q-0074 admin-tier fix · **#659 HLP-3 guild overlay** — store + audited mutation seam + render integration; verify merge) → **next: Batch 7** mutation hardening (decision-cleared) · the Help overlay **editor UI** (audit Phase 5, incl. the Q-0059 embed-builder Home message) · health/diagnostics production live-tests (owed) |
 | **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover itself **shipped 2026-06-10, PR #649** — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -189,9 +189,16 @@ provenance schema is implemented.
   In parallel, **#653 (wave 1)** decoded thorn rings + 4-x-x sentries + the
   **banana economy** (bananaValue/bank capacity+interest as specials) —
   reconciled at the merge.
-  **Next:** decode-status ⭐ item 3 (the buff/zone tail), the #655
-  answerability-gap items (5–6) — plus the maintainer's live spot-check of
-  the new surfaces.
+- **Answerability tail (2026-06-10)** — items 5+6d in **#658** (deterministic
+  Ask parity · Pro views render Effects/Minions · Striker fraction fix);
+  items **6a–c + the Navarch "no coins" routing fix in #662** (the live wrong
+  answer was **routing, not data**: name-resolution miss → 0 facts, the
+  cap-truncated income sentence, no paragon income/effect grounding leg —
+  fixed across grounding/menus/AI tool, + minion-name grounding, the Pouākai
+  diacritic tokenizer fix, honest dataset source labels).
+  **Next:** decode-status ⭐ item 3 (buff/zone tail — demand-driven), the
+  maintainer's live spot-check (item 4); item 7 captures the
+  conversation-grounding follow-up idea.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.
@@ -216,7 +223,7 @@ accepted, not a target).
   boundary is **complete** (every mining write through `services/mining_workflow.py`,
   one transaction per op, AST-fenced; pure domain in `utils/mining/`), recipes are
   catalog-reconciled under an alignment lint (Q-0075), the **shared game-XP track**
-  exists (migrations 064/065: awards atomic with their actions, daily soft cap, shared
+  exists (migrations 065/066: awards atomic with their actions, daily soft cap, shared
   derived level, `gamexp`/`crafting` leaderboards, depth records), the **deeper
   ladders** land (gold/diamond tiers — the diamond lantern finally unlocks MAGMA),
   the Gear panel / Recipe browser / fuzzy names / `!fastmine` modernize the old UX,
@@ -253,7 +260,7 @@ privacy/provenance/moderation review before any public surface.
 - **Existing plans** — [server-management/setup/access/routine extension routing](planning/server-management-extension-routing-2026-06-08.md): announcements, anti-spam, availability, explanations, analytics; gate: authoritative trackers and privacy/AI decisions.
 - **Someday / Later** — [integrations/media/voice/website](planning/integrations-media-voice-website-roadmap-2026-06-08.md): provider alerts, activity, voice, and web projection; gate: privacy/security/moderation review (Q-0041/Q-0042 answered 2026-06-09: YouTube-first posture; staged Someday website).
 - **Later** — [UX/discoverability/mobile-first](planning/ux-discoverability-mobile-roadmap-2026-06-08.md): help, changelog, copy, and mobile conformance through existing UI standards; gate: authoritative interface sequencing and copy/release-manifest decisions.
-- **Later (decisions first)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): unify Help catalogue/projection before guild rename/hide/order customization; gate: Q-0055–Q-0059 + coordination with Adaptive Setup/Access P1B/P1C.
+- **Next (editor UI only)** — [Help cog customization audit and roadmap](planning/help-cog-customization-audit-2026-06-09.md): the **seam (#657, merged) and the HLP-3 overlay store/mutation/render integration (#659 — verify merged) shipped 2026-06-10** (audit Phases 1+2+3); the remaining pieces are the **overlay editor UI** (audit Phase 5 — settings/setup integration, carrying the Q-0059 embed-builder Home message whose preview is mandatory) and Phase 4 command/panel-action records (Q-0057 rider: no ordering until stable action identities).
 - Routing ledger: [idea-to-roadmap inventory](planning/idea-roadmap-inventory-2026-06-08.md).
 
 ## Someday / ideas (NOT approved — capture only)

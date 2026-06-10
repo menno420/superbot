@@ -48,10 +48,13 @@ from services.btd6_knowledge_service import (
 )
 from services.btd6_resolver_service import ResolvedIntent, resolve
 from services.btd6_response_builder import (
+    UNRESOLVED_TITLE,
     BTD6Response,
+    for_bloon,
     for_hero,
     for_map,
     for_mode,
+    for_reference_facts,
     for_round,
     for_tower,
     for_unresolved,
@@ -106,7 +109,7 @@ def deterministic_answer(intent: ResolvedIntent) -> BTD6Response:
     """Return the deterministic-only :class:`BTD6Response` for ``intent``.
 
     The first recognised entity wins (towers → heroes → maps →
-    modes → rounds). If nothing was resolved, returns the
+    modes → rounds → bloons). If nothing was resolved, returns the
     "unresolved" response so the cog can surface a helpful hint.
     """
     if intent.towers:
@@ -129,6 +132,11 @@ def deterministic_answer(intent: ResolvedIntent) -> BTD6Response:
         fact = round_fact(intent.rounds[0].round_number)
         if fact is not None:
             return for_round(fact)
+    # Bloons resolve last so "ceramic rush on round 63" stays a round answer;
+    # the resolver matched bloons all along — this branch was the missing
+    # consumer (#655 answerability item 5).
+    if intent.bloons:
+        return for_bloon(intent.bloons[0])
     return for_unresolved(intent)
 
 
@@ -154,6 +162,13 @@ async def answer_question(
     intent = resolve(text)
     response = deterministic_answer(intent)
     response = await _attach_live_grounding(text, response)
+    if response.title == UNRESOLVED_TITLE and response.live_facts:
+        # No entity intent matched, but the shared grounding pipeline answered
+        # anyway (powers / Monkey Knowledge / bosses / Geraldo / relics…) —
+        # lead with the facts instead of a "couldn't find anything" headline.
+        # The AI tool path reads the same facts directly; this gives the
+        # deterministic menu Ask the same reach (#655 item 5).
+        response = for_reference_facts(response.live_facts)
     if augment_with_ai and btd6_ai_enabled() and task_enabled(AITask.HELP_ANSWER):
         return await _augment_with_ai(intent, response, guild_id=guild_id)
     return response

@@ -7,9 +7,10 @@ typed-accessible and reachable through the Games hub.
 
 These tests assert:
 
-* The overview embed (``build_overview_embed``) excludes any subsystem
-  with ``parent_hub`` set.
-* The paginated overview (``_build_page_embed``) does the same.
+* The paginated overview (``_build_page_embed``) excludes any subsystem
+  with ``parent_hub`` set. (The legacy non-paginated
+  ``build_overview_embed`` was production-dead and deleted in Batch 6 —
+  HLP-2; its pins moved to the live surfaces.)
 * The visible list assembled by ``resolve_help_panel_state``,
   ``_resolve_visible``, and the ``HelpCog.help_command`` typed entry
   excludes hub children.
@@ -49,50 +50,6 @@ def _hub_children() -> list[str]:
 def _all_visible_set() -> set[str]:
     """Visible set covering every subsystem — governance allows everything."""
     return set(SUBSYSTEMS.keys())
-
-
-# ---------------------------------------------------------------------------
-# Overview embed (non-paginated)
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_build_overview_embed_excludes_parent_hub_children():
-    bot = MagicMock()
-    ctx = MagicMock()
-    embed = await help_cog.build_overview_embed(
-        bot,
-        ctx,
-        visible=_all_visible_set(),
-        member_tier="owner",
-    )
-
-    rendered = "\n".join(field.value for field in embed.fields)
-    # build_overview_embed renders each entry as
-    # ``{emoji} **{display_name}** — {desc}`` (help_cog.py:118). Match
-    # the bolded form so substring collisions in descriptions (e.g.
-    # "General" appearing inside "General utility commands") don't
-    # false-positive against a hub child's display_name.
-    for child in _hub_children():
-        display = SUBSYSTEMS[child]["display_name"]
-        assert f"**{display}**" not in rendered, (
-            f"hub child {child!r} ({display!r}) leaked into overview embed"
-        )
-
-
-@pytest.mark.asyncio
-async def test_build_overview_embed_still_shows_games_hub():
-    bot = MagicMock()
-    ctx = MagicMock()
-    embed = await help_cog.build_overview_embed(
-        bot,
-        ctx,
-        visible=_all_visible_set(),
-        member_tier="owner",
-    )
-
-    rendered = "\n".join(field.value for field in embed.fields)
-    assert "Games" in rendered
 
 
 # ---------------------------------------------------------------------------
@@ -241,8 +198,10 @@ async def test_help_panel_view_resolve_visible_excludes_hub_children(
     )
 
     view = help_cog.HelpPanelView(visible_list=list(SUBSYSTEMS.keys()), page=0)
-    visible_list, member_tier = await view._resolve_visible(interaction)
-    assert member_tier == "owner"
+    # HLP-3: _resolve_visible now returns the fresh projection (renames need
+    # presentations downstream), not just the bare tier.
+    visible_list, projection = await view._resolve_visible(interaction)
+    assert projection.member_tier == "owner"
     for child in _hub_children():
         assert child not in visible_list, child
     assert "games" in visible_list
@@ -337,16 +296,27 @@ def test_pr3_metadata_assignments_present():
 async def test_pr3_new_children_hidden_from_overview():
     """Every subsystem promoted in PR #3 must not appear in the
     top-level Help overview (the Phase 4 filter is parent_hub-driven).
+
+    Pinned against ``_build_page_embed`` — the live paginated overview —
+    since the legacy ``build_overview_embed`` was deleted (Batch 6).
+    Renders every page of the full subsystem list so the parent_hub
+    filter (not pagination) is what excludes the children.
     """
+    import math
+
     bot = MagicMock()
-    ctx = MagicMock()
-    embed = await help_cog.build_overview_embed(
-        bot,
-        ctx,
-        visible=_all_visible_set(),
-        member_tier="owner",
+    visible_list = list(SUBSYSTEMS.keys())
+    pages = max(1, math.ceil(len(visible_list) / help_cog._PAGE_SIZE))
+    rendered = "\n".join(
+        field.value
+        for page in range(pages)
+        for field in help_cog._build_page_embed(
+            bot,
+            visible_list=visible_list,
+            page=page,
+            member_tier="owner",
+        ).fields
     )
-    rendered = "\n".join(field.value for field in embed.fields)
 
     pr3_children = {
         "inventory",
