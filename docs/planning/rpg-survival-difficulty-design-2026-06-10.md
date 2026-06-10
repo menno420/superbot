@@ -199,6 +199,9 @@ outputs, not guesses.
   the 2026-06-10 teardown's verdict, owner ratification pending): P3's design
   should keep its seams ecosystem-ready (own loot ladder, local-currency hook,
   collection-log hook) so promotion extends rather than rewrites it.
+- P3's campfire has no named fuel source — the ancestor bot (minebot, 2025)
+  had a `chop` woodcutting command; wood-as-fuel is the natural echo (and a
+  third gathering verb if fishing becomes ecosystem #2).
 - Whether Medium death (P2) costs a small coin/food penalty or only time.
 - Fishing loot table depth (own ladder vs. reskinned ore weights at v1).
 - Whether cooked food may later be sellable (market interaction — economy
