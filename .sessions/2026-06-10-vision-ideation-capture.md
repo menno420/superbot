@@ -41,6 +41,13 @@ gates G1–G3; Easy-mode byte-identical as the headline pin). The
 help-home/navigation plan is the named next grooming target, sequenced with
 the Help lane's overlay editor UI.
 
+Follow-up owner correction → **Q-0079**: no per-panel button caps ("the 3
+buttons per panel is never going to work"); cleaner UX = fewer or
+**better-defined** buttons (labels/grouping/placement); removal only for
+genuine redundancy — almost all current buttons are useful. The vision's "≤3"
+is navigation depth only. Routed into the capture doc (§1/V-03/AG-01/§6) +
+the roadmap interface row; binds the upcoming help-home/navigation plan.
+
 ## Context delta (reflection interview)
 
 - **Route miss:** none serious — CLAUDE.md → current-state → ideas/README →

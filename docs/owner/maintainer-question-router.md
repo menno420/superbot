@@ -3225,3 +3225,38 @@ capture-doc T-4. The pets answer **amends the pets plan's future phases**
 `docs/planning/rpg-survival-difficulty-design-2026-06-10.md` (new, the
 grooming move); `docs/roadmap.md` games + interface lanes;
 `docs/planning/pets-companions-plan-2026-06-09.md` (amendment note).
+
+### Q-0079 — "Cleaner UX" clarified: no per-panel button caps; better-defined buttons over removal
+
+**Area:** Help-interface / UX doctrine (V-03, V-12, AG-01)
+**Type:** Owner correction of a captured idea (unprompted statement, follow-up to Q-0078)
+**Priority:** Medium (binds the help-home/navigation plan before it is structured)
+**Status:** Answered (owner statement, 2026-06-10) — **Routed** → capture doc §1/§3/§4/§6 notes; roadmap interface row
+
+**Owner statement (2026-06-10, verbatim):** "the 3 buttons per panel is never
+going to work, but we can definitely aim for a cleaner UX, with less or better
+defined buttons, tho we can't just remove buttons because almost all of them
+are actually useful." *(In response to the agent's closing pitch for AG-01's
+"≤3-clicks check" as a CI invariant; he affirmed the captured ideas overall.)*
+
+**Durable conclusions:**
+
+1. **No numeric per-panel button budget — ever.** Panels keep every useful
+   button, and almost all existing buttons are useful. Any future UX lint that
+   counts buttons per panel is rejected posture.
+2. **The vision's "3" is navigation depth.** "Maximum of 3 buttons to reach
+   any game, setting, or action" (capture doc §1 / V-03) means **presses from
+   Help Home** — an aim to design toward, not a cap on how many buttons a
+   panel may show.
+3. **"Cleaner UX" = fewer *or better-defined* buttons.** The levers are
+   clearer labels, grouping, row order/placement, and consistent conventions.
+   Removing a button is allowed only when that specific button is genuinely
+   redundant — never to satisfy a quota.
+4. **AG-01 bounded accordingly.** If promoted, the CI-checkable UX invariants
+   are (a) reachability **depth** over the help projection / hub registry and
+   (c) zero-dead-buttons. A button-count check is out.
+
+**Routed to:** capture doc (`../ideas/superbot-vision-2026-06-10.md`) §1
+owner-voice clarification + V-03 + AG-01 + §6 ledger row; `docs/roadmap.md`
+interface planning row. The help-home/navigation plan (the named next grooming
+target) inherits these as design constraints.

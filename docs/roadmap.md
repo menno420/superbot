@@ -119,7 +119,8 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   ([superbot-vision](ideas/superbot-vision-2026-06-10.md) V-02/V-03 + AG-01/AG-03):
   Play · Server & Info · My Stuff · Manage top level (layout decided Q-0078),
   update-in-place + mother/help links on every panel, one-active-panel + summon,
-  and the ≤3-clicks reachability invariant. Owner-picked as a next planning
+  and the ≤3-clicks reachability invariant (navigation depth — per-panel
+  button caps rejected, Q-0079). Owner-picked as a next planning
   target; **sequence with/after the Help overlay editor UI plan** on the same
   projection seam (capture-doc T-4) — structure into its own plan before building.
 - **Later** — [command-expansion-backlog](building-roadmap/command-expansion-backlog.md)

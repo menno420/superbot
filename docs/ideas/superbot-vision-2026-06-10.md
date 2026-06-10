@@ -48,6 +48,13 @@ action. The sections he sketched:
    moderation/settings.
 4. He lands on **4 main options being best**, one of which is bot settings.
 
+*Owner clarification (2026-06-10, Q-0079): the "maximum of 3 buttons" is
+**navigation depth** — at most ~3 presses from Help Home to any destination — **not**
+a per-panel button cap. "The 3 buttons per panel is never going to work": panels keep
+every useful button, and almost all current buttons are useful. The aim is cleaner UX
+through fewer **or better-defined** buttons — clearer labels, grouping, placement —
+never removal quotas.*
+
 Every setting should be easily changed, and it should be clear **what each setting
 does and why you would change it**.
 
@@ -121,6 +128,7 @@ section is new work** — it's the ground the vision stands on.
 - **V-03 — Help Home as 3–4 buttons.** Replace the Home dropdown with ~4 top-level
   buttons; **≤3 interactions to any destination**. Owner's sketch: Games/Actions ·
   General · Bot Settings (admin) · (a member-facing variant — see V-04).
+  *(Q-0079: the ≤3 is navigation depth, not a per-panel button cap.)*
 - **V-04 — Per-user bot preferences.** Regular members tune the bot for themselves
   without changing it for others — a third settings scope (platform > guild >
   **user**).
@@ -164,6 +172,10 @@ section is new work** — it's the ground the vision stands on.
   configured < 2 min" as a scripted step in the production eval checklist (V-01);
   (c) zero-dead-buttons — every visible button's action resolves or renders a
   governed denial (the projection's reason codes already exist).
+  *Owner-bounded (Q-0079, 2026-06-10): (a) checks navigation **depth** over the
+  projection — a per-panel button-count lint is explicitly rejected. Cleaner UX
+  means better-defined/grouped buttons; removal only for genuine redundancy,
+  never to hit a number.*
 - **AG-02 — Setup Smart Scan + readiness meter.** First-run wizard step: snapshot
   the guild (channels, names, topics, permissions), run the **existing advisor
   seam** (deterministic heuristics first, AI optional per guild policy), and
@@ -299,7 +311,7 @@ section is new work** — it's the ground the vision stands on.
 | V-09 + T-1 (story pets, party of 3) | Pets plan (amend, don't fork) | M | Owner pick on T-1, then amend the pets plan |
 | V-10 + AG-08/AG-09 + T-5 (quest engine, Story Actions, AI DM v1) | AI lane × games lane (Q-0040 posture) | XL | Structure the quest-engine + Story-Actions plan; the bounded-authority decision rides it |
 | V-11 (weather) | Utility hub | XS | Quick-win candidate (free no-key API, store nothing) |
-| V-12 + AG-01 (UX laws as invariants) | Tooling/CI + eval checklist | S | Quick-win: the ≤3-clicks graph check is one test over existing registries |
+| V-12 + AG-01 (UX laws as invariants) | Tooling/CI + eval checklist | S | Quick-win: the ≤3-clicks **depth** check is one test over existing registries (no button-count lint — Q-0079) |
 | AG-10 (expeditions) | Games lane (§7.7 Wave 5 social) | L | Capture only; revisit at the social wave |
 | AG-11 (death = rescue mission) | Games lane (rides V-05 hard mode) | S | Fold into the V-05 design doc |
 | AG-12 (daily campfire scene) | AI lane (Q-0040 narrator) | S | Capture; candidate first AI-narration slice after the DM plan exists |
