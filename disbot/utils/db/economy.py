@@ -8,19 +8,99 @@ remain supported.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from utils.db import pool
+
+if TYPE_CHECKING:
+    import asyncpg
 
 # ---------------------------------------------------------------------------
 # Coin primitives — wrap via services.economy_service for audited writes.
 # ---------------------------------------------------------------------------
 
 
-async def get_coins(user_id: int, guild_id: int) -> int:
+async def get_coins(
+    user_id: int,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> int:
     row = await pool.fetchone(
         "SELECT coins FROM xp WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
+        conn=conn,
     )
     return row["coins"] if row else 0
+
+
+async def try_debit_coins(
+    user_id: int,
+    guild_id: int,
+    amount: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> int | None:
+    """Conditionally subtract *amount* coins; ``None`` when unaffordable.
+
+    The conditional UPDATE (``coins >= $3``) decides affordability and
+    writes in one statement, eliminating the read-then-write race of the
+    legacy ``get_coins`` + ``add_coins`` pair.  A user with no ``xp`` row
+    matches nothing and is treated as having 0 coins.  Transaction-aware
+    (Q-0071): pass *conn* to join a workflow-owned transaction.
+    """
+    row = await pool.fetchone(
+        """UPDATE xp SET coins = xp.coins - $3
+           WHERE user_id=$1 AND guild_id=$2 AND coins >= $3
+           RETURNING coins""",
+        (user_id, guild_id, amount),
+        conn=conn,
+    )
+    return row["coins"] if row else None
+
+
+async def credit_coins(
+    user_id: int,
+    guild_id: int,
+    amount: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> int:
+    """Add *amount* coins and return the new balance in one statement.
+
+    Transaction-aware (Q-0071) sibling of :func:`add_coins` — same upsert
+    semantics (`GREATEST(0, …)` floor) plus ``RETURNING`` so callers
+    inside a workflow transaction never need a follow-up read.
+    """
+    row = await pool.fetchone(
+        """INSERT INTO xp (user_id, guild_id, coins) VALUES ($1, $2, GREATEST(0, $3))
+           ON CONFLICT (user_id, guild_id) DO UPDATE SET
+               coins=GREATEST(0, xp.coins + $3)
+           RETURNING coins""",
+        (user_id, guild_id, amount),
+        conn=conn,
+    )
+    return row["coins"] if row else 0
+
+
+async def insert_economy_audit(
+    guild_id: int,
+    user_id: int,
+    actor_id: int | None,
+    delta: int,
+    new_balance: int,
+    reason: str,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> None:
+    """Append one row to ``economy_audit_log`` (transaction-aware)."""
+    await pool.execute(
+        """INSERT INTO economy_audit_log
+             (guild_id, user_id, actor_id, delta, new_balance, reason)
+           VALUES ($1, $2, $3, $4, $5, $6)""",
+        (guild_id, user_id, actor_id, delta, new_balance, reason),
+        conn=conn,
+    )
 
 
 async def add_coins(user_id: int, guild_id: int, amount: int) -> int:

@@ -33,7 +33,16 @@ _ALLOWED_PATHS = {
     _DISBOT / "utils" / "db" / "pool.py",
 }
 
-_FORBIDDEN_NAMES = {"add_coins", "set_coins"}
+_FORBIDDEN_NAMES = {
+    "add_coins",
+    "set_coins",
+    # RS01 transaction-aware primitives — same containment as add/set:
+    # only economy_service (debit_in_txn / credit_in_txn) and the DB
+    # layer itself may touch them.
+    "try_debit_coins",
+    "credit_coins",
+    "insert_economy_audit",
+}
 
 # Raw SQL that writes the xp.coins column or the economy table.  We
 # accept SELECTs (read-only) and any reference inside utils/db/*.

@@ -22,6 +22,8 @@ import logging
 import os
 import re
 import time
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 import asyncpg
 
@@ -112,10 +114,16 @@ def _query_label(query: str) -> str:
     return f"{op}:{table}"
 
 
-async def fetchone(query: str, params: tuple = ()) -> dict | None:
+async def fetchone(
+    query: str,
+    params: tuple = (),
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> dict | None:
     start = time.monotonic()
     try:
-        row = await get().fetchrow(query, *params)
+        target = conn if conn is not None else get()
+        row = await target.fetchrow(query, *params)
         return dict(row) if row else None
     finally:
         elapsed = time.monotonic() - start
@@ -124,10 +132,16 @@ async def fetchone(query: str, params: tuple = ()) -> dict | None:
         _slow.maybe_record("db_query", label, elapsed * 1000)
 
 
-async def fetchall(query: str, params: tuple = ()) -> list[dict]:
+async def fetchall(
+    query: str,
+    params: tuple = (),
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> list[dict]:
     start = time.monotonic()
     try:
-        rows = await get().fetch(query, *params)
+        target = conn if conn is not None else get()
+        rows = await target.fetch(query, *params)
         return [dict(r) for r in rows]
     finally:
         elapsed = time.monotonic() - start
@@ -136,12 +150,33 @@ async def fetchall(query: str, params: tuple = ()) -> list[dict]:
         _slow.maybe_record("db_query", label, elapsed * 1000)
 
 
-async def execute(query: str, params: tuple = ()) -> None:
+async def execute(
+    query: str,
+    params: tuple = (),
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> None:
     start = time.monotonic()
     try:
-        await get().execute(query, *params)
+        target = conn if conn is not None else get()
+        await target.execute(query, *params)
     finally:
         elapsed = time.monotonic() - start
         label = _query_label(query)
         _metrics.db_query_seconds.labels(query_name=label).observe(elapsed)
         _slow.maybe_record("db_query", label, elapsed * 1000)
+
+
+@asynccontextmanager
+async def transaction() -> AsyncIterator[asyncpg.Connection]:
+    """One connection + one transaction for a cross-domain workflow service.
+
+    Q-0071: a workflow spanning coins + a domain inventory must hold ONE
+    DB transaction — pass the yielded connection into the conn-aware CRUD
+    primitives so every leg commits or rolls back together.  EventBus
+    emission belongs AFTER this context exits (= after commit), never
+    inside it (the ``economy_service.transfer`` precedent).
+    """
+    p = get()
+    async with p.acquire() as conn, conn.transaction():
+        yield conn

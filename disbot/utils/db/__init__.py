@@ -52,13 +52,16 @@ from utils.db.anchors import (
 from utils.db.economy import (
     add_coins,
     claim_daily_if_ready,
+    credit_coins,
     ensure_and_get_economy,
     get_coins,
     get_job_times,
     increment_job,
+    insert_economy_audit,
     set_coins,
     set_daily_claim,
     set_last_worked,
+    try_debit_coins,
 )
 
 # ──────────────────────────────────────────────────────────────────────
@@ -113,7 +116,7 @@ from utils.db.governance import (
     set_subsystem_visibility,
     write_governance_audit,
 )
-from utils.db.inventory import add_item, get_inventory, has_item
+from utils.db.inventory import add_item, get_inventory, has_item, try_grant_unique_item
 from utils.db.moderation import (
     add_prohibited_word,
     add_warning,
@@ -128,7 +131,7 @@ from utils.db.moderation import (
 # ──────────────────────────────────────────────────────────────────────
 # Pool lifecycle + primitives  (kept at the package root for back-compat)
 # ──────────────────────────────────────────────────────────────────────
-from utils.db.pool import close, execute, fetchall, fetchone, get, init
+from utils.db.pool import close, execute, fetchall, fetchone, get, init, transaction
 from utils.db.roles import (
     add_reaction_role,
     clear_role_exemption,
@@ -180,6 +183,7 @@ __all__ = [
     "fetchone",
     "get",
     "init",
+    "transaction",
     # xp
     "add_xp",
     "delete_xp",
@@ -217,17 +221,21 @@ __all__ = [
     # economy
     "add_coins",
     "claim_daily_if_ready",
+    "credit_coins",
     "ensure_and_get_economy",
     "get_coins",
     "get_job_times",
     "increment_job",
+    "insert_economy_audit",
     "set_coins",
     "set_daily_claim",
     "set_last_worked",
+    "try_debit_coins",
     # inventory
     "add_item",
     "get_inventory",
     "has_item",
+    "try_grant_unique_item",
     # governance
     "get_all_cleanup_for_guild",
     "get_all_visibility_for_guild",

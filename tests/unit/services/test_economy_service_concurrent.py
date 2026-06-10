@@ -41,7 +41,7 @@ async def test_credit_under_concurrency_emits_per_call():
             return_value=100,
         ) as add_coins,
         patch(
-            "services.economy_service.db.execute",
+            "services.economy_service.db.insert_economy_audit",
             new_callable=AsyncMock,
         ) as audit,
         patch(
@@ -79,7 +79,7 @@ async def test_debit_under_concurrency_emits_per_call():
             new_callable=AsyncMock,
             return_value=0,
         ),
-        patch("services.economy_service.db.execute", new_callable=AsyncMock),
+        patch("services.economy_service.db.insert_economy_audit", new_callable=AsyncMock),
         patch(
             "services.economy_service.bus.emit",
             new_callable=AsyncMock,
@@ -113,7 +113,7 @@ async def test_debit_insufficient_funds_raises_before_emit():
             "services.economy_service.db.add_coins",
             new_callable=AsyncMock,
         ) as add_coins,
-        patch("services.economy_service.db.execute", new_callable=AsyncMock),
+        patch("services.economy_service.db.insert_economy_audit", new_callable=AsyncMock),
         patch(
             "services.economy_service.bus.emit",
             new_callable=AsyncMock,
