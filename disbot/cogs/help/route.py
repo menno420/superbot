@@ -279,12 +279,13 @@ async def open_route(
 
     if route.kind == "advanced":
         visible_list = projection.advanced_subsystems()
-        view = HelpPanelView(visible_list, page=0)
+        view = HelpPanelView(visible_list, page=0, projection=projection)
         embed = _build_page_embed(
             opener.client,
             visible_list,
             0,
             projection.member_tier,
+            projection=projection,
         )
         return embed, view
 
@@ -336,7 +337,7 @@ async def open_route(
                     exc,
                     exc_info=True,
                 )
-        return build_cog_embed(cog, prefix, route.target), None
+        return build_cog_embed(cog, prefix, route.target, projection=projection), None
 
     if route.kind == "command":
         if route.target is None:
