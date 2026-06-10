@@ -80,6 +80,16 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 
 ### 🖥️ Building / interface (Discord-native UI) — **Next**
 
+- **Next** — **platform-surface mapping campaign** (2026-06-09): two parallel
+  Codex mapping agents (A: user surface · B: admin/platform surface) map every
+  subsystem/command/panel/service against the
+  [mapping standard](planning/platform-surface-mapping-standard-2026-06-09.md)
+  (verified baseline · schema · split · copy-paste prompts), then one
+  merge/implementation session lands the consistency fixes. Mapping-only;
+  Lanes 7–8 / adaptive P1C keep their queued scopes. Gate: #641 merged +
+  re-verify in-flight PR state live before launching the agents (#639/Lane 4
+  merged 2026-06-09; #638 was still an open draft at the late-2026-06-09
+  reconciliation).
 - **Next** — **interface completion**: the live sequence is
   [mother-hub-map](building-roadmap/mother-hub-map.md) (S1–S13).
   [interface-completion-roadmap](building-roadmap/interface-completion-roadmap.md) is the
