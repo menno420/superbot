@@ -168,14 +168,23 @@ section is new work** — it's the ground the vision stands on.
   per-ecosystem currencies (maybe), shared tool identity, deliberate light
   cross-investment links, mining as the proving ground whose patterns (energy,
   ladders, workshop seams, game-XP) get *extracted into the substrate* for
-  ecosystems #2+. Open structured-choice round pending (ecosystem #2 identity ·
-  currency model · cross-investment strength — asked 2026-06-10).
+  ecosystems #2+. **Answered same night (Q-0090, router §37):** ecosystem #2 =
+  **research-decided** (the V-14 teardown picks it from evidence) · currencies =
+  **local per-ecosystem, no exchange** (main coins stay the one universal
+  layer; no arbitrage, sinks stay local) · cross-links = **medium, special
+  tools only** (a few advanced *optional/prestige* tools may require "a little
+  time" in another ecosystem; **no core capability may be gated this way** —
+  the Q-0087 boundary).
 - **V-14 — Competitive feature mining (added 2026-06-10, brainstorm round 5).**
   Owner-endorsed research direction: systematically tear down the big bots'
   ("thousands of features") catalogs, "filter out some of the best ideas and
   combine them into another branch of the bot" — a deep-research session
   producing a verified, dedup-mapped candidate list routed through the normal
-  idea conveyor (nothing auto-approved). Scope question pending (same round).
+  idea conveyor (nothing auto-approved). **Answered same night (Q-0090): scope =
+  game & economy bots first** (Dank Memer / EPIC RPG / OwO / idle bots), and the
+  session is **elevated to gateway status — its findings decide ecosystem #2**
+  of the V-13 open world (owner's pick: "let the research decide"). Queued on
+  the roadmap session queue.
 
 ## 4. Agent response — what I'd add to make it the best bot ever (AG-xx)
 

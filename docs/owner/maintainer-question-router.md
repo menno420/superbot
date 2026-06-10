@@ -3602,3 +3602,35 @@ ideas; this rule *generates new* ones — both run at END.
 (see the session log + ideas README): the bot/caretaker posts a daily
 "what changed in your bot yesterday" summary built from merged PR titles,
 so the owner experiences the network's velocity as a product feature.
+
+### Q-0090 — Open-world federation round: ecosystem #2, currencies, cross-links, research scope
+
+**Area:** Games / open-world architecture (V-13) + research direction (V-14)
+**Type:** Structured choices (agent-initiated round, owner-requested questions)
+**Priority:** High for the games lane (binds all future ecosystem design)
+**Status:** **Answered** (2026-06-10) — **Routed** → vision doc V-13/V-14 (updated in place); roadmap session queue (V-14 research added, gateway status)
+
+**The four picks (structured choices, same conversation):**
+
+1. **Ecosystem #2 = let the research decide.** The V-14 competitive teardown
+   runs first and proposes ecosystem #2 from evidence (candidates the round
+   offered: farming/homestead · combat/dungeons · fishing-promoted). This
+   **elevates V-14 to gateway status** for the open-world expansion.
+2. **Currencies = local per-ecosystem, no exchange** (recommended option).
+   Each ecosystem earns/spends its own currency internally; **main coins stay
+   the one universal layer**; no conversion market — no arbitrage, local
+   sinks, per-ecosystem identity preserved.
+3. **Cross-links = medium, special tools only** (recommended option — and the
+   owner's own words: "invest a little time in another section… for some
+   tools"). A few advanced **optional/prestige-class** tools may require
+   another ecosystem's basics; **no core capability may ever be gated
+   cross-ecosystem** — this is the Q-0087 never-mandatory boundary applied
+   to the federation.
+4. **V-14 research scope = game & economy bots first** (Dank Memer, EPIC RPG,
+   OwO, idle bots) — feeds the open-world design while its momentum is live;
+   admin-suite and engagement teardowns remain later passes.
+
+**Design consequence recorded:** decisions 2+3 are *posture for future
+ecosystems* — current mining/coins are untouched until ecosystem #2 work
+actually starts; the substrate extraction (tools/energy/game-XP as shared
+identity) happens then, on the mining patterns proven by that point.

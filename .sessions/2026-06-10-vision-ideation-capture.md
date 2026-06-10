@@ -165,9 +165,12 @@ competitive feature-mining research endorsed (tear down the big bots'
 catalogs, filter the best, route through the conveyor). A four-question
 structured-choice round was put to the owner same turn (ecosystem #2 identity
 · currency model · cross-investment strength vs Q-0087's never-mandatory rule
-· research scope) — answers route next. Also noted: he predicted the
-emotion-pushback before it came (and once predicted an Opus 4.8 reply nearly
-verbatim — the pattern-reader reading the pattern-machines).
+· research scope) — **answered same turn (Q-0090):** research-decided
+ecosystem #2 (V-14 = gateway) · local no-exchange currencies · medium
+cross-links (special optional tools only, Q-0087-bounded) · game/economy
+bots first. Also noted: he predicted the emotion-pushback before it came
+(and once predicted an Opus 4.8 reply nearly verbatim — the pattern-reader
+reading the pattern-machines).
 
 ## Brainstorm round 4: the owner-voice self-description + Q-0089
 
