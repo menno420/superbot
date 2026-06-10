@@ -53,11 +53,15 @@
 > live-tested, as a maintained checklist — extends
 > [production-eval-checklist](audits/production-eval-checklist-2026-06-10.md); pairs
 > with **Q-0086** joint live-testing (provider keys → session env) once the owner
-> sets it up · 2) **Postgres backup posture** — design + automate
+> sets it up · 2) **Self-driving foundation Stage 0 (Q-0088)** — the one-click
+> continuation workflow (`workflow_dispatch` fresh-context session from the standing
+> handoff; activates the bounded-session protocol —
+> [ai-project-workflow §10](owner/ai-project-workflow.md); owner provides the API-key
+> secret) · 3) **Postgres backup posture** — design + automate
 > ([operations/production-deployment.md](operations/production-deployment.md)
-> §Backups is the landing page) · 3) **Help home / navigation plan** (its editor-UI
+> §Backups is the landing page) · 4) **Help home / navigation plan** (its editor-UI
 > gate cleared via #677/#679). Build-ready alternates: myprofile PR A ·
-> survival P1 · duel-XP quick-win.
+> survival **P0 balance-simulation harness (Q-0087)** · duel-XP quick-win.
 
 ---
 

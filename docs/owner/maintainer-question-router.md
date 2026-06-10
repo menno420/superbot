@@ -3369,7 +3369,7 @@ sleeping") until reset.
 **Area:** Collaboration model / agent ecosystem
 **Type:** Owner north-star decision (agent-initiated deep round)
 **Priority:** Medium (orients tooling/health/deploy work; changes nothing today)
-**Status:** Answered + clarified (2026-06-10) — **Routed** → collaboration-model north-star note; bot-awareness lane cites it when resumed
+**Status:** Answered + clarified (2026-06-10) — **Routed** → collaboration-model north-star note; bot-awareness lane cites it when resumed. **Timing corrected same day by Q-0088 (§37): the foundation starts now, small** — the end-state remains staged/not-near-term.
 
 **Question:** Today agents build and push; the owner merges, deploys,
 prod-checks; a 3am breakage waits for his next session. How self-driving
@@ -3499,3 +3499,71 @@ never print/echo them, never write them to a file/commit/PR/log, never send
 them to any tool output; use them only via the bot's own env mechanisms.
 Scope note: this gives sessions the *test bot* + provider keys, not Railway
 access — production logs/dashboard stay owner-side.
+
+## 37. Brainstorm round 2 — balance philosophy + the self-driving correction — 2026-06-10 (same conversation)
+
+### Q-0087 — RPG balance philosophy: casual-core, grinder-prestige, never mandatory — and simulation approved as the balance methodology
+
+**Area:** Games / RPG survival design (binds the survival plan's numbers)
+**Type:** Owner design principle (unprompted, reacting to the simulation idea)
+**Priority:** High for the games lane (it defines what "balanced" means)
+**Status:** **Answered** (2026-06-10) — **Routed** → survival plan **D0** (philosophy) + **P0** (simulation harness) + **G2** (numbers confirmed from sim outputs)
+
+**Owner statement (2026-06-10, verbatim):** "that would be a great way to
+test if my game idea would be fun and playable for everyone, we can decide a
+perfect balance between gaining items and spending them, so users could just
+play for a few minutes a day and gain real progress, but there should also be
+a reward for grinders who play for a long time and achieve certain goals, tho
+it should never feel like those goals are mandatory to increase your level
+and the things you can do."
+
+**Reading:** dual-track progression — the **casual track owns capability**
+(levels, unlocks, "the things you can do"); the **grind track owns prestige
+and surplus** (records, surplus wealth, leaderboards), never core capability.
+Plus an explicit methodology approval: **simulate before shipping** — the
+survival plan now carries a P0 balance-simulation harness whose output bands
+(casual progress/day · grinder surplus/hour · the capability-gap
+"mandatory-feel" metric) ship as CI-pinned tests, and G2's owner round
+presents simulation evidence instead of guesses.
+
+### Q-0088 — Self-driving timing corrected: build the foundation now, small — bounded sessions + automatic continuation
+
+**Area:** Collaboration model / agent ecosystem (corrects Q-0083's timing)
+**Type:** Owner correction + direction (unprompted, explicit self-correction)
+**Priority:** High (changes session protocol design; queues a build)
+**Status:** **Direction set** (2026-06-10) — **Routed** → `ai-project-workflow.md` §10 (the foundation design); roadmap session queue (Stage 0 build); collaboration-model north-star note updated; Q-0083 entry cross-stamped
+
+**Owner statement (2026-06-10, verbatim core):** "at the moment the level of
+AI is so advanced that the only thing I should realistically be doing is
+adding more ideas and setting strict guidelines on what the desired functions
+and UX should be, apart from that everything should be automated, and I know
+I said that that is an idea for much later, but I have to correct myself, and
+I'm not saying I want everything automated right away, but I do think we
+should at least create a foundation, and implement this in a small way."
+
+**Two operational problems he put on record (the foundation's requirements):**
+
+1. **Runaway unguided sessions:** "a few times now I thought a session was
+   done, but then it produced a few more PRs unguided, and that caused one
+   duplicate function to be build" (the #678-class collision — Q-0060's
+   recurrence data point is the same event family).
+2. **Long-context degradation:** "you can work pretty well up untill you get
+   to about 700-800K context, and then your code noticably starts to become
+   a little worse over time."
+
+**His proposed shape (verbatim):** "the best thing would be to have a clear
+stop condition for each session, like, always do 2 tasks and clean up the
+docs + guide the next session, but that would only work if we have a way to
+automatically start a next session aswell."
+
+**The routed design (workflow §10):** a **bounded-session protocol**
+(~2 substantial tasks → ledger/docs cleanup → handoff → END; wrap before
+~700K context; no new unguided PRs past declared scope — extra work goes into
+the handoff queue, not the session) + a **staged continuation mechanism**:
+**Stage 0** = a `workflow_dispatch` GitHub Action that starts a fresh
+Claude Code session from the standing handoff (one click, fresh context, no
+schedule, no surprise spend) · **Stage 1** = the scheduled caretaker (cron)
+once Stage 0 has proven itself. The protocol **activates when Stage 0
+lands** (his conditional, honored). Owner provides: the Anthropic API key as
+a repo secret + a per-run budget choice. Until activation, the ~700K
+guidance + no-unguided-PRs rule apply as journal guidance immediately.

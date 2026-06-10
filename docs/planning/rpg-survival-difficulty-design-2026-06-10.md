@@ -43,6 +43,19 @@ single-party as its first constraint.
 
 ## Design
 
+### D0 — Balance philosophy (Q-0087, 2026-06-10 — binding on every number below)
+
+The owner's stated target (verbatim core in router §37): **a few minutes a day
+must earn real progress**, grinders get **real rewards for long play and
+goals**, and grinder goals must **never feel mandatory** for levels or core
+capabilities. Operationally: every knob in the D1 contract table is tuned to a
+**dual-track curve** — the casual track carries *capability* progression
+(levels, unlocks, story); the grind track carries *prestige and surplus*
+(records, cosmetics-class rewards, leaderboard standing, faster-but-never-
+exclusive paths). A number that gates a core capability behind grind-hours
+violates D0 and fails review. The **P0 simulation harness** (Phasing, below)
+is the methodology that proves a tuning satisfies this before P1 ships.
+
 ### D1 — The difficulty contract (V-05 + Q-0078)
 
 One new per-player field: `difficulty` (`easy` default · `medium` · `hard`).
@@ -130,6 +143,20 @@ enough to ship as a quick-win ahead of the rest of this plan.
 
 ## Phasing (each ≈ one bounded PR, promoted individually)
 
+**P0 — balance simulation harness (added 2026-06-10, Q-0087 — owner approved
+simulation as the balance methodology).** Before P1: a pure-python model of
+the D1 contract table + activity expected values (no Discord, no DB — repo
+code imports the same constants the game will use). It simulates player-days
+under behavior profiles (casual ≈ minutes/day · regular · grinder ≈ hours/day)
+across difficulties and outputs three curves: **casual progress/day** (must
+stay meaningful at every level), **grinder surplus per extra hour** (real but
+diminishing), and the **mandatory-feel metric** — the *core-capability* gap
+between a pure-casual and a grinder at the same calendar week (must stay
+inside a pinned band; prestige/surplus gap may grow, capability gap may not —
+D0). The bands ship as **tests**, so every future balance change re-proves
+the philosophy in CI. G2's structured-choices round presents simulation
+outputs, not guesses.
+
 1. **P1 — Difficulty choice + energy.** Contract table, World-panel picker
    (one-way ascent enforced at the mutation seam), energy on Medium/Hard,
    level-up refill, board flags. *Easy-mode byte-identical pin test is the
@@ -152,7 +179,7 @@ enough to ship as a quick-win ahead of the rest of this plan.
   interleaves only with an explicit owner pick.
 - **G2 — owner confirms the numbers** (T-2): Medium's energy existence +
   cap/regen, Hard's bonuses — at P1 build time, as a structured-choices round
-  over the contract table.
+  over the contract table **backed by P0 simulation outputs (Q-0087)**.
 - **G3 — `docs/ideas/README.md` gates** (ownership ✓ mining workflow · reuse ✓
   extends shipped state/services · risk: balance only · mechanics listed
   here).
