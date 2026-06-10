@@ -4,6 +4,10 @@ After the routing-consistency PR, typed Help and the Help dropdown both
 go through :func:`cogs.help_cog._resolve_route` and
 :func:`cogs.help_cog._open_route`. These tests verify the resolver
 + opener pipeline lands on the same surface as the dropdown would.
+
+Batch 6 (HLP-2): ``_open_route`` consumes the audience's
+:class:`HelpProjection`, so each test builds one from the visible set +
+tier it previously passed as separate kwargs.
 """
 
 from __future__ import annotations
@@ -14,6 +18,19 @@ import discord
 import pytest
 
 from cogs import help_cog
+from governance.models import VisibilityResult
+from services.help_projection import HelpProjection
+
+
+def _projection(visible: set[str], tier: str) -> HelpProjection:
+    return HelpProjection.from_visibility(
+        VisibilityResult(
+            visible_subsystems=visible,
+            member_tier=tier,
+            resolved_from={},
+            traces={},
+        ),
+    )
 
 
 def _opener() -> help_cog.HelpOpener:
@@ -60,8 +77,7 @@ async def test_help_games_opens_games_hub_panel(monkeypatch):
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"games"},
-        member_tier="user",
+        projection=_projection({"games"}, "user"),
     )
     fake_cog.build_help_menu_view.assert_awaited_once()
     assert embed is fake_embed
@@ -92,8 +108,7 @@ async def test_help_platform_opens_platform_hub_via_dedicated_builder(monkeypatc
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"diagnostic"},
-        member_tier="administrator",
+        projection=_projection({"diagnostic"}, "administrator"),
     )
     fake_cog.build_platform_help_menu_view.assert_awaited_once()
     fake_cog.build_help_menu_view.assert_not_called()
@@ -122,8 +137,7 @@ async def test_help_diagnostic_singular_opens_platform_hub(monkeypatch):
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"diagnostic"},
-        member_tier="administrator",
+        projection=_projection({"diagnostic"}, "administrator"),
     )
     fake_cog.build_platform_help_menu_view.assert_awaited_once()
     assert embed.title == "Platform hub"
@@ -153,8 +167,7 @@ async def test_help_diagnostics_plural_opens_diagnostics_hub(monkeypatch):
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"diagnostic"},
-        member_tier="administrator",
+        projection=_projection({"diagnostic"}, "administrator"),
     )
     fake_cog.build_help_menu_view.assert_awaited_once()
     fake_cog.build_platform_help_menu_view.assert_not_called()
@@ -185,8 +198,7 @@ async def test_help_blackjack_opens_blackjack_panel(monkeypatch):
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"blackjack"},
-        member_tier="user",
+        projection=_projection({"blackjack"}, "user"),
     )
     fake_cog.build_help_menu_view.assert_awaited_once()
     assert embed is fake_embed
@@ -210,8 +222,7 @@ async def test_subsystem_route_falls_back_to_command_list_on_hook_failure(monkey
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"blackjack"},
-        member_tier="user",
+        projection=_projection({"blackjack"}, "user"),
     )
     assert view is None  # command-list fallback is embed-only
     assert isinstance(embed, discord.Embed)
@@ -232,8 +243,7 @@ async def test_help_advanced_opens_help_panel_view():
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems={"games", "economy"},
-        member_tier="user",
+        projection=_projection({"games", "economy"}, "user"),
     )
     assert isinstance(view, help_cog.HelpPanelView)
     assert isinstance(embed, discord.Embed)
@@ -253,6 +263,11 @@ async def test_help_command_name_returns_single_command_embed():
     fake_cmd.aliases = []
     fake_cmd.signature = ""
     fake_cmd.help = "Claim your daily reward."
+    # HLP-2: the command route applies the shared display filter, which
+    # reads these attributes — a bare MagicMock would be truthy-hidden.
+    fake_cmd.hidden = False
+    fake_cmd.enabled = True
+    fake_cmd.extras = {}
     opener.client.get_command = MagicMock(return_value=fake_cmd)
 
     route = help_cog._resolve_route("daily", bot=opener.client)
@@ -261,8 +276,7 @@ async def test_help_command_name_returns_single_command_embed():
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems=set(),
-        member_tier="user",
+        projection=_projection(set(), "user"),
     )
     assert view is None
     assert "daily" in (embed.title or "")
@@ -283,8 +297,7 @@ async def test_unknown_name_returns_not_found_embed():
     embed, view = await help_cog._open_route(
         route,
         opener,
-        visible_subsystems=set(),
-        member_tier="user",
+        projection=_projection(set(), "user"),
     )
     assert view is None
     assert "not-a-real-thing" in (embed.description or "")

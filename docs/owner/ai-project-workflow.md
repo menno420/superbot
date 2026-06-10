@@ -220,3 +220,34 @@ one agent each. Empirical result: **zero code conflicts, one mechanical docs con
 - **Do not add coordination machinery.** The observed total overhead was one mechanical
   merge; any session-ledger / lock protocol would cost more than it saves. The
   per-section ownership table above + the rules here are sufficient.
+
+### Cross-cutting ledger discipline (added 2026-06-10 — the recurring-conflict fix)
+
+Three parallel-merge conflicts in one day (#655×#653, #655×#656, #658×#657) shared
+one root cause: **`docs/current-state.md`'s ▶ Next-action was a single mega-line
+every session had to edit.** Git merges by line — a shared line is a guaranteed
+conflict; a shared *file* with per-lane lines is not. (The journal already solved
+its own instance of this class by moving the Session Log to per-session
+`.sessions/` files, 2026-06-07; the ledgers were the remaining hotspot.) The
+standing rules:
+
+1. **The ▶ Next-action block is per-lane bullets — edit ONLY your lane's bullet.**
+   One bullet per lane (consolidated batches · BTD6 · gated · the numbered lane
+   list below it). A session that didn't work a lane never touches that lane's
+   bullet. Two sessions in different lanes now auto-merge.
+2. **Session narrative goes in `.sessions/<date>-<slug>.md` + the PR body — never
+   in the ledger.** The ledger bullet is one line of *state* ("X shipped in #NNN;
+   next: Y"), not the story. The `.sessions/` file is the agent-owned,
+   conflict-free write-ahead record (each agent already writes its own).
+3. **Ledger distribution rides the existing REVIEW cadence** (journal protocol,
+   every ~3–5 sessions): the reviewing session reconciles the ledger bullets +
+   `roadmap.md` rows against live GitHub and the recent `.sessions/` files —
+   exactly the "session files get distributed into the right docs every few
+   sessions" model, mapped onto a step that already exists. Between reviews, a
+   slightly-stale ledger is by design ("verify open PRs against live GitHub" is
+   already the doc's own rule).
+4. **`docs/roadmap.md`: same discipline** — edit only your area's section/row;
+   the at-a-glance table row for another lane is not yours to refresh.
+5. **When a conflict still lands** (same-lane parallel work, or both sides edited
+   the thin header), resolution stays **UNION, second-to-merge reconciles**
+   (Q-0060) — now a one-bullet merge instead of a mega-line rewrite.

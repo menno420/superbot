@@ -61,7 +61,13 @@ SUBSYSTEMS: dict[str, dict] = {
         "description": "Cog management, server stats, diagnostics",
         "emoji": "⚙️",
         "color": ADMIN_COLOR.value,
-        "visibility_tier": "owner",
+        # Q-0074 (2026-06-10): administrator-visible placement, matching the
+        # Admin hub's minimum_tier and the `!adminmenu` admission gate
+        # (`has_permissions(administrator=True)`). The genuinely dangerous
+        # actions (cog load/unload/reload, slash sync) keep their
+        # `commands.is_owner()` execution checks — placement is display,
+        # not admission.
+        "visibility_tier": "administrator",
         "visibility_mode": "normal",
         "category": "admin",
         "tags": ["admin", "cogs", "management", "diagnostics"],

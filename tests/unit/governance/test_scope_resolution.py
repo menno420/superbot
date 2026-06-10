@@ -193,7 +193,8 @@ async def test_internal_mode_subsystem_never_visible(mock_db):
 
 @pytest.mark.asyncio
 async def test_high_tier_subsystem_invisible_to_user(mock_db):
-    """admin requires tier='owner' — user-tier member should not see it."""
+    """admin requires tier='administrator' (Q-0074) — user-tier member
+    should not see it."""
     ctx = make_ctx()  # member=None → tier='user'
     result = await resolve_visibility(ctx)
     assert "admin" not in result.visible_subsystems
