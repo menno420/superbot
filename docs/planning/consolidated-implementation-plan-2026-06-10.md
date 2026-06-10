@@ -128,7 +128,13 @@ Batches 1+2 touch disjoint files and may run as parallel sessions
 Batches 5→6 are strictly sequential; Batch 3 should not run beside 1 (both touch
 services) without partitioning by module.
 
-### Batch 1 — Low-risk runtime truth/clarity (RS04 · RS09 · RS13 · RS14 · RS16 · RS11-rename) — ready
+### Batch 1 — Low-risk runtime truth/clarity (RS04 · RS09 · RS13 · RS14 · RS16 · RS11-rename) — executed in **#650** (2026-06-10, verify merged)
+
+> Outcome notes: RS04 = no-op hook **deleted** (no binding read cache exists —
+> contract + 2 pinning tests); RS09 = shell **deleted** (consumer proof in the PR);
+> RS14 = `panel_command` **deprecated** (known-list canonical until Settings
+> Phase 2); RS11 rename = `ensure_and_get_economy`. Details: PR #650 +
+> `.sessions/2026-06-10-batch1-runtime-truth-clarity.md`.
 
 - **Objective:** make names/contracts say what the code does; retire the dead shell.
 - **Files:** `disbot/services/binding_mutation.py` (`_invalidate_cache` —
