@@ -295,7 +295,10 @@ class SummaryView(BaseView):
 
         try:
             embed = SettingsHubView.build_embed()
-            view = SettingsHubView(interaction.user)
+            view = await SettingsHubView.create(
+                interaction.user,
+                interaction.guild_id,
+            )
         except Exception:
             logger.exception(
                 "summary._open_settings: SettingsHubView build failed",

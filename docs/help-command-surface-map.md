@@ -3,9 +3,11 @@
 > **Status:** `binding` — Cog/command surface inventory; pinned to code by a doc-test.
 
 Source-of-truth inventory for every loaded cog/subsystem and how each is
-reachable today through Help, hubs, and typed commands. Captured at HEAD
-`38353aa` (post-PR-#142, post-PR-#143). The Help routing unification
-landed in PR #142; this doc now reflects the merged state, not the
+reachable today through Help, hubs, and typed commands. Originally captured at
+HEAD `38353aa` (post-PR-#142, post-PR-#143); prose counts re-verified against
+source 2026-06-09 at `7534e3e` (tables were already correct; scoreboard
+**Lane 8** still owns pinning these counts with tests). The Help routing
+unification landed in PR #142; this doc reflects the merged state, not the
 pre-PR perspective.
 
 The columns that matter most are **owner**, **panel**, **Help route**,
@@ -20,8 +22,9 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 23 of 24 loaded cogs expose `build_help_menu_view`. `help_cog` itself
-  is the exception — it IS the Help surface, so there is no hook.
+- 28 of the 29 subsystem-owning cogs expose `build_help_menu_view`.
+  `help_cog` itself is the exception — it IS the Help surface, so there
+  is no hook.
 - The hub key `diagnostic` is "Platform / Diagnostics". The override
   table `HUB_PANEL_BUILDERS["diagnostic"] = "build_platform_help_menu_view"`
   routes hub → Platform Hub. Subsystem aliases `diagnostics`/`diag`
@@ -29,7 +32,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 1. Mother hubs
 
-9 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
+10 hubs in `disbot/utils/hub_registry.py`. Every hub key matches a
 `SUBSYSTEMS` key so Help can resolve a hub entry to its host cog.
 
 | key | display | entry | host cog | panel | min tier |
@@ -47,8 +50,11 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 2. Subsystem inventory
 
-26 cogs in `disbot/config.py:33-58`. 25 of 26 expose
-`build_help_menu_view`; only `help_cog` itself does not. The Help route
+29 registered subsystems in `disbot/utils/subsystem_registry.py`, each with
+one owning cog. (`disbot/config.py` `INITIAL_EXTENSIONS` loads 36 extensions —
+the 7 extras are `bootstrap_access_cog`, `setup_cog`, and the five split BTD6
+cogs, which are not one-to-one Help subsystems.) 28 of the 29 subsystem cogs
+expose `build_help_menu_view`; only `help_cog` itself does not. The Help route
 resolver therefore opens a real panel for every subsystem except `help`,
 and only falls back to the command-list embed when the hook is missing
 or raises.
