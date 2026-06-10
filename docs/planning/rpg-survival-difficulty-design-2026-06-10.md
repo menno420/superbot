@@ -195,6 +195,10 @@ outputs, not guesses.
 
 ## Open (non-blocking, for the build sessions)
 
+- **Fishing may be promoted from P3 activity to ecosystem #2** (V-13/Q-0090 —
+  the 2026-06-10 teardown's verdict, owner ratification pending): P3's design
+  should keep its seams ecosystem-ready (own loot ladder, local-currency hook,
+  collection-log hook) so promotion extends rather than rewrites it.
 - Whether Medium death (P2) costs a small coin/food penalty or only time.
 - Fishing loot table depth (own ladder vs. reskinned ore weights at v1).
 - Whether cooked food may later be sellable (market interaction — economy

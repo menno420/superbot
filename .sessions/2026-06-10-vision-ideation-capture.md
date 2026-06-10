@@ -168,7 +168,21 @@ structured-choice round was put to the owner same turn (ecosystem #2 identity
 · research scope) — **answered same turn (Q-0090):** research-decided
 ecosystem #2 (V-14 = gateway) · local no-exchange currencies · medium
 cross-links (special optional tools only, Q-0087-bounded) · game/economy
-bots first. Round-5 tail: **V-15 — migrate game stats from incumbent bots**
+bots first. **Round 6 (post-midnight): the V-14 research ran in-conversation**
+— three parallel background agents (open-source ecosystems · game/economy
+giants · V-15 surfaces; the third initially ended prematurely after spawning
+its own sub-agents, whose orphaned reports then routed to the main session —
+lesson: research-agent briefs should say "do NOT spawn sub-agents; your final
+message must BE the report"). Output:
+[`competitive-teardown-2026-06-10.md`](../docs/ideas/competitive-teardown-2026-06-10.md)
+(~95 features, 30 scored harvest candidates, retention-engine analysis,
+**fishing as the ecosystem-#2 verdict — ratification pending**, V-15 MEE6
+endpoint live-verified incl. the exact XP curve). Prediction game played and
+scored honestly in-chat (~2.5/5: farming guess wrong → fishing; ritual-gap,
+shared-engine, and Lurkr-prior-art predictions right; Amari "clean API" guess
+wrong — that API is dead). Owner anecdote logged: a past Opus repo-audit
+spawned 22 parallel Sonnets. Round-5 tail: **V-15 — migrate game stats from
+incumbent bots**
 (direct API where exposed; level-channel history parsing as the bot-agnostic
 fallback; draft-lane import; rider on the V-14 teardown to catalog export/API
 surfaces). Also noted: he predicted the emotion-pushback before it came
