@@ -1,7 +1,7 @@
 # Settings / bindings / provisioning subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + binding contracts win.
-> **Last updated:** 2026-06-09.
+> **Last updated:** 2026-06-10 (Phase 2 #654 + Help-overlay shipped-state corrections).
 
 ## What & where
 
@@ -43,8 +43,9 @@ resource-pointer **bindings**, and confirmed **resource provisioning**. Start in
 - **Hub discovery is actionable-groups-only (audit Phases 0+1, shipped #640,
   2026-06-09):** `services/customization_catalogue.actionable_settings_groups()` is
   the one inclusion rule (editable scalar · binding · provisionable resource ·
-  declared domain panel — `DOMAIN_CONFIG_SUBSYSTEMS`, a Phase 1 seam until Phase 2's
-  real registrations); the hub select paginates past Discord's 25-option cap and
+  declared domain panel — real `DomainPanelSpec` registrations since **Phase 2,
+  #654 2026-06-10**; the Phase 1 `DOMAIN_CONFIG_SUBSYSTEMS` frozenset is retired,
+  pinned gone by `test_domain_panel_declarations.py`); the hub select paginates past Discord's 25-option cap and
   `SettingsHubView.create(author, guild_id)` marks routed-off groups via per-guild
   cog routing while keeping them reachable. Audit + phase queue:
   [settings audit §11](../planning/settings-cog-centralization-audit-2026-06-09.md).
@@ -64,7 +65,7 @@ safe-disable behavior before implementation.
 - **`docs/planning/ai-btd6-answerability-roadmap-2026-06-09.md`** (`plan`) — conditionally plans one AI-settings vertical slice after a centralized effective-settings introspection read model exists; it does not approve a broad Settings Manager rewrite.
 - **[`docs/planning/settings-cog-centralization-audit-2026-06-09.md`](../planning/settings-cog-centralization-audit-2026-06-09.md)** (`plan`) — source-verified audit of scalar settings, settings-adjacent domains, UI discovery/editability gaps, and the phased convergence roadmap.
 
-- **[Help cog customization audit and roadmap](../planning/help-cog-customization-audit-2026-06-09.md)** (`plan`) — maps Help/hub/access/customization ownership and recommends a catalogue + projection + audited presentation-overlay sequence; it does not approve runtime customization before Q-0055–Q-0059.
+- **[Help cog customization audit and roadmap](../planning/help-cog-customization-audit-2026-06-09.md)** (`plan`) — maps Help/hub/access/customization ownership; its catalogue + projection + audited presentation-overlay sequence **shipped 2026-06-10** (Q-0055–Q-0059 answered; seam #657, overlay store #659) — the overlay **editor UI** (audit Phase 5) is the open tail.
 
 ## Ideas (not approved)
 

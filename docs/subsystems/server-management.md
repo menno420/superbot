@@ -1,7 +1,7 @@
 # Server management subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + the status tracker win.
-> **Last updated:** 2026-06-08.
+> **Last updated:** 2026-06-10 (#656 Access Map/Help Preview subpanels recorded).
 
 ## What & where
 
@@ -135,7 +135,12 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   `server_management` subsystem + hub (owner decision Q-0016; key snake_cased per Q-0026) via
   `services/server_management_hub.py` + `views/server_management/hub.py` +
   `cogs/server_management_cog.py`. The tracker's only remaining server-management item is the
-  **gated PR13 AI template layer**.
+  **gated PR13 AI template layer**. **2026-06-10 (#656, adaptive-platform P1C):** the hub
+  gained the read-only **Access Map + Help Preview staff subpanels**
+  (`views/server_management/access_map.py` — display-only, AST-pinned; first
+  `project_access_map` consumers). *Known drift (EOD verification §4): the Help
+  Preview predates the #657 Help projection seam and re-derives Help truth from
+  access axes — migrate it onto `project_help_with_execution` in a Help-lane slice.*
 - Known UX follow-ups: moderation member quicksearch via `discord.ui.UserSelect`
   (`unban` remains ID-based); bulk **Clear missing** on time/XP panels; selector-ize
   Edit Role.

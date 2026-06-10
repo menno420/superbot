@@ -418,6 +418,53 @@ async def test_apply_quick_craft_crafts_equips_and_clears_marker():
 
 
 @pytest.mark.asyncio
+async def test_apply_quick_craft_awards_crafting_xp_in_txn():
+    # quick_craft must award its documented game-XP (game_xp_service._AWARDS
+    # has quick_craft = 8) on the op's own conn, exactly like craft — pin for
+    # the 2026-06-10 verification finding that the award was silently skipped.
+    from services import game_xp_service
+
+    with patch(
+        "services.mining_workflow.db.get_last_broken",
+        new_callable=AsyncMock,
+        return_value="torch",
+    ), patch(
+        "services.mining_workflow.load_recipes",
+        return_value={"torch": {"wood": 2}},
+    ), patch(
+        "services.mining_workflow.db.get_mining_inventory",
+        new_callable=AsyncMock,
+        return_value={"wood": 4},
+    ), patch(
+        "services.mining_workflow.db.apply_inventory_deltas",
+        new_callable=AsyncMock,
+    ), patch(
+        "services.mining_workflow.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "services.mining_workflow.db.equip_item",
+        new_callable=AsyncMock,
+    ), patch(
+        "services.mining_workflow.db.set_last_broken",
+        new_callable=AsyncMock,
+    ), patch(
+        "services.mining_workflow.game_xp_service.award",
+        new_callable=AsyncMock,
+        return_value=None,
+    ) as mock_award:
+        result = await mining_workflow.quick_craft(1, 7)
+    assert result.ok
+    mock_award.assert_awaited_once_with(
+        7,
+        1,
+        game=game_xp_service.GAME_CRAFTING,
+        action="quick_craft",
+        conn=ANY,
+    )
+
+
+@pytest.mark.asyncio
 async def test_apply_quick_craft_keeps_marker_when_craft_fails():
     with patch(
         "services.mining_workflow.db.get_last_broken",

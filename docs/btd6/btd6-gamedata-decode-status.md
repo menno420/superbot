@@ -20,7 +20,7 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards DECODED (#653+#655) · Ask parity + dark renders (#658) · items 6a–c + the Navarch routing fix (#662); next = item 3 (demand-driven) + item 4 (maintainer spot-check)**)
+## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards DECODED (#653+#655) · Ask parity + dark renders (#658) · items 6a–c + the Navarch routing fix (#662) · item 7 slice 1 + zero-fact sweep (#668; probe tool #666); next = item 3 (demand-driven) + item 4 (maintainer spot-check)**)
 
 > **2026-06-10 (PR #662 — the Navarch live miss + items 6a–c):** the first
 > *demand-driven* item-3-style question arrived via screenshot ("does the
@@ -190,7 +190,8 @@ works** (the traps we hit), and what is still un-decoded.
    names and rendered as ×0.25/×0.05 *reductions* — remapped to the
    `*Percentage` family (+25% pierce, +5% range) with transplant-skips.
 7. ~~**Conversation-entity grounding for follow-up turns**~~ — **slice 1
-   SHIPPED 2026-06-10** (same day it was planned:
+   SHIPPED 2026-06-10 in PR #668** (same day it was planned; the
+   `btd6_probe.py` triage tool + the plan itself landed in **#666**:
    [`../planning/btd6-conversation-grounding-plan-2026-06-10.md`](../planning/btd6-conversation-grounding-plan-2026-06-10.md)):
    a zero-fact `build()` with channel identity (the NL mention path) grounds
    the newest recent conversation turn that resolves entities — typically

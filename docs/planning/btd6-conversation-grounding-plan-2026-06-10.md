@@ -1,6 +1,6 @@
 # BTD6 conversation-carryover grounding — design plan
 
-> **Status:** `plan` — **slice 1 (§3) EXECUTED 2026-06-10**, same day, after the
+> **Status:** `plan` — **slice 1 (§3) EXECUTED 2026-06-10 in PR #668**, same day, after the
 > maintainer asked what else could ship without his testing ("anything else you
 > can do right now") — the act-envelope call: deterministic, read-only, no new
 > state, regression-pinned. §4's first open question resolved in-code: the gate
@@ -53,6 +53,9 @@ seam.** In `_gather_feature_facts` (BTD6 branch only):
 4. For each prior turn, run **entity resolution only** (the resolver + the
    #662 name passes) until one yields entities; rebuild grounding for the
    *current* question text augmented with those entity names.
+   *(As built in #668: the implementation grounds the prior turn's text
+   directly via a nested identity-free `build()` — functionally equivalent
+   and simpler; raw turn text still never enters the fact payload.)*
 5. Label every carried fact's origin in one leading line — e.g.
    `[btd6_carryover] Grounding "<entity>" from the earlier conversation
    turn; if the user meant something else, ask.` — so the model can hedge
