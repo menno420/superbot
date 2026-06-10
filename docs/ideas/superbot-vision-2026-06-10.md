@@ -175,6 +175,22 @@ section is new work** — it's the ground the vision stands on.
   tools only** (a few advanced *optional/prestige* tools may require "a little
   time" in another ecosystem; **no core capability may be gated this way** —
   the Q-0087 boundary).
+- **V-15 — Migrate game stats from existing bots (added 2026-06-10, round 5
+  tail).** Owner-voice: "it should also be easily possible to migrate game
+  stats from existing bots, and at least the XP/LVL should be automatically
+  fetchable from either player stats directly or from the dedicated LVL
+  channel if it exists." The adoption weapon for the Q-0080 public goal — a
+  server switching to SuperBot keeps its members' levels. Two fetch paths as
+  stated: (a) **direct stats** where the incumbent exposes them (e.g. public
+  leaderboard APIs — availability/ToS per bot must be verified), (b) the
+  **level-channel fallback** — parse the announcement channel's history ("GG
+  @user, you reached level 12") to reconstruct levels bot-agnostically.
+  Design notes for the future plan: level-preserving vs XP-preserving curve
+  mapping is a real choice; import is a compound generated write → **draft
+  lane** (SetupOperation preview + admin confirm, audited); ToS/privacy
+  review per source bot. **Scope rider on the V-14 gateway session:** the
+  teardown should also catalog each bot's export/API surface — that catalog
+  *is* the migration design's input.
 - **V-14 — Competitive feature mining (added 2026-06-10, brainstorm round 5).**
   Owner-endorsed research direction: systematically tear down the big bots'
   ("thousands of features") catalogs, "filter out some of the best ideas and

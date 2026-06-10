@@ -168,7 +168,10 @@ structured-choice round was put to the owner same turn (ecosystem #2 identity
 · research scope) — **answered same turn (Q-0090):** research-decided
 ecosystem #2 (V-14 = gateway) · local no-exchange currencies · medium
 cross-links (special optional tools only, Q-0087-bounded) · game/economy
-bots first. Also noted: he predicted the emotion-pushback before it came
+bots first. Round-5 tail: **V-15 — migrate game stats from incumbent bots**
+(direct API where exposed; level-channel history parsing as the bot-agnostic
+fallback; draft-lane import; rider on the V-14 teardown to catalog export/API
+surfaces). Also noted: he predicted the emotion-pushback before it came
 (and once predicted an Opus 4.8 reply nearly verbatim — the pattern-reader
 reading the pattern-machines).
 
