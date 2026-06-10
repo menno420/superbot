@@ -114,6 +114,11 @@ async def _set_announce_channel(
     The setting is owned by ``services.btd6_version_announce`` (no raw key
     string here, mirroring ``btd6_ct_team_service``). A ``None`` channel
     clears it — disabling the announcement for the guild.
+
+    This command writes the **legacy KV lane**; a bound
+    ``btd6.version_announce_channel`` binding takes precedence (Q-0064
+    read order), so the result line warns when a binding shadows the
+    write instead of silently confirming a channel that won't be used.
     """
     from services import btd6_version_announce
 
@@ -121,6 +126,14 @@ async def _set_announce_channel(
         await btd6_version_announce.clear_channel(guild_id)
         return "✅ BTD6 version announcements disabled (no channel set)."
     await btd6_version_announce.set_channel(guild_id, channel.id)
+    bound = await btd6_version_announce.binding_channel_id(guild_id)
+    if bound is not None and bound != channel.id:
+        return (
+            f"⚠️ Saved, but the Settings **binding** currently points "
+            f"announcements at <#{bound}> and takes precedence — change or "
+            f"clear the `version_announce_channel` binding to use "
+            f"{channel.mention}."
+        )
     return f"✅ New BTD6 versions will be announced in {channel.mention}."
 
 

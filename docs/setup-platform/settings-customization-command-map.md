@@ -1156,17 +1156,21 @@ Subsystems (29): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
     `BTD6_CACHE_FRESHNESS_WARNING_HOURS`
     (in `disbot/utils/settings_keys/btd6_cache.py`);
     `BTD6_STRATEGY_SUBMISSION_CHANNEL` (M4),
-    `BTD6_CT_GROUP_ID` (the per-guild Contested Territory bracket id pasted
-    via `!btd6 ctteam`, read/written through
-    `services.btd6_ct_team_service`; a runtime pointer, no SettingSpec), and
-    `BTD6_VERSION_ANNOUNCEMENT_CHANNEL` (the per-guild channel where new BTD6
-    version announcements are posted, set via `!btd6ops announcechannel`,
-    read/written through `services.btd6_version_announce`; a runtime pointer,
-    no SettingSpec), all
+    `BTD6_CT_GROUP_ID` (the per-guild Contested Territory bracket id —
+    set via the **guided flow** since Settings Phase 2/Q-0064:
+    `!btd6 ctteam <url-or-id>` parses → previews → confirms before
+    `services.btd6_ct_team_service` commits; never a raw scalar field), and
+    `BTD6_VERSION_ANNOUNCEMENT_CHANNEL` (the **legacy fallback lane** for the
+    version-announcement channel since Settings Phase 2/Q-0064 — the
+    `btd6.version_announce_channel` binding takes precedence when bound;
+    `!btd6ops announcechannel` still writes this KV pointer and warns when a
+    binding shadows it; read through `services.btd6_version_announce`), all
     in `disbot/utils/settings_keys/btd6.py`.
 11. **existing_BindingSpec_entries**: `btd6.strategy_submission_channel`
     (M4) routes natural-language submissions in bound channels into
-    the strategy review pipeline; declared in
+    the strategy review pipeline; `btd6.version_announce_channel`
+    (Settings Phase 2, Q-0064) is the first-class version-announcement
+    channel (binding-first read; legacy KV fallback). Both declared in
     `disbot/cogs/btd6/schemas.py` with capability
     `btd6.settings.configure`. Writes flow through
     `BindingMutationPipeline`.

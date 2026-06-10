@@ -35,8 +35,8 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 (**P1B complete** — remainder shipped #632; **P1C next**, Q-0032) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–3 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice still open — verify merges) → **Batch 4** Settings **Phase 2** declaration coverage (Q-0064 BTD6 rows ride along) → **Batch 5** Adaptive **P1C** → **Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
+| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** Wave 1 (Workshop + durability + live overview shipped #624; **next slice — Q-0072 answered 2026-06-10: the workshop-workflow service boundary first**, then structures / game-XP) · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; **P1C executed 2026-06-10 in #656** — verify merged; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
+| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–5 executed 2026-06-10** (#650 truth/clarity · #651 surface-classification invariant · #652 service boundaries, RS07 slice open · #654 declaration-coverage core + Q-0064 BTD6 rows, pointer-classification tail open · #656 adaptive P1C subpanels — verify merges) → **next: Batch 6** Help **projection seam** (Q-0055–Q-0059 overlay follows) · health/diagnostics production live-tests (owed) |
 | **Later** | **Batch 7** mutation hardening (economy purchase → mining workflow convergence; **Q-0071/Q-0072 answered 2026-06-10** — workflow-service-owned transactions, workshop boundary first) · BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover itself **shipped 2026-06-10, PR #649** — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
@@ -75,14 +75,15 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   actionable-groups-only hub (`actionable_settings_groups()`, 11 live groups) +
   paginated >25-option reachability + per-guild routing availability markers.
   Sequencing home: [settings audit §11](planning/settings-cog-centralization-audit-2026-06-09.md).
-- **Next** — settings audit **Phase 2** (declaration/coverage map: real domain-panel
-  registrations replacing the Phase 1 `DOMAIN_CONFIG_SUBSYSTEMS` seam; **Q-0064**
-  BTD6 announcement-channel binding + CT guided flow) — **Batch 4 of the
-  [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** —
-  then **Phase 3** duplicate-path convergence (**Q-0063** converge-gradually — router §27).
+- **Phase 2 core executed 2026-06-10** (consolidated-plan Batch 4 — verify merged):
+  real domain-panel registrations (`DomainPanelSpec`) replaced the Phase 1
+  `DOMAIN_CONFIG_SUBSYSTEMS` seam (+ DT06 coverage invariant); **Q-0064** BTD6
+  announcement-channel binding + CT guided flow landed with it. Open tail:
+  pointer-migration classification rows; then **Phase 3** duplicate-path
+  convergence (**Q-0063** converge-gradually — router §27).
 - **Now (Phase 1 active)** — [Adaptive Setup, Access, Profile, and Routine Platform](planning/adaptive-setup-access-routine-platform-2026-06-08.md):
-  P0 + P1A + P1B shipped (#588/#589/#591/#592/#632); **P1C next** (staff-hub
-  subpanels, Q-0032 — Batch 5 of the consolidated plan). *(Horizon corrected
+  P0 + P1A + P1B + P1C shipped (#588/#589/#591/#592/#632 + the 2026-06-10
+  Batch 5 subpanels, #656 — verify merged; Q-0032 hub-buttons-only honored). **P2 next** (own planning first). *(Horizon corrected
   2026-06-10: this row said "Later" while the at-a-glance table said P1C "Next".)*
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
@@ -185,9 +186,12 @@ provenance schema is implemented.
   rings, engineer typed-sentry rosters, sub Energizer/paragon support, bucc
   sellback + Flagship dedup, striker auras (+ dump fills committed holes),
   Magus phoenix.
-  **Next:** decode-status ⭐ item 2 (banana economy), the buff/zone tail, the
-  #655 answerability-gap items (5–6) — plus the maintainer's live spot-check
-  of the new surfaces.
+  In parallel, **#653 (wave 1)** decoded thorn rings + 4-x-x sentries + the
+  **banana economy** (bananaValue/bank capacity+interest as specials) —
+  reconciled at the merge.
+  **Next:** decode-status ⭐ item 3 (the buff/zone tail), the #655
+  answerability-gap items (5–6) — plus the maintainer's live spot-check of
+  the new surfaces.
 - **Earlier (#638, merged 2026-06-10)** — ABR rounds + income sets ingested
   game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed.

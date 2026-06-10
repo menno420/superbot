@@ -668,36 +668,63 @@ def _ct_team_notice(message: str) -> discord.Embed:
     )
 
 
-async def handle_ctteam(ctx: Any, arg: str) -> discord.Embed:
-    """Drive the ``!btd6 ctteam`` command: view / set / clear.
+async def handle_ctteam(
+    ctx: Any,
+    arg: str,
+) -> tuple[discord.Embed, discord.ui.View | None]:
+    """Drive the ``!btd6 ctteam`` command: view / guided set / clear.
 
-    Returns an embed for every path so the cog stays a one-line delegate.
-    Setting or clearing the bracket id needs the Manage Server permission;
-    an empty ``arg`` just shows the current team's live standing.
+    Returns ``(embed, view)`` so the cog stays a one-line delegate.
+    Setting goes through the **guided flow** (Settings Phase 2, Q-0064):
+    a pasted URL/id is parsed and previewed with a Confirm/Cancel step —
+    never written immediately. ``clear`` stays immediate (reversible,
+    nothing to preview). An empty ``arg`` shows the current team's live
+    standing, plus a "Set CT team…" button for Manage Server holders.
     """
     from services import btd6_ct_team_service
+    from views.btd6.ct_group_flow import (
+        CTGroupConfirmView,
+        CTGroupEntryView,
+        build_ct_preview_embed,
+    )
 
     guild = getattr(ctx, "guild", None)
     if guild is None:
-        return _ct_team_notice("Use this in a server, not a DM.")
+        return _ct_team_notice("Use this in a server, not a DM."), None
     guild_id = guild.id
     action = (arg or "").strip()
+    author = getattr(ctx, "author", None)
+    can_manage = bool(
+        getattr(getattr(author, "guild_permissions", None), "manage_guild", False),
+    )
     if action:
-        perms = getattr(getattr(ctx, "author", None), "guild_permissions", None)
-        if perms is None or not getattr(perms, "manage_guild", False):
-            return _ct_team_notice(
-                "You need the Manage Server permission to change the CT team.",
+        if not can_manage:
+            return (
+                _ct_team_notice(
+                    "You need the Manage Server permission to change the CT team.",
+                ),
+                None,
             )
         if action.lower() == "clear":
             await btd6_ct_team_service.clear_team_group_id(guild_id)
-            return _ct_team_notice("Cleared this server's CT team.")
-        stored = await btd6_ct_team_service.set_team_group_id(guild_id, action)
-        if stored is None:
-            return _ct_team_notice(
-                "That doesn't look like a CT bracket id or group URL. Paste your "
-                "team's `…/leaderboard/group/<id>` link or the bare id.",
+            return _ct_team_notice("Cleared this server's CT team."), None
+        group_id = btd6_ct_team_service.parse_group_id(action)
+        if group_id is None:
+            return (
+                _ct_team_notice(
+                    "That doesn't look like a CT bracket id or group URL. Paste "
+                    "your team's `…/leaderboard/group/<id>` link or the bare id.",
+                ),
+                None,
             )
-    return await build_ct_team_embed(guild_id)
+        # Guided flow: parse → preview → confirm. The commit happens in the
+        # Confirm callback (which re-checks Manage Server), not here.
+        preview = await build_ct_preview_embed(guild_id, group_id)
+        return preview, CTGroupConfirmView(author, group_id)
+
+    embed = await build_ct_team_embed(guild_id)
+    view = CTGroupEntryView(author) if can_manage else None
+    return embed, view
 
 
 async def build_ct_team_embed(guild_id: int) -> discord.Embed:

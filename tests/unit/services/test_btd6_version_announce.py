@@ -50,10 +50,71 @@ async def test_clear_channel_writes_empty(monkeypatch):
     set_setting.assert_awaited_once_with(123, BTD6_VERSION_ANNOUNCEMENT_CHANNEL, "")
 
 
+def _patch_binding(monkeypatch, target_id=None):
+    """Patch the version_announce_channel binding read (Q-0064 dual-read)."""
+    monkeypatch.setattr(
+        "core.runtime.bindings.get_binding",
+        AsyncMock(return_value=MagicMock(target_id=target_id)),
+    )
+
+
 async def test_get_channel_id_reads_setting(monkeypatch):
+    """KV fallback: with no binding bound, the legacy pointer answers."""
+    _patch_binding(monkeypatch, target_id=None)
     monkeypatch.setattr("utils.db.get_setting", AsyncMock(return_value="789"))
 
     assert await announce.get_channel_id(guild_id=123) == "789"
+
+
+# ---------------------------------------------------------------------------
+# Binding-first precedence (Settings Phase 2, Q-0064)
+# ---------------------------------------------------------------------------
+
+
+async def test_get_channel_id_prefers_bound_binding(monkeypatch):
+    """A bound version_announce_channel binding wins over the KV pointer."""
+    _patch_binding(monkeypatch, target_id=555)
+    kv = AsyncMock(return_value="789")
+    monkeypatch.setattr("utils.db.get_setting", kv)
+
+    assert await announce.get_channel_id(guild_id=123) == "555"
+    kv.assert_not_awaited()  # the legacy lane was never consulted
+
+
+async def test_binding_read_failure_degrades_to_kv(monkeypatch):
+    """A broken binding read must not kill announcements — KV lane answers."""
+    monkeypatch.setattr(
+        "core.runtime.bindings.get_binding",
+        AsyncMock(side_effect=RuntimeError("db down")),
+    )
+    monkeypatch.setattr("utils.db.get_setting", AsyncMock(return_value="789"))
+
+    assert await announce.get_channel_id(guild_id=123) == "789"
+
+
+async def test_resolve_channel_uses_bound_channel(monkeypatch):
+    """The send path resolves the bound channel object directly."""
+    import discord
+
+    channel = MagicMock(spec=discord.TextChannel)
+    guild = MagicMock()
+    guild.id = 123
+    guild.get_channel_or_thread = MagicMock(return_value=channel)
+    _patch_binding(monkeypatch, target_id=555)
+
+    assert await announce._resolve_channel(guild) is channel
+    guild.get_channel_or_thread.assert_called_once_with(555)
+
+
+async def test_resolve_channel_bound_but_missing_skips(monkeypatch):
+    """A bound-but-deleted channel skips the announcement (loud log) rather
+    than silently falling back to a stale KV pointer the operator replaced."""
+    guild = MagicMock()
+    guild.id = 123
+    guild.get_channel_or_thread = MagicMock(return_value=None)
+    _patch_binding(monkeypatch, target_id=555)
+
+    assert await announce._resolve_channel(guild) is None
 
 
 # ---------------------------------------------------------------------------
@@ -121,6 +182,7 @@ async def test_blank_version_is_ignored(monkeypatch):
 async def test_resolve_channel_filters_non_text(monkeypatch):
     # resolve_settings_channel returns something that isn't a TextChannel/Thread
     # (e.g. a category) -> _resolve_channel rejects it.
+    _patch_binding(monkeypatch, target_id=None)  # unbound → KV path
     monkeypatch.setattr(
         "core.runtime.guild_resources.resolve_settings_channel",
         AsyncMock(return_value=MagicMock()),

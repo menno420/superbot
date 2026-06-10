@@ -20,9 +20,10 @@ works** (the traps we hit), and what is still un-decoded.
 
 ---
 
-## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED + CARRY-FORWARDS ALL DECODED (#655); next = backlog item 2, banana economy**)
+## ⭐ Next session — start here (updated 2026-06-10 — **cutover DONE (#649) · VERIFIED (#655) · carry-forwards ALL DECODED (#653 wave 1 + #655) · banana economy DONE (#653); next = backlog item 3, the buff/zone tail**)
 
-> **2026-06-10 (PR #655 continuation, the carry-forward decode pass):
+> **2026-06-10 (PR #655 continuation — in parallel, #653's wave 1 decoded
+> thorn rings / 4-x-x sentries / banana economy; reconciled at the merge):
 > `_CUTOVER_CARRYFORWARD` is EMPTY — every #649 carry-forward is now
 > mapper-decoded, and the audit reads 91 CLEAN · 0 DELTA · 0 SUSPECT** (was
 > 76/9/0; the mapper now reproduces 100% of every committed file). Decoded,
@@ -41,7 +42,7 @@ works** (the traps we hit), and what is still un-decoded.
 > attack-speed on L7–17, Bomb-Shooter on L18+), and Magus' phoenix
 > (`TowerCreateParagonTowerModel` — five combat-identical skins dedupe to
 > one). The bucc-paragon Flagship carried-duplicate collapsed into two honest
-> entries split by the new structural `onlyAffectParagon` flag. Striker's
+> entries split by the new structural `onlyAffectParagon` flag. The druid
 > "150/250 staleness" note below was itself stale — committed already carried
 > the correct 0-immune-props split, re-verified against the dump. *(Found
 > during the pass, pre-existing, routed to item 6: hero-level `buffs` and
@@ -87,25 +88,33 @@ works** (the traps we hit), and what is still un-decoded.
 
 ### Post-cutover decode backlog (the new "do next", ordered)
 
-1. ~~**Decode the carried-forward mechanisms**~~ — **DONE 2026-06-10 (PR #655
-   continuation)**: all of druid thorn rings (+ the paragon's, new), engineer
-   typed sentries + paragon roster, sub Energizer + paragon support, bucc
-   sellback (as the committed-schema buff, husk removed) + paragon Flagship
-   dedup, striker's two hero auras (+ dump fills the committed L7–17 /
-   L18+ holes), Magus' phoenix (5 skins → 1). `_CUTOVER_CARRYFORWARD` is
-   empty; audit 91 CLEAN · 0 DELTA · 0 SUSPECT. Evidence comments live at
-   each decode site; the ⭐ entry above is the summary.
-2. **Banana-economy decode (new answerability):** banana value lives on the
-   banana projectile's `CashModel` (`minimum`/`maximum` 20→1200, `salvage`,
-   `bonusMultiplier` 0.25) and banks on `BankModel` (`capacity` 7000/10000,
-   `interest` 0.15) — all prose-confirmable; would answer "how much is a
-   banana / BRF crate / bank capacity".
+> **Wave 1 executed 2026-06-10 (#653, the parallel same-day session):** druid
+> thorn rings + engineer tier-4 typed sentries + the **banana economy**
+> (tier-level `bananaValue`/`bananaValueMax`/`bananaSalvageValue`/
+> `bananaBonusMultiplier` + `bankCapacity`/`bankInterest`, lifted off the
+> suppressed banana attack's `CashModel` + the `BankModel`, surfaced as
+> specials — "Bananas worth $300", "Bank $7,000 capacity, +15%
+> interest/round"). The #655 pass then decoded the rest (below) and the two
+> thorn/sentry implementations were reconciled at the merge (mutatorId-keyed
+> ring names, committed far/middle/close order, the Ceramic+Moabs tag gate).
+
+1. ~~**Decode the carried-forward mechanisms**~~ — **DONE 2026-06-10 (#653
+   wave 1 + the #655 completion)**: druid thorn rings (+ the paragon's, new),
+   engineer typed sentries (4-x-x) **and** the paragon roster
+   (Green/Red/Blue + the deduped "Modified" child), sub Energizer + paragon
+   support, bucc sellback (as the committed-schema buff, husk removed) +
+   paragon Flagship dedup, striker's two hero auras (+ dump fills the
+   committed L7–17 / L18+ holes), Magus' phoenix (5 skins → 1).
+   `_CUTOVER_CARRYFORWARD` is empty; audit 91 CLEAN · 0 DELTA · 0 SUSPECT.
+   Evidence comments live at each decode site.
+2. ~~**Banana-economy decode**~~ — **DONE 2026-06-10 (#653 wave 1)**, see
+   above; answers "how much is a banana / BRF crate / bank capacity".
 3. **Remaining buff/zone `$type` tail** — the pre-cutover "unconfirmable"
    blocker is gone in a new sense: committed data *is* the dump now, so new
    decodes are confirmed by **upgrade-prose / owner gameplay knowledge**, not a
    committed diff. Pick from the SHA-pinned report §3 ranking as questions
    surface.
-4. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
+3. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
    per-tier beast names ("what does the Orca do?"), Farm/Village answers
    (Wall Street income, discounts, MIB), Spectre/Mini Sun Avatar minions, and
    the "BTD6 game data 55.1" source label. *(+ from #655: the modes panel's

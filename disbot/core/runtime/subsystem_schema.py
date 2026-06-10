@@ -200,6 +200,37 @@ class CompletenessReport:
 
 
 @dataclass(frozen=True)
+class DomainPanelSpec:
+    """A separate canonical configuration destination for a subsystem.
+
+    Settings Phase 2 (settings audit §10.2 step 4): a subsystem whose
+    real configuration lives in a dedicated panel/service — not scalar
+    settings, bindings, or resources — declares that destination here so
+    the Settings hub discovers it as a *domain configuration group*
+    instead of relying on a curated hardcoded list (the Phase 1
+    ``DOMAIN_CONFIG_SUBSYSTEMS`` seam this replaces).
+
+    Discovery-only by contract: the declared panel/service stays the
+    mutation owner, and its callbacks re-check authority at execution
+    time regardless of what this declaration says.
+
+    Fields:
+
+    name:
+        Short operator-facing label (e.g. ``"Cleanup policies"``).
+    description:
+        One line of "what you configure there".
+    capability_required:
+        Capability gating edits on the destination (informational here;
+        the destination enforces it).
+    """
+
+    name: str
+    description: str = ""
+    capability_required: str = ""
+
+
+@dataclass(frozen=True)
 class SubsystemSchema:
     """A subsystem's complete guild-level configuration declaration.
 
@@ -219,6 +250,11 @@ class SubsystemSchema:
         Phase 1c declarations of platform resources this subsystem
         consumes at runtime.  Optional but recommended for any subsystem
         with bindings.
+    domain_panels:
+        Settings Phase 2: separate canonical configuration destinations
+        (see :class:`DomainPanelSpec`).  Declaring one makes the
+        subsystem an actionable Settings group even with no scalar
+        settings/bindings (e.g. cleanup's governance-policy panel).
     version:
         Schema version.  Phase 1 schemas start at ``1``; bumped on
         breaking shape changes so Phase 4a diagnostics can warn on
@@ -235,6 +271,7 @@ class SubsystemSchema:
     bindings: tuple[BindingSpec, ...] = ()
     settings: tuple[SettingSpec, ...] = ()
     resource_requirements: tuple[ResourceRequirement, ...] = ()
+    domain_panels: tuple[DomainPanelSpec, ...] = ()
     version: int = 1
     completeness_rule: Callable[[int], CompletenessReport] | None = None
 
@@ -345,6 +382,7 @@ __all__ = [
     "BindingKind",
     "BindingSpec",
     "CompletenessReport",
+    "DomainPanelSpec",
     "SettingSpec",
     "SubsystemSchema",
     "all_schemas",

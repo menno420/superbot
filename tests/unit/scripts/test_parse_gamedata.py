@@ -2747,3 +2747,67 @@ def test_sequenced_typed_towers_emit_list_and_deduped_child(mod):
         "SentryParagonRed",
         "SentryParagonChild",
     ]
+
+
+# --- decode wave 1 (#653) integration tests kept at the merge ---------------
+
+
+def test_typed_sentry_subtowers_decode(mod):
+    # Engineer Sentry Expert: four typed sentries embedded on the spawner
+    # projectile's CreateTypedTowerModel.
+    def sentry(name):
+        return {
+            "$type": "Il2CppAssets.Scripts.Models.Towers.TowerModel, Assembly-CSharp",
+            "name": name,
+            "behaviors": [{"$type": _t("TowerExpireModel"), "lifespan": 25.0}],
+        }
+
+    proj = _projectile()
+    proj["behaviors"].append(
+        {
+            "$type": _t("CreateTypedTowerModel"),
+            "crushingTower": sentry("SentryCrushing"),
+            "boomTower": sentry("SentryBoom"),
+            "coldTower": sentry("SentryCold"),
+            "energyTower": sentry("SentryEnergy"),
+        }
+    )
+    model = _tower_model(attacks=[_attack(proj)])
+    subs = mod._map_tier(model)["subtowers"]
+    assert [s["name"] for s in subs] == [
+        "SentryCrushing",
+        "SentryBoom",
+        "SentryCold",
+        "SentryEnergy",
+    ]
+    assert all(s["lifespan"] == 25 for s in subs)
+
+
+def test_farm_income_extraction(mod, tmp_path):
+    # Farm economy lifts off the (suppressed) banana attack's CashModel and
+    # the BankModel — prose-pinned fields.
+    dump = tmp_path / "dump"
+    tdir = dump / "Towers" / "BananaFarm"
+    tdir.mkdir(parents=True)
+    proj = _projectile(damage=None)
+    proj["behaviors"].append(
+        {
+            "$type": _t("CashModel"),
+            "minimum": 45.0,
+            "maximum": 45.0,
+            "salvage": 0.5,
+            "bonusMultiplier": 0.25,
+        }
+    )
+    base = _tower_model(attacks=[_attack(proj)])
+    base["behaviors"].append(
+        {"$type": _t("BankModel"), "capacity": 7000.0, "interest": 0.15}
+    )
+    (tdir / "BananaFarm.json").write_text(json.dumps(base))
+    res = mod.map_tower(dump, "banana_farm", "BananaFarm", "55.1")
+    tier = res.payload["tiers"]["000"]
+    assert tier["attacks"] == []  # nominal banana attack suppressed
+    assert tier["bananaValue"] == 45
+    assert tier["bananaSalvageValue"] == 0.5
+    assert tier["bananaBonusMultiplier"] == 0.25
+    assert tier["bankCapacity"] == 7000 and tier["bankInterest"] == 0.15

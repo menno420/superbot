@@ -554,8 +554,11 @@ _SUBTOWER_SPAWN_TYPES: dict[str, tuple[str, ...]] = {
     "ComancheDefenceModel": ("towerModel",),
     "TowerCreateTowerModel": ("towerModel",),
     "TranceTotemSpawnerModel": ("tower",),
-    # Engineer 4-x-x Sentry Expert: the four typed sentries are embedded
-    # TowerModels on the sentry-spawner projectile (2026-06-10 decode pass).
+    # Engineer Sentry Expert (4-x-x): the spawner projectile picks one of four
+    # typed sentries, embedded under per-type fields (names SentryCrushing /
+    # SentryBoom / SentryCold / SentryEnergy, each with a 25 s TowerExpireModel
+    # — committed-confirmed). Decoded post-cutover (2026-06-10); the committed
+    # typed entries were carried forward until then.
     "CreateTypedTowerModel": (
         "crushingTower",
         "boomTower",
@@ -1497,6 +1500,55 @@ def _read_upgrade(dump: Path, upgrade_id: Any) -> dict | None:
         return None
 
 
+def _walk_dicts(node: Any) -> Any:
+    """Yield every dict in a raw model tree (depth-first)."""
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from _walk_dicts(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _walk_dicts(value)
+
+
+def _farm_income(model: dict) -> dict:
+    """Banana Farm's economy numbers, lifted to the tier node (Farm-scoped —
+    its nominal attack is suppressed at the cutover, so the banana projectile's
+    ``CashModel`` would otherwise vanish with it).
+
+    Every field is prose-pinned against the committed upgrade descriptions:
+    CashModel min/max == BRF "worth $300 each" · ``salvage`` 0.5 == EZ Collect
+    "auto-collect for half value" · ``bonusMultiplier`` 0.25 == Valuable
+    Bananas "worth 25% more cash" · BankModel ``interest`` 0.15 == Monkey Bank
+    "earns 15% interest each round".
+    """
+    out: dict = {}
+    for node in _walk_dicts(model):
+        short = _short_type(node)
+        if short == "CashModel" and "bananaValue" not in out:
+            minimum = node.get("minimum")
+            maximum = node.get("maximum")
+            if isinstance(minimum, (int, float)):
+                out["bananaValue"] = _num(minimum)
+            if isinstance(maximum, (int, float)) and maximum != minimum:
+                out["bananaValueMax"] = _num(maximum)
+            salvage = node.get("salvage")
+            if isinstance(salvage, (int, float)) and salvage:
+                out["bananaSalvageValue"] = _num(salvage)
+            bonus = node.get("bonusMultiplier")
+            if isinstance(bonus, (int, float)) and bonus:
+                out["bananaBonusMultiplier"] = _num(bonus)
+        elif short == "BankModel" and "bankCapacity" not in out:
+            for src, dst in (
+                ("capacity", "bankCapacity"),
+                ("interest", "bankInterest"),
+            ):
+                value = node.get(src)
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    out[dst] = _num(value)
+    return out
+
+
 def map_tower(dump: Path, tower_id: str, canonical: str, version: str) -> MapResult:
     folder = _pascal(canonical)
     tdir = dump / "Towers" / folder
@@ -1515,11 +1567,15 @@ def map_tower(dump: Path, tower_id: str, canonical: str, version: str) -> MapRes
             continue  # skip -Paragon and any non-tier file
         model = json.loads(fp.read_text("utf-8"))
         node = _map_tier(model)
+        if tower_id == "banana_farm":
+            node.update(_farm_income(model))
         node["code"] = code
         node["crosspath"] = "-".join(code)
         tiers[code] = node
     # base file is the 000 tier
     base_node = _map_tier(base)
+    if tower_id == "banana_farm":
+        base_node.update(_farm_income(base))
     base_node["code"] = "000"
     base_node["crosspath"] = "0-0-0"
     tiers["000"] = base_node
@@ -2153,7 +2209,8 @@ _CURATED_EFFECT_NAMES: dict[str, dict[str, str]] = {
         "StartOfRoundRateBuff": "Start-of-round buff",
         # The 5-x-x Sentry Champion's spawned sentry — the committed label.
         "SentryParagon": "Champion Sentry",
-        # The 4-x-x typed sentries (CreateTypedTowerModel embeds).
+        # Sentry Expert's four typed sentries (decoded 2026-06-10 from
+        # CreateTypedTowerModel) — the committed labels.
         "SentryCrushing": "Crushing Sentry",
         "SentryBoom": "Boom Sentry",
         "SentryCold": "Cold Sentry",
@@ -2282,7 +2339,8 @@ _CUTOVER_NAME_RETIREMENTS: dict[str, frozenset[str]] = {
 
 # Committed entries the mapper cannot yet reproduce from the dump — carried
 # forward verbatim (matched by name, per tier). EMPTY since the 2026-06-10
-# decode pass: every #649 carry-forward (druid thorn rings, engineer typed
+# decode passes (#653 wave 1 + the #655 completion): every #649
+# carry-forward (druid thorn rings, engineer typed
 # sentries incl. the paragon roster, sub Energizer/paragon-support auras,
 # bucc sellback + paragon Flagship, striker's two hero auras, Magus' phoenix)
 # is now mapper-decoded — see the per-mechanism evidence comments at each
