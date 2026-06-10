@@ -191,6 +191,24 @@ section is new work** — it's the ground the vision stands on.
   review per source bot. **Scope rider on the V-14 gateway session:** the
   teardown should also catalog each bot's export/API surface — that catalog
   *is* the migration design's input.
+- **V-16 — The rendered character: paper-doll gear display (added 2026-06-11,
+  round 7).** Owner-voice: "the goal should be to actually render a base
+  character and show/display the equipped items on the correct positions."
+  Not a richer text embed — an **image**: base character sprite + equipped
+  items composited at per-slot anchor positions (tool→hand, light→belt/head,
+  charm→neck, weapon→off-hand, armor→torso). Build notes: the **PIL pipeline
+  already exists** (#665's inventory/stat cards prove render→attach→embed);
+  the renderer is a pure-`utils/` compositor driven by a **sprite manifest**
+  (item → sprite asset + anchor offset; graceful badge-row fallback for
+  sprite-less items; cache per loadout-hash). This becomes the **cross-
+  ecosystem character identity** (V-13: the same doll holds the rod when
+  fishing lands). Prerequisite/sibling slice: the ⚔️/🛡️ **combat gear item
+  families** (slots are reserved-but-empty today — `utils/equipment.py`
+  docstring; duels already read damage/defense, so items matter the moment
+  they exist). **Gating decision (owner's, asked 2026-06-11): art
+  direction** — programmatic pixel-art vs AI-generated sprite sheet vs
+  owner-provided assets. Gear-picker stat-preview polish rides along
+  (gear_panel `_ItemSelect` options are label-only today).
 - **V-14 — Competitive feature mining (added 2026-06-10, brainstorm round 5).**
   Owner-endorsed research direction: systematically tear down the big bots'
   ("thousands of features") catalogs, "filter out some of the best ideas and

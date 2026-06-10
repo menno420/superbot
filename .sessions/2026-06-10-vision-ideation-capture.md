@@ -155,6 +155,24 @@ Calibration: this is the second same-day instance of the owner moving
 
 ## Brainstorm round 3: "can the bot test itself?" → idea captured
 
+## Round 7: the gear thread → V-16 rendered character
+
+The owner asked how ready the mining Gear view is "to display items — I
+really want that to work." Source-read of `views/mining/gear_panel.py` +
+`utils/equipment.py` + `character_panel.py` established: panel shipped &
+works (5 slots, durability bars, stat totals, two-step equip, Equip Best);
+the equipment model is **already the cross-game substrate** (pure utils/,
+data-driven, deathmatch reads damage/defense); the ⚔️/🛡️ slots are
+**reserved-but-empty** (no combat items exist yet); the item picker shows
+labels without stats. The owner's actual goal then landed: **render a base
+character with equipped items at correct positions** → captured as **V-16**
+(vision doc §3) with build notes (PIL pipeline proven by #665; manifest-
+driven compositor in utils/; combat-gear item families as sibling slice;
+art-direction = the gating owner decision, structured-choice asked
+in-conversation). Also confirmed: the owner's remembered old fishing cog is
+**pre-GitHub** — no repo archaeology needed (verified: zero fishing code in
+history; the only grep hit is the idiom "fish out" in a comment).
+
 ## Brainstorm round 5: the open-world federation + competitive mining (V-13/V-14)
 
 Two new owner statements captured into the vision doc §3: **V-13** — the
