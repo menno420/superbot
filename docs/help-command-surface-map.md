@@ -5,10 +5,11 @@
 Source-of-truth inventory for every loaded cog/subsystem and how each is
 reachable today through Help, hubs, and typed commands. Originally captured at
 HEAD `38353aa` (post-PR-#142, post-PR-#143); prose counts re-verified against
-source 2026-06-09 at `7534e3e` (tables were already correct; scoreboard
-**Lane 8** still owns pinning these counts with tests). The Help routing
-unification landed in PR #142; this doc reflects the merged state, not the
-pre-PR perspective.
+source 2026-06-09 at `7534e3e` (#641), then **pinned to the live registries by
+`tests/unit/docs/test_help_surface_map_doc.py` (scoreboard Lane 8)** — a drifted
+count now fails CI instead of rotting silently. The Help routing unification
+landed in PR #142; this doc reflects the merged state, not the pre-PR
+perspective.
 
 The columns that matter most are **owner**, **panel**, **Help route**,
 **hub route**, and **recommended placement**. Command lists are
@@ -22,9 +23,16 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 28 of the 29 subsystem-owning cogs expose `build_help_menu_view`.
-  `help_cog` itself is the exception — it IS the Help surface, so there
-  is no hook.
+- 28 of the 36 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+  `build_help_menu_view` — equivalently, 28 of the 29 subsystem-owning
+  cogs expose it. The 8 extensions without the hook: the bootstrap
+  access guard (not a Help surface), `help_cog` itself (it IS the Help
+  surface), the five split BTD6 support cogs (`btd6_reference` /
+  `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
+  commands route under the one `btd6` subsystem via `btd6_cog`'s hook),
+  and `setup_cog` (an orchestrator with no `SUBSYSTEMS` row). "Loaded
+  extension", "subsystem", and "Help category" are different concepts —
+  do not conflate them (help audit §4).
 - The hub key `diagnostic` is "Platform / Diagnostics". The override
   table `HUB_PANEL_BUILDERS["diagnostic"] = "build_platform_help_menu_view"`
   routes hub → Platform Hub. Subsystem aliases `diagnostics`/`diag`
@@ -50,14 +58,13 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 2. Subsystem inventory
 
-29 registered subsystems in `disbot/utils/subsystem_registry.py`, each with
-one owning cog. (`disbot/config.py` `INITIAL_EXTENSIONS` loads 36 extensions —
-the 7 extras are `bootstrap_access_cog`, `setup_cog`, and the five split BTD6
-cogs, which are not one-to-one Help subsystems.) 28 of the 29 subsystem cogs
-expose `build_help_menu_view`; only `help_cog` itself does not. The Help route
-resolver therefore opens a real panel for every subsystem except `help`,
-and only falls back to the command-list embed when the hook is missing
-or raises.
+29 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 36 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+extension↔subsystem mapping is many-to-one — see the routing summary
+above for the 8 extensions without a hook). Every subsystem's host cog
+defines `build_help_menu_view` except `help` itself, so the Help route
+resolver opens a real panel for every subsystem except `help`, and only
+falls back to the command-list embed when the hook is missing or raises.
 
 | subsystem | owner | public commands (sample) | hidden / legacy | panel hook | Help route today | Hub route today | Recommendation |
 | --- | --- | --- | --- | --- | --- | --- | --- |
