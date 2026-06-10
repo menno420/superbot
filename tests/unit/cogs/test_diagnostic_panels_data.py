@@ -77,13 +77,17 @@ async def test_check_database_embed_uses_migrations_not_expected_list(monkeypatc
         "counting_state",
     }
 
-    async def fake_fetchall(query, params=()):
-        if "pg_tables" in query:
-            # base tables + a migration-added table that used to read "unexpected"
-            return [{"tablename": t} for t in base | {"role_automation_exemptions"}]
-        return [{"version": v} for v in on_disk]
+    import utils.db.migrations as migrations_db
 
-    monkeypatch.setattr(_helpers.db, "fetchall", fake_fetchall)
+    async def fake_tables():
+        # base tables + a migration-added table that used to read "unexpected"
+        return base | {"role_automation_exemptions"}
+
+    async def fake_applied():
+        return set(on_disk)
+
+    monkeypatch.setattr(migrations_db, "list_public_tables", fake_tables)
+    monkeypatch.setattr(migrations_db, "applied_migration_versions", fake_applied)
 
     embed = await _helpers.build_check_database_embed()
     names = [f.name for f in embed.fields]

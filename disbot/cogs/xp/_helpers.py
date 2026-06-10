@@ -47,26 +47,26 @@ async def _build_rank_embed(
     guild: discord.Guild,
     stat: str,
 ) -> discord.Embed:
-    """Build the rank card embed for a member."""
+    """Build the rank card embed for a member.
+
+    Ranks come from the canonical :mod:`services.rank_providers` registry
+    (its docstring names this builder as a consumer) — the inline rank SQL
+    this function used to carry was the drift the registry exists to kill.
+    """
+    from services.rank_providers import get_provider
+
     row = await db.get_xp(member.id, guild.id)
     level, current, needed = db.level_progress(row["xp"])
 
-    all_xp = await db.fetchall(
-        "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY xp DESC",
-        (guild.id,),
-    )
-    all_coins = await db.fetchall(
-        "SELECT user_id FROM xp WHERE guild_id=$1 ORDER BY coins DESC",
-        (guild.id,),
-    )
-    xp_rank = next(
-        (i + 1 for i, r in enumerate(all_xp) if r["user_id"] == member.id),
-        "?",
-    )
-    co_rank = next(
-        (i + 1 for i, r in enumerate(all_coins) if r["user_id"] == member.id),
-        "?",
-    )
+    async def _rank(provider_name: str) -> int | str:
+        provider = get_provider(provider_name)
+        if provider is None:  # registry always has xp/coins; stay crash-proof
+            return "?"
+        position, _ = await provider.member_rank(guild, member.id)
+        return position if position is not None else "?"
+
+    xp_rank = await _rank("xp")
+    co_rank = await _rank("coins")
 
     embed = discord.Embed(title=f"📊 {member.display_name}", color=UTILITY_COLOR)
     embed.set_thumbnail(url=member.display_avatar.url)

@@ -43,6 +43,30 @@ async def get_or_create_session(
     return dict(row)
 
 
+async def count_sessions_by_subsystem(
+    subsystem: str | None = None,
+) -> list[dict]:
+    """Per-subsystem session counts (``[{"subsystem", "n"}, ...]``).
+
+    The ``!platform sessions`` diagnostic read model (RS08 — the SQL
+    used to live inline in ``cogs/diagnostic/_platform_embeds.py``).
+    ``subsystem`` filters to one subsystem; ``None`` returns all,
+    busiest first.
+    """
+    if subsystem is not None:
+        rows = await pool.get().fetch(
+            "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
+            "WHERE subsystem = $1 GROUP BY subsystem",
+            subsystem,
+        )
+    else:
+        rows = await pool.get().fetch(
+            "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
+            "GROUP BY subsystem ORDER BY n DESC",
+        )
+    return [dict(r) for r in rows]
+
+
 async def touch_session(session_id: str) -> None:
     """Update last_active_at for an existing session."""
     await pool.get().execute(

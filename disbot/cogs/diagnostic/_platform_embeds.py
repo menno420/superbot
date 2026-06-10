@@ -1294,21 +1294,10 @@ async def build_sessions_embed(
     DB query fails — callers preserve the existing error-surface
     behavior of the typed command by checking the second element.
     """
-    from utils import db
+    from utils.db import sessions as sessions_db
 
     try:
-        if subsystem:
-            rows = await db.fetchall(
-                "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
-                "WHERE subsystem=$1 GROUP BY subsystem",
-                (subsystem,),
-            )
-        else:
-            rows = await db.fetchall(
-                "SELECT subsystem, COUNT(*) AS n FROM runtime_sessions "
-                "GROUP BY subsystem ORDER BY n DESC",
-                (),
-            )
+        rows = await sessions_db.count_sessions_by_subsystem(subsystem or None)
     except Exception as exc:  # noqa: BLE001 — surface DB outage to operator
         return None, f"❌ DB query failed: {exc}"
     embed = discord.Embed(
@@ -1336,7 +1325,7 @@ async def build_sessions_embed(
 async def build_anchors_embed() -> discord.Embed:
     """Build the embed for ``!platform anchors``."""
     from core.runtime import message_anchor_manager
-    from utils import db
+    from utils.db import anchors as anchors_db
 
     stats = message_anchor_manager.last_restore_stats()
     embed = discord.Embed(
@@ -1354,11 +1343,7 @@ async def build_anchors_embed() -> discord.Embed:
         inline=False,
     )
     try:
-        rows = await db.fetchall(
-            "SELECT subsystem, COUNT(*) AS n FROM panel_anchors "
-            "WHERE NOT is_stale GROUP BY subsystem ORDER BY n DESC",
-            (),
-        )
+        rows = await anchors_db.count_active_anchors_by_subsystem()
         if rows:
             lines = [f"`{r['subsystem']}` — {r['n']}" for r in rows]
             embed.add_field(

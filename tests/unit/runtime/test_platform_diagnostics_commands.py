@@ -236,15 +236,13 @@ async def test_platform_sessions_renders_all_subsystems_when_no_filter():
         {"subsystem": "role", "n": 3},
     ]
     with patch(
-        "utils.db.fetchall",
+        "utils.db.sessions.count_sessions_by_subsystem",
         new_callable=AsyncMock,
         return_value=rows,
-    ) as fetchall:
+    ) as count:
         await cog.platform_sessions.callback(cog, ctx)
 
-    fetchall.assert_awaited_once()
-    sql = fetchall.await_args.args[0]
-    assert "WHERE subsystem" not in sql  # no filter clause
+    count.assert_awaited_once_with(None)  # unfiltered read model
     embed = ctx.send.call_args.kwargs["embed"]
     assert "all subsystems" in embed.description
     by_sub = next(f for f in embed.fields if f.name == "By subsystem")
@@ -253,21 +251,18 @@ async def test_platform_sessions_renders_all_subsystems_when_no_filter():
 
 
 @pytest.mark.asyncio
-async def test_platform_sessions_filter_passes_to_sql_param():
+async def test_platform_sessions_filter_passes_to_read_model():
     cog = _make_cog()
     ctx = _make_ctx()
 
     with patch(
-        "utils.db.fetchall",
+        "utils.db.sessions.count_sessions_by_subsystem",
         new_callable=AsyncMock,
         return_value=[{"subsystem": "economy", "n": 7}],
-    ) as fetchall:
+    ) as count:
         await cog.platform_sessions.callback(cog, ctx, "economy")
 
-    fetchall.assert_awaited_once()
-    sql, params = fetchall.await_args.args
-    assert "WHERE subsystem=$1" in sql
-    assert params == ("economy",)
+    count.assert_awaited_once_with("economy")
     embed = ctx.send.call_args.kwargs["embed"]
     assert "filter: `economy`" in embed.description
 
@@ -278,7 +273,7 @@ async def test_platform_sessions_db_failure_surfaces_to_user():
     ctx = _make_ctx()
 
     with patch(
-        "utils.db.fetchall",
+        "utils.db.sessions.count_sessions_by_subsystem",
         new_callable=AsyncMock,
         side_effect=RuntimeError("connection refused"),
     ):
