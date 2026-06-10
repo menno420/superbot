@@ -63,6 +63,15 @@ _AREA_WATER, _AREA_LAND, _AREA_TRACK = 1, 2, 4
 
 # Raw ``DamageModifierForTagModel.tag`` → the wiki/runtime field name the
 # detail embed renders (``utils.btd6.stats_embed._DAMAGE_MODIFIERS``).
+# PushBackModel's per-blimp knockback multipliers → the committed spellings
+# the Pro view renders (verified identical, bomb 5-0-0 Bloon Crush).
+_PUSH_RENAME: dict[str, str] = {
+    "multiplierMOAB": "pushMultiplierForMoab",
+    "multiplierBFB": "pushMultiplierForBfb",
+    "multiplierZOMG": "pushMultiplierForZomg",
+    "multiplierDDT": "pushMultiplierForDdt",
+}
+
 _TAG_TO_DAMAGE_MOD: dict[str, str] = {
     "Lead": "damageModifierForLead",
     "Ceramic": "damageModifierForCeramic",
@@ -202,6 +211,32 @@ def _clean_projectile(proj: dict) -> dict:
     knock = _first(proj, "KnockbackModel")
     if knock is not None and "distance" in knock:
         out["pushAmount"] = _num(knock["distance"])
+    # Bloon Crush-style knockback is a PushBackModel: pushAmount + per-blimp
+    # multipliers, all committed-confirmed identical (bomb 5-0-0: 20 / x0.25
+    # each) under the committed field spellings the Pro view renders.
+    push = _first(proj, "PushBackModel")
+    if push is not None and "pushAmount" in push:
+        out["pushAmount"] = _num(push["pushAmount"])
+        for raw_field, schema_field in _PUSH_RENAME.items():
+            value = push.get(raw_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                out[schema_field] = _num(value)
+        if "onlyIfDamaged" in push:
+            out["pushOnlyIfDamaged"] = bool(push["onlyIfDamaged"])
+
+    # Cash-dropping projectiles (Sniper Supply Drop's crate, Bloon Trap…)
+    # carry a CashModel; the runtime's specials scan surfaces it as
+    # "Cash crate $N" off ``cashMinimum`` (the committed wiki shape kept the
+    # same field name on the ability's collectables — sniper 0-4-0: 1100).
+    cash = _first(proj, "CashModel")
+    if cash is not None:
+        for raw_field, schema_field in (
+            ("minimum", "cashMinimum"),
+            ("maximum", "cashMaximum"),
+        ):
+            value = cash.get(raw_field)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                out[schema_field] = _num(value)
 
     # filterInvisible: a ProjectileFilterModel with an invisible filter, or the
     # projectile's own filters. The wiki surfaces it as a plain bool.
@@ -422,9 +457,16 @@ def _clean_ability(ability: dict, index: int) -> dict:
     }
     if "cooldown" in ability:
         out["cooldown"] = _num(ability["cooldown"])
-    # An ability fires its own AttackModels; surface their projectiles + bad dmg.
+    # An ability fires its own attacks — either direct AttackModel behaviors or
+    # under an ActivateAttackModel's ``attacks[]`` (Sniper Supply Drop's cash
+    # crate rides the latter); surface their projectiles + bad dmg.
+    ability_attacks = _behaviors(ability, "AttackModel")
+    for activate in _behaviors(ability, "ActivateAttackModel"):
+        ability_attacks += [
+            a for a in activate.get("attacks", []) or [] if isinstance(a, dict)
+        ]
     projectiles: list[dict] = []
-    for attack in _behaviors(ability, "AttackModel"):
+    for attack in ability_attacks:
         for w in attack.get("weapons", []) or []:
             if isinstance(w, dict) and isinstance(w.get("projectile"), dict):
                 projectiles.extend(_collect_projectiles(w["projectile"]))
@@ -432,12 +474,22 @@ def _clean_ability(ability: dict, index: int) -> dict:
         out["projectiles"] = _dedupe_projectiles(projectiles)
     for key in ("damageToBad", "damageToNonBad"):
         # These live on DamageModel children of the ability's attacks.
-        for attack in _behaviors(ability, "AttackModel"):
+        for attack in ability_attacks:
             for w in attack.get("weapons", []) or []:
                 proj = w.get("projectile") if isinstance(w, dict) else None
                 dm = _first(proj, "DamageModel") if isinstance(proj, dict) else None
                 if dm and key in dm:
                     out[key] = _num(dm[key])
+    # Bomb Blitz-style damage-all abilities: a pair of AbilityDamageAllModel
+    # nodes whose ``inclusive`` flag splits the BFB-and-up class from the rest
+    # (verified identical to the committed pair — bomb 0-0-5: inclusive 2000
+    # == damageToBad, exclusive 9999999 == damageToNonBad).
+    for dmg_all in _behaviors(ability, "AbilityDamageAllModel"):
+        value = dmg_all.get("damage")
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        key = "damageToBad" if dmg_all.get("inclusive") else "damageToNonBad"
+        out[key] = _num(value)
     return out
 
 
@@ -954,15 +1006,16 @@ def _map_tier(model: dict, _subtower: bool = False) -> dict:
         tier["doesntBlockTowerPlacement"] = bool(
             foot.get("doesntBlockTowerPlacement", False),
         )
-    attacks = _behaviors(model, "AttackModel")
-    if _subtower:
-        # Air-unit subtowers carry combat under AttackAirUnitModel (standard
-        # weapons[] shape). Verified for the Mini-Comanche: its Ballistic
-        # Missile (rate 3.0, Explosion damage 4) lives there and matches the
-        # committed heli 0-0-4 attack — without this the missile never emits.
-        # Scoped to subtowers on purpose: widening it for base towers changes
-        # unverified heli/ace output (cutover-scope, not this slice).
-        attacks = attacks + _behaviors(model, "AttackAirUnitModel")
+    # Air units carry combat under AttackAirUnitModel (standard weapons[]
+    # shape) — first verified on the Mini-Comanche subtower (Ballistic Missile
+    # rate 3.0 / Explosion damage 4 == committed heli 0-0-4), then widened to
+    # base towers at the cutover: Monkey Ace's ENTIRE attack set (and the
+    # Goliath Doomship paragon's) is air-unit-modelled, so without this every
+    # ace tier maps with zero attacks.
+    attacks = _behaviors(model, "AttackModel") + _behaviors(
+        model,
+        "AttackAirUnitModel",
+    )
     tier["attacks"] = [_clean_attack(a, i) for i, a in enumerate(attacks)]
     abilities = _behaviors(model, "AbilityModel")
     if abilities:
@@ -1106,7 +1159,7 @@ def _upgrades_for(tdir: Path, dump: Path) -> list[dict]:
                 target = str(entry.get("tower") or "")
                 tcode = target.rsplit("-", 1)[-1]
                 if len(tcode) == 3 and tcode.isdigit():
-                    for i, (a, b) in enumerate(zip(src_code, tcode)):
+                    for i, (a, b) in enumerate(zip(src_code, tcode, strict=True)):
                         if a != b:
                             derived[name] = (i + 1, int(b))
                             break
@@ -2103,9 +2156,7 @@ def _carryforward_entries(payload: dict, committed: dict, entity_id: str) -> lis
             if not sources:
                 continue
             existing = {
-                e.get("name")
-                for e in pnode.get(cls, []) or []
-                if isinstance(e, dict)
+                e.get("name") for e in pnode.get(cls, []) or [] if isinstance(e, dict)
             }
             added = [e for e in sources if e.get("name") not in existing]
             if not added:

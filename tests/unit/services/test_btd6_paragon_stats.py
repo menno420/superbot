@@ -61,28 +61,35 @@ def test_lookup_by_tower_matches_lookup_by_id():
     assert by_tower is apex
 
 
-def test_prose_sourced_paragons_present_and_flagged():
-    # Module-less paragons are transcribed from article prose: they DO have a
-    # combat base now, flagged is_prose_sourced; module-sourced ones are not.
+def test_no_paragon_is_prose_sourced_after_cutover():
+    # The two article-prose bases (Herald, Root) were re-sourced from game data
+    # at the v55.1 cutover — every paragon now has a module-exact combat base
+    # and none carries the lower-fidelity prose flag.
     for pid in _PROSE_SOURCED:
         stats = svc.get_paragon_stats(pid)
         assert stats is not None
         assert stats.has_combat_stats
-        assert stats.is_prose_sourced
+        assert stats.is_prose_sourced is False
     assert svc.get_paragon_stats_by_tower("druid") is not None
     assert svc.get_paragon_stats_by_tower("ice_monkey") is not None
-    assert svc.get_paragon_stats("glaive_dominus").is_prose_sourced is False
+    assert all(
+        svc.get_paragon_stats(pid).is_prose_sourced is False
+        for pid in svc.list_paragon_ids()
+    )
 
 
-def test_prose_sourced_degree_scaling_works():
-    # The universal degree scaling still applies to a prose-sourced base.
+def test_formerly_prose_sourced_degree_scaling_works():
+    # The universal degree scaling applies to the (now game-sourced) base.
     herald = svc.get_paragon_stats("herald_of_everfrost")
     d1, d100 = herald.degree(1), herald.degree(100)
     assert d1.power == 0 and d100.power == 200_000
     assert d1.boss_multiplier == 1.0 and d100.boss_multiplier == 2.25
-    # Ice Beam 600 dmg at d1 -> 600*2+10 at d100.
+    # The beam hit: 600 dmg at d1 -> 600*2+10 at d100 (the same value the old
+    # prose base carried as "Ice Beam"; the group is the game attack name now).
     dmg100 = next(
-        s for s in d100.stats if s.group == "Ice Beam" and s.label == "Damage"
+        s
+        for s in d100.stats
+        if s.group == "BeamHitProjectile" and s.label == "Damage"
     )
     assert dmg100.value == 600 * 2 + 10
 
@@ -190,14 +197,15 @@ def test_description_surfaces_in_grounding():
     assert any("fusing Glaive Lord" in line for line in lines)
 
 
-def test_render_paragon_prose_sourced_labels_origin():
+def test_render_paragon_labels_game_data_origin():
     from services import btd6_context_service as ctx
 
-    # Druid's paragon is prose-sourced: it still grounds combat stats, but the
-    # provenance label says so (so the model can hedge on the lower fidelity).
+    # Druid's paragon base was article-prose before the v55.1 cutover; it is
+    # game-sourced now and the provenance label says so.
     lines = ctx._render_paragon("druid", "Druid")
     joined = "\n".join(lines)
     assert "[btd6_paragon]" in joined  # name + cost
     assert "[btd6_paragon_stats normal]" in joined  # now has stats too
     assert "Root of all Nature" in joined
-    assert "article prose" in joined  # provenance label
+    assert "BTD6 game data" in joined  # provenance label
+    assert "article prose" not in joined

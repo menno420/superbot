@@ -474,9 +474,7 @@ def get_upgrade_detail(upgrade_id: str) -> UpgradeDetail | None:
         abilities=tuple(_ability(a) for a in tier.get("abilities", [])),
         buffs=tuple(_buff_text(b) for b in tier.get("buffs", [])),
         # Structural zones with no decoded effect render as "" — drop them.
-        zones=tuple(
-            text for z in tier.get("zones", []) if (text := _zone_text(z))
-        ),
+        zones=tuple(text for z in tier.get("zones", []) if (text := _zone_text(z))),
         description=description,
     )
 

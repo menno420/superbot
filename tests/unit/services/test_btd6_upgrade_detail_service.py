@@ -39,19 +39,26 @@ def test_prince_of_darkness_detail():
     assert d.normal is not None
     assert d.normal.cooldown == 0.275
     assert (d.normal.damage, d.normal.pierce) == (2, 1)
-    # Every named attack stays addressable, including MOAB-reanimation.
+    # Every named attack stays addressable, including MOAB-reanimation (game
+    # names since the v55.1 cutover: the wiki's "Reanimate"/"MOAB" attacks are
+    # the game's "Attack Necromancer", whose projectiles carry the minions).
     names = {a.name for a in d.attacks}
-    assert {"Attack", "Reanimate", "MOAB"} <= names
+    assert {"Attack", "Attack Necromancer", "Attack Shimmer"} <= names
     # The reanimated MOAB/BFB minions are still readable in the detail, just no
     # longer masquerading as the tower's headline damage.
-    moab = _attack(d, "MOAB")
-    assert {p.name: p.damage for p in moab.projectiles} == {"MOAB": 40, "BFB": 100}
+    necro = _attack(d, "Attack Necromancer")
+    assert {p.name: p.damage for p in necro.projectiles} == {
+        "Projectile": 2,
+        "ProjectileMoab": 40,
+        "ProjectileBfb": 100,
+    }
 
 
 def test_prince_of_darkness_minion_pierce_is_one():
-    # The marquee failure: the answer lives on Reanimate, not the main attack.
+    # The marquee failure: the answer lives on the Necromancer attack (the
+    # wiki-era "Reanimate"), not the main attack.
     d = det.get_upgrade_detail("wizard_monkey:005")
-    reanimate = _attack(d, "Reanimate")
+    reanimate = _attack(d, "Attack Necromancer")
     assert reanimate is not None
     assert reanimate.projectiles[0].pierce == 1
     assert reanimate.projectiles[0].damage == 2
@@ -61,10 +68,10 @@ def test_prince_of_darkness_buff_and_moab_projectiles():
     d = det.get_upgrade_detail("wizard_monkey:005")
     assert any("Undead Bloon buff" in b for b in d.buffs)
     assert any("+3 damage" in b and "x1.5 lifespan" in b for b in d.buffs)
-    moab = _attack(d, "MOAB")
-    proj = {p.name: (p.damage, p.pierce) for p in moab.projectiles}
-    assert proj["MOAB"] == (40, 20)
-    assert proj["BFB"] == (100, 50)
+    necro = _attack(d, "Attack Necromancer")
+    proj = {p.name: (p.damage, p.pierce) for p in necro.projectiles}
+    assert proj["ProjectileMoab"] == (40, 20)
+    assert proj["ProjectileBfb"] == (100, 50)
 
 
 def test_subtower_minion_is_exposed():
@@ -85,13 +92,16 @@ def test_ability_and_zone_sections():
     assert any("Thorn zone" in z for z in druid.zones)
 
 
-def test_economy_upgrade_has_identity_but_no_combat():
-    # Monkey-Nomics (banana farm 0-5-0): real upgrade, no combat tiers.
+def test_economy_upgrade_has_attacks_suppressed_but_ability():
+    # Monkey-Nomics (banana farm 0-5-0): since the Q-0067 cutover the Farm has
+    # full game-native tiers — the nominal banana "attack" is suppressed, but
+    # the ability is real data.
     d = det.get_upgrade_detail("banana_farm:050")
     assert d is not None
     assert d.identity.canonical == "Monkey-Nomics"
-    assert not d.has_combat_stats
     assert d.attacks == ()
+    assert d.abilities and d.abilities[0].name == "Monkey-Nomics"
+    assert d.abilities[0].cooldown == 60
 
 
 def test_unknown_id_returns_none():
@@ -110,7 +120,7 @@ def test_render_grounding_surfaces_minion_pierce():
     # attack line specifically — the textTable description line also says
     # "Reanimate", so key off the per-attack "pierce" stat, not the word alone.)
     reanimate_line = next(
-        line for line in lines if "Reanimate" in line and "pierce" in line
+        line for line in lines if "Attack Necromancer" in line and "pierce" in line
     )
     assert "1 pierce" in reanimate_line
     assert "Undead Bloon buff" in blob

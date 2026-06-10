@@ -656,7 +656,8 @@ async def test_btd6_paragon_stats_at_degree_returns_nonlinear_breakdown():
     # Cooldown is the sqrt curve (not linear ~0.49s); the bomb's two projectiles
     # are exposed rather than collapsed to one number.
     assert abs(main["cooldown_seconds"] - 0.4215) < 0.001
-    assert {p["name"] for p in main["projectiles"]} >= {"Projectile", "Explosion"}
+    # Game-native names since the cutover: direct hit + explosion.
+    assert {p["name"] for p in main["projectiles"]} >= {"MainProjectile", "Projectile"}
     # DPS is present but explicitly a rough estimate, never asserted as exact.
     assert r["rough_dps"] > 0
     assert "ROUGH" in r["rough_dps_note"]
