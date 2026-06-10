@@ -1,6 +1,6 @@
 # Help overlay editor UI — implementation plan (audit Phase 5)
 
-> **Status:** `plan` — **PR A EXECUTED same day (2026-06-10, PR #677)**: the
+> **Status:** `plan` — **PR A EXECUTED same day (2026-06-10, PR #678)**: the
 > editor (`views/help/editor.py`), both entry points (staff-hub `✏️ Help
 > editor` button · the "Help appearance" domain panel — taxonomy 12 → 13),
 > 12 pinning tests, live Postgres round-trip (hide → rename → preview agrees

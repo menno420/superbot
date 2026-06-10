@@ -192,7 +192,7 @@ possible pre-#675 timing) → the floor now catches it deterministically.
 
 ---
 
-## Continuation 4 (same session): Help editor PR A built + live-verified (PR #677)
+## Continuation 4 (same session): Help editor PR A built + live-verified (PR #678)
 
 With the eval steady (4 PRs merged) the session resumed the queue item the
 screenshots had interrupted — **plan §5 PR A**, same-day execution of the
