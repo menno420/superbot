@@ -409,6 +409,61 @@ CASES: list[EvalCase] = [
         ),
     ),
     EvalCase(
+        id="grounding.btd6_navarch_income",
+        category="grounding",
+        task=AITask.BTD6_ANSWER,
+        # Real failure (2026-06-10 screenshot, turn 1): with no income fact
+        # grounded, the model confidently answered "no coins" while sounding
+        # sourced. The income fact now grounds (PR #662); this pins that the
+        # model USES it — the verbatim user text, article typo included.
+        user_message="does the navarch of seas paragon make coins",
+        tools=(_tool("btd6_lookup"),),
+        tool_results={
+            "btd6_lookup": {
+                "found": True,
+                "facts": [
+                    "[btd6_paragon] Monkey Buccaneer's Paragon (tier 6) is "
+                    "Navarch of the Seas, costing 550000 on Medium "
+                    "(source: bloonswiki)",
+                    "[btd6_paragon_stats normal] Navarch of the Seas income: "
+                    "generates $3,200 at the end of each round "
+                    "(degree-independent; source: BTD6 game data)",
+                ],
+            },
+        },
+        grader=any_of(contains("3,200"), contains("3200")),
+    ),
+    EvalCase(
+        id="grounding.btd6_carryover_followup",
+        category="grounding",
+        task=AITask.BTD6_ANSWER,
+        # Real failure (same screenshot, turn 2): the pronoun follow-up. In
+        # production the carryover pass (PR #668) grounds the prior turn's
+        # entity with the [btd6_carryover] label; this pins that the model
+        # answers from the labeled carried fact instead of refusing or
+        # contradicting it. (A true multi-turn eval needs a harness
+        # recent-turns field — out of scope; the carryover mechanics are
+        # deterministic and unit-pinned.)
+        user_message="Does it make coins at the end of round",
+        tools=(_tool("btd6_lookup"),),
+        tool_results={
+            "btd6_lookup": {
+                "found": True,
+                "facts": [
+                    "[btd6_carryover] The user's latest message names no BTD6 "
+                    "entity; the facts below are grounded from the recent "
+                    "conversation (most recent turn that named one). If the "
+                    "user appears to mean a different subject, ask instead of "
+                    "assuming.",
+                    "[btd6_paragon_stats normal] Navarch of the Seas income: "
+                    "generates $3,200 at the end of each round "
+                    "(degree-independent; source: BTD6 game data)",
+                ],
+            },
+        },
+        grader=any_of(contains("3,200"), contains("3200")),
+    ),
+    EvalCase(
         id="tool.btd6_capability_discovery",
         category="tool_use",
         task=AITask.BTD6_ANSWER,

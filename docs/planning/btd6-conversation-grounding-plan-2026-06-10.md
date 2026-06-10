@@ -5,8 +5,12 @@
 > can do right now") — the act-envelope call: deterministic, read-only, no new
 > state, regression-pinned. §4's first open question resolved in-code: the gate
 > is **zero facts total** (the conservative trigger; the live case had exactly
-> that). Remaining open: the eval-harness pin (§4 third bullet) and any wider
-> window once real usage data exists.
+> that). The §4 eval question is resolved (2026-06-10, follow-up PR): two
+> canned-fact probes in `tests/evals/cases.py`
+> (`grounding.btd6_navarch_income` + `grounding.btd6_carryover_followup`,
+> both verbatim report text) — a true *multi-turn* eval needs a harness
+> `recent_turns` field and stays out of scope. Remaining open: any wider
+> carryover window once real usage data exists.
 > **Prepared:** 2026-06-10 (the Navarch routing session's captured gap, PR #662).
 > **Area authorities:** [`../subsystems/btd6.md`](../subsystems/btd6.md) ·
 > [`../subsystems/ai.md`](../subsystems/ai.md) · backlog home:
