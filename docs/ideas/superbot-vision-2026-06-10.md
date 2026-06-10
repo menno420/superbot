@@ -157,6 +157,25 @@ section is new work** — it's the ground the vision stands on.
 - **V-12 — "Don't make me think" as the design bar.** The bot feels smart: correct
   guesses about server layout, obvious next actions, no dead ends. (The qualitative
   umbrella over V-01/V-02/V-03; AG-01 makes slices of it measurable.)
+- **V-13 — Multi-ecosystem open world (added 2026-06-10, brainstorm round 5).**
+  Owner-voice: mining is "one of a couple of ecosystems, that should be connected
+  but also separate, maybe they would get some different currency but the tools
+  are the same, and for some tools maybe you'd need to invest a little time in
+  another section… the mining is only going to be one part of the open world
+  system, it just now be the main focus because it has all the variables in one
+  section, so it makes the best foundation to lay the open world idea on top."
+  Architecture intent: **federated ecosystems on one character/tool substrate** —
+  per-ecosystem currencies (maybe), shared tool identity, deliberate light
+  cross-investment links, mining as the proving ground whose patterns (energy,
+  ladders, workshop seams, game-XP) get *extracted into the substrate* for
+  ecosystems #2+. Open structured-choice round pending (ecosystem #2 identity ·
+  currency model · cross-investment strength — asked 2026-06-10).
+- **V-14 — Competitive feature mining (added 2026-06-10, brainstorm round 5).**
+  Owner-endorsed research direction: systematically tear down the big bots'
+  ("thousands of features") catalogs, "filter out some of the best ideas and
+  combine them into another branch of the bot" — a deep-research session
+  producing a verified, dedup-mapped candidate list routed through the normal
+  idea conveyor (nothing auto-approved). Scope question pending (same round).
 
 ## 4. Agent response — what I'd add to make it the best bot ever (AG-xx)
 
