@@ -19,7 +19,8 @@ from cogs.help.route import resolve_route as _resolve_route
 from core.runtime.persistent_views import PersistentView, register
 from services import governance_service
 from services.governance_service import GovernanceContext
-from utils.hub_registry import ALL_COMMANDS_KEY, hubs_for_tier
+from services.help_projection import HelpProjection, is_command_displayable
+from utils.hub_registry import ALL_COMMANDS_KEY
 from utils.subsystem_registry import SUBSYSTEMS, all_subsystems_sorted
 from utils.ui_constants import ADMIN_COLOR, GENERAL_COLOR, MOD_COLOR, UTILITY_COLOR
 
@@ -80,78 +81,15 @@ def _cog_for_subsystem(bot: commands.Bot, subsystem_name: str) -> commands.Cog |
     return None
 
 
-def _classification_hidden(cmd: commands.Command) -> bool:
-    """Return ``True`` if classification metadata hides ``cmd`` from help.
-
-    Thin wrapper around the canonical
-    :func:`core.runtime.command_surface_ledger.is_command_hidden_from_help`
-    so help-rendering code consumes the **same policy** the ledger
-    surface uses — there is no second hidden-set declaration to drift
-    against.  An unknown / missing classification keeps the command
-    visible (the policy default is "show").
-    """
-    # Function-local import keeps the help cog's import graph
-    # consistent with the cycle-sensitive discipline used in
-    # ``cogs.help.route``.
-    from core.runtime.command_surface_ledger import is_command_hidden_from_help
-
-    return is_command_hidden_from_help(cmd)
-
-
 def _get_visible_commands(cog: commands.Cog) -> list[commands.Command]:
-    return [
-        cmd
-        for cmd in cog.get_commands()
-        if not cmd.hidden and cmd.enabled and not _classification_hidden(cmd)
-    ]
+    """Commands the help surfaces may render for ``cog``.
 
-
-async def build_overview_embed(
-    bot: commands.Bot,
-    ctx: commands.Context,
-    visible: set[str],
-    member_tier: str,
-) -> discord.Embed:
-    """Build a governance-aware overview embed grouped by visibility tier.
-
-    Subsystems with ``parent_hub`` set (e.g. Blackjack under the Games
-    hub) are hidden from the top-level overview — they remain reachable
-    through their hub and via typed commands.
+    Delegates to :func:`services.help_projection.is_command_displayable` —
+    the one display filter (Discord-hidden / disabled / ledger
+    classification) shared by the command-list embed and the typed
+    single-command route (HLP-2).
     """
-    embed = discord.Embed(
-        title="📚 Help Menu",
-        description="Select a category from the dropdown below.",
-        color=UTILITY_COLOR,
-    )
-
-    subsystems_by_name = dict(all_subsystems_sorted())
-
-    for group in _TIER_GROUPS:
-        group_tiers: set[str] = group["tiers"]
-        entries: list[str] = []
-
-        for name, meta in subsystems_by_name.items():
-            if name not in visible:
-                continue
-            if meta.get("parent_hub"):
-                continue
-            if meta.get("visibility_tier") not in group_tiers:
-                continue
-            emoji = meta.get("emoji", "•")
-            display = meta.get("display_name", name)
-            desc = meta.get("description", "")
-            entries.append(f"{emoji} **{display}** — {desc}")
-
-        if entries:
-            embed.add_field(
-                name=group["label"],
-                value="\n".join(entries),
-                inline=False,
-            )
-
-    if not embed.fields:
-        embed.description = "No commands are available in this channel."
-    return embed
+    return [cmd for cmd in cog.get_commands() if is_command_displayable(cmd)]
 
 
 def build_cog_embed(
@@ -230,8 +168,9 @@ def _attach_back_to_help_button(view: discord.ui.View) -> None:
     ) -> tuple[discord.Embed, discord.ui.View]:
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
-        new_view = HelpCategoryView(vis_result.member_tier)
-        embed = build_categories_overview_embed(vis_result.member_tier)
+        projection = HelpProjection.from_visibility(vis_result)
+        new_view = HelpCategoryView(projection=projection)
+        embed = build_categories_overview_embed(projection=projection)
         return embed, new_view
 
     attach_back_button(
@@ -299,22 +238,36 @@ def _build_page_embed(
     return embed
 
 
-def build_categories_overview_embed(member_tier: str) -> discord.Embed:
+def build_categories_overview_embed(
+    member_tier: str | None = None,
+    *,
+    projection: HelpProjection | None = None,
+) -> discord.Embed:
     """Build the top-level Help embed showing mother-hub categories.
 
-    Iterates :data:`utils.hub_registry.HUBS`, filters to hubs visible at
-    ``member_tier`` via :func:`hubs_for_tier`, and always appends the
-    permanent "Advanced / All Commands" fallback row. Each hub row is a
-    uniform two-line shape — purpose + typed entry command — with no
-    ``Includes:`` line. Child rosters live inside each hub panel.
+    HLP-2: hub rows come from ``projection.visible_hubs()`` — the one
+    effective-access seam (hub tier floor **and** host-subsystem governance
+    visibility), so Home can no longer show a hub whose subsystem is
+    governance-hidden in this scope. Live callers pass the projection they
+    built from the resolved :class:`VisibilityResult`; ``member_tier`` alone
+    falls back to :meth:`HelpProjection.registry_defaults` (static registry
+    tiers — tests / restore symmetry only, byte-equivalent to the pre-seam
+    tier-only rule).
+
+    Always appends the permanent "Advanced / All Commands" fallback row.
+    Each hub row is a uniform two-line shape — purpose + typed entry
+    command — with no ``Includes:`` line. Child rosters live inside each
+    hub panel.
     """
+    if projection is None:
+        projection = HelpProjection.registry_defaults(member_tier or "user")
     embed = discord.Embed(
         title="📚 Help Menu",
         description="Pick a category from the dropdown below.",
         color=UTILITY_COLOR,
     )
 
-    for hub in hubs_for_tier(member_tier):
+    for hub in projection.visible_hubs():
         embed.add_field(
             name=f"{hub.emoji} {hub.display_name}",
             value=f"{hub.purpose}\n→ `{hub.entry_command}`",
@@ -355,8 +308,9 @@ async def resolve_help_panel_state(
     """
     gctx = GovernanceContext.from_interaction(interaction)
     vis_result = await governance_service.resolve_visibility(gctx)
-    view = HelpCategoryView(vis_result.member_tier)
-    embed = build_categories_overview_embed(vis_result.member_tier)
+    projection = HelpProjection.from_visibility(vis_result)
+    view = HelpCategoryView(projection=projection)
+    embed = build_categories_overview_embed(projection=projection)
     return embed, view
 
 
@@ -434,19 +388,20 @@ class HelpPanelView(PersistentView):
         self,
         interaction: discord.Interaction,
     ) -> tuple[list[str], str]:
-        """Return (sorted visible subsystem names, member_tier) via governance."""
+        """Return (sorted visible subsystem names, member_tier) via the
+        projection seam (HLP-2).
+        """
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
-        visible_set = vis_result.visible_subsystems
-        visible_list = [
-            name
-            for name, meta in all_subsystems_sorted()
-            if name in visible_set and not meta.get("parent_hub")
-        ]
-        return visible_list, vis_result.member_tier
+        projection = HelpProjection.from_visibility(vis_result)
+        return projection.advanced_subsystems(), projection.member_tier
 
     async def _on_select(self, interaction: discord.Interaction) -> None:
         """Open the chosen subsystem in place — direct navigation, no extra clicks.
+
+        HLP-2: re-resolves governance and checks the selected target against
+        the projection **at click time** (pre-seam, a stale dropdown opened
+        any subsystem regardless of current visibility — audit §3).
 
         Resolution order:
           1. If the cog exposes ``build_help_menu_view(interaction)``, call it
@@ -457,6 +412,17 @@ class HelpPanelView(PersistentView):
              adopted the direct-navigation hook.
         """
         subsystem_name = interaction.data["values"][0]  # type: ignore[typeddict-item]
+
+        gctx = GovernanceContext.from_interaction(interaction)
+        vis_result = await governance_service.resolve_visibility(gctx)
+        projection = HelpProjection.from_visibility(vis_result)
+        if not projection.is_subsystem_advertised(subsystem_name):
+            await interaction.response.send_message(
+                "That category is no longer available.",
+                ephemeral=True,
+            )
+            return
+
         cog = _cog_for_subsystem(interaction.client, subsystem_name)  # type: ignore[arg-type]
         if not cog:
             await interaction.response.send_message(
@@ -532,25 +498,37 @@ class HelpCategoryView(PersistentView):
     is effectively unused for restore but is kept for symmetry with
     the rest of the codebase.
 
-    Stateless aside from ``_member_tier`` cached at construction time
-    so the dropdown options match the user's governance tier. The
-    select callback re-resolves visibility before opening a hub so a
-    user who lost a tier between Help renders gets the current state,
-    not the stale snapshot.
+    Stateless aside from ``_projection`` cached at construction time
+    so the dropdown options match the user's effective access (HLP-2:
+    hub tier floor **and** host-subsystem governance visibility — the
+    same seam every other Help path consumes). The select callback
+    re-resolves visibility before opening a hub so a user who lost a
+    tier between Help renders gets the current state, not the stale
+    snapshot.
+
+    ``member_tier`` (without a projection) falls back to the static
+    registry-defaults projection — persistent-view restore symmetry and
+    tests only; live callers pass ``projection``.
     """
 
     SUBSYSTEM = "help"
 
-    def __init__(self, member_tier: str | None = None) -> None:
+    def __init__(
+        self,
+        member_tier: str | None = None,
+        *,
+        projection: HelpProjection | None = None,
+    ) -> None:
         super().__init__()
-        self._member_tier = member_tier or "user"
+        self._projection = projection or HelpProjection.registry_defaults(
+            member_tier or "user",
+        )
         self._rebuild_items()
 
     def _rebuild_items(self) -> None:
         self.clear_items()
-        visible_hubs = hubs_for_tier(self._member_tier)
         options: list[discord.SelectOption] = []
-        for hub in visible_hubs:
+        for hub in self._projection.visible_hubs():
             options.append(
                 discord.SelectOption(
                     label=hub.display_name[:100],
@@ -588,6 +566,7 @@ class HelpCategoryView(PersistentView):
         # when the category panel was first rendered.
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
+        projection = HelpProjection.from_visibility(vis_result)
 
         # The sentinel "All Commands / Advanced" routes through the same
         # resolver as everything else — keyed by the canonical "advanced"
@@ -606,8 +585,7 @@ class HelpCategoryView(PersistentView):
         embed, sub_view = await _open_route(
             route,
             opener,
-            visible_subsystems=vis_result.visible_subsystems,
-            member_tier=vis_result.member_tier,
+            projection=projection,
         )
 
         if sub_view is None:
@@ -637,8 +615,7 @@ class HelpCog(commands.Cog):
         """Shows available commands. Pass a category name for details."""
         gctx = GovernanceContext.from_ctx(ctx)
         vis_result = await governance_service.resolve_visibility(gctx)
-        visible_set = vis_result.visible_subsystems
-        member_tier = vis_result.member_tier
+        projection = HelpProjection.from_visibility(vis_result)
         prefix = ctx.prefix or "!"
 
         if category:
@@ -655,8 +632,7 @@ class HelpCog(commands.Cog):
             embed, sub_view = await _open_route(
                 route,
                 opener,
-                visible_subsystems=visible_set,
-                member_tier=member_tier,
+                projection=projection,
                 prefix=prefix,
             )
 
@@ -674,8 +650,8 @@ class HelpCog(commands.Cog):
         # S3: the top of Help is the mother-hub category index. The
         # legacy paginated subsystem list is reached only via the
         # "Advanced / All Commands" entry inside HelpCategoryView.
-        view = HelpCategoryView(member_tier)
-        embed = build_categories_overview_embed(member_tier)
+        view = HelpCategoryView(projection=projection)
+        embed = build_categories_overview_embed(projection=projection)
 
         # The help panel is invoke-and-see, not a stable hub: each !help should
         # appear at the bottom of the channel where the user just typed.
@@ -741,8 +717,7 @@ class HelpCog(commands.Cog):
         """
         gctx = GovernanceContext.from_interaction(interaction)
         vis_result = await governance_service.resolve_visibility(gctx)
-        visible_set = vis_result.visible_subsystems
-        member_tier = vis_result.member_tier
+        projection = HelpProjection.from_visibility(vis_result)
 
         if name:
             opener = HelpOpener.from_interaction(interaction)
@@ -758,8 +733,7 @@ class HelpCog(commands.Cog):
             embed, sub_view = await _open_route(
                 route,
                 opener,
-                visible_subsystems=visible_set,
-                member_tier=member_tier,
+                projection=projection,
                 prefix=config.PREFIX,  # RC-14: operator-configurable, not "!"
             )
 

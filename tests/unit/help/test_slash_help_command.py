@@ -137,11 +137,14 @@ async def test_slash_help_named_route_resolves_via_shared_resolver():
 
     # Resolver receives the user-supplied name + the bot client.
     resolve_mock.assert_called_once_with("games", bot=cog.bot)
-    # Opener receives the resolved route + governance result.
+    # Opener receives the resolved route + the audience projection built
+    # from the governance result (HLP-2: one seam, not two raw kwargs).
     open_mock.assert_awaited_once()
     open_kwargs = open_mock.await_args.kwargs
-    assert open_kwargs["visible_subsystems"] == {"games", "economy"}
-    assert open_kwargs["member_tier"] == "user"
+    projection = open_kwargs["projection"]
+    assert projection.member_tier == "user"
+    assert projection.source == "governance"
+    assert projection.is_subsystem_advertised("games")
     # Back-to-Help is attached to the sub-view before send.
     back_mock.assert_called_once_with(fake_view)
     # Response is ephemeral + carries the route's embed/view.
