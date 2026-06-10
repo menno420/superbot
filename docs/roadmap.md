@@ -147,8 +147,9 @@ provenance schema is implemented; extraction resumed against the decode-status b
   ingested game-natively (roundset-aware `btd6_round_composition`/`btd6_round_cash`);
   subtower mechanisms 7/7; buffs 15/38 confirmed (the rest are provably unconfirmable
   pre-cutover). **Next: the dedicated `--all` towers-cutover session (owner decisions
-  Q-0066–Q-0069, router §29)** — game-native committed stats, Farm/Village minimal
-  tiers, per-tier beast names, name-guard joins, ~25 value-pinned test updates.
+  Q-0066–Q-0069, router §29)** — game-native committed stats, Farm/Village **full**
+  tier structures (attack-suppressed), per-tier beast names, name-guard joins, ~25
+  value-pinned test updates.
   Status: [decode-status](btd6/btd6-gamedata-decode-status.md).
 - **Built (2026-06-09, Q-0049 — PR #633, scoreboard Lane 5; verify merge)** — the
   "fetch-everything-on-update" data refresh is a committed **manual-dispatch GitHub

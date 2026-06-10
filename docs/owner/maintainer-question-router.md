@@ -2537,11 +2537,15 @@ PR #638.
 **Priority:** Medium
 **Status:** Answered (2026-06-09) — **Routed** → decode-status step 5d (cutover scope) + the blocked income-multiplier item
 
-**Maintainer answer (verbatim, 2026-06-09):** "Yes — minimal tiers at cutover" —
-Banana Farm + Monkey Village gain tier nodes carrying just their buffs/zones/income
-blocks (no fake attacks), so the prose-confirmed Central Market ×1.1 (+10%
-Merchantman income), Banana Central ×1.25 and the Village Primary Training auras
-land as structured, renderable buffs.
+**Maintainer answer (verbatim, 2026-06-09, two rounds):** first round: "Yes —
+minimal tiers at cutover"; **re-asked the same evening with refined options and
+the final answer SUPERSEDES it: "Full tier structure"** — Banana Farm + Monkey
+Village get the same game-native tier nodes as every other tower at the cutover
+(with attack suppression for Farm's nominal `AttackModel`), not a buffs-only
+shape. The prose-confirmed Central Market ×1.1 (+10% Merchantman income), Banana
+Central ×1.25 and the Village Primary Training auras land as structured,
+renderable buffs inside ordinary tier nodes — one tower-file shape, no second
+schema to maintain.
 
 ### Q-0068 — Beast Handler subtowers adopt per-tier game names at cutover
 

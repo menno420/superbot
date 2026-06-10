@@ -28,8 +28,9 @@ works** (the traps we hit), and what is still un-decoded.
 > ProjectileRadius Striker-identity · BananaCashIncrease committed via benjamin
 > re-export · ProjectileSpeed owner-confirmed +25%, Q-0069); zones carry `inclusive`;
 > paragonDegreeData cross-checked exact. **Cutover decisions made (router §29):**
-> dedicated cutover session next (Q-0066) · Farm/Village get minimal tier structures
-> (Q-0067) · per-tier beast names (Q-0068). Remaining buff/zone types are provably
+> dedicated cutover session next (Q-0066) · Farm/Village get **full game-native tier
+> structures** (attack-suppressed for Farm; refined from "minimal" in a same-evening
+> re-ask — Q-0067) · per-tier beast names (Q-0068). Remaining buff/zone types are provably
 > unconfirmable pre-cutover — validate them at/after the cutover itself.
 
 ### Current state & next actions (READ FIRST)
