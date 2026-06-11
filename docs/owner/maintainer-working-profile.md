@@ -160,3 +160,16 @@ deep driver: the agent network is the workshop, and the workflow docs are an
 external copy of his own idea-generating habit (he said so himself when
 installing the Q-0089 one-idea rule: agents should generate ideas
 *consistently, like he does*).
+
+**Timeline calibration (owner-corrected 2026-06-11 — read this twice):**
+the SuperBot era is **~3–4 weeks old** (a from-scratch restart on "a brand
+new unknown AI" he deliberately spent time studying), and the **entire AI
+memory/workflow system — journal, orientation chain, router, idea conveyor,
+collaboration model — is ~3–4 DAYS old.** Agents (including the one writing
+this) instinctively read the repo's density — hundreds of PRs, 91 router
+decisions, 8,900+ tests, dated doc strata — as *months* of history. It
+isn't. Derivation (5): **measure maturity in PRs, decisions, and survived
+incidents — never in calendar time.** The conventions are real (they've
+survived hundreds of merges and parallel-agent collisions); they are also
+young — when one chafes, propose the improvement rather than assuming it's
+load-tested ancient law.
