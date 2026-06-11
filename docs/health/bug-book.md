@@ -10,7 +10,7 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
-## BUG-0010 — the "in ABR" qualifier is ignored by auto-grounding and the round-cash workflow — OPEN
+## BUG-0010 — the "in ABR" qualifier is ignored by auto-grounding and the round-cash workflow
 
 - **Reported:** 2026-06-11 ~15:06–15:07 (owner, Haiku round): "how much cash
   do I get in ABR from r25 to r83 when I have double cash and I started with
@@ -33,8 +33,26 @@
   `abr_rounds` and label the lines `[ABR]`; (2) `RoundCashPlan` gains a
   `roundset` field + matcher cue so the workflow computes/labels the ABR
   range; (3) regression: the two live phrasings above.
-- **Status:** OPEN — queued for the AI lane (a multi-layer slice; captured
-  mid live-session 2026-06-11 rather than rushed).
+- **Fix (follow-up session, same day):** one shared `ABR_CUE_RE`
+  (`utils/btd6/keywords.py`) consumed by both legs. Grounding: the round
+  legs re-fetch each resolver-matched round via `get_round(n, roundset="abr")`
+  and stamp **every** line `Round N (ABR)` with an ABR economy note (no
+  silent standard-as-ABR possible; a missing ABR entry says so explicitly).
+  Workflow: `RoundCashPlan` gained `roundset` + `unsupported_modifier`; the
+  matcher parses the cue and the named cash modifier; all three executors
+  compute on the plan's roundset, label the economy in `result_text`, carry
+  `roundset` in the evidence inputs/id, and emit an explicit "<modifier> is
+  NOT applied" warning. Live phrasing now answers deterministically:
+  **$113,872.30** ABR rounds 25-83 (≈ $119,315.30 projected with the stated
+  $5,443) + the double-cash warning; "r87 in ABR" grounds **83,280 RBE /
+  5 ZOMG (ABR)** instead of standard's 66,624 / 4 ZOMG.
+- **Regression tests:**
+  `test_plan_abr_qualifier_and_modifier_production_phrasing` ·
+  `test_run_abr_range_uses_abr_economy_and_flags_modifier` ·
+  `test_standard_phrasings_stay_default_roundset` ·
+  `test_abr_qualifier_grounds_abr_round_entries` · live-battery
+  `knowledge.btd6_abr_range_cash_bug_0010`.
+- **Status:** FIXED — follow-up session 2026-06-11 (the PR after #707).
 
 ## BUG-0009 — grounded facts, wrong assembly: lists mislabeled / badly grouped (the claim-assembly class) — OPEN
 
