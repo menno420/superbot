@@ -103,3 +103,23 @@ provenance header lives in the script.) **Executed in this same session as
 the Q-0015 grooming move** (small/safe/active-lane): `--route` prints the
 task classification, the round-cash plan match, and the engaging profiles —
 `test_route_leg_flags_general_path_miss` pins the miss signature.
+
+## Round 3 (same conversation, post-#703 live re-test): BUG-0004 + the capabilities list
+
+The owner re-tested live: despos ✓ ($120,250), seed-data ✓ (70 blobs) — but
+"How much do I have on r70 if I had 26932 at the end of r53" got
+**$71,315.20**, which is the from-round-1 cumulative, not his scenario
+(truth: $56,318.70). He also asked for the capabilities reply as a clear
+bulleted list (the old tool-catalog style), complete with the new families.
+
+- **BUG-0004** (bug book): r-shorthand anchors + "end of round" start shift
+  + had/held balance cues + the router r-round leg (two tokens or one +
+  money cue). The deterministic workflow now owns the projection:
+  $56,318.70, with the end-of-53 assumption stated.
+- **Capabilities reply**: bulleted render (one `- **name** — note` line per
+  domain) + a Lookups line; introspection notes updated to advertise
+  Standard+Elite boss health, crosspath/bulk pricing, and balance
+  projections; new `boss_health` calculation domain. 1,616 chars (cap 1900).
+- The verifier-checks-values-not-claims class has now produced TWO live
+  mislabels (BUG-0002 elite, BUG-0004 cumulative) — both fixed by making
+  the deterministic layer own the labeled answer; noted as a watch-class.

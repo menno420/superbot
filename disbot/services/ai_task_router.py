@@ -164,6 +164,23 @@ def _looks_like_btd6_entity(lowered: str) -> bool:
     return bool(tokens & single)
 
 
+# "r53"-style round shorthand (live miss 2026-06-11: "How much do I have on
+# r70 if I had 26932 at the end of r53" routed general — the model assembled
+# tool numbers wrongly with no number guard). The trailing \b rejects
+# "r2d2"-style tokens (digit→letter is no boundary). Conservative: two
+# round tokens read as BTD6 rounds talk on their own; a single one needs a
+# money cue so "there r 5 of us" stays general.
+_R_ROUND_RE = re.compile(r"\br\s?\d{1,3}\b")
+_MONEY_CUE_RE = re.compile(r"\bcash\b|\bmoney\b|\bhow much\b")
+
+
+def _looks_like_round_shorthand(lowered: str) -> bool:
+    hits = _R_ROUND_RE.findall(lowered)
+    if len(hits) >= 2:
+        return True
+    return bool(hits) and _MONEY_CUE_RE.search(lowered) is not None
+
+
 @dataclass(frozen=True)
 class RoutedTask:
     task: AITask
@@ -191,6 +208,8 @@ def classify(
     looks_btd6 = any(keyword in lowered for keyword in _BTD6_KEYWORDS)
     if not looks_btd6:
         looks_btd6 = _looks_like_btd6_entity(lowered)
+    if not looks_btd6:
+        looks_btd6 = _looks_like_round_shorthand(lowered)
     if channel_is_strategy_intake and looks_btd6:
         return RoutedTask(
             task=AITask.BTD6_STRATEGY_REVIEW,

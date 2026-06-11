@@ -275,8 +275,10 @@ def build_btd6_answerability() -> BTD6AnswerabilitySnapshot:
             "round_cash",
             "calculation",
             note=(
-                "Per-round and inclusive-range cash earned (rounds 1-140): "
-                "standard/Medium by default, ABR via roundset='abr'."
+                "Per-round and inclusive-range cash earned (rounds 1-140), "
+                "standard/Medium by default (ABR via roundset='abr') — incl. "
+                'projections like "if I have 20K by round 50, how much by '
+                'round 60?".'
             ),
         ),
         AnswerabilityDomain(
@@ -287,7 +289,19 @@ def build_btd6_answerability() -> BTD6AnswerabilitySnapshot:
         AnswerabilityDomain(
             "cumulative_upgrade_cost",
             "calculation",
-            note="Running cost to reach a tower upgrade tier on a path, per difficulty.",
+            note=(
+                "Running cost to reach any upgrade tier, per difficulty — "
+                "incl. full crosspath builds and bulk amounts "
+                '("10 041 despos" = ten 0-4-1 Desperados).'
+            ),
+        ),
+        AnswerabilityDomain(
+            "boss_health",
+            "calculation",
+            note=(
+                "Per-tier boss health and speed, Standard AND Elite "
+                "(single-player; co-op scaling not modelled)."
+            ),
         ),
         AnswerabilityDomain(
             "paragon",

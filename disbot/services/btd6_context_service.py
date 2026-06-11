@@ -1802,27 +1802,31 @@ def deterministic_meta_reply(message_text: str) -> str | None:
         name = d.name.replace("_", " ")
         return f"{name} ({d.item_count})" if d.item_count else name
 
+    def _bullets(domains: list[Any]) -> list[str]:
+        # One "- name — note" bullet per domain: the owner compared the old
+        # semicolon-run rendering against the bulleted tool-catalog list and
+        # asked for "a clear list of everything it can do in a readable
+        # format" (live, 2026-06-11).
+        out = []
+        for d in domains:
+            name = d.name.replace("_", " ")
+            out.append(f"- **{name}** — {d.note}" if d.note else f"- **{name}**")
+        return out
+
     lines = [
         f"**What I know about BTD6** (game version {snap.game_version}, "
         f"{snap.source_label}):",
         "📚 **Verified data:** " + ", ".join(_label(d) for d in fixtures) + ".",
+        "🔎 **Lookups:** any of the above by name — plus capability search "
+        "(camo detection, lead/purple popping, …) and rankings by cost, "
+        "damage, DPS, pierce, or range.",
     ]
     if calculations:
-        lines.append(
-            "🧮 **Calculations:** "
-            + "; ".join(
-                f"{d.name.replace('_', ' ')} — {d.note}" if d.note else d.name
-                for d in calculations
-            ),
-        )
+        lines.append("🧮 **Calculations:**")
+        lines.extend(_bullets(calculations))
     if live:
-        lines.append(
-            "📡 **Live:** "
-            + "; ".join(
-                f"{d.name.replace('_', ' ')} — {d.note}" if d.note else d.name
-                for d in live
-            ),
-        )
+        lines.append("📡 **Live:**")
+        lines.extend(_bullets(live))
     if unsupported:
         lines.append(
             "🚫 **Not covered:** "

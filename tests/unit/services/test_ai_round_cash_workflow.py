@@ -162,6 +162,60 @@ def test_plan_money_question_gate_stays_conservative() -> None:
         assert wf.plan_question(text) is None, text
 
 
+def test_plan_r_shorthand_with_completed_round_production_phrasing() -> None:
+    # Live miss (2026-06-11, post-#703): "How much do I have on r70 if I had
+    # 26932 at the end of r53" — r-shorthand anchors matched nothing, the
+    # workflow stayed out, and the model presented cumulative(70) =
+    # $71,315.20 as the total. Truth: 26,932 + range(54..70) = $56,318.70.
+    plan = wf.plan_question(
+        "How much do I have on r70 if I had 26932 at the end of r53",
+    )
+    assert plan is not None
+    assert plan.intent == "range_cash"
+    # Anchors arrive reversed (70 first); "end of r53" shifts the lower
+    # anchor to 54 — the service normalises the order downstream.
+    assert {plan.round_start, plan.round_end} == {70, 54}
+    assert plan.starting_balance == 26932.0
+    assert plan.completed_round_anchor == 53
+
+
+def test_run_completed_round_projection_counts_from_next_round() -> None:
+    answer = wf.run("How much do I have on r70 if I had 26932 at the end of r53")
+    assert answer is not None
+    assert answer.status == "complete"
+    outputs = answer.evidence[0].outputs
+    assert (outputs["round_start"], outputs["round_end"]) == (54, 70)
+    assert outputs["starting_balance"] == 26932.0
+    assert outputs["projected_total"] == 56318.7
+    assert "$56,318.70" in answer.result_text
+    assert any("end of round 53" in a for a in answer.assumptions)
+
+
+def test_plan_r_shorthand_basic_range() -> None:
+    plan = wf.plan_question("how much cash from r50 to r60")
+    assert plan is not None
+    assert (plan.round_start, plan.round_end) == (50, 60)
+    assert plan.completed_round_anchor is None
+
+
+def test_completed_cue_on_upper_round_is_a_no_op() -> None:
+    # Inclusive ranges already count the end round — "to the end of round
+    # 60" must not shift anything.
+    plan = wf.plan_question("how much cash from round 50 to the end of round 60")
+    assert plan is not None
+    assert (plan.round_start, plan.round_end) == (50, 60)
+    assert plan.completed_round_anchor is None
+
+
+def test_r_token_requires_digit_boundary() -> None:
+    # "r2d2" / "r 5" word salad never reads as a round anchor.
+    for text in (
+        "how much money does r2d2 have",
+        "there r 5 of us, how much cash do we need",
+    ):
+        assert wf.plan_question(text) is None, text
+
+
 def test_range_answer_projects_balance_for_by_round_phrasing() -> None:
     answer = wf.run("if I have 20K by round 50, how much would I have by round 60?")
     assert answer is not None

@@ -244,6 +244,24 @@ CASES: list[EvalCase] = [
         ),
     ),
     EvalCase(
+        # BUG-0004 (live, 2026-06-11, post-#703): r-shorthand anchors matched
+        # nothing, the question routed general (no number guard), and the
+        # model presented cumulative(70) = $71,315.20 as the user's total.
+        # Truth: 26,932 (held after r53) + 29,386.70 (rounds 54-70) =
+        # $56,318.70.
+        id="knowledge.btd6_round_cash_r_shorthand_bug_0004",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        user_message="How much do I have on r70 if I had 26932 at the end of r53",
+        grader=llm_judge(
+            "Must state approximately $56,318.70 as the total at the end of "
+            "round 70 (the stated $26,932 plus about $29,386.70 earned over "
+            "rounds 54-70 — round 53 is already counted). Stating $71,315.20 "
+            "(the from-round-1 cumulative) as the user's total FAILS; a "
+            "refusal FAILS.",
+        ),
+    ),
+    EvalCase(
         # BUG-0002 (live, 2026-06-11): "elite lych hp per tier" was answered
         # with the STANDARD table labeled Elite (T1 14,000 …) — the question
         # routed to the general path and the dataset had no elite figures.

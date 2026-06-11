@@ -93,6 +93,17 @@ No setup needed (the tool is offered under the default profile).
       4,800,000 / 24,000,000**.
       **Report if:** 14,000 / 52,500 / … appears (those are Standard values —
       the BUG-0002 mislabel), or a refusal.
+- [ ] **BUG-0004 regression (r-shorthand + end-of-round):**
+      `How much do I have on r70 if I had 26932 at the end of r53`
+      **Expect:** ≈ **$56,318.70** ($26,932 held + $29,386.70 earned over
+      rounds 54-70 — round 53 already counted).
+      **Report if:** **$71,315.20** appears as the total (that's the
+      from-round-1 cumulative — the BUG-0004 mislabel), or a refusal.
+- [ ] **Capabilities list format:** mention the bot with
+      `what can you tell me about btd6`
+      **Expect:** a bulleted list (one `-` line per calculation/live
+      capability) incl. boss health Standard+Elite, crosspath/bulk pricing,
+      and balance projections — not a semicolon run.
 - [ ] **BUG-0003 regression (PR #703; needs `!btd6ops seed-data` after merge):**
       `how much do 10 041 despos cost on impop`
       **Expect:** despos = the **Desperado** tower, and "10 041" read as TEN

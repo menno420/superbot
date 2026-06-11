@@ -179,3 +179,40 @@ def test_boss_and_shorthand_questions_route_to_btd6_answer(text):
     assert (
         decision.task is AITask.BTD6_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # r-shorthand rounds (live miss 2026-06-11, post-#703): "on r70 … end of
+    # r53" routed general, so the model assembled tool numbers with no
+    # number guard and presented cumulative(70) as the user's total. Two
+    # r-round tokens — or one plus a money cue — read as BTD6 rounds talk.
+    [
+        "How much do I have on r70 if I had 26932 at the end of r53",
+        "how much cash do i get from r40 to r80",
+        "r63 and r76 are brutal",
+        "how much money by r100",
+    ],
+)
+def test_r_shorthand_round_questions_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # The r-shorthand leg must not over-route ordinary chat: "r2d2" has no
+    # digit boundary, and a lone "r 5" needs a money cue that these lack.
+    [
+        "r2d2 is my favourite droid",
+        "there r 5 of us coming",
+        "is r78 hard",  # single token, no money cue — stays conservative
+    ],
+)
+def test_r_shorthand_does_not_over_route(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"

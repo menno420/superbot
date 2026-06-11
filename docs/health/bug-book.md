@@ -10,6 +10,47 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0004 — r-shorthand round projection answered with the wrong total (cumulative-from-round-1 mislabel)
+
+- **Reported:** 2026-06-11 ~12:39 (owner screenshot, #general — post-#703
+  deploy; the owner flagged it as "probably fixed *if* those numbers are
+  correct" — they were not)
+- **Surface:** AI natural-language → BTD6 round-cash routing + workflow matcher
+- **Symptom (verbatim):** "How much do I have on r70 if I had 26932 at the
+  end of r53" → "At the end of round 70, you would have a total of
+  **$71,315.20**" (plus a correct $29,386.70 rounds-54-70 breakdown).
+  $71,315.20 is the cumulative from **round 1** through 70 — not the user's
+  scenario. Truth: 26,932 + 29,386.70 = **$56,318.70**.
+- **Root cause (four stacked gaps):** (1) every workflow range pattern
+  demanded the literal word "round" — the r-shorthand anchors ("r70",
+  "r53") matched nothing, so the deterministic workflow stayed out; (2) the
+  router had no r-form cue either, so the message routed
+  `general.nl_answer` — the model called the round tools itself and the
+  general path checks names only, so each number was individually grounded
+  (cumulative(70), range(54,70), round 53) while the **assembly** was wrong
+  — the faithfulness guard checks values, not claims (the BUG-0002 mislabel
+  class again); (3) "at the END of r53" semantics didn't exist — even a
+  match would have double-counted round 53; (4) "if I **had**" wasn't a
+  balance cue (only have/got/hold).
+- **Fix (this PR):** one shared round-token vocabulary (`round 53` / `r53` /
+  `r 53`, digit-boundary-guarded so "r2d2" stays out) across all range/afford
+  anchors; a completion-cue start shift ("end of/after/finished/cleared
+  round N" on the range's lower round → start N+1, no-op on the upper) with
+  an explicit assumption line; had/held/started-with balance cues; r-form
+  round masking before amount extraction; and a conservative router leg —
+  two r-round tokens, or one plus a money cue, route `btd6.answer` (arming
+  the number guard). The default-profile workflow (#703) then owns the
+  projection: $56,318.70, deterministic.
+- **Regression tests:**
+  `test_plan_r_shorthand_with_completed_round_production_phrasing` ·
+  `test_run_completed_round_projection_counts_from_next_round` ·
+  `test_completed_cue_on_upper_round_is_a_no_op` ·
+  `test_r_token_requires_digit_boundary` ·
+  `test_r_shorthand_round_questions_route_to_btd6_answer` (+ the
+  over-route negatives) · live-battery
+  `knowledge.btd6_round_cash_r_shorthand_bug_0004`.
+- **Status:** FIXED — this PR
+
 ## BUG-0003 — "despos" hallucinated as Plasma Monkey Fan Club (unguarded general path)
 
 - **Reported:** 2026-06-11 ~10:32 (owner screenshot, #general)
