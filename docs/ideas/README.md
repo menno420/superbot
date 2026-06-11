@@ -18,6 +18,13 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`voice-mode-planning-capture-2026-06-11.md`](./voice-mode-planning-capture-2026-06-11.md) —
+  **voice-mode brainstorm (2026-06-11):** UX and product ideas from a casual spoken planning
+  session via ChatGPT. Covers setup wizard clarity, centralized settings navigation, help-menu
+  modernization, crafting filters, craft-and-equip shortcut, deeper mining/chopping progression,
+  world/exploration hub concept, idle/pets/co-op/NPC ideas, and routing notes per candidate.
+  Strongest near-term candidates: crafting UX polish + AI settings clarity.
+
 > **Standing intake note (Q-0089, 2026-06-10):** every session now *generates*
 > one new `💡 Session idea` at END (owner directive — consistent generation
 > beats occasional brilliance). Substantial ones land here as files; small ones
