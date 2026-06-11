@@ -3610,7 +3610,41 @@ so the owner experiences the network's velocity as a product feature.
 **Area:** Games / open-world architecture / public-bot posture (Q-0080)
 **Type:** Architectural product decision — currently *unasked anywhere*
 **Priority:** High-before-ecosystem-#2 (re-keying tables later = migration nightmare)
-**Status:** **Open** — awaiting owner
+**Status:** **Answered** (2026-06-11) — the owner invented a **fourth model**
+none of the offered options contained: **conservation-based optional transfer
+with a destination-aware cap.**
+
+**Owner statement (2026-06-11, verbatim):** "I think it should be an option,
+but it should be very nuanced, for instance, I don't think it's a good idea
+to just let people take their full high lvl player into a new server, that
+would be kinda unfair, what if the server is new or something like that, what
+I do think, that based on the average lvls of the server they join as their
+second server, thay should be able to choose between either starting from 0
+or transferring up to 10% of they cash and items and gear etc from the other
+server, and it would actually take the items from their inventory there and
+give them to their other character, so it's not free and always optional and
+still fair to the players of the server that didn't start somewhere else."
+
+**The model as canon (binds the V-13 federation + ecosystem-#2 design):**
+
+1. **Characters stay per-guild** (tables keep their `(user, guild)` keys —
+   no re-keying migration ever needed).
+2. **Joining another server offers a choice:** start from 0, **or** transfer
+   **up to 10%** of cash/items/gear from an existing character.
+3. **Transfer = conservation, not duplication:** the items/cash are *removed*
+   from the source character and given to the destination one. Not free,
+   always optional, fair to native players.
+4. **Destination-aware calibration:** the offer is shaped by the destination
+   server's **average level** (a high-roller can't stomp a brand-new server).
+   Exact calibration mechanics = build-time design (+ a P0-style simulation
+   pass before shipping; anti-abuse review per Q-0080 — transfer round-trips
+   as a laundering vector must be checked).
+
+**Substrate consequence (V-13):** items/gear need a **serializable,
+audited cross-guild transfer seam** — design it into the shared-substrate
+extraction when ecosystem #2 work starts.
+
+**Original options + context (superseded by the owner's model):**
 
 **Context:** every game table is keyed `(user, guild)` — a player's character
 exists per server. Public-bot era makes this the biggest invisible decision:
@@ -3629,6 +3663,27 @@ exists per server. Public-bot era makes this the biggest invisible decision:
 
 **Sequencing:** decide before ecosystem #2 multiplies the keyed tables; the
 full gap list is [`ideas/gap-analysis-2026-06-11.md`](../ideas/gap-analysis-2026-06-11.md).
+
+### Gap-round addenda (2026-06-11, same conversation)
+
+- **Blanket grant:** the owner approved the remaining gap items —
+  "I agree and you can implement all of them or make the preperations for
+  it." Routed: item 6 (actions Node-24 bump) **executed in PR #694**; items
+  2 (data export/erasure), 4 (session telemetry), 5 (AI spend metering) =
+  **granted, queued for implementation/prep** (roadmap session queue);
+  item 3 (alerting) stays owner-deferred.
+- **Q-0082 cost datapoint:** "I have spend about 12 euro so far on the API
+  requests made by my bot and we have tested it a very long time" — actual
+  spend is tiny; ceiling pressure low. The **meter** (item 5) remains wanted
+  for the public era, but the € figure is even less urgent than assumed.
+- **Real-user testing culture (recorded):** the owner runs his friends as a
+  growing tester community and *teaches eval methodology* — steering them
+  from exhaustive enumeration ("every tower's upgrades by name") to
+  **abstract multi-step questions that require calculation/research**, which
+  find non-working commands "in one or two messages." He keeps inviting more
+  people "for randomness." This is live input for the commissioned
+  untested-surface checklist session: the human battery exists and is being
+  trained.
 
 ### Q-0090 — Open-world federation round: ecosystem #2, currencies, cross-links, research scope
 

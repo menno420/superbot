@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Full history so the docs-only detector can diff against the base.
           fetch-depth: 0
@@ -60,7 +60,7 @@ jobs:
 
       - name: Set up Python
         if: steps.changes.outputs.code == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.10"
 
