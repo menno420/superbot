@@ -38,7 +38,7 @@ DOLL_SIZE = (200, 300)
 
 
 def _canvas(
-    size: tuple[int, int] = (256, 256)
+    size: tuple[int, int] = (256, 256),
 ) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new("RGBA", size, (0, 0, 0, 0))
     return img, ImageDraw.Draw(img)
