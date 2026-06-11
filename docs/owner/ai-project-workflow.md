@@ -297,6 +297,13 @@ chained** sessions.
   protocol."* No schedule, no surprise spend — the owner presses Run.
   Requires (owner-side): the Anthropic API key as a repo Actions secret and a
   per-run budget choice. Build is queued on the roadmap session queue.
+  *(Owner-proposed interim variant, 2026-06-11: Samsung Routines touch-macros
+  on his phone — scheduled taps pressing send / switching chats hourly.
+  Viable as a zero-infra experiment, but two flaws keep it interim: the phone
+  is held hostage awake+unlocked all night, and unless the macro opens a NEW
+  chat each cycle it extends one conversation's context — recreating the
+  exact 700K degradation this protocol exists to avoid. The Action supersedes
+  it.)*
 - **Stage 1 — the scheduled caretaker:** the same workflow on a cron (e.g.
   nightly): smoke probes on the test bot, eval-checklist automatable rows,
   one grooming move, small fixes merged green, morning report. Promotes only

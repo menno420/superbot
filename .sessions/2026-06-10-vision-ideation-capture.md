@@ -197,6 +197,24 @@ V-16 as design-document material: directional mining (Up/Forward/Down),
 axes/shovels, planks/sticks intermediates, structures-as-items (wooden house
 / diamond throne / gold statue / giant fortress — §7.5 ancestry).
 
+## Round 8 (final): the gap-analysis probe + the Samsung-routine idea
+
+The owner asked "what's still missing from either the bot or the AI system?"
+— answered with six dedup-verified blind spots, filed in
+[`docs/ideas/gap-analysis-2026-06-11.md`](../docs/ideas/gap-analysis-2026-06-11.md):
+cross-server character identity (**Q-0091**, router §38 — the unasked
+public-era architecture decision, hybrid recommended) · per-user data
+export/erasure (V-15's mirror) · owner alerting/dead-man's switch (tonight's
+outage was found by accident) · session telemetry (quantify the
+self-improvement loop) · AI spend metering (the Q-0082 instrument) ·
+toolchain rot watch (live example: Node-20 actions deprecation, forced
+2026-06-16 — CI bump awaiting owner nod). He then proposed the
+**Samsung-Routines session-chainer** (scheduled phone touch-macros) —
+captured as the Stage-0 interim variant in workflow §10 with its two flaws
+(device hostage; same-chat context growth unless each cycle opens a new
+chat). Session ended here — far past the (not-yet-active) context budget;
+everything routed, handoff sharp.
+
 Owner observation worth promoting someday into "why this system exists"
 (verbatim): looking at his old debug command's many inconsistent shapes —
 "look how many diffrent shapes my debug command had back then, that's the
