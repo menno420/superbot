@@ -198,7 +198,7 @@ section is new work** — it's the ground the vision stands on.
   ([numbers record](../planning/gear-set-numbers-2026-06-11.md)), picker stat
   previews, and the compositor (`utils/character_render.py`) with procedural
   placeholder sprites — **the owner's PNG pack now hot-swaps by dropping files
-  into `disbot/data/assets/character/`** (README there documents the naming).
+  into `disbot/assets/gear/`** (README there documents the naming).
   Phase 2 = the real pack + anchor tuning + (later) doll-in-stat-card.
   Owner-voice: "the goal should be to actually render a base
   character and show/display the equipped items on the correct positions."

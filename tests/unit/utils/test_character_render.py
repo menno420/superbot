@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from utils import character_render as cr
 from utils import equipment as eq
 
@@ -18,30 +20,70 @@ _FULL = {
 }
 
 
-def test_every_slot_has_an_anchor():
-    assert set(cr.SLOT_ANCHORS) == set(eq.SLOTS)
+def test_every_slot_has_a_default_layout():
+    assert set(cr.DEFAULT_LAYOUT) == set(eq.SLOTS)
 
 
-def test_sprite_filenames_follow_the_owner_pack_convention():
-    # Tiered set gear → "{family}_{tier}.png" (the PythonAnywhere pack names).
+def test_sprite_filenames_follow_the_pack_convention():
+    # Tiered set gear → "{family}_{tier}.png" (the seeded pack / owner names).
     assert cr.sprite_filename("diamond sword") == "sword_diamond.png"
     assert cr.sprite_filename("Bronze Boots") == "boots_bronze.png"
     assert cr.sprite_filename("iron chestplate") == "chestplate_iron.png"
-    # Untiered gear → spaces become underscores.
+    # Set starters → the family base sprite.
+    assert cr.sprite_filename("sword") == "sword.png"
+    assert cr.sprite_filename("shield") == "shield.png"
+    # Non-set gear → spaces become underscores.
     assert cr.sprite_filename("iron pickaxe") == "iron_pickaxe.png"
-    assert cr.sprite_filename("torch") == "torch.png"
     assert cr.sprite_filename("lucky charm") == "lucky_charm.png"
 
 
-def test_spec_builds_one_layer_per_equipped_item(tmp_path):
+def test_the_seeded_repo_pack_resolves_every_set_item():
+    # PR #701's pack + manifest: all 30 tiered items, both starters, and the
+    # base doll must resolve to real files via the manifest.
+    manifest = cr._load_manifest(cr.ASSET_DIR)
+    assert manifest is not None
+    names = [
+        f"{tier} {family}"
+        for tier in eq.TIER_ORDER
+        for family in ("sword", "shield", "helmet", "chestplate", "leggings", "boots")
+    ] + ["sword", "shield"]
+    for name in names:
+        path = os.path.join(cr.ASSET_DIR, cr.sprite_filename(name, manifest))
+        assert os.path.isfile(path), path
+    spec = cr.build_character_spec(_FULL)
+    assert spec.base_sprite_path is not None
+    by_slot = {layer.slot: layer for layer in spec.layers}
+    for slot in eq.SET_SLOTS:
+        assert by_slot[slot].sprite_path is not None, slot
+    # Mining gear has no sprites in the seeded pack → placeholder layers.
+    assert by_slot[eq.TOOL].sprite_path is None
+
+
+def test_manifest_anchor_and_palette_win_over_defaults():
+    manifest = cr._load_manifest(cr.ASSET_DIR)
+    assert manifest is not None
+    spec = cr.build_character_spec({eq.WEAPON: "diamond sword"})
+    layer = spec.layers[0]
+    anchor = manifest["families"]["sword"]["anchor"]
+    scale = manifest["families"]["sword"]["scale"]
+    side = int(256 * scale * 2)  # _RENDER_SCALE
+    assert layer.box == (
+        anchor[0] * 2 - side // 2,
+        anchor[1] * 2 - side // 2,
+        side,
+        side,
+    )
+    assert layer.color == tuple(manifest["tier_palettes"]["diamond"])
+
+
+def test_spec_in_an_empty_dir_falls_back_to_placeholders(tmp_path):
     spec = cr.build_character_spec(_FULL, asset_dir=str(tmp_path))
     assert len(spec.layers) == len(_FULL)
     assert {layer.slot for layer in spec.layers} == set(_FULL)
-    # No sprites on disk → every layer is a placeholder, in the tier palette.
     assert all(layer.sprite_path is None for layer in spec.layers)
+    assert spec.base_sprite_path is None
     doll_layer = next(la for la in spec.layers if la.slot == eq.WEAPON)
     assert doll_layer.color == cr.TIER_COLORS["diamond"]
-    assert spec.base_sprite_path is None
 
 
 def test_spec_skips_empty_slots(tmp_path):
@@ -51,27 +93,13 @@ def test_spec_skips_empty_slots(tmp_path):
     assert spec.layers[0].color not in cr.TIER_COLORS.values()
 
 
-def test_spec_resolves_sprites_that_exist(tmp_path):
-    (tmp_path / "sword_diamond.png").write_bytes(b"not really a png")
-    (tmp_path / cr.BASE_SPRITE).write_bytes(b"also not a png")
-    spec = cr.build_character_spec(
-        {eq.WEAPON: "diamond sword", eq.BOOTS: "diamond boots"},
-        asset_dir=str(tmp_path),
-    )
-    by_slot = {layer.slot: layer for layer in spec.layers}
-    assert by_slot[eq.WEAPON].sprite_path is not None  # file present → used
-    assert by_slot[eq.BOOTS].sprite_path is None  # file absent → placeholder
-    assert spec.base_sprite_path is not None
-
-
-def test_render_returns_png_bytes_with_pillow(tmp_path):
+def test_render_returns_png_bytes_with_pillow():
     import pytest
 
     pytest.importorskip("PIL")
-    png = cr.render_character_for(_FULL, asset_dir=str(tmp_path))
+    png = cr.render_character_for(_FULL)  # the real seeded pack
     assert png is not None and png[:8] == b"\x89PNG\r\n\x1a\n"
-    # Empty loadout renders the bare figure (still a valid card).
-    bare = cr.render_character_for({}, asset_dir=str(tmp_path))
+    bare = cr.render_character_for({})
     assert bare is not None and bare[:8] == b"\x89PNG\r\n\x1a\n"
 
 

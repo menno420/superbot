@@ -71,7 +71,7 @@
 > numbers tables (sim-pinned —
 > [gear-set-numbers](planning/gear-set-numbers-2026-06-11.md)) · picker stat
 > previews · the paper-doll compositor with placeholder sprites (owner's PNG pack
-> hot-swaps via `disbot/data/assets/character/`); **V-16 phase 2 next** = the
+> hot-swaps via `disbot/assets/gear/`); **V-16 phase 2 next** = the
 > owner's asset pack + anchor tuning + (later) doll-in-stat-card composition.
 > Build-ready alternates: myprofile PR A · survival **P0 balance-simulation
 > harness (Q-0087)** · duel-XP quick-win · **gap items 2/4/5 (owner-granted

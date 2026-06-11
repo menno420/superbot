@@ -17,7 +17,7 @@ model + compositor entries) · [`docs/planning/gear-set-numbers-2026-06-11.md`](
 - Gear-picker stat previews (+ delta vs equipped, "⚠ breaks set bonus"
   warning) and a set-progress line on the gear embed.
 - The paper-doll compositor (`utils/character_render.py`): manifest = naming
-  convention over `disbot/data/assets/character/` (owner pack 1:1),
+  convention over `disbot/assets/gear/` (owner pack 1:1),
   procedural tier-palette placeholders, wired to `!gear` + hub Gear button.
 - Capacity fixes the 41-item catalogue forced: categorized market fields +
   per-section buy selects (the old single select silently truncated at

@@ -369,7 +369,7 @@ class MiningCog(commands.Cog):
             text="Tip: !minemenu → 🧰 Gear equips with clicks (and ✨ Equip Best).",
         )
         # V-16: the paper-doll render (placeholder sprites until the owner's
-        # pack lands in data/assets/character/) — embed always kept.
+        # pack lands in assets/gear/) — embed always kept.
         import io
 
         from utils.character_render import render_character_for

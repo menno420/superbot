@@ -1,20 +1,21 @@
 """Paper-doll character compositor (V-16 phase 1) — manifest-driven, pure.
 
-Renders the player's character as a PNG: a base figure with every equipped
-item drawn at its slot's anchor position.  This is the restoration of
-minebot's ``/gear`` render (April 2025) and the seed of the cross-ecosystem
-character identity (V-13: the same doll later holds the fishing rod).
+Renders the player's character as a PNG: the base figure with every equipped
+item drawn at its slot's anchor.  This is the restoration of minebot's
+``/gear`` render (April 2025) and the seed of the cross-ecosystem character
+identity (V-13: the same doll later holds the fishing rod).
 
-The render pipeline is **hot-swappable art**:
+The art pipeline is **hot-swappable**, anchored on :data:`ASSET_DIR`
+(``disbot/assets/gear/`` — seeded by PR #701 with 37 generated placeholder
+sprites recreated from the owner's shapes):
 
-* The sprite manifest is a *naming convention over a directory*
-  (:data:`ASSET_DIR`): the owner's PNG pack drops in as
-  ``{family}_{tier}.png`` (``sword_diamond.png``, ``boots_gold.png`` — the
-  pack's own naming) plus ``base_character.png``, and the compositor picks
-  the files up on the next render — no code change.
-* Until a sprite exists, the renderer draws a **procedural placeholder**
-  (a per-family shape in the tier's palette colour), so the doll works for
-  all 30 set items + mining gear from day one.
+* ``manifest.json`` is the layout authority: per-family sprite filenames,
+  anchor centres + scales on the 200×300 reference doll, and tier palettes.
+  The owner's original PNG pack replaces the sprite files **file-for-file**
+  (same names); the manifest stays.
+* Anything *not* covered by a sprite file — mining gear (tool/light/charm),
+  a missing/corrupt file — falls back to a **procedural placeholder shape**
+  in the item's tier colour, so the doll always renders complete.
 
 Layout (:func:`build_character_spec`) is pure and unit-tested without
 Pillow; only :func:`render_character` needs the library, and it degrades to
@@ -25,68 +26,127 @@ their embed fallback.
 from __future__ import annotations
 
 import io
+import json
 import os
 from dataclasses import dataclass
 from functools import lru_cache
 
 from utils import equipment
 
-# Where the owner's sprite pack lives.  Files are optional one by one — any
-# present sprite is used, any absent one falls back to its placeholder.
+# The sprite pack + manifest home (PR #701).  Files are optional one by one —
+# any present sprite is used, any absent one falls back to its placeholder.
 ASSET_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "data",
     "assets",
-    "character",
+    "gear",
 )
+MANIFEST_FILE = "manifest.json"
 BASE_SPRITE = "base_character.png"
 
-_CANVAS_W = 360
-_CANVAS_H = 440
+# The manifest's reference doll canvas (base_character.png is exactly this),
+# and the output upscale factor for a crisper Discord attachment.
+_REF_W, _REF_H = 200, 300
+_RENDER_SCALE = 2
 _BG = (24, 26, 32)
 
-# Per-slot anchor boxes (x, y, w, h) on the canvas — where each equipped
-# item is drawn.  The base figure is centred at x=180: head ≈ (180, 88),
-# torso 130–250, legs 250–380, feet 380–416.
-SLOT_ANCHORS: dict[str, tuple[int, int, int, int]] = {
-    equipment.HELMET: (142, 42, 76, 46),
-    equipment.CHARM: (166, 122, 28, 24),
-    equipment.CHESTPLATE: (142, 136, 76, 96),
-    equipment.LEGGINGS: (148, 240, 64, 110),
-    equipment.BOOTS: (138, 376, 84, 40),
-    equipment.WEAPON: (264, 140, 76, 150),
-    equipment.SHIELD: (22, 156, 72, 104),
-    equipment.TOOL: (52, 286, 60, 60),
-    equipment.LIGHT: (252, 296, 52, 56),
+# Built-in layout defaults, in reference-canvas coordinates:
+# slot -> (anchor_cx, anchor_cy, scale).  The six set families mirror the
+# seeded manifest (which overrides these when readable); tool/light/charm are
+# compositor-local — they have no manifest entry yet.
+DEFAULT_LAYOUT: dict[str, tuple[int, int, float]] = {
+    equipment.HELMET: (100, 42, 0.4),
+    equipment.CHARM: (100, 95, 0.12),
+    equipment.CHESTPLATE: (100, 150, 0.55),
+    equipment.LEGGINGS: (100, 222, 0.55),
+    equipment.BOOTS: (100, 278, 0.35),
+    equipment.WEAPON: (158, 165, 0.45),
+    equipment.SHIELD: (42, 168, 0.38),
+    equipment.TOOL: (32, 230, 0.28),
+    equipment.LIGHT: (168, 235, 0.22),
 }
 
-# Tier palette for placeholder sprites (and any future tint pass).  Untiered
-# gear (starters, mining tools) renders in a neutral wood/leather brown.
+# Tier palette fallback (the manifest's tier_palettes win when readable).
 TIER_COLORS: dict[str, tuple[int, int, int]] = {
-    "bronze": (176, 108, 56),
-    "iron": (130, 130, 140),
-    "silver": (200, 200, 210),
-    "gold": (235, 190, 60),
-    "diamond": (120, 225, 230),
+    "bronze": (184, 115, 51),
+    "iron": (138, 143, 152),
+    "silver": (192, 192, 200),
+    "gold": (255, 210, 74),
+    "diamond": (95, 227, 220),
 }
 _UNTIERED_COLOR = (150, 120, 90)
 _FIGURE_COLOR = (90, 96, 110)
 _OUTLINE = (16, 17, 21)
 
+_SLOT_TO_FAMILY: dict[str, str] = {
+    equipment.WEAPON: "sword",
+    equipment.SHIELD: "shield",
+    equipment.HELMET: "helmet",
+    equipment.CHESTPLATE: "chestplate",
+    equipment.LEGGINGS: "leggings",
+    equipment.BOOTS: "boots",
+}
 
-def sprite_filename(item_name: str) -> str:
-    """The manifest filename for *item_name*.
 
-    Tiered set gear uses the owner pack's ``{family}_{tier}.png`` convention
-    (``"diamond sword"`` → ``sword_diamond.png``); everything else maps
-    spaces to underscores (``"iron pickaxe"`` → ``iron_pickaxe.png``).
+@lru_cache(maxsize=8)
+def _load_manifest(asset_dir: str) -> dict | None:
+    """Parse ``manifest.json`` under *asset_dir* (None on any problem)."""
+    try:
+        with open(os.path.join(asset_dir, MANIFEST_FILE), encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else None
+    except (OSError, json.JSONDecodeError, ValueError):
+        return None
+
+
+def sprite_filename(item_name: str, manifest: dict | None = None) -> str:
+    """The sprite filename for *item_name*.
+
+    The manifest's family tables win; the fallback convention matches them
+    exactly — tiered set gear is ``{family}_{tier}.png`` (the owner pack's
+    own naming), set starters are the family base (``sword.png``), and
+    everything else maps spaces to underscores (``iron_pickaxe.png``).
     """
     name = item_name.lower()
     tier = equipment.gear_tier(name)
-    if tier is not None:
-        family = name.split(None, 1)[1]
-        return f"{family.replace(' ', '_')}_{tier}.png"
+    slot = equipment.slot_for(name)
+    family = _SLOT_TO_FAMILY.get(slot or "")
+    if family is not None and manifest is not None:
+        entry = (manifest.get("families") or {}).get(family) or {}
+        if tier is not None and isinstance(entry.get("tiers"), dict):
+            filename = entry["tiers"].get(tier)
+            if isinstance(filename, str):
+                return filename
+        elif tier is None and isinstance(entry.get("base"), str):
+            return entry["base"]
+    if family is not None:
+        return f"{family}_{tier}.png" if tier is not None else f"{family}.png"
     return f"{name.replace(' ', '_')}.png"
+
+
+def _layout_for(slot: str, manifest: dict | None) -> tuple[int, int, float]:
+    """(anchor_cx, anchor_cy, scale) for *slot* — manifest first, defaults after."""
+    family = _SLOT_TO_FAMILY.get(slot)
+    if family is not None and manifest is not None:
+        entry = (manifest.get("families") or {}).get(family) or {}
+        anchor = entry.get("anchor")
+        scale = entry.get("scale")
+        if (
+            isinstance(anchor, list)
+            and len(anchor) == 2
+            and isinstance(scale, (int, float))
+        ):
+            return int(anchor[0]), int(anchor[1]), float(scale)
+    return DEFAULT_LAYOUT[slot]
+
+
+def _tier_color(tier: str | None, manifest: dict | None) -> tuple[int, int, int]:
+    if tier is None:
+        return _UNTIERED_COLOR
+    if manifest is not None:
+        palette = (manifest.get("tier_palettes") or {}).get(tier)
+        if isinstance(palette, list) and len(palette) == 3:
+            return tuple(int(c) for c in palette)  # type: ignore[return-value]
+    return TIER_COLORS.get(tier, _UNTIERED_COLOR)
 
 
 @dataclass(frozen=True)
@@ -95,7 +155,8 @@ class CharacterLayer:
 
     slot: str
     item: str
-    anchor: tuple[int, int, int, int]
+    # Pixel box (x, y, w, h) on the OUTPUT canvas, centred on the anchor.
+    box: tuple[int, int, int, int]
     sprite_path: str | None  # None → draw the procedural placeholder
     color: tuple[int, int, int]
 
@@ -106,8 +167,8 @@ class CharacterSpec:
 
     base_sprite_path: str | None  # None → draw the procedural figure
     layers: tuple[CharacterLayer, ...]
-    width: int = _CANVAS_W
-    height: int = _CANVAS_H
+    width: int = _REF_W * _RENDER_SCALE
+    height: int = _REF_H * _RENDER_SCALE
 
 
 def _existing(path: str) -> str | None:
@@ -121,86 +182,168 @@ def build_character_spec(
 ) -> CharacterSpec:
     """Compose the render spec for an ``{slot: item}`` loadout (pure layout).
 
-    Sprite resolution is the only filesystem touch: a sprite file that exists
-    under *asset_dir* is referenced, anything else renders as a placeholder.
-    Slots draw in :data:`SLOT_ANCHORS` order (armor first, held items on
-    top), each at its anchor.
+    Sprite resolution is the only filesystem touch.  Manifest ``scale`` is
+    the factor applied to a sprite's intrinsic size (the seeded sprites are
+    uniform 256×256), expressed here as a box centred on the anchor; the
+    placeholder shapes draw inside the same box.  Slots render in
+    body-first order (armor under the held items).
     """
     directory = ASSET_DIR if asset_dir is None else asset_dir
+    manifest = _load_manifest(directory)
     layers: list[CharacterLayer] = []
-    for slot, anchor in SLOT_ANCHORS.items():
+    order = (
+        equipment.CHESTPLATE,
+        equipment.LEGGINGS,
+        equipment.BOOTS,
+        equipment.HELMET,
+        equipment.CHARM,
+        equipment.SHIELD,
+        equipment.WEAPON,
+        equipment.TOOL,
+        equipment.LIGHT,
+    )
+    for slot in order:
         item = equipped.get(slot)
         if not item:
             continue
+        cx, cy, scale = _layout_for(slot, manifest)
+        side = int(256 * scale * _RENDER_SCALE)
+        box = (
+            cx * _RENDER_SCALE - side // 2,
+            cy * _RENDER_SCALE - side // 2,
+            side,
+            side,
+        )
         tier = equipment.gear_tier(item)
         layers.append(
             CharacterLayer(
                 slot=slot,
                 item=item.lower(),
-                anchor=anchor,
+                box=box,
                 sprite_path=_existing(
-                    os.path.join(directory, sprite_filename(item)),
+                    os.path.join(directory, sprite_filename(item, manifest)),
                 ),
-                color=TIER_COLORS.get(tier or "", _UNTIERED_COLOR),
+                color=_tier_color(tier, manifest),
             ),
         )
+    base_name = BASE_SPRITE
+    if manifest is not None and isinstance(manifest.get("base_character"), str):
+        base_name = manifest["base_character"]
     return CharacterSpec(
-        base_sprite_path=_existing(os.path.join(directory, BASE_SPRITE)),
+        base_sprite_path=_existing(os.path.join(directory, base_name)),
         layers=tuple(layers),
     )
 
 
-def _draw_figure(draw) -> None:
-    """The procedural base character (used until base_character.png exists)."""
-    # Head, torso, arms, legs — a friendly blocky figure, centred at x=180.
-    draw.ellipse((150, 58, 210, 118), fill=_FIGURE_COLOR, outline=_OUTLINE)
-    draw.rectangle((152, 126, 208, 252), fill=_FIGURE_COLOR, outline=_OUTLINE)
-    draw.rectangle((118, 136, 150, 244), fill=_FIGURE_COLOR, outline=_OUTLINE)
-    draw.rectangle((210, 136, 242, 244), fill=_FIGURE_COLOR, outline=_OUTLINE)
-    draw.rectangle((154, 252, 178, 384), fill=_FIGURE_COLOR, outline=_OUTLINE)
-    draw.rectangle((182, 252, 206, 384), fill=_FIGURE_COLOR, outline=_OUTLINE)
+def _draw_figure(draw, w: int, h: int) -> None:
+    """The procedural base character (only if base_character.png is gone)."""
+    cx = w // 2
+    head_r = w // 9
+    head_cy = int(h * 0.18)
+    draw.ellipse(
+        (cx - head_r, head_cy - head_r, cx + head_r, head_cy + head_r),
+        fill=_FIGURE_COLOR,
+        outline=_OUTLINE,
+    )
+    torso_w, torso_top, torso_bot = int(w * 0.16), int(h * 0.27), int(h * 0.55)
+    draw.rectangle(
+        (cx - torso_w, torso_top, cx + torso_w, torso_bot),
+        fill=_FIGURE_COLOR,
+        outline=_OUTLINE,
+    )
+    arm_w = int(w * 0.09)
+    draw.rectangle(
+        (cx - torso_w - arm_w, torso_top, cx - torso_w, int(h * 0.52)),
+        fill=_FIGURE_COLOR,
+        outline=_OUTLINE,
+    )
+    draw.rectangle(
+        (cx + torso_w, torso_top, cx + torso_w + arm_w, int(h * 0.52)),
+        fill=_FIGURE_COLOR,
+        outline=_OUTLINE,
+    )
+    leg_w = int(w * 0.07)
+    draw.rectangle(
+        (cx - leg_w * 2, torso_bot, cx - 2, int(h * 0.9)),
+        fill=_FIGURE_COLOR,
+        outline=_OUTLINE,
+    )
+    draw.rectangle(
+        (cx + 2, torso_bot, cx + leg_w * 2, int(h * 0.9)),
+        fill=_FIGURE_COLOR,
+        outline=_OUTLINE,
+    )
 
 
 def _draw_placeholder(draw, layer: CharacterLayer) -> None:
     """A per-family placeholder shape in the item's tier colour."""
-    x, y, w, h = layer.anchor
+    x, y, w, h = layer.box
     c, o = layer.color, _OUTLINE
     slot = layer.slot
     if slot == equipment.HELMET:
-        draw.pieslice((x, y, x + w, y + 2 * h), 180, 360, fill=c, outline=o)
-    elif slot == equipment.CHESTPLATE:
-        draw.rounded_rectangle((x, y, x + w, y + h), radius=8, fill=c, outline=o)
-    elif slot == equipment.LEGGINGS:
-        mid = x + w // 2
-        draw.rectangle((x, y, mid - 3, y + h), fill=c, outline=o)
-        draw.rectangle((mid + 3, y, x + w, y + h), fill=c, outline=o)
-    elif slot == equipment.BOOTS:
-        mid = x + w // 2
-        draw.rectangle((x, y, mid - 4, y + h), fill=c, outline=o)
-        draw.rectangle((mid + 4, y, x + w, y + h), fill=c, outline=o)
-    elif slot == equipment.WEAPON:
-        # Blade with a small crossguard.
-        bx = x + w // 2
-        draw.polygon(
-            ((bx - 7, y + h - 30), (bx + 7, y + h - 30), (bx, y)),
+        draw.pieslice(
+            (x, y + h // 4, x + w, y + h + h // 4),
+            180,
+            360,
             fill=c,
             outline=o,
         )
-        draw.rectangle((bx - 16, y + h - 30, bx + 16, y + h - 22), fill=c, outline=o)
-        draw.rectangle((bx - 4, y + h - 22, bx + 4, y + h), fill=c, outline=o)
+    elif slot == equipment.CHESTPLATE:
+        pad = w // 5
+        draw.rounded_rectangle(
+            (x + pad, y + pad, x + w - pad, y + h - pad),
+            radius=max(4, w // 12),
+            fill=c,
+            outline=o,
+        )
+    elif slot in (equipment.LEGGINGS, equipment.BOOTS):
+        pad = w // 4
+        mid = x + w // 2
+        gap = max(3, w // 20)
+        draw.rectangle((x + pad, y + pad, mid - gap, y + h - pad), fill=c, outline=o)
+        draw.rectangle(
+            (mid + gap, y + pad, x + w - pad, y + h - pad),
+            fill=c,
+            outline=o,
+        )
+    elif slot == equipment.WEAPON:
+        bx = x + w // 2
+        guard_y = y + h - h // 4
+        draw.polygon(
+            ((bx - w // 14, guard_y), (bx + w // 14, guard_y), (bx, y)),
+            fill=c,
+            outline=o,
+        )
+        draw.rectangle(
+            (bx - w // 6, guard_y, bx + w // 6, guard_y + h // 16),
+            fill=c,
+            outline=o,
+        )
+        draw.rectangle(
+            (bx - w // 24, guard_y + h // 16, bx + w // 24, y + h),
+            fill=c,
+            outline=o,
+        )
     elif slot == equipment.SHIELD:
-        draw.ellipse((x, y, x + w, y + h), fill=c, outline=o)
+        pad = w // 6
+        draw.ellipse((x + pad, y, x + w - pad, y + h), fill=c, outline=o)
     elif slot == equipment.TOOL:
-        # Pick head + handle.
-        draw.arc((x, y, x + w, y + h), 200, 340, fill=c, width=6)
+        draw.arc((x, y, x + w, y + h), 200, 340, fill=c, width=max(3, w // 10))
         draw.line(
             (x + w // 2, y + h // 4, x + w // 2, y + h),
             fill=c,
-            width=5,
+            width=max(2, w // 12),
         )
     elif slot == equipment.LIGHT:
-        draw.ellipse((x + 8, y, x + w - 8, y + h - 16), fill=(255, 222, 120), outline=o)
-        draw.rectangle((x + w // 2 - 5, y + h - 16, x + w // 2 + 5, y + h), fill=c)
+        draw.ellipse(
+            (x + w // 6, y, x + w - w // 6, y + h - h // 4),
+            fill=(255, 222, 120),
+            outline=o,
+        )
+        draw.rectangle(
+            (x + w // 2 - w // 10, y + h - h // 4, x + w // 2 + w // 10, y + h),
+            fill=c,
+        )
     elif slot == equipment.CHARM:
         bx, by = x + w // 2, y + h // 2
         draw.polygon(
@@ -217,7 +360,7 @@ def _render_cached(spec: CharacterSpec) -> bytes | None:
     except Exception:  # noqa: BLE001 — any import failure → graceful no-op
         return None
 
-    img = Image.new("RGB", (spec.width, spec.height), _BG)
+    img = Image.new("RGBA", (spec.width, spec.height), _BG)
     draw = ImageDraw.Draw(img)
 
     base = None
@@ -227,14 +370,11 @@ def _render_cached(spec: CharacterSpec) -> bytes | None:
         except Exception:  # noqa: BLE001 — a corrupt sprite must not kill the panel
             base = None
     if base is not None:
-        base.thumbnail((spec.width - 40, spec.height - 40))
-        img.paste(
-            base,
-            ((spec.width - base.width) // 2, (spec.height - base.height) // 2),
-            base,
-        )
+        # NEAREST keeps the pixel-art placeholders crisp at 2× output.
+        base = base.resize((spec.width, spec.height), Image.Resampling.NEAREST)
+        img.alpha_composite(base)
     else:
-        _draw_figure(draw)
+        _draw_figure(draw, spec.width, spec.height)
 
     for layer in spec.layers:
         sprite = None
@@ -243,19 +383,18 @@ def _render_cached(spec: CharacterSpec) -> bytes | None:
                 sprite = Image.open(layer.sprite_path).convert("RGBA")
             except Exception:  # noqa: BLE001 — fall back to the placeholder
                 sprite = None
-        x, y, w, h = layer.anchor
+        x, y, w, h = layer.box
         if sprite is not None:
             sprite.thumbnail((w, h))
-            img.paste(
+            img.alpha_composite(
                 sprite,
                 (x + (w - sprite.width) // 2, y + (h - sprite.height) // 2),
-                sprite,
             )
         else:
             _draw_placeholder(draw, layer)
 
     buffer = io.BytesIO()
-    img.save(buffer, format="PNG")
+    img.convert("RGB").save(buffer, format="PNG")
     return buffer.getvalue()
 
 
@@ -280,8 +419,9 @@ def render_character_for(
 
 __all__ = [
     "ASSET_DIR",
+    "MANIFEST_FILE",
     "BASE_SPRITE",
-    "SLOT_ANCHORS",
+    "DEFAULT_LAYOUT",
     "TIER_COLORS",
     "sprite_filename",
     "CharacterLayer",

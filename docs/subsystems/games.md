@@ -79,7 +79,7 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
 - **Paper-doll character render: `utils/character_render.py`** (V-16 phase 1, the
   minebot `/gear` restoration) — a pure, manifest-driven compositor: base figure +
   per-slot sprites at `SLOT_ANCHORS`, **procedural tier-palette placeholders** until
-  the owner's PNG pack drops into `disbot/data/assets/character/` (naming convention
+  the owner's PNG pack drops into `disbot/assets/gear/` (naming convention
   in that directory's README — `{family}_{tier}.png`, hot-swap, no code change).
   Attached by `!gear` (embed image) and the hub Gear button (ephemeral follow-up);
   embed fallback always (Pillow-optional, corrupt sprites fall back per-layer).
