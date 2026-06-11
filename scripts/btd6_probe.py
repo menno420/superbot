@@ -21,6 +21,12 @@ once or twice before trusting it as the first triage step.
 Usage:
     python3.10 scripts/btd6_probe.py "does the navarch of seas paragon make coins"
     python3.10 scripts/btd6_probe.py --grep income "navarch of the seas"
+    python3.10 scripts/btd6_probe.py --route "what is the hp of elite lych per tier"
+
+``--route`` prepends the task-router + round-cash-workflow legs: a routing
+miss is invisible in the facts view (the facts are built by *this* script
+calling build() directly — the live pipeline only does that when the router
+classifies the message ``btd6.answer``).
 """
 
 from __future__ import annotations
@@ -43,6 +49,43 @@ async def probe(text: str):
     return await btd6_context_service.build(text)
 
 
+def route_report(text: str) -> list[str]:
+    """The routing/workflow legs the grounding facts can't show (test seam).
+
+    Added 2026-06-11 (BUG-0002/0003 session): the probe printed 5 healthy
+    facts for "elite lych hp per tier" while the live pipeline never reached
+    grounding at all — the router had sent the message to the GENERAL path.
+    A routing bug is invisible to the facts view by construction, so triage
+    needs both legs in one place.
+    """
+    from services import (
+        ai_orchestration_presets,
+        ai_round_cash_workflow,
+        ai_task_router,
+    )
+
+    lines: list[str] = []
+    routed = ai_task_router.classify(text)
+    lines.append(f"task: {routed.task.value}  (route={routed.route})")
+    if routed.task.value != "btd6.answer":
+        lines.append(
+            "⚠ NOT routed to btd6.answer — BTD6 grounding/guards never run; "
+            "the model answers this from memory (the BUG-0002/0003 class).",
+        )
+    plan = ai_round_cash_workflow.plan_question(text)
+    if plan is None:
+        lines.append("round-cash workflow: no match (conservative planner stays out)")
+    else:
+        lines.append(f"round-cash workflow: MATCH → {plan}")
+        engaged = sorted(
+            p.key
+            for p in ai_orchestration_presets.all_presets()
+            if p.workflow == ai_round_cash_workflow.WORKFLOW_KEY
+        )
+        lines.append(f"  engages under profiles: {', '.join(engaged)}")
+    return lines
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Print the BTD6 grounding facts a message would produce.",
@@ -53,7 +96,18 @@ def main(argv: list[str] | None = None) -> int:
         metavar="SUBSTR",
         help="only print facts containing this substring (case-insensitive)",
     )
+    parser.add_argument(
+        "--route",
+        action="store_true",
+        help="also print the task-router / round-cash-workflow legs "
+        "(a routing miss is invisible in the facts view)",
+    )
     args = parser.parse_args(argv)
+
+    if args.route:
+        for line in route_report(args.message):
+            print(line)
+        print()
 
     ctx = asyncio.run(probe(args.message))
     facts = list(ctx.facts)
