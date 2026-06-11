@@ -197,6 +197,75 @@ V-16 as design-document material: directional mining (Up/Forward/Down),
 axes/shovels, planks/sticks intermediates, structures-as-items (wooden house
 / diamond throne / gold statue / giant fortress — §7.5 ancestry).
 
+## SESSION END — arc summary, reflection, and the next-session handoff
+
+**The arc in order (14 merged PRs, #685–#698):** backups question → live
+production build outage diagnosed + fixed (`.python-version` pin, #685; ops
+doc founded) → owner answers: keys-to-env (Q-0086), template rework,
+testing-checklist commissioned → capabilities brainstorm → Q-0087 balance
+philosophy + survival P0 sim harness → **Q-0088 self-driving correction**
+(bounded sessions + staged continuation, workflow §10) → bot self-test
+walker idea → **Q-0089 one-idea ender installed** + owner self-description
+preserved (working-profile §6) → V-13 federation + V-14 teardown + V-15
+migration + **Q-0090** (fishing = research-decided; local currencies; medium
+cross-links) → the V-14 research EXECUTED in-conversation (the dossier;
+**fishing verdict, ratification pending**) → V-16 paper-doll (a restoration —
+minebot ancestry, owner's asset pack located) → gap analysis (6 blind spots)
+→ **BUG-0001** reported live, bug book founded, root-caused, **fixed (#694)**
+→ **Q-0091** conservation-transfer canon + gap grant + actions Node-24 bump →
+model-allocation policy (workflow §11) → timeline calibration + the
+interviews + the founding moment (working-profile §6 completed).
+
+**Reflection interview (the standing six):**
+1. *Route miss:* Railway deploy semantics (read FAILED/REMOVED as downtime —
+   owner corrected; records fixed) and `check_docs --strict` vs plain (CI bit
+   twice → journal QR rule added).
+2. *Route excess:* none material — the orientation chain held at every turn.
+3. *Discovered by hand:* the docs ratchet has a hard pytest twin; orphaned
+   sub-agent reports route to the parent session; pbs asset probing as the
+   pin-verification method (now in the ops doc).
+4. *Decisions made alone:* `docs/operations/` creation; fishing framed as
+   ratification-pending rather than auto-decided; BUG-0001 fix scoped to the
+   range branch only.
+5. *Weak point of what shipped:* the teardown dossier is triangulated, not
+   live-verified (provenance-headered); the BUG-0001 fix's model loop needs a
+   live walk (checklist 1.1 regression line added — needs the grounded
+   profile).
+6. *One change that would have helped:* research-agent briefs must forbid
+   sub-agent spawning (recorded in round 6); scout subagents on cheap models
+   (now workflow §11 lever 3).
+
+💡 **Session idea (Q-0089):** the owner's morning digest (recorded in round 4's
+section + router §37 first-execution note).
+
+### Next-session handoff (owner-requested, 2026-06-11)
+
+**Prepared plan: the gear-lane slice — V-16 phase 1** (vision doc V-16 +
+roadmap queue item 6). Bounded ~2 tasks: (1) **combat-gear item families** as
+data rows in `utils/equipment.py` (owner taxonomy: helmet/chestplate/
+leggings/boots/shield/sword × bronze/silver/gold/iron/diamond; slot-mapping =
+**structured-choices round to the owner first**: map onto the existing
+weapon/armor slots vs set-piece sub-slots — slots are data, both work) +
+forge-recipe obtain paths (tier↔ore alignment, V-16 notes) — duels already
+read damage/defense, so items matter immediately; (2) **gear-picker stat
+previews** (`views/mining/gear_panel.py` `_ItemSelect` options are
+label-only). Capacity remaining: the **compositor seam** (pure-utils manifest
+renderer, programmatic placeholder sprites, hot-swappable for the owner's PNG
+pack — port ideas from minebot's `pil_helper` when the owner uploads the zip:
+assets + `helpers/` + JSONs). **Model: Opus** (workflow §11 — this is
+execution of a written plan). Wrap before ~700K; END per protocol incl. the
+Q-0089 💡 idea; draft→ready→merge per Q-0084.
+
+**Paste-ready prompt for the owner:** *"Read the orientation chain. Execute
+the prepared gear-lane slice: see `docs/current-state.md` ▶ Next action and
+the Next-session handoff in `.sessions/2026-06-10-vision-ideation-capture.md`.
+Ask me the slot-mapping structured-choices round before writing the item
+table. Bounded session: ~2 tasks + END protocol."*
+
+**Also waiting on the owner (no session needed):** the word "ratified" for
+fishing (Q-0090) · the asset-pack zip · the `ANTHROPIC_API_KEY` Actions
+secret for Stage 0 · (later) the eval walk re-testing BUG-0001 live.
+
 ## Round 10: Q-0091 answered + the gap grant + the €12 datapoint
 
 The owner answered two gaps and granted the rest ("implement all of them or
