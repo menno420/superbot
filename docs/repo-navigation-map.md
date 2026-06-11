@@ -167,6 +167,7 @@ or read `docs/architecture.md` § "Ownership boundary" again).
 | A new governance write | Use `governance/writes.py:GovernanceMutationPipeline` | `docs/ownership.md` INV-E |
 | A new helper (any kind) | Read `docs/helper-policy.md` **first**. The default answer is "inline it" or "put it in the cog's own package". | `docs/helper-policy.md` |
 | A production build/deploy config change | `.python-version` (interpreter pin — bump procedure in the doc) · `Procfile` (worker command) · Railway dashboard is maintainer-only (service vars, restarts) | `docs/operations/production-deployment.md` |
+| Hermes agent / Telegram gateway operations | Hetzner VPS (`hermes-control-plane-01`) · `hermes` user · `hermes-gateway.service` systemd unit · `gh` CLI · SuperBot clone at `/home/hermes/repos/superbot` | [`docs/operations/hermes-control-plane.md`](operations/hermes-control-plane.md) |
 | A live-reported bug (intake, root cause, fix record) | Add a numbered entry to the bug book; bugs jump the queue (root cause over symptom) | `docs/health/bug-book.md` |
 
 ---

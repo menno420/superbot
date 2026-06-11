@@ -1,5 +1,7 @@
 # Hermes Control Plane Setup
 
+> **Status:** `living-ledger` — operational record of the Hermes agent VPS and Telegram gateway setup. Verified 2026-06-11 (initial setup session). Maintainer owns the Hetzner VPS and Telegram token; agents have no direct access — updates land here as an ops reference.
+
 ## Purpose
 
 This document records the current Hermes Agent setup used as a mobile-accessible control plane for SuperBot repository inspection, planning support, and future automation.
