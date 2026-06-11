@@ -76,12 +76,28 @@ No setup needed (the tool is offered under the default profile).
       **Expect:** **$19,840** — inclusive of BOTH endpoints (Q-0043).
       **Report if:** $16,824 appears (that's the old exclusive subtraction bug)
       or any other number, or the model answers without a real figure.
-- [ ] **BUG-0001 regression (2026-06-11; needs the §1.2 grounded profile):**
+- [ ] **BUG-0001 regression (2026-06-11; works on the DEFAULT profile since
+      PR #703 — no setup):**
       `lets say i have 8094$ at round 60, what is the cash that i will get by going to round 68`
       **Expect:** ≈ **$13,093.90** for rounds 60–68 inclusive, ideally with the
       projected total ≈ **$21,187.90**.
       **Report if:** the "I don't have verified BTD6 data" refusal returns —
       that's the BUG-0001 misroute ([bug book](../health/bug-book.md)).
+- [ ] **BUG-0001 recurrence phrasing (PR #703):**
+      `if I have 20K by round 50, how much would I have by round 60?`
+      **Expect:** ≈ **$39,840** ($20,000 stated + $19,840 earned, rounds 50–60
+      inclusive). **Report if:** a refusal returns.
+- [ ] **BUG-0002 regression (PR #703; needs `!btd6ops seed-data` after merge):**
+      `what is the hp of elite lych per tier`
+      **Expect:** the ELITE table — **30,000 / 180,000 / 1,100,000 /
+      4,800,000 / 24,000,000**.
+      **Report if:** 14,000 / 52,500 / … appears (those are Standard values —
+      the BUG-0002 mislabel), or a refusal.
+- [ ] **BUG-0003 regression (PR #703; needs `!btd6ops seed-data` after merge):**
+      `how much do 10 041 despos cost on impop`
+      **Expect:** despos = the **Desperado** tower, **$360** each on
+      Impoppable (10,041 × $360 = **$3,614,760**) — or an honest refusal.
+      **Report if:** "Plasma Monkey Fan Club" (or any other entity) returns.
 
 ### 1.2 Orchestration profiles + Phase 4 workflow (PRs #619, #634)
 

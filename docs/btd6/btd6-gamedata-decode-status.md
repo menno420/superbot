@@ -721,7 +721,7 @@ nested `mutatorMods[]` / `behaviors[]` array where the value actually lives.**
 
 | What | Where in dump | Value | Notes |
 |---|---|---|---|
-| **Boss bloons** | `Bloons/{Bloonarius,Blastapopoulos,Lych,Vortex,Dreadbloon,Phayze}/…` (101 boss models incl. Elite + Diamondback segments) | **HIGH** | Full combat stats (`maxHealth` e.g. Bloonarius1 = 20000, `speed`, `isBoss`, properties). Our `bloons.json` has **0** bosses. The biggest real gap. |
+| **Boss bloons** | `Bloons/{Bloonarius,Blastapopoulos,Lych,Vortex,Dreadbloon,Phayze}/…` (101 boss models incl. Elite + Diamondback segments) | ~~HIGH~~ **FETCHED** | `bosses.json` carries all 7 bosses' roster + per-tier `maxHealth`/`speed` for **Standard AND Elite** tiers (Elite backfilled 2026-06-11, BUG-0002 — `map_bosses` reads `<Family>Elite{1..5}.json`). Remaining tail: co-op health scaling, Dreadbloon rock-segment models, deeper per-tier behaviors (skull counts etc.) — demand-driven. |
 | **Game-mode rules cutover** | `Mods/` (22) | MED–HIGH | `modes.json` is curated; the dump is the authoritative source (and confirms our values). Cutover or verify. |
 | **Alternate round sets** (ABR, etc.) | `Rounds/` (5,181 files = many round sets) | MED | We expose only the default 140. |
 | Achievements | `Achievements/` (156) | LOW | `name`/`goal`/`loot` lookup catalog (e.g. "All for one…" → `KnowledgePoints:1`). |

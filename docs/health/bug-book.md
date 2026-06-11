@@ -10,6 +10,77 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0003 — "despos" hallucinated as Plasma Monkey Fan Club (unguarded general path)
+
+- **Reported:** 2026-06-11 ~10:32 (owner screenshot, #general)
+- **Surface:** AI natural-language → BTD6 routing + grounding
+- **Symptom (verbatim):** "@SuperBot how much do 10 041 despos cost on impop"
+  → "A single Plasma Monkey Fan Club (Despo) costs $54,000 on Impoppable.
+  For 10,041 Despos: 10,041 × $54,000 = $542,214,000 (542.2 million)."
+- **Expected:** "despo" is community shorthand for the **Desperado** tower
+  (base $300 Medium → $360 Impoppable; 10,041 × $360 = $3,614,760) — or an
+  honest refusal if unresolvable. Never a confident wrong entity.
+- **Root cause (three stacked gaps):** (1) the task router had no cue for the
+  message — "impop"/"despos" matched no keyword and no entity alias — so it
+  routed `general.nl_answer`, where the model answers from memory; (2) the
+  dataset's Desperado aliases (`des`, `cowboy`, `gunslinger`) lacked `despo`,
+  and the resolver's single-word alias matching had no plural fold, so even
+  `despo` would have missed the token "despos"; (3) on the general path
+  numbers are never guarded (by design), and the reply-name guard verdict
+  depends on the reply text — the wrong-entity answer shipped. (On current
+  code the name guard *does* block this exact reply with empty facts —
+  fail-closed — but the user-visible result is still a refusal where a
+  correct answer should be.)
+- **Fix (this PR):** `impop` + `despo` joined the curated BTD6 keywords
+  (substring match covers "impoppable"/"despos"); `despo` added as a
+  Desperado alias in towers.json; the resolver's single-word alias matching
+  gained a conservative plural fold (`alias + "s"`); boss canonicals joined
+  the router's entity set (see BUG-0002); and `btd6_difficulty_cost` gained
+  an optional `quantity` so the bulk product is tool-grounded, never model
+  arithmetic.
+- **Regression tests:** `test_boss_and_shorthand_questions_route_to_btd6_answer`
+  (router) · `test_resolves_single_word_alias_plural` (resolver) ·
+  `test_btd6_difficulty_cost_quantity_grounds_bulk_totals` (tool) ·
+  live-battery `knowledge.btd6_despo_bulk_cost_bug_0003`.
+- **Deploy note:** the alias lives in towers.json — prod serves it only after
+  `!btd6ops seed-data` (postgres blob lane).
+- **Status:** FIXED — this PR
+
+## BUG-0002 — Elite boss HP answered with the Standard table labeled "Elite"
+
+- **Reported:** 2026-06-11 ~10:34 (owner screenshot, #general; the answer even
+  drew a 🔥 reaction — confident wrong numbers read as authoritative)
+- **Surface:** AI natural-language → BTD6 routing + boss dataset
+- **Symptom (verbatim):** "@SuperBot what is the hp of elite lych per tier" →
+  "Elite Lych health per tier: Tier 1: 14,000 … Tier 5: 2,100,000" — those
+  are the **Standard** Lych figures. Elite Lych is 30,000 / 180,000 /
+  1,100,000 / 4,800,000 / 24,000,000 (2-11× higher).
+- **Root cause (two stacked gaps):** (1) boss names were not router entities
+  and no keyword matched, so the question routed `general.nl_answer` and the
+  model answered from training memory unguarded (numbers are not checked on
+  the general path); (2) the dataset had **no elite figures at all** —
+  bosses.json carried only the five standard tiers, so even the grounded
+  path could only mislabel (the faithfulness guard checks numbers, not the
+  labels next to them).
+- **Fix (this PR):** `map_bosses` now also reads the dump's
+  `Bloons/<Family>/<Family>Elite{1..5}.json` models → `elite_tiers` on every
+  boss (regenerated from the pinned v55.1 cutover SHA `4e22e586`,
+  byte-identical otherwise); `BossEntry.elite_tiers`; grounding emits an
+  explicitly-labeled ELITE line on elite questions and the standard line is
+  now labeled "Standard (non-Elite)"; the honesty note remains only for a
+  dataset predating the backfill; `btd6_boss_lookup` surfaces `elite_tiers`;
+  boss canonicals joined the router's entity set and the faithfulness name
+  index.
+- **Regression tests:** `test_boss_elite_questions_ground_the_elite_table` ·
+  `test_boss_elite_honesty_note_when_dataset_predates_backfill` ·
+  `test_map_bosses_reads_elite_tier_models` ·
+  `test_btd6_boss_lookup_surfaces_elite_tiers` ·
+  `test_bosses_load_resolve_and_carry_tiers` (elite > standard per tier, all
+  7 bosses) · live-battery `knowledge.btd6_elite_lych_hp_bug_0002`.
+- **Deploy note:** elite data lives in bosses.json — prod serves it only
+  after `!btd6ops seed-data` (postgres blob lane).
+- **Status:** FIXED — this PR
+
 ## BUG-0001 — Round-cash question misrouted to the no-data denial
 
 - **Reported:** 2026-06-11 01:53 (owner screenshot of live server; reporter:
@@ -53,3 +124,23 @@
   owner's eval walk set it during Tier 1.2). On the default profile this
   question refuses *by design*.
 - **Status:** FIXED — merged via PR #694 (auto-deploys on merge)
+- **Recurrence (2026-06-11 ~10:30-10:34, owner screenshots):** the *verbatim*
+  phrasing refused again in #general, hours after #694 deployed — plus a new
+  miss: "if I have 20K by round 50, how much would I have by round 60?".
+  Root causes: (1) the deploy note above was the bug — #general runs the
+  **default** profile, where the workflow never engaged, and the round-cash
+  *tool* can't ground a starting-balance projection (the model's `20000 + X`
+  is exactly what the number guard blocks), so "refuses by design" was a
+  standing landmine on every default channel; (2) the matcher's cash-keyword
+  gate had no cash noun to match ("how much would I have") and no pattern
+  covered "by round A … by round B" anchors. **Follow-up fix (this PR):** the
+  `compatible_default` + `balanced_helper` presets now declare the
+  `analyze_execute_verify` workflow (read-only deterministic, Q-0048
+  standing lift; `no_tools` keeps it off), the gate gained a money-question
+  alternative ("how much … have/get/make/earn/gain"), and "by" joined both
+  anchor sets. Regression tests:
+  `test_plan_by_round_anchors_with_balance_production_phrasing` ·
+  `test_plan_money_question_gate_stays_conservative` ·
+  `test_default_and_balanced_engage_round_cash_workflow` · live-battery
+  `knowledge.btd6_round_cash_by_round_projection`. No channel setup is
+  needed anymore for round-cash questions.
