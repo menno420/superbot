@@ -883,3 +883,26 @@ async def test_boss_elite_honesty_note_when_dataset_predates_backfill(monkeypatc
     assert notes
     plain = await btd6_context_service.build("lych hp per tier")
     assert not any("NOT in the dataset" in f for f in plain.facts)
+
+
+@pytest.mark.asyncio
+async def test_abr_qualifier_grounds_abr_round_entries():
+    """BUG-0010 (live, 2026-06-11): "how much RBE is in r87 in ABR" grounded
+    the STANDARD round 87 (4 ZOMG / 66,624 RBE) — the reply's honest
+    "Alternate Bloons Rounds" naming then floored as ungrounded. The ABR cue
+    must swap the round legs to the abr_rounds entries, labeled on every
+    line."""
+    from services import btd6_data_service
+
+    ctx = await btd6_context_service.build("how much RBE is in r87 in ABR")
+    round_lines = [f for f in ctx.facts if f.startswith("[btd6_round]")]
+    assert round_lines, ctx.facts
+    assert all("Round 87 (ABR)" in line for line in round_lines), round_lines
+    abr_entry = btd6_data_service.get_round(87, roundset="abr")
+    assert any(f"total RBE {abr_entry.rbe:,}" in line for line in round_lines)
+    assert not any("standard economy" in line for line in round_lines)
+
+    # Control: without the cue the standard entry renders, unlabeled.
+    std = await btd6_context_service.build("how much RBE is in r87")
+    std_lines = [f for f in std.facts if f.startswith("[btd6_round]")]
+    assert std_lines and all("(ABR)" not in line for line in std_lines)

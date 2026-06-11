@@ -52,6 +52,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from core.runtime.ai.contracts import AIAnswerWithEvidence, CalculationEvidence
+from utils.btd6.keywords import ABR_CUE_RE as _ABR_CUE_RE
 
 # The orchestration-profile workflow label this module implements. Profiles
 # declaring it (ai_orchestration_presets) opt their scopes into the workflow.
@@ -92,6 +93,15 @@ class RoundCashPlan:
     # income is already counted/held); kept here so the answer's assumption
     # line can say so explicitly.
     completed_round_anchor: int | None = None
+    # BUG-0010 (live, 2026-06-11): "how much cash do I get in ABR from r25 to
+    # r83" computed the standard set and the model then claimed ABR was
+    # uncovered. The cue routes the calculation to the ABR round set, which
+    # the data service has always supported.
+    roundset: str = "default"
+    # A cash modifier named in the question ("double cash", "half cash") —
+    # never applied (the calculator computes base economy only); carried so
+    # the answer states that explicitly instead of leaving it to the model.
+    unsupported_modifier: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -99,6 +109,10 @@ class RoundCashPlan:
 # ---------------------------------------------------------------------------
 
 _CASH_KEYWORD_RE = re.compile(r"\b(?:cash|money|income|earn(?:ed|ings?|s)?)\b", re.I)
+
+# Cash modifiers the calculator deliberately never applies (Q-0043 honesty
+# posture: base economy only, never a guessed number).
+_MODIFIER_RE = re.compile(r"\b(double|half)\s+cash\b", re.I)
 
 # A "how much would I have …" money question carries no cash noun at all —
 # the live 2026-06-11 miss "if I have 20K by round 50, how much would I have
@@ -264,6 +278,8 @@ def plan_question(text: str) -> RoundCashPlan | None:
                     intent="afford_check",
                     round_start=int(round_match.group(1)),
                     target_cost=amount,
+                    roundset=_roundset_for(text),
+                    unsupported_modifier=_modifier_for(text),
                 )
     if not (_CASH_KEYWORD_RE.search(text) or _MONEY_QUESTION_RE.search(text)):
         return None
@@ -281,8 +297,21 @@ def plan_question(text: str) -> RoundCashPlan | None:
                 round_end=end,
                 starting_balance=_extract_balance(text),
                 completed_round_anchor=completed,
+                roundset=_roundset_for(text),
+                unsupported_modifier=_modifier_for(text),
             )
     return None
+
+
+def _roundset_for(text: str) -> str:
+    """Return "abr" when the question names the Alternate Bloons Rounds set."""
+    return "abr" if _ABR_CUE_RE.search(text) else "default"
+
+
+def _modifier_for(text: str) -> str | None:
+    """A named cash modifier ("double cash"/"half cash"), or ``None``."""
+    match = _MODIFIER_RE.search(text)
+    return match.group(0).lower() if match else None
 
 
 def _extract_balance(text: str) -> float | None:
@@ -322,10 +351,11 @@ def _data_version() -> str | None:
 
 
 def _evidence_id(plan: RoundCashPlan) -> str:
+    suffix = ":abr" if plan.roundset == "abr" else ""
     if plan.intent == "afford_check":
-        return f"afford:r{plan.round_start}:cost{plan.target_cost:g}"
+        return f"afford:r{plan.round_start}:cost{plan.target_cost:g}{suffix}"
     end = plan.round_end if plan.round_end is not None else plan.round_start
-    return f"round_cash:r{plan.round_start}-r{end}"
+    return f"round_cash:r{plan.round_start}-r{end}{suffix}"
 
 
 def _result_assumptions(result: dict[str, Any]) -> tuple[str, ...]:
@@ -442,13 +472,34 @@ def _verification_failed(
     )
 
 
+def _economy_label(plan: RoundCashPlan) -> str:
+    """The round-set/economy phrase every result_text carries (BUG-0010)."""
+    if plan.roundset == "abr":
+        return "ABR — Alternate Bloons Rounds, entered at round 3"
+    return "standard rounds, Medium difficulty"
+
+
+def _modifier_warning(plan: RoundCashPlan) -> tuple[str, ...]:
+    if plan.unsupported_modifier is None:
+        return ()
+    return (
+        f"{plan.unsupported_modifier} is NOT applied — the calculator computes "
+        "base economy only; these figures are without any cash modifier",
+    )
+
+
 def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
     from services import btd6_data_service
 
-    result = btd6_data_service.round_cash(plan.round_start, plan.round_end)
+    result = btd6_data_service.round_cash(
+        plan.round_start,
+        plan.round_end,
+        roundset=plan.roundset,
+    )
     inputs: dict[str, Any] = {
         "round_start": plan.round_start,
         "round_end": plan.round_end,
+        "roundset": plan.roundset,
     }
     if not result.get("found"):
         return _unsupported(plan, inputs, result)
@@ -473,9 +524,10 @@ def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
             "starting_cash": result.get("starting_cash"),
         }
         result_text = (
-            f"Cash earned on round {result['round_start']} (standard rounds, "
-            f"Medium difficulty): ${float(round_value):,.2f}. Cumulative cash "
-            f"through round {result['round_start']}: ${float(cumulative):,.2f}."
+            f"Cash earned on round {result['round_start']} "
+            f"({_economy_label(plan)}): ${float(round_value):,.2f}. "
+            f"Cumulative cash through round {result['round_start']}: "
+            f"${float(cumulative):,.2f}."
         )
         return _answer(
             plan,
@@ -484,6 +536,7 @@ def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
             inputs=inputs,
             outputs=outputs,
             assumptions=assumptions,
+            warnings=_modifier_warning(plan),
         )
 
     problems = _verify_range(result)
@@ -508,14 +561,16 @@ def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
         "cumulative_at_end": result["cumulative_at_end"],
         "starting_cash": result.get("starting_cash"),
     }
-    warnings: tuple[str, ...] = ()
+    warnings: tuple[str, ...] = _modifier_warning(plan)
     if result.get("normalized"):
-        warnings = ("range endpoints were given reversed and have been normalised",)
+        warnings = warnings + (
+            "range endpoints were given reversed and have been normalised",
+        )
     result_text = (
         f"Cash earned from round {result['round_start']} through round "
         f"{result['round_end']} — inclusive of both endpoints — is "
-        f"${float(result['range_cash']):,.2f} (standard rounds, Medium "
-        f"difficulty, no income towers)."
+        f"${float(result['range_cash']):,.2f} ({_economy_label(plan)}, "
+        f"no income towers)."
     )
     if plan.starting_balance is not None:
         projected = round(
@@ -549,9 +604,13 @@ def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
 def _run_afford(plan: RoundCashPlan) -> AIAnswerWithEvidence:
     from services import btd6_data_service
 
-    result = btd6_data_service.round_cash(plan.round_start)
+    result = btd6_data_service.round_cash(plan.round_start, roundset=plan.roundset)
     target = float(plan.target_cost or 0)
-    inputs: dict[str, Any] = {"round": plan.round_start, "target_cost": target}
+    inputs: dict[str, Any] = {
+        "round": plan.round_start,
+        "target_cost": target,
+        "roundset": plan.roundset,
+    }
     if not result.get("found"):
         return _unsupported(plan, inputs, result)
     cumulative = result.get("cumulative_cash")
@@ -574,7 +633,7 @@ def _run_afford(plan: RoundCashPlan) -> AIAnswerWithEvidence:
     relation = f"${margin:,.2f} to spare" if affordable else f"${-margin:,.2f} short"
     result_text = (
         f"{verdict} — total cash earned through the end of round "
-        f"{result['round_start']} (standard rounds, Medium difficulty, nothing "
+        f"{result['round_start']} ({_economy_label(plan)}, nothing "
         f"spent) is ${float(cumulative):,.2f}, which is {relation} against a "
         f"${target:,.2f} cost."
     )
@@ -586,6 +645,7 @@ def _run_afford(plan: RoundCashPlan) -> AIAnswerWithEvidence:
         inputs=inputs,
         outputs=outputs,
         assumptions=assumptions,
+        warnings=_modifier_warning(plan),
     )
 
 

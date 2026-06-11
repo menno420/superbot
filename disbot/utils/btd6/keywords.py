@@ -20,6 +20,13 @@ skipped as too generic).
 
 from __future__ import annotations
 
+import re
+
+# The "in ABR" qualifier (BUG-0010): one cue shared by the grounding round
+# legs and the round-cash workflow so they can never drift. "abr" is a
+# distinctive token; "alternate bloons( rounds)" is the spelled form.
+ABR_CUE_RE = re.compile(r"\babr\b|\balternate\s+bloons?\b", re.IGNORECASE)
+
 BTD6_CONTEXT_KEYWORDS: tuple[str, ...] = (
     "btd6",
     "bloons",
@@ -93,4 +100,4 @@ def has_btd6_context(text: str) -> bool:
     return any(keyword in lowered for keyword in BTD6_CONTEXT_KEYWORDS)
 
 
-__all__ = ["BTD6_CONTEXT_KEYWORDS", "has_btd6_context"]
+__all__ = ["ABR_CUE_RE", "BTD6_CONTEXT_KEYWORDS", "has_btd6_context"]

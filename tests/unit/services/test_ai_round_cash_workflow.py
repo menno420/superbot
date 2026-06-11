@@ -247,7 +247,11 @@ def test_range_answer_pins_the_q0043_inclusive_anchor() -> None:
     assert evidence.outputs["rounds_counted"] == 11
     assert evidence.calculator == "btd6_data_service.round_cash"
     assert evidence.calculator_version == wf.CALCULATOR_VERSION
-    assert evidence.normalized_inputs == {"round_start": 50, "round_end": 60}
+    assert evidence.normalized_inputs == {
+        "round_start": 50,
+        "round_end": 60,
+        "roundset": "default",
+    }
     assert evidence.data_version  # stamped from the dataset
     assert "$19,840.00" in answer.result_text
     assert "inclusive" in answer.result_text
@@ -332,7 +336,7 @@ def test_verification_gate_degrades_on_corrupt_owner_output(monkeypatch) -> None
     """A range_cash that contradicts its own cumulative endpoints must never
     be presented — the §10.2 completeness gate degrades it to unsupported."""
 
-    def corrupt(round_start, round_end=None):
+    def corrupt(round_start, round_end=None, **_kw):
         return {
             "found": True,
             "single_round": False,
@@ -412,3 +416,53 @@ def test_workflow_key_matches_a_declared_preset_label() -> None:
 
     declared = {p.workflow for p in presets.all_presets()}
     assert wf.WORKFLOW_KEY in declared
+
+
+def test_plan_abr_qualifier_and_modifier_production_phrasing() -> None:
+    # BUG-0010 (live, 2026-06-11, first Q-0086 session): "in ABR … double
+    # cash" planned the STANDARD set, the model served $107,164.60 labeled
+    # "not ABR" and claimed the calculator can't do ABR — it always could
+    # (the tool's roundset='abr'); only the workflow never parsed the cue.
+    plan = wf.plan_question(
+        "how much cash do I get in ABR from r25 to r83 when I have double "
+        "cash and I started with 5443",
+    )
+    assert plan is not None
+    assert plan.intent == "range_cash"
+    assert (plan.round_start, plan.round_end) == (25, 83)
+    assert plan.roundset == "abr"
+    assert plan.starting_balance == 5443.0
+    assert plan.unsupported_modifier == "double cash"
+
+
+def test_run_abr_range_uses_abr_economy_and_flags_modifier() -> None:
+    from services import btd6_data_service
+
+    answer = wf.run(
+        "how much cash do I get in ABR from r25 to r83 when I have double "
+        "cash and I started with 5443",
+    )
+    assert answer is not None
+    assert answer.status == "complete"
+    expected = btd6_data_service.round_cash(25, 83, roundset="abr")
+    outputs = answer.evidence[0].outputs
+    assert outputs["range_cash"] == expected["range_cash"]
+    assert answer.evidence[0].normalized_inputs["roundset"] == "abr"
+    assert "ABR — Alternate Bloons Rounds" in answer.result_text
+    assert "standard rounds" not in answer.result_text
+    assert any("double cash is NOT applied" in w for w in answer.warnings)
+    assert ":abr" in answer.evidence[0].evidence_id
+    # The ABR range genuinely differs from standard — the live answer's
+    # standard figure must not appear.
+    standard = btd6_data_service.round_cash(25, 83)
+    assert expected["range_cash"] != standard["range_cash"]
+
+
+def test_standard_phrasings_stay_default_roundset() -> None:
+    plan = wf.plan_question("how much cash do I earn from round 50 to round 60?")
+    assert plan is not None
+    assert plan.roundset == "default"
+    assert plan.unsupported_modifier is None
+    answer = wf.run("how much cash do I earn from round 50 to round 60?")
+    assert "$19,840.00" in answer.result_text
+    assert "standard rounds, Medium difficulty" in answer.result_text

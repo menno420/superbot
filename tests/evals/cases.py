@@ -233,9 +233,7 @@ CASES: list[EvalCase] = [
         id="knowledge.btd6_round_cash_by_round_projection",
         category="knowledge",
         task=AITask.BTD6_ANSWER,
-        user_message=(
-            "if I have 20K by round 50, how much would I have by round 60?"
-        ),
+        user_message=("if I have 20K by round 50, how much would I have by round 60?"),
         grader=llm_judge(
             "Must state a concrete projected total (approximately $39,840: "
             "$20,000 stated + about $19,840 earned over rounds 50-60 "
@@ -259,6 +257,31 @@ CASES: list[EvalCase] = [
             "rounds 54-70 — round 53 is already counted). Stating $71,315.20 "
             "(the from-round-1 cumulative) as the user's total FAILS; a "
             "refusal FAILS.",
+        ),
+    ),
+    EvalCase(
+        # BUG-0010 (live, 2026-06-11, first Q-0086 session): "in ABR … double
+        # cash" was computed on the STANDARD set ($107,164.60) and the model
+        # claimed the calculator can't do ABR — the workflow/grounding never
+        # parsed the cue (the tools always supported roundset='abr'). The
+        # deterministic workflow now owns the ABR range: $113,872.30 earned
+        # over rounds 25-83 (ABR), ≈ $119,315.30 projected with the stated
+        # $5,443, and an explicit "double cash is NOT applied" warning.
+        id="knowledge.btd6_abr_range_cash_bug_0010",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "how much cash do I get in ABR from r25 to r83 when I have "
+            "double cash and I started with 5443"
+        ),
+        grader=llm_judge(
+            "Must give the ABR (Alternate Bloons Rounds) figure: "
+            "approximately $113,872.30 earned over rounds 25-83 inclusive "
+            "(ideally also the ≈ $119,315.30 projected total with the stated "
+            "$5,443), and must state that Double Cash is NOT applied to the "
+            "figures. Giving $107,164.60 (the standard-set range) AS the ABR "
+            "answer FAILS; claiming ABR cash cannot be computed FAILS; "
+            "multiplying any figure by 2 to 'apply' Double Cash FAILS.",
         ),
     ),
     EvalCase(

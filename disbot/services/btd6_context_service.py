@@ -33,6 +33,7 @@ from utils.btd6.grounding_format import DEFAULT_CAP as _FACT_TEXT_CAP
 from utils.btd6.grounding_format import is_infinite as _is_infinite
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
+from utils.btd6.keywords import ABR_CUE_RE as _ABR_CUE_RE
 
 logger = logging.getLogger("bot.services.btd6_context")
 
@@ -997,18 +998,25 @@ def _render_fixture_bloon(entry: Any) -> list[str]:
     return lines
 
 
-def _render_fixture_round(entry: Any) -> list[str]:
+def _render_fixture_round(entry: Any, *, roundset_label: str = "") -> list[str]:
     """Render a RoundEntry as 1-3 ``[btd6_round]`` grounding lines.
 
     Surfaces the facts round questions hinge on: danger, total (children-
     inclusive) RBE, the exact spawn composition, and any curated strategy note.
     Only resolver-matched round(s) are rendered, so grounding stays bounded.
+
+    ``roundset_label`` (e.g. ``"ABR"``) stamps every line's round reference —
+    BUG-0010: an Alternate Bloons Rounds entry rendered without the label is
+    indistinguishable from standard, and the answer guard then either blocks
+    the model's honest "Alternate Bloons Rounds" naming or lets a
+    standard-as-ABR mislabel through.
     """
     from services import btd6_data_service
 
     number = getattr(entry, "round_number", None)
     if number is None:
         return []
+    ref = f"Round {number} ({roundset_label})" if roundset_label else f"Round {number}"
     danger = _sanitise(str(getattr(entry, "danger", "") or ""))
     rbe = getattr(entry, "rbe", None)
     threats = tuple(getattr(entry, "common_threats", ()) or ())
@@ -1027,17 +1035,23 @@ def _render_fixture_round(entry: Any) -> list[str]:
         if isinstance(cumulative, (int, float)):
             bit += f", cumulative ~${round(cumulative):,}"
         # Standard/Medium base economy: ~$1 per bloon pop + end-of-round bonus,
-        # before any income towers, and halved under Half Cash.
-        head.append(bit + " (standard economy, no income towers)")
+        # before any income towers, and halved under Half Cash. An ABR entry's
+        # cash follows ABR rules (entered at round 3) — never call it standard.
+        economy = (
+            f"{roundset_label} round-set economy, no income towers"
+            if roundset_label
+            else "standard economy, no income towers"
+        )
+        head.append(f"{bit} ({economy})")
     if threats:
         head.append(f"threats: {', '.join(_sanitise(t) for t in threats)}")
     headline = " | ".join(head)
     lines = [
         _cap(
             (
-                f"[btd6_round] Round {number} — {headline} (source: {_dataset_label()})"
+                f"[btd6_round] {ref} — {headline} (source: {_dataset_label()})"
                 if headline
-                else f"[btd6_round] Round {number} (source: {_dataset_label()})"
+                else f"[btd6_round] {ref} (source: {_dataset_label()})"
             ),
         ),
     ]
@@ -1061,7 +1075,7 @@ def _render_fixture_round(entry: Any) -> list[str]:
             parts.append(f"{aggregated[(bloon_id, modifiers)]} {label}")
         lines.append(
             _cap(
-                f"[btd6_round] Round {number} composition — "
+                f"[btd6_round] {ref} composition — "
                 f"{_sanitise(', '.join(parts))} (source: {_dataset_label()})",
             ),
         )
@@ -1070,7 +1084,7 @@ def _render_fixture_round(entry: Any) -> list[str]:
     if summary and not summary[0].isdigit():
         lines.append(
             _cap(
-                f"[btd6_round] Round {number} — {summary} (source: {_dataset_label()})",
+                f"[btd6_round] {ref} — {summary} (source: {_dataset_label()})",
             ),
         )
     return lines
@@ -2262,7 +2276,7 @@ def _catalog_facts(message_text: str) -> list[str]:
     return out
 
 
-def _fixture_facts_for_intent(intent: Any) -> list[str]:
+def _fixture_facts_for_intent(intent: Any, *, message_text: str = "") -> list[str]:
     """Return fixture-sourced grounding lines for any tower/hero/bloon in ``intent``.
 
     Called when the DB returns no rows for a matched entity so the AI
@@ -2302,8 +2316,30 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
         if record is not None:
             lines.extend(_render_fixture_bloon(record))
     # Rounds resolve to full RoundEntry records already (composition + RBE), so
-    # render them directly rather than re-fetching by number.
+    # render them directly rather than re-fetching by number. BUG-0010: the
+    # resolver only knows the standard set — when the question says ABR
+    # ("how much RBE is in r87 in ABR"), swap each round for its
+    # Alternate Bloons Rounds entry and say so on every line, or the model
+    # serves (or refuses over) standard data labeled ABR.
+    abr_cue = bool(_ABR_CUE_RE.search(message_text or ""))
     for round_entry in getattr(intent, "rounds", ()) or ():
+        if abr_cue:
+            number = getattr(round_entry, "round_number", None)
+            abr_entry = (
+                btd6_data_service.get_round(int(number), roundset="abr")
+                if number is not None
+                else None
+            )
+            if abr_entry is not None:
+                lines.extend(
+                    _render_fixture_round(abr_entry, roundset_label="ABR"),
+                )
+                continue
+            lines.append(
+                f"[btd6_round] Round {number} has no Alternate Bloons Rounds "
+                "entry in the dataset — the standard-set figures below are "
+                "NOT the ABR values.",
+            )
         lines.extend(_render_fixture_round(round_entry))
     # CT relics carry their static effect from the catalog.
     for relic in getattr(intent, "ct_relics", ()) or ():
@@ -2711,7 +2747,7 @@ async def build(
         # and upgrade/ability data reach the LLM even when the DB has
         # no rows for tower/hero entities (the common state before live
         # ingestion populates btd6_facts).
-        facts.extend(_fixture_facts_for_intent(intent))
+        facts.extend(_fixture_facts_for_intent(intent, message_text=message_text))
 
         # Pass 3b: a paragon named directly (not via its tower) — the resolver
         # doesn't key on paragon names, so ground those too (deduped against
