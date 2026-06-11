@@ -235,6 +235,7 @@ def test_reset_clears_name_index(monkeypatch):
         modes=(),
         bloons=(),
         ct_relics=(),
+        bosses=(),
     )
     monkeypatch.setattr(btd6_data_service, "get_dataset", lambda: fake)
     btd6_grounding_service._reset_for_tests()

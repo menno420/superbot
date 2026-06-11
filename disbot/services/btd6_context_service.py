@@ -2200,6 +2200,20 @@ def _catalog_facts(message_text: str) -> list[str]:
                 line += f" | requires: {', '.join(entry.prerequisites)}"
             out.append(line)
 
+    def _tier_bits(rows: Any) -> list[str]:
+        bits = []
+        for t in rows or ():
+            tier = t.get("tier") if isinstance(t, dict) else getattr(t, "tier", None)
+            hp = t.get("health") if isinstance(t, dict) else getattr(t, "health", None)
+            spd = t.get("speed") if isinstance(t, dict) else getattr(t, "speed", None)
+            if tier is None or hp is None:
+                continue
+            bit = f"T{tier} {hp:,} HP"
+            if spd is not None:
+                bit += f" (speed {spd})"
+            bits.append(bit)
+        return bits
+
     for boss in dataset.bosses:
         name = boss.canonical.strip().lower()
         if not name or name not in text:
@@ -2215,30 +2229,32 @@ def _catalog_facts(message_text: str) -> list[str]:
         # miss (2026-06-10): the teaser line above told the model the tiers
         # exist without giving any figure, so a healthy answer had nothing
         # to ground and the faithfulness floor refused. Single bounded line
-        # per named boss (≤5 tiers).
-        tier_bits = []
-        for t in boss.tiers:
-            tier = t.get("tier") if isinstance(t, dict) else getattr(t, "tier", None)
-            hp = t.get("health") if isinstance(t, dict) else getattr(t, "health", None)
-            spd = t.get("speed") if isinstance(t, dict) else getattr(t, "speed", None)
-            if tier is None or hp is None:
-                continue
-            bit = f"T{tier} {hp:,} HP"
-            if spd is not None:
-                bit += f" (speed {spd})"
-            tier_bits.append(bit)
-        if tier_bits:
+        # per named boss (≤5 tiers). Standard and Elite are labeled
+        # explicitly (BUG-0002: standard figures were served as "Elite") —
+        # the variant words must appear next to the numbers they describe.
+        standard_bits = _tier_bits(boss.tiers)
+        if standard_bits:
             out.append(
-                f"[btd6_boss] {boss.canonical} per-tier base health "
-                "(standard difficulty, single-player): " + " · ".join(tier_bits),
+                f"[btd6_boss] {boss.canonical} per-tier health — Standard "
+                "(non-Elite) ranked boss, single-player: " + " · ".join(standard_bits),
             )
         if "elite" in text:
-            out.append(
-                f"[btd6_boss] Elite {boss.canonical} health is NOT in the "
-                "dataset — only standard-tier health is on record. If the "
-                "user supplies their own Elite modifier, apply it as THEIR "
-                "premise and say the base figures are the verified part.",
-            )
+            elite_bits = _tier_bits(boss.elite_tiers)
+            if elite_bits:
+                out.append(
+                    f"[btd6_boss] ELITE {boss.canonical} per-tier health "
+                    "(single-player): "
+                    + " · ".join(elite_bits)
+                    + " — answer Elite questions from these figures, NOT "
+                    "from the Standard table.",
+                )
+            else:
+                out.append(
+                    f"[btd6_boss] Elite {boss.canonical} health is NOT in the "
+                    "dataset — only standard-tier health is on record. If the "
+                    "user supplies their own Elite modifier, apply it as THEIR "
+                    "premise and say the base figures are the verified part.",
+                )
     return out
 
 

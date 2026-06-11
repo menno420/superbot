@@ -137,6 +137,18 @@ def _get_entity_aliases() -> tuple[frozenset[str], frozenset[str]]:
                 elif len(al) > 4:  # skip ultra-short aliases (q, eti, ado…)
                     single.add(al)
 
+        for boss in ds.bosses:
+            # Boss canonical names (bloonarius, lych, vortex, dreadbloon,
+            # phayze, blastapopoulos, diamondback) are distinctive words —
+            # without them a boss question routes to the general path and the
+            # model answers from memory unguarded ("elite lych hp per tier"
+            # served the Standard table as Elite; BUG-0002, 2026-06-11).
+            name = boss.canonical.lower()
+            if " " in name:
+                multi.add(name)
+            elif len(name) > 3:
+                single.add(name)
+
         _entity_aliases = (frozenset(multi), frozenset(single))
         return _entity_aliases
 

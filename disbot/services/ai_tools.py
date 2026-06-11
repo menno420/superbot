@@ -771,7 +771,9 @@ _BTD6_DIFFICULTY_COST_SPEC = AIToolSpec(
         "When the user asks about Easy / Hard / Impoppable pricing, pass the "
         "Medium cost here to get the exact Easy/Medium/Hard/Impoppable prices "
         "— do not do the multiplication yourself, and never claim costs are "
-        "the same across difficulties."
+        "the same across difficulties. For 'how much do N of these cost', "
+        "pass quantity too and read total_costs_by_difficulty — never "
+        "multiply yourself."
     ),
     parameters={
         "type": "object",
@@ -779,6 +781,13 @@ _BTD6_DIFFICULTY_COST_SPEC = AIToolSpec(
             "medium_cost": {
                 "type": "integer",
                 "description": "The Medium-difficulty cost to convert.",
+            },
+            "quantity": {
+                "type": "integer",
+                "description": (
+                    "How many are being bought (optional, default 1); adds "
+                    "total_costs_by_difficulty = quantity x adjusted cost."
+                ),
             },
         },
         "required": ["medium_cost"],
@@ -797,11 +806,28 @@ async def _btd6_difficulty_cost(arguments: dict[str, Any]) -> dict[str, Any]:
         return {"found": False, "note": "medium_cost must be an integer"}
     if medium <= 0:
         return {"found": False, "note": "medium_cost must be > 0"}
-    return {
+    per_difficulty = difficulty_costs.all_difficulty_costs(medium)
+    result = {
         "found": True,
         "medium_cost": medium,
-        "costs_by_difficulty": difficulty_costs.all_difficulty_costs(medium),
+        "costs_by_difficulty": per_difficulty,
     }
+    raw_quantity = arguments.get("quantity")
+    if raw_quantity is not None:
+        # Bulk pricing ("how much do 10,041 despos cost on impop", BUG-0003):
+        # the product must come from the tool, not model arithmetic — the
+        # faithfulness guard rightly blocks numbers absent from the ledger.
+        try:
+            quantity = int(raw_quantity)
+        except (TypeError, ValueError):
+            return {"found": False, "note": "quantity must be an integer"}
+        if quantity <= 0:
+            return {"found": False, "note": "quantity must be > 0"}
+        result["quantity"] = quantity
+        result["total_costs_by_difficulty"] = {
+            difficulty: cost * quantity for difficulty, cost in per_difficulty.items()
+        }
+    return result
 
 
 # --- btd6_round_composition --------------------------------------------------
@@ -1317,11 +1343,13 @@ _BTD6_BOSS_SPEC = AIToolSpec(
         "BTD6 Boss Bloon info (Bloonarius, Lych, Vortex, Dreadbloon, "
         "Blastapopoulos, Phayze, Diamondback): each boss's game-authored mechanic "
         "description, its damage-type immunities, and the per-tier health + speed "
-        "for all five boss tiers (health scales up sharply by tier; co-op "
-        "multiplies it further). Pass a boss name to look one up, or omit it to "
+        "for all five boss tiers — Standard in `tiers` AND the Elite variant in "
+        "`elite_tiers` (health scales up sharply by tier; co-op multiplies it "
+        "further). Answer Elite questions from elite_tiers, never from the "
+        "Standard table. Pass a boss name to look one up, or omit it to "
         "list every boss. Use for 'how much health does a tier 3 Bloonarius have', "
-        "'what is Dreadbloon immune to', 'how fast is Vortex', 'what does Lych do', "
-        "'list the bosses'."
+        "'elite lych hp per tier', 'what is Dreadbloon immune to', 'how fast is "
+        "Vortex', 'what does Lych do', 'list the bosses'."
     ),
     parameters={
         "type": "object",
@@ -1345,6 +1373,10 @@ def _boss_dict(entry: Any) -> dict[str, Any]:
         # grounded numbers (e.g. tier 3 Bloonarius = 350,000 health).
         "tiers": [dict(t) for t in entry.tiers],
     }
+    if entry.elite_tiers:
+        # The Elite variant's own table (BUG-0002: without it, Standard
+        # figures were the only numbers available to "Elite" questions).
+        out["elite_tiers"] = [dict(t) for t in entry.elite_tiers]
     if entry.tagline:
         out["tagline"] = entry.tagline
     if entry.immune_to:

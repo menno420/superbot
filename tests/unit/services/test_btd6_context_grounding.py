@@ -743,19 +743,53 @@ def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
 async def test_boss_per_tier_health_grounds():
     """"Base HP of Lych per tier" must ground the figures, not the teaser —
     the old fact said "5 tier(s) on record" with no number, so a healthy
-    answer had nothing to ground and the floor refused (live, 2026-06-10)."""
+    answer had nothing to ground and the floor refused (live, 2026-06-10).
+    The line is variant-labeled "Standard (non-Elite)" since BUG-0002."""
     ctx = await btd6_context_service.build("what is the base hp of lych per tier")
     boss_lines = [f for f in ctx.facts if f.startswith("[btd6_boss]")]
-    health = [f for f in boss_lines if "per-tier base health" in f]
+    health = [f for f in boss_lines if "Standard (non-Elite)" in f]
     assert health, boss_lines
     assert "T1 14,000 HP" in health[0]
     assert "T5" in health[0]
 
 
 @pytest.mark.asyncio
-async def test_boss_elite_questions_get_the_honesty_note():
-    """Elite health is not in the dataset — saying so beats freelancing a
-    multiplier as if it were data."""
+async def test_boss_elite_questions_ground_the_elite_table():
+    """BUG-0002 (live, 2026-06-11): "elite lych hp per tier" was answered with
+    the STANDARD table labeled as Elite — the dataset had no elite figures and
+    the number guard checks values, not labels. The dump's elite models are now
+    on record; an elite question must ground the real Elite figures alongside
+    the explicitly-labeled Standard line."""
+    ctx = await btd6_context_service.build("what is the hp of elite lych per tier")
+    elite = [f for f in ctx.facts if f.startswith("[btd6_boss] ELITE Lych")]
+    assert elite, ctx.facts
+    # The live wrong answer said T1 14,000 (standard); elite truth is 30,000.
+    assert "T1 30,000 HP" in elite[0]
+    assert "T5 24,000,000 HP" in elite[0]
+    assert "NOT from the Standard table" in elite[0]
+    # The standard line stays present and explicitly variant-labeled.
+    assert any("Standard (non-Elite)" in f for f in ctx.facts)
+    # No stale honesty note once the data exists.
+    assert not any("NOT in the dataset" in f for f in ctx.facts)
+
+
+@pytest.mark.asyncio
+async def test_boss_elite_honesty_note_when_dataset_predates_backfill(monkeypatch):
+    """A dataset without elite_tiers (a pre-backfill blob in prod) keeps the
+    honest "NOT in the dataset" note instead of freelancing a multiplier."""
+    import dataclasses
+
+    from services import btd6_data_service
+
+    real = btd6_data_service.get_dataset()
+    stripped = tuple(
+        dataclasses.replace(b, elite_tiers=()) for b in real.bosses
+    )
+    monkeypatch.setattr(
+        btd6_data_service,
+        "get_dataset",
+        lambda: dataclasses.replace(real, bosses=stripped),
+    )
     ctx = await btd6_context_service.build("how much hp does a tier 4 elite lych have")
     notes = [f for f in ctx.facts if "Elite Lych health is NOT in the dataset" in f]
     assert notes

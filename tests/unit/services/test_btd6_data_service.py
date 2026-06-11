@@ -150,6 +150,17 @@ def test_bosses_load_resolve_and_carry_tiers():
     assert [t["health"] for t in bloonarius.tiers] == sorted(
         t["health"] for t in bloonarius.tiers
     )
+    # Elite variants (BUG-0002 backfill, dump Bloons/<Family>/<Family>EliteN):
+    # five tiers each, strictly above the standard tier — Elite Lych T1 is
+    # 30,000 vs the 14,000 the live bot wrongly served as "Elite".
+    lych = get_boss("lych")
+    assert len(lych.elite_tiers) == 5
+    assert next(t for t in lych.elite_tiers if t["tier"] == 1)["health"] == 30_000
+    for boss in dataset.bosses:
+        assert len(boss.elite_tiers) == 5, boss.id
+        for std, elite in zip(boss.tiers, boss.elite_tiers):
+            assert elite["tier"] == std["tier"]
+            assert elite["health"] > std["health"], boss.id
     # Derived type-immunities: Dreadbloon = Lead, Blastapopoulos = Purple.
     assert set(get_boss("dreadbloon").immune_to) == {"Cold", "Energy", "Sharp", "Shatter"}
     assert set(get_boss("blastapopoulos").immune_to) == {"Energy", "Fire", "Frigid", "Plasma"}

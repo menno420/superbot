@@ -277,14 +277,18 @@ class BossEntry:
     ``description`` are the game-authored strings; ``immune_to`` is the derived
     damage-type immunity set (e.g. Dreadbloon = Lead, Blastapopoulos = Purple);
     ``tiers`` carries the five boss tiers' ``{tier, health, speed}`` (both scale
-    up per tier — co-op multiplies health further at runtime). ``tagline`` is the
-    flavour line shown on the boss-select panel.
+    up per tier — co-op multiplies health further at runtime). ``elite_tiers``
+    carries the same shape for the Elite variant (dump
+    ``Bloons/<Family>/<Family>Elite{1..5}.json``; empty for a dataset predating
+    the BUG-0002 backfill). ``tagline`` is the flavour line shown on the
+    boss-select panel.
     """
 
     id: str
     canonical: str
     description: str
     tiers: tuple[dict[str, Any], ...] = ()
+    elite_tiers: tuple[dict[str, Any], ...] = ()
     tagline: str = ""
     immune_to: tuple[str, ...] = ()
 
@@ -724,20 +728,24 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
 
 def _parse_boss(raw: dict[str, Any]) -> BossEntry:
     _require_keys(raw, _REQUIRED_BOSS_FIELDS, where=f"boss {raw.get('id')!r}")
-    tiers = tuple(
-        {
-            "tier": int(t["tier"]),
-            "health": int(t["health"]),
-            "speed": float(t["speed"]),
-        }
-        for t in raw.get("tiers", []) or ()
-        if "tier" in t and "health" in t
-    )
+
+    def _tier_rows(key: str) -> tuple[dict[str, Any], ...]:
+        return tuple(
+            {
+                "tier": int(t["tier"]),
+                "health": int(t["health"]),
+                "speed": float(t["speed"]),
+            }
+            for t in raw.get(key, []) or ()
+            if "tier" in t and "health" in t
+        )
+
     return BossEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
         description=str(raw.get("description", "")).strip(),
-        tiers=tiers,
+        tiers=_tier_rows("tiers"),
+        elite_tiers=_tier_rows("elite_tiers"),
         tagline=str(raw.get("tagline", "")).strip(),
         immune_to=tuple(str(x) for x in raw.get("immune_to", []) or ()),
     )
