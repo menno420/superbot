@@ -24,14 +24,17 @@
    trust-infrastructure (and GDPR-adjacent: the owner is EU-based). Cheap
    version: one command producing a JSON of everything keyed to your user id
    + an erasure flow through the audited mutation seams.
-3. **Owner alerting — a dead-man's switch.** Tonight's outage was found by
-   *accident* (the owner happened to open the Railway dashboard ~45 minutes
-   in). Nothing pushes "the bot is down" to him. Cheap version: the existing
-   healthserver endpoint + any free uptime monitor + a Discord webhook DM.
-   This is also the missing sensory organ for self-driving Stage 1 — the
-   caretaker can't fix what nothing detects. *(Dedup note: may partially
-   overlap the bot-awareness capture — if so, merge there, the alert-to-owner
-   leg is the new part.)*
+3. **Owner alerting — a dead-man's switch.** *(Owner-corrected + downgraded
+   2026-06-11: known, prepared, consciously deferred — a decision, not a
+   blind spot.)* Facts corrected: the 2026-06-10 build failures caused **no
+   user-facing downtime** (Railway keeps the active instance serving until a
+   new build is live; the agent misread FAILED/REMOVED dashboard states as an
+   outage) — the failure class was a *silent ship-blocker*, not downtime.
+   The owner has alerting preparations made and has deliberately
+   deprioritized it. Residual point kept for the record: nothing yet alerts
+   on real downtime *or* on build-pipeline failure, and the Stage 1 caretaker
+   will eventually want both as sensory inputs — pick it up when the owner
+   says so, not before.
 
 ## AI-system / workflow gaps
 

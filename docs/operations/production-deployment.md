@@ -70,7 +70,11 @@ with the maintainer — when decided, this section becomes its home.
 
 - **2026-06-10 — worker build outage (~21:00–21:45 UTC).** Three consecutive build
   failures (the #681 and #680 merge deploys + a manual retry): railpack default
-  resolved to binary-less CPython 3.13.14 (see "Why pinned" above). Postgres was
-  **Online** throughout — bot offline, no data impact. Fix: the `.python-version`
-  pin, PR #685, merged the same hour. Diagnosis artifacts: the maintainer's
-  uploaded build log; pbs asset probes (3.13.13 → 200, 3.13.14 → 404).
+  resolved to binary-less CPython 3.13.14 (see "Why pinned" above).
+  **Impact (owner-corrected 2026-06-11): no user-facing downtime** — Railway
+  keeps the active deployment serving until a new build goes live, so the
+  previous instance ran throughout; Postgres Online throughout. The real
+  impact was a **silent ship-blocker**: no new code could reach production
+  until the pin landed. Fix: the `.python-version` pin, PR #685, merged the
+  same hour. Diagnosis artifacts: the maintainer's uploaded build log; pbs
+  asset probes (3.13.13 → 200, 3.13.14 → 404).
