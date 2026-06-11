@@ -150,6 +150,17 @@ def test_bosses_load_resolve_and_carry_tiers():
     assert [t["health"] for t in bloonarius.tiers] == sorted(
         t["health"] for t in bloonarius.tiers
     )
+    # Elite variants (BUG-0002 backfill, dump Bloons/<Family>/<Family>EliteN):
+    # five tiers each, strictly above the standard tier — Elite Lych T1 is
+    # 30,000 vs the 14,000 the live bot wrongly served as "Elite".
+    lych = get_boss("lych")
+    assert len(lych.elite_tiers) == 5
+    assert next(t for t in lych.elite_tiers if t["tier"] == 1)["health"] == 30_000
+    for boss in dataset.bosses:
+        assert len(boss.elite_tiers) == 5, boss.id
+        for std, elite in zip(boss.tiers, boss.elite_tiers):
+            assert elite["tier"] == std["tier"]
+            assert elite["health"] > std["health"], boss.id
     # Derived type-immunities: Dreadbloon = Lead, Blastapopoulos = Purple.
     assert set(get_boss("dreadbloon").immune_to) == {"Cold", "Energy", "Sharp", "Shatter"}
     assert set(get_boss("blastapopoulos").immune_to) == {"Energy", "Fire", "Frigid", "Plasma"}
@@ -159,6 +170,40 @@ def test_bosses_load_resolve_and_carry_tiers():
     # Unknown / empty fail closed.
     assert get_boss("zzz") is None
     assert find_boss("") is None
+
+
+def test_crosspath_cost_full_tower_per_difficulty():
+    """BUG-0003 (owner-corrected): "10 041 despos" = TEN 0-4-1 Desperados.
+    The full crosspathed cost is base + every tier on each path, with each
+    purchase rounded to $5 at the difficulty BEFORE summing."""
+    from services.btd6_data_service import crosspath_cost
+
+    r = crosspath_cost("despo", "041", quantity=10)
+    assert r["found"] is True
+    assert r["tower"] == "Desperado" and r["code"] == "0-4-1"
+    # Medium: 300 + (150+350+3000+6000) + 220 = 10,020.
+    assert r["unit_costs_by_difficulty"]["medium"] == 10_020
+    # Impoppable per-component: 360+180+420+3600+7200+265 = 12,025 — NOT
+    # round5(10020*1.2) of the sum (the per-purchase rule).
+    assert r["unit_costs_by_difficulty"]["impoppable"] == 12_025
+    assert r["total_costs_by_difficulty"]["impoppable"] == 120_250
+    assert r["upgrade_names"] == ["Bounty Hunter", "Wanderer"]
+
+    # Hyphenated form + no quantity → unit only.
+    unit = crosspath_cost("Desperado", "0-4-1")
+    assert unit["found"] is True
+    assert "total_costs_by_difficulty" not in unit
+
+    # Base code prices the bare tower.
+    base = crosspath_cost("despo", "000", quantity=10)
+    assert base["unit_costs_by_difficulty"]["medium"] == 300
+    assert base["total_costs_by_difficulty"]["impoppable"] == 3_600
+
+    # Fail-closed: illegal code, unknown tower, bad quantity.
+    assert crosspath_cost("despo", "551")["found"] is False
+    assert crosspath_cost("despo", "1-1-1")["found"] is False
+    assert crosspath_cost("nope", "041")["found"] is False
+    assert crosspath_cost("despo", "041", quantity=0)["found"] is False
 
 
 def test_map_removables_curated_for_known_maps_only():

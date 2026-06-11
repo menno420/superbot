@@ -40,6 +40,33 @@
           "health": 3000000,
           "speed": 1.25
         }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 43000,
+          "speed": 1
+        },
+        {
+          "tier": 2,
+          "health": 270000,
+          "speed": 1.05
+        },
+        {
+          "tier": 3,
+          "health": 1700000,
+          "speed": 1.1
+        },
+        {
+          "tier": 4,
+          "health": 7000000,
+          "speed": 1.15
+        },
+        {
+          "tier": 5,
+          "health": 35000000,
+          "speed": 1.25
+        }
       ]
     },
     {
@@ -74,6 +101,33 @@
           "health": 3000000,
           "speed": 1.5
         }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 50000,
+          "speed": 1.25
+        },
+        {
+          "tier": 2,
+          "health": 300000,
+          "speed": 1.25
+        },
+        {
+          "tier": 3,
+          "health": 2000000,
+          "speed": 1.25
+        },
+        {
+          "tier": 4,
+          "health": 8000000,
+          "speed": 1.5
+        },
+        {
+          "tier": 5,
+          "health": 40000000,
+          "speed": 1.5
+        }
       ]
     },
     {
@@ -106,6 +160,33 @@
         {
           "tier": 5,
           "health": 3800000,
+          "speed": 2
+        }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 95000,
+          "speed": 2
+        },
+        {
+          "tier": 2,
+          "health": 550000,
+          "speed": 2
+        },
+        {
+          "tier": 3,
+          "health": 4000000,
+          "speed": 2
+        },
+        {
+          "tier": 4,
+          "health": 15000000,
+          "speed": 2
+        },
+        {
+          "tier": 5,
+          "health": 65000000,
           "speed": 2
         }
       ]
@@ -147,6 +228,33 @@
           "health": 1000000,
           "speed": 1.6
         }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 15000,
+          "speed": 1.25
+        },
+        {
+          "tier": 2,
+          "health": 90000,
+          "speed": 1.3
+        },
+        {
+          "tier": 3,
+          "health": 650000,
+          "speed": 1.4
+        },
+        {
+          "tier": 4,
+          "health": 2625000,
+          "speed": 1.5
+        },
+        {
+          "tier": 5,
+          "health": 12500000,
+          "speed": 1.6
+        }
       ]
     },
     {
@@ -180,6 +288,33 @@
           "tier": 5,
           "health": 2100000,
           "speed": 2.2
+        }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 30000,
+          "speed": 2.4
+        },
+        {
+          "tier": 2,
+          "health": 180000,
+          "speed": 2.5
+        },
+        {
+          "tier": 3,
+          "health": 1100000,
+          "speed": 2.7
+        },
+        {
+          "tier": 4,
+          "health": 4800000,
+          "speed": 2.8
+        },
+        {
+          "tier": 5,
+          "health": 24000000,
+          "speed": 2.9
         }
       ]
     },
@@ -215,6 +350,33 @@
           "health": 1450000,
           "speed": 0.8
         }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 19000,
+          "speed": 0.8
+        },
+        {
+          "tier": 2,
+          "health": 110000,
+          "speed": 0.8
+        },
+        {
+          "tier": 3,
+          "health": 770000,
+          "speed": 0.8
+        },
+        {
+          "tier": 4,
+          "health": 3100000,
+          "speed": 0.8
+        },
+        {
+          "tier": 5,
+          "health": 15500000,
+          "speed": 0.8
+        }
       ]
     },
     {
@@ -248,6 +410,33 @@
           "tier": 5,
           "health": 2512500,
           "speed": 4.2
+        }
+      ],
+      "elite_tiers": [
+        {
+          "tier": 1,
+          "health": 41800,
+          "speed": 3.75
+        },
+        {
+          "tier": 2,
+          "health": 251000,
+          "speed": 4.05
+        },
+        {
+          "tier": 3,
+          "health": 1675000,
+          "speed": 4.5
+        },
+        {
+          "tier": 4,
+          "health": 6700000,
+          "speed": 4.65
+        },
+        {
+          "tier": 5,
+          "health": 33500000,
+          "speed": 4.8
         }
       ]
     }

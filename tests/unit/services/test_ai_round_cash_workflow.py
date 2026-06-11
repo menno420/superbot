@@ -134,6 +134,45 @@ def test_plan_separated_anchors_stay_conservative() -> None:
         assert wf.plan_question(text) is None, text
 
 
+def test_plan_by_round_anchors_with_balance_production_phrasing() -> None:
+    # Live miss (2026-06-11, same morning as BUG-0001's recurrence) — the
+    # exact production message, verbatim: no cash noun at all ("how much
+    # would I have") and both anchors carried by "by round N".
+    plan = wf.plan_question(
+        "if I have 20K by round 50, how much would I have by round 60?",
+    )
+    assert plan is not None
+    assert plan.intent == "range_cash"
+    assert (plan.round_start, plan.round_end) == (50, 60)
+    # "20K" is a stated balance (ownership cue + k-suffix amount).
+    assert plan.starting_balance == 20000.0
+
+
+def test_plan_money_question_gate_stays_conservative() -> None:
+    cases = [
+        # Money-ish verb but no two round anchors → out.
+        "how much pierce does juggernaut have",
+        "how much would I have if I sell everything",
+        # Cost questions are not round-cash questions.
+        "how much do 10 041 despos cost on impop",
+        # "how much … have" with only one round anchor → out.
+        "how much would I have by round 60?",
+    ]
+    for text in cases:
+        assert wf.plan_question(text) is None, text
+
+
+def test_range_answer_projects_balance_for_by_round_phrasing() -> None:
+    answer = wf.run("if I have 20K by round 50, how much would I have by round 60?")
+    assert answer is not None
+    assert answer.status == "complete"
+    outputs = answer.evidence[0].outputs
+    assert outputs["starting_balance"] == 20000.0
+    expected = round(20000.0 + float(outputs["range_cash"]), 2)
+    assert abs(float(outputs["projected_total"]) - expected) < 0.01
+    assert "projects to" in answer.result_text
+
+
 # ---------------------------------------------------------------------------
 # Execute + verify — against the real dataset
 # ---------------------------------------------------------------------------

@@ -209,7 +209,8 @@ CASES: list[EvalCase] = [
         # no-data refusal because the round-cash matcher couldn't see anchors
         # separated by a clause. Pinned so the live battery re-proves the
         # routed path end-to-end (workflow evidence grounds the arithmetic).
-        # Requires the btd6_grounded orchestration profile, like Tier 1.x.
+        # Since the same-day recurrence fix the workflow engages on the
+        # DEFAULT orchestration profile too — no per-channel setup needed.
         id="knowledge.btd6_round_cash_balance_bug_0001",
         category="knowledge",
         task=AITask.BTD6_ANSWER,
@@ -222,6 +223,58 @@ CASES: list[EvalCase] = [
             "60-68 (inclusive; approximately $13,093.90), and may additionally "
             "project the running total (approximately $21,187.90). A refusal, "
             "'no verified data', or an answer with no dollar figure FAILS.",
+        ),
+    ),
+    EvalCase(
+        # Same-morning live miss (2026-06-11): no cash noun ("how much would
+        # I have") + both anchors as "by round N" — refused on a default-
+        # profile channel. Pins the widened matcher + the default-profile
+        # workflow engagement together.
+        id="knowledge.btd6_round_cash_by_round_projection",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "if I have 20K by round 50, how much would I have by round 60?"
+        ),
+        grader=llm_judge(
+            "Must state a concrete projected total (approximately $39,840: "
+            "$20,000 stated + about $19,840 earned over rounds 50-60 "
+            "inclusive). A refusal, 'no verified data', or an answer with no "
+            "dollar figure FAILS.",
+        ),
+    ),
+    EvalCase(
+        # BUG-0002 (live, 2026-06-11): "elite lych hp per tier" was answered
+        # with the STANDARD table labeled Elite (T1 14,000 …) — the question
+        # routed to the general path and the dataset had no elite figures.
+        id="knowledge.btd6_elite_lych_hp_bug_0002",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        user_message="what is the hp of elite lych per tier",
+        grader=llm_judge(
+            "Must give ELITE Lych per-tier health: T1 30,000 / T2 180,000 / "
+            "T3 1,100,000 / T4 4,800,000 / T5 24,000,000. Giving the standard "
+            "values (14,000 / 52,500 / 220,000 / 525,000 / 2,100,000) AS the "
+            "elite values FAILS; a refusal also FAILS.",
+        ),
+    ),
+    EvalCase(
+        # BUG-0003 (live, 2026-06-11): "despos" was hallucinated as Plasma
+        # Monkey Fan Club on the unguarded general path. Owner-corrected
+        # semantics: "10 041 despos" = TEN 0-4-1 Desperados (quantity then
+        # crosspath — the standard community phrasing), NOT the number
+        # 10,041. A 0-4-1 Desperado costs $12,025 on Impoppable.
+        id="knowledge.btd6_despo_bulk_cost_bug_0003",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        user_message="how much do 10 041 despos cost on impop",
+        grader=llm_judge(
+            "Must treat 'despos' as the Desperado tower (NOT Plasma Monkey "
+            "Fan Club or any other entity) and read '10 041' as TEN towers "
+            "at crosspath 0-4-1. Correct: $12,025 per 0-4-1 Desperado on "
+            "Impoppable, $120,250 for the ten. Resolving despos to a "
+            "different tower/upgrade FAILS; treating the quantity as 10,041 "
+            "FAILS; inventing other figures FAILS.",
         ),
     ),
     # --- instruction following / format ----------------------------------

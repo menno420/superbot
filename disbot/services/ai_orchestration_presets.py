@@ -16,12 +16,20 @@ Authority is never widened here. ``AIToolSpec.min_scope`` stays authoritative �
 ``server_context_sensitive`` still offers a USER-scope caller nothing above their
 scope. A preset only ever *narrows* what the scope already permits.
 
-**Compatibility is the contract.** The default key
-(:data:`DEFAULT_PROFILE_KEY`) reproduces today's behaviour byte-for-byte: every
-scope-allowed tool offered (``enabled_toolsets=None``), automatic tool choice,
-and the historical hop-bounded budget with no other caps. Any scope with no
-profile set resolves to it, so migration 062 changes nothing on its own
-(orchestration plan §6.3).
+**Compatibility is the contract — with one deliberate, owner-driven
+divergence.** The default key (:data:`DEFAULT_PROFILE_KEY`) reproduces the
+pre-orchestration behaviour: every scope-allowed tool offered
+(``enabled_toolsets=None``), automatic tool choice, and the historical
+hop-bounded budget with no other caps. Any scope with no profile set resolves
+to it, so migration 062 changed nothing on its own (orchestration plan §6.3).
+Since 2026-06-11 the default (and ``balanced_helper``) also declare the
+deterministic round-cash ``workflow`` — BUG-0001 recurred live on a
+default-profile channel because the workflow that *can* answer round-cash
+arithmetic was gated behind a profile nobody had set there, while the normal
+path refuses such questions by design (the faithfulness guard correctly
+blocks model arithmetic). The workflow is read-only and deterministic
+(standing lift Q-0048) and engages only on conservatively-matched round-cash
+questions, so every other default behaviour is unchanged.
 """
 
 from __future__ import annotations
@@ -87,14 +95,16 @@ _PRESETS: dict[str, OrchestrationProfile] = {
         label="Compatible (today's behaviour)",
         description=(
             "Offer every tool the caller's scope allows, with automatic tool "
-            "choice and the historical hop-bounded budget. The implicit default "
-            "for any scope with no orchestration profile set."
+            "choice and the historical hop-bounded budget. Recognised "
+            "round-cash questions are answered by the deterministic workflow. "
+            "The implicit default for any scope with no orchestration profile "
+            "set."
         ),
         enabled_toolsets=None,
         disabled_tools=(),
         tool_choice=AIToolChoice(mode=ToolRequirementMode.AUTO),
         tool_budget=AIToolBudget(),
-        workflow="direct_or_tool",
+        workflow="analyze_execute_verify",
         answer_contract="concise_fact",
     ),
     "balanced_helper": OrchestrationProfile(
@@ -103,13 +113,14 @@ _PRESETS: dict[str, OrchestrationProfile] = {
         description=(
             "General-purpose. Every scope-allowed tool is available with "
             "automatic choice, but the loop is capped (3 hops / 4 tool calls) "
-            "to keep trivial questions cheap."
+            "to keep trivial questions cheap. Recognised round-cash questions "
+            "are answered by the deterministic workflow."
         ),
         enabled_toolsets=None,
         disabled_tools=(),
         tool_choice=AIToolChoice(mode=ToolRequirementMode.AUTO),
         tool_budget=AIToolBudget(max_hops=3, max_calls=4),
-        workflow="direct_or_tool",
+        workflow="analyze_execute_verify",
         answer_contract="concise_fact",
     ),
     "btd6_grounded": OrchestrationProfile(

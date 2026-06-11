@@ -76,9 +76,15 @@ _COVERAGE: dict[str, CoverageArea] = {
         area=AREA_BOSS,
         supported=True,
         completeness="partial",
-        limitation="standard difficulty / teamSize 1 only",
-        user_label="Boss data is standard difficulty, single-player (teamSize 1) only.",
-        staff_label="Boss: standard difficulty + teamSize=1 only; elite/co-op not ingested.",
+        limitation="single-player (teamSize 1) only — co-op scaling not ingested",
+        user_label=(
+            "Boss data covers Standard and Elite tiers, single-player "
+            "(teamSize 1) only — co-op health scaling is not ingested."
+        ),
+        staff_label=(
+            "Boss: Standard + Elite per-tier health/speed (BUG-0002 backfill); "
+            "teamSize=1 only, co-op scaling not ingested."
+        ),
     ),
     AREA_ODYSSEY: CoverageArea(
         area=AREA_ODYSSEY,

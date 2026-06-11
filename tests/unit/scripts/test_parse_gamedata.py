@@ -1077,6 +1077,47 @@ def test_map_bosses_skips_boss_with_no_tier_models(mod, tmp_path):
     assert any("no tier models" in w for w in warnings)
 
 
+def test_map_bosses_reads_elite_tier_models(mod, tmp_path):
+    # Elite variants live beside the standard models as <Family>Elite{N}.json
+    # (BUG-0002: the dataset had no elite figures, so "elite lych hp" was
+    # answered with the standard table). A family with no elite models simply
+    # omits the key — pinned by test_map_bosses_reads_roster_tiers above.
+    dump = tmp_path / "dump"
+    _write(dump / "Bosses" / "Lych.json", {"LocsKey": "Lych"})
+    _write(
+        dump / "Bloons" / "Lych" / "Lych1.json",
+        {"id": "Lych1", "maxHealth": 14000, "speed": 2.0, "bloonProperties": 0},
+    )
+    _write(
+        dump / "Bloons" / "Lych" / "LychElite1.json",
+        {"id": "LychElite1", "maxHealth": 30000, "speed": 2.4, "bloonProperties": 0},
+    )
+    _write(dump / "textTable.json", {"Lych": "Lych"})
+    rows, warnings = mod.map_bosses(dump, "55.1")
+    assert warnings == []
+    (boss,) = rows
+    assert boss["tiers"] == [{"tier": 1, "health": 14000, "speed": 2.0}]
+    assert boss["elite_tiers"] == [{"tier": 1, "health": 30000, "speed": 2.4}]
+
+
+def test_map_bosses_warns_on_elite_standard_count_mismatch(mod, tmp_path):
+    dump = tmp_path / "dump"
+    _write(dump / "Bosses" / "Lych.json", {"LocsKey": "Lych"})
+    for tier in (1, 2):
+        _write(
+            dump / "Bloons" / "Lych" / f"Lych{tier}.json",
+            {"maxHealth": 14000 * tier, "speed": 2.0, "bloonProperties": 0},
+        )
+    _write(
+        dump / "Bloons" / "Lych" / "LychElite1.json",
+        {"maxHealth": 30000, "speed": 2.4, "bloonProperties": 0},
+    )
+    _write(dump / "textTable.json", {"Lych": "Lych"})
+    rows, warnings = mod.map_bosses(dump, "55.1")
+    assert len(rows) == 1  # still emitted — the warning is advisory
+    assert any("elite tier count mismatch" in w for w in warnings)
+
+
 def test_validate_anchors(mod, tmp_path):
     dump = tmp_path / "dump"
     _write(dump / "Towers" / "DartMonkey" / "DartMonkey.json", _tower_model(cost=200.0))

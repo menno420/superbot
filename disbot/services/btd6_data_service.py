@@ -277,14 +277,18 @@ class BossEntry:
     ``description`` are the game-authored strings; ``immune_to`` is the derived
     damage-type immunity set (e.g. Dreadbloon = Lead, Blastapopoulos = Purple);
     ``tiers`` carries the five boss tiers' ``{tier, health, speed}`` (both scale
-    up per tier — co-op multiplies health further at runtime). ``tagline`` is the
-    flavour line shown on the boss-select panel.
+    up per tier — co-op multiplies health further at runtime). ``elite_tiers``
+    carries the same shape for the Elite variant (dump
+    ``Bloons/<Family>/<Family>Elite{1..5}.json``; empty for a dataset predating
+    the BUG-0002 backfill). ``tagline`` is the flavour line shown on the
+    boss-select panel.
     """
 
     id: str
     canonical: str
     description: str
     tiers: tuple[dict[str, Any], ...] = ()
+    elite_tiers: tuple[dict[str, Any], ...] = ()
     tagline: str = ""
     immune_to: tuple[str, ...] = ()
 
@@ -724,20 +728,24 @@ def _parse_knowledge(raw: dict[str, Any]) -> MonkeyKnowledgeEntry:
 
 def _parse_boss(raw: dict[str, Any]) -> BossEntry:
     _require_keys(raw, _REQUIRED_BOSS_FIELDS, where=f"boss {raw.get('id')!r}")
-    tiers = tuple(
-        {
-            "tier": int(t["tier"]),
-            "health": int(t["health"]),
-            "speed": float(t["speed"]),
-        }
-        for t in raw.get("tiers", []) or ()
-        if "tier" in t and "health" in t
-    )
+
+    def _tier_rows(key: str) -> tuple[dict[str, Any], ...]:
+        return tuple(
+            {
+                "tier": int(t["tier"]),
+                "health": int(t["health"]),
+                "speed": float(t["speed"]),
+            }
+            for t in raw.get(key, []) or ()
+            if "tier" in t and "health" in t
+        )
+
     return BossEntry(
         id=str(raw["id"]),
         canonical=str(raw["canonical"]),
         description=str(raw.get("description", "")).strip(),
-        tiers=tiers,
+        tiers=_tier_rows("tiers"),
+        elite_tiers=_tier_rows("elite_tiers"),
         tagline=str(raw.get("tagline", "")).strip(),
         immune_to=tuple(str(x) for x in raw.get("immune_to", []) or ()),
     )
@@ -1877,6 +1885,83 @@ def cumulative_upgrade_costs(
             f"{diff} pricing (each purchase rounded to $5, then summed)."
         ),
     }
+
+
+def crosspath_cost(
+    tower: str,
+    code: str,
+    *,
+    quantity: int | None = None,
+) -> dict[str, Any]:
+    """Full cost of one tower at upgrade state ``code`` (base + every tier
+    bought on each path), for all four difficulties — plus bulk totals when
+    ``quantity`` is given.
+
+    The community phrasing "10 041 despos" means TEN 0-4-1 Desperados
+    (quantity + crosspath), not the number 10,041 (BUG-0003, owner-corrected
+    2026-06-11). Difficulty pricing scales and rounds **each purchase** to $5
+    before summing (same rule as :func:`cumulative_upgrade_costs`), and a
+    bulk buy is ``quantity`` separate purchases of those already-rounded
+    prices, so ``total = quantity × unit`` exactly.
+    """
+    from utils.btd6 import difficulty_costs, tier_codes
+
+    entry = _find_by_surface(get_dataset().towers, tower)
+    if entry is None:
+        return {"found": False, "note": f"unknown tower: {tower!r}"}
+    normalized = (code or "").replace("-", "").replace(" ", "").strip()
+    if not tier_codes.is_legal(normalized):
+        return {
+            "found": False,
+            "note": f"illegal upgrade code: {code!r} (e.g. 0-4-1 / 041)",
+        }
+    if quantity is not None and quantity <= 0:
+        return {"found": False, "note": "quantity must be > 0"}
+
+    paths = ("top", "mid", "bot")
+    tiers_by_path = dict(zip(paths, (int(d) for d in normalized), strict=True))
+    costs = entry.upgrade_costs or {}
+    names = entry.upgrade_paths or {}
+    medium_steps: list[int] = []
+    top_names: list[str] = []
+    for pkey, depth in tiers_by_path.items():
+        if not depth:
+            continue
+        path_costs = costs.get(pkey, ())
+        if len(path_costs) < depth or not all(path_costs[:depth]):
+            return {
+                "found": False,
+                "note": f"no committed costs for {entry.canonical} {pkey} "
+                f"tiers 1-{depth}",
+            }
+        medium_steps.extend(path_costs[:depth])
+        path_names = names.get(pkey, ())
+        if len(path_names) >= depth:
+            top_names.append(path_names[depth - 1])
+
+    unit = {
+        diff: difficulty_costs.cost_for_difficulty(entry.base_cost, diff)
+        + sum(difficulty_costs.cost_for_difficulty(step, diff) for step in medium_steps)
+        for diff in difficulty_costs.DIFFICULTIES
+    }
+    display_code = "-".join(normalized)
+    result: dict[str, Any] = {
+        "found": True,
+        "tower": entry.canonical,
+        "code": display_code,
+        "upgrade_names": top_names,
+        "unit_costs_by_difficulty": unit,
+        "note": (
+            "unit cost = tower base + every tier bought on each path, each "
+            "purchase rounded to $5 at that difficulty, then summed."
+        ),
+    }
+    if quantity is not None:
+        result["quantity"] = quantity
+        result["total_costs_by_difficulty"] = {
+            diff: cost * quantity for diff, cost in unit.items()
+        }
+    return result
 
 
 def list_ct_relics() -> tuple[RelicEntry, ...]:

@@ -275,7 +275,9 @@ async def test_live_event_question_emits_coverage_and_freshness_signals(monkeypa
     coverage_lines = [f for f in ctx.facts if f.startswith("[btd6_coverage]")]
     freshness_lines = [f for f in ctx.facts if f.startswith("[btd6_freshness]")]
     assert coverage_lines, ctx.facts
-    assert any("standard difficulty" in f.lower() for f in coverage_lines)
+    # The boss coverage copy: Standard+Elite tiers on record, co-op not
+    # ingested (label refreshed with the BUG-0002 elite backfill).
+    assert any("single-player" in f.lower() for f in coverage_lines)
     assert freshness_lines, ctx.facts
     assert any("no current live-event data is loaded" in f.lower() for f in freshness_lines)
 

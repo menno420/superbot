@@ -205,6 +205,13 @@ def _name_index() -> name_guard.NameMatchers:
             canonicals.add(hero.canonical)
             aliases.update(hero.aliases)
 
+        # Boss Bloons — same discipline as heroes: every canonical
+        # (Bloonarius, Lych, Vortex, …) is a distinctive word, and a BTD6
+        # reply naming a boss absent from the grounded facts should offend
+        # exactly like an ungrounded hero name (BUG-0002 class).
+        for boss in dataset.bosses:
+            canonicals.add(boss.canonical)
+
         # Other categories — only multi-word names (substring-safe). Single
         # words here are generic (bloon colours, "Druid") and would
         # false-positive on ordinary chat, so they are skipped.

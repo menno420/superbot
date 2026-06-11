@@ -154,3 +154,28 @@ def test_rewidened_terms_do_not_over_route_general_chat(text):
     assert (
         decision.task is AITask.GENERAL_NL_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # BUG-0002 + BUG-0003 (live, 2026-06-11): boss-name and shorthand
+    # questions fell through to the general path, where the model answered
+    # from memory unguarded — "elite lych hp per tier" served the Standard
+    # table labeled Elite; "10 041 despos … on impop" hallucinated despos =
+    # Plasma Monkey Fan Club. Boss canonicals now come from the dataset;
+    # "impop" / "despo" are curated keywords (substring → plurals covered).
+    [
+        "what is the hp of elite lych per tier",
+        "how much health does bloonarius have at tier 3",
+        "is dreadbloon immune to lead",
+        "what does phayze do",
+        "how much do 10 041 despos cost on impop",
+        "despo best crosspath",
+        "how much does a dart monkey cost on impop",
+    ],
+)
+def test_boss_and_shorthand_questions_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"

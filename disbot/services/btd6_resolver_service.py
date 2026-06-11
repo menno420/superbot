@@ -95,13 +95,24 @@ def _match_terms_collect(
 
     The matched surface terms let the caller mask them out of the text
     (see relic-vs-fixture precedence in :func:`resolve`).
+
+    Single-word aliases also match their naive plural (``alias + "s"``):
+    multi-word names get plural tolerance for free from substring matching
+    ("dart monkeys" contains "dart monkey"), but a single-word token like
+    "despos" matched nothing even with a "despo" alias on record (BUG-0003,
+    2026-06-11). Only the known-alias+s direction is tried, so no new
+    surface terms are invented.
     """
     text_lower = text.lower()
     tokens = set(_word_iter(text))
     found: set[str] = set()
     terms: list[str] = []
     for alias, owner_id in name_aliases.items():
-        hit = (alias in text_lower) if " " in alias else (alias in tokens)
+        hit = (
+            (alias in text_lower)
+            if " " in alias
+            else (alias in tokens or f"{alias}s" in tokens)
+        )
         if hit:
             found.add(owner_id)
             terms.append(alias)

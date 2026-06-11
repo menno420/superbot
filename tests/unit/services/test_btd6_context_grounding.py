@@ -743,19 +743,110 @@ def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
 async def test_boss_per_tier_health_grounds():
     """"Base HP of Lych per tier" must ground the figures, not the teaser —
     the old fact said "5 tier(s) on record" with no number, so a healthy
-    answer had nothing to ground and the floor refused (live, 2026-06-10)."""
+    answer had nothing to ground and the floor refused (live, 2026-06-10).
+    The line is variant-labeled "Standard (non-Elite)" since BUG-0002."""
     ctx = await btd6_context_service.build("what is the base hp of lych per tier")
     boss_lines = [f for f in ctx.facts if f.startswith("[btd6_boss]")]
-    health = [f for f in boss_lines if "per-tier base health" in f]
+    health = [f for f in boss_lines if "Standard (non-Elite)" in f]
     assert health, boss_lines
     assert "T1 14,000 HP" in health[0]
     assert "T5" in health[0]
 
 
 @pytest.mark.asyncio
-async def test_boss_elite_questions_get_the_honesty_note():
-    """Elite health is not in the dataset — saying so beats freelancing a
-    multiplier as if it were data."""
+async def test_boss_elite_questions_ground_the_elite_table():
+    """BUG-0002 (live, 2026-06-11): "elite lych hp per tier" was answered with
+    the STANDARD table labeled as Elite — the dataset had no elite figures and
+    the number guard checks values, not labels. The dump's elite models are now
+    on record; an elite question must ground the real Elite figures alongside
+    the explicitly-labeled Standard line."""
+    ctx = await btd6_context_service.build("what is the hp of elite lych per tier")
+    elite = [f for f in ctx.facts if f.startswith("[btd6_boss] ELITE Lych")]
+    assert elite, ctx.facts
+    # The live wrong answer said T1 14,000 (standard); elite truth is 30,000.
+    assert "T1 30,000 HP" in elite[0]
+    assert "T5 24,000,000 HP" in elite[0]
+    assert "NOT from the Standard table" in elite[0]
+    # The standard line stays present and explicitly variant-labeled.
+    assert any("Standard (non-Elite)" in f for f in ctx.facts)
+    # No stale honesty note once the data exists.
+    assert not any("NOT in the dataset" in f for f in ctx.facts)
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_quantity_crosspath_production_phrasing():
+    """BUG-0003, owner-corrected (2026-06-11): "how much do 10 041 despos
+    cost on impop" means TEN 0-4-1 Desperados. The grounded pricing line must
+    carry the unit cost AND the ×10 totals — the faithfulness guard blocks
+    any sum the model derives itself."""
+    ctx = await btd6_context_service.build("how much do 10 041 despos cost on impop")
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    line = pricing[0]
+    assert "0-4-1 Desperado" in line
+    assert "$12,025" in line  # unit on Impoppable
+    assert "×10" in line
+    assert "$120,250" in line  # the ten, on Impoppable
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_word_number_quantity():
+    """"five 0-2-4 dart monkeys" (the §7.5 acceptance phrasing) — word
+    numbers count as quantities."""
+    ctx = await btd6_context_service.build(
+        "how much do five 0-2-4 dart monkeys cost on hard",
+    )
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    assert "0-2-4 Dart Monkey" in pricing[0]
+    assert "×5" in pricing[0]
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_unit_only_without_quantity():
+    ctx = await btd6_context_service.build("what does a 0-4-1 desperado cost")
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    assert "$12,025" in pricing[0]
+    assert "×" not in pricing[0]
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_bulk_base_towers_without_crosspath():
+    """"how much do 10 despos cost" — quantity straight before the tower
+    name prices N base towers."""
+    ctx = await btd6_context_service.build("how much do 10 despos cost on impop")
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    assert "10×" in pricing[0] and "base tower" in pricing[0]
+    assert "$3,600" in pricing[0]  # 10 × $360 Impoppable
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_absent_for_plain_tower_question():
+    """No quantity, no crosspath → no pricing line (the base-cost fact
+    already covers it; don't bloat grounding)."""
+    ctx = await btd6_context_service.build("tell me about the desperado")
+    assert not any(f.startswith("[btd6_pricing]") for f in ctx.facts)
+
+
+@pytest.mark.asyncio
+async def test_boss_elite_honesty_note_when_dataset_predates_backfill(monkeypatch):
+    """A dataset without elite_tiers (a pre-backfill blob in prod) keeps the
+    honest "NOT in the dataset" note instead of freelancing a multiplier."""
+    import dataclasses
+
+    from services import btd6_data_service
+
+    real = btd6_data_service.get_dataset()
+    stripped = tuple(
+        dataclasses.replace(b, elite_tiers=()) for b in real.bosses
+    )
+    monkeypatch.setattr(
+        btd6_data_service,
+        "get_dataset",
+        lambda: dataclasses.replace(real, bosses=stripped),
+    )
     ctx = await btd6_context_service.build("how much hp does a tier 4 elite lych have")
     notes = [f for f in ctx.facts if "Elite Lych health is NOT in the dataset" in f]
     assert notes

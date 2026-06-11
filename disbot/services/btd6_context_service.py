@@ -2200,6 +2200,20 @@ def _catalog_facts(message_text: str) -> list[str]:
                 line += f" | requires: {', '.join(entry.prerequisites)}"
             out.append(line)
 
+    def _tier_bits(rows: Any) -> list[str]:
+        bits = []
+        for t in rows or ():
+            tier = t.get("tier") if isinstance(t, dict) else getattr(t, "tier", None)
+            hp = t.get("health") if isinstance(t, dict) else getattr(t, "health", None)
+            spd = t.get("speed") if isinstance(t, dict) else getattr(t, "speed", None)
+            if tier is None or hp is None:
+                continue
+            bit = f"T{tier} {hp:,} HP"
+            if spd is not None:
+                bit += f" (speed {spd})"
+            bits.append(bit)
+        return bits
+
     for boss in dataset.bosses:
         name = boss.canonical.strip().lower()
         if not name or name not in text:
@@ -2215,30 +2229,32 @@ def _catalog_facts(message_text: str) -> list[str]:
         # miss (2026-06-10): the teaser line above told the model the tiers
         # exist without giving any figure, so a healthy answer had nothing
         # to ground and the faithfulness floor refused. Single bounded line
-        # per named boss (≤5 tiers).
-        tier_bits = []
-        for t in boss.tiers:
-            tier = t.get("tier") if isinstance(t, dict) else getattr(t, "tier", None)
-            hp = t.get("health") if isinstance(t, dict) else getattr(t, "health", None)
-            spd = t.get("speed") if isinstance(t, dict) else getattr(t, "speed", None)
-            if tier is None or hp is None:
-                continue
-            bit = f"T{tier} {hp:,} HP"
-            if spd is not None:
-                bit += f" (speed {spd})"
-            tier_bits.append(bit)
-        if tier_bits:
+        # per named boss (≤5 tiers). Standard and Elite are labeled
+        # explicitly (BUG-0002: standard figures were served as "Elite") —
+        # the variant words must appear next to the numbers they describe.
+        standard_bits = _tier_bits(boss.tiers)
+        if standard_bits:
             out.append(
-                f"[btd6_boss] {boss.canonical} per-tier base health "
-                "(standard difficulty, single-player): " + " · ".join(tier_bits),
+                f"[btd6_boss] {boss.canonical} per-tier health — Standard "
+                "(non-Elite) ranked boss, single-player: " + " · ".join(standard_bits),
             )
         if "elite" in text:
-            out.append(
-                f"[btd6_boss] Elite {boss.canonical} health is NOT in the "
-                "dataset — only standard-tier health is on record. If the "
-                "user supplies their own Elite modifier, apply it as THEIR "
-                "premise and say the base figures are the verified part.",
-            )
+            elite_bits = _tier_bits(boss.elite_tiers)
+            if elite_bits:
+                out.append(
+                    f"[btd6_boss] ELITE {boss.canonical} per-tier health "
+                    "(single-player): "
+                    + " · ".join(elite_bits)
+                    + " — answer Elite questions from these figures, NOT "
+                    "from the Standard table.",
+                )
+            else:
+                out.append(
+                    f"[btd6_boss] Elite {boss.canonical} health is NOT in the "
+                    "dataset — only standard-tier health is on record. If the "
+                    "user supplies their own Elite modifier, apply it as THEIR "
+                    "premise and say the base figures are the verified part.",
+                )
     return out
 
 
@@ -2255,7 +2271,8 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
         return []
 
     lines: list[str] = []
-    crosspaths = _crosspaths_in_text(str(getattr(intent, "raw_text", "") or ""))
+    raw_text = str(getattr(intent, "raw_text", "") or "")
+    crosspaths = _crosspaths_in_text(raw_text)
     for tower in getattr(intent, "towers", ()) or ():
         tower_id = str(getattr(tower, "id", "") or "")
         if not tower_id:
@@ -2265,6 +2282,7 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
             lines.extend(_render_fixture_tower(record))
             for code in crosspaths:
                 lines.extend(_render_tower_crosspath(tower_id, record.canonical, code))
+            lines.extend(_crosspath_pricing_lines(record, crosspaths, raw_text))
     for hero in getattr(intent, "heroes", ()) or ():
         hero_id = str(getattr(hero, "id", "") or "")
         if not hero_id:
@@ -2286,6 +2304,125 @@ def _fixture_facts_for_intent(intent: Any) -> list[str]:
     # CT relics carry their static effect from the catalog.
     for relic in getattr(intent, "ct_relics", ()) or ():
         lines.extend(_render_ct_relic(relic))
+    return lines
+
+
+# Word-number quantities players actually write ("five 0-2-4 dart monkeys").
+_QUANTITY_WORDS: dict[str, int] = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "fifteen": 15,
+    "twenty": 20,
+}
+
+_QUANTITY_BEFORE_RE = re.compile(
+    r"(?:\b(\d{1,4})|\b(" + "|".join(_QUANTITY_WORDS) + r"))\s*[x×*]?\s*$",
+    re.I,
+)
+
+
+def _quantity_before(text: str, position: int) -> int | None:
+    """The count immediately preceding ``position`` ("10 041", "five 024"), or None.
+
+    Owner-corrected semantics (BUG-0003, 2026-06-11): "10 041 despos" means
+    TEN 0-4-1 Desperados — quantity then crosspath — never the number 10,041
+    (which players write without the space, and which the crosspath regex
+    already rejects via its digit-adjacency guards).
+    """
+    match = _QUANTITY_BEFORE_RE.search(text[:position])
+    if match is None:
+        return None
+    if match.group(1):
+        value = int(match.group(1))
+        return value if 0 < value <= 9999 else None
+    return _QUANTITY_WORDS[match.group(2).lower()]
+
+
+def _format_costs(costs: dict[str, int]) -> str:
+    return " · ".join(f"{d.capitalize()} ${v:,}" for d, v in costs.items())
+
+
+def _crosspath_pricing_lines(
+    record: Any,
+    crosspaths: list[str],
+    raw_text: str,
+) -> list[str]:
+    """``[btd6_pricing]`` lines for the cost-question family the resolver sees.
+
+    "how much do 10 041 despos cost on impop" needs the full 0-4-1 unit cost
+    AND the ×10 totals in the grounded haystack — the faithfulness guard
+    (rightly) blocks any sum the model derives itself, so without these lines
+    the question is unanswerable on every path. One line per named crosspath
+    (≤3, the `_crosspaths_in_text` cap); a bare "N <tower>s" with no
+    crosspath gets the base-tower bulk line instead.
+    """
+    from services import btd6_data_service
+
+    lines: list[str] = []
+    lowered = raw_text.lower()
+    for code in crosspaths:
+        quantity = None
+        for match in _CROSSPATH_RE.finditer(raw_text):
+            if "".join(match.groups()) == code:
+                quantity = _quantity_before(raw_text, match.start())
+                break
+        priced = btd6_data_service.crosspath_cost(
+            record.canonical,
+            code,
+            quantity=quantity if quantity and quantity > 1 else None,
+        )
+        if not priced.get("found"):
+            continue
+        label = " + ".join(priced.get("upgrade_names") or ()) or "base"
+        line = (
+            f"[btd6_pricing] {priced['code']} {record.canonical} ({label}) "
+            f"full cost per tower: "
+            f"{_format_costs(priced['unit_costs_by_difficulty'])} "
+            f"(base + each upgrade rounded to $5 per purchase at that "
+            f"difficulty)."
+        )
+        totals = priced.get("total_costs_by_difficulty")
+        if totals:
+            line += f" ×{priced['quantity']} towers → {_format_costs(totals)}."
+        lines.append(line)
+    if not crosspaths:
+        # "how much do 10 despos cost" — quantity straight before the tower
+        # name/alias (optionally pluralised) prices N base towers.
+        alts = sorted(
+            {record.canonical.lower(), *(a.lower() for a in record.aliases)},
+            key=len,
+            reverse=True,
+        )
+        pattern = (
+            r"\b(?:" + "|".join(re.escape(a) for a in alts if len(a) >= 3) + r")s?\b"
+        )
+        name_match = re.search(pattern, lowered)
+        if name_match is not None:
+            quantity = _quantity_before(lowered, name_match.start())
+            if quantity and quantity > 1:
+                priced = btd6_data_service.crosspath_cost(
+                    record.canonical,
+                    "000",
+                    quantity=quantity,
+                )
+                if priced.get("found"):
+                    lines.append(
+                        f"[btd6_pricing] {priced['quantity']}× "
+                        f"{record.canonical} (base tower, no upgrades): "
+                        f"{_format_costs(priced['total_costs_by_difficulty'])} "
+                        f"(per tower: "
+                        f"{_format_costs(priced['unit_costs_by_difficulty'])}).",
+                    )
     return lines
 
 

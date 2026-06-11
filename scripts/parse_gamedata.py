@@ -3382,6 +3382,12 @@ def map_bosses(dump: Path, version: str) -> tuple[list[dict], list[str]]:
     from ``Bloons/<Family>/<Family>{1..5}.json`` (``maxHealth`` / ``speed``), and
     ``immune_to`` is derived from the base tier's ``bloonProperties`` bitflag via
     the same inverter the bloon overlay uses (one source of truth for the mask).
+
+    Elite variants live beside the standard models as
+    ``Bloons/<Family>/<Family>Elite{1..5}.json`` and fill ``elite_tiers`` with
+    the same ``{tier, health, speed}`` shape (BUG-0002: the AI served standard
+    Lych health as "Elite" because the dataset had no elite figures at all).
+    A family with no elite models simply omits the key.
     """
     from utils.btd6.damage_types import immunities_for_bloon_properties
 
@@ -3406,6 +3412,7 @@ def map_bosses(dump: Path, version: str) -> tuple[list[dict], list[str]]:
             continue
         bdir = dump / "Bloons" / loc
         tiers: list[dict] = []
+        elite_tiers: list[dict] = []
         immune: list[str] = []
         for tier in range(1, 6):
             tfp = bdir / f"{loc}{tier}.json"
@@ -3423,24 +3430,42 @@ def map_bosses(dump: Path, version: str) -> tuple[list[dict], list[str]]:
                 immune = sorted(
                     immunities_for_bloon_properties(model.get("bloonProperties", 0)),
                 )
+        for tier in range(1, 6):
+            efp = bdir / f"{loc}Elite{tier}.json"
+            if not efp.exists():
+                continue
+            model = json.loads(efp.read_text("utf-8"))
+            elite_tiers.append(
+                {
+                    "tier": tier,
+                    "health": _num(model.get("maxHealth", 0)),
+                    "speed": _num(model.get("speed", 0)),
+                },
+            )
         if not tiers:
             warnings.append(f"no tier models under Bloons/{loc}/ — skipped")
             continue
+        if elite_tiers and len(elite_tiers) != len(tiers):
+            warnings.append(
+                f"elite tier count mismatch for {loc}: "
+                f"{len(elite_tiers)} elite vs {len(tiers)} standard",
+            )
         seen.add(bid)
         tagline = " — ".join(
             _clean_desc(tt[k]) for k in (f"{loc}TagLine", f"{loc}TagLine2") if tt.get(k)
         )
         description = _clean_boss_desc(tt.get(f"{loc}InfoPanelDescription", ""))
-        rows.append(
-            {
-                "id": bid,
-                "canonical": name,
-                "tagline": tagline,
-                "description": description,
-                "immune_to": immune,
-                "tiers": tiers,
-            },
-        )
+        row = {
+            "id": bid,
+            "canonical": name,
+            "tagline": tagline,
+            "description": description,
+            "immune_to": immune,
+            "tiers": tiers,
+        }
+        if elite_tiers:
+            row["elite_tiers"] = elite_tiers
+        rows.append(row)
     rows.sort(key=lambda b: b["id"])
     return rows, warnings
 

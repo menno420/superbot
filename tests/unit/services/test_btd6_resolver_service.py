@@ -16,6 +16,19 @@ def test_resolves_dart_monkey_by_alias():
     assert any(t.id == "dart_monkey" for t in intent.towers)
 
 
+def test_resolves_single_word_alias_plural():
+    """BUG-0003 (live, 2026-06-11): "how much do 10 041 despos cost on impop"
+    resolved nothing — single-word aliases only matched the exact token, so
+    the plural "despos" missed the "despo" alias and the model hallucinated
+    despos = Plasma Monkey Fan Club on the unguarded general path."""
+    intent = resolve("how much do 10 041 despos cost on impop")
+    assert any(t.id == "desperado" for t in intent.towers)
+    # The singular alias still resolves too.
+    assert any(
+        t.id == "desperado" for t in resolve("is the despo any good").towers
+    )
+
+
 def test_resolves_round_number():
     intent = resolve("How do I survive round 63?")
     assert 63 in intent.candidate_round_numbers

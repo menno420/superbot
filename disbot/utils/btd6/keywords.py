@@ -36,7 +36,10 @@ BTD6_CONTEXT_KEYWORDS: tuple[str, ...] = (
     "freeplay",
     "deflation",
     "apopalypse",
-    "impoppable",
+    # "impop" covers "impoppable" too (substring match) AND the shorthand
+    # players actually type ("cost on impop") — the live despos question
+    # (BUG-0003, 2026-06-11) carried no other BTD6 cue and went unrouted.
+    "impop",
     "half cash",
     "primary only",
     "military only",
@@ -61,6 +64,9 @@ BTD6_CONTEXT_KEYWORDS: tuple[str, ...] = (
     "banned tower",
     "obyn",
     "desperado",
+    # The Desperado shorthand players use ("despo(s)") — distinctive, never
+    # ordinary English; also a towers.json alias so grounding resolves it.
+    "despo",
 )
 
 

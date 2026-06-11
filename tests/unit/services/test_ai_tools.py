@@ -309,6 +309,53 @@ async def test_btd6_difficulty_cost_converts_medium_to_all_difficulties():
     ] is False
 
 
+async def test_btd6_difficulty_cost_quantity_grounds_bulk_totals():
+    """Bulk products must come from the tool, not model arithmetic — the
+    faithfulness guard (rightly) blocks any sum absent from the ledger.
+    (Generic quantity support; the BUG-0003 crosspath family is owned by
+    crosspath_cost / btd6_cumulative_cost.)"""
+    registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
+
+    result = await registry.handlers["btd6_difficulty_cost"](
+        {"medium_cost": 300, "quantity": 25},
+    )
+    assert result["found"] is True
+    assert result["quantity"] == 25
+    per = result["costs_by_difficulty"]
+    totals = result["total_costs_by_difficulty"]
+    assert totals == {d: c * 25 for d, c in per.items()}
+
+    # No quantity → no totals key (result shape unchanged for old callers).
+    plain = await registry.handlers["btd6_difficulty_cost"]({"medium_cost": 300})
+    assert "total_costs_by_difficulty" not in plain
+
+    bad = await registry.handlers["btd6_difficulty_cost"](
+        {"medium_cost": 300, "quantity": 0},
+    )
+    assert bad["found"] is False
+
+
+async def test_btd6_cumulative_cost_crosspath_quantity():
+    """BUG-0003 (owner-corrected): "10 041 despos" = TEN 0-4-1 Desperados.
+    The crosspath arm returns the full unit cost per difficulty + quantity
+    totals — $12,025 each on Impoppable, $120,250 for the ten."""
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    result = await h["btd6_cumulative_cost"](
+        {"tower": "despo", "crosspath": "0-4-1", "quantity": 10},
+    )
+    assert result["found"] is True
+    assert result["tower"] == "Desperado"
+    assert result["code"] == "0-4-1"
+    assert result["unit_costs_by_difficulty"]["impoppable"] == 12_025
+    assert result["total_costs_by_difficulty"]["impoppable"] == 120_250
+    # The path-table arm is unchanged when no crosspath is passed.
+    table = await h["btd6_cumulative_cost"]({"tower": "dart monkey"})
+    assert table["found"] is True and "paths" in table
+    # Illegal codes fail closed.
+    bad = await h["btd6_cumulative_cost"]({"tower": "despo", "crosspath": "5-5-1"})
+    assert bad["found"] is False
+
+
 async def test_btd6_power_effect_applies_monkey_boost_to_attack_speed():
     # The bot previously could state what Monkey Boost does but not apply it to a
     # tower's attack stat; this tool grounds "Crossbow Master on a Monkey Boost".
@@ -886,6 +933,25 @@ async def test_btd6_boss_lookup_single_and_roster():
     roster = await h["btd6_boss_lookup"]({})
     assert roster["count"] == len(roster["bosses"]) == 7
     assert (await h["btd6_boss_lookup"]({"boss": "nope"}))["found"] is False
+
+
+async def test_btd6_boss_lookup_surfaces_elite_tiers():
+    """BUG-0002: Elite figures must come from the dataset's own elite table,
+    never from the Standard one. Elite Lych T1 = 30,000 (standard is 14,000)."""
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    one = await h["btd6_boss_lookup"]({"boss": "Lych"})
+    boss = one["boss"]
+    assert "elite_tiers" in boss, boss.keys()
+    elite_t1 = next(t for t in boss["elite_tiers"] if t["tier"] == 1)
+    assert elite_t1["health"] == 30_000
+    elite_t5 = next(t for t in boss["elite_tiers"] if t["tier"] == 5)
+    assert elite_t5["health"] == 24_000_000
+    # Standard stays what it was — the two tables never blend.
+    std_t1 = next(t for t in boss["tiers"] if t["tier"] == 1)
+    assert std_t1["health"] == 14_000
+    # Every boss in the roster carries its elite table (v55.1 dump backfill).
+    roster = await h["btd6_boss_lookup"]({})
+    assert all(b.get("elite_tiers") for b in roster["bosses"])
 
 
 async def test_btd6_bloon_filter_traits_and_modifier_note():

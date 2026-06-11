@@ -30,9 +30,13 @@ How the slice composes (plan §7.2, specialised to one calculator):
 
 Activation is **profile-gated**: ``natural_language_stage._invoke_gateway``
 consults this module only when the resolved orchestration profile declares
-``workflow == WORKFLOW_KEY`` (today: ``btd6_grounded`` /
-``btd6_grounded_strict``). The compatible default profile never reaches it, so
-default behaviour stays byte-identical.
+``workflow == WORKFLOW_KEY``. Since 2026-06-11 that includes the compatible
+default and balanced-helper presets (BUG-0001 recurred live on a default-
+profile channel: the normal model+tools path *cannot* answer arithmetic
+questions by design — the number guard rightly blocks ungrounded sums — so
+gating the only workflow that can answer them behind a manually-set profile
+left every default channel refusing; see ``ai_orchestration_presets``).
+``no_tools`` keeps it off (an explicit conversational-only operator choice).
 
 Range semantics are an owner decision (**Q-0043**): ``range_cash(A, B)`` counts
 BOTH endpoints. The emitted :class:`AIAnswerWithEvidence` carries that
@@ -91,6 +95,17 @@ class RoundCashPlan:
 
 _CASH_KEYWORD_RE = re.compile(r"\b(?:cash|money|income|earn(?:ed|ings?|s)?)\b", re.I)
 
+# A "how much would I have …" money question carries no cash noun at all —
+# the live 2026-06-11 miss "if I have 20K by round 50, how much would I have
+# by round 60?" failed this gate and refused. The verb set is money-flavoured
+# (have/get/make/earn/gain); stat verbs ("how much pierce does X have") can
+# slip the gate but are filtered by the range patterns, which still require
+# two round anchors.
+_MONEY_QUESTION_RE = re.compile(
+    r"\bhow\s+much\b[^.?!\n]{0,60}?\b(?:have|get|make|earn|gain)\b",
+    re.I,
+)
+
 _RANGE_RES = (
     re.compile(
         r"\bfrom\s+rounds?\s+(\d{1,3})\s*(?:to|through|thru|until|till|[-–])"
@@ -108,9 +123,11 @@ _RANGE_RES = (
     # anchors must carry the literal word "round" and sit within one sentence
     # (≤80 chars apart), so the conservatism of the adjacent patterns is kept;
     # the cash-keyword gate still applies before any range pattern is tried.
+    # "by" joined both anchor sets for the same-day follow-up miss "i have
+    # 20K by round 50, how much would I have by round 60".
     re.compile(
-        r"\b(?:at|from|on)\s+round\s+(\d{1,3})\b[^.?!\n]{0,80}?"
-        r"\b(?:to|until|till|reach(?:ing)?|going\s+to|get(?:ting)?\s+to)"
+        r"\b(?:at|from|on|by)\s+round\s+(\d{1,3})\b[^.?!\n]{0,80}?"
+        r"\b(?:to|until|till|reach(?:ing)?|going\s+to|get(?:ting)?\s+to|by|at)"
         r"\s+round\s+(\d{1,3})\b",
         re.I,
     ),
@@ -191,7 +208,7 @@ def plan_question(text: str) -> RoundCashPlan | None:
                     round_start=int(round_match.group(1)),
                     target_cost=amount,
                 )
-    if not _CASH_KEYWORD_RE.search(text):
+    if not (_CASH_KEYWORD_RE.search(text) or _MONEY_QUESTION_RE.search(text)):
         return None
     for pattern in _RANGE_RES:
         match = pattern.search(text)
