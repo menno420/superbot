@@ -3685,6 +3685,34 @@ full gap list is [`ideas/gap-analysis-2026-06-11.md`](../ideas/gap-analysis-2026
   untested-surface checklist session: the human battery exists and is being
   trained.
 
+### Q-0092 — Gear-lane night-session round (structured choices, answered so the session runs unattended)
+
+**Area:** Games / gear lane (V-16 phase 1) — the prepared night session
+**Type:** Structured choices (asked at the owner's request before he slept)
+**Priority:** Immediate (the night session executes on these)
+**Status:** **Answered** (2026-06-11)
+
+1. **Slot model = set-pieces + set bonus** (the ambitious option): replace
+   the single `armor` slot with **helmet / chestplate / leggings / boots**,
+   `shield` as its own slot, sword→`weapon` (≈9 slots total, matching the
+   asset pack 1:1), **plus a small same-tier full-set stat bonus** — full-set
+   collection becomes a goal.
+2. **New ores = YES:** **bronze and silver join the mining depth ladder** as
+   real ores (loot-table rows at sensible depths), giving every gear tier a
+   clean smelt-the-ore → forge-the-gear path. Mining deepens for free.
+3. **Stat numbers = full authority** (owner verbatim: "I will run this with
+   fable 5, so I trust that with a little guidance it will create proper
+   code, it can go as far as it can") — the session sets the tier
+   damage/defense tables itself: simulation-sane, monotonic per tier,
+   documented; a later owner round can retune.
+4. **Priority = all three required** (items+recipes · picker previews ·
+   compositor seam) — the owner explicitly authorizes pushing past the
+   bounded-session default for this session; it should go as far as it can,
+   handing off cleanly wherever it stops.
+
+**Routing:** the Next-session handoff (session log) updated to the decided
+scope; current-state ▶ pointer updated (model: **Fable**, owner's choice).
+
 ### Q-0090 — Open-world federation round: ecosystem #2, currencies, cross-links, research scope
 
 **Area:** Games / open-world architecture (V-13) + research direction (V-14)

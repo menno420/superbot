@@ -256,11 +256,23 @@ assets + `helpers/` + JSONs). **Model: Opus** (workflow §11 — this is
 execution of a written plan). Wrap before ~700K; END per protocol incl. the
 Q-0089 💡 idea; draft→ready→merge per Q-0084.
 
+**UPDATE (Q-0092, answered before the owner slept — the session runs
+unattended):** slot model = **set-pieces + same-tier set bonus** (~9 slots:
+tool/light/charm/weapon/shield/helmet/chestplate/leggings/boots) · **bronze +
+silver enter the mining ladder as real ores** (loot rows at sensible depths;
+smelt→forge per tier) · **full numbers authority** (sim-sane, monotonic,
+documented; owner retunes later) · **all three deliverables required**
+(items+recipes · picker previews · compositor seam w/ placeholder sprites) —
+the owner explicitly authorized exceeding the bounded default; go as far as
+possible, hand off cleanly wherever it stops. Model: **Fable** (owner's
+choice).
+
 **Paste-ready prompt for the owner:** *"Read the orientation chain. Execute
-the prepared gear-lane slice: see `docs/current-state.md` ▶ Next action and
-the Next-session handoff in `.sessions/2026-06-10-vision-ideation-capture.md`.
-Ask me the slot-mapping structured-choices round before writing the item
-table. Bounded session: ~2 tasks + END protocol."*
+the gear-lane slice end-to-end: scope and all owner decisions are in
+`docs/current-state.md` ▶ Next action, router §38 Q-0092, and the
+Next-session handoff in `.sessions/2026-06-10-vision-ideation-capture.md`.
+No questions pending — all decided. Go as far as you can; END protocol when
+you stop."*
 
 **Also waiting on the owner (no session needed):** the word "ratified" for
 fishing (Q-0090) · the asset-pack zip · the `ANTHROPIC_API_KEY` Actions
