@@ -3796,3 +3796,40 @@ the same session were NOT memory — the routing/guard layer discarded the
 context the model could already see (BUG-0006/BUG-0007, fixed same session).
 Any future proposal to change the floor (size or existence) is an owner
 decision against THIS entry.
+
+### Q-0095 — Canonical AI model allocation: Haiku 4.5 for the two NL tasks; the guild-default-provider trap
+
+**Area:** AI platform / model routing / cost (Q-0082-adjacent)
+**Type:** Owner directive (config canon)
+**Priority:** Settled
+**Status:** **Answered** (2026-06-11, first Q-0086 live session) — routed → journal Runbook boot recipe · `docs/subsystems/ai.md`.
+
+**Owner (2026-06-11):** "btd6 and nl general should both run on haiku4.5" —
+"production has haiku routed for these 2 specific tasks".
+
+**Canonical allocation:** `AITask.BTD6_ANSWER` and `AITask.GENERAL_NL_ANSWER`
+→ `anthropic:claude-haiku-4-5-20251001` (env:
+`AI_ROUTING_BTD6_ANSWER` / `AI_ROUTING_GENERAL_NL_ANSWER`); every other task
+stays on the OpenAI defaults (`AI_DEFAULT_PROVIDER=openai`, gpt-4o-mini);
+`AI_FALLBACK_PROVIDER=openai` gives the gateway a fault cascade. Sandbox
+sessions boot the test bot with exactly this split (journal Runbook).
+
+**The trap found live:** `ai_guild_policy.default_provider` (a panel write)
+**silently outranks** the env task routing (`gateway._overlay_guild_policy`
+precedence: guild row > env > defaults). The owner's panel walk set
+`openai` on the test guild and the Haiku routing was bypassed until the row
+was cleared. Keep guild `default_provider` EMPTY unless a guild-wide
+override is genuinely intended; the AI-panel rework capture
+(`docs/ideas/ai-panel-inplace-navigation-2026-06-11.md`) lists surfacing
+this coupling as a requirement.
+
+**Addendum — sandbox floor-testing posture (owner, same session):** "it would
+be a good idea to also test with chat gpt keys in the sandbox, both to save
+costs and to make it extra failsave, because if we can get chat gpt to give
+correct answers we will be 100% fine when we switch to haiku." Sandbox live
+testing therefore defaults to the **OpenAI floor model** (gpt-4o-mini —
+cheaper AND a stricter test of the deterministic pipeline); the Haiku
+prod-mirror boot is used for final verification passes. Evidence from this
+session: after the BUG-0005…0008 routing/grounding fixes, gpt-4o-mini
+produced the correct, subject-stable farm-income answers — the pipeline, not
+the model, was the bottleneck.
