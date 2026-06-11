@@ -2568,7 +2568,12 @@ def _coverage_freshness_signals(
     return signals
 
 
-async def _conversation_carryover_facts(guild_id: int, channel_id: int) -> list[str]:
+async def _conversation_carryover_facts(
+    guild_id: int,
+    channel_id: int,
+    *,
+    current_text: str = "",
+) -> list[str]:
     """Ground the newest recent conversation turn that resolves BTD6 entities.
 
     Deterministic, read-only, no new state: scans the existing per-channel
@@ -2579,13 +2584,23 @@ async def _conversation_carryover_facts(guild_id: int, channel_id: int) -> list[
     the original question got), with channel identity omitted so the
     fallback can never recurse. Plan:
     ``docs/planning/btd6-conversation-grounding-plan-2026-06-10.md``.
+
+    ``current_text``: turns identical to the question being grounded are
+    skipped — a cooldown-denied first attempt is recorded in the floor, and
+    when the question itself resolves a generic entity ("…damage **lead**")
+    that duplicate becomes the "newest entity-bearing turn", grounding the
+    user's own re-ask instead of the conversation subject (live miss
+    2026-06-11, the Geraldo follow-up's second floor).
     """
     from services import ai_conversation_service
 
+    normalized_current = " ".join((current_text or "").lower().split())
     turns = ai_conversation_service.recent_turns(guild_id, channel_id)
     for turn in reversed(turns):  # newest first
         text = (getattr(turn, "text", "") or "").strip()
         if not text:
+            continue
+        if normalized_current and " ".join(text.lower().split()) == normalized_current:
             continue
         prior = await build(text)
         if not prior.facts:
@@ -2789,7 +2804,11 @@ async def build(
         and channel_id is not None
     ):
         try:
-            carryover = await _conversation_carryover_facts(guild_id, channel_id)
+            carryover = await _conversation_carryover_facts(
+                guild_id,
+                channel_id,
+                current_text=message_text,
+            )
             seen = set(facts)
             facts.extend(line for line in carryover if line not in seen)
         except Exception as exc:  # noqa: BLE001 — defensive

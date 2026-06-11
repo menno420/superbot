@@ -182,6 +182,18 @@ async def test_followup_flag_forces_carryover_despite_partial_grounding():
         role="assistant",
         text="Here are Geraldo's 16 shop items, organized by unlock level.",
     )
+    # The cooldown-denied FIRST ATTEMPT is recorded in the floor before the
+    # retry. Because "lead" resolves as the Lead Bloon, that duplicate would
+    # be the "newest entity-bearing turn" and carryover would ground the
+    # user's own re-ask instead of the Geraldo subject (the live second
+    # floor, 2026-06-11 13:15/13:17). Identical-to-current turns are skipped.
+    ai_conversation_service.append(
+        _GID,
+        _CID,
+        user_id=1,
+        role="user",
+        text="which of those can damage lead",
+    )
     ctx = await btd6_context_service.build(
         "which of those can damage lead",
         guild_id=_GID,
