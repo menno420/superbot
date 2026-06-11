@@ -39,9 +39,15 @@ model + compositor entries) · [`docs/planning/gear-set-numbers-2026-06-11.md`](
 
 ## Context delta (reflection interview)
 
-1. **Route miss:** none material — the three-pointer handoff
-   (current-state ▶ · router §38 · session-log handoff) was exactly
-   sufficient; every decision I needed was pre-made.
+1. **Route miss:** one real one — **PR #701 (the sprite-pack seed) merged to
+   main minutes before this session started**, explicitly *for* this session
+   ("the night session builds the compositor against this manifest"), but
+   appeared in no orientation doc and an open-PR check wouldn't have caught
+   it (already merged). I built the compositor blind and reconciled it at
+   the final main-sync. Journal rule extended: at session start also skim
+   `git log <base>..origin/main` for same-area merges. Otherwise the
+   three-pointer handoff (current-state ▶ · router §38 · session-log
+   handoff) was exactly sufficient — every decision pre-made.
 2. **Route excess:** current-state's header page-1 was all I needed — the
    per-lane bullet convention is working.
 3. **Discovered by hand:** the market panel's silent `options[:25]`
