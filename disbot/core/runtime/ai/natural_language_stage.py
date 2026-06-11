@@ -1175,13 +1175,15 @@ async def _invoke_gateway(
                 ledger,
             )
         # Phase 4 MVP (Q-0046): the deterministic round-cash plan→execute→
-        # verify workflow — profile-gated on the resolved ``workflow`` label,
-        # so the compatible default (``direct_or_tool``) never reaches it and
-        # default behaviour stays byte-identical. A recognised question's
-        # evidence is appended to the system prompt (the model explains the
-        # already-computed result) and to the faithfulness ledger (so the
-        # restated numbers are grounded). Defensive: a workflow fault must
-        # never break the reply path — it degrades to the unchanged request.
+        # verify workflow — gated on the resolved ``workflow`` label. Since
+        # the 2026-06-11 BUG-0001 recurrence the compatible default and
+        # balanced presets declare it too (an explicit ``direct_or_tool`` /
+        # ``direct_answer`` profile still never reaches it). A recognised
+        # question's evidence is appended to the system prompt (the model
+        # explains the already-computed result) and to the faithfulness
+        # ledger (so the restated numbers are grounded). Defensive: a
+        # workflow fault must never break the reply path — it degrades to
+        # the unchanged request.
         if orchestration.workflow == ai_round_cash_workflow.WORKFLOW_KEY:
             try:
                 answer = ai_round_cash_workflow.run(

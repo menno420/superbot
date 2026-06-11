@@ -723,6 +723,32 @@ def test_deterministic_meta_reply_answers_capability_questions():
         assert len(reply) <= 1900
 
 
+def test_deterministic_meta_reply_renders_bulleted_capability_list():
+    """Owner ask (live, 2026-06-11): the semicolon-run capabilities blob was
+    unreadable — "it should provide a clear list of everything it can do in
+    a readable format". One bullet per calculation/live capability, and the
+    new families (crosspath/bulk pricing, Standard+Elite boss health,
+    balance projections) must all be listed."""
+    reply = btd6_context_service.deterministic_meta_reply(
+        "what can you tell me about btd6",
+    )
+    assert reply is not None
+    # Bulleted, not semicolon-run: one "- **name** — note" line per domain.
+    assert "\n- **round cash** —" in reply
+    assert "\n- **difficulty cost** —" in reply
+    assert "\n- **cumulative upgrade cost** —" in reply
+    assert "\n- **boss health** —" in reply
+    assert "\n- **paragon** —" in reply
+    assert "\n- **ct team status** —" in reply
+    # The post-#703 capabilities are advertised.
+    assert "Standard AND Elite" in reply
+    assert "10 041 despos" in reply
+    assert "projections" in reply
+    assert "Lookups" in reply
+    # Still one message: the 1900-char Discord-safe cap holds with room.
+    assert len(reply) <= 1900
+
+
 def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
     """Entity/stats questions and non-BTD6 meta questions never get the
     summary — they keep their own grounding (or the general catalog tool)."""

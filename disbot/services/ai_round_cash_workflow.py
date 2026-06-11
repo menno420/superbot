@@ -87,6 +87,11 @@ class RoundCashPlan:
     # present the range answer also projects starting_balance + range_cash,
     # deterministically, so the total is grounded in the evidence ledger.
     starting_balance: float | None = None
+    # "… at the END of r53" (live, 2026-06-11): the completion cue on the
+    # range's lower round shifts the start one round later (that round's
+    # income is already counted/held); kept here so the answer's assumption
+    # line can say so explicitly.
+    completed_round_anchor: int | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -106,48 +111,100 @@ _MONEY_QUESTION_RE = re.compile(
     re.I,
 )
 
+# One shared round-token vocabulary: "round 53" / "rounds 53" / "r53" /
+# "r 53" — players use the r-shorthand constantly and the live 2026-06-11
+# "on r70 … at the end of r53" question matched nothing because every
+# pattern demanded the literal word "round". The trailing \b on the digits
+# keeps "r2d2"-style tokens out (digit→letter is not a boundary).
+_RT = r"(?:rounds?|r)\s*"
+# An anchor may reference a round's completion ("at the END of r53", "after
+# round 53"); the start-shift logic reads the cue separately, this fragment
+# only lets the patterns match through it.
+_RTA = r"(?:the\s+)?(?:end\s+of\s+)?" + _RT
+
 _RANGE_RES = (
     re.compile(
-        r"\bfrom\s+rounds?\s+(\d{1,3})\s*(?:to|through|thru|until|till|[-–])"
-        r"\s*(?:rounds?\s+)?(\d{1,3})\b",
+        r"\bfrom\s+" + _RTA + r"(\d{1,3})\s*(?:to|through|thru|until|till|[-–])"
+        r"\s*(?:" + _RTA + r")?(\d{1,3})\b",
         re.I,
     ),
     re.compile(
-        r"\brounds?\s+(\d{1,3})\s*(?:to|through|thru|[-–])"
-        r"\s*(?:rounds?\s+)?(\d{1,3})\b",
+        r"\b" + _RT + r"(\d{1,3})\s*(?:to|through|thru|[-–])"
+        r"\s*(?:" + _RT + r")?(\d{1,3})\b",
         re.I,
     ),
-    re.compile(r"\bbetween\s+rounds?\s+(\d{1,3})\s+and\s+(\d{1,3})\b", re.I),
+    re.compile(r"\bbetween\s+" + _RT + r"(\d{1,3})\s+and\s+(\d{1,3})\b", re.I),
     # BUG-0001 (live miss 2026-06-11): anchors separated by a clause — "at
     # round 60, what is the cash that i will get by going to round 68". Both
-    # anchors must carry the literal word "round" and sit within one sentence
+    # anchors must carry a literal round token and sit within one sentence
     # (≤80 chars apart), so the conservatism of the adjacent patterns is kept;
     # the cash-keyword gate still applies before any range pattern is tried.
     # "by" joined both anchor sets for the same-day follow-up miss "i have
-    # 20K by round 50, how much would I have by round 60".
+    # 20K by round 50, how much would I have by round 60"; the r-shorthand +
+    # completion infix came from "on r70 if I had 26932 at the end of r53"
+    # (the reversed anchors are normalised downstream).
     re.compile(
-        r"\b(?:at|from|on|by)\s+round\s+(\d{1,3})\b[^.?!\n]{0,80}?"
+        r"\b(?:at|from|on|by)\s+" + _RTA + r"(\d{1,3})\b[^.?!\n]{0,80}?"
         r"\b(?:to|until|till|reach(?:ing)?|going\s+to|get(?:ting)?\s+to|by|at)"
-        r"\s+round\s+(\d{1,3})\b",
+        r"\s+" + _RTA + r"(\d{1,3})\b",
         re.I,
     ),
 )
 
-# An ownership cue that marks a stated balance ("i have 8094$ at round 60"),
-# as opposed to an incidental number; required before a range question's
-# residual amount is read as starting cash.
+# "end of round N" / "after r N" — the completion cue that shifts a range
+# start one round later when attached to the LOWER round (its income is
+# already earned); on the upper round it is a no-op (ranges are inclusive).
+_COMPLETED_ROUND_TMPL = (
+    r"\b(?:end\s+of|after|beat(?:ing)?|clear(?:ed|ing)?|finish(?:ed|ing)?|"
+    r"complet(?:ed|ing))\s+(?:the\s+)?(?:rounds?|r)\s*{n}\b"
+)
+
+
+def _apply_completed_round_shift(
+    text: str,
+    first: int,
+    second: int,
+) -> tuple[int, int, int | None]:
+    """Shift the range start past a completed lower round, order preserved.
+
+    "How much do I have on r70 if I had 26932 at the end of r53" must count
+    rounds 54-70 — round 53's income is already inside the stated 26,932.
+    Without the shift the inclusive range double-counts it (live wrong
+    answer, 2026-06-11: the model presented cumulative(70) = $71,315.20 as
+    the total; truth is 26,932 + range(54,70) = $56,318.70).
+    """
+    lo, hi = min(first, second), max(first, second)
+    if lo >= hi:
+        return first, second, None
+    if re.search(_COMPLETED_ROUND_TMPL.format(n=lo), text, re.I) is None:
+        return first, second, None
+    shifted = lo + 1
+    return (
+        shifted if first == lo else first,
+        shifted if second == lo else second,
+        lo,
+    )
+
+
+# An ownership cue that marks a stated balance ("i have 8094$ at round 60",
+# "if I had 26932 at the end of r53"), as opposed to an incidental number;
+# required before a range question's residual amount is read as starting cash.
 _BALANCE_CUE_RE = re.compile(
-    r"\b(?:i|we)\s+(?:have|got|hold)\b|\bstart(?:ing)?\s+with\b|\bhaving\b",
+    r"\b(?:i|we)\s+(?:have|had|got|hold|held)\b|\bstart(?:ing|ed)?\s+with\b"
+    r"|\bhaving\b",
     re.I,
 )
 
-# Masks every "round N" span so round numbers can never be read as money when
-# extracting a balance from a range question (same idea as the afford branch's
-# anchor masking).
-_ROUND_SPAN_RE = re.compile(r"\brounds?\s+\d{1,3}\b", re.I)
+# Masks every round-token span ("round 60", "r53") so round numbers can never
+# be read as money when extracting a balance from a range question (same idea
+# as the afford branch's anchor masking).
+_ROUND_SPAN_RE = re.compile(r"\b(?:rounds?|r)\s*\d{1,3}\b", re.I)
 
 _AFFORD_RE = re.compile(r"\bafford\b", re.I)
-_AFFORD_ROUND_RE = re.compile(r"\b(?:at|by|on|in)\s+round\s+(\d{1,3})\b", re.I)
+_AFFORD_ROUND_RE = re.compile(
+    r"\b(?:at|by|on|in)\s+" + _RTA + r"(\d{1,3})\b",
+    re.I,
+)
 
 # An explicit money amount: $-prefixed, k/m-suffixed, or a bare number of at
 # least 3 digits / with thousands commas — so "afford 2 farms at round 30"
@@ -213,11 +270,17 @@ def plan_question(text: str) -> RoundCashPlan | None:
     for pattern in _RANGE_RES:
         match = pattern.search(text)
         if match is not None:
+            start, end, completed = _apply_completed_round_shift(
+                text,
+                int(match.group(1)),
+                int(match.group(2)),
+            )
             return RoundCashPlan(
                 intent="range_cash",
-                round_start=int(match.group(1)),
-                round_end=int(match.group(2)),
+                round_start=start,
+                round_end=end,
                 starting_balance=_extract_balance(text),
+                completed_round_anchor=completed,
             )
     return None
 
@@ -426,6 +489,14 @@ def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
     problems = _verify_range(result)
     if problems:
         return _verification_failed(plan, inputs, problems)
+
+    if plan.completed_round_anchor is not None:
+        assumptions = assumptions + (
+            f'"end of round {plan.completed_round_anchor}" anchors the range '
+            f"start at round {plan.completed_round_anchor + 1} — round "
+            f"{plan.completed_round_anchor}'s income is already counted in "
+            f"what the user holds",
+        )
 
     outputs = {
         "round_start": result["round_start"],
