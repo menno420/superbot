@@ -21,6 +21,11 @@ class FeatureFactRequest:
     channel_id: int | None
     author_id: int | None
     message_id: int | None
+    # The router routed this turn to BTD6 via the conversation cue (a pronoun
+    # follow-up) — the grounding layer then adds the carryover facts even when
+    # the text itself grounds something (the "which of those can damage lead"
+    # partial-grounding miss, 2026-06-11).
+    conversation_followup: bool = False
 
 
 @dataclass(frozen=True)

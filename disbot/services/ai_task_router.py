@@ -236,6 +236,11 @@ class RoutedTask:
     task: AITask
     route: str  # short string for the audit row (e.g. "btd6.answer")
     confidence: float  # 0.0 .. 1.0 — informational only in M2
+    # True when the conversation-cue follow-up leg (not the message text)
+    # carried the BTD6 route — the grounding layer uses it to force the
+    # conversation-carryover facts even when the text grounds something
+    # (the "which of those can damage lead" partial-grounding miss).
+    via_conversation_cue: bool = False
 
 
 def classify(
@@ -264,6 +269,7 @@ def classify(
     pronoun) stay general regardless of the flag.
     """
     lowered = (message_text or "").lower()
+    via_cue = False
     looks_btd6 = any(keyword in lowered for keyword in _BTD6_KEYWORDS)
     if not looks_btd6:
         looks_btd6 = _looks_like_btd6_entity(lowered)
@@ -272,7 +278,7 @@ def classify(
     if not looks_btd6:
         looks_btd6 = _looks_like_short_alias_money(lowered)
     if not looks_btd6 and conversation_btd6_context:
-        looks_btd6 = _looks_like_conversation_followup(lowered)
+        looks_btd6 = via_cue = _looks_like_conversation_followup(lowered)
     if channel_is_strategy_intake and looks_btd6:
         return RoutedTask(
             task=AITask.BTD6_STRATEGY_REVIEW,
@@ -284,6 +290,7 @@ def classify(
             task=AITask.BTD6_ANSWER,
             route="btd6.answer",
             confidence=0.6,
+            via_conversation_cue=via_cue,
         )
     url_count = _count_youtube_urls(message_text or "")
     if url_count >= 2:

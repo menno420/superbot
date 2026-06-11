@@ -10,6 +10,32 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0010 — the "in ABR" qualifier is ignored by auto-grounding and the round-cash workflow — OPEN
+
+- **Reported:** 2026-06-11 ~15:06–15:07 (owner, Haiku round): "how much cash
+  do I get in ABR from r25 to r83 when I have double cash and I started with
+  5443" → honest but **underclaiming** answer (served the standard $107,164.60
+  correctly labeled "that's not ABR", then claimed the calculator can't do
+  ABR — it can); "how much RBE is in r87 in ABR" → floored (the reply's
+  honest "Alternate Bloons Rounds" naming wasn't in the haystack).
+- **Probe evidence:** both phrasings route `btd6.answer` and the workflow
+  MATCHES the range — but every grounded `[btd6_round]` fact and the workflow
+  plan are **standard-roundset** (r87 grounds standard's 4-ZOMG/66,624-RBE
+  round, not ABR's). The guard accidentally protects today: the mislabel
+  can't pass because ABR facts are never in the haystack — so the failure
+  mode is refusal, not a wrong number.
+- **What already works:** the dataset carries all 140 ABR rounds
+  (`abr_rounds.json`); the `btd6_round_composition` and round-cash TOOLS take
+  `roundset='abr'` (the capabilities list advertises it). Only the
+  deterministic legs lack the qualifier.
+- **Fix sketch (focused slice):** (1) an ABR cue ("abr", "alternate bloons")
+  in the resolver/grounding round legs → resolve round numbers against
+  `abr_rounds` and label the lines `[ABR]`; (2) `RoundCashPlan` gains a
+  `roundset` field + matcher cue so the workflow computes/labels the ABR
+  range; (3) regression: the two live phrasings above.
+- **Status:** OPEN — queued for the AI lane (a multi-layer slice; captured
+  mid live-session 2026-06-11 rather than rushed).
+
 ## BUG-0009 — grounded facts, wrong assembly: lists mislabeled / badly grouped (the claim-assembly class) — OPEN
 
 - **Reported:** 2026-06-11 ~14:07–14:18 (owner, first Q-0086 live session):

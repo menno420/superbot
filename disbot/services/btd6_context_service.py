@@ -2605,6 +2605,7 @@ async def build(
     *,
     guild_id: int | None = None,
     channel_id: int | None = None,
+    conversation_followup: bool = False,
 ) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
@@ -2775,9 +2776,22 @@ async def build(
         # _TASK_CONTRACT live-event directive.
         facts.extend(_coverage_freshness_signals(intent, live_rows))
 
-    if not facts and guild_id is not None and channel_id is not None:
+    # Zero-fact fallback — OR a router-detected follow-up. The zero-fact
+    # condition alone misses partial grounding: "which of those can damage
+    # lead" resolves the Lead BLOON (facts non-empty) while the actual
+    # subject (the prior turn's Geraldo items) grounds nothing, so the reply
+    # names the subject and floors (live miss 2026-06-11, first Haiku round).
+    # When the router routed HERE because of the conversation cue
+    # (``conversation_followup``), the carryover facts are always added.
+    if (
+        (not facts or conversation_followup)
+        and guild_id is not None
+        and channel_id is not None
+    ):
         try:
-            facts = await _conversation_carryover_facts(guild_id, channel_id)
+            carryover = await _conversation_carryover_facts(guild_id, channel_id)
+            seen = set(facts)
+            facts.extend(line for line in carryover if line not in seen)
         except Exception as exc:  # noqa: BLE001 — defensive
             logger.debug(
                 "btd6_context_service: carryover grounding unavailable (%s)",

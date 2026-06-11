@@ -159,3 +159,45 @@ async def test_generic_alias_words_stay_behind_the_keyword_gate():
     path)."""
     out = btd6_context_service._paragon_name_facts("row your boat", set())
     assert out == []
+
+
+@pytest.mark.asyncio
+async def test_followup_flag_forces_carryover_despite_partial_grounding():
+    """Live miss 2026-06-11 (first Haiku round): "which of those can damage
+    lead" resolved the Lead BLOON — facts were non-empty, so the zero-fact
+    carryover never fired and the reply's subject (the prior Geraldo turn)
+    floored as ungrounded. With the router's conversation-cue flag the
+    carryover facts are always added on top."""
+    ai_conversation_service.append(
+        _GID,
+        _CID,
+        user_id=1,
+        role="user",
+        text="what are geraldos items",
+    )
+    ai_conversation_service.append(
+        _GID,
+        _CID,
+        user_id=2,
+        role="assistant",
+        text="Here are Geraldo's 16 shop items, organized by unlock level.",
+    )
+    ctx = await btd6_context_service.build(
+        "which of those can damage lead",
+        guild_id=_GID,
+        channel_id=_CID,
+        conversation_followup=True,
+    )
+    assert any("Geraldo" in f for f in ctx.facts), ctx.facts
+    assert any(f.startswith("[btd6_carryover]") for f in ctx.facts), ctx.facts
+    # Without the flag, today's zero-fact-only behaviour is preserved:
+    # the lead-bloon resolution suppresses carryover.
+    ctx_no_flag = await btd6_context_service.build(
+        "which of those can damage lead",
+        guild_id=_GID,
+        channel_id=_CID,
+    )
+    if ctx_no_flag.facts:
+        assert not any(
+            f.startswith("[btd6_carryover]") for f in ctx_no_flag.facts
+        ), "zero-fact gate should still suppress carryover when facts exist"

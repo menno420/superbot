@@ -389,6 +389,7 @@ class AINaturalLanguageStage:
                 channel_id=channel_id,
                 author_id=user_id,
                 message_id=message.id,
+                conversation_followup=getattr(routed, "via_conversation_cue", False),
             )
             feature = await _gather_feature_facts(_fact_req)
 
@@ -889,6 +890,7 @@ async def _gather_feature_facts(req: FeatureFactRequest) -> FeatureFactsResult:
             req.text,
             guild_id=req.guild_id,
             channel_id=req.channel_id,
+            conversation_followup=req.conversation_followup,
         )
         return FeatureFactsResult(facts=tuple(ctx.facts))
     if req.task in _VIDEO_TASKS:
