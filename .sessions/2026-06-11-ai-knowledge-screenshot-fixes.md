@@ -80,5 +80,7 @@ to the existing probe — it showed 5 healthy facts for a question the
 pipeline never grounded, which is actively misleading triage. BUG-0002/0003
 would have been one probe invocation instead of three hand-written
 simulations. (Dedup-checked `docs/ideas/` — the probe has no idea file; its
-provenance header lives in the script. Small enough to execute as a
-follow-up slice; captured here per Q-0089.)
+provenance header lives in the script.) **Executed in this same session as
+the Q-0015 grooming move** (small/safe/active-lane): `--route` prints the
+task classification, the round-cash plan match, and the engaging profiles —
+`test_route_leg_flags_general_path_miss` pins the miss signature.
