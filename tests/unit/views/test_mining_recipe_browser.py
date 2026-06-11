@@ -31,9 +31,14 @@ async def test_factory_builds_category_recipe_and_pager_controls():
     assert len(selects) == 2  # category + recipes
     labels = {b.label for b in buttons}
     assert {"◀ Prev", "Next ▶", "↩ Mining Hub"} <= labels
-    # One page today: both pagers disabled.
-    pagers = [b for b in buttons if b.label in ("◀ Prev", "Next ▶")]
-    assert all(b.disabled for b in pagers)
+    # The 44-recipe catalogue (V-16 gear sets) spans two pages: page 0 has
+    # Prev disabled and Next enabled — the pagination is live, not vestigial.
+    prev = next(b for b in buttons if b.label == "◀ Prev")
+    nxt = next(b for b in buttons if b.label == "Next ▶")
+    assert prev.disabled
+    assert not nxt.disabled
+    recipe_select = selects[1]
+    assert len(recipe_select.options) <= 25  # the Discord cap holds per page
 
 
 @pytest.mark.asyncio

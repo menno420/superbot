@@ -13,8 +13,12 @@ This realises the brainstorm §7.4 "relocate the pure stat model to a shared
 layer" step — extracted the moment a second game (deathmatch) needed it.
 
 Slots and per-item stats are deliberately data (``_GEAR``): extend by adding
-rows.  Combat slots (weapon/armor) and their damage/defense stats are reserved
-in :class:`EffectiveStats` but unused until combat gear exists.
+rows.  The combat slots follow the set-piece model (V-16 phase 1, owner
+decision Q-0092): weapon + shield + the four armor pieces, each a 5-tier
+family (bronze < iron < silver < gold < diamond), with a small same-tier
+full-set bonus so collecting a complete set is a goal.  The full numbers
+rationale (stat ladders, totals vs the duel constants, sim bands) lives in
+``docs/planning/gear-set-numbers-2026-06-11.md``.
 """
 
 from __future__ import annotations
@@ -22,14 +26,39 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 # Equipment slots — each holds at most one item.  Mining slots (tool/light/
-# charm) feed the mining stats; combat slots (weapon/armor) feed the deathmatch
-# stats.  One equip/unequip path serves every slot.
+# charm) feed the mining stats; the six combat slots (weapon/shield + the four
+# armor pieces) feed the deathmatch stats.  One equip/unequip path serves
+# every slot.
 TOOL = "tool"
 LIGHT = "light"
 CHARM = "charm"
 WEAPON = "weapon"
-ARMOR = "armor"
-SLOTS: tuple[str, ...] = (TOOL, LIGHT, CHARM, WEAPON, ARMOR)
+SHIELD = "shield"
+HELMET = "helmet"
+CHESTPLATE = "chestplate"
+LEGGINGS = "leggings"
+BOOTS = "boots"
+SLOTS: tuple[str, ...] = (
+    TOOL,
+    LIGHT,
+    CHARM,
+    WEAPON,
+    SHIELD,
+    HELMET,
+    CHESTPLATE,
+    LEGGINGS,
+    BOOTS,
+)
+
+# The set-piece slots: a full same-tier loadout across these six grants the
+# set bonus.  Mining slots are deliberately excluded — sets are a combat goal.
+SET_SLOTS: tuple[str, ...] = (WEAPON, SHIELD, HELMET, CHESTPLATE, LEGGINGS, BOOTS)
+
+# Gear tiers, weakest → strongest.  Bronze and silver are real mining ores
+# (utils.mining.rewards loot rows), so every tier has a smelt-the-ore →
+# forge-the-gear path.  Tier names double as the sprite-manifest vocabulary
+# (utils.character_render: ``{family}_{tier}.png``).
+TIER_ORDER: tuple[str, ...] = ("bronze", "iron", "silver", "gold", "diamond")
 
 
 @dataclass(frozen=True)
@@ -77,6 +106,12 @@ STAT_LABELS: dict[str, str] = {
 
 
 # Which slot each gear item fits, and the stats it contributes.
+#
+# Combat numbers are bounded by the duel constants (cogs/deathmatch_cog.py:
+# 15 base damage / 100 base HP, flat defense reduction floored at 1): the
+# full-diamond defense total (14) stays below the 15 base attack so a bare
+# fighter's hits always land, and same/adjacent-tier fights stay competitive.
+# Full design record: docs/planning/gear-set-numbers-2026-06-11.md.
 _GEAR: dict[str, tuple[str, EffectiveStats]] = {
     # Mining gear → mining stats.  The "deeper ladders" tiers (gold/diamond,
     # 2026-06-10 owner decision: curated economy + deeper ladders) extend each
@@ -90,16 +125,57 @@ _GEAR: dict[str, tuple[str, EffectiveStats]] = {
     "lantern": (LIGHT, EffectiveStats(light_radius=2, depth_access=2)),
     "diamond lantern": (LIGHT, EffectiveStats(light_radius=3, depth_access=3)),
     "lucky charm": (CHARM, EffectiveStats(luck=1, loot_bonus=1)),
-    # Combat gear → deathmatch stats.  Deliberately a SMALL, fair edge over the
-    # base 100 HP / 15-damage duel — gear tilts a fight, it does not decide it
-    # (a bare fighter still wins on crits + good defends).  Tune here.
+    # Starter combat gear — pre-metal entry pieces, strictly below bronze.
     "sword": (WEAPON, EffectiveStats(damage=3)),
+    "shield": (SHIELD, EffectiveStats(defense=2, max_health=10)),
+    # Swords (weapon slot) — damage ladder anchored to the pre-set values
+    # (iron 6 / diamond 10 predate the set model and are preserved).
+    "bronze sword": (WEAPON, EffectiveStats(damage=4)),
     "iron sword": (WEAPON, EffectiveStats(damage=6)),
+    "silver sword": (WEAPON, EffectiveStats(damage=7)),
+    "gold sword": (WEAPON, EffectiveStats(damage=8)),
     "diamond sword": (WEAPON, EffectiveStats(damage=10)),
-    "shield": (ARMOR, EffectiveStats(defense=2, max_health=10)),
-    "armor": (ARMOR, EffectiveStats(defense=4, max_health=20)),
-    "diamond armor": (ARMOR, EffectiveStats(defense=7, max_health=35)),
+    # Shields — the heaviest single defense piece (and the HP anchor).
+    "bronze shield": (SHIELD, EffectiveStats(defense=2, max_health=12)),
+    "iron shield": (SHIELD, EffectiveStats(defense=3, max_health=14)),
+    "silver shield": (SHIELD, EffectiveStats(defense=3, max_health=16)),
+    "gold shield": (SHIELD, EffectiveStats(defense=4, max_health=18)),
+    "diamond shield": (SHIELD, EffectiveStats(defense=4, max_health=20)),
+    # Helmets.
+    "bronze helmet": (HELMET, EffectiveStats(defense=1, max_health=2)),
+    "iron helmet": (HELMET, EffectiveStats(defense=1, max_health=3)),
+    "silver helmet": (HELMET, EffectiveStats(defense=2, max_health=4)),
+    "gold helmet": (HELMET, EffectiveStats(defense=2, max_health=5)),
+    "diamond helmet": (HELMET, EffectiveStats(defense=2, max_health=6)),
+    # Chestplates — the biggest armor piece.  "iron chestplate" and
+    # "diamond chestplate" absorb the legacy "armor"/"diamond armor" items
+    # (migration 068), rebalanced for five stacking defense pieces.
+    "bronze chestplate": (CHESTPLATE, EffectiveStats(defense=2, max_health=6)),
+    "iron chestplate": (CHESTPLATE, EffectiveStats(defense=2, max_health=8)),
+    "silver chestplate": (CHESTPLATE, EffectiveStats(defense=3, max_health=10)),
+    "gold chestplate": (CHESTPLATE, EffectiveStats(defense=3, max_health=12)),
+    "diamond chestplate": (CHESTPLATE, EffectiveStats(defense=4, max_health=15)),
+    # Leggings.
+    "bronze leggings": (LEGGINGS, EffectiveStats(defense=1, max_health=4)),
+    "iron leggings": (LEGGINGS, EffectiveStats(defense=1, max_health=5)),
+    "silver leggings": (LEGGINGS, EffectiveStats(defense=2, max_health=6)),
+    "gold leggings": (LEGGINGS, EffectiveStats(defense=2, max_health=8)),
+    "diamond leggings": (LEGGINGS, EffectiveStats(defense=2, max_health=10)),
+    # Boots.
+    "bronze boots": (BOOTS, EffectiveStats(defense=1, max_health=2)),
+    "iron boots": (BOOTS, EffectiveStats(defense=1, max_health=3)),
+    "silver boots": (BOOTS, EffectiveStats(defense=1, max_health=4)),
+    "gold boots": (BOOTS, EffectiveStats(defense=2, max_health=5)),
+    "diamond boots": (BOOTS, EffectiveStats(defense=2, max_health=6)),
 }
+
+# Same-tier full-set bonus (Q-0092): equipping all six SET_SLOTS with gear of
+# one tier adds ``damage = tier_index`` and ``max_health = 3 × tier_index``
+# (bronze +1/+3 … diamond +5/+15).  Small on purpose — the set is a collection
+# goal, not a power cliff; defense is deliberately NOT in the bonus so the
+# full-diamond defense total stays below the 15 base attack damage.
+SET_BONUS_DAMAGE_PER_TIER = 1
+SET_BONUS_HEALTH_PER_TIER = 3
 
 
 # Max durability — how many uses the "active" unit of a gear item survives
@@ -117,13 +193,29 @@ MAX_DURABILITY: dict[str, int] = {
     "lantern": 100,
     "diamond lantern": 180,
     "lucky charm": 80,
+    # Starters.
     "sword": 60,
-    "iron sword": 150,
-    "diamond sword": 150,
     "shield": 90,
-    "armor": 120,
-    "diamond armor": 200,
 }
+
+# Combat-set durability — one ladder for all six families (gear wears once
+# per duel, so these are generous: a sink, not an annoyance).
+_SET_DURABILITY: tuple[int, ...] = (80, 150, 200, 260, 320)
+_SET_FAMILIES: tuple[str, ...] = (
+    "sword",
+    "shield",
+    "helmet",
+    "chestplate",
+    "leggings",
+    "boots",
+)
+MAX_DURABILITY.update(
+    {
+        f"{tier} {family}": _SET_DURABILITY[i]
+        for i, tier in enumerate(TIER_ORDER)
+        for family in _SET_FAMILIES
+    },
+)
 
 
 def max_durability(item_name: str) -> int | None:
@@ -152,12 +244,78 @@ def item_stats(item_name: str) -> EffectiveStats:
     return entry[1] if entry else EffectiveStats()
 
 
+def gear_tier(item_name: str) -> str | None:
+    """The set tier of *item_name* (``"bronze"`` … ``"diamond"``), or None.
+
+    Only set-slot gear is tiered — the ``"{tier} {family}"`` naming convention
+    is the registry (it is also the sprite-manifest convention).  Starters
+    ("sword", "shield") and mining gear return None.
+    """
+    entry = _GEAR.get(item_name.lower())
+    if entry is None or entry[0] not in SET_SLOTS:
+        return None
+    first = item_name.lower().split()[0]
+    return first if first in TIER_ORDER else None
+
+
+def tier_index(tier: str) -> int:
+    """1-based strength index of *tier* (bronze=1 … diamond=5)."""
+    return TIER_ORDER.index(tier) + 1
+
+
+def active_set_tier(equipped: dict[str, str]) -> str | None:
+    """The tier of a complete same-tier combat set, or None.
+
+    All six :data:`SET_SLOTS` must hold gear of one tier; any empty slot,
+    starter, or tier mismatch disqualifies the set.
+    """
+    tiers: set[str] = set()
+    for slot in SET_SLOTS:
+        tier = gear_tier(equipped.get(slot, ""))
+        if tier is None:
+            return None
+        tiers.add(tier)
+    return tiers.pop() if len(tiers) == 1 else None
+
+
+def set_bonus(equipped: dict[str, str]) -> EffectiveStats:
+    """The same-tier full-set bonus for *equipped* (all-zero without a set)."""
+    tier = active_set_tier(equipped)
+    if tier is None:
+        return EffectiveStats()
+    idx = tier_index(tier)
+    return EffectiveStats(
+        damage=SET_BONUS_DAMAGE_PER_TIER * idx,
+        max_health=SET_BONUS_HEALTH_PER_TIER * idx,
+    )
+
+
+def set_progress(equipped: dict[str, str]) -> tuple[str, int] | None:
+    """``(tier, pieces_equipped)`` for the player's most-advanced partial set.
+
+    Drives the Gear panel's "Bronze set 4/6" line.  Ties break toward the
+    stronger tier; returns None when no set-slot item is tiered.
+    """
+    counts: dict[str, int] = {}
+    for slot in SET_SLOTS:
+        tier = gear_tier(equipped.get(slot, ""))
+        if tier is not None:
+            counts[tier] = counts.get(tier, 0) + 1
+    if not counts:
+        return None
+    best = max(counts, key=lambda t: (counts[t], tier_index(t)))
+    return best, counts[best]
+
+
 def compute_stats(equipped: dict[str, str]) -> EffectiveStats:
-    """Sum the stats of every equipped item.  *equipped* is ``{slot: name}``."""
+    """Sum the stats of every equipped item, plus any full-set bonus.
+
+    *equipped* is ``{slot: name}``.
+    """
     total = EffectiveStats()
     for item_name in equipped.values():
         total = total + item_stats(item_name)
-    return total
+    return total + set_bonus(equipped)
 
 
 def describe_stats(stats: EffectiveStats) -> list[tuple[str, int]]:
@@ -173,7 +331,17 @@ __all__ = [
     "TOOL",
     "LIGHT",
     "CHARM",
+    "WEAPON",
+    "SHIELD",
+    "HELMET",
+    "CHESTPLATE",
+    "LEGGINGS",
+    "BOOTS",
     "SLOTS",
+    "SET_SLOTS",
+    "TIER_ORDER",
+    "SET_BONUS_DAMAGE_PER_TIER",
+    "SET_BONUS_HEALTH_PER_TIER",
     "EffectiveStats",
     "STAT_LABELS",
     "MAX_DURABILITY",
@@ -182,6 +350,11 @@ __all__ = [
     "slot_for",
     "is_equippable",
     "item_stats",
+    "gear_tier",
+    "tier_index",
+    "active_set_tier",
+    "set_bonus",
+    "set_progress",
     "compute_stats",
     "describe_stats",
 ]

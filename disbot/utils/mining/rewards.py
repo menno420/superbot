@@ -13,11 +13,16 @@ import random
 from utils import equipment
 
 # Mining ore weights at the Surface (depth 0).  Deeper bands re-weight these
-# toward rarer ore via ``ore_weights_for_depth`` — the same four ores at every
-# depth, just better odds the deeper you mine.
+# toward rarer ore via ``ore_weights_for_depth`` — the same six ores at every
+# depth, just better odds the deeper you mine.  Surface weights descend in
+# 0.5 steps by sell value (stone 1 < bronze 2 < iron 3 < silver 4 < gold 6 <
+# diamond 12) — commonness is the inverse of worth.  Bronze + silver joined
+# with the V-16 gear sets (Q-0092) so every gear tier has its ore.
 ORE_WEIGHTS: dict[str, float] = {
     "stone": 3,
+    "bronze": 2.5,
     "iron": 2,
+    "silver": 1.5,
     "gold": 1,
     "diamond": 0.5,
 }
@@ -27,14 +32,17 @@ def ore_weights_for_depth(depth: int) -> dict[str, float]:
     """Ore selection weights for a mining band.
 
     ``depth`` 0 returns :data:`ORE_WEIGHTS` unchanged (so the Surface roll is
-    identical to the pre-depth behaviour); each band deeper shifts the odds away
-    from stone and toward iron/gold/diamond — "deeper = richer" — while keeping
-    the same four ores so callers never see an unknown drop.
+    identical to the pre-depth behaviour); each band deeper shifts the odds
+    away from stone — and, at half that rate, away from bronze (the shallow
+    Bronze-Age metal) — and toward the precious ores — "deeper = richer" —
+    while keeping the same six ores so callers never see an unknown drop.
     """
     d = max(0, depth)
     return {
         "stone": max(0.5, ORE_WEIGHTS["stone"] - d),
+        "bronze": max(0.5, ORE_WEIGHTS["bronze"] - 0.5 * d),
         "iron": ORE_WEIGHTS["iron"] + 0.5 * d,
+        "silver": ORE_WEIGHTS["silver"] + 0.5 * d,
         "gold": ORE_WEIGHTS["gold"] + 0.5 * d,
         "diamond": ORE_WEIGHTS["diamond"] + 0.5 * d,
     }

@@ -20,9 +20,11 @@ from utils.mining import items
 SELL_REASON = "mining:sell_ore"
 BUY_REASON = "mining:buy_gear"
 
-# Gear shop — coins to buy each item (the sink).  Priced above the sell value
-# of the materials it would take to craft, so selling-then-buying is never free
-# arbitrage.  Tunable; this is the balance knob for the economy loop.
+# Gear shop — coins to buy each item (the sink).  Priced ~5-6× the sell value
+# of the materials it would take to craft, so crafting stays the cheaper path
+# and selling-then-buying is never free arbitrage.  Tunable; this is the
+# balance knob for the economy loop — repair pricing derives from it too
+# (workshop.repair_base), so EVERY wearing item must have a row here.
 GEAR_SHOP: dict[str, int] = {
     "torch": 10,
     "pickaxe": 25,
@@ -30,17 +32,47 @@ GEAR_SHOP: dict[str, int] = {
     "shield": 30,
     "dynamite": 30,
     "lantern": 40,
-    "iron sword": 60,
     "iron pickaxe": 60,
-    "armor": 70,
     "lucky charm": 80,
     # Deeper ladders (2026-06-10) — priced well above material sell value so
     # crafting stays the cheaper path and selling-then-buying never profits.
     "gold pickaxe": 140,
-    "diamond sword": 180,
     "diamond lantern": 200,
-    "diamond armor": 250,
     "diamond pickaxe": 320,
+    # The V-16 combat-set families (Q-0092) — monotonic per family; the
+    # per-tier ladder tracks each tier's ore value (bronze 2 / iron 3 /
+    # silver 4 / gold 6 / diamond 12).  Numbers rationale:
+    # docs/planning/gear-set-numbers-2026-06-11.md.
+    "bronze sword": 30,
+    "iron sword": 60,
+    "silver sword": 75,
+    "gold sword": 95,
+    "diamond sword": 180,
+    "bronze shield": 40,
+    "iron shield": 65,
+    "silver shield": 85,
+    "gold shield": 110,
+    "diamond shield": 200,
+    "bronze helmet": 35,
+    "iron helmet": 55,
+    "silver helmet": 75,
+    "gold helmet": 105,
+    "diamond helmet": 190,
+    "bronze chestplate": 55,
+    "iron chestplate": 85,
+    "silver chestplate": 115,
+    "gold chestplate": 160,
+    "diamond chestplate": 280,
+    "bronze leggings": 45,
+    "iron leggings": 70,
+    "silver leggings": 95,
+    "gold leggings": 135,
+    "diamond leggings": 240,
+    "bronze boots": 25,
+    "iron boots": 40,
+    "silver boots": 55,
+    "gold boots": 75,
+    "diamond boots": 130,
 }
 
 
@@ -97,6 +129,39 @@ def shop_listing() -> list[tuple[str, int]]:
     return sorted(GEAR_SHOP.items(), key=lambda kv: (kv[1], kv[0]))
 
 
+def shop_sections() -> list[tuple[str, list[tuple[str, int]]]]:
+    """The shop listing grouped for display: ``[(section_label, rows)]``.
+
+    The set-piece catalogue outgrew one flat list (41 items vs Discord's
+    25-option select cap and the 1024-char field cap), so the market panel
+    renders one field + one buy-select per section.  Grouping is derived from
+    the equipment slot — never a hand-kept name list.
+    """
+    from utils import equipment  # local import keeps module deps one-way
+
+    weapon_slots = {equipment.WEAPON, equipment.SHIELD}
+    armor_slots = {
+        equipment.HELMET,
+        equipment.CHESTPLATE,
+        equipment.LEGGINGS,
+        equipment.BOOTS,
+    }
+    sections: dict[str, list[tuple[str, int]]] = {
+        "⚔️ Weapons & shields": [],
+        "🛡️ Armor": [],
+        "🧰 Tools & supplies": [],
+    }
+    for name, price in shop_listing():
+        slot = equipment.slot_for(name)
+        if slot in weapon_slots:
+            sections["⚔️ Weapons & shields"].append((name, price))
+        elif slot in armor_slots:
+            sections["🛡️ Armor"].append((name, price))
+        else:
+            sections["🧰 Tools & supplies"].append((name, price))
+    return [(label, rows) for label, rows in sections.items() if rows]
+
+
 __all__ = [
     "TradeResult",
     "GEAR_SHOP",
@@ -107,4 +172,5 @@ __all__ = [
     "total_sale_value",
     "buy_price",
     "shop_listing",
+    "shop_sections",
 ]

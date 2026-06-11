@@ -15,20 +15,29 @@ def test_hub_has_market_button():
     assert "mining:market" in ids
 
 
-def test_market_view_has_buy_select_sell_and_back():
+def test_market_view_has_buy_selects_sell_and_back():
+    from utils.mining import market
+
     view = MiningMarketView(SimpleNamespace(id=1), guild_id=2)
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(selects) == 1  # the buy-gear dropdown
+    # One buy dropdown per shop section (the 41-item catalogue outgrew one
+    # select's 25-option cap), each under the cap.
+    assert len(selects) == len(market.shop_sections())
+    assert all(len(s.options) <= 25 for s in selects)
     labels = " | ".join(b.label or "" for b in buttons)
     assert "Sell All" in labels
     assert "Hub" in labels  # back-to-hub navigation
 
 
-def test_buy_select_lists_the_gear_shop():
+def test_buy_selects_cover_the_whole_gear_shop():
     from utils.mining import market
 
     view = MiningMarketView(SimpleNamespace(id=1), guild_id=2)
-    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
-    values = {opt.value for opt in select.options}
+    values = {
+        opt.value
+        for c in view.children
+        if isinstance(c, discord.ui.Select)
+        for opt in c.options
+    }
     assert values == set(market.GEAR_SHOP)

@@ -19,7 +19,8 @@ from utils.mining import items
 from utils.mining.recipes import DEFAULT_RECIPES, load_recipes
 
 # Resources that drop from mine/harvest/explore — the economy's raw inputs.
-_MINEABLE = {"wood", "stone", "iron", "gold", "diamond"}
+# Bronze + silver joined the ore ladder with the V-16 gear sets (Q-0092).
+_MINEABLE = {"wood", "stone", "bronze", "iron", "silver", "gold", "diamond"}
 
 # The curated post-trim recipe set.  Extending content = adding the recipe,
 # its ItemDef, and (for gear) stats/durability/prices — then this line.
@@ -29,9 +30,7 @@ _EXPECTED_RECIPES = {
     "torch",
     "lantern",
     "sword",
-    "iron sword",
     "shield",
-    "armor",
     "stone hut",
     "wooden house",
     "gold statue",
@@ -41,8 +40,14 @@ _EXPECTED_RECIPES = {
     "gold pickaxe",
     "diamond pickaxe",
     "diamond lantern",
-    "diamond sword",
-    "diamond armor",
+    # The V-16 combat-set families (Q-0092): 6 families × 5 tiers, each
+    # forged from its tier's ore ("armor"/"diamond armor" folded into the
+    # chestplate family — migration 068).
+    *(
+        f"{tier} {family}"
+        for tier in ("bronze", "iron", "silver", "gold", "diamond")
+        for family in ("sword", "shield", "helmet", "chestplate", "leggings", "boots")
+    ),
 }
 
 

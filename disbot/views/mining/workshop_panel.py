@@ -73,15 +73,21 @@ async def build_workshop_embed(
 
     craftables = workshop.craftable_gear(load_recipes(), inventory)
     if craftables:
-        embed.add_field(
-            name="🛠️ Craft gear",
-            value="\n".join(
-                f"{'✅' if g.craftable else '▫️'} **{g.name.title()}** — "
-                f"{workshop.describe_materials(g.materials)}"
-                for g in craftables
-            ),
-            inline=False,
+        # The set-piece catalogue (30+ gear recipes) outgrew one field's
+        # 1024-char cap: show what is craftable NOW, point at the Recipe
+        # browser for the full tree.
+        ready = [g for g in craftables if g.craftable]
+        lines = [
+            f"✅ **{g.name.title()}** — {workshop.describe_materials(g.materials)}"
+            for g in ready[:12]
+        ]
+        if not ready:
+            lines = ["▫️ Nothing craftable from your current resources."]
+        lines.append(
+            f"📖 All **{len(craftables)}** gear recipes: the Recipe browser "
+            f"(`!recipes`).",
         )
+        embed.add_field(name="🛠️ Craft gear", value="\n".join(lines), inline=False)
     embed.set_footer(
         text=f"Balance: {balance} 🪙  •  !repair <item> · !craft <item> · !quickcraft",
     )
@@ -186,6 +192,9 @@ class MiningWorkshopView(HubView):
                 _RepairSelect(author.id, guild_id, repair_options[:25]),
             )
 
+        # Craftable-now first, so the 25-option cap drops the recipes the
+        # player can't afford anyway (the Recipe browser carries the full
+        # catalogue).
         craft_options = [
             discord.SelectOption(
                 label=f"{g.name.title()} — {workshop.describe_materials(g.materials)}"[
@@ -194,7 +203,10 @@ class MiningWorkshopView(HubView):
                 value=g.name,
                 emoji="✅" if g.craftable else None,
             )
-            for g in workshop.craftable_gear(load_recipes(), inventory)
+            for g in sorted(
+                workshop.craftable_gear(load_recipes(), inventory),
+                key=lambda g: (not g.craftable, g.name),
+            )
         ]
         if craft_options:
             view.add_item(_CraftSelect(author.id, guild_id, craft_options[:25]))

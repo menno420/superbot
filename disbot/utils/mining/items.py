@@ -20,6 +20,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 
+from utils.equipment import TIER_ORDER
+
 
 class ItemKind(Enum):
     RESOURCE = "resource"  # raw materials: stone, iron, gold, diamond, wood
@@ -43,12 +45,16 @@ class ItemDef:
 
 # Canonical catalog.  Names are stored lower-cased to match inventory keys.
 _CATALOG: dict[str, ItemDef] = {
-    # resources (ordered by value / depth)
+    # resources (ordered by value / depth).  Bronze + silver joined the ore
+    # ladder with the V-16 gear sets (Q-0092): bronze sits between stone and
+    # iron, silver between iron and gold — every gear tier smelts from its ore.
     "wood": ItemDef("wood", ItemKind.RESOURCE, tier=1, value=1),
     "stone": ItemDef("stone", ItemKind.RESOURCE, tier=1, value=1),
-    "iron": ItemDef("iron", ItemKind.RESOURCE, tier=2, value=3),
-    "gold": ItemDef("gold", ItemKind.RESOURCE, tier=3, value=6),
-    "diamond": ItemDef("diamond", ItemKind.RESOURCE, tier=4, value=12),
+    "bronze": ItemDef("bronze", ItemKind.RESOURCE, tier=2, value=2),
+    "iron": ItemDef("iron", ItemKind.RESOURCE, tier=3, value=3),
+    "silver": ItemDef("silver", ItemKind.RESOURCE, tier=4, value=4),
+    "gold": ItemDef("gold", ItemKind.RESOURCE, tier=5, value=6),
+    "diamond": ItemDef("diamond", ItemKind.RESOURCE, tier=6, value=12),
     # tools (tier drives crafting upgrades / loadout strength)
     "axe": ItemDef("axe", ItemKind.TOOL, tier=1, value=5),
     "pickaxe": ItemDef("pickaxe", ItemKind.TOOL, tier=1, value=5),
@@ -81,7 +87,8 @@ _CATALOG: dict[str, ItemDef] = {
         tags=frozenset({"luck"}),
     ),
     # Combat gear (deathmatch) — equippable tools-of-war; never sellable (TOOL,
-    # not RESOURCE).  Values are for inventory net-worth display, not a sale price.
+    # not RESOURCE).  Values are for inventory net-worth display, not a sale
+    # price.  Starters first; the six 5-tier set families are appended below.
     "sword": ItemDef(
         "sword",
         ItemKind.TOOL,
@@ -89,25 +96,11 @@ _CATALOG: dict[str, ItemDef] = {
         value=5,
         tags=frozenset({"weapon"}),
     ),
-    "iron sword": ItemDef(
-        "iron sword",
-        ItemKind.TOOL,
-        tier=2,
-        value=15,
-        tags=frozenset({"weapon"}),
-    ),
     "shield": ItemDef(
         "shield",
         ItemKind.TOOL,
         tier=1,
         value=8,
-        tags=frozenset({"armor"}),
-    ),
-    "armor": ItemDef(
-        "armor",
-        ItemKind.TOOL,
-        tier=2,
-        value=18,
         tags=frozenset({"armor"}),
     ),
     # Structures are built via recipes rather than mined.
@@ -128,20 +121,6 @@ _CATALOG: dict[str, ItemDef] = {
         tier=3,
         value=45,
         tags=frozenset({"light"}),
-    ),
-    "diamond sword": ItemDef(
-        "diamond sword",
-        ItemKind.TOOL,
-        tier=3,
-        value=40,
-        tags=frozenset({"weapon"}),
-    ),
-    "diamond armor": ItemDef(
-        "diamond armor",
-        ItemKind.TOOL,
-        tier=3,
-        value=55,
-        tags=frozenset({"armor"}),
     ),
     "gold statue": ItemDef(
         "gold statue",
@@ -169,13 +148,54 @@ _CATALOG: dict[str, ItemDef] = {
     ),
 }
 
+# The combat-gear set families (V-16 phase 1, Q-0092): six families × five
+# tiers, one ``"{tier} {family}"`` row each (tier vocabulary =
+# utils.equipment.TIER_ORDER — one source of truth).  Values are net-worth
+# display numbers (~2× the material sell value, monotonic per family); stats
+# and durability live in utils/equipment.py; the full numbers rationale is
+# docs/planning/gear-set-numbers-2026-06-11.md.
+_SET_FAMILY_VALUES: dict[str, tuple[int, ...]] = {
+    # family: value per tier (bronze, iron, silver, gold, diamond)
+    "sword": (10, 15, 20, 30, 40),
+    "shield": (12, 18, 24, 32, 42),
+    "helmet": (12, 18, 25, 35, 55),
+    "chestplate": (20, 30, 40, 60, 90),
+    "leggings": (16, 24, 32, 48, 70),
+    "boots": (8, 12, 16, 24, 36),
+}
+_SET_FAMILY_TAG: dict[str, str] = {
+    "sword": "weapon",
+    "shield": "armor",
+    "helmet": "armor",
+    "chestplate": "armor",
+    "leggings": "armor",
+    "boots": "armor",
+}
+_CATALOG.update(
+    {
+        f"{tier} {family}": ItemDef(
+            f"{tier} {family}",
+            ItemKind.TOOL,
+            tier=i + 1,
+            value=values[i],
+            tags=frozenset({_SET_FAMILY_TAG[family]}),
+        )
+        for family, values in _SET_FAMILY_VALUES.items()
+        for i, tier in enumerate(TIER_ORDER)
+    },
+)
+
 # Tool upgrade ladder — the spine of a future crafting progression.  Each
 # entry maps a tool family to its ordered tiers (lowest → highest).
 TOOL_LADDERS: dict[str, tuple[str, ...]] = {
     "pickaxe": ("pickaxe", "iron pickaxe", "gold pickaxe", "diamond pickaxe"),
     "light": ("torch", "lantern", "diamond lantern"),
-    "weapon": ("sword", "iron sword", "diamond sword"),
-    "armor": ("shield", "armor", "diamond armor"),
+    "weapon": ("sword",) + tuple(f"{t} sword" for t in TIER_ORDER),
+    "shield": ("shield",) + tuple(f"{t} shield" for t in TIER_ORDER),
+    "helmet": tuple(f"{t} helmet" for t in TIER_ORDER),
+    "chestplate": tuple(f"{t} chestplate" for t in TIER_ORDER),
+    "leggings": tuple(f"{t} leggings" for t in TIER_ORDER),
+    "boots": tuple(f"{t} boots" for t in TIER_ORDER),
 }
 
 

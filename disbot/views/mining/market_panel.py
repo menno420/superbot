@@ -49,13 +49,14 @@ async def build_market_embed(
             value="Nothing to sell — go `!mine` some ore first.",
             inline=False,
         )
-    embed.add_field(
-        name="🛍️ Buy gear",
-        value="\n".join(
-            f"**{name.title()}** — {price} 🪙" for name, price in market.shop_listing()
-        ),
-        inline=False,
-    )
+    # One field per shop section — the set-piece catalogue (41 items) outgrew
+    # a single field's 1024-char cap, and the sections mirror the buy selects.
+    for label, rows in market.shop_sections():
+        embed.add_field(
+            name=f"Buy: {label}",
+            value="\n".join(f"**{name.title()}** — {price} 🪙" for name, price in rows),
+            inline=False,
+        )
     embed.set_footer(
         text=f"Balance: {balance} 🪙  •  Sell all your ore, or pick gear to buy.",
     )
@@ -63,12 +64,24 @@ async def build_market_embed(
 
 
 class _MiningBuySelect(discord.ui.Select):
-    """Gear-shop dropdown — buys one item through the audited market path."""
+    """Gear-shop dropdown — buys one item through the audited market path.
 
-    def __init__(self, user_id: int, guild_id: int, options: list) -> None:
+    One select per shop section (market.shop_sections) keeps every section
+    under Discord's 25-option cap as the catalogue grows.
+    """
+
+    def __init__(
+        self,
+        user_id: int,
+        guild_id: int,
+        options: list,
+        *,
+        placeholder: str = "Buy gear with coins…",
+        row: int = 0,
+    ) -> None:
         self._user_id = user_id
         self._guild_id = guild_id
-        super().__init__(placeholder="Buy gear with coins…", options=options, row=0)
+        super().__init__(placeholder=placeholder, options=options, row=row)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
@@ -95,16 +108,25 @@ class MiningMarketView(HubView):
     def __init__(self, author: discord.Member | discord.User, guild_id: int) -> None:
         super().__init__(author)
         self.guild_id = guild_id
-        options = [
-            discord.SelectOption(label=f"{name.title()} — {price} 🪙", value=name)
-            for name, price in market.shop_listing()
-        ]
-        self.add_item(_MiningBuySelect(author.id, guild_id, options[:25]))
+        for row, (label, rows) in enumerate(market.shop_sections()[:3]):
+            options = [
+                discord.SelectOption(label=f"{name.title()} — {price} 🪙", value=name)
+                for name, price in rows
+            ]
+            self.add_item(
+                _MiningBuySelect(
+                    author.id,
+                    guild_id,
+                    options[:25],
+                    placeholder=f"Buy: {label}…",
+                    row=row,
+                ),
+            )
 
     @discord.ui.button(
         label="💰 Sell All Ore",
         style=discord.ButtonStyle.success,
-        row=1,
+        row=3,
     )
     async def sell_all_btn(
         self,
@@ -122,7 +144,7 @@ class MiningMarketView(HubView):
         embed.color = SUCCESS_COLOR if result.ok else ERROR_COLOR
         await safe_edit(interaction, embed=embed, view=self)
 
-    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=3)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         # Late import keeps the module-load graph acyclic (the hub imports this).
         from views.mining.main_panel import MiningHubView, build_overview_embed

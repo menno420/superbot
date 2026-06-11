@@ -38,8 +38,9 @@ WEAR_PLAN: dict[str, tuple[tuple[str, bool], ...]] = {
     ACTION_MINE: ((equipment.TOOL, False), (equipment.LIGHT, True)),
     ACTION_EXPLORE: ((equipment.LIGHT, True), (equipment.CHARM, False)),
     # Q-0054: combat gear joins the craft→break→repair loop — a PvP duel
-    # ticks each fighter's weapon + armor once (never underground-gated).
-    ACTION_DUEL: ((equipment.WEAPON, False), (equipment.ARMOR, False)),
+    # ticks each fighter's equipped combat pieces once (never
+    # underground-gated).  All six set slots wear (V-16 set-piece model).
+    ACTION_DUEL: tuple((slot, False) for slot in equipment.SET_SLOTS),
 }
 
 
