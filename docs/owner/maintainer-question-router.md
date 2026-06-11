@@ -3747,3 +3747,31 @@ numbers record: `docs/planning/gear-set-numbers-2026-06-11.md`; session log:
 ecosystems* — current mining/coins are untouched until ecosystem #2 work
 actually starts; the substrate extraction (tools/energy/game-XP as shared
 identity) happens then, on the mining patterns proven by that point.
+
+### Q-0093 — Session-end merge mechanics: why did a CI-green PR sit unmerged, and should sessions skip the draft step?
+
+**Area:** Agent workflow / PR lifecycle (refines Q-0052 draft-first + Q-0084 self-merge)
+**Type:** Process correction (owner-observed miss) + owner suggestion
+**Priority:** High (every session's end-state depends on it)
+**Status:** **Answered by diagnosis + rule installed** (2026-06-11) — **Routed** → journal Rules (binding default) · `.sessions/2026-06-11-ai-knowledge-screenshot-fixes.md`; the draft-vs-regular choice stays open for the owner if he still prefers regular PRs after reading the diagnosis.
+
+**Owner (verbatim, 2026-06-11):** "Any reason why you never merged it, maybe
+it's a better idea if a session just opens a regular PR instead of a draft,
+because it seems like you don't get CI notifications about draft PRs"
+
+**Diagnosis (PR #703, same day):** the draft status was NOT the cause. CI ran
+on every push of the draft and went green at 10:01; the platform delivers
+CI **failures**, comments, and reviews as session-waking events — **CI
+success is never delivered for any PR, draft or regular**. The session's
+backstop was a background *unauthenticated* `curl` poll of api.github.com,
+which rate-limited into silent failure (`curl -sf` swallowed the 403s), so
+the loop produced nothing and the session never woke to merge.
+
+**Rule installed (journal → Rules):** a session PR whose only remaining gate
+is CI is merged **in-turn** — poll the authenticated GitHub MCP
+(`pull_request_read get_check_runs`, a few calls over the ~3-5 min suite)
+and merge on green before ending the turn; never park the merge on a
+background poll or on webhook hope. Draft-first (Q-0052) keeps its original
+benefit (a real PR # for docs from the first push); it costs nothing once
+the merge is in-turn. If the owner still prefers regular-from-the-start
+PRs, that is a one-line Q-0052 amendment — flag it in any session.

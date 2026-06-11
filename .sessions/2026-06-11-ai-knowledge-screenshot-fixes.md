@@ -1,6 +1,12 @@
 # 2026-06-11 — AI knowledge: the morning screenshots' 3 live misses fixed (PR #703)
 
-**PR:** [#703](https://github.com/menno420/superbot/pull/703).
+**PR:** [#703](https://github.com/menno420/superbot/pull/703) — **MERGED**
+2026-06-11 (`f29cc4d`), but only after the owner asked why it was still
+sitting CI-green: the session's background unauthenticated-curl CI poll
+rate-limited into silent failure and CI-success is never webhook-delivered
+(draft was NOT the cause). Lesson → journal Rule + **Q-0093** (merge
+in-turn via authenticated MCP polling). Docs follow-up PR carries this
+record.
 **Authoritative docs:** [`docs/health/bug-book.md`](../docs/health/bug-book.md)
 (BUG-0001 recurrence addendum + new BUG-0002 / BUG-0003 — full root causes
 live there, not here) · decode-status boss row (Elite → FETCHED) ·
