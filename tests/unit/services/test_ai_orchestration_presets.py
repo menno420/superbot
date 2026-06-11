@@ -30,6 +30,18 @@ def test_default_is_compatible_byte_identical() -> None:
     assert default.tool_budget == AIToolBudget()
 
 
+def test_default_and_balanced_engage_round_cash_workflow() -> None:
+    """BUG-0001 recurred live (2026-06-11) on a default-profile channel: the
+    deterministic round-cash workflow is the ONLY path that can answer
+    round-cash arithmetic (the faithfulness guard rightly blocks model
+    sums), so the default + balanced presets must declare it. ``no_tools``
+    stays conversational by explicit operator choice."""
+    assert presets.default().workflow == "analyze_execute_verify"
+    assert presets.get("balanced_helper").workflow == "analyze_execute_verify"
+    assert presets.get("btd6_grounded").workflow == "analyze_execute_verify"
+    assert presets.get("no_tools").workflow == "direct_answer"
+
+
 def test_all_presets_default_first() -> None:
     allp = presets.all_presets()
     assert allp[0].key == presets.DEFAULT_PROFILE_KEY

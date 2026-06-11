@@ -165,12 +165,15 @@ _AEV = orch.OrchestrationDecision(
 )
 
 
-async def test_default_profile_never_runs_workflow_prompt_byte_identical(
+async def test_direct_or_tool_decision_never_runs_workflow(
     monkeypatch,
 ) -> None:
-    """A round-cash question under the DEFAULT profile must produce the exact
-    historical request — the workflow is gated on the profile's ``workflow``
-    label, not on the question text."""
+    """A round-cash question under a ``direct_or_tool`` decision must produce
+    the exact historical request — the workflow is gated on the resolved
+    decision's ``workflow`` label, not on the question text. (The *default
+    preset* declares ``analyze_execute_verify`` since the 2026-06-11 BUG-0001
+    recurrence — this pin now covers the label mechanism itself, e.g. a
+    decision resolved from an older persisted profile.)"""
     captured = _wire(monkeypatch, _DEFAULT)
     ledger: list[str] = []
     await nls._invoke_gateway(
