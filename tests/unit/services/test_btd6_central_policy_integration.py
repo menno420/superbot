@@ -185,7 +185,7 @@ def _stub_services_for_btd6(monkeypatch):
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _text: SimpleNamespace(
+        lambda _text, **_kw: SimpleNamespace(
             task=AITask.BTD6_ANSWER,
             route="btd6.answer",
         ),

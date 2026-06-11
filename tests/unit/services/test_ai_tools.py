@@ -1295,3 +1295,27 @@ def test_btd6_answerability_joins_the_grounding_ledger():
     # BTD6_ANSWER path every number in a reply is checked against the ledger,
     # so an unledgered inventory would block the very replies it serves.
     assert "btd6_answerability" in ai_tools.BTD6_GROUNDING_TOOL_NAMES
+
+
+async def test_quantity_laundering_gate_rejects_implausible_counts():
+    """Live miss 2026-06-11: the model misread "10 041" as the number 10,041
+    and passed it as the tool quantity — the tool computed the wrong product,
+    which entered the trusted ledger and self-grounded past the faithfulness
+    guard. Implausible counts now fail closed with a note that teaches the
+    correct "<quantity> <crosspath>" reading."""
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+
+    cost = await h["btd6_difficulty_cost"]({"medium_cost": 300, "quantity": 10_041})
+    assert cost["found"] is False
+    assert "10 towers at crosspath 0-4-1" in cost["note"]
+
+    cumulative = await h["btd6_cumulative_cost"](
+        {"tower": "despo", "crosspath": "0-4-1", "quantity": 10_041},
+    )
+    assert cumulative["found"] is False
+    assert "quantity=10" in cumulative["note"]
+
+    # Plausible bulk counts still work through both arms.
+    ok = await h["btd6_difficulty_cost"]({"medium_cost": 300, "quantity": 999})
+    assert ok["found"] is True
+    assert ok["total_costs_by_difficulty"]["medium"] == 300 * 999

@@ -37,9 +37,15 @@ scoped tools (including owner-gated diagnostics). Source:
 
 ## Current state
 
-- AI runs **degraded in the sandbox** (no provider key): deterministic paths are
-  testable here, but the model actually *calling* a tool must be verified on the
-  maintainer's production bot. See `docs/current-state.md` (stability baseline + gates).
+- **Provider keys live in agent sessions since 2026-06-11 (Q-0086)** — the
+  full model loop (mention → router → grounding → gateway → guard → reply)
+  is sandbox-testable against the test bot; the old "model loop awaits the
+  maintainer's production check" constraint is lifted. Boot recipes (floor-test
+  vs prod-mirror) + the guild-`default_provider`-outranks-env-routing trap:
+  journal Runbook + router **Q-0095**. Model allocation canon: `btd6.answer` +
+  `general.nl_answer` → Haiku 4.5; rest OpenAI. Memory default (off + last-3
+  floor) is owner-confirmed canon (**Q-0094**). Live-found bug classes:
+  `docs/health/bug-book.md` (BUG-0005…0010, first Q-0086 session).
 - **Shipped:** owner-gated `diagnostics_health_snapshot` tool (#541). Setup-advisor
   integration shape: `docs/ai/ai-service-integration-map.md`.
 - **Gate:** AI feature expansion is gated on *all* of bot-wide stability + provider/

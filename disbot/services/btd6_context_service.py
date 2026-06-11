@@ -2397,7 +2397,21 @@ def _crosspath_pricing_lines(
         )
         totals = priced.get("total_costs_by_difficulty")
         if totals:
-            line += f" ×{priced['quantity']} towers → {_format_costs(totals)}."
+            # Spell the notation out AND negate the misreading: the model saw
+            # "10 041" in the user text and multiplied the unit cost by 10,041
+            # despite this line's ×10 total (live miss 2026-06-11 — the wrong
+            # product entered the reply, and a tool call with the misread
+            # quantity can even launder it into the trusted ledger). State the
+            # only correct reading explicitly so the verifier's haystack and
+            # the instruction agree.
+            qty = priced["quantity"]
+            line += (
+                f" ×{qty} towers → {_format_costs(totals)}."
+                f" (The user's '{qty} {priced['code']}' means {qty} towers at "
+                f"crosspath {priced['code']} — it is NOT the single number "
+                f"{qty}{priced['code'].replace('-', '')}. Use these grounded "
+                f"totals verbatim; do not recompute.)"
+            )
         lines.append(line)
     if not crosspaths:
         # "how much do 10 despos cost" — quantity straight before the tower
@@ -2554,7 +2568,12 @@ def _coverage_freshness_signals(
     return signals
 
 
-async def _conversation_carryover_facts(guild_id: int, channel_id: int) -> list[str]:
+async def _conversation_carryover_facts(
+    guild_id: int,
+    channel_id: int,
+    *,
+    current_text: str = "",
+) -> list[str]:
     """Ground the newest recent conversation turn that resolves BTD6 entities.
 
     Deterministic, read-only, no new state: scans the existing per-channel
@@ -2565,13 +2584,23 @@ async def _conversation_carryover_facts(guild_id: int, channel_id: int) -> list[
     the original question got), with channel identity omitted so the
     fallback can never recurse. Plan:
     ``docs/planning/btd6-conversation-grounding-plan-2026-06-10.md``.
+
+    ``current_text``: turns identical to the question being grounded are
+    skipped — a cooldown-denied first attempt is recorded in the floor, and
+    when the question itself resolves a generic entity ("…damage **lead**")
+    that duplicate becomes the "newest entity-bearing turn", grounding the
+    user's own re-ask instead of the conversation subject (live miss
+    2026-06-11, the Geraldo follow-up's second floor).
     """
     from services import ai_conversation_service
 
+    normalized_current = " ".join((current_text or "").lower().split())
     turns = ai_conversation_service.recent_turns(guild_id, channel_id)
     for turn in reversed(turns):  # newest first
         text = (getattr(turn, "text", "") or "").strip()
         if not text:
+            continue
+        if normalized_current and " ".join(text.lower().split()) == normalized_current:
             continue
         prior = await build(text)
         if not prior.facts:
@@ -2591,6 +2620,7 @@ async def build(
     *,
     guild_id: int | None = None,
     channel_id: int | None = None,
+    conversation_followup: bool = False,
 ) -> BTD6Context:
     """Build a BTD6 context bundle for ``message_text``.
 
@@ -2761,9 +2791,26 @@ async def build(
         # _TASK_CONTRACT live-event directive.
         facts.extend(_coverage_freshness_signals(intent, live_rows))
 
-    if not facts and guild_id is not None and channel_id is not None:
+    # Zero-fact fallback — OR a router-detected follow-up. The zero-fact
+    # condition alone misses partial grounding: "which of those can damage
+    # lead" resolves the Lead BLOON (facts non-empty) while the actual
+    # subject (the prior turn's Geraldo items) grounds nothing, so the reply
+    # names the subject and floors (live miss 2026-06-11, first Haiku round).
+    # When the router routed HERE because of the conversation cue
+    # (``conversation_followup``), the carryover facts are always added.
+    if (
+        (not facts or conversation_followup)
+        and guild_id is not None
+        and channel_id is not None
+    ):
         try:
-            facts = await _conversation_carryover_facts(guild_id, channel_id)
+            carryover = await _conversation_carryover_facts(
+                guild_id,
+                channel_id,
+                current_text=message_text,
+            )
+            seen = set(facts)
+            facts.extend(line for line in carryover if line not in seen)
         except Exception as exc:  # noqa: BLE001 — defensive
             logger.debug(
                 "btd6_context_service: carryover grounding unavailable (%s)",

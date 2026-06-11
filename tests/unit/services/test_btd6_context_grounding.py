@@ -813,6 +813,11 @@ async def test_pricing_line_quantity_crosspath_production_phrasing():
     assert "$12,025" in line  # unit on Impoppable
     assert "×10" in line
     assert "$120,250" in line  # the ten, on Impoppable
+    # Live miss 2026-06-11: the model multiplied the unit cost by its own
+    # 10,041 reading despite the ×10 total above. The line must explicitly
+    # negate the misreading and pin the totals as verbatim.
+    assert "NOT the single number 10041" in line
+    assert "do not recompute" in line
 
 
 @pytest.mark.asyncio
