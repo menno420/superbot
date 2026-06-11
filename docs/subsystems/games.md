@@ -1,7 +1,7 @@
 # Games subsystem — folio
 
 > **Status:** `living-ledger` (area index). Source + ADR-002 win.
-> **Last updated:** 2026-06-09.
+> **Last updated:** 2026-06-11.
 
 ## What & where
 
@@ -55,17 +55,34 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   catalogued `game_xp.*` events after commit. Leaderboards: `gamexp` + `crafting`
   rank providers.
 - **Duels tick combat-gear wear (Q-0054, shipped 2026-06-10):** a finished PvP
-  deathmatch wears each human fighter's weapon + armor once
-  (`ACTION_DUEL` in `utils/mining/workshop.py`, applied via
-  `mining_workflow.wear_tick` at the win/timeout paths; bot duels excluded) —
-  combat gear is now fully in the craft→break→repair loop.
+  deathmatch wears each human fighter's equipped combat pieces once
+  (`ACTION_DUEL` in `utils/mining/workshop.py` — all six set slots since the
+  V-16 set model — applied via `mining_workflow.wear_tick` at the win/timeout
+  paths; bot duels excluded) — combat gear is fully in the
+  craft→break→repair loop.
 - **Cross-game character stats: `utils/equipment.py`** is the shared, pure gear→stats
   read model (`EffectiveStats` + the gear catalogue + `compute_stats`). Equipment is
   guild-scoped game state in `mining_equipment` (`utils/db/games/`); one `!equip`/
   `!unequip`/`!gear` path serves every slot. Mining reads `mining_power`/`light_radius`/
-  `depth_access`; **deathmatch reads `damage`/`defense`/`max_health`** from each fighter's
-  equipped combat gear (weapon/armor) — a small, fair edge tunable in `_GEAR`. Add a new
-  game's stat dependency by reading the block, never by importing another game's items.
+  `depth_access`; **deathmatch reads `damage`/`defense`/`max_health`** from the equipped
+  combat gear. **The V-16 set-piece model shipped 2026-06-11 (Q-0092):** 9 slots
+  (weapon/shield/helmet/chestplate/leggings/boots join tool/light/charm), 6 combat
+  families × 5 tiers (bronze<iron<silver<gold<diamond — **bronze + silver are real
+  mining ores** with loot rows), a same-tier full-set bonus (`set_bonus`, never
+  defense), forge recipes per tier ore, and migration 068 folding the legacy
+  "armor" items/slot into the chestplate/shield slots. Numbers are owner-delegated
+  and **pinned by `tests/unit/utils/test_gear_set_numbers.py`** (monotonic ladders +
+  duel-sim win-rate bands); rationale:
+  [`../planning/gear-set-numbers-2026-06-11.md`](../planning/gear-set-numbers-2026-06-11.md).
+  Add a new game's stat dependency by reading the block, never by importing another
+  game's items.
+- **Paper-doll character render: `utils/character_render.py`** (V-16 phase 1, the
+  minebot `/gear` restoration) — a pure, manifest-driven compositor: base figure +
+  per-slot sprites at `SLOT_ANCHORS`, **procedural tier-palette placeholders** until
+  the owner's PNG pack drops into `disbot/data/assets/character/` (naming convention
+  in that directory's README — `{family}_{tier}.png`, hot-swap, no code change).
+  Attached by `!gear` (embed image) and the hub Gear button (ephemeral follow-up);
+  embed fallback always (Pillow-optional, corrupt sprites fall back per-layer).
 - **Mining economy loop** — sell raw resources for coins (faucet, reusing
   `items.item_value`) and buy gear with coins (sink), closing the
   mine→sell→upgrade→descend loop. Pricing is pure (`utils/mining/market.py`); the
