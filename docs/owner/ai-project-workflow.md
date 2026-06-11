@@ -304,6 +304,53 @@ chained** sessions.
   chat each cycle it extends one conversation's context — recreating the
   exact 700K degradation this protocol exists to avoid. The Action supersedes
   it.)*
+
+## 11. Model allocation — spend intelligence where ambiguity lives (2026-06-11)
+
+> **Why this exists:** the owner ran near-200% of weekly plan limits for
+> weeks (2–4 parallel agents, top-tier models on everything) — unsustainable
+> by his own numbers. The fix is not "less work"; it's matching model tier to
+> task shape. **This repo's whole scaffolding (orientation chain, context
+> packs, turn-key plans, context maps, CI mirror, hooks) exists precisely to
+> lower the intelligence floor a session needs** — let it pay for itself.
+
+**The split, by task shape (not by lane):**
+
+- **Fable-class (premium, 1M context) — ~1–2 sessions/week, never parallel
+  with itself:** vision/posture/decision conversations; writing the *plans*
+  other models execute; architecture calls; unknown-cause debugging;
+  reviewing/auditing other agents' merged work; genuinely huge-context
+  marathons. **Not** for grinding through an already-written plan.
+- **Opus — the execution workhorse:** planned `disbot/` PRs (risky runtime
+  code with a clear plan), typical root-cause bug fixes, mid-size refactors,
+  parallel lane execution. Fast mode for snappier turnaround.
+- **Sonnet — the volume tier (underused today):** turn-key recipe execution
+  (the P0C precedent: context_map + grep + recipe carried a whole session),
+  docs/ledger sessions, test-writing against specs, grooming passes, CI
+  babysitting, caretaker/Stage-1 probe duties. The "barely enough context to
+  read my documents" objection is solved by **pointing Sonnet at the
+  generated context packs** (`docs/agent/generated/`, built for exactly
+  this) + one turn-key plan — not by avoiding Sonnet.
+- **Haiku — mechanical chores & cheap subagents:** single-file mechanical
+  changes, summarization-shaped subtasks.
+
+**Four standing levers (any session, any model):**
+
+1. **Plan→execute flip:** premium models write plans; cheaper models execute
+   them. A plan good enough for Sonnet is the *quality bar for plans*.
+2. **Bounded sessions are also the cost fix** (§10): the 700K quality cliff
+   and the burn rate are the same curve — wrap early, chain fresh.
+3. **Subagent model override:** research/search/scout subagents default to
+   Sonnet or Haiku (the Agent tool takes a `model` parameter) — a scout's
+   report reads the same regardless of which tier fetched the pages.
+4. **Parallel discipline:** parallel lanes run on Opus/Sonnet; at most one
+   premium session at a time, and only when its distinct value is needed.
+
+**Owner-stated context (2026-06-11, for calibration):** Max x20 plan; ~200%
+weekly usage on x5 for 3 weeks (grace refreshes granted); 80% of the x20
+week consumed in ~1.5 days after the Fable release with everything pointed
+at the top tier. Target: fit inside the weekly limit without shrinking
+output — the split above plus the levers is the path.
 - **Stage 1 — the scheduled caretaker:** the same workflow on a cron (e.g.
   nightly): smoke probes on the test bot, eval-checklist automatable rows,
   one grooming move, small fixes merged green, morning report. Promotes only
