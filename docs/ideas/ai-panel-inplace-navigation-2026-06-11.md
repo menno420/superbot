@@ -1,4 +1,4 @@
-# AI panels → in-place navigation (owner-requested, 2026-06-11)
+# AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)
 
 > **Status:** `ideas` — **owner-requested direction, not yet planned/scheduled.**
 > Captured mid live-testing session (Q-0086 joint session, 2026-06-11). Not a plan;
@@ -12,6 +12,22 @@
 Context: he was walking the AI enablement flow (`!aimenu` → settings → policy →
 why-no-response) and every navigation step stacked another ephemeral message in
 the channel instead of the panel updating itself.
+
+**Second finding, same walk (owner, after the first live reply):**
+
+> "I think these settings are a little confusing, and they should probably be
+> more centralized as well, because you have to go in different panels to edit
+> certain AI settings"
+
+Live evidence from the router trace: configuring AI for the first time took him
+through **seven distinct panel surfaces in ~10 minutes** (`ai:settings` →
+`ai:policy` → `ai:behavior` → `ai:diagnostics` → `ai:providers` → `ai:tools` →
+`ai:routing`), plus the flat scalar "Edit a setting…" select (10 `ai_*` keys
+with no grouping or guidance). The trap that opened this session — master
+`ai_enabled` ON while `ai_natural_language_enabled` stayed OFF, bot silent —
+is a direct symptom: the two switches that must *both* be on to get a reply
+live in an undifferentiated flat list. (Denial trail in `ai_decision_audit`:
+`guild_not_configured` → `ai_nl_disabled_for_guild` → `no_mention_required`.)
 
 ## Source-confirmed diagnosis (2026-06-11)
 
@@ -48,6 +64,17 @@ messages reserved for confirmations/errors, not navigation.
    swaps (panel → settings / policy / behavior / tools / routing as pages of
    one anchor, mirroring the Settings-hub navigation doctrine — V-02 in
    [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md)).
+1b. **Centralize/structure the settings surface** (the second owner ask): one
+   AI hub page that groups settings by *what the admin is trying to do*
+   ("make the bot reply here" = enabled + natural_language + channel mode +
+   min level as ONE guided flow), instead of seven sibling subpanels + a flat
+   10-key scalar editor. Couplings the UI must make visible: `ai_enabled` ∧
+   `ai_natural_language_enabled` (both required for replies); channel
+   mode vs guild default; orchestration profile vs tools-enabled. Candidate
+   shape: fold the scalar editor's keys into the relevant task pages and keep
+   an "advanced" page for the rest. Should also reconcile with the Settings
+   hub's AI group so there is one obvious front door (today `!aimenu` and
+   `!settings` both reach AI config by different routes).
 2. Chained select menus (the stated exemption reason) are solvable in-place:
    re-render the same message with the next select; the Settings hub's
    channel/enum/role edit flows already do this shape.

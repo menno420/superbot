@@ -25,7 +25,7 @@ Current broad captures:
 
 - [`ai-panel-inplace-navigation-2026-06-11.md`](./ai-panel-inplace-navigation-2026-06-11.md) —
   **owner-requested (2026-06-11 live session):** the AI settings/panel family
-  spawns a new ephemeral message per navigation click and extends raw
+  spawns a new ephemeral message per navigation click, scatters config across seven subpanels + a flat scalar editor (second owner ask: centralize), and extends raw
   `discord.ui.View` behind a blanket `views/ai/` yaml exemption (ratchet-invisible
   debt). Migrate it to the rest-of-bot in-place HubView pattern (V-02 navigation
   doctrine); source-confirmed diagnosis + scope sketch in the file.
