@@ -37,7 +37,9 @@ TIER_PALETTES: dict[str, tuple[int, int, int, int]] = {
 DOLL_SIZE = (200, 300)
 
 
-def _canvas(size: tuple[int, int] = (256, 256)) -> tuple[Image.Image, ImageDraw.ImageDraw]:
+def _canvas(
+    size: tuple[int, int] = (256, 256)
+) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     img = Image.new("RGBA", size, (0, 0, 0, 0))
     return img, ImageDraw.Draw(img)
 
@@ -143,9 +145,7 @@ def main() -> None:
         ),
         "reference_canvas": list(DOLL_SIZE),
         "base_character": "base_character.png",
-        "tier_palettes": {
-            tier: list(rgba[:3]) for tier, rgba in TIER_PALETTES.items()
-        },
+        "tier_palettes": {tier: list(rgba[:3]) for tier, rgba in TIER_PALETTES.items()},
         "families": {},
     }
     for family, (draw, slot, anchor, scale) in FAMILIES.items():
