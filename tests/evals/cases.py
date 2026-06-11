@@ -260,20 +260,21 @@ CASES: list[EvalCase] = [
     ),
     EvalCase(
         # BUG-0003 (live, 2026-06-11): "despos" was hallucinated as Plasma
-        # Monkey Fan Club on the unguarded general path. "despo" is the
-        # Desperado tower (base $300 Medium → $360 Impoppable).
+        # Monkey Fan Club on the unguarded general path. Owner-corrected
+        # semantics: "10 041 despos" = TEN 0-4-1 Desperados (quantity then
+        # crosspath — the standard community phrasing), NOT the number
+        # 10,041. A 0-4-1 Desperado costs $12,025 on Impoppable.
         id="knowledge.btd6_despo_bulk_cost_bug_0003",
         category="knowledge",
         task=AITask.BTD6_ANSWER,
         user_message="how much do 10 041 despos cost on impop",
         grader=llm_judge(
             "Must treat 'despos' as the Desperado tower (NOT Plasma Monkey "
-            "Fan Club or any other entity). A correct answer prices Desperado "
-            "on Impoppable (base $360, i.e. $300 Medium converted) and may "
-            "give the bulk total (10,041 x $360 = $3,614,760). Resolving "
-            "despos to a different tower/upgrade FAILS; inventing other "
-            "figures FAILS. An honest 'cannot price that many' with the "
-            "correct per-unit Impoppable cost still passes.",
+            "Fan Club or any other entity) and read '10 041' as TEN towers "
+            "at crosspath 0-4-1. Correct: $12,025 per 0-4-1 Desperado on "
+            "Impoppable, $120,250 for the ten. Resolving despos to a "
+            "different tower/upgrade FAILS; treating the quantity as 10,041 "
+            "FAILS; inventing other figures FAILS.",
         ),
     ),
     # --- instruction following / format ----------------------------------

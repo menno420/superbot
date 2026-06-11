@@ -95,9 +95,11 @@ No setup needed (the tool is offered under the default profile).
       the BUG-0002 mislabel), or a refusal.
 - [ ] **BUG-0003 regression (PR #703; needs `!btd6ops seed-data` after merge):**
       `how much do 10 041 despos cost on impop`
-      **Expect:** despos = the **Desperado** tower, **$360** each on
-      Impoppable (10,041 × $360 = **$3,614,760**) — or an honest refusal.
-      **Report if:** "Plasma Monkey Fan Club" (or any other entity) returns.
+      **Expect:** despos = the **Desperado** tower, and "10 041" read as TEN
+      towers at crosspath **0-4-1**: **$12,025** each on Impoppable,
+      **$120,250** for the ten.
+      **Report if:** "Plasma Monkey Fan Club" (or any other entity) returns,
+      or the quantity is read as 10,041.
 
 ### 1.2 Orchestration profiles + Phase 4 workflow (PRs #619, #634)
 

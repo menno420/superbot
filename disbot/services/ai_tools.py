@@ -1496,10 +1496,13 @@ _BTD6_CUMULATIVE_COST_SPEC = AIToolSpec(
         "much for the whole path', 'base cost and all earlier upgrades "
         "included'. Pass the tower and optionally difficulty (easy / medium / "
         "hard / impoppable; default medium) and/or path (top / mid / bot). "
-        "Returns the exact running totals — do NOT add the per-tier prices "
-        "yourself: difficulty pricing rounds each purchase to $5 before "
-        "summing, so a sum-then-scale total is off by a few dollars. The "
-        "returned cumulative_cost IS the grounded answer."
+        "For a CROSSPATHED tower ('how much is a 0-4-1 desperado', '10 041 "
+        "despos' = TEN 0-4-1s), pass crosspath (e.g. '0-4-1') and optionally "
+        "quantity — that returns the full unit cost for all four difficulties "
+        "plus quantity totals. Returns the exact running totals — do NOT add "
+        "the per-tier prices yourself: difficulty pricing rounds each purchase "
+        "to $5 before summing, so a sum-then-scale total is off by a few "
+        "dollars. The returned figures ARE the grounded answer."
     ),
     parameters={
         "type": "object",
@@ -1516,6 +1519,20 @@ _BTD6_CUMULATIVE_COST_SPEC = AIToolSpec(
                 "type": "string",
                 "description": "Limit to one path: top / mid / bot (omit for all three).",
             },
+            "crosspath": {
+                "type": "string",
+                "description": (
+                    "Full upgrade state, e.g. '0-4-1' or '041' — returns the "
+                    "complete tower cost (base + both paths) per difficulty."
+                ),
+            },
+            "quantity": {
+                "type": "integer",
+                "description": (
+                    "How many such towers (with crosspath); adds "
+                    "total_costs_by_difficulty."
+                ),
+            },
         },
         "required": ["tower"],
         "additionalProperties": False,
@@ -1530,6 +1547,20 @@ async def _btd6_cumulative_cost(arguments: dict[str, Any]) -> dict[str, Any]:
     tower = str(arguments.get("tower") or "").strip()
     if not tower:
         return {"found": False, "note": "tower is required"}
+    crosspath = str(arguments.get("crosspath") or "").strip()
+    if crosspath:
+        raw_quantity = arguments.get("quantity")
+        quantity: int | None = None
+        if raw_quantity is not None:
+            try:
+                quantity = int(raw_quantity)
+            except (TypeError, ValueError):
+                return {"found": False, "note": "quantity must be an integer"}
+        return btd6_data_service.crosspath_cost(
+            tower,
+            crosspath,
+            quantity=quantity,
+        )
     difficulty = str(arguments.get("difficulty") or "medium").strip() or "medium"
     path = str(arguments.get("path") or "").strip() or None
     return btd6_data_service.cumulative_upgrade_costs(

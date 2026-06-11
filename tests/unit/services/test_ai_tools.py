@@ -310,19 +310,20 @@ async def test_btd6_difficulty_cost_converts_medium_to_all_difficulties():
 
 
 async def test_btd6_difficulty_cost_quantity_grounds_bulk_totals():
-    """BUG-0003 tail: "how much do 10,041 X cost on impop" needs the product
-    in the tool result — model arithmetic is (rightly) blocked by the
-    faithfulness guard, so the tool must carry the total itself."""
+    """Bulk products must come from the tool, not model arithmetic — the
+    faithfulness guard (rightly) blocks any sum absent from the ledger.
+    (Generic quantity support; the BUG-0003 crosspath family is owned by
+    crosspath_cost / btd6_cumulative_cost.)"""
     registry = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2)
 
     result = await registry.handlers["btd6_difficulty_cost"](
-        {"medium_cost": 300, "quantity": 10041},
+        {"medium_cost": 300, "quantity": 25},
     )
     assert result["found"] is True
-    assert result["quantity"] == 10041
+    assert result["quantity"] == 25
     per = result["costs_by_difficulty"]
     totals = result["total_costs_by_difficulty"]
-    assert totals == {d: c * 10041 for d, c in per.items()}
+    assert totals == {d: c * 25 for d, c in per.items()}
 
     # No quantity → no totals key (result shape unchanged for old callers).
     plain = await registry.handlers["btd6_difficulty_cost"]({"medium_cost": 300})
@@ -331,6 +332,27 @@ async def test_btd6_difficulty_cost_quantity_grounds_bulk_totals():
     bad = await registry.handlers["btd6_difficulty_cost"](
         {"medium_cost": 300, "quantity": 0},
     )
+    assert bad["found"] is False
+
+
+async def test_btd6_cumulative_cost_crosspath_quantity():
+    """BUG-0003 (owner-corrected): "10 041 despos" = TEN 0-4-1 Desperados.
+    The crosspath arm returns the full unit cost per difficulty + quantity
+    totals — $12,025 each on Impoppable, $120,250 for the ten."""
+    h = build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).handlers
+    result = await h["btd6_cumulative_cost"](
+        {"tower": "despo", "crosspath": "0-4-1", "quantity": 10},
+    )
+    assert result["found"] is True
+    assert result["tower"] == "Desperado"
+    assert result["code"] == "0-4-1"
+    assert result["unit_costs_by_difficulty"]["impoppable"] == 12_025
+    assert result["total_costs_by_difficulty"]["impoppable"] == 120_250
+    # The path-table arm is unchanged when no crosspath is passed.
+    table = await h["btd6_cumulative_cost"]({"tower": "dart monkey"})
+    assert table["found"] is True and "paths" in table
+    # Illegal codes fail closed.
+    bad = await h["btd6_cumulative_cost"]({"tower": "despo", "crosspath": "5-5-1"})
     assert bad["found"] is False
 
 

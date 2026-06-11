@@ -30,6 +30,19 @@ eval checklist §1.1 (three new regression walks).
    it. Fix: `impop`/`despo` keywords, Desperado `despo` alias, resolver
    plural fold (`alias+"s"`), and `btd6_difficulty_cost` gained `quantity`
    so bulk products are tool-grounded.
+   **Owner correction (same session, second round):** "10 041" is
+   **quantity + crosspath** — *ten 0-4-1 Desperados* — not the number
+   10,041 (my first reading). Built the missing pricing leg:
+   `btd6_data_service.crosspath_cost` (full per-difficulty cost of any
+   legal upgrade state, per-purchase $5 rounding) + a `[btd6_pricing]`
+   grounding line for every named crosspath with the preceding quantity
+   parsed (digits or word numbers — covers the §7.5 acceptance phrasing
+   "five 0-2-4 dart monkeys"), a "N <tower>s" base-bulk line, and
+   `btd6_cumulative_cost` crosspath/quantity tool parity. Correct answer
+   now grounded: $12,025 per 0-4-1 Desperado on Impoppable, $120,250 for
+   ten. Lesson for the log: a number formatted oddly in a domain question
+   ("10 041") is domain notation before it is a thousands separator — ask
+   the domain reading first.
 
 ## Verification
 

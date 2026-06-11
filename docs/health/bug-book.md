@@ -17,30 +17,41 @@
 - **Symptom (verbatim):** "@SuperBot how much do 10 041 despos cost on impop"
   → "A single Plasma Monkey Fan Club (Despo) costs $54,000 on Impoppable.
   For 10,041 Despos: 10,041 × $54,000 = $542,214,000 (542.2 million)."
-- **Expected:** "despo" is community shorthand for the **Desperado** tower
-  (base $300 Medium → $360 Impoppable; 10,041 × $360 = $3,614,760) — or an
-  honest refusal if unresolvable. Never a confident wrong entity.
-- **Root cause (three stacked gaps):** (1) the task router had no cue for the
+- **Expected (owner-corrected 2026-06-11):** "despo" is community shorthand
+  for the **Desperado** tower, and "10 041" is **quantity + crosspath** —
+  *ten 0-4-1 Desperados* (the standard community phrasing), not the number
+  10,041. Correct answer: $12,025 per 0-4-1 Desperado on Impoppable,
+  $120,250 for the ten — or an honest refusal if unresolvable. Never a
+  confident wrong entity.
+- **Root cause (four stacked gaps):** (1) the task router had no cue for the
   message — "impop"/"despos" matched no keyword and no entity alias — so it
   routed `general.nl_answer`, where the model answers from memory; (2) the
   dataset's Desperado aliases (`des`, `cowboy`, `gunslinger`) lacked `despo`,
   and the resolver's single-word alias matching had no plural fold, so even
-  `despo` would have missed the token "despos"; (3) on the general path
-  numbers are never guarded (by design), and the reply-name guard verdict
-  depends on the reply text — the wrong-entity answer shipped. (On current
-  code the name guard *does* block this exact reply with empty facts —
-  fail-closed — but the user-visible result is still a refusal where a
-  correct answer should be.)
+  `despo` would have missed the token "despos"; (3) grounding had **no
+  pricing leg for the `<quantity> <crosspath> <tower>` family** — the
+  crosspath regex fed only a *stats* line, no cost — and the faithfulness
+  guard (rightly) blocks any sum the model derives, so the question was
+  unanswerable on every path; (4) on the general path numbers are never
+  guarded (by design) — the wrong-entity answer shipped.
 - **Fix (this PR):** `impop` + `despo` joined the curated BTD6 keywords
   (substring match covers "impoppable"/"despos"); `despo` added as a
   Desperado alias in towers.json; the resolver's single-word alias matching
   gained a conservative plural fold (`alias + "s"`); boss canonicals joined
-  the router's entity set (see BUG-0002); and `btd6_difficulty_cost` gained
-  an optional `quantity` so the bulk product is tool-grounded, never model
-  arithmetic.
+  the router's entity set (see BUG-0002). **The pricing leg:**
+  `btd6_data_service.crosspath_cost(tower, code, quantity=…)` computes the
+  full per-difficulty cost of any legal upgrade state (each purchase rounded
+  to $5, then summed — the same rule as `cumulative_upgrade_costs`), and
+  grounding emits a `[btd6_pricing]` line for every named crosspath with the
+  preceding quantity parsed (digits or word numbers: "10 041 despos",
+  "five 0-2-4 dart monkeys"); a bare "N <tower>s" grounds the base-tower
+  bulk line. `btd6_cumulative_cost` gained `crosspath`/`quantity` params and
+  `btd6_difficulty_cost` a `quantity` param for the tool lane.
 - **Regression tests:** `test_boss_and_shorthand_questions_route_to_btd6_answer`
   (router) · `test_resolves_single_word_alias_plural` (resolver) ·
-  `test_btd6_difficulty_cost_quantity_grounds_bulk_totals` (tool) ·
+  `test_crosspath_cost_*` (service math) · `test_pricing_line_*` (grounding,
+  verbatim phrasing) · `test_btd6_cumulative_cost_crosspath_quantity` +
+  `test_btd6_difficulty_cost_quantity_grounds_bulk_totals` (tools) ·
   live-battery `knowledge.btd6_despo_bulk_cost_bug_0003`.
 - **Deploy note:** the alias lives in towers.json — prod serves it only after
   `!btd6ops seed-data` (postgres blob lane).

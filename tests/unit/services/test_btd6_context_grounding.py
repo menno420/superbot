@@ -774,6 +774,63 @@ async def test_boss_elite_questions_ground_the_elite_table():
 
 
 @pytest.mark.asyncio
+async def test_pricing_line_quantity_crosspath_production_phrasing():
+    """BUG-0003, owner-corrected (2026-06-11): "how much do 10 041 despos
+    cost on impop" means TEN 0-4-1 Desperados. The grounded pricing line must
+    carry the unit cost AND the ×10 totals — the faithfulness guard blocks
+    any sum the model derives itself."""
+    ctx = await btd6_context_service.build("how much do 10 041 despos cost on impop")
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    line = pricing[0]
+    assert "0-4-1 Desperado" in line
+    assert "$12,025" in line  # unit on Impoppable
+    assert "×10" in line
+    assert "$120,250" in line  # the ten, on Impoppable
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_word_number_quantity():
+    """"five 0-2-4 dart monkeys" (the §7.5 acceptance phrasing) — word
+    numbers count as quantities."""
+    ctx = await btd6_context_service.build(
+        "how much do five 0-2-4 dart monkeys cost on hard",
+    )
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    assert "0-2-4 Dart Monkey" in pricing[0]
+    assert "×5" in pricing[0]
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_unit_only_without_quantity():
+    ctx = await btd6_context_service.build("what does a 0-4-1 desperado cost")
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    assert "$12,025" in pricing[0]
+    assert "×" not in pricing[0]
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_bulk_base_towers_without_crosspath():
+    """"how much do 10 despos cost" — quantity straight before the tower
+    name prices N base towers."""
+    ctx = await btd6_context_service.build("how much do 10 despos cost on impop")
+    pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
+    assert pricing, ctx.facts
+    assert "10×" in pricing[0] and "base tower" in pricing[0]
+    assert "$3,600" in pricing[0]  # 10 × $360 Impoppable
+
+
+@pytest.mark.asyncio
+async def test_pricing_line_absent_for_plain_tower_question():
+    """No quantity, no crosspath → no pricing line (the base-cost fact
+    already covers it; don't bloat grounding)."""
+    ctx = await btd6_context_service.build("tell me about the desperado")
+    assert not any(f.startswith("[btd6_pricing]") for f in ctx.facts)
+
+
+@pytest.mark.asyncio
 async def test_boss_elite_honesty_note_when_dataset_predates_backfill(monkeypatch):
     """A dataset without elite_tiers (a pre-backfill blob in prod) keeps the
     honest "NOT in the dataset" note instead of freelancing a multiplier."""

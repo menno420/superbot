@@ -1887,6 +1887,83 @@ def cumulative_upgrade_costs(
     }
 
 
+def crosspath_cost(
+    tower: str,
+    code: str,
+    *,
+    quantity: int | None = None,
+) -> dict[str, Any]:
+    """Full cost of one tower at upgrade state ``code`` (base + every tier
+    bought on each path), for all four difficulties — plus bulk totals when
+    ``quantity`` is given.
+
+    The community phrasing "10 041 despos" means TEN 0-4-1 Desperados
+    (quantity + crosspath), not the number 10,041 (BUG-0003, owner-corrected
+    2026-06-11). Difficulty pricing scales and rounds **each purchase** to $5
+    before summing (same rule as :func:`cumulative_upgrade_costs`), and a
+    bulk buy is ``quantity`` separate purchases of those already-rounded
+    prices, so ``total = quantity × unit`` exactly.
+    """
+    from utils.btd6 import difficulty_costs, tier_codes
+
+    entry = _find_by_surface(get_dataset().towers, tower)
+    if entry is None:
+        return {"found": False, "note": f"unknown tower: {tower!r}"}
+    normalized = (code or "").replace("-", "").replace(" ", "").strip()
+    if not tier_codes.is_legal(normalized):
+        return {
+            "found": False,
+            "note": f"illegal upgrade code: {code!r} (e.g. 0-4-1 / 041)",
+        }
+    if quantity is not None and quantity <= 0:
+        return {"found": False, "note": "quantity must be > 0"}
+
+    paths = ("top", "mid", "bot")
+    tiers_by_path = dict(zip(paths, (int(d) for d in normalized), strict=True))
+    costs = entry.upgrade_costs or {}
+    names = entry.upgrade_paths or {}
+    medium_steps: list[int] = []
+    top_names: list[str] = []
+    for pkey, depth in tiers_by_path.items():
+        if not depth:
+            continue
+        path_costs = costs.get(pkey, ())
+        if len(path_costs) < depth or not all(path_costs[:depth]):
+            return {
+                "found": False,
+                "note": f"no committed costs for {entry.canonical} {pkey} "
+                f"tiers 1-{depth}",
+            }
+        medium_steps.extend(path_costs[:depth])
+        path_names = names.get(pkey, ())
+        if len(path_names) >= depth:
+            top_names.append(path_names[depth - 1])
+
+    unit = {
+        diff: difficulty_costs.cost_for_difficulty(entry.base_cost, diff)
+        + sum(difficulty_costs.cost_for_difficulty(step, diff) for step in medium_steps)
+        for diff in difficulty_costs.DIFFICULTIES
+    }
+    display_code = "-".join(normalized)
+    result: dict[str, Any] = {
+        "found": True,
+        "tower": entry.canonical,
+        "code": display_code,
+        "upgrade_names": top_names,
+        "unit_costs_by_difficulty": unit,
+        "note": (
+            "unit cost = tower base + every tier bought on each path, each "
+            "purchase rounded to $5 at that difficulty, then summed."
+        ),
+    }
+    if quantity is not None:
+        result["quantity"] = quantity
+        result["total_costs_by_difficulty"] = {
+            diff: cost * quantity for diff, cost in unit.items()
+        }
+    return result
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics
