@@ -451,3 +451,5 @@ Make Hermes consistently useful for SuperBot repo review, doc consistency checks
 ```
 
 This gives the highest value with the lowest risk because it improves behavior without giving Hermes broader write or production access.
+
+**The skill pack has been implemented** — see [`hermes-skills/`](./hermes-skills/README.md) for the six ready-to-use skill prompts.
