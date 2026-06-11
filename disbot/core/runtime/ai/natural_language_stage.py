@@ -268,7 +268,31 @@ class AINaturalLanguageStage:
 
         # Route classification first so the audit row records both
         # the routed task and the resolver decision even when denied.
-        routed = ai_task_router.classify(raw_text)
+        # The conversation cue lets an entity-less follow-up ("does IT
+        # make coins…?") reach the BTD6 path where the carryover
+        # grounding lives — the floor holds only the PRIOR turns here
+        # (this message is recorded after gathering, below). Best-effort:
+        # a cue failure must never block routing.
+        conversation_btd6 = False
+        try:
+            from utils.btd6.keywords import has_btd6_context
+
+            conversation_btd6 = any(
+                has_btd6_context(turn.text)
+                for turn in ai_conversation_service.recent_turns(
+                    guild_id,
+                    channel_id,
+                )
+            )
+        except Exception:  # noqa: BLE001 — defensive: cue only
+            logger.debug(
+                "ai_natural_language_stage: conversation cue unavailable",
+                exc_info=True,
+            )
+        routed = ai_task_router.classify(
+            raw_text,
+            conversation_btd6_context=conversation_btd6,
+        )
 
         if not decision.allowed:
             # Record the triggering mention exactly once before the
@@ -572,10 +596,23 @@ class AINaturalLanguageStage:
             routed.task is AITask.GENERAL_NL_ANSWER
             and btd6_grounding_service.general_path_should_verify(raw_text, reply_text)
         ):
+            # General path only: the channel's recent conversation turns are
+            # legitimate quotable context — "what was the last message about?"
+            # must be answerable by naming entities the conversation already
+            # contains (live miss 2026-06-11: a conversation-meta question
+            # floored to the BTD6 refusal because the reply quoted the prior
+            # Desperado turns). Fresh entities the conversation never named
+            # still floor. The BTD6 path keeps its strict facts∪tools haystack
+            # — numbers there must come from grounding, never from chat.
+            conversation_haystack: tuple[str, ...] = ()
+            if routed.task is AITask.GENERAL_NL_ANSWER:
+                conversation_haystack = tuple(
+                    turn.text for turn in recent_turns if turn.text
+                )
             verdict = btd6_grounding_service.validate_btd6_reply(
                 reply_text,
                 facts=tuple(feature.facts),
-                tool_results=tuple(ledger),
+                tool_results=(*ledger, *conversation_haystack),
                 task=routed.task,
             )
             if not verdict.grounded:
@@ -592,7 +629,7 @@ class AINaturalLanguageStage:
                     btd6_grounding_service.validate_btd6_reply(
                         retry_text,
                         facts=tuple(feature.facts),
-                        tool_results=tuple(ledger),
+                        tool_results=(*ledger, *conversation_haystack),
                         task=routed.task,
                     )
                     if retry_text
@@ -1040,6 +1077,34 @@ async def _serve_btd6_floor(
                 exc_info=True,
             )
         return "replied", PolicyDenialReason.NONE
+
+    # A question that is not itself BTD6-themed (the guard fired off the
+    # REPLY's content — e.g. a conversation-meta question whose answer named
+    # game entities) must not get the version-stamped BTD6 data refusal: it
+    # reads as a non-sequitur (live miss 2026-06-11, "what is the last
+    # message you can see"). Send an honest generic floor instead.
+    try:
+        from utils.btd6.keywords import has_btd6_context
+
+        question_is_btd6 = has_btd6_context(raw_text)
+    except Exception:  # noqa: BLE001 — defensive: keep the strict refusal
+        question_is_btd6 = True
+    if not question_is_btd6:
+        try:
+            await message.channel.send(
+                "I drafted an answer, but it included game details I can't "
+                "verify, so I held it back. Try rephrasing — or ask me about "
+                "a specific tower, hero, or paragon and I'll use real data.",
+                allowed_mentions=discord.AllowedMentions.none(),
+                reference=message.to_reference(fail_if_not_exists=False),
+            )
+        except discord.HTTPException:
+            logger.warning(
+                "generic guard floor send failed for message=%s",
+                getattr(message, "id", None),
+                exc_info=True,
+            )
+        return "denied", PolicyDenialReason.GROUNDING_FAILED
 
     await _send_btd6_refusal(message)
     return "denied", PolicyDenialReason.GROUNDING_FAILED

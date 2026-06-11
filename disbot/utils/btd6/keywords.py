@@ -67,6 +67,11 @@ BTD6_CONTEXT_KEYWORDS: tuple[str, ...] = (
     # The Desperado shorthand players use ("despo(s)") — distinctive, never
     # ordinary English; also a towers.json alias so grounding resolves it.
     "despo",
+    # Farm-economy questions ("how much money does a 420 farm make", "what
+    # does banana central cost") carried no other cue (live miss 2026-06-11).
+    # "farm" alone is too collision-prone (mining/harvest chat) — the router
+    # rescues it behind a money cue; "banana" is distinctive enough bare.
+    "banana",
 )
 
 

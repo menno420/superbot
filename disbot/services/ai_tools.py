@@ -814,15 +814,30 @@ async def _btd6_difficulty_cost(arguments: dict[str, Any]) -> dict[str, Any]:
     }
     raw_quantity = arguments.get("quantity")
     if raw_quantity is not None:
-        # Bulk pricing ("how much do 10,041 despos cost on impop", BUG-0003):
-        # the product must come from the tool, not model arithmetic — the
-        # faithfulness guard rightly blocks numbers absent from the ledger.
+        # Bulk pricing ("how much do 10 041 despos cost on impop", BUG-0003 —
+        # owner-corrected: that notation is TEN 0-4-1 towers): the product must
+        # come from the tool, not model arithmetic — the faithfulness guard
+        # rightly blocks numbers absent from the ledger.
         try:
             quantity = int(raw_quantity)
         except (TypeError, ValueError):
             return {"found": False, "note": "quantity must be an integer"}
         if quantity <= 0:
             return {"found": False, "note": "quantity must be > 0"}
+        if quantity > 999:
+            # An absurd count is almost always the "10 041" notation misread
+            # as one number — without this gate the tool computes the wrong
+            # product and LAUNDERS it into the trusted ledger, where the
+            # faithfulness guard then approves it (live miss 2026-06-11).
+            return {
+                "found": False,
+                "note": (
+                    f"quantity {quantity} is not a plausible tower count. "
+                    "If the user wrote something like '10 041', that means "
+                    "10 towers at crosspath 0-4-1 — retry with quantity=10 "
+                    "and the crosspath upgrade costs."
+                ),
+            }
         result["quantity"] = quantity
         result["total_costs_by_difficulty"] = {
             difficulty: cost * quantity for difficulty, cost in per_difficulty.items()
@@ -1556,6 +1571,19 @@ async def _btd6_cumulative_cost(arguments: dict[str, Any]) -> dict[str, Any]:
                 quantity = int(raw_quantity)
             except (TypeError, ValueError):
                 return {"found": False, "note": "quantity must be an integer"}
+            if quantity > 999:
+                # Same laundering gate as btd6_difficulty_cost: an absurd
+                # count is the "10 041" notation misread as one number; the
+                # product would enter the trusted ledger and self-ground.
+                return {
+                    "found": False,
+                    "note": (
+                        f"quantity {quantity} is not a plausible tower count. "
+                        "If the user wrote something like '10 041', that "
+                        "means 10 towers at crosspath 0-4-1 — retry with "
+                        "quantity=10."
+                    ),
+                }
         return btd6_data_service.crosspath_cost(
             tower,
             crosspath,

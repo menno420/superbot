@@ -216,3 +216,93 @@ def test_r_shorthand_does_not_over_route(text):
     assert (
         decision.task is AITask.GENERAL_NL_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Conversation-followup leg (live miss 2026-06-11): "does it make coins
+    # at the end of the round?" — the checklist's own Tier-1.4 phrase — has
+    # no BTD6 token, so the #668 carryover grounding (hosted on the BTD6
+    # path) was unreachable. With the caller-observed conversation cue, a
+    # pronoun follow-up question routes to BTD6 where carryover resolves it.
+    [
+        "does it make coins at the end of the round?",
+        "does it earn money?",
+        "how much do they cost",
+        "is it any good against camo",
+        "which of those items can damage lead",
+    ],
+)
+def test_pronoun_followup_routes_btd6_with_conversation_cue(text):
+    decision = ai_task_router.classify(text, conversation_btd6_context=True)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "does it make coins at the end of the round?",
+        "does it earn money?",
+    ],
+)
+def test_pronoun_followup_stays_general_without_cue(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # The cue must NOT btd6-route standalone questions with no follow-up
+    # pronoun — a conversation-meta question in a BTD6-heavy channel stays
+    # general ("what is the last message you can see", live 2026-06-11).
+    [
+        "what is the last message you can see",
+        "can you tell me about the server",
+        "thanks, that was great",  # pronoun "that" excluded on purpose
+    ],
+)
+def test_conversation_cue_does_not_route_standalone_questions(text):
+    decision = ai_task_router.classify(text, conversation_btd6_context=True)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Short-alias + money-cue leg ("420 farm" live miss 2026-06-11): "farm"
+    # is dropped from the entity matcher (≤4 chars) so the farm-economy
+    # question froze the general path with unguarded freelance numbers.
+    [
+        "how much money does a 420 farm make",
+        "how much cash does a banana farm make per round",
+        "how much do farms make",
+        "list all the ways you can increase your farm income",
+    ],
+)
+def test_farm_money_questions_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # The farm leg must not swallow the mining/economy chat that shares the
+    # word: no money cue (cash|money|how much) → stays general.
+    [
+        "how do i farm coins",
+        "best way to farm xp in the mine",
+        "my farm is doing great",
+    ],
+)
+def test_farm_without_money_cue_stays_general(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"

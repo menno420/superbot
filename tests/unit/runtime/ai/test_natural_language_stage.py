@@ -139,7 +139,7 @@ def stub_services(monkeypatch):
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _text: SimpleNamespace(
+        lambda _text, **_kw: SimpleNamespace(
             task=AITask.GENERAL_NL_ANSWER,
             route="general.nl_answer",
         ),
@@ -438,7 +438,7 @@ async def test_send_failure_video_task_writes_video_send_failed(
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _t: SimpleNamespace(task=AITask.VIDEO_DESCRIBE, route="video.describe"),
+        lambda _t, **_kw: SimpleNamespace(task=AITask.VIDEO_DESCRIBE, route="video.describe"),
     )
     monkeypatch.setattr(
         mod,
@@ -1161,7 +1161,7 @@ async def test_stage_appends_btd6_live_state_block_for_btd6_answer(
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _text: SimpleNamespace(
+        lambda _text, **_kw: SimpleNamespace(
             task=AITask.BTD6_ANSWER,
             route="btd6.answer",
         ),
@@ -1272,7 +1272,7 @@ async def test_stage_continues_when_btd6_gather_raises(monkeypatch, stub_service
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _text: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
+        lambda _text, **_kw: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
     )
     monkeypatch.setattr(
         bot_knowledge_service,
@@ -1316,7 +1316,7 @@ def _route_btd6(monkeypatch):
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _t: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
+        lambda _t, **_kw: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
     )
 
 
@@ -1544,7 +1544,10 @@ async def test_general_numeric_answer_is_not_refused(monkeypatch, stub_services)
 @pytest.mark.asyncio
 async def test_general_path_btd6_leak_is_refused(monkeypatch, stub_services):
     """A general reply that names a distinctive multi-word BTD6 entity it cannot
-    ground is refused even though the router missed it."""
+    ground is refused even though the router missed it. The prompt here is NOT
+    itself BTD6-themed, so the floor is the generic guard copy — the
+    version-stamped BTD6 refusal read as a non-sequitur on such questions
+    (live miss 2026-06-11, "what is the last message you can see")."""
     from services import ai_gateway
 
     _stub_facts(monkeypatch, ())
@@ -1556,6 +1559,72 @@ async def test_general_path_btd6_leak_is_refused(monkeypatch, stub_services):
 
     msg = _make_message()
     msg.content = "tell me something cool"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert "game details I can't verify" in _sent_text(msg)
+    assert stub_services[-1]["decision"] == "denied"
+
+
+@pytest.mark.asyncio
+async def test_general_path_reply_may_quote_recent_conversation(
+    monkeypatch,
+    stub_services,
+):
+    """A general reply may name BTD6 entities the recent conversation already
+    contains — the conversation floor is part of the guard's trusted haystack
+    on the general path (live miss 2026-06-11: "what is the last message you
+    can see" floored to the BTD6 refusal for quoting the prior Desperado
+    turns). Entities the conversation never named still floor."""
+    from services import ai_gateway
+
+    _stub_facts(monkeypatch, ())
+    _gather_recent_turns_returns(
+        monkeypatch,
+        [
+            SimpleNamespace(
+                user_id=11,
+                role="assistant",
+                text="A 0-4-1 Desperado costs $12,025 on Impoppable.",
+            ),
+        ],
+    )
+
+    async def fake_execute(_request):
+        return _make_response(
+            text="Your last message asked about the Desperado tower's cost.",
+        )
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    msg.content = "what is the last message you can see"
+    await AINaturalLanguageStage().process(_make_ctx(msg))
+
+    assert "Desperado" in _sent_text(msg)
+    assert stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_general_path_btd6_themed_leak_keeps_version_refusal(
+    monkeypatch,
+    stub_services,
+):
+    """A BTD6-themed question whose general-path reply cannot be grounded
+    still gets the version-stamped refusal (the strict copy is correct when
+    the user actually asked about the game)."""
+    from services import ai_gateway
+
+    _stub_facts(monkeypatch, ())
+
+    async def fake_execute(_request):
+        return _make_response(text="The Apex Plasma Master costs 5000000.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    msg = _make_message()
+    # "banana" is a curated BTD6 context keyword — themed, but routed general
+    # in this stub setup.
+    msg.content = "tell me something cool about banana farming strategies"
     await AINaturalLanguageStage().process(_make_ctx(msg))
 
     assert "verified BTD6 data" in _sent_text(msg)

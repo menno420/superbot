@@ -3775,3 +3775,24 @@ background poll or on webhook hope. Draft-first (Q-0052) keeps its original
 benefit (a real PR # for docs from the first push); it costs nothing once
 the merge is in-turn. If the owner still prefers regular-from-the-start
 PRs, that is a one-line Q-0052 amendment — flag it in any session.
+
+### Q-0094 — AI conversation memory default: off, except an always-on last-3-messages floor
+
+**Area:** AI natural-language / conversation memory / product default
+**Type:** Owner directive (stated mid live-testing, first Q-0086 session)
+**Priority:** Settled — records canon so it is never "cleaned up" away
+**Status:** **Answered** (2026-06-11) — **already the implemented design**; pinned here as owner-confirmed canon. Routed → `docs/subsystems/ai.md` (current state), bug-book context for BUG-0006/0007.
+
+**Owner (verbatim, 2026-06-11):** "AI memory should be off by default except
+for the last 3 messages so it always feels natural in direct follow ups"
+
+**Source state at the time:** `services/ai_conversation_service.py`
+`MIN_FLOOR_TURNS = 3` — the memory *window* defaults to 0 (off), but the last
+3 turns per channel are always retained and fed to the model
+(`ai_memory_service.gather_recent_turns` honours the floor regardless of the
+window). The owner's directive and the shipped design coincide exactly; no
+change was needed. **Scope note:** the "unnatural follow-ups" he observed in
+the same session were NOT memory — the routing/guard layer discarded the
+context the model could already see (BUG-0006/BUG-0007, fixed same session).
+Any future proposal to change the floor (size or existence) is an owner
+decision against THIS entry.

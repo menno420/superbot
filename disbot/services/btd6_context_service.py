@@ -2397,7 +2397,21 @@ def _crosspath_pricing_lines(
         )
         totals = priced.get("total_costs_by_difficulty")
         if totals:
-            line += f" ×{priced['quantity']} towers → {_format_costs(totals)}."
+            # Spell the notation out AND negate the misreading: the model saw
+            # "10 041" in the user text and multiplied the unit cost by 10,041
+            # despite this line's ×10 total (live miss 2026-06-11 — the wrong
+            # product entered the reply, and a tool call with the misread
+            # quantity can even launder it into the trusted ledger). State the
+            # only correct reading explicitly so the verifier's haystack and
+            # the instruction agree.
+            qty = priced["quantity"]
+            line += (
+                f" ×{qty} towers → {_format_costs(totals)}."
+                f" (The user's '{qty} {priced['code']}' means {qty} towers at "
+                f"crosspath {priced['code']} — it is NOT the single number "
+                f"{qty}{priced['code'].replace('-', '')}. Use these grounded "
+                f"totals verbatim; do not recompute.)"
+            )
         lines.append(line)
     if not crosspaths:
         # "how much do 10 despos cost" — quantity straight before the tower

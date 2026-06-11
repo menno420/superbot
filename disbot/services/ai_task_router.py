@@ -171,7 +171,11 @@ def _looks_like_btd6_entity(lowered: str) -> bool:
 # round tokens read as BTD6 rounds talk on their own; a single one needs a
 # money cue so "there r 5 of us" stays general.
 _R_ROUND_RE = re.compile(r"\br\s?\d{1,3}\b")
-_MONEY_CUE_RE = re.compile(r"\bcash\b|\bmoney\b|\bhow much\b")
+# "income"/"earn" joined 2026-06-11: "list all the ways you can increase your
+# farm income" carried no other money cue and froze the general path.
+_MONEY_CUE_RE = re.compile(
+    r"\bcash\b|\bmoney\b|\bhow much\b|\bincome\b|\bearns?\b|\bearning\b",
+)
 
 
 def _looks_like_round_shorthand(lowered: str) -> bool:
@@ -179,6 +183,43 @@ def _looks_like_round_shorthand(lowered: str) -> bool:
     if len(hits) >= 2:
         return True
     return bool(hits) and _MONEY_CUE_RE.search(lowered) is not None
+
+
+# Short tower aliases the entity matcher deliberately drops (≤4 chars — too
+# collision-prone bare), rescued here only WITH a money cue: "how much money
+# does a 420 farm make" carried no other BTD6 signal and froze the general
+# path (live miss 2026-06-11 — unguarded freelance income numbers). The cue
+# requirement keeps "how do I farm coins" (mining) and ordinary chat general.
+_SHORT_ALIAS_MONEY_TOKENS = frozenset({"farm", "farms"})
+
+# Entity-less follow-up shape ("does IT make coins at the end of the round?").
+# Routes BTD6 only when the caller says the recent conversation was BTD6
+# (``conversation_btd6_context``) — the conversation-carryover grounding
+# (services.btd6_context_service, PR #668) lives on the BTD6 path and was
+# unreachable for exactly this shape: text-only classification cannot see the
+# conversation (live miss 2026-06-11, the checklist's own Tier-1.4 phrase).
+# "those"/"these" cover item-list follow-ups ("which of those items can
+# damage lead", live 2026-06-11); bare "that" stays out — too common in
+# ordinary chat ("what was that?") for a low-confidence route.
+_FOLLOWUP_PRONOUN_RE = re.compile(r"\b(?:it|its|they|them|those|these)\b")
+_QUESTION_SHAPE_RE = re.compile(
+    r"^(?:does|do|did|is|are|was|were|can|could|will|would|should|"
+    r"what|how|why|when|which|who)\b|\?\s*$",
+)
+
+
+def _looks_like_short_alias_money(lowered: str) -> bool:
+    if _MONEY_CUE_RE.search(lowered) is None:
+        return False
+    tokens = frozenset(re.findall(r"[a-z0-9]+", lowered))
+    return bool(tokens & _SHORT_ALIAS_MONEY_TOKENS)
+
+
+def _looks_like_conversation_followup(lowered: str) -> bool:
+    stripped = lowered.strip()
+    return bool(
+        _FOLLOWUP_PRONOUN_RE.search(stripped) and _QUESTION_SHAPE_RE.search(stripped),
+    )
 
 
 @dataclass(frozen=True)
@@ -192,6 +233,7 @@ def classify(
     message_text: str,
     *,
     channel_is_strategy_intake: bool = False,
+    conversation_btd6_context: bool = False,
 ) -> RoutedTask:
     """Return the routed task for ``message_text``.
 
@@ -203,6 +245,14 @@ def classify(
     bound to ``btd6.strategy_submission_channel``) and the message
     looks BTD6-related, route to :attr:`AITask.BTD6_STRATEGY_REVIEW`
     so the message flows into the strategy review pipeline.
+
+    ``conversation_btd6_context=True`` means the caller observed BTD6
+    content in the channel's recent conversation floor. It does NOT
+    force the BTD6 route — it only lets an entity-less *follow-up
+    question* ("does it make coins at the end of the round?") reach
+    the BTD6 path, where the conversation-carryover grounding can
+    resolve the pronoun. Standalone non-BTD6 questions (no follow-up
+    pronoun) stay general regardless of the flag.
     """
     lowered = (message_text or "").lower()
     looks_btd6 = any(keyword in lowered for keyword in _BTD6_KEYWORDS)
@@ -210,6 +260,10 @@ def classify(
         looks_btd6 = _looks_like_btd6_entity(lowered)
     if not looks_btd6:
         looks_btd6 = _looks_like_round_shorthand(lowered)
+    if not looks_btd6:
+        looks_btd6 = _looks_like_short_alias_money(lowered)
+    if not looks_btd6 and conversation_btd6_context:
+        looks_btd6 = _looks_like_conversation_followup(lowered)
     if channel_is_strategy_intake and looks_btd6:
         return RoutedTask(
             task=AITask.BTD6_STRATEGY_REVIEW,
