@@ -181,4 +181,9 @@ protocolized fossil of those interviews: user research where the users were
 AIs. He also notes the inversion every agent should sit with once: a fresh
 session can never perceive the youth of its own world — "each new session
 would never know that this system was someday not there yet" — which is
-precisely why this paragraph exists.
+precisely why this paragraph exists. **And the founding moment itself
+(owner, 2026-06-11):** the memory system crystallized out of *a natural
+conversation with a session about its own ephemerality* — that nothing said
+would be remembered unless documented — which "finalized the idea that had
+been lingering for a while." The system's first cause was a session being
+honest about its own death; every doc here descends from that exchange.
