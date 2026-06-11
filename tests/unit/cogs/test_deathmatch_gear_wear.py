@@ -11,9 +11,11 @@ from cogs.deathmatch_cog import _tick_duel_gear_wear
 from utils.mining.workshop import ACTION_DUEL, WEAR_PLAN, WearReport
 
 
-def test_duel_wear_plan_covers_weapon_and_armor_only():
+def test_duel_wear_plan_covers_every_combat_set_slot():
+    from utils import equipment
+
     slots = {slot for slot, _ in WEAR_PLAN[ACTION_DUEL]}
-    assert slots == {"weapon", "armor"}
+    assert slots == set(equipment.SET_SLOTS)
     # Never underground-gated — duels happen anywhere.
     assert all(not underground for _, underground in WEAR_PLAN[ACTION_DUEL])
 

@@ -41,8 +41,16 @@ def test_roll_mine_loot_pickaxe_doubles_amount():
     assert with_pickaxe == no_pickaxe * 2
 
 
-def test_ore_weights_contain_all_four_resources():
-    assert set(rewards.ORE_WEIGHTS) == {"stone", "iron", "gold", "diamond"}
+def test_ore_weights_contain_all_six_resources():
+    # Bronze + silver joined the ladder with the V-16 gear sets (Q-0092).
+    assert set(rewards.ORE_WEIGHTS) == {
+        "stone",
+        "bronze",
+        "iron",
+        "silver",
+        "gold",
+        "diamond",
+    }
 
 
 def test_ore_weights_for_depth_zero_equals_surface_table():
@@ -55,10 +63,14 @@ def test_deeper_bands_favor_rarer_ore():
     surface = rewards.ore_weights_for_depth(0)
     deep = rewards.ore_weights_for_depth(2)
     assert deep["stone"] < surface["stone"]  # stone gets rarer with depth
+    assert deep["bronze"] < surface["bronze"]  # bronze is the shallow metal
     assert deep["diamond"] > surface["diamond"]  # rare ore gets likelier
     assert deep["gold"] > surface["gold"]
-    # Same four ores at every depth — callers never see an unknown drop.
+    assert deep["silver"] > surface["silver"]
+    # Same six ores at every depth — callers never see an unknown drop.
     assert set(deep) == set(rewards.ORE_WEIGHTS)
+    # Every weight stays positive at the deepest band.
+    assert all(w > 0 for w in rewards.ore_weights_for_depth(3).values())
 
 
 def test_roll_mine_loot_keeps_known_ore_names_at_every_depth():

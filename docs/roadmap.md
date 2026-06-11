@@ -1,7 +1,7 @@
 # SuperBot — Implementation Roadmap
 
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
-> what order" index. **Last updated:** 2026-06-10.
+> what order" index. **Last updated:** 2026-06-11.
 >
 > **What this is:** a thin router over the detailed plans. Each row is a one-line
 > description + a link to the **authoritative plan** and the area **folio** — it restates
@@ -65,15 +65,18 @@
 > 2026-06-10/11 in-conversation** (the [dossier](ideas/competitive-teardown-2026-06-10.md):
 > 30 scored harvest candidates, retention engines, V-15 surfaces live-verified;
 > **ecosystem-#2 verdict = fishing, owner ratification pending**); remaining work =
-> structure the top harvest picks into plans through the conveyor · 6) **the
-> gear-lane slice (V-16)**: combat-gear item families (⚔️/🛡️ slots are
-> reserved-but-empty today; duels already read the stats) + the **paper-doll
-> character renderer** (PIL compositor over a sprite manifest — gated on the
-> owner's art-direction pick) + gear-picker stat previews. Build-ready
-> alternates: myprofile PR A · survival **P0 balance-simulation harness (Q-0087)**
-> · duel-XP quick-win · **gap items 2/4/5 (owner-granted 2026-06-11: per-user
-> data export/erasure · session telemetry · AI spend metering — implement or
-> prep; [gap file](ideas/gap-analysis-2026-06-11.md))**.
+> structure the top harvest picks into plans through the conveyor · 6) ~~the
+> gear-lane slice (V-16)~~ **EXECUTED 2026-06-11 (PR #702, full Q-0092 scope)**:
+> 9-slot set-piece model + same-tier set bonus · bronze/silver ores · the 30-item
+> numbers tables (sim-pinned —
+> [gear-set-numbers](planning/gear-set-numbers-2026-06-11.md)) · picker stat
+> previews · the paper-doll compositor with placeholder sprites (owner's PNG pack
+> hot-swaps via `disbot/assets/gear/`); **V-16 phase 2 next** = the
+> owner's asset pack + anchor tuning + (later) doll-in-stat-card composition.
+> Build-ready alternates: myprofile PR A · survival **P0 balance-simulation
+> harness (Q-0087)** · duel-XP quick-win · **gap items 2/4/5 (owner-granted
+> 2026-06-11: per-user data export/erasure · session telemetry · AI spend
+> metering — implement or prep; [gap file](ideas/gap-analysis-2026-06-11.md))**.
 
 ---
 

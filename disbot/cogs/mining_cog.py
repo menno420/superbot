@@ -302,7 +302,7 @@ class MiningCog(commands.Cog):
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
     async def unequip(self, ctx, *, slot: str = None):
-        """Clear an equipment slot (tool / light / charm)."""
+        """Clear an equipment slot (tool, light, charm, or a combat piece)."""
         if not slot:
             return await ctx.send(
                 f"Specify a slot to clear: {', '.join(equipment.SLOTS)}.",
@@ -348,10 +348,41 @@ class MiningCog(commands.Cog):
             ),
             inline=False,
         )
+        tier = equipment.active_set_tier(equipped)
+        progress = equipment.set_progress(equipped)
+        if tier is not None:
+            embed.add_field(
+                name="✨ Set bonus",
+                value=f"**{tier.title()} set complete** — bonus active!",
+                inline=False,
+            )
+        elif progress is not None:
+            embed.add_field(
+                name="🧩 Set progress",
+                value=(
+                    f"{progress[0].title()} set: **{progress[1]}/"
+                    f"{len(equipment.SET_SLOTS)}** pieces"
+                ),
+                inline=False,
+            )
         embed.set_footer(
             text="Tip: !minemenu → 🧰 Gear equips with clicks (and ✨ Equip Best).",
         )
-        await ctx.send(embed=embed)
+        # V-16: the paper-doll render (placeholder sprites until the owner's
+        # pack lands in assets/gear/) — embed always kept.
+        import io
+
+        from utils.character_render import render_character_for
+
+        png = render_character_for(equipped)
+        if png is not None:
+            embed.set_image(url="attachment://character_doll.png")
+            await ctx.send(
+                embed=embed,
+                file=discord.File(io.BytesIO(png), filename="character_doll.png"),
+            )
+        else:
+            await ctx.send(embed=embed)
 
     @commands.command(
         name="character",

@@ -207,7 +207,7 @@ async def test_apply_buy_insufficient_funds_grants_nothing():
         "services.mining_workflow.db.update_mining_item",
         new_callable=AsyncMock,
     ) as mock_add:
-        result = await mining_workflow.buy(1, 1, "armor")
+        result = await mining_workflow.buy(1, 1, "iron chestplate")
     assert not result.ok
     mock_add.assert_not_awaited()  # no free item when you can't pay
 

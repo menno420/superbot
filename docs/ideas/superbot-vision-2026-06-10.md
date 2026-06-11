@@ -192,7 +192,15 @@ section is new work** — it's the ground the vision stands on.
   teardown should also catalog each bot's export/API surface — that catalog
   *is* the migration design's input.
 - **V-16 — The rendered character: paper-doll gear display (added 2026-06-11,
-  round 7).** Owner-voice: "the goal should be to actually render a base
+  round 7).** **PHASE 1 SHIPPED 2026-06-11 (PR #702, Q-0092 full scope):**
+  the 9-slot set-piece model + set bonus, bronze/silver ores + per-tier forge
+  recipes, the sim-pinned 30-item tables
+  ([numbers record](../planning/gear-set-numbers-2026-06-11.md)), picker stat
+  previews, and the compositor (`utils/character_render.py`) with procedural
+  placeholder sprites — **the owner's PNG pack now hot-swaps by dropping files
+  into `disbot/assets/gear/`** (README there documents the naming).
+  Phase 2 = the real pack + anchor tuning + (later) doll-in-stat-card.
+  Owner-voice: "the goal should be to actually render a base
   character and show/display the equipped items on the correct positions."
   **This is a RESTORATION, not an invention (Discord screenshots, April
   2025):** the ancestor bot (minebot, same Galaxy Bot identity) **already

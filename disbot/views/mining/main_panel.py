@@ -492,11 +492,18 @@ class MiningHubView(PersistentView):
             )
             return
         # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.gear_panel import MiningGearView, build_gear_embed
+        from views.mining.gear_panel import (
+            MiningGearView,
+            build_gear_embed,
+            send_character_doll,
+        )
 
         embed = await build_gear_embed(interaction.user.id, interaction.guild_id)
         view = await MiningGearView.create(interaction.user, interaction.guild_id)
         await safe_edit(interaction, embed=embed, view=view)
+        # V-16: the paper-doll render rides along as an ephemeral follow-up
+        # (the _send_inventory_card pattern — additive, embed always kept).
+        await send_character_doll(interaction)
 
     @discord.ui.button(
         label="📖 Recipes",

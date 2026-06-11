@@ -26,9 +26,6 @@
         "wood": 6,
         "iron": 1
     },
-    "armor": {
-        "iron": 4
-    },
     "stone hut": {
         "stone": 5
     },
@@ -63,8 +60,96 @@
         "diamond": 2,
         "wood": 1
     },
-    "diamond armor": {
-        "diamond": 4,
+    "bronze sword": {
+        "bronze": 2,
+        "wood": 1
+    },
+    "silver sword": {
+        "silver": 2,
+        "wood": 1
+    },
+    "gold sword": {
+        "gold": 2,
+        "wood": 1
+    },
+    "bronze shield": {
+        "bronze": 2,
+        "wood": 2
+    },
+    "iron shield": {
+        "iron": 2,
+        "wood": 2
+    },
+    "silver shield": {
+        "silver": 2,
+        "wood": 2
+    },
+    "gold shield": {
+        "gold": 2,
+        "wood": 2
+    },
+    "diamond shield": {
+        "diamond": 2,
+        "wood": 2
+    },
+    "bronze helmet": {
+        "bronze": 3
+    },
+    "iron helmet": {
+        "iron": 3
+    },
+    "silver helmet": {
+        "silver": 3
+    },
+    "gold helmet": {
+        "gold": 3
+    },
+    "diamond helmet": {
+        "diamond": 3
+    },
+    "bronze chestplate": {
+        "bronze": 5
+    },
+    "iron chestplate": {
+        "iron": 5
+    },
+    "silver chestplate": {
+        "silver": 5
+    },
+    "gold chestplate": {
+        "gold": 5
+    },
+    "diamond chestplate": {
+        "diamond": 5
+    },
+    "bronze leggings": {
+        "bronze": 4
+    },
+    "iron leggings": {
+        "iron": 4
+    },
+    "silver leggings": {
+        "silver": 4
+    },
+    "gold leggings": {
+        "gold": 4
+    },
+    "diamond leggings": {
+        "diamond": 4
+    },
+    "bronze boots": {
+        "bronze": 2
+    },
+    "iron boots": {
         "iron": 2
+    },
+    "silver boots": {
+        "silver": 2
+    },
+    "gold boots": {
+        "gold": 2
+    },
+    "diamond boots": {
+        "diamond": 2
     }
 }

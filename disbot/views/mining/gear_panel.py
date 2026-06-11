@@ -28,8 +28,28 @@ _SLOT_EMOJI = {
     equipment.LIGHT: "💡",
     equipment.CHARM: "🍀",
     equipment.WEAPON: "⚔️",
-    equipment.ARMOR: "🛡️",
+    equipment.SHIELD: "🛡️",
+    equipment.HELMET: "⛑️",
+    equipment.CHESTPLATE: "🦺",
+    equipment.LEGGINGS: "👖",
+    equipment.BOOTS: "🥾",
 }
+
+
+def _set_line(equipped: dict[str, str]) -> str | None:
+    """The set-collection status line ("Diamond set 4/6" / bonus active)."""
+    tier = equipment.active_set_tier(equipped)
+    if tier is not None:
+        bonus = equipment.set_bonus(equipped)
+        return (
+            f"✨ **{tier.title()} set complete** — bonus +{bonus.damage} damage, "
+            f"+{bonus.max_health} max health"
+        )
+    progress = equipment.set_progress(equipped)
+    if progress is None:
+        return None
+    tier, count = progress
+    return f"🧩 {tier.title()} set: **{count}/{len(equipment.SET_SLOTS)}** pieces"
 
 
 async def build_gear_embed(
@@ -58,6 +78,9 @@ async def build_gear_embed(
         if maximum is not None:
             line += f" {workshop.durability_bar(wear.get(item, maximum), maximum)}"
         lines.append(line)
+    set_line = _set_line(equipped)
+    if set_line:
+        lines.append(set_line)
     embed.add_field(name="Slots", value="\n".join(lines), inline=False)
     bonuses = equipment.describe_stats(stats)
     embed.add_field(
@@ -73,6 +96,29 @@ async def build_gear_embed(
         text="Pick a slot, then an item  •  !equip <item> · !unequip <slot>",
     )
     return embed
+
+
+async def send_character_doll(interaction: discord.Interaction) -> None:
+    """Follow up with the paper-doll PNG (additive — the embed already
+    rendered; a missing/broken Pillow changes nothing).  V-16 phase 1.
+    """
+    import io
+
+    from utils.character_render import render_character_for
+
+    if interaction.guild_id is None:
+        return
+    equipped = await db.get_equipment(str(interaction.user.id), interaction.guild_id)
+    png = render_character_for(equipped)
+    if png is None:
+        return
+    try:
+        await interaction.followup.send(
+            file=discord.File(io.BytesIO(png), filename="character_doll.png"),
+            ephemeral=True,
+        )
+    except discord.HTTPException:
+        pass  # the embed already served the data
 
 
 class _SlotSelect(discord.ui.Select):
@@ -112,13 +158,51 @@ class _SlotSelect(discord.ui.Select):
         view.stop()
 
 
+def _preview(item: str, slot: str, equipped: dict[str, str]) -> str:
+    """The stat preview line for an item-picker option (≤100 chars).
+
+    Shows the item's own bonuses, the net stat change vs what is currently
+    in the slot ("→ Damage +2"), and a warning when equipping it would break
+    an active same-tier set bonus.
+    """
+    stats = equipment.item_stats(item)
+    parts = [f"{label} +{value}" for label, value in equipment.describe_stats(stats)]
+    text = ", ".join(parts) if parts else "no stat bonuses"
+    equipped_item = equipped.get(slot)
+    if equipped_item and equipped_item.lower() != item.lower():
+        current = equipment.item_stats(equipped_item)
+        deltas = [
+            f"{label} {value - getattr(current, name):+d}"
+            for name, label in equipment.STAT_LABELS.items()
+            if (value := getattr(stats, name)) != getattr(current, name)
+        ]
+        if deltas:
+            text += "  →  " + ", ".join(deltas)
+    if (
+        equipment.active_set_tier(equipped) is not None
+        and equipment.active_set_tier({**equipped, slot: item}) is None
+    ):
+        text = "⚠ breaks set bonus · " + text
+    return text[:100]
+
+
 class _ItemSelect(discord.ui.Select):
     """Step 2 — pick the owned item to equip into the chosen slot."""
 
-    def __init__(self, slot: str, owned: list[str]) -> None:
+    def __init__(
+        self,
+        slot: str,
+        owned: list[str],
+        equipped: dict[str, str] | None = None,
+    ) -> None:
         self._slot = slot
+        equipped = equipped or {}
         options = [
-            discord.SelectOption(label=item.title(), value=item)
+            discord.SelectOption(
+                label=item.title(),
+                value=item,
+                description=_preview(item, slot, equipped),
+            )
             for item in owned[:24]  # 24 + the unequip sentinel ≤ 25 (Discord cap)
         ]
         options.append(
@@ -193,11 +277,22 @@ class MiningGearView(HubView):
         view.add_item(_SlotSelect(equipped, wear))
         if slot is not None:
             owned = sorted(
-                item
-                for item, qty in inventory.items()
-                if qty > 0 and equipment.slot_for(item) == slot
+                (
+                    item
+                    for item, qty in inventory.items()
+                    if qty > 0 and equipment.slot_for(item) == slot
+                ),
+                # Weakest → strongest (tier ladder), then name — so the picker
+                # reads as the upgrade path.
+                key=lambda it: (
+                    sum(
+                        getattr(equipment.item_stats(it), f)
+                        for f in equipment.STAT_LABELS
+                    ),
+                    it,
+                ),
             )
-            view.add_item(_ItemSelect(slot, owned))
+            view.add_item(_ItemSelect(slot, owned, equipped))
         return view
 
     @discord.ui.button(
@@ -255,4 +350,4 @@ class MiningGearView(HubView):
         self.stop()
 
 
-__all__ = ["MiningGearView", "build_gear_embed"]
+__all__ = ["MiningGearView", "build_gear_embed", "send_character_doll"]

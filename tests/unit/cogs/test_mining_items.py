@@ -30,7 +30,9 @@ def test_tool_predicates():
 
 
 def test_tool_tier_and_value():
-    assert items.tool_tier("diamond") == 4
+    # Resource tiers renumbered when bronze/silver joined the ladder
+    # (stone 1 < bronze 2 < iron 3 < silver 4 < gold 5 < diamond 6).
+    assert items.tool_tier("diamond") == 6
     assert items.tool_tier("unknown") == 0
     assert items.item_value("diamond") > items.item_value("stone")
     assert items.item_value("unknown") == 1

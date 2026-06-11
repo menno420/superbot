@@ -124,7 +124,9 @@ def draw_sword(color: tuple[int, int, int, int]) -> Image.Image:
 
 
 FAMILIES = {
-    "helmet": (draw_helmet, "helmet", (100, 42), 0.40),
+    # Tuned 2026-06-11 by the compositor session (first real render): the
+    # bulb must fully cap the 76px head centred at (100, 55).
+    "helmet": (draw_helmet, "helmet", (100, 58), 0.55),
     "chestplate": (draw_chestplate, "chestplate", (100, 150), 0.55),
     "leggings": (draw_leggings, "leggings", (100, 222), 0.55),
     "boots": (draw_boots, "boots", (100, 278), 0.35),

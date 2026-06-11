@@ -252,7 +252,9 @@ def eligible_outcomes(biome: Biome, loadout: Loadout) -> list[ExploreOutcome]:
 
 
 # Items whose gains scale with mining power (ore — not flavour drops like wood).
-_ORE_ITEMS: frozenset[str] = frozenset({"stone", "iron", "gold", "diamond"})
+_ORE_ITEMS: frozenset[str] = frozenset(
+    {"stone", "bronze", "iron", "silver", "gold", "diamond"},
+)
 
 
 def _scale_amount(outcome: ExploreOutcome, stats: equipment.EffectiveStats) -> int:

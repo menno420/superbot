@@ -28,7 +28,11 @@ ALIASES: dict[str, str] = {
     "dlantern": "diamond lantern",
     "charm": "lucky charm",
     "dsword": "diamond sword",
-    "darmor": "diamond armor",
+    # The pre-set "armor"/"diamond armor" items became chestplates
+    # (migration 068, V-16 set-piece model) — keep the muscle-memory names.
+    "armor": "iron chestplate",
+    "darmor": "diamond chestplate",
+    "diamond armor": "diamond chestplate",
     "tnt": "dynamite",
 }
 
