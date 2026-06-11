@@ -197,7 +197,27 @@ V-16 as design-document material: directional mining (Up/Forward/Down),
 axes/shovels, planks/sticks intermediates, structures-as-items (wooden house
 / diamond throne / gold statue / giant fortress — §7.5 ancestry).
 
-## Round 8 (final): the gap-analysis probe + the Samsung-routine idea
+## Round 9 (actually final): BUG-0001 — live bug report → bug book + fix
+
+A real user's question in the owner's server misrouted to the no-data
+refusal: "lets say i have 8094$ at round 60, what is the cash that i will
+get by going to round 68". Owner asked for "the bug book" (didn't exist) +
+a fix via agents. Founded **`docs/health/bug-book.md`** (nav-map row added);
+a background diagnosis agent produced a file:line root cause (two stacked
+gaps in `ai_round_cash_workflow.py`: range patterns blind to clause-separated
+anchors + no starting-balance concept, so the number-guard — working
+correctly — refused the ungrounded arithmetic). Fix implemented same hour:
+fourth conservative range pattern, ownership-cue-gated balance extraction
+(round-spans masked; postfix "8094$" supported), deterministic
+`projected_total` in the evidence ledger. 5 new unit tests incl. the
+production phrasing verbatim + conservatism pins; live-battery eval case
+added. PR #694. Also: owner corrected the night's outage framing (no
+user-facing downtime — Railway keeps the old instance serving; alerting is
+prepared-but-deferred by his decision) — ops doc/gap file/current-state
+corrected. Owner observation preserved: sessions auto-rebooting on chat
+entry = container warm-up, explained in-chat.
+
+## Round 8: the gap-analysis probe + the Samsung-routine idea
 
 The owner asked "what's still missing from either the bot or the AI system?"
 — answered with six dedup-verified blind spots, filed in
