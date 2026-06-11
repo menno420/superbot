@@ -172,4 +172,13 @@ isn't. Derivation (5): **measure maturity in PRs, decisions, and survived
 incidents — never in calendar time.** The conventions are real (they've
 survived hundreds of merges and parallel-agent collisions); they are also
 young — when one chafes, propose the improvement rather than assuming it's
-load-tested ancient law.
+load-tested ancient law. **How it matured this fast (owner, 2026-06-11):**
+he personally interviewed **40–50 sessions** about their experience — what
+they could find, what conflicted, what would help the next session —
+"doubling the time each session took," and folded the answers back into the
+structure. The standing six-question reflection interview is the
+protocolized fossil of those interviews: user research where the users were
+AIs. He also notes the inversion every agent should sit with once: a fresh
+session can never perceive the youth of its own world — "each new session
+would never know that this system was someday not there yet" — which is
+precisely why this paragraph exists.
