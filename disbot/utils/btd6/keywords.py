@@ -41,6 +41,10 @@ BTD6_CONTEXT_KEYWORDS: tuple[str, ...] = (
     # (BUG-0003, 2026-06-11) carried no other BTD6 cue and went unrouted.
     "impop",
     "half cash",
+    # Symmetry with "half cash" (asymmetry surfaced 2026-06-11: a reply
+    # naming the Double Cash mode had no routable question form).
+    "double cash",
+    "2x cash",
     "primary only",
     "military only",
     "magic only",

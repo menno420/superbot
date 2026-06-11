@@ -154,13 +154,22 @@ def _get_entity_aliases() -> tuple[frozenset[str], frozenset[str]]:
 
 
 def _looks_like_btd6_entity(lowered: str) -> bool:
-    """True when the text references a BTD6 tower or hero by name/alias."""
+    """True when the text references a BTD6 tower or hero by name/alias.
+
+    Tokens are matched both raw and with a trailing possessive/plural "s"
+    stripped: "what are geraldos items" must hit the "geraldo" token (live
+    miss 2026-06-11 — the possessive routed general and the model freelanced
+    the item list; the resolver got this fold in #703, the router never did).
+    """
     multi, single = _get_entity_aliases()
     if any(phrase in lowered for phrase in multi):
         return True
     if not single:
         return False
-    tokens = frozenset(re.findall(r"[a-z0-9]+", lowered))
+    raw = re.findall(r"[a-z0-9]+", lowered)
+    tokens = frozenset(raw) | frozenset(
+        t[:-1] for t in raw if len(t) > 4 and t.endswith("s")
+    )
     return bool(tokens & single)
 
 

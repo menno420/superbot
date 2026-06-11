@@ -306,3 +306,28 @@ def test_farm_without_money_cue_stays_general(text):
     assert (
         decision.task is AITask.GENERAL_NL_ANSWER
     ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Possessive/plural entity tokens ("what are geraldos items", live miss
+    # 2026-06-11): the router's single-token set held "geraldo" but the
+    # possessive token never matched, so the question froze the general path.
+    # The de-s fold only applies to tokens >4 chars, keeping short ordinary
+    # words out.
+    [
+        "what are geraldos items",
+        "what are geraldo's items",
+        "saudas best crosspath",
+    ],
+)
+def test_possessive_entity_tokens_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+def test_double_cash_keyword_routes():
+    decision = ai_task_router.classify("does double cash affect tower prices")
+    assert decision.task is AITask.BTD6_ANSWER
