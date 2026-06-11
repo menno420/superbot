@@ -79,6 +79,10 @@ class RoundCashPlan:
     round_start: int
     round_end: int | None = None
     target_cost: float | None = None
+    # BUG-0001: a stated cash-in-hand ("i have 8094$ at round 60 …") — when
+    # present the range answer also projects starting_balance + range_cash,
+    # deterministically, so the total is grounded in the evidence ledger.
+    starting_balance: float | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -99,7 +103,31 @@ _RANGE_RES = (
         re.I,
     ),
     re.compile(r"\bbetween\s+rounds?\s+(\d{1,3})\s+and\s+(\d{1,3})\b", re.I),
+    # BUG-0001 (live miss 2026-06-11): anchors separated by a clause — "at
+    # round 60, what is the cash that i will get by going to round 68". Both
+    # anchors must carry the literal word "round" and sit within one sentence
+    # (≤80 chars apart), so the conservatism of the adjacent patterns is kept;
+    # the cash-keyword gate still applies before any range pattern is tried.
+    re.compile(
+        r"\b(?:at|from|on)\s+round\s+(\d{1,3})\b[^.?!\n]{0,80}?"
+        r"\b(?:to|until|till|reach(?:ing)?|going\s+to|get(?:ting)?\s+to)"
+        r"\s+round\s+(\d{1,3})\b",
+        re.I,
+    ),
 )
+
+# An ownership cue that marks a stated balance ("i have 8094$ at round 60"),
+# as opposed to an incidental number; required before a range question's
+# residual amount is read as starting cash.
+_BALANCE_CUE_RE = re.compile(
+    r"\b(?:i|we)\s+(?:have|got|hold)\b|\bstart(?:ing)?\s+with\b|\bhaving\b",
+    re.I,
+)
+
+# Masks every "round N" span so round numbers can never be read as money when
+# extracting a balance from a range question (same idea as the afford branch's
+# anchor masking).
+_ROUND_SPAN_RE = re.compile(r"\brounds?\s+\d{1,3}\b", re.I)
 
 _AFFORD_RE = re.compile(r"\bafford\b", re.I)
 _AFFORD_ROUND_RE = re.compile(r"\b(?:at|by|on|in)\s+round\s+(\d{1,3})\b", re.I)
@@ -108,13 +136,19 @@ _AFFORD_ROUND_RE = re.compile(r"\b(?:at|by|on|in)\s+round\s+(\d{1,3})\b", re.I)
 # least 3 digits / with thousands commas — so "afford 2 farms at round 30"
 # never parses the 2 as a $2 cost (no amount → the workflow stays out).
 _AMOUNT_DOLLAR_RE = re.compile(r"\$\s*(\d[\d,]*(?:\.\d+)?)\s*([km])?", re.I)
+# Postfix form ("8094$") — seen verbatim in the BUG-0001 production message.
+_AMOUNT_DOLLAR_POSTFIX_RE = re.compile(r"(\d[\d,]*(?:\.\d+)?)\s*([km])?\s*\$", re.I)
 _AMOUNT_SUFFIX_RE = re.compile(r"\b(\d[\d,]*(?:\.\d+)?)\s*([km])\b", re.I)
 _AMOUNT_BARE_RE = re.compile(r"\b(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d{3,}(?:\.\d+)?)\b")
 
 
 def _extract_amount(text: str) -> float | None:
     """First explicit money amount in ``text``, or ``None``."""
-    match = _AMOUNT_DOLLAR_RE.search(text) or _AMOUNT_SUFFIX_RE.search(text)
+    match = (
+        _AMOUNT_DOLLAR_RE.search(text)
+        or _AMOUNT_DOLLAR_POSTFIX_RE.search(text)
+        or _AMOUNT_SUFFIX_RE.search(text)
+    )
     if match is not None:
         raw, suffix = match.group(1), match.group(2)
     else:
@@ -166,8 +200,24 @@ def plan_question(text: str) -> RoundCashPlan | None:
                 intent="range_cash",
                 round_start=int(match.group(1)),
                 round_end=int(match.group(2)),
+                starting_balance=_extract_balance(text),
             )
     return None
+
+
+def _extract_balance(text: str) -> float | None:
+    """A stated cash-in-hand for a range question, or ``None`` (BUG-0001).
+
+    Conservative on purpose: requires an ownership cue, and masks every
+    "round N" span first so round numbers can never be misread as money.
+    """
+    if not _BALANCE_CUE_RE.search(text):
+        return None
+    masked = _ROUND_SPAN_RE.sub(lambda m: " " * len(m.group()), text)
+    amount = _extract_amount(masked)
+    if amount is None or amount <= 0:
+        return None
+    return amount
 
 
 # ---------------------------------------------------------------------------
@@ -379,6 +429,24 @@ def _run_range(plan: RoundCashPlan) -> AIAnswerWithEvidence:
         f"${float(result['range_cash']):,.2f} (standard rounds, Medium "
         f"difficulty, no income towers)."
     )
+    if plan.starting_balance is not None:
+        projected = round(
+            float(plan.starting_balance) + float(result["range_cash"]),
+            2,
+        )
+        inputs["starting_balance"] = plan.starting_balance
+        outputs["starting_balance"] = plan.starting_balance
+        outputs["projected_total"] = projected
+        result_text += (
+            f" Starting from ${float(plan.starting_balance):,.2f}, that "
+            f"projects to ≈ ${projected:,.2f} by the end of round "
+            f"{result['round_end']}."
+        )
+        assumptions = assumptions + (
+            f"the stated ${float(plan.starting_balance):,.2f} is treated as "
+            f"cash in hand entering round {result['round_start']}, and the "
+            f"projection assumes nothing is spent in between",
+        )
     return _answer(
         plan,
         status="complete",

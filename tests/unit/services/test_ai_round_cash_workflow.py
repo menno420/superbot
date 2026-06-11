@@ -92,6 +92,48 @@ def test_plan_afford_without_anchor_falls_through_to_range() -> None:
     assert (plan.round_start, plan.round_end) == (50, 60)
 
 
+def test_plan_separated_anchors_production_phrasing_bug_0001() -> None:
+    # BUG-0001 (live, 2026-06-11) — the exact production message, verbatim.
+    plan = wf.plan_question(
+        "lets say i have 8094$ at round 60, "
+        "what is the cash that i will get by going to round 68",
+    )
+    assert plan is not None
+    assert plan.intent == "range_cash"
+    assert (plan.round_start, plan.round_end) == (60, 68)
+    # The stated cash-in-hand is captured (postfix "8094$" form included).
+    assert plan.starting_balance == 8094.0
+
+
+def test_plan_separated_anchors_without_balance_cue() -> None:
+    plan = wf.plan_question(
+        "i'm at round 40 — how much money will i earn by getting to round 60?",
+    )
+    assert plan is not None
+    assert plan.intent == "range_cash"
+    assert (plan.round_start, plan.round_end) == (40, 60)
+    assert plan.starting_balance is None  # no ownership cue → no balance
+
+
+def test_plan_afford_accepts_postfix_dollar() -> None:
+    plan = wf.plan_question("can I afford a 8094$ upgrade at round 50?")
+    assert plan is not None
+    assert plan.intent == "afford_check"
+    assert plan.round_start == 50
+    assert plan.target_cost == 8094.0
+
+
+def test_plan_separated_anchors_stay_conservative() -> None:
+    cases = [
+        # No cash keyword → the range patterns are never consulted.
+        "what bloons come at round 60 and going to round 68?",
+        # Anchors more than one sentence apart stay out.
+        "i have cash at round 60. " + ("x" * 40) + ". going to round 68?",
+    ]
+    for text in cases:
+        assert wf.plan_question(text) is None, text
+
+
 # ---------------------------------------------------------------------------
 # Execute + verify — against the real dataset
 # ---------------------------------------------------------------------------
@@ -129,6 +171,29 @@ def test_range_answer_single_round_collapse() -> None:
     assert entry is not None
     assert evidence.outputs["round_cash"] == float(entry.cash)
     assert evidence.outputs["cumulative_cash"] == float(entry.cumulative_cash)
+
+
+def test_range_answer_projects_stated_starting_balance_bug_0001() -> None:
+    # BUG-0001 end-to-end: the production phrasing must produce a grounded
+    # projected total = stated balance + the inclusive range sum.
+    answer = wf.run(
+        "lets say i have 8094$ at round 60, "
+        "what is the cash that i will get by going to round 68",
+    )
+    assert answer is not None
+    assert answer.status == "complete"
+    assert answer.intent == "range_cash"
+    (evidence,) = answer.evidence
+    raw = btd6_data_service.round_cash(60, 68)
+    assert raw.get("found")
+    expected_total = round(8094.0 + float(raw["range_cash"]), 2)
+    assert evidence.outputs["starting_balance"] == 8094.0
+    assert evidence.outputs["projected_total"] == expected_total
+    assert evidence.normalized_inputs["starting_balance"] == 8094.0
+    # The projection rides the result text and is stated as an assumption,
+    # so the number-guard haystack contains every figure the model may say.
+    assert f"${expected_total:,.2f}" in answer.result_text
+    assert any("cash in hand" in a for a in answer.assumptions)
 
 
 def test_afford_check_compares_against_cumulative() -> None:

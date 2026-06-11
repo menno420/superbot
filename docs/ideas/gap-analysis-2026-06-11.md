@@ -24,14 +24,17 @@
    trust-infrastructure (and GDPR-adjacent: the owner is EU-based). Cheap
    version: one command producing a JSON of everything keyed to your user id
    + an erasure flow through the audited mutation seams.
-3. **Owner alerting — a dead-man's switch.** Tonight's outage was found by
-   *accident* (the owner happened to open the Railway dashboard ~45 minutes
-   in). Nothing pushes "the bot is down" to him. Cheap version: the existing
-   healthserver endpoint + any free uptime monitor + a Discord webhook DM.
-   This is also the missing sensory organ for self-driving Stage 1 — the
-   caretaker can't fix what nothing detects. *(Dedup note: may partially
-   overlap the bot-awareness capture — if so, merge there, the alert-to-owner
-   leg is the new part.)*
+3. **Owner alerting — a dead-man's switch.** *(Owner-corrected + downgraded
+   2026-06-11: known, prepared, consciously deferred — a decision, not a
+   blind spot.)* Facts corrected: the 2026-06-10 build failures caused **no
+   user-facing downtime** (Railway keeps the active instance serving until a
+   new build is live; the agent misread FAILED/REMOVED dashboard states as an
+   outage) — the failure class was a *silent ship-blocker*, not downtime.
+   The owner has alerting preparations made and has deliberately
+   deprioritized it. Residual point kept for the record: nothing yet alerts
+   on real downtime *or* on build-pipeline failure, and the Stage 1 caretaker
+   will eventually want both as sensory inputs — pick it up when the owner
+   says so, not before.
 
 ## AI-system / workflow gaps
 
@@ -58,11 +61,17 @@
    executable-config rule). Standing fix: a caretaker duty reviewing
    deprecation warnings + dependency freshness monthly.
 
-## Routing
+## Routing (updated 2026-06-11 — owner round: "implement all or prep")
 
-- §1 → **Q-0091** (router §38, open question — needs an owner pick before
-  ecosystem #2 build).
-- §2, §3, §4, §5 → captured here; groom into the roadmap queue as sessions
-  free up (§5 naturally fuses with the Q-0086 joint prod-check session).
-- §6 → small CI maintenance task awaiting owner nod; deadline-flavored
-  (2026-06-16 for the forced Node switch).
+- §1 → **Q-0091 ANSWERED** (router §38): the owner's **conservation-based
+  optional transfer with a destination-aware cap** — per-guild characters
+  stay; joining a second server offers start-from-0 *or* transfer of **up to
+  10%** of cash/items/gear, **removed from the source character**, calibrated
+  by the destination's average level. Binds V-13/ecosystem-#2 design.
+- §2 (export/erasure), §4 (session telemetry), §5 (spend metering) →
+  **owner-granted 2026-06-11** — implement or prep in coming sessions
+  (roadmap session queue). §5's urgency datapoint: ~€12 total API spend to
+  date — meter for the public era, not a fire.
+- §3 (alerting) → **owner-deferred by decision** (prepared, deprioritized).
+- §6 → **EXECUTED in PR #694** (checkout v4→v5, setup-python v5→v6 across all
+  three workflows; validated by that PR's own CI run).

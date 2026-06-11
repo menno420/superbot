@@ -204,6 +204,26 @@ CASES: list[EvalCase] = [
             "or incorrect answers fail.",
         ),
     ),
+    EvalCase(
+        # BUG-0001 (live, 2026-06-11): this exact phrasing fell through to the
+        # no-data refusal because the round-cash matcher couldn't see anchors
+        # separated by a clause. Pinned so the live battery re-proves the
+        # routed path end-to-end (workflow evidence grounds the arithmetic).
+        # Requires the btd6_grounded orchestration profile, like Tier 1.x.
+        id="knowledge.btd6_round_cash_balance_bug_0001",
+        category="knowledge",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "lets say i have 8094$ at round 60, what is the cash that i will "
+            "get by going to round 68"
+        ),
+        grader=llm_judge(
+            "Must state a concrete dollar figure for cash earned over rounds "
+            "60-68 (inclusive; approximately $13,093.90), and may additionally "
+            "project the running total (approximately $21,187.90). A refusal, "
+            "'no verified data', or an answer with no dollar figure FAILS.",
+        ),
+    ),
     # --- instruction following / format ----------------------------------
     EvalCase(
         id="format.exact_pong",

@@ -197,7 +197,45 @@ V-16 as design-document material: directional mining (Up/Forward/Down),
 axes/shovels, planks/sticks intermediates, structures-as-items (wooden house
 / diamond throne / gold statue / giant fortress — §7.5 ancestry).
 
-## Round 8 (final): the gap-analysis probe + the Samsung-routine idea
+## Round 10: Q-0091 answered + the gap grant + the €12 datapoint
+
+The owner answered two gaps and granted the rest ("implement all of them or
+make the preperations"): **Q-0091 ANSWERED with a fourth model** nobody
+offered — per-guild characters stay; a second-server join offers
+start-from-0 *or* transfer of **up to 10% of cash/items/gear, physically
+removed from the source character** (conservation, not duplication),
+calibrated by the destination server's average level. Routed as canon
+(router §38 verbatim; binds V-13/ecosystem-#2; substrate consequence: an
+audited cross-guild transfer seam; anti-laundering review flagged). **AI
+cost:** ~€12 total spend to date → ceiling pressure low, meter still wanted
+(Q-0082 addendum). **Gap grant routed:** item 6 EXECUTED same PR (actions
+checkout v5 / setup-python v6 across all three workflows); items 2/4/5
+queued as granted; item 3 stays owner-deferred. Also recorded: the owner's
+**human tester community** — he teaches friends eval methodology (abstract
+multi-step questions over enumeration) and keeps inviting people "for
+randomness"; live input for the untested-surface checklist session.
+
+## Round 9: BUG-0001 — live bug report → bug book + fix
+
+A real user's question in the owner's server misrouted to the no-data
+refusal: "lets say i have 8094$ at round 60, what is the cash that i will
+get by going to round 68". Owner asked for "the bug book" (didn't exist) +
+a fix via agents. Founded **`docs/health/bug-book.md`** (nav-map row added);
+a background diagnosis agent produced a file:line root cause (two stacked
+gaps in `ai_round_cash_workflow.py`: range patterns blind to clause-separated
+anchors + no starting-balance concept, so the number-guard — working
+correctly — refused the ungrounded arithmetic). Fix implemented same hour:
+fourth conservative range pattern, ownership-cue-gated balance extraction
+(round-spans masked; postfix "8094$" supported), deterministic
+`projected_total` in the evidence ledger. 5 new unit tests incl. the
+production phrasing verbatim + conservatism pins; live-battery eval case
+added. PR #694. Also: owner corrected the night's outage framing (no
+user-facing downtime — Railway keeps the old instance serving; alerting is
+prepared-but-deferred by his decision) — ops doc/gap file/current-state
+corrected. Owner observation preserved: sessions auto-rebooting on chat
+entry = container warm-up, explained in-chat.
+
+## Round 8: the gap-analysis probe + the Samsung-routine idea
 
 The owner asked "what's still missing from either the bot or the AI system?"
 — answered with six dedup-verified blind spots, filed in

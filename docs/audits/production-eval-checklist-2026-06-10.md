@@ -76,6 +76,12 @@ No setup needed (the tool is offered under the default profile).
       **Expect:** **$19,840** — inclusive of BOTH endpoints (Q-0043).
       **Report if:** $16,824 appears (that's the old exclusive subtraction bug)
       or any other number, or the model answers without a real figure.
+- [ ] **BUG-0001 regression (2026-06-11; needs the §1.2 grounded profile):**
+      `lets say i have 8094$ at round 60, what is the cash that i will get by going to round 68`
+      **Expect:** ≈ **$13,093.90** for rounds 60–68 inclusive, ideally with the
+      projected total ≈ **$21,187.90**.
+      **Report if:** the "I don't have verified BTD6 data" refusal returns —
+      that's the BUG-0001 misroute ([bug book](../health/bug-book.md)).
 
 ### 1.2 Orchestration profiles + Phase 4 workflow (PRs #619, #634)
 

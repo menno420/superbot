@@ -71,7 +71,9 @@
 > character renderer** (PIL compositor over a sprite manifest — gated on the
 > owner's art-direction pick) + gear-picker stat previews. Build-ready
 > alternates: myprofile PR A · survival **P0 balance-simulation harness (Q-0087)**
-> · duel-XP quick-win.
+> · duel-XP quick-win · **gap items 2/4/5 (owner-granted 2026-06-11: per-user
+> data export/erasure · session telemetry · AI spend metering — implement or
+> prep; [gap file](ideas/gap-analysis-2026-06-11.md))**.
 
 ---
 
