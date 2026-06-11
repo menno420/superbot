@@ -23,6 +23,12 @@ Current broad captures:
 > beats occasional brilliance). Substantial ones land here as files; small ones
 > live in their session log's 💡 flag. The grooming pass then moves them.
 
+- [`ai-panel-inplace-navigation-2026-06-11.md`](./ai-panel-inplace-navigation-2026-06-11.md) —
+  **owner-requested (2026-06-11 live session):** the AI settings/panel family
+  spawns a new ephemeral message per navigation click and extends raw
+  `discord.ui.View` behind a blanket `views/ai/` yaml exemption (ratchet-invisible
+  debt). Migrate it to the rest-of-bot in-place HubView pattern (V-02 navigation
+  doctrine); source-confirmed diagnosis + scope sketch in the file.
 - [`gap-analysis-2026-06-11.md`](./gap-analysis-2026-06-11.md) — six
   dedup-verified blind spots from the owner's "what's still missing?" probe:
   cross-server character identity (**Q-0091**, the public-era architectural
