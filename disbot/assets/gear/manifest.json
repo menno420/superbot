@@ -1,0 +1,133 @@
+{
+  "provenance": "Placeholder sprites recreated as code from the owner's base-item images (2026-06-11). The original PNG pack replaces these file-for-file when uploaded; the manifest stays.",
+  "reference_canvas": [
+    200,
+    300
+  ],
+  "base_character": "base_character.png",
+  "tier_palettes": {
+    "bronze": [
+      184,
+      115,
+      51
+    ],
+    "silver": [
+      192,
+      192,
+      200
+    ],
+    "gold": [
+      255,
+      210,
+      74
+    ],
+    "iron": [
+      138,
+      143,
+      152
+    ],
+    "diamond": [
+      95,
+      227,
+      220
+    ]
+  },
+  "families": {
+    "helmet": {
+      "slot": "helmet",
+      "base": "helmet.png",
+      "tiers": {
+        "bronze": "helmet_bronze.png",
+        "silver": "helmet_silver.png",
+        "gold": "helmet_gold.png",
+        "iron": "helmet_iron.png",
+        "diamond": "helmet_diamond.png"
+      },
+      "anchor": [
+        100,
+        42
+      ],
+      "scale": 0.4
+    },
+    "chestplate": {
+      "slot": "chestplate",
+      "base": "chestplate.png",
+      "tiers": {
+        "bronze": "chestplate_bronze.png",
+        "silver": "chestplate_silver.png",
+        "gold": "chestplate_gold.png",
+        "iron": "chestplate_iron.png",
+        "diamond": "chestplate_diamond.png"
+      },
+      "anchor": [
+        100,
+        150
+      ],
+      "scale": 0.55
+    },
+    "leggings": {
+      "slot": "leggings",
+      "base": "leggings.png",
+      "tiers": {
+        "bronze": "leggings_bronze.png",
+        "silver": "leggings_silver.png",
+        "gold": "leggings_gold.png",
+        "iron": "leggings_iron.png",
+        "diamond": "leggings_diamond.png"
+      },
+      "anchor": [
+        100,
+        222
+      ],
+      "scale": 0.55
+    },
+    "boots": {
+      "slot": "boots",
+      "base": "boots.png",
+      "tiers": {
+        "bronze": "boots_bronze.png",
+        "silver": "boots_silver.png",
+        "gold": "boots_gold.png",
+        "iron": "boots_iron.png",
+        "diamond": "boots_diamond.png"
+      },
+      "anchor": [
+        100,
+        278
+      ],
+      "scale": 0.35
+    },
+    "shield": {
+      "slot": "shield",
+      "base": "shield.png",
+      "tiers": {
+        "bronze": "shield_bronze.png",
+        "silver": "shield_silver.png",
+        "gold": "shield_gold.png",
+        "iron": "shield_iron.png",
+        "diamond": "shield_diamond.png"
+      },
+      "anchor": [
+        42,
+        168
+      ],
+      "scale": 0.38
+    },
+    "sword": {
+      "slot": "weapon",
+      "base": "sword.png",
+      "tiers": {
+        "bronze": "sword_bronze.png",
+        "silver": "sword_silver.png",
+        "gold": "sword_gold.png",
+        "iron": "sword_iron.png",
+        "diamond": "sword_diamond.png"
+      },
+      "anchor": [
+        158,
+        165
+      ],
+      "scale": 0.45
+    }
+  }
+}
