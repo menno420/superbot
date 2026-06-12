@@ -4291,3 +4291,49 @@ Planning can begin for `services/security_service.py` (tiers 1 + 2 only).
 
 **Home:** `docs/ideas/community-platform-features-2026-06-12.md` §3 — routing updated.
 Planning required before implementation (NL parsing + AI cost need explicit design).
+
+---
+
+### Q-0113 — Autonomous loop: merge gate for routine-driven PRs
+
+> **ANSWERED 2026-06-12 (owner, question panel).** Asked while wiring the autonomous-loop
+> seams (Hermes-reviewer + dispatch bridge + phase gate).
+
+**Area:** Agent ecosystem / workflow · autonomy boundary
+**Type:** Owner decision (autonomy/safety)
+
+**Question:** for unattended/routine-driven PRs (the dispatch-bridge loop), where should the
+merge gate sit — open-only + one-tap confirm, auto-merge docs/test-covered only, or full
+self-merge on green CI?
+
+**Decision: full self-merge on green CI** — routines self-merge any green-CI PR, the same grant
+interactive sessions already have (Q-0084), now extended to unattended runs. Bounded by: CI
+**required-green on the final head**, **`claude/`-only** branch pushes, and the Q-0114 feature
+carve-out (agent-originated *features* never self-merge — they wait for approve/deny). Merge ≠
+deploy; production restart stays the maintainer's (auto-deploy on merge is already true).
+
+**Home:** `docs/operations/hermes-dispatch-bridge.md` (the routine's saved gate prompt enforces
+it) · `docs/owner/ai-project-workflow.md` §12 · this entry is provenance.
+
+---
+
+### Q-0114 — Autonomous loop: where the human approve/deny gate applies
+
+> **ANSWERED 2026-06-12 (owner, question panel).** Companion to Q-0113.
+
+**Area:** Agent ecosystem / workflow · autonomy boundary
+**Type:** Owner decision (autonomy/safety)
+
+**Question:** what must reach the maintainer before it ships — every agent-originated feature,
+everything above docs/bug-fix, or only above a risk threshold?
+
+**Decision: agent-originated *features* only.** Features the agents invent themselves go through
+the maintainer's approve/deny (Hermes explains them in plain language — the `superbot-review`
+`## Maintainer summary` block). Bug fixes, UX polish, docs, and correctness work **flow freely**
+under the Q-0113 merge gate. The ordering ("bugs first … only then features", vision §2) is
+enforced by `scripts/check_phase_gate.py`: a feature may only be *originated* in **invent-phase**
+(zero OPEN bugs, zero `Not Done` readiness rows) — otherwise it is captured as an idea, not built.
+
+**Home:** `docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md` (the loop this gates) ·
+`scripts/check_phase_gate.py` (the phase mechanism) · `docs/operations/hermes-dispatch-bridge.md`
+· `docs/owner/ai-project-workflow.md` §12 · this entry is provenance.

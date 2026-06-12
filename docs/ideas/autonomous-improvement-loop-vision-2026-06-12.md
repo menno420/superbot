@@ -1,9 +1,11 @@
 # Vision: the fully-autonomous self-improvement loop
 
-> **Status:** `ideas`. **Not approved for implementation** — this is the north-star the
-> existing workflow scaffolding is *already* building toward, captured so sessions can aim
-> at it. It decomposes into reviewable steps (see Routing); it is not a single build.
-> Binding contracts and owner decisions win over anything here.
+> **Status:** `ideas` (north-star) — but **the three repo-side seams are now built** (Q-0113/
+> Q-0114, 2026-06-12): the `superbot-review` skill, `scripts/check_phase_gate.py`, and the
+> dispatch bridge (`docs/operations/hermes-dispatch-bridge.md`). The full *autonomous* loop is
+> still gated on the maintainer wiring the Routine + `/fire` token and calibrating (Q-0105).
+> The binding subset is `docs/owner/ai-project-workflow.md` §12. Binding contracts and owner
+> decisions win over anything here.
 
 **Captured:** 2026-06-12 (maintainer vision, voice) · **Owning area:** agent ecosystem /
 workflow (the *real artifact*, per `.claude/CLAUDE.md` Working agreement & `docs/collaboration-model.md`).
@@ -79,12 +81,15 @@ monitor (`log-triage`/`repo-health`), but **the independent-review + human-gate 
 | Bounded session handoff protocol | ✅ exists (`ai-project-workflow.md` §10) |
 | Plan→execute model split (premium plans, cheaper executes) | ✅ exists (§11) |
 | Auto-deploy on merge + agent self-merge | ✅ exists (Q-0084, production-deployment) |
-| Automatic session→session chaining | ❌ needs Routines bridge (idea 1) |
-| Correctness-vs-invention phase gate | ❌ needs a machine-readable signal |
-| Independent (non-Claude) plan/impl review | ❌ needs the Hermes-reviewer seam |
-| Human explain → approve/deny loop via Hermes | ❌ needs a Hermes review/notify skill + a verdict-routing convention |
+| Automatic session→session chaining | 🟡 dispatch seam built (`superbot-dispatch` + `operations/hermes-dispatch-bridge.md`); **closes when the maintainer wires the Routine + `/fire` token** |
+| Correctness-vs-invention phase gate | ✅ built — `scripts/check_phase_gate.py` (zero OPEN bugs + zero `Not Done` rows ⇒ invent-phase) |
+| Independent (non-Claude) plan/impl review | ✅ built — `superbot-review` Hermes skill (plan + PR-diff critique) |
+| Human explain → approve/deny loop via Hermes | ✅ convention built — Q-0114 (features only) + the `superbot-review` `## Maintainer summary` block; routed in workflow §12 |
 
-So the substrate is largely built; the loop is **~3 seams** short of closing.
+So the substrate is largely built; **the three repo-side seams shipped 2026-06-12**
+(Q-0113/Q-0114 — review skill, phase gate, dispatch bridge + saved gate prompt). The one
+remaining step to *close* the loop is maintainer-side: wire the Claude Code Routine and its
+`/fire` token (`operations/hermes-dispatch-bridge.md` ⬜ steps), then calibrate (Q-0105).
 
 ## Open questions (why this is discuss-lane)
 

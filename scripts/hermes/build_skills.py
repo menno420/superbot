@@ -76,6 +76,14 @@ EXTRAS: dict[str, SkillExtras] = {
         tags=["Monitoring", "SuperBot", "Diagnostics"],
         related=["superbot-repo-health"],
     ),
+    "review": SkillExtras(
+        tags=["Review", "SuperBot", "Quality"],
+        related=["superbot-session-brief"],
+    ),
+    "dispatch": SkillExtras(
+        tags=["Automation", "SuperBot", "Dispatch"],
+        related=["superbot-prompt-builder", "superbot-review"],
+    ),
 }
 
 VERSION = "1.0.0"
