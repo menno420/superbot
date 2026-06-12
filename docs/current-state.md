@@ -56,6 +56,14 @@ Source code and merged PRs win over anything written here.
 > multiple of 10 — Q-0107; `scripts/check_reconciliation_due.py` flags it). Reset this
 > marker to the latest PR after a pass.
 
+- **#742 (2026-06-12, the autonomous-loop seams — parallel Hermes session)** — Hermes
+  `superbot-review` skill (independent non-Claude plan/PR critique with a maintainer
+  summary) · `scripts/check_phase_gate.py` (machine-readable **fix-phase vs. invent-phase**;
+  invent requires zero OPEN bugs + zero Not-Done readiness rows — reports FIX-PHASE today) ·
+  the `superbot-dispatch` skill + runbook (Hermes → Claude Code Routine `/fire`). Owner
+  decisions **Q-0113** (routine PRs self-merge on green CI) + **Q-0114** (human approve/deny
+  for agent-originated features; invent-phase-only origination) — workflow §12. Maintainer
+  follow-ups: wire the Routine + token, calibrate per Q-0105 before trusting unattended.
 - **#741 (2026-06-12, the first Q-0107 reconciliation pass)** — every plan added in
   #715–#740 mapped ([pass record + decade queue](planning/reconciliation-pass-2026-06-12.md)):
   new roadmap lanes **safety/community** (Q-0108–Q-0112) + **agent ecosystem/workflow**;

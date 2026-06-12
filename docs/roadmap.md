@@ -365,11 +365,17 @@ its *plans* so they're sequenced like any other area. Ops shelf:
   the bounded-session protocol (Q-0088).
 - **Open decision** — **Q-0096 remainder**: Context7 MCP adopted (#737); Postgres-MCP +
   pyright-LSP still open ([plugins evaluation](ideas/claude-code-plugins-evaluation-2026-06-12.md)).
-- **Someday (visions, not approved)** — the
-  [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)
-  (north-star; decomposes into reviewable steps) · the
+- **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the
+  [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)'s
+  three repo-side seams: the Hermes `superbot-review` skill (independent non-Claude critique) ·
+  `scripts/check_phase_gate.py` (fix-phase vs. invent-phase; invent requires zero OPEN bugs +
+  zero Not-Done readiness rows — currently **FIX-PHASE**) · the
   [Hermes → Claude dispatch bridge](ideas/hermes-claude-dispatch-bridge-2026-06-12.md)
-  (Q-block discussion is the gate) · the
+  (`superbot-dispatch` + runbook). Gates: routine PRs self-merge on green CI (**Q-0113**);
+  human approve/deny applies to **agent-originated features only**, originated in
+  invent-phase only (**Q-0114**). Maintainer follow-ups: wire the Routine + `/fire` token,
+  then calibrate per Q-0105 before trusting it unattended.
+- **Someday (vision, not approved)** — the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md)
   (owner-shaped strategic direction).
 

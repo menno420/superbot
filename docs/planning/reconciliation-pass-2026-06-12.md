@@ -15,9 +15,13 @@
 - **Latest merged PR at write time: #740** (then **#732** merged in-pass — it was the one
   open PR; **zero open PRs** after it). All of #715–#740 verified merged on live GitHub.
 - **Parallel work in flight (owner-stated, 2026-06-12):** another session is planning /
-  implementing **Hermes-agent** work concurrently with this pass. Its PRs will land inside
-  this band on the 🤝 workflow lane — they *add to* the decade, they don't displace queue
-  slots. The next pass reconciles them.
+  implementing **Hermes-agent** work concurrently with this pass. Its PRs land inside this
+  band on the 🤝 workflow lane — they *add to* the decade, they don't displace queue slots.
+  **First one landed before this pass merged: #742** (the autonomous-loop seams — Hermes
+  `superbot-review` · `check_phase_gate.py` fix/invent signal · the dispatch bridge — under
+  new owner decisions **Q-0113** routine self-merge-on-green + **Q-0114** feature
+  approve/deny, invent-phase-only origination); reconciled into the roadmap's workflow lane
+  + the ledger in-pass.
 - **2026-06-12 was a docs/tooling/workflow day** (16 merged PRs, no runtime `disbot/`
   feature work): the review-map + seven readiness maps (#715–#724), the hardening roadmap +
   manageability tools (#725–#728), the 429 crash-loop fix (#729 — the day's one runtime
@@ -46,7 +50,7 @@
 | #715/#716 | [`ideas/review-unit-tagging-2026-06-12.md`](../ideas/review-unit-tagging-2026-06-12.md) | ideas | **Executed** (#726); kept for rationale |
 | #731/#732 | [`audits/untested-surface-checklist.md`](../audits/untested-surface-checklist.md) + `scripts/command_surface_dump.py` | audit + tool | Standing owner-led live-walk instrument; pairs with hardening **P1-4** |
 | #730 | [`operations/hermes-operating-prompt.md`](../operations/hermes-operating-prompt.md) + installable skills | reference | Hermes control-plane docs (`operations/hermes-control-plane.md`) |
-| #730/#731 | [`ideas/autonomous-improvement-loop-vision-2026-06-12.md`](../ideas/autonomous-improvement-loop-vision-2026-06-12.md) · [`ideas/hermes-claude-dispatch-bridge-2026-06-12.md`](../ideas/hermes-claude-dispatch-bridge-2026-06-12.md) | ideas (vision) | Roadmap **🤝 workflow lane Someday** — north-star; first concrete step stays Stage 0 |
+| #730/#731 | [`ideas/autonomous-improvement-loop-vision-2026-06-12.md`](../ideas/autonomous-improvement-loop-vision-2026-06-12.md) · [`ideas/hermes-claude-dispatch-bridge-2026-06-12.md`](../ideas/hermes-claude-dispatch-bridge-2026-06-12.md) | ideas (vision) → **seams wired** | Roadmap **🤝 workflow lane Now** — **#742** (parallel session, in-band) wired review/phase-gate/dispatch under Q-0113/Q-0114; maintainer wires the Routine + calibrates |
 | #733 | [`ideas/portable-agent-memory-package-2026-06-12.md`](../ideas/portable-agent-memory-package-2026-06-12.md) | ideas (vision) | Roadmap **🤝 workflow lane Someday** — owner-shaped strategic direction |
 | #733 | [`operations/claude-code-hooks-and-plugins.md`](../operations/claude-code-hooks-and-plugins.md) | reference | Workflow operations shelf (hook inventory) |
 | #714 | [`ideas/claude-code-plugins-evaluation-2026-06-12.md`](../ideas/claude-code-plugins-evaluation-2026-06-12.md) | ideas | **Q-0096 partially answered** — Context7 adopted (#737, `operations/mcp-servers.md`); Postgres-MCP / pyright-LSP still open in the router |
