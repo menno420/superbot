@@ -361,3 +361,57 @@ output — the split above plus the levers is the path.
   work, and `.sessions/` handoffs exist — Stage 0 is the only missing link in
   a complete loop: *handoff → fresh session → bounded work → green merge →
   auto-deploy → sharpened handoff*.
+
+## 12. The autonomous review/approval loop (Q-0113 / Q-0114, 2026-06-12)
+
+> **Status:** the **seams** are built (this section's tools/skills exist); the
+> loop **closes** when the maintainer wires the Routine + `/fire` token
+> (`operations/hermes-dispatch-bridge.md`, the ⬜ steps). Until then the same
+> seams are usable manually (dispatch degrades to a printed work order; review
+> runs on any plan/PR by hand).
+
+**Why:** §10/§11 are the *chaining + cost* half of the self-driving loop. This
+section is the *correctness + autonomy-boundary* half: how invented work is
+reviewed by a different mind and how far an unattended run may go on its own.
+The north-star is `docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`;
+this section is the binding subset that is actually wired.
+
+**The three seams (built 2026-06-12):**
+
+1. **Independent review — `superbot-review` (Hermes skill).** A *non-Claude*
+   model critiques a plan or a PR diff. In a Claude-only loop every author and
+   reviewer share the same blind spots (a monoculture); a different mind's
+   dissent is worth more than another Claude pass. Output includes a
+   plain-language **maintainer summary** for the approve/deny hand-off.
+2. **Phase gate — `scripts/check_phase_gate.py`.** Machine-readable
+   *fix-phase vs. invent-phase*. Invent-phase requires **zero OPEN bugs**
+   (bug-book) **and zero `Not Done` rows** (readiness maps). It enforces the
+   maintainer's order: bugs/UX/correctness first; agent-*originated* features
+   only once everything works.
+3. **Dispatch bridge — `superbot-dispatch` (Hermes skill) +
+   `operations/hermes-dispatch-bridge.md`.** Hermes assembles a work order and
+   fires a Claude Code Routine (read-only: it sends text; Claude Code mutates
+   under CI). The routine's **saved prompt** is where the gates below live on
+   the build side.
+
+**The two gates (owner decisions):**
+
+- **Merge gate (Q-0113) — full self-merge on green CI.** Routine PRs self-merge
+  on green CI exactly as interactive sessions do (Q-0084 extended to unattended
+  runs), bounded by: CI required-green on the final head, `claude/`-only pushes,
+  and the feature carve-out below. Merge ≠ deploy.
+- **Human approve/deny gate (Q-0114) — agent-originated *features* only.** A
+  feature an agent invents is built (only in invent-phase), opened as a PR, and
+  **held** for the maintainer's approve/deny — Hermes explains it in plain
+  language. Bug/UX/docs/correctness work flows freely under the merge gate.
+
+**The closed loop:** *idea/diagnosis → Hermes orients + classifies + checks the
+phase gate → dispatch → routine builds + tests → (fix/ux/docs/correctness)
+self-merge on green **or** (feature) open + hold for approve/deny → Hermes
+reports + `superbot-review` on the diff → maintainer verdict routes back.*
+
+**Calibration discipline (Q-0105):** the reviewer and the dispatch bridge are
+**unverified convenience infrastructure** until proven — confirm the reviewer
+catches known-planted issues and the dispatch gate behaves on a tiny known fix
+before trusting either unattended; tear them down if they prove unreliable over
+multiple sessions rather than working around them.
