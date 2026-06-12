@@ -50,9 +50,14 @@ Found drift: #732/#738/#739 were missing from Recently-shipped (plus my #742/#74
 
 ## Left open / handoff (next session)
 
-- **Q-0107 decade reconciliation is now DUE** (`check_reconciliation_due` flags it — merged PRs
-  crossed #740). The next session should be a **docs-only repo review + plan-the-next-9 pass**,
-  then reset the `Last reconciliation pass` marker. This is a dedicated session, not a fold-in.
+- **Q-0107 decade reconciliation — DONE concurrently by PR #741** (a parallel session ran the
+  decade pass at the same time as this one; it mapped #715–#740, produced the
+  [`planning/reconciliation-pass-2026-06-12.md`](../docs/planning/reconciliation-pass-2026-06-12.md)
+  decade queue, reset the marker to #741, and reconciled #742 in-band). My #743 session-close
+  PR collided with it on `current-state.md`/-archive — resolved by taking #741's authoritative
+  ledger (UNION, reconciler role) and keeping only this session log. **Lesson:** check `list_pull_requests`
+  for an in-flight reconciliation before doing ledger surgery at session close (the #678/#682
+  parallel-collision class again). **Next action is now #741's decade queue, not a reconciliation.**
 - **Maintainer VPS actions to close the loop:** create the Claude Code Routine (paste the saved
   gate prompt), store `CLAUDE_ROUTINE_*` on the VPS, `install-skills.sh` + restart the gateway;
   then **calibrate (Q-0105)** — plant a known issue for `superbot-review`, dispatch one tiny known
