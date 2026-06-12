@@ -26,8 +26,10 @@
 > (P0 integrity → P1 correctness → P2 drift, with the gating owner Qs) are the
 > risk-ranked "what's left to be production-ready" view across all subsystems. Index:
 > [`planning/production-readiness/`](planning/production-readiness/README.md).
-> **P0-2/P0-3/P0-4 unblocked 2026-06-12** (Q-0098/Q-0099/Q-0100 answered); only Q-0097
-> (health finding lifecycle) still gates a track.
+> **All gating decisions answered as of 2026-06-12 evening** (Q-0098/Q-0099/Q-0100 + Q-0097
+> = operator-managed findings lifecycle); no hardening track waits on a decision. **Next
+> implementation session (owner-picked): P0-1 —**
+> [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md).
 
 ## How to read
 
@@ -50,13 +52,14 @@
 |---|---|
 | **Now** | The **[decade queue](planning/reconciliation-pass-2026-06-12.md)** (Q-0107 pass, 2026-06-12): production-hardening P0 tracks ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — P0-2/3/4 unblocked) + backup posture + the first **safety/community lane** slices (Q-0108–Q-0112 — see the "Server safety & community platform" section below). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
 | **Next** | Safety/community lane remainder (image moderation · security tiers 1+2 · NL event scheduler — all plan-first, see the lane section) · P1-1 versioned AI eval/smoke matrix · myprofile PR A ([plan](planning/myprofile-foundation-plan-2026-06-10.md), turn-key) · help home/navigation plan (editor-UI gate cleared via #677/#679) · V-14 harvest structuring ([dossier](ideas/competitive-teardown-2026-06-10.md); ecosystem-#2 = fishing, owner ratification pending) · the 2026-06-10 [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md) is **FULLY EXECUTED** (`historical`; [EOD verification](audits/past-day-verification-2026-06-10.md)) |
-| **Later** | P1-2 health findings lifecycle (gate: Q-0097) · Stage 0 one-click continuation (gate: owner API-key secret — [workflow §10](owner/ai-project-workflow.md)) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
+| **Later** | P1-2 health findings lifecycle (Q-0097 answered 2026-06-12 — operator-managed; ready when queued) · continuation dispatch = the **Routine seam** (Stage 0's GH Action folded in — Q-0115; activates on Routine wired + calibrated) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 > **Standing posture (router §35, 2026-06-10):** the end-state is a **public
 > bot** (Q-0080 — every new plan inherits stranger-grade onboarding/abuse/cost
 > filters) · the flagship RPG is **solo core + co-op overlays** (Q-0081) · AI
-> spend = **owner-set hard ceiling, visible graceful degrade** (Q-0082) · the
+> spend = **owner-set hard ceiling, visible graceful degrade** (Q-0082 — **interim
+> €30/month set 2026-06-12**; refine after first prod measurements) · the
 > workflow converges toward **full self-driving — explicitly not near-term**
 > (Q-0083).
 >
@@ -302,6 +305,10 @@ provenance schema is implemented.
 Folio: [games](subsystems/games.md) · **Boundary:** ADR-002 (game state not restart-safe —
 accepted, not a target).
 
+- **Now (next implementation session, owner-picked 2026-06-12)** — **P0-1 wager
+  money-safety**: [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md)
+  — one audited `game_wager_workflow` composing the existing `economy_service` atomic
+  primitives (escrow→settle/refund, idempotent payouts), failure-injection tests, AST fence.
 - **Now (active lane)** — the **mining character platform** (from the
   [mining brainstorm](ideas/mining_exploration_brainstorm.md) §7 vision). Wave-1 chain
   shipped #606–#610 + #624 (explore wiring + equipment seam, persistent Descent, combat
@@ -360,9 +367,11 @@ its *plans* so they're sequenced like any other area. Ops shelf:
 - **Standing** — the **Q-0107 reconciliation cadence** (docs-only pass each time merged PRs
   cross a multiple of 10; current pass: [2026-06-12](planning/reconciliation-pass-2026-06-12.md))
   · the session enders (Q-0089 idea · Q-0102 prev-session review · Q-0104 closing audit).
-- **Later (gated on the owner's API-key secret)** — **self-driving Stage 0**: the one-click
-  continuation workflow ([ai-project-workflow §10](owner/ai-project-workflow.md)); activates
-  the bounded-session protocol (Q-0088).
+- **Later — continuation dispatch = the Routine seam (Q-0115, 2026-06-12):** Stage 0's
+  separate `workflow_dispatch` GH Action is **folded into the #742 Routine bridge** — one
+  dispatch mechanism for Hermes-fired, one-click, and later scheduled runs. The
+  bounded-session protocol ([ai-project-workflow §10](owner/ai-project-workflow.md), Q-0088)
+  activates once the Routine is **wired + calibrated** (the bridge runbook's ⬜ steps).
 - **Open decision** — **Q-0096 remainder**: Context7 MCP adopted (#737); Postgres-MCP +
   pyright-LSP still open ([plugins evaluation](ideas/claude-code-plugins-evaluation-2026-06-12.md)).
 - **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the

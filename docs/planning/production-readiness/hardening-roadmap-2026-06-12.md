@@ -144,13 +144,17 @@ operator/agent misrouting:
 | Q | Decision | Gates | Status |
 |---|---|---|---|
 | Q-0077 | BTD6 auto-seed-on-boot | BTD6 data-lane proof | pre-existing |
-| Q-0097 | Health finding lifecycle (open/resolved/ignored) | P1-2 | Open (asked 2026-06-12) |
+| Q-0097 | Health finding lifecycle (open/resolved/ignored) | P1-2 | ✅ **ANSWERED 2026-06-12 — (a) operator-managed** via the sole writer → P1-2 unblocked |
 | Q-0098 | Delegated-Setup apply authority contract | P0-3 | ✅ **ANSWERED 2026-06-12 — (a) delegates may apply** → P0-3 unblocked |
 | Q-0099 | Media/YouTube retention & data-minimization policy | P0-2 | ✅ **ANSWERED 2026-06-12 — (a) bounded projection + scheduled purge** → P0-2 unblocked |
 | Q-0100 | Canonical owner for direct channel mutations | P0-4 | ✅ **ANSWERED 2026-06-12 — (a) converge under existing seams** → P0-4 unblocked |
 
-**Net effect:** P0-2, P0-3, P0-4 are now **unblocked** (each has its decided design above).
-Only P1-2 still waits on an owner answer (Q-0097, health finding lifecycle).
+**Net effect (updated 2026-06-12 evening):** **every gating owner decision is answered** —
+P0-2/P0-3/P0-4 (Q-0098–Q-0100) and now P1-2 (Q-0097 = operator-managed). No hardening track
+waits on a decision; sequencing lives in the
+[reconciliation-pass decade queue](../reconciliation-pass-2026-06-12.md). **P0-1 is
+owner-picked as the next implementation session — design pinned:**
+[games-wager-money-safety-plan](../games-wager-money-safety-plan-2026-06-12.md).
 
 ## Recommended first three sessions
 

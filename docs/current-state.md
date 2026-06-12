@@ -56,6 +56,14 @@ Source code and merged PRs win over anything written here.
 > multiple of 10 — Q-0107; `scripts/check_reconciliation_due.py` flags it). Reset this
 > marker to the latest PR after a pass.
 
+- **#745 (2026-06-12, the direction-lock round)** — owner question-panel round: **next
+  implementation session = P0-1 wager money-safety** (design pinned:
+  [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md)) ·
+  **Q-0097 = operator-managed findings lifecycle** (every hardening gate now answered) ·
+  **Q-0082 interim global AI ceiling = €30/month** · **Q-0115**: Stage 0 folded into the
+  #742 Routine bridge (one continuation-dispatch seam; bounded protocol activates on
+  wired + calibrated). (#743/#744 same day: the loop session's close + a journal
+  draft-first wording fix.)
 - **#742 (2026-06-12, the autonomous-loop seams — parallel Hermes session)** — Hermes
   `superbot-review` skill (independent non-Claude plan/PR critique with a maintainer
   summary) · `scripts/check_phase_gate.py` (machine-readable **fix-phase vs. invent-phase**;

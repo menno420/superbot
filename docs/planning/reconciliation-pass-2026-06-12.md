@@ -95,7 +95,7 @@ per-session (Q-0102/Q-0104 enders); its next *structural* step (Stage 0) is owne
 |---|---|---|---|
 | 1 | **This pass** — reconcile + decade plan (docs-only) | Q-0107 | — |
 | 2 | **P2 doc-drift sweep** + nudge Q-0097 | [hardening P2 table](production-readiness/hardening-roadmap-2026-06-12.md) — 5 known fixes (smoke-checklist command, AI README, ADR-006 wording, media folio claim, flag ownership label) | — (small/required is allowed) |
-| 3 | **P0-1 games wager money-safety** | One economy-service-backed wager workflow (atomic/idempotent debit→checkpoint→settle) + failure-injection tests + terminal-state matrix | — |
+| 3 | **P0-1 games wager money-safety** — **owner-picked next (2026-06-12); design pinned: [plan](games-wager-money-safety-plan-2026-06-12.md)** | One audited `game_wager_workflow` composing the existing atomic primitives (escrow→settle/refund, idempotent payouts) + failure-injection tests + terminal-state matrix + AST fence | — |
 | 4 | **Postgres backup posture** — design + automate | [production-deployment §Backups](../operations/production-deployment.md) (OPEN since the #685 incident) | Railway access facts from owner if needed |
 | 5 | **P0-3 settings pointer-lane convergence + delegated-apply** | Settings map "recommended next session"; Q-0098 = delegates may apply; includes its P1-3 parity invariants | unblocked |
 | 6 | **P0-4 server-mgmt channel-ownership convergence** | Q-0100 = converge under the existing audited seams; extend the channel invariant past `.edit()`/`.delete()` | unblocked |
@@ -106,9 +106,10 @@ per-session (Q-0102/Q-0104 enders); its next *structural* step (Stage 0) is owne
 
 **Deliberately *not* in this decade** (queued next, in rough order): image-moderation
 service + security tiers 1+2 (next decade's safety slices, on the family plan) ·
-**P1-1 versioned AI eval/smoke matrix** · **P1-2 health findings lifecycle** (opens when
-Q-0097 is answered) · NL **event scheduler** (Q-0112 — wants its own AI-cost design) ·
-**Stage 0 one-click continuation** (owner provides the API-key secret first) · help
+**P1-1 versioned AI eval/smoke matrix** · **P1-2 health findings lifecycle** (Q-0097
+answered 2026-06-12 — operator-managed; ready) · NL **event scheduler** (Q-0112 — wants its
+own AI-cost design; interim ceiling €30/mo set, Q-0082) ·
+**continuation dispatch** (Stage 0 folded into the #742 Routine seam — Q-0115) · help
 home/navigation plan · V-14 harvest structuring · myprofile PR A · mining V-16 phase 2
 (owner PNG pack). Owner-led in parallel: untested-surface checklist walks (P1-4).
 
