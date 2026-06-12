@@ -34,7 +34,22 @@ useful, non-stale contribution.
 ## Verification
 
 - `.mcp.json` + `settings.json` valid JSON · no stale `get-library-docs` refs remain ·
-  Context7 live-tested. Will reconcile this PR's number into the ledger before close.
+  Context7 live-tested · `check_docs`/`check_session_log`/ledger green.
+- **#746 left for next-session ledger reconciliation** (the documented one-session lag) — main had
+  active parallel sessions (#743–#745+), so editing the high-collision `current-state.md` at
+  session-end was avoided; `check_current_state_ledger` will surface #746 next session.
+
+## Where to continue (next session)
+
+1. **Context7 (this thread):** verify it a **few more times across sessions** (per Q-0105) to
+   graduate it out of "unverified" → load-bearing. Reach for `query-docs` on any `discord.py` /
+   `asyncpg` work; if it ever returns stale/wrong docs, trip its kill-switch (`mcp-servers.md`).
+   The 💡 below (a Context7 value/verification log) would make that graduation evidence concrete.
+2. **The built-but-unexercised autonomous-loop seams (#742):** `review` + `dispatch` Hermes
+   skills + `check_phase_gate.py` exist now but haven't been run end-to-end. A real
+   dispatch→build→review→approve dry-run is the natural next milestone.
+3. **Project-wide:** the live queue is the **decade queue** in current-state.md's ▶ Next action
+   (P0 hardening + the Q-0108–Q-0112 safety/community lane); next Q-0107 reconciliation pass at #750.
 
 ## ⟲ Previous-session review (Q-0102 — reviewing #742, the autonomous-loop seams)
 
