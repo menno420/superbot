@@ -40,3 +40,13 @@ one home — vertically too.
 > These folios intentionally link to existing contracts, ledgers, plans, and history.
 > Move an underlying doc only when doing so reduces drift without obscuring authority or
 > creating risky reference/doc-test churn.
+
+## Folio coverage is intentional, not exhaustive (owner decision Q-0101, 2026-06-12)
+
+Folios exist for the **high-traffic / structurally complex** areas above — not for every
+cog. The other ~24 subsystems (economy, moderation, xp, role, inventory, counting, …) are
+entered through the [`repo-navigation-map.md`](../repo-navigation-map.md) **subsystem
+cheat-sheet** (cog · view package · service · DB module) + [`ownership.md`](../ownership.md).
+That gap is a **decision** (maintenance burden vs. uniformity), not an omission: 24 stub
+folios that then rot would be worse than the cheat-sheet. Add a folio for a smaller cog only
+if it grows genuinely complex (its own view package + service + DB module + active plans).

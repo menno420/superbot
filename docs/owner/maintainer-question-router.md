@@ -3905,6 +3905,10 @@ retention roll-up as **Not Done** for production readiness.
 
 ### Q-0098 — Do delegated Setup admins have apply authority for settings/bindings/provisioning?
 
+> **ANSWERED 2026-06-12 — (a) Delegates may apply.** Add a non-escalating delegated-setup
+> capability route so the mutation pipelines authorize the same actor the Setup gate did
+> (preserve execution-time re-checks). Unblocks roadmap **P0-3**.
+
 **Area:** Settings / Bindings / Provisioning · Setup delegation
 **Type:** Owner/product + authority decision exposed by production-readiness review
 **Priority:** High before Settings / Bindings / Provisioning is declared production-ready
@@ -3932,6 +3936,10 @@ either path changes an authority surface. Implementing either silently picks the
 
 ### Q-0099 — What is the retention & data-minimization policy for cached YouTube data?
 
+> **ANSWERED 2026-06-12 — (a) Bounded projection + scheduled purge.** Store only the bounded
+> fields the runtime uses, wire purge through a managed task, verify deletion against Postgres.
+> Unblocks roadmap **P0-2**.
+
 **Area:** Media / YouTube (shared platform)
 **Type:** Owner/product + privacy decision exposed by production-readiness review
 **Priority:** High before Media / YouTube is declared production-ready (privacy-sensitive)
@@ -3957,6 +3965,11 @@ storage or surfaces; wiring the existing purge on the current schema is a safe i
 [`docs/planning/production-readiness/media-youtube-production-readiness-map-2026-06-12.md`](../planning/production-readiness/media-youtube-production-readiness-map-2026-06-12.md)
 
 ### Q-0100 — Who is the canonical owner for direct channel mutations (create/clone/overwrite/category)?
+
+> **ANSWERED 2026-06-12 — (a) Converge under the existing seams.** Creation/category through
+> `ResourceProvisioningPipeline` (keep its confirmation rule), clone/overwrite through
+> `ChannelLifecycleService` with audit+events; then extend the channel invariant. Unblocks
+> roadmap **P0-4**.
 
 **Area:** Server management · channel lifecycle / resource provisioning
 **Type:** Architecture/ownership decision exposed by production-readiness review
@@ -3986,6 +3999,10 @@ unilaterally.
 [`docs/planning/production-readiness/server-management-production-readiness-map-2026-06-12.md`](../planning/production-readiness/server-management-production-readiness-map-2026-06-12.md)
 
 ### Q-0101 — Do the ~24 smaller subsystems need their own folio/context-pack, or is the cheat-sheet enough?
+
+> **ANSWERED 2026-06-12 — (a) Cheat-sheet is enough.** Folios stay for the high-traffic /
+> complex areas only; the gap is **intentional** and now documented in
+> [`docs/subsystems/README.md`](../subsystems/README.md). No stub folios. Idea #4 resolved.
 
 **Area:** Docs & agent system · orientation
 **Type:** Workflow/orientation decision (doc-maintenance burden vs. uniformity)
