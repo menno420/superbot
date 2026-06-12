@@ -246,16 +246,15 @@ Groom into an executable slice once automod or logging is underway.
 
 ---
 
-## Routing summary
+## Routing summary (updated 2026-06-12 — owner decisions via Q-0110/Q-0112)
 
-| Idea | Size | Risk | Router Q | Next destination |
+| Idea | Size | Risk | Decision | Next destination |
 |---|---|---|---|---|
-| Welcome service (embed only) | Small | Low | — | Roadmap Next |
-| Welcome service (PIL image cards) | Medium | Low | Q-0110 | Discuss → plan |
-| Social feed notifications (YouTube) | Medium | Low–medium (API quota) | — | Roadmap Later (Q-0041 approved) |
-| Social feed notifications (other sources) | Large | Medium | — | Roadmap Someday |
-| YouTube video summarization | Medium | Medium (AI cost) | — | Roadmap Later |
-| Event scheduler (simple tier) | Small | Low | Q-0112 | Discuss → plan |
-| Event scheduler (NL tier) | Medium | Medium (AI cost) | Q-0112 | Discuss |
-| Custom commands | Medium | Medium (sandboxing) | — | Roadmap Someday |
-| Dynamic server counters | Small | Low | — | Roadmap Next (quick-win) |
+| Welcome service — Phase 1 (embed-only) | Small | Low | **APPROVED** (Q-0110) | Plan `services/welcome_service.py` |
+| Welcome service — Phase 2 (PIL image cards) | Medium | Low | **APPROVED as follow-up** (Q-0110) | Plan after Phase 1 stable |
+| Social feed notifications (YouTube) | Medium | Low–medium | Approved direction (Q-0041) | Roadmap Later — needs plan |
+| Social feed notifications (other sources) | Large | Medium | Captured | Roadmap Someday |
+| YouTube video summarization | Medium | Medium (AI cost) | Captured | Roadmap Later |
+| Event scheduler (NL time parsing from day one) | Medium | Medium (AI cost) | **APPROVED** (Q-0112) | Plan needed before implementation |
+| Custom commands | Medium | Medium (sandboxing) | Captured | Roadmap Someday |
+| Dynamic server counters | Small | Low | Captured | Roadmap Next (quick-win, no Q needed) |
