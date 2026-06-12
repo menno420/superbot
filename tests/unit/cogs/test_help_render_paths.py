@@ -228,6 +228,7 @@ def test_advanced_top_level_set_today():
         "server_management",
         "settings",
         "utility",
+        "ux_lab",
     ]
 
 

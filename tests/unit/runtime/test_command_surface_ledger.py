@@ -1053,6 +1053,7 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "setup-undelegate": None,
     "setup-unskip": None,
     "utility": None,
+    "uxlab": None,
     # app_commands.Group namespaces (their subcommands ride the
     # group's surface decision; extend the pin per-subcommand only if
     # a group ever needs one classified individually)

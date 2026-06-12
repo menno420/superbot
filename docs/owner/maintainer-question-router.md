@@ -4390,8 +4390,16 @@ lane · the reconciliation-pass queue (Stage 0 entry re-pointed) ·
 
 ### Q-0116 — UX Lab (interface gallery cog): scheduling + audience
 
-> **OPEN (2026-06-12).** Raised by the owner-commissioned UX Lab design session
-> (the brainstorm → design pass for the interface-gallery testing cog).
+> **ANSWERED 2026-06-12 (owner, in-session, ~35 min after the design merged):**
+> *"you can start building it, let me know if you need anything from me."*
+> **Scheduling = immediate** — built the same session as an owner-steered slice
+> (PRs **#758 → #760 → #762**, merged 2026-06-12; the decade queue otherwise
+> unchanged). **Audience = the recommended option applied**: admin-gated
+> (`has_permissions(administrator=True)` + author-locked panels,
+> `visibility_tier=administrator`). *Answer scope: the owner's message approved
+> building; the audience choice is the standing recommendation acted on per the
+> act-vs-ask envelope — say the word to narrow it to owner-only. The non-decision
+> stands: CV2 adoption for real panels remains a future ADR.*
 
 **Area:** Building / interface · new subsystem `ux_lab`
 **Type:** Scheduling + product-audience decision (the design itself is pinned)
@@ -4417,8 +4425,9 @@ every callback re-checks authority) vs owner-only. Hidden from Help either way
 **Non-decision pinned in the plan:** the lab does NOT authorize migrating real panels
 to Components V2 — that stays a future ADR taken on the lab's evidence.
 
-**Routed (on answer):** roadmap 🖥️ Building/interface lane horizon · the plan's status
-banner · `ideas/ux-lab-interface-gallery-2026-06-12.md` lifecycle state.
+**Routed:** roadmap 🖥️ lane (SHIPPED bullet) · the plan's banner (`historical`, PR
+numbers) · `ideas/ux-lab-interface-gallery-2026-06-12.md` (state: implemented) · the
+durable export `docs/ux/pattern-library.md` · this entry is provenance.
 
 
 ### Q-0117 — Hermes as the independent-reviewer merge gate for big executor steps

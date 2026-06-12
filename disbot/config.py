@@ -88,6 +88,7 @@ INITIAL_EXTENSIONS = [
     "cogs.setup_cog",
     "cogs.server_management_cog",
     "cogs.hermes_cog",
+    "cogs.ux_lab_cog",
 ]
 
 # ==========================

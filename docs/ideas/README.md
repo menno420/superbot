@@ -26,9 +26,11 @@ Current broad captures:
   discord.py 2.7.1) · PIL cards), plus a **platform-limit probe bench** and clickable
   **mockups of the approved Q-0108–Q-0112 features**. Each exhibit carries registry
   metadata (`pattern_id`, status, limits) that graduates into `docs/ux/pattern-library.md`
-  — the bot's design vocabulary. **State: captured → routed** — full design in
-  [`../planning/ux-lab-interface-gallery-plan-2026-06-12.md`](../planning/ux-lab-interface-gallery-plan-2026-06-12.md)
-  (3 PRs); scheduling + audience open in router **Q-0116**.
+  — the bot's design vocabulary. **State: IMPLEMENTED same day** (owner-steered):
+  PRs **#758 / #760 / #762**, 2026-06-12 — the design
+  ([plan](../planning/ux-lab-interface-gallery-plan-2026-06-12.md), now `historical`)
+  shipped end-to-end; the durable artifact is
+  [`../ux/pattern-library.md`](../ux/pattern-library.md) (Q-0116 records the call).
 - [`server-safety-and-automod-2026-06-12.md`](./server-safety-and-automod-2026-06-12.md) —
   **owner-uploaded research (2026-06-12):** four moderation-safety modules SuperBot
   lacks vs. competitors (Carl-bot, Dyno, YAGPDB, Koya, Double Counter):
