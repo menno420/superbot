@@ -36,7 +36,12 @@ CURRENT_STATE = REPO_ROOT / "docs" / "current-state.md"
 STEP = 20  # the cadence: a pass per multiple-of-20 PR band (raised from 10, 2026-06-12)
 
 _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
-_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|\(#)(\d+)")
+# Match all three merge-subject styles in this repo's history:
+# "Merge pull request #N" (GitHub web), "Merge PR #N: …" (MCP merges with a
+# custom title — the dominant style since 2026-06), and "title (#N)" suffixes.
+# The missing "PR #" alternative made the checker under-report the latest PR
+# (stuck at #751 while #762 was merged — caught by the 2026-06-12 night pass).
+_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
 
 
 def _latest_merged_pr() -> int | None:

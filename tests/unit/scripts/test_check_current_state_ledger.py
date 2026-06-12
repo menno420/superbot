@@ -45,6 +45,9 @@ def test_merge_subject_extraction(monkeypatch) -> None:
             "fix: something (#733)",
             "chore: no pr number here",
             "Merge pull request #730 from menno420/other",
+            # The MCP merge style ("Merge PR #N: title") — five real merges
+            # went invisible to this check before the 2026-06-12 regex fix.
+            "Merge PR #762: UX Lab PR C — mock studio",
         ]
     )
 
@@ -54,7 +57,7 @@ def test_merge_subject_extraction(monkeypatch) -> None:
 
     monkeypatch.setattr(csl.subprocess, "run", lambda *a, **k: _R())
     nums = csl._git_merged_pr_numbers(10)
-    assert nums == [734, 733, 730]  # order preserved, de-duped, non-PR skipped
+    assert nums == [734, 733, 730, 762]  # order preserved, de-duped, non-PR skipped
 
 
 def test_find_missing_flags_unlisted(monkeypatch) -> None:

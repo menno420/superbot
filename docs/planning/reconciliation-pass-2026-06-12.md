@@ -1,11 +1,12 @@
 # Reconciliation + planning pass — 2026-06-12 (PR band #741–#750)
 
-> **Status:** `plan` — the first **Q-0107** docs-only reconciliation + planning pass
-> (**PR #741**; cadence: every 10th PR; this pass fired when merged PRs crossed **#740**). It does two
-> things: **(1) reconcile** — verify the repo's plan inventory against the latest PRs and
-> route every plan into the roadmaps; **(2) plan the next ~9 PRs** — the realistic,
-> modular queue for the upcoming decade. Re-badge `historical` at the next pass
-> (due once merged PRs cross **#750**; marker lives in `current-state.md`).
+> **Status:** `historical` — **superseded by the
+> [second pass (2026-06-12 night)](reconciliation-pass-2026-06-12-night.md)**, which
+> scored this queue (§2 there: slots 1+3 executed as #741/#748; the rest carried —
+> the band's capacity went to the owner-steered UX Lab + autonomous-loop arcs).
+> Kept for the scorecard's reference; act from the night pass's §4 queue instead.
+> *(Original header: the first Q-0107 pass, PR #741, fired crossing #740 at the
+> then-10 cadence — raised to 20 in #753.)*
 >
 > Source code and merged PRs win over this file. The [roadmap](../roadmap.md) stays the
 > cross-area index; this doc owns the **decade queue** so the two never restate each other.

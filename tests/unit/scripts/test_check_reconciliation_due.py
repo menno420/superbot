@@ -69,3 +69,17 @@ def test_strict_exit_when_not_due(monkeypatch) -> None:
 def test_no_marker_main_exits_zero(monkeypatch) -> None:
     monkeypatch.setattr(crd, "is_due", lambda: (False, 740, None))
     assert crd.main(["--strict"]) == 0
+
+
+def test_merge_subject_regex_covers_all_three_styles() -> None:
+    """The 'PR #' alternative is load-bearing: MCP merges ("Merge PR #N: …")
+    are the dominant style since 2026-06, and missing them froze the latest-PR
+    detection at #751 while #762 was merged (the 2026-06-12 night pass bug)."""
+    subjects = (
+        ("Merge pull request #730 from menno420/branch", 730),
+        ("docs(hermes): live-verified 2026-06-12 (#751)", 751),
+        ("Merge PR #762: UX Lab PR C — mock studio", 762),
+    )
+    for subject, expected in subjects:
+        match = crd._MERGE_SUBJECT_RE.search(subject)
+        assert match and int(match.group(1)) == expected, subject
