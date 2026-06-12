@@ -8,8 +8,11 @@ This page is the manual companion to the readiness snapshot
 (`services.platform_consistency.build_readiness_snapshot()`).  Every
 checklist item below corresponds to a field on the
 `ReadinessSnapshot` dataclass, so once you have looked at the live
-`!platform diagnostics` output you can tick each item directly from
-the rendered snapshot.
+`!platform runtime` output (the snapshot roll-up; `!platform
+consistency` renders the companion report) you can tick each item
+directly from the rendered snapshot. *(Route corrected 2026-06-12 —
+this page previously said `!platform diagnostics`, which does not
+exist; P2 doc-drift sweep, health readiness map.)*
 
 The doc-test `tests/unit/docs/test_smoke_test_checklist.py` pins
 this 1:1 correspondence, so adding a field to `ReadinessSnapshot`

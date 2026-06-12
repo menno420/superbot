@@ -1,11 +1,14 @@
 """Interactive ``!platform`` admin panel.
 
 ``_PlatformHubView`` is the ephemeral hub opened by ``!platform`` with
-no subcommand. It groups every existing ``!platform <subcommand>``
-into four category Selects (Runtime/status, Catalogues,
+no subcommand. It groups the read-only ``!platform <subcommand>``
+families into four category Selects (Runtime/status, Catalogues,
 Resources/rollout, Validation), an Overview button that returns
 to the category listing, and a Flag manager button that opens the
-editable per-guild flag manager.
+editable per-guild flag manager. Not every subcommand is grouped:
+``startup``/``findings`` (and other later additions) remain
+typed-only until deliberately added to a category — keep this list
+honest when extending (health readiness map, P2 sweep 2026-06-12).
 
 Selects update the panel in place via ``safe_defer`` +
 ``safe_edit``, identical to ``_DiagnosticsHubView`` and

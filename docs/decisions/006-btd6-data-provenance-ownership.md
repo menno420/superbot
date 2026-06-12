@@ -1,13 +1,16 @@
 # ADR-006: BTD6 data provenance + owner-per-fact-type matrix
 
-**Status:** Accepted (2026-06-05)
+**Status:** Accepted (2026-06-05) — **pause condition SATISFIED 2026-06-08+**
+(see the dated addendum at the bottom; the decision itself is unchanged)
 **Supersedes:** none
 **Superseded by:** none
 
 > **Accepted.** The provenance object + owner matrix + Hybrid storage choice are
 > ratified and binding. This ADR still does **not** hand-design the schema; a
 > follow-on docs/schema PR does that. BTD6 data extraction stays **PAUSED** until
-> that PR lands (the RC-10 gate).
+> that PR lands (the RC-10 gate). *(That gate has since cleared — see the
+> addendum; the pause wording below is the historical decision text, kept
+> verbatim per ADR immutability.)*
 
 ## Context
 
@@ -59,3 +62,17 @@ any new extraction resumes.
 
 Ratify when the maintainer fixes the storage model; the provenance object + matrix
 then become binding and a docs/schema PR implements them.
+
+---
+
+## Status addendum (2026-06-12 — P2 doc-drift sweep; decision unchanged)
+
+The pause condition this ADR set **was satisfied and the gate cleared**: the
+provenance schema shipped as `docs/btd6/btd6-provenance-schema.md` (RC-10 gate
+met, 2026-06-08), extraction resumed owner-approved against the decode-status
+backlog, and the **game-native cutover landed** (Q-0066, PR #649, 2026-06-10 —
+committed data is the pinned v55.1 dump). The provenance/ownership decision in
+this ADR remains binding and unweakened; only the "stays PAUSED" wording above
+is historical. Live status: `docs/btd6/btd6-gamedata-decode-status.md` +
+`docs/subsystems/btd6.md`. *(The BTD6 readiness map flagged the stale pause
+wording as agent-misrouting drift — this addendum is the fix.)*

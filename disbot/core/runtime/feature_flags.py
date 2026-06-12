@@ -351,7 +351,10 @@ YOUTUBE_CONTEXT_ENABLED = FeatureFlag(
         "effectively off even when enabled here."
     ),
     default_value=False,
-    owner="ai",
+    # ADR-007: media/YouTube is shared platform infrastructure, not AI-owned —
+    # the AI pipeline is one consumer of it. Owner corrected from "ai" in the
+    # P2 doc-drift sweep (2026-06-12; ai + media readiness maps).
+    owner="platform",
     audience="operator",
     label="YouTube context for AI replies",
 )

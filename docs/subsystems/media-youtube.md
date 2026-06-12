@@ -26,8 +26,13 @@ and rendering video references. Start in `disbot/services/youtube_context_servic
 ## Current state
 
 - Fetch, context, cache, DB, embed, and renderer seams exist. YouTube context is
-  operator/config gated, and migration `049` stores bounded cached metadata,
-  transcript/fetch status, errors, and expiry.
+  operator/config gated. Migration `049` stores transcript/fetch status, errors,
+  and expiry — **but the cached rows currently include raw fetched payloads, not
+  the bounded metadata projection this line previously claimed** (media readiness
+  map, 2026-06-12). The bounded-projection + scheduled-purge shape is the decided
+  **Q-0099 target**, queued as hardening **P0-2** (band queue slot 9) — until that
+  lands, treat cached media rows as raw-payload retention with the privacy
+  implications the readiness map names.
 - YouTube is env-gated and runs degraded in the sandbox when required keys/network
   behavior are unavailable; degraded does not mean broken, and production behavior
   has not been live-verified in this mapping session.
