@@ -23,14 +23,16 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 29 of the 37 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 29 of the 38 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 29 of the 30 subsystem-owning
-  cogs expose it. The 8 extensions without the hook: the bootstrap
+  cogs expose it. The 9 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
   `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
   commands route under the one `btd6` subsystem via `btd6_cog`'s hook),
-  and `setup_cog` (an orchestrator with no `SUBSYSTEMS` row). "Loaded
+  `setup_cog` (an orchestrator with no `SUBSYSTEMS` row), and
+  `hermes_cog` (the Hermes→Claude dispatch bridge — admin-only slash
+  commands, no subsystem row). "Loaded
   extension", "subsystem", and "Help category" are different concepts —
   do not conflate them (help audit §4).
 - The hub key `diagnostic` is "Platform / Diagnostics". The override
@@ -70,9 +72,9 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 ## 2. Subsystem inventory
 
 30 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 37 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+each below); 38 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
-above for the 8 extensions without a hook). Every subsystem's host cog
+above for the 9 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
 resolver opens a real panel for every subsystem except `help`, and only
 falls back to the command-list embed when the hook is missing or raises.

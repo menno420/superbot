@@ -106,17 +106,17 @@ Source code and merged PRs win over anything written here.
   stale platform facts** (verified on installed discord.py 2.7.1): the limits doc's CV2
   budget (25 → **40 children / 4 000-char text**) and the journal's "modals can't contain
   selects" rule (Label, 2.6+). Scheduling + audience = router **Q-0116** (open). Docs-only.
-- **#746–#747 + #749–#752 (2026-06-12, the dispatch-bridge wiring + routine-fleet arc)** —
+- **#746–#754 (2026-06-12, dispatch-bridge wiring + routine-fleet arc)** —
   the Hermes→Claude Code dispatch bridge went **live-verified end-to-end**: **#746**
   Context7 verify/tool-name fix · **#747** routine-creation step marked DONE (calibration
   pass) · **#749** `superbot-dispatch` wired to the verified Routines `/fire` API ·
-  **#751** Telegram-driven dispatch path live-verified · **#752**
+  **#750** routed the wager-flow-map session idea into the backlog · **#751**
+  Telegram-driven dispatch path live-verified · **#752**
   [`operations/autonomous-routines.md`](operations/autonomous-routines.md) — the Routine
-  fleet's prompts in git (autonomous dispatch · nightly docs-reconciliation, self-gated on
-  `check_reconciliation_due` · night caretaker, phase-gated, one-small-bug-per-run) ·
-  **#750** routed the wager-flow-map session idea into the backlog. *(Ledger entries added
-  retroactively by the #755 session's Q-0104 audit — these micro-PRs shipped without
-  ledger lines.)*
+  fleet's prompts in git (autonomous dispatch · nightly docs-reconciliation · night
+  caretaker) · **#753** docs-reconciliation routine made issue-triggered + cadence raised
+  10→20 (Q-0107) · **#754** routine prompts rewritten as self-improvement-loop turns with
+  memory read/write and the Q-0089/Q-0102 hooks.
 - **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
   `services/game_wager_workflow.py`: the audited money boundary for every two-party /
   paid-entry game move, composing `economy_service.*_in_txn` inside one
