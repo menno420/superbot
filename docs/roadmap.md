@@ -54,13 +54,11 @@
 > (Q-0083).
 >
 > **Recommended session queue (2026-06-10, owner-ack'd in the outage session):**
-> 1) **Untested-surface testing checklist** (owner-commissioned): enumerate every
-> command/prompt that automated tests *can't* verify and that hasn't been explicitly
-> live-tested, as a maintained checklist — extends
-> [production-eval-checklist](audits/production-eval-checklist-2026-06-10.md); pairs
-> with **Q-0086** joint live-testing (provider keys → session env) once the owner
-> sets it up; its automation follow-on is the captured
-> [bot-self-test-walker idea](ideas/bot-self-test-walker-2026-06-10.md) · 2) **Self-driving foundation Stage 0 (Q-0088)** — the one-click
+> 1) ~~**Untested-surface testing checklist** (owner-commissioned)~~ **EXECUTED
+> 2026-06-12 (PR #731):** [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md)
+> — 18 sections / 70+ items; companion
+> [`scripts/command_surface_dump.py`](../scripts/command_surface_dump.py) (offline
+> AST dump + `--diff-checklist` gap check, same session grooming pass) · 2) **Self-driving foundation Stage 0 (Q-0088)** — the one-click
 > continuation workflow (`workflow_dispatch` fresh-context session from the standing
 > handoff; activates the bounded-session protocol —
 > [ai-project-workflow §10](owner/ai-project-workflow.md); owner provides the API-key
