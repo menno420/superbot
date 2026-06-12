@@ -259,9 +259,11 @@ standing rules:
 
 ## 10. Session lifecycle & continuation — the self-driving foundation (Q-0088)
 
-> **Status:** designed 2026-06-10; the bounded-session *protocol* **activates
-> when the Stage 0 continuation workflow lands** (the owner's explicit
-> conditional). Until then, the context-budget guidance and the
+> **Status:** designed 2026-06-10; **dispatch mechanism re-decided 2026-06-12 (Q-0115):**
+> Stage 0's separate GitHub-Action dispatcher is **folded into the #742 Claude Code
+> Routine bridge** (`operations/hermes-dispatch-bridge.md`) — the bounded-session
+> *protocol* now **activates once the Routine is wired + calibrated** (the runbook's ⬜
+> steps), not "when Stage 0 lands". Until then, the context-budget guidance and the
 > no-unguided-PRs rule apply as journal guidance.
 
 **Why (owner-stated, Q-0088):** two observed failure modes of unbounded
@@ -290,7 +292,9 @@ chained** sessions.
 
 **The continuation mechanism (staged):**
 
-- **Stage 0 — one-click continuation:** a `workflow_dispatch` GitHub Action
+- **Stage 0 — one-click continuation** *(superseded 2026-06-12, Q-0115: folded into the
+  Routine bridge — the one-click run is now a Routine fire, no GH Action is built; kept
+  for design history)*: a `workflow_dispatch` GitHub Action
   that boots a **fresh** Claude Code session (fresh context — the fix for the
   700K problem) with a fixed prompt: *"Read the orientation chain and the
   newest handoff; execute the recommended next ~2 tasks under the bounded

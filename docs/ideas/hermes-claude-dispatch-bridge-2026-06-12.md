@@ -1,6 +1,9 @@
 # Idea: Hermes → Claude Code (web) dispatch bridge
 
-> **Status:** `ideas` → **repo-side seam built 2026-06-12** (Q-0113/Q-0114). The
+> **Status:** `ideas` → **repo-side seam built 2026-06-12** (Q-0113/Q-0114) · **Q-0115
+> (same day): this Routine bridge is THE continuation-dispatch seam** — Stage 0's separate
+> GH-Action dispatcher is folded in; the bounded-session protocol activates on
+> wired + calibrated. The
 > `superbot-dispatch` Hermes skill + the runbook with the routine's saved gate prompt now
 > exist (`docs/operations/hermes-dispatch-bridge.md`); the merge gate (full self-merge on
 > green CI) and human gate (agent-originated features only) are decided. **Remaining = the
