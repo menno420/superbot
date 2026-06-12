@@ -3338,7 +3338,7 @@ overlay on the solo core.
 **Area:** AI lane / product economics
 **Type:** Owner posture decision (agent-initiated deep round)
 **Priority:** Medium-high (binds the AI-DM plan's budget gates; compounds with Q-0080)
-**Status:** Answered (2026-06-10) — **Routed** → capture doc §5 (T-6) + §6; the AI-DM plan cites it when structured
+**Status:** Answered (2026-06-10) — **Routed** → capture doc §5 (T-6) + §6; the AI-DM plan cites it when structured. **Interim € figure set 2026-06-12 (question panel): €30/month** — see conclusion 2.
 
 **Question:** The cost *mechanism* is decided (Q-0040: budget-capped seams,
 degrade-closed, never silent overspend) — but no number or posture exists for
@@ -3353,9 +3353,13 @@ sleeping") until reset.
 
 1. **One owner-set global ceiling → derived per-guild budgets.** Predictable
    forever; no silent growth.
-2. **The € figure itself is still owed** — set it right after the first real
-   prod measurements (the model-loop prod check is already pending). Until
-   then: conservative low caps.
+2. **The € figure: interim ceiling set 2026-06-12 (owner, question panel) = €30/month
+   global hard ceiling** (picked over the recommended €15 — headroom for joint
+   live-testing + the new metered lanes; datapoint at decision time: ~€12 spent total).
+   Refine after the first real prod measurements; per-guild budgets derive from it.
+   *Answer scope: the interim global number only — mechanism/degrade behavior unchanged
+   from the 2026-06-10 answer; metered designs (NL events Q-0112, YouTube summarization)
+   build against €30/mo until remeasured.*
 3. **Degradation is visible and in-world** (storyteller-resting copy), never
    silent — matches Q-0040's "never silent overspend".
 4. Public ambition (Q-0080) × cosmetic-only donations (Q-0039) × a fixed
@@ -3885,7 +3889,7 @@ CodeGraph-style pin note for any new server.
 **Area:** Health / Diagnostics / persistent operational findings
 **Type:** Owner/product decision exposed by production-readiness review
 **Priority:** High before Health / Diagnostics is declared production-ready
-**Status:** **Open** (asked 2026-06-12)
+**Status:** ✅ **ANSWERED 2026-06-12 (owner, question panel) — (a) operator-managed lifecycle.**
 
 **Question:** Persistent findings support `open`, `resolved`, and `ignored` states, and
 retention only rolls up/prunes `resolved`/`ignored` rows. Source currently provides only
@@ -3903,6 +3907,15 @@ finding out of `open`. Which lifecycle is intended?
 **Why this needs owner intent:** automatic absence does not necessarily mean recovery,
 while operator mutation adds a privileged control surface to a subsystem intentionally
 kept read-only so far. Implementing either silently would choose product semantics.
+
+**Decision (2026-06-12): (a) operator-managed lifecycle** — minimal resolve/ignore/reopen
+mutations through the existing sole writer (`services.health_findings_service`), exposed
+from an explicitly privileged existing diagnostics surface; audited like every other
+mutation. An automatic absence-based resolve rule may layer on later as a separate ask.
+*Answer scope: the lifecycle-transition owner only — retention mechanics and the P1-2
+scheduling/drift items proceed under the hardening roadmap as planned.*
+**Routed:** hardening roadmap P1-2 (now unblocked) · health readiness map · this entry is
+provenance.
 
 **Safe default until answered:** keep the existing sole-writer/store unchanged; do not
 add a second writer or direct cog/view DB mutation. Treat finding lifecycle and effective
@@ -4337,3 +4350,32 @@ enforced by `scripts/check_phase_gate.py`: a feature may only be *originated* in
 **Home:** `docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md` (the loop this gates) ·
 `scripts/check_phase_gate.py` (the phase mechanism) · `docs/operations/hermes-dispatch-bridge.md`
 · `docs/owner/ai-project-workflow.md` §12 · this entry is provenance.
+
+---
+
+### Q-0115 — Continuation dispatch: one seam (the Routine bridge) or two (+ Stage 0's GH Action)?
+
+> **ANSWERED 2026-06-12 (owner, question panel).** Raised by the Q-0107 reconciliation pass
+> the day #742 wired the Hermes → Claude Code Routine dispatch bridge.
+
+**Area:** Agent ecosystem / workflow · session continuation
+**Type:** Owner direction decision (de-duplicating two designed dispatch mechanisms)
+
+**Question:** Stage 0 (workflow §10 — a `workflow_dispatch` GitHub Action that boots a
+fresh bounded session from the standing handoff; owner-side API-key secret) overlaps the
+#742 dispatch bridge (Hermes fires a Claude Code **Routine** `/fire` endpoint). Keep both,
+fold one in, or decide after calibration?
+
+**Decision: fold Stage 0 into the Routine seam** *(the recommended option)*. The Claude
+Code Routine becomes **the one dispatch mechanism** — Hermes-fired, one-click, and (later)
+scheduled continuation runs all use it. Stage 0's separate GitHub-Action dispatcher is
+**dropped, not built**; the **bounded-session protocol (workflow §10) activates once the
+Routine is wired + calibrated** (the Q-0105 calibration steps in the bridge runbook) instead
+of "when Stage 0 lands". One mechanism to trust, audit, and calibrate.
+*Answer scope: the dispatch mechanism only — the bounded-session protocol's content, the
+Q-0113/Q-0114 gates, and Stage 1+ staging are unchanged; revisit only if the Routine proves
+insufficient (e.g. a Hermes/VPS outage making a GitHub-side fallback worth its upkeep).*
+
+**Routed:** `ai-project-workflow.md` §10 (Stage 0 superseded note) · roadmap 🤝 workflow
+lane · the reconciliation-pass queue (Stage 0 entry re-pointed) ·
+`ideas/hermes-claude-dispatch-bridge-2026-06-12.md` · this entry is provenance.

@@ -88,3 +88,29 @@ Dedup-checked: `check_reconciliation_due.py` only tracks *when* a pass is due, n
 content; nothing in `docs/ideas/` covers this. Conveyor home: this log (small tooling
 idea; build it at the #750 pass if the inventory step still hurts — also the natural
 place to fold the ⟲ hook proposal above into a router Q-block).
+
+---
+
+## Continuation (same session, post-merge): direction-locking question round
+
+Owner asked to use this chat for planning/ordering before his next implementation
+session (Hermes implementation continuing in a parallel chat). One structured round
+(Q-0061 pattern), four decisions — all recorded in the router + routed:
+
+1. **Next implementation session = P0-1 games wager money-safety** → design pinned
+   same session: [`planning/games-wager-money-safety-plan-2026-06-12.md`](../docs/planning/games-wager-money-safety-plan-2026-06-12.md)
+   (source-verified: both PvP settles are sequential credit→overdraft-debit;
+   `economy_service` already has the atomic primitives — the plan composes them into one
+   audited `game_wager_workflow` with escrow-at-accept as D1).
+2. **Q-0097 = (a) operator-managed findings lifecycle** → P1-2 unblocked; **every
+   hardening gate is now answered**.
+3. **Q-0082 interim ceiling = €30/month** (owner picked over the recommended €15 —
+   headroom for live-testing + new metered lanes).
+4. **Q-0115 (new) = fold Stage 0 into the #742 Routine bridge** — one dispatch seam;
+   bounded protocol activates on wired + calibrated (workflow §10 + roadmap + bridge
+   idea doc annotated).
+
+Standing owner actions re-surfaced (no decision needed): wire the Routine + `/fire`
+token then calibrate (Q-0105) · V-16 PNG pack · `!btd6ops seed-data` stays self-applying ·
+Q-0036 #632 markup · fishing ratification (V-14) still pending — deliberately not asked
+this round (games lane is occupied by P0-1; ratify when the games lane frees up).
