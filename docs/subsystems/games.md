@@ -25,6 +25,10 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   handle timeout/terminal states safely. Reuse shared panel/back helpers where the
   actionability roadmap points to them.
 
+## Production-readiness review
+
+- Current verified map: [`docs/planning/production-readiness/games-production-readiness-map-2026-06-12.md`](../planning/production-readiness/games-production-readiness-map-2026-06-12.md).
+
 ## Current state
 
 - `docs/archive/games-actionability-roadmap.md` is complete: hubs and the principal RPS,
