@@ -68,6 +68,14 @@ Current broad captures:
   commands). 8 tests. Makes `docs/audits/untested-surface-checklist.md` machine-verifiable
   going forward.
 
+- [`wager-flow-map-2026-06-12.md`](./wager-flow-map-2026-06-12.md) —
+  **session idea (2026-06-12, Q-0089, from the P0-1 wager-safety session #748):** a
+  read-only offline `scripts/wager_flow_map.py` that traces every game's money path
+  (accept→escrow→settle/refund, entry→payout) from the new `game_wager_workflow` call
+  sites + `*_escrow` subsystems — the human-readable companion to the
+  `test_game_wager_write_boundary` fence, with a `--check` drift mode (every escrow
+  subsystem must have a matching settle + recovery). Quick-win, read-only tooling lane;
+  build it next time an economy path is touched. Not auto-promoted.
 - [`review-unit-tagging-2026-06-12.md`](./review-unit-tagging-2026-06-12.md) —
   **session idea (2026-06-12, Q-0089):** operationalize the new
   [`repo-review-map.md`](../repo-review-map.md) — have `context_map.py` print a file's
