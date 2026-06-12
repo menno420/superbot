@@ -702,6 +702,29 @@ SUBSYSTEMS: dict[str, dict] = {
             "diagnostic.latency.check",
         ],
     },
+    "ux_lab": {
+        "display_name": "UX Lab",
+        "description": "Interface gallery — browse UI patterns, all fake & safe",
+        "emoji": "🧪",
+        "color": ADMIN_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "admin",
+        "tags": ["admin", "design", "gallery", "patterns"],
+        "entry_points": ["uxlab"],
+        "default_channels": ["staff", "bot-spam"],
+        "related_subsystems": [],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 20,
+        # Zero-write workbench: the lab mutates nothing (CI-fenced by
+        # tests/unit/invariants/test_ux_lab_zero_write.py), so it holds no
+        # capability of its own — authority is the administrator floor on
+        # the command plus the view's author lock.
+        "capabilities": [],
+    },
     "ai": {
         "display_name": "AI Platform",
         "description": (
