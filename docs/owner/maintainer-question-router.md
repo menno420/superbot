@@ -4125,3 +4125,36 @@ sessions.
 
 **Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (the Q-0014 tooling bullet) · this
 entry is provenance.
+
+### Q-0106 — Agents never self-edit CLAUDE.md on their own initiative; propose for live review
+
+> **DIRECTED 2026-06-12 (owner, voice).** For full autonomous improvement, agents must not
+> edit `.claude/CLAUDE.md` (or binding rules) when *they* have an idea — they document the
+> proposal for live review. The owner's framing: the instructions "may be binding for their
+> session, but they are not locked/pinned — they are still in development just like the rest
+> of the system."
+
+**Area:** Agent system · governance / self-modification boundary
+**Type:** Standing workflow rule (process + safety)
+**Priority:** Standing — every session, load-bearing for autonomy
+
+**Decision:**
+- **`CLAUDE.md` is binding *for* a session but not *pinned*.** It is in development like the
+  rest of the system. Agents follow it this session and may *evolve* it — but only by
+  **proposing**, not self-applying.
+- **Agent-originated rule changes → a router Q-block (DISCUSS lane), never a direct edit.**
+  The change lands in `CLAUDE.md` only after the owner decides.
+- **Exception — maintainer-directed in-session changes apply directly.** When the owner
+  directs a rule change live (as with Q-0102–Q-0106), the owner *is* the live reviewer, so
+  the agent applies it and records the provenance Q-number.
+- **In a fully autonomous session (no human live), `CLAUDE.md` is read-only to the agent** —
+  it only ever writes proposals. This is *why* the `Edit(.claude/CLAUDE.md)` permission prompt
+  is kept (it is the live-review gate when a human is present); see
+  `docs/operations/claude-code-hooks-and-plugins.md` § Permissions posture.
+
+**Why:** self-modification of one's own binding instructions is the highest-risk autonomous
+action — the prime prompt-injection / value-drift target. Routing all rule changes through
+owner review keeps the agent's "constitution" under human control while still letting the
+system evolve. This is the governance counterpart to the Q-0102/Q-0104 self-audit loop.
+
+**Home:** `.claude/CLAUDE.md` Working agreement (binding) · this entry is provenance.
