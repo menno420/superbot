@@ -41,6 +41,13 @@ system, refocusing priority on the substrate so sessions auto-execute bot work.
   step → abandoned drafts; the early *open* for the PR number is what mattered). Added a
   hard **terminal-state** requirement: every session merges or closes its PR, never leaves
   it open. Updated CLAUDE.md (Q-0052 refined), router (Q-0103), and the `/session-close` skill.
+- **Permission-friction reduction (owner ask — sessions stalling on unexpected approvals).**
+  `.claude/settings.json`: set `defaultMode: acceptEdits` (auto-accept file edits — the main
+  stall) and a **curated allowlist** for the safe workflow operations (git read+commit+push,
+  the python3.10 check/test/format toolchain, the GitHub PR MCP ops, read tools). Force-push,
+  push-to-main, hard-reset, and clean stay in `ask`; rm / network / secrets / arbitrary bash
+  still prompt (the prompt is also the prompt-injection guard against external PR/issue
+  content). The environment's own permission mode (web UI) remains the dominant lever.
 
 ## Verification
 
