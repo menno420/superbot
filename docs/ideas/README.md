@@ -44,6 +44,13 @@ Current broad captures:
   `review_scope.py` that classifies a changed-file set as single-slice / multi-slice /
   platform. Turns the review partition from a doc you must remember into a signal the
   toolchain emits. Read-only, quick-win lane, not auto-promoted.
+- [`portable-agent-memory-package-2026-06-12.md`](./portable-agent-memory-package-2026-06-12.md) —
+  **maintainer vision (2026-06-12, voice):** extract this repo's consistent-memory +
+  self-improving-workflow substrate into a standalone **open-source package** (à la CodeGraph)
+  — the externalization of the "real artifact" CLAUDE.md already names. Carries a **priority
+  reorientation**: lead with memory/workflow-substrate improvements so sessions auto-execute
+  bot work. Core hard problem = mechanism-vs-content separation; sequencing = harden in-repo
+  first (no approval needed), extract later. → **discuss lane**.
 - [`autonomous-improvement-loop-vision-2026-06-12.md`](./autonomous-improvement-loop-vision-2026-06-12.md) —
   **maintainer vision (2026-06-12, voice):** the north-star — agents continuously improve
   the bot, chain session→session autonomously (idea → revised plan → implement), gate

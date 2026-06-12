@@ -4028,3 +4028,30 @@ docs surface — generating 24 stubs that then rot would be worse than the curre
 point for non-folio cogs.
 
 **Source review:** [`docs/ideas/repo-manageability-2026-06-12.md`](../ideas/repo-manageability-2026-06-12.md) #4.
+
+### Q-0102 — Mandatory session ender: every session reviews the previous session + surfaces one system improvement
+
+> **DIRECTED 2026-06-12 (owner directive, voice).** Not a question — a standing rule the
+> maintainer asked to be **required**. Recorded here for provenance; the binding form lives
+> in `.claude/CLAUDE.md` § "Session & plan workflow".
+
+**Area:** Agent system · workflow / self-improvement
+**Type:** Standing workflow rule (process)
+**Priority:** Standing — every session
+
+**Directive:** Every session, at close, adds a short **⟲ Previous-session review** note to
+its `.sessions/` log: one genuine remark on the *previous* session (what it did well / what
+it missed) **plus one concrete improvement to the system/workflow itself**. Every session
+**assumes the system is still in development** and *initiates* improvement thinking on its
+own rather than waiting to be asked.
+
+**Guardrails (owner-stated):** keep it short and useful; **if there is genuinely nothing to
+improve, say so and why — do not hallucinate filler** (same bar as the Q-0089 idea rule).
+
+**Why:** the maintainer observed this was "sort of a rule already" but inconsistently done
+(improving lately). Making it a required session-ender turns the session chain into a
+**self-auditing loop** — each session reviews its predecessor. It is the internal mirror of
+the Hermes-as-independent-reviewer seam
+([`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`](../ideas/autonomous-improvement-loop-vision-2026-06-12.md)).
+
+**Home:** `.claude/CLAUDE.md` (binding) · this entry is the provenance record.

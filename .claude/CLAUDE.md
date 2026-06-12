@@ -143,6 +143,17 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   idea file + README index entry. Forced filler is worse than none — the owner wants
   *consistent genuine generation* ("if agents did this consistently, you're pretty much
   guaranteed to eventually come up with a good idea"), not ceremony.
+- **Review the previous session — mandatory session ender (owner directive Q-0102,
+  2026-06-12).** Distinct from the forward idea (Q-0089) and grooming (which move *bot/idea*
+  work): at session close, add a short **⟲ Previous-session review** note to the `.sessions/`
+  log — one genuine remark on the *previous* session (what it did well, what it missed or
+  could have done better) **plus one concrete improvement to the system/workflow itself** it
+  surfaces. **Assume the system is always still in development** and *initiate* the
+  improvement thinking yourself — don't wait to be asked. Keep it short and useful; **if
+  there is genuinely nothing to improve, say so and why — never hallucinate filler** (same
+  bar as Q-0089). This turns the session chain into a **self-auditing loop**: each session
+  reviews its predecessor, which is the internal mirror of the Hermes-as-independent-reviewer
+  idea (`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`).
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges
