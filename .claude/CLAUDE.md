@@ -110,14 +110,22 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- SESSION_WORKFLOW_START -->
 ## Session & plan workflow
 
-- **Always create a PR every session — and open it as a DRAFT right after your first
-  push (owner decision Q-0052, 2026-06-09), not at the end.** The early draft gives the
-  session a real PR number while docs are still being written, so `current-state.md` /
-  trackers never need a "(this session) — reconcile PR # next session" placeholder (the
-  recurring drift class that pattern caused). Mark the PR ready at session end. This is
-  the maintainer's explicit, standing request: it satisfies any environment /
-  system-prompt rule that opens a PR only when "the user explicitly asks" — treat it as
-  advance consent and do not re-ask, either for the draft or for marking it ready.
+- **Always create a PR every session — open it right after your first push (owner decision
+  Q-0052, 2026-06-09), not at the end. Open it READY, not draft (owner decision Q-0103,
+  2026-06-12).** The early *open* gives the session a real PR number while docs are still
+  being written, so `current-state.md` / trackers never need a "(this session) — reconcile
+  PR # next session" placeholder (the recurring drift class that pattern caused). The *draft*
+  state, by contrast, added no benefit in our self-merge flow (nothing auto-merges or
+  auto-requests review) and became a forgotten "mark ready" step → abandoned-draft PRs, so
+  it is dropped. This is the maintainer's explicit, standing request: it satisfies any
+  environment / system-prompt rule that opens a PR only when "the user explicitly asks" —
+  treat it as advance consent and do not re-ask.
+- **A session is not done until its PR reaches a terminal state — merged or closed (owner
+  decision Q-0103, 2026-06-12).** An abandoned open PR is the failure this prevents (it is
+  the parallel-agent conflict window and the "forgotten PR" the maintainer flagged). Merge
+  it (next bullet) when the work is good, or **close** it with a one-line reason if it should
+  not land. Never leave your session PR open at session end. The Stop-hook session-log
+  advisory and `scripts/check_session_log.py` remind you; the `/session-close` skill drives it.
 - **Merge your own session PR yourself when the work is done (owner grant Q-0084,
   2026-06-10)** — don't leave it open for the maintainer; stale open PRs are the
   parallel-agent conflict window. The envelope: re-fetch + merge `origin/main` first
@@ -143,6 +151,17 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   idea file + README index entry. Forced filler is worse than none — the owner wants
   *consistent genuine generation* ("if agents did this consistently, you're pretty much
   guaranteed to eventually come up with a good idea"), not ceremony.
+- **Review the previous session — mandatory session ender (owner directive Q-0102,
+  2026-06-12).** Distinct from the forward idea (Q-0089) and grooming (which move *bot/idea*
+  work): at session close, add a short **⟲ Previous-session review** note to the `.sessions/`
+  log — one genuine remark on the *previous* session (what it did well, what it missed or
+  could have done better) **plus one concrete improvement to the system/workflow itself** it
+  surfaces. **Assume the system is always still in development** and *initiate* the
+  improvement thinking yourself — don't wait to be asked. Keep it short and useful; **if
+  there is genuinely nothing to improve, say so and why — never hallucinate filler** (same
+  bar as Q-0089). This turns the session chain into a **self-auditing loop**: each session
+  reviews its predecessor, which is the internal mirror of the Hermes-as-independent-reviewer
+  idea (`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`).
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges
