@@ -19,8 +19,9 @@ output can churn) and **few** (each is a trust surface). Adoption is owner-gated
 Two tools:
 - `resolve-library-id` — map a library name ("discord.py", "asyncpg", "pillow") → a
   Context7 library ID.
-- `get-library-docs` — fetch the **current** docs/snippets for that ID, optionally scoped to
-  a topic (e.g. "app_commands", "connection pooling").
+- `query-docs` — fetch the **current** docs/snippets for that ID, with a specific query
+  (e.g. "app_commands slash command definition", "asyncpg connection pooling"). Call
+  `resolve-library-id` first to get the `/org/project` ID.
 
 **When to use it:** before writing or reviewing non-trivial code against a fast-churning
 third-party library — `discord.py` above all, also `asyncpg`, `Pillow`, `pytest`. Prefer it
@@ -46,8 +47,11 @@ To raise the limit:
 ## Reliability / provenance (Q-0105)
 
 - **`context7`** — added **2026-06-12** (owner-approved, Q-0096). *Why:* reduce the
-  "API-from-memory" bug class on `discord.py`/`asyncpg`. **Unverified:** confirm its returned
-  docs against the library's official docs a few times across sessions before trusting them.
+  "API-from-memory" bug class on `discord.py`/`asyncpg`. **Verified 1× (2026-06-12):** resolved
+  `discord.py` → `/rapptz/discord.py` and `query-docs` returned *current, accurate* API — the
+  post-2.0 button-callback signature order **and** the Components-V2 `LayoutView`/`Container`/
+  `Section` APIs (discord.py 2.6, newer than the model's training). Still **unverified overall**
+  — confirm a few more times across sessions before graduating it out of convenience status.
   **Delete if unreliable:** if its docs prove stale/wrong, the rate limit makes it useless, or
   it adds noise over several sessions, **remove the `.mcp.json` entry + the
   `enabledMcpjsonServers`/permission lines** — it is a convenience, not load-bearing.
