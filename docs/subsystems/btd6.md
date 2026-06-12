@@ -85,6 +85,7 @@ behavior/config gates are satisfied.
 `docs/decisions/006-btd6-data-provenance-ownership.md`, the BTD6 docs indexed in
 [`../btd6/README.md`](../btd6/README.md),
 `docs/audits/agent-d-btd6-ai-subsystem-audit-2026-06-05.md`,
+[`docs/planning/production-readiness/btd6-production-readiness-map-2026-06-12.md`](../planning/production-readiness/btd6-production-readiness-map-2026-06-12.md),
 `docs/current-state.md`, `docs/subsystems/ai.md`, `docs/subsystems/media-youtube.md`.
 
 ## Product-extension routing (not approved)
