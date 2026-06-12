@@ -12,9 +12,11 @@ import discord
 from utils.ux_patterns import PatternCategory, category_counts
 from views.base import HubView
 from views.ux_lab.buttons import ButtonsWingView
+from views.ux_lab.compare import CompareView
 from views.ux_lab.embeds import EmbedsWingView
 from views.ux_lab.image_cards import ImageWingView
 from views.ux_lab.layout_v2 import LayoutWingView
+from views.ux_lab.mockups import MockupsWingView
 from views.ux_lab.modals import ModalsWingView
 from views.ux_lab.probes import ProbesBenchView
 from views.ux_lab.selects import SelectsWingView
@@ -27,6 +29,7 @@ _WING_LABELS: dict[PatternCategory, str] = {
     PatternCategory.EMBEDS: "Embeds",
     PatternCategory.LAYOUT_V2: "Components V2",
     PatternCategory.IMAGE: "PIL cards",
+    PatternCategory.MOCKUP: "Mock studio",
     PatternCategory.PROBE: "Probe bench",
 }
 
@@ -84,6 +87,7 @@ class UxLabHomeView(HubView):
             ("🪧", "Embeds", EmbedsWingView, 0),
             ("🧱", "Components V2", LayoutWingView, 1),
             ("🎨", "PIL cards", ImageWingView, 1),
+            ("🎭", "Mock studio", MockupsWingView, 1),
         )
         for emoji, label, wing_cls, row in wings:
             btn: discord.ui.Button[discord.ui.View] = discord.ui.Button(
@@ -118,3 +122,18 @@ class UxLabHomeView(HubView):
 
         bench_btn.callback = _open_bench  # type: ignore[method-assign]
         self.add_item(bench_btn)
+
+        compare_btn: discord.ui.Button[discord.ui.View] = discord.ui.Button(
+            label="Compare",
+            emoji="⚖️",
+            style=discord.ButtonStyle.secondary,
+            row=2,
+        )
+
+        async def _open_compare(interaction: discord.Interaction) -> None:
+            panel = CompareView(interaction.user, home_builder=home_builder)
+            embeds, view = panel.build()
+            await interaction.response.edit_message(embeds=embeds, view=view)
+
+        compare_btn.callback = _open_compare  # type: ignore[method-assign]
+        self.add_item(compare_btn)

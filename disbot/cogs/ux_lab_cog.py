@@ -31,6 +31,13 @@ class UxLabCog(commands.Cog, name="UX Lab"):  # type: ignore[call-arg]
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_load(self) -> None:
+        # Anchor-free boot registration (the SetupLauncherView precedent) so
+        # the persistence exhibit's panel keeps answering across restarts.
+        from views.ux_lab.persistent_demo import UxLabPersistentDemo
+
+        self.bot.add_view(UxLabPersistentDemo())
+
     async def build_help_menu_view(
         self,
         interaction: discord.Interaction,
