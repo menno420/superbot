@@ -88,6 +88,10 @@ mutation/provisioning services and preserve operator confirmation.
 3. Extend provisioning only through catalogue → preview → confirmed apply → audit,
    with partial-failure and retry behavior documented.
 
+## Production-readiness reviews
+
+- [`docs/planning/production-readiness/settings-bindings-provisioning-production-readiness-map-2026-06-12.md`](../planning/production-readiness/settings-bindings-provisioning-production-readiness-map-2026-06-12.md) — source-verified Done / Partial / Not Done inventory and production blockers (2026-06-12).
+
 ## Related docs
 
 `docs/setup-platform/settings-customization-roadmap.md`, `docs/setup-platform/settings-customization-command-map.md`,
