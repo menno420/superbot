@@ -15,6 +15,12 @@
 > **Initial cut — evolving, not locked.** New plans get slotted into their area below as
 > they land (see [Adding a plan](#adding-a-plan)); horizons will re-sequence as plans
 > arrive and gates clear. Treat the ordering as a current best-guess, not a commitment.
+>
+> **▶ Production-readiness:** the seven per-subsystem readiness maps + the consolidated
+> [**hardening roadmap**](planning/production-readiness/hardening-roadmap-2026-06-12.md)
+> (P0 integrity → P1 correctness → P2 drift, with the gating owner Qs) are the
+> risk-ranked "what's left to be production-ready" view across all subsystems. Index:
+> [`planning/production-readiness/`](planning/production-readiness/README.md).
 
 ## How to read
 

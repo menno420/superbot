@@ -18,6 +18,13 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`repo-manageability-2026-06-12.md`](./repo-manageability-2026-06-12.md) —
+  **owner-asked (2026-06-12):** "what else would make the repo more easily manageable?"
+  after the review-map + readiness-map work. Five workflow-substrate ideas: operationalize
+  the review-map in tooling (cross-ref #1) · trim/auto-archive the bloated `current-state.md`
+  · a freshness guard for dated snapshots · folio/context-pack coverage for the ~24 smaller
+  subsystems · a generated readiness scoreboard. Mostly quick-win lane; folio coverage =
+  discuss.
 - [`voice-mode-planning-capture-2026-06-11.md`](./voice-mode-planning-capture-2026-06-11.md) —
   **voice-mode brainstorm (2026-06-11):** UX and product ideas from a casual spoken planning
   session via ChatGPT. Covers setup wizard clarity, centralized settings navigation, help-menu
