@@ -121,6 +121,8 @@ unreliable across multiple sessions, tear it down rather than working around it.
 
 ## See also
 
+- [`autonomous-routines.md`](./autonomous-routines.md) — the routine fleet (dispatch + docs
+  reconciliation + night caretaker) and their version-controlled prompts.
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) — the Hermes side (assemble + fire).
 - [`hermes-skills/review.md`](./hermes-skills/review.md) — independent review of the resulting PR.
 - [`scripts/check_phase_gate.py`](../../scripts/check_phase_gate.py) — the phase signal.
