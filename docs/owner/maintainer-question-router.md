@@ -4198,137 +4198,96 @@ the marker · this entry is provenance.
 
 ### Q-0108 — Automod rules engine + image moderation: wanted? Which scope to start?
 
-> **DISCUSS (2026-06-12).** Source: owner-uploaded competitor research (Carl-bot, Dyno,
-> YAGPDB, Koya analysis) + AI-integration reference. Two related questions, grouped
-> because they share the same `on_message` interception point and moderation service.
+> **ANSWERED 2026-06-12 (owner, question panel).**
 
 **Area:** Moderation platform · automod + image moderation
 **Type:** Product direction + provider choice
-**Priority:** Medium — next major moderation gap vs. competitors
 
-**Questions:**
+**Decision:**
+- **Automod v1 rule types:** all four — spam burst · discord.gg/ invite links · mass
+  @mentions · excessive caps. Expand from the minimal set to the full first-tier suite.
+- **Image moderation:** yes, **OpenAI omni-moderation-latest only** (free, uses the
+  existing key, covers sexual/violence/harassment/hate categories). No paid provider
+  (API4AI or Hive) at this stage.
 
-1. **Automod rules engine** — is this wanted as a near-term priority? If yes, which rule
-   types should be in v1? (Suggested minimal set: spam bursts · discord.gg/ invite links ·
-   mass @mentions. Caps-filtering and blacklisted-words are the next tier.)
-2. **Image moderation** — is automated image scanning wanted at all? If yes:
-   - Free tier: **OpenAI omni-moderation-latest** (already integrated, free, 20 MB limit,
-     covers sexual/violence/harassment/hate) — sufficient to start.
-   - Paid tier: **API4AI NSFW** (binary SFW/NSFW, affordable) or **Hive Moderation**
-     (50+ categories including weapons/drugs/hate symbols, enterprise cost, no free tier).
-   - Recommendation: start OpenAI-only (zero incremental cost); gate paid providers behind
-     a per-guild opt-in configuration.
-
-**Detail:** `docs/ideas/server-safety-and-automod-2026-06-12.md` §1 and §3.
-
-**Waiting on:** owner decision.
+**Home:** `docs/ideas/server-safety-and-automod-2026-06-12.md` — routing updated to
+reflect these decisions. Planning can begin for `services/automod_service.py` +
+`services/image_moderation_service.py`.
 
 ---
 
 ### Q-0109 — Server logging service: event scope and channel layout
 
-> **DISCUSS (2026-06-12).** Source: owner-uploaded competitor research (Carl-bot, Dyno,
-> Arcane logging capabilities). Companion to Q-0108 — independent enough to decide separately.
+> **ANSWERED 2026-06-12 (owner, question panel).**
 
 **Area:** Moderation platform · server event logging
 **Type:** Product direction + UX design
-**Priority:** Medium — core staff utility; low implementation risk
 
-**Questions:**
+**Decision:**
+- **Event scope (v1):** message edits and deletions · member join and leave · role
+  grants/revocations (non-bot actions). Voice channel activity **not included** in v1.
+- **Channel layout:** **owner-configurable** — the setup panel lets server operators
+  choose a single combined log channel *or* assign separate channels per event category.
+  Both layouts are supported; neither is forced.
+- **Privacy disclosure:** deleted-message logging must be clearly surfaced in the setup
+  wizard (staff can see content that was deleted).
 
-1. **Event scope** — which event categories to log in v1?
-   Suggested: message edits · message deletes · member join · member leave.
-   Optional adds: role grants/revocations (not by the bot) · voice channel joins/leaves.
-2. **Channel layout** — one combined `#server-log` channel, or separate channels per
-   category (e.g., `#message-log`, `#member-log`)? Separate channels give finer control
-   but add setup friction.
-3. **Privacy note** — deleted-message logging means staff can see what was said before
-   deletion. Does the maintainer want this disclosed clearly in the setup wizard?
-
-**Detail:** `docs/ideas/server-safety-and-automod-2026-06-12.md` §2.
-
-**Waiting on:** owner decision.
+**Home:** `docs/ideas/server-safety-and-automod-2026-06-12.md` §2 — routing updated.
+Planning can begin for `services/server_logging_service.py`.
 
 ---
 
 ### Q-0110 — Welcome service: PIL image cards on day one, or start with embeds?
 
-> **DISCUSS (2026-06-12).** Source: owner-uploaded research (ProBot, Koya welcome
-> features + PIL-within-8-MiB bot constraints).
+> **ANSWERED 2026-06-12 (owner, question panel).**
 
 **Area:** Community platform · welcome service
 **Type:** Product direction + implementation scope
-**Priority:** Medium — community onboarding; visible "first impression" feature
 
-**Questions:**
+**Decision:**
+- **Phase 1:** embed-only welcome message (fast to ship, zero PIL complexity).
+- **Phase 2 follow-up:** PIL avatar-composited image cards added once the service is stable.
+- Join DM and goodbye message scope remain open — not asked; agent should propose
+  defaults when planning (join DM opt-in, goodbye message enabled by default).
 
-1. Start with an embed-only welcome message (fast to ship, no PIL dependency) and add
-   PIL image cards in a follow-up slice? **OR** build the PIL avatar-composited welcome
-   card from the start?
-2. Is join DM (private welcome message to the new member) wanted alongside the channel
-   post?
-3. Is a "goodbye message on member leave" wanted, or just the welcome?
-
-**Detail:** `docs/ideas/community-platform-features-2026-06-12.md` §1 and
-`docs/operations/discord-platform-limits.md` §4.
-
-**Waiting on:** owner decision.
+**Home:** `docs/ideas/community-platform-features-2026-06-12.md` §1 — routing updated.
+Planning can begin with an embed-first scope; PIL card slice planned as a follow-up PR.
 
 ---
 
 ### Q-0111 — Security service: which tiers are wanted, given privacy tradeoffs?
 
-> **DISCUSS (2026-06-12).** Source: owner-uploaded research (Double Counter alt
-> detection + raid prevention capabilities). Privacy risk varies strongly by tier.
+> **ANSWERED 2026-06-12 (owner, question panel).**
 
 **Area:** Server security · account screening
 **Type:** Product direction + privacy/legal boundary
-**Priority:** Lower until public scale; higher once the bot is public (Q-0080)
 
-**Tiers:**
+**Decision:**
+- **Tier 1 (raid detection): APPROVED.** Monitor join rate, auto-slowmode + staff alert.
+- **Tier 2 (account-age filter): APPROVED.** Reject/quarantine accounts younger than N
+  days on join; configurable threshold.
+- **Tier 3 (alt detection): NOT selected.** GDPR/privacy implications; declined.
+- **Tier 4 (VPN/proxy blocking): NOT selected.** GDPR/privacy implications; declined.
 
-1. **Raid detection** (no external API, no privacy cost) — monitor join rate; if >N
-   joins in T seconds, apply slowmode and alert staff. Low risk. **Recommended yes.**
-2. **New-account age filter** (no external API) — reject or quarantine Discord accounts
-   younger than N days on join. Low risk. **Recommended yes.**
-3. **Alt detection** — requires external device/IP signals. Real privacy and GDPR
-   implications (owner is EU-based). Requires explicit member disclosure. **Needs
-   explicit owner approval.**
-4. **VPN/proxy blocking** — sends every join's IP to a third-party reputation DB.
-   Blocks legitimate privacy-conscious users. **Needs explicit owner approval.**
-
-**Questions:**
-
-1. Are tiers 1 + 2 approved for implementation (independently of tiers 3 + 4)?
-2. Are tiers 3 and 4 wanted at all, given the privacy and legal implications?
-
-**Detail:** `docs/ideas/server-safety-and-automod-2026-06-12.md` §4.
-
-**Waiting on:** owner decision.
+**Home:** `docs/ideas/server-safety-and-automod-2026-06-12.md` §4 — routing updated.
+Planning can begin for `services/security_service.py` (tiers 1 + 2 only).
 
 ---
 
 ### Q-0112 — Event scheduler: simple RSVP tier standalone, or needs NL parsing?
 
-> **DISCUSS (2026-06-12).** Source: owner-uploaded research (Sesh scheduling bot).
-> Also touches AI cost (Q-0082 ceiling).
+> **ANSWERED 2026-06-12 (owner, question panel).**
 
 **Area:** Community platform · event scheduling
 **Type:** Product direction + AI cost boundary
-**Priority:** Medium — "General commands" section of the ideal help menu (owner vision)
 
-**Questions:**
+**Decision:**
+- **Natural-language time parsing wanted from day one** ("next Friday 8pm" → parsed
+  datetime via LLM call). This is the primary UX, not just a follow-up add-on.
+- Adds one LLM call per event creation → must be metered under the Q-0082 spend ceiling.
+- Availability polling scope not explicitly decided; agent should propose it as a
+  day-one feature in the planning doc (fits naturally alongside NL events).
+- Agent must check for existing scheduler infrastructure before designing reminder timers.
 
-1. Is a **simple structured-input event scheduler** (slash command with date/time pickers,
-   RSVP buttons, reminder notifications) valuable on its own — even without natural-language
-   parsing?
-2. Is **natural-language time parsing** ("next Friday 8pm") wanted? It adds an LLM call per
-   event creation → counts against the Q-0082 spend ceiling.
-3. Is **availability polling** (members vote across multiple time options → bot highlights
-   winner) a day-one feature, or a follow-up?
-4. Is there an existing scheduler service in the codebase to reuse for reminders? (Agent
-   should check before designing new infra.)
-
-**Detail:** `docs/ideas/community-platform-features-2026-06-12.md` §3.
-
-**Waiting on:** owner decision.
+**Home:** `docs/ideas/community-platform-features-2026-06-12.md` §3 — routing updated.
+Planning required before implementation (NL parsing + AI cost need explicit design).

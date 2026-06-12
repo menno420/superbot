@@ -214,12 +214,13 @@ raid detection and account-age filter can be approved independently of the advan
 
 ---
 
-## Routing summary
+## Routing summary (updated 2026-06-12 — owner decisions via Q-0108/Q-0109/Q-0111)
 
-| Idea | Size | Risk | Router Q | Next destination |
+| Idea | Size | Risk | Decision | Next destination |
 |---|---|---|---|---|
-| Automod rules engine | Medium | Low (false positives) | Q-0108 | Discuss → plan |
-| Server logging service | Small–medium | Low (privacy note) | Q-0109 | Discuss → plan |
-| Image moderation | Medium | Medium (third-party, privacy) | Q-0108 | Discuss → plan |
-| Security service (simple tiers) | Small | Low | Q-0111 | Discuss → plan |
-| Security service (advanced tiers) | Medium | High (privacy/legal) | Q-0111 | Discuss → decision |
+| Automod rules engine (4 rule types) | Medium | Low (false positives) | **APPROVED** (Q-0108) | Plan `services/automod_service.py` |
+| Server logging service (3 event categories + configurable channels) | Small–medium | Low (privacy note in setup) | **APPROVED** (Q-0109) | Plan `services/server_logging_service.py` |
+| Image moderation — OpenAI-only | Medium | Low (free, existing key) | **APPROVED** (Q-0108) | Plan `services/image_moderation_service.py` |
+| Image moderation — paid tier (API4AI / Hive) | — | — | **DECLINED** | Someday if needed |
+| Security service — tiers 1+2 (raid detection, account-age filter) | Small | Low | **APPROVED** (Q-0111) | Plan `services/security_service.py` |
+| Security service — tiers 3+4 (alt detection, VPN blocking) | — | High (GDPR) | **DECLINED** | Not pursuing |
