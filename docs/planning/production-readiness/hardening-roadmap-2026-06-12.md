@@ -119,7 +119,8 @@ Postgres/Discord end-to-end proof despite strong unit coverage.
 [production-eval checklist](../../audits/production-eval-checklist-2026-06-10.md) to cover the
 newer surfaces each map flagged (health findings/startup · media fetch/cache/purge · games
 terminal-states & refunds · settings three-lane smoke · server-mgmt channel paths), then run
-it. Owner-dependent — pairs with the commissioned untested-surface checklist.
+it. Owner-dependent — pairs with the commissioned
+[untested-surface checklist](../../audits/untested-surface-checklist.md).
 
 ---
 
