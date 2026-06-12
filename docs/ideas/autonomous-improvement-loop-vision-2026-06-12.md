@@ -98,6 +98,31 @@ So the substrate is largely built; the loop is **~3 seams** short of closing.
 4. **Loop stop-conditions** — what halts a runaway loop (cost cap, daily-run cap, a
    red-readiness freeze)? §11 cost discipline is the budget side of this.
 
+## Model selection for the reviewer seam (maintainer direction, 2026-06-12)
+
+The reviewer's job is **independence + repo-comprehension + judgment — not raw coding
+skill**. Pick the backing model on those axes, and decide it **empirically** (the
+maintainer's stated method, and the repo's "unverified — confirm against ground truth a few
+times before trusting" rule): give the candidate a plan or PR diff where the issues are
+*already known*, and measure whether it finds them. Only then is its dissent trusted to gate.
+
+- **Hermes free tier first** — free, a different model family, zero-cost to test. If it
+  passes the known-answer calibration, no paid plan is needed.
+- **Claude-reviewing-Claude** — viable fallback but the **weakest independent check**: it
+  shares the author's blind spots (the monoculture this seam exists to break). Slightly more
+  efficient than one Claude, but not the goal.
+- **GPT / Gemini** — strongest *independent* options if Hermes-free underperforms. Gemini
+  is untested by the maintainer as of 2026-06-12.
+- **Grok — out of the gate role.** Maintainer-tested 2026-06-12: overclaims ability and
+  could not reliably pull repo context. A reviewer that can't accurately comprehend the repo
+  is disqualified *for review/gating* specifically. **Role-split:** unreliable-but-divergent
+  models may later feed *low-stakes idea generation* (where being wrong is cheap); reliable
+  models own review and gating (where wrong is costly).
+- **The seam is model-agnostic by design** — it is a read-only review skill + whatever
+  agent/connector backs it. The loop does not depend on which model sits behind it, so the
+  reviewer can be **tested cheaply and swapped freely** (Hermes-free → GPT/Gemini → Claude
+  fallback) without rebuilding anything. Start free; swap only if calibration says so.
+
 ## Routing
 
 **Discuss first (router Q-block).** This is the ecosystem north-star, not a single PR — it
