@@ -50,6 +50,14 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 
+- **PR #730 (2026-06-12, untested-surface checklist)** — the owner-commissioned
+  [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md):
+  18 sections, 70+ `[ ]` items covering every command/UI surface that automated CI
+  cannot verify and has no live-walk record — Economy · General · Utility · Roles ·
+  XP · Moderation · Channel/Word-filter · Counting · Admin · Diagnostic · Logging ·
+  BTD6 ref/strat/paragon · Deathmatch · Community/Games/420 · Server-mgmt subpanels ·
+  Bootstrap access · Regression sweep. Persistent successor to the 2026-06-10 eval
+  checklist. Linked from hardening roadmap.
 - **#729 (2026-06-12, 429 login crash-loop fix)** — `_maybe_backoff_on_rate_limit()`:
   when `bot.start()` returns HTTP 429 (Discord/Cloudflare 1015 rate limit), the
   process now sleeps 60 s before exiting so Railway's on-failure restart fires after
