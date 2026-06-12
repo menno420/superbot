@@ -4419,3 +4419,35 @@ to Components V2 — that stays a future ADR taken on the lab's evidence.
 
 **Routed (on answer):** roadmap 🖥️ Building/interface lane horizon · the plan's status
 banner · `ideas/ux-lab-interface-gallery-2026-06-12.md` lifecycle state.
+
+
+### Q-0117 — Hermes as the independent-reviewer merge gate for big executor steps
+
+> **DIRECTED 2026-06-12 (owner, in-session, executor wiring).** When the nightly executor
+> advances a *substantial* plan step: "if possible we should have hermes review the work first,
+> and then it should send the trigger to merge, if that is possible, if that's not possible then
+> just merge."
+
+**Area:** Agent ecosystem / workflow · autonomy boundary · the Hermes-reviewer keystone
+**Type:** Owner decision (autonomy/safety — expands Hermes' role)
+
+**Decision:** for a **substantial** executor step (feature-sized plan work, multi-file refactor,
+migration — anything wanting a second pair of eyes), the executor opens a PR labeled
+`needs-hermes-review` and does **not** self-merge. **Hermes** — a *different model* — reviews the
+diff (`superbot-review-merge` skill) and **merges it if sound on green CI**, else requests
+changes. This is the **independent-reviewer seam** (autonomous-loop vision §3): a non-Claude mind
+between Claude's big steps and `main`, breaking the author-reviews-self monoculture. Small
+fixes/docs keep self-merging on green (Q-0113); only big steps carry the label.
+
+- **It expands Hermes' read-only model by exactly one write:** `gh pr merge` (+ review
+  comments/labels) on a PR it just reviewed. Hermes still never edits code, pushes, or touches
+  prod/Railway/Neon. Recorded in `hermes-operating-prompt.md`.
+- **Fallback (owner-stated):** if Hermes review is not available, the step's green PR may
+  self-merge — "if that's not possible then just merge."
+- **Calibration (Q-0105, vision open-question 1):** Hermes' review earns the *merge* trigger only
+  once proven to catch real issues. Until then it runs in **ADVISORY** mode (review + escalate to
+  the maintainer for the merge); graduate to auto-merge after it reliably catches planted issues.
+
+**Home:** `docs/operations/autonomous-routines.md` (the executor + the three labels) ·
+`docs/operations/hermes-skills/review-merge.md` (the skill) · `hermes-operating-prompt.md`
+(the read-only carve-out) · this entry is provenance.
