@@ -3984,3 +3984,30 @@ unilaterally.
 
 **Source review:**
 [`docs/planning/production-readiness/server-management-production-readiness-map-2026-06-12.md`](../planning/production-readiness/server-management-production-readiness-map-2026-06-12.md)
+
+### Q-0101 — Do the ~24 smaller subsystems need their own folio/context-pack, or is the cheat-sheet enough?
+
+**Area:** Docs & agent system · orientation
+**Type:** Workflow/orientation decision (doc-maintenance burden vs. uniformity)
+**Priority:** Low — quality-of-life for agents working in the smaller cogs
+
+**Question:** Seven areas have a [folio](../subsystems/README.md) (+ generated context pack);
+the other ~24 cog subsystems (economy, moderation, xp, role, inventory, counting, …) have
+only the `repo-navigation-map.md` cheat-sheet row + `ownership.md`. The review-map implies
+"every slice has one entry page", which is currently uniform for 7 and ad-hoc for the rest.
+
+- **(a) Accept the cheat-sheet as the entry for small cogs (recommended default):** keep
+  folios for the high-traffic/complex areas only, and document that the gap is *intentional*
+  (so it reads as a decision, not an omission). Lowest maintenance.
+- **(b) Generate lightweight stub folios/context-packs per remaining subsystem:** uniform
+  "one entry page per slice", at the cost of ~24 more docs to keep fresh.
+- **(c) Hybrid:** add a folio only for a small cog once it crosses a complexity threshold
+  (e.g. has a view package + a service + a DB module), cheat-sheet otherwise.
+
+**Why this needs owner intent:** it's a maintenance-burden vs. uniformity trade-off on the
+docs surface — generating 24 stubs that then rot would be worse than the current gap.
+
+**Safe default until answered:** leave as-is; the cheat-sheet + ownership are the entry
+point for non-folio cogs.
+
+**Source review:** [`docs/ideas/repo-manageability-2026-06-12.md`](../ideas/repo-manageability-2026-06-12.md) #4.

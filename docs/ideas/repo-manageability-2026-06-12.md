@@ -7,8 +7,9 @@
 > **Update 2026-06-12 (owner-approved):** ideas **#1, #2, #3, #5 are EXECUTED** as
 > `scripts/{review_scope,_review_units,readiness_scoreboard,check_doc_freshness}.py` +
 > the `current-state.md` trim/archive + the `check_docs` Recently-shipped ratchet
-> (see [`context-map-tooling.md`](../context-map-tooling.md)). **#4 (folio coverage)
-> remains a discuss item.**
+> (see [`context-map-tooling.md`](../context-map-tooling.md)). **#4 (folio coverage) is
+> routed to [Q-0101](../owner/maintainer-question-router.md) (discuss — maintenance vs.
+> uniformity).**
 
 The review-map (#715) + the seven readiness maps (#717–#723) made the repo *navigable* and
 *reviewable per slice*. These ideas target what's still friction. Each is dedup-checked
