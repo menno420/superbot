@@ -78,6 +78,35 @@ non-`bus` receiver shows as `unresolved`, never a guess. `--check` gates only on
 "possible dead subscriber" is an advisory hint (FP-prone via forwarders), never a
 gate failure. Pinned by `tests/unit/scripts/test_wiring_map.py`.
 
+## Companion — review scope (`scripts/review_scope.py`)
+
+Operationalizes [`repo-review-map.md`](repo-review-map.md): instead of remembering the
+review/refactor partition, ask the tool which **review unit** a file or a change belongs
+to. `context_map.py` now also prints the file's unit on its header line.
+
+```bash
+python3.10 scripts/review_scope.py disbot/cogs/economy_cog.py   # one file → its unit
+python3.10 scripts/review_scope.py --diff                       # change vs origin/main
+git diff --name-only | python3.10 scripts/review_scope.py --stdin --files
+```
+
+It classifies each path into an Axis-A domain and, inside the bot, an Axis-B
+**slice** vs. **platform** unit (logic in `scripts/_review_units.py`), then verdicts a
+changeset as **single-slice / multi-slice / platform / non-runtime** with review advice.
+Pure path logic (no filesystem), so it also classifies deleted/renamed paths from a diff.
+Heuristic — services don't map 1:1 to slices, so it says "confirm in `ownership.md`" rather
+than guess. Pinned by `tests/unit/scripts/test_review_units.py`.
+
+## Companion — readiness scoreboard & doc freshness
+
+- `scripts/readiness_scoreboard.py` — tallies the
+  [production-readiness maps'](planning/production-readiness/README.md) Done/Partial/Not-Done
+  cells into a one-glance per-subsystem table; `--write` injects it into that README between
+  markers, `--check` gates on staleness. Pinned by `tests/unit/scripts/test_readiness_scoreboard.py`.
+- `scripts/check_doc_freshness.py` — **advisory** (always exits 0): for dated `audit`/`plan`
+  docs, warns when a source path they cite has git-changed since the doc's date ("may be
+  stale; re-verify"). Keeps dated snapshots from silently rotting.
+
 ## Dependency
 
 The importer/blast-radius engine uses **Grimp** (`requirements-dev.txt`, pinned).
