@@ -3902,3 +3902,85 @@ retention roll-up as **Not Done** for production readiness.
 
 **Source review:**
 [`docs/planning/production-readiness/health-diagnostics-production-readiness-map-2026-06-12.md`](../planning/production-readiness/health-diagnostics-production-readiness-map-2026-06-12.md)
+
+### Q-0098 — Do delegated Setup admins have apply authority for settings/bindings/provisioning?
+
+**Area:** Settings / Bindings / Provisioning · Setup delegation
+**Type:** Owner/product + authority decision exposed by production-readiness review
+**Priority:** High before Settings / Bindings / Provisioning is declared production-ready
+
+**Question:** The Setup Final-Review gate authorizes the owner **or a delegated setup admin**
+to apply a staged draft, but the three mutation pipelines (settings/binding/provisioning)
+enforce an administrator floor in `governance.capability.actor_holds_capability()` that does
+**not** represent delegated-setup authority. A delegate can therefore stage and pass Final
+Review, then fail the canonical write per operation. Which is intended?
+
+- **(a) Delegates may apply (recommended if delegation is a real feature):** add a
+  non-escalating delegated-setup capability route so the pipelines authorize the same actor
+  the Setup gate did. Preserve execution-time re-checks.
+- **(b) Delegates may stage only:** keep the admin floor; change Setup copy/gates so they
+  stop promising apply authority a delegate doesn't have.
+
+**Why this needs owner intent:** it's a product call about what "delegated setup" means, and
+either path changes an authority surface. Implementing either silently picks the semantics.
+
+**Safe default until answered:** leave both gates as-is; treat the delegated-apply path as
+**Not Done** and surface the mismatch in operator UX rather than widening capability.
+
+**Source review:**
+[`docs/planning/production-readiness/settings-bindings-provisioning-production-readiness-map-2026-06-12.md`](../planning/production-readiness/settings-bindings-provisioning-production-readiness-map-2026-06-12.md)
+
+### Q-0099 — What is the retention & data-minimization policy for cached YouTube data?
+
+**Area:** Media / YouTube (shared platform)
+**Type:** Owner/product + privacy decision exposed by production-readiness review
+**Priority:** High before Media / YouTube is declared production-ready (privacy-sensitive)
+
+**Question:** The video cache stores `metadata_json` as the **full unsanitized** YouTube API
+item (including full descriptions), and `purge_expired_video_cache()` has **no caller** — so
+expired rows (transcripts + raw metadata) persist indefinitely. For a public bot, what is the
+allowed policy?
+
+- **(a) Bounded projection + scheduled purge (recommended):** store only the bounded fields
+  the runtime actually uses, define a deletion/purge owner, and schedule physical expiry
+  through a managed task; verify deletion against production Postgres.
+- **(b) Raw payload with a defined TTL:** keep full payloads but justify it, document the
+  retention window, and still wire the purge so expiry is physical, not just logical.
+
+**Why this needs owner intent:** data-minimization and retention are privacy/product calls,
+not implementation defaults — especially for stored third-party content.
+
+**Safe default until answered:** treat retention as **Not Done**; do not expand YouTube
+storage or surfaces; wiring the existing purge on the current schema is a safe interim fix.
+
+**Source review:**
+[`docs/planning/production-readiness/media-youtube-production-readiness-map-2026-06-12.md`](../planning/production-readiness/media-youtube-production-readiness-map-2026-06-12.md)
+
+### Q-0100 — Who is the canonical owner for direct channel mutations (create/clone/overwrite/category)?
+
+**Area:** Server management · channel lifecycle / resource provisioning
+**Type:** Architecture/ownership decision exposed by production-readiness review
+**Priority:** High before Server management is declared production-ready
+
+**Question:** Channel **creation, clone, permission-overwrite, and category-lifecycle** paths
+currently mutate Discord outside the one audited lifecycle/provisioning seam, so the same
+operator action gets different audit, confirmation, and failure behavior by path. What is the
+canonical owner for each?
+
+- **(a) Converge under the existing seams (recommended):** route creation/category through
+  `ResourceProvisioningPipeline` (preserving its confirmation rule) and clone/overwrite
+  through `ChannelLifecycleService` with audit + events; then extend the channel invariant to
+  pin `.set_permissions()`/`.clone()`/create.
+- **(b) A new dedicated channel-mutation owner:** if those paths don't fit the existing seams,
+  declare one canonical audited owner for them with the same confirmation/audit/event contract.
+
+**Why this needs owner intent:** it's an architecture decision about confirmation semantics on
+destructive guild mutations (e.g. should every clone/overwrite require confirmation like
+provisioning does?) before code converges.
+
+**Safe default until answered:** leave paths as-is; the channel invariant intentionally pins
+only `.edit()`/`.delete()` until the owner is chosen — do not widen `ChannelLifecycleService`
+unilaterally.
+
+**Source review:**
+[`docs/planning/production-readiness/server-management-production-readiness-map-2026-06-12.md`](../planning/production-readiness/server-management-production-readiness-map-2026-06-12.md)

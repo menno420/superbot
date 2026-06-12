@@ -17,6 +17,12 @@ hardening that area reads its map + its [folio](../../subsystems/README.md) inst
 re-scanning source. They were produced **2026-06-12** by per-subsystem mapping agents
 (PRs #717–#723).
 
+> **▶ Consolidated, prioritized backlog:** the
+> [**hardening roadmap**](hardening-roadmap-2026-06-12.md) ranks every map's findings by
+> production risk (P0 integrity → P1 correctness → P2 drift), names the bounded session per
+> track, and lists the owner decisions (Q-0077/Q-0097/Q-0098/Q-0099/Q-0100) that gate them.
+> Start there to pick the next session; use the individual maps below for the evidence.
+
 ## Convention
 
 Each map carries an `audit` badge and a table of the shape:
