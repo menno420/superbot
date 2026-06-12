@@ -48,3 +48,24 @@ anchor, so any two concurrently-open PRs collided there (it bit #529→#530 and
   graduate into `.session-journal.md` (the guidebook) or `.claude/CLAUDE.md`.
 - **Find** past work by grepping this directory — don't read it top-to-bottom.
 - Pre-migration history lives in `.session-journal-archive.md`.
+
+## 📊 Telemetry footer (gap-analysis §4, light version — 2026-06-12)
+
+End every session log with a `📊 Telemetry` table so the system's learning trend is
+measurable (evidence for Q-0083's trust-tier promotions instead of vibes):
+
+```markdown
+## 📊 Telemetry
+
+| Metric | Value |
+|---|---|
+| PRs merged this session | N |
+| CI-red rounds | N (rounds from push → green on the session's PR) |
+| Repo-rule trips | N (arch check errors / rule violations hit) |
+| New ideas contributed | N (Q-0089 ideas) |
+| Ideas groomed | N (backlog moves made) |
+```
+
+Keep it honest — a CI-red-rounds count of 2 is more useful than 0. The caretaker
+weekly rollup (the heavier half of gap-analysis §4) is not yet built; the footer
+makes the data available when it is.

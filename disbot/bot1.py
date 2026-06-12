@@ -1291,6 +1291,29 @@ def _exit_code_after_main(*, crashed: bool) -> int:
     return 0
 
 
+# How long to sleep before exiting when Discord rate-limits the login attempt.
+# The sleep happens inside the still-running process so that Railway's
+# immediate on-failure restart fires *after* the backoff has elapsed —
+# preventing the rapid crash loop that deepens the Cloudflare 1015 ban.
+_LOGIN_RATE_LIMIT_BACKOFF_S = 60
+
+
+def _maybe_backoff_on_rate_limit(exc: BaseException) -> bool:
+    """Sleep before exiting when a 429 is detected during startup login.
+
+    Returns True if a backoff sleep was performed.
+    """
+    if isinstance(exc, discord.HTTPException) and exc.status == 429:
+        logger.warning(
+            "Login rate-limited (429); sleeping %ds before exit so the "
+            "platform restart does not immediately re-trigger the ban.",
+            _LOGIN_RATE_LIMIT_BACKOFF_S,
+        )
+        time.sleep(_LOGIN_RATE_LIMIT_BACKOFF_S)
+        return True
+    return False
+
+
 if __name__ == "__main__":
     import sys
 
@@ -1300,4 +1323,5 @@ if __name__ == "__main__":
     except Exception as exc:
         logger.error("Critical startup error: %s", exc, exc_info=True)
         _crashed = True
+        _maybe_backoff_on_rate_limit(exc)
     sys.exit(_exit_code_after_main(crashed=_crashed))
