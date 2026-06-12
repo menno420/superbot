@@ -452,4 +452,21 @@ Make Hermes consistently useful for SuperBot repo review, doc consistency checks
 
 This gives the highest value with the lowest risk because it improves behavior without giving Hermes broader write or production access.
 
-**The skill pack has been implemented** — see [`hermes-skills/`](./hermes-skills/README.md) for the six ready-to-use skill prompts.
+**The skill pack has been implemented** — see [`hermes-skills/`](./hermes-skills/README.md)
+for the ready-to-use skill prompts. They are now **scripted to install**: the docs are the
+source of truth, `scripts/hermes/build_skills.py` generates installable `SKILL.md` files,
+and `scripts/hermes/install-skills.sh` copies them onto the VPS. A standing read-only
+operating prompt (step 6 below) is implemented as
+[`hermes-operating-prompt.md`](./hermes-operating-prompt.md).
+
+### Next sanctioned capability: read-only log triage
+
+The highest-value graduation from "repo assistant" to "operations assistant" is letting
+Hermes **read production logs** and diagnose problems — without granting any write/deploy
+power. This stays inside the safety model: it is look-but-don't-touch.
+
+- The [`log-triage`](./hermes-skills/log-triage.md) skill is ready; it triages the
+  VPS-local `hermes-gateway` logs today and the production (Railway) logs once a
+  **read-only** Railway token + CLI is set up on the VPS.
+- A Neon read-only role can follow the same pattern for DB-level checks.
+- Operating production (restart / redeploy / scale) remains a maintainer action.
