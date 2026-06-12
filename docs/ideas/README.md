@@ -30,6 +30,14 @@ Current broad captures:
 > beats occasional brilliance). Substantial ones land here as files; small ones
 > live in their session log's 💡 flag. The grooming pass then moves them.
 
+- [`claude-code-plugins-evaluation-2026-06-12.md`](./claude-code-plugins-evaluation-2026-06-12.md) —
+  **owner-asked (2026-06-12):** "any good Claude (Code) plugins useful for us?" —
+  ecosystem survey (official + community marketplaces, spot-verified), filtered
+  against our existing hooks/skills/CodeGraph stack. Verdict: most categories
+  duplicate or fight our bespoke workflow; shortlist = **Context7** (live
+  version-pinned library docs, strongest), read-only **Postgres MCP**, trial-only
+  `pyright-lsp`. Supply-chain posture + pinning rules included. Adoption =
+  executable-config change → routed to **Q-0096** (discuss lane).
 - [`ai-panel-inplace-navigation-2026-06-11.md`](./ai-panel-inplace-navigation-2026-06-11.md) —
   **owner-requested (2026-06-11 live session):** the AI settings/panel family
   spawns a new ephemeral message per navigation click, scatters config across seven subpanels + a flat scalar editor (second owner ask: centralize), and extends raw
