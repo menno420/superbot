@@ -3871,3 +3871,34 @@ only MCP server beyond the environment's GitHub MCP).
 **Suggested destination after answer:** the evaluation doc's §Lifecycle (flip
 state), `.mcp.json` + journal Runbook if anything is adopted, CLAUDE.md
 CodeGraph-style pin note for any new server.
+
+### Q-0097 — Who owns operational-health finding lifecycle transitions?
+
+**Area:** Health / Diagnostics / persistent operational findings
+**Type:** Owner/product decision exposed by production-readiness review
+**Priority:** High before Health / Diagnostics is declared production-ready
+**Status:** **Open** (asked 2026-06-12)
+
+**Question:** Persistent findings support `open`, `resolved`, and `ignored` states, and
+retention only rolls up/prunes `resolved`/`ignored` rows. Source currently provides only
+record/list/count/retention paths: there is no service or operator path that changes a
+finding out of `open`. Which lifecycle is intended?
+
+- **(a) Operator-managed lifecycle (recommended):** add minimal resolve/ignore/reopen
+  mutations through the existing sole writer, `services.health_findings_service`, and
+  expose them from an explicitly privileged existing diagnostics surface.
+- **(b) Automatic lifecycle:** define a deterministic rule for resolving a finding after
+  it is absent from later bounded snapshots; ignored remains an explicit operator action.
+- **(c) Open-only history:** remove or de-scope the unresolved resolved/ignored/retention
+  claims and treat rows as permanent open recurrence counters.
+
+**Why this needs owner intent:** automatic absence does not necessarily mean recovery,
+while operator mutation adds a privileged control surface to a subsystem intentionally
+kept read-only so far. Implementing either silently would choose product semantics.
+
+**Safe default until answered:** keep the existing sole-writer/store unchanged; do not
+add a second writer or direct cog/view DB mutation. Treat finding lifecycle and effective
+retention roll-up as **Not Done** for production readiness.
+
+**Source review:**
+[`docs/planning/production-readiness/health-diagnostics-production-readiness-map-2026-06-12.md`](../planning/production-readiness/health-diagnostics-production-readiness-map-2026-06-12.md)
