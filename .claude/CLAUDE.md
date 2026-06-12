@@ -215,48 +215,7 @@ CodeGraph is a tree-sitter-parsed knowledge graph of every symbol, edge, and fil
 
 MCP startup is pinned in **`.mcp.json`** and the SessionStart hook (**`scripts/claude_session_start.sh`** `CG_PKG`), currently `@optave/codegraph@3.11.2` (bumped from 3.10.0 on 2026-06-08, verified graph-identical; upgrade history lives in git + `docs/codegraph-usage.md`). If a version ever regresses, revert both pins. **Availability gotcha:** on a *cold* container the first `npx -y` download can blip and the hook reports `[CodeGraph] CLI unavailable`, silently disabling CodeGraph for the whole session. If you see that, read the hook's `Last error:` line (it retries the probe 3× and prints the real npm error) and re-run `npx -y @optave/codegraph@3.11.2 build .` — a transient blip clears on retry.
 
-### Use automatically — no prompt required
-
-Reach for CodeGraph **without being asked** whenever the task involves any of the following:
-
-| Situation | What to do first |
-|---|---|
-| Finding where a symbol is defined | `mcp__codegraph__where("symbol_name")` before any grep or Read |
-| Reading a function you haven't seen before | `mcp__codegraph__context("name")` for source + signature in one call |
-| Understanding what calls a function | `mcp__codegraph__fn_impact("name", depth=1)` then grep-verify |
-| Listing what exists in a file or directory | `mcp__codegraph__list_functions(file="path/")` before opening files blindly |
-| Assessing complexity before a refactor | `mcp__codegraph__complexity(file="path/")` or `mcp__codegraph__triage(level=function, sort=complexity)` |
-| Planning any edit to shared code | `mcp__codegraph__context` to read source + get starting caller list, then grep |
-| Bug investigation across multiple functions | `mcp__codegraph__context` on each candidate — faster than chained Read calls |
-
-**Default order for any unfamiliar code:** `where` → `context` → grep-verify → `Read` only if more source detail is needed.
-
-**Before your first edit to a `disbot/*.py` file, run the file context map** —
-`python3.10 scripts/context_map.py <path>` (~0.2s). It is the **file-level** complement to
-CodeGraph's symbol-level tools: it surfaces module-level **and lazy/function-body
-(CodeGraph-invisible) imports**, reverse importers, blast radius, related docs/tests, a
-**recommended read set**, and the post-edit checks to run. A `PreToolUse` hook
-(`scripts/claude_pre_edit.py`) shows it automatically once per file per session, but run it
-yourself when planning a change. Full reference: `docs/context-map-tooling.md`.
-
-### What to trust as-is vs. always grep-verify
-
-Three reliability tiers, **verified against `grep`/`Read` ground truth on this repo's real call/import patterns (2026-06-08)**. Trust tier 1 without re-checking; never act on tier 2/3 without the grep.
-
-**Tier 1 — trust CodeGraph as-is (accurate):**
-
-| Tool | Trust it for |
-|---|---|
-| `mcp__codegraph__where` / `context` | Symbol **definition** location (file + line range) and **signature** |
-| `mcp__codegraph__list_functions` | Complete **structural listing** of a file's/dir's symbols |
-| `mcp__codegraph__complexity` / `check` / `triage` | Complexity metrics (AST-local). Use `triage level=function`, never `level=directory` |
-
-**Tier 1 — for imports/dependencies, trust Grimp (not CodeGraph).** For "who imports X / what does X import / import blast-radius", use **`python3.10 scripts/context_map.py <path>`** (Grimp import graph). **Verified complete, including lazy/function-body imports** (e.g. `utils/role_feasibility.py` → *all 6* importers, incl. the 3 body-import callers CodeGraph's call graph misses). Its import edges are reliable as an **import** lower bound — trust them. `fn_impact` / `context.callers` are **not** the tool for this question.
-
-**Tier 2 — `context.callers` / `fn_impact`: starting list, never the list (the bare-token rule).** CodeGraph resolves a call edge only for a **bare-name** call (`foo(...)`). It **misses** the qualified form `module.foo(...)`, indirect/variable calls (`cb(...)`), and decorator/registry-dispatched calls — which SuperBot uses *everywhere* (`resources.resolve_role`, `db.get_setting`, `setup_diagnostics.collect_…`). That is why CodeGraph's own *caller coverage reads ~20%*. Always grep-verify a caller list:
-```
-grep -rn "function_name\b" disbot/ --include="*.py"
-```
+**Trigger table and trust tiers:** see `docs/codegraph-usage.md` § "When to use automatically" — it has the full tool-selection table, the Grimp vs. CodeGraph import-trust split, and the `callers`/`fn_impact` bare-token caveat. That doc is the working reference; the rules below are the safety-critical subset that must stay in active context.
 
 ### Critical rules — non-negotiable
 
