@@ -3,7 +3,9 @@
 Sent to the channel once both players accept.  Each player clicks
 "Pick your move" → gets an ephemeral :class:`_RpsMovePickerView` →
 their choice is recorded back here.  When both picks land, the result
-is computed and payouts flow through :mod:`services.economy_service`.
+is computed and the escrowed pot is settled through
+:mod:`services.game_wager_workflow` (P0-1 — stakes were escrowed at
+challenge-accept time, so settle is atomic + idempotent).
 """
 
 from __future__ import annotations
@@ -12,10 +14,10 @@ import logging
 
 import discord
 
-from services import economy_service, game_state_service
+from services import game_state_service, game_wager_workflow
 from utils.ui_constants import GAME_COLOR, SUCCESS_COLOR
 from views.rps._helpers import (
-    _FREE_WIN,
+    RPS_PVP_ESCROW_SUBSYSTEM,
     RPS_PVP_PENDING_SUBSYSTEM,
     RPS_PVP_PENDING_VERSION,
     rps_pvp_canonical_user_id,
@@ -122,56 +124,57 @@ class _RpsPvpPlayView(discord.ui.View):
         e = {"rock": "🪨", "paper": "📄", "scissors": "✂️", "forfeit": "❌"}
 
         if m1 == "forfeit" and m2 == "forfeit":
-            result, coin_delta, winner_id = "🤝 Both forfeited.", 0, None
+            result, _, winner_id = "🤝 Both forfeited.", 0, None
         elif m1 == "forfeit":
-            result, coin_delta, winner_id = (
+            result, _, winner_id = (
                 f"{self.p2.mention} wins (opponent forfeited)!",
                 self.bet,
                 self.p2.id,
             )
         elif m2 == "forfeit":
-            result, coin_delta, winner_id = (
+            result, _, winner_id = (
                 f"{self.p1.mention} wins (opponent forfeited)!",
                 self.bet,
                 self.p1.id,
             )
         elif m1 == m2:
-            result, coin_delta, winner_id = "🤝 Tie! No coins exchanged.", 0, None
+            result, _, winner_id = "🤝 Tie! No coins exchanged.", 0, None
         elif _wins(m1, m2):
-            result, coin_delta, winner_id = (
+            result, _, winner_id = (
                 f"🎉 {self.p1.mention} wins!",
                 self.bet,
                 self.p1.id,
             )
         else:
-            result, coin_delta, winner_id = (
+            result, _, winner_id = (
                 f"🎉 {self.p2.mention} wins!",
                 self.bet,
                 self.p2.id,
             )
 
-        if coin_delta and winner_id:
-            loser_id = self.p2.id if winner_id == self.p1.id else self.p1.id
-            payout = coin_delta if coin_delta else _FREE_WIN
-            # Preserves prior semantics: winner always credited the full
-            # payout; loser debited down to floor-zero if short (overdraft
-            # allowed). Using economy_service.transfer would atomically
-            # reject the move on insufficient loser balance — that is the
-            # safer pattern but a behaviour change; revisit when game
-            # rules formalise bet escrow.
-            await economy_service.credit(
-                self.guild_id,
-                winner_id,
-                payout,
-                reason="rps:pvp_win",
-            )
-            await economy_service.debit(
-                self.guild_id,
-                loser_id,
-                payout,
-                reason="rps:pvp_loss",
-                allow_overdraft=True,
-            )
+        # P0-1 (D1) — the stakes were escrowed at accept.  Pay the pot to
+        # the winner, or return both stakes on a tie / double-forfeit.
+        # Both legs are atomic + idempotent inside the wager workflow, so
+        # no crash here can mint coins or leave the pot stranded.
+        if self.bet > 0:
+            kwargs = {
+                "guild_id": self.guild_id,
+                "channel_id": self.channel.id,
+                "subsystem": RPS_PVP_ESCROW_SUBSYSTEM,
+                "p1_id": self.p1.id,
+                "p2_id": self.p2.id,
+            }
+            if winner_id:
+                await game_wager_workflow.settle_pvp(
+                    **kwargs,
+                    winner_id=winner_id,
+                    reason="rps:pvp_win",
+                )
+            else:
+                await game_wager_workflow.refund_pvp(
+                    **kwargs,
+                    reason="rps:pvp_refund",
+                )
 
         embed = discord.Embed(
             title="✂️ RPS PvP Result",

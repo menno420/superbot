@@ -52,6 +52,7 @@ async def save(
     state: dict[str, Any],
     *,
     version: int = 1,
+    conn: Any | None = None,
 ) -> None:
     """Upsert a game-state checkpoint.
 
@@ -62,6 +63,13 @@ async def save(
     drift across deploys.  On load, an adopting cog should compare
     the stored version to its current schema version and decide
     whether to resume the game or refund + clear.
+
+    P0-1: pass *conn* to compose this write inside a caller-owned
+    ``db.transaction()`` — ``services.game_wager_workflow`` escrows a
+    wager (coin debit + checkpoint write) in ONE transaction so a
+    crash can never leave money moved without a recovery row, or a row
+    without the money.  When *conn* is None the write runs on the pool
+    (the existing best-effort checkpoint behaviour).
     """
     payload = json.dumps(state)
     await pool.execute(
@@ -74,6 +82,7 @@ async def save(
                version    = EXCLUDED.version,
                updated_at = NOW()""",
         (guild_id, user_id, channel_id, subsystem, payload, version),
+        conn=conn,
     )
 
 
@@ -103,14 +112,74 @@ async def clear(
     user_id: int,
     channel_id: int,
     subsystem: str,
+    *,
+    conn: Any | None = None,
 ) -> None:
-    """Delete the checkpoint for a completed game."""
+    """Delete the checkpoint for a completed game.
+
+    P0-1: pass *conn* to delete inside a caller-owned transaction —
+    ``game_wager_workflow`` releases a wager's escrow row in the same
+    transaction that pays out the pot, so a settle is all-or-nothing.
+    """
     await pool.execute(
         """DELETE FROM game_state
            WHERE guild_id=$1 AND user_id=$2
              AND channel_id=$3 AND subsystem=$4""",
         (guild_id, user_id, channel_id, subsystem),
+        conn=conn,
     )
+
+
+async def fetch_rows_for_update(
+    guild_id: int,
+    subsystem: str,
+    *,
+    conn: Any,
+    channel_id: int | None = None,
+    user_ids: list[int] | None = None,
+) -> list[dict[str, Any]]:
+    """Lock and return checkpoint rows for an escrow/payout settlement.
+
+    The P0-1 wager workflow calls this **inside** a ``db.transaction()``
+    to take a row-level ``FOR UPDATE`` lock on the escrow rows it is
+    about to settle.  The lock serialises concurrent settle/refund
+    attempts (a crash-retry or a double-click): the first call holds
+    the rows and deletes them; the second blocks, then finds them gone
+    and treats the settle as already done (idempotency without a
+    dedicated key column).
+
+    *channel_id* scopes a PvP match; *user_ids* narrows to the two
+    players.  Omit both to lock every row for the subsystem in the
+    guild (a tournament payout).  Each returned dict carries the
+    decoded ``state`` plus ``user_id`` / ``channel_id``.
+    """
+    clauses = ["guild_id=$1", "subsystem=$2"]
+    params: list[Any] = [guild_id, subsystem]
+    if channel_id is not None:
+        params.append(channel_id)
+        clauses.append(f"channel_id=${len(params)}")
+    if user_ids is not None:
+        params.append(list(user_ids))
+        clauses.append(f"user_id = ANY(${len(params)}::bigint[])")
+    sql = (
+        "SELECT user_id, channel_id, state, version FROM game_state WHERE "
+        + " AND ".join(clauses)
+        + " FOR UPDATE"
+    )
+    rows = await pool.fetchall(sql, tuple(params), conn=conn)
+    result: list[dict[str, Any]] = []
+    for r in rows:
+        raw = r["state"]
+        state = json.loads(raw) if isinstance(raw, str) else raw
+        result.append(
+            {
+                "user_id": r["user_id"],
+                "channel_id": r["channel_id"],
+                "state": state,
+                "version": r["version"],
+            },
+        )
+    return result
 
 
 async def list_active_for_subsystem(

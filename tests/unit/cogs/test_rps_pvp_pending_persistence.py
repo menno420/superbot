@@ -36,7 +36,11 @@ def _row(id_, version=1, **kwargs):
         "updated_at": "2025-01-01",
     }
     base.update(
-        {k: v for k, v in kwargs.items() if k not in {"state", "guild_id", "user_id", "channel_id"}},
+        {
+            k: v
+            for k, v in kwargs.items()
+            if k not in {"state", "guild_id", "user_id", "channel_id"}
+        },
     )
     return base
 
@@ -89,11 +93,11 @@ async def test_record_choice_updates_persisted_state():
             new_callable=AsyncMock,
         ),
         patch(
-            "views.rps.pvp_play.economy_service.credit",
+            "views.rps.pvp_play.game_wager_workflow.settle_pvp",
             new_callable=AsyncMock,
         ),
         patch(
-            "views.rps.pvp_play.economy_service.debit",
+            "views.rps.pvp_play.game_wager_workflow.refund_pvp",
             new_callable=AsyncMock,
         ),
     ):
@@ -138,11 +142,11 @@ async def test_resolve_clears_persisted_state():
             new_callable=AsyncMock,
         ) as mock_clear,
         patch(
-            "views.rps.pvp_play.economy_service.credit",
+            "views.rps.pvp_play.game_wager_workflow.settle_pvp",
             new_callable=AsyncMock,
         ),
         patch(
-            "views.rps.pvp_play.economy_service.debit",
+            "views.rps.pvp_play.game_wager_workflow.refund_pvp",
             new_callable=AsyncMock,
         ),
     ):

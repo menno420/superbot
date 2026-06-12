@@ -1,19 +1,22 @@
-"""PR G5 — blackjack tournament persists per-player entry fees.
+"""PR G5 / P0-1 — blackjack tournament persists per-player entry fees.
 
-Tournaments are the highest-stakes path in the cog because
-``deduct_fees`` debits each player's entry_fee BEFORE any rounds run.
-A crash between fee deduction and the natural payout in
-``_check_tourn_done`` would otherwise leave the money in limbo
-forever.
+Tournaments are the highest-stakes path in the cog: each player's
+entry_fee is debited BEFORE any rounds run.  Since P0-1 the debit and
+the recovery row are written together by
+``services.game_wager_workflow.enter_tournament`` (one transaction), so
+a crash can no longer leave the money in limbo.
 
 The persistence design is per-player rows (one row per registered
 participant) — avoids the "sentinel user_id for guild-wide state"
 problem entirely.  Recovery refunds each row's ``bet`` (which equals
 the entry_fee) via ``economy_service.refund`` with a filterable
-reason, then deletes the row.
+reason, then deletes the row.  Natural completion is handled by
+``payout_tournament``: it credits the winner and deletes the rows in
+one idempotent transaction, so a replay cannot double-pay.
 
-Natural completion clears WITHOUT refund because the pot payout has
-already been credited; double-clearing would result in a double-pay.
+The ``_save_tournament_entry`` / ``_clear_tournament_entry`` helpers
+exercised below remain the row read/write primitives; P0-1 moved the
+*money* atomicity into ``enter_tournament`` / ``payout_tournament``.
 """
 
 from __future__ import annotations
@@ -136,8 +139,7 @@ async def test_recover_blackjack_tournament_refunds_each_row():
     # Every row was refunded with its bet amount.
     assert mock_refund.await_count == 3
     refunds = {
-        (c.kwargs["user_id"], c.kwargs["amount"])
-        for c in mock_refund.await_args_list
+        (c.kwargs["user_id"], c.kwargs["amount"]) for c in mock_refund.await_args_list
     }
     assert refunds == {(222, 100), (333, 50), (444, 200)}
     # Reason string is filterable in economy_audit_log.
@@ -275,8 +277,7 @@ async def test_on_guild_remove_refunds_tournament_entries_for_guild():
         await cog.on_guild_remove(guild)
     # Both tournament rows refunded with their bets.
     refunds = {
-        (c.kwargs["user_id"], c.kwargs["amount"])
-        for c in mock_refund.await_args_list
+        (c.kwargs["user_id"], c.kwargs["amount"]) for c in mock_refund.await_args_list
     }
     assert refunds == {(222, 100), (333, 50)}
     for c in mock_refund.await_args_list:
