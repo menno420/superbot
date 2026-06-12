@@ -28,7 +28,7 @@ from cogs.blackjack._state import (
     _TournPlayerState,
 )
 from core.runtime import resources
-from services import economy_service, game_state_service, tournament_state_service
+from services import game_wager_workflow, tournament_state_service
 from services.blackjack_engine import hand_value as _hand_value
 from services.blackjack_engine import is_blackjack as _is_blackjack
 from utils.channels import cleanup_category
@@ -236,36 +236,41 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
         lines.append(f"{icon} **{name}** — {chips} chips")
 
     winner_id = ranking[0][0] if ranking else None
-    pot = tourn.pot
 
     embed = discord.Embed(
         title="🏆 Blackjack Tournament Results",
         description="\n".join(lines),
         color=ECONOMY_COLOR,
     )
-    if winner_id and pot:
-        new_bal = await economy_service.credit(
-            tourn.guild_id,
-            winner_id,
-            pot,
-            reason="blackjack:tournament_win",
-        )
+    # P0-1 — pay the winner the escrowed pot (the sum of the actual entry
+    # rows) and release those rows in ONE idempotent transaction.  This
+    # replaces the credit-then-separate-clear pair: a re-run finds no
+    # rows and cannot double-pay, and recovery cannot refund an
+    # already-settled tournament.
+    result = await game_wager_workflow.payout_tournament(
+        guild_id=tourn.guild_id,
+        subsystem=BLACKJACK_TOURNAMENT_SUBSYSTEM,
+        winner_id=winner_id,
+        reason="blackjack:tournament_win",
+        free_reward=200,
+        free_reason="blackjack:tournament_free_reward",
+    )
+    if result.paid and tourn.entry_fee > 0:
         embed.add_field(
             name="Winner's payout",
-            value=f"<@{winner_id}> receives **{pot}** 🪙 (Balance: {new_bal} 🪙)",
+            value=(
+                f"<@{winner_id}> receives **{result.amount}** 🪙 "
+                f"(Balance: {result.new_winner_balance} 🪙)"
+            ),
             inline=False,
         )
-    elif winner_id and not pot:
-        reward = 200
-        new_bal = await economy_service.credit(
-            tourn.guild_id,
-            winner_id,
-            reward,
-            reason="blackjack:tournament_free_reward",
-        )
+    elif result.paid:
         embed.add_field(
             name="Winner's reward",
-            value=f"<@{winner_id}> receives **{reward}** 🪙 (Balance: {new_bal} 🪙)",
+            value=(
+                f"<@{winner_id}> receives **{result.amount}** 🪙 "
+                f"(Balance: {result.new_winner_balance} 🪙)"
+            ),
             inline=False,
         )
 
@@ -275,33 +280,6 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
     # Clean up private channels
     if tourn.category:
         await cleanup_category(tourn.category)
-
-    # PR G5 — natural completion: clear the persisted entry-fee rows
-    # WITHOUT refunding (payouts above already settled the pot).  The
-    # cog_load recovery path is the ONLY one that refunds; clearing
-    # here prevents it from double-paying on the next restart.
-    try:
-        rows = await game_state_service.list_active_for_subsystem(
-            BLACKJACK_TOURNAMENT_SUBSYSTEM,
-            guild_id=tourn.guild_id,
-        )
-        for row in rows:
-            try:
-                await game_state_service.clear_by_id(row["id"])
-            except Exception as exc:
-                logger.warning(
-                    "blackjack_tournament natural-completion clear "
-                    "failed for id=%s: %s",
-                    row.get("id"),
-                    exc,
-                )
-    except Exception as exc:
-        logger.warning(
-            "blackjack_tournament natural-completion sweep failed for "
-            "guild=%d: %s — entries will be cleared by the 24 h GC sweep",
-            tourn.guild_id,
-            exc,
-        )
 
     _tournaments.pop(tourn.guild_id, None)
     await tournament_state_service.clear_active(tourn.guild_id)

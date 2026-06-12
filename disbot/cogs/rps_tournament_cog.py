@@ -67,10 +67,12 @@ from core.runtime import tasks
 from services import (  # noqa: F401 — game_state_service kept for back-compat patch sites
     economy_service,
     game_state_service,
+    game_wager_workflow,
     tournament_state_service,
 )
 from utils.ui_constants import INFO_COLOR
 from views.rps import _RpsRegistrationView
+from views.rps._helpers import RPS_PVP_ESCROW_SUBSYSTEM
 
 logger = logging.getLogger("bot")
 
@@ -143,6 +145,15 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
         # PR G1 — drop any rps_pvp_pending game_state rows left over
         # from a previous process.
         tasks.spawn("rps:recover_pvp_pending", self._recover_rps_pvp_pending())
+        # P0-1 — refund any stranded PvP escrow (stakes debited at accept
+        # but the match never settled because the bot bounced).
+        tasks.spawn(
+            "rps:recover_pvp_escrow",
+            game_wager_workflow.recover_escrow(
+                RPS_PVP_ESCROW_SUBSYSTEM,
+                reason="rps:pvp_escrow_refund",
+            ),
+        )
         # PR G6 — refund stranded tournament entries.  Same shape as
         # blackjack tournament: entry fees were debited at registration
         # and never paid back if the bot crashed before the final
@@ -172,6 +183,12 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
     async def on_guild_remove(self, guild) -> None:
         """Wipe rps subsystem rows for a departed guild (delegator)."""
         await on_guild_remove_rps(guild.id)
+        # P0-1 — refund stranded PvP escrow for the departing guild.
+        await game_wager_workflow.recover_escrow(
+            RPS_PVP_ESCROW_SUBSYSTEM,
+            reason="rps:pvp_escrow_refund",
+            guild_id=guild.id,
+        )
 
     # ------------------------------------------------------------------
     # Tournament registration
@@ -319,13 +336,20 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
         if user.id in self.paid_players or user in self.players:
             return False  # already registered
         if self.entry_fee > 0:
+            # P0-1 — debit the fee and write the recovery row in ONE
+            # transaction (the old flow debited, then saved the row in a
+            # separate call: a crash between lost the fee with no row to
+            # refund from).  channel_id=0 keeps the guild-wide natural
+            # key; state={"bet": fee} matches the recovery convention.
             try:
-                await economy_service.debit(
-                    guild_id,
-                    user.id,
-                    self.entry_fee,
+                await game_wager_workflow.enter_tournament(
+                    guild_id=guild_id,
+                    user_id=user.id,
+                    channel_id=0,
+                    subsystem=RPS_TOURNAMENT_SUBSYSTEM,
+                    version=RPS_TOURNAMENT_VERSION,
+                    fee=self.entry_fee,
                     reason="rps:entry_fee",
-                    actor_id=user.id,
                 )
             except economy_service.InsufficientFundsError:
                 return False
@@ -333,14 +357,6 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
         self.players.append(user)
         self.scores[user] = 0
         await add_player_to_db(user, guild_id)
-        # PR G6 — persist the paid-entry state so a crash before the
-        # final payout in ``check_tournament_progress`` can refund this
-        # player on cog_load.
-        await save_tournament_entry(
-            guild_id=guild_id,
-            user_id=user.id,
-            entry_fee=self.entry_fee,
-        )
         return True
 
     # ------------------------------------------------------------------
@@ -648,25 +664,28 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
         """Checks if the tournament is over or starts a new round."""
         if len(self.current_round) == 1:
             winner = self.current_round[0]
-            pot = self.entry_fee * len(self.paid_players)
+            # P0-1 — pay the winner the escrowed pot (the sum of the
+            # actual entry rows, not a recomputed fee×players) and delete
+            # those rows in ONE idempotent transaction.  This replaces
+            # the credit-then-separate-clear pair, so a re-run can never
+            # double-pay and recovery can never refund an already-settled
+            # tournament.
+            result = await game_wager_workflow.payout_tournament(
+                guild_id=guild.id,
+                subsystem=RPS_TOURNAMENT_SUBSYSTEM,
+                winner_id=winner.id,
+                reason="rps:tournament_win",
+                free_reward=100,
+                free_reason="rps:tournament_free_reward",
+            )
             msg_lines = [f"🏆 **{winner.display_name}** has won the RPS Tournament! 🏆"]
-            if pot:
-                new_bal = await economy_service.credit(
-                    guild.id,
-                    winner.id,
-                    pot,
-                    reason="rps:tournament_win",
+            if result.paid and self.entry_fee > 0:
+                msg_lines.append(
+                    f"💰 Payout: **{result.amount}** 🪙 "
+                    f"(Balance: {result.new_winner_balance} 🪙)",
                 )
-                msg_lines.append(f"💰 Payout: **{pot}** 🪙 (Balance: {new_bal} 🪙)")
-            elif self.entry_fee == 0:
-                reward = 100
-                new_bal = await economy_service.credit(
-                    guild.id,
-                    winner.id,
-                    reward,
-                    reason="rps:tournament_free_reward",
-                )
-                msg_lines.append(f"🎁 Free tournament reward: **{reward}** 🪙")
+            elif result.paid:
+                msg_lines.append(f"🎁 Free tournament reward: **{result.amount}** 🪙")
             announce = guild.system_channel or last_channel
             await announce.send("\n".join(msg_lines))
             self.tournament_active = False
@@ -676,30 +695,6 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
             self.matches.clear()
             self.current_round.clear()
             self.match_channels.clear()
-            # PR G6 — natural completion: drop the persisted entry-fee
-            # rows WITHOUT refunding (the pot above already settled).
-            try:
-                rows = await game_state_service.list_active_for_subsystem(
-                    RPS_TOURNAMENT_SUBSYSTEM,
-                    guild_id=guild.id,
-                )
-                for row in rows:
-                    try:
-                        await game_state_service.clear_by_id(row["id"])
-                    except Exception as exc:
-                        logger.warning(
-                            "rps_tournament natural-completion clear "
-                            "failed for id=%s: %s",
-                            row.get("id"),
-                            exc,
-                        )
-            except Exception as exc:
-                logger.warning(
-                    "rps_tournament natural-completion sweep failed for "
-                    "guild=%d: %s — entries will be cleared by the 24h GC",
-                    guild.id,
-                    exc,
-                )
             # Clean up any remaining match channels
             await delete_all_match_channels(guild)
         else:

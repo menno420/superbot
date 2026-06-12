@@ -40,6 +40,13 @@ BLACKJACK_SOLO_VERSION = 1
 BLACKJACK_PVP_SUBSYSTEM = "blackjack_pvp"
 BLACKJACK_PVP_VERSION = 1
 
+# P0-1 — escrow subsystem for D1 escrow-at-accept.  One ``{"bet": stake,
+# "peer": other_id}`` row per player so the existing ``bet``-keyed
+# recovery refunds each player their own stake.  Wagered money moves only
+# through ``services.game_wager_workflow``.
+BLACKJACK_PVP_ESCROW_SUBSYSTEM = "blackjack_pvp_escrow"
+BLACKJACK_PVP_ESCROW_VERSION = 1
+
 BLACKJACK_TOURNAMENT_SUBSYSTEM = "blackjack_tournament"
 BLACKJACK_TOURNAMENT_VERSION = 1
 

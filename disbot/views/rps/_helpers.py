@@ -37,6 +37,15 @@ _rps_pvp_pending: dict[frozenset, dict] = {}
 RPS_PVP_PENDING_SUBSYSTEM = "rps_pvp_pending"
 RPS_PVP_PENDING_VERSION = 1
 
+# P0-1 — escrow subsystem for D1 escrow-at-accept.  One row PER player
+# (keyed at each player's own id, not the canonical surrogate) holding
+# ``{"bet": stake, "peer": other_id}``: per-player rows let the existing
+# ``bet``-keyed recovery (cog_load sweep + the 24 h GC) refund each
+# player their own stake without a two-party special case.  Money moves
+# only through ``services.game_wager_workflow``.
+RPS_PVP_ESCROW_SUBSYSTEM = "rps_pvp_escrow"
+RPS_PVP_ESCROW_VERSION = 1
+
 
 def rps_pvp_canonical_user_id(p1_id: int, p2_id: int) -> int:
     """The user_id used as the natural key for an rps_pvp_pending row.

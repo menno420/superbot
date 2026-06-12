@@ -50,6 +50,19 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   **`utils/mining/`** — shared by the service, the cog, and the views. Economy is a
   dependency for bets/rewards, not a place for game cogs/views to duplicate balance
   writes.
+- **Wagered PvP + tournament money routes through `services/game_wager_workflow.py`**
+  (P0-1, PR #748): the same one-transaction-per-op seam as mining, for every two-party /
+  paid-entry coin move. **D1 escrow-at-accept** — PvP stakes leave both wallets atomically
+  with a per-player `*_escrow` `game_state` row when a challenge is accepted (`open_pvp_wager`),
+  so the loser can never be short at settle (the old credit-then-`allow_overdraft`-debit
+  **mint window** is gone). `settle_pvp` / `refund_pvp` / `payout_tournament` are idempotent
+  by `FOR UPDATE` row-consumption (replay = no-op, never double-pays); `enter_tournament`
+  debits the fee + writes the recovery row in one txn. Escrow/entry rows carry the `bet`
+  key, so the 24h `game_state` GC + `recover_escrow` (cog_load / on_guild_remove) refund any
+  stranded stake. AST-fenced by `tests/unit/invariants/test_game_wager_write_boundary.py`
+  (no `economy_service.credit/.debit` in the wager files; `allow_overdraft=True` solo-only).
+  **Solo** flows (single player vs the house) stay on `economy_service` directly — no
+  counterparty, no mint risk.
 - **Shared game-XP track: `services/game_xp_service.py`** (Wave 2 seed, 2026-06-10) —
   the second XP track (chat XP keeps driving auto-roles untouched): guild-scoped
   `game_xp` rows per game, central award policy (XP ≈ effort/risk; money moves award 0),

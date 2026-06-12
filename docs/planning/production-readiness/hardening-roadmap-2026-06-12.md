@@ -36,8 +36,13 @@ session". Tracks needing an owner decision name the routed Q-block.
 
 ## P0 — integrity (do before any public posture)
 
-### P0-1 · Games wager money-safety
-**Evidence:** [games map](games-production-readiness-map-2026-06-12.md) — RPS/blackjack PvP
+### P0-1 · Games wager money-safety  ·  ✅ **SHIPPED (PR #748, 2026-06-12)**
+**Done:** `services/game_wager_workflow.py` (D1 escrow-at-accept; atomic + idempotent settle/
+refund/payout; `enter_tournament` debit+row in one txn), all four call sites migrated, AST
+fence `test_game_wager_write_boundary`, failure-injection / terminal-matrix / idempotency
+tests. Record: [games-wager-money-safety-plan](../games-wager-money-safety-plan-2026-06-12.md).
+
+**Evidence (original):** [games map](games-production-readiness-map-2026-06-12.md) — RPS/blackjack PvP
 settle with sequential winner-credit + overdraft loser-debit (a crash between calls **mints
 coins**); paid tournament registration **debits before** writing a recovery checkpoint (a
 crash loses the fee with no row to refund — contra ADR-002); multi-call payouts/refunds have

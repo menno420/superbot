@@ -47,6 +47,7 @@ from cogs.blackjack._persistence import (  # noqa: F401 — re-exported
 # imports are flagged by ruff so we collect them via __all__ below
 # instead of relying on F401 noqa pragmas.
 from cogs.blackjack._state import (  # noqa: F401 — re-exported
+    BLACKJACK_PVP_ESCROW_SUBSYSTEM,
     BLACKJACK_PVP_SUBSYSTEM,
     BLACKJACK_PVP_VERSION,
     BLACKJACK_SOLO_SUBSYSTEM,
@@ -65,7 +66,12 @@ from cogs.blackjack._state import (  # noqa: F401 — re-exported
     _TournPlayerState,
 )
 from core.runtime import resources, tasks
-from services import economy_service, game_state_service, tournament_state_service
+from services import (
+    economy_service,
+    game_state_service,
+    game_wager_workflow,
+    tournament_state_service,
+)
 from services.blackjack_engine import is_blackjack as _is_blackjack
 from utils import db
 from utils.channels import cleanup_category, create_private_channel
@@ -125,6 +131,15 @@ class BlackjackCog(commands.Cog):
         # balance and starts a new game.
         tasks.spawn("blackjack:recover_solo", self._recover_blackjack_solo())
         tasks.spawn("blackjack:recover_pvp", self._recover_blackjack_pvp())
+        # P0-1 — refund any stranded PvP escrow (stakes debited at accept
+        # but the match never settled because the bot bounced).
+        tasks.spawn(
+            "blackjack:recover_pvp_escrow",
+            game_wager_workflow.recover_escrow(
+                BLACKJACK_PVP_ESCROW_SUBSYSTEM,
+                reason="blackjack:pvp_escrow_refund",
+            ),
+        )
         # PR G5 — tournament recovery DOES refund.  Entry fees were
         # debited at launch; if the bot crashed before _check_tourn_done
         # paid out the pot, those coins are still in limbo.  Refund
@@ -351,6 +366,13 @@ class BlackjackCog(commands.Cog):
                     guild.id,
                     exc,
                 )
+
+        # P0-1 — refund stranded PvP escrow for the departing guild.
+        await game_wager_workflow.recover_escrow(
+            BLACKJACK_PVP_ESCROW_SUBSYSTEM,
+            reason="blackjack:pvp_escrow_refund",
+            guild_id=guild.id,
+        )
 
     async def _cleanup_orphaned_tournaments(self):
         """On startup, find leftover BJ Tournament categories and notify players."""
@@ -590,9 +612,30 @@ async def _launch_tournament(
         await tournament_state_service.clear_active(tourn.guild_id)
         return
 
-    # Deduct entry fees (uses shared TournamentRegistration helper)
+    # P0-1 — debit each entry fee and write its recovery row in ONE
+    # transaction per player (the old flow batch-debited via
+    # ``deduct_fees`` then saved each row separately at channel-creation
+    # time: a crash in the window lost the fee with no row to refund).
+    # channel_id=0 keeps the guild-wide natural key; the per-round
+    # private channel is bookkeeping, not money.
     if tourn.entry_fee:
-        await tourn.deduct_fees()
+        paid: set[int] = set()
+        for uid in list(tourn.players):
+            try:
+                await game_wager_workflow.enter_tournament(
+                    guild_id=tourn.guild_id,
+                    user_id=uid,
+                    channel_id=0,
+                    subsystem=BLACKJACK_TOURNAMENT_SUBSYSTEM,
+                    version=BLACKJACK_TOURNAMENT_VERSION,
+                    fee=tourn.entry_fee,
+                    reason="tournament:entry_fee",
+                    extra_state={"rounds": tourn.rounds},
+                )
+                paid.add(uid)
+            except economy_service.InsufficientFundsError:
+                continue
+        tourn.players = paid
 
     if not tourn.players:
         if announce:
@@ -630,17 +673,9 @@ async def _launch_tournament(
                 tourn.rounds,
                 channel_id=ch.id,
             )
-            # PR G5 — persist the paid-entry state so a crash before
-            # the tournament resolves can refund this player on
-            # cog_load.  ``bet`` matches the G0 GC convention so the
-            # 24 h sweep is a secondary safety net.
-            await _save_tournament_entry(
-                guild_id=tourn.guild_id,
-                user_id=uid,
-                channel_id=ch.id,
-                entry_fee=tourn.entry_fee,
-                rounds=tourn.rounds,
-            )
+            # The paid-entry recovery row was written atomically with the
+            # fee debit in ``enter_tournament`` above (P0-1), keyed at
+            # channel_id=0 — no separate save here.
             await ch.send(
                 f"Welcome, {member.mention}! You have **{tourn.rounds}** rounds "
                 f"and start with **{TOURN_START_CHIPS}** chips. Good luck! 🃏",

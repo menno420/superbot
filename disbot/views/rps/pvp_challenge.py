@@ -12,8 +12,10 @@ import logging
 import discord
 
 from core.runtime.interaction_helpers import safe_edit
-from services import game_state_service
+from services import economy_service, game_state_service, game_wager_workflow
 from views.rps._helpers import (
+    RPS_PVP_ESCROW_SUBSYSTEM,
+    RPS_PVP_ESCROW_VERSION,
     RPS_PVP_PENDING_SUBSYSTEM,
     RPS_PVP_PENDING_VERSION,
     _rps_pvp_pending,
@@ -65,6 +67,34 @@ class _RpsPvpChallengeView(discord.ui.View):
             view=self,
         ):
             return
+        # P0-1 (D1) — escrow both stakes the moment the challenge is
+        # accepted.  The pot leaves both wallets atomically here, so the
+        # loser cannot be short at settle (the old credit-then-overdraft-
+        # debit mint window is gone).  If either player can no longer
+        # afford the stake, abort before any move is picked.
+        if self.bet > 0:
+            try:
+                await game_wager_workflow.open_pvp_wager(
+                    guild_id=self.guild_id,
+                    channel_id=interaction.channel_id,
+                    subsystem=RPS_PVP_ESCROW_SUBSYSTEM,
+                    version=RPS_PVP_ESCROW_VERSION,
+                    p1_id=self.challenger.id,
+                    p2_id=self.opponent.id,
+                    stake=self.bet,
+                    reason="rps:pvp_escrow",
+                )
+            except economy_service.InsufficientFundsError:
+                await safe_edit(
+                    interaction,
+                    content=(
+                        "❌ Challenge cancelled — both players need "
+                        f"**{self.bet}** 🪙 to stake."
+                    ),
+                    view=self,
+                )
+                self.stop()
+                return
         key = frozenset({self.challenger.id, self.opponent.id})
         _rps_pvp_pending[key] = {
             "choices": {},
