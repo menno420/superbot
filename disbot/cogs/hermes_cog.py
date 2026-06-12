@@ -9,6 +9,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from core.runtime.interaction_helpers import safe_defer
 from utils.ui_constants import ERROR_COLOR, INFO_COLOR, SUCCESS_COLOR
 
 logger = logging.getLogger("bot")
@@ -110,7 +111,7 @@ class HermesCog(commands.Cog):
         notes: str = "",
     ) -> None:
         """Submit a bug report that fires an autonomous fix session."""
-        await interaction.response.defer(ephemeral=True)
+        await safe_defer(interaction, ephemeral=True)
 
         work_order = _build_work_order(
             task=title,
@@ -171,7 +172,7 @@ class HermesCog(commands.Cog):
         work_order: str,
     ) -> None:
         """Fire an arbitrary work order at the Claude Code Routine."""
-        await interaction.response.defer(ephemeral=True)
+        await safe_defer(interaction, ephemeral=True)
 
         try:
             result = await _fire_work_order(work_order)
