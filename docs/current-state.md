@@ -50,7 +50,7 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 
-- **#733–#734 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
+- **#733–#735 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
   (mandatory `⟲ Previous-session review` session-ender) + **Q-0103** (open session PRs **ready not
   draft**; every PR reaches a terminal state). `scripts/check_session_log.py` + post-edit/Stop-hook
   wiring enforce the Q-0089/Q-0102 enders. New
@@ -60,7 +60,9 @@ Source code and merged PRs win over anything written here.
   **#734**: reconciled this ledger's drift (added #730/#733, relabeled #731, added #724–#728) and
   built `scripts/check_current_state_ledger.py` (the living-ledger self-check) + **Q-0104** (closing
   documentation audit) + **Q-0105** (adopt-tooling-with-a-delete-if-unreliable kill-switch) +
-  permissions-posture doc. Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines
+  permissions-posture doc. **#735**: **Q-0106** — agents propose `CLAUDE.md` rule changes via a
+  router Q-block, never self-edit (binding for a session but not pinned; read-only to a fully
+  autonomous agent). Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines
   dispatch bridge · portable OSS memory/workflow package · ledger session-arc aggregation.
 - **#730 (2026-06-12, Hermes skills installable)** — `scripts/hermes/build_skills.py` generates
   installable `SKILL.md` files (Hermes frontmatter) from the skill docs + `install-skills.sh`
