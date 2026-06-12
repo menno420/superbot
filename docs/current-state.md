@@ -52,9 +52,11 @@ Source code and merged PRs win over anything written here.
 >
 > **Last reconciliation pass:** PR #741 (2026-06-12 —
 > [the pass record + decade queue](planning/reconciliation-pass-2026-06-12.md)). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #750 (every
-> multiple of 10 — Q-0107; `scripts/check_reconciliation_due.py` flags it). Reset this
-> marker to the latest PR after a pass.
+> **docs-only review + planning reconciliation** is due once merged PRs cross #760 (every
+> multiple of **20** — Q-0107 cadence raised 10→20 on 2026-06-12; `check_reconciliation_due.py`
+> flags it, and `.github/workflows/reconciliation-trigger.yml` auto-opens a `reconcile` issue
+> at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
+> PR after a pass.
 
 - **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
   `services/game_wager_workflow.py`: the audited money boundary for every two-party /

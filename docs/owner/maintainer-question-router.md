@@ -4189,24 +4189,32 @@ system evolve. This is the governance counterpart to the Q-0102/Q-0104 self-audi
 > modular but not too segmented; each PR should ship a reasonable change unless it really is
 > only a small required change."
 
+> **AMENDED 2026-06-12 (owner, in-session, autonomous-routines wiring):** cadence raised
+> **10 → 20**. Rationale: "some sessions create a lot of small PRs, so [the threshold]
+> shouldn't be too low" — every 10 fired too often. The pass is also now **fired automatically**
+> by a GitHub Action (`.github/workflows/reconciliation-trigger.yml`) that opens a
+> `reconcile`-labeled issue at the boundary, triggering the **superbot docs reconciliation**
+> routine (`docs/operations/autonomous-routines.md`). Agents/maintainer may also open a
+> `reconcile` issue by hand to fire the pass when they spot docs drift off-cycle.
+
 **Area:** Agent system · workflow / planning cadence
 **Type:** Standing workflow rule (process)
-**Priority:** Standing — every 10th PR
+**Priority:** Standing — every 20th PR
 
 **Directive:**
-- PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are a **docs-only review +
+- PR numbers crossing a **multiple of 20** (#20, #40, #60, …) are a **docs-only review +
   planning** pass — no runtime / `disbot/` code.
 - **Reconcile:** review the ledger, active lanes, open Q-blocks, idea backlog, roadmap; prune
   stale docs; restate current priorities.
-- **Plan the next ~9 PRs:** what is realistically achievable in the upcoming decade of PRs,
+- **Plan the next ~9 PRs:** what is realistically achievable in the upcoming band of PRs,
   **modular but not over-segmented** — each planned PR ships a *reasonable, meaningful* change,
   not a trivial fragment (small PRs only when the change genuinely is small/required).
-- **Cadence guard:** `scripts/check_reconciliation_due.py` tracks the `Last reconciliation
-  pass:** PR #N` marker in `current-state.md` and flags when a pass is due; reset the marker
-  after a pass. Surfaced by `/session-close`.
+- **Cadence guard:** `scripts/check_reconciliation_due.py` (`STEP = 20`) tracks the
+  `Last reconciliation pass:** PR #N` marker in `current-state.md` and flags when a pass is due;
+  reset the marker after a pass. Surfaced by `/session-close` and the trigger Action.
 
 **Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · `current-state.md` holds
-the marker · this entry is provenance.
+the marker · `docs/operations/autonomous-routines.md` (the routine + Action) · this entry is provenance.
 
 
 ### Q-0108 — Automod rules engine + image moderation: wanted? Which scope to start?

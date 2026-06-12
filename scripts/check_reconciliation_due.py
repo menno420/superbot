@@ -1,12 +1,14 @@
 #!/usr/bin/env python3.10
 """Reconciliation-cadence guard — flag when a docs-only review/planning pass is due.
 
-Owner directive Q-0107: PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are
+Owner directive Q-0107: PR numbers crossing a **multiple of 20** (#20, #40, #60, …) are
 reserved for a **docs-only repo review + planning-reconciliation** pass — review the state
 of the repo (ledger, active lanes, open Q-blocks, idea backlog, roadmap), prune stale docs,
 and refocus the next priorities. This guard tracks the cadence against the
 ``Last reconciliation pass:** PR #N`` marker in ``docs/current-state.md``: a pass is **due**
-once merged PRs have crossed into a new multiple-of-10 band since the last marked pass.
+once merged PRs have crossed into a new multiple-of-20 band since the last marked pass.
+(Cadence raised 10 → 20 on 2026-06-12, owner-directed: small PRs inflate the count, so every
+10 fired too often; the band size is the ``STEP`` constant below — retune there.)
 
 Advisory by default (exit 0); ``--strict`` for an explicit gate (e.g. ``/session-close``).
 After completing a pass, reset the marker to the latest PR. Pure stdlib, like ``check_docs.py``.
@@ -31,7 +33,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CURRENT_STATE = REPO_ROOT / "docs" / "current-state.md"
 
-STEP = 10  # the cadence: a pass per multiple-of-10 PR band
+STEP = 20  # the cadence: a pass per multiple-of-20 PR band (raised from 10, 2026-06-12)
 
 _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 _MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|\(#)(\d+)")

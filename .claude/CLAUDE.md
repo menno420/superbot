@@ -180,17 +180,20 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   This is the automated-plus-judgment complement to the Q-0102 review; it exists because this
   exact question, asked once (2026-06-12), surfaced multiple drifted ledger entries. The
   `/session-close` skill runs the automated half.
-- **Reconciliation + planning pass at every 10th PR — required (owner directive Q-0107,
-  2026-06-12).** PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are reserved for a
+- **Reconciliation + planning pass at every 20th PR — required (owner directive Q-0107,
+  2026-06-12; cadence raised 10 → 20 same day — small PRs inflate the count, so every 10 fired
+  too often).** PR numbers crossing a **multiple of 20** (#20, #40, #60, …) are reserved for a
   **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things:
   **(1) reconcile** — review the living ledger, active lanes, open Q-blocks, idea backlog, and
   roadmap; prune/archive stale docs; restate the current priorities; and **(2) plan the next ~9
-  PRs** — what is realistically achievable in the upcoming decade of PRs, **modular but not
+  PRs** — what is realistically achievable in the upcoming band of PRs, **modular but not
   over-segmented**: each planned PR should ship a *reasonable, meaningful change* (a real slice),
   **not** a trivial fragment — a small PR is fine only when the change genuinely is small or a
   required one-off. `scripts/check_reconciliation_due.py` flags when a pass is due (against the
-  `Last reconciliation pass:** PR #N` marker in `current-state.md`; surfaced by `/session-close`);
-  reset the marker to the latest PR after the pass.
+  `Last reconciliation pass:** PR #N` marker in `current-state.md`; surfaced by `/session-close`).
+  The pass is now **fired automatically** by `.github/workflows/reconciliation-trigger.yml` (opens
+  a `reconcile`-labeled issue at the boundary → the **superbot docs reconciliation** routine runs
+  it — see `docs/operations/autonomous-routines.md`); reset the marker to the latest PR after the pass.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges

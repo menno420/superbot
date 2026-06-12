@@ -1,0 +1,62 @@
+name: reconciliation-trigger
+
+# Owner directive Q-0107 (cadence raised to 20, 2026-06-12): when merged PRs cross a
+# multiple-of-20 band, open a `reconcile` issue that fires the "superbot docs reconciliation"
+# routine. This runs the docs/planning pass PROMPTLY (daytime included) so the docs are fresh
+# for the nightly executor — not deferred to a nightly poll.
+#
+# Provenance + reliability (Q-0105): added 2026-06-12. UNVERIFIED — confirm over a few cycles
+# that it opens the issue only at the boundary and dedupes. Delete this workflow if it
+# misfires repeatedly; it is a convenience trigger, not load-bearing runtime.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: reconciliation-trigger
+  cancel-in-progress: false
+
+jobs:
+  maybe-open-reconcile-issue:
+    # Never run on forks — this opens issues against the canonical repo only.
+    if: github.repository == 'menno420/superbot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so the cadence guard can scan merge subjects
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Is a reconciliation pass due?
+        id: due
+        run: |
+          # --strict exits 1 when a pass is due. (An if-condition is exempt from set -e.)
+          if python3.10 scripts/check_reconciliation_due.py --strict; then
+            echo "due=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "due=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Open a reconcile issue (deduped)
+        if: steps.due.outputs.due == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Dedupe: if an open `reconcile` issue already exists, do nothing (avoids a new
+          # issue on every push between the boundary crossing and the routine running).
+          open_count="$(gh issue list --label reconcile --state open --json number --jq 'length' 2>/dev/null || echo 0)"
+          if [ "${open_count:-0}" != "0" ]; then
+            echo "An open 'reconcile' issue already exists — nothing to do."
+            exit 0
+          fi
+          gh label create reconcile --color FBCA04 \
+            --description "Fires the docs-reconciliation routine (Q-0107)" --force 2>/dev/null || true
+          gh issue create \
+            --title "Docs reconciliation due (Q-0107)" \
+            --label reconcile \
+            --body $'A multiple-of-20 PR band was crossed — a docs-only reconciliation + planning pass is due (Q-0107).\n\nThis issue triggers the **superbot docs reconciliation** routine, which reconciles the ledger, de-stales docs, plans the next ~9 PRs, adds one idea, resets the `Last reconciliation pass` marker, and closes this issue.\n\nAuto-opened by `.github/workflows/reconciliation-trigger.yml`. You can also open a `reconcile`-labeled issue by hand whenever you spot docs drift.'

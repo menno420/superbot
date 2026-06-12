@@ -17,39 +17,52 @@ kill switch is toggling the routine off in the console.
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
 | **superbot autonomous dispatch** | API (`/fire`) | General work orders from Hermes/phone (`superbot-dispatch`). Classifies by `CLASS:`. | per work order (Q-0113/Q-0114) |
-| **superbot docs reconciliation** | Schedule (nightly), self-gated | The Q-0107 every-10th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next ~9 PRs, contribute one idea. | `docs` → self-merge on green |
+| **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-20th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next ~9 PRs, contribute one idea. | `docs` → self-merge on green |
 | **superbot night caretaker** | Schedule (nightly) + API | Find & fix **one** small, well-understood runtime bug per run, with a test; or fix what Hermes hands it via `text`. | `fix` → self-merge on green |
 
-**Why nightly-schedule, not per-PR GitHub trigger, for reconciliation:** a GitHub
-`pull_request.closed` trigger fires a full cloud session on *every* merge (most just to check
-"not due" and exit), which burns the daily routine-run cap. A nightly run that consults
-`scripts/check_reconciliation_due.py` does the same job for ~1 run/night and catches the
-10th-PR boundary by morning. Switch to the GitHub trigger only if you want it instant and the
-run cap allows.
+**Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
+pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
+for the nightly executor, not deferred to a night-time poll (owner point, 2026-06-12). A
+per-PR `pull_request.closed` trigger would spin a full cloud session on *every* merge (mostly
+to exit), burning the daily run cap. The clean middle: **the issue *is* the trigger**, opened
+two ways —
+1. **Automatically** by `.github/workflows/reconciliation-trigger.yml`: on every push to `main`
+   it runs `scripts/check_reconciliation_due.py --strict` and, when merged PRs cross a
+   **multiple-of-20** band (Q-0107, raised from 10 on 2026-06-12 — small PRs inflate the
+   count), opens a deduped issue labeled `reconcile`.
+2. **By judgment** — *any agent or the maintainer* opens a `reconcile`-labeled issue the moment
+   they spot docs needing reordering, even off-cycle. The routine treats the issue's existence
+   as the go-signal (it does not re-gate on the cadence), does the pass, and closes the issue.
+
+So the cadence runs in the GitHub Action (cheap, deterministic), and the routine just listens
+for the labeled issue.
 
 **The docs/runtime split (honors Q-0107):** the reconciliation routine is **docs-only** — if
 it *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN), and the **caretaker**
 routine fixes it. Neither routine invents features (the phase gate holds those until
 invent-phase, and these prompts never originate them).
 
-**Stage-1 note (workflow §10):** these two are *scheduled, unattended, self-merging* routines —
-real Stage-1 autonomy, earned by the Stage-0 calibration runs on 2026-06-12 (connectivity ·
-held-for-review PR #747 · self-merge PR #751). Watch the first scheduled run of each (or fire
-once via **Run now**) before trusting them overnight. Stagger their schedules so they don't race
-on `main`.
+**Stage-1 note (workflow §10):** these two are *unattended, self-merging* routines (the docs
+one issue-triggered, the caretaker nightly) — real Stage-1 autonomy, earned by the Stage-0
+calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
+Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
+issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.
 
 ---
 
 ## Routine: superbot docs reconciliation
 
-- **Trigger:** Schedule → Daily (suggested 03:30 in your zone; staggered after the caretaker).
+- **Trigger:** GitHub → **Issue opened**, filtered to **label is one of `reconcile`**.
+  (The `reconcile` issue is opened by the Action above on the 20-PR boundary, or by hand when
+  an agent spots drift.)
 - **Repository:** `menno420/superbot`. **Model:** Sonnet or Opus (docs work — the volume tier
   is fine; §11). **Permissions:** unrestricted branch push **OFF**. **Behavior:** auto-fix PRs ON.
 - **Paste this as the routine's instructions:**
 
 ```
-You are the SuperBot DOCS RECONCILIATION routine — the Q-0107 every-10th-PR docs-only
-review + planning pass. You run autonomously and self-merge on green CI (Q-0113).
+You are the SuperBot DOCS RECONCILIATION routine — the Q-0107 docs-only review + planning
+pass. You are triggered by a GitHub issue labeled `reconcile`. You run autonomously and
+self-merge on green CI (Q-0113).
 
 STRICTLY DOCS-ONLY. Never modify disbot/ runtime code, migrations, or tests in this routine
 (that is the Q-0107 rule). Runtime bugs you notice are CAPTURED, not fixed here (step 3).
@@ -57,9 +70,9 @@ STRICTLY DOCS-ONLY. Never modify disbot/ runtime code, migrations, or tests in t
 ORIENT: read .claude/CLAUDE.md, docs/current-state.md, the newest .sessions/ log, and
 docs/owner/ai-project-workflow.md section 12.
 
-STEP 1 — GATE: run `python3.10 scripts/check_reconciliation_due.py`.
-  - NOT due: stop now. Open no PR. End with "reconciliation not due — no action".
-  - DUE: continue.
+STEP 1 — GO-SIGNAL: the triggering `reconcile` issue IS your go-signal — do the pass. (Do not
+  re-gate on check_reconciliation_due: the issue was opened either because the cadence fired or
+  because an agent spotted drift; either way reconciliation is wanted.) Note the issue number.
 
 STEP 2 — RECONCILE (the Q-0107 pass):
   - Reconcile docs/current-state.md against live merged PRs: run
@@ -68,18 +81,20 @@ STEP 2 — RECONCILE (the Q-0107 pass):
   - Run `python3.10 scripts/check_docs.py --strict`; fix every reachability/badge/staleness
     issue, plus stale links, wrong PR numbers, and broken references you find.
   - Prune/relabel clearly stale docs; restate current priorities in current-state Next-action.
-  - Plan the next ~9 PRs (the upcoming decade) — modular, each a meaningful slice — into the
+  - Plan the next ~9 PRs (the upcoming band) — modular, each a meaningful slice — into the
     decade-queue planning doc.
   - Contribute ONE new genuine idea (Q-0089) to docs/ideas/ with a one-line why.
   - Reset the "Last reconciliation pass: PR #N" marker in current-state.md to the latest PR.
-    (This is what makes a re-fire exit at step 1 — do not skip it.)
+    (The trigger Action keys off this marker — resetting it is what stops it re-opening a
+    reconcile issue next push. Do not skip it.)
 
 STEP 3 — RUNTIME BUGS YOU NOTICED: do NOT fix them here. Append each to docs/health/bug-book.md
   as a new OPEN entry for the night-caretaker routine. Stay docs-only.
 
 STEP 4 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger, and
   check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
-  conflicts (you are the reconciler), require CI green on the final head, merge-commit.
+  conflicts (you are the reconciler), require CI green on the final head, merge-commit. Then
+  CLOSE the triggering `reconcile` issue (reference the merged PR) so it doesn't linger.
 
 Respect the bounded-session protocol. Never touch production, Railway, or the database.
 ```
@@ -129,14 +144,32 @@ the database directly.
 
 ---
 
+## The `reconcile` issue — how to fire the docs pass by hand
+
+The docs-reconciliation routine triggers on a GitHub **issue labeled `reconcile`**. Beyond the
+automatic Action (every 20-PR band), **any agent or the maintainer should open one whenever the
+docs visibly need reordering** — the ledger drifted, a plan is stale, links rot, priorities
+moved — without waiting for the cadence:
+
+```bash
+gh issue create --repo menno420/superbot --label reconcile \
+  --title "Docs reconciliation: <one-line reason>" \
+  --body "What looks stale / needs reordering, and why now."
+```
+
+The routine treats the issue as the go-signal, runs the docs-only pass, and closes the issue.
+(If the `reconcile` label doesn't exist yet, the Action creates it on first use; or
+`gh label create reconcile --color FBCA04`.)
+
 ## Operating the fleet
 
 - **Pause/kill:** toggle a routine off (or delete it) in the console. The caretaker's API
-  trigger also lets Hermes fire it; revoke that token to cut the on-demand path.
+  trigger also lets Hermes fire it; revoke that token to cut the on-demand path. To stop the
+  automatic cadence, disable `.github/workflows/reconciliation-trigger.yml`.
 - **Watch runs:** each fire is a session in your list; a green run-status means it *started and
   exited cleanly*, not that the task succeeded — open the run to confirm.
-- **Cost:** routines draw subscription usage + a daily run cap. Nightly schedules + the
-  reconciliation self-gate keep volume low. The cap is also a natural runaway stop.
+- **Cost:** routines draw subscription usage + a daily run cap. The issue-trigger (cadence
+  gated in the Action) + nightly caretaker keep volume low. The cap is also a runaway stop.
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
 
@@ -145,4 +178,5 @@ the database directly.
 - [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — the `/fire` mechanism + gates.
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) · [`hermes-skills/review.md`](./hermes-skills/review.md)
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
+- `.github/workflows/reconciliation-trigger.yml` — the Action that opens the `reconcile` issue on the 20-PR boundary.
 - `docs/owner/ai-project-workflow.md` §10 (staging) · §12 (the loop).
