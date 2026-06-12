@@ -40,8 +40,12 @@ ARCHIVE = REPO_ROOT / "docs" / "current-state-archive.md"
 
 DEFAULT_WINDOW = 15
 
-# A PR reference in a commit subject: "Merge pull request #734" or "title (#734)".
-_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|\(#)(\d+)")
+# A PR reference in a commit subject: "Merge pull request #734" (GitHub web),
+# "Merge PR #734: ..." (MCP merges with a custom title — the dominant style
+# since 2026-06), or "title (#734)". The missing "PR #" alternative let five
+# merged PRs (#753-#761) go invisible to this check while it reported green
+# (caught by the 2026-06-12 night reconciliation pass).
+_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
 # A standalone ledger reference: "#734", "PR #734", "**#734".
 _LEDGER_REF_RE = re.compile(r"#(\d+)")
 # A ledger range: "#715–#723" / "#715-#723" / "#715–723" (en-dash or hyphen).

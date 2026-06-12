@@ -374,7 +374,8 @@ its *plans* so they're sequenced like any other area. Ops shelf:
 [operating prompt](operations/hermes-operating-prompt.md).
 
 - **Standing** — the **Q-0107 reconciliation cadence** (docs-only pass each time merged PRs
-  cross a multiple of 10; current pass: [2026-06-12](planning/reconciliation-pass-2026-06-12.md))
+  cross a multiple of **20** (#753); fired automatically by the `reconcile`-issue trigger;
+  current pass: [2026-06-12 night](planning/reconciliation-pass-2026-06-12-night.md))
   · the session enders (Q-0089 idea · Q-0102 prev-session review · Q-0104 closing audit).
 - **Later — continuation dispatch = the Routine seam (Q-0115, 2026-06-12):** Stage 0's
   separate `workflow_dispatch` GH Action is **folded into the #742 Routine bridge** — one
@@ -391,8 +392,14 @@ its *plans* so they're sequenced like any other area. Ops shelf:
   [Hermes → Claude dispatch bridge](ideas/hermes-claude-dispatch-bridge-2026-06-12.md)
   (`superbot-dispatch` + runbook). Gates: routine PRs self-merge on green CI (**Q-0113**);
   human approve/deny applies to **agent-originated features only**, originated in
-  invent-phase only (**Q-0114**). Maintainer follow-ups: wire the Routine + `/fire` token,
-  then calibrate per Q-0105 before trusting it unattended.
+  invent-phase only (**Q-0114**).
+- **LIVE (2026-06-12, the #753–#761 wiring arc — parallel lane):** the loop now *runs* —
+  issue-triggered reconciliation (#753) · routine prompts as loop turns (#754) · the
+  **Q-0117 Hermes independent-review merge gate** for substantial executor steps (#756) ·
+  the **executor-nightly cron** (#759) · free-form `/bugreport` dispatch (#761); the
+  HermesCog Discord entry point is in flight (**#757**, its own lane). Posture: **Q-0105
+  calibration** — verify runs against ground truth before trusting unattended (the night
+  reconciliation pass's checker-regex catch is calibration working).
 - **Someday (vision, not approved)** — the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md)
   (owner-shaped strategic direction).
