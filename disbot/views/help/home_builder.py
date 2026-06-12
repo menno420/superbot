@@ -217,7 +217,9 @@ class HomeMessageBuilderView(_EditorViewBase):
 class _EditTitleButton(discord.ui.Button):
     def __init__(self) -> None:
         super().__init__(
-            label="✏️ Edit title…", style=discord.ButtonStyle.primary, row=0,
+            label="✏️ Edit title…",
+            style=discord.ButtonStyle.primary,
+            row=0,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -229,7 +231,9 @@ class _EditTitleButton(discord.ui.Button):
 class _EditBodyButton(discord.ui.Button):
     def __init__(self) -> None:
         super().__init__(
-            label="📝 Edit body…", style=discord.ButtonStyle.primary, row=0,
+            label="📝 Edit body…",
+            style=discord.ButtonStyle.primary,
+            row=0,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:

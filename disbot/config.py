@@ -87,6 +87,7 @@ INITIAL_EXTENSIONS = [
     "cogs.community_spotlight_cog",
     "cogs.setup_cog",
     "cogs.server_management_cog",
+    "cogs.ux_lab_cog",
 ]
 
 # ==========================

@@ -100,6 +100,7 @@ KNOWN_PANEL_COMMANDS: tuple[tuple[str, str], ...] = (
     ("role", "rolemenu"),
     ("server_management", "servermanagement"),
     ("utility", "utilitymenu"),
+    ("ux_lab", "uxlab"),
     ("xp", "xpmenu"),
 )
 

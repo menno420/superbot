@@ -920,6 +920,44 @@ Subsystems (29): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
 23. **priority**: `P2`.
 24. **recommended_PR_phase**: post-S11.
 
+### ux_lab
+
+1. **cog_module**: `disbot/cogs/ux_lab_cog.py`.
+2. **subsystem**: `ux_lab` (admin-tier design workbench).
+3. **current_commands**: `!uxlab` (alias: `!interfacelab`), `/uxlab`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: opens `UxLabHomeView`
+   (`disbot/views/ux_lab/home.py`) — wing buttons into the exhibit browsers
+   + the limit probe bench.
+6. **help_menu_discoverable**: Yes — `subsystem_registry.py` entry,
+   `visibility_tier=administrator` (admins only).
+7. **dedicated_panel_command**: `!uxlab`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` on the cog.
+9. **existing_SettingSpec_declarations**: none — **by design, permanently**:
+   the lab is a zero-write workbench (no settings, no DB, no mutations;
+   CI-fenced by `tests/unit/invariants/test_ux_lab_zero_write.py`).
+10. **existing_settings_keys**: none (see 9).
+11. **existing_BindingSpec_entries**: none (see 9).
+12. **existing_ResourceRequirement_entries**: none (see 9).
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    `has_permissions(administrator=True)` on both entry commands; views are
+    author-locked (`BaseView` default).
+14. **hardcoded_or_env_only_behavior**: exhibit content is code-defined
+    sample data — intentionally static (it is the demo corpus).
+15. **missing_customization_commands**: none — the lab must not grow a
+    settings surface (zero-write fence).
+16. **missing_settings_pages**: none (see 15).
+17. **missing_menu_buttons_selects_modals**: plan PRs B/C add the
+    Components-V2, PIL, mockup, and compare wings
+    (`docs/planning/ux-lab-interface-gallery-plan-2026-06-12.md` §8).
+18. **setting_class_per_value**: n/a (no configurable state, see 9).
+19. **target_Settings_Manager_page**: none — exempt by design.
+20. **target_mutation_path**: none — zero-write fence.
+21. **target_help_or_menu_route**: DONE — Help direct-nav (admin tier).
+22. **provisionable_resources**: none.
+23. **priority**: `P3` — workbench, not a member feature.
+24. **recommended_PR_phase**: UX Lab plan PR A (this entry); B/C follow.
+
 ### general
 
 1. **cog_module**: `disbot/cogs/general_cog.py`
