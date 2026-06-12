@@ -1,10 +1,13 @@
 # UX Lab — design + implementation plan (the interface gallery cog)
 
-> **Status:** `plan` — owner-commissioned design (2026-06-12). **Not yet scheduled**:
-> implementation slotting + audience are open in router **Q-0116**; the decade queue
-> ([reconciliation pass](reconciliation-pass-2026-06-12.md) §4) is unchanged until the
-> owner steers. Cross-check every library claim against source before implementing —
-> the verified-facts section below is dated and pinned to discord.py 2.7.1.
+> **Status:** `historical` — **EXECUTED 2026-06-12, same day as the design** (owner
+> steered: "you can start building it"). PR A **#758** (core wings) → PR B **#760**
+> (Components-V2 + PIL) → PR C **#762** (mock studio + compare + export). The living
+> artifact is now **[`../ux/pattern-library.md`](../ux/pattern-library.md)** (generated
+> from the registry, doc-pinned) — consult it, not this plan, for current patterns.
+> Deviations from §8: the PersistentView exhibit moved PR B → PR C (built honestly via
+> the canonical registration); the platform-limits doc needed no further update (the
+> #755 introspection corrections held; the probe bench re-verifies on demand).
 > Capture/origin: [`../ideas/ux-lab-interface-gallery-2026-06-12.md`](../ideas/ux-lab-interface-gallery-2026-06-12.md).
 
 ---
