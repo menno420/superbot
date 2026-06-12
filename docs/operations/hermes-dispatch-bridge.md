@@ -76,6 +76,14 @@ docs/AGENT_ORIENTATION.md for your task's reading route. The incoming work order
 payload) is your task. If it is empty, read the standing handoff (current-state ▶ Next action
 / roadmap session queue) and take the recommended next ~2 bounded tasks instead.
 
+FREE-FORM INPUT: the work order may arrive structured (a `CLASS:` line from the Hermes
+superbot-dispatch skill) OR free-form — e.g. a bug report from the Discord `/bugreport` command,
+or a spoken request. If there is no explicit `CLASS:`, infer it: a bug report or "X is broken /
+wrong / doesn't work" is **CLASS: fix** — reproduce/diagnose it FIRST (find the root cause; if
+you cannot reproduce or locate it, say so, capture it to docs/health/bug-book.md as OPEN with
+what you found, and stop), then fix root-cause with a regression test. Treat user-reported
+breakage as a fix, never a feature.
+
 CLASSIFY the work order by its CLASS field (fix | ux | docs | correctness | feature):
 
 - fix / ux / docs / correctness  -> build it, write/extend tests, run the full CI mirror
