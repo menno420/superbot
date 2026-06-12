@@ -37,6 +37,10 @@ scoped tools (including owner-gated diagnostics). Source:
 
 ## Current state
 
+- **Production-readiness map (verified 2026-06-12):**
+  `docs/planning/production-readiness/ai-production-readiness-map-2026-06-12.md` inventories
+  the live AI / Setup Advisor envelope, direct seams, gaps, gates, and recommended
+  verification session. Source code and merged PRs remain authoritative.
 - **Provider keys live in agent sessions since 2026-06-11 (Q-0086)** — the
   full model loop (mention → router → grounding → gateway → guard → reply)
   is sandbox-testable against the test bot; the old "model loop awaits the
