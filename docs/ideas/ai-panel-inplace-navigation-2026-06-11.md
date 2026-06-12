@@ -3,6 +3,10 @@
 > **Status:** `ideas` — **owner-requested direction, not yet planned/scheduled.**
 > Captured mid live-testing session (Q-0086 joint session, 2026-06-11). Not a plan;
 > promotion path is `docs/ideas/README.md` → a `docs/planning/` slice when picked up.
+>
+> **Routed (2026-06-12):** placed on `docs/roadmap.md` § AI at the **Later** horizon
+> (UX debt, owner-requested). State: `captured → on the roadmap`. Next step when picked
+> up = a `docs/planning/` slice (wants its own session with runtime context).
 
 ## What the owner said (live session, 2026-06-11)
 
