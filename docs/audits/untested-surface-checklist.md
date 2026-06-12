@@ -1,4 +1,4 @@
-# Untested-surface testing checklist
+<img width="476" height="138" alt="image" src="https://github.com/user-attachments/assets/26f5d331-6306-4910-b807-46ede543d4d6" /><img width="525" height="306" alt="image" src="https://github.com/user-attachments/assets/2563b1f8-cc90-48ee-9f9f-353a62d54ad2" /># Untested-surface testing checklist
 
 > **Status:** `audit` — maintained live-walk checklist for every command/UI
 > flow that automated tests **cannot** verify.
@@ -49,22 +49,22 @@
   **Report if:** no coins credited, or the cooldown doesn't reset after 24 h.
 - `[ ]` `!work` — **Expect:** coins/XP from a "job" result; different jobs
   appear on repeat. **Report if:** always the same job, or zero reward.
-- `[ ]` `!balance` (aliases: `!bal`, `!wallet`) — **Expect:** embed showing
-  your coin count and inventory summary. Try `!balance @someone` too.
-- `[ ]` `!shop` — **Expect:** the shop embed renders with prices; nothing
-  changes until you actually buy.
-- `[ ]` `!joblist` (alias: `!jobs`) — **Expect:** a readable list of available
-  jobs with their XP/coin ranges.
-- `[ ]` `!economymenu` — **Expect:** the Economy hub panel with navigation
-  buttons to Daily, Work, Balance, Shop, etc. All buttons respond.
+- `[✅]` `!balance` (aliases: `!bal`, `!wallet`) — **Expect:** embed showing
+  your coin count and inventory summary. Try `!balance @someone` too. `live walk 2026-06-13`
+- `[✅]` `!shop` — **Expect:** the shop embed renders with prices; nothing
+  changes until you actually buy. `live walk 2026-06-13`
+- `[✅]` `!joblist` (alias: `!jobs`) — **Expect:** a readable list of available
+  jobs with their XP/coin ranges. `live walk 2026-06-13`
+- `[✅]` `!economymenu` — **Expect:** the Economy hub panel with navigation
+  buttons to Daily, Work, Balance, Shop, etc. All buttons respond. `live walk 2026-06-13`
 
 ### 1.2 Inventory hub
 
-- `[ ]` `!inventory` (alias: `!inv`) — **Expect:** a unified hub embed showing
+- `[✅]` `!inventory` (alias: `!inv`) — **Expect:** a unified hub embed showing
   items grouped by type (mining ore, gear, consumables…). Navigation buttons
-  for each category work.
-- `[ ]` `!inventory @someone` — **Expect:** shows their inventory (read-only).
-  **Report if:** errors on another user, or shows your own inventory.
+  for each category work. `live walk 2026-06-13`
+- `[✅]` `!inventory @someone` — **Expect:** shows their inventory (read-only).
+  **Report if:** errors on another user, or shows your own inventory. `live walk 2026-06-13`
 
 ---
 
@@ -72,19 +72,19 @@
 
 > Machine coverage: none. The general cog has had no behavioral tests written.
 
-- `[ ]` `!fact` — **Expect:** a random interesting fact embed. Runs twice to
-  confirm different facts appear.
-- `[ ]` `!joke` — **Expect:** a joke (setup + punchline or one-liner).
-- `[ ]` `!quote` — **Expect:** a famous quote with attribution.
-- `[ ]` `!motivate` — **Expect:** a motivational message.
-- `[ ]` `!greet` — **Expect:** a random greeting directed at you.
-- `[ ]` `!trivia` — **Expect:** a trivia question with interactive answer
-  buttons; correct answer is revealed; score/result shown.
-- `[ ]` `!eightball <question>` — **Expect:** a magic-8-ball style response.
-  E.g. `!eightball will I win today?`
-- `[ ]` `!general` (the hub entry point) — **Expect:** the General hub panel
+- `[✅]` `!fact` — **Expect:** a random interesting fact embed. Runs twice to
+  confirm different facts appear. `live walk 2026-06-13`
+- `[✅]` `!joke` — **Expect:** a joke (setup + punchline or one-liner). `live walk 2026-06-13`
+- `[✅]` `!quote` — **Expect:** a famous quote with attribution. `live walk 2026-06-13`
+- `[✅]` `!motivate` — **Expect:** a motivational message. `live walk 2026-06-13`
+- `[✅]` `!greet` — **Expect:** a random greeting directed at you. `live walk 2026-06-13`
+- `[✅]` `!trivia` — **Expect:** a trivia question with interactive answer 
+  buttons; correct answer is revealed; score/result shown. `live walk 2026-06-13`
+- `[✅]` `!eightball <question>` — **Expect:** a magic-8-ball style response.
+  E.g. `!eightball will I win today?` `live walk 2026-06-13`
+- `[✅]` `!generalmenu` (the hub entry point) — **Expect:** the General hub panel
   with buttons for each command above; each button opens the corresponding
-  flow inline.
+  flow inline. `live walk 2026-06-13`
 
 ---
 
@@ -92,20 +92,20 @@
 
 > Machine coverage: none for command behavior. UI panel classes are not tested.
 
-- `[ ]` `!utilitymenu` — **Expect:** the Utility hub with buttons for Info,
-  Clear, Poll, Remind, Invite.
-- `[ ]` `!info` (default: server) — **Expect:** server info embed (member
+- `[✅]` `!utilitymenu` — **Expect:** the Utility hub with buttons for Info,
+  Clear, Poll, Remind, Invite. `live walk 2026-06-13`
+- `[~]` `!info` (default: server) — **Expect:** server info embed (member
   count, region, channels, owner). `!info user` / `!info @someone` shows
-  user profile.
-- `[ ]` `!clear 5` — **Expect:** deletes the last 5 messages in the channel
+  user profile. `2026-06-13`
+- `[✅]` `!clear 5` — **Expect:** deletes the last 5 messages in the channel
   (requires Manage Messages). **Report if:** it deletes more or fewer, or
-  errors without permission.
-- `[ ]` `!poll "question" "A" "B" "C"` — **Expect:** a poll embed with
-  reaction/button options for A, B, C. Results update on vote.
-- `[ ]` `!remind 1 test message` — **Expect:** a confirmation, then a DM (or
-  channel mention) after 1 minute. **Report if:** the reminder never fires.
-- `[ ]` `!invite` — **Expect:** a bot-invite link embed. **Report if:** the
-  URL is broken or missing.
+  errors without permission. `live walk 2026-06-13`
+- `[✅]` `!poll "question" "A" "B" "C"` — **Expect:** a poll embed with
+  reaction/button options for A, B, C. Results update on vote. `live walk 2026-06-13`
+- `[✅]` `!remind 1 test message` — **Expect:** a confirmation, then a DM (or
+  channel mention) after 1 minute. **Report if:** the reminder never fires. `live walk 2026-06-13`
+- `[✅]` `!invite` — **Expect:** a bot-invite link embed. **Report if:** the
+  URL is broken or missing. `live walk 2026-06-13`
 
 ---
 
