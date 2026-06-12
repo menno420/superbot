@@ -20,7 +20,7 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-12 (evening), **the first Q-0107 reconciliation pass (PR #741)** — every #715–#740 plan mapped, the decade queue set ([pass record](planning/reconciliation-pass-2026-06-12.md)), ledger + roadmap drift fixed; stamp-line history older than 2026-06-11 moved to [`current-state-archive.md`](current-state-archive.md) § Stamp-line history. · 2026-06-11 (afternoon), **first Q-0086 joint live-testing session (PR #707)** — model-loop gate lifted, BUG-0005…0008 fixed live, BUG-0009/0010 opened, Q-0094/Q-0095 recorded — see the AI lane bullet. · 2026-06-11, **AI-knowledge bug session (PRs #703 + #706 + process record #705): the morning's 3 live misses + the re-test round's BUG-0004 + the capabilities format fixed** — see the BTD6 lane bullet above. · Earlier same day: **gear-lane session (PR #702): V-16 phase 1 executed** — see the mining lane bullet above; this stamp line otherwise preserves the 2026-06-10 marathon record below.
+> **Last updated:** 2026-06-12 (night), **UX Lab design session (PR #755)** — owner-commissioned interface-gallery cog design (plan + Q-0116) + CV2 platform-limit corrections; **the next Q-0107 reconciliation pass is DUE** (merged PRs crossed #750 — next session, or the #752 nightly Routine if wired). · 2026-06-12 (evening), **the first Q-0107 reconciliation pass (PR #741)** — every #715–#740 plan mapped, the decade queue set ([pass record](planning/reconciliation-pass-2026-06-12.md)), ledger + roadmap drift fixed; stamp-line history older than 2026-06-11 moved to [`current-state-archive.md`](current-state-archive.md) § Stamp-line history. · 2026-06-11 (afternoon), **first Q-0086 joint live-testing session (PR #707)** — model-loop gate lifted, BUG-0005…0008 fixed live, BUG-0009/0010 opened, Q-0094/Q-0095 recorded — see the AI lane bullet. · 2026-06-11, **AI-knowledge bug session (PRs #703 + #706 + process record #705): the morning's 3 live misses + the re-test round's BUG-0004 + the capabilities format fixed** — see the BTD6 lane bullet above. · Earlier same day: **gear-lane session (PR #702): V-16 phase 1 executed** — see the mining lane bullet above; this stamp line otherwise preserves the 2026-06-10 marathon record below.
 
 > **Purpose:** the one file that answers "what is true right now?" so a new
 > session does not reconstruct it from the journal + planning docs. Read it
@@ -58,6 +58,28 @@ Source code and merged PRs win over anything written here.
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#755 (2026-06-12, UX Lab design — owner-commissioned)** — the **interface-gallery
+  cog design**: [capture](ideas/ux-lab-interface-gallery-2026-06-12.md) +
+  [full plan](planning/ux-lab-interface-gallery-plan-2026-06-12.md) for a zero-write,
+  admin-gated `!uxlab` gallery — 9 exhibit wings (~60 patterns: buttons / all 5 selects /
+  modals incl. Label-wrapped selects / embed archetypes / **Components V2** / PIL cards /
+  **mockups of the approved Q-0108–Q-0112 features**), a 10-probe platform-limit bench,
+  compare-with-verdict mode, a `PatternSpec` registry exporting to a pattern-library
+  doc in plan-PR C, AST zero-write fence, 3-PR slicing. **Found + fixed two
+  stale platform facts** (verified on installed discord.py 2.7.1): the limits doc's CV2
+  budget (25 → **40 children / 4 000-char text**) and the journal's "modals can't contain
+  selects" rule (Label, 2.6+). Scheduling + audience = router **Q-0116** (open). Docs-only.
+- **#746–#747 + #749–#752 (2026-06-12, the dispatch-bridge wiring + routine-fleet arc)** —
+  the Hermes→Claude Code dispatch bridge went **live-verified end-to-end**: **#746**
+  Context7 verify/tool-name fix · **#747** routine-creation step marked DONE (calibration
+  pass) · **#749** `superbot-dispatch` wired to the verified Routines `/fire` API ·
+  **#751** Telegram-driven dispatch path live-verified · **#752**
+  [`operations/autonomous-routines.md`](operations/autonomous-routines.md) — the Routine
+  fleet's prompts in git (autonomous dispatch · nightly docs-reconciliation, self-gated on
+  `check_reconciliation_due` · night caretaker, phase-gated, one-small-bug-per-run) ·
+  **#750** routed the wager-flow-map session idea into the backlog. *(Ledger entries added
+  retroactively by the #755 session's Q-0104 audit — these micro-PRs shipped without
+  ledger lines.)*
 - **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
   `services/game_wager_workflow.py`: the audited money boundary for every two-party /
   paid-entry game move, composing `economy_service.*_in_txn` inside one

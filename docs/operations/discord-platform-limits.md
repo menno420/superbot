@@ -14,10 +14,10 @@
 
 | Limit | Value | Notes |
 |---|---|---|
-| Action rows per message | **5** | Whether using legacy or Components V2 |
+| Action rows per message | **5** | Legacy (`discord.ui.View`) messages |
 | Buttons per action row | **5** | Buttons only; select menus use the full row |
 | Select menus per action row | **1** | Each menu occupies an entire row |
-| Total components per message | **25** | Across all action rows |
+| Total components per message | **25** | **Legacy `View` ceiling** (5 rows × 5); Components V2 has its own 40 budget — see below |
 | Button label length | **80 characters** | |
 | Button custom\_id length | **100 characters** | Used for persistent-view routing |
 | String-select options | **2 – 25** | Min 2, max 25 options per menu |
@@ -26,10 +26,31 @@
 | Select option description length | **100 characters** | |
 | Select placeholder text | **150 characters** | |
 
-**Components V2** (requires the `IS_COMPONENTS_V2` flag on the message) allows the full
-25-component budget across containers, sections, and interactive elements. SuperBot's
-`PersistentView` and `HubView` base classes handle registration automatically — keep the
-total component count under 25 per message.
+**Components V2** *(corrected 2026-06-12 — this section previously claimed a
+25-component budget; verified against the installed discord.py 2.7.1 source)*:
+requires the `IS_COMPONENTS_V2` flag on the message (discord.py sets it when sending a
+`discord.ui.LayoutView`) and is a different message shape with its own budgets:
+
+| CV2 limit | Value | Source |
+|---|---|---|
+| Total components (nested count) | **40** | `LayoutView` raises `ValueError('maximum number of children exceeded (40)')` |
+| Combined display text across all items | **4 000 characters** | `LayoutView` validation |
+| `Section` text displays | ≤3 + one accessory (`Thumbnail` or `Button`) | class docs |
+| `MediaGallery` items | ≤10 | class docs |
+
+A CV2 message **replaces** `content`/`embeds` (and disallows polls/stickers); files must
+be referenced by a component (`Thumbnail`, `MediaGallery`, `File`). discord.py ≥2.6
+exposes the full set: `LayoutView`, `Container` (accent colour, spoiler), `Section`,
+`TextDisplay`, `MediaGallery`, `File`, `Separator`. SuperBot's `BaseView`/`HubView`/
+`PersistentView` lineage is **legacy-View-based** — CV2 panels need `LayoutView`, a
+separate lineage; adopting it for real panels is an ADR-shaped decision (see the
+[UX Lab plan](../planning/ux-lab-interface-gallery-plan-2026-06-12.md), whose probe
+bench re-verifies this table on demand).
+
+**Modals** *(corrected 2026-06-12)*: since discord.py 2.6, a modal may contain
+`discord.ui.Label`-wrapped components — i.e. **selects inside modals are now possible**
+(`Label(text=…, component=Select(...))`; label text ≤45 chars, description ≤100).
+Older guidance that modals are text-input-only predates the 2.7 pin.
 
 **Pagination implication:** lists longer than 25 items (e.g., a full inventory, a large
 role list) require pagination or dynamic loading — a single select menu cannot show them

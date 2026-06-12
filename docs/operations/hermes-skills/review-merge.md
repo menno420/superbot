@@ -5,7 +5,7 @@
 > when the review rubric, the label convention, or the merge policy change.
 
 **Window:** an executor opened a substantial PR labeled `needs-hermes-review`
-**Purpose:** The **independent-reviewer merge gate** (owner decision Q-0116). For *big* executor
+**Purpose:** The **independent-reviewer merge gate** (owner decision Q-0117). For *big* executor
 steps, Claude does not self-merge — Hermes (a **different model**) reviews the diff and, only if
 it is sound, **triggers the merge**. This puts a non-Claude mind between Claude's work and
 `main`, breaking the author-reviews-self monoculture (autonomous-loop vision §3).
@@ -14,7 +14,7 @@ it is sound, **triggers the merge**. This puts a non-Claude mind between Claude'
 open PRs labeled `needs-hermes-review`. Small fixes/docs self-merge without you; only
 substantial planned steps carry this label.
 
-**The boundary this skill is allowed to cross (Q-0116):** Hermes is read-only *except* it may
+**The boundary this skill is allowed to cross (Q-0117):** Hermes is read-only *except* it may
 **merge a PR it has just reviewed and approved** through this skill. It still never edits code,
 pushes, or touches production/Railway/Neon. If unsure, it does NOT merge — it comments and
 escalates to the maintainer.
@@ -31,7 +31,7 @@ escalates to the maintainer.
 
 ```
 You are Hermes, working with the SuperBot repository at /home/hermes/repos/superbot.
-You are the INDEPENDENT-REVIEWER MERGE GATE (Q-0116). You may merge a PR you have just
+You are the INDEPENDENT-REVIEWER MERGE GATE (Q-0117). You may merge a PR you have just
 reviewed and approved — that is your ONE sanctioned write action. You never edit code, push,
 or touch production/Railway/Neon. When unsure, do NOT merge: comment and escalate.
 
@@ -91,4 +91,4 @@ RULES:
   Small fixes/docs self-merge on green (Q-0113) and never enter this queue.
 - Pairs with [`review.md`](./review.md) (the read-only critique) — this skill is that rubric
   plus the sanctioned merge action. See [`../autonomous-routines.md`](../autonomous-routines.md)
-  and the Q-0116 router entry.
+  and the Q-0117 router entry.

@@ -27,7 +27,7 @@ session N leaves session N+1 better-equipped.
 |---|---|---|---|
 | **superbot autonomous dispatch** | API (`/fire`) | General work orders from Hermes/phone (`superbot-dispatch`). Classifies by `CLASS:`. | per work order (Q-0113/Q-0114) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-20th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next ~9 PRs, contribute one idea. | `docs` → self-merge on green |
-| **superbot night executor** | Schedule (nightly) + Issue `continue` + API | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0116) |
+| **superbot night executor** | Schedule (nightly) + Issue `continue` + API | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0117) |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
 pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
@@ -133,7 +133,7 @@ Its primary job is to **advance the next big step of the plan** (not just small 
   (picks up a continuation handoff promptly) · **API** (Hermes fires it with a detected problem).
 - **Repository:** `menno420/superbot`. **Model:** Opus 4.8 (the execution tier; §11).
   **Permissions:** unrestricted branch push **OFF**. **Behavior:** auto-fix PRs ON.
-- **Merge gate (Q-0116):** small fixes/docs **self-merge on green** (Q-0113); a **substantial
+- **Merge gate (Q-0117):** small fixes/docs **self-merge on green** (Q-0113); a **substantial
   plan step** opens a PR labeled `needs-hermes-review` and does **not** self-merge — Hermes
   reviews it (`superbot-review-merge`) and merges it if sound. If Hermes review is unavailable,
   the step's green PR may self-merge as the documented fallback.
@@ -189,7 +189,7 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always): ONE genuine idea (Q-0089)
   log if you shipped; mark fixed bug-book entries FIXED; ALWAYS leave current-state ▶ Next
   action sharpened so the next run continues cleanly.
 
-STEP 5 — SHIP (merge gate, Q-0116):
+STEP 5 — SHIP (merge gate, Q-0117):
   - SMALL fix / docs / a self-contained low-risk change → SELF-MERGE on green CI (Q-0113):
     re-sync origin/main, require CI green on the final head, merge-commit.
   - SUBSTANTIAL plan step (real feature-sized work within the plan, a multi-file refactor, a
@@ -208,7 +208,7 @@ STEP 5 — SHIP (merge gate, Q-0116):
 |---|---|---|---|
 | `reconcile` | the cadence Action (every 20-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
 | `continue` | the **executor** when it hands off a partly-done plan step (or a maintainer) | the executor | resume the explicit handoff in the issue body; chain again if still unfinished |
-| `needs-hermes-review` | the **executor** on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0116) |
+| `needs-hermes-review` | the **executor** on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0117) |
 
 This is the self-driving loop in three signals: reconcile keeps the docs honest, continue
 chains big work across bounded runs, and needs-hermes-review puts a *different model* between
@@ -249,5 +249,5 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) · [`hermes-skills/review.md`](./hermes-skills/review.md)
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
 - `.github/workflows/reconciliation-trigger.yml` — the Action that opens the `reconcile` issue on the 20-PR boundary.
-- [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0116).
+- [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0117).
 - `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).

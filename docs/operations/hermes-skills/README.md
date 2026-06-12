@@ -27,7 +27,7 @@ equivalent of `.claude/CLAUDE.md`.
 | [`btd6-status`](./btd6-status.md) | After live testing | BTD6 data pipeline coverage and open items |
 | [`log-triage`](./log-triage.md) | After a deploy / when the bot misbehaves | Read production logs and diagnose what's wrong (gated on a read-only log source) |
 | [`review`](./review.md) | Plan finalization / open PR | Independent (non-Claude) critique of a plan or PR diff + a maintainer summary for the approve/deny gate |
-| [`review-merge`](./review-merge.md) | Executor opened a big-step PR | The independent-reviewer **merge gate** (Q-0116): review `needs-hermes-review` PRs and merge if sound — Hermes' one sanctioned write |
+| [`review-merge`](./review-merge.md) | Executor opened a big-step PR | The independent-reviewer **merge gate** (Q-0117): review `needs-hermes-review` PRs and merge if sound — Hermes' one sanctioned write |
 | [`dispatch`](./dispatch.md) | Idea on your phone | Assemble a work order and fire a Claude Code Routine to build it (the autonomous-loop chaining link) |
 
 The last two are the **autonomous-improvement-loop seams** — see
