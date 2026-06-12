@@ -49,7 +49,15 @@ Source code and merged PRs win over anything written here.
 > Convention: **merged PRs only** (with #numbers). In-flight work is *not* listed here —
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
+>
+> **Last reconciliation pass:** PR #737 (2026-06-12). The next **docs-only review + planning
+> reconciliation** is due once merged PRs cross #740 (every multiple of 10 — Q-0107;
+> `scripts/check_reconciliation_due.py` flags it). Reset this marker to the latest PR after a pass.
 
+- **#737 (2026-06-12, Context7 MCP adopted)** — wired `@upstash/context7-mcp@3.2.0` (live
+  library docs → kills the "API-from-memory" bug class) as a pinned `.mcp.json` server +
+  [`docs/operations/mcp-servers.md`](operations/mcp-servers.md) (when-to-use, key setup, Q-0105
+  provenance). Q-0096 answered (Context7 yes; Postgres-MCP/pyright-lsp still open).
 - **#736 (2026-06-12, CodeGraph health check + doc pin fix)** — verified CodeGraph 3.11.2 is
   healthy (no regression from the bump; the "problems" are the cold-start availability blip + the
   documented false positives). Fixed the real bug: `docs/codegraph-usage.md` told agents to run the

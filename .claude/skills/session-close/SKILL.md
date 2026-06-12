@@ -91,8 +91,14 @@ Run these in order and fix any failures before proceeding:
 python3.10 scripts/check_docs.py --strict
 python3.10 scripts/check_session_log.py --strict      # Q-0089 idea + Q-0102 review present
 python3.10 scripts/check_current_state_ledger.py --strict  # merged PRs are in the ledger
+python3.10 scripts/check_reconciliation_due.py        # Q-0107: is a 10th-PR docs/planning pass due?
 python3.10 scripts/check_quality.py --check-only
 ```
+
+If `check_reconciliation_due` reports **DUE**, the next session should be a docs-only review +
+planning-reconciliation pass (Q-0107: reconcile repo state + plan the next ~9 PRs, modular but
+not over-segmented); after that pass, reset the `Last reconciliation pass:** PR #N` marker in
+`current-state.md` to the latest PR.
 
 If `check_docs` fails on the new session log file: add the required `> **Status:**` badge.
 Session logs use the `audit` badge token. If `check_session_log` fails, add the missing
