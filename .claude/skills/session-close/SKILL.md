@@ -89,13 +89,22 @@ Run these in order and fix any failures before proceeding:
 
 ```bash
 python3.10 scripts/check_docs.py --strict
-python3.10 scripts/check_session_log.py --strict   # Q-0089 idea + Q-0102 review present
+python3.10 scripts/check_session_log.py --strict      # Q-0089 idea + Q-0102 review present
+python3.10 scripts/check_current_state_ledger.py --strict  # merged PRs are in the ledger
 python3.10 scripts/check_quality.py --check-only
 ```
 
 If `check_docs` fails on the new session log file: add the required `> **Status:**` badge.
 Session logs use the `audit` badge token. If `check_session_log` fails, add the missing
-`💡 Session idea` / `⟲ Previous-session review` section it names.
+`💡 Session idea` / `⟲ Previous-session review` section it names. If
+`check_current_state_ledger` flags a merged PR, **verify its #number against live GitHub**
+then add it to `docs/current-state.md` § Recently shipped (or an aggregated range entry).
+
+**Documentation audit (Q-0104) — the judgment half.** The checks above are the automated
+half. Also ask yourself: *"is anything important from this session captured only in chat?"*
+— a new owner decision not yet in the router, a design conclusion, a gotcha. Route it to its
+durable home before closing. This question, asked once on 2026-06-12, surfaced the drift the
+ledger check now guards.
 
 ### Step 5 — commit
 

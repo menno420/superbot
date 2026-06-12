@@ -20,6 +20,21 @@ undocumented. An audit found a live drift bug in `current-state.md`.
 - **Documented the permissions posture** (Part 4 in `claude-code-hooks-and-plugins.md`) — its
   durable home. `acceptEdits` + curated allowlist + the `ask` guards + the deliberate
   prompt-as-injection-guard rationale + the env-mode note. Previously only in a session log.
+- **Built the ledger drift guard** (executing this session's 💡 idea). `scripts/check_current_state_ledger.py`
+  (+ 9 tests) reads merged PR numbers from `git log origin/main` (expanding `#AAA–#BBB` range
+  entries) and flags recent ones absent from `current-state.md` / `current-state-archive.md`.
+  Advisory by default, `--strict` for `/session-close` (now wired into the skill's quality gate).
+  It immediately surfaced **pre-existing** drift — #724–#728 (another session's readiness/roadmap
+  arc) were in neither the ledger nor the archive — so reconciled those too with an aggregated
+  range entry. `--strict` now clean (last 15 merges all present). This makes the *living ledger*
+  self-checking, the way `check_session_log.py` made the *session log* self-checking.
+- **Two new owner directives (voice).** **Q-0104** — close every session with a documentation
+  audit (the "is anything undocumented?" question that found this drift; automated half =
+  `check_current_state_ledger --strict` in `/session-close`, judgment half = the "only in chat?"
+  sweep). **Q-0105** — adopt tooling freely without asking, but every adopted tool carries a
+  "delete this if it proves unreliable over multiple sessions" kill-switch in its header
+  (extends Q-0014). Applied the kill-switch header to `check_session_log.py` +
+  `check_current_state_ledger.py` (dogfood). CLAUDE.md + router + `/session-close` updated.
 
 ## Verification
 
@@ -41,13 +56,17 @@ moving a backlog idea). Backlog already groomed in the #730/#733 batches this se
   that **merged PRs land in the `current-state.md` ledger**. A ledger-reconciliation check
   would have caught this automatically. → captured as this session's 💡 idea.
 
+> _The prior batch's 💡 idea — `check_current_state_ledger.py` — was **executed this batch**
+> (idea → implemented in one hop). Fresh idea below._
+
 ## 💡 Session idea
 
-**Idea:** A `check_current_state_ledger.py` (or a `check_docs` extension) that flags merged
-PRs from `git log origin/main` whose `#number` is absent from `current-state.md` § Recently
-shipped.
-**Why:** `current-state.md` drift (missing/mislabeled merged PRs) is a recurring class — it
-happened *this very session*. The log-completeness gate (Q-0089/Q-0102) made the *session log*
-self-checking; this does the same for the *living ledger*, the second-most-read doc. Advisory
-(non-blocking), git-driven, pure stdlib like `check_docs`. Closes the last unchecked corner of
-the memory system. _Small — recorded here; promote to an idea file if it grows._
+**Idea:** Session-arc aggregation for the ledger — a convention (and a `check_current_state_ledger`
+hint) that collapses the several small PRs of one conversation/session-arc into a single
+aggregated `#AAA–#BBB` Recently-shipped entry, the way #685–#698 / #715–#723 / #724–#728 already
+do, instead of one bullet per PR.
+**Why:** this very session shipped #730 + #733 + #734 as three separate ledger bullets on one
+topic-arc; the Recently-shipped ratchet (budget 20) stays leaner if same-arc PRs aggregate. The
+checker already parses ranges, so it could detect "N consecutive merges from one session not yet
+aggregated" and suggest collapsing them. Keeps the second-most-read doc scannable.
+_Small — recorded here; promote to an idea file if it grows._

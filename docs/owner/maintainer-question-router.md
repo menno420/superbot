@@ -4082,3 +4082,46 @@ incomplete close; the `/session-close` skill performs the terminal-state step. (
 call GitHub MCP, so the merge/close itself is agent/skill-driven, not hook-driven.)
 
 **Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · this entry is provenance.
+
+### Q-0104 — Mandatory session ender: close with a documentation/drift audit
+
+> **DIRECTED 2026-06-12 (owner, voice).** The owner's closing question — "is anything
+> important from this session not yet documented?" — surfaced multiple drifted `current-state.md`
+> ledger entries (#730/#733 missing, untested-surface mislabeled #730→#731, #724–#728 absent).
+> He asked that this question be put to *every* agent ending a session.
+
+**Area:** Agent system · workflow / documentation integrity
+**Type:** Standing workflow rule (process)
+**Priority:** Standing — every session
+
+**Directive:** Every session, before ending, performs a documentation audit: ask *"is anything
+important from this session not yet in its durable home?"* Concretely — run
+`check_current_state_ledger.py --strict` (merged PRs in the ledger), confirm new owner
+decisions are in the router and new docs are reachable (`check_docs --strict`), and sweep for
+anything captured only in chat. The automated half runs in `/session-close`; the judgment half
+(the "only in chat?" sweep) is the agent's.
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · `scripts/check_current_state_ledger.py`
+is the automated teeth · this entry is provenance.
+
+### Q-0105 — Adopt tooling freely, with a "delete if unreliable" kill-switch in its header
+
+> **DIRECTED 2026-06-12 (owner, voice).** Extends Q-0014. The owner: *"implement whatever you
+> think would work, but make sure another agent knows it should be deleted if it's been proven
+> unreliable over multiple sessions."*
+
+**Area:** Agent system · tooling / autonomy
+**Type:** Autonomy grant + provenance discipline (refines Q-0014)
+**Priority:** Standing
+
+**Decision:** Agents may implement/adopt whatever tooling or check they judge will help —
+custom or third-party — **without asking first**. The cost of that autonomy is a **provenance +
+reliability header** on every such tool: *why* + *date* + *"unverified: confirm against ground
+truth a few times before trusting"* **+ an explicit "delete this if it proves unreliable over
+multiple sessions"** instruction. The kill-switch matters because a convenience guard that
+misfires should be *removed* by a later agent, not silently worked around (which would leave a
+lying check in place). Load-bearing checks graduate out of "unverified" once proven across
+sessions.
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (the Q-0014 tooling bullet) · this
+entry is provenance.
