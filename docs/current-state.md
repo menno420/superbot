@@ -58,6 +58,18 @@ Source code and merged PRs win over anything written here.
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#751–#754 (2026-06-12, autonomous-loop infrastructure)** — `autonomous-routines.md`
+  (the routine fleet + specialized self-improving prompts, PR #752); Hermes dispatch bridge
+  live-verified end-to-end (PR #751); routine token stored on VPS, Telegram-driven `/fire`
+  path confirmed; docs reconciliation routine made issue-triggered + cadence raised 10→20
+  (Q-0107, PR #753); routine prompts rewritten as self-improvement-loop turns with memory
+  read/write and the Q-0089/Q-0102 hooks (PR #754).
+- **#750 (2026-06-12, ideas backlog)** — `wager-flow-map` session idea routed into
+  `docs/ideas/` with README entry (a read-only offline script tracing every game's money path).
+- **#749 (2026-06-12, dispatch bridge)** — `superbot-dispatch` Hermes skill wired to the
+  verified Routines `/fire` API; `hermes-dispatch-bridge.md` runbook updated.
+- **#746 (2026-06-12, Context7 toolname fix)** — Context7 tool name corrected in the
+  permissions allowlist (`get-library-docs` → `query-docs`); verified working.
 - **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
   `services/game_wager_workflow.py`: the audited money boundary for every two-party /
   paid-entry game move, composing `economy_service.*_in_txn` inside one

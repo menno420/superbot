@@ -69,7 +69,28 @@ def main() -> int:
     if arch.returncode != 0:
         print("  ⚠  errors found — run check_architecture.py for details")
 
-    # Quick test summary (last pytest result from cache, not a fresh run)
+    # Reconciliation-due advisory (Q-0107 cadence guard — printed early so the
+    # session knows before doing feature work whether it should be a planning pass)
+    recon = subprocess.run(
+        [sys.executable, str(SCRIPTS / "check_reconciliation_due.py")],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        timeout=10,
+    )
+    recon_line = recon.stdout.strip().splitlines()[0] if recon.stdout.strip() else ""
+    if recon.returncode != 0:
+        print()
+        print(
+            "⚠  RECONCILIATION PASS DUE (Q-0107) — make this a docs-only planning pass.",
+        )
+        print(f"   {recon_line}")
+    else:
+        print()
+        recon_short = recon_line.replace("check_reconciliation_due: ", "")
+        print(f"Recon  : {recon_short}")
+
+    # Quick commands
     print()
     print("Quick commands:")
     print(
