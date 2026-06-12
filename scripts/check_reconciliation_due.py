@@ -38,7 +38,22 @@ _MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|\(#)(\d+)")
 
 
 def _latest_merged_pr() -> int | None:
-    """Highest merged PR number from recent origin/main history."""
+    """Highest merged PR number from recent origin/main history.
+
+    Best-effort fetch first: fresh containers clone with a stale ``origin/main``
+    ref, and reading it unfetched under-reports the latest PR (observed
+    2026-06-12: reported #687 while live main was at #740). Offline or slow
+    remotes degrade gracefully to the local ref.
+    """
+    try:
+        subprocess.run(
+            ["git", "fetch", "origin", "main", "--quiet"],
+            capture_output=True,
+            cwd=REPO_ROOT,
+            timeout=15,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        pass
     try:
         result = subprocess.run(
             ["git", "log", "origin/main", "--pretty=format:%s", "-n", "60"],

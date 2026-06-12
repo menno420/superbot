@@ -1,7 +1,12 @@
 # SuperBot — Implementation Roadmap
 
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
-> what order" index. **Last updated:** 2026-06-11.
+> what order" index. **Last updated:** 2026-06-12 (Q-0107 reconciliation pass).
+>
+> **▶ The live decade queue (next ~9 PRs):**
+> [`planning/reconciliation-pass-2026-06-12.md`](planning/reconciliation-pass-2026-06-12.md)
+> §4 — set by the first Q-0107 pass (hardening P0s + backup posture + the new Q-0108–Q-0112
+> safety/community lane). That doc owns the queue; this page stays the per-area index.
 >
 > **What this is:** a thin router over the detailed plans. Each row is a one-line
 > description + a link to the **authoritative plan** and the area **folio** — it restates
@@ -21,6 +26,8 @@
 > (P0 integrity → P1 correctness → P2 drift, with the gating owner Qs) are the
 > risk-ranked "what's left to be production-ready" view across all subsystems. Index:
 > [`planning/production-readiness/`](planning/production-readiness/README.md).
+> **P0-2/P0-3/P0-4 unblocked 2026-06-12** (Q-0098/Q-0099/Q-0100 answered); only Q-0097
+> (health finding lifecycle) still gates a track.
 
 ## How to read
 
@@ -41,9 +48,9 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The three active lanes (`docs/current-state.md` ▶ Next action is authoritative): **mining character platform** — **Batch 7 + the Wave-2 seed shipped 2026-06-10** (#661 + #663/#664/#665 via **#667**: full write boundary, shared game-XP, deeper ladders, gear/recipe UX, duels wear, PIL cards); **next slice: structures §7.5 (Forge/Vault/Home)**, then the §7.4 skill tree · **Adaptive Setup/Access** Phase 1 **complete** (P1B #632; P1C **merged #656**; **P2 next**, own planning first) · **AI tooling** (orchestration **P4 MVP shipped #634**; **answerability P3 shipped #639** — the three self-awareness tools, Q-0047; read-only deterministic tools have a standing lift, Q-0048) |
-| **Next** | The **[consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md)** (2026-06-10 — reconciles mapping PRs **#646**/**#647** + carries the 06-09 queue): **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 declaration-coverage core · #656 adaptive P1C · #657+#659 Help seam + overlay · Batch 7 mining stack via #667 · #649 cutover → **#671** (RS07 + Batch 9's RS08 + the Help-Preview Tier-2 fix) → **#672** (Batch 4 pointer tail COMPLETE — proof-channel declaration; logging verified satisfied — + the Batch 10 selections: setup PR4 planning next · AI §7.5 after the prod check) → the Help overlay **editor UI executed** (plan → **PR A #677 + PR B #679**, 2026-06-10 — editor + the Q-0059 Home builder w/ mandatory preview) → **#681** (Batch 9 COMPLETE — RS05 publish-accepted contract + `event_bus` observability · RS10 economy family, ratchet 17→13) → **the consolidated plan is FULLY EXECUTED**; remaining (plan-first/gated): Help audit Phase 4 records · health/diagnostics production live-tests (owed; the **[eval checklist](audits/production-eval-checklist-2026-06-10.md)** scripts the maintainer's walk, §4.5 now incl. the editor) |
-| **Later** | BTD6 post-cutover decode backlog (the Q-0066 `--all` cutover **shipped #649**; verification #655; answerability tail #658/#662/#668 — see the BTD6 section) · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (privacy review) · games deferred follow-ups |
+| **Now** | The **[decade queue](planning/reconciliation-pass-2026-06-12.md)** (Q-0107 pass, 2026-06-12): production-hardening P0 tracks ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — P0-2/3/4 unblocked) + backup posture + the first **safety/community lane** slices (Q-0108–Q-0112 — see the "Server safety & community platform" section below). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
+| **Next** | Safety/community lane remainder (image moderation · security tiers 1+2 · NL event scheduler — all plan-first, see the lane section) · P1-1 versioned AI eval/smoke matrix · myprofile PR A ([plan](planning/myprofile-foundation-plan-2026-06-10.md), turn-key) · help home/navigation plan (editor-UI gate cleared via #677/#679) · V-14 harvest structuring ([dossier](ideas/competitive-teardown-2026-06-10.md); ecosystem-#2 = fishing, owner ratification pending) · the 2026-06-10 [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md) is **FULLY EXECUTED** (`historical`; [EOD verification](audits/past-day-verification-2026-06-10.md)) |
+| **Later** | P1-2 health findings lifecycle (gate: Q-0097) · Stage 0 one-click continuation (gate: owner API-key secret — [workflow §10](owner/ai-project-workflow.md)) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
 
 > **Standing posture (router §35, 2026-06-10):** the end-state is a **public
@@ -53,34 +60,13 @@
 > workflow converges toward **full self-driving — explicitly not near-term**
 > (Q-0083).
 >
-> **Recommended session queue (2026-06-10, owner-ack'd in the outage session):**
-> 1) ~~**Untested-surface testing checklist** (owner-commissioned)~~ **EXECUTED
-> 2026-06-12 (PR #731):** [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md)
-> — 18 sections / 70+ items; companion
-> [`scripts/command_surface_dump.py`](../scripts/command_surface_dump.py) (offline
-> AST dump + `--diff-checklist` gap check, same session grooming pass) · 2) **Self-driving foundation Stage 0 (Q-0088)** — the one-click
-> continuation workflow (`workflow_dispatch` fresh-context session from the standing
-> handoff; activates the bounded-session protocol —
-> [ai-project-workflow §10](owner/ai-project-workflow.md); owner provides the API-key
-> secret) · 3) **Postgres backup posture** — design + automate
-> ([operations/production-deployment.md](operations/production-deployment.md)
-> §Backups is the landing page) · 4) **Help home / navigation plan** (its editor-UI
-> gate cleared via #677/#679) · 5) **V-14 competitive teardown — research EXECUTED
-> 2026-06-10/11 in-conversation** (the [dossier](ideas/competitive-teardown-2026-06-10.md):
-> 30 scored harvest candidates, retention engines, V-15 surfaces live-verified;
-> **ecosystem-#2 verdict = fishing, owner ratification pending**); remaining work =
-> structure the top harvest picks into plans through the conveyor · 6) ~~the
-> gear-lane slice (V-16)~~ **EXECUTED 2026-06-11 (PR #702, full Q-0092 scope)**:
-> 9-slot set-piece model + same-tier set bonus · bronze/silver ores · the 30-item
-> numbers tables (sim-pinned —
-> [gear-set-numbers](planning/gear-set-numbers-2026-06-11.md)) · picker stat
-> previews · the paper-doll compositor with placeholder sprites (owner's PNG pack
-> hot-swaps via `disbot/assets/gear/`); **V-16 phase 2 next** = the
-> owner's asset pack + anchor tuning + (later) doll-in-stat-card composition.
-> Build-ready alternates: myprofile PR A · survival **P0 balance-simulation
-> harness (Q-0087)** · duel-XP quick-win · **gap items 2/4/5 (owner-granted
-> 2026-06-11: per-user data export/erasure · session telemetry · AI spend
-> metering — implement or prep; [gap file](ideas/gap-analysis-2026-06-11.md))**.
+> **Session queue → superseded 2026-06-12.** The 2026-06-10 recommended queue completed
+> items 1 + 6 (untested-surface checklist **#731**/**#732** · the V-16 gear slice **#702**);
+> its remainder (Stage 0 · backup posture · help home/navigation · V-14 structuring) and
+> the build-ready alternates (myprofile PR A · survival **P0 balance-sim harness, Q-0087** ·
+> duel-XP quick-win · **gap items 2/4/5** — [gap file](ideas/gap-analysis-2026-06-11.md))
+> are folded into the **[decade queue](planning/reconciliation-pass-2026-06-12.md)** §4 and
+> its "deliberately not in this decade" list. One queue home — don't restate it here.
 
 ---
 
@@ -103,6 +89,35 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
 - Plans (context, not sequence): [roadmap](planning/server-management-roadmap-2026-06-05.md)
   (target architecture) · [implementation-plan](planning/server-management-implementation-plan-2026-06-05.md)
   (PR scope; shipped through PR14 — the tracker is authoritative).
+
+### 🚨 Server safety & community platform — **Next** (new approved lane, plan-first)
+
+**New lane (2026-06-12):** the owner uploaded competitor/safety research (#739 →
+[server-safety-and-automod](ideas/server-safety-and-automod-2026-06-12.md) ·
+[community-platform-features](ideas/community-platform-features-2026-06-12.md)) and answered
+the five scope questions same day (**Q-0108–Q-0112**, #740 — decisions recorded in the
+router + both idea docs' routing tables). No folio yet — the **family plan** below becomes
+the lane's entry doc (the navigation cheat-sheet covers the moderation/community cogs per
+Q-0101). UI/attachment numbers: [discord-platform-limits](operations/discord-platform-limits.md).
+
+- **Next (decade-queue slots 8–10)** — **one family plan first** (shared config/UX shape,
+  reuse seams), then the first slices: **automod v1** (Q-0108 — all four rule types, exempt
+  roles/channels, escalation intact through `moderation_service`) → **server event logging
+  v1** (Q-0109 — edits/deletes · join/leave · role changes; owner-configurable single or
+  per-category channels; privacy disclosure in setup; **extends the existing
+  `services/server_logging.py` seam, never a parallel one**) → **welcome v1 + server
+  counters** (Q-0110 embed-only phase 1 + the counters quick-win; joins `guild_lifecycle`'s
+  join/leave handling).
+- **Next (after the first slices)** — **image moderation** (Q-0108 — OpenAI
+  `omni-moderation-latest` only; paid tiers declined) · **security service tiers 1+2**
+  (Q-0111 — raid detection + account-age filter; tiers 3+4 **declined**, GDPR) · **welcome
+  phase 2** (PIL image cards, after phase 1 is stable).
+- **Later (plan-first, AI cost design)** — **NL event scheduler** (Q-0112 — NL time parsing
+  from day one, metered under the Q-0082 ceiling; availability polls proposed day-one;
+  check existing scheduler infra before designing reminders).
+- **Later** — social feed notifications, YouTube-first (Q-0041 direction approved; the
+  summarization enrichment layer rides the Q-0082 ceiling). Other sources + custom
+  commands: Someday (see below).
 
 ### ⚙️ Settings / bindings / provisioning — **Next**
 
@@ -330,6 +345,39 @@ privacy/provenance/moderation review before any public surface.
 
 - **Later** — a channel-summary / content-status feature would need a bounded read-only
   first slice and an explicit privacy/security review. No public media command ships today.
+- **Now (hardening P0-2, unblocked)** — retention/data-minimization per **Q-0099** (bounded
+  projection + scheduled purge) — in the [decade queue](planning/reconciliation-pass-2026-06-12.md).
+
+### 🤝 Agent ecosystem / workflow — standing lane
+
+The workflow substrate is first-class work (CLAUDE.md working agreement); this section maps
+its *plans* so they're sequenced like any other area. Ops shelf:
+[hooks & plugins](operations/claude-code-hooks-and-plugins.md) ·
+[MCP servers](operations/mcp-servers.md) ·
+[Hermes control plane](operations/hermes-control-plane.md) +
+[operating prompt](operations/hermes-operating-prompt.md).
+
+- **Standing** — the **Q-0107 reconciliation cadence** (docs-only pass each time merged PRs
+  cross a multiple of 10; current pass: [2026-06-12](planning/reconciliation-pass-2026-06-12.md))
+  · the session enders (Q-0089 idea · Q-0102 prev-session review · Q-0104 closing audit).
+- **Later (gated on the owner's API-key secret)** — **self-driving Stage 0**: the one-click
+  continuation workflow ([ai-project-workflow §10](owner/ai-project-workflow.md)); activates
+  the bounded-session protocol (Q-0088).
+- **Open decision** — **Q-0096 remainder**: Context7 MCP adopted (#737); Postgres-MCP +
+  pyright-LSP still open ([plugins evaluation](ideas/claude-code-plugins-evaluation-2026-06-12.md)).
+- **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the
+  [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)'s
+  three repo-side seams: the Hermes `superbot-review` skill (independent non-Claude critique) ·
+  `scripts/check_phase_gate.py` (fix-phase vs. invent-phase; invent requires zero OPEN bugs +
+  zero Not-Done readiness rows — currently **FIX-PHASE**) · the
+  [Hermes → Claude dispatch bridge](ideas/hermes-claude-dispatch-bridge-2026-06-12.md)
+  (`superbot-dispatch` + runbook). Gates: routine PRs self-merge on green CI (**Q-0113**);
+  human approve/deny applies to **agent-originated features only**, originated in
+  invent-phase only (**Q-0114**). Maintainer follow-ups: wire the Routine + `/fire` token,
+  then calibrate per Q-0105 before trusting it unattended.
+- **Someday (vision, not approved)** — the
+  [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md)
+  (owner-shaped strategic direction).
 
 ---
 
@@ -377,6 +425,10 @@ privacy/provenance/moderation review before any public surface.
   Games lane; the rest stays captured.)*
 - [superbot-ideas-lab](planning/superbot-ideas-lab-2026-06-05.md) — broad brainstorm; its
   §2 (operating decisions) + §6 (rejection ledger) are **binding do-not-propose**.
+- **Custom commands** (operator-defined trigger→template responses, sandboxed) + **social
+  feeds beyond YouTube** (Twitch/RSS/Reddit/…) — captured in
+  [community-platform-features](ideas/community-platform-features-2026-06-12.md) §§2/4;
+  groom toward Later once the safety/community lane's first slices land.
 
 ---
 

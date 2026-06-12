@@ -25,8 +25,10 @@ Current broad captures:
   **server logging service** (message edits/deletes, join/leave, role changes) ·
   **image moderation** (OpenAI omni-moderation free endpoint vs. API4AI vs. Hive 50+
   categories) · **security service** (raid detection, account-age filter, alt detection,
-  VPN blocking — tiered by privacy risk). Larger decisions pending Q-0108, Q-0109,
-  Q-0111.
+  VPN blocking — tiered by privacy risk). **Decisions ANSWERED 2026-06-12
+  (Q-0108/Q-0109/Q-0111, PR #740):** automod (all 4 rule types) + OpenAI-only image
+  moderation + logging v1 + security tiers 1+2 **approved, plan-first** (routed to the
+  roadmap's safety/community lane); security tiers 3+4 + paid image tiers declined.
 - [`community-platform-features-2026-06-12.md`](./community-platform-features-2026-06-12.md) —
   **owner-uploaded research (2026-06-12):** five community-management features from
   ProBot, Koya, YAGPDB, Sesh, and Statbot:
@@ -36,7 +38,9 @@ Current broad captures:
   **event scheduler** (simple RSVP tier first; NL parsing gated on AI cost) ·
   **custom commands** (TagScript-safe, DB-stored, admin-only creation) ·
   **dynamic server counters** (statdock channel-renaming, quick-win candidate).
-  Decisions pending Q-0110 (welcome images), Q-0112 (event scheduler scope).
+  **Decisions ANSWERED 2026-06-12 (Q-0110/Q-0112, PR #740):** welcome = embed-first,
+  PIL cards phase 2; event scheduler = NL parsing from day one (Q-0082-metered) —
+  both **approved, plan-first** (routed to the roadmap's safety/community lane).
 - [`repo-manageability-2026-06-12.md`](./repo-manageability-2026-06-12.md) —
   **owner-asked (2026-06-12):** "what else would make the repo more easily manageable?"
   after the review-map + readiness-map work. Five workflow-substrate ideas: operationalize
