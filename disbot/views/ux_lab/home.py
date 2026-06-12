@@ -13,6 +13,8 @@ from utils.ux_patterns import PatternCategory, category_counts
 from views.base import HubView
 from views.ux_lab.buttons import ButtonsWingView
 from views.ux_lab.embeds import EmbedsWingView
+from views.ux_lab.image_cards import ImageWingView
+from views.ux_lab.layout_v2 import LayoutWingView
 from views.ux_lab.modals import ModalsWingView
 from views.ux_lab.probes import ProbesBenchView
 from views.ux_lab.selects import SelectsWingView
@@ -23,6 +25,8 @@ _WING_LABELS: dict[PatternCategory, str] = {
     PatternCategory.SELECTS: "Selects",
     PatternCategory.MODALS: "Modals",
     PatternCategory.EMBEDS: "Embeds",
+    PatternCategory.LAYOUT_V2: "Components V2",
+    PatternCategory.IMAGE: "PIL cards",
     PatternCategory.PROBE: "Probe bench",
 }
 
@@ -73,18 +77,20 @@ class UxLabHomeView(HubView):
 
     def __init__(self, author: discord.Member | discord.User) -> None:
         super().__init__(author)
-        wings: tuple[tuple[str, str, type[ExhibitWingView]], ...] = (
-            ("🔘", "Buttons", ButtonsWingView),
-            ("📋", "Selects", SelectsWingView),
-            ("⌨️", "Modals", ModalsWingView),
-            ("🪧", "Embeds", EmbedsWingView),
+        wings: tuple[tuple[str, str, type[ExhibitWingView], int], ...] = (
+            ("🔘", "Buttons", ButtonsWingView, 0),
+            ("📋", "Selects", SelectsWingView, 0),
+            ("⌨️", "Modals", ModalsWingView, 0),
+            ("🪧", "Embeds", EmbedsWingView, 0),
+            ("🧱", "Components V2", LayoutWingView, 1),
+            ("🎨", "PIL cards", ImageWingView, 1),
         )
-        for emoji, label, wing_cls in wings:
+        for emoji, label, wing_cls, row in wings:
             btn: discord.ui.Button[discord.ui.View] = discord.ui.Button(
                 label=label,
                 emoji=emoji,
                 style=discord.ButtonStyle.primary,
-                row=0,
+                row=row,
             )
 
             async def _open(
