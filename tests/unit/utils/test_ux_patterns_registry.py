@@ -26,7 +26,9 @@ def test_registry_is_populated_per_wing():
     assert counts[PatternCategory.SELECTS] == 8
     assert counts[PatternCategory.MODALS] == 6
     assert counts[PatternCategory.EMBEDS] == 14
-    assert counts[PatternCategory.PROBE] == 4
+    assert counts[PatternCategory.LAYOUT_V2] == 8
+    assert counts[PatternCategory.IMAGE] == 6
+    assert counts[PatternCategory.PROBE] == 10
 
 
 def test_registry_completeness():

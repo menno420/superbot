@@ -64,6 +64,37 @@ _probe_spec(
     "expect PASS on discord.py ≥2.6 — submit the modal to complete the probe",
     notes="Manual probe: it must open AND accept a submission.",
 )
+_probe_spec(
+    "probe_cv2_40_children",
+    "P-03 · LayoutView with exactly 40 children",
+    "expect PASS — 40 is the CV2 ceiling (verified in library source)",
+)
+_probe_spec(
+    "probe_cv2_41_children",
+    "P-04 · LayoutView with 41 children",
+    "expect FAIL at library construction — ValueError('… exceeded (40)')",
+)
+_probe_spec(
+    "probe_cv2_text_budget",
+    "P-05 · CV2 display-text budget (4000 chars)",
+    "expect PASS at 4000 combined; the probe reports which layer rejects 4001",
+)
+_probe_spec(
+    "probe_cv2_content_exclusive",
+    "P-09 · CV2 + content= mutual exclusion",
+    "expect FAIL — a CV2 message replaces content/embeds entirely",
+)
+_probe_spec(
+    "probe_modal_entity_select",
+    "P-08 · entity select (UserSelect) inside a modal",
+    "UNKNOWN — exactly what this probe exists to pin down",
+    notes="Manual probe: open it; rejection at construction/open is the answer.",
+)
+_probe_spec(
+    "probe_attachment_alt_text",
+    "P-10 · attachment alt-text round-trip",
+    "expect PASS — description field ≤1024 chars survives upload",
+)
 
 
 def _stamp() -> str:
@@ -188,6 +219,156 @@ class ProbesBenchView(HubView):
             f"sent — 10 embeds, {total} combined chars (≤6000 budget)",
         )
 
+    async def _probe_cv2_40(self, channel: discord.abc.Messageable) -> ProbeResult:
+        pid, title = "probe_cv2_40_children", "P-03 LayoutView · 40 children"
+        try:
+            view = discord.ui.LayoutView(timeout=_PROBE_MSG_TTL)
+            for n in range(40):
+                view.add_item(discord.ui.TextDisplay(f"-# item {n + 1}/40"))
+            await channel.send(view=view, delete_after=_PROBE_MSG_TTL)
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                False,
+                f"{type(exc).__name__}: {str(exc)[:180]}",
+            )
+        return ProbeResult(pid, title, True, "sent — 40 children accepted")
+
+    async def _probe_cv2_41(self, channel: discord.abc.Messageable) -> ProbeResult:
+        pid, title = "probe_cv2_41_children", "P-04 LayoutView · 41 children"
+        try:
+            view = discord.ui.LayoutView(timeout=_PROBE_MSG_TTL)
+            for n in range(41):
+                view.add_item(discord.ui.TextDisplay(f"-# item {n + 1}/41"))
+        except ValueError as exc:
+            return ProbeResult(
+                pid,
+                title,
+                True,
+                f"rejected at library construction — ValueError: {str(exc)[:140]}",
+            )
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                False,
+                f"{type(exc).__name__}: {str(exc)[:180]}",
+            )
+        try:
+            await channel.send(view=view, delete_after=_PROBE_MSG_TTL)
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                True,
+                f"rejected at the API — {type(exc).__name__}: {str(exc)[:140]}",
+            )
+        return ProbeResult(
+            pid,
+            title,
+            False,
+            "UNEXPECTED: 41 children accepted — update the doc!",
+        )
+
+    async def _probe_cv2_text_budget(
+        self,
+        channel: discord.abc.Messageable,
+    ) -> ProbeResult:
+        pid, title = "probe_cv2_text_budget", "P-05 CV2 text budget (4000)"
+        try:
+            at_limit = discord.ui.LayoutView(timeout=_PROBE_MSG_TTL)
+            at_limit.add_item(discord.ui.TextDisplay("x" * 4000))
+            await channel.send(view=at_limit, delete_after=_PROBE_MSG_TTL)
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                False,
+                f"4000 chars rejected — {type(exc).__name__}: {str(exc)[:140]}",
+            )
+        try:
+            over = discord.ui.LayoutView(timeout=_PROBE_MSG_TTL)
+            over.add_item(discord.ui.TextDisplay("x" * 4001))
+            await channel.send(view=over, delete_after=_PROBE_MSG_TTL)
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                True,
+                "4000 sent OK; 4001 rejected — "
+                f"{type(exc).__name__}: {str(exc)[:120]}",
+            )
+        return ProbeResult(
+            pid,
+            title,
+            False,
+            "UNEXPECTED: 4001 chars accepted — update the doc!",
+        )
+
+    async def _probe_cv2_content_exclusive(
+        self,
+        channel: discord.abc.Messageable,
+    ) -> ProbeResult:
+        pid, title = "probe_cv2_content_exclusive", "P-09 CV2 + content="
+        try:
+            view = discord.ui.LayoutView(timeout=_PROBE_MSG_TTL)
+            view.add_item(discord.ui.TextDisplay("CV2 exclusivity probe"))
+            await channel.send(
+                "plain content alongside CV2",
+                view=view,
+                delete_after=_PROBE_MSG_TTL,
+            )
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                True,
+                f"rejected as expected — {type(exc).__name__}: {str(exc)[:140]}",
+            )
+        return ProbeResult(
+            pid,
+            title,
+            False,
+            "UNEXPECTED: content + CV2 accepted together — update the doc!",
+        )
+
+    async def _probe_alt_text(
+        self,
+        channel: discord.abc.Messageable,
+    ) -> ProbeResult:
+        import io  # noqa: PLC0415 — tiny, probe-only
+
+        pid, title = "probe_attachment_alt_text", "P-10 alt-text round-trip"
+        alt = "UX Lab alt-text probe file"
+        try:
+            file = discord.File(
+                io.BytesIO(b"alt-text probe\n"),
+                filename="uxlab-alt-probe.txt",
+                description=alt,
+            )
+            msg = await channel.send(
+                "🧪 P-10: alt-text round-trip — self-deletes.",
+                file=file,
+                delete_after=_PROBE_MSG_TTL,
+            )
+        except Exception as exc:  # noqa: BLE001
+            return ProbeResult(
+                pid,
+                title,
+                False,
+                f"{type(exc).__name__}: {str(exc)[:180]}",
+            )
+        got = msg.attachments[0].description if msg.attachments else None
+        if got == alt:
+            return ProbeResult(pid, title, True, "description survived upload verbatim")
+        return ProbeResult(
+            pid,
+            title,
+            False,
+            f"description came back as {got!r} (sent {alt!r})",
+        )
+
     # -- rendering ------------------------------------------------------------
 
     def build(self) -> tuple[list[discord.Embed], ProbesBenchView]:
@@ -215,18 +396,25 @@ class ProbesBenchView(HubView):
             )
         return [embed], self
 
+    def _automated_probes(self):  # noqa: ANN202 — (label, runner, row) triples
+        return (
+            ("P-01 grid", self._probe_legacy_grid, 0),
+            ("P-02 26-option", self._probe_select_26, 0),
+            ("P-06 embed budget", self._probe_embed_budget, 0),
+            ("P-03 CV2 ×40", self._probe_cv2_40, 1),
+            ("P-04 CV2 ×41", self._probe_cv2_41, 1),
+            ("P-05 CV2 4000ch", self._probe_cv2_text_budget, 1),
+            ("P-09 CV2+content", self._probe_cv2_content_exclusive, 2),
+            ("P-10 alt-text", self._probe_alt_text, 2),
+        )
+
     def _build_items(self) -> None:
         self.clear_items()
-        probes = (
-            ("P-01 grid", self._probe_legacy_grid),
-            ("P-02 26-option", self._probe_select_26),
-            ("P-06 embed budget", self._probe_embed_budget),
-        )
-        for label, runner in probes:
+        for label, runner, row in self._automated_probes():
             btn: discord.ui.Button[discord.ui.View] = discord.ui.Button(
                 label=label,
                 style=discord.ButtonStyle.primary,
-                row=0,
+                row=row,
             )
 
             async def _run(
@@ -251,8 +439,8 @@ class ProbesBenchView(HubView):
 
         modal_btn: discord.ui.Button[discord.ui.View] = discord.ui.Button(
             label="P-07 modal+select (manual)",
-            style=discord.ButtonStyle.primary,
-            row=1,
+            style=discord.ButtonStyle.secondary,
+            row=2,
         )
 
         async def _modal_probe(interaction: discord.Interaction) -> None:
@@ -261,11 +449,48 @@ class ProbesBenchView(HubView):
         modal_btn.callback = _modal_probe  # type: ignore[method-assign]
         self.add_item(modal_btn)
 
+        entity_btn: discord.ui.Button[discord.ui.View] = discord.ui.Button(
+            label="P-08 modal+UserSelect (manual)",
+            style=discord.ButtonStyle.secondary,
+            row=2,
+        )
+
+        async def _entity_modal_probe(interaction: discord.Interaction) -> None:
+            # Construction or open may be rejected at any layer — wherever it
+            # fails IS the probe's answer, so report instead of raising.
+            try:
+                modal = discord.ui.Modal(title="P-08: entity select", timeout=120)
+                modal.add_item(
+                    discord.ui.Label(
+                        text="Pick a member",
+                        component=discord.ui.UserSelect(),
+                    ),
+                )
+
+                async def _submitted(submit_interaction: discord.Interaction) -> None:
+                    await submit_interaction.response.send_message(
+                        "✅ P-08: Discord accepted a UserSelect inside a modal "
+                        "(submission received) — update the limits doc.",
+                        ephemeral=True,
+                    )
+
+                modal.on_submit = _submitted  # type: ignore[method-assign]
+                await interaction.response.send_modal(modal)
+            except Exception as exc:  # noqa: BLE001 — the failure IS the result
+                await interaction.response.send_message(
+                    f"❌ P-08 rejected — `{type(exc).__name__}: "
+                    f"{str(exc)[:200]}` (that rejection is the probe's answer)",
+                    ephemeral=True,
+                )
+
+        entity_btn.callback = _entity_modal_probe  # type: ignore[method-assign]
+        self.add_item(entity_btn)
+
         run_all: discord.ui.Button[discord.ui.View] = discord.ui.Button(
             label="Run all automated",
             emoji="🔬",
             style=discord.ButtonStyle.success,
-            row=1,
+            row=3,
         )
 
         async def _run_all(interaction: discord.Interaction) -> None:
@@ -274,11 +499,7 @@ class ProbesBenchView(HubView):
             channel = interaction.channel
             if channel is None or not isinstance(channel, discord.abc.Messageable):
                 return
-            for probe in (
-                self._probe_legacy_grid,
-                self._probe_select_26,
-                self._probe_embed_budget,
-            ):
+            for _label, probe, _row in self._automated_probes():
                 result = await probe(channel)
                 self._results[result.probe_id] = result
             embeds, _ = self.build()
