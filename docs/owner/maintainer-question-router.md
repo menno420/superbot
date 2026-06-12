@@ -4166,3 +4166,31 @@ owner review keeps the agent's "constitution" under human control while still le
 system evolve. This is the governance counterpart to the Q-0102/Q-0104 self-audit loop.
 
 **Home:** `.claude/CLAUDE.md` Working agreement (binding) · this entry is provenance.
+
+### Q-0107 — Reconciliation + planning pass at every 10th PR (docs-only)
+
+> **DIRECTED 2026-06-12 (owner, voice).** "After every 10 PRs there should be a docs-only
+> cleanup and plan reconciliation that reviews the state of the repo and refocuses our
+> attention." Refined: "every 10, 20, 30 etc should be docs-only reviewing and planning," and
+> "every planning session should focus on what the next 9 PRs can realistically achieve —
+> modular but not too segmented; each PR should ship a reasonable change unless it really is
+> only a small required change."
+
+**Area:** Agent system · workflow / planning cadence
+**Type:** Standing workflow rule (process)
+**Priority:** Standing — every 10th PR
+
+**Directive:**
+- PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are a **docs-only review +
+  planning** pass — no runtime / `disbot/` code.
+- **Reconcile:** review the ledger, active lanes, open Q-blocks, idea backlog, roadmap; prune
+  stale docs; restate current priorities.
+- **Plan the next ~9 PRs:** what is realistically achievable in the upcoming decade of PRs,
+  **modular but not over-segmented** — each planned PR ships a *reasonable, meaningful* change,
+  not a trivial fragment (small PRs only when the change genuinely is small/required).
+- **Cadence guard:** `scripts/check_reconciliation_due.py` tracks the `Last reconciliation
+  pass:** PR #N` marker in `current-state.md` and flags when a pass is due; reset the marker
+  after a pass. Surfaced by `/session-close`.
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · `current-state.md` holds
+the marker · this entry is provenance.
