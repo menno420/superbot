@@ -1,6 +1,6 @@
 # AI / Setup Advisor production-readiness map — 2026-06-12
 
-> **Status:** `living-ledger` — docs-only, source-verified production-readiness review.
+> **Status:** `audit` — docs-only, source-verified production-readiness review (point-in-time).
 > **Authority:** source code and merged PRs win over this map. Recheck live PRs before using it as an execution queue.
 > **Scope:** AI Platform, Setup Advisor, and only the directly required settings, health/diagnostics, BTD6-grounding, and setup-behaviour seams.
 

@@ -1,6 +1,6 @@
 # Media / YouTube production-readiness map — 2026-06-12
 
-> **Status:** `plan` — verified readiness review; findings are not implementation approval.
+> **Status:** `audit` — verified readiness review (point-in-time); findings are not implementation approval.
 > **Mode:** docs-only mapping and production-readiness review; no fixes implemented.
 > **Verdict:** **Not production-ready.** The feature is a coherent, default-off AI
 > grounding slice with useful unit coverage, but production readiness is blocked by

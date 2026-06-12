@@ -111,6 +111,16 @@ A B-platform change should be reviewed for **blast radius** (how many slices it 
 not just local correctness — use `python3.10 scripts/context_map.py <file>` to see importers
 before reviewing or refactoring one of these.
 
+### Per-subsystem readiness maps (the first applied output)
+
+The B-slice review unit has a concrete deliverable per area: a
+**production-readiness map** that inventories the slice (cog · views · service · DB ·
+migrations · external seams) and marks each item Done / Partial / Not Done with evidence.
+The full set lives at
+[`planning/production-readiness/`](planning/production-readiness/README.md) — one map per
+subsystem, each linked from its [folio](subsystems/README.md). Open a slice's map for
+*what's left*; open its folio for *the rules*.
+
 ---
 
 ## How to scope a review or refactor (decision guide)
