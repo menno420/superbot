@@ -83,6 +83,27 @@ posture so this doc stands alone:
 - **Rules if anything is adopted:** pin (sha/version), audit the bundle for hooks first,
   prefer hook-free MCP/skills-only bundles, carry the Q-0014 provenance header.
 
+## Part 4 — Permissions posture (`.claude/settings.json`)
+
+`permissions` in `settings.json` controls which tool calls run without an approval prompt.
+The posture (set 2026-06-12, owner ask: sessions stalled on unexpected approvals) balances
+**friction vs. the prompt-as-injection-guard**:
+
+- **`defaultMode: acceptEdits`** — file edits auto-apply (the dominant stall source). Repo
+  edits are git-reversible, so this is low-risk.
+- **`allow`** — the safe, high-frequency workflow operations: git read+commit+push+fetch+
+  merge+checkout+branch, the `python3.10` check/test/format toolchain, the GitHub PR MCP
+  ops, and read tools.
+- **`ask`** — force-push, push-to-`main`, `git reset --hard`, `git clean` still prompt even
+  though broad `git *` is allowed (`ask` overrides `allow`).
+- **Everything else still prompts** — `rm`, network calls, secret/`.env` access, arbitrary
+  bash. **This is deliberate:** a session that reads external content (PR comments, issue
+  text, CI logs, web pages) can be steered by prompt-injection, and the permission prompt is
+  the last guard when the agent's judgment is compromised by untrusted input. Auto-allowing
+  destructive/outbound operations would remove that guard.
+- **The environment's permission mode (web UI) is the dominant lever** — it can override the
+  repo allowlist for cloud sessions and is the maintainer's to set.
+
 ## Changing a hook or adopting a plugin
 
 1. It's executable config → **propose first** (router Q-block or owner ask), don't wire silently.

@@ -50,7 +50,22 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 
-- **PR #730 (2026-06-12, untested-surface checklist)** — the owner-commissioned
+- **#733 (2026-06-12, workflow/memory/permissions)** — **Q-0102** (mandatory `⟲ Previous-session
+  review` session-ender — review the predecessor + surface one system improvement) + **Q-0103**
+  (open session PRs **ready not draft**; every PR must reach a terminal state — merged or closed).
+  `scripts/check_session_log.py` + post-edit/Stop-hook wiring enforce the Q-0089/Q-0102 enders.
+  New [`docs/operations/claude-code-hooks-and-plugins.md`](operations/claude-code-hooks-and-plugins.md)
+  (the 6 wired hooks + candidate-hook brainstorm + plugins posture → Q-0096). `.claude/settings.json`
+  permission-friction cut (`acceptEdits` + curated allowlist; force-push/destructive still prompt).
+  Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines dispatch bridge ·
+  portable OSS memory/workflow package.
+- **#730 (2026-06-12, Hermes skills installable)** — `scripts/hermes/build_skills.py` generates
+  installable `SKILL.md` files (Hermes frontmatter) from the skill docs + `install-skills.sh`
+  deploys them to the VPS; `repo-health` self-schedules a daily Telegram digest via a frontmatter
+  `blueprint.schedule`. New `log-triage` skill (read-only prod/gateway log diagnosis) +
+  [`hermes-operating-prompt.md`](operations/hermes-operating-prompt.md) (the Hermes-side `CLAUDE.md`).
+  `tests/unit/scripts/test_build_skills.py` freshness-gates the generated artifacts.
+- **#731 (2026-06-12, untested-surface checklist)** — the owner-commissioned
   [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md):
   18 sections, 70+ `[ ]` items covering every command/UI surface that automated CI
   cannot verify and has no live-walk record — Economy · General · Utility · Roles ·
