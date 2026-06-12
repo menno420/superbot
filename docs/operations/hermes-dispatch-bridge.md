@@ -40,20 +40,25 @@ idea / nightly diagnosis
   trigger enabled. prompt = the saved prompt below · repo = `menno420/superbot` · environment
   network policy scoped tight · branch-push setting left at the default **`claude/`-only** ·
   API trigger enabled (you get a per-routine `/fire` URL + bearer token).
-- ⬜ **Store the secrets on the VPS** for the `hermes` user (never commit them):
+- ✅ **Store the secrets on the VPS** for the `hermes` user (never commit them). The
+  `superbot-dispatch` skill sources `~/.hermes/routine.env`, so put them there (chmod 600):
   ```bash
-  # ~/.hermes/.env  (or the VPS secret store the gateway loads)
-  CLAUDE_ROUTINE_FIRE_URL="https://…/routines/<id>/fire"
-  CLAUDE_ROUTINE_TOKEN="<bearer token>"
-  CLAUDE_ROUTINE_BETA="<the dated routines beta header value from the docs>"
+  # ~/.hermes/routine.env  (verified Routines /fire shape, 2026-06-12)
+  CLAUDE_ROUTINE_FIRE_URL="https://api.anthropic.com/v1/claude_code/routines/<trig_id>/fire"
+  CLAUDE_ROUTINE_TOKEN="sk-ant-oat01-…"          # the per-routine bearer token (shown once)
+  CLAUDE_ROUTINE_BETA="experimental-cc-routine-2026-04-01"
+  CLAUDE_ROUTINE_VERSION="2023-06-01"
   ```
+  Then `chmod 600 ~/.hermes/routine.env`. (The token is shown once at generation — regenerate
+  from the routine's API-trigger modal if lost.)
 - ⬜ **Install the skills** so Hermes can dispatch:
   ```bash
   bash scripts/hermes/install-skills.sh && sudo systemctl restart hermes-gateway
   ```
-- ⬜ **Calibrate before trusting (Q-0105):** dispatch a *known, tiny* fix first and confirm the
-  routine opened the PR, CI ran, and the merge gate behaved (self-merged a docs fix; held a
-  fake "feature" for approval). Only then let nightly diagnoses dispatch unattended.
+- ✅ **Calibrate before trusting (Q-0105):** DONE 2026-06-12 — a connectivity test (fire →
+  clone → read-only, no changes) and a first real run (PR #747: a minimal docs edit, held open
+  for review per the work order, CI green) both passed; the routine respected the work-order
+  instructions precisely. Self-merge-on-green and the daily schedule are the earned next steps.
 
 ## The routine's saved prompt (paste into the routine config)
 
