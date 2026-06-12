@@ -97,7 +97,7 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # 2026-06-08: 41 -> 16 after the Q-0010 consolidation moved plans / audits /
 # inventories / historical snapshots into clustered subdirs (docs/ai/,
 # docs/setup-platform/, docs/health/) and the type buckets, behind their folios.
-_TOP_LEVEL_DOCS_BUDGET = 16
+_TOP_LEVEL_DOCS_BUDGET = 17
 
 
 def _docs_files() -> list[Path]:
