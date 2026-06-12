@@ -144,9 +144,12 @@ operator/agent misrouting:
 |---|---|---|---|
 | Q-0077 | BTD6 auto-seed-on-boot | BTD6 data-lane proof | pre-existing |
 | Q-0097 | Health finding lifecycle (open/resolved/ignored) | P1-2 | Open (asked 2026-06-12) |
-| Q-0098 | Delegated-Setup apply authority contract | P0-3 | **routed 2026-06-12** |
-| Q-0099 | Media/YouTube retention & data-minimization policy | P0-2 | **routed 2026-06-12** |
-| Q-0100 | Canonical owner for direct channel mutations | P0-4 | **routed 2026-06-12** |
+| Q-0098 | Delegated-Setup apply authority contract | P0-3 | ✅ **ANSWERED 2026-06-12 — (a) delegates may apply** → P0-3 unblocked |
+| Q-0099 | Media/YouTube retention & data-minimization policy | P0-2 | ✅ **ANSWERED 2026-06-12 — (a) bounded projection + scheduled purge** → P0-2 unblocked |
+| Q-0100 | Canonical owner for direct channel mutations | P0-4 | ✅ **ANSWERED 2026-06-12 — (a) converge under existing seams** → P0-4 unblocked |
+
+**Net effect:** P0-2, P0-3, P0-4 are now **unblocked** (each has its decided design above).
+Only P1-2 still waits on an owner answer (Q-0097, health finding lifecycle).
 
 ## Recommended first three sessions
 
@@ -154,8 +157,9 @@ operator/agent misrouting:
    wrong commands and stale ownership. One session.
 2. **P0-1 games wager money-safety** — highest concrete harm (mints/loses currency),
    self-contained, no owner gate, test-injectable.
-3. **P0-3 or P0-4** — once **Q-0098 / Q-0100** are answered, the settings pointer-lane or
-   server-mgmt channel-ownership convergence (whichever the owner answers first).
+3. **P0-3 / P0-4** — now unblocked (Q-0098 / Q-0100 answered): settings pointer-lane +
+   delegated-apply route, or server-mgmt channel-ownership convergence under the existing
+   seams. Both are now design-decided; sequence by the owner's pick.
 
 > As a track lands, update the relevant map's rows from Partial/Not Done → Done with the PR
 > as evidence, and tick the verdict table above.
