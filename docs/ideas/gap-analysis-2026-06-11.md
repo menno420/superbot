@@ -68,10 +68,14 @@
   stay; joining a second server offers start-from-0 *or* transfer of **up to
   10%** of cash/items/gear, **removed from the source character**, calibrated
   by the destination's average level. Binds V-13/ecosystem-#2 design.
-- §2 (export/erasure), §4 (session telemetry), §5 (spend metering) →
+- §2 (export/erasure), §5 (spend metering) →
   **owner-granted 2026-06-11** — implement or prep in coming sessions
   (roadmap session queue). §5's urgency datapoint: ~€12 total API spend to
   date — meter for the public era, not a fire.
+- §4 (session telemetry) → **PARTIALLY EXECUTED 2026-06-12**: the "structured
+  footer in each session log" half shipped as the `📊 Telemetry` block in
+  `.sessions/README.md` (every log now carries 5 counters). The heavier
+  "caretaker weekly rollup" half stays on the roadmap Someday queue.
 - §3 (alerting) → **owner-deferred by decision** (prepared, deprioritized).
 - §6 → **EXECUTED in PR #694** (checkout v4→v5, setup-python v5→v6 across all
   three workflows; validated by that PR's own CI run).
