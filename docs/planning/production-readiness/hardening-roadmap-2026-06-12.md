@@ -129,18 +129,18 @@ it. Owner-dependent — pairs with the commissioned
 
 ---
 
-## P2 — drift & quick wins (cheap, no owner gate)
+## P2 — drift & quick wins (cheap, no owner gate) — ✅ **SWEPT 2026-06-12 (night)**
 
-A single **doc-drift sweep** session clears all of these; each is small and removes active
-operator/agent misrouting:
+All five cleared in one docs-sweep session (band queue slot 2), each verified
+against source before editing:
 
-| Fix | Evidence |
-|---|---|
-| Health smoke checklist: replace nonexistent `!platform diagnostics` with real `!platform runtime`/`consistency`; correct the Platform-hub completeness claim | health map |
-| AI `core/runtime/ai/README.md`: drop stale "inert scaffold" wording for active code | ai map |
-| ADR-006: reconcile stale BTD6 pause wording + decode-status summary rows | btd6 map |
-| Media folio: "bounded cached metadata" vs. the raw-payload reality (fix doc or code per Q-0099) | media map |
-| `YOUTUBE_CONTEXT_ENABLED` ownership label `ai` → shared platform (ADR-007) | ai + media maps |
+| Fix | Evidence | Done |
+|---|---|---|
+| Health smoke checklist: replace nonexistent `!platform diagnostics` with real `!platform runtime`/`consistency`; correct the Platform-hub completeness claim | health map | ✅ checklist route + `platform_panel.py` docstring (grouped ≠ every subcommand) |
+| AI `core/runtime/ai/README.md`: drop stale "inert scaffold" wording for active code | ai map | ✅ rewritten for the live gateway/routing/NL-stage package |
+| ADR-006: reconcile stale BTD6 pause wording + decode-status summary rows | btd6 map | ✅ dated status addendum (decision text untouched per ADR immutability) + decode-status header v55.0→v55.1 + duplicate backlog №3 renumbered |
+| Media folio: "bounded cached metadata" vs. the raw-payload reality (fix doc or code per Q-0099) | media map | ✅ folio states the raw-payload reality; bounded projection = the Q-0099/P0-2 target (queue slot 9) |
+| `YOUTUBE_CONTEXT_ENABLED` ownership label `ai` → shared platform (ADR-007) | ai + media maps | ✅ `owner="platform"` with ADR-007 comment |
 
 ---
 

@@ -3,7 +3,9 @@
 > **Status:** `living-ledger`
 
 The living status of the effort to source BTD6 data from the **BTD Mod Helper
-game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, v55.0). Start here
+game-data dump** (`github.com/Btd6ModHelper/btd6-game-data`, **v55.1** at the
+cutover SHA `4e22e586` — header corrected from v55.0, 2026-06-12 P2 sweep).
+Start here
 to pick up the work: it records what's done, **how the dump's data actually
 works** (the traps we hit), and what is still un-decoded.
 
@@ -140,7 +142,7 @@ works** (the traps we hit), and what is still un-decoded.
    decodes are confirmed by **upgrade-prose / owner gameplay knowledge**, not a
    committed diff. Pick from the SHA-pinned report §3 ranking as questions
    surface.
-3. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
+4. **Maintainer live spot-check** of the new surfaces (no sandbox Discord):
    per-tier beast names ("what does the Orca do?"), Farm/Village answers
    (Wall Street income, discounts, MIB), Spectre/Mini Sun Avatar minions, and
    the "BTD6 game data 55.1" source label. *(+ from #655: the modes panel's
