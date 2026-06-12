@@ -94,8 +94,11 @@ SQL outside utils/db/; mutations through *_mutation.py with an audit event). Res
 bounded-session protocol (workflow §10): ~2 substantial tasks max, then hand off. Push only to
 claude/ branches. Never touch production, Railway, or the database directly.
 
-END by leaving the standing handoff sharpened (current-state ▶ Next action) so the next run
-continues cleanly.
+CLOSE THE LOOP before you end (this is a turn of SuperBot's self-improvement loop, not just a
+task): leave current-state ▶ Next action sharpened so the next run continues cleanly; contribute
+ONE genuine new idea (Q-0089) to docs/ideas/ if you have one worth having (never forced filler);
+and note one honest line on the PREVIOUS run/session (Q-0102). Trigger a positive improvement
+wherever one honestly exists — improving docs/orientation/tooling for the next run is first-class.
 ```
 
 ## Safety scoping (why each knob is set where it is)
