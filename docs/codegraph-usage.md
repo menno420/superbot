@@ -1,13 +1,38 @@
 # CodeGraph Usage Guide — SuperBot
 
-> **Status:** `binding` — CodeGraph trust matrix; the short rules live in `.claude/CLAUDE.md`.
+> **Status:** `binding` — CodeGraph trigger table, trust matrix, and safety rules.
+> `.claude/CLAUDE.md` retains only the critical do-not-delete rules for working context.
 
-> **This is the full trust matrix. `.claude/CLAUDE.md` contains the mandatory
-> short rules; this document contains the evidence behind them.**
+> **This is the full reference. `.claude/CLAUDE.md` contains only the five critical
+> safety rules (dead-unresolved, name-collision, Discord decorators, empty callees,
+> blind-spot wiring). Everything else lives here.**
 >
 > Last evaluated: 2026-05-24, codegraph 3.10.0, against the live repo.
 > Evaluation method: every claim below was verified by running the tool, then
 > grep-searching or source-reading to confirm or refute the result.
+
+---
+
+## When to use automatically — trigger table
+
+Reach for CodeGraph **without being asked** whenever the task involves any of the following:
+
+| Situation | What to do first |
+|---|---|
+| Finding where a symbol is defined | `mcp__codegraph__where("symbol_name")` before any grep or Read |
+| Reading a function you haven't seen before | `mcp__codegraph__context("name")` for source + signature in one call |
+| Understanding what calls a function | `mcp__codegraph__fn_impact("name", depth=1)` then grep-verify |
+| Listing what exists in a file or directory | `mcp__codegraph__list_functions(file="path/")` before opening files blindly |
+| Assessing complexity before a refactor | `mcp__codegraph__complexity(file="path/")` or `mcp__codegraph__triage(level=function, sort=complexity)` |
+| Planning any edit to shared code | `mcp__codegraph__context` to read source + get starting caller list, then grep |
+| Bug investigation across multiple functions | `mcp__codegraph__context` on each candidate — faster than chained Read calls |
+
+**Default order for any unfamiliar code:** `where` → `context` → grep-verify → `Read` only if more source detail is needed.
+
+**Contained vs. unfamiliar:** for a *contained* change — a known refactor, adding one function, a localised bug — `python3.10 scripts/context_map.py <file>` + targeted grep is usually faster than the graph. Reach for CodeGraph when navigating *unfamiliar* code across many files.
+
+**Before your first edit to a `disbot/*.py` file, run the file context map:**
+`python3.10 scripts/context_map.py <path>` (~0.2 s). It surfaces module-level **and** lazy/function-body (CodeGraph-invisible) imports, reverse importers, blast radius, related docs/tests, a recommended read set, and the post-edit checks to run. A `PreToolUse` hook (`scripts/claude_pre_edit.py`) shows it automatically once per file per session, but run it yourself when planning a change. Full reference: `docs/context-map-tooling.md`.
 
 ---
 

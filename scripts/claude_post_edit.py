@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""PostToolUse hook: auto-format the just-edited Python file.
+"""PostToolUse hook: auto-format Python files; check docs on Markdown edits.
 
 Called by Claude Code after every Edit or Write tool use.
 The file path is read from CLAUDE_TOOL_INPUT_FILE_PATH.
 
-Runs black → isort → ruff --fix on the single edited file. Auto-fixes
-formatting silently in the happy path. When a fix was applied OR a tool
-reported an error, prints a loud, multi-line warning so the change is
-visible in the chat transcript — the previous "always quiet" behaviour
-hid real issues (see PR #338 post-mortem).
+For .py files: runs black → isort → ruff --fix on the single edited file.
+Auto-fixes formatting silently in the happy path. When a fix was applied OR
+a tool reported an error, prints a loud, multi-line warning so the change is
+visible in the chat transcript — the previous "always quiet" behaviour hid
+real issues (see PR #338 post-mortem).
 
-Always exits 0 — formatting auto-fixes never block Claude. The Stop hook
+For .md files: runs check_docs.py --strict against the whole docs/ tree and
+prints a loud warning if any issue is found (missing badge, orphan doc, broken
+link). This catches CI failures at edit-time rather than at PR push.
+
+Always exits 0 — auto-fixes and doc warnings never block Claude. The Stop hook
 runs check-only versions for hard failures (architecture, mypy).
 """
 
@@ -37,13 +41,64 @@ def _digest(path: Path) -> str:
         return ""
 
 
+def _check_docs(path: Path) -> int:
+    """Run check_docs --strict after any .md edit and warn loudly on failure."""
+    # Only care about files inside docs/ or the session journal — skip everything else
+    try:
+        rel = path.relative_to(REPO_ROOT)
+    except ValueError:
+        return 0
+    parts = rel.parts
+    if not (
+        parts[0] == "docs"
+        or str(rel) in (".session-journal.md", "CLAUDE.md")
+        or parts[:2] == (".claude",)
+    ):
+        return 0
+
+    check_script = REPO_ROOT / "scripts" / "check_docs.py"
+    if not check_script.exists():
+        return 0
+
+    result = subprocess.run(
+        [PY, str(check_script), "--strict"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        output = (result.stdout + result.stderr).strip()
+        print(
+            "\n━━━ check_docs warning ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            file=sys.stderr,
+        )
+        print(f"  triggered by edit to: {rel}", file=sys.stderr)
+        print(
+            "  ⚠ DOCS ISSUE — fix before pushing (will fail CI):",
+            file=sys.stderr,
+        )
+        for line in output.splitlines():
+            print(f"    {line}", file=sys.stderr)
+        print(
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            file=sys.stderr,
+        )
+    return 0  # always non-blocking
+
+
 def main() -> int:
     file_path = os.environ.get("CLAUDE_TOOL_INPUT_FILE_PATH", "").strip()
     if not file_path:
         return 0
 
     path = Path(file_path)
-    if not path.exists() or path.suffix != ".py":
+    if not path.exists():
+        return 0
+
+    if path.suffix == ".md":
+        return _check_docs(path)
+
+    if path.suffix != ".py":
         return 0
 
     try:
