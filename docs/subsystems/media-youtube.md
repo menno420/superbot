@@ -60,7 +60,8 @@ media command.
 
 `docs/decisions/007-media-youtube-ownership.md`, `docs/server-logging.md`,
 `docs/current-state.md`, `docs/subsystems/ai.md`, `docs/subsystems/btd6.md`,
-`docs/ideas/ai-extra-tool-capability-ideas.md`.
+`docs/ideas/ai-extra-tool-capability-ideas.md`, and the verified
+[2026-06-12 production-readiness map](../planning/production-readiness/media-youtube-production-readiness-map-2026-06-12.md).
 
 ## Broader integration routing (not approved)
 
