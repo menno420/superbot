@@ -1,0 +1,56 @@
+# Production-readiness maps — per-subsystem readiness reviews
+
+> **Status:** `reference` — index + convention for the production-readiness map set.
+> The individual maps are dated `audit` snapshots; **source code and merged PRs win
+> over any map**, and a map reflects only the date in its filename.
+
+## What this is
+
+One **production-readiness map per subsystem** — a source-verified inventory of every
+cog, service, view, DB path, migration, and external seam in that subsystem, each marked
+**Done / Partial / Not Done** with a reason and file-level evidence, plus the work
+required before a production posture, the risks, and a recommended next session.
+
+These maps are the first concrete use of the [`repo-review-map.md`](../../repo-review-map.md)
+divisions: each one reviews exactly **one subsystem slice / area** (Axis B), so a session
+hardening that area reads its map + its [folio](../../subsystems/README.md) instead of
+re-scanning source. They were produced **2026-06-12** by per-subsystem mapping agents
+(PRs #717–#723).
+
+## Convention
+
+Each map carries an `audit` badge and a table of the shape:
+
+| Item | Path | Type | Status | Reason | Evidence |
+|---|---|---|---|---|---|
+
+`Status ∈ {Done, Partial, Not Done}` measures **end-to-end production usefulness**, not
+"does the declaration parse". A map is a point-in-time review — when source moves, the
+map is stale until refreshed (re-run that subsystem's mapping pass and re-date the file).
+
+## The maps
+
+| Subsystem | Map | Folio |
+|---|---|---|
+| AI / Setup Advisor | [`ai-production-readiness-map-2026-06-12.md`](ai-production-readiness-map-2026-06-12.md) | [`subsystems/ai.md`](../../subsystems/ai.md) |
+| BTD6 data / tools | [`btd6-production-readiness-map-2026-06-12.md`](btd6-production-readiness-map-2026-06-12.md) | [`subsystems/btd6.md`](../../subsystems/btd6.md) |
+| Games | [`games-production-readiness-map-2026-06-12.md`](games-production-readiness-map-2026-06-12.md) | [`subsystems/games.md`](../../subsystems/games.md) |
+| Health / diagnostics | [`health-diagnostics-production-readiness-map-2026-06-12.md`](health-diagnostics-production-readiness-map-2026-06-12.md) | [`subsystems/health-diagnostics.md`](../../subsystems/health-diagnostics.md) |
+| Media / YouTube | [`media-youtube-production-readiness-map-2026-06-12.md`](media-youtube-production-readiness-map-2026-06-12.md) | [`subsystems/media-youtube.md`](../../subsystems/media-youtube.md) |
+| Server management | [`server-management-production-readiness-map-2026-06-12.md`](server-management-production-readiness-map-2026-06-12.md) | [`subsystems/server-management.md`](../../subsystems/server-management.md) |
+| Settings / bindings / provisioning | [`settings-bindings-provisioning-production-readiness-map-2026-06-12.md`](settings-bindings-provisioning-production-readiness-map-2026-06-12.md) | [`subsystems/settings-bindings-provisioning.md`](../../subsystems/settings-bindings-provisioning.md) |
+
+> Health / diagnostics surfaced an owner decision — the persistent-finding lifecycle
+> (`open` / `resolved` / `ignored`) — captured as **Q-0097** in
+> [`maintainer-question-router.md`](../../owner/maintainer-question-router.md).
+
+## How to use
+
+- **Hardening an area?** Open its map for the Partial / Not Done rows + "Required before
+  production-ready", then its folio for the binding contracts. The map is the *what's
+  left*; the folio is the *rules*.
+- **The Bloons/runtime split, settings pointer-lane debt, channel-ownership convergence,
+  and the AI projection dual-store** are the recurring cross-map themes — each map's
+  "Recommended next session" proposes a bounded follow-up.
+- These are reviews, **not** implementation approval. A fix follows the normal
+  plan → PR route and updates the relevant map row.
