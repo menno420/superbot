@@ -30,6 +30,13 @@ Current broad captures:
 > beats occasional brilliance). Substantial ones land here as files; small ones
 > live in their session log's 💡 flag. The grooming pass then moves them.
 
+- [`review-unit-tagging-2026-06-12.md`](./review-unit-tagging-2026-06-12.md) —
+  **session idea (2026-06-12, Q-0089):** operationalize the new
+  [`repo-review-map.md`](../repo-review-map.md) — have `context_map.py` print a file's
+  review unit (subsystem slice vs. shared-platform layer), and add a PR-level
+  `review_scope.py` that classifies a changed-file set as single-slice / multi-slice /
+  platform. Turns the review partition from a doc you must remember into a signal the
+  toolchain emits. Read-only, quick-win lane, not auto-promoted.
 - [`claude-code-plugins-evaluation-2026-06-12.md`](./claude-code-plugins-evaluation-2026-06-12.md) —
   **owner-asked (2026-06-12):** "any good Claude (Code) plugins useful for us?" —
   ecosystem survey (official + community marketplaces, spot-verified), filtered

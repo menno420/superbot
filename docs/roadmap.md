@@ -222,6 +222,12 @@ dedicated decision** for any action capability.
   backlog onto that foundation · [ai-readiness-plan](ai/ai-readiness-plan.md) M2 (typed policy
   tables + central NL stage) · [provider-switch + grounding fix](ai/ai-provider-and-grounding-fix-plan.md).
   Map: [ai-service-integration-map](ai/ai-service-integration-map.md).
+- **Later (UX debt — owner-requested)** — [AI panel in-place navigation](ideas/ai-panel-inplace-navigation-2026-06-11.md):
+  migrate the `views/ai/` settings family off per-click ephemeral messages + the blanket
+  raw-`discord.ui.View` yaml exemption onto the rest-of-bot in-place **HubView** pattern
+  (V-02 navigation doctrine), and centralize the seven scattered subpanels. Clear
+  direction + a source-confirmed scope sketch in the idea file; wants its own planning
+  session before code.
 
 ### 🎈 BTD6 data / tools — **Now** (THE CUTOVER IS DONE — post-cutover decode backlog)
 
