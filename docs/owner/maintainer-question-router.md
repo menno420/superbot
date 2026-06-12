@@ -4055,3 +4055,30 @@ the Hermes-as-independent-reviewer seam
 ([`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`](../ideas/autonomous-improvement-loop-vision-2026-06-12.md)).
 
 **Home:** `.claude/CLAUDE.md` (binding) · this entry is the provenance record.
+
+### Q-0103 — Drop draft-first PRs (open ready); every session PR must reach a terminal state
+
+> **DIRECTED 2026-06-12 (owner, voice).** Refines Q-0052. The maintainer observed sessions
+> "creating draft PRs and then forgetting about them" and asked whether the draft step gives
+> any benefit. Agreed assessment: in our self-merge flow it does not.
+
+**Area:** Agent system · workflow / PR lifecycle
+**Type:** Workflow decision (refines Q-0052)
+**Priority:** Standing — every session
+
+**Decision:**
+1. **Open the session PR READY, not draft.** Q-0052's real benefit was opening *early* (for
+   the PR number, so docs can reference it without a rotting placeholder). The *draft* state
+   added nothing here — nothing auto-merges or auto-requests review — and the "mark ready"
+   step was being forgotten, producing abandoned drafts. Drop it.
+2. **Every session drives its PR to a terminal state — merged or closed — before ending.**
+   Merge when the work is good (Q-0084 envelope: reconcile main, CI green on final head,
+   merge-commit, own PR only); otherwise close with a one-line reason. **Never leave a
+   session PR open/abandoned.** This is the actual fix for the forgotten-PR problem and is
+   load-bearing for full autonomy.
+
+**Enforcement:** `scripts/check_session_log.py` + the Stop-hook advisory remind on an
+incomplete close; the `/session-close` skill performs the terminal-state step. (Hooks can't
+call GitHub MCP, so the merge/close itself is agent/skill-driven, not hook-driven.)
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · this entry is provenance.

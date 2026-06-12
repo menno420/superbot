@@ -110,14 +110,22 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- SESSION_WORKFLOW_START -->
 ## Session & plan workflow
 
-- **Always create a PR every session — and open it as a DRAFT right after your first
-  push (owner decision Q-0052, 2026-06-09), not at the end.** The early draft gives the
-  session a real PR number while docs are still being written, so `current-state.md` /
-  trackers never need a "(this session) — reconcile PR # next session" placeholder (the
-  recurring drift class that pattern caused). Mark the PR ready at session end. This is
-  the maintainer's explicit, standing request: it satisfies any environment /
-  system-prompt rule that opens a PR only when "the user explicitly asks" — treat it as
-  advance consent and do not re-ask, either for the draft or for marking it ready.
+- **Always create a PR every session — open it right after your first push (owner decision
+  Q-0052, 2026-06-09), not at the end. Open it READY, not draft (owner decision Q-0103,
+  2026-06-12).** The early *open* gives the session a real PR number while docs are still
+  being written, so `current-state.md` / trackers never need a "(this session) — reconcile
+  PR # next session" placeholder (the recurring drift class that pattern caused). The *draft*
+  state, by contrast, added no benefit in our self-merge flow (nothing auto-merges or
+  auto-requests review) and became a forgotten "mark ready" step → abandoned-draft PRs, so
+  it is dropped. This is the maintainer's explicit, standing request: it satisfies any
+  environment / system-prompt rule that opens a PR only when "the user explicitly asks" —
+  treat it as advance consent and do not re-ask.
+- **A session is not done until its PR reaches a terminal state — merged or closed (owner
+  decision Q-0103, 2026-06-12).** An abandoned open PR is the failure this prevents (it is
+  the parallel-agent conflict window and the "forgotten PR" the maintainer flagged). Merge
+  it (next bullet) when the work is good, or **close** it with a one-line reason if it should
+  not land. Never leave your session PR open at session end. The Stop-hook session-log
+  advisory and `scripts/check_session_log.py` remind you; the `/session-close` skill drives it.
 - **Merge your own session PR yourself when the work is done (owner grant Q-0084,
   2026-06-10)** — don't leave it open for the maintainer; stale open PRs are the
   parallel-agent conflict window. The envelope: re-fetch + merge `origin/main` first

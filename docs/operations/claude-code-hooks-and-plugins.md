@@ -27,7 +27,8 @@ code) — the defensible end of the supply-chain spectrum (see § Plugins).
 | `PreToolUse` · `Edit\|Write` | `claude_pre_edit.py` | On the **first** edit of a `disbot/*.py` file in a session, injects that file's `context_map.py` output (importers, blast radius, lazy imports, read set, post-edit checks) as `additionalContext` — the file-level navigation step, surfaced automatically. |
 | `PostToolUse` · `Edit\|Write` | `claude_post_edit.py` | `.py`: auto-runs black → isort → ruff `--fix` on the edited file, **loud warning** when a fix landed or a tool errored. `.md`: runs `check_docs --strict`, warns on failure. Non-blocking (exit 0). |
 | `PostToolUse` · `create_pull_request` | `claude_pr_subscribe_reminder.py` | Injects a reminder to call `subscribe_pr_activity` right after a PR is created (hooks can't call MCP tools themselves) — closes the "PR merged but the session never learned" gap. |
-| `Stop` | `claude_stop_check.py` | **Hard-fail gate** at end of each turn: on Python files changed vs `origin/main`, runs architecture (strict) + black/isort/ruff `--check` + mypy. Prints the `check_quality.py --full` command. The CI mirror at turn boundary. |
+| `Stop` | `claude_stop_check.py` | **Hard-fail gate** at end of each turn: on Python files changed vs `origin/main`, runs architecture (strict) + black/isort/ruff `--check` + mypy. Prints the `check_quality.py --full` command. The CI mirror at turn boundary. Also runs a **non-blocking session-log advisory** (`check_session_log.py`) when there are commits ahead of main but the session log is incomplete. |
+| `PostToolUse` · `Edit\|Write` (`.sessions/*.md`) | `claude_post_edit.py` → `check_session_log.py` | On a session-log edit, warns (non-blocking) if it's missing the required `💡 Session idea` (Q-0089) / `⟲ Previous-session review` (Q-0102) / Status badge. `.sessions/` isn't under `docs/`, so `check_docs` never sees these — this is their gate. |
 
 **Reading the table:** `PreToolUse`/`PostToolUse` can inject `additionalContext` or warn;
 `Stop` is the only hard gate; `SessionStart` is pure setup. Hooks are shell commands — they
@@ -38,13 +39,14 @@ code) — the defensible end of the supply-chain spectrum (see § Plugins).
 Scoped to the maintainer's focus — **memory + autonomous workflow consistency**. Each is a
 proposal (ask-first); none is wired.
 
-1. **Session-close completeness gate (`Stop` or `SessionEnd`).** Verify, when a session is
-   wrapping, that a `.sessions/<today>.md` log exists and contains the required sections
-   (`💡 Session idea` Q-0089, `⟲ Previous-session review` Q-0102, grooming note). This
-   directly attacks the maintainer's observation that the session-ender rules "aren't always
-   properly done" — turn the convention into a checked signal. *Highest-value for the memory
-   system.* Risk: must be a soft nudge mid-session and only firm at genuine session end, or
-   it nags every turn.
+1. **Session-close completeness gate** — ✅ **DONE (2026-06-12).** `scripts/check_session_log.py`
+   validates that the current session's log (selected via git, not filename) carries the
+   `💡 Session idea` (Q-0089), `⟲ Previous-session review` (Q-0102), and a Status badge.
+   Wired non-blocking into the post-edit hook (warns when you edit a session log) and the
+   Stop hook (advisory when there are commits but no complete log), and run `--strict` by
+   `/session-close`. Turns the conventions into a checked signal — the maintainer's
+   "aren't always properly done" concern. The advisory stays non-blocking so it never halts
+   mid-session work.
 2. **Previous-session surfacing (`SessionStart`).** Extend the boot banner to print the
    *previous* `.sessions/` log's "Left open / next" + its `💡` idea + its `⟲` review, so a
    new session sees the handoff immediately instead of having to grep for it. Feeds the

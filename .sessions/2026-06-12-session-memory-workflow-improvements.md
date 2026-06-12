@@ -30,6 +30,17 @@ system, refocusing priority on the substrate so sessions auto-execute bot work.
   memory/workflow-package direction: what it generalizes from SuperBot, the core
   mechanism-vs-content separation problem, the "harden in-repo first, extract later"
   sequencing, and the priority reorientation. Routed discuss; indexed in ideas README.
+- **Session-close completeness gate — WIRED (the guardrail suggestion, owner-approved).**
+  `scripts/check_session_log.py` (+ test) validates the current session's log (git-selected,
+  not filename) carries the Q-0089 idea + Q-0102 review + Status badge. Wired non-blocking
+  into `claude_post_edit.py` (warns on session-log edits) and `claude_stop_check.py`
+  (advisory when commits exist but the log is incomplete), and run `--strict` by
+  `/session-close`. Turns the session-ender conventions into a checked signal.
+- **Draft-first PRs dropped → Q-0103 (owner question).** Open the session PR **ready, not
+  draft** (the draft state added no benefit in our self-merge flow and became a forgotten
+  step → abandoned drafts; the early *open* for the PR number is what mattered). Added a
+  hard **terminal-state** requirement: every session merges or closes its PR, never leaves
+  it open. Updated CLAUDE.md (Q-0052 refined), router (Q-0103), and the `/session-close` skill.
 
 ## Verification
 
