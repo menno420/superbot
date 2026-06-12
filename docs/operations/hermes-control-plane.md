@@ -459,6 +459,20 @@ and `scripts/hermes/install-skills.sh` copies them onto the VPS. A standing read
 operating prompt (step 6 below) is implemented as
 [`hermes-operating-prompt.md`](./hermes-operating-prompt.md).
 
+### Autonomous-loop seams (built 2026-06-12)
+
+Three repo-side seams of the autonomous-improvement loop now exist (owner decisions
+Q-0113/Q-0114), keeping Hermes read-only while letting it review and dispatch:
+
+- **`superbot-review`** — independent (non-Claude) critique of a plan or PR diff, with a
+  plain-language maintainer summary for the approve/deny gate.
+- **`scripts/check_phase_gate.py`** — the fix-phase vs. invent-phase signal (agent-originated
+  features stay gated until correctness is done).
+- **`superbot-dispatch`** + **[`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md)** — turn
+  a work order into a Claude Code Routine `/fire` call. **Maintainer wiring required** (Routine +
+  token) before it can fire; see the runbook's ⬜ steps. The merge gate is full self-merge on
+  green CI (Q-0113); agent-originated features open a PR and wait for your approve/deny (Q-0114).
+
 ### Next sanctioned capability: read-only log triage
 
 The highest-value graduation from "repo assistant" to "operations assistant" is letting

@@ -1,8 +1,11 @@
 # Idea: Hermes → Claude Code (web) dispatch bridge
 
-> **Status:** `ideas`. **Not approved for implementation.** Capture only — a Q-block
-> discussion is the gate (see Routing). Source code and the binding contracts win over
-> anything here.
+> **Status:** `ideas` → **repo-side seam built 2026-06-12** (Q-0113/Q-0114). The
+> `superbot-dispatch` Hermes skill + the runbook with the routine's saved gate prompt now
+> exist (`docs/operations/hermes-dispatch-bridge.md`); the merge gate (full self-merge on
+> green CI) and human gate (agent-originated features only) are decided. **Remaining = the
+> maintainer-side wiring**: create the Routine, store the `/fire` token on the VPS, calibrate
+> (Q-0105). Source code and the binding contracts win over anything here.
 
 **Captured:** 2026-06-12 (session idea, Q-0089) · **Owning area:** agent workflow /
 control plane (not the bot runtime).

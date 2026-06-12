@@ -4,9 +4,10 @@
 > skills. Each skill is a ready-to-configure prompt for the Hermes agent running on the
 > control-plane VPS. Setup context: `docs/operations/hermes-control-plane.md`.
 
-This pack contains seven skills covering the windows Hermes fills that Claude Code
-cannot: **pre-session orientation**, **between-session monitoring**, and
-**production diagnosis from your phone**.
+This pack contains nine skills covering the windows Hermes fills that Claude Code
+cannot: **pre-session orientation**, **between-session monitoring**,
+**production diagnosis from your phone**, and the **autonomous-loop seams**
+(independent review + dispatch).
 
 For the standing read-only operating instructions every Hermes session should start
 with, see [`hermes-operating-prompt.md`](../hermes-operating-prompt.md) — the Hermes-side
@@ -25,6 +26,12 @@ equivalent of `.claude/CLAUDE.md`.
 | [`open-questions`](./open-questions.md) | Between sessions | Surface unanswered Q- blocks from the router |
 | [`btd6-status`](./btd6-status.md) | After live testing | BTD6 data pipeline coverage and open items |
 | [`log-triage`](./log-triage.md) | After a deploy / when the bot misbehaves | Read production logs and diagnose what's wrong (gated on a read-only log source) |
+| [`review`](./review.md) | Plan finalization / open PR | Independent (non-Claude) critique of a plan or PR diff + a maintainer summary for the approve/deny gate |
+| [`dispatch`](./dispatch.md) | Idea on your phone | Assemble a work order and fire a Claude Code Routine to build it (the autonomous-loop chaining link) |
+
+The last two are the **autonomous-improvement-loop seams** — see
+[`hermes-dispatch-bridge.md`](../hermes-dispatch-bridge.md) for how they fit together with the
+phase gate (`scripts/check_phase_gate.py`) and the owner's merge/approve gates (Q-0113/Q-0114).
 
 ---
 
