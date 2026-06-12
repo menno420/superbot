@@ -59,6 +59,8 @@ idea / nightly diagnosis
   clone → read-only, no changes) and a first real run (PR #747: a minimal docs edit, held open
   for review per the work order, CI green) both passed; the routine respected the work-order
   instructions precisely. Self-merge-on-green and the daily schedule are the earned next steps.
+  The full Telegram-driven path (the Hermes `superbot-dispatch` skill sourcing the routine token from
+  the VPS → `/fire`) was live-verified end-to-end on 2026-06-12.
 
 ## The routine's saved prompt (paste into the routine config)
 
