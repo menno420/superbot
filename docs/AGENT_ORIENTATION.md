@@ -79,7 +79,8 @@ read **`docs/helper-policy.md`** first.
 | 4 | `docs/codegraph-usage.md` | Full trust matrix behind the short CLAUDE.md rules. Skim once, refer back when CodeGraph surprises you. |
 | 5 | `docs/AGENT_ORIENTATION.md` (this file) | What to read next, based on what you are doing. |
 | 6 | `docs/repo-navigation-map.md` | Where things live in the tree. Use as a folder-to-purpose lookup. |
-| 7 | `docs/owner/maintainer-question-router.md` (when needed) | Unresolved maintainer-facing questions and preserved owner intent. Unanswered questions are not approval. |
+| 7 | `docs/repo-review-map.md` (when scoping a review/refactor) | The review/refactor partition: for a given change, what is the smallest self-contained unit (subsystem slice vs. shared platform layer vs. data/tooling/docs domain). |
+| 8 | `docs/owner/maintainer-question-router.md` (when needed) | Unresolved maintainer-facing questions and preserved owner intent. Unanswered questions are not approval. |
 
 ### Adding a new subsystem / cog
 
@@ -321,6 +322,11 @@ has already been done.
   when the two disagree.
 - `docs/context-map-tooling.md` — how to use `scripts/context_map.py` (file-impact context
   before editing a `disbot/` file: importers, blast radius, related docs/tests, risk).
+- `docs/repo-review-map.md` — the review/refactor partition of the repo: the coarse
+  top-level domains (Axis A) and, inside the bot, the unit of independent review
+  (Axis B = the vertical subsystem slice vs. the shared platform layers). Read when
+  scoping what a given change's self-contained review unit is. Companion to the
+  navigation map (paths), architecture (layers), and ownership (tables).
 
 ### Plans / roadmaps (read for context only)
 

@@ -5,7 +5,10 @@
 > new code. Companion to `docs/architecture.md` (conceptual layering)
 > and `docs/ownership.md` (per-table / per-service ownership). This
 > file is **path-level** orientation; the other two are
-> **contract-level**.
+> **contract-level**. For *review/refactor* scoping — "what is the smallest
+> self-contained unit for this change?" — see
+> [`docs/repo-review-map.md`](repo-review-map.md), which partitions the tree
+> into independently reviewable units over this map.
 >
 > **How to use:** when you do not know which folder a piece of code
 > belongs in, find the row here that matches the responsibility and
