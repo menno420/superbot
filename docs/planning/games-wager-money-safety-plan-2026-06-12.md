@@ -1,12 +1,16 @@
 # Games wager money-safety plan — P0-1 (2026-06-12)
 
-> **Status:** `plan` — the design for hardening track **P0-1** ([hardening
-> roadmap](production-readiness/hardening-roadmap-2026-06-12.md)). **Owner-picked as the
-> next implementation session** (2026-06-12, question panel — the same round that answered
-> Q-0097/Q-0082-interim/Q-0115). Evidence: the [games readiness
-> map](production-readiness/games-production-readiness-map-2026-06-12.md); claims below
-> re-verified against source 2026-06-12. One risky-runtime PR; ADR-002 (game state not
-> restart-safe) stays accepted — this plan fixes **money**, not game-state restartability.
+> **Status:** `historical` — **EXECUTED in PR #748 (2026-06-12).** Shipped the
+> `services/game_wager_workflow.py` service, D1 escrow-at-accept, all four call-site
+> migrations (RPS + blackjack PvP and tournament), the AST fence
+> (`test_game_wager_write_boundary`), and the failure-injection / idempotency /
+> terminal-matrix tests (real-Postgres integration + mock-based CI). The design below is
+> the as-built record. ADR-002 (game state not restart-safe) stays accepted — this fixed
+> **money**, not game-state restartability.
+>
+> _Original status:_ `plan` — the design for hardening track **P0-1** ([hardening
+> roadmap](production-readiness/hardening-roadmap-2026-06-12.md)), owner-picked 2026-06-12
+> (the question panel that answered Q-0097/Q-0082-interim/Q-0115).
 
 ## The defect class (source-verified)
 

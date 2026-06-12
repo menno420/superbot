@@ -56,6 +56,22 @@ Source code and merged PRs win over anything written here.
 > multiple of 10 — Q-0107; `scripts/check_reconciliation_due.py` flags it). Reset this
 > marker to the latest PR after a pass.
 
+- **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
+  `services/game_wager_workflow.py`: the audited money boundary for every two-party /
+  paid-entry game move, composing `economy_service.*_in_txn` inside one
+  `db.transaction()` (the mining_workflow precedent). **D1 escrow-at-accept** —
+  `open_pvp_wager` debits both stakes + writes per-player `*_escrow` rows when a PvP
+  challenge is accepted, deleting the old credit-then-overdraft-debit **mint window**;
+  `settle_pvp`/`refund_pvp`/`payout_tournament` are idempotent by `FOR UPDATE`
+  row-consumption (no double-pay); `enter_tournament` debits the fee + writes the
+  recovery row in one txn (closes the lost-fee window). All four call sites migrated
+  (RPS + blackjack PvP and tournament); dead un-escrowed `deduct_fees` removed; AST fence
+  (`test_game_wager_write_boundary`) bans `economy_service.credit/.debit` in the wager
+  files + `allow_overdraft=True` outside solo views. Failure-injection / terminal-matrix /
+  idempotency tests (real-Postgres integration + mock CI). No schema migration (escrow
+  rides existing `game_state`). Executes
+  [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md);
+  **closes hardening P0-1** → next P0 track = P0-2.
 - **#745 (2026-06-12, the direction-lock round)** — owner question-panel round: **next
   implementation session = P0-1 wager money-safety** (design pinned:
   [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md)) ·
