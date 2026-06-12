@@ -22,12 +22,13 @@ from utils.ux_patterns.builders import spec_card
 
 def test_registry_is_populated_per_wing():
     counts = category_counts()
-    assert counts[PatternCategory.BUTTONS] == 10
+    assert counts[PatternCategory.BUTTONS] == 11
     assert counts[PatternCategory.SELECTS] == 8
     assert counts[PatternCategory.MODALS] == 6
     assert counts[PatternCategory.EMBEDS] == 14
     assert counts[PatternCategory.LAYOUT_V2] == 8
     assert counts[PatternCategory.IMAGE] == 6
+    assert counts[PatternCategory.MOCKUP] == 9
     assert counts[PatternCategory.PROBE] == 10
 
 

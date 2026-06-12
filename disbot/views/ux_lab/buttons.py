@@ -189,6 +189,27 @@ register(
 
 register(
     PatternSpec(
+        pattern_id="persistent_panel",
+        title="Persistent panel (survives restarts)",
+        category=_CAT,
+        status=PatternStatus.STABLE,
+        recommended_for=(
+            "long-lived anchors (setup launcher, staff hubs) that must keep "
+            "working after a deploy",
+        ),
+        anti_patterns=("per-user stateful panels — PersistentViews must be stateless",),
+        limits=(
+            "timeout=None + static custom_ids + boot-time registration",
+            "no instance state — fetch everything from the interaction",
+        ),
+        adopted_by=("views/setup launcher", "views/ai/panel", "views/moderation"),
+        notes="Posts a REAL registered PersistentView: press → restart the "
+        "bot → press again.",
+    ),
+)
+
+register(
+    PatternSpec(
         pattern_id="timeout_behavior",
         title="Disable-on-timeout (BaseView lifecycle)",
         category=_CAT,
@@ -257,6 +278,7 @@ class ButtonsWingView(ExhibitWingView):
             "paginator_classic",
             "toggle_pills",
             "timeout_behavior",
+            "persistent_panel",
         )
 
     def _render_exhibit(self, pattern_id: str) -> ExhibitRender:
@@ -271,6 +293,7 @@ class ButtonsWingView(ExhibitWingView):
             "paginator_classic": self._ex_paginator,
             "toggle_pills": self._ex_toggle_pills,
             "timeout_behavior": self._ex_timeout,
+            "persistent_panel": self._ex_persistent,
         }[pattern_id]
         return render()
 
@@ -668,6 +691,47 @@ class ButtonsWingView(ExhibitWingView):
                 _header(
                     "⏱️ Disable-on-timeout",
                     "Spawns an ephemeral demo panel with `timeout=15`.",
+                ),
+            ],
+            [btn],
+        )
+
+    def _ex_persistent(self) -> ExhibitRender:
+        from views.ux_lab.persistent_demo import (  # noqa: PLC0415 — sibling
+            UxLabPersistentDemo,
+            build_persistent_demo_embed,
+        )
+
+        btn = self.demo_button(
+            "Post the persistent panel",
+            style=discord.ButtonStyle.primary,
+            emoji="♻️",
+            row=0,
+        )
+
+        async def _post(interaction: discord.Interaction) -> None:
+            channel = interaction.channel
+            if channel is None or not isinstance(channel, discord.abc.Messageable):
+                await self.ack(interaction, "No sendable channel here.")
+                return
+            await channel.send(
+                embed=build_persistent_demo_embed(),
+                view=UxLabPersistentDemo(),
+            )
+            await self.ack(
+                interaction,
+                "♻️ Posted (no self-delete — it must outlive a restart). "
+                "Press it, restart the bot, press it again. 🗑️ removes it.",
+            )
+
+        btn.callback = _post  # type: ignore[method-assign]
+        return (
+            [
+                _header(
+                    "♻️ Restart survival",
+                    "Every other lab panel greys out at timeout. This one is a "
+                    "REAL registered PersistentView — the canonical mechanism, "
+                    "not a simulation.",
                 ),
             ],
             [btn],
