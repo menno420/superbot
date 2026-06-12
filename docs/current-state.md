@@ -50,7 +50,7 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #762 (2026-06-12 night —
+> **Last reconciliation pass:** PR #763 (2026-06-12 night —
 > [the pass record + band queue](planning/reconciliation-pass-2026-06-12-night.md)). The next
 > **docs-only review + planning reconciliation** is due once merged PRs cross #780 (every
 > multiple of **20** — Q-0107 cadence raised 10→20 on 2026-06-12; `check_reconciliation_due.py`
@@ -58,6 +58,14 @@ Source code and merged PRs win over anything written here.
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#763 (2026-06-12 night, the second Q-0107 reconciliation pass)** — band #741–#762
+  scored ([record + next-band queue](planning/reconciliation-pass-2026-06-12-night.md):
+  slots 1+3 executed; the hardening+safety queue carried intact — capacity went to the
+  two owner-steered arcs) · the #753–#761 ledger gap reconciled (the arc entry below) ·
+  **both audit checkers' shared merge-subject regex root-fixed** ("Merge PR #N:" was
+  invisible — the cadence checker froze at #751 and the ledger checker was **green
+  while five PRs were missing**; tests pin all three subject styles now) · marker
+  reset, next pass at **#780**. Docs + tooling only.
 - **#753 + #754 + #756 + #759 + #761 (2026-06-12, the autonomous-loop wiring arc —
   parallel lane)** — the loop went **live**: **#753** issue-triggered docs
   reconciliation (`.github/workflows/reconciliation-trigger.yml` opens a `reconcile`
