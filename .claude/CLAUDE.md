@@ -162,6 +162,15 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   bar as Q-0089). This turns the session chain into a **self-auditing loop**: each session
   reviews its predecessor, which is the internal mirror of the Hermes-as-independent-reviewer
   idea (`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`).
+- **Close with a documentation audit — mandatory session ender (owner directive Q-0104,
+  2026-06-12).** Before ending, ask the question that catches drift: *"is anything important
+  from this session not yet in its durable home?"* Concretely: run `python3.10
+  scripts/check_current_state_ledger.py --strict` (every merged PR is in the living ledger),
+  confirm new owner decisions are recorded in the question router and new docs are reachable
+  (`check_docs --strict`), and sweep for anything captured only in chat that belongs in a doc.
+  This is the automated-plus-judgment complement to the Q-0102 review; it exists because this
+  exact question, asked once (2026-06-12), surfaced multiple drifted ledger entries. The
+  `/session-close` skill runs the automated half.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges
@@ -178,13 +187,18 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   Q-0014, 2026-06-08).** Prefer small custom tooling built on the repo's own AST +
   `architecture_rules/` (e.g. `check_architecture.py`, `check_docs.py`, `context_map.py`,
   `wiring_map.py`). But you may download / try / adopt **any** third-party package when it
-  clearly wins and its output is **verifiable** — no need to ask first. Carry a **provenance
-  header** on it: *why* it was added, the *date*, and *"unverified: confirm its output
-  against ground truth a few times across sessions before trusting it."* Keep a new **dev**-only
+  clearly wins and its output is **verifiable** — no need to ask first. **Adopt-freely with a
+  kill-switch (owner directive Q-0105, 2026-06-12):** implement whatever tooling/check you
+  judge will help — custom *or* third-party — without asking. But every adopted tool carries a
+  **provenance + reliability header**: *why* it was added, the *date*, *"unverified: confirm
+  its output against ground truth a few times across sessions before trusting it,"* **and an
+  explicit "delete this if it proves unreliable over multiple sessions"** instruction — so a
+  later agent knows a convenience guard is *disposable* and removes it rather than working
+  around it. (Load-bearing checks graduate out of "unverified" once proven; the
+  CodeGraph/Grimp reliability tiers below are that "verified" end-state.) Keep a new **dev**-only
   dep lazy-imported with a fallback + `pytest.importorskip` (CI installs `requirements.txt`
   only, not `requirements-dev.txt` — an ungated dev dep reddens CI); **pin** a new bot-**runtime**
-  dep. (The CodeGraph/Grimp reliability tiers below are the "verified" end-state of this
-  discipline.)
+  dep.
 
 ## Decisions
 

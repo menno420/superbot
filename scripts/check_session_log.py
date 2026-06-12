@@ -23,6 +23,10 @@ flagging another session's already-merged log.
 Pure stdlib so the unit test runs in CI without extra deps (same discipline as
 `check_docs.py`).
 
+Reliability (Q-0105, added 2026-06-12): **unverified** — if this nags spuriously or misses
+incomplete logs over multiple sessions, **delete it**; it is a convenience guard for the
+Q-0089/Q-0102 enders, not load-bearing.
+
 Usage:
     python3.10 scripts/check_session_log.py              # report (exit 0)
     python3.10 scripts/check_session_log.py --strict     # exit 1 if incomplete/missing
