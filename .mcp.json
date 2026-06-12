@@ -4,6 +4,10 @@
       "command": "npx",
       "args": ["-y", "@optave/codegraph@3.11.2", "mcp"],
       "cwd": "/home/user/superbot"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@3.2.0"]
     }
   }
 }
