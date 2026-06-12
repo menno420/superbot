@@ -1,9 +1,14 @@
 # Repo-manageability ideas — 2026-06-12
 
-> **Status:** `ideas` — **not approved.** Captured when the owner asked "what else would
-> make the repo more easily manageable?" after the review-map + readiness-map work. These
-> are about the *dev/review workflow* (the substrate), not the bot's features. Capture +
-> route only; promotion path is [`README.md`](README.md) → a `docs/planning/` slice.
+> **Status:** `ideas` — captured when the owner asked "what else would make the repo more
+> easily manageable?" after the review-map + readiness-map work. These are about the
+> *dev/review workflow* (the substrate), not the bot's features.
+>
+> **Update 2026-06-12 (owner-approved):** ideas **#1, #2, #3, #5 are EXECUTED** as
+> `scripts/{review_scope,_review_units,readiness_scoreboard,check_doc_freshness}.py` +
+> the `current-state.md` trim/archive + the `check_docs` Recently-shipped ratchet
+> (see [`context-map-tooling.md`](../context-map-tooling.md)). **#4 (folio coverage)
+> remains a discuss item.**
 
 The review-map (#715) + the seven readiness maps (#717–#723) made the repo *navigable* and
 *reviewable per slice*. These ideas target what's still friction. Each is dedup-checked

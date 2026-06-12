@@ -97,7 +97,12 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # 2026-06-08: 41 -> 16 after the Q-0010 consolidation moved plans / audits /
 # inventories / historical snapshots into clustered subdirs (docs/ai/,
 # docs/setup-platform/, docs/health/) and the type buckets, behind their folios.
-_TOP_LEVEL_DOCS_BUDGET = 17
+_TOP_LEVEL_DOCS_BUDGET = 18
+
+# Soft cap on `current-state.md` § Recently shipped (newest-first merged-PR bullets).
+# Keeps the 2nd-most-read doc lean — overflow is archived to current-state-archive.md.
+# Headroom over the ~15 target so a busy week doesn't nag immediately. Warn-only.
+_RECENTLY_SHIPPED_BUDGET = 20
 
 
 def _docs_files() -> list[Path]:
@@ -318,7 +323,38 @@ def print_census() -> None:
             "subdir (folio-linked), or lower the ratchet if you intentionally "
             "trimmed. (soft — not a CI failure)",
         )
+    shipped = _recently_shipped_count()
+    print(
+        f"  current-state Recently-shipped: {shipped} (ratchet {_RECENTLY_SHIPPED_BUDGET})",
+    )
+    if shipped > _RECENTLY_SHIPPED_BUDGET:
+        print(
+            f"  ⚠ Recently-shipped grew by {shipped - _RECENTLY_SHIPPED_BUDGET} over the "
+            "ratchet — move the oldest entries into docs/current-state-archive.md to keep "
+            "the living ledger lean. (soft — not a CI failure)",
+        )
     print()
+
+
+def _recently_shipped_count() -> int:
+    """Count newest-first merged-PR bullets in ``current-state.md`` § Recently shipped."""
+    f = DOCS_ROOT / "current-state.md"
+    if not f.exists():
+        return 0
+    lines = f.read_text(encoding="utf-8").splitlines()
+    try:
+        hdr = next(
+            i for i, ln in enumerate(lines) if ln.startswith("## Recently shipped")
+        )
+    except StopIteration:
+        return 0
+    count = 0
+    for ln in lines[hdr + 1 :]:
+        if ln.startswith("## "):
+            break
+        if ln.startswith("- **#"):
+            count += 1
+    return count
 
 
 def main(argv: list[str] | None = None) -> int:

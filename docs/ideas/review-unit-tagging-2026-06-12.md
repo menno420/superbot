@@ -1,8 +1,10 @@
 # Review-unit tagging — make the repo-review-map a signal, not just a doc (2026-06-12)
 
-> **Status:** `ideas` — **not approved.** Session idea (Q-0089) from the session that
-> shipped [`docs/repo-review-map.md`](../repo-review-map.md) (PR #715). Capture only;
-> promotion path is `docs/ideas/README.md` → a `docs/planning/` slice when picked up.
+> **Status:** `ideas` → **EXECUTED 2026-06-12** (owner-approved). Session idea (Q-0089)
+> from the session that shipped [`docs/repo-review-map.md`](../repo-review-map.md) (PR #715).
+> Shipped as `scripts/review_scope.py` + `scripts/_review_units.py` + the `context_map.py`
+> "Review unit" header line — see [`context-map-tooling.md`](../context-map-tooling.md)
+> § "Companion — review scope". Kept for the design rationale below.
 
 ## The idea
 

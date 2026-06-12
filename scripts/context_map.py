@@ -34,6 +34,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 import check_architecture as _arch  # noqa: E402
+from _review_units import classify_path as _classify_review_unit  # noqa: E402
 
 REPO_ROOT: Path = _arch.REPO_ROOT
 DISBOT_ROOT: Path = _arch.DISBOT_ROOT
@@ -341,6 +342,8 @@ def render(path: Path, reverse: _Reverse, overrides: dict, max_importers: int) -
             "",
             f"_Module:_ `{mod}`  ·  _Layer:_ `{layer or 'n/a'}`  ·  "
             f"_Reverse edges via:_ {engine_note}",
+            "",
+            f"_Review unit (repo-review-map.md):_ **{_classify_review_unit(rel).label()}**",
             "",
             "## File role / authority",
             "",
