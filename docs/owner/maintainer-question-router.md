@@ -3833,3 +3833,41 @@ prod-mirror boot is used for final verification passes. Evidence from this
 session: after the BUG-0005…0008 routing/grounding fixes, gpt-4o-mini
 produced the correct, subject-stable farm-income answers — the pipeline, not
 the model, was the bottleneck.
+
+### Q-0096 — Claude Code plugins: adopt the Context7 / Postgres-MCP shortlist, or stay plugin-free?
+
+**Area:** Agent workflow / tooling / executable config (`.claude/settings.json`, `.mcp.json`)
+**Type:** Owner decision (adoption gate — plugin enablement is ask-first executable config)
+**Priority:** Low-medium (quality-of-life for agent sessions; nothing is blocked)
+**Status:** **Open** (asked 2026-06-12, prompted by the owner's own question
+"are there any good plugins for claude that would be useful for us?")
+
+**Question:** The 2026-06 plugin-ecosystem survey
+([`docs/ideas/claude-code-plugins-evaluation-2026-06-12.md`](../ideas/claude-code-plugins-evaluation-2026-06-12.md))
+found most plugin categories duplicate or conflict with our bespoke
+workflow (review skills, journal memory, PR process, CodeGraph). Three
+candidates add a genuinely missing capability. Which, if any, should a
+session wire in (pinned, provenance-headered, Q-0014 trial discipline)?
+
+- **(a) Context7** — live version-pinned library docs (discord.py / asyncpg
+  API truth instead of model memory). Recommended **yes, as a pinned
+  `.mcp.json` server**, trialed a few sessions before trusted. Note: hosted
+  endpoint wants a free API key; can also run locally via npx.
+- **(b) Read-only Postgres MCP** (`crystaldba/postgres-mcp`,
+  `--access-mode=restricted`) — schema-aware DB work in sandbox sessions.
+  Optional; ad-hoc `psql` already covers most of this.
+- **(c) `pyright-lsp`** (official marketplace) — LSP ground truth beside
+  CodeGraph. Trial-only if curious; unknown overhead on 1,400 files.
+- **(d) none** — stay plugin-free; current posture is the safest
+  supply-chain stance and nothing is blocked today.
+
+**Why agents need this:** plugin/MCP enablement edits `.claude/settings.json` /
+`.mcp.json` — the one seam the working agreement marks ask-first, and the seam
+2026 CVEs target. Silent adoption is off the table by design.
+
+**Safe default until answered:** plugin-free status quo (CodeGraph remains the
+only MCP server beyond the environment's GitHub MCP).
+
+**Suggested destination after answer:** the evaluation doc's §Lifecycle (flip
+state), `.mcp.json` + journal Runbook if anything is adopted, CLAUDE.md
+CodeGraph-style pin note for any new server.
