@@ -50,6 +50,10 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 
+- **#736 (2026-06-12, CodeGraph health check + doc pin fix)** — verified CodeGraph 3.11.2 is
+  healthy (no regression from the bump; the "problems" are the cold-start availability blip + the
+  documented false positives). Fixed the real bug: `docs/codegraph-usage.md` told agents to run the
+  old `@optave/codegraph@3.10.0` while the live pin is 3.11.2 — bumped all command refs.
 - **#733–#735 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
   (mandatory `⟲ Previous-session review` session-ender) + **Q-0103** (open session PRs **ready not
   draft**; every PR reaches a terminal state). `scripts/check_session_log.py` + post-edit/Stop-hook

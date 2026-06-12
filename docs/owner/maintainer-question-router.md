@@ -3836,6 +3836,14 @@ the model, was the bottleneck.
 
 ### Q-0096 — Claude Code plugins: adopt the Context7 / Postgres-MCP shortlist, or stay plugin-free?
 
+> **ANSWERED (partial) 2026-06-12 — adopt Context7 (trial).** Owner: "go ahead, it seems very
+> useful and time-saving." Wired `@upstash/context7-mcp@3.2.0` as a pinned `.mcp.json` server
+> (keyless to start), approved via `enabledMcpjsonServers`, tools pre-allowed. Operational home +
+> key-setup + Q-0105 delete-if-unreliable note: [`../operations/mcp-servers.md`](../operations/mcp-servers.md).
+> **Maintainer follow-up:** optionally add a free `CONTEXT7_API_KEY` to the environment for the
+> higher rate limit (keyless ≈ 500 req/mo ceiling). Postgres-MCP / `pyright-lsp` remain open
+> under this Q — revisit if wanted.
+
 **Area:** Agent workflow / tooling / executable config (`.claude/settings.json`, `.mcp.json`)
 **Type:** Owner decision (adoption gate — plugin enablement is ask-first executable config)
 **Priority:** Low-medium (quality-of-life for agent sessions; nothing is blocked)
