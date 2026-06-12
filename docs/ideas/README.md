@@ -18,6 +18,17 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`ux-lab-interface-gallery-2026-06-12.md`](./ux-lab-interface-gallery-2026-06-12.md) —
+  **owner-commissioned design (2026-06-12):** the **UX Lab** — a zero-write, admin-gated
+  gallery cog (`!uxlab`) exhibiting every Discord interaction/layout pattern the pinned
+  library supports (buttons · all 5 selects · modals incl. Label-wrapped selects · embed
+  card archetypes · **Components V2** layouts (verified: 40-child/4 000-char budget on
+  discord.py 2.7.1) · PIL cards), plus a **platform-limit probe bench** and clickable
+  **mockups of the approved Q-0108–Q-0112 features**. Each exhibit carries registry
+  metadata (`pattern_id`, status, limits) that graduates into `docs/ux/pattern-library.md`
+  — the bot's design vocabulary. **State: captured → routed** — full design in
+  [`../planning/ux-lab-interface-gallery-plan-2026-06-12.md`](../planning/ux-lab-interface-gallery-plan-2026-06-12.md)
+  (3 PRs); scheduling + audience open in router **Q-0116**.
 - [`server-safety-and-automod-2026-06-12.md`](./server-safety-and-automod-2026-06-12.md) —
   **owner-uploaded research (2026-06-12):** four moderation-safety modules SuperBot
   lacks vs. competitors (Carl-bot, Dyno, YAGPDB, Koya, Double Counter):

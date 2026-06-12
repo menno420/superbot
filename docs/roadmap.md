@@ -187,6 +187,15 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   target; its sequencing gate — the Help overlay editor UI — **cleared 2026-06-10**
   (the editor shipped as **#677 + #679**), so it is ready to structure into its own
   plan on the same projection seam (capture-doc T-4) before building.
+- **Next (owner-steered, awaiting Q-0116 scheduling)** — the **UX Lab interface-gallery
+  cog**: owner-commissioned design pinned in
+  [ux-lab-interface-gallery-plan](planning/ux-lab-interface-gallery-plan-2026-06-12.md)
+  (3 PRs: core wings · Components-V2 + PIL · mock studio + pattern-library export). A
+  zero-write, admin-gated gallery of every interaction/layout pattern + a platform-limit
+  probe bench + clickable mockups of the Q-0108–Q-0112 lane — the design-review surface
+  for the safety/community family plan and the evidence generator for any future
+  Components-V2 adoption ADR. Capture:
+  [ideas/ux-lab-interface-gallery](ideas/ux-lab-interface-gallery-2026-06-12.md).
 - **Later** — [command-expansion-backlog](building-roadmap/command-expansion-backlog.md)
   and [admin-powers config-coverage](building-roadmap/admin-powers-config-coverage.md):
   backlogs — cross-check source before pulling one.
