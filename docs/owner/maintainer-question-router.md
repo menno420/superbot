@@ -4387,3 +4387,67 @@ insufficient (e.g. a Hermes/VPS outage making a GitHub-side fallback worth its u
 **Routed:** `ai-project-workflow.md` §10 (Stage 0 superseded note) · roadmap 🤝 workflow
 lane · the reconciliation-pass queue (Stage 0 entry re-pointed) ·
 `ideas/hermes-claude-dispatch-bridge-2026-06-12.md` · this entry is provenance.
+
+### Q-0116 — UX Lab (interface gallery cog): scheduling + audience
+
+> **OPEN (2026-06-12).** Raised by the owner-commissioned UX Lab design session
+> (the brainstorm → design pass for the interface-gallery testing cog).
+
+**Area:** Building / interface · new subsystem `ux_lab`
+**Type:** Scheduling + product-audience decision (the design itself is pinned)
+
+**Context:** The owner commissioned "the most versatile and inclusive UX testing cog" —
+a zero-write, admin-gated gallery of every Discord interaction/layout pattern (buttons /
+selects / modals / embeds / Components V2 / PIL cards), a platform-limit probe bench,
+and clickable mockups of the approved Q-0108–Q-0112 safety/community features. Full
+design: [`../planning/ux-lab-interface-gallery-plan-2026-06-12.md`](../planning/ux-lab-interface-gallery-plan-2026-06-12.md)
+(3 PRs: A core wings · B Components-V2 + PIL · C mock studio + pattern-library export).
+
+**Question 1 — scheduling:** the decade queue (reconciliation pass §4) is full and
+allows owner-steered swaps. Where do UX Lab PRs A–C sit?
+*Recommended:* PR A as a near-term steered slice (it is additive/zero-risk and
+immediately useful), and PR C **before or with** the safety-lane family plan (decade
+slot 8) so the Q-0108–Q-0112 UX decisions are reviewed on rendered, clickable panels
+instead of prose. Alternative: after the current decade completes.
+
+**Question 2 — audience:** admin-gated (*recommended* — staff can browse styles too;
+every callback re-checks authority) vs owner-only. Hidden from Help either way
+(workbench, not a member feature).
+
+**Non-decision pinned in the plan:** the lab does NOT authorize migrating real panels
+to Components V2 — that stays a future ADR taken on the lab's evidence.
+
+**Routed (on answer):** roadmap 🖥️ Building/interface lane horizon · the plan's status
+banner · `ideas/ux-lab-interface-gallery-2026-06-12.md` lifecycle state.
+
+
+### Q-0117 — Hermes as the independent-reviewer merge gate for big executor steps
+
+> **DIRECTED 2026-06-12 (owner, in-session, executor wiring).** When the nightly executor
+> advances a *substantial* plan step: "if possible we should have hermes review the work first,
+> and then it should send the trigger to merge, if that is possible, if that's not possible then
+> just merge."
+
+**Area:** Agent ecosystem / workflow · autonomy boundary · the Hermes-reviewer keystone
+**Type:** Owner decision (autonomy/safety — expands Hermes' role)
+
+**Decision:** for a **substantial** executor step (feature-sized plan work, multi-file refactor,
+migration — anything wanting a second pair of eyes), the executor opens a PR labeled
+`needs-hermes-review` and does **not** self-merge. **Hermes** — a *different model* — reviews the
+diff (`superbot-review-merge` skill) and **merges it if sound on green CI**, else requests
+changes. This is the **independent-reviewer seam** (autonomous-loop vision §3): a non-Claude mind
+between Claude's big steps and `main`, breaking the author-reviews-self monoculture. Small
+fixes/docs keep self-merging on green (Q-0113); only big steps carry the label.
+
+- **It expands Hermes' read-only model by exactly one write:** `gh pr merge` (+ review
+  comments/labels) on a PR it just reviewed. Hermes still never edits code, pushes, or touches
+  prod/Railway/Neon. Recorded in `hermes-operating-prompt.md`.
+- **Fallback (owner-stated):** if Hermes review is not available, the step's green PR may
+  self-merge — "if that's not possible then just merge."
+- **Calibration (Q-0105, vision open-question 1):** Hermes' review earns the *merge* trigger only
+  once proven to catch real issues. Until then it runs in **ADVISORY** mode (review + escalate to
+  the maintainer for the merge); graduate to auto-merge after it reliably catches planted issues.
+
+**Home:** `docs/operations/autonomous-routines.md` (the executor + the three labels) ·
+`docs/operations/hermes-skills/review-merge.md` (the skill) · `hermes-operating-prompt.md`
+(the read-only carve-out) · this entry is provenance.
