@@ -1,0 +1,52 @@
+name: executor-nightly
+
+# Fires the "superbot night executor" routine on a real overnight schedule by opening a
+# `continue`-labeled issue (the routine's console Schedule trigger was unreliable in the
+# research-preview UI, so the cadence lives here instead — same pattern as
+# reconciliation-trigger.yml). Two runs a night = two FRESH-context starts (fights the
+# ~700K-context degradation). The executor reads the issue body, advances the next plan step,
+# and closes the issue.
+#
+# Times are UTC. 01:00 + 03:00 UTC == 03:00 + 05:00 CEST (the maintainer's summer local time).
+# Adjust the cron if your local offset changes (CET winter would be 02:00 + 04:00 UTC).
+#
+# Provenance + reliability (Q-0105): added 2026-06-12. UNVERIFIED — confirm it opens one issue
+# per scheduled slot and the executor picks it up. Delete this workflow if it misfires; it is a
+# convenience scheduler, not load-bearing runtime.
+
+on:
+  schedule:
+    - cron: "0 1,3 * * *"
+  workflow_dispatch: {} # lets you also kick a run by hand from the Actions tab
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: executor-nightly
+  cancel-in-progress: false
+
+jobs:
+  open-executor-run-issue:
+    if: github.repository == 'menno420/superbot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open a scheduled `continue` issue (deduped)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Dedupe: if a scheduled executor-run issue is still open (executor hasn't picked up
+          # the last one — it closes them when done), don't pile another on top.
+          open_scheduled="$(gh issue list --repo "$GITHUB_REPOSITORY" --label continue --state open \
+            --search 'in:title "Scheduled executor run"' --json number --jq 'length' 2>/dev/null || echo 0)"
+          if [ "${open_scheduled:-0}" != "0" ]; then
+            echo "A scheduled executor-run issue is still open — skipping (the executor will get to it)."
+            exit 0
+          fi
+          gh label create continue --repo "$GITHUB_REPOSITORY" --color 1D76DB \
+            --description "Executor continuation / scheduled run" --force 2>/dev/null || true
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Scheduled executor run ($(date -u +%Y-%m-%d\ %H:%M) UTC)" \
+            --label continue \
+            --body $'Scheduled overnight run of the **superbot night executor** — no prior handoff.\n\nAdvance the **next big step of the plan** per `docs/current-state.md` ▶ Next action / the decade-queue doc (executor STEP 1.C). If a bigger step needs more than one run, hand off via a fresh `continue` issue per STEP 3. Close this issue when the run ships (executor STEP 5).\n\nAuto-opened by `.github/workflows/executor-nightly.yml`.'

@@ -27,7 +27,7 @@ session N leaves session N+1 better-equipped.
 |---|---|---|---|
 | **superbot autonomous dispatch** | API (`/fire`) | General work orders from Hermes/phone (`superbot-dispatch`). Classifies by `CLASS:`. | per work order (Q-0113/Q-0114) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-20th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next ~9 PRs, contribute one idea. | `docs` → self-merge on green |
-| **superbot night executor** | Schedule (nightly) + Issue `continue` + API | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0117) |
+| **superbot night executor** | Issue `continue` (cron-driven 03:00/05:00 + handoffs) | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0117) |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
 pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
@@ -129,8 +129,11 @@ The nightly **executor** — a productive "continue from where the last session 
 Its primary job is to **advance the next big step of the plan** (not just small fixes), and to
 **self-chain** across runs via `continue` issues when a step is bigger than one bounded run.
 
-- **Triggers:** Schedule → Daily (suggested 03:00) · **GitHub → Issue opened, label `continue`**
-  (picks up a continuation handoff promptly) · **API** (Hermes fires it with a detected problem).
+- **Triggers:** **GitHub → Issue opened, label `continue`** — and that's all it needs. The
+  overnight cadence is driven by `.github/workflows/executor-nightly.yml` (a cron that opens a
+  scheduled `continue` issue at 03:00 and 05:00 local), because the console Schedule trigger was
+  unreliable in the research-preview UI. The same `continue` trigger also picks up real
+  continuation handoffs. (No API trigger / no token — on-demand work goes through dispatch.)
 - **Repository:** `menno420/superbot`. **Model:** Opus 4.8 (the execution tier; §11).
   **Permissions:** unrestricted branch push **OFF**. **Behavior:** auto-fix PRs ON.
 - **Merge gate (Q-0117):** small fixes/docs **self-merge on green** (Q-0113); a **substantial
@@ -248,6 +251,7 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — the `/fire` mechanism + gates.
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) · [`hermes-skills/review.md`](./hermes-skills/review.md)
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
-- `.github/workflows/reconciliation-trigger.yml` — the Action that opens the `reconcile` issue on the 20-PR boundary.
+- `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 20-PR boundary.
+- `.github/workflows/executor-nightly.yml` — cron that opens a scheduled `continue` issue at 03:00/05:00 local.
 - [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0117).
 - `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).
