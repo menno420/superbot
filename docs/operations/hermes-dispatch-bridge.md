@@ -25,11 +25,12 @@ idea / nightly diagnosis
   → Hermes reports the result + offers superbot-review on the diff
 ```
 
-## The three gates (owner decisions, 2026-06-12)
+## The gates (owner decisions, 2026-06-12)
 
 | Gate | Decision | Enforced by |
 |---|---|---|
 | **Merge** (Q-0113) | Routines **self-merge on green CI**, same as interactive sessions (extends Q-0084 to unattended runs). | The saved routine prompt + CI being required-green. |
+| **Independent review** (Q-0116) | A **substantial executor step** does NOT self-merge — it opens a `needs-hermes-review` PR; **Hermes** (a different model) reviews and merges it if sound. Small fixes/docs still self-merge. | `superbot-review-merge` skill + the `needs-hermes-review` label; the executor's STEP 5. |
 | **Human approve/deny** (Q-0114) | Applies to **agent-originated features only**. Bug/UX/docs/correctness work flows freely. | `superbot-dispatch` `CLASS:` label + the saved prompt's "features open-only" branch. |
 | **Phase** (Q-0114 mechanism) | A feature may only be *originated* in **invent-phase** (zero OPEN bugs, zero `Not Done` rows). | `scripts/check_phase_gate.py --require-invent`, run by the routine before any feature work. |
 

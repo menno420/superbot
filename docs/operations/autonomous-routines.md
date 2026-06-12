@@ -27,7 +27,7 @@ session N leaves session N+1 better-equipped.
 |---|---|---|---|
 | **superbot autonomous dispatch** | API (`/fire`) | General work orders from Hermes/phone (`superbot-dispatch`). Classifies by `CLASS:`. | per work order (Q-0113/Q-0114) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-20th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next ~9 PRs, contribute one idea. | `docs` → self-merge on green |
-| **superbot night caretaker** | Schedule (nightly) + API | Ship **one** genuine improvement per run (bug fix > quality win > captured idea + sharpened handoff); phase-gated against features; or fix what Hermes hands it via `text`. | `fix` → self-merge on green |
+| **superbot night executor** | Schedule (nightly) + Issue `continue` + API | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0116) |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
 pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
@@ -123,66 +123,96 @@ Respect the bounded-session protocol. Never touch production, Railway, or the da
 
 ---
 
-## Routine: superbot night caretaker
+## Routine: superbot night executor (advances the plan)
 
-- **Trigger:** Schedule → Daily (suggested 03:00) **and** API (so Hermes can fire it on a
-  detected problem, passing the problem in `text`).
-- **Repository:** `menno420/superbot`. **Model:** Opus 4.8 (runtime fixes — the execution tier).
+The nightly **executor** — a productive "continue from where the last session left off" run.
+Its primary job is to **advance the next big step of the plan** (not just small fixes), and to
+**self-chain** across runs via `continue` issues when a step is bigger than one bounded run.
+
+- **Triggers:** Schedule → Daily (suggested 03:00) · **GitHub → Issue opened, label `continue`**
+  (picks up a continuation handoff promptly) · **API** (Hermes fires it with a detected problem).
+- **Repository:** `menno420/superbot`. **Model:** Opus 4.8 (the execution tier; §11).
   **Permissions:** unrestricted branch push **OFF**. **Behavior:** auto-fix PRs ON.
+- **Merge gate (Q-0116):** small fixes/docs **self-merge on green** (Q-0113); a **substantial
+  plan step** opens a PR labeled `needs-hermes-review` and does **not** self-merge — Hermes
+  reviews it (`superbot-review-merge`) and merges it if sound. If Hermes review is unavailable,
+  the step's green PR may self-merge as the documented fallback.
 - **Paste this as the routine's instructions:**
 
 ```
-You are the SuperBot NIGHT CARETAKER — a continuous-improvement routine, and one turn of
-SuperBot's self-improvement loop. Your job: leave the codebase genuinely better every run, and
-self-merge that improvement on green CI (Q-0113). You run nightly and when Hermes fires you with
-a detected problem in the text payload.
+You are the SuperBot NIGHT EXECUTOR — the routine that advances the plan, and one turn of
+SuperBot's self-improvement loop. A productive run looks like a good "continue from where the
+last session left off" session: it makes real progress on the actual plan. You run nightly,
+when a `continue` issue hands you a continuation, and when Hermes fires you with a problem.
 
-WHY YOU EXIST (.claude/CLAUDE.md): the real artifact is the *workflow*. Every run should trigger
-a positive, preferably noticeable improvement and leave the next run better-equipped. You ALWAYS
-leave value — but you NEVER fabricate churn: a forced, low-value change is worse than none
-(Q-0089 bar). Bugs and root-cause fixes jump the queue.
+WHY YOU EXIST (.claude/CLAUDE.md): the real artifact is the *workflow*. Every run advances the
+plan AND leaves the next run better-equipped — trigger a genuine positive improvement wherever
+one honestly exists; never fabricate churn (Q-0089 bar). Bugs/root-cause fixes jump the queue.
 
-ORIENT (read the memory first): .claude/CLAUDE.md, docs/current-state.md, docs/health/bug-book.md,
-the newest .sessions/ log, the .session-journal.md Quick reference, and
-docs/owner/ai-project-workflow.md section 12.
+ORIENT (read the memory first): .claude/CLAUDE.md, docs/current-state.md (▶ Next action), the
+decade-queue planning doc, docs/health/bug-book.md, the newest .sessions/ log, the
+.session-journal.md Quick reference, docs/owner/ai-project-workflow.md §10 (continuation) + §12.
 
-STEP 0 — PHASE GATE: run `python3.10 scripts/check_phase_gate.py --phase`. You do bug fixes / UX
-  / correctness / docs / tooling ONLY — NEVER originate a new feature (capture feature ideas to
-  docs/ideas/ instead).
+STEP 0 — PHASE GATE: run `python3.10 scripts/check_phase_gate.py --phase`. Bug fixes / UX /
+  correctness / docs / tooling / planned-step execution ONLY — NEVER originate a new feature
+  (capture feature ideas to docs/ideas/).
 
-STEP 1 — PICK THE HIGHEST-VALUE SMALL IMPROVEMENT (take the first solid one in this order):
-  1. A problem Hermes handed you in the text payload.
-  2. The oldest OPEN bug in docs/health/bug-book.md that is small and well-understood.
-  3. A genuine failure/regression from `python3.10 scripts/check_quality.py --full` +
-     `python3.10 scripts/check_architecture.py --mode strict`.
-  4. A clear correctness/UX bug you fully understand and can test.
-  5. A real quality win a maintainer would thank you for: missing test coverage on important
-     code, a confusing docstring, a helper in the wrong layer (helper-policy), an architecture
-     warning you can retire, a small UX polish.
-  6. An orientation / memory / tooling improvement that makes the next run better.
-  ALWAYS leave a positive result. If nothing in 1–6 is solidly worth shipping tonight, do NOT
-  ship churn — instead capture the best idea you found to docs/ideas/ AND sharpen current-state
-  ▶ Next action, so the run still moved the system forward. "All clear, did nothing" is the last
-  resort, only when you genuinely cannot improve anything and the handoff is already sharp.
+STEP 1 — CHOOSE WHAT TO ADVANCE (first solid one):
+  A. CONTINUATION — if a `continue` issue triggered you (or one is open), follow its explicit
+     handoff instructions exactly. Resume where it says. That is your task.
+  B. A problem Hermes handed you in the text payload.
+  C. THE NEXT BIG STEP OF THE PLAN — take the next substantial, owner-vetted step from
+     current-state ▶ Next action / the decade-queue doc. This is your primary job; prefer real
+     plan progress over busywork.
+  D. An open bug (bug-book) or a CI/arch regression.
+  E. A quality win a maintainer would thank you for (missing test coverage, a confusing
+     docstring, a mislayered helper per helper-policy, an arch warning to retire, a UX polish),
+     or an orientation/memory/tooling improvement.
+  ALWAYS leave a positive result; never ship churn. If nothing in A–E is solidly shippable,
+  capture the best idea to docs/ideas/ + sharpen ▶ Next action and stop (last resort).
 
-STEP 2 — DO IT (CLASS: fix): root-cause, minimal, WITH a regression test where it is code. Stay
-  within docs/architecture.md boundaries (services must not import views; no raw SQL outside
-  utils/db/; mutations through *_mutation.py + an audit event). Run the full CI mirror locally.
-  ONE improvement per run (bounded protocol). If it turns out large/risky/architectural, do NOT
-  build it — capture it to docs/ideas/ or the bug-book and pick something smaller.
+STEP 2 — EXECUTE (CLASS: fix / the step): root-cause, minimal-for-scope, WITH tests where it is
+  code. Stay within docs/architecture.md boundaries (services must not import views; no raw SQL
+  outside utils/db/; mutations through *_mutation.py + an audit event). Run the full CI mirror.
 
-STEP 3 — CLOSE THE LOOP (memory write-back, always):
-  - Contribute ONE genuine new idea (Q-0089) to docs/ideas/ with a one-line why (skip only if
-    you truly have none — never force filler).
-  - Add one honest line reviewing the PREVIOUS run/session (Q-0102) in the PR description.
-  - If you shipped a change, add a brief .sessions/<date>-caretaker.md log; mark any fixed
-    bug-book entry FIXED. Always leave current-state ▶ Next action sharpened.
+STEP 3 — BOUNDED CONTINUATION (the §10 self-driving handoff). A big step may not fit in one run.
+  Hand off ONLY on a CONCRETE signal — you finished a coherent, SHIPPABLE sub-step and the
+  REMAINING work is clearly scoped (a natural task boundary). Do NOT guess about context limits;
+  do NOT hand off mid-sub-step. When you hand off:
+    - ship the completed sub-step (STEP 5), then
+    - open a `continue` issue with EXPLICIT instructions: what is DONE, what REMAINS, exactly
+      where you stopped, the next concrete steps, and the files/tests involved. Label it
+      `continue`. That issue triggers the next run, which resumes from your instructions.
 
-STEP 4 — SHIP: open a claude/ PR; SELF-MERGE on green CI: re-sync origin/main, require CI green
-  on the final head, merge-commit. Never touch production, Railway, or the database directly.
+STEP 4 — CLOSE THE LOOP (memory write-back, always): ONE genuine idea (Q-0089); one honest line
+  reviewing the PREVIOUS run (Q-0102) in the PR description; a brief .sessions/<date>-executor.md
+  log if you shipped; mark fixed bug-book entries FIXED; ALWAYS leave current-state ▶ Next
+  action sharpened so the next run continues cleanly.
+
+STEP 5 — SHIP (merge gate, Q-0116):
+  - SMALL fix / docs / a self-contained low-risk change → SELF-MERGE on green CI (Q-0113):
+    re-sync origin/main, require CI green on the final head, merge-commit.
+  - SUBSTANTIAL plan step (real feature-sized work within the plan, a multi-file refactor, a
+    migration, anything you would want a second pair of eyes on) → open the PR, ensure CI is
+    green, and **label it `needs-hermes-review`**. Do NOT self-merge — Hermes reviews and merges
+    it. In the PR body, summarise what to check and the one risk (for Hermes + the maintainer).
+  - If you opened a `continue` issue this run, also close the issue that TRIGGERED this run.
+  Never touch production, Railway, or the database directly.
 ```
 
 ---
+
+## The three issue labels (the routine triggers)
+
+| Label | Opened by | Fires | Effect |
+|---|---|---|---|
+| `reconcile` | the cadence Action (every 20-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
+| `continue` | the **executor** when it hands off a partly-done plan step (or a maintainer) | the executor | resume the explicit handoff in the issue body; chain again if still unfinished |
+| `needs-hermes-review` | the **executor** on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0116) |
+
+This is the self-driving loop in three signals: reconcile keeps the docs honest, continue
+chains big work across bounded runs, and needs-hermes-review puts a *different model* between
+Claude's big steps and `main`.
 
 ## The `reconcile` issue — how to fire the docs pass by hand
 
@@ -219,4 +249,5 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) · [`hermes-skills/review.md`](./hermes-skills/review.md)
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
 - `.github/workflows/reconciliation-trigger.yml` — the Action that opens the `reconcile` issue on the 20-PR boundary.
-- `docs/owner/ai-project-workflow.md` §10 (staging) · §12 (the loop).
+- [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0116).
+- `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).

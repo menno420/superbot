@@ -80,6 +80,15 @@ EXTRAS: dict[str, SkillExtras] = {
         tags=["Review", "SuperBot", "Quality"],
         related=["superbot-session-brief"],
     ),
+    "review-merge": SkillExtras(
+        tags=["Review", "SuperBot", "MergeGate"],
+        related=["superbot-review"],
+        schedule=(
+            "30 7 * * *",
+            "Review the needs-hermes-review PR queue and report verdicts "
+            "(merge sound + green PRs when calibrated; otherwise escalate).",
+        ),
+    ),
     "dispatch": SkillExtras(
         tags=["Automation", "SuperBot", "Dispatch"],
         related=["superbot-prompt-builder", "superbot-review"],
