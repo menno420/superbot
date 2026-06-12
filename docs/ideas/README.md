@@ -18,6 +18,25 @@ Pure brainstorm backlogs — capture without commitment. Each file should carry 
 
 Current broad captures:
 
+- [`server-safety-and-automod-2026-06-12.md`](./server-safety-and-automod-2026-06-12.md) —
+  **owner-uploaded research (2026-06-12):** four moderation-safety modules SuperBot
+  lacks vs. competitors (Carl-bot, Dyno, YAGPDB, Koya, Double Counter):
+  **automod rules engine** (spam/link/caps/mention filtering with per-rule escalation) ·
+  **server logging service** (message edits/deletes, join/leave, role changes) ·
+  **image moderation** (OpenAI omni-moderation free endpoint vs. API4AI vs. Hive 50+
+  categories) · **security service** (raid detection, account-age filter, alt detection,
+  VPN blocking — tiered by privacy risk). Larger decisions pending Q-0108, Q-0109,
+  Q-0111.
+- [`community-platform-features-2026-06-12.md`](./community-platform-features-2026-06-12.md) —
+  **owner-uploaded research (2026-06-12):** five community-management features from
+  ProBot, Koya, YAGPDB, Sesh, and Statbot:
+  **welcome service** (PIL avatar-composited welcome cards, join DM, auto-role, goodbye) ·
+  **social feed notifications** (YouTube-first per Q-0041, then Twitch/RSS/Reddit, with
+  optional LLM video summarization) ·
+  **event scheduler** (simple RSVP tier first; NL parsing gated on AI cost) ·
+  **custom commands** (TagScript-safe, DB-stored, admin-only creation) ·
+  **dynamic server counters** (statdock channel-renaming, quick-win candidate).
+  Decisions pending Q-0110 (welcome images), Q-0112 (event scheduler scope).
 - [`repo-manageability-2026-06-12.md`](./repo-manageability-2026-06-12.md) —
   **owner-asked (2026-06-12):** "what else would make the repo more easily manageable?"
   after the review-map + readiness-map work. Five workflow-substrate ideas: operationalize
