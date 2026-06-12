@@ -49,8 +49,40 @@ Source code and merged PRs win over anything written here.
 > Convention: **merged PRs only** (with #numbers). In-flight work is *not* listed here —
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
+>
+> **Last reconciliation pass:** PR #737 (2026-06-12). The next **docs-only review + planning
+> reconciliation** is due once merged PRs cross #740 (every multiple of 10 — Q-0107;
+> `scripts/check_reconciliation_due.py` flags it). Reset this marker to the latest PR after a pass.
 
-- **PR #731 (2026-06-12, untested-surface checklist)** — the owner-commissioned
+- **#737 (2026-06-12, Context7 MCP adopted)** — wired `@upstash/context7-mcp@3.2.0` (live
+  library docs → kills the "API-from-memory" bug class) as a pinned `.mcp.json` server +
+  [`docs/operations/mcp-servers.md`](operations/mcp-servers.md) (when-to-use, key setup, Q-0105
+  provenance). Q-0096 answered (Context7 yes; Postgres-MCP/pyright-lsp still open).
+- **#736 (2026-06-12, CodeGraph health check + doc pin fix)** — verified CodeGraph 3.11.2 is
+  healthy (no regression from the bump; the "problems" are the cold-start availability blip + the
+  documented false positives). Fixed the real bug: `docs/codegraph-usage.md` told agents to run the
+  old `@optave/codegraph@3.10.0` while the live pin is 3.11.2 — bumped all command refs.
+- **#733–#735 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
+  (mandatory `⟲ Previous-session review` session-ender) + **Q-0103** (open session PRs **ready not
+  draft**; every PR reaches a terminal state). `scripts/check_session_log.py` + post-edit/Stop-hook
+  wiring enforce the Q-0089/Q-0102 enders. New
+  [`docs/operations/claude-code-hooks-and-plugins.md`](operations/claude-code-hooks-and-plugins.md)
+  (the 6 wired hooks + brainstorm + plugins posture → Q-0096). `.claude/settings.json`
+  permission-friction cut (`acceptEdits` + curated allowlist; force-push/destructive still prompt).
+  **#734**: reconciled this ledger's drift (added #730/#733, relabeled #731, added #724–#728) and
+  built `scripts/check_current_state_ledger.py` (the living-ledger self-check) + **Q-0104** (closing
+  documentation audit) + **Q-0105** (adopt-tooling-with-a-delete-if-unreliable kill-switch) +
+  permissions-posture doc. **#735**: **Q-0106** — agents propose `CLAUDE.md` rule changes via a
+  router Q-block, never self-edit (binding for a session but not pinned; read-only to a fully
+  autonomous agent). Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines
+  dispatch bridge · portable OSS memory/workflow package · ledger session-arc aggregation.
+- **#730 (2026-06-12, Hermes skills installable)** — `scripts/hermes/build_skills.py` generates
+  installable `SKILL.md` files (Hermes frontmatter) from the skill docs + `install-skills.sh`
+  deploys them to the VPS; `repo-health` self-schedules a daily Telegram digest via a frontmatter
+  `blueprint.schedule`. New `log-triage` skill (read-only prod/gateway log diagnosis) +
+  [`hermes-operating-prompt.md`](operations/hermes-operating-prompt.md) (the Hermes-side `CLAUDE.md`).
+  `tests/unit/scripts/test_build_skills.py` freshness-gates the generated artifacts.
+- **#731 (2026-06-12, untested-surface checklist)** — the owner-commissioned
   [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md):
   18 sections, 70+ `[ ]` items covering every command/UI surface that automated CI
   cannot verify and has no live-walk record — Economy · General · Utility · Roles ·
@@ -64,6 +96,12 @@ Source code and merged PRs win over anything written here.
   the backoff has elapsed rather than immediately. Breaks the rapid crash loop that
   deepened the ban (live incident 2026-06-12 — 4 restarts in ~2 min). Non-429
   crashes unaffected; 5 targeted tests added.
+- **#724–#728 (2026-06-12, the readiness/roadmap/tooling arc)** — **#724** indexed + reconciled
+  the seven production-readiness maps; **#725** the consolidated hardening roadmap + the
+  `repo-manageability` ideas + routed Q-0098–Q-0100; **#726** the four manageability tools
+  (`review_scope.py` + readiness scoreboard + doc-freshness guard + the `current-state.md`
+  trim/auto-archive ratchet); **#727** closed that arc's session; **#728** recorded owner
+  decisions Q-0098–Q-0101 (all the recommended option). Docs/tooling.
 - **#715–#723 (2026-06-12, the review-map + readiness-map set)** — **#715** founded `docs/repo-review-map.md` (the review/refactor partition: Axis A repo domains · Axis B subsystem-slice vs. shared-platform review units); **#716** closed that session. Then **seven per-subsystem production-readiness maps** (#717 AI · #718 health/diagnostics + Q-0097 · #719 server-management · #720 settings/bindings/provisioning · #721 BTD6 · #722 games · #723 media/YouTube) landed under [`planning/production-readiness/`](planning/production-readiness/README.md) — each a source-verified Done/Partial/Not-Done inventory of one slice, linked from its folio. A reconciliation pass added the directory README index, normalized two badges to `audit`, and linked the set from the review map. Docs-only; recurring cross-map themes = settings pointer-lane debt · server-management channel-ownership convergence · AI projection dual-store · BTD6 runtime/data split.
 - **#706** — **BUG-0004 + capabilities format (the owner's live re-test round)**: r-shorthand round anchors (`r53`/`r 53`, digit-boundary-guarded) across the round-cash matcher · "end of round N" completion-cue start shift with stated assumption (the $71,315.20 cumulative-as-total mislabel; truth $56,318.70) · had/held balance cues · router r-round leg (two tokens or one + money cue) · `deterministic_meta_reply` renders one bullet per capability + Lookups line, advertising boss_health Standard+Elite, crosspath/bulk pricing, and balance projections. Code-only (no seed-data needed). (#705 same day: the Q-0093 in-turn merge process record.)
 - **#703** — **AI-knowledge live-miss fixes (BUG-0001r/0002/0003, the owner's morning screenshots)**: elite boss tiers backfilled from the pinned v55.1 dump for all 7 bosses + variant-labeled boss grounding · boss canonicals/impop/despo route to `btd6.answer` (the unguarded-general-path class) · resolver plural fold · the `<quantity> <crosspath> <tower>` pricing leg ("10 041 despos" = ten 0-4-1s, owner-corrected; per-purchase $5 rounding) with `btd6_cumulative_cost` crosspath/quantity parity · round-cash workflow on the **default + balanced profiles** (Q-0048) + money-question gate + by-round anchors · `btd6_probe.py --route`. **Owner action: `!btd6ops seed-data` after deploy** (bosses/towers are blob-lane data).

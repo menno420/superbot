@@ -73,7 +73,65 @@ def _run(label: str, cmd: list[str]) -> tuple[bool, str]:
     return ok, output
 
 
+def _commits_ahead_of_main() -> int:
+    """How many commits HEAD is ahead of origin/main (0 if unknown)."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-list", "--count", "origin/main..HEAD"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+    except OSError:
+        return 0
+    if result.returncode != 0:
+        return 0
+    try:
+        return int(result.stdout.strip() or "0")
+    except ValueError:
+        return 0
+
+
+def _session_log_advisory() -> None:
+    """Non-blocking reminder if a session has produced work but no complete log.
+
+    Runs on every Stop (even docs-only sessions, where the Python gate returns early)
+    but only speaks when there are commits ahead of origin/main and this session's log
+    is missing or incomplete (Q-0089 idea / Q-0102 previous-session review). Advisory
+    only — never changes the exit code. Fully defensive: any failure is swallowed.
+    """
+    try:
+        if _commits_ahead_of_main() < 1:
+            return
+        checker = SCRIPTS / "check_session_log.py"
+        if not checker.exists():
+            return
+        result = subprocess.run(
+            [PY, str(checker)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+        out = result.stdout.strip()
+        if "complete ✓" in out or not out:
+            return
+        print(
+            "\n── session-log reminder (advisory) ─────────────────────────",
+            file=sys.stderr,
+        )
+        for line in out.splitlines():
+            print(f"  {line}", file=sys.stderr)
+        print(
+            "  Before ending: complete the `.sessions/` log (Q-0089 idea + "
+            "Q-0102 previous-session review), and merge or close this session's PR.",
+            file=sys.stderr,
+        )
+    except Exception:  # noqa: BLE001 — advisory must never break the Stop hook
+        return
+
+
 def main() -> int:
+    _session_log_advisory()
     changed = _changed_py_files()
     if not changed:
         return 0

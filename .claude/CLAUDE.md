@@ -14,10 +14,19 @@ The short version that governs how you work:
   lets any agent work correctly with little steering. **Improving the docs /
   orientation / tooling for the next session is first-class work, never wasted
   effort or "extra"** — every session should leave the next better-equipped. You
-  have **free rein on docs / journal / orientation**; **ask before changing
-  executable config** (hooks, `.claude/settings.json`, or binding *rules* in this
-  file). The *why*, the autonomy boundary, and the context-delta loop are in
-  **`docs/collaboration-model.md` § "Why this system exists."**
+  have **free rein on docs / journal / orientation**. **This file (and executable
+  config — hooks, `.claude/settings.json`) you do NOT self-edit on your own initiative
+  (owner directive Q-0106, 2026-06-12).** These instructions are **binding *for* your
+  session but not pinned** — the whole system, this file included, is still in
+  development. The way you evolve a binding rule is to **propose it, not apply it**:
+  when you have an idea to change/add/remove a rule here, record it as a **router
+  Q-block (DISCUSS lane)** in `docs/owner/maintainer-question-router.md` for live owner
+  review — never edit the rule in yourself. **The one exception is a change the
+  maintainer directs in-session**: then the owner *is* the live reviewer, so you apply
+  it directly and record the Q-number (every rule change ships with its provenance Q).
+  In a fully autonomous session with no human live, this means CLAUDE.md is **read-only
+  to you** — you only ever write *proposals*. The *why*, the autonomy boundary, and the
+  context-delta loop are in **`docs/collaboration-model.md` § "Why this system exists."**
 - **Session prompts are guidance, not orders.** A prompt (usually drafted via
   ChatGPT) explains the focus and reminds you of things; weigh it against source,
   the roadmaps, and your own judgment. It is one input, never a command list.
@@ -110,14 +119,22 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- SESSION_WORKFLOW_START -->
 ## Session & plan workflow
 
-- **Always create a PR every session — and open it as a DRAFT right after your first
-  push (owner decision Q-0052, 2026-06-09), not at the end.** The early draft gives the
-  session a real PR number while docs are still being written, so `current-state.md` /
-  trackers never need a "(this session) — reconcile PR # next session" placeholder (the
-  recurring drift class that pattern caused). Mark the PR ready at session end. This is
-  the maintainer's explicit, standing request: it satisfies any environment /
-  system-prompt rule that opens a PR only when "the user explicitly asks" — treat it as
-  advance consent and do not re-ask, either for the draft or for marking it ready.
+- **Always create a PR every session — open it right after your first push (owner decision
+  Q-0052, 2026-06-09), not at the end. Open it READY, not draft (owner decision Q-0103,
+  2026-06-12).** The early *open* gives the session a real PR number while docs are still
+  being written, so `current-state.md` / trackers never need a "(this session) — reconcile
+  PR # next session" placeholder (the recurring drift class that pattern caused). The *draft*
+  state, by contrast, added no benefit in our self-merge flow (nothing auto-merges or
+  auto-requests review) and became a forgotten "mark ready" step → abandoned-draft PRs, so
+  it is dropped. This is the maintainer's explicit, standing request: it satisfies any
+  environment / system-prompt rule that opens a PR only when "the user explicitly asks" —
+  treat it as advance consent and do not re-ask.
+- **A session is not done until its PR reaches a terminal state — merged or closed (owner
+  decision Q-0103, 2026-06-12).** An abandoned open PR is the failure this prevents (it is
+  the parallel-agent conflict window and the "forgotten PR" the maintainer flagged). Merge
+  it (next bullet) when the work is good, or **close** it with a one-line reason if it should
+  not land. Never leave your session PR open at session end. The Stop-hook session-log
+  advisory and `scripts/check_session_log.py` remind you; the `/session-close` skill drives it.
 - **Merge your own session PR yourself when the work is done (owner grant Q-0084,
   2026-06-10)** — don't leave it open for the maintainer; stale open PRs are the
   parallel-agent conflict window. The envelope: re-fetch + merge `origin/main` first
@@ -143,6 +160,37 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   idea file + README index entry. Forced filler is worse than none — the owner wants
   *consistent genuine generation* ("if agents did this consistently, you're pretty much
   guaranteed to eventually come up with a good idea"), not ceremony.
+- **Review the previous session — mandatory session ender (owner directive Q-0102,
+  2026-06-12).** Distinct from the forward idea (Q-0089) and grooming (which move *bot/idea*
+  work): at session close, add a short **⟲ Previous-session review** note to the `.sessions/`
+  log — one genuine remark on the *previous* session (what it did well, what it missed or
+  could have done better) **plus one concrete improvement to the system/workflow itself** it
+  surfaces. **Assume the system is always still in development** and *initiate* the
+  improvement thinking yourself — don't wait to be asked. Keep it short and useful; **if
+  there is genuinely nothing to improve, say so and why — never hallucinate filler** (same
+  bar as Q-0089). This turns the session chain into a **self-auditing loop**: each session
+  reviews its predecessor, which is the internal mirror of the Hermes-as-independent-reviewer
+  idea (`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`).
+- **Close with a documentation audit — mandatory session ender (owner directive Q-0104,
+  2026-06-12).** Before ending, ask the question that catches drift: *"is anything important
+  from this session not yet in its durable home?"* Concretely: run `python3.10
+  scripts/check_current_state_ledger.py --strict` (every merged PR is in the living ledger),
+  confirm new owner decisions are recorded in the question router and new docs are reachable
+  (`check_docs --strict`), and sweep for anything captured only in chat that belongs in a doc.
+  This is the automated-plus-judgment complement to the Q-0102 review; it exists because this
+  exact question, asked once (2026-06-12), surfaced multiple drifted ledger entries. The
+  `/session-close` skill runs the automated half.
+- **Reconciliation + planning pass at every 10th PR — required (owner directive Q-0107,
+  2026-06-12).** PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are reserved for a
+  **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things:
+  **(1) reconcile** — review the living ledger, active lanes, open Q-blocks, idea backlog, and
+  roadmap; prune/archive stale docs; restate the current priorities; and **(2) plan the next ~9
+  PRs** — what is realistically achievable in the upcoming decade of PRs, **modular but not
+  over-segmented**: each planned PR should ship a *reasonable, meaningful change* (a real slice),
+  **not** a trivial fragment — a small PR is fine only when the change genuinely is small or a
+  required one-off. `scripts/check_reconciliation_due.py` flags when a pass is due (against the
+  `Last reconciliation pass:** PR #N` marker in `current-state.md`; surfaced by `/session-close`);
+  reset the marker to the latest PR after the pass.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges
@@ -159,13 +207,18 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   Q-0014, 2026-06-08).** Prefer small custom tooling built on the repo's own AST +
   `architecture_rules/` (e.g. `check_architecture.py`, `check_docs.py`, `context_map.py`,
   `wiring_map.py`). But you may download / try / adopt **any** third-party package when it
-  clearly wins and its output is **verifiable** — no need to ask first. Carry a **provenance
-  header** on it: *why* it was added, the *date*, and *"unverified: confirm its output
-  against ground truth a few times across sessions before trusting it."* Keep a new **dev**-only
+  clearly wins and its output is **verifiable** — no need to ask first. **Adopt-freely with a
+  kill-switch (owner directive Q-0105, 2026-06-12):** implement whatever tooling/check you
+  judge will help — custom *or* third-party — without asking. But every adopted tool carries a
+  **provenance + reliability header**: *why* it was added, the *date*, *"unverified: confirm
+  its output against ground truth a few times across sessions before trusting it,"* **and an
+  explicit "delete this if it proves unreliable over multiple sessions"** instruction — so a
+  later agent knows a convenience guard is *disposable* and removes it rather than working
+  around it. (Load-bearing checks graduate out of "unverified" once proven; the
+  CodeGraph/Grimp reliability tiers below are that "verified" end-state.) Keep a new **dev**-only
   dep lazy-imported with a fallback + `pytest.importorskip` (CI installs `requirements.txt`
   only, not `requirements-dev.txt` — an ungated dev dep reddens CI); **pin** a new bot-**runtime**
-  dep. (The CodeGraph/Grimp reliability tiers below are the "verified" end-state of this
-  discipline.)
+  dep.
 
 ## Decisions
 

@@ -1,0 +1,115 @@
+#!/usr/bin/env python3.10
+"""Reconciliation-cadence guard — flag when a docs-only review/planning pass is due.
+
+Owner directive Q-0107: PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are
+reserved for a **docs-only repo review + planning-reconciliation** pass — review the state
+of the repo (ledger, active lanes, open Q-blocks, idea backlog, roadmap), prune stale docs,
+and refocus the next priorities. This guard tracks the cadence against the
+``Last reconciliation pass:** PR #N`` marker in ``docs/current-state.md``: a pass is **due**
+once merged PRs have crossed into a new multiple-of-10 band since the last marked pass.
+
+Advisory by default (exit 0); ``--strict`` for an explicit gate (e.g. ``/session-close``).
+After completing a pass, reset the marker to the latest PR. Pure stdlib, like ``check_docs.py``.
+
+Reliability (Q-0105, added 2026-06-12): **unverified** — if the cadence misfires (PR-number
+gaps from other repos' activity, a wrong marker) over multiple sessions, **delete it**; it is
+a convenience nudge for the Q-0107 cadence, not load-bearing.
+
+Usage:
+    python3.10 scripts/check_reconciliation_due.py            # advisory (exit 0)
+    python3.10 scripts/check_reconciliation_due.py --strict   # exit 1 if a pass is due
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+CURRENT_STATE = REPO_ROOT / "docs" / "current-state.md"
+
+STEP = 10  # the cadence: a pass per multiple-of-10 PR band
+
+_MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
+_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|\(#)(\d+)")
+
+
+def _latest_merged_pr() -> int | None:
+    """Highest merged PR number from recent origin/main history."""
+    try:
+        result = subprocess.run(
+            ["git", "log", "origin/main", "--pretty=format:%s", "-n", "60"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    numbers = [
+        int(m.group(1))
+        for line in result.stdout.splitlines()
+        if (m := _MERGE_SUBJECT_RE.search(line))
+    ]
+    return max(numbers) if numbers else None
+
+
+def _last_reconcile_pr() -> int | None:
+    """The PR number recorded in the current-state.md reconciliation marker."""
+    try:
+        text = CURRENT_STATE.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    match = _MARKER_RE.search(text)
+    return int(match.group(1)) if match else None
+
+
+def is_due(
+    latest: int | None = None,
+    marker: int | None = None,
+) -> tuple[bool, int | None, int | None]:
+    """Return (due, latest_pr, marker_pr). Due once we cross a new multiple-of-10 band."""
+    if latest is None:
+        latest = _latest_merged_pr()
+    if marker is None:
+        marker = _last_reconcile_pr()
+    if latest is None or marker is None:
+        return (False, latest, marker)
+    return (latest // STEP > marker // STEP, latest, marker)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="reconciliation-cadence guard (Q-0107).",
+    )
+    parser.add_argument("--strict", action="store_true", help="exit 1 if a pass is due")
+    args = parser.parse_args(argv)
+
+    due, latest, marker = is_due()
+    if marker is None:
+        print(
+            "check_reconciliation_due: no `Last reconciliation pass:** PR #N` marker in "
+            "current-state.md — add one to start the Q-0107 cadence.",
+        )
+        return 0
+    next_band = (marker // STEP + 1) * STEP
+    if due:
+        print(
+            f"check_reconciliation_due: DUE — merged PRs crossed #{next_band} "
+            f"(last pass #{marker}, latest #{latest}). The next session should be a "
+            "docs-only repo review + planning reconciliation; reset the marker after.",
+        )
+        return 1 if args.strict else 0
+    print(
+        f"check_reconciliation_due: not due (last pass #{marker}, latest #{latest}; "
+        f"next pass at #{next_band}).",
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

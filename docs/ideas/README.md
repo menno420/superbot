@@ -52,6 +52,28 @@ Current broad captures:
   `review_scope.py` that classifies a changed-file set as single-slice / multi-slice /
   platform. Turns the review partition from a doc you must remember into a signal the
   toolchain emits. Read-only, quick-win lane, not auto-promoted.
+- [`portable-agent-memory-package-2026-06-12.md`](./portable-agent-memory-package-2026-06-12.md) —
+  **maintainer vision (2026-06-12, voice):** extract this repo's consistent-memory +
+  self-improving-workflow substrate into a standalone **open-source package** (à la CodeGraph)
+  — the externalization of the "real artifact" CLAUDE.md already names. Carries a **priority
+  reorientation**: lead with memory/workflow-substrate improvements so sessions auto-execute
+  bot work. Core hard problem = mechanism-vs-content separation; sequencing = harden in-repo
+  first (no approval needed), extract later. → **discuss lane**.
+- [`autonomous-improvement-loop-vision-2026-06-12.md`](./autonomous-improvement-loop-vision-2026-06-12.md) —
+  **maintainer vision (2026-06-12, voice):** the north-star — agents continuously improve
+  the bot, chain session→session autonomously (idea → revised plan → implement), gate
+  agent-*generated* features behind correctness (bugs/UX first), and use **Hermes as the
+  independent reviewer** (a non-Claude "different mind" that critiques plans + implementations,
+  explains features to the maintainer, and routes his approve/deny verdict). Maps each claim
+  to existing scaffolding (`ai-project-workflow.md` §10/§11, the idea lifecycle); the loop is
+  ~3 seams short. Decomposes into reviewable steps (dispatch bridge → reviewer seam → phase
+  gate) → **discuss lane**.
+- [`hermes-claude-dispatch-bridge-2026-06-12.md`](./hermes-claude-dispatch-bridge-2026-06-12.md) —
+  **session idea (2026-06-12, Q-0089):** let Hermes *trigger* a Claude Code-on-the-web
+  session from Telegram (not just prepare the prompt), closing the autonomous loop —
+  phone idea → Hermes orients + dispatches → Claude Code builds/tests/PRs/self-merges →
+  Hermes reports back. Preserves the safety split (Hermes read-only; Claude Code mutates
+  under CI gates). Needs web-trigger API research → **discuss lane** (router Q-block).
 - [`claude-code-plugins-evaluation-2026-06-12.md`](./claude-code-plugins-evaluation-2026-06-12.md) —
   **owner-asked (2026-06-12):** "any good Claude (Code) plugins useful for us?" —
   ecosystem survey (official + community marketplaces, spot-verified), filtered

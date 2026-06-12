@@ -7,7 +7,10 @@
 > safety rules (dead-unresolved, name-collision, Discord decorators, empty callees,
 > blind-spot wiring). Everything else lives here.**
 >
-> Last evaluated: 2026-05-24, codegraph 3.10.0, against the live repo.
+> Last evaluated: 2026-05-24 at codegraph 3.10.0, against the live repo. **Pinned
+> `@optave/codegraph@3.11.2` since 2026-06-08** (bumped from 3.10.0, verified
+> graph-identical — all commands below run the pinned 3.11.2). If you ever run a bare
+> `@optave/codegraph` command, use the pinned version to match the live MCP server.
 > Evaluation method: every claim below was verified by running the tool, then
 > grep-searching or source-reading to confirm or refute the result.
 
@@ -66,10 +69,10 @@ functions called through any of these patterns.
 No global install is required. The MCP server starts via pinned `npx` on every
 Claude Code launch.
 
-1. Verify the package resolves: `npx -y @optave/codegraph@3.10.0 --version`
+1. Verify the package resolves: `npx -y @optave/codegraph@3.11.2 --version`
 2. Build the index (first time or fresh clone):
-   `npx -y @optave/codegraph@3.10.0 build .`
-3. Confirm the index: `npx -y @optave/codegraph@3.10.0 stats` — look for
+   `npx -y @optave/codegraph@3.11.2 build .`
+3. Confirm the index: `npx -y @optave/codegraph@3.11.2 stats` — look for
    `Active engine: native`
 4. Inside Claude Code, confirm MCP tools load by calling
    `mcp__codegraph__where` on any known symbol.
@@ -319,8 +322,8 @@ Caller lists are lower bounds. Callee lists are empty when lazy imports are used
 | Symptom | Fix |
 |---|---|
 | MCP tools unavailable and index present | Restart Claude Code — the `npx` MCP server is loaded once at session init |
-| MCP tools available but empty results | Index is missing. Run `npx -y @optave/codegraph@3.10.0 build .` — no restart needed |
-| Stale index after editing files | `npx -y @optave/codegraph@3.10.0 build .` to rebuild |
+| MCP tools available but empty results | Index is missing. Run `npx -y @optave/codegraph@3.11.2 build .` — no restart needed |
+| Stale index after editing files | `npx -y @optave/codegraph@3.11.2 build .` to rebuild |
 | `Active engine: wasm` in stats | Performance degraded. Rebuild the native binding (`npm rebuild better-sqlite3` inside the codegraph package). |
 | `execution_flow` returns 0 entries | Known broken — do not use. Use grep for forward tracing. |
 | `find_cycles` / `communities` return 0 | Known broken — file-level edges are broken in this index. Do not use. |
@@ -328,7 +331,7 @@ Caller lists are lower bounds. Callee lists are empty when lazy imports are used
 | `module_map` returns all zeros | Known broken. Use `fn_impact` or `context` for function-level connectivity. |
 | `file_deps` shows 0 imports | Known broken. Use grep to trace cross-file references. |
 | `impact_analysis` returns 0 dependents | Known broken. Use `fn_impact` for blast-radius. |
-| `semantic_search` returns "No embeddings" | Run `npx -y @optave/codegraph@3.10.0 embed` first. |
+| `semantic_search` returns "No embeddings" | Run `npx -y @optave/codegraph@3.11.2 embed` first. |
 | `brief` caller count seems too high | Count is transitive total, not direct callers. Use `fn_impact` Level 1. |
 | Caller list misses known callers | Callers use lazy imports or module-alias calls — grep-verify always. |
 | Unexpected callers in unrelated files | Name-collision: check whether those files have a same-named function/method. |

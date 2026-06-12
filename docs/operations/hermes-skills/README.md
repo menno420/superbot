@@ -4,8 +4,13 @@
 > skills. Each skill is a ready-to-configure prompt for the Hermes agent running on the
 > control-plane VPS. Setup context: `docs/operations/hermes-control-plane.md`.
 
-This pack contains six skills covering the two windows Hermes fills that Claude Code
-cannot: **pre-session orientation** and **between-session monitoring**.
+This pack contains seven skills covering the windows Hermes fills that Claude Code
+cannot: **pre-session orientation**, **between-session monitoring**, and
+**production diagnosis from your phone**.
+
+For the standing read-only operating instructions every Hermes session should start
+with, see [`hermes-operating-prompt.md`](../hermes-operating-prompt.md) — the Hermes-side
+equivalent of `.claude/CLAUDE.md`.
 
 ---
 
@@ -14,26 +19,46 @@ cannot: **pre-session orientation** and **between-session monitoring**.
 | Skill | Window | Purpose |
 |---|---|---|
 | [`session-brief`](./session-brief.md) | Pre-session | Compressed orientation brief to paste into Claude Code |
-| [`repo-health`](./repo-health.md) | Between sessions | Traffic-light snapshot — is anything broken? |
+| [`repo-health`](./repo-health.md) | Between sessions | Traffic-light snapshot — is anything broken? (self-schedules a daily digest) |
 | [`ideas-triage`](./ideas-triage.md) | Downtime | Ideas backlog review with a suggested next move |
 | [`prompt-builder`](./prompt-builder.md) | Pre-session | Turn a spoken idea into a structured Claude Code prompt |
 | [`open-questions`](./open-questions.md) | Between sessions | Surface unanswered Q- blocks from the router |
 | [`btd6-status`](./btd6-status.md) | After live testing | BTD6 data pipeline coverage and open items |
+| [`log-triage`](./log-triage.md) | After a deploy / when the bot misbehaves | Read production logs and diagnose what's wrong (gated on a read-only log source) |
 
 ---
 
-## How to install on the VPS
+## How it's built and installed
 
-Each skill file contains a ready-to-use prompt block. To add a skill to Hermes:
+These `.md` files are the **human-readable source of truth** for each prompt. Hermes
+loads skills as `SKILL.md` files with YAML frontmatter, so a small builder generates
+those from these docs (the same source → builder → generated-artifact pattern as
+`tools/agent_context/`):
 
-1. SSH into the VPS as `hermes`.
-2. Create a skill file in `~/.hermes/skills/` (or the path configured in `~/.hermes/config.yaml`).
-3. Paste the prompt block from the skill file into the Hermes skill config.
-4. Alternatively, send the full prompt text directly in Telegram — each skill prompt
-   is self-contained and works as a plain Telegram message too.
+```bash
+# Regenerate the installable SKILL.md artifacts after editing any skill doc:
+python3.10 scripts/hermes/build_skills.py
+```
 
-The repo-side skill files are the source of truth. If you update a skill prompt here,
-copy the new version to the VPS manually.
+This writes `scripts/hermes/skills/<name>/SKILL.md` (frontmatter + prompt body, marked
+`GENERATED — DO NOT EDIT`). **Edit the doc here, never the generated `SKILL.md`.** A test
+(`tests/unit/scripts/test_build_skills.py`) fails CI if the committed artifacts drift
+from the docs.
+
+To install on the VPS (run as the `hermes` user, from the repo root):
+
+```bash
+bash scripts/hermes/install-skills.sh            # copies SKILL.md files into ~/.hermes/skills/
+bash scripts/hermes/install-skills.sh --dry-run  # preview
+sudo systemctl restart hermes-gateway            # pick up the new skills
+```
+
+Hermes loads any `SKILL.md` under `~/.hermes/skills/` on next run — no registration step.
+Alternatively, each prompt is self-contained and works as a plain Telegram message too.
+
+`repo-health` ships a `blueprint.schedule` (`0 8 * * *`) in its frontmatter, so once
+installed Hermes self-schedules the daily health digest to your home channel — no extra
+cron wiring needed.
 
 ---
 

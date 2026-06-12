@@ -86,6 +86,50 @@ def _check_docs(path: Path) -> int:
     return 0  # always non-blocking
 
 
+def _check_session_log(path: Path) -> int:
+    """On a `.sessions/*.md` edit, warn if the log is missing required sections.
+
+    Enforces the Q-0089 (session idea) / Q-0102 (previous-session review) enders at
+    write-time — `.sessions/` is not under `docs/`, so `check_docs` never sees it.
+    Non-blocking and defensive: any failure here is swallowed so the hook never breaks.
+    """
+    try:
+        rel = path.relative_to(REPO_ROOT)
+    except ValueError:
+        return 0
+    if rel.parts[:1] != (".sessions",) or path.name == "README.md":
+        return 0
+
+    checker = REPO_ROOT / "scripts" / "check_session_log.py"
+    if not checker.exists():
+        return 0
+    try:
+        result = subprocess.run(
+            [PY, str(checker), "--file", str(path)],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return 0
+    if result.returncode != 0 or "is missing:" in result.stdout:
+        print(
+            "\n━━━ session-log reminder ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            file=sys.stderr,
+        )
+        for line in result.stdout.strip().splitlines():
+            print(f"  {line}", file=sys.stderr)
+        print(
+            "  (Q-0089 idea + Q-0102 previous-session review are required enders)",
+            file=sys.stderr,
+        )
+        print(
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+            file=sys.stderr,
+        )
+    return 0  # always non-blocking
+
+
 def main() -> int:
     file_path = os.environ.get("CLAUDE_TOOL_INPUT_FILE_PATH", "").strip()
     if not file_path:
@@ -96,7 +140,9 @@ def main() -> int:
         return 0
 
     if path.suffix == ".md":
-        return _check_docs(path)
+        _check_docs(path)
+        _check_session_log(path)
+        return 0
 
     if path.suffix != ".py":
         return 0

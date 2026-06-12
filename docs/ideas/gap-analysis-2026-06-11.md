@@ -35,6 +35,12 @@
    on real downtime *or* on build-pipeline failure, and the Stage 1 caretaker
    will eventually want both as sensory inputs — pick it up when the owner
    says so, not before.
+   *(Grooming 2026-06-12, PR #730: the Hermes control plane now supplies the
+   alerting substrate this called for — a self-scheduled daily `repo-health`
+   digest and the read-only `log-triage` skill push repo/CI/log status to
+   Telegram. That covers the "is anything broken?" sensory input; real-downtime
+   alerting on the production bot still waits on the read-only Railway log
+   source. Moves this item captured → partially routed.)*
 
 ## AI-system / workflow gaps
 

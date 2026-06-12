@@ -3836,6 +3836,14 @@ the model, was the bottleneck.
 
 ### Q-0096 — Claude Code plugins: adopt the Context7 / Postgres-MCP shortlist, or stay plugin-free?
 
+> **ANSWERED (partial) 2026-06-12 — adopt Context7 (trial).** Owner: "go ahead, it seems very
+> useful and time-saving." Wired `@upstash/context7-mcp@3.2.0` as a pinned `.mcp.json` server
+> (keyless to start), approved via `enabledMcpjsonServers`, tools pre-allowed. Operational home +
+> key-setup + Q-0105 delete-if-unreliable note: [`../operations/mcp-servers.md`](../operations/mcp-servers.md).
+> **Maintainer follow-up:** optionally add a free `CONTEXT7_API_KEY` to the environment for the
+> higher rate limit (keyless ≈ 500 req/mo ceiling). Postgres-MCP / `pyright-lsp` remain open
+> under this Q — revisit if wanted.
+
 **Area:** Agent workflow / tooling / executable config (`.claude/settings.json`, `.mcp.json`)
 **Type:** Owner decision (adoption gate — plugin enablement is ask-first executable config)
 **Priority:** Low-medium (quality-of-life for agent sessions; nothing is blocked)
@@ -4028,3 +4036,161 @@ docs surface — generating 24 stubs that then rot would be worse than the curre
 point for non-folio cogs.
 
 **Source review:** [`docs/ideas/repo-manageability-2026-06-12.md`](../ideas/repo-manageability-2026-06-12.md) #4.
+
+### Q-0102 — Mandatory session ender: every session reviews the previous session + surfaces one system improvement
+
+> **DIRECTED 2026-06-12 (owner directive, voice).** Not a question — a standing rule the
+> maintainer asked to be **required**. Recorded here for provenance; the binding form lives
+> in `.claude/CLAUDE.md` § "Session & plan workflow".
+
+**Area:** Agent system · workflow / self-improvement
+**Type:** Standing workflow rule (process)
+**Priority:** Standing — every session
+
+**Directive:** Every session, at close, adds a short **⟲ Previous-session review** note to
+its `.sessions/` log: one genuine remark on the *previous* session (what it did well / what
+it missed) **plus one concrete improvement to the system/workflow itself**. Every session
+**assumes the system is still in development** and *initiates* improvement thinking on its
+own rather than waiting to be asked.
+
+**Guardrails (owner-stated):** keep it short and useful; **if there is genuinely nothing to
+improve, say so and why — do not hallucinate filler** (same bar as the Q-0089 idea rule).
+
+**Why:** the maintainer observed this was "sort of a rule already" but inconsistently done
+(improving lately). Making it a required session-ender turns the session chain into a
+**self-auditing loop** — each session reviews its predecessor. It is the internal mirror of
+the Hermes-as-independent-reviewer seam
+([`docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`](../ideas/autonomous-improvement-loop-vision-2026-06-12.md)).
+
+**Home:** `.claude/CLAUDE.md` (binding) · this entry is the provenance record.
+
+### Q-0103 — Drop draft-first PRs (open ready); every session PR must reach a terminal state
+
+> **DIRECTED 2026-06-12 (owner, voice).** Refines Q-0052. The maintainer observed sessions
+> "creating draft PRs and then forgetting about them" and asked whether the draft step gives
+> any benefit. Agreed assessment: in our self-merge flow it does not.
+
+**Area:** Agent system · workflow / PR lifecycle
+**Type:** Workflow decision (refines Q-0052)
+**Priority:** Standing — every session
+
+**Decision:**
+1. **Open the session PR READY, not draft.** Q-0052's real benefit was opening *early* (for
+   the PR number, so docs can reference it without a rotting placeholder). The *draft* state
+   added nothing here — nothing auto-merges or auto-requests review — and the "mark ready"
+   step was being forgotten, producing abandoned drafts. Drop it.
+2. **Every session drives its PR to a terminal state — merged or closed — before ending.**
+   Merge when the work is good (Q-0084 envelope: reconcile main, CI green on final head,
+   merge-commit, own PR only); otherwise close with a one-line reason. **Never leave a
+   session PR open/abandoned.** This is the actual fix for the forgotten-PR problem and is
+   load-bearing for full autonomy.
+
+**Enforcement:** `scripts/check_session_log.py` + the Stop-hook advisory remind on an
+incomplete close; the `/session-close` skill performs the terminal-state step. (Hooks can't
+call GitHub MCP, so the merge/close itself is agent/skill-driven, not hook-driven.)
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · this entry is provenance.
+
+### Q-0104 — Mandatory session ender: close with a documentation/drift audit
+
+> **DIRECTED 2026-06-12 (owner, voice).** The owner's closing question — "is anything
+> important from this session not yet documented?" — surfaced multiple drifted `current-state.md`
+> ledger entries (#730/#733 missing, untested-surface mislabeled #730→#731, #724–#728 absent).
+> He asked that this question be put to *every* agent ending a session.
+
+**Area:** Agent system · workflow / documentation integrity
+**Type:** Standing workflow rule (process)
+**Priority:** Standing — every session
+
+**Directive:** Every session, before ending, performs a documentation audit: ask *"is anything
+important from this session not yet in its durable home?"* Concretely — run
+`check_current_state_ledger.py --strict` (merged PRs in the ledger), confirm new owner
+decisions are in the router and new docs are reachable (`check_docs --strict`), and sweep for
+anything captured only in chat. The automated half runs in `/session-close`; the judgment half
+(the "only in chat?" sweep) is the agent's.
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · `scripts/check_current_state_ledger.py`
+is the automated teeth · this entry is provenance.
+
+### Q-0105 — Adopt tooling freely, with a "delete if unreliable" kill-switch in its header
+
+> **DIRECTED 2026-06-12 (owner, voice).** Extends Q-0014. The owner: *"implement whatever you
+> think would work, but make sure another agent knows it should be deleted if it's been proven
+> unreliable over multiple sessions."*
+
+**Area:** Agent system · tooling / autonomy
+**Type:** Autonomy grant + provenance discipline (refines Q-0014)
+**Priority:** Standing
+
+**Decision:** Agents may implement/adopt whatever tooling or check they judge will help —
+custom or third-party — **without asking first**. The cost of that autonomy is a **provenance +
+reliability header** on every such tool: *why* + *date* + *"unverified: confirm against ground
+truth a few times before trusting"* **+ an explicit "delete this if it proves unreliable over
+multiple sessions"** instruction. The kill-switch matters because a convenience guard that
+misfires should be *removed* by a later agent, not silently worked around (which would leave a
+lying check in place). Load-bearing checks graduate out of "unverified" once proven across
+sessions.
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (the Q-0014 tooling bullet) · this
+entry is provenance.
+
+### Q-0106 — Agents never self-edit CLAUDE.md on their own initiative; propose for live review
+
+> **DIRECTED 2026-06-12 (owner, voice).** For full autonomous improvement, agents must not
+> edit `.claude/CLAUDE.md` (or binding rules) when *they* have an idea — they document the
+> proposal for live review. The owner's framing: the instructions "may be binding for their
+> session, but they are not locked/pinned — they are still in development just like the rest
+> of the system."
+
+**Area:** Agent system · governance / self-modification boundary
+**Type:** Standing workflow rule (process + safety)
+**Priority:** Standing — every session, load-bearing for autonomy
+
+**Decision:**
+- **`CLAUDE.md` is binding *for* a session but not *pinned*.** It is in development like the
+  rest of the system. Agents follow it this session and may *evolve* it — but only by
+  **proposing**, not self-applying.
+- **Agent-originated rule changes → a router Q-block (DISCUSS lane), never a direct edit.**
+  The change lands in `CLAUDE.md` only after the owner decides.
+- **Exception — maintainer-directed in-session changes apply directly.** When the owner
+  directs a rule change live (as with Q-0102–Q-0106), the owner *is* the live reviewer, so
+  the agent applies it and records the provenance Q-number.
+- **In a fully autonomous session (no human live), `CLAUDE.md` is read-only to the agent** —
+  it only ever writes proposals. This is *why* the `Edit(.claude/CLAUDE.md)` permission prompt
+  is kept (it is the live-review gate when a human is present); see
+  `docs/operations/claude-code-hooks-and-plugins.md` § Permissions posture.
+
+**Why:** self-modification of one's own binding instructions is the highest-risk autonomous
+action — the prime prompt-injection / value-drift target. Routing all rule changes through
+owner review keeps the agent's "constitution" under human control while still letting the
+system evolve. This is the governance counterpart to the Q-0102/Q-0104 self-audit loop.
+
+**Home:** `.claude/CLAUDE.md` Working agreement (binding) · this entry is provenance.
+
+### Q-0107 — Reconciliation + planning pass at every 10th PR (docs-only)
+
+> **DIRECTED 2026-06-12 (owner, voice).** "After every 10 PRs there should be a docs-only
+> cleanup and plan reconciliation that reviews the state of the repo and refocuses our
+> attention." Refined: "every 10, 20, 30 etc should be docs-only reviewing and planning," and
+> "every planning session should focus on what the next 9 PRs can realistically achieve —
+> modular but not too segmented; each PR should ship a reasonable change unless it really is
+> only a small required change."
+
+**Area:** Agent system · workflow / planning cadence
+**Type:** Standing workflow rule (process)
+**Priority:** Standing — every 10th PR
+
+**Directive:**
+- PR numbers crossing a **multiple of 10** (#10, #20, #30, …) are a **docs-only review +
+  planning** pass — no runtime / `disbot/` code.
+- **Reconcile:** review the ledger, active lanes, open Q-blocks, idea backlog, roadmap; prune
+  stale docs; restate current priorities.
+- **Plan the next ~9 PRs:** what is realistically achievable in the upcoming decade of PRs,
+  **modular but not over-segmented** — each planned PR ships a *reasonable, meaningful* change,
+  not a trivial fragment (small PRs only when the change genuinely is small/required).
+- **Cadence guard:** `scripts/check_reconciliation_due.py` tracks the `Last reconciliation
+  pass:** PR #N` marker in `current-state.md` and flags when a pass is due; reset the marker
+  after a pass. Surfaced by `/session-close`.
+
+**Home:** `.claude/CLAUDE.md` § "Session & plan workflow" (binding) · `current-state.md` holds
+the marker · this entry is provenance.

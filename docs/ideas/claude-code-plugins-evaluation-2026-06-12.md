@@ -146,7 +146,11 @@ end of the spectrum. Adoption rules if Q-0096 approves anything:
 
 ## Lifecycle
 
-- **State:** captured → **routed (discuss)** — owner decision **Q-0096**.
-- On approval: a session wires the approved item(s) (`.mcp.json` /
-  `settings.json` edit, pin, provenance note, journal Runbook update) — small,
-  single-PR work.
+- **State:** captured → routed (discuss) → **partially adopted** — owner decision **Q-0096**
+  answered 2026-06-12.
+- **Context7 — ADOPTED (trial), 2026-06-12.** Owner approved; wired as a pinned `.mcp.json`
+  server (`@upstash/context7-mcp@3.2.0`, keyless to start), approved via
+  `enabledMcpjsonServers`, tools pre-allowed. Operational reference + key-setup + the Q-0105
+  delete-if-unreliable note: [`../operations/mcp-servers.md`](../operations/mcp-servers.md).
+  Still **unverified** — confirm its docs against ground truth across sessions before trusting.
+- The read-only Postgres MCP and `pyright-lsp` remain **not adopted** (open under Q-0096).
