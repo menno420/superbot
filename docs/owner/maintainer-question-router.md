@@ -4379,3 +4379,35 @@ insufficient (e.g. a Hermes/VPS outage making a GitHub-side fallback worth its u
 **Routed:** `ai-project-workflow.md` §10 (Stage 0 superseded note) · roadmap 🤝 workflow
 lane · the reconciliation-pass queue (Stage 0 entry re-pointed) ·
 `ideas/hermes-claude-dispatch-bridge-2026-06-12.md` · this entry is provenance.
+
+### Q-0116 — UX Lab (interface gallery cog): scheduling + audience
+
+> **OPEN (2026-06-12).** Raised by the owner-commissioned UX Lab design session
+> (the brainstorm → design pass for the interface-gallery testing cog).
+
+**Area:** Building / interface · new subsystem `ux_lab`
+**Type:** Scheduling + product-audience decision (the design itself is pinned)
+
+**Context:** The owner commissioned "the most versatile and inclusive UX testing cog" —
+a zero-write, admin-gated gallery of every Discord interaction/layout pattern (buttons /
+selects / modals / embeds / Components V2 / PIL cards), a platform-limit probe bench,
+and clickable mockups of the approved Q-0108–Q-0112 safety/community features. Full
+design: [`../planning/ux-lab-interface-gallery-plan-2026-06-12.md`](../planning/ux-lab-interface-gallery-plan-2026-06-12.md)
+(3 PRs: A core wings · B Components-V2 + PIL · C mock studio + pattern-library export).
+
+**Question 1 — scheduling:** the decade queue (reconciliation pass §4) is full and
+allows owner-steered swaps. Where do UX Lab PRs A–C sit?
+*Recommended:* PR A as a near-term steered slice (it is additive/zero-risk and
+immediately useful), and PR C **before or with** the safety-lane family plan (decade
+slot 8) so the Q-0108–Q-0112 UX decisions are reviewed on rendered, clickable panels
+instead of prose. Alternative: after the current decade completes.
+
+**Question 2 — audience:** admin-gated (*recommended* — staff can browse styles too;
+every callback re-checks authority) vs owner-only. Hidden from Help either way
+(workbench, not a member feature).
+
+**Non-decision pinned in the plan:** the lab does NOT authorize migrating real panels
+to Components V2 — that stays a future ADR taken on the lab's evidence.
+
+**Routed (on answer):** roadmap 🖥️ Building/interface lane horizon · the plan's status
+banner · `ideas/ux-lab-interface-gallery-2026-06-12.md` lifecycle state.
