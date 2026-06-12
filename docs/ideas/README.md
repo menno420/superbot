@@ -56,6 +56,14 @@ Current broad captures:
 > beats occasional brilliance). Substantial ones land here as files; small ones
 > live in their session log's 💡 flag. The grooming pass then moves them.
 
+- **`scripts/command_surface_dump.py`** *(Q-0089 session idea, 2026-06-12 — **EXECUTED
+  same session as grooming pass**)* — offline AST-based command-surface dump: reads
+  all cog files without a live bot and emits every prefix/slash/group command by
+  subsystem. `--diff-checklist` flags commands in source with no checklist entry (found
+  120 gaps on first run — expected, as the checklist covers hub-level entries not individual
+  commands). 8 tests. Makes `docs/audits/untested-surface-checklist.md` machine-verifiable
+  going forward.
+
 - [`review-unit-tagging-2026-06-12.md`](./review-unit-tagging-2026-06-12.md) —
   **session idea (2026-06-12, Q-0089):** operationalize the new
   [`repo-review-map.md`](../repo-review-map.md) — have `context_map.py` print a file's
