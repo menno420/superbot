@@ -35,10 +35,11 @@ idea / nightly diagnosis
 
 ## Maintainer setup (one-time)
 
-- ⬜ **Create the routine** in the Claude Code console (https://code.claude.com/docs/en/routines):
-  prompt = the saved prompt below · repo = `menno420/superbot` · environment network policy
-  scoped tight · branch-push setting left at the default **`claude/`-only** · API trigger
-  enabled (you get a per-routine `/fire` URL + bearer token).
+- ✅ **Create the routine** — DONE 2026-06-12: the routine **superbot autonomous dispatch**
+  is live in the Claude Code console (https://code.claude.com/docs/en/routines) with the API
+  trigger enabled. prompt = the saved prompt below · repo = `menno420/superbot` · environment
+  network policy scoped tight · branch-push setting left at the default **`claude/`-only** ·
+  API trigger enabled (you get a per-routine `/fire` URL + bearer token).
 - ⬜ **Store the secrets on the VPS** for the `hermes` user (never commit them):
   ```bash
   # ~/.hermes/.env  (or the VPS secret store the gateway loads)
