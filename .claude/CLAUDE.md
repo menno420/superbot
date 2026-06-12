@@ -14,10 +14,19 @@ The short version that governs how you work:
   lets any agent work correctly with little steering. **Improving the docs /
   orientation / tooling for the next session is first-class work, never wasted
   effort or "extra"** — every session should leave the next better-equipped. You
-  have **free rein on docs / journal / orientation**; **ask before changing
-  executable config** (hooks, `.claude/settings.json`, or binding *rules* in this
-  file). The *why*, the autonomy boundary, and the context-delta loop are in
-  **`docs/collaboration-model.md` § "Why this system exists."**
+  have **free rein on docs / journal / orientation**. **This file (and executable
+  config — hooks, `.claude/settings.json`) you do NOT self-edit on your own initiative
+  (owner directive Q-0106, 2026-06-12).** These instructions are **binding *for* your
+  session but not pinned** — the whole system, this file included, is still in
+  development. The way you evolve a binding rule is to **propose it, not apply it**:
+  when you have an idea to change/add/remove a rule here, record it as a **router
+  Q-block (DISCUSS lane)** in `docs/owner/maintainer-question-router.md` for live owner
+  review — never edit the rule in yourself. **The one exception is a change the
+  maintainer directs in-session**: then the owner *is* the live reviewer, so you apply
+  it directly and record the Q-number (every rule change ships with its provenance Q).
+  In a fully autonomous session with no human live, this means CLAUDE.md is **read-only
+  to you** — you only ever write *proposals*. The *why*, the autonomy boundary, and the
+  context-delta loop are in **`docs/collaboration-model.md` § "Why this system exists."**
 - **Session prompts are guidance, not orders.** A prompt (usually drafted via
   ChatGPT) explains the focus and reminds you of things; weigh it against source,
   the roadmaps, and your own judgment. It is one input, never a command list.
