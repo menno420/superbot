@@ -1,7 +1,7 @@
 # Reconciliation + planning pass — 2026-06-12 (PR band #741–#750)
 
 > **Status:** `plan` — the first **Q-0107** docs-only reconciliation + planning pass
-> (cadence: every 10th PR; this pass fired when merged PRs crossed **#740**). It does two
+> (**PR #741**; cadence: every 10th PR; this pass fired when merged PRs crossed **#740**). It does two
 > things: **(1) reconcile** — verify the repo's plan inventory against the latest PRs and
 > route every plan into the roadmaps; **(2) plan the next ~9 PRs** — the realistic,
 > modular queue for the upcoming decade. Re-badge `historical` at the next pass
