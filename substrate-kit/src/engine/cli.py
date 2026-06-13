@@ -1,9 +1,10 @@
 """The substrate-kit bootstrap command line.
 
 Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``ask`` (list the
-pending interview questions), and ``--simulate N`` (the CI / proving smoke that
-drives the staged interview). Output goes through ``_emit`` (``sys.stdout.write``)
-rather than ``print`` to keep the engine lint-clean.
+pending interview questions), ``render`` (write content docs), ``check`` (run the
+doc + session-log hygiene checks), and ``--simulate N`` (the CI / proving smoke
+that drives the staged interview). Output goes through ``_emit``
+(``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.
 """
 
 from __future__ import annotations
@@ -13,6 +14,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from engine.checks.check_docs import run_doc_checks
+from engine.checks.check_session_log import check_log, latest_session_log
 from engine.interview.interview import critical_slots, pending_questions, run_session
 from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config, config_path, load_config, save_config
@@ -131,6 +134,43 @@ def cmd_render(target: Path) -> int:
     return 0
 
 
+def cmd_check(target: Path, strict: bool) -> int:
+    """Run the doc-hygiene + session-log checks against ``target``.
+
+    Doc findings always count toward the exit code (under ``--strict``); a
+    *missing* session log is advisory (a host may run ``check`` mid-session), but
+    an *incomplete* existing log counts. Uses config defaults if ``target`` has
+    no ``substrate.config.json`` yet, so a project can lint before onboarding.
+    """
+    config = load_config(target)
+    docs_root = target / config.docs_root
+    doc_findings = run_doc_checks(
+        docs_root,
+        config.badge_tokens,
+        config.readpath_docs,
+    )
+    if doc_findings:
+        _emit(f"check: {len(doc_findings)} doc finding(s):")
+        for finding in doc_findings:
+            _emit(f"  [{finding.kind}] {finding.path}: {finding.message}")
+
+    log = latest_session_log(target / config.sessions_dir)
+    log_missing: list[str] = check_log(log, config.session_markers) if log else []
+    if log is None:
+        _emit("check: no session log found yet (advisory — not a failure).")
+    else:
+        rel = log.relative_to(target) if log.is_relative_to(target) else log
+        if log_missing:
+            _emit(f"check: session log {rel} is missing: {', '.join(log_missing)}")
+        else:
+            _emit(f"check: session log {rel} complete.")
+
+    if not doc_findings and not log_missing:
+        _emit("check: all checks passed.")
+        return 0
+    return 1 if strict else 0
+
+
 def cmd_simulate(n: int) -> int:
     """Init into a temp dir and drive ``n`` interview sessions; verify progress.
 
@@ -184,6 +224,9 @@ def build_parser() -> argparse.ArgumentParser:
     mode = sub.add_parser("mode", help="set the integration mode")
     mode.add_argument("name")
     mode.add_argument("--target", type=Path, default=Path.cwd())
+    check = sub.add_parser("check", help="run the doc + session-log hygiene checks")
+    check.add_argument("--target", type=Path, default=Path.cwd())
+    check.add_argument("--strict", action="store_true", help="exit 1 if any violation")
     return parser
 
 
@@ -204,6 +247,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_render(args.target)
         if args.command == "mode":
             return cmd_mode(args.target, args.name)
+        if args.command == "check":
+            return cmd_check(args.target, args.strict)
     except UnsafeTargetError as exc:
         _emit(f"refused: {exc}")
         return 2

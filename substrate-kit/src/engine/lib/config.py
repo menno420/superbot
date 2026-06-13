@@ -31,6 +31,35 @@ def _default_cadence() -> dict[str, int]:
     return {"reconciliation_prs": 20}
 
 
+def _default_badge_tokens() -> list[str]:
+    """Return the default Status-badge taxonomy the doc checker accepts."""
+    return [
+        "binding",
+        "living-ledger",
+        "reference",
+        "plan",
+        "historical",
+        "audit",
+        "owner-guidance",
+        "ideas",
+        "archive",
+    ]
+
+
+def _default_readpath_docs() -> list[str]:
+    """Return the read-path doc names that seed the reachability roots."""
+    return ["AGENT_ORIENTATION.md", "current-state.md"]
+
+
+def _default_session_markers() -> list[dict[str, str]]:
+    """Return the markers every session log must carry (label + substring)."""
+    return [
+        {"label": "Status badge", "needle": "**Status:**"},
+        {"label": "Session idea", "needle": "💡"},
+        {"label": "Previous-session review", "needle": "previous-session review"},
+    ]
+
+
 @dataclass
 class Config:
     """Host-project configuration for one substrate-kit install."""
@@ -39,9 +68,16 @@ class Config:
     interpreter: str = field(default_factory=lambda: sys.executable)
     interpreter_for_checks: str | None = None
     state_dir: str = DEFAULT_STATE_DIR
+    docs_root: str = "docs"
+    sessions_dir: str = ".sessions"
     paths: dict[str, str] = field(default_factory=dict)
     cadence: dict[str, int] = field(default_factory=_default_cadence)
     scopes: dict[str, str] = field(default_factory=dict)
+    badge_tokens: list[str] = field(default_factory=_default_badge_tokens)
+    readpath_docs: list[str] = field(default_factory=_default_readpath_docs)
+    session_markers: list[dict[str, str]] = field(
+        default_factory=_default_session_markers,
+    )
 
     def to_json(self) -> str:
         """Serialise the config to indented, key-sorted JSON."""
