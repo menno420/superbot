@@ -23,8 +23,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 29 of the 38 loaded extensions (`config.INITIAL_EXTENSIONS`) define
-  `build_help_menu_view` — equivalently, 29 of the 30 subsystem-owning
+- 30 of the 39 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+  `build_help_menu_view` — equivalently, 30 of the 31 subsystem-owning
   cogs expose it. The 9 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
@@ -71,8 +71,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 2. Subsystem inventory
 
-30 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 38 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+31 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 39 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 9 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -83,6 +83,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `admin` | `admin_cog.py` | `adminmenu`, `serverstats`, `cog`, `loadall`, `unloadall`, `restart`, `loglevel` | — | `_AdminPanelView` | `!help admin` → opens Admin panel (shared resolver) | dropdown Admin → panel | hub top-level (Admin) |
 | `ai` | `ai_cog.py` | `ai`, `aimenu`, `ai status`, `ai diagnostics`, `ai providers`, `ai routing`, `ai settings` | — | `AIPanelView` | `!help ai` → opens AI Platform panel (shared resolver) | reached via Admin / Diagnostics | central AI policy host (M1+); auto-dispatched settings via `ai settings` and `!settings` hub |
+| `automod` | `automod_cog.py` | `automod` | — | `HubView` | `!help automod` → automod policy summary (shared resolver) | reached via Moderation; `parent_hub="moderation"` (Q-0108) | hub child (Moderation) — declared; config via `!settings` → Automod |
 | `btd6` | `btd6_cog.py` | `btd6`, `btd6menu`, `btd6 ask`, `btd6 tower`, `btd6 hero`, `btd6 round`, `btd6 relic`, `btd6 ct`, `btd6 leaderboard`, `btd6 live`, `btd6 event`, `btd6 status`, `btd6 diagnostics`, `btd6 test-intent` | — | `BTD6PanelView` | `!help btd6` → opens BTD6 panel (shared resolver) | dropdown BTD6 → panel | hub top-level (BTD6 Assistant) |
 | `blackjack` | `blackjack_cog.py:95` | `blackjack`, `bj`, `bjtournament`, `bjstart`, `bjstatus` | — | `BlackjackPanelView` | `!help blackjack` → opens Blackjack panel (shared resolver) | reached via Games | hub child (Games) |
 | `chain` | `chain_cog.py` | `chain`, `chainmenu` | — | `_ChainMenuView` | `!help chain` → opens Chain panel (shared resolver) | reached via Games / Community | hub child |

@@ -149,6 +149,7 @@ HUBS: tuple[HubEntry, ...] = (
         # parent_hub of "moderation" so they hide from the Help Home
         # top-level overview and surface under this hub instead.
         primary_children=(
+            "automod",
             "cleanup",
             "logging",
             "proof_channel",

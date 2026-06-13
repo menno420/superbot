@@ -313,6 +313,32 @@ SUBSYSTEMS: dict[str, dict] = {
             "cleanup.policy.configure",
         ],
     },
+    # automod v1 (Q-0108) — the automated message-filter layer beneath manual
+    # moderation; the twin of ``cleanup`` (auto-mod tier, message-pipeline
+    # stage, parented to the moderation hub).  Config is editable through the
+    # !settings widget via the SubsystemSchema in cogs/automod/schemas.py.
+    "automod": {
+        "display_name": "Automod",
+        "description": "Spam, invite links, excessive caps, and mass-mention filtering",
+        "emoji": "🛡️",
+        "color": MOD_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "moderation",
+        "tags": ["automod", "moderation", "safety", "spam", "filter"],
+        "entry_points": ["automod"],
+        "default_channels": ["staff"],
+        "related_subsystems": ["moderation", "cleanup"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 73,
+        "parent_hub": "moderation",
+        "capabilities": [
+            "automod.settings.configure",
+        ],
+    },
     "games": {
         "display_name": "Games",
         "description": "Competitive games and channel activities",

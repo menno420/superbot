@@ -238,6 +238,58 @@ Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
 23. **priority**: `P0` — first subsystem page after Settings shell + logging.
 24. **recommended_PR_phase**: S10 (first of the subsystem-page sub-PRs).
 
+### automod
+
+automod v1 (owner decision Q-0108) — the automated message-filter layer beneath
+manual moderation; the twin of `cleanup` (auto-mod pipeline tier, parented to the
+moderation hub). Detection lives in `services/automod_service.py`; actions route
+through `moderation_service` (no parallel audit path).
+
+1. **cog_module**: `disbot/cogs/automod_cog.py` (+ `disbot/cogs/automod/`
+   subpackage with `schemas.py` + `listener.py`).
+2. **subsystem**: `automod`
+3. **current_commands**: `!automod` (read-only policy summary).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: none (config via `!settings` → Automod).
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["automod"]` lists `automod`.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
+9. **existing_SettingSpec_declarations**: `enabled`, `spam_enabled`,
+   `invites_enabled`, `caps_enabled`, `mentions_enabled`, `spam_count`,
+   `spam_window_seconds`, `caps_percent`, `mentions_count`, `exempt_roles`,
+   `exempt_channels` (`disbot/cogs/automod/schemas.py`). All flags default OFF;
+   defaults + bounds are the single source of truth in
+   `disbot/services/automod_config.py`.
+10. **existing_settings_keys**: `AUTOMOD_ENABLED`, `AUTOMOD_SPAM_ENABLED`,
+    `AUTOMOD_INVITES_ENABLED`, `AUTOMOD_CAPS_ENABLED`, `AUTOMOD_MENTIONS_ENABLED`,
+    `AUTOMOD_SPAM_COUNT`, `AUTOMOD_SPAM_WINDOW_SECONDS`, `AUTOMOD_CAPS_PERCENT`,
+    `AUTOMOD_MENTIONS_COUNT`, `AUTOMOD_EXEMPT_ROLES`, `AUTOMOD_EXEMPT_CHANNELS`
+    (`disbot/utils/settings_keys/automod.py`). Stored as scalar guild settings —
+    **no migration**.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capability `automod.settings.configure`; spec edits gated on
+    `moderation.settings.configure` (automod *is* moderation's automated layer).
+14. **hardcoded_or_env_only_behavior**: none — every rule + threshold + exempt
+    list is operator config; a fresh guild is unaffected (all flags default OFF).
+15. **current_resource_dependencies**: none (no channels/roles required).
+16. **target_settings_fields**: the four rule toggles + thresholds + the two
+    exempt lists (`mock_automod_rules` is the reviewed UX target).
+17. **target_bindings**: none in v1.
+18. **target_access_controls**: administrator floor for config; runtime actions
+    are system-actor via `moderation_service` (warn → escalation).
+19. **acceptance_or_validation_rules**: thresholds bounded by the
+    `MIN_*`/`MAX_*` constants in `automod_config`; exempt lists must be numeric
+    ids (CSV).
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars). Actions are
+    not a settings mutation — they route through `moderation_service`.
+21. **target_help_or_menu_route**: Help direct-nav (policy summary), Settings
+    → Automod group.
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — first slice of the safety/community lane (band slot 4).
+24. **recommended_PR_phase**: safety-lane PR1 (this PR).
+
 ### economy
 
 1. **cog_module**: `disbot/cogs/economy_cog.py` (+ `disbot/cogs/economy/`
