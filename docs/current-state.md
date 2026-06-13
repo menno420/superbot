@@ -56,7 +56,12 @@
 > hub-less (surfaced via Help hook + `!settings` + `!welcome`/`!counters`, like
 > `ai`/`channel`/`ux_lab`) so they don't clutter the user-tier Community hub. No migration.
 > **The safety/community band (slots 4–6) is COMPLETE; next = the carried P0-3/P0-4/P0-2
-> hardening spine.** · 2026-06-13, **server event logging v1 (PR #774, band slot 5)** — the
+> hardening spine.** · 2026-06-13, **native auto-merge migration (PRs #779 + #786, Q-0123)** —
+> merge mechanics moved off the Claude session: `auto-merge-enabler.yml` arms GitHub-native
+> auto-merge on every non-draft `claude/*` PR so it merges itself on green `code-quality`,
+> attributed to the owner via the now-widened `ROUTINE_PAT` (which also unblocked the PAT-less
+> routine triggers — the secret had never existed); the Q-0084 self-merge envelope is struck
+> from CLAUDE.md. Proven live on #786 (hands-off, ~15 s). · 2026-06-13, **server event logging v1 (PR #774, band slot 5)** — the
 > passive-event layer of `services/server_logging.py` (Q-0109): message edits/deletions ·
 > member joins/leaves · role grants/revocations, gated by the master `logging.enabled` + a
 > per-category flag (all default OFF), with owner-configurable combined-vs-per-category
