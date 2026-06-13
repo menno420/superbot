@@ -20,6 +20,7 @@ from pathlib import Path
 
 KIT_ROOT = Path(__file__).resolve().parents[1]
 ENGINE_ROOT = KIT_ROOT / "src" / "engine"
+TEMPLATES_ROOT = KIT_ROOT / "src" / "templates"
 DIST_PATH = KIT_ROOT / "dist" / "bootstrap.py"
 
 # Dependency order: a module appears after everything it references.
@@ -31,6 +32,7 @@ MODULE_ORDER = (
     "interview/question_bank.py",
     "interview/stages.py",
     "interview/interview.py",
+    "render.py",
     "cli.py",
 )
 PACKAGE_FILES = ("__init__.py", "lib/__init__.py", "interview/__init__.py")
@@ -101,6 +103,11 @@ def build() -> str:
     lines.append("_ENGINE_MANIFEST = {")
     for path, text in manifest.items():
         lines.append(f"    {path!r}: {text!r},")
+    lines.append("}")
+    lines.append("")
+    lines.append("_TEMPLATES = {")
+    for tpath in sorted(TEMPLATES_ROOT.glob("*")):
+        lines.append(f"    {tpath.name!r}: {tpath.read_text(encoding='utf-8')!r},")
     lines.append("}")
     lines.append("")
     lines.append('if __name__ == "__main__":')
