@@ -4585,3 +4585,29 @@ dispatches **open a PR and hold** (not self-merge to prod) until reviewed — ru
 from this docs/tooling session, but available the moment `/bugreport` sees real use.
 
 **Home:** on decision, record here; build per the idea doc's build order in a control-plane session.
+
+### Q-0122 — Stop-hook end-of-session advisory (PR-lifecycle + grooming reminders)
+
+> **DIRECTED 2026-06-13 (owner, in-session).** The owner selected the "enforcement hooks" scope of the
+> 2026-06-13 workflow-hardening pass — the in-session direction Q-0106 requires for an executable-config
+> change (agents don't self-edit hooks on their own initiative). This entry is provenance; the change is
+> **non-blocking** (advisory only).
+
+**Area:** Executable config (`scripts/claude_stop_check.py`, the wired Stop hook) · session-ender enforcement
+**Type:** Owner-directed in-session edit to executable config (provenance per Q-0106)
+
+**Problem:** several mandatory session-enders relied purely on the agent remembering — **Q-0052** (open
+the PR early), **Q-0103/Q-0084** (the PR must reach a terminal state), **Q-0015** (grooming). Nothing
+flagged them. The existing Stop-hook session-log advisory only fired when the `.sessions/` log was
+*incomplete*, so a session that wrote a complete log but **forgot to merge its PR** got no nudge — the
+exact Q-0103 abandoned-open-PR failure.
+
+**Change:** broadened `_session_log_advisory` → `_end_of_session_advisory`, which — when HEAD is ahead
+of `origin/main` — **always** prints a terse, **non-blocking** reminder of the PR-lifecycle + grooming +
+session-log obligations. It stays advisory because the Stop hook runs locally with **no GitHub access**:
+it cannot verify PR state, only remind. No `.claude/settings.json` change (the hook is already wired).
+
+**Calibration (Q-0105):** advisory-first; consider a harder gate only if the reminder proves it needs
+teeth across sessions. Relax/delete if it proves noisy.
+
+**Home:** `scripts/claude_stop_check.py` is the change; this entry is provenance.
