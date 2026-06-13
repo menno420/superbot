@@ -77,6 +77,15 @@ image-mod, embed budgets for log/welcome embeds):
    external API call are surfaced in the setup wizard copy (Q-0109/Q-0108).
 6. **Config UI is the `mock_*` shape made real**, not a new invention — cite the
    `pattern_id` in the slice PR.
+7. **Extend an existing subsystem before minting a new one.** Before registering a
+   new `SubsystemSchema`, ask whether the feature *extends an existing subsystem's
+   domain*. If so, add settings/bindings to that subsystem's schema — a new subsystem
+   trips the whole pinned-surface cascade (hub roster · help-surface-map ·
+   discoverability hook · settings-customization `###` section), an extension trips
+   **none** of it. Mint a new subsystem only when the feature has its own
+   identity/pipeline/lifecycle. *(Proof from the lane: automod = new subsystem, yes —
+   own pipeline stage; server event logging = extension of `logging`, no — it added
+   4 settings + 4 bindings to the existing schema and touched zero pinned surfaces.)*
 
 ## 4. Build order (the band-queue slots 4–9, each one session)
 
