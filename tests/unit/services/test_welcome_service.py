@@ -1,0 +1,257 @@
+"""Unit tests for the welcome orchestration (services.welcome_service)."""
+
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock
+
+import discord
+import pytest
+
+from services import welcome_service
+from services.welcome_config import WelcomePolicy
+
+
+def _guild() -> MagicMock:
+    g = MagicMock(spec=discord.Guild)
+    g.id = 1
+    g.name = "Demo"
+    g.member_count = 1235
+    g.get_channel.return_value = None
+    g.get_role.return_value = None
+    return g
+
+
+def _member(guild: MagicMock | None = None) -> MagicMock:
+    m = MagicMock(spec=discord.Member)
+    m.id = 200
+    m.bot = False
+    m.mention = "<@200>"
+    m.display_name = "Astro"
+    m.roles = []
+    avatar = MagicMock()
+    avatar.url = "https://cdn.example/avatar.png"
+    m.display_avatar = avatar
+    m.guild = guild if guild is not None else _guild()
+    return m
+
+
+def _text_channel() -> MagicMock:
+    ch = MagicMock(spec=discord.TextChannel)
+    ch.send = AsyncMock()
+    return ch
+
+
+# ---------------------------------------------------------------------------
+# Embed builders
+# ---------------------------------------------------------------------------
+
+
+def test_join_embed_uses_mention_and_count():
+    member = _member()
+    policy = WelcomePolicy(join_message="Hi {user} — #{count} in {server}")
+    embed = welcome_service.format_join_embed(member, policy, 1235)
+    assert embed.description == "Hi <@200> — #1,235 in Demo"
+    assert embed.color == discord.Color.green()
+
+
+def test_leave_embed_uses_plain_name():
+    member = _member()
+    policy = WelcomePolicy(leave_message="{user} left {server}")
+    embed = welcome_service.format_leave_embed(member, policy, 42)
+    # A departed member is named, not mentioned.
+    assert embed.description == "Astro left Demo"
+
+
+# ---------------------------------------------------------------------------
+# handle_member_join
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_join_disabled_is_noop(monkeypatch):
+    member = _member()
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(return_value=WelcomePolicy(enabled=False)),
+    )
+    apply = AsyncMock()
+    monkeypatch.setattr("services.role_automation.apply", apply)
+
+    await welcome_service.handle_member_join(member)
+    apply.assert_not_called()
+    member.guild.get_channel.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_join_posts_greeting_and_emits(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+            ),
+        ),
+    )
+    import core.events
+
+    emit = AsyncMock()
+    monkeypatch.setattr(core.events.bus, "emit", emit)
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_awaited_once()
+    assert "embed" in channel.send.await_args.kwargs
+    emit.assert_awaited_once()
+    assert emit.await_args.args[0] == welcome_service.EVT_WELCOME_MEMBER_GREETED
+    assert emit.await_args.kwargs["user_id"] == 200
+
+
+@pytest.mark.asyncio
+async def test_join_grants_entry_role(monkeypatch):
+    role = MagicMock()
+    role.id = 777
+    role.name = "Member"
+    member = _member()
+    member.guild.get_role.return_value = role
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(enabled=True, join_enabled=False, entry_role_id=777),
+        ),
+    )
+    apply = AsyncMock()
+    monkeypatch.setattr("services.role_automation.apply", apply)
+
+    await welcome_service.handle_member_join(member)
+
+    apply.assert_awaited_once()
+    # The grant goes through the audited seam as a system actor.
+    assert apply.await_args.kwargs["actor_type"] == "system"
+    assignment = apply.await_args.args[1][0]
+    assert assignment.add_role_id == 777
+
+
+@pytest.mark.asyncio
+async def test_join_skips_role_already_held(monkeypatch):
+    role = MagicMock()
+    role.id = 777
+    member = _member()
+    member.roles = [role]  # already has the entry role
+    member.guild.get_role.return_value = role
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(return_value=WelcomePolicy(enabled=True, entry_role_id=777)),
+    )
+    apply = AsyncMock()
+    monkeypatch.setattr("services.role_automation.apply", apply)
+
+    await welcome_service.handle_member_join(member)
+    apply.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_join_missing_channel_does_not_send(monkeypatch):
+    member = _member()
+    member.guild.get_channel.return_value = None  # configured id no longer resolves
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(enabled=True, join_enabled=True, channel_id=100),
+        ),
+    )
+    import core.events
+
+    emit = AsyncMock()
+    monkeypatch.setattr(core.events.bus, "emit", emit)
+
+    await welcome_service.handle_member_join(member)
+    emit.assert_not_called()  # no greeting posted → no greeted event
+
+
+@pytest.mark.asyncio
+async def test_join_load_policy_fault_fails_open(monkeypatch):
+    member = _member()
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(side_effect=RuntimeError("db down")),
+    )
+    # Must not raise.
+    await welcome_service.handle_member_join(member)
+
+
+@pytest.mark.asyncio
+async def test_join_send_forbidden_is_swallowed(monkeypatch):
+    channel = _text_channel()
+    channel.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "no perms"))
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(enabled=True, join_enabled=True, channel_id=100),
+        ),
+    )
+    import core.events
+
+    emit = AsyncMock()
+    monkeypatch.setattr(core.events.bus, "emit", emit)
+
+    await welcome_service.handle_member_join(member)  # no raise
+    emit.assert_not_called()  # failed post → no greeted event
+
+
+# ---------------------------------------------------------------------------
+# handle_member_leave
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_leave_posts_farewell(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                leave_enabled=True,
+                channel_id=100,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_leave(member)
+    channel.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_leave_disabled_is_noop(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                leave_enabled=False,
+                channel_id=100,
+            ),
+        ),
+    )
+    await welcome_service.handle_member_leave(member)
+    channel.send.assert_not_called()

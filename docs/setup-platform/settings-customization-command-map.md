@@ -662,6 +662,66 @@ through `moderation_service` (no parallel audit path).
 23. **priority**: `P2` — functional as-is; settings surface is future work.
 24. **recommended_PR_phase**: future community-settings PR.
 
+### welcome
+
+welcome v1 (owner decision Q-0110) — the member-greeting layer of the
+safety/community platform (band slot 6). Greets members on join, optionally
+bids farewell on leave, and optionally grants an entry role the moment a member
+joins. Embed-only (the Q-0110 PIL card is phase 2). Deliberately hub-less:
+surfaced via its Help hook + `!settings` → Welcome + the `!welcome` summary, so
+it does not clutter the user-tier Community hub with operator config. Embeds +
+orchestration live in `services/welcome_service.py`; the entry-role grant routes
+through `services/role_automation.py` (audited — no parallel role/audit path).
+
+1. **cog_module**: `disbot/cogs/welcome_cog.py` (+ `disbot/cogs/welcome/`
+   subpackage with `schemas.py`).
+2. **subsystem**: `welcome`
+3. **current_commands**: `!welcome` (read-only policy summary).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: none (config via `!settings` → Welcome).
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["welcome"]` lists `welcome`;
+   discoverable via the `build_help_menu_view` hook (administrator tier).
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
+9. **existing_SettingSpec_declarations**: `enabled`, `join_enabled`,
+   `leave_enabled`, `channel`, `join_message`, `leave_message`, `entry_role`
+   (`disbot/cogs/welcome/schemas.py`). The master flag defaults OFF; defaults
+   are the single source of truth in `disbot/services/welcome_config.py`.
+10. **existing_settings_keys**: `WELCOME_ENABLED`, `WELCOME_JOIN_ENABLED`,
+    `WELCOME_LEAVE_ENABLED`, `WELCOME_CHANNEL`, `WELCOME_JOIN_MESSAGE`,
+    `WELCOME_LEAVE_MESSAGE`, `WELCOME_ENTRY_ROLE`
+    (`disbot/utils/settings_keys/welcome.py`). Stored as scalar guild settings —
+    **no migration**. The `channel`/`entry_role` settings carry
+    `input_hint="channel"`/`"role"` (channel-id-as-str duality).
+11. **existing_BindingSpec_entries**: none (channel/role are scalar settings
+    with a picker `input_hint`, not `subsystem_bindings` rows in v1).
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capability `welcome.settings.configure`; the `!welcome` summary is
+    `manage_guild`-gated.
+14. **hardcoded_or_env_only_behavior**: none — every flag/channel/template is
+    operator config; a fresh guild is unaffected (master flag defaults OFF).
+15. **current_resource_dependencies**: the greeting channel + optional entry
+    role are operator-supplied ids (no auto-provisioning in v1).
+16. **target_settings_fields**: the two per-event toggles + channel + the two
+    templates + the entry role (`mock_welcome_ab` is the reviewed UX target;
+    embed-first, PIL card phase 2).
+17. **target_bindings**: none in v1 (a channel/role BindingSpec is a phase-2
+    option once the binding read path generalises).
+18. **target_access_controls**: administrator floor for config; the entry-role
+    grant is system-actor via `role_automation` (audited).
+19. **acceptance_or_validation_rules**: channel/role ids must be numeric (or
+    empty); message templates are non-empty and bounded by `MAX_MESSAGE_LENGTH`;
+    placeholders render injection-safe via `welcome_config.render_template`.
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars). The greeting
+    is a channel send, not a settings mutation; the entry role routes through
+    `role_automation`.
+21. **target_help_or_menu_route**: Help direct-nav (policy summary), Settings
+    → Welcome group.
+22. **provisionable_resources**: none.
+23. **priority**: `P1` — band slot 6 of the safety/community lane.
+24. **recommended_PR_phase**: safety-lane slot 6 (this PR).
+
 ### games
 
 1. **cog_module**: `disbot/cogs/games_cog.py`.

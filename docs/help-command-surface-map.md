@@ -23,7 +23,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 30 of the 39 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 31 of the 40 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 30 of the 31 subsystem-owning
   cogs expose it. The 9 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
@@ -71,8 +71,8 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 
 ## 2. Subsystem inventory
 
-31 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 39 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+32 registered subsystems in `utils/subsystem_registry.py` (one row
+each below); 40 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 9 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
@@ -111,6 +111,7 @@ falls back to the command-list embed when the hook is missing or raises.
 | `settings` | `settings_cog.py` | (entry via `!settings`) | — | `SettingsHubView` | `!help settings` → opens Settings panel (shared resolver) | dropdown Settings → panel | hub top-level |
 | `utility` | `utility_cog.py` | `utilitymenu`, `clear`/`purge`, `info`, `serverinfo`, `userinfo`, `avatar`, `remind` | — | `_UtilityPanelView` | `!help utility` → opens Utility panel (shared resolver) | dropdown Utility → panel | hub top-level |
 | `ux_lab` | `ux_lab_cog.py` | `uxlab` (alias `interfacelab`), `/uxlab` | — | `UxLabHomeView` (wings in `views/ux_lab/`) | `!help` → UX Lab (shared resolver; administrator tier) | admin-tier top-level (design workbench, no parent hub) | zero-write interface gallery (UX Lab plan 2026-06-12) |
+| `welcome` | `welcome_cog.py` | `welcome` | — | `HubView` | `!help welcome` → welcome policy summary (shared resolver) | hub-less; surfaced via `!settings` → Welcome + the `!welcome` summary (administrator tier) | member greetings/farewell + optional entry role (Q-0110); config via `!settings` → Welcome |
 | `xp` | `xp_cog.py` | `xpmenu`, `rank`, `givexp`, `resetxp`, `xpconfig` | — | `_XpHubView` | `!help xp` → opens XP panel (shared resolver) | reached via Community; `parent_hub="community"` since PR #3 | hub child (Community) — declared; admin controls live in panel |
 
 ## 3. Known inconsistencies (resolved by PR #142 / PR #143)

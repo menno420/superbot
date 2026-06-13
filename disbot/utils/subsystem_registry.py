@@ -414,6 +414,32 @@ SUBSYSTEMS: dict[str, dict] = {
             "community_spotlight.dashboard.view",
         ],
     },
+    # welcome v1 (owner decision Q-0110): the member-greeting layer of the
+    # safety/community platform. Admin-configured (visibility_tier), but
+    # deliberately hub-less — surfaced via its Help hook + `!settings` →
+    # Welcome + the `!welcome` summary (like `ai`/`channel`/`ux_lab`), so it
+    # does not clutter the user-tier Community hub with operator config.
+    "welcome": {
+        "display_name": "Welcome",
+        "description": "Member greetings, farewells, and an optional entry role",
+        "emoji": "👋",
+        "color": GENERAL_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "community",
+        "tags": ["welcome", "greeting", "onboarding", "community"],
+        "entry_points": ["welcome"],
+        "default_channels": ["general", "bot-commands"],
+        "related_subsystems": ["role", "logging"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 31,
+        "capabilities": [
+            "welcome.settings.configure",
+        ],
+    },
     "blackjack": {
         "display_name": "Blackjack",
         "description": "Blackjack card game",
