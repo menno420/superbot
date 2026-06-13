@@ -41,6 +41,9 @@
       "Bash(python3.10 -m isort*)",
       "Bash(python3.10 -m ruff*)",
       "Bash(python3.10 -m mypy*)",
+      "Bash(python3.10 substrate-kit/src/build_bootstrap.py*)",
+      "Bash(python3.10 substrate-kit/dist/bootstrap.py*)",
+      "Bash(mktemp*)",
       "Bash(ls*)",
       "Bash(wc*)",
       "Bash(echo*)",
@@ -55,7 +58,9 @@
       "mcp__github__unsubscribe_pr_activity",
       "mcp__github__get_file_contents",
       "mcp__github__list_commits",
-      "mcp__github__get_commit"
+      "mcp__github__get_commit",
+      "mcp__github__get_job_logs",
+      "mcp__github__actions_list"
     ],
     "ask": [
       "Bash(git push --force*)",
