@@ -111,7 +111,12 @@ def test_moderation_hub_uses_existing_panel():
     assert moderation is not None
     assert moderation.entry_command == "!modmenu"
     assert moderation.minimum_tier == "moderator"
-    assert moderation.primary_children == ("cleanup", "logging", "proof_channel")
+    assert moderation.primary_children == (
+        "automod",
+        "cleanup",
+        "logging",
+        "proof_channel",
+    )
     assert moderation.cross_link_children == ()
     assert moderation.panel_available is True
 

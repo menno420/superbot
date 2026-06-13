@@ -99,9 +99,11 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
 [server-safety-and-automod](ideas/server-safety-and-automod-2026-06-12.md) ·
 [community-platform-features](ideas/community-platform-features-2026-06-12.md)) and answered
 the five scope questions same day (**Q-0108–Q-0112**, #740 — decisions recorded in the
-router + both idea docs' routing tables). No folio yet — the **family plan** below becomes
-the lane's entry doc (the navigation cheat-sheet covers the moderation/community cogs per
-Q-0101). UI/attachment numbers: [discord-platform-limits](operations/discord-platform-limits.md).
+router + both idea docs' routing tables). The lane's entry doc is the
+**[safety/community family plan](planning/safety-community-family-plan-2026-06-13.md)**
+(2026-06-13, band slot 4 — shared architecture + sliced build order, citing
+`ux/pattern-library.md` pattern_ids; **automod v1 shipped in the same PR**). UI/attachment
+numbers: [discord-platform-limits](operations/discord-platform-limits.md).
 
 - **Next (decade-queue slots 8–10)** — **one family plan first** (shared config/UX shape,
   reuse seams), then the first slices: **automod v1** (Q-0108 — all four rule types, exempt

@@ -62,6 +62,12 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         "game_xp.level_up",
         # ── Moderation (services/moderation_service.py) ──────────────────
         "moderation.action_taken",
+        # ── Automod (cogs/automod/listener.py, Q-0108) ───────────────────
+        # Advisory.  Emitted after an automod rule deletes + warns (the action
+        # itself audits via moderation_service).  Payload: guild_id, user_id,
+        # rule, channel_id.  Subscriber failure logged + swallowed; the action
+        # is authoritative either way.  See docs/ownership.md § Event ownership.
+        "automod.rule_triggered",
         # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────
         "bindings.changed",
         # ── Settings (services/settings_mutation.py, S4) ──────────────────
