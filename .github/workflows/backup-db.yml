@@ -1,0 +1,130 @@
+# Postgres backup — daily pg_dump uploaded as a GitHub Actions artifact.
+#
+# Trigger policy: scheduled daily (02:00 UTC, between the two executor runs)
+# plus workflow_dispatch for manual / ad-hoc runs. The schedule means the
+# most-recent artifact is ≤24 h old at any point.
+#
+# What it does: pg_dump --no-owner --no-acl against DATABASE_PUBLIC_URL
+# (Railway's external proxy URL — not the private internal URL), pipes
+# through gzip, uploads as a 90-day artifact.  On failure it opens a bug
+# issue so the maintainer is notified even if email notifications are off.
+#
+# Prerequisites (one-time owner setup):
+#   1. Railway dashboard → Postgres service → Connect tab → copy the value
+#      labelled "Database URL" under "Public networking" (this is the public
+#      proxy URL, distinct from the internal DATABASE_URL).
+#   2. GitHub repo → Settings → Secrets and variables → Actions →
+#      New repository secret → name it DATABASE_PUBLIC_URL, paste the value.
+#
+# Restore procedure: docs/operations/production-deployment.md § Backups.
+#
+# Provenance + reliability (Q-0105): added 2026-06-13 (band slot 3).
+# UNVERIFIED — confirm the first run produces an artifact and the dump is
+# restorable (run a test restore to a local Postgres once the secret is set).
+# Delete or disable this workflow if it proves unreliable.
+
+name: Postgres backup (daily)
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # daily 02:00 UTC — between the two executor runs
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual backup (optional)'
+        required: false
+
+permissions:
+  contents: read
+  issues: write  # for the failure-notification issue
+
+concurrency:
+  group: postgres-backup
+  cancel-in-progress: false  # never cancel an in-progress backup
+
+jobs:
+  backup:
+    name: pg_dump → artifact (90 days)
+    runs-on: ubuntu-latest
+    if: github.repository == 'menno420/superbot'
+
+    steps:
+      - name: Verify secret is configured
+        env:
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          if [ -z "$DATABASE_PUBLIC_URL" ]; then
+            echo "::error::DATABASE_PUBLIC_URL secret is not set."
+            echo "Setup: Railway → Postgres → Connect → public URL → GitHub secret."
+            echo "See docs/operations/production-deployment.md § Backups."
+            exit 1
+          fi
+          echo "Secret configured."
+
+      - name: Install postgresql-client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+
+      - name: Dump and compress
+        id: dump
+        env:
+          DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
+        run: |
+          TIMESTAMP=$(date -u '+%Y%m%dT%H%M%SZ')
+          FILENAME="superbot-backup-${TIMESTAMP}.sql.gz"
+          pg_dump --no-owner --no-acl "$DATABASE_PUBLIC_URL" | gzip > "$FILENAME"
+          SIZE=$(du -sh "$FILENAME" | cut -f1)
+          echo "file=$FILENAME" >> "$GITHUB_OUTPUT"
+          echo "Backup created: $FILENAME ($SIZE)"
+          {
+            echo "### Postgres backup"
+            echo "- **File:** \`$FILENAME\`"
+            echo "- **Size:** $SIZE (compressed)"
+            echo "- **Retention:** 90 days (artifact)"
+            echo ""
+            echo "Download from the Actions run to restore."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-backup-${{ github.run_id }}
+          path: ${{ steps.dump.outputs.file }}
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Open issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = [
+              context.serverUrl,
+              context.repo.owner,
+              context.repo.repo,
+              'actions/runs',
+              context.runId,
+            ].join('/');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Postgres backup failed (${today})`,
+              body: [
+                'The scheduled Postgres backup workflow failed.',
+                '',
+                `**Run:** ${runUrl}`,
+                '',
+                '**Likely causes:**',
+                '- `DATABASE_PUBLIC_URL` secret not set, or expired/rotated',
+                '  (Railway updates it when the database is recreated)',
+                '- Transient network issue between GitHub Actions and Railway',
+                '',
+                'Check the workflow logs. If the secret is stale, update it:',
+                'Railway → Postgres → Connect → public URL → repo secret.',
+                '',
+                'See `docs/operations/production-deployment.md` § Backups for the',
+                'full setup and restore procedure.',
+              ].join('\n'),
+            });

@@ -59,12 +59,57 @@
   direction is an owner decision —
   [`owner/maintainer-question-router.md`](../owner/maintainer-question-router.md) §36.
 
-## Backups — OPEN
+## Backups
 
-**No automated backup/restore posture exists yet** (as of 2026-06-10). Bot data
-lives on the Railway `postgres-volume`. Designing the posture (Railway-side
-snapshots vs. offsite `pg_dump`, retention, restore drill) is an open discussion
-with the maintainer — when decided, this section becomes its home.
+**Posture (2026-06-13, band slot 3):** daily automated `pg_dump` to GitHub Actions
+artifacts (90-day rolling window) + a local-run script for ad-hoc dumps.
+
+### What runs automatically
+
+`.github/workflows/backup-db.yml` fires at **02:00 UTC every day** (also available
+as a manual `workflow_dispatch`). It runs `pg_dump --no-owner --no-acl` against the
+Railway public proxy URL, compresses with gzip, and uploads as an artifact named
+`postgres-backup-<run-id>` with 90-day retention. On failure it opens a GitHub issue.
+
+### One-time owner setup (required before the first scheduled run works)
+
+1. Railway dashboard → **Postgres service → Connect tab**.  Under
+   "Public networking" copy the URL labelled **"Database URL"** (the public proxy
+   URL — *not* the internal `DATABASE_PRIVATE_URL`).
+2. GitHub repo → **Settings → Secrets and variables → Actions →
+   New repository secret**.  Name: `DATABASE_PUBLIC_URL`.  Paste the URL.
+3. Manually trigger the workflow once (`Actions → Postgres backup → Run workflow`)
+   to verify an artifact appears and is non-zero.
+
+> **Note on rotation:** Railway may rotate the public URL when the Postgres service
+> is recreated or manually rotated.  If the backup fails, the first thing to check
+> is whether the secret is stale.
+
+### Restore procedure
+
+1. Download the desired artifact from **Actions → Postgres backup (daily) → the
+   run → Artifacts → postgres-backup-\<run-id\>** and unzip it.
+2. Obtain `DATABASE_URL` for the target Postgres (Railway dashboard or local).
+3. ```
+   gunzip -c superbot-backup-<timestamp>.sql.gz | psql <DATABASE_URL>
+   ```
+4. Restart the Railway worker service so it reconnects cleanly.
+
+### Ad-hoc / local backup
+
+```
+DATABASE_PUBLIC_URL=<url> python3.10 scripts/backup_db.py [--output-dir /path]
+```
+
+Requires `pg_dump` on PATH (`brew install libpq` on macOS;
+`apt-get install postgresql-client` on Debian/Ubuntu).
+
+### Railway-native snapshots (complement, not replacement)
+
+Railway's Pro plan includes **Point-In-Time Recovery** and database snapshots in the
+Postgres service UI.  Enable them if available on the current plan — they recover
+from in-cluster data corruption, while the offsite `pg_dump` above survives a full
+Railway service loss.  The two are complementary.
 
 ## Incident log
 
