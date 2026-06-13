@@ -14,9 +14,11 @@ import tempfile
 from pathlib import Path
 
 from engine.interview.interview import critical_slots, pending_questions, run_session
+from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config, config_path, load_config, save_config
 from engine.lib.guardrail import UnsafeTargetError, assert_safe_target
 from engine.lib.state import JsonStateBackend, default_state
+from engine.render import build_context, find_placeholders, load_templates, render
 
 
 def _emit(line: str = "") -> None:
@@ -107,6 +109,28 @@ def cmd_ask(target: Path) -> int:
     return 0
 
 
+def cmd_render(target: Path) -> int:
+    """Render the content docs from the current filled slots into ``target``."""
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    if not backend.data:
+        _emit(f"render: no state at {target} (run init first).")
+        return 1
+    context = build_context(backend.data)
+    out_dir = target / config.state_dir / "rendered"
+    leftover_total = 0
+    for name, text in load_templates().items():
+        rendered = render(text, context)
+        leftover = find_placeholders(rendered)
+        leftover_total += len(leftover)
+        out_name = name[:-5] if name.endswith(".tmpl") else name
+        atomic_write_text(out_dir / out_name, rendered)
+        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""
+        _emit(f"render: wrote {out_name}{suffix}")
+    _emit(f"render: {leftover_total} unfilled placeholder(s) total.")
+    return 0
+
+
 def cmd_simulate(n: int) -> int:
     """Init into a temp dir and drive ``n`` interview sessions; verify progress.
 
@@ -153,6 +177,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("init", "initialise a project"),
         ("status", "show install state"),
         ("ask", "list pending interview questions"),
+        ("render", "render content docs from filled slots"),
     ):
         child = sub.add_parser(name, help=helptext)
         child.add_argument("--target", type=Path, default=Path.cwd())
@@ -175,6 +200,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_status(args.target)
         if args.command == "ask":
             return cmd_ask(args.target)
+        if args.command == "render":
+            return cmd_render(args.target)
         if args.command == "mode":
             return cmd_mode(args.target, args.name)
     except UnsafeTargetError as exc:
