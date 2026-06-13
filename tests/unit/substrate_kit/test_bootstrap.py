@@ -52,3 +52,5 @@ def test_single_file_simulate_via_subprocess(tmp_path):
     )
     assert result.returncode == 0, result.stderr
     assert "OK" in result.stdout
+    # proves the interview engine is embedded and reaches steady in the single file
+    assert "graduated=True" in result.stdout

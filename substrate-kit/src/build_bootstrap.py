@@ -28,9 +28,12 @@ MODULE_ORDER = (
     "lib/config.py",
     "lib/state.py",
     "lib/guardrail.py",
+    "interview/question_bank.py",
+    "interview/stages.py",
+    "interview/interview.py",
     "cli.py",
 )
-PACKAGE_FILES = ("__init__.py", "lib/__init__.py")
+PACKAGE_FILES = ("__init__.py", "lib/__init__.py", "interview/__init__.py")
 
 # Intra-package imports are dropped: in the concatenated file the referenced
 # names already live in the same module namespace.

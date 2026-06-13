@@ -1,9 +1,9 @@
 """The substrate-kit bootstrap command line.
 
-PR-1a surface: ``init`` (idempotent), ``status``, ``mode <name>``, and
-``--simulate N`` (the CI / proving smoke). The richer interview surface — the
-staged questions and templates — arrives in PR 1b. Output goes through ``_emit``
-(``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.
+Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``ask`` (list the
+pending interview questions), and ``--simulate N`` (the CI / proving smoke that
+drives the staged interview). Output goes through ``_emit`` (``sys.stdout.write``)
+rather than ``print`` to keep the engine lint-clean.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from engine.interview.interview import critical_slots, pending_questions, run_session
 from engine.lib.config import Config, config_path, load_config, save_config
 from engine.lib.guardrail import UnsafeTargetError, assert_safe_target
 from engine.lib.state import JsonStateBackend, default_state
@@ -86,29 +87,55 @@ def cmd_mode(target: Path, name: str) -> int:
     return 0
 
 
-def _run_session(target: Path, config: Config) -> None:
-    """Advance one synthetic session (PR-1a: bump the session counter)."""
+def cmd_ask(target: Path) -> int:
+    """List the interview's currently pending questions."""
+    config = load_config(target)
     backend = JsonStateBackend(_state_path(target, config))
-    with backend.transaction():
-        backend.set("session_count", int(backend.get("session_count", 0)) + 1)
+    if not backend.data:
+        _emit(f"ask: no state at {target} (run init first).")
+        return 1
+    pending = pending_questions(backend.data)
+    if not pending:
+        _emit("ask: no pending questions — all slots filled.")
+        return 0
+    _emit(f"ask: {len(pending)} pending question(s):")
+    for question in pending:
+        _emit(
+            f"  [{question['id']}] "
+            f"({question['audience']}/{question['priority']}) {question['prompt']}",
+        )
+    return 0
 
 
 def cmd_simulate(n: int) -> int:
-    """Init into a temp dir and drive ``n`` synthetic sessions; verify the count."""
+    """Init into a temp dir and drive ``n`` interview sessions; verify progress.
+
+    Session 1 supplies confirmed answers for every critical slot; later sessions
+    supply none. Asserts the critical slots fill and (for ``n`` past the quiet
+    threshold) the install graduates integration -> steady.
+    """
     with tempfile.TemporaryDirectory(prefix="substrate-sim-") as tmp:
         target = Path(tmp)
         rc = cmd_init(target)
         if rc != 0:
             return rc
-        config = load_config(target)
-        for _ in range(n):
-            _run_session(target, config)
-        backend = JsonStateBackend(_state_path(target, config))
-        final = int(backend.get("session_count", 0))
-        if final != n:
-            _emit(f"simulate: FAILED (expected {n} sessions, got {final}).")
+        state_path = _state_path(target, load_config(target))
+        crit = critical_slots()
+        answers = {slot: f"value-for-{slot}" for slot in crit}
+        graduated = False
+        for index in range(n):
+            backend = JsonStateBackend(state_path)
+            result = run_session(backend, answers if index == 0 else {})
+            graduated = graduated or result["graduated"]
+        data = JsonStateBackend(state_path).data
+        missing = [s for s in crit if data.get("slots", {}).get(s) != "filled"]
+        if missing:
+            _emit(f"simulate: FAILED — critical slots unfilled: {missing}")
             return 1
-        _emit(f"simulate: OK — {n} synthetic sessions, state intact.")
+        _emit(
+            f"simulate: OK — {n} session(s), {len(crit)} critical slots filled, "
+            f"stage={data.get('stage')} (graduated={graduated}).",
+        )
     return 0
 
 
@@ -125,6 +152,7 @@ def build_parser() -> argparse.ArgumentParser:
     for name, helptext in (
         ("init", "initialise a project"),
         ("status", "show install state"),
+        ("ask", "list pending interview questions"),
     ):
         child = sub.add_parser(name, help=helptext)
         child.add_argument("--target", type=Path, default=Path.cwd())
@@ -145,6 +173,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_init(args.target)
         if args.command == "status":
             return cmd_status(args.target)
+        if args.command == "ask":
+            return cmd_ask(args.target)
         if args.command == "mode":
             return cmd_mode(args.target, args.name)
     except UnsafeTargetError as exc:
