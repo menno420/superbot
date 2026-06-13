@@ -30,9 +30,10 @@ in `.claude/CLAUDE.md`.
 1. Read this doc + the two origin idea docs above.
 2. Execution is **already owner-approved** — do **not** re-plan or re-open the review rounds; the
    "External review" sections (Rounds 1–10) are a *settled record*, not open questions.
-3. **PR 1a + 1b are DONE (#789, #791–#793) — resume at the 1b tail: the two stdlib checker ports**
-   (then PR 2, the capability layer). See the **Execution log** below for what shipped, the exact
-   "▶ RESUME HERE" recipe, and the CI gotchas to respect. Hermes's four blockers were resolved in 1a.
+3. **PR 1a + 1b are DONE, incl. the 1b tail (#789, #791–#793, #802) — resume at PR 2, the
+   capability layer** (stances / skills / personas). See the **Execution log** below for what
+   shipped, the exact "▶ RESUME HERE" recipe, and the CI gotchas to respect. Hermes's four
+   blockers were resolved in 1a.
 4. Delivery is **two-phase**: PRs 1a–3 deliver the working substrate *proven in-repo* under
    `substrate-kit/`; the public-OSS productization phase (~160–276 h) is separate and later.
 5. The kit lives in a self-contained `substrate-kit/` tree and **never mutates superbot's live
@@ -69,15 +70,28 @@ in `.claude/CLAUDE.md`.
   current-state / session-journal / question-router / ideas-README), referencing only bank slots
   so a fully-filled interview renders zero leftovers. Single-file loop verified end-to-end
   (`init → ask`/`simulate` → `render` writes all six docs); 43 substrate-kit tests green.
-- **▶ RESUME HERE (next session) — the 1b tail: two stdlib checker ports.** Lift `check_docs` +
-  `check_session_log` into `substrate-kit/src/engine/checks/` as **generic, config-driven** ports
-  (not superbot's hardcoded versions): extend `lib/config.py` with `docs_root` / `badge_tokens` /
-  `readpath_docs` / `sessions_dir` / `session_markers`; check badge-presence + link-resolution +
-  reachability (drop superbot's ratchets/freshness rules); add a `check` CLI command; add the
-  modules to `build_bootstrap.py` `MODULE_ORDER` + `PACKAGE_FILES` and regenerate `dist/bootstrap.py`;
-  add `tests/unit/substrate_kit/test_checks.py`. Stdlib-only. Then **PR 2** (capability layer:
-  stances / skills / personas). The CI gotchas above (tests under `tests/`, `print`/`assert` bans,
-  isort-checks-tests, regenerate-the-bootstrap) all still apply.
+- **PR 1b tail (2026-06-13) — DONE (#802).** The two stdlib checker ports, generic + config-driven:
+  `lib/config.py` gained `docs_root` / `sessions_dir` / `badge_tokens` / `readpath_docs` /
+  `session_markers`; `engine/checks/check_docs.py` (badge-presence + link-resolution + reachability —
+  the host's ratchets + freshness rule deliberately **left behind** as project policy) and
+  `engine/checks/check_session_log.py` (configurable required-marker check; current log picked by
+  **mtime**, *not* `subprocess` — S603 is banned in engine code); a `check` CLI command (doc findings
+  + an incomplete *existing* log gate `--strict`; a *missing* log stays advisory); both wired into
+  `build_bootstrap.py` + the regenerated `dist/bootstrap.py`; `test_checks.py` (19 cases). **Also
+  closed verification goal (d):** every orientation template gained a `> **Status:** `<token>`` badge
+  so a host running `bootstrap check` on rendered output is badge-clean (proven by a render→check
+  integration test). 62 substrate-kit tests green; `check_quality --full` green (9367).
+- **▶ RESUME HERE (next session) — PR 2: the capability layer.** Per §3b/§3c + the PR-2 line under
+  "Implementation phases": the three modes' per-session behaviors; the full capability layer —
+  **stances** (`engine/stances/` + five stances + a `stance` CLI + orientation injection + the stub
+  `state.json.stance` field already shipped), **skills** (`build_skills.py` emitting native
+  `.claude/skills/*/SKILL.md` from generalized sources) and **personas** (`templates/agents/` →
+  `.claude/agents/`); trigger/drift/staleness detection; the full contract-doc template set +
+  owner-profile; templated hooks + `settings.template.json` + a generalized session-close; the
+  simulation asserts mode/stance behaviors, skill-generation validity, + graduation. The CI gotchas
+  in the 1a/1b entries above (tests under `tests/`, `print`/`assert`/`subprocess` bans on
+  `engine/`, isort-checks-tests, **regenerate the bootstrap** after any `src/engine` edit, black↔ruff
+  COM812 on awkward wraps — hoist long strings to constants) all still apply.
 
 ---
 
