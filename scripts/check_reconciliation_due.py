@@ -10,6 +10,12 @@ once merged PRs have crossed into a new multiple-of-20 band since the last marke
 (Cadence raised 10 → 20 on 2026-06-12, owner-directed: small PRs inflate the count, so every
 10 fired too often; the band size is the ``STEP`` constant below — retune there.)
 
+The marker is read from **origin/main as well as the working tree** (max of the two), so a
+reconciliation the autonomous routine already merged on main is not re-flagged as "due" when
+a continuation session starts on a branch that predates it (the 2026-06-13 stale-branch
+false-positive). Always ``git fetch origin main`` at session start before trusting the local
+ledger — a routine may have moved the world on.
+
 Advisory by default (exit 0); ``--strict`` for an explicit gate (e.g. ``/session-close``).
 After completing a pass, reset the marker to the latest PR. Pure stdlib, like ``check_docs.py``.
 
@@ -80,14 +86,52 @@ def _latest_merged_pr() -> int | None:
     return max(numbers) if numbers else None
 
 
-def _last_reconcile_pr() -> int | None:
-    """The PR number recorded in the current-state.md reconciliation marker."""
-    try:
-        text = CURRENT_STATE.read_text(encoding="utf-8")
-    except OSError:
-        return None
+def _marker_in(text: str) -> int | None:
+    """Extract the reconciliation-marker PR number from current-state text."""
     match = _MARKER_RE.search(text)
     return int(match.group(1)) if match else None
+
+
+def _marker_local() -> int | None:
+    """The reconciliation marker in the working-tree current-state.md."""
+    try:
+        return _marker_in(CURRENT_STATE.read_text(encoding="utf-8"))
+    except OSError:
+        return None
+
+
+def _marker_on_ref(ref: str) -> int | None:
+    """The reconciliation marker in ``<ref>:docs/current-state.md`` (or None)."""
+    try:
+        result = subprocess.run(
+            ["git", "show", f"{ref}:docs/current-state.md"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return _marker_in(result.stdout)
+
+
+def _last_reconcile_pr() -> int | None:
+    """Highest reconciliation marker across the working tree AND origin/main.
+
+    Read from BOTH the local file and ``origin/main``, taking the max. Rationale
+    (2026-06-13): the autonomous reconciliation routine resets the marker in a PR
+    that merges to main; a continuation session whose branch predates that merge
+    would otherwise read only its **stale local** marker and report a FALSE 'due'
+    — the routine already did the pass. Reading origin/main too (the same source
+    ``_latest_merged_pr`` already trusts and fetches) makes a routine-completed
+    pass visible before the local branch syncs; local is still considered so an
+    in-progress reconciliation (marker bumped, not yet merged) also counts.
+    """
+    markers = [
+        m for m in (_marker_local(), _marker_on_ref("origin/main")) if m is not None
+    ]
+    return max(markers) if markers else None
 
 
 def is_due(

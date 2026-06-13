@@ -83,3 +83,33 @@ def test_merge_subject_regex_covers_all_three_styles() -> None:
     for subject, expected in subjects:
         match = crd._MERGE_SUBJECT_RE.search(subject)
         assert match and int(match.group(1)) == expected, subject
+
+
+def test_marker_in_extracts_or_none() -> None:
+    assert crd._marker_in("blah Last reconciliation pass:** PR #800 (...)") == 800
+    assert crd._marker_in("no marker anywhere") is None
+
+
+def test_last_reconcile_uses_max_of_local_and_main(monkeypatch) -> None:
+    # The 2026-06-13 stale-branch case: local marker #780 (branch predates the
+    # routine's reconciliation), origin/main already reset to #800 → use #800, so
+    # a routine-completed pass is NOT re-flagged as due.
+    monkeypatch.setattr(crd, "_marker_local", lambda: 780)
+    monkeypatch.setattr(crd, "_marker_on_ref", lambda ref: 800)
+    assert crd._last_reconcile_pr() == 800
+
+
+def test_last_reconcile_falls_back_to_local_when_main_absent(monkeypatch) -> None:
+    monkeypatch.setattr(crd, "_marker_local", lambda: 800)
+    monkeypatch.setattr(crd, "_marker_on_ref", lambda ref: None)
+    assert crd._last_reconcile_pr() == 800
+
+
+def test_stale_branch_not_due_after_routine_reset(monkeypatch) -> None:
+    # End-to-end: latest #805, stale local marker #780, main marker #800 → not due
+    # (805//20 == 800//20 == 40). Before the fix this reported DUE (805//20 > 780//20),
+    # the exact false-positive that misled the 2026-06-13 continuation session.
+    monkeypatch.setattr(crd, "_latest_merged_pr", lambda: 805)
+    monkeypatch.setattr(crd, "_marker_local", lambda: 780)
+    monkeypatch.setattr(crd, "_marker_on_ref", lambda ref: 800)
+    assert crd.is_due()[0] is False

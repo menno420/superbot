@@ -134,6 +134,16 @@ STEP 5 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_s
 Respect the bounded-session protocol. Never touch production, Railway, or the database.
 ```
 
+> **Note for continuation sessions — the marker lives on `main`, not your branch.** When this
+> routine resets the "Last reconciliation pass: PR #N" marker (STEP 2) and merges, the new marker
+> is on `main`. A human/agent session whose branch was cut *before* that merge still has the **old**
+> marker locally, so a naive cadence check reads it as a **false "recon DUE"** (this bit the
+> 2026-06-13 continuation session — it nearly re-ran a pass the routine had already done at #800).
+> Two guards: (1) **always `git fetch origin main` at session start and check what merged** — a
+> routine may have moved the world on; (2) `scripts/check_reconciliation_due.py` now reads the
+> marker from **origin/main as well as the working tree** (max of the two), so a
+> routine-completed pass is not re-flagged on a stale branch.
+
 ---
 
 ## Routine: superbot night executor (advances the plan)
@@ -278,7 +288,9 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 | 6 | After #1: **`workflow_dispatch` `executor-nightly.yml`** once | the **first real unattended executor run** (the Q-0105 "watch the first run" moment — still pending; the loop has never self-fired) | #778 | ⬜ |
 
 > Once #1 is done, the cron path self-serves (#6 is just to watch the first one promptly). The first
-> autonomous **reconciliation** fires when merged PRs cross **#780**.
+> autonomous **reconciliation** fired at the **#800** boundary (PR #803 — band #781–#800 scored, marker
+> reset to #800, #801–#820 planned), proving the `reconcile`-issue trigger end-to-end; the next fires
+> when merged PRs cross **#820**.
 
 ## See also
 
