@@ -128,7 +128,7 @@ _LOGGING_BINDINGS: tuple[LoggingBinding, ...] = (
     ),
     LoggingBinding(
         subsystem="economy",
-        binding_name="economy_log_channel",
+        binding_name="log_channel",
         intent="general_logs",
         detailed_channel_name="economy-logs",
     ),

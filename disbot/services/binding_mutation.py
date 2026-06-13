@@ -44,6 +44,24 @@ Boundary notes (source-verified):
   * Authority is capability-native (ADR-005 A1): resolved via
     :func:`governance.capability.actor_holds_capability` against
     ``BindingSpec.capability_required`` (empty resolves to the admin floor).
+
+Actor model (parity with :class:`services.settings_mutation.SettingsMutationPipeline`):
+
+  * ``actor_type='user'`` / ``'moderator'`` / ``'admin'`` — a Discord
+    member initiated the write; ``actor`` is that member and the
+    capability check applies.
+  * ``actor_type='system'`` / ``'backfill'`` — a scripted / lifecycle
+    write (e.g. the economy-log auto-provision on guild join).  ``actor``
+    may be ``None`` and the capability check is bypassed inside
+    :func:`governance.capability.actor_holds_capability` (it short-circuits
+    on the actor_type).  Because ``binding_audit_log.actor_id`` is
+    ``NOT NULL`` (unlike ``settings_mutation_audit``, which permits NULL),
+    a system write records the bot's own id (``guild.me.id``) as the
+    audit ``actor_id`` — ``actor_type`` is the real discriminator.  This
+    is what lets a Discord-resource pointer be set by an automatic path
+    *and* still live in the binding lane (the P0-3 pointer-lane
+    convergence: a pointer has one canonical binding owner, no parallel
+    scalar).
 """
 
 from __future__ import annotations
@@ -75,9 +93,22 @@ logger = logging.getLogger("bot.services.binding_mutation")
 
 EVT_BINDING_CHANGED = "bindings.changed"
 
+# Recognized actor types.  ``binding_audit_log`` (migration 022) carries
+# no CHECK on ``actor_type`` and its docstring anticipates
+# ``'user'`` / ``'system'`` / ``'backfill'``; we mirror the
+# ``settings_mutation`` set so the pipeline rejects a typo'd actor type
+# rather than writing an unrecognised discriminator.
+_ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
+    {"user", "moderator", "admin", "system", "backfill"},
+)
+
 
 class BindingMutationError(Exception):
     """Base class for failures from :class:`BindingMutationPipeline`."""
+
+
+class InvalidBindingActorTypeError(BindingMutationError):
+    """Raised when ``actor_type`` is not in :data:`_ALLOWED_ACTOR_TYPES`."""
 
 
 class UnknownSubsystemError(BindingMutationError):
@@ -148,18 +179,28 @@ class BindingMutationPipeline:
         binding_name: str,
         kind: BindingKind,
         target_id: int,
-        actor: discord.Member,
+        actor: discord.Member | discord.User | None,
+        *,
+        actor_type: str = "user",
     ) -> BindingMutationResult:
         """Bind ``target_id`` to ``(subsystem, binding_name)``.
+
+        ``actor_type`` defaults to ``'user'`` (member-initiated; the
+        capability check applies).  ``'system'`` / ``'backfill'`` writes
+        pass ``actor=None`` and bypass the capability check (see the
+        module "Actor model" note) — used by lifecycle paths such as the
+        economy-log auto-provision on guild join.
 
         Raises:
             UnknownSubsystemError: ``subsystem`` not in SUBSYSTEMS.
             UndeclaredBindingError: schema does not declare ``binding_name``.
             BindingKindMismatchError: declared kind disagrees with ``kind``.
+            InvalidBindingActorTypeError: ``actor_type`` not recognised.
             UnauthorizedBindingMutationError: actor below the authority floor.
         """
+        self._validate_actor_type(actor_type)
         spec = self._resolve_spec(subsystem, binding_name, kind)
-        await self._validate_authority(spec, guild, actor)
+        await self._validate_authority(spec, guild, actor, actor_type)
 
         new_status = await validate_binding_target(guild, kind, target_id)
         old = await get_binding(guild.id, subsystem, binding_name)
@@ -172,6 +213,7 @@ class BindingMutationPipeline:
             new_status=new_status,
             old=old,
             actor=actor,
+            actor_type=actor_type,
             action_label="set",
         )
 
@@ -181,17 +223,22 @@ class BindingMutationPipeline:
         subsystem: str,
         binding_name: str,
         kind: BindingKind,
-        actor: discord.Member,
+        actor: discord.Member | discord.User | None,
+        *,
+        actor_type: str = "user",
     ) -> BindingMutationResult:
         """Clear the binding at ``(subsystem, binding_name)``.
 
         The slot row remains so the schema-declared binding stays
         discoverable; ``target_id`` is set to NULL and ``status`` to
-        ``unresolved``.
+        ``unresolved``.  ``actor_type`` follows the same model as
+        :meth:`set_binding`.
         """
+        self._validate_actor_type(actor_type)
         spec = self._resolve_spec(subsystem, binding_name, kind)
-        await self._validate_authority(spec, guild, actor)
+        await self._validate_authority(spec, guild, actor, actor_type)
 
+        actor_id = self._resolve_actor_id(actor, guild)
         old = await get_binding(guild.id, subsystem, binding_name)
         if old.target_id is None and old.last_updated_at is None:
             # Nothing to clear; treat as a no-op success rather than
@@ -215,8 +262,8 @@ class BindingMutationPipeline:
                 guild_id=guild.id,
                 subsystem=subsystem,
                 binding_name=binding_name,
-                actor_id=actor.id,
-                actor_type="user",
+                actor_id=actor_id,
+                actor_type=actor_type,
                 mutation_id=mutation_id,
                 old_target_id=old.target_id,
                 old_status=old.status.value,
@@ -245,8 +292,8 @@ class BindingMutationPipeline:
             guild_id=guild.id,
             prev_value=str(old.target_id) if old.target_id is not None else None,
             new_value=None,
-            actor_id=actor.id,
-            actor_type="user",
+            actor_id=actor_id,
+            actor_type=actor_type,
             occurred_at=committed_at,
         )
         event_emitted = await self._emit_event(
@@ -316,18 +363,44 @@ class BindingMutationPipeline:
         )
         raise UndeclaredBindingError(msg)
 
+    def _validate_actor_type(self, actor_type: str) -> None:
+        """Reject an unrecognised ``actor_type`` before any write."""
+        if actor_type not in _ALLOWED_ACTOR_TYPES:
+            raise InvalidBindingActorTypeError(
+                f"actor_type={actor_type!r} not in {sorted(_ALLOWED_ACTOR_TYPES)}",
+            )
+
+    @staticmethod
+    def _resolve_actor_id(
+        actor: discord.Member | discord.User | None,
+        guild: discord.Guild,
+    ) -> int:
+        """Audit ``actor_id`` for the write.
+
+        ``binding_audit_log.actor_id`` is ``NOT NULL`` (migration 022), so a
+        system write (``actor=None``) records the bot's own id — the
+        automatic actor — and relies on ``actor_type`` as the discriminator.
+        """
+        if actor is not None:
+            return actor.id
+        me = guild.me
+        return me.id if me is not None else 0
+
     async def _validate_authority(
         self,
         spec: BindingSpec,
         guild: discord.Guild,
-        actor: discord.Member,
+        actor: discord.Member | discord.User | None,
+        actor_type: str,
     ) -> None:
         """Step 2: capability-native authority (ADR-005 A1).
 
         The actor must hold ``spec.capability_required``; an empty capability
-        resolves to the administrator floor.  Resolution (and any per-guild
-        revoke overlay) lives in
-        :func:`governance.capability.actor_holds_capability`.
+        resolves to the administrator floor.  ``actor_type='system'`` /
+        ``'backfill'`` bypass the check inside
+        :func:`governance.capability.actor_holds_capability` (it short-circuits
+        on the actor_type, as the settings pipeline relies on).  Resolution
+        (and any per-guild revoke overlay) lives in that module.
         """
         from governance.capability import actor_holds_capability
 
@@ -335,7 +408,7 @@ class BindingMutationPipeline:
             actor,
             guild,
             spec.capability_required,
-            actor_type="user",
+            actor_type=actor_type,
         )
         if not decision.allowed:
             raise UnauthorizedBindingMutationError(decision.reason)
@@ -350,7 +423,8 @@ class BindingMutationPipeline:
         new_target_id: int,
         new_status: ResourceStatus,
         old: BindingValue,
-        actor: discord.Member,
+        actor: discord.Member | discord.User | None,
+        actor_type: str,
         action_label: str,
     ) -> BindingMutationResult:
         """Steps 5-6: write+audit, then best-effort emission.
@@ -359,6 +433,7 @@ class BindingMutationPipeline:
         in via ``old``.
         """
         del action_label  # currently single shape; reserved for future actions
+        actor_id = self._resolve_actor_id(actor, guild)
         mutation_id = str(uuid.uuid4())
         try:
             await bindings_db.upsert_with_audit(
@@ -368,8 +443,8 @@ class BindingMutationPipeline:
                 kind=kind.value,
                 target_id=new_target_id,
                 status=new_status.value,
-                actor_id=actor.id,
-                actor_type="user",
+                actor_id=actor_id,
+                actor_type=actor_type,
                 mutation_id=mutation_id,
                 old_target_id=old.target_id,
                 old_status=old.status.value,
@@ -398,8 +473,8 @@ class BindingMutationPipeline:
             guild_id=guild.id,
             prev_value=str(old.target_id) if old.target_id is not None else None,
             new_value=str(new_target_id),
-            actor_id=actor.id,
-            actor_type="user",
+            actor_id=actor_id,
+            actor_type=actor_type,
             occurred_at=committed_at,
         )
         event_emitted = await self._emit_event(
@@ -483,6 +558,7 @@ __all__ = [
     "BindingMutationError",
     "BindingMutationPipeline",
     "BindingMutationResult",
+    "InvalidBindingActorTypeError",
     "UnauthorizedBindingMutationError",
     "UndeclaredBindingError",
     "UnknownSubsystemError",

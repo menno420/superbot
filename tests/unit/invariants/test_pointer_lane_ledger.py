@@ -49,12 +49,16 @@ _COGS_DIR = _REPO_ROOT / "disbot" / "cogs"
 # (or removing it) is a convergence step the P0-3 plan governs.
 # ---------------------------------------------------------------------------
 
-CONVERGEABLE_POINTERS: frozenset[str] = frozenset(
-    {
-        "economy.economy_log_channel",  # → economy.log_channel (declared)
-        "xp.xp_announce_channel",  # → xp.announce_channel (declared)
-    },
-)
+# Empty since P0-3 arc PR 2 (2026-06-13): the two convergeable pointers
+# (``economy.economy_log_channel`` → ``economy.log_channel`` and
+# ``xp.xp_announce_channel`` → ``xp.announce_channel``) were *retired* —
+# their editable scalar SettingSpecs were deleted, so they are no longer
+# registered pointer settings.  Their bindings are now the sole write
+# surface (read binding-first via ``config_arbitration`` with
+# ``pointer_retired=True``); the legacy KV stays as the rollback fallback.
+# A new convergeable pointer (a scalar whose binding home is declared and
+# in ``MIGRATED_KEYS``) would be listed here until its own retirement.
+CONVERGEABLE_POINTERS: frozenset[str] = frozenset()
 
 DEFERRED_POINTERS: frozenset[str] = frozenset(
     {
@@ -184,4 +188,38 @@ def test_convergeable_and_deferred_match_backfill_registries():
     assert not bad_deferred, (
         "DEFERRED_POINTERS whose key is not in DEFERRED_KEYS "
         f"(un-homed): {bad_deferred}"
+    )
+
+
+def test_no_dual_declared_pointer():
+    """A ``MIGRATED_KEYS`` pointer must not also be a registered scalar setting.
+
+    Once a pointer's binding home is declared (it graduated into
+    ``MIGRATED_KEYS``), its editable scalar ``SettingSpec`` is retired so the
+    binding is the single operator-visible truth — the P0-3 convergence.  A
+    scalar still registered for a migrated key is the "two operator-visible
+    truths" bug this ratchet prevents (a future agent who adds a binding home
+    but forgets to delete the scalar fails here).
+
+    ``DEFERRED_KEYS`` are intentionally excluded: their binding has no schema
+    home yet, so they *keep* their scalar by design (the moderation
+    trusted/moderator role pointers).  This invariant could only be added
+    *after* the live duals were gone — it ships with arc PR 2, which retired
+    the XP-announce + economy-log scalars.
+    """
+    from core.runtime.subsystem_schema import all_schemas
+    from services.binding_backfill import MIGRATED_KEYS
+
+    _pointer_settings()  # ensure every cog schema is registered
+    schemas = all_schemas()
+    registered_keys = {
+        s.settings_key for schema in schemas.values() for s in schema.settings
+    }
+    migrated_keys = {mk.legacy_key for mk in MIGRATED_KEYS}
+    duals = sorted(migrated_keys & registered_keys)
+    assert not duals, (
+        "These legacy keys are in MIGRATED_KEYS (their binding home is "
+        "declared) but STILL have a registered scalar SettingSpec — retire "
+        "the scalar so the binding is the single operator-visible truth "
+        "(P0-3 pointer-lane convergence):\n" + "\n".join(f"  {k}" for k in duals)
     )

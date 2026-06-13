@@ -192,7 +192,9 @@ async def test_unknown_input_hint_falls_through_to_default_routing():
 
 
 def test_channel_view_has_select_and_clear_button():
-    view = ChannelSettingSelectView("xp", "xp_announce_channel", None)
+    # (Uses a still-live channel setting; xp_announce_channel was retired
+    # to the binding lane in P0-3.)
+    view = ChannelSettingSelectView("moderation", "public_log_channel", None)
     types = {type(c).__name__ for c in view.children}
     assert "_ChannelPickSelect" in types
     assert "_ClearChannelButton" in types
@@ -263,15 +265,8 @@ def test_presets_view_truncates_when_too_many_presets():
 
 
 # ---------------------------------------------------------------------------
-# Existing channel SettingSpecs opted in (PR #7 wiring sanity)
+# Channel SettingSpec wiring (PR #7) + the P0-3 pointer-lane retirement
 # ---------------------------------------------------------------------------
-
-
-def test_xp_announce_channel_uses_channel_hint():
-    from cogs.xp.schemas import XP_SETTINGS
-
-    by_name = {spec.name: spec for spec in XP_SETTINGS}
-    assert by_name["xp_announce_channel"].input_hint == "channel"
 
 
 def test_xp_cooldown_uses_numeric_presets_hint():
@@ -282,8 +277,19 @@ def test_xp_cooldown_uses_numeric_presets_hint():
     assert len(by_name["xp_cooldown"].presets) > 0
 
 
-def test_economy_log_channel_uses_channel_hint():
-    from cogs.economy.schemas import ECONOMY_SETTINGS
+def test_retired_channel_pointers_are_not_scalar_settings():
+    """P0-3 arc PR 2 retired the ``xp_announce_channel`` +
+    ``economy_log_channel`` scalar SettingSpecs, so the channel
+    input-hint dispatch no longer surfaces them.  They live in the
+    binding lane now (``xp.announce_channel`` / ``economy.log_channel``);
+    the no-dual-declared-pointer invariant pins that they are not also
+    scalars.
+    """
+    from cogs.economy.schemas import ECONOMY_BINDINGS, ECONOMY_SETTINGS
+    from cogs.xp.schemas import XP_BINDINGS, XP_SETTINGS
 
-    by_name = {spec.name: spec for spec in ECONOMY_SETTINGS}
-    assert by_name["economy_log_channel"].input_hint == "channel"
+    assert "xp_announce_channel" not in {s.name for s in XP_SETTINGS}
+    assert "economy_log_channel" not in {s.name for s in ECONOMY_SETTINGS}
+    # The binding is the canonical pointer home.
+    assert "announce_channel" in {b.name for b in XP_BINDINGS}
+    assert "log_channel" in {b.name for b in ECONOMY_BINDINGS}

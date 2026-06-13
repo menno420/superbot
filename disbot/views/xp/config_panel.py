@@ -12,9 +12,8 @@ import discord
 from discord.ext import commands
 
 from cogs.xp._helpers import _guild_xp_settings
+from core.runtime.config_arbitration import get_xp_announce_channel
 from core.runtime.interaction_helpers import safe_edit
-from utils import db
-from utils.settings_keys import XP_ANNOUNCE_CHANNEL
 from utils.ui_constants import UTILITY_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
@@ -50,7 +49,11 @@ class XpConfigView(BaseView):
     async def build_embed(self) -> discord.Embed:
         gid = self.ctx.guild.id
         xp_min, xp_max, cooldown = await _guild_xp_settings(gid)
-        cid = await db.get_setting(gid, XP_ANNOUNCE_CHANNEL, "")
+        # Binding-first read (the xp_announce_channel scalar was retired
+        # in P0-3; arbitration resolves xp.announce_channel, legacy KV
+        # remains the rollback fallback).
+        ann = await get_xp_announce_channel(gid)
+        cid = ann.value or ""
         channel_str = f"<#{cid}>" if cid else "Same channel as message"
 
         embed = discord.Embed(title="⚙️ XP Configuration", color=UTILITY_COLOR)

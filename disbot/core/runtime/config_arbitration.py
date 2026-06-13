@@ -301,15 +301,25 @@ async def read_config(
     legacy_key: str,
     *,
     binding_kind: str | None = None,
+    pointer_retired: bool = False,
 ) -> ConfigReadResult:
     """Resolve a config value via the bindings → legacy ladder.
 
     Resolution:
 
-    1. Consult ``is_enabled("bindings.primary", guild_id)``:
-       - If **OFF** → read legacy.  Return ``source='legacy'`` if a
-         value is present; ``source='missing'`` if not.
-       - If **ON**  → fall through to step 2.
+    1. Decide whether the binding is primary for this read:
+       - ``pointer_retired=True`` → binding is **always** primary,
+         regardless of the global ``bindings.primary`` canary flag.  A
+         retired pointer (its editable scalar ``SettingSpec`` is gone —
+         P0-3 convergence) has *completed* its transition: the binding
+         is its only write surface, so the read must consult the
+         binding even before the global flag is flipped.  This is what
+         lets the retirement deploy safely without a coordinated
+         production flag flip; the global flag still governs in-transition
+         keys (e.g. the governance role pointers).
+       - Otherwise consult ``is_enabled("bindings.primary", guild_id)``:
+         **OFF** → read legacy (``source='legacy'`` / ``'missing'``);
+         **ON** → fall through to step 2.
     2. Read the binding via :func:`core.runtime.bindings.get_binding`.
        - If ``status == BOUND`` and a target is present AND (when
          ``binding_kind`` was supplied) the binding's declared kind
@@ -318,7 +328,9 @@ async def read_config(
          and fall through to fallback.
        - Else → fall through to step 3.
     3. Read legacy as a fallback.  ``source='fallback'`` if legacy
-       supplies a value, ``source='missing'`` if not.
+       supplies a value, ``source='missing'`` if not.  For a retired
+       pointer this fallback is the rollback path: a guild whose value
+       was never migrated to a binding still reads its legacy KV.
 
     Failure handling:
 
@@ -335,21 +347,27 @@ async def read_config(
 
     diagnostics: list[str] = []
 
-    # Step 1: feature flag gate.
-    try:
-        primary_on = await feature_flags.is_enabled(
-            "bindings.primary",
-            guild_id,
-        )
-    except Exception as exc:  # noqa: BLE001 — arbitration must not raise
-        logger.warning(
-            "config_arbitration: is_enabled raised for guild=%d (%r); "
-            "treating bindings.primary as OFF",
-            guild_id,
-            exc,
-        )
-        primary_on = False
-        diagnostics.append(f"is_enabled raised: {type(exc).__name__}")
+    # Step 1: decide whether the binding is primary.  A retired pointer
+    # forces binding-primary (the flag governs only in-transition keys);
+    # everything else consults the global canary flag.
+    if pointer_retired:
+        primary_on = True
+        diagnostics.append("binding primary forced (retired pointer)")
+    else:
+        try:
+            primary_on = await feature_flags.is_enabled(
+                "bindings.primary",
+                guild_id,
+            )
+        except Exception as exc:  # noqa: BLE001 — arbitration must not raise
+            logger.warning(
+                "config_arbitration: is_enabled raised for guild=%d (%r); "
+                "treating bindings.primary as OFF",
+                guild_id,
+                exc,
+            )
+            primary_on = False
+            diagnostics.append(f"is_enabled raised: {type(exc).__name__}")
 
     if not primary_on:
         legacy_value = await _read_legacy(settings_db, guild_id, legacy_key)
@@ -540,6 +558,12 @@ async def get_xp_announce_channel(guild_id: int) -> ConfigReadResult:
     the existing ``XpConfig.announce_channel`` shape).  A binding-side
     snowflake int is stringified; an unparseable legacy value is
     returned as the raw string.
+
+    **Retired pointer (P0-3 arc PR 2):** the editable ``xp_announce_channel``
+    scalar ``SettingSpec`` was retired; the ``xp.announce_channel`` binding
+    is the only write surface, so this read is binding-first regardless of
+    the global ``bindings.primary`` flag (legacy KV remains the rollback
+    fallback).
     """
     result = await read_config(
         guild_id=guild_id,
@@ -547,6 +571,7 @@ async def get_xp_announce_channel(guild_id: int) -> ConfigReadResult:
         binding_name="announce_channel",
         legacy_key="xp_announce_channel",
         binding_kind="channel",
+        pointer_retired=True,
     )
     return _coerce_to_str(result)
 
@@ -557,6 +582,12 @@ async def get_economy_log_channel(guild_id: int) -> ConfigReadResult:
     Consumers (``utils.helpers.post_log_embed``) then do
     ``guild.get_channel(value)``.  An unparseable legacy value becomes
     ``None`` with a diagnostic explaining the parse failure.
+
+    **Retired pointer (P0-3 arc PR 2):** the editable ``economy_log_channel``
+    scalar ``SettingSpec`` was retired; the ``economy.log_channel`` binding
+    is the only write surface, so this read is binding-first regardless of
+    the global ``bindings.primary`` flag (legacy KV remains the rollback
+    fallback).
     """
     result = await read_config(
         guild_id=guild_id,
@@ -564,6 +595,7 @@ async def get_economy_log_channel(guild_id: int) -> ConfigReadResult:
         binding_name="log_channel",
         legacy_key="economy_log_channel",
         binding_kind="channel",
+        pointer_retired=True,
     )
     return _coerce_to_int(result)
 

@@ -8,13 +8,21 @@ Five modals extracted from ``cogs/xp_cog.py``:
   _XpCooldownModal   — XP gain cooldown seconds (XpConfigView)
   _XpChannelModal    — level-up announcement channel id (XpConfigView)
 
-The three config modals (range / cooldown / channel) write through
+The range / cooldown modals write through
 :class:`services.settings_mutation.SettingsMutationPipeline` since
 PR #5.  The pipeline handles audit, the per-key SettingSpec-lane
 cache invalidation, and event emission — each scalar value lands
 with a row in ``settings_mutation_audit``.
 
-After every successful pipeline write, the helper also calls
+The **channel** modal writes through
+:class:`services.binding_mutation.BindingMutationPipeline` since the
+P0-3 pointer-lane convergence retired the ``xp_announce_channel``
+scalar ``SettingSpec``: the announce channel lives in the binding lane
+(``xp.announce_channel``) with one canonical pointer owner.  An empty
+input clears the binding; a numeric ID sets it.  The audit row lands
+in ``binding_audit_log``.
+
+After every successful scalar pipeline write, the helper also calls
 :func:`utils.guild_config_accessors.invalidate_xp_config` to drop the
 legacy composite ``XpConfig`` cache that the XP ``on_message`` hot
 path consumes.  The pipeline's own invalidation covers the per-key
@@ -111,6 +119,88 @@ async def _set_xp_setting_via_pipeline(
     # ``XpConfig`` accessor used by the XP on_message hot path is a
     # separate cache; drop it explicitly so the next message read
     # sees the new value without waiting for the TTL.
+    invalidate_xp_config(guild.id)
+    return True
+
+
+async def _set_xp_announce_channel_via_binding(
+    interaction: discord.Interaction,
+    raw_value: str,
+) -> bool:
+    """Set / clear the ``xp.announce_channel`` binding from modal input.
+
+    P0-3 arc PR 2 retired the ``xp_announce_channel`` scalar
+    ``SettingSpec``; the announce channel now lives in the binding lane
+    (one canonical pointer owner, no parallel scalar).  Empty input
+    *clears* the binding (announce in-place); a numeric channel ID
+    *sets* it.  Authority is the same ``xp.settings.configure``
+    capability the retired scalar required (it is the binding's
+    ``capability_required``).
+
+    Returns True on success (caller defers + re-renders); on failure
+    sends an ephemeral and returns False so the caller short-circuits.
+    Still pokes :func:`invalidate_xp_config` so the XP ``on_message``
+    hot-path composite cache re-reads the (binding-first) channel.
+    """
+    from core.runtime.subsystem_schema import BindingKind
+    from services.binding_mutation import (
+        BindingMutationError,
+        BindingMutationPipeline,
+        UnauthorizedBindingMutationError,
+    )
+
+    guild = interaction.guild
+    if guild is None:
+        await interaction.response.send_message(
+            "❌ XP config requires a guild context.",
+            ephemeral=True,
+        )
+        return False
+
+    raw = raw_value.strip()
+    if raw and not raw.isdigit():
+        await interaction.response.send_message(
+            "❌ Channel must be empty (to clear) or a numeric Discord channel ID.",
+            ephemeral=True,
+        )
+        return False
+
+    pipeline = BindingMutationPipeline()
+    try:
+        if not raw:
+            await pipeline.clear_binding(
+                guild,
+                "xp",
+                "announce_channel",
+                BindingKind.CHANNEL,
+                interaction.user,
+            )
+        else:
+            await pipeline.set_binding(
+                guild,
+                "xp",
+                "announce_channel",
+                BindingKind.CHANNEL,
+                int(raw),
+                interaction.user,
+            )
+    except UnauthorizedBindingMutationError as exc:
+        await interaction.response.send_message(f"❌ {exc}", ephemeral=True)
+        return False
+    except BindingMutationError as exc:
+        await interaction.response.send_message(
+            f"❌ {type(exc).__name__}: {exc}",
+            ephemeral=True,
+        )
+        return False
+    except Exception as exc:  # noqa: BLE001 — defensive
+        logger.exception("XP modal announce-channel binding write failed")
+        await interaction.response.send_message(
+            f"❌ Unexpected error: {type(exc).__name__}: {exc}",
+            ephemeral=True,
+        )
+        return False
+
     invalidate_xp_config(guild.id)
     return True
 
@@ -279,14 +369,13 @@ class _XpChannelModal(discord.ui.Modal, title="Level-up Announcement Channel"): 
         self.view = view
 
     async def on_submit(self, interaction: discord.Interaction):
-        # The xp_announce_channel SettingSpec's validator enforces
-        # "empty or numeric"; surface any failure as an ephemeral and
-        # bail before touching the parent view.
-        val = self.channel_id.value.strip()
-        if not await _set_xp_setting_via_pipeline(
+        # P0-3: the announce channel is a binding now (the scalar
+        # xp_announce_channel SettingSpec was retired).  The helper
+        # validates "empty or numeric", clears or sets the binding, and
+        # surfaces any failure as an ephemeral before touching the view.
+        if not await _set_xp_announce_channel_via_binding(
             interaction,
-            "xp_announce_channel",
-            val,
+            self.channel_id.value,
         ):
             return
         if not await safe_defer(interaction):

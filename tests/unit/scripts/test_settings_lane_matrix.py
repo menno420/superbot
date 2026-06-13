@@ -64,13 +64,13 @@ def test_known_pointers_are_classified_correctly(matrix_mod):
     m = matrix_mod.build_matrix()
     by_name = {f"{p.subsystem}.{p.setting_name}": p for p in m.pointers}
 
-    # Economy/XP log+announce are homed (binding declared).
-    assert by_name["economy.economy_log_channel"].disposition == (
-        "binding_backed_convergeable"
-    )
-    assert by_name["xp.xp_announce_channel"].disposition == (
-        "binding_backed_convergeable"
-    )
-    # Governance role pointers are deferred (reserved-namespace, no home).
+    # XP-announce + economy-log were RETIRED (P0-3 arc PR 2): their scalar
+    # SettingSpecs are deleted, so they are no longer pointer settings at
+    # all — the binding lane is their sole home now.
+    assert "economy.economy_log_channel" not in by_name
+    assert "xp.xp_announce_channel" not in by_name
+
+    # Governance role pointers are still deferred (reserved-namespace, no
+    # schema home yet — Q-0119); their scalars remain until a home is picked.
     assert by_name["moderation.trusted_role"].disposition == "binding_backed_deferred"
     assert by_name["moderation.trusted_role"].target_binding_declared is False

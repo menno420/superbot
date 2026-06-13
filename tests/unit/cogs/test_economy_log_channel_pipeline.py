@@ -1,24 +1,29 @@
-"""Regression tests for PR #6 — economy_cog log-channel writes use the pipeline.
+"""Regression tests — economy_cog log-channel writes use the binding lane.
 
-Pre-PR-#6 ``cogs/economy_cog.py`` wrote ``ECONOMY_LOG_CHANNEL`` via
-``db.set_setting`` from three sites:
+The economy log channel is a Discord-resource pointer.  PR #6 first
+routed its writes through ``SettingsMutationPipeline`` (the scalar
+``economy_log_channel``); the P0-3 pointer-lane convergence (arc PR 2)
+then **retired that scalar** and moved the channel into the binding lane
+(``economy.log_channel``).  ``cogs/economy_cog.py`` now writes it via
+``services.binding_mutation.BindingMutationPipeline`` from three sites:
 
 * ``on_ready`` listener (``_ensure_log_channel`` → existing channel found)
 * ``on_guild_join`` listener (``_ensure_log_channel`` → newly created)
 * ``!setlogchannel`` admin command
 
-PR #6 routes all three through ``services.settings_mutation.
-SettingsMutationPipeline`` via the new ``_record_log_channel`` helper.
-System-triggered paths pass ``actor=None`` + ``actor_type='system'``;
-the admin command passes the invoking member.
+System-triggered paths pass ``actor=None`` + ``actor_type='system'``; the
+admin command passes the invoking member.  ``_ensure_log_channel``'s
+"already configured?" check reads binding-first via
+``config_arbitration.get_economy_log_channel``.
 
-These tests pin the new contract by:
+These tests pin the contract by:
 
-* Asserting the cog module no longer references ``db.set_setting``.
-* Patching the pipeline class and verifying each call site invokes
-  it with the expected ``(subsystem, name, value, actor_type)`` shape.
-* Asserting the ``economy_log_channel`` SettingSpec is declared with
-  the empty-or-numeric validator.
+* Asserting the cog module does not reference ``db.set_setting``.
+* Patching the binding pipeline and verifying each call site invokes
+  ``set_binding`` with the expected ``(subsystem, binding_name, kind,
+  target_id, actor, actor_type)`` shape.
+* Asserting the ``economy_log_channel`` scalar SettingSpec is retired
+  and the ``economy.log_channel`` binding is its replacement home.
 """
 
 from __future__ import annotations
@@ -26,10 +31,13 @@ from __future__ import annotations
 import ast
 import importlib
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import discord
 import pytest
+
+from core.runtime.subsystem_schema import BindingKind
 
 _COG_PATH = (
     Path(__file__).resolve().parents[3] / "disbot" / "cogs" / "economy_cog.py"
@@ -42,8 +50,8 @@ _COG_PATH = (
 
 
 def test_economy_cog_does_not_reference_db_set_setting():
-    """``cogs/economy_cog.py`` is removed from the no-direct-writes
-    allowlist in PR #6; the AST scan now enforces it.
+    """``cogs/economy_cog.py`` must not write settings directly — the log
+    channel is a binding now, and there is no other scalar write.
     """
     source = _COG_PATH.read_text()
     tree = ast.parse(source)
@@ -62,12 +70,13 @@ def test_economy_cog_exports_record_helper():
 
 
 # ---------------------------------------------------------------------------
-# Helper-level: _record_log_channel hits the pipeline with the right shape
+# Helper-level: _record_log_channel hits the binding pipeline with the
+# right shape
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_record_log_channel_uses_pipeline_for_admin_writes():
+async def test_record_log_channel_binds_for_admin_writes():
     from cogs.economy_cog import EconomyCog
 
     cog = EconomyCog(MagicMock())
@@ -76,20 +85,21 @@ async def test_record_log_channel_uses_pipeline_for_admin_writes():
     actor = MagicMock(spec=discord.Member)
     actor.id = 7
 
-    pipeline_instance = MagicMock()
-    pipeline_instance.set_value = AsyncMock(return_value=MagicMock())
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock(return_value=MagicMock())
 
     with patch(
-        "services.settings_mutation.SettingsMutationPipeline",
-        return_value=pipeline_instance,
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
     ):
         await cog._record_log_channel(guild, "1234567890", actor=actor)
 
-    pipeline_instance.set_value.assert_awaited_once_with(
+    pipeline.set_binding.assert_awaited_once_with(
         guild,
         "economy",
-        "economy_log_channel",
-        "1234567890",
+        "log_channel",
+        BindingKind.CHANNEL,
+        1234567890,
         actor,
         actor_type="user",
     )
@@ -97,10 +107,10 @@ async def test_record_log_channel_uses_pipeline_for_admin_writes():
 
 @pytest.mark.asyncio
 async def test_record_log_channel_uses_system_actor_type_for_listeners():
-    """The two listener-triggered paths (on_ready / on_guild_join via
+    """The listener-triggered paths (on_ready / on_guild_join via
     ``_ensure_log_channel``) call ``_record_log_channel`` with
-    ``actor=None`` + ``actor_type='system'`` so the pipeline's
-    administrator-tier check is bypassed via the system bucket.
+    ``actor=None`` + ``actor_type='system'`` so the binding pipeline's
+    capability check is bypassed via the system bucket.
     """
     from cogs.economy_cog import EconomyCog
 
@@ -108,12 +118,12 @@ async def test_record_log_channel_uses_system_actor_type_for_listeners():
     guild = MagicMock(spec=discord.Guild)
     guild.id = 99
 
-    pipeline_instance = MagicMock()
-    pipeline_instance.set_value = AsyncMock(return_value=MagicMock())
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock(return_value=MagicMock())
 
     with patch(
-        "services.settings_mutation.SettingsMutationPipeline",
-        return_value=pipeline_instance,
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
     ):
         await cog._record_log_channel(
             guild,
@@ -122,27 +132,28 @@ async def test_record_log_channel_uses_system_actor_type_for_listeners():
             actor_type="system",
         )
 
-    pipeline_instance.set_value.assert_awaited_once_with(
+    pipeline.set_binding.assert_awaited_once_with(
         guild,
         "economy",
-        "economy_log_channel",
-        "555",
+        "log_channel",
+        BindingKind.CHANNEL,
+        555,
         None,
         actor_type="system",
     )
 
 
 # ---------------------------------------------------------------------------
-# Listener path: _ensure_log_channel routes existing-channel pickup through
-# the pipeline
+# Listener path: _ensure_log_channel reads binding-first, then routes an
+# existing-channel pickup through the binding pipeline
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-async def test_ensure_log_channel_existing_routes_through_pipeline():
-    """When ``resources.resolve_channel`` finds an existing
-    #economy-log, ``_ensure_log_channel`` records its id via the
-    pipeline (not ``db.set_setting``).
+async def test_ensure_log_channel_existing_routes_through_binding():
+    """When the guild has no configured log channel (binding-first read
+    returns nothing) but a #economy-log already exists,
+    ``_ensure_log_channel`` binds its id via the pipeline (system actor).
     """
     from cogs import economy_cog
 
@@ -153,54 +164,73 @@ async def test_ensure_log_channel_existing_routes_through_pipeline():
     existing = MagicMock()
     existing.id = 12345
 
-    pipeline_instance = MagicMock()
-    pipeline_instance.set_value = AsyncMock(return_value=MagicMock())
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock(return_value=MagicMock())
 
-    with patch.object(
-        economy_cog.resources,
-        "resolve_settings_channel",
-        new=AsyncMock(return_value=None),
+    with patch(
+        "core.runtime.config_arbitration.get_economy_log_channel",
+        new=AsyncMock(return_value=SimpleNamespace(value=None)),
     ), patch.object(
         economy_cog.resources,
         "resolve_channel",
         return_value=existing,
     ), patch(
-        "services.settings_mutation.SettingsMutationPipeline",
-        return_value=pipeline_instance,
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
     ):
         await cog._ensure_log_channel(guild)
 
-    pipeline_instance.set_value.assert_awaited_once()
-    call = pipeline_instance.set_value.await_args
-    assert call.args[1:4] == ("economy", "economy_log_channel", "12345")
+    pipeline.set_binding.assert_awaited_once()
+    call = pipeline.set_binding.await_args
+    assert call.args[1:5] == ("economy", "log_channel", BindingKind.CHANNEL, 12345)
     assert call.kwargs.get("actor_type") == "system"
 
 
-# ---------------------------------------------------------------------------
-# SettingSpec presence (PR #6 schema addition)
-# ---------------------------------------------------------------------------
-
-
-def test_economy_log_channel_settingspec_declared():
-    """PR #6 added ``economy_log_channel`` to ``ECONOMY_SETTINGS`` so the
-    pipeline accepts writes for it.  Pin the spec shape and validator.
+@pytest.mark.asyncio
+async def test_ensure_log_channel_skips_when_already_bound():
+    """A guild that already has the channel bound (and present) is left
+    alone — no re-create, no re-bind.
     """
-    from cogs.economy.schemas import ECONOMY_SETTINGS
+    from cogs import economy_cog
 
-    by_name = {spec.name: spec for spec in ECONOMY_SETTINGS}
-    assert "economy_log_channel" in by_name, (
-        "economy_log_channel must be declared as a SettingSpec — "
-        "PR #6 promoted it from a direct-write to a pipeline-managed "
-        "scalar."
+    cog = economy_cog.EconomyCog(MagicMock())
+    guild = MagicMock(spec=discord.Guild)
+    guild.id = 42
+    guild.get_channel = MagicMock(return_value=MagicMock())  # channel present
+
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock()
+
+    with patch(
+        "core.runtime.config_arbitration.get_economy_log_channel",
+        new=AsyncMock(return_value=SimpleNamespace(value=98765)),
+    ), patch.object(
+        economy_cog.resources,
+        "resolve_channel",
+    ) as resolve_channel, patch(
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
+    ):
+        await cog._ensure_log_channel(guild)
+
+    guild.get_channel.assert_called_once_with(98765)
+    resolve_channel.assert_not_called()
+    pipeline.set_binding.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# SettingSpec retirement (P0-3 arc PR 2)
+# ---------------------------------------------------------------------------
+
+
+def test_economy_log_channel_settingspec_retired():
+    """P0-3 arc PR 2 retired the ``economy_log_channel`` scalar SettingSpec;
+    the log channel lives in the binding lane now (``economy.log_channel``).
+    """
+    from cogs.economy.schemas import ECONOMY_BINDINGS, ECONOMY_SETTINGS
+
+    assert "economy_log_channel" not in {spec.name for spec in ECONOMY_SETTINGS}, (
+        "economy_log_channel scalar SettingSpec must be retired — the log "
+        "channel lives in the binding lane now (P0-3)."
     )
-    spec = by_name["economy_log_channel"]
-    assert spec.value_type is str
-    assert spec.default == ""
-    assert spec.validator is not None
-    # Empty is allowed (clears the channel).
-    spec.validator("")
-    # Numeric IDs are allowed.
-    spec.validator("1234567890")
-    # Non-numeric non-empty is rejected.
-    with pytest.raises(ValueError):
-        spec.validator("not-a-channel")
+    assert "log_channel" in {b.name for b in ECONOMY_BINDINGS}

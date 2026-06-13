@@ -1,23 +1,28 @@
-"""Regression tests for PR #5 — XP config modals use SettingsMutationPipeline.
+"""Regression tests for the XP config modal write paths.
 
-Pre-PR-#5 the three XP config modals (range / cooldown / channel)
-called ``db.set_setting`` directly and then manually invoked
-``invalidate_xp_config``. PR #5 routes each write through
-``services.settings_mutation.SettingsMutationPipeline`` so the
+The **range / cooldown** modals write through
+``services.settings_mutation.SettingsMutationPipeline`` (PR #5) so the
 mutation lands with audit + per-key cache invalidation + event
 emission; the modal still pokes ``invalidate_xp_config`` afterward
 because the legacy composite ``XpConfig`` accessor is a separate
 cache that the pipeline doesn't know about.
 
-These tests pin the new contract by:
+The **channel** modal moved to
+``services.binding_mutation.BindingMutationPipeline`` in the P0-3
+pointer-lane convergence (arc PR 2): the ``xp_announce_channel``
+scalar SettingSpec was retired and the announce channel now lives in
+the binding lane (``xp.announce_channel``).  An empty input clears the
+binding; a numeric ID sets it.  The modal still pokes
+``invalidate_xp_config`` so the on_message hot-path cache re-reads the
+(binding-first) channel.
+
+These tests pin the contract by:
 
 * Asserting the modals do not import ``db.set_setting``.
-* Patching ``SettingsMutationPipeline.set_value`` and verifying each
-  modal's ``on_submit`` calls it with the expected ``(subsystem,
-  name, value)`` triple for valid inputs.
+* Patching the pipeline / helper and verifying each modal's
+  ``on_submit`` drives it with the expected arguments for valid inputs.
 * Verifying ``invalidate_xp_config(guild.id)`` is called after a
-  successful pipeline write so the legacy hot-path cache stays
-  fresh.
+  successful write so the legacy hot-path cache stays fresh.
 * Verifying validation failures stay ephemeral (no pipeline call,
   no cache poke) for non-numeric / non-positive inputs.
 """
@@ -263,7 +268,10 @@ async def test_xp_cooldown_modal_writes_cooldown():
 
 
 @pytest.mark.asyncio
-async def test_xp_channel_modal_writes_channel_string():
+async def test_xp_channel_modal_drives_binding_helper():
+    """The channel modal passes its raw input to the binding helper
+    (which validates + sets/clears the xp.announce_channel binding).
+    """
     from views.xp import modals as xp_modals
 
     fake_view = MagicMock()
@@ -276,7 +284,7 @@ async def test_xp_channel_modal_writes_channel_string():
 
     with patch.object(
         xp_modals,
-        "_set_xp_setting_via_pipeline",
+        "_set_xp_announce_channel_via_binding",
         new=AsyncMock(return_value=True),
     ) as helper, patch.object(
         xp_modals,
@@ -286,67 +294,134 @@ async def test_xp_channel_modal_writes_channel_string():
         await modal.on_submit(interaction)
 
     helper.assert_awaited_once()
-    assert helper.await_args.args[1:] == ("xp_announce_channel", "1234567890")
+    assert helper.await_args.args[1] == "1234567890"
     fake_view._rerender.assert_awaited_once()
 
 
+# ---------------------------------------------------------------------------
+# Channel binding helper (_set_xp_announce_channel_via_binding) — P0-3
+# ---------------------------------------------------------------------------
+
+
 @pytest.mark.asyncio
-async def test_xp_channel_modal_writes_empty_string_to_clear():
-    """Empty input clears the channel — passed through to the pipeline
-    as ``""`` (the SettingSpec validator accepts empty).
-    """
+async def test_announce_helper_sets_binding_for_numeric_input():
+    from core.runtime.subsystem_schema import BindingKind
     from views.xp import modals as xp_modals
 
-    fake_view = MagicMock()
-    fake_view._rerender = AsyncMock()
-    modal = xp_modals._XpChannelModal(fake_view)
-    modal.channel_id = MagicMock()
-    modal.channel_id.value = "  "
+    interaction = _modal_interaction()
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock(return_value=MagicMock())
+    pipeline.clear_binding = AsyncMock(return_value=MagicMock())
+
+    with patch(
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
+    ), patch.object(xp_modals, "invalidate_xp_config") as inv:
+        ok = await xp_modals._set_xp_announce_channel_via_binding(
+            interaction,
+            " 1234567890 ",
+        )
+
+    assert ok is True
+    pipeline.set_binding.assert_awaited_once_with(
+        interaction.guild,
+        "xp",
+        "announce_channel",
+        BindingKind.CHANNEL,
+        1234567890,
+        interaction.user,
+    )
+    pipeline.clear_binding.assert_not_called()
+    inv.assert_called_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_announce_helper_clears_binding_on_blank_input():
+    from core.runtime.subsystem_schema import BindingKind
+    from views.xp import modals as xp_modals
 
     interaction = _modal_interaction()
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock(return_value=MagicMock())
+    pipeline.clear_binding = AsyncMock(return_value=MagicMock())
 
-    with patch.object(
-        xp_modals,
-        "_set_xp_setting_via_pipeline",
-        new=AsyncMock(return_value=True),
-    ) as helper, patch.object(
-        xp_modals,
-        "safe_defer",
-        new=AsyncMock(return_value=True),
-    ):
-        await modal.on_submit(interaction)
+    with patch(
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
+    ), patch.object(xp_modals, "invalidate_xp_config") as inv:
+        ok = await xp_modals._set_xp_announce_channel_via_binding(interaction, "   ")
 
-    helper.assert_awaited_once()
-    assert helper.await_args.args[1:] == ("xp_announce_channel", "")
-
-
-# ---------------------------------------------------------------------------
-# SettingSpec presence (PR #5 schema addition)
-# ---------------------------------------------------------------------------
-
-
-def test_xp_announce_channel_settingspec_declared():
-    """PR #5 added ``xp_announce_channel`` to ``XP_SETTINGS`` so the
-    pipeline accepts writes for it. Pin the declaration and the
-    validator's empty-or-numeric contract via the schema, not the
-    modal.
-    """
-    from cogs.xp.schemas import XP_SETTINGS
-
-    by_name = {spec.name: spec for spec in XP_SETTINGS}
-    assert "xp_announce_channel" in by_name, (
-        "xp_announce_channel must be declared as a SettingSpec — "
-        "PR #5 promoted it from a direct-write to a pipeline-managed "
-        "scalar."
+    assert ok is True
+    pipeline.clear_binding.assert_awaited_once_with(
+        interaction.guild,
+        "xp",
+        "announce_channel",
+        BindingKind.CHANNEL,
+        interaction.user,
     )
-    spec = by_name["xp_announce_channel"]
-    assert spec.value_type is str
-    assert spec.default == ""
-    assert spec.validator is not None
-    # Empty is allowed.
-    spec.validator("")
-    # Numeric IDs are allowed.
-    spec.validator("1234567890")
-    # Non-numeric non-empty is rejected.
-    with pytest.raises(ValueError):
-        spec.validator("not-a-channel")
+    pipeline.set_binding.assert_not_called()
+    inv.assert_called_once_with(99)
+
+
+@pytest.mark.asyncio
+async def test_announce_helper_rejects_non_numeric_without_writing():
+    from views.xp import modals as xp_modals
+
+    interaction = _modal_interaction()
+    pipeline = MagicMock()
+    pipeline.set_binding = AsyncMock()
+    pipeline.clear_binding = AsyncMock()
+
+    with patch(
+        "services.binding_mutation.BindingMutationPipeline",
+        return_value=pipeline,
+    ), patch.object(xp_modals, "invalidate_xp_config") as inv:
+        ok = await xp_modals._set_xp_announce_channel_via_binding(
+            interaction,
+            "not-a-channel",
+        )
+
+    assert ok is False
+    pipeline.set_binding.assert_not_called()
+    pipeline.clear_binding.assert_not_called()
+    inv.assert_not_called()
+    sent = interaction.response.send_message.await_args
+    assert sent.kwargs.get("ephemeral") is True
+
+
+@pytest.mark.asyncio
+async def test_announce_helper_returns_false_on_dm():
+    from views.xp import modals as xp_modals
+
+    interaction = MagicMock()
+    interaction.guild = None
+    interaction.response.send_message = AsyncMock()
+
+    with patch(
+        "services.binding_mutation.BindingMutationPipeline",
+    ) as pipeline_cls, patch.object(xp_modals, "invalidate_xp_config") as inv:
+        ok = await xp_modals._set_xp_announce_channel_via_binding(interaction, "123")
+
+    assert ok is False
+    pipeline_cls.assert_not_called()
+    inv.assert_not_called()
+    interaction.response.send_message.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# SettingSpec retirement (P0-3 arc PR 2)
+# ---------------------------------------------------------------------------
+
+
+def test_xp_announce_channel_settingspec_retired():
+    """P0-3 arc PR 2 retired the ``xp_announce_channel`` scalar SettingSpec;
+    the announce channel is a binding now (``xp.announce_channel``).  Pin
+    that the scalar is gone and the binding is its replacement home.
+    """
+    from cogs.xp.schemas import XP_BINDINGS, XP_SETTINGS
+
+    assert "xp_announce_channel" not in {spec.name for spec in XP_SETTINGS}, (
+        "xp_announce_channel scalar SettingSpec must be retired — the "
+        "announce channel lives in the binding lane now (P0-3)."
+    )
+    assert "announce_channel" in {b.name for b in XP_BINDINGS}
