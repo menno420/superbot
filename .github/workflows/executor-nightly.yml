@@ -36,8 +36,22 @@ jobs:
     steps:
       - name: Open a scheduled `continue` issue (deduped)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Author the issue with a NON-default token. An issue created by the default
+          # secrets.GITHUB_TOKEN is authored by github-actions[bot], and a bot-authored issue
+          # does NOT start the Claude "night executor" routine. Verified 2026-06-13: a real-
+          # user-authored `continue` issue (#776) fired the routine in <1 min, while the
+          # github-actions[bot]-authored #768 sat open for hours and never fired. ROUTINE_PAT is
+          # a fine-grained PAT (this repo, Issues: read/write). The GITHUB_TOKEN fallback only
+          # prevents a hard failure when ROUTINE_PAT is unset — while unset, the routine will
+          # NOT fire, so set the secret.
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          ROUTINE_PAT_SET: ${{ secrets.ROUTINE_PAT != '' }}
         run: |
+          # Loud, non-fatal warning if the PAT is missing — otherwise the issue is bot-authored
+          # and the routine silently never fires (the exact failure this token change fixes).
+          if [ "$ROUTINE_PAT_SET" != "true" ]; then
+            echo "::warning::ROUTINE_PAT is not set — the issue will be authored by github-actions[bot], which does NOT start the Claude routine. Add ROUTINE_PAT (fine-grained PAT, this repo, Issues: read/write) to enable autonomous firing."
+          fi
           # Dedupe: if a scheduled executor-run issue is still open (executor hasn't picked up
           # the last one — it closes them when done), don't pile another on top.
           open_scheduled="$(gh issue list --repo "$GITHUB_REPOSITORY" --label continue --state open \
