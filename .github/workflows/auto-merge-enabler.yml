@@ -1,0 +1,66 @@
+name: auto-merge-enabler
+
+# Turn ON GitHub-native auto-merge for session PRs so they merge themselves the moment the
+# required `Code Quality` check passes — removing merge mechanics from the Claude session
+# entirely (the session just opens the PR; GitHub does the gated merge). This is the
+# "Native auto-merge + enabler" path (owner decision 2026-06-13), replacing Claude's manual
+# self-merge envelope.
+#
+# HARD REQUIREMENTS (one-time, maintainer-side — the workflow is inert until these exist):
+#   1. Repo Settings → General → Pull Requests → "Allow auto-merge" = ON.
+#   2. A branch rule on `main` that REQUIRES the "Code Quality" status check. Without a
+#      required check a PR is immediately mergeable and auto-merge has nothing to wait on
+#      (it cannot be enabled).
+#   3. ROUTINE_PAT must include Pull requests: Read/Write AND Contents: Read/Write (not just
+#      Issues). The PAT is used on purpose: the eventual merge is attributed to whoever
+#      enabled auto-merge, and a merge attributed to github-actions[bot] would NOT trigger
+#      `reconciliation-trigger.yml` (on: push to main) — silently killing the reconcile
+#      cadence. (Same GITHUB_TOKEN-author gotcha this repo hit with the routine issue triggers.)
+#
+# CARVE-OUTS (never auto-merge) — opt-out by label:
+#   * `needs-hermes-review` (Q-0117) — a substantial executor step; Hermes reviews + merges.
+#   * `do-not-automerge` — generic hold (agent-originated features Q-0114, or any PR a human
+#     wants to gate). Set this label AT PR-OPEN. v1 limitation: a label added AFTER open does
+#     not retroactively disable an already-enabled auto-merge.
+#
+# Provenance + reliability (Q-0105): added 2026-06-13. UNVERIFIED — watch the first few PRs to
+# confirm it enables auto-merge only on the right PRs and that merges attribute to the PAT
+# user (so the reconcile cadence keeps firing). Delete this workflow if it misfires; native
+# auto-merge can always be toggled by hand.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-enabler-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  enable-auto-merge:
+    if: >-
+      github.repository == 'menno420/superbot' &&
+      github.event.pull_request.draft == false &&
+      startsWith(github.head_ref, 'claude/') &&
+      !contains(github.event.pull_request.labels.*.name, 'needs-hermes-review') &&
+      !contains(github.event.pull_request.labels.*.name, 'do-not-automerge')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable native auto-merge (merge commit)
+        env:
+          # PAT (not GITHUB_TOKEN) so the eventual merge attributes to a real user and keeps
+          # reconciliation-trigger.yml (on: push to main) firing. Needs Pull requests + Contents
+          # write. The GITHUB_TOKEN fallback only avoids a hard failure (and would break the
+          # cadence-trigger attribution) — set ROUTINE_PAT with the wider scope.
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if gh pr merge --auto --merge "$PR" --repo "$GITHUB_REPOSITORY"; then
+            echo "Auto-merge enabled for PR #$PR — it will merge when 'Code Quality' is green."
+          else
+            echo "::warning::Could not enable auto-merge for PR #$PR. Confirm: (1) 'Allow auto-merge' is ON, (2) main requires the 'Code Quality' check, (3) ROUTINE_PAT has Pull requests + Contents write."
+          fi
