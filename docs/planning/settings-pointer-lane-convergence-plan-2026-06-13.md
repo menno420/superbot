@@ -10,10 +10,12 @@
 > shipped alongside it. **Not a blanket implementation approval** — source +
 > merged PRs win.
 
-> **▶ One-line state:** the broken `governance.trusted_role` backfill is
-> reframed (no longer permanently `BLOCKED_NO_SCHEMA`); two parity invariants
-> now ratchet the lane; the risky scalar retirements + the delegated-apply
-> authority route are sequenced below as arc PRs 2–3.
+> **▶ One-line state:** families 1+2 (XP-announce, economy-log) are
+> **RETIRED — arc PR 2, #794**: their scalar `SettingSpec`s are deleted,
+> their bindings are the sole write surface, and the retired accessors read
+> binding-first via `pointer_retired=True` (decoupled from the global
+> `bindings.primary` canary flag — see the refinement note in §3). The
+> delegated-apply authority route (arc PR 3) and families 3–5 remain.
 
 ---
 
@@ -96,20 +98,37 @@ rollback (flip `bindings.primary` OFF). Ordered by risk (lowest first):
 
 | # | Family | Members | Readiness | Notes |
 |---|---|---|---|---|
-| 1 | **XP announce** | `xp.xp_announce_channel` → `xp.announce_channel` | **Ready** — binding declared, arbitration read live, in `MIGRATED_KEYS` | Lowest blast radius; the reference retirement. |
-| 2 | **Economy log** | `economy.economy_log_channel` → `economy.log_channel` | **Ready** — same shape as XP | Pairs with family 1 in arc PR 2. |
+| 1 | **XP announce** | `xp.xp_announce_channel` → `xp.announce_channel` | ✅ **Retired (#794)** | Reference retirement; lowest blast radius. |
+| 2 | **Economy log** | `economy.economy_log_channel` → `economy.log_channel` | ✅ **Retired (#794)** | Retired with family 1 in arc PR 2. |
 | 3 | **Governance role pointers** | `moderation.{trusted,moderator}_role` → `governance.{trusted,moderator}_role` | **Blocked on Q-0119** (no schema home) | The hardest case; touches authority tiers. Do *not* retire until the home is decided. |
 | 4 | **Welcome/counters orphans** | `welcome.channel`, `welcome.entry_role`, `counters.{total,humans,bots}_channel` | **Not started** — no binding declared | Each needs a `BindingSpec` + backfill mapping minted first. Lower priority (new, low-traffic). |
 | 5 | **Moderation public-log + logging fallbacks** | `moderation.public_log_channel`; `LOGGING_MOD_CHANNEL`/`LOGGING_CLEANUP_CHANNEL` fallbacks | **Not started** | `moderation.public_log_channel` has no binding; the logging fallbacks shadow 7 canonical bindings. |
 
-**Arc PR 2 (next session):** retire families 1+2 (XP announce, economy log) —
-the two *ready* convergeable pointers. Delete the editable scalar `SettingSpec`,
-keep the legacy KV column readable for one release for rollback, prove the
-binding-first read + backfill dry-run on real Postgres, and add the
-`test_no_dual_declared_pointer` invariant (it can only be added *after* the dual
-is gone — adding it now would fail on the live duals). Update the ledger:
-`economy.economy_log_channel` + `xp.xp_announce_channel` move out of
-`CONVERGEABLE_POINTERS` (they're no longer pointer settings).
+**Arc PR 2 — DONE (#794).** Retired families 1+2 (XP announce, economy log):
+deleted the editable scalar `SettingSpec`s, kept the legacy KV readable as the
+rollback fallback, repointed both writers to the binding lane (XP channel modal +
+economy `_record_log_channel`) and both stale legacy reads to arbitration (XP
+config panel + economy `_ensure_log_channel`), proved the binding-first read +
+backfill dry-run on real Postgres, emptied `CONVERGEABLE_POINTERS`, and added the
+`test_no_dual_declared_pointer` invariant. Also: extended `BindingMutationPipeline`
+to accept `actor_type='system'`/`'backfill'` (the economy auto-provision is a
+system write) and fixed two adjacent binding-name bugs (`logging_presets.py` +
+`channels.py` keyed the economy/xp channel bindings by their legacy *settings*
+keys, so the economy-logs preset was silently filtered out).
+
+> **Design refinement discovered building this (read before arc PR 3):** the read
+> path (`config_arbitration.read_config`) only consults the binding when the
+> global `bindings.primary` flag is ON — but that flag is `default=False` and not
+> yet flipped in production. Binding-only writes after retirement would therefore
+> be **invisible to reads** with the flag OFF. Fix: a *retired* pointer reads
+> **binding-first unconditionally** (`pointer_retired=True`) — it has completed
+> its transition, so the binding is authoritative by definition; the global flag
+> still governs in-transition keys (the governance role pointers). This makes the
+> retirement **safe to deploy with no coordinated flag flip**. Consequently the
+> §6 rollback for a retired key is **not** "flip `bindings.primary` OFF" (that
+> flag no longer governs it) — it is the still-live legacy-KV fallback (binding
+> UNRESOLVED → legacy) plus a PR revert. Future retirements (families 3–5) must
+> pass `pointer_retired=True` on their accessor for the same reason.
 
 ---
 
@@ -197,8 +216,10 @@ Run on a real guild + Postgres after arc PR 2 (extends the
 1. **Three-lane edits** — a scalar setting edit/reset; a binding set/clear; a
    provisioning create-and-bind + a use-existing. Confirm each audits.
 2. **Pointer retirement** — for a retired family (XP/economy): set the binding,
-   confirm the runtime reads the binding (not the gone scalar); flip
-   `bindings.primary` OFF and confirm legacy-KV rollback still reads.
+   confirm the runtime reads the binding (not the gone scalar) **even with
+   `bindings.primary` OFF** (retired pointers force binding-first); then clear the
+   binding and confirm the legacy-KV fallback still reads (the rollback path —
+   note the global flag no longer governs a retired key, per §3's refinement).
 3. **Backfill** — `dry_run` then `apply_backfill` on a guild with a legacy
    value; confirm the candidate classifies `CANDIDATE_VALID` → `written`, and a
    re-run is `skipped_idempotent`.
@@ -216,9 +237,10 @@ Run on a real guild + Postgres after arc PR 2 (extends the
 | Arc PR | Scope | Gate |
 |---|---|---|
 | **1 (this PR)** | Matrix tool · backfill reframe (Required #2) · 2 parity invariants · this plan · Q-0119 | shipped, behavior-preserving |
-| **2 (next)** | Retire XP-announce + economy-log scalars (families 1+2) · `test_no_dual_declared_pointer` invariant · real-Postgres binding-first proof | unblocked |
-| **3** | Delegated-apply contract (§4) — the `setup_delegate` actor_type + AST fence + audit | Q-0098 (answered); design pinned in §4 |
+| **2 (#794) ✅** | Retired XP-announce + economy-log scalars (families 1+2) · `test_no_dual_declared_pointer` invariant · `pointer_retired` binding-first decoupling · real-Postgres proof | DONE |
+| **3 (next)** | Delegated-apply contract (§4) — the `setup_delegate` actor_type + AST fence + audit | Q-0098 (answered); design pinned in §4 |
 | *(later)* | Families 3–5 (governance roles per Q-0119 · welcome/counters/mod-public-log bindings) | family 3 gated on Q-0119 |
+| *(later)* | **Sunset the global `bindings.primary` flag** — once every pointer family is retired (each binding-first via `pointer_retired=True`) and the non-pointer migrated keys are homed (Q-0119), the global canary governs nothing and can be removed. Arc PR 2 proved the per-key model is cleaner + safer to deploy than a guild-wide flip. | after families 3–5 + Q-0119 |
 
 P0-3's **P1-3 follow-up** (declared-setting → runtime-consumer disposition
 invariant for the *non-pointer* settings) is deliberately not in this arc — the
