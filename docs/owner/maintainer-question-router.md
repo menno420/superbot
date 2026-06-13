@@ -4460,3 +4460,28 @@ fixes/docs keep self-merging on green (Q-0113); only big steps carry the label.
 **Home:** `docs/operations/autonomous-routines.md` (the executor + the three labels) ·
 `docs/operations/hermes-skills/review-merge.md` (the skill) · `hermes-operating-prompt.md`
 (the read-only carve-out) · this entry is provenance.
+
+### Q-0118 — Autonomous executor stalled on a `git push -u origin main` permission prompt
+
+> **DIRECTED 2026-06-13 (owner, in-session).** A nightly-executor routine run (no human present)
+> stopped at an interactive "Allow Claude to run `git push -u origin main`?" prompt while pushing a
+> ledger update. Owner: "this should not ask for permissions, especially not on an autonomous run …
+> it should just work exactly like in a normal session."
+
+**Area:** Executable config (`.claude/settings.json` permissions) · autonomy boundary
+**Type:** Owner decision (in-session directed edit to executable config — provenance per Q-0106)
+
+**Root cause:** `permissions.ask` listed `Bash(git push origin main*)` and `Bash(git push -u origin
+main*)`. In Claude Code, `ask` outranks `allow`, so those direct-to-main pushes overrode the broad
+`Bash(git push*)` allow and forced a prompt. In an autonomous routine (no human to click *Allow*),
+that hangs the run. The `ask` guard was meant to catch *accidental* direct-to-main pushes in
+interactive sessions, but the executor's normal session-close flow **is** a direct ledger push to
+`main`, so the guard was pure friction there.
+
+**Decision:** removed the two plain direct-to-main entries from `ask`; they now fall through to the
+existing `Bash(git push*)` allow → no prompt. **Kept gated** the genuinely destructive ops a *normal*
+session also gates: `git push --force*`, `git push -f*`, `git reset --hard*`, `git clean*`. Net: a
+plain push to main "just works exactly like a normal session," force-pushes/history-rewrites still
+prompt.
+
+**Home:** `.claude/settings.json` (`permissions.ask`) is the change; this entry is provenance.
