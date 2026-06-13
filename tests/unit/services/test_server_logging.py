@@ -483,14 +483,31 @@ async def test_resolve_log_channel_unknown_kind_returns_none():
 def test_phase_9a_route_table_is_complete_and_acyclic():
     """Pin the route table shape so a future edit doesn't silently
     drop a route or introduce a fallback cycle.
+
+    The set covers the Phase-9a moderation/severity/audit routes plus the
+    server-event-logging v1 routes (events + per-category). Every chain
+    terminates at a ``None`` fallback (``mod`` for the severity tier,
+    ``events`` for the event tier).
     """
     from services.server_logging import _ROUTE_FALLBACK, _ROUTE_TO_BINDING
 
-    expected = {"mod", "cleanup", "debug", "info", "warning", "error", "audit"}
+    expected = {
+        "mod",
+        "cleanup",
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "audit",
+        "events",
+        "message_log",
+        "member_log",
+        "role_log",
+    }
     assert set(_ROUTE_TO_BINDING) == expected
     assert set(_ROUTE_FALLBACK) == expected
     # Acyclic: walking ``_ROUTE_FALLBACK`` from any starting kind must
-    # terminate at ``mod`` (fallback=None) within at most len(expected) hops.
+    # terminate at a None fallback within at most len(expected) hops.
     for start in expected:
         seen_chain: list[str] = []
         cursor: str | None = start

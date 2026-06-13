@@ -46,12 +46,37 @@ from core.runtime.subsystem_schema import (
     SettingSpec,
     SubsystemSchema,
 )
+from services.server_logging_config import (
+    DEFAULT_EVENT_ROUTING,
+    DEFAULT_MEMBERS_ENABLED,
+    DEFAULT_MESSAGES_ENABLED,
+    DEFAULT_ROLES_ENABLED,
+    ROUTING_COMBINED,
+    ROUTING_PER_CATEGORY,
+    VALID_ROUTING,
+)
 from utils.settings_keys import logging as _log_keys
 
 
 def _validate_bool(value: object) -> None:
     if not isinstance(value, bool):
         raise ValueError(f"expected bool, got {type(value).__name__}: {value!r}")
+
+
+def _validate_routing(value: object) -> None:
+    """Accept only the two recognised routing modes.
+
+    ``combined`` (one channel for every event category) or
+    ``per_category`` (each category to its own channel). Rejects non-str
+    and unknown tokens so a typo fails loudly at write time rather than
+    silently degrading the read model.
+    """
+    if not isinstance(value, str):
+        raise ValueError(f"expected a routing mode string, got {value!r}")
+    if value not in VALID_ROUTING:
+        raise ValueError(
+            f"{value!r} is not a routing mode — use one of {sorted(VALID_ROUTING)}",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -86,6 +111,56 @@ LOGGING_SETTINGS: tuple[SettingSpec, ...] = (
             "spontaneous channels."
         ),
         validator=_validate_bool,
+    ),
+    # -- Server event logging v1 (Q-0109) -------------------------------
+    # Per-category passive-event flags. Each is gated by `enabled` (the
+    # master switch above) *and* its own flag; all default OFF so a guild
+    # that already runs moderation logging sees no new behaviour.
+    SettingSpec(
+        name="messages_enabled",
+        value_type=bool,
+        default=DEFAULT_MESSAGES_ENABLED,
+        settings_key=_log_keys.LOGGING_MESSAGES_ENABLED,
+        capability_required="logging.settings.configure",
+        hint=(
+            "Log message edits and deletions to the configured channel.  "
+            "⚠️ Privacy: when on, staff can see the content of messages "
+            "that members edited or deleted.  Off by default."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="members_enabled",
+        value_type=bool,
+        default=DEFAULT_MEMBERS_ENABLED,
+        settings_key=_log_keys.LOGGING_MEMBERS_ENABLED,
+        capability_required="logging.settings.configure",
+        hint="Log member joins and departures (account age, member count, roles held).",
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="roles_enabled",
+        value_type=bool,
+        default=DEFAULT_ROLES_ENABLED,
+        settings_key=_log_keys.LOGGING_ROLES_ENABLED,
+        capability_required="logging.settings.configure",
+        hint="Log role grants and revocations on members (which roles were added/removed).",
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="event_routing",
+        value_type=str,
+        default=DEFAULT_EVENT_ROUTING,
+        settings_key=_log_keys.LOGGING_EVENT_ROUTING,
+        capability_required="logging.settings.configure",
+        hint=(
+            "How event logs are routed: `combined` sends every category to "
+            "one channel (the events route); `per_category` sends each to "
+            "its own (messages / members / roles), falling back to the "
+            "combined channel when a category channel is unset."
+        ),
+        validator=_validate_routing,
+        allowed_values=(ROUTING_COMBINED, ROUTING_PER_CATEGORY),
     ),
 )
 
@@ -168,6 +243,51 @@ LOGGING_BINDINGS: tuple[BindingSpec, ...] = (
         hint=(
             "Channel for audit-trail records (governance/settings/binding "
             "mutations).  Falls back to `mod_channel` when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    # Server event logging v1 (Q-0109) — passive-event channel slots.
+    # ``events_channel`` is the combined "everything" destination; the
+    # three per-category slots fall back to it (NOT to ``mod_channel``) so
+    # event noise never lands in the moderation-action channel.
+    BindingSpec(
+        name="events_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Combined channel for all server events (edits/deletes, "
+            "joins/leaves, role changes) in `combined` routing mode, and "
+            "the per-category fallback in `per_category` mode."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="message_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for message edits/deletions in `per_category` mode.  "
+            "Falls back to `events_channel` when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="member_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for member joins/leaves in `per_category` mode.  "
+            "Falls back to `events_channel` when unbound."
+        ),
+        capability_required="logging.settings.configure",
+    ),
+    BindingSpec(
+        name="role_channel",
+        kind=BindingKind.CHANNEL,
+        required=False,
+        hint=(
+            "Channel for role grants/revocations in `per_category` mode.  "
+            "Falls back to `events_channel` when unbound."
         ),
         capability_required="logging.settings.configure",
     ),
@@ -265,6 +385,54 @@ LOGGING_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (
         binding_name="audit_channel",
         description=("Operator-facing channel for audit-trail records."),
     ),
+    # Server event logging v1 (Q-0109) — RECOMMENDED requirements for the
+    # passive-event routes.  Names mirror the DEFAULT_*_CHANNEL_NAME
+    # constants in ``utils.settings_keys.logging`` so the create-channel
+    # flow and the auto-create fallback agree.
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="events_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-event-log",
+            suggested_category="Staff",
+        ),
+        binding_name="events_channel",
+        description=("Combined channel for server events (edits/joins/roles)."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="message_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-message-log",
+            suggested_category="Staff",
+        ),
+        binding_name="message_channel",
+        description=("Per-category channel for message edits/deletions."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="member_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-member-log",
+            suggested_category="Staff",
+        ),
+        binding_name="member_channel",
+        description=("Per-category channel for member joins/leaves."),
+    ),
+    ResourceRequirement(
+        kind=ResourceKind.CHANNEL,
+        intent="role_log",
+        provisioning=ProvisioningHint(
+            priority=ProvisioningPriority.RECOMMENDED,
+            suggested_name="bot-role-log",
+            suggested_category="Staff",
+        ),
+        binding_name="role_channel",
+        description=("Per-category channel for role grants/revocations."),
+    ),
 )
 
 
@@ -275,7 +443,11 @@ LOGGING_CONFIG_SCHEMA = SubsystemSchema(
     resource_requirements=LOGGING_RESOURCE_REQUIREMENTS,
     # v2 (Phase 9a): added debug/info/warning/error/audit channel
     # bindings + matching RECOMMENDED resource requirements.
-    version=2,
+    # v3 (server event logging v1, Q-0109): added the messages/members/
+    # roles category flags + event_routing mode setting, the
+    # events/message/member/role channel bindings, and their RECOMMENDED
+    # resource requirements.
+    version=3,
 )
 
 

@@ -83,7 +83,7 @@ image-mod, embed budgets for log/welcome embeds):
 | Slice | Q | New surface | `pattern_id` | Notes |
 |---|---|---|---|---|
 | **automod v1** *(this PR)* | Q-0108 | `AutomodStage` (pipeline) + `services/automod_service.py` + `services/automod_config.py` + `cogs/automod/` | `mock_automod_rules` | 4 rule types (spam burst · invite links · excessive caps · mass mentions); delete + `warn`; exempt roles/channels; **no migration** |
-| **server logging v1** | Q-0109 | extend `services/server_logging.py` with passive handlers + `*_config` | `mock_logging_routing` | edits/deletes · join/leave · role changes; owner-configurable single-vs-per-category channel (the rendered toggle is the decision); privacy note in setup |
+| **server logging v1** ✅ *(shipped — slot 5)* | Q-0109 | extended `services/server_logging.py` with the five passive handlers + `services/server_logging_config.py`; listeners on `LoggingCog`; four event routes on the shared route table | `mock_logging_routing` | edits/deletes · join/leave · role changes; owner-configurable single-vs-per-category channel (`logging.event_routing`); privacy disclosed in the `messages_enabled` hint + the wizard logging section |
 | **welcome v1 + counters** | Q-0110 | `services/welcome_service.py` (embed-only) + `services/counter_service.py` | `mock_welcome_ab`, `mock_counters` | join/leave embed + entry-role; counters = scheduled channel-rename quick-win (respect the 2/10-min rate cap) |
 | **image moderation** | Q-0108 | `services/image_moderation_service.py` + an image-mod `MessageStage` | (reuse automod panel) | OpenAI `omni-moderation-latest` **only** (free, existing key); paid tiers declined; threshold ≥0.80; sends image externally → disclose |
 | **security tiers 1+2** | Q-0111 | `services/security_service.py` (raid detection + account-age filter) | `mock_security_alerts` | tiers 3+4 (alt-detection / VPN) **declined** — keep absent; self-contained, no external API |
@@ -130,6 +130,50 @@ window behaviour, `evaluate` exemptions + disabled-flag fall-open, the
 `process_message` orchestration (mock `moderation_service` — asserts
 `auto_delete` + `warn` called and the event emitted), and the
 schema/defaults-alignment test (mirrors the moderation schema test).
+
+## 5b. server logging v1 — the slice shipped as band slot 5 (Q-0109)
+
+The passive twin of automod: where automod *acts* on messages, logging
+*observes* server events. It deliberately **reuses the existing logging
+subsystem** rather than registering a new one — so it trips none of the
+new-subsystem pinned-surface cascade (the friction the automod slice
+flagged).
+
+**Design (settings-only, no migration — mirrors `automod_config`):**
+
+- `utils/settings_keys/logging.py` — the new `logging_*` KV keys
+  (`messages_enabled`/`members_enabled`/`roles_enabled`/`event_routing`)
+  + the event-route default channel names.
+- `services/server_logging_config.py` — `DEFAULT_*` constants (one source
+  of truth shared with the schema), the frozen `EventLoggingPolicy`, and
+  `load_policy(guild_id)`. The master switch is the **existing**
+  `logging.enabled`, so one switch governs moderation + audit + event
+  logging.
+- `services/server_logging.py` — the five `format_*_embed` builders, the
+  five `log_*` handlers (gate → resolve → send, all fail-safe + counted),
+  `resolve_event_channel`, and four new entries in the shared route table
+  (`events` + `message_log`/`member_log`/`role_log`, falling back to
+  `events`, never `mod`).
+- `cogs/logging_cog.py` — the five `@commands.Cog.listener()` methods
+  (cheap structural filters → delegate) + the `!logging status` event
+  summary.
+- `cogs/logging/schemas.py` — schema v3: four `SettingSpec`s + four
+  `BindingSpec`s + four `ResourceRequirement`s; the routing setting uses
+  `allowed_values=("combined", "per_category")` for an enum picker.
+- The channel routing reuses the **existing Routes panel** + the
+  `BindingMutationPipeline` (the route table is generic); the
+  `provision_view`/`select_view` route tables gained the four routes too.
+
+**Privacy (Q-0109):** the `messages_enabled` hint carries the
+deleted-message disclosure, and the setup wizard's logging-presets section
+states it.
+
+**Tests:** `tests/unit/services/test_server_logging_events.py` — policy
+gating/routing, `load_policy` resolution, the embed builders (+ truncation),
+`resolve_event_channel` mode selection, the handlers (disabled-skip / send /
+missing-channel / fail-safe counters), and the cog-listener filters
+(skip-bot / no-op-edit / role-diff). Subsystem doc:
+[`../server-logging.md`](../server-logging.md) § "Server event logging v1".
 
 ## 6. Verification
 

@@ -33,7 +33,8 @@ logger = logging.getLogger("bot.cogs.logging.routes_panel")
 
 
 # Display order for the routes embed. Sources first, then severity,
-# then audit — mirrors the operator's typical mental model.
+# then audit, then the server-event routes — mirrors the operator's
+# typical mental model.
 _ROUTE_DISPLAY_ORDER: tuple[str, ...] = (
     "mod",
     "cleanup",
@@ -42,6 +43,11 @@ _ROUTE_DISPLAY_ORDER: tuple[str, ...] = (
     "warning",
     "error",
     "audit",
+    # Server event logging v1 (Q-0109).
+    "events",
+    "message_log",
+    "member_log",
+    "role_log",
 )
 
 
@@ -134,6 +140,8 @@ async def build_routes_embed(guild: discord.Guild | None) -> discord.Embed:
         )
         return embed
 
+    from services.server_logging import _ROUTE_FALLBACK
+
     lines: list[str] = []
     for kind in _ROUTE_DISPLAY_ORDER:
         state = await _resolve_route_state(guild, kind)
@@ -144,7 +152,10 @@ async def build_routes_embed(guild: discord.Guild | None) -> discord.Embed:
         if source == "binding" and mention is not None:
             marker = f"→ {mention}"
         elif source == "fallback" and mention is not None:
-            marker = f"↪ {mention} *(via mod fallback)*"
+            # Name the actual fallback target — event routes fall back to
+            # the combined `events` channel, not `mod`.
+            target = _ROUTE_FALLBACK.get(kind) or "mod"
+            marker = f"↪ {mention} *(via {target} fallback)*"
         elif source == "error":
             marker = "⚠️ *(resolution error — see logs)*"
         else:
@@ -158,7 +169,8 @@ async def build_routes_embed(guild: discord.Guild | None) -> discord.Embed:
     embed.set_footer(
         text=(
             "Pick a route below, then Set Channel or Create Channel. "
-            "Routes without their own binding fall back to the mod channel."
+            "Routes without their own binding fall back along their "
+            "fallback chain (severity/audit → mod; event routes → events)."
         ),
     )
     return embed

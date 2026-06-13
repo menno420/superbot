@@ -77,6 +77,12 @@ _COUNTERS: dict[str, int] = {
     # subscriber; moderator-name-redacted; gated by the moderation policy).
     "mod_public_sent": 0,
     "mod_public_skipped": 0,
+    # Server event logging v1 (Q-0109) — passive Discord-event handlers
+    # (message edits/deletes, member joins/leaves, role changes). Share the
+    # existing permission_error / send_error buckets for delivery failures.
+    "event_sent": 0,
+    "event_skipped_disabled": 0,
+    "event_missing_channel": 0,
 }
 
 
@@ -151,6 +157,38 @@ _ROUTE_TO_BINDING: dict[str, str] = {
     "warning": "warning_channel",
     "error": "error_channel",
     "audit": "audit_channel",
+    # Server event logging v1 (Q-0109) — passive Discord-event routes.
+    # ``events`` is the combined "everything" channel (single-channel
+    # mode); the three per-category routes fall back to it.
+    "events": "events_channel",
+    "message_log": "message_channel",
+    "member_log": "member_channel",
+    "role_log": "role_channel",
+}
+
+# Server event logging v1 — maps an event category (from
+# ``services.server_logging_config``) to its per-category route kind. The
+# combined route (``events``) is selected directly when routing mode is
+# ``combined``; in ``per_category`` mode these per-category kinds are used,
+# and each falls back to ``events`` (see ``_ROUTE_FALLBACK``) when its own
+# channel is unset.
+_CATEGORY_TO_ROUTE: dict[str, str] = {
+    "messages": "message_log",
+    "members": "member_log",
+    "roles": "role_log",
+}
+
+# Auto-create channel names per route kind. Routes absent from this map
+# (the Phase-9a severity/audit routes) keep their historical behaviour of
+# defaulting to the mod-log name via ``ensure_log_channel``'s ``.get``
+# fallback — only the new event routes opt into purpose-built names.
+_KIND_DEFAULT_CHANNEL_NAME: dict[str, str] = {
+    "mod": _log_keys.DEFAULT_MOD_CHANNEL_NAME,
+    "cleanup": _log_keys.DEFAULT_CLEANUP_CHANNEL_NAME,
+    "events": _log_keys.DEFAULT_EVENTS_CHANNEL_NAME,
+    "message_log": _log_keys.DEFAULT_MESSAGE_LOG_CHANNEL_NAME,
+    "member_log": _log_keys.DEFAULT_MEMBER_LOG_CHANNEL_NAME,
+    "role_log": _log_keys.DEFAULT_ROLE_LOG_CHANNEL_NAME,
 }
 
 # Per-route fallback. ``cleanup`` historically falls back to ``mod``
@@ -165,6 +203,14 @@ _ROUTE_FALLBACK: dict[str, str | None] = {
     "warning": "mod",
     "error": "mod",
     "audit": "mod",
+    # Event routes terminate at the combined ``events`` channel, NOT at
+    # ``mod`` — passive-event noise (deletes, joins) must never spill into
+    # the moderation-action channel. ``events`` itself is terminal: when
+    # unset, the event simply isn't logged (fail-safe).
+    "events": None,
+    "message_log": "events",
+    "member_log": "events",
+    "role_log": "events",
 }
 
 
@@ -277,10 +323,9 @@ async def ensure_log_channel(
     existing = await resolve_log_channel(guild, kind)
     if existing is not None:
         return existing
-    fallback_name = (
-        _log_keys.DEFAULT_CLEANUP_CHANNEL_NAME
-        if kind == "cleanup"
-        else _log_keys.DEFAULT_MOD_CHANNEL_NAME
+    fallback_name = _KIND_DEFAULT_CHANNEL_NAME.get(
+        kind,
+        _log_keys.DEFAULT_MOD_CHANNEL_NAME,
     )
     try:
         created = await ensure_channel(guild, fallback_name, kind="text")
@@ -842,6 +887,352 @@ async def _on_moderation_action_public(
 
 
 # ---------------------------------------------------------------------------
+# Server event logging v1 (Q-0109) — passive Discord-event handlers
+# ---------------------------------------------------------------------------
+#
+# The passive layer: when a tracked Discord event fires (message
+# edit/delete, member join/leave, role change), the LoggingCog listener
+# delegates here. Each handler loads the per-guild EventLoggingPolicy,
+# gates on the master switch + its category flag, resolves the routed
+# channel, and posts a structured embed — fully fail-safe (an error counts
+# a bucket and returns; it never raises into the gateway, so a logging
+# fault can't block legitimate activity).
+
+# Discord embed field-value limit; content/role lists are truncated to it.
+_EVENT_VALUE_CAP = 1024
+
+
+def _truncate(text: str, cap: int = _EVENT_VALUE_CAP) -> str:
+    """Truncate ``text`` to ``cap`` chars with an ellipsis if over."""
+    if len(text) <= cap:
+        return text
+    return text[: cap - 1] + "…"
+
+
+def _relative_ts(when: datetime.datetime | None) -> str | None:
+    """Render a Discord ``<t:...:R>`` relative timestamp, or ``None``."""
+    if when is None:
+        return None
+    return f"<t:{int(when.timestamp())}:R>"
+
+
+def format_message_delete_embed(message: discord.Message) -> discord.Embed:
+    """Render a deleted message as a log embed (author · channel · content)."""
+    embed = discord.Embed(
+        title="🗑️ Message deleted",
+        color=discord.Color.red(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    author = message.author
+    embed.add_field(
+        name="Author",
+        value=f"<@{author.id}> (`{author.id}`)",
+        inline=True,
+    )
+    embed.add_field(
+        name="Channel",
+        value=getattr(message.channel, "mention", "*(unknown)*"),
+        inline=True,
+    )
+    content = message.content or ""
+    embed.add_field(
+        name="Content",
+        value=_truncate(content) if content else "*(no text content)*",
+        inline=False,
+    )
+    if message.attachments:
+        names = "\n".join(a.filename for a in message.attachments)
+        embed.add_field(name="Attachments", value=_truncate(names), inline=False)
+    return embed
+
+
+def format_message_edit_embed(
+    before: discord.Message,
+    after: discord.Message,
+) -> discord.Embed:
+    """Render a message edit as a log embed (before/after + jump link)."""
+    embed = discord.Embed(
+        title="✏️ Message edited",
+        color=discord.Color.gold(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    author = after.author
+    embed.add_field(
+        name="Author",
+        value=f"<@{author.id}> (`{author.id}`)",
+        inline=True,
+    )
+    embed.add_field(
+        name="Channel",
+        value=getattr(after.channel, "mention", "*(unknown)*"),
+        inline=True,
+    )
+    embed.add_field(
+        name="Before",
+        value=_truncate(before.content) if before.content else "*(empty)*",
+        inline=False,
+    )
+    embed.add_field(
+        name="After",
+        value=_truncate(after.content) if after.content else "*(empty)*",
+        inline=False,
+    )
+    jump = getattr(after, "jump_url", None)
+    if jump:
+        embed.add_field(name="Jump", value=f"[Go to message]({jump})", inline=False)
+    return embed
+
+
+def format_member_join_embed(member: discord.Member) -> discord.Embed:
+    """Render a member join as a log embed (member · account age · count)."""
+    embed = discord.Embed(
+        title="📥 Member joined",
+        color=discord.Color.green(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    embed.add_field(
+        name="Member",
+        value=f"<@{member.id}> (`{member.id}`)",
+        inline=True,
+    )
+    created = _relative_ts(getattr(member, "created_at", None))
+    if created:
+        embed.add_field(name="Account created", value=created, inline=True)
+    count = getattr(member.guild, "member_count", None)
+    if count is not None:
+        embed.add_field(name="Member count", value=str(count), inline=True)
+    return embed
+
+
+def format_member_leave_embed(member: discord.Member) -> discord.Embed:
+    """Render a member departure as a log embed (member · joined · roles)."""
+    embed = discord.Embed(
+        title="📤 Member left",
+        color=discord.Color.dark_orange(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    # Show the username too — a mention of a departed member often won't
+    # resolve to a name in the client.
+    embed.add_field(
+        name="Member",
+        value=f"{member} — <@{member.id}> (`{member.id}`)",
+        inline=False,
+    )
+    joined = _relative_ts(getattr(member, "joined_at", None))
+    if joined:
+        embed.add_field(name="Joined", value=joined, inline=True)
+    held = [r for r in getattr(member, "roles", []) if not r.is_default()]
+    if held:
+        embed.add_field(
+            name="Roles held",
+            value=_truncate(", ".join(r.mention for r in held)),
+            inline=False,
+        )
+    return embed
+
+
+def format_role_change_embed(
+    member: discord.Member,
+    added: list[discord.Role],
+    removed: list[discord.Role],
+) -> discord.Embed:
+    """Render a member's role grants/revocations as a log embed."""
+    embed = discord.Embed(
+        title="🎭 Roles updated",
+        color=discord.Color.blurple(),
+        timestamp=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+    embed.add_field(
+        name="Member",
+        value=f"<@{member.id}> (`{member.id}`)",
+        inline=False,
+    )
+    if added:
+        embed.add_field(
+            name="➕ Added",
+            value=_truncate(", ".join(r.mention for r in added)),
+            inline=False,
+        )
+    if removed:
+        embed.add_field(
+            name="➖ Removed",
+            value=_truncate(", ".join(r.mention for r in removed)),
+            inline=False,
+        )
+    return embed
+
+
+async def resolve_event_channel(
+    guild: discord.Guild,
+    category: str,
+    *,
+    per_category: bool,
+) -> discord.TextChannel | None:
+    """Resolve the destination channel for an event ``category``.
+
+    ``per_category`` False → the combined ``events`` route. True → the
+    category's own route (``message_log`` / ``member_log`` / ``role_log``),
+    which the route table falls back to ``events`` for when its own channel
+    is unset. Returns ``None`` when nothing resolves (event not logged).
+    """
+    if per_category:
+        kind = _CATEGORY_TO_ROUTE.get(category)
+        if kind is None:
+            return None
+    else:
+        kind = "events"
+    return await resolve_log_channel(guild, kind)
+
+
+async def _post_event_embed(
+    guild: discord.Guild,
+    category: str,
+    *,
+    per_category: bool,
+    embed: discord.Embed,
+) -> bool:
+    """Resolve the routed channel and send ``embed`` — fail-safe + counted."""
+    channel = await resolve_event_channel(guild, category, per_category=per_category)
+    if channel is None and await auto_create_enabled(guild.id):
+        kind = _CATEGORY_TO_ROUTE[category] if per_category else "events"
+        channel = await ensure_log_channel(guild, kind)
+    if channel is None:
+        _bump("event_missing_channel")
+        return False
+    try:
+        await channel.send(embed=embed)
+    except discord.Forbidden:
+        _bump("permission_error")
+        logger.warning(
+            "server_logging event: missing send permission in #%s (guild %d)",
+            channel.name,
+            guild.id,
+        )
+        return False
+    except discord.HTTPException as exc:
+        _bump("send_error")
+        logger.warning(
+            "server_logging event: HTTP error sending to #%s (guild %d): %s",
+            channel.name,
+            guild.id,
+            exc,
+        )
+        return False
+    except Exception as exc:  # noqa: BLE001 — fail-safe wrapper
+        _bump("send_error")
+        logger.warning(
+            "server_logging event: unexpected error sending to #%s (guild %d): %s",
+            channel.name,
+            guild.id,
+            exc,
+            exc_info=True,
+        )
+        return False
+    _bump("event_sent")
+    return True
+
+
+async def _log_event_if_enabled(
+    guild: discord.Guild | None,
+    category: str,
+    embed_factory: Any,
+) -> bool:
+    """Shared gate for every passive handler.
+
+    Loads the policy, applies the master+category gate, and posts the embed
+    built by ``embed_factory`` (a zero-arg callable, evaluated only once the
+    gate passes so a disabled category does no embed work). Fully fail-safe.
+    """
+    if guild is None:
+        return False
+    from services import server_logging_config as _cfg
+
+    try:
+        policy = await _cfg.load_policy(guild.id)
+        if not policy.should_log(category):
+            _bump("event_skipped_disabled")
+            return False
+        return await _post_event_embed(
+            guild,
+            category,
+            per_category=policy.per_category,
+            embed=embed_factory(),
+        )
+    except Exception as exc:  # noqa: BLE001 — a logging fault must never block
+        _bump("subscriber_errors")
+        logger.exception(
+            "server_logging event handler raised %s — counted and swallowed.",
+            type(exc).__name__,
+            exc_info=exc,
+        )
+        return False
+
+
+async def log_message_delete(message: discord.Message) -> bool:
+    """Post a deleted-message embed when the messages category is enabled."""
+    from services.server_logging_config import CATEGORY_MESSAGES
+
+    return await _log_event_if_enabled(
+        message.guild,
+        CATEGORY_MESSAGES,
+        lambda: format_message_delete_embed(message),
+    )
+
+
+async def log_message_edit(
+    before: discord.Message,
+    after: discord.Message,
+) -> bool:
+    """Post a message-edit embed when the messages category is enabled."""
+    from services.server_logging_config import CATEGORY_MESSAGES
+
+    return await _log_event_if_enabled(
+        after.guild,
+        CATEGORY_MESSAGES,
+        lambda: format_message_edit_embed(before, after),
+    )
+
+
+async def log_member_join(member: discord.Member) -> bool:
+    """Post a member-join embed when the members category is enabled."""
+    from services.server_logging_config import CATEGORY_MEMBERS
+
+    return await _log_event_if_enabled(
+        member.guild,
+        CATEGORY_MEMBERS,
+        lambda: format_member_join_embed(member),
+    )
+
+
+async def log_member_leave(member: discord.Member) -> bool:
+    """Post a member-departure embed when the members category is enabled."""
+    from services.server_logging_config import CATEGORY_MEMBERS
+
+    return await _log_event_if_enabled(
+        member.guild,
+        CATEGORY_MEMBERS,
+        lambda: format_member_leave_embed(member),
+    )
+
+
+async def log_role_change(
+    member: discord.Member,
+    added: list[discord.Role],
+    removed: list[discord.Role],
+) -> bool:
+    """Post a role-change embed when the roles category is enabled."""
+    from services.server_logging_config import CATEGORY_ROLES
+
+    if not added and not removed:
+        return False
+    return await _log_event_if_enabled(
+        member.guild,
+        CATEGORY_ROLES,
+        lambda: format_role_change_embed(member, added, removed),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Setup / diagnostics registration
 # ---------------------------------------------------------------------------
 
@@ -895,11 +1286,22 @@ __all__ = [
     "ensure_log_channel",
     "format_audit_embed",
     "format_log_embed",
+    "format_member_join_embed",
+    "format_member_leave_embed",
+    "format_message_delete_embed",
+    "format_message_edit_embed",
     "format_public_log_embed",
+    "format_role_change_embed",
     "is_enabled",
     "log_audit_event",
     "log_event",
+    "log_member_join",
+    "log_member_leave",
+    "log_message_delete",
+    "log_message_edit",
+    "log_role_change",
     "maybe_log_public",
+    "resolve_event_channel",
     "resolve_log_channel",
     "setup",
 ]
