@@ -4662,3 +4662,68 @@ wording still lives in `docs/operations/autonomous-routines.md` (routine prompts
 
 **Home:** CLAUDE.md SESSION_WORKFLOW (envelope struck → auto-merge bullet); `auto-merge-enabler.yml`
 is the mechanism; this entry is provenance.
+
+### Q-0124 — The Q-0107 reconciliation pass is the routines' job, not a manual session's
+
+> **DIRECTED 2026-06-13 (owner, in-session).** Verbatim: *"please make a note that the
+> reconciliation is always done automatically by the routines so that should not be part of a
+> manually started session unless explicitly asked."* This is the in-session direction Q-0106
+> requires to edit `.claude/CLAUDE.md` directly; this entry is the provenance.
+
+**Area:** Session/PR workflow · the Q-0107 reconciliation cadence · manual-vs-routine task scope
+**Type:** Owner-directed in-session clarification (provenance per Q-0106)
+
+**Problem (the trigger):** a manually-started session ("continue where PR #800 ended") read the
+SessionStart `Recon: DUE` banner + the `current-state` "next pass is due" line and **diverted into
+running the reconciliation pass itself** — which (a) was not what the owner asked (PR #800's lane was
+the P0-3 hardening arc), and (b) duplicated a pass the routine was already running concurrently
+(merged as #804). The banner's wording ("the next session should be a docs-only reconciliation
+pass") read as an instruction to whatever session saw it.
+
+**Decision:**
+> The docs-only Q-0107 reconciliation pass is **always run automatically by the routines** (the
+> `reconcile`-issue trigger → the *superbot docs reconciliation* routine). A **manually-started
+> session does NOT run it unless the owner explicitly asks**; it pursues the work it was started for.
+> The `Recon: DUE` banner is a signal *for the routine*, not an instruction to a human-started
+> session.
+
+**Applied this session (provenance = this Q):** CLAUDE.md Q-0107 bullet gained the manual-session
+clause; `scripts/check_reconciliation_due.py`'s DUE banner reworded to say the routines run it and a
+manual session should not unless asked; journal Quick-reference + Rules note added.
+
+**Home:** CLAUDE.md § Session & plan workflow (Q-0107 bullet); `check_reconciliation_due.py` banner;
+`.session-journal.md` (Quick reference + Rules). This entry is provenance.
+
+### Q-0125 — Stale open PRs must be dispositioned (sessions + the reconciliation pass)
+
+> **OBSERVED 2026-06-13 (owner, in-session).** Verbatim: *"there are still a few PRs open … one of
+> them even has a failing CI that should be fixed"* and *"they are all quite old, I … was curious if
+> a session would see them, or if the reconciliation session would clean them up, but none of that
+> happened."* The owner deliberately left stale PRs to test whether the workflow self-heals; it did
+> not. Treated as an in-session directive to close the gap (provenance per Q-0106).
+
+**Area:** Session/PR workflow · open-PR hygiene · reconciliation-pass scope
+**Type:** Owner-observed workflow gap → recorded behavior rule
+
+**The gap:** four PRs sat open (#704 owner · #766 **red CI** · #771 redundant + conflicted · #805
+green/auto-merging). Neither ordinary sessions nor *two* reconciliation passes (#782 noted #771 as
+"recommend close" but never closed it; #804 didn't act either) dispositioned them. Sessions checked
+open PRs only for *title collisions* (the Q-0060 rule), never for *health* (red/stuck/redundant).
+
+**Decision (behavior rule):**
+> 1. **A session checks open-PR _health_, not just titles.** At orientation, `list_pull_requests`
+>    (state=open) + each one's CI/mergeable state; a red or stuck PR adjacent to your work is a
+>    bugs-first item.
+> 2. **The reconciliation pass _dispositions_ open PRs** (added to the Q-0107 reconcile scope):
+>    close redundant/stale, fix or flag a red-CI one, leave owner PRs. "Noting" a PR for close is
+>    not disposition — close it.
+> 3. **The autonomous docs-reconciliation routine** does the same (its prompt names the open-PR
+>    sweep), since a routine — not a manual session — runs the cadence pass (Q-0124).
+
+**Applied this session:** #766 CI fixed (3 idea files were `check_docs` reachability orphans → linked
+from the README index); #771 closed (redundant — its #765/#767/#769 entries are already in the ledger
+— and `dirty`/conflicted); CLAUDE.md Q-0107 reconcile bullet + the routine prompt gained the open-PR
+sweep; journal Quick-reference updated.
+
+**Home:** CLAUDE.md § Session & plan workflow (Q-0107 bullet); `docs/operations/autonomous-routines.md`
+(reconcile routine prompt); `.session-journal.md` (Quick reference + Rules). This entry is provenance.
