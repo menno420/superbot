@@ -1,0 +1,54 @@
+"""Tests for the bootstrap builder + the generated single-file artifact."""
+
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+import build_bootstrap
+
+_KIT = Path(__file__).resolve().parents[3] / "substrate-kit"
+_DIST = _KIT / "dist" / "bootstrap.py"
+
+
+def _manifest_keys(content: str) -> list[str]:
+    return re.findall(r"^\s*'(engine/[^']+)':", content, re.MULTILINE)
+
+
+def test_build_is_deterministic():
+    assert build_bootstrap.build() == build_bootstrap.build()
+
+
+def test_committed_bootstrap_is_current():
+    # The committed dist/bootstrap.py must equal a fresh build — i.e. nobody
+    # edited src/ and forgot to regenerate. Regenerate: python3 src/build_bootstrap.py
+    assert _DIST.read_text(encoding="utf-8") == build_bootstrap.build()
+
+
+def test_no_self_embedding_recursion():
+    keys = _manifest_keys(build_bootstrap.build())
+    assert keys  # the manifest is non-empty
+    assert all(k.startswith("engine/") for k in keys)  # never embeds dist/
+
+
+def test_generated_file_compiles():
+    compile(build_bootstrap.build(), "bootstrap.py", "exec")
+
+
+def test_no_leftover_placeholder_tokens():
+    content = build_bootstrap.build()
+    assert "$PLACEHOLDER" not in content
+    assert "$SLOT" not in content
+
+
+def test_single_file_simulate_via_subprocess(tmp_path):
+    boot = tmp_path / "bootstrap.py"
+    boot.write_text(build_bootstrap.build(), encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, str(boot), "--simulate", "3"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "OK" in result.stdout

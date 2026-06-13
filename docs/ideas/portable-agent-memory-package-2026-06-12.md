@@ -7,6 +7,12 @@
 **Captured:** 2026-06-12 (maintainer vision, voice) · **Owning area:** agent ecosystem /
 the workflow substrate itself (the *real artifact*, per `.claude/CLAUDE.md`).
 
+> **▶ UPDATE 2026-06-13 — GRADUATED TO AN APPROVED PLAN.** This vision is now a concrete,
+> owner-approved, finalization-ready **executable plan** (10 external-review rounds + ExitPlanMode
+> approval): [`../planning/portable-substrate-kit-extraction-2026-06-13.md`](../planning/portable-substrate-kit-extraction-2026-06-13.md).
+> This file is preserved as the **origin capture**; the discuss-lane questions below were resolved
+> by the maintainer directing the work in-session. Execution = that plan (entry point: PR 1a).
+
 ## The idea
 
 Extract the thing this repo is *actually* building — **consistent cross-session memory +
