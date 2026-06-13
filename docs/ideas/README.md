@@ -163,6 +163,13 @@ Current broad captures:
   master-flag state + a jump to its `!settings` group. Closes the operator-discoverability
   cost of going hub-less; composes from the existing schema registry (zero new state).
   Sequence after the lane's remaining slices land.
+- [`readiness-maps-cite-regen-command-2026-06-13.md`](./readiness-maps-cite-regen-command-2026-06-13.md) —
+  **session idea (2026-06-13, Q-0089, from the P0-3 settings pointer-lane session):**
+  `production-readiness/*` maps embed frozen inventory counts that rot the moment a feature
+  lands (the settings map was 1 day old and already wrong — 36/13 claimed vs 65/17 real).
+  Convention (soft `check_docs` rule): a map stating a count must cite its regen command
+  (`scripts/settings_lane_matrix.py`, `command_surface_dump.py`) beside it. Source-wins
+  applied to the doc class most prone to drift.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
