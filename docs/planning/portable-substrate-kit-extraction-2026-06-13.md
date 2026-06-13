@@ -41,6 +41,21 @@ in `.claude/CLAUDE.md`.
 *internal* revision marker (v1 → v9 across the review rounds); the `plan` badge above is this
 *document's* lifecycle badge. Everything from the next heading down is the approved plan verbatim.
 
+## Execution log
+
+- **PR 1a (2026-06-13) — DONE, green in-repo.** Skeleton + locked contracts shipped under
+  `substrate-kit/`: `engine/lib/{atomicio,config,state,guardrail}.py`, `engine/cli.py`,
+  `src/build_bootstrap.py`, and the generated stdlib-only `dist/bootstrap.py` (the `--simulate`
+  smoke passes). 23 tests green; black/isort/ruff/check_docs green; the full suite still collects
+  clean (9360). **Verified plan deviation:** the kit's tests live in **`tests/unit/substrate_kit/`**,
+  *not* `substrate-kit/tests/` — superbot's CI runs `pytest tests/` with `testpaths=["tests"]`, so it
+  does **not** auto-collect `substrate-kit/tests/` (the plan's verification-section assumption was
+  wrong; verified against `pyproject.toml` + the workflow). On extraction they move into
+  `substrate-kit/tests/`. Also confirmed for whoever does PR 1b: `dist/` is excluded from black/ruff
+  (the generated file isn't linted), `tests/` is excluded from black/ruff but **isort still checks it**
+  (the repo's isort skip-glob matches nothing), and `print`/`assert`/`subprocess` (T201/S101/S603) are
+  enforced on `substrate-kit/src/` — hence `sys.stdout.write` + no asserts in engine code.
+
 ---
 
 # Plan: Portable, self-learning agent-memory + workflow system ("the substrate, extracted")
