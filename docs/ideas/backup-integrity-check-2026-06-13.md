@@ -1,6 +1,6 @@
 # Idea: backup dump integrity check
 
-> **Status:** `idea` — captured 2026-06-13 (executor run, Q-0089).
+> **Status:** `ideas` — captured 2026-06-13 (executor run, Q-0089).
 > **Area:** operations / backup posture.
 
 ## The idea

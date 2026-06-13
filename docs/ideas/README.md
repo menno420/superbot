@@ -150,6 +150,12 @@ Current broad captures:
   **owner-directed (design captured, build next):** route `/bugreport` *through Hermes*
   (spam/genuine triage → reproduce + reword + fetch logs → save a curated `bug` issue +
   Discord summary) → nightly executor batch-fixes. Replaces the current direct instant-fire.
+- [`backup-integrity-check-2026-06-13.md`](./backup-integrity-check-2026-06-13.md) —
+  **session idea (2026-06-13, Q-0089, from the backup-posture session):** add a dump
+  integrity step to `backup-db.yml` — verify the dump contains ≥ threshold `CREATE TABLE`
+  statements before uploading, catching the silent empty-dump failure class (pg_dump exits 0
+  on permission errors). Turns the backup posture from "uploads something" to "uploads a
+  verifiable schema snapshot." Small one-step addition; quick-win ops lane.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
