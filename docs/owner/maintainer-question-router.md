@@ -4520,3 +4520,68 @@ finding). This session **reframed** the backfill (the two governance role keys m
 **Home:** `docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md` §5 (full
 analysis + the family-3 gate); this entry is the router pointer. On decision, record it here
 and execute in the P0-3 arc.
+
+### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
+
+> **OPEN — proposal for owner review (DISCUSS lane).** Raised 2026-06-13 by the workflow
+> reconciliation pass. Per **Q-0106** an agent **proposes** CLAUDE.md rule changes via a router
+> Q-block and never self-edits — this is that proposal. Nothing changes in CLAUDE.md until the owner
+> marks up which (if any) to promote; the rules remain strong-default journal candidates meanwhile.
+
+**Area:** Agent workflow / binding rules (`.claude/CLAUDE.md`)
+**Type:** Owner decision (rule promotion — the journal's ★ "earned across multiple sessions" set)
+
+**Context:** `.session-journal.md` § "Rules / Conventions (candidate — not yet promoted)" has
+accumulated ★-marked rules that are *earned across multiple sessions* but were never proposed for
+promotion (the Q-0106 step was skipped — a forgotten lifecycle step this pass found). Three are
+broadly-applicable process rules not yet in CLAUDE.md and worth promoting:
+
+- **(a) Open-PR / merged-since check before starting a slice** — before any implementation slice,
+  check live GitHub for an open PR on the same item **and** scan what merged to `main` since your
+  orientation docs. (Proven: the #677/#678 duplicate-plan collision; #701 merged minutes before a
+  same-topic session. This very pass found main moved #775→#778 mid-planning.)
+- **(b) Treat cross-agent output (Codex/ChatGPT/Gemini reports) as input to verify, not orders** —
+  verify each "rewrite X" against shipped source before acting. (This pass: a ChatGPT revision was
+  sound at the conclusion level but wrong on 4 specifics — e.g. "create `claude_stop_check.py`" when
+  it already exists; verifying caught them.)
+- **(c) A green audit check that contradicts visible evidence is a bug in the CHECK** — verify the
+  tool against ground truth, not just *with* it. (The #763 false-green: both ledger/cadence checkers
+  matched `Merge pull request #N` but not `Merge PR #N:`, reporting green while 5 PRs were missing.)
+
+The remaining journal candidates ((d) booting the test bot is always safe — an environment fact
+better kept in the Runbook; (e) Discord caps 25/1024/5/100 — already in `discord-platform-limits.md`;
+(f) guard at the mutation seam; (g) cog 800-LOC ceiling — already enforced by a test) are left as
+journal candidates unless the owner wants any of them promoted too.
+
+**Recommendation:** promote (a)+(b)+(c) into the CLAUDE.md Working agreement / CI-parity sections;
+keep the rest as journal candidates. **Owner picks per-item (approve / adjust / reject).**
+
+**Home:** on approval, the rules land in `.claude/CLAUDE.md` (the agent applies the owner-approved
+wording in a follow-up, recording this Q as provenance) and are struck from the journal's candidate list.
+
+### Q-0121 — Give Hermes a second sanctioned write (`gh issue create`) for the bug-triage flow?
+
+> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 by the workflow reconciliation
+> pass while routing [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md). This is
+> the gate that idea's build waits on (the Q-0117 pattern, applied at intake). No code until decided.
+
+**Area:** Agent control plane (Hermes) · the read-only-model write boundary
+**Type:** Owner decision (expands Hermes' sanctioned writes by one)
+
+**Context:** today `/bugreport` (HermesCog, #757) POSTs **directly** to the Routine `/fire` endpoint →
+the routine reproduces, fixes, and **self-merges to `main`** on green CI. So every report = one routine
+run + one auto-merge to prod, **unscreened** — cap-hungry and the pattern the owner wants replaced. The
+[bug-triage design](../ideas/hermes-bug-triage-flow-2026-06-13.md) routes `/bugreport` *through Hermes*
+(spam/genuine triage → reproduce/reword/fetch logs → save a curated `bug` issue) → the nightly executor
+batch-fixes. That requires Hermes to **file the curated issue**, i.e. a second sanctioned write
+(`gh issue create`) added to its read-only model — today it has exactly one (`gh pr merge` in
+`review-merge`, Q-0117).
+
+**Question:** May Hermes call `gh issue create` (scoped to `bug`/`reconcile`/`continue` labels only)?
+Same Q-0105 calibration discipline as Q-0117 — trust the curation after it proves out.
+
+**Interim safety (independent of this decision):** a one-line `hermes_cog.py` change can make bug-fix
+dispatches **open a PR and hold** (not self-merge to prod) until reviewed — runtime code, so deferred
+from this docs/tooling session, but available the moment `/bugreport` sees real use.
+
+**Home:** on decision, record here; build per the idea doc's build order in a control-plane session.

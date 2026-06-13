@@ -20,7 +20,15 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-13, **hardening P0-3 settings pointer-lane convergence
+> **Last updated:** 2026-06-13, **workflow reconciliation + hardening pass (this session)** —
+> a by-judgment Q-0107-style pass: re-badged 2 executed ideas + the server-mgmt tracker `historical`,
+> routed the loose ideas (backup-integrity → tooling PR · bot-self-test-walker → Later · hermes-bug-triage
+> → Q-0121), proposed the journal's earned candidate rules (Q-0120), added the **Control-plane state
+> ledger** to `autonomous-routines.md`, and reconciled the #778 ledger gap. The #780 cadence marker is
+> **untouched** (interim pass). Record: [`planning/reconciliation-pass-2026-06-13-workflow.md`](planning/reconciliation-pass-2026-06-13-workflow.md).
+> · 2026-06-13, **fix: routine-trigger author → `ROUTINE_PAT` (PR #778)** — root-caused why the
+> autonomous loop never self-fired (bot-authored trigger issues don't start a routine); inert until the
+> owner adds the secret. · 2026-06-13, **hardening P0-3 settings pointer-lane convergence
 > (PR #777, foundation)** — the carried hardening spine's next slot, behavior-preserving.
 > Root-fixed the broken governance-role backfill (reframed the permanently
 > `BLOCKED_NO_SCHEMA` `MIGRATED_KEYS` into honest `MIGRATED_KEYS`/`DEFERRED_KEYS` — the
@@ -87,6 +95,15 @@ Source code and merged PRs win over anything written here.
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#778 (2026-06-13, fix: routine-trigger issues now authored by `ROUTINE_PAT`)** —
+  root-caused why the autonomous loop had **never self-fired**: `executor-nightly.yml` +
+  `reconciliation-trigger.yml` created their trigger issue with `GITHUB_TOKEN`, so it was authored
+  by `github-actions[bot]` — and a **bot-authored issue does not start a Claude routine**
+  (A/B-verified: real-user issue #776 fired in <1 min; the cron's #768 sat ~12h, never fired). Both
+  workflows now author with `secrets.ROUTINE_PAT` (fallback `GITHUB_TOKEN` + a loud `::warning::`
+  when unset). **Inert until the owner adds the `ROUTINE_PAT` repo secret** — tracked with the other
+  maintainer-side actions in [`operations/autonomous-routines.md`](operations/autonomous-routines.md)
+  § Control-plane state. Docs + workflows only.
 - **#777 (2026-06-13, hardening P0-3 settings pointer-lane convergence — FOUNDATION)** —
   the [pointer-lane convergence + Setup-delegate authority plan](planning/settings-pointer-lane-convergence-plan-2026-06-13.md)
   (arc PR 1, behavior-preserving). **Root-fix (settings readiness map "Required #2",
@@ -290,21 +307,7 @@ Source code and merged PRs win over anything written here.
   healthy (no regression from the bump; the "problems" are the cold-start availability blip + the
   documented false positives). Fixed the real bug: `docs/codegraph-usage.md` told agents to run the
   old `@optave/codegraph@3.10.0` while the live pin is 3.11.2 — bumped all command refs.
-- **#733–#735 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
-  (mandatory `⟲ Previous-session review` session-ender) + **Q-0103** (open session PRs **ready not
-  draft**; every PR reaches a terminal state). `scripts/check_session_log.py` + post-edit/Stop-hook
-  wiring enforce the Q-0089/Q-0102 enders. New
-  [`docs/operations/claude-code-hooks-and-plugins.md`](operations/claude-code-hooks-and-plugins.md)
-  (the 6 wired hooks + brainstorm + plugins posture → Q-0096). `.claude/settings.json`
-  permission-friction cut (`acceptEdits` + curated allowlist; force-push/destructive still prompt).
-  **#734**: reconciled this ledger's drift (added #730/#733, relabeled #731, added #724–#728) and
-  built `scripts/check_current_state_ledger.py` (the living-ledger self-check) + **Q-0104** (closing
-  documentation audit) + **Q-0105** (adopt-tooling-with-a-delete-if-unreliable kill-switch) +
-  permissions-posture doc. **#735**: **Q-0106** — agents propose `CLAUDE.md` rule changes via a
-  router Q-block, never self-edit (binding for a session but not pinned; read-only to a fully
-  autonomous agent). Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines
-  dispatch bridge · portable OSS memory/workflow package · ledger session-arc aggregation.
-- **Older merges (#731 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~15 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count).
+- **Older merges (#735 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~15 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #733–#735 agent-workflow/memory hardening arc was archived 2026-06-13 to offset the #778 entry — keeping the live ledger at the ratchet.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
@@ -320,7 +323,8 @@ Source code and merged PRs win over anything written here.
   incl. the migration-059 staging fix), and **PR14 — the unified Server Management
   Hub — shipped 2026-06-08 via #584**. The only remainder is the **gated PR13 AI
   generation layer**. The `docs/planning/server-management-status-2026-06-05.md`
-  tracker is the authoritative queue — don't duplicate it here.
+  tracker (re-badged `historical` 2026-06-13 — initiative complete) is the historical
+  record; the gated PR13 AI tail lives in [`roadmap.md`](roadmap.md) → Later. Don't duplicate it here.
 - Health/diagnostics maintainer live-tests (production AI tool + grouped findings):
   see `docs/subsystems/health-diagnostics.md`.
 - **Docs consolidation (Q-0010) — executed 2026-06-08.** Top-level `docs/` is now **16**
@@ -336,6 +340,17 @@ Source code and merged PRs win over anything written here.
 
 ## Gates / blocked work
 
+- **Autonomous loop — blocked on a maintainer secret (2026-06-13):** the loop is wired but has
+  **never self-fired**; root-caused in #778 (cron/cadence trigger issues were bot-authored). It stays
+  inert until the owner adds the **`ROUTINE_PAT`** repo secret — tracked with the other 5 maintainer
+  actions in [`operations/autonomous-routines.md`](operations/autonomous-routines.md) § Control-plane
+  state (the source of truth no in-repo checker can see; the first reconciliation still fires at #780).
+- **Open bugs (bug book):** **BUG-0009** (AI list-answer mislabeling — needs the AI orchestration §7
+  deterministic list-builders, plan-level) and **BUG-0011** (Hermes gateway restart crash-loop — needs
+  a clean VPS foreground repro) stay OPEN — [`health/bug-book.md`](health/bug-book.md).
+- **Open decisions:** **Q-0096** remainder (Context7 adopted #737; **Postgres-MCP + `pyright-lsp`**
+  undecided) · **Q-0119** (governance role-pointer home, P0-3 family 3) · **Q-0120/Q-0121** (this
+  workflow pass's proposals — candidate-rule promotion · Hermes bug-triage `gh issue create` write).
 - **AI / BTD6 feature expansion — re-postured 2026-06-09 (Q-0048):** AI tools that are
   **read-only AND deterministic** (no writes, no external calls, audience-tiered) carry a
   **standing lift** and may ship without a per-case ask. Anything that **writes, costs
