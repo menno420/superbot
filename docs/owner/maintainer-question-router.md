@@ -4485,3 +4485,38 @@ plain push to main "just works exactly like a normal session," force-pushes/hist
 prompt.
 
 **Home:** `.claude/settings.json` (`permissions.ask`) is the change; this entry is provenance.
+
+### Q-0119 — Where do the governance role-pointer bindings live? (P0-3 family 3)
+
+> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 during the P0-3
+> settings pointer-lane convergence session. No code until the owner picks; reads keep
+> working via the legacy scalar meanwhile (deferred, not broken).
+
+**Area:** Settings/bindings lane integrity · governance authority namespace
+**Type:** Architecture decision (blocks pointer-family 3 convergence)
+
+**Context:** `config_arbitration.get_{trusted,moderator}_tier_role` already read the
+moderator/trusted role pointers through `governance.{trusted,moderator}_role` bindings, and
+the binding-backfill targets them — but **`governance` is a *reserved* capability namespace**
+(`utils.subsystem_registry._RESERVED_CAPABILITY_PREFIXES`), deliberately **not** a feature
+subsystem, so those bindings have **no clean `SubsystemSchema` home**. The backfill was
+therefore permanently `BLOCKED_NO_SCHEMA` for these keys (the settings readiness map's High
+finding). This session **reframed** the backfill (the two governance role keys moved to
+`DEFERRED_KEYS`), which unblocks the broken machinery; the *home* decision is this Q.
+
+**Options (full trade-offs in the plan §5):**
+- **(a) Reserved-schema path (recommended)** — let `SubsystemSchema` register a
+  reserved-namespace `governance` schema that the identity-contract validator *expects* (a
+  small allowlist of reserved schema subsystems), so no `schema_subsystem_unknown` finding.
+  Keeps governance authority in the governance namespace; generalizes to future reserved
+  bindings; costs one validator allowlist.
+- **(b) Re-home under `moderation`** — declare `moderation.{trusted,moderator}_role` bindings
+  and repoint arbitration + backfill from `governance.*` to `moderation.*`. No validator
+  change, but conflates cross-cutting authority tiers with the moderation feature and touches
+  the live governance read path.
+- **(c) Permanent legacy exception** — accept the two role pointers as documented
+  governance-tier scalars, exempt from the lane rule. Cheapest; abandons lane uniformity.
+
+**Home:** `docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md` §5 (full
+analysis + the family-3 gate); this entry is the router pointer. On decision, record it here
+and execute in the P0-3 arc.

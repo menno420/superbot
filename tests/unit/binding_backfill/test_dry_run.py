@@ -89,7 +89,7 @@ def _patched_dry_run(_mock_guild):
 
 @pytest.mark.asyncio
 async def test_dry_run_iterates_every_migrated_key(_patched_dry_run):
-    """All three :data:`MIGRATED_KEYS` are classified — never short-circuit."""
+    """Every :data:`MIGRATED_KEYS` entry is classified — never short-circuit."""
     p = _patched_dry_run
     p["legacy"].return_value = ""  # all legacy values empty
     p["binding"].side_effect = lambda gid, sub, name: _bv(
@@ -99,14 +99,15 @@ async def test_dry_run_iterates_every_migrated_key(_patched_dry_run):
 
     summary = await dry_run(p["guild"])
 
-    # Three migrated keys today
-    assert len(summary.candidates) == 3
-    assert {c.subsystem for c in summary.candidates} == {"xp", "economy", "governance"}
+    # Two homed migrated keys today (governance role pointers are DEFERRED —
+    # no clean binding schema home yet — so dry_run never touches them).
+    assert len(summary.candidates) == 2
+    assert {c.subsystem for c in summary.candidates} == {"xp", "economy"}
     # All classified BOTH_ABSENT because legacy is empty + no binding row
     assert all(
         c.classification == Classification.BOTH_ABSENT.value for c in summary.candidates
     )
-    assert summary.counts == {Classification.BOTH_ABSENT.value: 3}
+    assert summary.counts == {Classification.BOTH_ABSENT.value: 2}
 
 
 @pytest.mark.asyncio
@@ -129,8 +130,8 @@ async def test_dry_run_records_checkpoint(_patched_dry_run):
     assert call.kwargs["mark_completed"] is True
     # summary_json carries counts + candidates
     summary = call.kwargs["summary_json"]
-    assert summary["counts"] == {Classification.BOTH_ABSENT.value: 3}
-    assert len(summary["candidates"]) == 3
+    assert summary["counts"] == {Classification.BOTH_ABSENT.value: 2}
+    assert len(summary["candidates"]) == 2
 
 
 @pytest.mark.asyncio
@@ -227,8 +228,16 @@ async def test_dry_run_both_present_disagree(_patched_dry_run):
 
 
 @pytest.mark.asyncio
-async def test_dry_run_blocked_when_schema_undeclared(_mock_guild):
-    """A subsystem with no SubsystemSchema registered → BLOCKED_NO_SCHEMA."""
+async def test_dry_run_excludes_deferred_keys(_mock_guild):
+    """dry_run never classifies a :data:`DEFERRED_KEYS` pointer.
+
+    The governance trusted/moderator role pointers have no clean binding
+    schema home yet (the reserved ``governance`` namespace), so they live in
+    ``DEFERRED_KEYS`` and dry_run must not touch them — otherwise every guild
+    would get a permanent ``BLOCKED_NO_SCHEMA`` finding (not production-ready
+    machinery).  The ``BLOCKED_NO_SCHEMA`` classifier path itself is still
+    covered synthetically in ``test_classification.py``.
+    """
     with (
         patch(
             "utils.db.settings.get_setting",
@@ -252,19 +261,16 @@ async def test_dry_run_blocked_when_schema_undeclared(_mock_guild):
             "utils.db.platform_migration_checkpoints.upsert_checkpoint",
             new_callable=AsyncMock,
         ),
-        # No patch on _schema_declares — use the real registry.  Governance
-        # has no schema registered so its candidate must be blocked.  XP and
-        # Economy schemas are registered at module import (cog_load) but in
-        # the test environment they may not be — the assertion below
-        # tolerates both outcomes by asserting "governance is at least
-        # blocked".
+        patch.object(binding_backfill, "_schema_declares", return_value=True),
     ):
         summary = await dry_run(_mock_guild)
-    governance_results = [c for c in summary.candidates if c.subsystem == "governance"]
-    assert len(governance_results) == 1
-    assert (
-        governance_results[0].classification == Classification.BLOCKED_NO_SCHEMA.value
-    )
+
+    classified_keys = {c.legacy_key for c in summary.candidates}
+    deferred_keys = {k.legacy_key for k in binding_backfill.DEFERRED_KEYS}
+    assert deferred_keys, "DEFERRED_KEYS should be non-empty while governance is unhomed"
+    assert classified_keys.isdisjoint(deferred_keys)
+    # No governance subsystem candidate is produced.
+    assert all(c.subsystem != "governance" for c in summary.candidates)
 
 
 @pytest.mark.asyncio
