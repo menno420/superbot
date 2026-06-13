@@ -92,38 +92,54 @@ def _commits_ahead_of_main() -> int:
         return 0
 
 
-def _session_log_advisory() -> None:
-    """Non-blocking reminder if a session has produced work but no complete log.
+def _end_of_session_advisory() -> None:
+    """Non-blocking end-of-session reminders, printed when HEAD is ahead of
+    origin/main (i.e. this session produced real work).
 
-    Runs on every Stop (even docs-only sessions, where the Python gate returns early)
-    but only speaks when there are commits ahead of origin/main and this session's log
-    is missing or incomplete (Q-0089 idea / Q-0102 previous-session review). Advisory
-    only — never changes the exit code. Fully defensive: any failure is swallowed.
+    Covers the session-ender obligations easy to forget because nothing else
+    checks them — but the Stop hook runs locally with **no GitHub access**, so the
+    PR-lifecycle line is a reminder to *confirm*, not true enforcement:
+
+      * Q-0052  — open the session PR early (right after the first push).
+      * Q-0103/Q-0084 — the PR must reach a terminal state (merge on green CI or
+        close); never leave it abandoned open (the parallel-agent conflict window).
+      * Q-0015  — grooming: move one ``docs/ideas/`` idea down its lifecycle.
+      * Q-0089/Q-0102 — the ``.sessions/`` log carries a new idea + a previous-
+        session review (delegated to ``check_session_log.py`` when present).
+
+    Advisory only — never changes the exit code. Fully defensive: any failure is
+    swallowed (provenance: owner-directed in-session, router Q-0122 / Q-0106).
     """
     try:
         if _commits_ahead_of_main() < 1:
             return
-        checker = SCRIPTS / "check_session_log.py"
-        if not checker.exists():
-            return
-        result = subprocess.run(
-            [PY, str(checker)],
-            capture_output=True,
-            text=True,
-            cwd=REPO_ROOT,
-        )
-        out = result.stdout.strip()
-        if "complete ✓" in out or not out:
-            return
         print(
-            "\n── session-log reminder (advisory) ─────────────────────────",
+            "\n── end-of-session reminders (advisory, non-blocking) ───────",
             file=sys.stderr,
         )
-        for line in out.splitlines():
-            print(f"  {line}", file=sys.stderr)
+        checker = SCRIPTS / "check_session_log.py"
+        if checker.exists():
+            result = subprocess.run(
+                [PY, str(checker)],
+                capture_output=True,
+                text=True,
+                cwd=REPO_ROOT,
+            )
+            out = result.stdout.strip()
+            if out and "complete ✓" not in out:
+                for line in out.splitlines():
+                    print(f"  {line}", file=sys.stderr)
+            else:
+                print("  · session log: complete ✓", file=sys.stderr)
         print(
-            "  Before ending: complete the `.sessions/` log (Q-0089 idea + "
-            "Q-0102 previous-session review), and merge or close this session's PR.",
+            "  · PR lifecycle (Q-0052/Q-0103/Q-0084): the session PR should be OPEN "
+            "and reach a terminal state — merge on green CI or close it. Don't leave "
+            "it abandoned open. (Hook has no GitHub access — confirm this yourself.)",
+            file=sys.stderr,
+        )
+        print(
+            "  · grooming (Q-0015): once the main task + PR are done, move one "
+            "docs/ideas/ idea one step down its lifecycle.",
             file=sys.stderr,
         )
     except Exception:  # noqa: BLE001 — advisory must never break the Stop hook
@@ -131,7 +147,7 @@ def _session_log_advisory() -> None:
 
 
 def main() -> int:
-    _session_log_advisory()
+    _end_of_session_advisory()
     changed = _changed_py_files()
     if not changed:
         return 0
