@@ -187,6 +187,21 @@ Current broad captures:
   found + fixed by convention; ~14 PRs were hidden). The structural complement to the pointer
   invariant above. Workflow lane; small (logic + one test), high-leverage for the autonomous
   loop. Routed Next.
+- [`executable-verification-over-prose-verified-2026-06-12.md`](./executable-verification-over-prose-verified-2026-06-12.md) —
+  **orientation-review capture (2026-06-12):** make evidence status machine-checkable — turn prose
+  "verified" checklist items into executable checks/CI tests, or label them explicitly manual with a
+  trace ID; treat any item without a verification rule as implicitly unverified. Prevents
+  rot-by-narrative. Workflow lane.
+- [`lane-scoped-session-state-2026-06-12.md`](./lane-scoped-session-state-2026-06-12.md) —
+  **orientation-review capture (2026-06-12):** cut the parallel-session merge tax by making
+  in-flight session state lane-scoped by default (per-lane sub-files under `.sessions/` + `docs/ideas/`,
+  scoped Q-router prefixes), aggregated on demand — prevention rather than after-the-fact UNION/renumber
+  cleanup. Workflow lane; partially embodied by the existing per-`.sessions/`-file + ledger-discipline rules.
+- [`single-canonical-execution-pointer-2026-06-12.md`](./single-canonical-execution-pointer-2026-06-12.md) —
+  **orientation-review capture (2026-06-12):** enforce that exactly one doc is canonical for "what do I
+  execute next," and a superseding plan must repoint the old one in the same commit. **Overlaps
+  [`live-decade-queue-pointer-invariant-2026-06-13.md`](./live-decade-queue-pointer-invariant-2026-06-13.md)**
+  (the later, more specific form) — grooming to reconcile the two into one invariant.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
