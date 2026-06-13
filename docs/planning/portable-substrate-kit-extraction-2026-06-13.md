@@ -30,8 +30,9 @@ in `.claude/CLAUDE.md`.
 1. Read this doc + the two origin idea docs above.
 2. Execution is **already owner-approved** — do **not** re-plan or re-open the review rounds; the
    "External review" sections (Rounds 1–10) are a *settled record*, not open questions.
-3. **Entry point = PR 1a** (the green/mergeable skeleton + locked contracts, in "Implementation
-   phases"). Then 1b → 2 → 3. Hermes's four blockers are already resolved in-core.
+3. **PR 1a is DONE (merged in #789) — resume at PR 1b** (the interview engine + core templates, in
+   "Implementation phases"); then 2 → 3. See the **Execution log** below for what 1a delivered and
+   the CI gotchas to respect. Hermes's four blockers were already resolved in 1a.
 4. Delivery is **two-phase**: PRs 1a–3 deliver the working substrate *proven in-repo* under
    `substrate-kit/`; the public-OSS productization phase (~160–276 h) is separate and later.
 5. The kit lives in a self-contained `substrate-kit/` tree and **never mutates superbot's live
@@ -55,6 +56,9 @@ in `.claude/CLAUDE.md`.
   (the generated file isn't linted), `tests/` is excluded from black/ruff but **isort still checks it**
   (the repo's isort skip-glob matches nothing), and `print`/`assert`/`subprocess` (T201/S101/S603) are
   enforced on `substrate-kit/src/` — hence `sys.stdout.write` + no asserts in engine code.
+  **Gotcha fixed:** `dist/` is git-ignored repo-wide, so the committed `dist/bootstrap.py` is kept
+  tracked via a scoped `substrate-kit/.gitignore` negation — don't delete it expecting it to
+  regenerate on clone; regenerate with `python3.10 substrate-kit/src/build_bootstrap.py`.
 
 ---
 
