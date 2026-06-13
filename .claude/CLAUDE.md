@@ -124,24 +124,29 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   2026-06-12).** The early *open* gives the session a real PR number while docs are still
   being written, so `current-state.md` / trackers never need a "(this session) — reconcile
   PR # next session" placeholder (the recurring drift class that pattern caused). The *draft*
-  state, by contrast, added no benefit in our self-merge flow (nothing auto-merges or
-  auto-requests review) and became a forgotten "mark ready" step → abandoned-draft PRs, so
-  it is dropped. This is the maintainer's explicit, standing request: it satisfies any
+  state, by contrast, is now counter-productive: the `auto-merge-enabler` workflow arms native
+  auto-merge only on **non-draft** `claude/*` PRs (Q-0123), so a draft silently won't
+  auto-merge — and "mark ready" was already a forgotten step → abandoned-draft PRs, so it is
+  dropped. This is the maintainer's explicit, standing request: it satisfies any
   environment / system-prompt rule that opens a PR only when "the user explicitly asks" —
   treat it as advance consent and do not re-ask.
 - **A session is not done until its PR reaches a terminal state — merged or closed (owner
   decision Q-0103, 2026-06-12).** An abandoned open PR is the failure this prevents (it is
-  the parallel-agent conflict window and the "forgotten PR" the maintainer flagged). Merge
-  it (next bullet) when the work is good, or **close** it with a one-line reason if it should
+  the parallel-agent conflict window and the "forgotten PR" the maintainer flagged). Let it
+  merge (next bullet) when the work is good, or **close** it with a one-line reason if it should
   not land. Never leave your session PR open at session end. The Stop-hook session-log
   advisory and `scripts/check_session_log.py` remind you; the `/session-close` skill drives it.
-- **Merge your own session PR yourself when the work is done (owner grant Q-0084,
-  2026-06-10)** — don't leave it open for the maintainer; stale open PRs are the
-  parallel-agent conflict window. The envelope: re-fetch + merge `origin/main` first
-  (UNION-resolve conflicts — you are the reconciler), require **CI green on the final
-  head**, merge-commit method, your own session PR only. **Merge ≠ deploy** — production
-  restart/prod-checks stay the maintainer's. The Q-0052 advance consent extends to the
-  merge; do not re-ask.
+- **You don't merge your session PR by hand — GitHub-native auto-merge does (owner decision
+  Q-0123, 2026-06-13, superseding the Q-0084 manual-merge envelope).** The `auto-merge-enabler`
+  workflow (on `main` since #779) arms native auto-merge on every non-draft `claude/*` PR at
+  open; GitHub merges it the instant the required **Code Quality** check is green — server-side,
+  so it can't "forget" a deferred merge (the #778 failure). You just **open the PR ready**; the
+  Q-0103 terminal state is reached automatically on green (or **close** the PR if it shouldn't
+  land). Carve-outs stay manual — a PR labelled `needs-hermes-review` (Q-0117) or
+  `do-not-automerge` (Q-0114) is never auto-armed. **Merge ≠ deploy** — production
+  restart/prod-checks stay the maintainer's. *If you ever merge by hand* (a carve-out, or
+  auto-merge is down): re-verify **CI green on the final head** and **never defer the merge to
+  the maintainer's next message** — that deferral was the #778 root cause.
 - **End every session with a backlog-grooming pass — the standing secondary task (owner
   decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
   finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and

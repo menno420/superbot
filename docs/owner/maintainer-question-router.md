@@ -4611,3 +4611,45 @@ it cannot verify PR state, only remind. No `.claude/settings.json` change (the h
 teeth across sessions. Relax/delete if it proves noisy.
 
 **Home:** `scripts/claude_stop_check.py` is the change; this entry is provenance.
+
+### Q-0123 — Merge mechanics move off the Claude session (GitHub-native auto-merge)
+
+> **DIRECTED 2026-06-13 (owner, in-session).** The owner directed live that merging be removed
+> from Claude's side ("completely remove merging from claude's side") and chose the **"Native
+> auto-merge + enabler"** path plus a **behavior rule (router proposal)**. This is the in-session
+> direction Q-0106 requires to edit `.claude/CLAUDE.md` directly; this entry is the provenance.
+> **Supersedes the Q-0084 manual self-merge grant** (its envelope is struck from CLAUDE.md);
+> **preserves Q-0103** — a session PR must still reach a terminal state, now satisfied
+> automatically on green (or by an explicit close).
+
+**Area:** Session/PR workflow · merge mechanics · agent context budget
+**Type:** Owner-directed in-session change (provenance per Q-0106) + a recorded behavior rule
+
+**Problem:** on #778 a session *deferred* its own merge on a stale CI read and ended the turn with
+the PR left open — the abandoned-open-PR / parallel-agent-conflict failure (Q-0103). Manual
+self-merge (Q-0084) put a server-side, timing-sensitive step *inside* the agent turn and carried a
+multi-line "re-fetch + UNION-resolve + CI-green-on-final-head" envelope in the always-loaded
+CLAUDE.md context.
+
+**Decision:**
+> 1. **Native auto-merge does the merge.** `.github/workflows/auto-merge-enabler.yml` (on `main`
+>    since #779) arms GitHub-native auto-merge on every non-draft `claude/*` PR at open; GitHub
+>    merges it the moment the required **Code Quality** check is green. Server-side ⇒ it cannot
+>    "forget". One-time maintainer setup (done 2026-06-13): *Allow auto-merge* ON · `main` requires
+>    the **Code Quality** check · `ROUTINE_PAT` widened to Pull requests + Contents write (so the
+>    merge attributes to a real user and keeps `reconciliation-trigger.yml` firing — the #778
+>    bot-author gotcha).
+> 2. **Claude no longer merges by hand.** The Q-0084 envelope is removed from CLAUDE.md.
+> 3. **Behavior rule (defense-in-depth, for any *residual* hand-merge — a carve-out, or auto-merge
+>    unavailable):** re-verify **CI green on the final head** before merging, and **never defer a
+>    merge to the maintainer's next message** (the #778 root cause).
+
+**Carve-outs preserved:** a PR labelled `needs-hermes-review` (Q-0117) or `do-not-automerge`
+(Q-0114) is never auto-armed — Hermes or a human reviews and merges those.
+
+**Follow-up (handed to the Q-0107 reconciliation sweep, not chased here):** `self-merge on green`
+wording still lives in `docs/operations/autonomous-routines.md` (routine prompts) and several
+`.sessions/` logs / idea docs; reconcile those to "auto-merge on green" in the next docs pass.
+
+**Home:** CLAUDE.md SESSION_WORKFLOW (envelope struck → auto-merge bullet); `auto-merge-enabler.yml`
+is the mechanism; this entry is provenance.
