@@ -202,6 +202,17 @@ Current broad captures:
   execute next," and a superseding plan must repoint the old one in the same commit. **Overlaps
   [`live-decade-queue-pointer-invariant-2026-06-13.md`](./live-decade-queue-pointer-invariant-2026-06-13.md)**
   (the later, more specific form) — grooming to reconcile the two into one invariant.
+- [`setup-wizard-onboarding-planner-spec.md`](./setup-wizard-onboarding-planner-spec.md) —
+  **preserved target-scope spec (from closed issue #232, owner 2026-05-21):** the full
+  guided server-onboarding planner — scan → propose plan → presets → `SetupOperation` drafts →
+  Final Review, with confidence/conflict-detection/completeness-scoring/post-setup-summary. Much
+  is now the active setup-platform lane; this preserves the original vision + the open-tail
+  enhancements. Settings/setup lane.
+- [`rps-tournament-service-refactor.md`](./rps-tournament-service-refactor.md) —
+  **preserved refactor spec (from closed issue #229, owner 2026-05-20):** move RPS tournament
+  orchestration/state out of `rps_tournament_cog.py` into an `RpsTournamentService` (5-step
+  decomposition; the money seam already audited via `game_wager_workflow`). Games lane; medium-high
+  before new tournament features.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
