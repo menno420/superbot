@@ -123,3 +123,32 @@ def test_cli_scaffold_prints_snippets_and_exits_one(ns, capsys):
     out = capsys.readouterr().out
     assert "paste-ready snippets" in out
     assert '"warp_drive": {' in out
+
+
+def test_no_panel_skips_panel_command_check(ns):
+    # Config-only subsystems (ai/welcome/counters/automod) carry NO
+    # KNOWN_PANEL_COMMANDS entry; without --no-panel the check is a false MISSING.
+    with_panel = _by_name(ns.build_checks("welcome", "WelcomeCog", "welcome", None))
+    assert not with_panel["panel-command"].ok  # the false positive the flag fixes
+
+    checks = ns.build_checks("welcome", "WelcomeCog", "welcome", None, has_panel=False)
+    assert "panel-command" not in _by_name(checks)
+    failed = [c for c in checks if not c.ok]
+    assert not failed, f"config-only welcome should pass: {[(c.name, c.detail) for c in failed]}"
+
+
+def test_cli_no_panel_exits_zero_for_config_only_subsystem(ns, capsys):
+    rc = ns.main(
+        [
+            "check",
+            "--key",
+            "welcome",
+            "--cog",
+            "WelcomeCog",
+            "--panel-command",
+            "welcome",
+            "--no-panel",
+        ],
+    )
+    assert rc == 0
+    assert "All touch-points present" in capsys.readouterr().out

@@ -143,8 +143,17 @@ def build_checks(
     cog_class: str,
     panel_command: str,
     parent_hub: str | None,
+    has_panel: bool = True,
 ) -> list[Check]:
-    """Evaluate every registration touch-point for *key*."""
+    """Evaluate every registration touch-point for *key*.
+
+    ``has_panel=False`` marks a **config-only** subsystem — one surfaced via
+    ``!settings`` + a plain summary command, with **no** ``KNOWN_PANEL_COMMANDS``
+    entry (e.g. ``ai`` / ``welcome`` / ``counters`` / ``automod``). The
+    panel-command touch-point is then skipped instead of reported MISSING.
+    (Verified 2026-06-13: those four shipped subsystems are legitimately absent
+    from the table, so a hard-fail here was a false positive for that pattern.)
+    """
     subsystem_registry, hub_registry = _import_registry()
     subsystems = subsystem_registry.SUBSYSTEMS
     checks: list[Check] = []
@@ -210,19 +219,23 @@ def build_checks(
             ),
         )
 
-    # 3. KNOWN_PANEL_COMMANDS row.
-    catalogue = (DISBOT / "services" / "customization_catalogue.py").read_text(
-        encoding="utf-8",
-    )
-    pair = f'("{key}", "{panel_command}")'
-    checks.append(
-        Check(
-            "panel-command",
-            pair in catalogue,
-            f"KNOWN_PANEL_COMMANDS {'has' if pair in catalogue else 'missing'} {pair}",
-            f"    {pair},  # keep the tuple alphabetical by subsystem",
-        ),
-    )
+    # 3. KNOWN_PANEL_COMMANDS row — only for subsystems that expose a panel
+    #    command. Config-only subsystems (ai/welcome/counters/automod) are
+    #    surfaced via !settings + a summary command and carry no entry, so
+    #    --no-panel skips this check rather than emitting a false MISSING.
+    if has_panel:
+        catalogue = (DISBOT / "services" / "customization_catalogue.py").read_text(
+            encoding="utf-8",
+        )
+        pair = f'("{key}", "{panel_command}")'
+        checks.append(
+            Check(
+                "panel-command",
+                pair in catalogue,
+                f"KNOWN_PANEL_COMMANDS {'has' if pair in catalogue else 'missing'} {pair}",
+                f"    {pair},  # keep the tuple alphabetical by subsystem",
+            ),
+        )
 
     # 4. Cog: class exists, setup() present, help hook adopted.
     cog_file = _find_cog_file(cog_class)
@@ -292,9 +305,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--cog", required=True, help="cog class name")
     parser.add_argument("--panel-command", required=True, help="panel entry command")
     parser.add_argument("--parent-hub", default=None, help="hub this child belongs to")
+    parser.add_argument(
+        "--no-panel",
+        action="store_true",
+        help="config-only subsystem (no KNOWN_PANEL_COMMANDS entry; surfaced via "
+        "!settings + a summary command, like ai/welcome/counters/automod) — skip "
+        "the panel-command check instead of reporting it MISSING",
+    )
     args = parser.parse_args(argv)
 
-    checks = build_checks(args.key, args.cog, args.panel_command, args.parent_hub)
+    checks = build_checks(
+        args.key,
+        args.cog,
+        args.panel_command,
+        args.parent_hub,
+        has_panel=not args.no_panel,
+    )
     missing = [c for c in checks if not c.ok]
 
     for c in checks:
