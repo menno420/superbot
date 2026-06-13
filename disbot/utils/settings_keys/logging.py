@@ -25,3 +25,35 @@ LOGGING_AUTO_CREATE_CHANNELS = "logging_auto_create_channels"
 # auto-creation is enabled.
 DEFAULT_MOD_CHANNEL_NAME = "bot-mod-log"
 DEFAULT_CLEANUP_CHANNEL_NAME = "bot-cleanup-log"
+
+# ---------------------------------------------------------------------------
+# Server event logging v1 (Q-0109)
+# ---------------------------------------------------------------------------
+#
+# Passive Discord-event logging — message edits/deletions, member
+# joins/leaves, and role grants/revocations.  Each per-category flag is
+# gated by the master ``LOGGING_ENABLED`` switch *and* its own flag, so a
+# guild that has logging on for moderation actions sees no new behaviour
+# until it opts a category in.  All default OFF — a fresh guild is
+# unchanged.  Stored in the same legacy ``guild_settings`` KV table; **no
+# migration**.  Resolved through the ``logging`` subsystem read model in
+# :mod:`services.server_logging_config`.
+
+# Per-category enable flags.
+LOGGING_MESSAGES_ENABLED = "logging_messages_enabled"
+LOGGING_MEMBERS_ENABLED = "logging_members_enabled"
+LOGGING_ROLES_ENABLED = "logging_roles_enabled"
+
+# Channel routing layout: ``"combined"`` (every category to one channel)
+# or ``"per_category"`` (each category to its own channel, falling back to
+# the combined events channel when a category channel is unset).  The
+# owner-configurable choice from Q-0109; the ``mock_logging_routing`` UX
+# exhibit renders both modes.
+LOGGING_EVENT_ROUTING = "logging_event_routing"
+
+# Default channel names used by ``ensure_log_channel`` for the new event
+# routes when auto-creation is enabled.
+DEFAULT_EVENTS_CHANNEL_NAME = "bot-event-log"
+DEFAULT_MESSAGE_LOG_CHANNEL_NAME = "bot-message-log"
+DEFAULT_MEMBER_LOG_CHANNEL_NAME = "bot-member-log"
+DEFAULT_ROLE_LOG_CHANNEL_NAME = "bot-role-log"

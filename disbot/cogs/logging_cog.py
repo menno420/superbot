@@ -28,14 +28,20 @@ async def build_logging_status_embed(guild: discord.Guild | None) -> discord.Emb
     :meth:`AdminCog._AdminPanelView.logging_btn` (which now opens the
     LoggingPanelView; the helper remains available for direct use).
     """
-    from services import server_logging
+    from services import server_logging, server_logging_config
 
     enabled = await server_logging.is_enabled(guild.id) if guild else False
     auto_create = await server_logging.auto_create_enabled(guild.id) if guild else False
-    mod_channel = cleanup_channel = None
+    mod_channel = cleanup_channel = events_channel = None
     if guild:
         mod_channel = await server_logging.resolve_log_channel(guild, "mod")
         cleanup_channel = await server_logging.resolve_log_channel(guild, "cleanup")
+        events_channel = await server_logging.resolve_log_channel(guild, "events")
+    event_policy = (
+        await server_logging_config.load_policy(guild.id)
+        if guild
+        else server_logging_config.EventLoggingPolicy()
+    )
     counters = server_logging.counters_snapshot()["counters"]
 
     embed = discord.Embed(
@@ -63,6 +69,26 @@ async def build_logging_status_embed(guild: discord.Guild | None) -> discord.Emb
     embed.add_field(
         name="Cleanup channel",
         value=cleanup_value,
+        inline=False,
+    )
+    # Server event logging v1 (Q-0109) — categories + routing summary.
+    active_categories = [
+        name
+        for name, on in (
+            ("messages", event_policy.messages_enabled),
+            ("members", event_policy.members_enabled),
+            ("roles", event_policy.roles_enabled),
+        )
+        if on
+    ]
+    events_channel_value = events_channel.mention if events_channel else "*(unset)*"
+    embed.add_field(
+        name="Event logging",
+        value=(
+            f"Categories: {', '.join(active_categories) if active_categories else '*(none)*'}\n"
+            f"Routing: `{event_policy.routing}`\n"
+            f"Events channel: {events_channel_value}"
+        ),
         inline=False,
     )
     embed.add_field(
@@ -95,6 +121,93 @@ class LoggingCog(commands.Cog):
         view = LoggingPanelView(interaction.user)
         embed = await build_panel_embed(interaction.guild)
         return embed, view
+
+    # ------------------------------------------------------------------
+    # Server event logging v1 (Q-0109) — passive Discord-event listeners
+    # ------------------------------------------------------------------
+    #
+    # Thin glue: each listener applies a cheap structural filter (skip
+    # bots / DMs / no-op edits / non-role updates) so the hot path does no
+    # DB work, then delegates to the matching ``server_logging.log_*``
+    # handler, which loads the per-guild policy, gates on the master +
+    # category flags, resolves the routed channel, and posts the embed.
+    # The handlers are fully fail-safe — a logging fault is counted and
+    # swallowed, never raised back into the gateway.
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message) -> None:
+        """Log a deleted message when the messages category is enabled."""
+        if message.guild is None or message.author.bot:
+            return
+        from services import server_logging
+
+        await server_logging.log_message_delete(message)
+
+    @commands.Cog.listener()
+    async def on_message_edit(
+        self,
+        before: discord.Message,
+        after: discord.Message,
+    ) -> None:
+        """Log a message edit when the messages category is enabled.
+
+        Discord also fires ``message_edit`` when embeds/attachments resolve
+        on a link with no text change — skip those so the log stays
+        meaningful.
+        """
+        if after.guild is None or after.author.bot:
+            return
+        if before.content == after.content:
+            return
+        from services import server_logging
+
+        await server_logging.log_message_edit(before, after)
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member) -> None:
+        """Log a member join when the members category is enabled.
+
+        Coexists with the autorole cog's own ``on_member_join`` — discord.py
+        dispatches the event to every registered listener independently.
+        """
+        if member.bot:
+            return
+        from services import server_logging
+
+        await server_logging.log_member_join(member)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member) -> None:
+        """Log a member departure when the members category is enabled."""
+        if member.bot:
+            return
+        from services import server_logging
+
+        await server_logging.log_member_leave(member)
+
+    @commands.Cog.listener()
+    async def on_member_update(
+        self,
+        before: discord.Member,
+        after: discord.Member,
+    ) -> None:
+        """Log role grants/revocations when the roles category is enabled.
+
+        ``member_update`` also fires for nickname / timeout / avatar
+        changes — compute the role diff and skip when it is empty so only
+        genuine role events reach the handler.
+        """
+        if after.bot:
+            return
+        before_roles = set(before.roles)
+        after_roles = set(after.roles)
+        added = [r for r in after.roles if r not in before_roles]
+        removed = [r for r in before.roles if r not in after_roles]
+        if not added and not removed:
+            return
+        from services import server_logging
+
+        await server_logging.log_role_change(after, added, removed)
 
     # ------------------------------------------------------------------
     # !logging — command group

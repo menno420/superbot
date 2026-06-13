@@ -38,6 +38,11 @@ _KIND_TO_BINDING: dict[str, str] = {
     "warning": "warning_channel",
     "error": "error_channel",
     "audit": "audit_channel",
+    # Server event logging v1 (Q-0109) — passive-event routes.
+    "events": "events_channel",
+    "message_log": "message_channel",
+    "member_log": "member_channel",
+    "role_log": "role_channel",
 }
 
 _KIND_TO_LABEL: dict[str, str] = {

@@ -1507,40 +1507,68 @@ through `moderation_service` (no parallel audit path).
    False), `auto_create_channels` (bool, default False).  Both point
    at the existing legacy keys via `settings_key=` so the S6
    edit/reset flows mutate them through `SettingsMutationPipeline`
-   today.
+   today.  **Server event logging v1 (schema v3, Q-0109)** adds four
+   more: `messages_enabled` / `members_enabled` / `roles_enabled`
+   (bool, default False — per-category gates for the passive
+   `LoggingCog` listeners) and `event_routing` (str enum,
+   `allowed_values=("combined", "per_category")`, default `combined`)
+   selecting one-channel vs per-category routing.  The
+   `messages_enabled` hint carries the deleted-message privacy
+   disclosure.
 10. **existing_settings_keys**: `LOGGING_ENABLED`,
     `LOGGING_AUTO_CREATE_CHANNELS` from `utils.settings_keys.logging`.
     The two channel-id keys (`LOGGING_MOD_CHANNEL`,
     `LOGGING_CLEANUP_CHANNEL`) are legacy and are migrating to
-    bindings in S7b.
+    bindings in S7b.  Server event logging v1 adds
+    `LOGGING_MESSAGES_ENABLED`, `LOGGING_MEMBERS_ENABLED`,
+    `LOGGING_ROLES_ENABLED`, and `LOGGING_EVENT_ROUTING` (all legacy
+    KV keys, no migration).
 11. **existing_BindingSpec_entries**: `mod_channel`, `cleanup_channel`
     — both `BindingKind.CHANNEL`, optional.  Declared in S7a; S7b
     wires the mutation path through `BindingMutationPipeline`.
     Phase 9a (schema v2) adds five severity/source slots, all
     `BindingKind.CHANNEL`, all optional, all falling back to
     `mod_channel` when unset: `debug_channel`, `info_channel`,
-    `warning_channel`, `error_channel`, `audit_channel`. No subscriber
-    publishes into these yet — publisher callsites land in Phase 9c.
+    `warning_channel`, `error_channel`, `audit_channel`.  Server
+    event logging v1 (schema v3) adds four more event-route slots:
+    `events_channel` (the combined "everything" destination) plus the
+    per-category `message_channel`, `member_channel`, `role_channel`
+    — these fall back to `events_channel` (NOT `mod_channel`) so event
+    noise never lands in the moderation-action log.
 12. **existing_ResourceRequirement_entries**: `mod_log` channel
     (`bot-mod-log`, RECOMMENDED), `cleanup_log` channel
     (`bot-cleanup-log`, RECOMMENDED).  Both link to the declared
     bindings via `binding_name=`.  Phase 9a adds five matching
     RECOMMENDED requirements with `bot-debug-log` / `bot-info-log` /
     `bot-warning-log` / `bot-error-log` / `bot-audit-log` suggested
-    names. Auto-create stays OFF by default.
+    names. Server event logging v1 adds four RECOMMENDED requirements
+    (`events_log`, `message_log`, `member_log`, `role_log`) with
+    `bot-event-log` / `bot-message-log` / `bot-member-log` /
+    `bot-role-log` suggested names. Auto-create stays OFF by default.
 13. **current_access_policy_behavior**: `visibility_tier=administrator`;
     capabilities `logging.settings.configure`, `logging.channel.bind`,
     `logging.channel.create`.  Master switch `logging.enabled`
     defaults to OFF; the service in `services/server_logging.py`
-    stays inert until an operator opts in.
+    stays inert until an operator opts in.  The passive event
+    listeners (added to `cogs/logging_cog.py`) read the master switch
+    plus each per-category flag, so a fresh guild — and a guild that
+    already logs moderation actions — sees no new behaviour.
 14. **hardcoded_or_env_only_behavior**: `DEFAULT_MOD_CHANNEL_NAME` /
     `DEFAULT_CLEANUP_CHANNEL_NAME` are module-level constants in
     `utils.settings_keys.logging`; the create-channel flow (S7c)
     uses the schema's `suggested_name` instead, so these constants
-    become a legacy fallback once S7c lands.
+    become a legacy fallback once S7c lands.  The event routes add
+    `DEFAULT_EVENTS_CHANNEL_NAME`, `DEFAULT_MESSAGE_LOG_CHANNEL_NAME`,
+    `DEFAULT_MEMBER_LOG_CHANNEL_NAME`, and
+    `DEFAULT_ROLE_LOG_CHANNEL_NAME` as the matching auto-create
+    fallback names.
 15. **missing_customization_commands**: existing-channel selection
-    (S7b), create-new-channel flow (S7c), per-event-class routing
-    (deferred — not in S7 scope).
+    (S7b — shipped), create-new-channel flow (S7c — shipped).
+    Per-event-class routing **shipped in server event logging v1
+    (Q-0109)**: message edits/deletions · member joins/leaves · role
+    grants/revocations, with the owner-configurable combined-vs-
+    per-category routing.  A multi-select exempt-roles/channels picker
+    remains a phase-2 UX polish.
 16. **missing_settings_pages**: bind-existing-channel flow (S7b),
     create-channel preview/confirm flow (S7c), logging admin panel
     (S7d).

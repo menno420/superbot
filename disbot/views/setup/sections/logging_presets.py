@@ -343,6 +343,22 @@ def build_logging_presets_embed(
         inline=False,
     )
 
+    # Q-0109 privacy disclosure — server event logging can surface the
+    # content of edited/deleted messages to staff. Off by default; opt in
+    # per-category via !settings → Logging. Surfacing it here satisfies the
+    # owner requirement that the wizard discloses it.
+    embed.add_field(
+        name="🔒 Privacy — server event logging",
+        value=(
+            "Server event logging (message edits/deletions, joins/leaves, "
+            "role changes) is **off by default**.  If you enable message "
+            "logging, **staff can see the content of messages members "
+            "edited or deleted**.  Turn categories on per-server in "
+            "`!settings → Logging`."
+        ),
+        inline=False,
+    )
+
     embed.set_footer(
         text=(
             "Nothing applies until Final Review.  Switching presets "

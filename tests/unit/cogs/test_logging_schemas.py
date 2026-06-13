@@ -71,7 +71,66 @@ def test_logging_settings_include_enabled_and_auto_create():
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
     setting_names = {s.name for s in LOGGING_CONFIG_SCHEMA.settings}
-    assert setting_names == {"enabled", "auto_create_channels"}
+    assert {"enabled", "auto_create_channels"}.issubset(setting_names)
+
+
+def test_logging_settings_include_event_logging_v1():
+    """Server event logging v1 (Q-0109) adds the category flags + routing mode."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    setting_names = {s.name for s in LOGGING_CONFIG_SCHEMA.settings}
+    assert setting_names == {
+        "enabled",
+        "auto_create_channels",
+        "messages_enabled",
+        "members_enabled",
+        "roles_enabled",
+        "event_routing",
+    }
+
+
+def test_event_category_flags_point_at_legacy_keys_and_default_off():
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    by_name = {s.name: s for s in LOGGING_CONFIG_SCHEMA.settings}
+    for name, key in (
+        ("messages_enabled", _log_keys.LOGGING_MESSAGES_ENABLED),
+        ("members_enabled", _log_keys.LOGGING_MEMBERS_ENABLED),
+        ("roles_enabled", _log_keys.LOGGING_ROLES_ENABLED),
+    ):
+        spec = by_name[name]
+        assert spec.value_type is bool
+        assert spec.default is False
+        assert spec.settings_key == key
+        assert spec.capability_required == "logging.settings.configure"
+
+
+def test_messages_enabled_hint_carries_privacy_disclosure():
+    """Q-0109 requires the deleted-message privacy implication be surfaced."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    spec = next(
+        s for s in LOGGING_CONFIG_SCHEMA.settings if s.name == "messages_enabled"
+    )
+    assert "Privacy" in spec.hint
+    assert "deleted" in spec.hint.lower()
+
+
+def test_event_routing_validator_accepts_modes_rejects_others():
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    spec = next(
+        s for s in LOGGING_CONFIG_SCHEMA.settings if s.name == "event_routing"
+    )
+    assert spec.value_type is str
+    assert spec.default == "combined"
+    assert spec.allowed_values == ("combined", "per_category")
+    spec.validator("combined")
+    spec.validator("per_category")
+    with pytest.raises(ValueError):
+        spec.validator("nonsense")
+    with pytest.raises(ValueError):
+        spec.validator(1)
 
 
 def test_logging_enabled_setting_points_at_legacy_key():
@@ -96,10 +155,12 @@ def test_logging_auto_create_setting_points_at_legacy_key():
     assert auto.capability_required == "logging.settings.configure"
 
 
-def test_logging_settings_have_validators_that_reject_non_bool():
+def test_logging_bool_settings_have_validators_that_reject_non_bool():
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
-    for spec in LOGGING_CONFIG_SCHEMA.settings:
+    bool_specs = [s for s in LOGGING_CONFIG_SCHEMA.settings if s.value_type is bool]
+    assert bool_specs  # sanity: there are bool settings to check
+    for spec in bool_specs:
         assert spec.validator is not None
         # accepts bool
         spec.validator(True)
@@ -129,6 +190,22 @@ def test_logging_bindings_include_severity_and_audit_routes_phase_9a():
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
     binding_names = {b.name for b in LOGGING_CONFIG_SCHEMA.bindings}
+    assert {
+        "mod_channel",
+        "cleanup_channel",
+        "debug_channel",
+        "info_channel",
+        "warning_channel",
+        "error_channel",
+        "audit_channel",
+    }.issubset(binding_names)
+
+
+def test_logging_bindings_include_event_routes_v1():
+    """Server event logging v1 (Q-0109) adds the four passive-event slots."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    binding_names = {b.name for b in LOGGING_CONFIG_SCHEMA.bindings}
     assert binding_names == {
         "mod_channel",
         "cleanup_channel",
@@ -137,14 +214,18 @@ def test_logging_bindings_include_severity_and_audit_routes_phase_9a():
         "warning_channel",
         "error_channel",
         "audit_channel",
+        "events_channel",
+        "message_channel",
+        "member_channel",
+        "role_channel",
     }
 
 
-def test_logging_schema_version_bumped_to_v2_for_phase_9a():
-    """Schema-shape change → version bump."""
+def test_logging_schema_version_bumped_to_v3_for_event_logging_v1():
+    """Schema-shape change → version bump (v2 Phase 9a → v3 event logging)."""
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
-    assert LOGGING_CONFIG_SCHEMA.version == 2
+    assert LOGGING_CONFIG_SCHEMA.version == 3
 
 
 def test_logging_bindings_are_channel_kind_and_optional():
@@ -174,7 +255,7 @@ def test_logging_resource_requirements_include_phase_9a_intents():
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
     intents = {r.intent for r in LOGGING_CONFIG_SCHEMA.resource_requirements}
-    assert intents == {
+    assert {
         "mod_log",
         "cleanup_log",
         "debug_log",
@@ -182,7 +263,15 @@ def test_logging_resource_requirements_include_phase_9a_intents():
         "warning_log",
         "error_log",
         "audit_log",
-    }
+    }.issubset(intents)
+
+
+def test_logging_resource_requirements_include_event_intents_v1():
+    """Server event logging v1 (Q-0109) adds the four passive-event intents."""
+    from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
+
+    intents = {r.intent for r in LOGGING_CONFIG_SCHEMA.resource_requirements}
+    assert {"events_log", "message_log", "member_log", "role_log"}.issubset(intents)
 
 
 def test_logging_resource_requirements_link_to_bindings():

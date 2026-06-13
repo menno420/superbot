@@ -227,15 +227,90 @@ a public surface).
   operator who sets a public channel clearly wants it.  Fail-safe + counted via
   `mod_public_sent` / `mod_public_skipped`.
 
-## What's NOT in PR-11
+## Server event logging v1 (Q-0109)
 
-* No new migration; settings live in the legacy `guild_settings` table.
-* No SettingsRegistry / mutation pipeline integration.
-* No setup wizard.
+> **Status:** `binding` — shipped as band slot 5 of the safety/community
+> family plan. Default: **OFF** per-category.
+
+The passive layer. Where the moderation/audit subscribers react to
+**bus events**, this layer reacts to **Discord gateway events** —
+posting an embed when something happens in the server that an operator
+might want a record of. Owner scope (Q-0109): **message edits and
+deletions · member joins and leaves · role grants/revocations**. Voice
+activity is deliberately out of v1 scope.
+
+### Where it lives
+
+* **Listeners** — `cogs/logging_cog.py` (the `LoggingCog`) gains five
+  `@commands.Cog.listener()` methods (`on_message_delete`,
+  `on_message_edit`, `on_member_join`, `on_member_remove`,
+  `on_member_update`). Each applies a cheap structural filter (skip
+  bots / DMs / no-op embed-only edits / non-role member updates) so the
+  hot path does no DB work, then delegates to a `server_logging.log_*`
+  handler. The `on_member_join` listener coexists with the autorole
+  cog's own — discord.py dispatches to every listener independently.
+* **Handlers + embeds** — `services/server_logging.py`
+  (`log_message_delete` / `log_message_edit` / `log_member_join` /
+  `log_member_leave` / `log_role_change`, plus the matching
+  `format_*_embed` builders). Each handler loads the policy, gates,
+  resolves the routed channel, and posts — fully fail-safe.
+* **Config read model** — `services/server_logging_config.py`
+  (`EventLoggingPolicy` + `load_policy`), mirroring `automod_config`.
+
+### Gating (off by default)
+
+Every event requires **two** flags: the existing master
+`logging.enabled` **and** the per-category flag
+(`logging.messages_enabled` / `logging.members_enabled` /
+`logging.roles_enabled`). All default OFF, so a fresh guild — and a
+guild that already enabled `logging.enabled` only for moderation
+logging — sees no new behaviour until it opts a category in. Configured
+through the `!settings` widget (the four new `SettingSpec`s) or
+`!logging status`.
+
+### Routing (owner-configurable)
+
+`logging.event_routing` selects the layout — the exact Q-0109 choice
+the `mock_logging_routing` UX exhibit renders:
+
+| Mode | Behaviour |
+|---|---|
+| `combined` (default) | every category → the `events` route (`events_channel`). |
+| `per_category` | messages → `message_log`, members → `member_log`, roles → `role_log`; each falls back to `events_channel` when its own channel is unset. |
+
+The event routes are added to the same route table as the
+moderation/severity routes, so they configure through the existing
+**Routes panel** (`!logging routes`) and the `BindingMutationPipeline`.
+Critically, the event routes fall back to `events` (then nothing), never
+to `mod` — passive-event noise must not land in the moderation-action
+channel.
+
+### Privacy
+
+Deleted-message logging surfaces content members removed. Q-0109
+requires this be disclosed: the `messages_enabled` SettingSpec hint
+carries a ⚠️ privacy line, and the setup wizard's logging-presets
+section states it too. Actor attribution for role changes (who granted
+the role) needs audit-log integration and is a phase-2 enhancement;
+v1 logs role grants/revokes on non-bot members without naming the actor.
+
+### Counters
+
+`event_sent` (delivered), `event_skipped_disabled` (master/category
+off), `event_missing_channel` (no routed channel). Delivery failures
+share the existing `permission_error` / `send_error` buckets, and a
+handler exception bumps `subscriber_errors`.
+
+## What's NOT in PR-11 (the original foundation)
+
+* No new migration; settings live in the legacy `guild_settings` table
+  (still true for event logging v1).
+* No SettingsRegistry / mutation pipeline integration *(superseded —
+  the schema now drives the `!settings` edit flow)*.
+* No setup wizard *(superseded — the logging-presets section exists)*.
 * No slash commands.
-* No per-event subscription toggles (`logging.enabled` is master switch).
-* No edit/delete/member-join logging.
+* ~~No per-event subscription toggles~~ *(superseded by event logging
+  v1's per-category flags above)*.
+* ~~No edit/delete/member-join logging~~ *(superseded by event logging
+  v1, Q-0109)*.
 * No web dashboard / external log storage / Redis.
-
-These belong to the broader UX phase that comes after the Command
-Surface Ledger and SettingsRegistry land.

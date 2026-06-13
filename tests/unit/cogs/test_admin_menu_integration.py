@@ -434,6 +434,8 @@ def test_attach_back_to_admin_button_noop_when_view_full():
 async def test_build_logging_status_embed_with_disabled_logging():
     guild = MagicMock()
     guild.id = 1234
+    from services.server_logging_config import EventLoggingPolicy
+
     with patch(
         "services.server_logging.is_enabled",
         new_callable=AsyncMock,
@@ -447,6 +449,10 @@ async def test_build_logging_status_embed_with_disabled_logging():
         new_callable=AsyncMock,
         return_value=None,
     ), patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(),
+    ), patch(
         "services.server_logging.counters_snapshot",
         return_value={"counters": {"sent": 0, "failed": 0}},
     ):
@@ -457,6 +463,7 @@ async def test_build_logging_status_embed_with_disabled_logging():
         "Auto-create channels",
         "Mod channel",
         "Cleanup channel",
+        "Event logging",
         "Counters (process-local)",
     ]
     enabled_field = next(f for f in embed.fields if f.name == "Enabled")
