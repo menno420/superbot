@@ -100,7 +100,7 @@ rollback (flip `bindings.primary` OFF). Ordered by risk (lowest first):
 |---|---|---|---|---|
 | 1 | **XP announce** | `xp.xp_announce_channel` → `xp.announce_channel` | ✅ **Retired (#794)** | Reference retirement; lowest blast radius. |
 | 2 | **Economy log** | `economy.economy_log_channel` → `economy.log_channel` | ✅ **Retired (#794)** | Retired with family 1 in arc PR 2. |
-| 3 | **Governance role pointers** | `moderation.{trusted,moderator}_role` → `governance.{trusted,moderator}_role` | **Blocked on Q-0119** (no schema home) | The hardest case; touches authority tiers. Do *not* retire until the home is decided. |
+| 3 | **Governance role pointers** | `moderation.{trusted,moderator}_role` → `governance.{trusted,moderator}_role` | **Q-0119 DECIDED → (a)**: reserved-namespace `governance` schema home. Ready to build. | The hardest case; touches authority tiers — declare the reserved schema + bindings, then retire with `pointer_retired=True`. |
 | 4 | **Welcome/counters orphans** | `welcome.channel`, `welcome.entry_role`, `counters.{total,humans,bots}_channel` | **Not started** — no binding declared | Each needs a `BindingSpec` + backfill mapping minted first. Lower priority (new, low-traffic). |
 | 5 | **Moderation public-log + logging fallbacks** | `moderation.public_log_channel`; `LOGGING_MOD_CHANNEL`/`LOGGING_CLEANUP_CHANNEL` fallbacks | **Not started** | `moderation.public_log_channel` has no binding; the logging fallbacks shadow 7 canonical bindings. |
 
@@ -204,7 +204,13 @@ family 3 is blocked on (routed to the owner as **Q-0119**, DISCUSS lane):
 
 Recommendation in the Q-block: **(a)** — it keeps governance authority in the
 governance namespace and generalizes (future reserved bindings get a home), at
-the cost of one validator allowlist. No code until the owner picks.
+the cost of one validator allowlist.
+
+> **DECIDED 2026-06-13 (owner) → option (a), "give authority its own home".** Family 3
+> is unblocked: a future P0-3 arc PR teaches the identity-contract validator to expect a
+> reserved-namespace `governance` schema, declares the `trusted_role`/`moderator_role`
+> bindings there, graduates the keys `DEFERRED_KEYS` → `MIGRATED_KEYS`, and retires the
+> scalars with `pointer_retired=True` (the families-1+2 pattern). Router Q-0119.
 
 ---
 
@@ -239,7 +245,7 @@ Run on a real guild + Postgres after arc PR 2 (extends the
 | **1 (this PR)** | Matrix tool · backfill reframe (Required #2) · 2 parity invariants · this plan · Q-0119 | shipped, behavior-preserving |
 | **2 (#794) ✅** | Retired XP-announce + economy-log scalars (families 1+2) · `test_no_dual_declared_pointer` invariant · `pointer_retired` binding-first decoupling · real-Postgres proof | DONE |
 | **3 (next)** | Delegated-apply contract (§4) — the `setup_delegate` actor_type + AST fence + audit | Q-0098 (answered); design pinned in §4 |
-| *(later)* | Families 3–5 (governance roles per Q-0119 · welcome/counters/mod-public-log bindings) | family 3 gated on Q-0119 |
+| *(later)* | Families 3–5 (governance roles · welcome/counters/mod-public-log bindings) | family 3 **ready** (Q-0119 → reserved `governance` schema); 4–5 need new `BindingSpec`s minted first |
 | *(later)* | **Sunset the global `bindings.primary` flag** — once every pointer family is retired (each binding-first via `pointer_retired=True`) and the non-pointer migrated keys are homed (Q-0119), the global canary governs nothing and can be removed. Arc PR 2 proved the per-key model is cleaner + safer to deploy than a guild-wide flip. | after families 3–5 + Q-0119 |
 
 P0-3's **P1-3 follow-up** (declared-setting → runtime-consumer disposition

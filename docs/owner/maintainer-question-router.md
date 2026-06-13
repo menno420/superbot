@@ -4488,9 +4488,18 @@ prompt.
 
 ### Q-0119 — Where do the governance role-pointer bindings live? (P0-3 family 3)
 
-> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 during the P0-3
-> settings pointer-lane convergence session. No code until the owner picks; reads keep
-> working via the legacy scalar meanwhile (deferred, not broken).
+> **ANSWERED 2026-06-13 (owner, structured-choices round) → option (a), the reserved-schema
+> path.** Raised 2026-06-13 during the P0-3 convergence session (#794); decided same day in a
+> follow-up `AskUserQuestion` round. **Verbatim choice: "Give authority its own home."** Give
+> server-wide authority settings their own reserved-namespace `governance` schema home — *not*
+> re-home under `moderation` (b), *not* a permanent legacy exception (c).
+>
+> **Answer scope:** unblocks pointer-family 3 (the governance trusted/moderator role pointers)
+> for a future P0-3 arc PR. **No behavior change today** and no code shipped this round — reads
+> keep working via the legacy scalar + the binding ladder; recorded for the next session to
+> execute (teach the identity-contract validator to expect a reserved-namespace `governance`
+> schema, declare the two role bindings there, graduate the keys `DEFERRED_KEYS` → `MIGRATED_KEYS`,
+> and retire the scalars with `pointer_retired=True` like families 1+2).
 
 **Area:** Settings/bindings lane integrity · governance authority namespace
 **Type:** Architecture decision (blocks pointer-family 3 convergence)
@@ -4518,8 +4527,8 @@ finding). This session **reframed** the backfill (the two governance role keys m
   governance-tier scalars, exempt from the lane rule. Cheapest; abandons lane uniformity.
 
 **Home:** `docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md` §5 (full
-analysis + the family-3 gate); this entry is the router pointer. On decision, record it here
-and execute in the P0-3 arc.
+analysis + the family-3 gate); this entry is the router pointer. **Decided → option (a);**
+execute in a future P0-3 arc PR (family 3).
 
 ### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
 
