@@ -2,10 +2,11 @@
 
 Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``
 (show or set the task stance), ``ask`` (list the pending interview questions),
-``render`` (write content docs), ``check`` (run the doc + session-log hygiene
-checks), and ``--simulate N`` (the CI / proving smoke that drives the staged
-interview). Output goes through ``_emit`` (``sys.stdout.write``) rather than
-``print`` to keep the engine lint-clean.
+``render`` (write content docs), ``skills`` (list / ``--build`` the skill pack),
+``check`` (run the doc + session-log hygiene checks), and ``--simulate N`` (the
+CI / proving smoke that drives the staged interview). Output goes through
+``_emit`` (``sys.stdout.write``) rather than ``print`` to keep the engine
+lint-clean.
 """
 
 from __future__ import annotations
@@ -23,6 +24,12 @@ from engine.lib.config import Config, config_path, load_config, save_config
 from engine.lib.guardrail import UnsafeTargetError, assert_safe_target
 from engine.lib.state import JsonStateBackend, default_state
 from engine.render import build_context, find_placeholders, load_templates, render
+from engine.skills.skills import (
+    SKILLS,
+    skill_capabilities,
+    skill_document,
+    skill_relpath,
+)
 from engine.stances.stances import DEFAULT_STANCE, stance_briefing, stance_names
 
 
@@ -163,6 +170,38 @@ def cmd_render(target: Path) -> int:
     return 0
 
 
+def cmd_skills(target: Path, build: bool) -> int:
+    """List the skill pack, or ``--build`` it into ``<state_dir>/skills/``.
+
+    Listing shows each skill + its declared capabilities (what it may do beyond
+    read, overriding the ambient stance). Building emits a native ``SKILL.md`` per
+    skill into the staging area, body slot-filled from the interview — the host
+    then installs them under ``.claude/skills/``. Like ``render``, the kit stages;
+    it never writes a live ``.claude/`` tree.
+    """
+    config = load_config(target)
+    if not build:
+        _emit("skills:")
+        for skill in SKILLS:
+            caps = ", ".join(skill_capabilities(skill["name"]))
+            _emit(f"  {skill['name']} — {skill['description']}")
+            _emit(f"    capabilities: {caps}")
+        return 0
+    backend = JsonStateBackend(_state_path(target, config))
+    context = build_context(backend.data) if backend.data else {}
+    out_base = target / config.state_dir
+    leftover_total = 0
+    for skill in SKILLS:
+        body = render(skill["body"], context)
+        leftover = find_placeholders(body)
+        leftover_total += len(leftover)
+        atomic_write_text(out_base / skill_relpath(skill), skill_document(skill, body))
+        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""
+        _emit(f"skills: wrote {skill_relpath(skill)}{suffix}")
+    _emit(f"skills: {len(SKILLS)} skill(s), {leftover_total} unfilled placeholder(s).")
+    return 0
+
+
 def cmd_check(target: Path, strict: bool) -> int:
     """Run the doc-hygiene + session-log checks against ``target``.
 
@@ -256,6 +295,13 @@ def build_parser() -> argparse.ArgumentParser:
     stance = sub.add_parser("stance", help="show or set the task stance")
     stance.add_argument("name", nargs="?", default=None)
     stance.add_argument("--target", type=Path, default=Path.cwd())
+    skills = sub.add_parser("skills", help="list or --build the skill pack")
+    skills.add_argument(
+        "--build",
+        action="store_true",
+        help="emit SKILL.md files into <state_dir>/skills/",
+    )
+    skills.add_argument("--target", type=Path, default=Path.cwd())
     check = sub.add_parser("check", help="run the doc + session-log hygiene checks")
     check.add_argument("--target", type=Path, default=Path.cwd())
     check.add_argument("--strict", action="store_true", help="exit 1 if any violation")
@@ -281,6 +327,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_mode(args.target, args.name)
         if args.command == "stance":
             return cmd_stance(args.target, args.name)
+        if args.command == "skills":
+            return cmd_skills(args.target, args.build)
         if args.command == "check":
             return cmd_check(args.target, args.strict)
     except UnsafeTargetError as exc:
