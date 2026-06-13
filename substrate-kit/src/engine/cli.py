@@ -1,10 +1,11 @@
 """The substrate-kit bootstrap command line.
 
-Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``ask`` (list the
-pending interview questions), ``render`` (write content docs), ``check`` (run the
-doc + session-log hygiene checks), and ``--simulate N`` (the CI / proving smoke
-that drives the staged interview). Output goes through ``_emit``
-(``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.
+Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``
+(show or set the task stance), ``ask`` (list the pending interview questions),
+``render`` (write content docs), ``check`` (run the doc + session-log hygiene
+checks), and ``--simulate N`` (the CI / proving smoke that drives the staged
+interview). Output goes through ``_emit`` (``sys.stdout.write``) rather than
+``print`` to keep the engine lint-clean.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from engine.lib.config import Config, config_path, load_config, save_config
 from engine.lib.guardrail import UnsafeTargetError, assert_safe_target
 from engine.lib.state import JsonStateBackend, default_state
 from engine.render import build_context, find_placeholders, load_templates, render
+from engine.stances.stances import DEFAULT_STANCE, stance_briefing, stance_names
 
 
 def _emit(line: str = "") -> None:
@@ -89,6 +91,33 @@ def cmd_mode(target: Path, name: str) -> int:
         return 1
     backend.set("mode", name)
     _emit(f"mode: set to {name}.")
+    return 0
+
+
+def cmd_stance(target: Path, name: str | None) -> int:
+    """Show or set the active task stance (question|analysis|debug|review|plan).
+
+    With no ``name``, prints the active stance's briefing (reading-route +
+    tool-scope + output contract) and the available set. With a ``name``, switches
+    the active stance in state. The stance is advisory — it scopes orientation, it
+    does not block actions.
+    """
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    if not backend.data:
+        _emit(f"stance: no state at {target} (run init first).")
+        return 1
+    if name is None:
+        active = backend.data.get("stance", DEFAULT_STANCE)
+        _emit(stance_briefing(active))
+        _emit(f"  available: {', '.join(stance_names())}")
+        return 0
+    if name not in stance_names():
+        _emit(f"stance: invalid stance {name!r} (choose from {stance_names()}).")
+        return 2
+    backend.set("stance", name)
+    _emit(f"stance: set to {name}.")
+    _emit(stance_briefing(name))
     return 0
 
 
@@ -224,6 +253,9 @@ def build_parser() -> argparse.ArgumentParser:
     mode = sub.add_parser("mode", help="set the integration mode")
     mode.add_argument("name")
     mode.add_argument("--target", type=Path, default=Path.cwd())
+    stance = sub.add_parser("stance", help="show or set the task stance")
+    stance.add_argument("name", nargs="?", default=None)
+    stance.add_argument("--target", type=Path, default=Path.cwd())
     check = sub.add_parser("check", help="run the doc + session-log hygiene checks")
     check.add_argument("--target", type=Path, default=Path.cwd())
     check.add_argument("--strict", action="store_true", help="exit 1 if any violation")
@@ -247,6 +279,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_render(args.target)
         if args.command == "mode":
             return cmd_mode(args.target, args.name)
+        if args.command == "stance":
+            return cmd_stance(args.target, args.name)
         if args.command == "check":
             return cmd_check(args.target, args.strict)
     except UnsafeTargetError as exc:
