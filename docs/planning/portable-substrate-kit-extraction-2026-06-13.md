@@ -30,9 +30,9 @@ in `.claude/CLAUDE.md`.
 1. Read this doc + the two origin idea docs above.
 2. Execution is **already owner-approved** — do **not** re-plan or re-open the review rounds; the
    "External review" sections (Rounds 1–10) are a *settled record*, not open questions.
-3. **PR 1a is DONE (merged in #789) — resume at PR 1b** (the interview engine + core templates, in
-   "Implementation phases"); then 2 → 3. See the **Execution log** below for what 1a delivered and
-   the CI gotchas to respect. Hermes's four blockers were already resolved in 1a.
+3. **PR 1a + 1b are DONE (#789, #791–#793) — resume at the 1b tail: the two stdlib checker ports**
+   (then PR 2, the capability layer). See the **Execution log** below for what shipped, the exact
+   "▶ RESUME HERE" recipe, and the CI gotchas to respect. Hermes's four blockers were resolved in 1a.
 4. Delivery is **two-phase**: PRs 1a–3 deliver the working substrate *proven in-repo* under
    `substrate-kit/`; the public-OSS productization phase (~160–276 h) is separate and later.
 5. The kit lives in a self-contained `substrate-kit/` tree and **never mutates superbot's live
@@ -59,6 +59,25 @@ in `.claude/CLAUDE.md`.
   **Gotcha fixed:** `dist/` is git-ignored repo-wide, so the committed `dist/bootstrap.py` is kept
   tracked via a scoped `substrate-kit/.gitignore` negation — don't delete it expecting it to
   regenerate on clone; regenerate with `python3.10 substrate-kit/src/build_bootstrap.py`.
+- **PR 1b (2026-06-13) — DONE (shipped as #791 → #792 → #793).** The staged-learning loop on the
+  1a skeleton: **#791** interview engine (`engine/interview/{question_bank,stages,interview}.py` —
+  the seed bank is a Python module so it embeds in the bootstrap with no parser; adaptive
+  graduation `integration → steady` only on *confirmed* critical slots + a quiet streak;
+  provisional self-answers never self-graduate; `ask` + interview-driven `--simulate`); **#792**
+  render (`engine/render.py` `${slot}` substitution + a dual-path template loader + the `render`
+  CLI); **#793** the full 6-doc orientation template set (CLAUDE / AGENT_ORIENTATION /
+  current-state / session-journal / question-router / ideas-README), referencing only bank slots
+  so a fully-filled interview renders zero leftovers. Single-file loop verified end-to-end
+  (`init → ask`/`simulate` → `render` writes all six docs); 43 substrate-kit tests green.
+- **▶ RESUME HERE (next session) — the 1b tail: two stdlib checker ports.** Lift `check_docs` +
+  `check_session_log` into `substrate-kit/src/engine/checks/` as **generic, config-driven** ports
+  (not superbot's hardcoded versions): extend `lib/config.py` with `docs_root` / `badge_tokens` /
+  `readpath_docs` / `sessions_dir` / `session_markers`; check badge-presence + link-resolution +
+  reachability (drop superbot's ratchets/freshness rules); add a `check` CLI command; add the
+  modules to `build_bootstrap.py` `MODULE_ORDER` + `PACKAGE_FILES` and regenerate `dist/bootstrap.py`;
+  add `tests/unit/substrate_kit/test_checks.py`. Stdlib-only. Then **PR 2** (capability layer:
+  stances / skills / personas). The CI gotchas above (tests under `tests/`, `print`/`assert` bans,
+  isort-checks-tests, regenerate-the-bootstrap) all still apply.
 
 ---
 
