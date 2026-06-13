@@ -90,3 +90,9 @@ doing it now, with the "mechanism vs. content" question (step 2) kept in mind. P
 [`autonomous-improvement-loop-vision-2026-06-12.md`](./autonomous-improvement-loop-vision-2026-06-12.md)
 (the loop this substrate runs) and the hooks brainstorm in
 [`../operations/claude-code-hooks-and-plugins.md`](../operations/claude-code-hooks-and-plugins.md).
+
+**Plan + revision (2026-06-13):** a consolidated execution plan (Plan v5, externally reviewed in five
+rounds) now exists for this idea. An independent revision/complement of it — prior-art positioning, a
+known-AI-weakness audit, the missing **task-stance "mode"** axis (question/analysis/etc.), forgotten
+steps, and assumptions to test — is recorded in
+[`../planning/portable-agent-substrate-revision-2026-06-13.md`](../planning/portable-agent-substrate-revision-2026-06-13.md).
