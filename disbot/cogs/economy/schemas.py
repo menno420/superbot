@@ -22,18 +22,6 @@ from core.runtime.subsystem_schema import (
     SettingSpec,
     SubsystemSchema,
 )
-from utils.settings_keys import ECONOMY_LOG_CHANNEL
-
-
-def _validate_channel_id_or_empty(value: object) -> None:
-    """Empty string clears the log channel; otherwise a numeric ID."""
-    if not isinstance(value, str):
-        raise ValueError(f"expected str, got {type(value).__name__}")
-    if value and not value.isdigit():
-        raise ValueError(
-            "must be empty (to clear) or a numeric Discord channel ID",
-        )
-
 
 # ---------------------------------------------------------------------------
 # Phase 1a — Guild config schema
@@ -52,28 +40,16 @@ ECONOMY_BINDINGS: tuple[BindingSpec, ...] = (
     ),
 )
 
-ECONOMY_SETTINGS: tuple[SettingSpec, ...] = (
-    SettingSpec(
-        name="economy_log_channel",
-        value_type=str,
-        default="",
-        settings_key=ECONOMY_LOG_CHANNEL,
-        capability_required="economy.settings.configure",
-        hint=(
-            "Numeric Discord channel ID for the economy mutations log.  "
-            "Leave empty to suppress logging.  Mirrors the "
-            "``log_channel`` BindingSpec — reads go through the "
-            "binding/legacy arbitration ladder; PR #6 routes writes "
-            "through SettingsMutationPipeline so they land in the "
-            "settings_mutation_audit trail."
-        ),
-        validator=_validate_channel_id_or_empty,
-        # PR #7 — opt in to the native channel select.  Operators
-        # pick the channel from Discord's UI instead of pasting a
-        # numeric ID into a text modal.
-        input_hint="channel",
-    ),
-)
+# NOTE: the ``economy_log_channel`` scalar SettingSpec was retired in the
+# P0-3 pointer-lane convergence (arc PR 2).  The log channel is a
+# Discord-resource pointer and lives solely in the binding lane
+# (``log_channel`` above); reads go through
+# ``config_arbitration.get_economy_log_channel`` (binding-first), and
+# writes go through ``BindingMutationPipeline`` (the ``!setlogchannel``
+# command, the on-join auto-provision, and the setup wizard).  The legacy
+# ``economy_log_channel`` KV remains readable as the arbitration rollback
+# fallback.  See docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md.
+ECONOMY_SETTINGS: tuple[SettingSpec, ...] = ()
 
 ECONOMY_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (
     ResourceRequirement(

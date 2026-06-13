@@ -63,10 +63,12 @@ _BINDING_TO_TAG: dict[str, str] = {
     "warning_channel": "likely_log",
     "error_channel": "likely_log",
     "audit_channel": "likely_log",
-    # economy
-    "economy_log_channel": "likely_log",
-    # xp
-    "xp_announce_channel": "likely_general",
+    # economy (binding name is ``log_channel`` — was wrongly keyed by the
+    # legacy settings key ``economy_log_channel`` before the P0-3 retirement,
+    # so this hint never fired).
+    "log_channel": "likely_log",
+    # xp (binding name is ``announce_channel`` — same legacy-key mismatch).
+    "announce_channel": "likely_general",
 }
 
 
@@ -83,8 +85,8 @@ _BINDING_TO_INTENT: dict[str, str] = {
     "warning_channel": "logs",
     "error_channel": "logs",
     "audit_channel": "logs",
-    "economy_log_channel": "logs",
-    "xp_announce_channel": "general",
+    "log_channel": "logs",
+    "announce_channel": "general",
     "welcome_channel": "welcome",
 }
 

@@ -58,37 +58,14 @@ def _bv(*, kind, target_id, status):
 
 
 @pytest.mark.asyncio
-async def test_xp_announce_channel_flag_off_returns_legacy_string():
-    with (
-        patch(
-            "core.runtime.feature_flags.is_enabled",
-            new_callable=AsyncMock,
-            return_value=False,
-        ),
-        patch(
-            "utils.db.settings.get_setting",
-            new_callable=AsyncMock,
-            return_value="123456",
-        ),
-    ):
-        result = await get_xp_announce_channel(guild_id=1)
-    assert result.value == "123456"
-    assert isinstance(result.value, str)
-    assert result.source == "legacy"
-
-
-@pytest.mark.asyncio
-async def test_xp_announce_channel_flag_on_binding_stringifies_int():
-    """When the binding returns an int, the accessor stringifies it.
-
-    XP callers expect a string (``XpConfig.announce_channel: str``).
+async def test_xp_announce_channel_reads_binding_first_even_when_flag_off():
+    """Retired pointer (P0-3): the accessor forces binding-first and the
+    binding int is stringified — regardless of the global ``bindings.primary``
+    flag, which is *not even consulted*.
     """
+    is_enabled = AsyncMock(return_value=False)  # global flag OFF
     with (
-        patch(
-            "core.runtime.feature_flags.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
+        patch("core.runtime.feature_flags.is_enabled", new=is_enabled),
         patch(
             "core.runtime.bindings.get_binding",
             new_callable=AsyncMock,
@@ -103,15 +80,45 @@ async def test_xp_announce_channel_flag_on_binding_stringifies_int():
     assert result.value == "999999"
     assert isinstance(result.value, str)
     assert result.source == "binding"
+    is_enabled.assert_not_awaited()  # retired pointer bypasses the flag
+
+
+@pytest.mark.asyncio
+async def test_xp_announce_channel_falls_back_to_legacy_when_unbound():
+    """Binding unbound → legacy KV is the rollback fallback (string)."""
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=_bv(
+                kind=BindingKind.CHANNEL,
+                target_id=None,
+                status=ResourceStatus.UNRESOLVED,
+            ),
+        ),
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+            return_value="123456",
+        ),
+    ):
+        result = await get_xp_announce_channel(guild_id=1)
+    assert result.value == "123456"
+    assert isinstance(result.value, str)
+    assert result.source == "fallback"
 
 
 @pytest.mark.asyncio
 async def test_xp_announce_channel_missing_returns_none():
     with (
         patch(
-            "core.runtime.feature_flags.is_enabled",
+            "core.runtime.bindings.get_binding",
             new_callable=AsyncMock,
-            return_value=False,
+            return_value=_bv(
+                kind=BindingKind.CHANNEL,
+                target_id=None,
+                status=ResourceStatus.UNRESOLVED,
+            ),
         ),
         patch(
             "utils.db.settings.get_setting",
@@ -130,33 +137,11 @@ async def test_xp_announce_channel_missing_returns_none():
 
 
 @pytest.mark.asyncio
-async def test_economy_log_channel_flag_off_parses_legacy_to_int():
+async def test_economy_log_channel_reads_binding_first_even_when_flag_off():
+    """Retired pointer (P0-3): binding-first int, flag bypassed."""
+    is_enabled = AsyncMock(return_value=False)
     with (
-        patch(
-            "core.runtime.feature_flags.is_enabled",
-            new_callable=AsyncMock,
-            return_value=False,
-        ),
-        patch(
-            "utils.db.settings.get_setting",
-            new_callable=AsyncMock,
-            return_value="777777",
-        ),
-    ):
-        result = await get_economy_log_channel(guild_id=1)
-    assert result.value == 777777
-    assert isinstance(result.value, int)
-    assert result.source == "legacy"
-
-
-@pytest.mark.asyncio
-async def test_economy_log_channel_flag_on_returns_binding_int():
-    with (
-        patch(
-            "core.runtime.feature_flags.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
+        patch("core.runtime.feature_flags.is_enabled", new=is_enabled),
         patch(
             "core.runtime.bindings.get_binding",
             new_callable=AsyncMock,
@@ -169,7 +154,34 @@ async def test_economy_log_channel_flag_on_returns_binding_int():
     ):
         result = await get_economy_log_channel(guild_id=1)
     assert result.value == 999
+    assert isinstance(result.value, int)
     assert result.source == "binding"
+    is_enabled.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_economy_log_channel_falls_back_to_legacy_when_unbound():
+    """Binding unbound → legacy KV fallback, parsed to int."""
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=_bv(
+                kind=BindingKind.CHANNEL,
+                target_id=None,
+                status=ResourceStatus.UNRESOLVED,
+            ),
+        ),
+        patch(
+            "utils.db.settings.get_setting",
+            new_callable=AsyncMock,
+            return_value="777777",
+        ),
+    ):
+        result = await get_economy_log_channel(guild_id=1)
+    assert result.value == 777777
+    assert isinstance(result.value, int)
+    assert result.source == "fallback"
 
 
 @pytest.mark.asyncio
@@ -177,9 +189,13 @@ async def test_economy_log_channel_unparseable_legacy_becomes_missing():
     """A legacy KV holding junk that can't be int-parsed should not crash."""
     with (
         patch(
-            "core.runtime.feature_flags.is_enabled",
+            "core.runtime.bindings.get_binding",
             new_callable=AsyncMock,
-            return_value=False,
+            return_value=_bv(
+                kind=BindingKind.CHANNEL,
+                target_id=None,
+                status=ResourceStatus.UNRESOLVED,
+            ),
         ),
         patch(
             "utils.db.settings.get_setting",
@@ -257,14 +273,27 @@ async def test_counters_increment_across_accessors():
             return_value=False,
         ),
         patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=_bv(
+                kind=BindingKind.CHANNEL,
+                target_id=None,
+                status=ResourceStatus.UNRESOLVED,
+            ),
+        ),
+        patch(
             "utils.db.settings.get_setting",
             new_callable=AsyncMock,
             return_value="123",
         ),
     ):
-        await get_xp_announce_channel(guild_id=1)
-        await get_economy_log_channel(guild_id=1)
-        await get_trusted_tier_role(guild_id=1)
+        await get_xp_announce_channel(guild_id=1)  # retired → forced binding-first
+        await get_economy_log_channel(guild_id=1)  # retired → forced binding-first
+        await get_trusted_tier_role(guild_id=1)  # flag-gated → honours OFF flag
     snap = config_arbitration.counters_snapshot()
     assert snap["calls_total"] == 3
-    assert snap["by_flag_state"]["off"] == 3
+    # The two retired pointers force binding-primary (flag_state on, falling
+    # back to legacy as the binding is unbound); the governance role pointer
+    # still honours the (off) global flag.
+    assert snap["by_flag_state"]["on"] == 2
+    assert snap["by_flag_state"]["off"] == 1

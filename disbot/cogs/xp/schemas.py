@@ -34,7 +34,6 @@ from core.runtime.subsystem_schema import (
     SubsystemSchema,
 )
 from utils.settings_keys import (
-    XP_ANNOUNCE_CHANNEL,
     XP_COOLDOWN,
     XP_MAX,
     XP_MIN,
@@ -49,16 +48,6 @@ def _validate_positive_int(value: object) -> None:
 def _validate_cooldown(value: object) -> None:
     if not isinstance(value, int) or value < 0:
         raise ValueError(f"expected non-negative int cooldown, got {value!r}")
-
-
-def _validate_channel_id_or_empty(value: object) -> None:
-    """Empty string clears the announce channel; otherwise a numeric ID."""
-    if not isinstance(value, str):
-        raise ValueError(f"expected str, got {type(value).__name__}")
-    if value and not value.isdigit():
-        raise ValueError(
-            "must be empty (to clear) or a numeric Discord channel ID",
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -115,25 +104,15 @@ XP_SETTINGS: tuple[SettingSpec, ...] = (
         input_hint="numeric_presets",
         presets=(0, 15, 30, 60, 120, 300),
     ),
-    SettingSpec(
-        name="xp_announce_channel",
-        value_type=str,
-        default="",
-        settings_key=XP_ANNOUNCE_CHANNEL,
-        capability_required="xp.settings.configure",
-        hint=(
-            "Numeric Discord channel ID for level-up announcements.  "
-            "Leave empty to announce in the channel where the level-up "
-            "happened."
-        ),
-        validator=_validate_channel_id_or_empty,
-        # PR #7 — opt in to the native channel select.  The Settings
-        # edit dispatcher renders a discord.ui.ChannelSelect; the
-        # legacy text-modal fallback is still reachable when the spec
-        # is mutated programmatically (the SettingSpec.value_type is
-        # still str so the pipeline accepts either shape).
-        input_hint="channel",
-    ),
+    # NOTE: the ``xp_announce_channel`` scalar SettingSpec was retired in
+    # the P0-3 pointer-lane convergence (arc PR 2).  The announce channel
+    # is a Discord-resource pointer and now lives solely in the binding
+    # lane (``announce_channel`` below); reads go through
+    # ``config_arbitration.get_xp_announce_channel`` (binding-first), and
+    # writes go through ``BindingMutationPipeline`` (the XP config modal +
+    # the setup wizard).  The legacy ``xp_announce_channel`` KV remains
+    # readable as the arbitration rollback fallback.  See
+    # docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md.
 )
 
 XP_RESOURCE_REQUIREMENTS: tuple[ResourceRequirement, ...] = (

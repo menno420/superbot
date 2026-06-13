@@ -38,7 +38,6 @@ from services import economy_service
 from utils import db
 from utils.cooldowns import check_cooldown, format_remaining
 from utils.helpers import post_log_embed
-from utils.settings_keys import ECONOMY_LOG_CHANNEL
 from utils.ui_constants import ECONOMY_COLOR, INFO_COLOR
 
 # Views — importing this module triggers the @register decorator on
@@ -116,29 +115,45 @@ class EconomyCog(commands.Cog):
         actor: discord.Member | discord.User | None,
         actor_type: str = "user",
     ) -> None:
-        """Persist the economy log channel via :class:`SettingsMutationPipeline`.
+        """Persist the economy log channel via :class:`BindingMutationPipeline`.
 
+        P0-3 arc PR 2 retired the ``economy_log_channel`` scalar
+        ``SettingSpec``; the log channel now lives in the binding lane
+        (``economy.log_channel``) so there is one canonical pointer owner.
         Used by both the system-triggered ``_ensure_log_channel`` path
         (``on_ready`` / ``on_guild_join``, ``actor_type='system'``,
         ``actor=None``) and the admin ``!setlogchannel`` command
-        (``actor_type='user'``, ``actor`` is the invoking member).
-        Either way the pipeline records the change in
-        ``settings_mutation_audit`` and invalidates the per-key cache.
+        (``actor_type='user'``, ``actor`` is the invoking member).  The
+        pipeline records the change in ``binding_audit_log`` (a system
+        write records the bot's own id as actor_id, since that column is
+        NOT NULL — ``actor_type`` is the real discriminator).
         """
-        from services.settings_mutation import SettingsMutationPipeline
+        from core.runtime.subsystem_schema import BindingKind
+        from services.binding_mutation import BindingMutationPipeline
 
-        await SettingsMutationPipeline().set_value(
+        await BindingMutationPipeline().set_binding(
             guild,
             "economy",
-            "economy_log_channel",
-            channel_id,
+            "log_channel",
+            BindingKind.CHANNEL,
+            int(channel_id),
             actor,
             actor_type=actor_type,
         )
 
     async def _ensure_log_channel(self, guild: discord.Guild) -> None:
         """Create #economy-log for *guild* if it doesn't already exist."""
-        if await resources.resolve_settings_channel(guild, ECONOMY_LOG_CHANNEL):
+        from core.runtime.config_arbitration import get_economy_log_channel
+
+        # Binding-first read (the economy_log_channel scalar was retired
+        # in P0-3): a guild that already has the channel bound — or a
+        # pre-migration legacy value — is left alone; only a truly
+        # unconfigured guild gets one auto-created.
+        configured = await get_economy_log_channel(guild.id)
+        if (
+            configured.value is not None
+            and guild.get_channel(configured.value) is not None
+        ):
             return
 
         existing = resources.resolve_channel(guild, name="economy-log")
