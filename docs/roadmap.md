@@ -404,13 +404,14 @@ its *plans* so they're sequenced like any other area. Ops shelf:
   cap-hungry direct instant-fire. Build waits on the Q-0121 write decision.
 - **Quick-win (executing 2026-06-13)** — [backup-dump integrity check](ideas/backup-integrity-check-2026-06-13.md):
   a `CREATE TABLE`-count gate in `backup-db.yml` so a silent empty dump never uploads as a "backup".
-- **Now (executing 2026-06-13 — #802)** — the
+- **Now (executing 2026-06-13 — #805)** — the
   [portable substrate-kit extraction](planning/portable-substrate-kit-extraction-2026-06-13.md):
   externalize the workflow substrate into a single-file, stdlib-only kit (`substrate-kit/`) that
   bootstraps the loop in any project. **PRs 1a/1b + the 1b tail are DONE** (#789 · #791–#793 · #802 —
-  skeleton, interview engine, templates, render, and now the generic config-driven
-  `check_docs`/`check_session_log` ports + a `check` CLI). **Next = PR 2** (capability layer:
-  stances / skills / personas); productization is a separate later phase.
+  skeleton, interview engine, templates, render, the `check_docs`/`check_session_log` ports + a
+  `check` CLI); **PR 2 is now landing in increments** — **stances shipped (#805 — §3b)**. **Next =
+  the §3c skills + personas increment** (then modes/triggers/hooks/templates); productization is a
+  separate later phase.
 - **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the
   [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)'s
   three repo-side seams: the Hermes `superbot-review` skill (independent non-Claude critique) ·
