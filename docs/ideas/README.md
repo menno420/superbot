@@ -171,6 +171,12 @@ Current broad captures:
   Convention (soft `check_docs` rule): a map stating a count must cite its regen command
   (`scripts/settings_lane_matrix.py`, `command_surface_dump.py`) beside it. Source-wins
   applied to the doc class most prone to drift.
+- [`live-decade-queue-pointer-invariant-2026-06-13.md`](./live-decade-queue-pointer-invariant-2026-06-13.md) —
+  **session idea (2026-06-13, Q-0089, from the third Q-0107 reconciliation pass):** a small
+  invariant (extend `check_docs.py`) asserting the "one live queue" rule on disk — exactly one
+  non-`historical` `reconciliation-pass-*.md`, and the current-state ▶ + roadmap pointers both
+  resolve to it. Turns a convention every pass must remember into a CI guard; motivated by the
+  three pointers this pass hand-verified. Workflow lane; quick-win when capacity allows.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
