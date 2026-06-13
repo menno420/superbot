@@ -373,8 +373,10 @@ Source code and merged PRs win over anything written here.
   deterministic list-builders, plan-level) and **BUG-0011** (Hermes gateway restart crash-loop — needs
   a clean VPS foreground repro) stay OPEN — [`health/bug-book.md`](health/bug-book.md).
 - **Open decisions:** **Q-0096** remainder (Context7 adopted #737; **Postgres-MCP + `pyright-lsp`**
-  undecided) · **Q-0119** (governance role-pointer home, P0-3 family 3) · **Q-0120/Q-0121** (this
-  workflow pass's proposals — candidate-rule promotion · Hermes bug-triage `gh issue create` write).
+  undecided) · **Q-0120/Q-0121** (the workflow pass's proposals — candidate-rule promotion · Hermes
+  bug-triage `gh issue create` write). *(**Q-0119 answered 2026-06-13** → governance role pointers
+  get their own reserved-namespace `governance` schema home (option a); P0-3 family 3 is unblocked
+  for a future arc PR — router §Q-0119 + the [convergence plan §5](planning/settings-pointer-lane-convergence-plan-2026-06-13.md).)*
 - **AI / BTD6 feature expansion — re-postured 2026-06-09 (Q-0048):** AI tools that are
   **read-only AND deterministic** (no writes, no external calls, audience-tiered) carry a
   **standing lift** and may ship without a per-case ask. Anything that **writes, costs
