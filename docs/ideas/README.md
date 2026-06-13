@@ -156,7 +156,7 @@ Current broad captures:
   statements before uploading, catching the silent empty-dump failure class (pg_dump exits 0
   on permission errors). Turns the backup posture from "uploads something" to "uploads a
   verifiable schema snapshot." Small one-step addition; quick-win ops lane.
-  **→ Executing this session (2026-06-13 workflow reconciliation, tooling PR).**
+  ✅ **EXECUTED → `historical` (2026-06-13):** the `CREATE TABLE`-count gate shipped in `backup-db.yml`.
 - [`safety-community-operator-landing-2026-06-13.md`](./safety-community-operator-landing-2026-06-13.md) —
   **session idea (2026-06-13, Q-0089, from the welcome+counters slot-6 session):** a read-only
   operator landing (`!safety` / Settings supergroup) aggregating the lane's scattered
