@@ -91,20 +91,36 @@ in `.claude/CLAUDE.md`.
   set); wired into `build_bootstrap.py` + the regenerated `dist/bootstrap.py`. `test_stances.py`
   (15 cases) incl. the `default_state`↔`DEFAULT_STANCE` invariant and the **edit-only-in-`debug`**
   safety pin ("zero out-of-stance writes"). 77 substrate-kit tests green; `check_quality --full` green.
-- **▶ RESUME HERE (next session) — PR 2 cont.: skills + personas (§3c), then the rest.** With
-  stances shipped, the next increment is the other two capability mechanisms: **skills**
-  (`engine/skills/` generalized sources + a `build_skills.py` manifest→artifact generator emitting
-  native `.claude/skills/*/SKILL.md` — starter pack: session-close · quality-gate · review ·
-  repo-health · deep-research **+ new** question · analysis) and **personas** (`templates/agents/` →
-  native `.claude/agents/*.md`: architect · reviewer · researcher), with the **precedence model**
-  (a skill's declared capabilities override the ambient stance; stances stay advisory otherwise).
-  Then the remaining PR-2 scope: the three modes' per-session behaviors; trigger/drift/staleness
-  detection; the full contract-doc template set + owner-profile; templated hooks +
-  `settings.template.json` (incl. the PreToolUse out-of-stance guard that calls `is_out_of_stance`) +
-  a generalized session-close; simulation asserts. The CI gotchas in the entries above (tests under
+- **PR 2 — skills (2026-06-13) — DONE (#811).** §3c first half. `engine/skills/skills.py` — the
+  7-skill starter pack (session-close · quality-gate · review · repo-health · deep-research + new
+  question · analysis), each declaring the capabilities it needs beyond read; bodies carry `${slot}`
+  refs so a skill is project-aware (`quality-gate` runs the project's own `${verify_command}`). The
+  **precedence model** `action_permitted(stance, action, skill)` — a skill's declared capability
+  **overrides the ambient stance** (session-close writes even under `review`); stances stay advisory
+  otherwise. Native emission via `skill_document` (metadata-first YAML frontmatter) + a `skills` CLI
+  (list / `--build` stages `SKILL.md` into `<state_dir>/skills/`, host-installed — the kit never
+  writes a live `.claude/`). **Root-fixed `build_bootstrap`**: a parenthesized multi-line
+  `from engine…` import leaked into the generated file (IndentationError) — `_split_imports` now drops
+  such imports whole (regression-tested). `test_skills.py` (16 cases). 91 kit tests; `--full` green.
+  *(Shipped as the CLI `skills` command + an engine module, not a standalone `build_skills.py` —
+  emission belongs in the bootstrapped engine so a host runs it, mirroring `render`. Re-cut clean as
+  #811 after the original #809 tangled with a parallel-session collision; #807's recon detour was
+  closed as superseded by #810/Q-0124.)*
+- **▶ RESUME HERE (next session) — PR 2 cont.: personas (§3c second half), then the rest.** With
+  stances (#805) + skills (#811) shipped, the next increment is **personas** — spawnable read-only
+  specialists generalized from superbot's `superbot-architect` + `mutation-boundary-auditor`:
+  interview-populated `templates/agents/{architect,reviewer,researcher}.md` → emitted as native
+  `.claude/agents/*.md` (frontmatter + body), each persona's binding sources filled from the project's
+  own contract docs; the **reviewer** wires to the §6 independent-review seam. Reuse the skills
+  emission shape (a CLI `agents --build` staging into `<state_dir>/agents/`, or fold into one `build`
+  command). Then the remaining PR-2 scope: the three modes' per-session behaviors; trigger/drift/
+  staleness detection; the full contract-doc template set + owner-profile; templated hooks +
+  `settings.template.json` (incl. the PreToolUse out-of-stance guard that calls `is_out_of_stance`);
+  simulation asserts mode/stance/skill behaviors. The CI gotchas in the entries above (tests under
   `tests/`, `print`/`assert`/`subprocess` bans on `engine/`, isort-checks-tests, **regenerate the
-  bootstrap** after any `src/engine` edit, black↔ruff COM812 on awkward wraps — hoist long strings to
-  constants) all still apply.
+  bootstrap** after any `src/engine` edit, **keep `from engine…` imports single-line** — the builder
+  now handles multi-line but simple is safer, black↔ruff COM812 on awkward wraps → hoist long strings
+  to constants) all still apply.
 
 ---
 

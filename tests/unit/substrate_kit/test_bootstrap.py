@@ -41,6 +41,25 @@ def test_no_leftover_placeholder_tokens():
     assert "$SLOT" not in content
 
 
+def test_split_imports_drops_multiline_intra_package():
+    # A parenthesized multi-line `from engine...` import must be dropped WHOLE —
+    # its continuation lines must not leak into the body (that IndentationError'd
+    # the generated bootstrap when cli.py imported the skills layer).
+    src = (
+        "from __future__ import annotations\n"
+        "import os\n"
+        "from engine.skills.skills import (\n"
+        "    SKILLS,\n"
+        "    skill_document,\n"
+        ")\n"
+        "x = 1\n"
+    )
+    future, imports, body = build_bootstrap._split_imports(src)
+    assert future == ["from __future__ import annotations"]
+    assert imports == ["import os"]
+    assert body == ["x = 1"]
+
+
 def test_single_file_simulate_via_subprocess(tmp_path):
     boot = tmp_path / "bootstrap.py"
     boot.write_text(build_bootstrap.build(), encoding="utf-8")
