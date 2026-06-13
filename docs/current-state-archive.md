@@ -13,6 +13,21 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#731 (2026-06-12, untested-surface checklist)** — the owner-commissioned
+  [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md):
+  18 sections, 70+ `[ ]` items covering every command/UI surface that automated CI
+  cannot verify and has no live-walk record. Persistent successor to the 2026-06-10 eval
+  checklist. Linked from hardening roadmap.
+- **#730 (2026-06-12, Hermes skills installable)** — `scripts/hermes/build_skills.py` generates
+  installable `SKILL.md` files (Hermes frontmatter) from the skill docs + `install-skills.sh`
+  deploys them to the VPS; `repo-health` self-schedules a daily Telegram digest via a frontmatter
+  `blueprint.schedule`. New `log-triage` skill (read-only prod/gateway log diagnosis) +
+  [`hermes-operating-prompt.md`](operations/hermes-operating-prompt.md) (the Hermes-side `CLAUDE.md`).
+- **#729 (2026-06-12, 429 login crash-loop fix)** — `_maybe_backoff_on_rate_limit()`:
+  when `bot.start()` returns HTTP 429 (Discord/Cloudflare 1015 rate limit), the
+  process now sleeps 60 s before exiting so Railway's on-failure restart fires after
+  the backoff has elapsed rather than immediately. Breaks the rapid crash loop that
+  deepened the ban (live incident 2026-06-12). 5 targeted tests added.
 - **#724–#728 (2026-06-12, the readiness/roadmap/tooling arc)** — **#724** indexed + reconciled
   the seven production-readiness maps; **#725** the consolidated hardening roadmap + the
   `repo-manageability` ideas + routed Q-0098–Q-0100; **#726** the four manageability tools

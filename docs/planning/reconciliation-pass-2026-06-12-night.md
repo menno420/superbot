@@ -99,7 +99,7 @@ open UX choices; the wager P0 closed).
 | 3 | ✅ **Postgres backup posture** (#769) | [production-deployment §Backups](../operations/production-deployment.md) (OPEN since #685) | Railway facts from owner if needed |
 | 4 | ✅ **Safety family plan + automod v1** (#772 — [family plan](safety-community-family-plan-2026-06-13.md)) | Q-0108; UX shapes by `pattern_id` (mock studio); reuse `moderation_service` + `services/server_logging.py` seams | plan-first (this PR is the plan) |
 | 5 | **Server event logging v1** | Q-0109 scope; `mock_logging_routing` renders the routing choice for the owner's pick | family plan (slot 4) |
-| 6 | **Welcome v1 + server counters** | Q-0110 embed-first (the lab's A/B exists); counters quick-win | family plan (slot 4) |
+| 6 | ✅ **Welcome v1 + server counters** (#775) | Q-0110 embed-first (the lab's A/B exists); counters quick-win | family plan (slot 4) |
 | 7 | **P0-3 settings pointer-lane convergence + delegated-apply** | settings map "recommended next"; Q-0098 | unblocked |
 | 8 | **P0-4 server-mgmt channel-ownership convergence** | Q-0100; extend the channel invariant | unblocked |
 | 9 | **P0-2 media retention + data-minimization** | Q-0099; `YOUTUBE_CONTEXT_ENABLED` ownership | unblocked |

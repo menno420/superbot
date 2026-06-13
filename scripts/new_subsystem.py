@@ -301,6 +301,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  [{'OK' if c.ok else 'MISSING'}] {c.name:<20} {c.detail}")
 
     if args.mode == "scaffold" and missing:
+        # Extend-before-mint reminder (family-plan §3.7 rubric, surfaced 2026-06-13).
+        # The cascade below is the cost of a NEW subsystem; the cheaper move is often
+        # to extend an existing one. Ask this BEFORE pasting any boilerplate.
+        print(
+            "\n⚠ extend-before-mint: does this feature EXTEND an existing subsystem's\n"
+            "  domain? If so, add settings/bindings to that subsystem's schema (no\n"
+            "  pinned-surface cascade) instead of minting a new one. Mint only when the\n"
+            "  feature has its own identity/pipeline/lifecycle. (server-logging extended\n"
+            "  `logging` = 0 cascade; automod/welcome/counters genuinely needed new ones.)",
+        )
         print("\n── paste-ready snippets for the missing touch-points ──")
         for c in missing:
             if c.snippet:

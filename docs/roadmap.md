@@ -50,7 +50,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The **[decade queue](planning/reconciliation-pass-2026-06-12.md)** (Q-0107 pass, 2026-06-12): production-hardening P0 tracks ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — P0-2/3/4 unblocked) + backup posture + the first **safety/community lane** slices (Q-0108–Q-0112 — see the "Server safety & community platform" section below). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
+| **Now** | The **[band queue](planning/reconciliation-pass-2026-06-12-night.md)** (second Q-0107 pass): backup posture ✅ #769 and the **safety/community band (slots 4–6) ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters). Active Now = the **production-hardening P0 spine** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 settings convergence next**, then P0-4/P0-2, all owner-unblocked). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
 | **Next** | Safety/community lane remainder (image moderation · security tiers 1+2 · NL event scheduler — all plan-first, see the lane section) · P1-1 versioned AI eval/smoke matrix · myprofile PR A ([plan](planning/myprofile-foundation-plan-2026-06-10.md), turn-key) · help home/navigation plan (editor-UI gate cleared via #677/#679) · V-14 harvest structuring ([dossier](ideas/competitive-teardown-2026-06-10.md); ecosystem-#2 = fishing, owner ratification pending) · the 2026-06-10 [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md) is **FULLY EXECUTED** (`historical`; [EOD verification](audits/past-day-verification-2026-06-10.md)) |
 | **Later** | P1-2 health findings lifecycle (Q-0097 answered 2026-06-12 — operator-managed; ready when queued) · continuation dispatch = the **Routine seam** (Stage 0's GH Action folded in — Q-0115; activates on Routine wired + calibrated) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -93,7 +93,7 @@ Folio: [server-management](subsystems/server-management.md) · **authoritative s
   (target architecture) · [implementation-plan](planning/server-management-implementation-plan-2026-06-05.md)
   (PR scope; shipped through PR14 — the tracker is authoritative).
 
-### 🚨 Server safety & community platform — **Next** (new approved lane, plan-first)
+### 🚨 Server safety & community platform — **first band shipped; remainder Next**
 
 **New lane (2026-06-12):** the owner uploaded competitor/safety research (#739 →
 [server-safety-and-automod](ideas/server-safety-and-automod-2026-06-12.md) ·
@@ -105,18 +105,19 @@ router + both idea docs' routing tables). The lane's entry doc is the
 `ux/pattern-library.md` pattern_ids; **automod v1 shipped in the same PR**). UI/attachment
 numbers: [discord-platform-limits](operations/discord-platform-limits.md).
 
-- **Next (decade-queue slots 8–10)** — **one family plan first** (shared config/UX shape,
-  reuse seams), then the first slices: **automod v1** (Q-0108 — all four rule types, exempt
-  roles/channels, escalation intact through `moderation_service`) → **server event logging
-  v1** (Q-0109 — edits/deletes · join/leave · role changes; owner-configurable single or
-  per-category channels; privacy disclosure in setup; **extends the existing
-  `services/server_logging.py` seam, never a parallel one**) → **welcome v1 + server
-  counters** (Q-0110 embed-only phase 1 + the counters quick-win; joins `guild_lifecycle`'s
-  join/leave handling).
-- **Next (after the first slices)** — **image moderation** (Q-0108 — OpenAI
+- **Shipped (band slots 4–6, 2026-06-13) ✅** — the family plan (slot 4) +
+  **automod v1** (#772, Q-0108 — all four rule types through `moderation_service`) →
+  **server event logging v1** (#774, Q-0109 — edits/deletes · join/leave · role changes,
+  **extending the existing `services/server_logging.py` seam**) → **welcome v1 + server
+  counters** (#775, Q-0110 — greetings/farewell/entry-role + statdock channels; two
+  hub-less new subsystems, embed-first). The first band is COMPLETE.
+- **Next (after the hardening spine)** — **image moderation** (Q-0108 — OpenAI
   `omni-moderation-latest` only; paid tiers declined) · **security service tiers 1+2**
   (Q-0111 — raid detection + account-age filter; tiers 3+4 **declined**, GDPR) · **welcome
-  phase 2** (PIL image cards, after phase 1 is stable).
+  phase 2** (PIL image cards — the `render_welcome_card` prototype already exists, so this
+  is a small follow-up on the stable embed-first v1) · the **NL event scheduler** (Q-0112,
+  own AI-cost design under the Q-0082 ceiling). A read-only **operator landing** for the
+  whole lane is captured as an idea ([safety-community-operator-landing](ideas/safety-community-operator-landing-2026-06-13.md)).
 - **Later (plan-first, AI cost design)** — **NL event scheduler** (Q-0112 — NL time parsing
   from day one, metered under the Q-0082 ceiling; availability polls proposed day-one;
   check existing scheduler infra before designing reminders).

@@ -414,6 +414,58 @@ SUBSYSTEMS: dict[str, dict] = {
             "community_spotlight.dashboard.view",
         ],
     },
+    # welcome v1 (owner decision Q-0110): the member-greeting layer of the
+    # safety/community platform. Admin-configured (visibility_tier), but
+    # deliberately hub-less — surfaced via its Help hook + `!settings` →
+    # Welcome + the `!welcome` summary (like `ai`/`channel`/`ux_lab`), so it
+    # does not clutter the user-tier Community hub with operator config.
+    "welcome": {
+        "display_name": "Welcome",
+        "description": "Member greetings, farewells, and an optional entry role",
+        "emoji": "👋",
+        "color": GENERAL_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "community",
+        "tags": ["welcome", "greeting", "onboarding", "community"],
+        "entry_points": ["welcome"],
+        "default_channels": ["general", "bot-commands"],
+        "related_subsystems": ["role", "logging"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 31,
+        "capabilities": [
+            "welcome.settings.configure",
+        ],
+    },
+    # server counters v1 (owner decision Q-0110): live stat channels (the
+    # statdock pattern). Admin-configured, deliberately hub-less for the same
+    # reason as welcome — surfaced via its Help hook + `!settings` → Counters +
+    # the `!counters` summary. Renamed channels are driven by a slow periodic
+    # loop (Discord rename rate limit), never per join.
+    "counters": {
+        "display_name": "Server Counters",
+        "description": "Live member-count channels (total · humans · bots)",
+        "emoji": "📊",
+        "color": GENERAL_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "community",
+        "tags": ["counters", "stats", "members", "community"],
+        "entry_points": ["counters"],
+        "default_channels": ["general"],
+        "related_subsystems": ["community_spotlight", "welcome"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 32,
+        "capabilities": [
+            "counters.settings.configure",
+        ],
+    },
     "blackjack": {
         "display_name": "Blackjack",
         "description": "Blackjack card game",

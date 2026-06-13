@@ -156,6 +156,13 @@ Current broad captures:
   statements before uploading, catching the silent empty-dump failure class (pg_dump exits 0
   on permission errors). Turns the backup posture from "uploads something" to "uploads a
   verifiable schema snapshot." Small one-step addition; quick-win ops lane.
+- [`safety-community-operator-landing-2026-06-13.md`](./safety-community-operator-landing-2026-06-13.md) —
+  **session idea (2026-06-13, Q-0089, from the welcome+counters slot-6 session):** a read-only
+  operator landing (`!safety` / Settings supergroup) aggregating the lane's scattered
+  subsystems (automod · logging · welcome · counters · image-mod · security) with each
+  master-flag state + a jump to its `!settings` group. Closes the operator-discoverability
+  cost of going hub-less; composes from the existing schema registry (zero new state).
+  Sequence after the lane's remaining slices land.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
