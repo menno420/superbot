@@ -1,6 +1,9 @@
 # Server Management — Status Tracker
 
-> **Status:** `living-ledger` — living status ledger. This is the **single current record** of what
+> **Status:** `historical` — completed-initiative record (re-badged by the 2026-06-13 workflow
+> reconciliation pass). Server management is **structurally complete** through PR14 (#584); the **only**
+> remainder is the gated **PR13 AI generation layer**, now tracked in [`roadmap.md`](../roadmap.md)
+> → *Later (gated)*. Retained as the **single record** of what
 > the server-management initiative has actually shipped and what is queued next.
 > When this tracker and the roadmap / implementation plan disagree about *what is
 > done*, **this tracker (cross-checked against source) wins**; the roadmap remains

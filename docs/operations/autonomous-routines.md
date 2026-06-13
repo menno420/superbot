@@ -259,6 +259,27 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
 
+## Control-plane state (maintainer-verified) — the bits no in-repo checker can see
+
+> **Why this exists:** the autonomous loop spans the repo **and** a Railway/console/VPS control
+> plane. `check_*` scripts only see the repo half, so maintainer-side config (secrets, routine
+> models, deploys) is invisible to every in-repo audit — it kept getting lost in PR-body prose
+> ("⚠️ Required maintainer action"). **This table + the newest control-plane `.sessions/` log are
+> the source of truth for "is the loop actually wired?"** (the #765/#769 Q-0102 notes asked for
+> exactly this ledger). Tick a box when verified live; add new maintainer actions here as they arise.
+
+| # | Maintainer action | Why it matters | Source PR | Verified? |
+|---|---|---|---|---|
+| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ⬜ |
+| 2 | Add repo secret **`DATABASE_PUBLIC_URL`** (Railway Postgres public proxy URL) | the daily `backup-db.yml` `pg_dump` is inert without it (workflow fails + opens an issue) | #769 | ⬜ |
+| 3 | Railway → **Deploy** the staged `CLAUDE_ROUTINE_*` env vars | `/bugreport` + `/dispatch` (HermesCog #757) may be inactive until the worker redeploys with the vars live | #765 | ⬜ |
+| 4 | Confirm the **dispatch routine prompt** is the free-form version | the owner finished routine setup *before* the #761 free-form prompt was handed over — it may carry the older prompt | #761/#765 | ⬜ |
+| 5 | Confirm **routine models**: dispatch/executor = **Opus 4.8**, reconciliation = Sonnet/Opus (not **Fable 5**) | dispatch was last seen on Fable 5 (premium) → daily spend risk vs. the €30/mo Q-0082 cap | §11 / #765 | ⬜ |
+| 6 | After #1: **`workflow_dispatch` `executor-nightly.yml`** once | the **first real unattended executor run** (the Q-0105 "watch the first run" moment — still pending; the loop has never self-fired) | #778 | ⬜ |
+
+> Once #1 is done, the cron path self-serves (#6 is just to watch the first one promptly). The first
+> autonomous **reconciliation** fires when merged PRs cross **#780**.
+
 ## See also
 
 - [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — the `/fire` mechanism + gates.

@@ -13,6 +13,20 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#733–#735 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
+  (mandatory `⟲ Previous-session review` session-ender) + **Q-0103** (open session PRs **ready not
+  draft**; every PR reaches a terminal state). `scripts/check_session_log.py` + post-edit/Stop-hook
+  wiring enforce the Q-0089/Q-0102 enders. New
+  [`docs/operations/claude-code-hooks-and-plugins.md`](operations/claude-code-hooks-and-plugins.md)
+  (the 6 wired hooks + brainstorm + plugins posture → Q-0096). `.claude/settings.json`
+  permission-friction cut (`acceptEdits` + curated allowlist; force-push/destructive still prompt).
+  **#734**: reconciled this ledger's drift (added #730/#733, relabeled #731, added #724–#728) and
+  built `scripts/check_current_state_ledger.py` (the living-ledger self-check) + **Q-0104** (closing
+  documentation audit) + **Q-0105** (adopt-tooling-with-a-delete-if-unreliable kill-switch) +
+  permissions-posture doc. **#735**: **Q-0106** — agents propose `CLAUDE.md` rule changes via a
+  router Q-block, never self-edit (binding for a session but not pinned; read-only to a fully
+  autonomous agent). Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines
+  dispatch bridge · portable OSS memory/workflow package · ledger session-arc aggregation.
 - **#731 (2026-06-12, untested-surface checklist)** — the owner-commissioned
   [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md):
   18 sections, 70+ `[ ]` items covering every command/UI surface that automated CI

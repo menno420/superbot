@@ -14,7 +14,9 @@
 ## What lives here
 
 Pure brainstorm backlogs — capture without commitment. Each file should carry an
-`ideas` badge in its header and state what it is *not* (not a plan, not approval).
+`ideas` badge in its header and state what it is *not* (not a plan, not approval). **Once a
+capture reaches its lifecycle outcome (§5) by being _implemented_, it is re-badged `historical`
+during grooming** (it stays listed here, annotated ✅) so the active backlog reflects only live ideas.
 
 Current broad captures:
 
@@ -54,13 +56,10 @@ Current broad captures:
   **Decisions ANSWERED 2026-06-12 (Q-0110/Q-0112, PR #740):** welcome = embed-first,
   PIL cards phase 2; event scheduler = NL parsing from day one (Q-0082-metered) —
   both **approved, plan-first** (routed to the roadmap's safety/community lane).
-- [`repo-manageability-2026-06-12.md`](./repo-manageability-2026-06-12.md) —
-  **owner-asked (2026-06-12):** "what else would make the repo more easily manageable?"
-  after the review-map + readiness-map work. Five workflow-substrate ideas: operationalize
-  the review-map in tooling (cross-ref #1) · trim/auto-archive the bloated `current-state.md`
-  · a freshness guard for dated snapshots · folio/context-pack coverage for the ~24 smaller
-  subsystems · a generated readiness scoreboard. Mostly quick-win lane; folio coverage =
-  discuss.
+- [`repo-manageability-2026-06-12.md`](./repo-manageability-2026-06-12.md) — ✅ **EXECUTED →
+  `historical`** (2026-06-13 reconciliation): #1/#2/#3/#5 shipped (`scripts/{review_scope,_review_units,
+  readiness_scoreboard,check_doc_freshness}.py` + the `current-state.md` trim/ratchet), #4 resolved via
+  Q-0101. Originally (owner-asked 2026-06-12) five workflow-substrate manageability ideas.
 - [`voice-mode-planning-capture-2026-06-11.md`](./voice-mode-planning-capture-2026-06-11.md) —
   **voice-mode brainstorm (2026-06-11):** UX and product ideas from a casual spoken planning
   session via ChatGPT. Covers setup wizard clarity, centralized settings navigation, help-menu
@@ -89,13 +88,10 @@ Current broad captures:
   `test_game_wager_write_boundary` fence, with a `--check` drift mode (every escrow
   subsystem must have a matching settle + recovery). Quick-win, read-only tooling lane;
   build it next time an economy path is touched. Not auto-promoted.
-- [`review-unit-tagging-2026-06-12.md`](./review-unit-tagging-2026-06-12.md) —
-  **session idea (2026-06-12, Q-0089):** operationalize the new
-  [`repo-review-map.md`](../repo-review-map.md) — have `context_map.py` print a file's
-  review unit (subsystem slice vs. shared-platform layer), and add a PR-level
-  `review_scope.py` that classifies a changed-file set as single-slice / multi-slice /
-  platform. Turns the review partition from a doc you must remember into a signal the
-  toolchain emits. Read-only, quick-win lane, not auto-promoted.
+- [`review-unit-tagging-2026-06-12.md`](./review-unit-tagging-2026-06-12.md) — ✅ **EXECUTED →
+  `historical`** (2026-06-13 reconciliation): shipped as `scripts/review_scope.py` +
+  `scripts/_review_units.py` + the `context_map.py` "Review unit" line. Originally a 2026-06-12
+  Q-0089 session idea to make the repo-review partition a toolchain signal.
 - [`portable-agent-memory-package-2026-06-12.md`](./portable-agent-memory-package-2026-06-12.md) —
   **maintainer vision (2026-06-12, voice):** extract this repo's consistent-memory +
   self-improving-workflow substrate into a standalone **open-source package** (à la CodeGraph)
@@ -146,16 +142,21 @@ Current broad captures:
   + an AI eval mode running scripted prompts through the real pipeline
   (Q-0086 keys). Pairs with the commissioned untested-surface testing
   checklist; candidate probe set for the workflow-§10 Stage 1 caretaker.
+  **→ Routed Later (structure-or-defer, 2026-06-13):** clear direction but bigger; pairs with
+  P1-1 AI eval matrix and wants its own plan before building (roadmap → agent-ecosystem / Later).
 - [`hermes-bug-triage-flow-2026-06-13.md`](./hermes-bug-triage-flow-2026-06-13.md) —
   **owner-directed (design captured, build next):** route `/bugreport` *through Hermes*
   (spam/genuine triage → reproduce + reword + fetch logs → save a curated `bug` issue +
   Discord summary) → nightly executor batch-fixes. Replaces the current direct instant-fire.
+  **→ Routed Next (2026-06-13, roadmap agent-ecosystem lane); gated on Q-0121** — Hermes's
+  second sanctioned write (`gh issue create`) needs an owner decision (the Q-0117 pattern).
 - [`backup-integrity-check-2026-06-13.md`](./backup-integrity-check-2026-06-13.md) —
   **session idea (2026-06-13, Q-0089, from the backup-posture session):** add a dump
   integrity step to `backup-db.yml` — verify the dump contains ≥ threshold `CREATE TABLE`
   statements before uploading, catching the silent empty-dump failure class (pg_dump exits 0
   on permission errors). Turns the backup posture from "uploads something" to "uploads a
   verifiable schema snapshot." Small one-step addition; quick-win ops lane.
+  **→ Executing this session (2026-06-13 workflow reconciliation, tooling PR).**
 - [`safety-community-operator-landing-2026-06-13.md`](./safety-community-operator-landing-2026-06-13.md) —
   **session idea (2026-06-13, Q-0089, from the welcome+counters slot-6 session):** a read-only
   operator landing (`!safety` / Settings supergroup) aggregating the lane's scattered
