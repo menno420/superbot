@@ -6,7 +6,7 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action — one live queue:** the **[band queue](planning/reconciliation-pass-2026-06-12-night.md)** (the second Q-0107 pass, 2026-06-12 night): ~~P2 doc-drift sweep~~ (✅ #764) → ~~backup posture~~ (✅ #769) → ~~safety/community **family plan + automod v1**~~ (✅ #772 — slot 4; lane entry doc = [`planning/safety-community-family-plan-2026-06-13.md`](planning/safety-community-family-plan-2026-06-13.md)) → ~~server event logging v1~~ (✅ #774 — slot 5 — Q-0109; passive edits/deletes · joins/leaves · role changes; `logging.event_routing` combined-vs-per-category; extends `services/server_logging.py` + `services/server_logging_config.py`) → **welcome v1 + counters** (slot 6 — Q-0110, embed-first; `mock_welcome_ab`/`mock_counters`) → the carried **P0-3/P0-4/P0-2** hardening tracks. Owner-steered alternates + the deliberately-deferred list live in that doc §4; [`roadmap.md`](roadmap.md) stays the per-area index. **Status is per-lane below — a session edits ONLY its own lane's bullet** (this paragraph used to be one shared mega-line and collided on every parallel merge; convention: [`owner/ai-project-workflow.md`](owner/ai-project-workflow.md) §9 "Cross-cutting ledger discipline").
+> **▶ Next action — one live queue:** the **[band queue](planning/reconciliation-pass-2026-06-12-night.md)** (the second Q-0107 pass, 2026-06-12 night): ~~P2 doc-drift sweep~~ (✅ #764) → ~~backup posture~~ (✅ #769) → ~~safety/community **family plan + automod v1**~~ (✅ #772 — slot 4; lane entry doc = [`planning/safety-community-family-plan-2026-06-13.md`](planning/safety-community-family-plan-2026-06-13.md)) → ~~server event logging v1~~ (✅ #774 — slot 5 — Q-0109; passive edits/deletes · joins/leaves · role changes; `logging.event_routing` combined-vs-per-category; extends `services/server_logging.py` + `services/server_logging_config.py`) → ~~welcome v1 + counters~~ (✅ #775 — slot 6 — Q-0110; `welcome` greetings/farewell/optional entry-role + `counters` statdock channels — two hub-less new subsystems, embed-first) → **the carried P0-3/P0-4/P0-2 hardening tracks (next: P0-3 settings convergence).** Owner-steered alternates + the deliberately-deferred list live in that doc §4; [`roadmap.md`](roadmap.md) stays the per-area index. **Status is per-lane below — a session edits ONLY its own lane's bullet** (this paragraph used to be one shared mega-line and collided on every parallel merge; convention: [`owner/ai-project-workflow.md`](owner/ai-project-workflow.md) §9 "Cross-cutting ledger discipline").
 >
 > - **Consolidated batches:** **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 Settings Phase 2 core · #656 adaptive P1C subpanels · **#657 Help projection seam** (HLP-2: `services/help_catalogue.py` + `services/help_projection.py`, all five render paths on one reason-coded `HelpProjection`; Q-0074 executed in the same PR) · **#659 HLP-3 guild overlay** (migration 064 `help_overlay`, audited `help_overlay_mutation` seam, cached read model, hide/rename through every render path; Q-0055 display-only pinned by an admission import fence) · **Batch 7 via the mining stack** (#661 + #663/#664/#665 → #667) · **Batch 8 = the #649 cutover**. **The queue-remainder session (PR #671, merged 2026-06-10) executed the RS07 chain-service slice** (audited `services/chain_service.py`, Batch 3 pattern, repo-wide write fence) **+ Batch 9's RS08 slice** (diagnostic read models out of the cog layer; new no-raw-SQL-in-cogs/views invariant) **+ the EOD audit's Tier-2 Help-Preview fix** (now consumes `project_help_with_execution`); **its continuation (PR #672) completed Batch 4** (proof-channel binding/resource declaration + binding-first read; logging rows verified satisfied) **and executed the Batch 10 selections** (wizard PR1–PR3 tranche verified shipped via #435 → setup-lane next = PR4 `/myprofile` planning session; next AI §7 family = **§7.5 multi-entity comparison**, sequenced after the maintainer's prod check — banners in the two plans carry the evidence). **The Help overlay editor UI executed 2026-06-10 ([plan](planning/help-overlay-editor-ui-plan-2026-06-10.md) → PR A #677 + PR B #679, both MERGED same day):** the hide/rename/re-describe editor (staff-hub `✏️ Help editor` button + the Settings-hub "Help appearance" domain group, 13th group) and the Q-0059 Home-message embed builder (migration 067, **mandatory preview**, shared `home_embed_frame` composer, byte-identical default pinned) — both live-verified on real Postgres. **Batch 9 then executed in PR #681** (open at write time): the RS05 publish-accepted delivery contract (runtime_contracts §2) + bus delivery stats / failure metric / the `event_bus` diagnostics provider, and the RS10 economy view family onto BaseView (conformance ratchet 17→13, arch warnings 84→80). **The consolidated plan's queue is FULLY EXECUTED (Batches 1–10; #681 MERGED).** A follow-on slice (PR #682, open at write time) migrated the **mining family** onto BaseView — the last true lifecycle-duplication family; ratchet 13→11 with a disposition note (remaining direct-View entries are ephemeral pipeline-gated follow-ups / bespoke admin checks, not RS10 duplication). **The PR4 `/myprofile` planning session ran (PR #684, open at write time):** [`planning/myprofile-foundation-plan-2026-06-10.md`](planning/myprofile-foundation-plan-2026-06-10.md) — §6 backend re-verified exact (4 audited pipeline entrypoints, typed accessors, schema registry, zero UI callers); PR A = read-only profile card (zero writes, turn-key) · PR B = the pipeline's first UI consumer · PR C onboarding **gated** on an owner decision; Q-0080 stranger-grade envelope applied throughout. Remaining plan-first/gated: Help audit Phase 4 records (Q-0057 rider) · AI §7.5 (post-eval).
 > - **BTD6 data + answerability:** the `--all` cutover **#649 merged 2026-06-10; post-cutover VERIFIED + every carry-forward DECODED the same day** (#653 wave 1 ∥ PR #655 — dump fidelity byte-identical · 2,022 menu embeds in-limits · AI battery green · `_CUTOVER_CARRYFORWARD` empty, audit 91 CLEAN / 0 DELTA / 0 SUSPECT · banana economy answerable · fixes for mode-rules dark data / `!btd6 diagnostics` 400 / stamp-rot / path leak); **answerability items 5+6d shipped in PR #658**; **the Navarch "no coins" live miss diagnosed (missing ROUTING, not data) + fixed end-to-end with items 6a–c — #662 MERGED 2026-06-10** (paragon grounding gains income + effect lines · article-tolerant/shorthand paragon names · minion-name → owner grounding ("Mini Sun Avatar"/"Crushing Sentry"/UAV) · Pouākai diacritic-fold · honest dataset source labels/summary); follow-up slice **#666** adds `scripts/btd6_probe.py` (grounding triage) + structures item 7 into [`planning/btd6-conversation-grounding-plan-2026-06-10.md`](planning/btd6-conversation-grounding-plan-2026-06-10.md); **item 7 slice 1 (conversation carryover) + the zero-fact sweep fixes (ranking rosters · bare distinctive shorthand) shipped same day in #668**. **The 2026-06-11 morning screenshots (3 live AI-knowledge misses) fixed end-to-end in PR #703** — BUG-0002 (elite boss HP: dataset had no elite figures + boss names never routed BTD6 → standard table served as "Elite"; elite_tiers backfilled from the pinned v55.1 dump for all 7 bosses, boss canonicals route + name-index, variant-labeled grounding) · BUG-0003 ("despos on impop" hallucinated as PMFC; impop/despo keywords, Desperado alias, resolver plural fold, the `<quantity> <crosspath> <tower>` pricing leg — "10 041 despos" = ten 0-4-1s, owner-corrected) · BUG-0001 recurrence (round-cash refusals in #general: the workflow was profile-gated OFF on default channels — compatible_default/balanced_helper now declare analyze_execute_verify (Q-0048), matcher gained the money-question gate + by-round anchors). **Owner action: run `!btd6ops seed-data` after the deploy** (bosses/towers json are blob-lane data; owner-confirmed done 2026-06-11 ~12:38 — despos answers correct in prod). **The live re-test round shipped in PR #706 (merged 2026-06-11):** BUG-0004 (r-shorthand rounds + "end of r53" start shift — the $71,315.20 cumulative mislabel; truth $56,318.70) + the bulleted capabilities list (owner format ask; boss_health/crosspath/projection rows advertised). **Next:** decode-status ⭐ item 3 (buff/zone tail, demand-driven) + item 4 (maintainer live spot-check).
@@ -20,7 +20,19 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-13, **server event logging v1 (PR #774, band slot 5)** — the
+> **Last updated:** 2026-06-13, **welcome v1 + server counters (PR #775, band slot 6 —
+> Q-0110)** — the safety/community lane's final two slices, as **two hub-less new
+> subsystems**. **welcome** (`services/welcome_service.py` + `welcome_config.py`): greet on
+> join · optional farewell on leave · optional **entry role** granted on join through the
+> audited `role_automation` seam; embed-first ({user}/{server}/{count} templates, the PIL
+> card stays phase 2); listeners on `WelcomeCog`. **counters** (`services/counter_service.py`
+> + `counter_config.py`): statdock-style channel renames (total/humans/bots) on a slow
+> `tasks.loop` — **never per join** (Discord's ~2-renames/10-min cap) + change-detection.
+> Both default OFF; advisory `welcome.member_greeted`/`counters.updated` events; deliberately
+> hub-less (surfaced via Help hook + `!settings` + `!welcome`/`!counters`, like
+> `ai`/`channel`/`ux_lab`) so they don't clutter the user-tier Community hub. No migration.
+> **The safety/community band (slots 4–6) is COMPLETE; next = the carried P0-3/P0-4/P0-2
+> hardening spine.** · 2026-06-13, **server event logging v1 (PR #774, band slot 5)** — the
 > passive-event layer of `services/server_logging.py` (Q-0109): message edits/deletions ·
 > member joins/leaves · role grants/revocations, gated by the master `logging.enabled` + a
 > per-category flag (all default OFF), with owner-configurable combined-vs-per-category
@@ -65,6 +77,24 @@ Source code and merged PRs win over anything written here.
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#775 (2026-06-13, welcome v1 + server counters — band slot 6, Q-0110)** — the
+  safety/community lane's final two slices ([family plan](planning/safety-community-family-plan-2026-06-13.md)
+  §4), shipped as **two hub-less new subsystems** (checked the extend-before-mint rubric:
+  nothing existed to extend; both kept off the user-tier Community hub so operator config
+  doesn't clutter it). **welcome** — `services/welcome_service.py` + `welcome_config.py` +
+  `cogs/welcome_cog.py`: greet on join · optional farewell · optional **entry role** granted
+  on join via the audited `role_automation.apply` (no parallel role/audit path);
+  injection-safe `{user}/{server}/{count}` templates; embed-first (PIL card = phase 2);
+  advisory `welcome.member_greeted`. **counters** — `services/counter_service.py` +
+  `counter_config.py` + `cogs/counters_cog.py`: statdock channel renames (total/humans/bots)
+  on a 10-min `tasks.loop`, **never per join** (Discord's ~2/10-min rename cap) +
+  change-detection; advisory `counters.updated`. Both default OFF (master switch) → a fresh
+  guild is unaffected; **no migration** (scalar `welcome_*`/`counters_*` KV settings,
+  channel/role pickers via `input_hint`). Root-fix: channel/role lookups route through
+  `core.runtime.resources.resolve_*` (the guild-resource invariant), not raw `guild.get_*`.
+  65 new tests; `check_quality --full` green (9292); `check_architecture` 0 errors; live
+  boot on Galaxy Bot (real Postgres): both cogs loaded, 0 ERROR/CRITICAL. **The
+  safety/community band (slots 4–6) is COMPLETE; next = the carried hardening spine (P0-3).**
 - **#774 (2026-06-13, server event logging v1 — band slot 5)** — the safety/community
   family plan's slot 5 (Q-0109): a passive Discord-event layer **extending the existing
   `logging` subsystem** (no new subsystem → no pinned-surface cascade). Logs **message
@@ -247,27 +277,7 @@ Source code and merged PRs win over anything written here.
   router Q-block, never self-edit (binding for a session but not pinned; read-only to a fully
   autonomous agent). Captured ideas: autonomous self-improvement loop · Hermes→Claude Routines
   dispatch bridge · portable OSS memory/workflow package · ledger session-arc aggregation.
-- **#730 (2026-06-12, Hermes skills installable)** — `scripts/hermes/build_skills.py` generates
-  installable `SKILL.md` files (Hermes frontmatter) from the skill docs + `install-skills.sh`
-  deploys them to the VPS; `repo-health` self-schedules a daily Telegram digest via a frontmatter
-  `blueprint.schedule`. New `log-triage` skill (read-only prod/gateway log diagnosis) +
-  [`hermes-operating-prompt.md`](operations/hermes-operating-prompt.md) (the Hermes-side `CLAUDE.md`).
-  `tests/unit/scripts/test_build_skills.py` freshness-gates the generated artifacts.
-- **#731 (2026-06-12, untested-surface checklist)** — the owner-commissioned
-  [`docs/audits/untested-surface-checklist.md`](audits/untested-surface-checklist.md):
-  18 sections, 70+ `[ ]` items covering every command/UI surface that automated CI
-  cannot verify and has no live-walk record — Economy · General · Utility · Roles ·
-  XP · Moderation · Channel/Word-filter · Counting · Admin · Diagnostic · Logging ·
-  BTD6 ref/strat/paragon · Deathmatch · Community/Games/420 · Server-mgmt subpanels ·
-  Bootstrap access · Regression sweep. Persistent successor to the 2026-06-10 eval
-  checklist. Linked from hardening roadmap.
-- **#729 (2026-06-12, 429 login crash-loop fix)** — `_maybe_backoff_on_rate_limit()`:
-  when `bot.start()` returns HTTP 429 (Discord/Cloudflare 1015 rate limit), the
-  process now sleeps 60 s before exiting so Railway's on-failure restart fires after
-  the backoff has elapsed rather than immediately. Breaks the rapid crash loop that
-  deepened the ban (live incident 2026-06-12 — 4 restarts in ~2 min). Non-429
-  crashes unaffected; 5 targeted tests added.
-- **Older merges (#728 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~15 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count).
+- **Older merges (#731 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~15 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count).
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
