@@ -1,6 +1,9 @@
 # Reconciliation pass — 2026-06-13 · the third Q-0107 cadence pass
 
-> **Status:** `plan` — the docs-only review + planning pass for the band that crossed
+> **Status:** `historical` — **superseded** by the band-#800 pass
+> ([reconciliation-pass-2026-06-13-band800.md](reconciliation-pass-2026-06-13-band800.md)),
+> which scored this doc's planned band (#781–#800) in its §2. Kept as the historical record
+> of the third cadence pass. The docs-only review + planning pass for the band that crossed
 > **#780** (cadence = every 20th merged PR; last cadence pass
 > [#763](reconciliation-pass-2026-06-12-night.md)). Triggered by the auto-opened
 > `reconcile` issue **#781** (`.github/workflows/reconciliation-trigger.yml`) — the

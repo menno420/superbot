@@ -20,6 +20,17 @@ GitHub across a few sessions before trusting it. If it proves unreliable (false 
 from an unusual commit-subject format, or a missed real drift) over multiple sessions,
 **delete it** — it is a convenience guard, not load-bearing.
 
+Known false-green (band-#800 reconciliation pass, 2026-06-13): this check expands every
+``#AAA-#BBB`` range it finds *anywhere* in ``current-state.md`` into "present" coverage
+(see ``ledger_pr_numbers``). A **forward-looking planning range** in the ``> Next action``
+pointer — e.g. naming the band the queue plans — therefore masks that whole band the moment
+it merges, and the guard reports green while the ledger is short (~14 substrate-kit /
+auto-merge PRs were hidden this way). Mitigation by **convention**: the live-queue pointer
+references the reconciliation pass *by name*, never by an inline PR-number range (the band
+range lives in the pass doc, which is not scanned here). The deeper structural fix — scope
+range-expansion to the ``## Recently shipped`` section only — needs a logic + test change;
+it is captured in ``docs/ideas/ledger-checker-range-scope-2026-06-13.md``.
+
 Usage:
     python3.10 scripts/check_current_state_ledger.py            # advisory report (exit 0)
     python3.10 scripts/check_current_state_ledger.py --strict   # exit 1 if drift found
