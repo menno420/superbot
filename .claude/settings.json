@@ -60,8 +60,6 @@
     "ask": [
       "Bash(git push --force*)",
       "Bash(git push -f*)",
-      "Bash(git push origin main*)",
-      "Bash(git push -u origin main*)",
       "Bash(git reset --hard*)",
       "Bash(git clean*)"
     ]
