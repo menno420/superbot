@@ -1,6 +1,8 @@
 # Review-unit tagging — make the repo-review-map a signal, not just a doc (2026-06-12)
 
-> **Status:** `ideas` → **EXECUTED 2026-06-12** (owner-approved). Session idea (Q-0089)
+> **Status:** `historical` — **EXECUTED 2026-06-12** (owner-approved); re-badged `historical` by the
+> 2026-06-13 workflow reconciliation pass (an implemented idea has reached its lifecycle outcome —
+> `docs/ideas/README.md` §5). Session idea (Q-0089)
 > from the session that shipped [`docs/repo-review-map.md`](../repo-review-map.md) (PR #715).
 > Shipped as `scripts/review_scope.py` + `scripts/_review_units.py` + the `context_map.py`
 > "Review unit" header line — see [`context-map-tooling.md`](../context-map-tooling.md)

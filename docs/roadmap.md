@@ -3,10 +3,13 @@
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
 > what order" index. **Last updated:** 2026-06-12 (Q-0107 reconciliation pass).
 >
-> **▶ The live decade queue (next ~9 PRs):**
-> [`planning/reconciliation-pass-2026-06-12.md`](planning/reconciliation-pass-2026-06-12.md)
-> §4 — set by the first Q-0107 pass (hardening P0s + backup posture + the new Q-0108–Q-0112
-> safety/community lane). That doc owns the queue; this page stays the per-area index.
+> **▶ The live decade queue (next ~9 PRs, band #781–#800):**
+> [`planning/reconciliation-pass-2026-06-13-q0107.md`](planning/reconciliation-pass-2026-06-13-q0107.md)
+> §4 — set by the third Q-0107 pass (the production-hardening P0 spine, integrity-first; the
+> safety/community band slots 4–6 shipped). That doc owns the queue; this page stays the
+> per-area index. (The [second pass](planning/reconciliation-pass-2026-06-12-night.md) is now
+> `historical`; the 2026-06-13 interim [workflow reconciliation](planning/reconciliation-pass-2026-06-13-workflow.md)
+> was docs/tooling only.)
 >
 > **What this is:** a thin router over the detailed plans. Each row is a one-line
 > description + a link to the **authoritative plan** and the area **folio** — it restates
@@ -50,7 +53,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The **[band queue](planning/reconciliation-pass-2026-06-12-night.md)** (second Q-0107 pass): backup posture ✅ #769 and the **safety/community band (slots 4–6) ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters). Active Now = the **production-hardening P0 spine** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 settings convergence next**, then P0-4/P0-2, all owner-unblocked). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
+| **Now** | The **[decade queue band #781–#800](planning/reconciliation-pass-2026-06-13-q0107.md)** (third Q-0107 pass): the **safety/community band (slots 4–6) ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters) + backup posture ✅ #769. Active Now = the **production-hardening P0 spine, integrity-first** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 foundation shipped #777**; next = P0-3 arc PR 2 (retire scalars) → arc PR 3 (delegated-apply) → P0-4 → P0-2 → P1-1, all owner-unblocked). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
 | **Next** | Safety/community lane remainder (image moderation · security tiers 1+2 · NL event scheduler — all plan-first, see the lane section) · P1-1 versioned AI eval/smoke matrix · myprofile PR A ([plan](planning/myprofile-foundation-plan-2026-06-10.md), turn-key) · help home/navigation plan (editor-UI gate cleared via #677/#679) · V-14 harvest structuring ([dossier](ideas/competitive-teardown-2026-06-10.md); ecosystem-#2 = fishing, owner ratification pending) · the 2026-06-10 [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md) is **FULLY EXECUTED** (`historical`; [EOD verification](audits/past-day-verification-2026-06-10.md)) |
 | **Later** | P1-2 health findings lifecycle (Q-0097 answered 2026-06-12 — operator-managed; ready when queued) · continuation dispatch = the **Routine seam** (Stage 0's GH Action folded in — Q-0115; activates on Routine wired + calibrated) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -77,8 +80,9 @@
 
 ### 🛡️ Server management — **structurally complete** (gated tail only)
 
-Folio: [server-management](subsystems/server-management.md) · **authoritative sequence:**
-[status tracker](planning/server-management-status-2026-06-05.md)
+Folio: [server-management](subsystems/server-management.md) · **historical record** (initiative
+complete through PR14; the gated PR13 AI tail is in *Later* below):
+[status tracker](planning/server-management-status-2026-06-05.md) (re-badged `historical` 2026-06-13)
 
 - **Shipped through PR14** *(routing corrected 2026-06-10 — this page queued the hub
   long after it merged)*: the unified **Server Management Hub** merged **2026-06-08 via
@@ -374,19 +378,31 @@ its *plans* so they're sequenced like any other area. Ops shelf:
 [hooks & plugins](operations/claude-code-hooks-and-plugins.md) ·
 [MCP servers](operations/mcp-servers.md) ·
 [Hermes control plane](operations/hermes-control-plane.md) +
-[operating prompt](operations/hermes-operating-prompt.md).
+[operating prompt](operations/hermes-operating-prompt.md) ·
+[autonomous routines + control-plane state ledger](operations/autonomous-routines.md).
 
 - **Standing** — the **Q-0107 reconciliation cadence** (docs-only pass each time merged PRs
-  cross a multiple of **20** (#753); fired automatically by the `reconcile`-issue trigger;
-  current pass: [2026-06-12 night](planning/reconciliation-pass-2026-06-12-night.md))
+  cross a multiple of **20** (#753); fired automatically by the `reconcile`-issue trigger —
+  **first auto-fire proven by issue #781**; current pass: [2026-06-13 third Q-0107](planning/reconciliation-pass-2026-06-13-q0107.md))
   · the session enders (Q-0089 idea · Q-0102 prev-session review · Q-0104 closing audit).
 - **Later — continuation dispatch = the Routine seam (Q-0115, 2026-06-12):** Stage 0's
   separate `workflow_dispatch` GH Action is **folded into the #742 Routine bridge** — one
   dispatch mechanism for Hermes-fired, one-click, and later scheduled runs. The
   bounded-session protocol ([ai-project-workflow §10](owner/ai-project-workflow.md), Q-0088)
   activates once the Routine is **wired + calibrated** (the bridge runbook's ⬜ steps).
-- **Open decision** — **Q-0096 remainder**: Context7 MCP adopted (#737); Postgres-MCP +
-  pyright-LSP still open ([plugins evaluation](ideas/claude-code-plugins-evaluation-2026-06-12.md)).
+- **Open decisions** — **Q-0096 remainder** (Context7 adopted #737; Postgres-MCP + pyright-LSP still
+  open — [plugins eval](ideas/claude-code-plugins-evaluation-2026-06-12.md)) · **Q-0120** (promote the
+  journal's earned candidate rules into CLAUDE.md) · **Q-0121** (Hermes's 2nd write `gh issue create`,
+  gating the bug-triage flow). **Open bug:** **BUG-0011** — Hermes gateway restart crash-loop
+  ([bug book](health/bug-book.md)).
+- **Later (structure-or-defer, 2026-06-13)** — [bot self-test walker](ideas/bot-self-test-walker-2026-06-10.md):
+  the owner-gated in-process command walker + AI eval mode; clear direction, wants its own plan (pairs
+  with P1-1 AI eval matrix) before building.
+- **Next (gated Q-0121)** — [Hermes bug-triage flow](ideas/hermes-bug-triage-flow-2026-06-13.md): route
+  `/bugreport` through Hermes (triage → curated `bug` issue → nightly executor batch-fix), replacing the
+  cap-hungry direct instant-fire. Build waits on the Q-0121 write decision.
+- **Quick-win (executing 2026-06-13)** — [backup-dump integrity check](ideas/backup-integrity-check-2026-06-13.md):
+  a `CREATE TABLE`-count gate in `backup-db.yml` so a silent empty dump never uploads as a "backup".
 - **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the
   [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)'s
   three repo-side seams: the Hermes `superbot-review` skill (independent non-Claude critique) ·

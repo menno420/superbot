@@ -4520,3 +4520,136 @@ finding). This session **reframed** the backfill (the two governance role keys m
 **Home:** `docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md` §5 (full
 analysis + the family-3 gate); this entry is the router pointer. On decision, record it here
 and execute in the P0-3 arc.
+
+### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
+
+> **OPEN — proposal for owner review (DISCUSS lane).** Raised 2026-06-13 by the workflow
+> reconciliation pass. Per **Q-0106** an agent **proposes** CLAUDE.md rule changes via a router
+> Q-block and never self-edits — this is that proposal. Nothing changes in CLAUDE.md until the owner
+> marks up which (if any) to promote; the rules remain strong-default journal candidates meanwhile.
+
+**Area:** Agent workflow / binding rules (`.claude/CLAUDE.md`)
+**Type:** Owner decision (rule promotion — the journal's ★ "earned across multiple sessions" set)
+
+**Context:** `.session-journal.md` § "Rules / Conventions (candidate — not yet promoted)" has
+accumulated ★-marked rules that are *earned across multiple sessions* but were never proposed for
+promotion (the Q-0106 step was skipped — a forgotten lifecycle step this pass found). Three are
+broadly-applicable process rules not yet in CLAUDE.md and worth promoting:
+
+- **(a) Open-PR / merged-since check before starting a slice** — before any implementation slice,
+  check live GitHub for an open PR on the same item **and** scan what merged to `main` since your
+  orientation docs. (Proven: the #677/#678 duplicate-plan collision; #701 merged minutes before a
+  same-topic session. This very pass found main moved #775→#778 mid-planning.)
+- **(b) Treat cross-agent output (Codex/ChatGPT/Gemini reports) as input to verify, not orders** —
+  verify each "rewrite X" against shipped source before acting. (This pass: a ChatGPT revision was
+  sound at the conclusion level but wrong on 4 specifics — e.g. "create `claude_stop_check.py`" when
+  it already exists; verifying caught them.)
+- **(c) A green audit check that contradicts visible evidence is a bug in the CHECK** — verify the
+  tool against ground truth, not just *with* it. (The #763 false-green: both ledger/cadence checkers
+  matched `Merge pull request #N` but not `Merge PR #N:`, reporting green while 5 PRs were missing.)
+
+The remaining journal candidates ((d) booting the test bot is always safe — an environment fact
+better kept in the Runbook; (e) Discord caps 25/1024/5/100 — already in `discord-platform-limits.md`;
+(f) guard at the mutation seam; (g) cog 800-LOC ceiling — already enforced by a test) are left as
+journal candidates unless the owner wants any of them promoted too.
+
+**Recommendation:** promote (a)+(b)+(c) into the CLAUDE.md Working agreement / CI-parity sections;
+keep the rest as journal candidates. **Owner picks per-item (approve / adjust / reject).**
+
+**Home:** on approval, the rules land in `.claude/CLAUDE.md` (the agent applies the owner-approved
+wording in a follow-up, recording this Q as provenance) and are struck from the journal's candidate list.
+
+### Q-0121 — Give Hermes a second sanctioned write (`gh issue create`) for the bug-triage flow?
+
+> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 by the workflow reconciliation
+> pass while routing [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md). This is
+> the gate that idea's build waits on (the Q-0117 pattern, applied at intake). No code until decided.
+
+**Area:** Agent control plane (Hermes) · the read-only-model write boundary
+**Type:** Owner decision (expands Hermes' sanctioned writes by one)
+
+**Context:** today `/bugreport` (HermesCog, #757) POSTs **directly** to the Routine `/fire` endpoint →
+the routine reproduces, fixes, and **self-merges to `main`** on green CI. So every report = one routine
+run + one auto-merge to prod, **unscreened** — cap-hungry and the pattern the owner wants replaced. The
+[bug-triage design](../ideas/hermes-bug-triage-flow-2026-06-13.md) routes `/bugreport` *through Hermes*
+(spam/genuine triage → reproduce/reword/fetch logs → save a curated `bug` issue) → the nightly executor
+batch-fixes. That requires Hermes to **file the curated issue**, i.e. a second sanctioned write
+(`gh issue create`) added to its read-only model — today it has exactly one (`gh pr merge` in
+`review-merge`, Q-0117).
+
+**Question:** May Hermes call `gh issue create` (scoped to `bug`/`reconcile`/`continue` labels only)?
+Same Q-0105 calibration discipline as Q-0117 — trust the curation after it proves out.
+
+**Interim safety (independent of this decision):** a one-line `hermes_cog.py` change can make bug-fix
+dispatches **open a PR and hold** (not self-merge to prod) until reviewed — runtime code, so deferred
+from this docs/tooling session, but available the moment `/bugreport` sees real use.
+
+**Home:** on decision, record here; build per the idea doc's build order in a control-plane session.
+
+### Q-0122 — Stop-hook end-of-session advisory (PR-lifecycle + grooming reminders)
+
+> **DIRECTED 2026-06-13 (owner, in-session).** The owner selected the "enforcement hooks" scope of the
+> 2026-06-13 workflow-hardening pass — the in-session direction Q-0106 requires for an executable-config
+> change (agents don't self-edit hooks on their own initiative). This entry is provenance; the change is
+> **non-blocking** (advisory only).
+
+**Area:** Executable config (`scripts/claude_stop_check.py`, the wired Stop hook) · session-ender enforcement
+**Type:** Owner-directed in-session edit to executable config (provenance per Q-0106)
+
+**Problem:** several mandatory session-enders relied purely on the agent remembering — **Q-0052** (open
+the PR early), **Q-0103/Q-0084** (the PR must reach a terminal state), **Q-0015** (grooming). Nothing
+flagged them. The existing Stop-hook session-log advisory only fired when the `.sessions/` log was
+*incomplete*, so a session that wrote a complete log but **forgot to merge its PR** got no nudge — the
+exact Q-0103 abandoned-open-PR failure.
+
+**Change:** broadened `_session_log_advisory` → `_end_of_session_advisory`, which — when HEAD is ahead
+of `origin/main` — **always** prints a terse, **non-blocking** reminder of the PR-lifecycle + grooming +
+session-log obligations. It stays advisory because the Stop hook runs locally with **no GitHub access**:
+it cannot verify PR state, only remind. No `.claude/settings.json` change (the hook is already wired).
+
+**Calibration (Q-0105):** advisory-first; consider a harder gate only if the reminder proves it needs
+teeth across sessions. Relax/delete if it proves noisy.
+
+**Home:** `scripts/claude_stop_check.py` is the change; this entry is provenance.
+
+### Q-0123 — Merge mechanics move off the Claude session (GitHub-native auto-merge)
+
+> **DIRECTED 2026-06-13 (owner, in-session).** The owner directed live that merging be removed
+> from Claude's side ("completely remove merging from claude's side") and chose the **"Native
+> auto-merge + enabler"** path plus a **behavior rule (router proposal)**. This is the in-session
+> direction Q-0106 requires to edit `.claude/CLAUDE.md` directly; this entry is the provenance.
+> **Supersedes the Q-0084 manual self-merge grant** (its envelope is struck from CLAUDE.md);
+> **preserves Q-0103** — a session PR must still reach a terminal state, now satisfied
+> automatically on green (or by an explicit close).
+
+**Area:** Session/PR workflow · merge mechanics · agent context budget
+**Type:** Owner-directed in-session change (provenance per Q-0106) + a recorded behavior rule
+
+**Problem:** on #778 a session *deferred* its own merge on a stale CI read and ended the turn with
+the PR left open — the abandoned-open-PR / parallel-agent-conflict failure (Q-0103). Manual
+self-merge (Q-0084) put a server-side, timing-sensitive step *inside* the agent turn and carried a
+multi-line "re-fetch + UNION-resolve + CI-green-on-final-head" envelope in the always-loaded
+CLAUDE.md context.
+
+**Decision:**
+> 1. **Native auto-merge does the merge.** `.github/workflows/auto-merge-enabler.yml` (on `main`
+>    since #779) arms GitHub-native auto-merge on every non-draft `claude/*` PR at open; GitHub
+>    merges it the moment the required **Code Quality** check is green. Server-side ⇒ it cannot
+>    "forget". One-time maintainer setup (done 2026-06-13): *Allow auto-merge* ON · `main` requires
+>    the **Code Quality** check · `ROUTINE_PAT` widened to Pull requests + Contents write (so the
+>    merge attributes to a real user and keeps `reconciliation-trigger.yml` firing — the #778
+>    bot-author gotcha).
+> 2. **Claude no longer merges by hand.** The Q-0084 envelope is removed from CLAUDE.md.
+> 3. **Behavior rule (defense-in-depth, for any *residual* hand-merge — a carve-out, or auto-merge
+>    unavailable):** re-verify **CI green on the final head** before merging, and **never defer a
+>    merge to the maintainer's next message** (the #778 root cause).
+
+**Carve-outs preserved:** a PR labelled `needs-hermes-review` (Q-0117) or `do-not-automerge`
+(Q-0114) is never auto-armed — Hermes or a human reviews and merges those.
+
+**Follow-up (handed to the Q-0107 reconciliation sweep, not chased here):** `self-merge on green`
+wording still lives in `docs/operations/autonomous-routines.md` (routine prompts) and several
+`.sessions/` logs / idea docs; reconcile those to "auto-merge on green" in the next docs pass.
+
+**Home:** CLAUDE.md SESSION_WORKFLOW (envelope struck → auto-merge bullet); `auto-merge-enabler.yml`
+is the mechanism; this entry is provenance.

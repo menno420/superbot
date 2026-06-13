@@ -1,6 +1,8 @@
 # Repo-manageability ideas — 2026-06-12
 
-> **Status:** `ideas` — captured when the owner asked "what else would make the repo more
+> **Status:** `historical` — **EXECUTED** (#1/#2/#3/#5 shipped, #4 resolved via Q-0101); re-badged
+> `historical` by the 2026-06-13 workflow reconciliation pass (lifecycle outcome reached). Originally
+> captured when the owner asked "what else would make the repo more
 > easily manageable?" after the review-map + readiness-map work. These are about the
 > *dev/review workflow* (the substrate), not the bot's features.
 >

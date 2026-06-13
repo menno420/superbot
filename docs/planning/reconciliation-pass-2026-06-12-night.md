@@ -1,6 +1,8 @@
 # Reconciliation pass — 2026-06-12 (night) · the second Q-0107 pass
 
-> **Status:** `plan` — the docs-only review + planning pass for the band that crossed
+> **Status:** `historical` — superseded by the [third Q-0107 pass](reconciliation-pass-2026-06-13-q0107.md)
+> (2026-06-13), which scored this doc's band (#761–#780) as **7/10 slots to plan** and set the
+> next decade queue. This was the docs-only review + planning pass for the band that crossed
 > **#760** (cadence = every 20th merged PR since #753; last pass
 > [#741](reconciliation-pass-2026-06-12.md)). Sections: §1 verified state ·
 > §2 decade scorecard · §3 priorities restated · §4 the next ~9 PRs · §5 pruned/fixed.
