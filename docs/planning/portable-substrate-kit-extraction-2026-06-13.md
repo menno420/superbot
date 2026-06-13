@@ -81,17 +81,30 @@ in `.claude/CLAUDE.md`.
   closed verification goal (d):** every orientation template gained a `> **Status:** `<token>`` badge
   so a host running `bootstrap check` on rendered output is badge-clean (proven by a render→check
   integration test). 62 substrate-kit tests green; `check_quality --full` green (9367).
-- **▶ RESUME HERE (next session) — PR 2: the capability layer.** Per §3b/§3c + the PR-2 line under
-  "Implementation phases": the three modes' per-session behaviors; the full capability layer —
-  **stances** (`engine/stances/` + five stances + a `stance` CLI + orientation injection + the stub
-  `state.json.stance` field already shipped), **skills** (`build_skills.py` emitting native
-  `.claude/skills/*/SKILL.md` from generalized sources) and **personas** (`templates/agents/` →
-  `.claude/agents/`); trigger/drift/staleness detection; the full contract-doc template set +
-  owner-profile; templated hooks + `settings.template.json` + a generalized session-close; the
-  simulation asserts mode/stance behaviors, skill-generation validity, + graduation. The CI gotchas
-  in the 1a/1b entries above (tests under `tests/`, `print`/`assert`/`subprocess` bans on
-  `engine/`, isort-checks-tests, **regenerate the bootstrap** after any `src/engine` edit, black↔ruff
-  COM812 on awkward wraps — hoist long strings to constants) all still apply.
+- **PR 2 — stances (2026-06-13) — DONE (#805).** §3b, the first capability-layer increment (PR 2
+  lands in green increments). `engine/stances/stances.py` — the five core stances (question /
+  analysis / debug / review / plan), each with a **reading-route**, a **tool-scope** (read / run /
+  edit / comment) and an **output contract**; shipped as a **Python module, not the plan's
+  `stances.yml`** (the `question_bank.py` precedent — embeds in the stdlib bootstrap with no YAML
+  parser). Conformance logic `action_allowed` / `is_out_of_stance` (fails **open** on an unknown
+  stance) + the `stance_briefing` orientation-injection primitive; a `stance [name]` CLI (show /
+  set); wired into `build_bootstrap.py` + the regenerated `dist/bootstrap.py`. `test_stances.py`
+  (15 cases) incl. the `default_state`↔`DEFAULT_STANCE` invariant and the **edit-only-in-`debug`**
+  safety pin ("zero out-of-stance writes"). 77 substrate-kit tests green; `check_quality --full` green.
+- **▶ RESUME HERE (next session) — PR 2 cont.: skills + personas (§3c), then the rest.** With
+  stances shipped, the next increment is the other two capability mechanisms: **skills**
+  (`engine/skills/` generalized sources + a `build_skills.py` manifest→artifact generator emitting
+  native `.claude/skills/*/SKILL.md` — starter pack: session-close · quality-gate · review ·
+  repo-health · deep-research **+ new** question · analysis) and **personas** (`templates/agents/` →
+  native `.claude/agents/*.md`: architect · reviewer · researcher), with the **precedence model**
+  (a skill's declared capabilities override the ambient stance; stances stay advisory otherwise).
+  Then the remaining PR-2 scope: the three modes' per-session behaviors; trigger/drift/staleness
+  detection; the full contract-doc template set + owner-profile; templated hooks +
+  `settings.template.json` (incl. the PreToolUse out-of-stance guard that calls `is_out_of_stance`) +
+  a generalized session-close; simulation asserts. The CI gotchas in the entries above (tests under
+  `tests/`, `print`/`assert`/`subprocess` bans on `engine/`, isort-checks-tests, **regenerate the
+  bootstrap** after any `src/engine` edit, black↔ruff COM812 on awkward wraps — hoist long strings to
+  constants) all still apply.
 
 ---
 
