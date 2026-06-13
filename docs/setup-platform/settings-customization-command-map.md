@@ -302,15 +302,15 @@ through `moderation_service` (no parallel audit path).
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: `economy_log_channel`
-   (`disbot/cogs/economy/schemas.py`).  PR #6 promoted the log channel
-   to a SettingSpec so the cog's three direct ``db.set_setting`` writes
-   (``on_ready``, ``on_guild_join``, ``!setlogchannel``) route through
-   ``SettingsMutationPipeline`` and land in
-   ``settings_mutation_audit``.  The existing ``log_channel`` BindingSpec
-   (item 11) remains the canonical typed-resource declaration and is
-   read via the arbitration ladder.  Daily/work cooldowns pending
-   promotion.
+9. **existing_SettingSpec_declarations**: _none_.  The `economy_log_channel`
+   scalar was **retired in P0-3 arc PR 2 (#794)** — the log channel is a
+   Discord-resource pointer and now lives solely in the `log_channel`
+   BindingSpec (item 11).  The three write sites (``on_ready``,
+   ``on_guild_join``, ``!setlogchannel``) route through
+   ``BindingMutationPipeline`` (`actor_type='system'` for the two listener
+   paths); reads go through the arbitration ladder
+   (``get_economy_log_channel``, binding-first regardless of the
+   `bindings.primary` flag).  Daily/work cooldowns pending promotion.
 10. **existing_settings_keys**: `ECONOMY_LOG_CHANNEL`
     (`disbot/utils/settings_keys/economy.py`).
 11. **existing_BindingSpec_entries**: `log_channel`
@@ -421,12 +421,14 @@ through `moderation_service` (no parallel audit path).
 6. **help_menu_discoverable**: Yes.
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `none`.
-9. **existing_SettingSpec_declarations**: `xp_min`, `xp_max`, `xp_cooldown`,
-    `xp_announce_channel` (`disbot/cogs/xp/schemas.py`). PR #5 promoted
-    the announce-channel scalar to a SettingSpec so all four XP config
-    modals write through `SettingsMutationPipeline`; the existing
-    `announce_channel` BindingSpec (item 11) remains the canonical
-    typed-resource declaration and is read by the arbitration ladder.
+9. **existing_SettingSpec_declarations**: `xp_min`, `xp_max`, `xp_cooldown`
+    (`disbot/cogs/xp/schemas.py`). The `xp_announce_channel` scalar was
+    **retired in P0-3 arc PR 2 (#794)** — the announce channel lives solely
+    in the `announce_channel` BindingSpec (item 11) now. The range/cooldown
+    modals still write scalars through `SettingsMutationPipeline`; the
+    channel modal writes the binding via `BindingMutationPipeline`, and
+    reads go through the arbitration ladder (`get_xp_announce_channel`,
+    binding-first regardless of the `bindings.primary` flag).
 10. **existing_settings_keys**: `XP_MIN`, `XP_MAX`, `XP_COOLDOWN`,
     `XP_ANNOUNCE_CHANNEL` (`disbot/utils/settings_keys/xp.py`).
 11. **existing_BindingSpec_entries**: `announce_channel`

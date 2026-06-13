@@ -242,6 +242,10 @@ beyond the plan.
   BindingSpec stays as the typed-resource declaration; the new
   `economy_log_channel` SettingSpec drives the write path. Same
   duality the PR #5 commit documented for `xp_announce_channel`.
+  _(Both scalars were later **retired in P0-3 arc PR 2 / #794**, which also
+  taught `BindingMutationPipeline` to accept `actor_type='system'` — the
+  listener-actor gap noted here is closed, and the writes now land in
+  `binding_audit_log`.)_
 - **Settings numeric presets + channel/role selectors** (plan PR #7)
   — **done** via PR #149. Added `SettingSpec.input_hint` +
   `SettingSpec.presets` fields and three new widget modules
