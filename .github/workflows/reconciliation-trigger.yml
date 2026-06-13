@@ -45,8 +45,19 @@ jobs:
       - name: Open a reconcile issue (deduped)
         if: steps.due.outputs.due == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Author the issue with a NON-default token — see executor-nightly.yml for the full
+          # rationale. A github-actions[bot]-authored issue does NOT start the Claude docs-
+          # reconciliation routine (verified 2026-06-13 via issue #776 vs #768). ROUTINE_PAT is a
+          # fine-grained PAT (this repo, Issues: read/write); the GITHUB_TOKEN fallback only
+          # avoids a hard failure when the secret is unset (the routine will not fire while unset).
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          ROUTINE_PAT_SET: ${{ secrets.ROUTINE_PAT != '' }}
         run: |
+          # Loud, non-fatal warning if the PAT is missing — otherwise the issue is bot-authored
+          # and the routine silently never fires (the exact failure this token change fixes).
+          if [ "$ROUTINE_PAT_SET" != "true" ]; then
+            echo "::warning::ROUTINE_PAT is not set — the issue will be authored by github-actions[bot], which does NOT start the Claude routine. Add ROUTINE_PAT (fine-grained PAT, this repo, Issues: read/write) to enable autonomous firing."
+          fi
           # Dedupe: if an open `reconcile` issue already exists, do nothing (avoids a new
           # issue on every push between the boundary crossing and the routine running).
           open_count="$(gh issue list --label reconcile --state open --json number --jq 'length' 2>/dev/null || echo 0)"

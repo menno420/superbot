@@ -46,6 +46,19 @@ two ways —
 So the cadence runs in the GitHub Action (cheap, deterministic), and the routine just listens
 for the labeled issue.
 
+> **⚠️ The trigger Action must author the issue with a non-default token.** An issue created by
+> the default `secrets.GITHUB_TOKEN` is authored by `github-actions[bot]`, and a **bot-authored
+> issue does not start the routine**. Verified 2026-06-13: a real-user-authored `continue` issue
+> (#776) fired the executor in under a minute, while the `github-actions[bot]`-authored `continue`
+> issue (#768) sat open for hours and never fired — the trigger, GitHub App, model, and cap were
+> all healthy; the *author* was the whole problem. Both `reconciliation-trigger.yml` and
+> `executor-nightly.yml` therefore create the issue with **`secrets.ROUTINE_PAT`** (a fine-grained
+> PAT scoped to this repo with **Issues: read/write**), falling back to `GITHUB_TOKEN` only to
+> avoid a hard failure. **If the routines stop firing from the cron/cadence, check that
+> `ROUTINE_PAT` exists and is unexpired first** — a fine-grained PAT expires (≤1 year), and when
+> it lapses the issues silently revert to bot-authored. (A GitHub App installation token avoids
+> the expiry if this becomes a recurring chore.)
+
 **The docs/runtime split (honors Q-0107):** the reconciliation routine is **docs-only** — if
 it *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN), and the **caretaker**
 routine fixes it. Neither routine invents features (the phase gate holds those until
