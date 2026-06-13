@@ -6,7 +6,9 @@
 #
 # What it does: pg_dump --no-owner --no-acl against DATABASE_PUBLIC_URL
 # (Railway's external proxy URL — not the private internal URL), pipes
-# through gzip, uploads as a 90-day artifact.  On failure it opens a bug
+# through gzip, verifies the dump contains >=10 CREATE TABLE statements
+# (so a silent empty/errored pg_dump — which can exit 0 — never uploads as a
+# "backup"), then uploads as a 90-day artifact.  On failure it opens a bug
 # issue so the maintainer is notified even if email notifications are off.
 #
 # Prerequisites (one-time owner setup):
@@ -85,6 +87,26 @@ jobs:
             echo ""
             echo "Download from the Actions run to restore."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify dump integrity
+        # Runs BEFORE upload so a bad dump never occupies an artifact slot.
+        # pg_dump can exit 0 yet emit a near-empty file (permission error,
+        # wrong URL, truncated connection); the upload step's if-no-files-found
+        # only checks existence/non-zero size, which a 1 KB error header passes.
+        # Threshold 10 is a conservative floor; bump to ~(actual - 10%) after the
+        # first verified run (the step prints the real count). (Q-0105: UNVERIFIED
+        # until the first real dump is seen — delete if it proves flaky.)
+        env:
+          BACKUP_FILE: ${{ steps.dump.outputs.file }}
+        run: |
+          TABLE_COUNT=$(zcat "$BACKUP_FILE" | grep -c '^CREATE TABLE' || true)
+          echo "CREATE TABLE statements in dump: $TABLE_COUNT"
+          if [ "${TABLE_COUNT:-0}" -lt 10 ]; then
+            echo "::error::Dump integrity check failed — only ${TABLE_COUNT:-0} CREATE TABLE statements (expected >=10). Refusing to upload a near-empty dump as a backup."
+            exit 1
+          fi
+          echo "Dump integrity OK (>=10 tables)."
+          echo "- **Tables:** $TABLE_COUNT (CREATE TABLE statements)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

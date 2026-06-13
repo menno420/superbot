@@ -1,6 +1,8 @@
 # Idea: backup dump integrity check
 
-> **Status:** `ideas` — captured 2026-06-13 (executor run, Q-0089).
+> **Status:** `historical` — **EXECUTED 2026-06-13**: the `CREATE TABLE`-count integrity gate
+> shipped in `.github/workflows/backup-db.yml` (re-badged by the workflow reconciliation pass).
+> Captured 2026-06-13 (executor run, Q-0089).
 > **Area:** operations / backup posture.
 
 ## The idea
