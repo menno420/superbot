@@ -240,6 +240,7 @@ Run on a real guild + Postgres after arc PR 2 (extends the
 | **2 (#794) ✅** | Retired XP-announce + economy-log scalars (families 1+2) · `test_no_dual_declared_pointer` invariant · `pointer_retired` binding-first decoupling · real-Postgres proof | DONE |
 | **3 (next)** | Delegated-apply contract (§4) — the `setup_delegate` actor_type + AST fence + audit | Q-0098 (answered); design pinned in §4 |
 | *(later)* | Families 3–5 (governance roles per Q-0119 · welcome/counters/mod-public-log bindings) | family 3 gated on Q-0119 |
+| *(later)* | **Sunset the global `bindings.primary` flag** — once every pointer family is retired (each binding-first via `pointer_retired=True`) and the non-pointer migrated keys are homed (Q-0119), the global canary governs nothing and can be removed. Arc PR 2 proved the per-key model is cleaner + safer to deploy than a guild-wide flip. | after families 3–5 + Q-0119 |
 
 P0-3's **P1-3 follow-up** (declared-setting → runtime-consumer disposition
 invariant for the *non-pointer* settings) is deliberately not in this arc — the
