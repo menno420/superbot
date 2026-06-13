@@ -179,6 +179,14 @@ Current broad captures:
   non-`historical` `reconciliation-pass-*.md`, and the current-state ▶ + roadmap pointers both
   resolve to it. Turns a convention every pass must remember into a CI guard; motivated by the
   three pointers this pass hand-verified. Workflow lane; quick-win when capacity allows.
+- [`ledger-checker-range-scope-2026-06-13.md`](./ledger-checker-range-scope-2026-06-13.md) —
+  **session idea (2026-06-13, Q-0089, from the fourth/band-#800 Q-0107 reconciliation pass):**
+  scope `check_current_state_ledger.py`'s `#AAA–#BBB` range-expansion to the `## Recently
+  shipped` section only, so a forward-looking planning range in the `▶ Next action` pointer
+  can't silently mask a whole merged band from the ledger guard (the false-green this pass
+  found + fixed by convention; ~14 PRs were hidden). The structural complement to the pointer
+  invariant above. Workflow lane; small (logic + one test), high-leverage for the autonomous
+  loop. Routed Next.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG

@@ -13,6 +13,18 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#737 (2026-06-12, Context7 MCP adopted)** — wired `@upstash/context7-mcp@3.2.0` (live
+  library docs → kills the "API-from-memory" bug class) as a pinned `.mcp.json` server +
+  [`docs/operations/mcp-servers.md`](operations/mcp-servers.md) (when-to-use, key setup, Q-0105
+  provenance). Q-0096 answered (Context7 yes; Postgres-MCP/pyright-lsp still open).
+- **#736 (2026-06-12, CodeGraph health check + doc pin fix)** — verified CodeGraph 3.11.2 is
+  healthy (no regression from the bump; the "problems" are the cold-start availability blip + the
+  documented false positives). Fixed the real bug: `docs/codegraph-usage.md` told agents to run the
+  old `@optave/codegraph@3.10.0` while the live pin is 3.11.2 — bumped all command refs.
+- **#732 (2026-06-12, command-surface dump tool)** — `scripts/command_surface_dump.py`:
+  offline AST dump of every prefix/slash command by subsystem (+ `--json` and
+  `--diff-checklist` against the untested-surface checklist); 8 tests. The #731 session's
+  grooming companion; roadmap queue item 1 closed with it.
 - **#733–#735 (2026-06-12, the agent-workflow/memory hardening arc)** — **#733**: **Q-0102**
   (mandatory `⟲ Previous-session review` session-ender) + **Q-0103** (open session PRs **ready not
   draft**; every PR reaches a terminal state). `scripts/check_session_log.py` + post-edit/Stop-hook
