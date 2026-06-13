@@ -3,6 +3,15 @@
 > **Status:** `audit` — source-verified production-readiness review; docs-only; no fixes implemented.
 > **Scope:** settings, bindings, resource provisioning, Settings UI, Setup relations, and directly required governance/authority seams.
 > **Verdict:** **Partial**. The three canonical lanes and their audited service boundaries exist and are well tested, but production readiness is blocked by pointer-lane duplication, incomplete binding/provisioning UI coverage, delegated-setup authority mismatch, and insufficient live verification.
+>
+> **▶ 2026-06-13 P0-3 update:** the hardening **P0-3 foundation slice** shipped against this
+> map → [pointer-lane convergence + Setup-delegate authority plan](../settings-pointer-lane-convergence-plan-2026-06-13.md).
+> Addressed: Required #2 (the broken `governance.trusted_role` backfill is **reframed** — see
+> the resolved High row below) and the lane-rule "stays-fixed" layer (two new parity
+> invariants). The plan also surfaced a finding this dated snapshot predates — welcome/counters
+> v1 (#775) added **five new orphan channel/role pointers**; the live inventory is now
+> `python3.10 scripts/settings_lane_matrix.py` (65 settings / 17 bindings, not the 36/13 below).
+> Pointer *retirement* + delegated-apply *implementation* stay sequenced in the plan (arc PRs 2–3).
 
 ## Current verified state
 
@@ -155,7 +164,7 @@ Every registered scalar below is editable through `SettingsMutationPipeline`; st
 | Finding | Severity | Status | Why it matters |
 |---|---|---|---|
 | Legacy Discord pointers remain registered as scalar settings while equivalent bindings exist. | High | **Not Done** | Violates lane rule, creates two operator-visible truths, and permits generic scalar editors to bypass binding target validation/status semantics. |
-| `binding_backfill.MIGRATED_KEYS` references undeclared `governance.trusted_role`. | High | **Not Done** | Backfill cannot apply that mapping because `_schema_declares()` will reject it. |
+| `binding_backfill.MIGRATED_KEYS` references undeclared `governance.trusted_role`. | High | **Reframed (2026-06-13)** | The governance trusted/moderator role pointers moved to `binding_backfill.DEFERRED_KEYS` (no clean schema home — `governance` is a reserved namespace), so the backfill no longer returns a permanent `BLOCKED_NO_SCHEMA`. `test_backfill_target_declaration_parity` pins it. The binding *home* decision is router **Q-0119** (P0-3 plan §5). |
 | Delegated Setup apply gate and mutation-pipeline administrator floor disagree. | High | **Not Done** | A delegated operator can stage and pass Final Review authority but fail canonical settings/binding/provisioning writes per operation. |
 | Declaration-to-runtime-consumer parity is manually verified, not invariant-backed. | Medium | **Partial** | Current consumers exist, but a future editable no-op setting could ship without a generated parity check. |
 | `moderation.mod_log` resource has no binding name. | Medium | **Not Done** | It cannot become a normal provisioning catalogue option that creates/reuses then binds. |

@@ -10,13 +10,33 @@ surface drift / disagreement / missing-target cases.
 Migrated key registry:
 
 The :data:`MIGRATED_KEYS` constant declares every legacy key the
-backfill plan covers, paired with the typed ``(subsystem,
-binding_name, kind)`` it should land at.  Initial set (per the Phase 2
-plan):
+backfill plan **can migrate today**, paired with the typed
+``(subsystem, binding_name, kind)`` it should land at.  A key may only
+live here when its target ``BindingSpec`` is actually declared on a
+registered :class:`SubsystemSchema` — otherwise the classifier would
+return :attr:`Classification.BLOCKED_NO_SCHEMA` for that key in every
+guild, which is not production-ready migration machinery
+(``test_backfill_target_declaration_parity`` pins this).
 
-* ``xp_announce_channel`` → ``(xp, announce_channel, CHANNEL)``
-* ``economy_log_channel`` → ``(economy, log_channel, CHANNEL)``
-* ``trusted_tier_role_id`` → ``(governance, trusted_role, ROLE)``
+* ``xp_announce_channel`` → ``(xp, announce_channel, CHANNEL)`` — homed.
+* ``economy_log_channel`` → ``(economy, log_channel, CHANNEL)`` — homed.
+
+:data:`DEFERRED_KEYS` declares legacy pointers whose **canonical binding
+home is still an open design decision**, so they are intentionally NOT
+backfillable yet (kept here, not silently dropped, so the intent and the
+gating reason survive in code).  The governance trusted/moderator role
+pointers are the current case: ``config_arbitration`` already reads them
+through ``governance.{trusted,moderator}_role`` bindings, but
+``governance`` is a *reserved* capability namespace (see
+``utils.subsystem_registry._RESERVED_CAPABILITY_PREFIXES``), not a
+feature subsystem, so those bindings have no clean schema home.  The
+convergence decision is owned by the P0-3 plan
+(``docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md``);
+when a home is decided + the ``BindingSpec`` declared, the key graduates
+from :data:`DEFERRED_KEYS` to :data:`MIGRATED_KEYS` and the parity
+invariant enforces it.  Reads keep working via the legacy scalar in the
+meantime (the arbitration ladder falls back to legacy when a binding is
+UNRESOLVED), so deferral changes no runtime behaviour.
 
 XP threshold roles are intentionally excluded — the 1:N (level → role)
 shape does not fit ``subsystem_bindings``' 1:1 schema; a dedicated
@@ -66,7 +86,7 @@ import discord
 from core.resources.status import ResourceStatus
 from core.runtime.subsystem_schema import BindingKind, get_schema
 from utils.settings_keys.economy import ECONOMY_LOG_CHANNEL
-from utils.settings_keys.governance import TRUSTED_TIER_ROLE_ID
+from utils.settings_keys.governance import MODERATOR_TIER_ROLE_ID, TRUSTED_TIER_ROLE_ID
 from utils.settings_keys.xp import XP_ANNOUNCE_CHANNEL
 
 logger = logging.getLogger("bot.services.binding_backfill")
@@ -107,10 +127,32 @@ MIGRATED_KEYS: tuple[MigratedKey, ...] = (
         binding_name="log_channel",
         kind=BindingKind.CHANNEL,
     ),
+)
+
+
+# Legacy pointers whose canonical binding home is an open design decision, so
+# they are NOT backfillable yet.  Tracked here (not dropped) so the intent and
+# the gating reason survive in code; ``test_backfill_target_declaration_parity``
+# pins that no DEFERRED key is also a MIGRATED key and that its target binding
+# is genuinely undeclared (otherwise it should graduate to MIGRATED_KEYS).
+#
+# Current case — the governance trusted/moderator role pointers
+# (``config_arbitration.get_{trusted,moderator}_tier_role`` already read them
+# through ``governance.{trusted,moderator}_role`` bindings).  ``governance`` is
+# a reserved capability namespace, not a feature subsystem, so those bindings
+# have no clean ``SubsystemSchema`` home.  The convergence decision is owned by
+# ``docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md`` (P0-3).
+DEFERRED_KEYS: tuple[MigratedKey, ...] = (
     MigratedKey(
         legacy_key=TRUSTED_TIER_ROLE_ID,
         subsystem="governance",
         binding_name="trusted_role",
+        kind=BindingKind.ROLE,
+    ),
+    MigratedKey(
+        legacy_key=MODERATOR_TIER_ROLE_ID,
+        subsystem="governance",
+        binding_name="moderator_role",
         kind=BindingKind.ROLE,
     ),
 )
@@ -900,6 +942,7 @@ async def apply_backfill(
 
 
 __all__ = [
+    "DEFERRED_KEYS",
     "MIGRATED_KEYS",
     "MIGRATION_NAME",
     "SUMMARY_VERSION",

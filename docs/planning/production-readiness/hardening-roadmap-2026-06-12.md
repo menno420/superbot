@@ -63,7 +63,16 @@ mis-owned (`YOUTUBE_CONTEXT_ENABLED` labeled `ai` despite ADR-007 shared-platfor
 bounded projection, wire purge through a managed-task owner, fix the flag ownership, add
 content-free media diagnostics.
 
-### P0-3 · Settings pointer-lane convergence + setup authority  ·  needs **Q-0098**
+### P0-3 · Settings pointer-lane convergence + setup authority  ·  🟡 **FOUNDATION SHIPPED (2026-06-13)** · Q-0098 answered
+**Foundation slice (arc PR 1):** [pointer-lane convergence + Setup-delegate authority plan](../settings-pointer-lane-convergence-plan-2026-06-13.md)
+— `scripts/settings_lane_matrix.py` (the rec-#1 matrix), the broken `governance.trusted_role`
+backfill **reframed** into `DEFERRED_KEYS` (Required #2 fixed; no permanent `BLOCKED_NO_SCHEMA`),
+and **two parity invariants** (`test_backfill_target_declaration_parity` +
+`test_pointer_lane_ledger` — the latter is the ratchet that blocks new pointer-as-scalar
+additions like the welcome/counters #775 ones). **Still sequenced (arc PRs 2–3):** retiring the
+XP-announce/economy-log scalars + the delegated-apply `setup_delegate` authority route (designed
+in the plan §4, Q-0098). Family-3 governance role-pointer home is gated on router **Q-0119**.
+
 **Evidence:** [settings map](settings-bindings-provisioning-production-readiness-map-2026-06-12.md)
 — legacy Discord pointers remain editable scalar settings while canonical bindings exist
 (two operator-visible truths; generic editors bypass binding validation); the delegated-Setup

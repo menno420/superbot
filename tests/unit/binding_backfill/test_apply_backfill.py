@@ -150,7 +150,12 @@ def _candidate(
 @pytest.mark.asyncio
 async def test_apply_writes_only_candidate_valid(_patches):
     p = _patches
-    # Three candidates: one valid, one already-bound, one blocked
+    # Three candidates: one valid, one already-bound, one non-writable.  The
+    # third is a synthetic BLOCKED_NO_SCHEMA candidate (dry_run is mocked here)
+    # — it exercises apply's "skip anything that is not CANDIDATE_VALID" path.
+    # In the live registry the governance role pointers are DEFERRED, so they
+    # never reach dry_run at all; this case stands in for any non-writable
+    # classification the apply loop must skip.
     candidates = [
         _candidate(legacy_target_id=999),  # CANDIDATE_VALID
         _candidate(
