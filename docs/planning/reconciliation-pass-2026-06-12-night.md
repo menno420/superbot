@@ -95,9 +95,9 @@ open UX choices; the wager P0 closed).
 | # | PR (one session each) | Scope anchor | Gate |
 |---|---|---|---|
 | 1 | **This pass** — reconcile + plan + the checker-regex root fix | Q-0107 | — |
-| 2 | **P2 doc-drift sweep** | [hardening P2 table](production-readiness/hardening-roadmap-2026-06-12.md) — the 5 known fixes | — (small/required) |
-| 3 | **Postgres backup posture** — design + automate | [production-deployment §Backups](../operations/production-deployment.md) (OPEN since #685) | Railway facts from owner if needed |
-| 4 | **Safety family plan + automod v1** | Q-0108; UX shapes by `pattern_id` (mock studio); reuse `moderation_service` + `services/server_logging.py` seams | plan-first (this PR is the plan) |
+| 2 | ✅ **P2 doc-drift sweep** (#764) | [hardening P2 table](production-readiness/hardening-roadmap-2026-06-12.md) — the 5 known fixes | — (small/required) |
+| 3 | ✅ **Postgres backup posture** (#769) | [production-deployment §Backups](../operations/production-deployment.md) (OPEN since #685) | Railway facts from owner if needed |
+| 4 | ✅ **Safety family plan + automod v1** (#772 — [family plan](safety-community-family-plan-2026-06-13.md)) | Q-0108; UX shapes by `pattern_id` (mock studio); reuse `moderation_service` + `services/server_logging.py` seams | plan-first (this PR is the plan) |
 | 5 | **Server event logging v1** | Q-0109 scope; `mock_logging_routing` renders the routing choice for the owner's pick | family plan (slot 4) |
 | 6 | **Welcome v1 + server counters** | Q-0110 embed-first (the lab's A/B exists); counters quick-win | family plan (slot 4) |
 | 7 | **P0-3 settings pointer-lane convergence + delegated-apply** | settings map "recommended next"; Q-0098 | unblocked |
