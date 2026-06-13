@@ -35,6 +35,7 @@ MODULE_ORDER = (
     "checks/check_docs.py",
     "checks/check_session_log.py",
     "stances/stances.py",
+    "skills/skills.py",
     "render.py",
     "cli.py",
 )
@@ -44,6 +45,7 @@ PACKAGE_FILES = (
     "interview/__init__.py",
     "checks/__init__.py",
     "stances/__init__.py",
+    "skills/__init__.py",
 )
 
 # Intra-package imports are dropped: in the concatenated file the referenced
@@ -64,14 +66,27 @@ def _read(rel: str) -> str:
 
 
 def _split_imports(source: str) -> tuple[list[str], list[str], list[str]]:
-    """Split a module into (future imports, kept imports, body lines)."""
+    """Split a module into (future imports, kept imports, body lines).
+
+    Intra-package imports are dropped — in the concatenated file their names
+    already live in the same namespace. A *parenthesized multi-line* intra-package
+    import is dropped **whole**: its continuation lines must not leak into the body
+    (that produced an ``IndentationError`` in the generated bootstrap).
+    """
     future: list[str] = []
     imports: list[str] = []
     body: list[str] = []
+    dropping_multiline = False
     for line in source.splitlines():
+        if dropping_multiline:
+            if ")" in line:
+                dropping_multiline = False
+            continue
         if line.startswith("from __future__"):
             future.append(line)
         elif any(line.startswith(p) for p in _INTRA_PKG_PREFIXES):
+            if "(" in line and ")" not in line:
+                dropping_multiline = True
             continue
         elif line.startswith(("import ", "from ")):
             imports.append(line)
