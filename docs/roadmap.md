@@ -54,7 +54,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The **[band-#800 decade queue](planning/reconciliation-pass-2026-06-13-band800.md)** (fourth Q-0107 pass): the **safety/community band (slots 4–6) ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters) + backup posture ✅ #769 + **native auto-merge migration ✅ #786/#787 (Q-0123)**. Active Now = the **production-hardening P0 spine, integrity-first** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 foundation #777 + arc PR 2 #794** (XP-announce/economy-log scalar pointers retired → binding lane); next = P0-3 arc PR 3 (delegated-apply, Q-0098) → P0-4 → P0-2 → P1-1, all owner-unblocked) — running in parallel with the owner's active thread, the **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** OSS package (PR 1a/1b + the 1b-tail checkers DONE #802; **PR 2 landing in increments — stances #805 + skills #811 shipped**; resume at §3c personas). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
+| **Now** | The **[band-#800 decade queue](planning/reconciliation-pass-2026-06-13-band800.md)** (fourth Q-0107 pass): the **safety/community band (slots 4–6) ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters) + backup posture ✅ #769 + **native auto-merge migration ✅ #786/#787 (Q-0123)**. Active Now = the **production-hardening P0 spine, integrity-first** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 foundation #777 + arc PR 2 #794** (XP-announce/economy-log scalar pointers retired → binding lane); next = P0-3 arc PR 3 (delegated-apply, Q-0098) → P0-4 → P0-2 → P1-1, all owner-unblocked) — running in parallel with the owner's active thread, the **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** OSS package (PR 1a/1b + the 1b-tail checkers DONE #802; **PR 2 capability layer §3b/§3c COMPLETE — stances #805 + skills #811 + personas #812**; resume at the PR-2 remainder: modes + triggers + hooks). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
 | **Next** | Safety/community lane remainder (image moderation · security tiers 1+2 · NL event scheduler — all plan-first, see the lane section) · P1-1 versioned AI eval/smoke matrix · myprofile PR A ([plan](planning/myprofile-foundation-plan-2026-06-10.md), turn-key) · help home/navigation plan (editor-UI gate cleared via #677/#679) · V-14 harvest structuring ([dossier](ideas/competitive-teardown-2026-06-10.md); ecosystem-#2 = fishing, owner ratification pending) · the 2026-06-10 [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md) is **FULLY EXECUTED** (`historical`; [EOD verification](audits/past-day-verification-2026-06-10.md)) |
 | **Later** | P1-2 health findings lifecycle (Q-0097 answered 2026-06-12 — operator-managed; ready when queued) · continuation dispatch = the **Routine seam** (Stage 0's GH Action folded in — Q-0115; activates on Routine wired + calibrated) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
@@ -404,14 +404,15 @@ its *plans* so they're sequenced like any other area. Ops shelf:
   cap-hungry direct instant-fire. Build waits on the Q-0121 write decision.
 - **Quick-win (executing 2026-06-13)** — [backup-dump integrity check](ideas/backup-integrity-check-2026-06-13.md):
   a `CREATE TABLE`-count gate in `backup-db.yml` so a silent empty dump never uploads as a "backup".
-- **Now (executing 2026-06-13 — #811)** — the
+- **Now (executing 2026-06-13 — #812)** — the
   [portable substrate-kit extraction](planning/portable-substrate-kit-extraction-2026-06-13.md):
   externalize the workflow substrate into a single-file, stdlib-only kit (`substrate-kit/`) that
   bootstraps the loop in any project. **PRs 1a/1b + the 1b tail are DONE** (#789 · #791–#793 · #802 —
   skeleton, interview engine, templates, render, the `check_docs`/`check_session_log` ports + a
-  `check` CLI); **PR 2 is landing in increments** — **stances (#805 — §3b) + skills (#811 — §3c) shipped**.
-  **Next = §3c personas** (`templates/agents/` → `.claude/agents/`), then modes/triggers/hooks/templates;
-  productization is a separate later phase.
+  `check` CLI); **PR 2's capability layer §3b/§3c is COMPLETE** — **stances (#805) + skills (#811) +
+  personas (#812)**. **Next = the PR-2 remainder** (the three modes' per-session behaviors + triggers +
+  templated hooks incl. the PreToolUse out-of-stance guard + contract-doc templates), then PR 3
+  (self-maintenance loop + review seam + productization).
 - **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the
   [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)'s
   three repo-side seams: the Hermes `superbot-review` skill (independent non-Claude critique) ·
