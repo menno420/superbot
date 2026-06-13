@@ -10,6 +10,29 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0011 — Hermes gateway crash-loops on restart (Telegram 409) + periodic status=1 — OPEN
+
+- **Symptom:** the `hermes-gateway` systemd service exits `Main process exited, code=exited,
+  status=1/FAILURE` on (a) **every `systemctl restart`** — the new instance starts, prints the
+  "Messaging platforms + cron scheduler" banner, then dies within ~1s — and (b) **periodically**
+  while running (observed unprompted at 2026-06-12 20:41 and 22:31 UTC, hours apart). `Restart=always`
+  (RestartSec=10) recovers it each time, so `is-active` reads `active` and service stays usable,
+  but the red `status=1` noise repeatedly obscured real diagnosis during the 2026-06-12 Discord
+  setup (it masked, then was confused with, the genuine `PrivilegedIntentsRequired` Discord error).
+- **Likely root cause (unconfirmed):** Telegram **409 Conflict** — on restart the new instance
+  begins long-polling `getUpdates` while the old instance's poll is still held briefly by
+  Telegram's side, so the new one exits. The 2026-06-12 systemd-unit fix (TimeoutStopSec ≥ drain)
+  reduced but did not remove it. The periodic (non-restart) crashes are unexplained — one was
+  preceded by a "Self-improvement review: User profile updated" log line; needs a clean foreground
+  repro (`systemctl stop` then `hermes gateway`) to capture the actual exit cause.
+- **Impact:** cosmetic + self-healing today (control plane, low traffic), but: noisy logs,
+  ~10–15s Telegram/Discord drop on each restart, and it actively hindered diagnosis. Worth fixing
+  before the gateway becomes more load-bearing.
+- **Candidate fixes:** confirm the 409 theory from a clean foreground run; on restart, have the
+  adapter **retry on 409** instead of exiting, or lengthen the drain so the old poll fully closes
+  before the new instance starts; investigate the periodic non-restart crashes separately.
+- **Status:** OPEN — captured 2026-06-13 during the Hermes dual-platform setup session.
+
 ## BUG-0010 — the "in ABR" qualifier is ignored by auto-grounding and the round-cash workflow
 
 - **Reported:** 2026-06-11 ~15:06–15:07 (owner, Haiku round): "how much cash

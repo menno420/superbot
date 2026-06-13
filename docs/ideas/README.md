@@ -146,6 +146,10 @@ Current broad captures:
   + an AI eval mode running scripted prompts through the real pipeline
   (Q-0086 keys). Pairs with the commissioned untested-surface testing
   checklist; candidate probe set for the workflow-§10 Stage 1 caretaker.
+- [`hermes-bug-triage-flow-2026-06-13.md`](./hermes-bug-triage-flow-2026-06-13.md) —
+  **owner-directed (design captured, build next):** route `/bugreport` *through Hermes*
+  (spam/genuine triage → reproduce + reword + fetch logs → save a curated `bug` issue +
+  Discord summary) → nightly executor batch-fixes. Replaces the current direct instant-fire.
 - [`superbot-vision-2026-06-10.md`](./superbot-vision-2026-06-10.md) — the
   maintainer's written **product vision statement** (2-minute setup, panel
   navigation doctrine, 4-button help home, per-user preferences, RPG
