@@ -74,6 +74,11 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # via role_automation (so this is *not* a second audit path).
         # Subscriber failure logged + swallowed.
         "welcome.member_greeted",
+        # ── Counters (services/counter_service.py, Q-0110) ────────────────
+        # Advisory.  Emitted after a periodic sync renames >= 1 counter
+        # channel.  Payload: guild_id, renamed (count).  No DB writes; the
+        # rename is a channel edit.  Subscriber failure logged + swallowed.
+        "counters.updated",
         # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────
         "bindings.changed",
         # ── Settings (services/settings_mutation.py, S4) ──────────────────

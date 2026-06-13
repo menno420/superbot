@@ -220,6 +220,7 @@ def test_advanced_top_level_set_today():
         "btd6",
         "channel",
         "community",
+        "counters",
         "diagnostic",
         "economy",
         "games",
@@ -229,6 +230,7 @@ def test_advanced_top_level_set_today():
         "settings",
         "utility",
         "ux_lab",
+        "welcome",
     ]
 
 

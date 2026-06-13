@@ -22,6 +22,7 @@ import logging
 import discord
 from discord.ext import commands
 
+from core.runtime import resources
 from services import welcome_config
 from utils.ui_constants import GENERAL_COLOR
 
@@ -71,9 +72,17 @@ class WelcomeCog(commands.Cog):
         def _flag(on: bool) -> str:
             return "🟢 on" if on else "⚫ off"
 
-        channel = guild.get_channel(policy.channel_id) if policy.channel_id else None
+        channel = (
+            resources.resolve_channel(guild, channel_id=policy.channel_id)
+            if policy.channel_id
+            else None
+        )
         channel_str = channel.mention if channel else "*(unset)*"
-        role = guild.get_role(policy.entry_role_id) if policy.entry_role_id else None
+        role = (
+            resources.resolve_role(guild, role_id=policy.entry_role_id)
+            if policy.entry_role_id
+            else None
+        )
         role_str = role.mention if role else "*(none)*"
 
         lines = [

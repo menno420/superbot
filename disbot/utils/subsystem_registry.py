@@ -440,6 +440,32 @@ SUBSYSTEMS: dict[str, dict] = {
             "welcome.settings.configure",
         ],
     },
+    # server counters v1 (owner decision Q-0110): live stat channels (the
+    # statdock pattern). Admin-configured, deliberately hub-less for the same
+    # reason as welcome — surfaced via its Help hook + `!settings` → Counters +
+    # the `!counters` summary. Renamed channels are driven by a slow periodic
+    # loop (Discord rename rate limit), never per join.
+    "counters": {
+        "display_name": "Server Counters",
+        "description": "Live member-count channels (total · humans · bots)",
+        "emoji": "📊",
+        "color": GENERAL_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "community",
+        "tags": ["counters", "stats", "members", "community"],
+        "entry_points": ["counters"],
+        "default_channels": ["general"],
+        "related_subsystems": ["community_spotlight", "welcome"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 32,
+        "capabilities": [
+            "counters.settings.configure",
+        ],
+    },
     "blackjack": {
         "display_name": "Blackjack",
         "description": "Blackjack card game",

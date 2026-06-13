@@ -27,6 +27,7 @@ from typing import Any
 
 import discord
 
+from core.runtime import resources
 from services import welcome_config
 
 logger = logging.getLogger("bot.services.welcome")
@@ -93,7 +94,7 @@ def _resolve_text_channel(
     """Return the configured greeting channel when it is sendable, else None."""
     if channel_id is None:
         return None
-    channel = guild.get_channel(channel_id)
+    channel = resources.resolve_channel(guild, channel_id=channel_id)
     if isinstance(channel, (discord.TextChannel, discord.Thread)):
         return channel
     return None
@@ -124,7 +125,7 @@ async def _grant_entry_role(member: discord.Member, role_id: int) -> None:
     Missing role / already-held is a no-op; failures are classified and
     logged by ``apply`` itself, never raised here.
     """
-    role = member.guild.get_role(role_id)
+    role = resources.resolve_role(member.guild, role_id=role_id)
     if role is None:
         logger.warning(
             "welcome: entry role %d not found in guild %d — skipping grant",
