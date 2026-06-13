@@ -190,7 +190,11 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   too often).** PR numbers crossing a **multiple of 20** (#20, #40, #60, …) are reserved for a
   **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things:
   **(1) reconcile** — review the living ledger, active lanes, open Q-blocks, idea backlog, and
-  roadmap; prune/archive stale docs; restate the current priorities; and **(2) plan the next ~9
+  roadmap; **disposition open PRs** (via the GitHub MCP — `list_pull_requests` + each one's
+  CI/mergeable state: close redundant/stale ones, fix or flag a red-CI one) — the gap that left
+  #766 (red CI) and #771 (redundant + conflicted) rotting unnoticed across sessions *and* prior
+  reconciliation passes (owner directive Q-0125, 2026-06-13); prune/archive stale docs; restate
+  the current priorities; and **(2) plan the next ~9
   PRs** — what is realistically achievable in the upcoming band of PRs, **modular but not
   over-segmented**: each planned PR should ship a *reasonable, meaningful change* (a real slice),
   **not** a trivial fragment — a small PR is fine only when the change genuinely is small or a
@@ -199,6 +203,11 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   The pass is now **fired automatically** by `.github/workflows/reconciliation-trigger.yml` (opens
   a `reconcile`-labeled issue at the boundary → the **superbot docs reconciliation** routine runs
   it — see `docs/operations/autonomous-routines.md`); reset the marker to the latest PR after the pass.
+  **A manually-started session does NOT run the reconciliation pass — the routines always do it
+  automatically; only run it in a manual session if the owner explicitly asks (owner directive
+  Q-0124, 2026-06-13).** The SessionStart `Recon: DUE` banner is a signal for the routine, not an
+  instruction to a human-started session — a manual session should pursue the work it was started
+  for (e.g. "continue where PR #N ended" = continue *that PR's* lane), not divert into a docs pass.
 - Plans span **2–3 PRs max**: the first PR covers root causes / foundation; subsequent PRs implement on top.
 - **Plan approval = full execution** — once a plan is approved (via **ExitPlanMode**),
   complete it in one session without stopping for confirmation or waiting for merges

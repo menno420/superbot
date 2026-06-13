@@ -122,8 +122,10 @@ def main(argv: list[str] | None = None) -> int:
     if due:
         print(
             f"check_reconciliation_due: DUE — merged PRs crossed #{next_band} "
-            f"(last pass #{marker}, latest #{latest}). The next session should be a "
-            "docs-only repo review + planning reconciliation; reset the marker after.",
+            f"(last pass #{marker}, latest #{latest}). The docs-only reconciliation pass "
+            "is run automatically by the routines (the `reconcile`-issue trigger); a "
+            "manually-started session should NOT run it unless explicitly asked (Q-0124) "
+            "— pursue the work you were started for. Reset the marker after a pass.",
         )
         return 1 if args.strict else 0
     print(

@@ -107,6 +107,11 @@ STEP 2 — RECONCILE (the Q-0107 pass):
   - Docs: run `python3.10 scripts/check_docs.py --strict`; fix every reachability/badge/
     staleness issue + stale links, wrong PR numbers, broken references.
   - Prune/relabel clearly stale docs; restate current priorities in current-state ▶ Next action.
+  - DISPOSITION OPEN PRs (Q-0125): `list_pull_requests` (state=open) + each one's CI/mergeable
+    state. Close the redundant/stale (e.g. a superseded ledger PR), fix or flag a red-CI one
+    (a `check_docs` reachability orphan is usually one missing README link), leave the owner's.
+    "Noting" a PR is not disposition — act on it. (This sweep was missing: #766 sat red + #771
+    redundant for ~21h, unnoticed by sessions and two prior passes.)
   - Plan the next ~9 PRs (the upcoming band) — modular, each a meaningful slice — into the
     decade-queue planning doc, ordered so the highest-value improvements come first.
   - IMPROVE THE SYSTEM: if you see a way to make the orientation / memory / tooling better for
