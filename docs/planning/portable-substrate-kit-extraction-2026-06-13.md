@@ -106,21 +106,30 @@ in `.claude/CLAUDE.md`.
   emission belongs in the bootstrapped engine so a host runs it, mirroring `render`. Re-cut clean as
   #811 after the original #809 tangled with a parallel-session collision; #807's recon detour was
   closed as superseded by #810/Q-0124.)*
-- **▶ RESUME HERE (next session) — PR 2 cont.: personas (§3c second half), then the rest.** With
-  stances (#805) + skills (#811) shipped, the next increment is **personas** — spawnable read-only
-  specialists generalized from superbot's `superbot-architect` + `mutation-boundary-auditor`:
-  interview-populated `templates/agents/{architect,reviewer,researcher}.md` → emitted as native
-  `.claude/agents/*.md` (frontmatter + body), each persona's binding sources filled from the project's
-  own contract docs; the **reviewer** wires to the §6 independent-review seam. Reuse the skills
-  emission shape (a CLI `agents --build` staging into `<state_dir>/agents/`, or fold into one `build`
-  command). Then the remaining PR-2 scope: the three modes' per-session behaviors; trigger/drift/
-  staleness detection; the full contract-doc template set + owner-profile; templated hooks +
-  `settings.template.json` (incl. the PreToolUse out-of-stance guard that calls `is_out_of_stance`);
-  simulation asserts mode/stance/skill behaviors. The CI gotchas in the entries above (tests under
-  `tests/`, `print`/`assert`/`subprocess` bans on `engine/`, isort-checks-tests, **regenerate the
-  bootstrap** after any `src/engine` edit, **keep `from engine…` imports single-line** — the builder
-  now handles multi-line but simple is safer, black↔ruff COM812 on awkward wraps → hoist long strings
-  to constants) all still apply.
+- **PR 2 — personas (2026-06-13) — DONE (#812). §3c COMPLETE.** `engine/agents/agents.py` — 3
+  read-only personas (architect · reviewer · researcher) generalized from superbot's
+  `superbot-architect` + `mutation-boundary-auditor`. Each emits a native `.claude/agents/<name>.md`
+  (frontmatter `name`/`description`/`tools` + system-prompt body); bodies fill from the project's own
+  contract slots (`${architecture_layers}`, `${ownership_model}`, …) so a persona reviews against
+  *this* project. **Read-only by construction** — only `Read`/`Grep`/`Glob` (test-pinned); no stance
+  precedence (spawned specialists). `agents` CLI (list / `--build` stages into `<state_dir>/agents/`,
+  host-installed). *(Shipped as a Python module + `agents` CLI, not the plan's literal
+  `templates/agents/` subdir — same stdlib-embed reasoning as skills; the `${slot}` substitution gives
+  the interview-population the plan wanted. The reviewer→§6-review-seam wiring is left for the
+  review-seam work in PR 3.)* `test_agents.py` (11 cases). 102 kit tests; `--full` green.
+- **▶ RESUME HERE (next session) — PR 2 remainder: modes + triggers + hooks + contract templates.**
+  §3b/§3c (the capability layer) are DONE — stances (#805) + skills (#811) + personas (#812). The
+  remaining PR-2 scope: **(a)** the three integration modes' (observe/guided/active) per-session
+  *behaviors* (the field exists in state; wire what each does per session); **(b)** trigger / drift /
+  staleness detection (the mandatory-question machinery, §4); **(c)** the full contract-doc template
+  set (architecture / ownership / runtime_contracts / repo-nav / helper-policy) + owner-profile; **(d)**
+  templated hooks + `settings.template.json` — incl. the **PreToolUse out-of-stance guard** that calls
+  `is_out_of_stance` (the one piece that makes stances enforced, not just advisory); **(e)** simulation
+  asserts for mode/stance/skill behaviors. Then **PR 3** (self-maintenance loop + independent-review
+  seam + distribution polish). The CI gotchas in the entries above (tests under `tests/`,
+  `print`/`assert`/`subprocess` bans on `engine/`, isort-checks-tests, **regenerate the bootstrap**
+  after any `src/engine` edit, **keep `from engine…` imports single-line** where easy, black↔ruff
+  COM812 on awkward wraps → hoist long strings to constants) all still apply.
 
 ---
 

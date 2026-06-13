@@ -3,10 +3,10 @@
 Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``
 (show or set the task stance), ``ask`` (list the pending interview questions),
 ``render`` (write content docs), ``skills`` (list / ``--build`` the skill pack),
-``check`` (run the doc + session-log hygiene checks), and ``--simulate N`` (the
-CI / proving smoke that drives the staged interview). Output goes through
-``_emit`` (``sys.stdout.write``) rather than ``print`` to keep the engine
-lint-clean.
+``agents`` (list / ``--build`` the persona pack), ``check`` (run the doc +
+session-log hygiene checks), and ``--simulate N`` (the CI / proving smoke that
+drives the staged interview). Output goes through ``_emit``
+(``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from engine.agents.agents import AGENTS, agent_document, agent_relpath
 from engine.checks.check_docs import run_doc_checks
 from engine.checks.check_session_log import check_log, latest_session_log
 from engine.interview.interview import critical_slots, pending_questions, run_session
@@ -202,6 +203,37 @@ def cmd_skills(target: Path, build: bool) -> int:
     return 0
 
 
+def cmd_agents(target: Path, build: bool) -> int:
+    """List the persona pack, or ``--build`` it into ``<state_dir>/agents/``.
+
+    Listing shows each persona + its description. Building emits a native
+    ``.claude/agents``-style ``<name>.md`` per persona into the staging area, body
+    slot-filled from the project's contract slots — the host then installs them
+    under ``.claude/agents/``. Like ``render``/``skills``, the kit stages; it never
+    writes a live ``.claude/`` tree.
+    """
+    config = load_config(target)
+    if not build:
+        _emit("agents:")
+        for agent in AGENTS:
+            _emit(f"  {agent['name']} — {agent['description']}")
+        return 0
+    backend = JsonStateBackend(_state_path(target, config))
+    context = build_context(backend.data) if backend.data else {}
+    out_base = target / config.state_dir
+    leftover_total = 0
+    for agent in AGENTS:
+        body = render(agent["body"], context)
+        leftover = find_placeholders(body)
+        leftover_total += len(leftover)
+        atomic_write_text(out_base / agent_relpath(agent), agent_document(agent, body))
+        suffix = f" ({len(leftover)} slot(s) unfilled)" if leftover else ""
+        _emit(f"agents: wrote {agent_relpath(agent)}{suffix}")
+    count = len(AGENTS)
+    _emit(f"agents: {count} persona(s), {leftover_total} unfilled placeholder(s).")
+    return 0
+
+
 def cmd_check(target: Path, strict: bool) -> int:
     """Run the doc-hygiene + session-log checks against ``target``.
 
@@ -302,6 +334,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit SKILL.md files into <state_dir>/skills/",
     )
     skills.add_argument("--target", type=Path, default=Path.cwd())
+    agents = sub.add_parser("agents", help="list or --build the persona pack")
+    agents.add_argument(
+        "--build",
+        action="store_true",
+        help="emit agent .md files into <state_dir>/agents/",
+    )
+    agents.add_argument("--target", type=Path, default=Path.cwd())
     check = sub.add_parser("check", help="run the doc + session-log hygiene checks")
     check.add_argument("--target", type=Path, default=Path.cwd())
     check.add_argument("--strict", action="store_true", help="exit 1 if any violation")
@@ -329,6 +368,8 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_stance(args.target, args.name)
         if args.command == "skills":
             return cmd_skills(args.target, args.build)
+        if args.command == "agents":
+            return cmd_agents(args.target, args.build)
         if args.command == "check":
             return cmd_check(args.target, args.strict)
     except UnsafeTargetError as exc:

@@ -36,6 +36,7 @@ MODULE_ORDER = (
     "checks/check_session_log.py",
     "stances/stances.py",
     "skills/skills.py",
+    "agents/agents.py",
     "render.py",
     "cli.py",
 )
@@ -46,6 +47,7 @@ PACKAGE_FILES = (
     "checks/__init__.py",
     "stances/__init__.py",
     "skills/__init__.py",
+    "agents/__init__.py",
 )
 
 # Intra-package imports are dropped: in the concatenated file the referenced
