@@ -25,11 +25,13 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/modest-ptolemy-2xipoh` · external-systems watchlist (owner-directed docs) ·
-  `docs/research/` (new README + watchlist) + orientation/idea cross-links · 2026-06-14
+- `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
+  planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 
 ## Recently cleared
 
+- `claude/modest-ptolemy-2xipoh` · external-systems watchlist (owner-directed docs) ·
+  `docs/research/` + orientation/idea cross-links · 2026-06-14 · **PR #856 (merged)**
 - `claude/nifty-allen-uwt95o` · P1-1 Layer A — BTD6 path/line-aware resolution (absence-claim
   trigger removal, design Rec #1) · 2026-06-14 · **PR #855**
 - `claude/p0-2-content-free-media-diagnostics-2026-06-14` · P0-2 follow-up — content-free

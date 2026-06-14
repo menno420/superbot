@@ -5159,3 +5159,95 @@ VPS. Deferred deeper investigation (owner: "we'll come back to that later") — 
 first-pass fix.
 
 **Home:** `docs/operations/hermes-skills/dispatch.md` (the AUTHORIZED rule + Notes diagnosis).
+
+---
+
+### Q-0137 — Planning sectors + Hermes-dispatched routines + staged deep-clean reconciliation (2026-06-14)
+
+> **PARTLY DECIDED — owner design conversation, 2026-06-14.** Three linked threads dropped in chat;
+> captured in full (owner direction + agent opinion) in
+> [`../ideas/routine-dispatch-and-staged-reconciliation-2026-06-14.md`](../ideas/routine-dispatch-and-staged-reconciliation-2026-06-14.md).
+>
+> **DECISION 2026-06-14 (Thread 3 — sectors):** owner adopted a **5-sector** planning taxonomy with
+> the **mechanism-vs-content split** — **S1 Bot · S2 BTD6 · S3 AI-Memory system (the *mechanism* — a
+> shippable engine of its own) · S4 Documentation system (the *content/product* the engine generates) ·
+> S5 Operations/control-plane.** Owner's rationale: "the docs are not the system, the docs are a product
+> of the system" — so Memory and Docs are separate sectors (the substrate is NOT folded into the docs).
+> Built as [`../repo-sector-map.md`](../repo-sector-map.md) (the 3-tap nav top layer). **Threads 1 & 2
+> (dispatch + staged deep-clean) remain open** for owner decision.
+
+**Thread 1 — dispatch.** Owner wants a more reliable dispatch with **every routine started by Hermes
+except reconciliation**. *Agent view:* endorse — dispatch is already Hermes (`/fire`); the concrete
+change is moving the **night executor** off GitHub's flaky `schedule:` cron onto the always-on Hermes
+VPS. **Keep reconciliation independent** because it is the **watchdog** (it runs `check_loop_health`);
+if it depended on Hermes, a Hermes outage would silently disable outage-detection. **Add a rail:** keep
+GitHub `schedule:` as a *degraded backstop* so a Hermes outage means "late," not "stopped."
+
+**Thread 2 — staged deep-clean.** Reconciliation should grow from docs-only into a staged deep-clean
+(surface problems · de-stale docs · dispose of open PRs/branches · review shipped work · refactor the
+roadmap · keep a healthy stability-vs-features backlog). *Agent view:* strong agree; (a) generate the
+*mechanical* findings via checkers into a punch-list so judgment-time goes to planning; (b) make it a
+**resumable staged program** (self-chains like the executor) with a **terminal condition** =
+every sector has live Now/Next horizons, zero rotting PRs/branches, ledger+docs green, control-plane
+verified. That operationalizes "always enough outstanding work."
+
+**Thread 3 — planning sectors.** Divide the repo into standing planning sectors: **bot · BTD6 · agent
+substrate · documentation system** (in-bot AI integrated into the bot). *Agent view:* the key reframe
+is **planning taxonomy ≠ review taxonomy** — `repo-review-map.md` Axis A already partitions for
+*review scoping*; the owner wants a *planning* partition the roadmap organizes around, which doesn't
+exist yet. Proposed coarsening: **S1 Bot product · S2 BTD6 (standing, spans A1 runtime + A2 pipeline) ·
+S3 Agent substrate (memory + docs-system + governance + tooling + loop — the owner's "AI-memory" and
+"documentation" are two faces of one sector) · S4 Operations / control-plane (THE FORGOTTEN ONE —
+no home today for non-file operational health: routine firing, backups, secrets, Hermes uptime; every
+recent real failure lived here) · (S5 substrate-as-product, future).** Reconcile S→A in both
+`repo-review-map.md` and the roadmap so two taxonomies don't compete.
+
+**Open decisions for the owner:** (1) adopt the S1–S4 planning-sector taxonomy (and create S4
+Operations as a first-class sector)? (2) move the executor to Hermes-dispatch + keep a cron backstop?
+(3) approve the staged-deep-clean shape + terminal condition before it's built? **Home on decision:**
+`docs/operations/autonomous-routines.md` (dispatch + deep-clean), `docs/roadmap.md` + `repo-review-map.md`
+(sectors).
+
+---
+
+### Q-0138 — Branch-freshness advisory hook (conflict/staleness guard) (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session — the Q-0106 exception: maintainer directs an
+> executable-config change live, so it is applied directly and recorded here with provenance).**
+
+**Context.** The owner asked for "a hook that tells any session that's about to merge something to
+check for recently merged PRs / outstanding PRs to fix any possible merge conflicts." Initially
+withdrawn (a parallel session self-handled a dirty merge), then re-requested after **#857 sat
+CONFLICTED and unmerged unnoticed** — a parallel PR (#855) merged a shared ledger file *after* #857
+was pushed, GitHub auto-merge silently waited on the dirty PR, and no event woke the session
+(webhooks don't deliver merge-conflict transitions).
+
+**Decision.** Add `scripts/check_branch_freshness.py`, a **non-blocking** advisory wired two ways in
+`.claude/settings.json`: (1) **PreToolUse on Bash** — acts only on `git push` (the "about to ship"
+moment, warn if already behind); (2) **Stop** — checks the branch every turn, so a branch that falls
+behind *after* its last push (the #857 case) is flagged on the next turn. It fetches `origin/main`,
+and if behind, lists the merged PRs + flags high-conflict ledger files (`active-work.md`,
+`current-state.md`, `ideas/README.md`, the router, `roadmap.md`), pointing at the fetch+UNION-merge
+fix. Always exits 0 (never blocks a push/turn). 7 unit tests; disposable kill-switch header per
+Q-0105 (delete if noisy over multiple sessions).
+
+**Home:** `scripts/check_branch_freshness.py` + `.claude/settings.json` (PreToolUse Bash + Stop).
+
+---
+
+### Q-0139 — Hook policy: when a fix becomes a hook vs. a rule/checker/config/doc (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session).** Owner asked for "a ruleset for what a hook
+> should define — what something needs to have/do/cause to qualify for a hook, so we know in which
+> future situations to fix something by making it a hook vs. adding it to CLAUDE.md / settings.json."
+
+**Decision.** Created [`../operations/hook-policy.md`](../operations/hook-policy.md) — the
+executable-config analogue of `helper-policy.md`. It names the **five mechanisms** (hook · checker ·
+CLAUDE.md rule · settings.json config · doc), a **five-part test** for what qualifies as a hook
+(automatic & forgettable · event-anchored · mechanizable at fire-time · cheap & safe/non-blocking ·
+recurring), a **quality bar** (defensive, self-filtering, kill-switch header, paired test), a
+**decision tree**, and worked examples. Does **not** lift the Q-0106 boundary (hooks/settings.json/
+CLAUDE.md are still propose-unless-owner-directed). Prompted by the Q-0138 freshness hook built the
+same session.
+
+**Home:** `docs/operations/hook-policy.md`.
