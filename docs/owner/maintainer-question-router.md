@@ -5045,3 +5045,45 @@ future-product-direction's "AI explanations only, no write tools") and the ChatG
 grounding contract (the repo already enforces grounding-first/cite-everything) — both already covered.
 
 **Home:** this block (provenance index); the four docs above hold the items.
+
+---
+
+### Q-0133 — Born-red session card: hold the merge until the session flips it ready (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed, applied in-session per the Q-0106 in-session-exception —
+> the owner is the live reviewer for this CLAUDE.md + workflow change).**
+
+**Problem.** Native auto-merge (Q-0123) merges a `claude/*` PR the instant **Code Quality** is
+green. A session that pushes its code first and its close-out docs (ledger entry, `.sessions/`
+log) second merges a **partial** PR before those docs land — the **#843** case: it merged without
+its ledger entry, leaving a stranded follow-up (#846). Push-batching discipline (Q-0126) alone did
+not prevent it; the owner asked to **enforce** a hold.
+
+**Owner's mechanism (his words, refined live).** "Enforce a rule so that the first docs PR…has a
+document with failing CI, and only when you want to merge do you change the document and CI goes
+green" → refined to: "the **same file** is also the session-start and session-end file, so it shows
+the next/parallel session **what is about to happen and what has happened**."
+
+**Decision — adopted as designed.** That single file is the existing **`.sessions/<date>-<slug>.md`
+session log**, and its `> **Status:**` badge gates the merge:
+- Created in the **first** commit with `Status: in-progress` + a one-line "what's about to happen"
+  → the PR is **born red** (race-free: the gate is red from commit 1, not a label added later).
+- Flipped to `Status: complete` as the **deliberate final step**, after the close-out docs (and the
+  Q-0089/Q-0102 enders) are written → Code Quality green → auto-merge fires on a *complete* PR.
+- Per-session filename → no parallel-chat collision, no `main` conflict; it lands on `main` as the
+  durable "what happened" record (already the `.sessions/` convention). Coordination ("what's about
+  to happen") is visible on the open PR; complements the pre-PR `active-work.md` claim ledger.
+
+**Strictness chosen — engage-when-present (not airtight).** The `check_session_gate` step in
+`code-quality` fails **only** when the PR *adds* a session card whose status isn't a ready token;
+a PR that adds no card merges as before. This is deliberate: it **cannot deadlock the autonomous
+loop** (workflow-authored PRs like `btd6-data-refresh`, or a routine that hasn't created a card,
+are never blocked). Creating the card is mandatory **by the CLAUDE.md rule** + the Stop-hook /
+`/session-close` reminder, not by hard CI. *Can be tightened to airtight (absent = red, with
+carve-outs for workflow-authored PRs) later if routine adoption proves reliable — left as the
+follow-up.* Reliability (Q-0105): UNVERIFIED — `scripts/check_session_gate.py` + the workflow step
+are deletable if the gate ever holds a PR it shouldn't.
+
+**Home:** `.claude/CLAUDE.md` § Session & plan workflow (the rule); `scripts/check_session_gate.py`
++ `.github/workflows/code-quality.yml` (the gate); `.claude/skills/session-close/SKILL.md` (the
+flip-ready step). Shipped this session (born-red dogfooded on its own PR).

@@ -68,6 +68,22 @@ jobs:
       - name: Run doc hygiene (check_docs)
         run: python3 scripts/check_docs.py --strict
 
+      # Born-red session merge-gate (owner directive Q-0133). On a PR, if this
+      # session ADDED a `.sessions/` card, the merge is HELD until that card's
+      # `> **Status:**` badge is a ready token (`complete`). The card is created
+      # in the first commit with `in-progress` (PR born red, so native auto-merge
+      # arms but cannot fire on a partial PR — the #843 race), then flipped to
+      # `complete` as the deliberate final step. A PR that adds no card is NOT
+      # gated (workflow-authored / non-adopting routine PRs are never deadlocked).
+      # Pure stdlib; see scripts/check_session_gate.py. UNVERIFIED (Q-0105) —
+      # delete this step + the script if it ever holds a PR it shouldn't.
+      - name: Session merge-gate (check_session_gate)
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 scripts/check_session_gate.py \
+            --base '${{ github.event.pull_request.base.sha }}' \
+            --head '${{ github.event.pull_request.head.sha }}'
+
       - name: Set up Python
         if: steps.changes.outputs.code == 'true'
         uses: actions/setup-python@v6

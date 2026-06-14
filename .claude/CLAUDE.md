@@ -163,6 +163,23 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   restart/prod-checks stay the maintainer's. *If you ever merge by hand* (a carve-out, or
   auto-merge is down): re-verify **CI green on the final head** and **never defer the merge to
   the maintainer's next message** — that deferral was the #778 root cause.
+- **Open your session card born-red as the FIRST commit; flip it green as the LAST (owner
+  directive Q-0133, 2026-06-14).** Auto-merge fires the instant **Code Quality** is green, so a
+  session that pushes code first and its close-out docs (ledger entry, `.sessions/` log) second
+  can merge a *partial* PR before those docs land — the #843 race. The fix is one per-session
+  file that is **both** the start-declaration (*what is about to happen* — visible to parallel /
+  next sessions on the open PR) **and** the end-record (*what has happened*): your
+  **`.sessions/<date>-<slug>.md` log**. Create it in your **first** commit with a HOLD status
+  (`> **Status:** \`in-progress\``) and a one-line "what I'm about to do" — that opens the PR
+  **born red** (the `check_session_gate` step in `code-quality` holds the merge), so auto-merge
+  arms but **cannot fire on an incomplete PR**. Do the work; write the close-out docs + the
+  Q-0089/Q-0102 enders into that same log; then, as the **deliberate final step**, flip the badge
+  to `\`complete\`` and push → Code Quality goes green → it merges. The gate engages **only** when
+  a PR *adds* a session card (workflow-authored / non-adopting routine PRs are never deadlocked),
+  so creating the card is mandatory *by this rule* + the Stop-hook reminder, not by hard CI. This
+  supersedes the "open the PR ready" phrasing above for `claude/*` sessions: **open it born-red,
+  flip it ready last.** (`scripts/check_session_gate.py`; ready tokens:
+  `complete/done/ready/final/merged/shipped`.)
 - **End every session with a backlog-grooming pass — the standing secondary task (owner
   decision Q-0015).** Once the main task + PR are done and capacity remains, you are *not*
   finished: browse `docs/ideas/` (plus any ideas the maintainer dropped this session) and
