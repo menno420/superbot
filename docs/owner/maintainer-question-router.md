@@ -5159,3 +5159,44 @@ VPS. Deferred deeper investigation (owner: "we'll come back to that later") — 
 first-pass fix.
 
 **Home:** `docs/operations/hermes-skills/dispatch.md` (the AUTHORIZED rule + Notes diagnosis).
+
+---
+
+### Q-0137 — Planning sectors + Hermes-dispatched routines + staged deep-clean reconciliation (2026-06-14)
+
+> **DISCUSS (open) — owner design conversation, 2026-06-14.** Three linked threads dropped in chat;
+> captured in full (owner direction + agent opinion) in
+> [`../ideas/routine-dispatch-and-staged-reconciliation-2026-06-14.md`](../ideas/routine-dispatch-and-staged-reconciliation-2026-06-14.md).
+> Not approved — this block records the open decisions.
+
+**Thread 1 — dispatch.** Owner wants a more reliable dispatch with **every routine started by Hermes
+except reconciliation**. *Agent view:* endorse — dispatch is already Hermes (`/fire`); the concrete
+change is moving the **night executor** off GitHub's flaky `schedule:` cron onto the always-on Hermes
+VPS. **Keep reconciliation independent** because it is the **watchdog** (it runs `check_loop_health`);
+if it depended on Hermes, a Hermes outage would silently disable outage-detection. **Add a rail:** keep
+GitHub `schedule:` as a *degraded backstop* so a Hermes outage means "late," not "stopped."
+
+**Thread 2 — staged deep-clean.** Reconciliation should grow from docs-only into a staged deep-clean
+(surface problems · de-stale docs · dispose of open PRs/branches · review shipped work · refactor the
+roadmap · keep a healthy stability-vs-features backlog). *Agent view:* strong agree; (a) generate the
+*mechanical* findings via checkers into a punch-list so judgment-time goes to planning; (b) make it a
+**resumable staged program** (self-chains like the executor) with a **terminal condition** =
+every sector has live Now/Next horizons, zero rotting PRs/branches, ledger+docs green, control-plane
+verified. That operationalizes "always enough outstanding work."
+
+**Thread 3 — planning sectors.** Divide the repo into standing planning sectors: **bot · BTD6 · agent
+substrate · documentation system** (in-bot AI integrated into the bot). *Agent view:* the key reframe
+is **planning taxonomy ≠ review taxonomy** — `repo-review-map.md` Axis A already partitions for
+*review scoping*; the owner wants a *planning* partition the roadmap organizes around, which doesn't
+exist yet. Proposed coarsening: **S1 Bot product · S2 BTD6 (standing, spans A1 runtime + A2 pipeline) ·
+S3 Agent substrate (memory + docs-system + governance + tooling + loop — the owner's "AI-memory" and
+"documentation" are two faces of one sector) · S4 Operations / control-plane (THE FORGOTTEN ONE —
+no home today for non-file operational health: routine firing, backups, secrets, Hermes uptime; every
+recent real failure lived here) · (S5 substrate-as-product, future).** Reconcile S→A in both
+`repo-review-map.md` and the roadmap so two taxonomies don't compete.
+
+**Open decisions for the owner:** (1) adopt the S1–S4 planning-sector taxonomy (and create S4
+Operations as a first-class sector)? (2) move the executor to Hermes-dispatch + keep a cron backstop?
+(3) approve the staged-deep-clean shape + terminal condition before it's built? **Home on decision:**
+`docs/operations/autonomous-routines.md` (dispatch + deep-clean), `docs/roadmap.md` + `repo-review-map.md`
+(sectors).

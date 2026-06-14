@@ -20,6 +20,12 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`routine-dispatch-and-staged-reconciliation-2026-06-14.md`](./routine-dispatch-and-staged-reconciliation-2026-06-14.md) —
+  **owner design conversation (2026-06-14, → Q-0137 DISCUSS):** three linked threads — (1) dispatch every
+  routine via Hermes *except* reconciliation (the watchdog); (2) evolve reconciliation into a staged,
+  resumable **deep-clean** with a checkable terminal condition; (3) a **planning-sector** taxonomy
+  (bot · BTD6 · agent substrate · **+ a forgotten Operations/control-plane sector**) distinct from the
+  `repo-review-map.md` review taxonomy. Captured owner direction + agent opinion; not approved.
 - [`agent-env-credential-smoke-check-2026-06-14.md`](./agent-env-credential-smoke-check-2026-06-14.md) —
   **tooling (2026-06-14, the `auth probe` routine / PR #840):** a stdlib `check_agent_env.py` that
   does a minimal authenticated round-trip for each external credential the env *claims* to provide

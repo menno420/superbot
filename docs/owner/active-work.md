@@ -25,10 +25,13 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/modest-ptolemy-2xipoh` · external-systems watchlist (owner-directed docs) ·
-  `docs/research/` (new README + watchlist) + orientation/idea cross-links · 2026-06-14
+- `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
+  planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 
 ## Recently cleared
+
+- `claude/modest-ptolemy-2xipoh` · external-systems watchlist (owner-directed docs) ·
+  `docs/research/` + orientation/idea cross-links · 2026-06-14 · **PR #856 (merged)**
 
 - `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
   2026-06-14 · **PR #843 (merged; session-close docs in a small follow-up PR)**
