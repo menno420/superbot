@@ -1,6 +1,6 @@
 # Session: ledger reconciliation — band #841–#860 + window catch-up
 
-> **Status:** `in-progress`
+> **Status:** `complete` — PR #867; born-red card flipped as the deliberate final step (Q-0133).
 
 **Branch:** `claude/sharp-ptolemy-5mzbvb` · **Date:** 2026-06-14 · **Type:** routine (fix/docs — living-ledger drift)
 
