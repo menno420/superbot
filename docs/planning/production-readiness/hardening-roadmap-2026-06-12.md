@@ -27,7 +27,7 @@ session". Tracks needing an owner decision name the routed Q-block.
 | Games | Partial | Wager settlement not atomic — can mint coins / lose entry fees | [games](games-production-readiness-map-2026-06-12.md) |
 | Media / YouTube | **Not ready** | Cache never purged + raw metadata stored indefinitely (privacy) | [media](media-youtube-production-readiness-map-2026-06-12.md) |
 | Settings / bindings / provisioning | Partial | Dual-lane pointers bypass binding validation; delegated-setup authority mismatch | [settings](settings-bindings-provisioning-production-readiness-map-2026-06-12.md) |
-| Server management | Partial | Mixed channel-mutation ownership (some audited, some direct) | [server-mgmt](server-management-production-readiness-map-2026-06-12.md) |
+| Server management | Partial | ~~Mixed channel-mutation ownership~~ → **converged (P0-4 complete)**; remaining gap = live verification only | [server-mgmt](server-management-production-readiness-map-2026-06-12.md) |
 | AI / Setup Advisor | Partial | Live-eval defect rate; no versioned eval/smoke matrix | [ai](ai-production-readiness-map-2026-06-12.md) |
 | BTD6 | Partial (gated) | Model-faithfulness + absence-claim safety; manual blob seeding | [btd6](btd6-production-readiness-map-2026-06-12.md) |
 | Health / diagnostics | Partial | Findings have no lifecycle transition; smoke/hub drift | [health](health-diagnostics-production-readiness-map-2026-06-12.md) |
@@ -85,15 +85,25 @@ what actually writes.
 families) + decide the delegated-Setup apply contract (Q-0098) + add the parity invariants
 (P1-3). → settings map "Recommended next session".
 
-### P0-4 · Server-management channel-ownership convergence  ·  needs **Q-0100**
-**Evidence:** [server-mgmt map](server-management-production-readiness-map-2026-06-12.md) —
-channel creation, clone, permission-overwrite, and category lifecycle paths sit **outside**
-the one audited lifecycle/provisioning seam; the same operator action gets different audit,
-confirmation, and failure behavior depending on path. The channel invariant only pins
+### P0-4 · Server-management channel-ownership convergence  ·  ✅ **SHIPPED (PR 1 #820 + PR 2, 2026-06-14)** · Q-0100 answered
+**Done:** every operator channel mutation routes through the audited
+`ChannelLifecycleService`. **PR 1 (#820):** `set_overwrite` + `clone` ops, all
+`.set_permissions()`/`.clone()` call sites routed off, invariant pins both. **PR 2:** ad-hoc
+operator creation (`!create`/`!evt`/`!bulkcreate` + the create panel) + category lifecycle via
+`ChannelLifecycleService.create_channels` (audit + `channel.lifecycle_changed` event + typed
+per-name result); `test_no_direct_channel_mutations.py` now pins `create_text_channel`/
+`create_voice_channel`/category creation, and `test_no_silent_auto_create.py` lists the service
+as the one sanctioned manual `guild.create_*` caller.
+**Design decision (Q-0100):** ad-hoc creation has *no* declared binding, so it does NOT fit the
+catalogue-driven `ResourceProvisioningPipeline`; it is owned by `ChannelLifecycleService`
+(the channel sibling of the audited `RoleLifecycleService`). Subsystem-*bound* creation stays
+with the provisioning pipeline.
+
+**Evidence (original):** [server-mgmt map](server-management-production-readiness-map-2026-06-12.md) —
+channel creation, clone, permission-overwrite, and category lifecycle paths sat **outside**
+the one audited lifecycle/provisioning seam; the same operator action got different audit,
+confirmation, and failure behavior depending on path. The channel invariant only pinned
 `.edit()`/`.delete()`, giving a false sense of completeness.
-**Why P0:** audit-trail integrity; uneven confirmation on destructive guild mutations.
-**Bounded session:** decide the canonical owner per direct path (Q-0100), then converge under
-it + extend the invariant. → server-mgmt map "Recommended next session".
 
 ---
 
@@ -176,9 +186,10 @@ owner-picked as the next implementation session — design pinned:**
    wrong commands and stale ownership. One session.
 2. **P0-1 games wager money-safety** — highest concrete harm (mints/loses currency),
    self-contained, no owner gate, test-injectable.
-3. **P0-3 / P0-4** — now unblocked (Q-0098 / Q-0100 answered): settings pointer-lane +
-   delegated-apply route, or server-mgmt channel-ownership convergence under the existing
-   seams. Both are now design-decided; sequence by the owner's pick.
+3. **P0-3 / P0-4** — ✅ **both SHIPPED.** P0-3 (settings pointer-lane + delegated-apply,
+   #777/#794/#817) and P0-4 (channel-ownership convergence, #820 + PR 2, 2026-06-14) are
+   complete. **Next implementation track = P0-2 media retention (Q-0099), then P1-1 eval
+   matrix.**
 
 > As a track lands, update the relevant map's rows from Partial/Not Done → Done with the PR
 > as evidence, and tick the verdict table above.

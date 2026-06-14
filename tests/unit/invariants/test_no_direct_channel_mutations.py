@@ -16,9 +16,15 @@ Scope notes:
   ``response.edit_message`` (attribute ``edit_message`` — never matched).
 * ``.delete`` / ``.edit`` / ``.set_permissions`` / ``.clone`` are pinned — the
   change operations the lifecycle service owns (Q-0100: clone/overwrite →
-  ChannelLifecycleService).  Channel *creation* (``.create_text_channel`` etc.)
-  is NOT pinned here: it converges under ``ResourceProvisioningPipeline`` in the
-  P0-4 creation follow-up, and is guarded by ``test_no_silent_auto_create.py``.
+  ChannelLifecycleService).
+* **P0-4 PR 2** also pins ad-hoc operator *creation*
+  (``.create_text_channel`` / ``.create_voice_channel`` / ``.create_category``):
+  the cog + channel views must route it through
+  ``ChannelLifecycleService.create_channels`` (the audited manual-channel
+  creator), not call Discord directly.  The complementary
+  ``test_no_silent_auto_create.py`` owns the repo-wide create-call allowlist
+  (the service itself is the one sanctioned manual ``guild.create_*`` caller);
+  subsystem-*bound* creation still goes through ``ResourceProvisioningPipeline``.
 """
 
 from __future__ import annotations
@@ -30,8 +36,18 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CHANNEL_COG = _REPO_ROOT / "disbot" / "cogs" / "channel_cog.py"
 _CHANNEL_VIEWS = _REPO_ROOT / "disbot" / "views" / "channels"
 
-# Channel mutations routed through ChannelLifecycleService.
-_FORBIDDEN = {"delete", "edit", "set_permissions", "clone"}
+# Channel mutations routed through ChannelLifecycleService — change operations
+# plus ad-hoc operator creation (P0-4 PR 2).
+_FORBIDDEN = {
+    "delete",
+    "edit",
+    "set_permissions",
+    "clone",
+    "create_text_channel",
+    "create_voice_channel",
+    "create_category",
+    "create_category_channel",
+}
 
 # Receiver expressions whose ``.delete()``/``.edit()`` are *message* operations
 # (panel re-renders), not channel mutations — excluded by the trailing name.

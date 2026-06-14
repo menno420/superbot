@@ -26,7 +26,6 @@ from services.channel_lifecycle_service import (
     ChannelLifecycleService,
 )
 from services.lifecycle import SUCCESS
-from utils.channels import get_or_create_category, safe_channel_name
 from utils.ui_constants import INFO_COLOR, WARNING_COLOR
 from views.base import send_panel
 
@@ -236,10 +235,22 @@ class ChannelCog(commands.Cog):
     @is_admin_or_owner()
     async def manage_event(self, ctx, evt: str, action: str):
         if action.lower() == "create":
-            category = await get_or_create_category(ctx.guild, "Events")
-            name = await safe_channel_name(ctx.guild, evt)
-            await ctx.guild.create_text_channel(name, category=category)
-            await ctx.send(f'Event channel "{name}" created!')
+            result = await ChannelLifecycleService().create_channels(
+                ctx.guild,
+                [evt],
+                ctx.author,
+                category_name="Events",
+                actor_type="admin",
+            )
+            if result.outcome == SUCCESS:
+                created = ctx.guild.get_channel(result.applied[0].target_id)
+                name = created.name if created else evt
+                await ctx.send(f'Event channel "{name}" created!')
+            else:
+                await ctx.send(
+                    f"❌ Could not create event channel: "
+                    f"{self._channel_result_error(result)}",
+                )
         elif action.lower() == "delete":
             channel = self._resolve_channel(ctx.guild, evt)
             if not channel:
@@ -275,7 +286,6 @@ class ChannelCog(commands.Cog):
         permission: bool,
         category_name: str = None,
     ):
-        safe_name = await safe_channel_name(ctx.guild, channel_name)
         category = None
         if category_name:
             category = self._resolve_category(ctx.guild, category_name)
@@ -283,11 +293,23 @@ class ChannelCog(commands.Cog):
                 await ctx.send(f'Category "{category_name}" not found!')
                 return
 
-        # NOTE: channel *creation* converges under ResourceProvisioningPipeline
-        # in the P0-4 follow-up (Q-0100); for now creation stays direct here, but
-        # the permission overwrite on the new channel routes through the audited
-        # lifecycle seam.
-        new_channel = await ctx.guild.create_text_channel(safe_name, category=category)
+        # Channel creation routes through the audited lifecycle seam (P0-4 PR 2,
+        # Q-0100); the follow-up permission overwrite routes through it too.
+        result = await ChannelLifecycleService().create_channels(
+            ctx.guild,
+            [channel_name],
+            ctx.author,
+            category_id=category.id if category else None,
+            actor_type="admin",
+        )
+        if result.outcome != SUCCESS:
+            await ctx.send(
+                f'❌ Could not create channel "{channel_name}": '
+                f"{self._channel_result_error(result)}",
+            )
+            return
+        new_channel = ctx.guild.get_channel(result.applied[0].target_id)
+        safe_name = new_channel.name if new_channel else channel_name
         state = "granted" if permission else "restricted"
         suffix = f' (renamed to "{safe_name}")' if safe_name != channel_name else ""
         await self._apply_overwrite(
@@ -618,16 +640,26 @@ class ChannelCog(commands.Cog):
         if isinstance(potential, discord.CategoryChannel):
             category = potential
             channel_names = list(args[:-1])
+        if not channel_names:
+            await ctx.send("Please provide at least one channel name.")
+            return
 
+        result = await ChannelLifecycleService().create_channels(
+            ctx.guild,
+            channel_names,
+            ctx.author,
+            category_id=category.id if category else None,
+            actor_type="admin",
+        )
         created, failed = [], []
-        for ch in channel_names:
-            safe = await safe_channel_name(ctx.guild, ch)
-            try:
-                await ctx.guild.create_text_channel(safe, category=category)
-                suffix = f" (as {safe})" if safe != ch else ""
-                created.append(f"{ch}{suffix}")
-            except Exception:
-                failed.append(ch)
+        for step in result.steps:
+            if step.ok:
+                made = ctx.guild.get_channel(step.target_id)
+                actual = made.name if made else step.target_name
+                suffix = f" (as {actual})" if actual != step.target_name else ""
+                created.append(f"{step.target_name}{suffix}")
+            else:
+                failed.append(step.target_name)
 
         response = ""
         if created:
