@@ -116,32 +116,32 @@
 
 ### 4.1 Role hub
 
-- `[ ]` `!roles` — **Expect:** the Roles hub panel with buttons: Create · Manage ·
-  Time Roles · XP Roles · Reaction · Diagnostics · Exemptions.
-- `[ ]` `!rolesettings` — **Expect:** the role settings panel (XP thresholds,
-  auto-assign rules).
-- `[ ]` `!rolemenu` — **Expect:** the full role management panel.
-- `[ ]` `!rolecreator` — **Expect:** a role-creation flow (guided or modal).
+- `[✅]` `!roles` — **Expect:** the Roles hub panel with buttons: Create · Manage ·
+  Time Roles · XP Roles · Reaction · Diagnostics · Exemptions. `live walk 2026-06-14`
+- `[✅]` `!rolesettings` — **Expect:** the role settings panel (XP thresholds,
+  auto-assign rules). `live walk 2026-06-14`
+- `[✅]` `!rolemenu` — **Expect:** the full role management panel. `live walk 2026-06-14`
+- `[✅]` `!rolecreator` — **Expect:** a role-creation flow (guided or modal). `live walk 2026-06-14`
 
 ### 4.2 Reaction roles
 
-- `[ ]` `!reactroles #channel :emoji: @Role "description"` — **Expect:** a
+- `[✅]` `!reactroles message_id :emoji: @Role` — **Expect:** a
   reaction-role message posted in the named channel; reacting adds the role;
-  removing the reaction removes it.
-- `[ ]` `!listreactroles` — **Expect:** a list of all configured reaction-role
-  entries for this guild.
-- `[ ]` `!removereactrole <message_id> :emoji:` — **Expect:** the binding is
-  removed; the role is no longer assigned by that reaction.
+  removing the reaction removes it. `live walk 2026-06-14`
+- `[✅]` `!listreactroles` — **Expect:** a list of all configured reaction-role
+  entries for this guild. `live walk 2026-06-14`
+- `[✅]` `!removereactrole <message_id> :emoji:` — **Expect:** the binding is
+  removed; the role is no longer assigned by that reaction. `live walk 2026-06-14`
 
 ### 4.3 XP-gated and time-gated roles
 
-- `[ ]` Confirm that roles auto-assign at the configured XP thresholds (check
+- `[✅]` Confirm that roles auto-assign at the configured XP thresholds (check
   `!rolesettings` for the thresholds; award XP manually via `!givexp` and
   watch the member's roles). **Roles the task loop assigns may have a < 10-min
-  delay** — note the lag, not a bug unless it never fires.
-- `[ ]` Confirm time-gated roles assign after the configured membership duration
+  delay** — note the lag, not a bug unless it never fires. `live walk 2026-06-14`
+- `[✅]` Confirm time-gated roles assign after the configured membership duration
   (hard to verify in a short session; just confirm the task loop is registered
-  and `!diagnostics` reports it running).
+  and `!diagnostics` reports it running). `live walk 2026-06-14`
 
 ---
 
@@ -151,20 +151,20 @@
 > `test_xp_listener_roles`, `test_xp_participation_gate` — internal behavior
 > tested; **embed quality and rank-card image unverified**.
 
-- `[ ]` `!rank` — **Expect:** a rank card (PIL image or embed fallback) showing
+- `[✅]` `!rank` — **Expect:** a rank card (PIL image or embed fallback) showing
   your XP, level, and server rank. Judge the image quality — this is the most
-  visible XP output.
-- `[ ]` `!rank @someone` — **Expect:** their rank card.
-- `[ ]` `!xpmenu` — **Expect:** the XP hub panel.
-- `[ ]` `!givexp @someone 100` (admin) — **Expect:** XP credited, rank card
-  reflects the change.
-- `[ ]` `!resetxp @someone` (admin) — **Expect:** XP reset; confirm it zeroes
-  correctly, including leaderboard position.
-- `[ ]` `!xpconfig` — **Expect:** the XP configuration panel (rate, exclusions,
-  etc.) renders with current values.
-- `[ ]` Level-up announcement: send several messages to trigger a level-up;
+  visible XP output. `live walk 2026-06-14`
+- `[✅]` `!rank @someone` — **Expect:** their rank card. `live walk 2026-06-14`
+- `[✅]` `!xpmenu` — **Expect:** the XP hub panel. `live walk 2026-06-14`
+- `[✅]` `!givexp @someone 100` (admin) — **Expect:** XP credited, rank card
+  reflects the change. `live walk 2026-06-14`
+- `[✅]` `!resetxp @someone` (admin) — **Expect:** XP reset; confirm it zeroes
+  correctly, including leaderboard position. `live walk 2026-06-14`
+- `[✅]` `!xpconfig` — **Expect:** the XP configuration panel (rate, exclusions,
+  etc.) renders with current values. `live walk 2026-06-14`
+- `[✅]` Level-up announcement: send several messages to trigger a level-up;
   **Expect:** a level-up announcement in the configured channel (or DM). Pairs
-  with Community Spotlight (already verified in production eval Tier 5).
+  with Community Spotlight (already verified in production eval Tier 5). `live walk 2026-06-14`
 
 ---
 
@@ -259,21 +259,21 @@
 > `test_admin_restart`, `test_admin_slash_sync` — some tests exist; **most
 > operator commands have never been run in a live bot session**.
 
-- `[ ]` `!adminmenu` — **Expect:** the Admin hub panel (admin-tier only).
-  Slash `/admin` also opens it.
-- `[ ]` `!serverstats` — **Expect:** a server statistics embed (guild count,
-  member total, uptime, etc.).
-- `[ ]` `!cog list` — **Expect:** list of loaded/available cogs and their
-  status.
+- `[✅]` `!adminmenu` — **Expect:** the Admin hub panel (admin-tier only).
+  Slash `/admin` also opens it. `live walk 2026-06-14`
+- `[✅]` `!serverstats` — **Expect:** a server statistics embed (guild count,
+  member total, uptime, etc.). `live walk 2026-06-14`
+- `[✅]` `!cog list` — **Expect:** list of loaded/available cogs and their
+  status. `live walk 2026-06-14`
 - `[ ]` `!syncslash` (alias `!syncs`) — **Expect:** slash commands synced to
   Discord; count of synced commands printed. **Do not run frequently — Discord
   rate-limits global slash syncs.**
-- `[ ]` `!slashes` — **Expect:** a list of all registered slash commands.
-- `[ ]` `!restart` — **Expect:** bot sends a "restarting" message, goes
-  offline, comes back (exit-42 contract, PR #675 + the new 429-backoff, PR
-  #729). **Already in production eval Step 0 — re-verify if in doubt.**
-- `[ ]` `!loglevel DEBUG` / `!loglevel INFO` — **Expect:** log level changes
-  live without restart; subsequent log output reflects the new level.
+- `[✅]` `!slashes` — **Expect:** a list of all registered slash commands. `live walk 2026-06-14`
+- `[✅]` `!restart` — **Expect:** bot sends a "restarting" message, goes 
+  offline, comes back (exit-42 contract, PR #675 + the new 429-backoff, PR 
+  #729). **Already in production eval Step 0 — re-verify if in doubt.** `live walk 2026-06-14`
+- `[✅]` `!loglevel DEBUG` / `!loglevel INFO` — **Expect:** log level changes
+  live without restart; subsequent log output reflects the new level. `live walk 2026-06-14`
 
 ---
 
@@ -284,14 +284,14 @@
 > `test_platform_setting_detail` — embed/data tests; **live command rendering
 > and multi-section navigation unverified**.
 
-- `[ ]` `!diagnostics` (or `!platform`) — **Expect:** multi-section platform
+- `[✅]` `!diagnostics` (or `!platform`) — **Expect:** multi-section platform
   health embed; navigation between sections works. **Already partially in
   production eval Tier 5 as `!platform consistency`.**
-- `[ ]` `!diagnostic_bot_status` — **Expect:** internal runtime status
+- `[✅]` `!diagnostic_bot_status` — **Expect:** internal runtime status
   (lifecycle phase, lock, Postgres pool stats).
-- `[ ]` `!recent_errors` — **Expect:** a list of recent error events from the
+- `[✅]` `!recent_errors` — **Expect:** a list of recent error events from the
   lifecycle buffer; empty is fine if no errors occurred.
-- `[ ]` `!query_logs` — **Expect:** a log-query interface or recent structured
+- `[✅]` `!query_logs` — **Expect:** a log-query interface or recent structured
   log entries.
 
 ---
@@ -320,13 +320,13 @@
 
 ### 13.1 BTD6 reference (`!btd6ref`)
 
-- `[ ]` `!btd6ref tower dart monkey` — **Expect:** tower stats embed for
-  the Dart Monkey.
-- `[ ]` `!btd6ref hero geraldo` — **Expect:** Geraldo hero stats/abilities.
-- `[ ]` `!btd6ref round 63` — **Expect:** round 63 composition / bloon info.
-- `[ ]` `!btd6ref relic <relic name>` — **Expect:** a Contested Territory
+- `[✅]` `!btd6ref tower dart monkey` — **Expect:** tower stats embed for
+  the Dart Monkey. `live walk 2026-06-14`
+- `[✅]` `!btd6ref hero geraldo` — **Expect:** Geraldo hero stats/abilities. `live walk 2026-06-14`
+- `[✅]` `!btd6ref round 63` — **Expect:** round 63 composition / bloon info. `live walk 2026-06-14`
+- `[✅]` `!btd6ref relic <relic name>` — **Expect:** a Contested Territory
   relic description.
-- `[ ]` `!btd6ref ct` — **Expect:** current CT season info or relic browser.
+- `[✅]` `!btd6ref ct` — **Expect:** current CT season info or relic browser. `live walk 2026-06-14`
 - `[ ]` Slash equivalents (`/btd6_tower`, `/btd6_hero`, `/btd6_round`,
   `/btd6_relic`, `/btd6_ct`) — **Expect:** same embeds via slash; ephemeral
   if applicable.
