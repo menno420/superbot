@@ -4727,3 +4727,59 @@ sweep; journal Quick-reference updated.
 
 **Home:** CLAUDE.md § Session & plan workflow (Q-0107 bullet); `docs/operations/autonomous-routines.md`
 (reconcile routine prompt); `.session-journal.md` (Quick reference + Rules). This entry is provenance.
+
+### Q-0126 — Code-quality CI cost + duplicate-work prevention (early-claim convention)
+
+> **OBSERVED 2026-06-14 (owner, in-session).** Verbatim: *"can you come up with a good way to
+> make the code quality work more efficient or have it get triggered less … also something
+> [to] help prevent agents from duplicating work … they should immediately open a small docs
+> only PR or an empty PR … where they will shortly list all the things they expect to ship …
+> so when another agent thinks to work on something they can first check the open and closed
+> recent PRs so they can prevent duplicate work, and once that is done just wait pushing until
+> the PR is complete and ready for the code quality check … how does it currently work? does
+> it always scan the entire repo or only the new files?"*
+
+**Area:** CI cost · session/PR workflow · duplicate-work prevention
+**Type:** (a) infra improvement — **APPLIED**; (b) workflow convention — **ANSWERED in-session** (owner picked via AskUserQuestion)
+
+**Context (measured this session).** `code-quality.yml` is the repo's dominant CI cost —
+**940 runs / 2,396 min this month** (next workflow: 52 runs). Avg run 1m50s. Root causes:
+1. **No `concurrency` block** — every push to a PR ran to completion even when superseded
+   (every other workflow already cancels; this one didn't).
+2. **No pip / mypy caching** — every run re-downloaded the pinned tools + re-type-checked all of `disbot/`.
+3. **Full-repo scope, all-or-nothing** — a docs-only detector skips heavy steps for `*.md`/`docs/`-only
+   changes, but any non-docs file triggers black/isort/ruff over the whole repo, `mypy disbot/`, and the
+   **entire 9,422-test suite**. The diff is used only for the docs-only skip, not to scope checks.
+4. **pytest is the bottleneck** — 9,422 tests in **109s** serial.
+
+**(a) APPLIED (PR #814) — auto-merges on green like a normal PR (see (b) gate decision):**
+  - **Concurrency cancellation** — `group: code-quality-${{ github.ref }}`, `cancel-in-progress`
+    on everything except `main`. Biggest lever on the 940-run count.
+  - **pip download cache** (setup-python) + **`.mypy_cache`** (`actions/cache`) — cut per-run minutes.
+  - **`pytest -n auto` (xdist) — TRIED AND REVERTED.** Measured 109s→35s (~3×) and green locally
+    (even at `-n 4`, CI's worker count), but CI went **red: 9 failed**. Re-running locally showed the
+    failures are **non-deterministic** — a *different* set fails each run (`-n auto` green; `--dist
+    loadscope` failed 7, then a different 1; CI failed 9). The suite has pervasive cross-test **state
+    pollution** that only surfaces under parallel scheduling, so **green locally ≠ green in CI** and no
+    `--dist` flag fixes it. Parallelization is **deferred** to a follow-up that makes the suite
+    isolation-safe *first* (the ~3× unlock). The self-testing gate catching this is the system working.
+
+**(b) ANSWERED in-session (owner via AskUserQuestion, 2026-06-14):**
+  - **Duplicate-work mechanism = claim ledger** (option 1): new append-only `docs/owner/active-work.md`;
+    agents scan it + open/recent PRs before starting, append a one-line claim, prune at close. Chosen
+    over WIP-PR+label / WIP-issue. The literal "open a docs-only PR immediately" was rejected because a
+    ready docs-only PR *arms auto-merge and self-merges empty* before real work lands (Q-0123).
+  - **Push-batching adopted** — hold intermediate pushes; push when the PR is complete. The behavioral
+    half of (a)'s concurrency cancel.
+  - **Gate-workflow changes auto-merge like normal** (not auto-`do-not-automerge`): the owner chose to
+    keep verified gate changes landing on green; #814 follows this.
+
+**Applied this session:** (a) the two safe wins in `.github/workflows/code-quality.yml` (xdist reverted
+there + in `scripts/check_quality.py` / `requirements-dev.txt`); (b) CLAUDE.md § Session & plan workflow
+gained the claim-ledger + push-batching bullet, and `docs/owner/active-work.md` was created. Provenance
+per Q-0106 (owner-directed in-session).
+
+**Home:** CLAUDE.md § Session & plan workflow (the convention); `docs/owner/active-work.md` (the ledger);
+`.github/workflows/code-quality.yml` + `scripts/check_quality.py` (the CI wins). Follow-up (parallel-safe
+test suite → re-enable xdist) captured in
+[`docs/ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md`](../ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md).

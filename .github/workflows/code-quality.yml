@@ -6,6 +6,16 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# Cancel superseded in-flight runs on the same ref. Agents iterate by pushing several
+# times to a PR branch; only the newest commit needs checking, so older runs for the
+# same PR are wasted minutes — and this workflow is the repo's dominant CI cost (~940
+# runs / 2,396 min this month vs. 52 for the next workflow). `main` is exempt: every
+# commit that lands is verified to completion. Provenance Q-0126 (2026-06-14); revert
+# this block if it ever cancels a run that should have finished.
+concurrency:
+  group: code-quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   code-quality:            # <- clear job name
     runs-on: ubuntu-latest
@@ -63,6 +73,13 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.10"
+          # Cache pip's download cache so the pinned tools + requirements.txt aren't
+          # re-downloaded every run. Keyed on the dep files; a version bump there
+          # invalidates it. Provenance Q-0126 (2026-06-14).
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
 
       - name: Install dependencies
         if: steps.changes.outputs.code == 'true'
@@ -84,12 +101,32 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         run: ruff check . --exclude .github,tests,venv,env,build,dist
 
+      - name: Cache mypy incremental cache
+        if: steps.changes.outputs.code == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .mypy_cache
+          # Exact key per disbot tree state; restore-keys falls back to the most recent
+          # cache so mypy re-checks only changed modules instead of all of disbot/.
+          # mypy validates its own cache, so a stale restore is safe. Provenance Q-0126.
+          key: mypy-${{ runner.os }}-py3.10-${{ hashFiles('disbot/**/*.py') }}
+          restore-keys: |
+            mypy-${{ runner.os }}-py3.10-
+
       - name: Run mypy
         if: steps.changes.outputs.code == 'true'
         run: mypy disbot/
 
       - name: Run pytest
         if: steps.changes.outputs.code == 'true'
+        # pytest is the dominant per-run cost (~109s for the 9.4k-test suite), so
+        # parallelizing it (`pytest -n auto`) is the obvious speed win — but it was
+        # tried under Q-0126 (2026-06-14) and reverted: the suite has non-deterministic
+        # cross-test state pollution that only surfaces under parallel scheduling
+        # (different tests fail each run; green locally != green in CI; `--dist
+        # loadscope` made it worse, not better). Parallelization is deferred until the
+        # suite is made isolation-safe — see the follow-up in
+        # docs/ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md.
         run: pytest tests/ -v --tb=short
 
       - name: Docs-only change — heavy checks skipped

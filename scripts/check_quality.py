@@ -129,6 +129,10 @@ def run_mypy() -> int:
 
 
 def run_pytest() -> int:
+    # Serial on purpose: `pytest -n auto` (xdist) was tried under Q-0126 and reverted
+    # — the suite has non-deterministic cross-test state pollution under parallel
+    # scheduling. Re-enable only after the isolation follow-up lands (so CI and this
+    # mirror flip together). See code-quality.yml's pytest step + the Q-0126 idea doc.
     return _run("pytest", _tool("pytest", "tests/", "-q", "--tb=short"))
 
 
