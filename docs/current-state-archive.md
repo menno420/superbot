@@ -13,6 +13,17 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#746–#754 (2026-06-12, dispatch-bridge wiring + routine-fleet arc)** —
+  the Hermes→Claude Code dispatch bridge went **live-verified end-to-end**: **#746**
+  Context7 verify/tool-name fix · **#747** routine-creation step marked DONE (calibration
+  pass) · **#749** `superbot-dispatch` wired to the verified Routines `/fire` API ·
+  **#750** routed the wager-flow-map session idea into the backlog · **#751**
+  Telegram-driven dispatch path live-verified · **#752**
+  [`operations/autonomous-routines.md`](operations/autonomous-routines.md) — the Routine
+  fleet's prompts in git (autonomous dispatch · nightly docs-reconciliation · night
+  caretaker) · **#753** docs-reconciliation routine made issue-triggered + cadence raised
+  10→20 (Q-0107) · **#754** routine prompts rewritten as self-improvement-loop turns with
+  memory read/write and the Q-0089/Q-0102 hooks.
 - **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
   `services/game_wager_workflow.py`: the audited money boundary for every two-party /
   paid-entry game move, composing `economy_service.*_in_txn` inside one
