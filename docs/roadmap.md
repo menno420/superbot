@@ -1,11 +1,11 @@
 # SuperBot — Implementation Roadmap
 
 > **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
-> what order" index. **Last updated:** 2026-06-13 (band-#800 Q-0107 reconciliation pass).
+> what order" index. **Last updated:** 2026-06-14 (band-#820 Q-0107 reconciliation pass).
 >
 > **▶ The live decade queue (next ~9 PRs):**
-> [`planning/reconciliation-pass-2026-06-13-band800.md`](planning/reconciliation-pass-2026-06-13-band800.md)
-> §4 — set by the fourth Q-0107 pass (the production-hardening P0 spine, integrity-first,
+> [`planning/reconciliation-pass-2026-06-14-band820.md`](planning/reconciliation-pass-2026-06-14-band820.md)
+> §4 — set by the fifth Q-0107 pass (the production-hardening P0 spine, integrity-first,
 > with the owner's portable-substrate-kit OSS arc running in parallel as the active thread).
 > That doc owns the queue; this page stays the per-area index. (The
 > [third pass](planning/reconciliation-pass-2026-06-13-q0107.md) is now `historical`; the
@@ -33,9 +33,10 @@
 > **All gating decisions answered as of 2026-06-12 evening** (Q-0098/Q-0099/Q-0100 + Q-0097
 > = operator-managed findings lifecycle); no hardening track waits on a decision. **P0 spine
 > progress:** P0-1 wager money-safety (#748) ✅ · P0-3 settings pointer-lane (#777/#794) +
-> **P0-3 arc PR 3 delegated-Setup apply authority (Q-0098)** ✅. **Next = P0-4** (server-mgmt
-> channel-ownership convergence, Q-0100), then P0-2 (media/YouTube retention, Q-0099) — see
-> the [band-#800 decade queue](planning/reconciliation-pass-2026-06-13-band800.md) §4.
+> **P0-3 arc PR 3 delegated-Setup apply authority (#817, Q-0098)** ✅ · **P0-4 PR 1 channel
+> clone/overwrite convergence (#820, Q-0100)** ✅. **Next = P0-4 PR 2** (channel creation/category
+> under `ResourceProvisioningPipeline`, Q-0100), then P0-2 (media/YouTube retention, Q-0099) — see
+> the [band-#820 decade queue](planning/reconciliation-pass-2026-06-14-band820.md) §4.
 
 ## How to read
 
@@ -56,7 +57,7 @@
 
 | Horizon | Items |
 |---|---|
-| **Now** | The **[band-#800 decade queue](planning/reconciliation-pass-2026-06-13-band800.md)** (fourth Q-0107 pass): the **safety/community band (slots 4–6) ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters) + backup posture ✅ #769 + **native auto-merge migration ✅ #786/#787 (Q-0123)**. Active Now = the **production-hardening P0 spine, integrity-first** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 foundation #777 + arc PR 2 #794** (XP-announce/economy-log scalar pointers retired → binding lane); next = P0-3 arc PR 3 (delegated-apply, Q-0098) → P0-4 → P0-2 → P1-1, all owner-unblocked) — running in parallel with the owner's active thread, the **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** OSS package (PR 1a/1b + the 1b-tail checkers DONE #802; **PR 2 capability layer §3b/§3c COMPLETE — stances #805 + skills #811 + personas #812; the PreToolUse stance-guard hook #813 makes stances enforced**; resume at the PR-2 remainder: modes + contract templates + triggers). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
+| **Now** | The **[band-#820 decade queue](planning/reconciliation-pass-2026-06-14-band820.md)** (fifth Q-0107 pass): the **safety/community band ✅ COMPLETE** (#772 automod · #774 logging · #775 welcome+counters) + backup posture ✅ #769 + **native auto-merge migration ✅ #786/#787 (Q-0123)**. Active Now = the **production-hardening P0 spine, integrity-first** ([hardening roadmap](planning/production-readiness/hardening-roadmap-2026-06-12.md) — **P0-3 COMPLETE** (#777/#794 + arc PR 3 delegated-apply #817, Q-0098); **P0-4 PR 1 channel clone/overwrite convergence ✅ #820, Q-0100**; **next = P0-4 PR 2** (creation/category under `ResourceProvisioningPipeline`) → P0-2 (media retention, Q-0099) → P1-1 eval-matrix, all owner-unblocked) — running in parallel with the owner's active thread, the **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** OSS package (PR 1a/1b + 1b-tail checkers DONE #802; **PR 2 capability layer COMPLETE — stances #805 + skills #811 + personas #812 + the PreToolUse stance-guard hook #813**; resume at the PR-2 remainder: modes + contract templates + triggers → PR 3). The product lanes stay open as owner-steered alternates: **mining** (V-16 phase 2 — gated on the owner's PNG pack; or structures §7.5) · **BTD6** (decode ⭐ item 3 demand-driven; owner live spot-check owed) · **AI** (§7 workflow families post-prod-check; BUG-0009 open in the [bug book](health/bug-book.md)) |
 | **Next** | Safety/community lane remainder (image moderation · security tiers 1+2 · NL event scheduler — all plan-first, see the lane section) · P1-1 versioned AI eval/smoke matrix · myprofile PR A ([plan](planning/myprofile-foundation-plan-2026-06-10.md), turn-key) · help home/navigation plan (editor-UI gate cleared via #677/#679) · V-14 harvest structuring ([dossier](ideas/competitive-teardown-2026-06-10.md); ecosystem-#2 = fishing, owner ratification pending) · the 2026-06-10 [consolidated implementation plan](planning/consolidated-implementation-plan-2026-06-10.md) is **FULLY EXECUTED** (`historical`; [EOD verification](audits/past-day-verification-2026-06-10.md)) |
 | **Later** | P1-2 health findings lifecycle (Q-0097 answered 2026-06-12 — operator-managed; ready when queued) · continuation dispatch = the **Routine seam** (Stage 0's GH Action folded in — Q-0115; activates on Routine wired + calibrated) · BTD6 post-cutover decode backlog · server-management **PR13 AI generation layer** + deferred governance setup (gated — Q-0008/Q-0011) · broad AI expansion beyond the active lanes (gated) · media channel-summary (now shaped by Q-0099) · games deferred follow-ups |
 | **Someday** | The ideas backlog — not approved (see [§Someday](#someday--ideas-not-approved--capture-only)) |
