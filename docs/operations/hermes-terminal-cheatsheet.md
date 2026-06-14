@@ -69,6 +69,27 @@ du -sh ~/.hermes/*                             # What's eating space in Hermes' 
 top                                            # Live CPU/mem/process viewer (q to quit; 'htop' is nicer if installed).
 ```
 
+## Branch hygiene (keeping the repo prunable)
+
+Autonomous sessions create a `claude/*` branch per PR; they pile up fast (hit **626** once,
+which broke Acode's branch picker — it can't paginate that far to reach `main`).
+
+```bash
+# Prevent buildup (one-time, GitHub web): repo Settings → General → Pull Requests →
+#   check "Automatically delete head branches"  → every merged PR self-deletes its branch.
+
+# One-time bulk prune of leftover branches (run from a clone with push rights, e.g. the VPS —
+# NOT from a Claude sandbox, whose git proxy 403s on deleting other branches):
+cd /home/hermes/repos/superbot && git fetch --prune origin
+git branch -r | sed 's#^[[:space:]]*origin/##' | grep -v '^HEAD' \
+  | grep -vx main > /tmp/del.txt   # keep main (add more -vx lines to keep others)
+wc -l /tmp/del.txt                  # review the count first
+xargs -n 50 -a /tmp/del.txt git push origin --delete
+```
+
+**Deleting a branch never deletes its PR** — every PR (title, diff, commits, reviews) stays fully
+viewable at `…/pulls`, and merged code lives in `main`. Safe to prune freely.
+
 ## Notes
 
 - The `hermes …` commands are the Hermes Agent CLI (Nous Research). `hermes config set KEY VAL`
