@@ -187,7 +187,7 @@ These are not blockers for the current opt-in read-only/advisory feature set, bu
 ### Remaining gaps
 
 - No automated test proves the full deployed Discord event → external provider → tool call(s) → grounded reply → audit row path against real provider APIs.
-- No recurring live-eval artifact is required by CI after router/grounding/tool changes.
+- The **deterministic** half of the eval/smoke matrix is now CI-gated (`tests/evals/smoke.py`, #878 — gates · fallback · tool-dispatch · audit · safety · redaction · config). The remaining gap is the **live-quality** artifact (the golden set), which still isn't auto-required by CI after router/grounding/tool changes (it needs paid provider creds — run `scripts/run_evals.py`).
 - External-provider Setup Advisor needs production-like validation for timeout/fallback/redaction and recommendation quality.
 - `diagnostics_health_snapshot` still needs an operator live-test record across audience/redaction and fresh/cached modes.
 - The broader natural-language phrase space and BTD6 vocabulary cannot be exhaustively unit-tested; regression prompts from each live miss should continue to enter the eval suite.
@@ -198,7 +198,7 @@ These are not blockers for the current opt-in read-only/advisory feature set, bu
 
 Run a **production-envelope verification session**, not a feature-expansion session:
 
-1. Build a short, versioned eval/smoke matrix covering global/task/tool gates, provider fallback, two-hop tool use, recent fixed BTD6 prompts, grounding refusal, audit/support report, readiness, and Setup Advisor advisory/no-write behavior.
+1. Build a short, versioned eval/smoke matrix covering global/task/tool gates, provider fallback, two-hop tool use, recent fixed BTD6 prompts, grounding refusal, audit/support report, readiness, and Setup Advisor advisory/no-write behavior. **(Offline/deterministic half shipped #878: `tests/evals/smoke.py`, CI-gated, versioned. Remaining = the live-quality half — execute the golden set with real creds per the steps below.)**
 2. Execute it with production-like Discord permissions and provider credentials; capture failures in the bug book and add regression tests before fixes.
 3. Live-test `diagnostics_health_snapshot` for platform-owner and non-owner access, cached/fresh behavior, and redaction.
 4. In a separate docs-only cleanup, correct the stale inert-scaffold runtime wording and document Setup Advisor provider precedence.
