@@ -29,6 +29,10 @@ _(no active claims)_
 
 ## Recently cleared
 
+- `claude/gracious-ramanujan-o5wcw1` · P0-2 PR 1 — media/YouTube data-minimization +
+  retention enforcement (Q-0099) · 2026-06-14 · **PR #829 (merged)**
+- `claude/gracious-ramanujan-a8nnjf` · P0-4 PR 2 — channel creation + category lifecycle
+  convergence (Q-0100) · 2026-06-14 · **PR #825 (merged)**
 - `claude/funny-bohr-skbaoz` · P0-3 arc PR 3 — delegated-Setup apply authority (Q-0098) ·
   2026-06-14 · PR #817
 - `claude/trusting-goldberg-po4p7s` · parallel-safe test suite → re-enabled `pytest -n auto`

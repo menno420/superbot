@@ -6,7 +6,7 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ Next action — one live queue:** the **[band-#800 decade queue](planning/reconciliation-pass-2026-06-13-band800.md)** §4 — the fourth Q-0107 pass (2026-06-13; the band-#800 cadence fire). *(Pointer references the pass by name, never by a PR-number range — a range here silently masks the band from the ledger guard, the drift this pass fixed; see that doc §6.)* **The standing priority is the production-hardening P0 spine, integrity-first** (every gating decision is answered): **next = P0-4 PR 2 — channel creation/category convergence under `ResourceProvisioningPipeline`** (Q-0100; resume recipe in the open `continue` issue — ad-hoc operator creation has no declared binding, design that fit) → P0-2 media retention (Q-0099) → P1-1 eval-matrix. **P0-4 PR 1 (clone + permission-overwrite convergence through `ChannelLifecycleService`, Q-0100) shipped** — `.set_permissions()`/`.clone()` now pinned by the channel invariant. **P0-3 is complete: arc PR 3 shipped the delegated-Setup apply authority (Q-0098) in #817** (arc PR 2 retired the XP-announce + economy-log scalar pointers in #794; arc PR 1 foundation #777). **The owner's active strategic thread is the [portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** (OSS agent-memory/workflow package; PR 1a+1b DONE, resume at the 1b tail → PR 2) — it consumed the #781–#800 band and runs in parallel as owner-steered. The safety/community band (slots 4–6: #772/#774/#775) is **COMPLETE**; its remainder (security tiers 1+2 · image-mod · welcome phase 2) is plan-first behind the P0 spine. Product lanes (mining/BTD6/AI) stay open as owner-steered alternates. The full scorecard + deferred list live in the queue doc; [`roadmap.md`](roadmap.md) stays the per-area index. **Status is per-lane below — a session edits ONLY its own lane's bullet** (convention: [`owner/ai-project-workflow.md`](owner/ai-project-workflow.md) §9 "Cross-cutting ledger discipline").
+> **▶ Next action — one live queue:** the **[band-#820 decade queue](planning/reconciliation-pass-2026-06-14-band820.md)** §4 — the fifth Q-0107 pass (2026-06-14; the band-#820 cadence fire). *(Pointer references the pass by name, never by a PR-number range — a range here silently masks the band from the ledger guard; see [the band-#800 pass §6](planning/reconciliation-pass-2026-06-13-band800.md).)* **The standing priority is the production-hardening P0 spine, integrity-first** (every gating decision is answered): **P0-4 is COMPLETE** (server-mgmt channel-ownership convergence, Q-0100) — PR 1 (#820) converged clone + permission-overwrite, **PR 2 (#825) converged ad-hoc channel creation + category lifecycle** through `ChannelLifecycleService.create_channels` (the channel sibling of `RoleLifecycleService`; ad-hoc operator creation has no declared binding, so it does *not* fit the catalogue-driven provisioning pipeline — the invariant now pins `create_*` too). **P0-2 media retention (Q-0099) PR 1 shipped (#829)** — bounded metadata projection at the cache write (raw provider payload no longer stored) + a scheduled physical-purge owner (`MediaMaintenanceCog`) + thumbnail-URL validation + the `media` ownership-registry row; **next = P0-2 follow-ups** (content-free media diagnostics · provider-execution hardening · maintainer live-verification) → P1-1 eval-matrix. **P0-3 is complete: arc PR 3 shipped the delegated-Setup apply authority (Q-0098) in #817** (arc PR 2 retired the XP-announce + economy-log scalar pointers in #794; arc PR 1 foundation #777). **The owner's active strategic thread is the [portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** (OSS agent-memory/workflow package; PR 1a+1b DONE, resume at the 1b tail → PR 2) — it consumed the #781–#800 band and runs in parallel as owner-steered. The safety/community band (slots 4–6: #772/#774/#775) is **COMPLETE**; its remainder (security tiers 1+2 · image-mod · welcome phase 2) is plan-first behind the P0 spine. Product lanes (mining/BTD6/AI) stay open as owner-steered alternates. The full scorecard + deferred list live in the queue doc; [`roadmap.md`](roadmap.md) stays the per-area index. **Status is per-lane below — a session edits ONLY its own lane's bullet** (convention: [`owner/ai-project-workflow.md`](owner/ai-project-workflow.md) §9 "Cross-cutting ledger discipline").
 >
 > - **Consolidated batches:** **Batches 1–8 ALL executed + verified merged 2026-06-10** ([EOD verification](audits/past-day-verification-2026-06-10.md)) — #650 truth/clarity · #651 surface-classification invariant · #652 service boundaries · #654 Settings Phase 2 core · #656 adaptive P1C subpanels · **#657 Help projection seam** (HLP-2: `services/help_catalogue.py` + `services/help_projection.py`, all five render paths on one reason-coded `HelpProjection`; Q-0074 executed in the same PR) · **#659 HLP-3 guild overlay** (migration 064 `help_overlay`, audited `help_overlay_mutation` seam, cached read model, hide/rename through every render path; Q-0055 display-only pinned by an admission import fence) · **Batch 7 via the mining stack** (#661 + #663/#664/#665 → #667) · **Batch 8 = the #649 cutover**. **The queue-remainder session (PR #671, merged 2026-06-10) executed the RS07 chain-service slice** (audited `services/chain_service.py`, Batch 3 pattern, repo-wide write fence) **+ Batch 9's RS08 slice** (diagnostic read models out of the cog layer; new no-raw-SQL-in-cogs/views invariant) **+ the EOD audit's Tier-2 Help-Preview fix** (now consumes `project_help_with_execution`); **its continuation (PR #672) completed Batch 4** (proof-channel binding/resource declaration + binding-first read; logging rows verified satisfied) **and executed the Batch 10 selections** (wizard PR1–PR3 tranche verified shipped via #435 → setup-lane next = PR4 `/myprofile` planning session; next AI §7 family = **§7.5 multi-entity comparison**, sequenced after the maintainer's prod check — banners in the two plans carry the evidence). **The Help overlay editor UI executed 2026-06-10 ([plan](planning/help-overlay-editor-ui-plan-2026-06-10.md) → PR A #677 + PR B #679, both MERGED same day):** the hide/rename/re-describe editor (staff-hub `✏️ Help editor` button + the Settings-hub "Help appearance" domain group, 13th group) and the Q-0059 Home-message embed builder (migration 067, **mandatory preview**, shared `home_embed_frame` composer, byte-identical default pinned) — both live-verified on real Postgres. **Batch 9 then executed in PR #681** (open at write time): the RS05 publish-accepted delivery contract (runtime_contracts §2) + bus delivery stats / failure metric / the `event_bus` diagnostics provider, and the RS10 economy view family onto BaseView (conformance ratchet 17→13, arch warnings 84→80). **The consolidated plan's queue is FULLY EXECUTED (Batches 1–10; #681 MERGED).** A follow-on slice (PR #682, open at write time) migrated the **mining family** onto BaseView — the last true lifecycle-duplication family; ratchet 13→11 with a disposition note (remaining direct-View entries are ephemeral pipeline-gated follow-ups / bespoke admin checks, not RS10 duplication). **The PR4 `/myprofile` planning session ran (PR #684, open at write time):** [`planning/myprofile-foundation-plan-2026-06-10.md`](planning/myprofile-foundation-plan-2026-06-10.md) — §6 backend re-verified exact (4 audited pipeline entrypoints, typed accessors, schema registry, zero UI callers); PR A = read-only profile card (zero writes, turn-key) · PR B = the pipeline's first UI consumer · PR C onboarding **gated** on an owner decision; Q-0080 stranger-grade envelope applied throughout. Remaining plan-first/gated: Help audit Phase 4 records (Q-0057 rider) · AI §7.5 (post-eval).
 > - **BTD6 data + answerability:** the `--all` cutover **#649 merged 2026-06-10; post-cutover VERIFIED + every carry-forward DECODED the same day** (#653 wave 1 ∥ PR #655 — dump fidelity byte-identical · 2,022 menu embeds in-limits · AI battery green · `_CUTOVER_CARRYFORWARD` empty, audit 91 CLEAN / 0 DELTA / 0 SUSPECT · banana economy answerable · fixes for mode-rules dark data / `!btd6 diagnostics` 400 / stamp-rot / path leak); **answerability items 5+6d shipped in PR #658**; **the Navarch "no coins" live miss diagnosed (missing ROUTING, not data) + fixed end-to-end with items 6a–c — #662 MERGED 2026-06-10** (paragon grounding gains income + effect lines · article-tolerant/shorthand paragon names · minion-name → owner grounding ("Mini Sun Avatar"/"Crushing Sentry"/UAV) · Pouākai diacritic-fold · honest dataset source labels/summary); follow-up slice **#666** adds `scripts/btd6_probe.py` (grounding triage) + structures item 7 into [`planning/btd6-conversation-grounding-plan-2026-06-10.md`](planning/btd6-conversation-grounding-plan-2026-06-10.md); **item 7 slice 1 (conversation carryover) + the zero-fact sweep fixes (ranking rosters · bare distinctive shorthand) shipped same day in #668**. **The 2026-06-11 morning screenshots (3 live AI-knowledge misses) fixed end-to-end in PR #703** — BUG-0002 (elite boss HP: dataset had no elite figures + boss names never routed BTD6 → standard table served as "Elite"; elite_tiers backfilled from the pinned v55.1 dump for all 7 bosses, boss canonicals route + name-index, variant-labeled grounding) · BUG-0003 ("despos on impop" hallucinated as PMFC; impop/despo keywords, Desperado alias, resolver plural fold, the `<quantity> <crosspath> <tower>` pricing leg — "10 041 despos" = ten 0-4-1s, owner-corrected) · BUG-0001 recurrence (round-cash refusals in #general: the workflow was profile-gated OFF on default channels — compatible_default/balanced_helper now declare analyze_execute_verify (Q-0048), matcher gained the money-question gate + by-round anchors). **Owner action: run `!btd6ops seed-data` after the deploy** (bosses/towers json are blob-lane data; owner-confirmed done 2026-06-11 ~12:38 — despos answers correct in prod). **The live re-test round shipped in PR #706 (merged 2026-06-11):** BUG-0004 (r-shorthand rounds + "end of r53" start shift — the $71,315.20 cumulative mislabel; truth $56,318.70) + the bulleted capabilities list (owner format ask; boss_health/crosspath/projection rows advertised). **Next:** decode-status ⭐ item 3 (buff/zone tail, demand-driven) + item 4 (maintainer live spot-check).
@@ -20,7 +20,24 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-14, **hardening P0-3 arc PR 3 — delegated-Setup apply authority
+> **Last updated:** 2026-06-14, **hardening P0-2 media retention PR 1 — data-minimization +
+> retention enforcement (#829, Q-0099)**. The video-reference cache now stores only
+> a bounded sanitized projection (`_project_metadata` — never the raw provider payload), a new
+> `MediaMaintenanceCog` owns a scheduled physical purge of expired rows, thumbnail URLs are
+> host/scheme-validated, and `docs/ownership.md` gained the `media` (YouTube) subsystem row.
+> CI green (9467); arch 0; next = P0-2 follow-ups (diagnostics · provider hardening · live
+> verify) → P1-1. ·
+> 2026-06-14, **hardening P0-4 PR 2 — channel creation + category lifecycle
+> convergence (#825, Q-0100)**. Ad-hoc operator channel creation
+> (`!create`/`!evt`/`!bulkcreate` + the create panel) routed through a new audited
+> `ChannelLifecycleService.create_channels` (the channel sibling of `RoleLifecycleService`;
+> unbound creation has no declared binding so it never fit `ResourceProvisioningPipeline`).
+> Every operator channel mutation now flows through one seam with audit +
+> `channel.lifecycle_changed`; `test_no_direct_channel_mutations` pins `create_*`,
+> `test_no_silent_auto_create` names the service as the one manual creator. **P0-4 complete;
+> next P0 = P0-2 media retention (Q-0099).** CI green (9453); arch 0; corrected the readiness-map
+> `create_panel` "uses provisioning lane" drift. ·
+> 2026-06-14, **hardening P0-3 arc PR 3 — delegated-Setup apply authority
 > (#817, Q-0098)**. Bounded `setup_delegate` actor authorized at the capability floor (still
 > member-checked + revocable, audited distinctly), minted only by `apply_operations` after a
 > live `can_apply_setup` re-check, threaded to the three capability pipelines, `_ALLOWED_ACTOR_TYPES`
@@ -127,14 +144,94 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #800 (2026-06-13, fourth Q-0107 cadence pass —
-> [the pass record + decade queue](planning/reconciliation-pass-2026-06-13-band800.md)). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #820 (every
+> **Last reconciliation pass:** PR #820 (2026-06-14, fifth Q-0107 cadence pass —
+> [the pass record + decade queue](planning/reconciliation-pass-2026-06-14-band820.md)). The next
+> **docs-only review + planning reconciliation** is due once merged PRs cross #840 (every
 > multiple of **20** — Q-0107 cadence raised 10→20 on 2026-06-12; `check_reconciliation_due.py`
 > flags it, and `.github/workflows/reconciliation-trigger.yml` auto-opens a `reconcile` issue
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#829 (2026-06-14, hardening P0-2 PR 1 — media/YouTube data-minimization + retention
+  enforcement, Q-0099)** — closed the two privacy/retention P0 gaps in the media readiness map.
+  The video-reference cache stored the **full raw YouTube provider payload** (descriptions, id,
+  statistics) and **never physically purged** expired rows (`purge_expired_video_cache` had no
+  caller). Now: (1) `youtube_context_service._project_metadata` runs before the cache write so
+  only the bounded sanitized projection is persisted — never the raw payload; it is **idempotent**
+  so legacy raw rows re-project transparently on read (no migration / cutover flag). (2)
+  `_safe_thumbnail_url` keeps only HTTPS `*.ytimg.com`/`*.youtube.com` URLs before storage/embed.
+  (3) A new **`MediaMaintenanceCog`** owns a scheduled 6-hour `purge_expired` loop (content-free —
+  logs only a row count), the shared-platform lifecycle owner per ADR-007 (not AI/BTD6). (4)
+  Added the `media` (YouTube) subsystem row to `docs/ownership.md`. Output facts are byte-identical
+  for fresh fetches — only what is *stored* changed. +18 tests; `check_quality --full` green
+  (9467); arch 0; `check_docs` clean. **Next = P0-2 follow-ups** (content-free media diagnostics ·
+  provider-execution hardening · maintainer live-verification) → P1-1 eval-matrix.
+- **#825 (2026-06-14, hardening P0-4 PR 2 — channel creation + category lifecycle convergence,
+  Q-0100)** — the **second half** of the channel-ownership convergence; **closes the final P0
+  integrity track.** Ad-hoc operator channel creation (`!create`/`!evt`/`!bulkcreate` + the
+  create panel) has **no declared subsystem binding**, so it never fit the catalogue-driven
+  `ResourceProvisioningPipeline` (which resolves a `(subsystem, binding_name)` option and writes
+  a binding row). It is now owned by a new audited **`ChannelLifecycleService.create_channels`** —
+  the channel-domain sibling of the allowlisted `RoleLifecycleService` (the manual-role creator):
+  bot-perm check → category resolve/get-or-create → safe-named text/voice create → typed per-name
+  `LifecycleResult` + audit companion + `channel.lifecycle_changed` event. Subsystem-*bound*
+  creation stays with the provisioning pipeline. The three cog commands + the create panel route
+  through it; `test_no_direct_channel_mutations.py` now pins
+  `create_text_channel`/`create_voice_channel`/category creation, and
+  `test_no_silent_auto_create.py` lists the service as the one sanctioned manual `guild.create_*`
+  caller (cog + create_panel **removed** from its allowlist — a net tightening). **Corrected a
+  readiness-map drift:** the `create_panel` row claimed "uses the resource-provisioning lane" but
+  the source called Discord directly until this PR. No migration. `check_quality --full` green
+  (9453); arch 0 errors. **P0-4 complete; next P0 = P0-2 media retention (Q-0099).**
+- **#820 (2026-06-14, hardening P0-4 PR 1 — channel clone + permission-overwrite convergence,
+  Q-0100)** — the first half of the server-mgmt channel-ownership convergence: `.set_permissions()`
+  and `.clone()` are now pinned by the channel-mutation invariant, routed through
+  **`ChannelLifecycleService`**. The service gained `set_overwrite` (REVERSIBLE) + `clone`
+  (COMPENSATABLE) ops — request fields `overwrite_target_id/type/overwrites` + `clone_name`;
+  target resolution via `guild_resources.resolve_role/resolve_member` (the guild-resource
+  invariant, **not** raw `guild.get_*`); a `LookupError`→failed-step path for a vanished
+  overwrite target; audit `_summary` branches. Every direct call site migrated (`set_access`,
+  `lock_channel`, `unlock_channel`, `modify_permissions`, `create_channel_with_role`'s
+  post-create overwrite, and `views/channels/restrict_panel.py`'s batched apply mapped back to
+  its succeeded/forbidden/failed buckets); `visibility_panel.py` was a map false-positive
+  (already routes through `governance_service`). `test_no_direct_channel_mutations._FORBIDDEN`
+  now pins `.set_permissions` + `.clone`. **Layering side-quest:** the convergence pushed
+  `channel_cog.py` over the 800-LOC ceiling, so the `!list` paginator view (~180 LOC) was
+  extracted to `views/channels/list_panel.py` (cog 739→640 LOC — a real layering smell removed,
+  not dodged). `check_quality --full` green (9446); arch 0 errors. **P0-4 PR 2 (creation/category
+  under `ResourceProvisioningPipeline`) carried** — resume recipe in the open `continue` issue
+  (ad-hoc operator `!create`/`!evt`/`!bulkcreate` channels have no declared binding; design
+  that fit).
+- **#814 + #815 (2026-06-14, CI efficiency arc — Q-0126 + ~3× test speedup)** — `code-quality.yml`
+  dominated June Actions cost (940 runs / 2,396 min/mo). **#814** shipped the safe levers
+  (`concurrency: cancel-in-progress` on superseded PR runs · `pip` + `.mypy_cache` caching) +
+  recorded **Q-0126** (the `docs/owner/active-work.md` claim ledger + push-batching convention,
+  now in CLAUDE.md). The big lever (parallel pytest) was tried & reverted there — the suite
+  wasn't parallel-safe. **#815** root-fixed that: three process-global singletons
+  (`core.runtime.lifecycle` phase, `feature_flags._REGISTRY` defaults, a leaked `server_logging`
+  bus subscription) leaked across tests, colliding only under parallel scheduling; one autouse
+  `conftest.py` fixture resets lifecycle/startup_outcome/feature_flags (snapshot-restore) per
+  test + `server_logging._reset_for_tests()` now tears down its subscription, then re-enabled
+  `pytest -n auto` (pinned `pytest-xdist==3.6.1`). CI ~109s→~35s, 8 parallel runs all green;
+  auto-merged hands-off (Q-0123).
+- **#802 + #805 + #811 + #812 + #813 (2026-06-13/14, portable substrate-kit — PR 1b tail + PR 2
+  capability layer)** — the owner's active OSS thread advanced inside the self-contained
+  `substrate-kit/` tree ([extraction plan](planning/portable-substrate-kit-extraction-2026-06-13.md)).
+  **#802** the PR 1b tail (the two stdlib checker ports — generic doc-reachability + session-log
+  guards). **PR 2 (the capability/modes layer) §3b/§3c COMPLETE:** **#805** task-stances (the
+  capability layer) · **#811** an invokable skill pack + skill/stance precedence · **#812**
+  spawnable read-only persona specialists · **#813** a PreToolUse stance-guard hook (stances now
+  *enforced*, not advisory). Stdlib-only; green in-repo; never mutates superbot's live
+  `.claude/`/`docs/`. **Resume: the PR-2 remainder — modes + contract templates + triggers.**
+- **#803 + #806 + #808 + #810 + #816 + #818 (2026-06-13/14, reconciliation + workflow rules +
+  session-close housekeeping)** — **#803** the **band-#800 Q-0107 reconciliation pass** (scored
+  #781–#800, planned #801–#820, fixed the masking-range ledger drift; now `historical`). **#806**
+  two workflow rules: **Q-0124** (a manually-started session does NOT run the reconciliation pass —
+  the routines always do, automatically) + **Q-0125** (reconciliation passes must disposition stale
+  open PRs via the GitHub MCP — the gap that left #766/#771 rotting). **#808** preserved the specs
+  from issues #229/#232 into `docs/ideas/` before closing them. **#818** the #817 merge note + router
+  **Q-0127** (the `auto-merge-enabler` workflow doesn't fire for MCP-created PRs). **#810/#816**
+  session-close logs (workflow cleanup · the CI-efficiency arc).
 - **#788 + #789 + #790 + #791 + #792 + #793 + #795 + #796 + #798 (2026-06-13, the portable
   substrate-kit extraction — PR 1a + 1b)** — the owner's strategic refocus (the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md) idea)
@@ -316,66 +413,7 @@ Source code and merged PRs win over anything written here.
   [`ux/pattern-library.md`](ux/pattern-library.md)** — registry-generated + doc-pinned;
   future panel plans cite `pattern_id`s. 49 lab tests; CI green ×3; live-boot ×3.
   CV2 adoption for real panels stays a future ADR (plan non-decision).
-- **#755 (2026-06-12, UX Lab design — owner-commissioned)** — the **interface-gallery
-  cog design**: [capture](ideas/ux-lab-interface-gallery-2026-06-12.md) +
-  [full plan](planning/ux-lab-interface-gallery-plan-2026-06-12.md) for a zero-write,
-  admin-gated `!uxlab` gallery — 9 exhibit wings (~60 patterns: buttons / all 5 selects /
-  modals incl. Label-wrapped selects / embed archetypes / **Components V2** / PIL cards /
-  **mockups of the approved Q-0108–Q-0112 features**), a 10-probe platform-limit bench,
-  compare-with-verdict mode, a `PatternSpec` registry exporting to a pattern-library
-  doc in plan-PR C, AST zero-write fence, 3-PR slicing. **Found + fixed two
-  stale platform facts** (verified on installed discord.py 2.7.1): the limits doc's CV2
-  budget (25 → **40 children / 4 000-char text**) and the journal's "modals can't contain
-  selects" rule (Label, 2.6+). Scheduling + audience = router **Q-0116** (open). Docs-only.
-- **#746–#754 (2026-06-12, dispatch-bridge wiring + routine-fleet arc)** —
-  the Hermes→Claude Code dispatch bridge went **live-verified end-to-end**: **#746**
-  Context7 verify/tool-name fix · **#747** routine-creation step marked DONE (calibration
-  pass) · **#749** `superbot-dispatch` wired to the verified Routines `/fire` API ·
-  **#750** routed the wager-flow-map session idea into the backlog · **#751**
-  Telegram-driven dispatch path live-verified · **#752**
-  [`operations/autonomous-routines.md`](operations/autonomous-routines.md) — the Routine
-  fleet's prompts in git (autonomous dispatch · nightly docs-reconciliation · night
-  caretaker) · **#753** docs-reconciliation routine made issue-triggered + cadence raised
-  10→20 (Q-0107) · **#754** routine prompts rewritten as self-improvement-loop turns with
-  memory read/write and the Q-0089/Q-0102 hooks.
-- **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
-  `services/game_wager_workflow.py`: the audited money boundary for every two-party /
-  paid-entry game move, composing `economy_service.*_in_txn` inside one
-  `db.transaction()` (the mining_workflow precedent). **D1 escrow-at-accept** —
-  `open_pvp_wager` debits both stakes + writes per-player `*_escrow` rows when a PvP
-  challenge is accepted, deleting the old credit-then-overdraft-debit **mint window**;
-  `settle_pvp`/`refund_pvp`/`payout_tournament` are idempotent by `FOR UPDATE`
-  row-consumption (no double-pay); `enter_tournament` debits the fee + writes the
-  recovery row in one txn (closes the lost-fee window). All four call sites migrated
-  (RPS + blackjack PvP and tournament); dead un-escrowed `deduct_fees` removed; AST fence
-  (`test_game_wager_write_boundary`) bans `economy_service.credit/.debit` in the wager
-  files + `allow_overdraft=True` outside solo views. Failure-injection / terminal-matrix /
-  idempotency tests (real-Postgres integration + mock CI). No schema migration (escrow
-  rides existing `game_state`). Executes
-  [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md);
-  **closes hardening P0-1** → next P0 track = P0-2.
-- **#745 (2026-06-12, the direction-lock round)** — owner question-panel round: **next
-  implementation session = P0-1 wager money-safety** (design pinned:
-  [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md)) ·
-  **Q-0097 = operator-managed findings lifecycle** (every hardening gate now answered) ·
-  **Q-0082 interim global AI ceiling = €30/month** · **Q-0115**: Stage 0 folded into the
-  #742 Routine bridge (one continuation-dispatch seam; bounded protocol activates on
-  wired + calibrated). (#743/#744 same day: the loop session's close + a journal
-  draft-first wording fix.)
-- **#742 (2026-06-12, the autonomous-loop seams — parallel Hermes session)** — Hermes
-  `superbot-review` skill (independent non-Claude plan/PR critique with a maintainer
-  summary) · `scripts/check_phase_gate.py` (machine-readable **fix-phase vs. invent-phase**;
-  invent requires zero OPEN bugs + zero Not-Done readiness rows — reports FIX-PHASE today) ·
-  the `superbot-dispatch` skill + runbook (Hermes → Claude Code Routine `/fire`). Owner
-  decisions **Q-0113** (routine PRs self-merge on green CI) + **Q-0114** (human approve/deny
-  for agent-originated features; invent-phase-only origination) — workflow §12. Maintainer
-  follow-ups: wire the Routine + token, calibrate per Q-0105 before trusting unattended.
-- **#741 (2026-06-12, the first Q-0107 reconciliation pass)** — every plan added in
-  #715–#740 mapped ([pass record + decade queue](planning/reconciliation-pass-2026-06-12.md)):
-  new roadmap lanes **safety/community** (Q-0108–Q-0112) + **agent ecosystem/workflow**;
-  the next ~9 PRs planned (hardening P0s · backup posture · the safety lane's first
-  slices); ledger drift reconciled; the cadence checker taught to fetch `origin/main`.
-- **Older merges (#740 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #738–#740 cadence/research arc was archived 2026-06-14 to offset the #817 entry added above — keeping the live ledger at the ratchet.)*
+- **Older merges (#755 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #755 entry was archived 2026-06-14 to offset the #829 entry added above; the #746–#754 entry was archived earlier the same day to offset #825; the #741/#742/#745/#748 entries were archived by the band-#820 reconciliation pass — keeping the live ledger at the ratchet of 20.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

@@ -26,6 +26,27 @@ Current broad captures:
   [anthropics/claude-code#54517](https://github.com/anthropics/claude-code/issues/54517)), so there
   is no at-a-glance "is a session active?" signal. Can't change the app UI — the DIY fit is a
   **Discord webhook ping** from each routine on start/finish (ask-gated: needs a channel + webhook).
+- [`scheduled-maintenance-registry-2026-06-14.md`](./scheduled-maintenance-registry-2026-06-14.md) —
+  **tooling / arch (2026-06-14, P0-2 media-retention session):** a central
+  `register_maintenance(name, interval, coro, owner)` registry + one runner cog, to retire the
+  "mint a whole cog per `tasks.loop`" tax (counters / spotlight / role / the new
+  `media_maintenance_cog`) and give periodic work the observability it currently lacks (last-run /
+  result / next-run / error per job — also feeds the P0-2 media-diagnostics follow-up). Surfaced
+  by this session minting a zero-command cog just to host one purge loop. Medium; slice
+  registry-first then migrate loop cogs one PR at a time.
+- [`readiness-map-claim-vs-source-guard-2026-06-14.md`](./readiness-map-claim-vs-source-guard-2026-06-14.md) —
+  **tooling (2026-06-14, P0-4 PR 2 session):** a guard that fails when a readiness-map /
+  ownership row's **routing claim** ("routes through X", "uses the Y lane", "Done") contradicts
+  the cited source file (reusing the channel invariants' forbidden-call sets). Surfaced by a real
+  drift this session caught — `create_panel.py` was marked "uses the provisioning lane" while the
+  source called `guild.create_text_channel` directly. Lifts the per-PR `test_no_direct_*`
+  invariants up to the docs that describe them. Small/safe grooming-lane candidate.
+- [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
+  **tooling (2026-06-14, band-#820 reconciliation pass):** have
+  `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its
+  number (it already walks `git log`), collapsing the reconciler's manual `git log --grep` loop
+  and reducing mis-attributed ledger entries. Runtime-lane (`scripts/`), so out of scope for a
+  docs-only self-merge pass. Small/safe grooming-lane candidate.
 - [`cogs-layer-view-residence-guard-2026-06-14.md`](./cogs-layer-view-residence-guard-2026-06-14.md) —
   **tooling / arch invariant (2026-06-14):** a guard flagging `discord.ui.View`/`Modal`
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans

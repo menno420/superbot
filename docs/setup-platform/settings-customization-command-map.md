@@ -87,13 +87,14 @@ without depending on bot startup or runtime registry population.
 The 38 extensions loaded at startup come from
 `disbot/config.py:INITIAL_EXTENSIONS`. The 30 subsystems live in
 `disbot/utils/subsystem_registry.py:SUBSYSTEMS`; each has exactly one owning
-cog. The 8 loaded extensions that are **not** one-to-one subsystems are
+cog. The 9 loaded extensions that are **not** one-to-one subsystems are
 `bootstrap_access_cog` (command-admission guard), `hermes_cog` (the
 Hermes→Claude dispatch bridge — admin-only slash commands with no subsystem
-row), `setup_cog` (the setup wizard surface), and the five split BTD6 cogs
-(`btd6_reference_cog`, `btd6_events_cog`, `btd6_strategy_cog`, `paragon_cog`,
-`btd6_ops_cog`), which all surface under the single `btd6` subsystem.
-(Counts re-verified against source 2026-06-12.)
+row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
+commands, no subsystem row), `setup_cog` (the setup wizard surface), and the
+five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
+`btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which all surface under
+the single `btd6` subsystem. (Counts re-verified against source 2026-06-12.)
 
 Cogs (38): `admin_cog`, `ai_cog`, `blackjack_cog`, `bootstrap_access_cog`,
 `btd6_cog`, `btd6_events_cog`, `btd6_ops_cog`, `btd6_reference_cog`,

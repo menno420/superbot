@@ -19,6 +19,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
+from urllib.parse import urlparse
 
 from core.runtime.ai.feature_facts import FeatureFactRequest
 from core.runtime.feature_flags import is_enabled
@@ -97,6 +98,84 @@ def _sanitise(text: str | None, max_chars: int = 500) -> str | None:
     text = _CONTROL_CHAR_RE.sub(" ", text)
     text = _MENTION_RE.sub("[mention]", text)
     return text[:max_chars].strip() or None
+
+
+def _safe_thumbnail_url(url: str | None) -> str | None:
+    """Accept a thumbnail URL only if it is HTTPS on a known YouTube host.
+
+    Provider data is untrusted: an arbitrary URL stored from the API item and
+    later handed to a Discord embed is an SSRF/abuse vector.  We only keep the
+    canonical thumbnail hosts (``*.ytimg.com`` / ``*.youtube.com``); anything
+    else (including ``http://``) is dropped to ``None``.
+    """
+    if not url:
+        return None
+    try:
+        parsed = urlparse(url)
+    except ValueError:
+        return None
+    if parsed.scheme != "https":
+        return None
+    host = (parsed.hostname or "").lower()
+    if host == "ytimg.com" or host.endswith(".ytimg.com"):
+        return url
+    if host == "youtube.com" or host.endswith(".youtube.com"):
+        return url
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Data-minimisation projection (P0-2 / Q-0099)
+# ---------------------------------------------------------------------------
+
+
+def _project_metadata(metadata: dict) -> dict:
+    """Project a YouTube provider item into the bounded metadata stored/served.
+
+    This is the data-minimisation seam (Q-0099): the cache must hold ONLY this
+    small, sanitised projection — never the raw provider payload (full
+    descriptions, channel ids, statistics, …).  Idempotent: it accepts either
+    the raw provider shape (``snippet`` / ``contentDetails``) or a previously
+    stored bounded projection, so a legacy raw cache row is re-projected
+    transparently on read.
+    """
+    if not metadata:
+        return {}
+    if "snippet" in metadata or "contentDetails" in metadata:
+        # Raw provider item.
+        snippet = metadata.get("snippet", {})
+        content = metadata.get("contentDetails", {})
+        title = snippet.get("title")
+        channel = snippet.get("channelTitle")
+        description = snippet.get("description", "") or ""
+        published_at = snippet.get("publishedAt")
+        raw_dur = content.get("duration")
+        duration_seconds = _parse_iso8601_duration(raw_dur) if raw_dur else None
+        thumbnails = snippet.get("thumbnails", {})
+        thumbnail_url = thumbnails.get("high", {}).get("url") or thumbnails.get(
+            "default",
+            {},
+        ).get("url")
+    else:
+        # Already-bounded projection (re-projection is a no-op).
+        title = metadata.get("title")
+        channel = metadata.get("channel_name")
+        description = metadata.get("description_excerpt") or ""
+        published_at = metadata.get("published_at")
+        duration_seconds = metadata.get("duration_seconds")
+        thumbnail_url = metadata.get("thumbnail_url")
+
+    return {
+        "title": _sanitise(title, _MAX_TITLE_CHARS),
+        "channel_name": _sanitise(channel, _MAX_CHANNEL_CHARS),
+        "published_at": published_at,
+        "duration_seconds": duration_seconds,
+        "description_excerpt": _sanitise(
+            description[:_MAX_DESCRIPTION_CHARS],
+            _MAX_DESCRIPTION_CHARS,
+        ),
+        "thumbnail_url": _safe_thumbnail_url(thumbnail_url),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -207,13 +286,16 @@ async def _resolve_video(video_id: str) -> VideoContext | str | None:
         raw = " ".join(s.get("text", "") for s in transcript_segments)
         transcript_text = _sanitise(raw, _MAX_TRANSCRIPT_CHARS)
 
+    # Data-minimisation (Q-0099): persist ONLY the bounded projection, never the
+    # raw provider payload.
+    projected = _project_metadata(metadata)
     await video_reference_cache_service.put_cached(
         video_id,
-        metadata,
+        projected,
         transcript_text,
         fetch_status="ok",
     )
-    return _build_video_context(video_id, metadata, transcript_text)
+    return _build_video_context(video_id, projected, transcript_text)
 
 
 def _reason_to_status(reason: str) -> str:
@@ -230,35 +312,24 @@ def _build_video_context(
     metadata: dict,
     transcript_text: str | None,
 ) -> VideoContext:
-    snippet = metadata.get("snippet", {})
-    content = metadata.get("contentDetails", {})
+    # ``metadata`` is the bounded projection on the fresh path; re-project so a
+    # legacy raw cache row (stored before Q-0099) is handled transparently.
+    m = _project_metadata(metadata)
 
-    title = _sanitise(snippet.get("title"), _MAX_TITLE_CHARS)
-    channel = _sanitise(snippet.get("channelTitle"), _MAX_CHANNEL_CHARS)
-    description = _sanitise(
-        snippet.get("description", "")[:_MAX_DESCRIPTION_CHARS],
-        _MAX_DESCRIPTION_CHARS,
-    )
+    title = m.get("title")
+    channel = m.get("channel_name")
+    description = m.get("description_excerpt")
 
     published_at: datetime | None = None
-    raw_pub = snippet.get("publishedAt")
+    raw_pub = m.get("published_at")
     if raw_pub:
         try:
-
-            published_at = datetime.fromisoformat(raw_pub.replace("Z", "+00:00"))
+            published_at = datetime.fromisoformat(str(raw_pub).replace("Z", "+00:00"))
         except ValueError:
             pass
 
-    duration_seconds: int | None = None
-    raw_dur = content.get("duration")
-    if raw_dur:
-        duration_seconds = _parse_iso8601_duration(raw_dur)
-
-    thumbnails = snippet.get("thumbnails", {})
-    thumbnail_url = thumbnails.get("high", {}).get("url") or thumbnails.get(
-        "default",
-        {},
-    ).get("url")
+    duration_seconds: int | None = m.get("duration_seconds")
+    thumbnail_url = m.get("thumbnail_url")
 
     limitations: list[str] = []
     if not transcript_text:

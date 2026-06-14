@@ -4,7 +4,7 @@
 >
 > **Scope:** setup, channel management, role management, moderation, cleanup, and the unified Server Management Hub. Source code and merged PRs win over this document.
 >
-> **Verdict:** **Partial / not yet production-ready as one end-to-end subsystem.** The unified composition, setup draft/apply lane, moderation convergence, role lifecycle service, cleanup policy controls, diagnostics composer, and most targeted unit/invariant coverage are Done. The main readiness blocker is the still-mixed channel mutation surface: direct channel creation, permission-overwrite, clone, and category paths remain outside one canonical audited lifecycle/provisioning seam. Production live verification and failure-path integration evidence are also incomplete.
+> **Verdict:** **Partial / not yet production-ready as one end-to-end subsystem.** The unified composition, setup draft/apply lane, moderation convergence, role lifecycle service, cleanup policy controls, diagnostics composer, and most targeted unit/invariant coverage are Done. **The channel-mutation surface is now converged (P0-4 complete, 2026-06-14): permission-overwrite + clone (PR 1) and ad-hoc creation + category lifecycle (PR 2) all route through the audited `ChannelLifecycleService`.** The remaining readiness gap is the cross-cutting one shared by every subsystem: production live verification and failure-path integration evidence.
 
 ## Current verified state
 
@@ -36,7 +36,7 @@
 | Server-management health/read model | `disbot/services/server_management_hub.py` | Read service | **Done** | Central read-only badge composer; keeps health reads out of the hub view. | `tests/unit/services/test_server_management_hub.py`. |
 | Access Map | `disbot/views/server_management/access_map.py` | Read-only panel | **Done** | Uses the access projection seam and is display-only. | Hub/access-map tests and display-only invariant coverage; merged #656. |
 | Help Preview | `disbot/views/server_management/access_map.py` | Read-only panel | **Done** | Uses `project_help_with_execution`, including governance/overlay behavior and orphan reporting after the #671 correction. | Merged #671; projection tests outside this subsystem map. |
-| Channel cog | `disbot/cogs/channel_cog.py` | Cog | **Partial** | Rich command surface and lifecycle routing for owned operations, but creation, clone, and overwrite mutations remain mixed/direct. | `tests/unit/invariants/test_no_direct_channel_mutations.py` explicitly excludes these remaining operations. |
+| Channel cog | `disbot/cogs/channel_cog.py` | Cog | **Done** | Full command surface routes every mutation through `ChannelLifecycleService` — change ops, overwrite, clone (P0-4 PR 1), and creation (`!create`/`!evt`/`!bulkcreate`, P0-4 PR 2). No direct `guild.create_*`. | `tests/unit/invariants/test_no_direct_channel_mutations.py` now pins `create_text_channel`/`create_voice_channel`/category creation; cog removed from `test_no_silent_auto_create.py` allowlist. |
 | Role cog | `disbot/cogs/role_cog.py`; `disbot/cogs/role/` | Cog / schema | **Done** | Canonical role hub, automation listeners, reaction-role commands, hidden panel-action routes, and schemas are wired; role-object lifecycle writes route through the lifecycle service. | Role routing/lifecycle/threshold invariant tests. |
 | Moderation cog | `disbot/cogs/moderation_cog.py`; `disbot/cogs/moderation/` | Cog / schema / helpers | **Done** | Prefix/slash/manual moderation surfaces converge on `moderation_service`; capability/permission OR-gate is pinned. | `test_no_direct_moderation_writes.py`; `test_moderation_role_authority.py`; merged #521. |
 | Cleanup cog | `disbot/cogs/cleanup_cog.py`; `disbot/cogs/cleanup/` | Cog / panel / schema | **Done** | Exposes cleanup configuration, history scan, word controls, staged policy application, and the reusable cleanup panel. | Cleanup cog/panel/stage/history tests; merged #549. |
@@ -76,11 +76,11 @@
 | Rename / move / reorder / delete service | `disbot/services/channel_lifecycle_service.py` | Lifecycle service | **Done** | Owns confirmed operator lifecycle operations, feasibility, audit companion, and lifecycle event emission. | `tests/unit/services/test_channel_lifecycle_service.py`; merged #523. |
 | Delete panel | `disbot/views/channels/delete_panel.py` | Panel | **Done** | Requires explicit confirmation and routes deletion through `ChannelLifecycleService`. | Channel mutation invariant. |
 | Move/reorder panel | `disbot/views/channels/move_panel.py` | Panel | **Done** | Selector-driven move/top/bottom operations route through the lifecycle service. | `tests/unit/views/test_channel_move_panel.py`; lifecycle tests. |
-| Channel creation panel | `disbot/views/channels/create_panel.py` | Panel / provisioning consumer | **Done** | Uses the resource-provisioning lane rather than silently creating from a detector/read model. | Resource-provisioning contract and channel service tests. |
-| Legacy/prefix channel creation | `ChannelCog.manage_event`; `create_channel_with_role`; `bulk_create_channels` | Management functions | **Partial** | These functions still call Discord channel/category creation directly, so channel creation does not have one canonical audited writer across all surfaces. | Source inspection; `docs/ownership.md` marks channel create/edit lifecycle mixed. |
+| Channel creation panel | `disbot/views/channels/create_panel.py` | Panel / lifecycle consumer | **Done** | P0-4 PR 2: the batch create flow routes through `ChannelLifecycleService.create_channels` (audit + `channel.lifecycle_changed` event + per-name typed result), not a direct `guild.create_text_channel`. *(Corrected 2026-06-14: the prior "uses the resource-provisioning lane" wording was aspirational — source still called Discord directly until PR 2.)* | `tests/unit/views/test_create_panel_multi.py`; panel removed from `test_no_silent_auto_create.py` allowlist. |
+| Legacy/prefix channel creation | `ChannelCog.manage_event`; `create_channel_with_role`; `bulk_create_channels` | Management functions | **Done** | P0-4 PR 2: all three route through `ChannelLifecycleService.create_channels` (one canonical audited creator across every surface); `manage_event`'s "Events" category and any named category are get-or-created inside that audited op. | `test_no_direct_channel_mutations.py` (pins `create_*` in the cog); `test_channel_lifecycle_service.py` create-batch tests. |
 | Channel permission overwrites | `ChannelCog.set_access`; `lock_channel`; `unlock_channel`; `modify_permissions`; `disbot/views/channels/restrict_panel.py` | Management functions / panels | **Done** | P0-4 (Q-0100): every overwrite routes through `ChannelLifecycleService.set_overwrite` (audit + `channel.lifecycle_changed` event + typed result); the invariant now pins `.set_permissions()`. `visibility_panel.py` was already audited via `governance_service`. | `test_no_direct_channel_mutations.py` (pins `.set_permissions`); `test_channel_lifecycle_service.py`; `test_restrict_panel_multi.py`. |
 | Channel clone | `ChannelCog.clone_channel` | Management function | **Done** | P0-4 (Q-0100): clone routes through `ChannelLifecycleService.clone` (compensatable, audited); the invariant pins `.clone()`. | `test_no_direct_channel_mutations.py`; `test_channel_lifecycle_service.py`. |
-| Category lifecycle / event category creation | `ChannelCog.manage_event`; channel create helpers | Management function | **Partial** | Category creation/lifecycle is not fully converged behind one audited service. | Source inspection; server-management folio current-state note. |
+| Category lifecycle / event category creation | `ChannelLifecycleService._resolve_create_category`; `utils.channels.get_or_create_category` | Management function | **Done** | P0-4 PR 2: category resolution/get-or-create happens inside the audited `create_channels` op (by id or by name); the raw `guild.create_category` stays in the allowlisted `utils.channels` infra helper, called only from the audited service. | `test_channel_lifecycle_service.py` (`get_or_creates_category_by_name`, `resolves_existing_category_by_id`). |
 | Bulk delete and single delete commands | `ChannelCog.bulk_delete_channels`; `delete_channel`; `manage_event(delete)` | Management functions | **Done** | Route through `ChannelLifecycleService` and return typed outcome errors. | Channel invariant and service tests. |
 | Channel list/info/pagination | `ChannelCog.list_channels`; `channel_info`; `_ChannelListPaginatorView` | Read-only management functions | **Done** | Read-only inventory and pagination are implemented. | `tests/unit/cogs/test_channel_list_paginate.py`. |
 
@@ -122,8 +122,19 @@
 
 ## Required before production-ready
 
-1. **Converge the remaining channel mutation paths.** **Clone + permission-overwrite are DONE** (P0-4 PR 1, Q-0100 — routed through `ChannelLifecycleService`). **Remaining: direct creation + category lifecycle** (`ChannelCog.manage_event` create, `create_channel_with_role`, `bulk_create_channels`, `views/channels/create_panel.py`) need to converge under `ResourceProvisioningPipeline` (preserve its confirmation rule), since ad-hoc operator creation has no declared binding — design that fit explicitly.
-2. **Expand the channel mutation invariant after each convergence.** `.set_permissions()` and `.clone()` are now pinned (P0-4 PR 1). Still to pin: the creation/category calls, once their canonical provisioning path exists.
+1. **Converge the remaining channel mutation paths.** ✅ **DONE (P0-4 complete, 2026-06-14).**
+   Clone + permission-overwrite (PR 1) and creation + category lifecycle (PR 2) all route
+   through `ChannelLifecycleService`. **Design note:** ad-hoc operator creation has *no*
+   declared binding, so it does NOT fit the catalogue-driven `ResourceProvisioningPipeline`
+   (which always resolves a `(subsystem, binding_name)` option and writes a binding row).
+   It is instead owned by `ChannelLifecycleService.create_channels` — the channel-domain
+   sibling of the allowlisted `RoleLifecycleService` (the audited manual-role creator).
+   Subsystem-*bound* creation stays with the provisioning pipeline.
+2. **Expand the channel mutation invariant after each convergence.** ✅ **DONE.**
+   `.set_permissions()` / `.clone()` (PR 1) and `create_text_channel` /
+   `create_voice_channel` / category creation (PR 2) are pinned in
+   `test_no_direct_channel_mutations.py` for the cog + channel views;
+   `test_no_silent_auto_create.py` lists the service as the one sanctioned manual creator.
 3. **Run a production-like live walk.** Exercise both prefix and slash entry points, hub navigation/back paths, setup stage → preview → apply → recovery, authority denials, Discord hierarchy failures, audit/log delivery, and cleanup scans on a real guild.
 4. **Verify persistence and partial-failure behavior on real PostgreSQL.** In particular: setup draft/op-kind parity against the deployed schema, lock contention, partial apply/recovery, cleanup policy writes, moderation history, and event/audit companion failure behavior.
 5. **Decide whether preflight adapters are required for every setup op before launch.** Today several known op kinds intentionally render `preflight unavailable`; this is safe but weakens operator confidence for compound changes.
@@ -131,8 +142,8 @@
 
 ## Bugs, inconsistencies, and risks
 
-- **Mixed channel ownership is the principal architectural risk.** Some channel paths are audited lifecycle operations while others call Discord directly. Similar operator actions therefore have different audit, confirmation, failure-reporting, and event behavior.
-- **The channel invariant can give a false sense of completeness.** It guarantees only `.edit()` / `.delete()` convergence and documents that overwrites/clone are outside its scope.
+- ~~**Mixed channel ownership is the principal architectural risk.**~~ ✅ **Resolved (P0-4 complete, 2026-06-14).** Every operator channel path — change ops, overwrite, clone, and creation/category — now routes through `ChannelLifecycleService` with uniform audit, confirmation, failure-reporting, and `channel.lifecycle_changed` event behavior.
+- ~~**The channel invariant can give a false sense of completeness.**~~ ✅ The invariant now pins `.edit`/`.delete`/`.set_permissions`/`.clone` **and** the `create_*` calls; nothing in the operator surface is out of its scope.
 - **Setup preflight coverage is incomplete.** Known operations without adapters are valid and apply correctly, but Final Review cannot always show a true current-versus-proposed diff.
 - **Best-effort companions are not durable history.** Channel/role lifecycle audit companions and domain events may fail after Discord mutation succeeds; this is by contract, but operators need live evidence that logging failures are visible enough operationally.
 - **Lifecycle services do not own every adjacent operation.** Role member assignment remains on automation/reaction-role paths by design; channel creation belongs to resource provisioning. Future work must preserve these boundaries rather than creating “one giant lifecycle service.”
@@ -145,7 +156,7 @@
 | Area | Readiness | Summary |
 |---|---|---|
 | **Setup** | **Partial** | Strong draft/apply/recovery architecture, canonical diagnostics, deterministic templates, and broad unit coverage. Needs live/Postgres/failure-path verification and a decision on incomplete preflight adapters. |
-| **Channels** | **Partial** | Rename/move/reorder/delete and their panels are converged. Direct creation, clone, overwrites, and category paths prevent full production readiness. |
+| **Channels** | **Partial** | All mutation paths are converged through `ChannelLifecycleService` (rename/move/reorder/delete, overwrite, clone, **and creation/category** — P0-4 complete). Remaining gap is live verification only. |
 | **Roles** | **Partial** | Core lifecycle and automation ownership are strong and invariant-pinned. Remaining gaps are primarily live verification and known UX follow-ups. |
 | **Moderation** | **Partial** | Service convergence, config, authority, history, and logging contracts are strong. Remaining gaps are live verification and member/unban UX. |
 | **Cleanup** | **Partial** | Policy hierarchy, presets, diagnostics, dry-run, versioning, and moderation integration are implemented. Production persistence/large-history/live behavior still needs verification. |
@@ -186,4 +197,12 @@
 
 ## Recommended next session
 
-**Run a channel-ownership convergence planning/review session, not an implementation-by-default session.** Produce a source-grounded decision for each remaining direct channel mutation (`create_*`, category creation, clone, and permission overwrites): canonical owner, confirmation requirement, audit/event contract, and migration/invariant implications. Cross-check the resource-provisioning contract before assigning creation ownership. End with a bounded implementation sequence and a live-verification matrix for the entire Server Management Hub. Do not add a setup op-kind, create a role-threshold writer, or permit direct cog/view DB writes as part of that work.
+**Channel-ownership convergence is COMPLETE (P0-4, 2026-06-14).** All channel mutation
+paths — change ops, overwrite, clone (PR 1) and creation/category (PR 2) — route through
+`ChannelLifecycleService` with audit + event + invariant coverage. The remaining
+server-management gap is the cross-cutting **production live-verification** one (a real-guild
+walk + real-Postgres failure-path run across all five managers — see § "Tests and
+live-verification gaps"), which pairs with P1-4 in the hardening roadmap and is owner-led.
+
+The next hardening **implementation** track is **P0-2 — Media/YouTube data-minimization &
+retention (Q-0099)**, then **P1-1 — the versioned AI eval/smoke matrix**.

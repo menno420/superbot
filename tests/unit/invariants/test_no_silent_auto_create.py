@@ -73,13 +73,18 @@ _ALLOWED_PATHS = {
     # the one sanctioned guild.create_role caller for *manual* roles (subsystem
     # role provisioning still goes through ResourceProvisioningPipeline).
     _DISBOT / "services" / "role_lifecycle_service.py",
+    # Audited manual-channel creator (P0-4 PR 2, Q-0100).  The channel-domain
+    # sibling of role_lifecycle_service: it owns ad-hoc operator channel
+    # creation (the !create / !evt / !bulkcreate commands + the create panel,
+    # which have no declared subsystem binding) with a manage-channels check +
+    # audit companion + channel.lifecycle_changed event.  Subsystem-*bound*
+    # channel creation still goes through ResourceProvisioningPipeline.
+    _DISBOT / "services" / "channel_lifecycle_service.py",
     # Grandfathered legacy paths — UI CRUD and admin commands.
-    # Each migrates to ResourceProvisioningPipeline in a per-subsystem
-    # S10 sub-PR.  (role_cog / views/roles/creation_panel were removed from
-    # this list once their create_role calls routed through
-    # RoleLifecycleService in PR5.)
-    _DISBOT / "views" / "channels" / "create_panel.py",
-    _DISBOT / "cogs" / "channel_cog.py",
+    # Each migrates to a converged audited creator in a per-subsystem S10
+    # sub-PR.  (channel_cog / views/channels/create_panel were removed from
+    # this list once their create_text_channel calls routed through
+    # ChannelLifecycleService.create_channels in P0-4 PR 2.)
     _DISBOT / "cogs" / "counting_cog.py",  # auto-create counting channel
     _DISBOT / "cogs" / "economy_cog.py",  # auto-create economy log channel
 }

@@ -50,15 +50,15 @@
 | Item | Path | Type | State | Reason | Evidence |
 |---|---|---|---|---|---|
 | Shared media ownership decision | `docs/decisions/007-media-youtube-ownership.md` | Architecture/ownership | **Done** | ADR-007 accepts one shared platform media subsystem and explicitly forbids BTD6 ownership. | Decision and consequences name shared ownership and downstream AI/BTD6 consumers. |
-| Canonical ownership registry entry | `docs/ownership.md` | Architecture inventory | **Not Done** | ADR-007 calls for a follow-on ownership row/service registration, but no media/YouTube row exists. | No `youtube` or media subsystem row is present in `docs/ownership.md`. |
+| Canonical ownership registry entry | `docs/ownership.md` | Architecture inventory | **Done** | P0-2 (Q-0099): a `media` (YouTube) subsystem row was added to `docs/ownership.md` — owns `youtube_video_cache`, shared-platform (ADR-007), with the data-minimisation + retention owners named. | `docs/ownership.md` § Subsystem ownership `media (YouTube)` row. |
 | Subsystem folio and generated context pack | `docs/subsystems/media-youtube.md`; `docs/agent/generated/media-youtube.context.md` | Orientation docs | **Done** | Both route agents to the shared seams and privacy/logging rules. | Folio and generated pack list the source route and active gates. |
 | URL-to-context orchestration | `disbot/services/youtube_context_service.py` | Service | **Partial** | End-to-end resolution, sanitization, fact rendering, two-video cap, and negative-cache mapping exist; duplicated URL parsing, inconsistent cached/fresh error codes, and no concurrency controls remain. | `build`, `_resolve_video`, `_reason_to_status`, `_render_facts`. |
 | Provider metadata fetch | `disbot/services/youtube_fetch_service.py` | External API service | **Partial** | API-key check, 10-second HTTP timeout, private/deleted and quota handling exist; there is no retry/backoff, shared session, rate/quota diagnostics, response-schema validation, or explicit network exception taxonomy. | `fetch_video_metadata`. |
 | Provider transcript fetch | `disbot/services/youtube_fetch_service.py` | External API service | **Partial** | Blocking client is moved to an executor and absence degrades safely, but all exceptions are silently swallowed, there is no timeout/language/provenance/status detail, and failures cannot be distinguished from no transcript. | `fetch_transcript`. |
 | Cache service | `disbot/services/video_reference_cache_service.py` | Service/cache policy | **Partial** | Centralized read/write seam and 24-hour/10-minute logical TTLs exist; transcript status is reduced to available/unavailable, error detail is not surfaced, and retention has no purge orchestration. | `get_cached`, `put_cached`, `_CACHE_TTL_*`. |
-| Cache DB helper | `disbot/utils/db/youtube_video_cache.py` | DB helper | **Partial** | Raw SQL is isolated, reads exclude expired rows, upsert and purge primitives exist; purge has no caller and the helper has no focused tests. | `get_video_cache`, `upsert_video_cache`, `purge_expired_video_cache`; repository search finds no purge caller. |
+| Cache DB helper | `disbot/utils/db/youtube_video_cache.py` | DB helper | **Partial** | Raw SQL is isolated, reads exclude expired rows, upsert and purge primitives exist. **P0-2 (Q-0099): `purge_expired_video_cache` now has a caller** — `video_reference_cache_service.purge_expired`, scheduled by `cogs/media_maintenance_cog.py`. Focused DB-helper tests still TBD. | `get_video_cache`, `upsert_video_cache`, `purge_expired_video_cache`; caller in `media_maintenance_cog._purge_loop`. |
 | Cache table/migration | `disbot/migrations/049_youtube_video_cache.sql` | Migration/table | **Partial** | Table, expiry index, status constraint, and error fields exist; retention is logical only, raw full metadata can persist indefinitely, and some declared statuses/fields are unused or incompletely projected. | `youtube_video_cache`; `transcript_unavailable` is never written; `transcript_status` is not exposed by `CachedVideoEntry`. |
-| Sanitized bounded AI facts | `disbot/services/youtube_context_service.py` | Privacy/safety helper | **Partial** | Mentions/control characters are removed and text fact fields are capped, but raw provider metadata is cached before projection and provider content is still prompt-injection-capable untrusted text. | `_sanitise`, `_build_video_context`, `_render_facts`; cache write receives raw `metadata`. |
+| Sanitized bounded AI facts | `disbot/services/youtube_context_service.py` | Privacy/safety helper | **Partial** | Mentions/control characters are removed and text fact fields are capped. **P0-2 (Q-0099): the cache write now receives the bounded projection** (`_project_metadata`), so the raw provider payload is no longer stored. Provider text is still prompt-injection-capable untrusted content (delimiting/test suite remains TBD). | `_sanitise`, `_project_metadata`, `_build_video_context`, `_render_facts`; cache write receives `_project_metadata(metadata)`. |
 | Video card embed | `disbot/views/youtube_embeds.py` | View helper | **Partial** | Title, AI summary, metadata fields, thumbnail, and transcript availability render; no focused tests validate limits, malicious provider strings, URLs, or embed behavior. | `build_video_card_embed`. |
 | Compare embed | `disbot/views/youtube_embeds.py` | View helper | **Partial** | Two-video comparison renders bounded fields, but lacks focused tests and explicit provider-content escaping/validation. | `build_compare_embed`. |
 | Describe/compare renderer registration | `disbot/views/youtube_renderers.py`; `disbot/cogs/ai_cog.py` | Render integration | **Partial** | Describe and compare renderers are explicitly and idempotently registered with mentions disabled; no dedicated renderer/embed tests exist and `VIDEO_QA` intentionally remains plain text. | `render_describe`, `render_compare`, `AICog.cog_load`. |
@@ -105,12 +105,14 @@
 
 ## Bugs, inconsistencies, and risks
 
-- **Retention bug/risk:** `purge_expired_video_cache()` has no caller. Expired rows stop
-  serving but remain stored indefinitely, including transcript excerpts and raw metadata.
-- **Raw-data mismatch:** runtime facts are bounded/sanitized, but `metadata_json` stores
-  the full unsanitized YouTube API item, including full descriptions. This contradicts
-  the folio's “bounded cached metadata” characterization and increases privacy/content
-  risk.
+- ~~**Retention bug/risk:** `purge_expired_video_cache()` has no caller.~~ **FIXED (P0-2 /
+  Q-0099):** `media_maintenance_cog` schedules a 6-hour physical purge via
+  `video_reference_cache_service.purge_expired`, so expired transcript excerpts/metadata are
+  removed from storage, not just hidden from reads.
+- ~~**Raw-data mismatch:** `metadata_json` stores the full unsanitized YouTube API item.~~
+  **FIXED (P0-2 / Q-0099):** the cache write now persists only `_project_metadata`'s bounded,
+  sanitized projection (no full description, id, statistics, …) — matching the folio's
+  “bounded cached metadata” characterization.
 - **Fresh/cache error drift:** a fresh private-video failure returns
   `video_private_or_deleted`; the negative cache stores and later returns
   `private_or_deleted`. Similar status-vs-reason drift makes audits/operator behavior
@@ -130,8 +132,10 @@
 - **Untrusted provider data:** descriptions and transcripts enter AI grounding and can
   contain prompt-injection text. Basic Discord sanitization is not a trust boundary;
   provider content must remain clearly delimited/untrusted in AI prompt assembly.
-- **Unvalidated provider URLs:** thumbnail URL is passed to Discord embeds from provider
-  data without an explicit scheme/host policy. Canonical watch URLs are locally built.
+- ~~**Unvalidated provider URLs:** thumbnail URL is passed to Discord embeds without a
+  scheme/host policy.~~ **FIXED (P0-2 / Q-0099):** `_safe_thumbnail_url` enforces HTTPS +
+  `*.ytimg.com`/`*.youtube.com` host allowlist before the URL is stored or embedded.
+  Canonical watch URLs are locally built.
 - **Operational fragility:** each metadata fetch creates a new HTTP session; there is no
   retry/backoff, request coalescing, per-guild/global rate limit, quota budget, or media
   metrics/diagnostics.
@@ -152,11 +156,12 @@
 | Transcript/content absent from normal logs | **Done** | No mapped log statement intentionally includes transcript, description, title, AI summary, or provider response body. |
 | Transcript/content absent from audit payloads | **Done** | Media emits no generic audit event; AI decision audit records IDs/task/route/decision/reason/policy hash, not grounding content. |
 | Discord mention safety | **Done** | Provider text mentions are replaced before facts and response sends/renderers use `AllowedMentions.none()`. |
-| Provider content treated as untrusted | **Partial** | Text is bounded/sanitized for Discord, but there is no explicit prompt-injection boundary/test suite and raw metadata is stored. |
+| Provider content treated as untrusted | **Partial** | Text is bounded/sanitized for Discord and only the bounded projection is now stored (Q-0099); an explicit prompt-injection delimiting boundary/test suite is still TBD. |
 | Bounded transcript storage | **Done** | Stored transcript text is sanitized and capped at 1,500 characters. |
-| Bounded metadata storage | **Not Done** | Full raw provider metadata item is cached; only the later fact projection is bounded. |
+| Bounded metadata storage | **Done** | P0-2 (Q-0099): `_project_metadata` runs before the cache write — only title/channel/published/duration/description-excerpt/validated-thumbnail are persisted; the raw provider item (full description, id, statistics, …) is never stored. Pinned by `test_cache_miss_stores_only_bounded_projection`. |
 | Logical expiry | **Done** | Reads require `expires_at > now()`; success/error TTLs are 24 hours/10 minutes. |
-| Physical deletion/retention enforcement | **Not Done** | Purge primitive exists but has no caller; expired content can remain indefinitely. |
+| Physical deletion/retention enforcement | **Done** | P0-2 (Q-0099): `media_maintenance_cog` runs a scheduled (6h) `purge_expired_video_cache` so expired content is physically removed, not just hidden from reads. |
+| Provider thumbnail URL validated | **Done** | P0-2 (Q-0099): `_safe_thumbnail_url` keeps only HTTPS `*.ytimg.com`/`*.youtube.com` URLs before storage/embed; anything else is dropped. Pinned by `test_safe_thumbnail_url_*`. |
 | Credential secrecy | **Done** | API key comes from environment and is not included in logs or DB writes. |
 | Credential readiness/rotation | **Partial** | Missing key fails closed, but there is no media readiness diagnostic and key value is captured at import. |
 | Error logging redaction | **Partial** | Known errors are reason-coded without content; unexpected tracebacks need an explicit provider-exception redaction guarantee. |
