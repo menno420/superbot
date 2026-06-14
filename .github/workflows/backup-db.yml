@@ -63,9 +63,16 @@ jobs:
           fi
           echo "Secret configured."
 
-      - name: Install postgresql-client
+      - name: Install postgresql-client (PGDG — must be >= the Railway server major)
+        # Ubuntu's default postgresql-client is v16, but Railway's Postgres is v18,
+        # and pg_dump refuses to dump a NEWER server with an OLDER client
+        # ("aborting because of server version mismatch"). Add the official PGDG apt
+        # repo and install the latest client — a newer client dumps older servers
+        # fine, so a future Railway major bump won't re-break this.
         run: |
           sudo apt-get update -qq
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
           sudo apt-get install -y postgresql-client
 
       - name: Dump and compress
@@ -141,6 +148,8 @@ jobs:
                 '**Likely causes:**',
                 '- `DATABASE_PUBLIC_URL` secret not set, or expired/rotated',
                 '  (Railway updates it when the database is recreated)',
+                '- pg_dump server/client version mismatch (Railway upgraded its',
+                '  Postgres major — bump the postgresql-client install in this workflow)',
                 '- Transient network issue between GitHub Actions and Railway',
                 '',
                 'Check the workflow logs. If the secret is stale, update it:',
