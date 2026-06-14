@@ -27,6 +27,8 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/wizardly-edison-xw34kb` · P1-1 — close eval-coverage gap on BTD6 hotspot tools (dog-food
+  #879) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-14
 ## Recently cleared
 
 - `claude/wizardly-edison-xw34kb` · eval-coverage drift guard (Q-0089 idea, owner-approved) ·
