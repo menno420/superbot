@@ -25,12 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
-  `services/health_findings_service.py` + `utils/db/health_findings.py` + `cogs/diagnostic_cog.py`
-  + new `cogs/health_maintenance_cog.py` · 2026-06-14
+_(no active claims)_
 
 ## Recently cleared
 
+- `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
+  2026-06-14 · **PR #843 (merged; session-close docs in a small follow-up PR)**
 - `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
   guardrail) · `tests/_isolation.py` + conftest + guardrail invariant test · 2026-06-14 ·
   **PR #833 (open, auto-merge on green)**
