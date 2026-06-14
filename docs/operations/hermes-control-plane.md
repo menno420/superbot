@@ -24,6 +24,24 @@ Hermes is currently treated as a **repo-aware assistant**, not as a production b
 - Backups: not enabled yet
 - Firewall: Ubuntu `ufw` was configured for SSH during setup
 
+### Python toolchain
+
+- System interpreter: **Python 3.11** (the Ubuntu 24.04 default `python3`).
+- **Python 3.10 installed alongside** (verified 2026-06-14) via the deadsnakes PPA — so the repo's
+  `python3.10`-pinned commands run verbatim while `python3` stays 3.11 (nothing else on the VPS is
+  repointed). Re-run after a VPS rebuild:
+  ```bash
+  sudo add-apt-repository -y ppa:deadsnakes/ppa
+  sudo apt-get update
+  sudo apt-get install -y python3.10 python3.10-venv python3.10-distutils
+  python3.10 --version            # Python 3.10.20
+  ```
+- The Hermes-run helpers (`build_skills.py`, `check_current_state_ledger.py`, `check_phase_gate.py`,
+  `routine_fire.py`, `railway_*`) are stdlib-only and run under **either** `python3` (3.11) or
+  `python3.10` — PR #869 de-pinned them, so 3.10 is installed for doc-command parity, not because
+  they require it. (The `python3.10` pin in `.claude/CLAUDE.md` is for the CI-parity tools —
+  `check_quality`/black/mypy/pytest — which Hermes does not run.)
+
 ### Linux users
 
 - Initial setup was performed through `root`
