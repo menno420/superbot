@@ -43,6 +43,7 @@ from cogs.diagnostic._platform_embeds import (
     build_identity_embed,
     build_lifecycle_embed,
     build_locks_embed,
+    build_media_embed,
     build_migrations_embed,
     build_participation_schemas_embed,
     build_provisioning_embed,
@@ -67,6 +68,7 @@ _RUNTIME_OPTIONS = (
     ("runtime", "🛰", "snapshot_all roll-up across every provider"),
     ("lifecycle", "♻️", "Lifecycle phase, pending requests, recent events"),
     ("caches", "🧠", "F-1 guild_config + governance cache state"),
+    ("media", "🎬", "Media (YouTube) cache health + provider outcomes"),
     ("locks", "🔒", "scope_locks snapshot (no filter)"),
     ("tasks", "🔁", "Managed background-task snapshot"),
     ("views", "🖼", "Registered PersistentView classes by subsystem"),
@@ -188,6 +190,8 @@ async def _dispatch(name: str, interaction: discord.Interaction) -> discord.Embe
         return build_lifecycle_embed()
     if name == "caches":
         return build_caches_embed()
+    if name == "media":
+        return await build_media_embed()
     if name == "locks":
         return build_locks_embed()
     if name == "tasks":

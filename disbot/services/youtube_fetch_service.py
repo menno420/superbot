@@ -15,6 +15,8 @@ import re
 
 import aiohttp
 
+from services import youtube_diagnostics
+
 logger = logging.getLogger("bot.services.youtube_fetch")
 
 _API_KEY: str | None = os.getenv("YOUTUBE_API_KEY")
@@ -54,7 +56,30 @@ async def fetch_video_metadata(video_id: str) -> dict:
 
     Raises YouTubeFetchError for missing key, private/deleted video,
     or quota exceeded.
+
+    Records a content-free provider-outcome counter on every call (success or
+    failure) for the ``!platform media`` diagnostic — the outcome *category*
+    only, never any video content.  Error semantics are unchanged: every
+    exception is re-raised exactly as before.
     """
+    try:
+        result = await _fetch_video_metadata(video_id)
+    except YouTubeFetchError as exc:
+        youtube_diagnostics.record_provider_outcome(
+            youtube_diagnostics.outcome_for_reason(exc.reason),
+        )
+        raise
+    except (TimeoutError, asyncio.TimeoutError):
+        youtube_diagnostics.record_provider_outcome("timeout")
+        raise
+    except Exception:  # noqa: BLE001 — record then re-raise unchanged
+        youtube_diagnostics.record_provider_outcome("fetch_error")
+        raise
+    youtube_diagnostics.record_provider_outcome("success")
+    return result
+
+
+async def _fetch_video_metadata(video_id: str) -> dict:
     global _API_KEY_WARNED
     if not _API_KEY:
         if not _API_KEY_WARNED:

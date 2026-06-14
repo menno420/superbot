@@ -19,7 +19,7 @@ import logging
 
 from discord.ext import commands, tasks
 
-from services import video_reference_cache_service
+from services import video_reference_cache_service, youtube_diagnostics
 
 logger = logging.getLogger("bot.cogs.media_maintenance")
 
@@ -48,7 +48,9 @@ class MediaMaintenanceCog(commands.Cog):
             purged = await video_reference_cache_service.purge_expired()
         except Exception:  # noqa: BLE001 — a transient DB blip must not kill the loop
             logger.exception("media: expired video-cache purge failed")
+            youtube_diagnostics.record_purge(0, ok=False)
             return
+        youtube_diagnostics.record_purge(purged, ok=True)
         if purged:
             logger.info("media: purged %d expired video-cache row(s)", purged)
 
@@ -58,4 +60,10 @@ class MediaMaintenanceCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
+    from services import diagnostics_service
+
+    # Register the content-free media diagnostics provider so the
+    # process-local provider-outcome counters + last-purge status show in
+    # ``!platform runtime`` and back the ``!platform media`` surface.
+    diagnostics_service.register("media", youtube_diagnostics.snapshot)
     await bot.add_cog(MediaMaintenanceCog(bot))

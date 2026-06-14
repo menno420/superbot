@@ -197,7 +197,7 @@ def test_counting_health_embed_healthy():
 
 
 def test_governance_context_for_thread_vs_channel():
-    from cogs.diagnostic_cog import _governance_context_for
+    from cogs.diagnostic._platform_embeds import governance_context_for
 
     author = MagicMock()
     author.roles = []
@@ -208,7 +208,7 @@ def test_governance_context_for_thread_vs_channel():
     channel = MagicMock(spec=discord.TextChannel)
     channel.id = 5
     channel.category_id = 7
-    cc = _governance_context_for(ctx, channel)
+    cc = governance_context_for(ctx, channel)
     assert cc.guild_id == 99
     assert cc.channel_id == 5
     assert cc.category_id == 7
@@ -219,7 +219,7 @@ def test_governance_context_for_thread_vs_channel():
     thread.parent_id = 5
     thread.parent = MagicMock()
     thread.parent.category_id = 7
-    tc = _governance_context_for(ctx, thread)
+    tc = governance_context_for(ctx, thread)
     assert tc.thread_id == 50
     assert tc.channel_id == 5
     assert tc.category_id == 7

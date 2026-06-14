@@ -295,6 +295,12 @@ Current broad captures:
   Final Review, with confidence/conflict-detection/completeness-scoring/post-setup-summary. Much
   is now the active setup-platform lane; this preserves the original vision + the open-tail
   enhancements. Settings/setup lane.
+- [`media-quota-health-finding-2026-06-14.md`](./media-quota-health-finding-2026-06-14.md) —
+  **small, decided-lane (Q-0089 session idea):** bridge PR #854's process-local media
+  provider-outcome counters (quota_limited / timeout) into the persistent health-findings
+  store (#843, Q-0097) so recurring YouTube quota exhaustion is visible across restarts, not
+  just within one boot. Content-free; reuses the findings seam. Sequence after the
+  provider-execution hardening follow-up.
 - [`rps-tournament-service-refactor.md`](./rps-tournament-service-refactor.md) —
   **preserved refactor spec (from closed issue #229, owner 2026-05-20):** move RPS tournament
   orchestration/state out of `rps_tournament_cog.py` into an `RpsTournamentService` (5-step
