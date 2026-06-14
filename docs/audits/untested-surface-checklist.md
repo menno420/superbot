@@ -199,9 +199,9 @@
 > Machine coverage: `test_channel_list_paginate` — pagination only; channel
 > mutations are untested.
 
-- `[ ]` `!lock #channel-name` — **Expect:** the channel goes read-only for
-  regular members; a "locked" message appears.
-- `[ ]` `!unlock #channel-name` — **Expect:** permissions restored; confirm
+- `[~]` `!lock #channel-name` — **Expect:** the channel goes read-only for
+  regular members; a "locked" message appears. `live walk 2026-06-14 except no locked message`
+- `[✅]` `!unlock #channel-name` — **Expect:** permissions restored; confirm
   members can post again.
 - `[ ]` Channel list commands (the channel management panel) — navigate to
   channel list; pagination works past 25 channels if the server has them.
@@ -216,15 +216,15 @@
 > `test_cleanup_stage` — internal stage tests; **`!word` commands and the
 > live filter behavior are unverified**.
 
-- `[ ]` `!wordmenu` — **Expect:** the Word Filter hub panel.
-- `[ ]` `!word add <phrase>` — **Expect:** phrase added to the filter;
+- `[✅]` `!wordmenu` — **Expect:** the Word Filter hub panel.
+- `[✅]` `!word add <phrase>` — **Expect:** phrase added to the filter;
   posting the phrase in the filtered channel triggers deletion + log.
-- `[ ]` `!word remove <phrase>` — **Expect:** phrase removed; posting it no
+- `[✅]` `!word remove <phrase>` — **Expect:** phrase removed; posting it no
   longer triggers the filter.
-- `[ ]` `!word list` — **Expect:** all active filtered phrases listed.
-- `[ ]` `!cleanup` — **Expect:** the cleanup-config panel renders with current
+- `[✅]` `!word list` — **Expect:** all active filtered phrases listed.
+- `[✅]` `!cleanup` — **Expect:** the cleanup-config panel renders with current
   auto-delete rules.
-- `[ ]` `!cleanuphistory` — **Expect:** recent cleanup log (deletions).
+- `[✅]` `!cleanuphistory` — **Expect:** recent cleanup log (deletions).
 
 ---
 
@@ -235,7 +235,7 @@
 > extensive internal tests; **the live panel flow and multi-player session
 > have never been walked**.
 
-- `[ ]` `!countingmenu` (alias `!cm`) — **Expect:** the Counting hub panel.
+- `[~]` `!countingmenu` (alias `!cm`) — **Expect:** the Counting hub panel.
 - `[ ]` `!start_match` — **Expect:** a counting game starts in the channel;
   players can join/begin.
 - `[ ]` `!count_info` — **Expect:** current game state (count, who's next,
