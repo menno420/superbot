@@ -2,7 +2,7 @@
 
 > **Status:** `complete`
 
-**Branch:** `claude/hermes-routine-fire` · **PR:** #864 (DRAFT — held for comparison) · **Date:** 2026-06-14 · **Type:** ops/dispatch bugfix (manual)
+**Branch:** `claude/hermes-routine-fire` · **PR:** #865 (DRAFT — held for comparison) · **Date:** 2026-06-14 · **Type:** ops/dispatch bugfix (manual)
 
 ## What this session did
 Live-testing Hermes' new operating prompt, Hermes diagnosed a **real bug** — the dispatch skill's
