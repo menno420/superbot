@@ -30,7 +30,7 @@ Do the following in order. Skip any step whose tool is unavailable and say so.
 
 1. PRODUCTION LOGS (Railway)
    Preferred — the read-only API reader (no CLI or login needed):
-     python3.10 scripts/hermes/railway_logs.py -n 400 2>&1
+     python3 scripts/hermes/railway_logs.py -n 400 2>&1
    It reads a read-only token + ids from the environment (RAILWAY_TOKEN — a
    project token — or RAILWAY_API_TOKEN, plus RAILWAY_PROJECT_ID and
    RAILWAY_SERVICE_ID) and
@@ -105,7 +105,7 @@ Format the output as:
   as `RAILWAY_TOKEN` (project token; or `RAILWAY_API_TOKEN` for an account token),
   plus `RAILWAY_PROJECT_ID` and `RAILWAY_SERVICE_ID` (from the dashboard URL
   `railway.com/project/<id>/service/<id>`). Verify with
-  `python3.10 scripts/hermes/railway_logs.py --whoami`. Until configured the skill
+  `python3 scripts/hermes/railway_logs.py --whoami`. Until configured the skill
   still works — it triages the local `hermes-gateway` logs and reports production
   logs unavailable. (The `railway` CLI remains an optional fallback.) Full
   reference: `docs/operations/production-deployment.md` § "Hermes read-only log
