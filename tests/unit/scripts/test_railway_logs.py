@@ -29,6 +29,27 @@ def mod():
     return module
 
 
+@pytest.fixture(autouse=True)
+def _clean_token_env(monkeypatch):
+    # Deterministic token resolution regardless of the CI/host environment.
+    for var in ("RAILWAY_TOKEN", "RAILWAY_PROJECT_TOKEN", "RAILWAY_API_TOKEN"):
+        monkeypatch.delenv(var, raising=False)
+
+
+# --- token resolution -------------------------------------------------------
+
+
+def test_railway_token_is_treated_as_project(mod, monkeypatch):
+    monkeypatch.setenv("RAILWAY_TOKEN", "pt")
+    monkeypatch.setenv("RAILWAY_API_TOKEN", "at")
+    assert mod._resolve_token() == ("pt", True)
+
+
+def test_api_token_is_account_when_no_project(mod, monkeypatch):
+    monkeypatch.setenv("RAILWAY_API_TOKEN", "at")
+    assert mod._resolve_token() == ("at", False)
+
+
 # --- deployment selection ---------------------------------------------------
 
 
@@ -196,6 +217,15 @@ def test_main_whoami_happy_path(mod, monkeypatch, capsys):
     monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
     assert mod.main(["--whoami"]) == 0
     assert "u1" in capsys.readouterr().out
+
+
+def test_main_whoami_project_token_guides(mod, monkeypatch, capsys):
+    # A project token has no `me` identity; --whoami should guide, not error.
+    monkeypatch.setenv("RAILWAY_TOKEN", "proj-tok")
+    assert mod.main(["--whoami"]) == 0
+    out = capsys.readouterr().out
+    assert "Project token detected" in out
+    assert "railway_vars.py list" in out
 
 
 def test_main_fetches_and_formats(mod, monkeypatch, capsys):

@@ -12,17 +12,18 @@ separate, owner-gated decision — see router Q-0130.)
 
 Auth + config come from the environment (never the repo):
 
+    RAILWAY_TOKEN           project token  -> ``Project-Access-Token`` (preferred,
+                            least-privilege; this is the var Railway's own Tokens
+                            page tells you to set). RAILWAY_PROJECT_TOKEN is an alias.
     RAILWAY_API_TOKEN       account / workspace token -> ``Authorization: Bearer``
-    RAILWAY_PROJECT_TOKEN   project token             -> ``Project-Access-Token``
-                            Set exactly one. A project token scoped to the
-                            production project is the least-privilege choice.
     RAILWAY_PROJECT_ID      the project's id
     RAILWAY_SERVICE_ID      the bot service's id ("worker")
     RAILWAY_ENVIRONMENT_ID  optional; scopes the lookup to one environment
 
 Get a token at https://railway.com/account/tokens. The project/service ids are in
 the dashboard URL: ``railway.com/project/<PROJECT_ID>/service/<SERVICE_ID>``.
-Run ``--whoami`` first to confirm the token authenticates.
+Confirm setup: an account token with ``--whoami``; a project token by reading data
+(``-n 20`` here, or ``railway_vars.py list``) — project tokens have no ``me`` identity.
 
 Usage:
     python3.10 scripts/hermes/railway_logs.py [-n LINES] [--json]
@@ -156,16 +157,27 @@ def format_logs(logs: list[dict[str, Any]]) -> str:
 
 
 def _resolve_token() -> tuple[str, bool]:
-    """Return ``(token, is_project_token)`` from the environment."""
+    """Return ``(token, is_project_token)`` from the environment.
+
+    Mirrors Railway's own convention: ``RAILWAY_TOKEN`` is a project token
+    (sent as ``Project-Access-Token``); ``RAILWAY_API_TOKEN`` is an account /
+    workspace token (sent as ``Authorization: Bearer``). ``RAILWAY_PROJECT_TOKEN``
+    is accepted as an alias for ``RAILWAY_TOKEN``. A project token is
+    least-privilege and preferred when both are set.
+    """
+    project = (
+        os.environ.get("RAILWAY_TOKEN", "").strip()
+        or os.environ.get("RAILWAY_PROJECT_TOKEN", "").strip()
+    )
     account = os.environ.get("RAILWAY_API_TOKEN", "").strip()
-    project = os.environ.get("RAILWAY_PROJECT_TOKEN", "").strip()
     if project:
-        return project, True  # least-privilege; preferred when both are set
+        return project, True
     if account:
         return account, False
     raise RailwayError(
-        "No Railway token found. Set RAILWAY_PROJECT_TOKEN (project token, "
-        "least-privilege) or RAILWAY_API_TOKEN (account/workspace token). "
+        "No Railway token found. Set RAILWAY_TOKEN (a project token — "
+        "least-privilege, and the var Railway's Tokens page tells you to set) or "
+        "RAILWAY_API_TOKEN (account/workspace token). "
         "Get one at https://railway.com/account/tokens.",
     )
 
@@ -206,6 +218,14 @@ def main(argv: list[str] | None = None) -> int:
         post = build_poster(token, is_project_token=is_project_token)
 
         if args.whoami:
+            if is_project_token:
+                print(
+                    "Project token detected (Project-Access-Token) — it has no "
+                    "'me' identity, so verify it by reading data instead:\n"
+                    "  python3.10 scripts/hermes/railway_logs.py -n 20\n"
+                    "  python3.10 scripts/hermes/railway_vars.py list",
+                )
+                return 0
             print(json.dumps(post(WHOAMI_QUERY, {}), indent=2))
             return 0
 

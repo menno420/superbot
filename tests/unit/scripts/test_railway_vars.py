@@ -31,6 +31,17 @@ def mod():
     return module
 
 
+@pytest.fixture(autouse=True)
+def _clean_token_env(monkeypatch):
+    for var in ("RAILWAY_TOKEN", "RAILWAY_PROJECT_TOKEN", "RAILWAY_API_TOKEN"):
+        monkeypatch.delenv(var, raising=False)
+
+
+def test_railway_token_is_treated_as_project(mod, monkeypatch):
+    monkeypatch.setenv("RAILWAY_TOKEN", "pt")
+    assert mod.resolve_token() == ("pt", True)
+
+
 def _recording_post(records: list, variables: dict | None = None):
     def post(query: str, variables_in: dict):
         records.append((query, variables_in))
