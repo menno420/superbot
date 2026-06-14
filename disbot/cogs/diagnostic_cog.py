@@ -478,6 +478,19 @@ class DiagnosticCog(commands.Cog):
         """Cache state: F-1 guild_config + governance.cache."""
         await ctx.send(embed=build_caches_embed())
 
+    @platform_grp.command(name="media")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_media(self, ctx):
+        """Content-free media (YouTube) diagnostics.
+
+        Credential presence, provider-request outcome counters, cache
+        size/age/expiry counts, and the last physical-purge outcome — counts
+        and categories only, never any provider content (P0-2 / Q-0099).
+        """
+        from cogs.diagnostic._platform_embeds import build_media_embed
+
+        await ctx.send(embed=await build_media_embed())
+
     @platform_grp.command(name="locks")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_locks(self, ctx, prefix: str = ""):
@@ -687,11 +700,14 @@ class DiagnosticCog(commands.Cog):
         validates RC-2) and lists visible/denied subsystems + where each decision
         resolved from.  Read-only.
         """
-        from cogs.diagnostic._platform_embeds import build_access_explainer_embed
+        from cogs.diagnostic._platform_embeds import (
+            build_access_explainer_embed,
+            governance_context_for,
+        )
         from governance.snapshot import build_governance_snapshot
 
         where = target or ctx.channel
-        gctx = _governance_context_for(ctx, where)
+        gctx = governance_context_for(ctx, where)
         snapshot = await build_governance_snapshot(gctx)
         await ctx.send(embed=build_access_explainer_embed(where.mention, snapshot))
 
@@ -710,12 +726,15 @@ class DiagnosticCog(commands.Cog):
         Reuses the read-only resolver; shows the resolved policy + which scope
         types a cleanup write accepts.  Makes no changes.
         """
-        from cogs.diagnostic._platform_embeds import build_cleanup_preview_embed
+        from cogs.diagnostic._platform_embeds import (
+            build_cleanup_preview_embed,
+            governance_context_for,
+        )
         from governance.cleanup import resolve_cleanup_policy
         from governance.scopes import VALID_CLEANUP_SCOPE_TYPES
 
         where = target or ctx.channel
-        gctx = _governance_context_for(ctx, where)
+        gctx = governance_context_for(ctx, where)
         policy = await resolve_cleanup_policy(gctx)
         await ctx.send(
             embed=build_cleanup_preview_embed(
@@ -749,34 +768,6 @@ class DiagnosticCog(commands.Cog):
                 read_counting_save_outcomes(),
             ),
         )
-
-
-def _governance_context_for(ctx, target):
-    """Build a GovernanceContext for an arbitrary channel/thread (IL-1/IL-2).
-
-    Mirrors ``GovernanceContext.from_ctx`` but for a user-selected ``target``
-    instead of ``ctx.channel``, keeping the invoker's member/roles so the
-    explainer answers "can *I* use this here?".
-    """
-    from governance.models import GovernanceContext
-
-    if isinstance(target, discord.Thread):
-        thread_id = target.id
-        channel_id = target.parent_id
-        category_id = getattr(target.parent, "category_id", None)
-    else:
-        thread_id = None
-        channel_id = getattr(target, "id", None)
-        category_id = getattr(target, "category_id", None)
-    member = ctx.author
-    return GovernanceContext(
-        guild_id=ctx.guild.id,
-        channel_id=channel_id,
-        category_id=category_id,
-        thread_id=thread_id,
-        member=member if isinstance(member, discord.Member) else None,
-        role_ids={r.id for r in getattr(member, "roles", [])},
-    )
 
 
 async def setup(bot):

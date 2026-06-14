@@ -40,6 +40,36 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 
 
+def governance_context_for(ctx: commands.Context, target: object):
+    """Build a GovernanceContext for an arbitrary channel/thread (IL-1/IL-2).
+
+    Mirrors ``GovernanceContext.from_ctx`` but for a user-selected ``target``
+    instead of ``ctx.channel``, keeping the invoker's member/roles so the
+    explainer answers "can *I* use this here?".  Lives here (not in the cog)
+    so the cog stays under the 800-LOC ceiling; the two ``!platform`` explainer
+    commands import it lazily.
+    """
+    from governance.models import GovernanceContext
+
+    if isinstance(target, discord.Thread):
+        thread_id = target.id
+        channel_id = target.parent_id
+        category_id = getattr(target.parent, "category_id", None)
+    else:
+        thread_id = None
+        channel_id = getattr(target, "id", None)
+        category_id = getattr(target, "category_id", None)
+    member = ctx.author
+    return GovernanceContext(
+        guild_id=ctx.guild.id,
+        channel_id=channel_id,
+        category_id=category_id,
+        thread_id=thread_id,
+        member=member if isinstance(member, discord.Member) else None,
+        role_ids={r.id for r in getattr(member, "roles", [])},
+    )
+
+
 def _capped(items: list[str], *, empty: str = "*(none)*", cap: int = 1000) -> str:
     if not items:
         return empty
@@ -1176,6 +1206,122 @@ def build_caches_embed() -> discord.Embed:
             value=_fmt_snapshot_value(snap),
             inline=False,
         )
+    return embed
+
+
+def _fmt_age(ts: object) -> str:
+    """Render a UTC timestamp as a compact '<n>s/m/h/d ago', or '—'."""
+    if not isinstance(ts, datetime.datetime):
+        return "—"
+    now = datetime.datetime.now(datetime.timezone.utc)
+    when = ts if ts.tzinfo is not None else ts.replace(tzinfo=datetime.timezone.utc)
+    delta = (now - when).total_seconds()
+    if delta < 0:
+        return "0s ago"
+    for unit, size in (("d", 86400), ("h", 3600), ("m", 60)):
+        if delta >= size:
+            return f"{delta / size:.1f}{unit} ago"
+    return f"{delta:.0f}s ago"
+
+
+def _fmt_until(ts: object) -> str:
+    """Render a future UTC timestamp as a compact 'in <n>s/m/h/d', or '—'."""
+    if not isinstance(ts, datetime.datetime):
+        return "—"
+    now = datetime.datetime.now(datetime.timezone.utc)
+    when = ts if ts.tzinfo is not None else ts.replace(tzinfo=datetime.timezone.utc)
+    delta = (when - now).total_seconds()
+    if delta <= 0:
+        return "now"
+    for unit, size in (("d", 86400), ("h", 3600), ("m", 60)):
+        if delta >= size:
+            return f"in {delta / size:.1f}{unit}"
+    return f"in {delta:.0f}s"
+
+
+async def build_media_embed() -> discord.Embed:
+    """Build the embed for ``!platform media`` — content-free media diagnostics.
+
+    Surfaces credential presence (Y/N, never the value), provider-request
+    outcome counters, cache size/age/expiry counts, and the last physical-purge
+    outcome.  P0-2 / Q-0099 follow-up: no descriptions, transcripts, titles, AI
+    summaries, raw provider bodies, or video IDs ever appear here — only counts,
+    ages, statuses, and bounded outcome categories.
+    """
+    import os
+
+    from services import video_reference_cache_service, youtube_diagnostics
+
+    embed = discord.Embed(
+        title="🎬 Media (YouTube) diagnostics",
+        description=(
+            "Content-free operator view — counts, ages, and outcome "
+            "categories only (no provider content)."
+        ),
+        color=discord.Color.blurple(),
+    )
+
+    # Credential presence — presence only, never the value.
+    has_key = bool(os.getenv("YOUTUBE_API_KEY"))
+    embed.add_field(
+        name="Credential",
+        value=f"`YOUTUBE_API_KEY` {'✅ present' if has_key else '❌ absent'}",
+        inline=False,
+    )
+
+    # Provider-request outcome counters (process-local; reset on restart).
+    counters = youtube_diagnostics.provider_outcome_counters()
+    total_requests = sum(counters.values())
+    counter_lines = [
+        f"`{name}` — {counters[name]}" for name in youtube_diagnostics.PROVIDER_OUTCOMES
+    ]
+    embed.add_field(
+        name=f"Provider requests (this process) — {total_requests} total",
+        value="\n".join(counter_lines),
+        inline=False,
+    )
+
+    # Cache health (DB aggregate, content-free).
+    try:
+        health = await video_reference_cache_service.cache_health()
+    except Exception as exc:  # noqa: BLE001 — degrade, don't blank the page
+        embed.add_field(
+            name="Cache",
+            value=f"*(unavailable: {type(exc).__name__})*",
+            inline=False,
+        )
+    else:
+        embed.add_field(
+            name="Cache rows",
+            value=(
+                f"total **{health.total_rows}** · live **{health.live_rows}** · "
+                f"expired **{health.expired_rows}**\n"
+                f"ok **{health.ok_rows}** · error **{health.error_rows}** · "
+                f"with-transcript **{health.with_transcript_rows}**"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Cache age / expiry",
+            value=(
+                f"oldest fetched {_fmt_age(health.oldest_fetched_at)} · "
+                f"newest {_fmt_age(health.newest_fetched_at)}\n"
+                f"next expiry {_fmt_until(health.next_expiry_at)}"
+            ),
+            inline=False,
+        )
+
+    # Last physical-purge outcome.
+    last_purge = youtube_diagnostics.last_purge_snapshot()
+    if last_purge is None:
+        purge_value = "*(no purge run this process yet)*"
+    else:
+        status = "✅ ok" if last_purge["ok"] else "❌ failed"
+        purge_value = (
+            f"{status} · removed **{last_purge['rows']}** row(s) · "
+            f"{_fmt_age(datetime.datetime.fromisoformat(str(last_purge['at'])))}"
+        )
+    embed.add_field(name="Last purge", value=purge_value, inline=False)
     return embed
 
 

@@ -62,6 +62,10 @@ GLOBAL_RESET_HOOKS: tuple[tuple[str, str], ...] = (
     ("core.runtime.slow_path_log", "_reset_for_tests"),
     ("core.runtime.participation_capabilities", "_reset_for_tests"),
     ("core.runtime.subsystem_capabilities", "_reset_for_tests"),
+    # Process-local media (YouTube) diagnostics counters + last-purge state.
+    # No import-time registration — wiping to zero each test is baseline-safe
+    # and prevents cross-file counter leakage under parallel runs.
+    ("services.youtube_diagnostics", "_reset_for_tests"),
 )
 
 # feature_flags is global too, but its _reset_for_tests() *wipes* an

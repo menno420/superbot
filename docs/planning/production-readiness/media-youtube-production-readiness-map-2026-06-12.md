@@ -73,7 +73,7 @@
 | Fetch/cache/DB/migration focused tests | No dedicated files | Tests | **Not Done** | No focused tests directly exercise `youtube_fetch_service`, `video_reference_cache_service`, `youtube_video_cache`, or migration `049`. | Repository test-name/content search. |
 | Embed/renderer focused tests | No dedicated YouTube view tests | Tests | **Not Done** | Generic renderer-registry tests exist, but YouTube embeds/renderers themselves are not directly tested. | Repository test-name/content search. |
 | Live provider and production DB verification | No recorded current artifact | Verification | **Not Done** | Existing tests mock external I/O; the folio explicitly says production fetch/transcript behavior was not live-verified. | `tests/unit/services/test_youtube_context_service.py`; subsystem folio. |
-| Media-specific diagnostics/metrics/operator status | No implementation found | Operations | **Not Done** | Operators can see/edit the generic flag, but cannot inspect provider/key health, quota, fetch outcomes, cache size/age, purge status, or transcript availability rates. | No media diagnostics/metrics registration found. |
+| Media-specific diagnostics/metrics/operator status | `disbot/services/youtube_diagnostics.py`; `disbot/cogs/diagnostic/_platform_embeds.py` (`build_media_embed`) | Operations | **Done** | P0-2 follow-up ([content-free media diagnostics plan](../p0-2-content-free-media-diagnostics-plan-2026-06-14.md)): `!platform media` + the `media` runtime diagnostics provider surface credential presence, provider-request outcome counters (success/key_missing/private_or_deleted/quota_limited/timeout/fetch_error), cache size/age/expiry counts, transcript-availability tally, and last-purge status — content-free (counts/categories only). `youtube_provider_request_total{outcome}` Prometheus counter added. | `build_media_embed`; `youtube_diagnostics.snapshot`; `youtube_video_cache.get_cache_stats`. |
 | Standalone public media surface | No implementation found | Product surface | **Not Done** | There is no standalone YouTube cog/command/channel-summary UI. This is not required for the current AI slice, but must not be claimed as shipped. | Source inventory and subsystem folio. |
 
 ## Required before production-ready
@@ -178,9 +178,10 @@
   media health/status surface and blocks cache hits before they are attempted.
 - **Partial:** the flag is labeled as AI-owned even though accepted ownership is shared
   media/platform.
-- **Not Done:** no media-specific status command/panel exposes effective flag source,
-  credential presence, provider/quota health, cache/purge health, or recent reason-coded
-  outcomes.
+- **Done (P0-2 follow-up):** `!platform media` (+ the Platform-hub Runtime entry and the
+  `media` diagnostics provider) exposes credential presence, provider/quota outcome
+  counters, cache size/age/expiry health, and last-purge status — content-free. Effective
+  *flag* source remains on `!platform flags`.
 - **Not Done:** no documented production rollback/live-check runbook beyond turning the
   flag off; no verified production credential/config state was available in this review.
 

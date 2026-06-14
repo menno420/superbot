@@ -30,6 +30,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/p0-2-content-free-media-diagnostics-2026-06-14` · P0-2 follow-up — content-free
+  media diagnostics (`!platform media` + `media` provider + cache-health/provider-outcome
+  counters) · 2026-06-14 · **PR #854 (open, auto-merge on green)**
 - `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
   2026-06-14 · **PR #843 (merged; session-close docs in a small follow-up PR)**
 - `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
