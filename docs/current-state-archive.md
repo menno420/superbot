@@ -13,6 +13,40 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#763 (2026-06-12 night, the second Q-0107 reconciliation pass)** — band #741–#762
+  scored ([record + next-band queue](planning/reconciliation-pass-2026-06-12-night.md):
+  slots 1+3 executed; the hardening+safety queue carried intact — capacity went to the
+  two owner-steered arcs) · the #753–#761 ledger gap reconciled · **both audit checkers'
+  shared merge-subject regex root-fixed** ("Merge PR #N:" was invisible — the cadence
+  checker froze at #751 and the ledger checker was **green while five PRs were missing**;
+  tests pin all three subject styles now) · marker reset, next pass at **#780**. Docs +
+  tooling only.
+- **#758 + #760 + #762 (2026-06-12, the UX Lab BUILD — owner-steered same-day
+  execution of the #755 design, Q-0116)** — `!uxlab` is **live**: an admin-gated,
+  **zero-write** (AST-fenced) interface gallery — **64 registered patterns** across 7
+  wings (buttons incl. the danger-confirm doctrine + a REAL PersistentView
+  restart-survival exhibit · selects incl. the >25 pagination fix · modals incl.
+  Label-wrapped selects · 14 embed archetypes · **Components V2** LayoutView renders ·
+  PIL cards reusing the #665/#702 renderers + the Q-0110 welcome-card prototype) · a
+  **10-probe limit bench** (dated, library-versioned) · a **mock studio for the whole
+  Q-0108–Q-0112 lane** (automod pills, the Q-0109 routing toggle, welcome embed-vs-card
+  A/B, RSVP, feed summary, counters, security tiers 1+2 — declined tiers test-pinned
+  absent) · ⚖️ compare-with-verdict lines. **The durable artifact:
+  [`ux/pattern-library.md`](ux/pattern-library.md)** — registry-generated + doc-pinned;
+  future panel plans cite `pattern_id`s. 49 lab tests; CI green ×3; live-boot ×3.
+  CV2 adoption for real panels stays a future ADR (plan non-decision).
+- **#753 + #754 + #756 + #759 + #761 (2026-06-12, the autonomous-loop wiring arc —
+  parallel lane)** — the loop went **live**: **#753** issue-triggered docs
+  reconciliation (`.github/workflows/reconciliation-trigger.yml` opens a `reconcile`
+  issue at each boundary) + the **Q-0107 cadence raised 10→20** (CLAUDE.md edited
+  in-session, owner-directed) · **#754** routine prompts reframed as turns of the
+  self-improvement loop · **#756** the **Q-0117 Hermes independent-review merge
+  gate** (substantial executor steps label `needs-hermes-review`; Hermes — a
+  different model — reviews and merges on green, the one write added to its
+  read-only envelope; small fixes keep Q-0113 self-merge) · **#759**
+  `executor-nightly.yml` cron (03:00/05:00 continue-issue) · **#761** dispatch
+  prompt handles free-form Discord `/bugreport` reports. Posture: **Q-0105
+  calibration** — wired, young, trust grows per verified run.
 - **#755 (2026-06-12, UX Lab design — owner-commissioned)** — the **interface-gallery
   cog design**: [capture](ideas/ux-lab-interface-gallery-2026-06-12.md) +
   [full plan](planning/ux-lab-interface-gallery-plan-2026-06-12.md) for a zero-write,
