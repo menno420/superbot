@@ -148,8 +148,9 @@ async def test_run_suite_and_scorecard(monkeypatch):
 
 
 def test_golden_set_is_well_formed():
-    from tests.evals.cases import CASES
+    from tests.evals.cases import CASES, GOLDEN_SET_VERSION
 
+    assert GOLDEN_SET_VERSION and GOLDEN_SET_VERSION[:4].isdigit()
     ids = [c.id for c in CASES]
     assert len(ids) == len(set(ids)), "duplicate case ids"
     assert len(CASES) >= 10

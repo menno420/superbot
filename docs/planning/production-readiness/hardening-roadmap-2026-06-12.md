@@ -109,7 +109,7 @@ confirmation, and failure behavior depending on path. The channel invariant only
 
 ## P1 — correctness & operations
 
-### P1-1 · AI answer correctness + a versioned eval/smoke harness  ·  🟡 **Layer A SHIPPED (#855, 2026-06-14)**
+### P1-1 · AI answer correctness + a versioned eval/smoke harness  ·  🟡 **Layer A (#855) + offline eval/smoke matrix (#878) SHIPPED (2026-06-14)**
 **Evidence:** [ai map](ai-production-readiness-map-2026-06-12.md) (ongoing live-eval defect
 rate; PRs #703/#706/#707/#709 each fixed live-found routing/grounding/workflow bugs) +
 [btd6 map](btd6-production-readiness-map-2026-06-12.md) (PMFC/POD entity substitution,
@@ -119,8 +119,13 @@ use · BTD6 prompts · grounding refusal · audit) run with production-like cred
 implement the BTD6 absence-claim guard. *(BTD6 broad expansion stays gated regardless.)*
 **Progress:** the absence-claim guard's **Layer A** (path/line-aware retrieval — the design's
 Recommendation #1) shipped in **#855**: `<tower> <top|middle|bottom> path` phrasing now grounds
-its tier line instead of resolving to nothing and licensing a confabulated "no". **Still owed:**
-the versioned eval/smoke matrix (needs prod-like creds for the live half) + **Layer B** (the
+its tier line instead of resolving to nothing and licensing a confabulated "no". The **offline
+half of the versioned eval/smoke matrix** shipped in **#878**: `tests/evals/smoke.py` drives the
+real gateway with scripted providers (no creds) and is **CI-gated** — proving the deterministic
+contract (gates · fallback · tool-dispatch · audit-visibility · safety · redaction · config) on
+every PR, alongside the now-`GOLDEN_SET_VERSION`/`SMOKE_MATRIX_VERSION`-stamped live golden set
+(`scripts/run_evals.py --smoke` runs the offline half creds-free). **Still owed:** the **live**
+half of the matrix (needs prod-like creds — the golden set's quality battery) + **Layer B** (the
 negative-existential gate, design-for-review per the absence-claim doc §4.3).
 
 ### P1-2 · Health findings lifecycle + retention + diagnostics drift  ·  ✅ **SHIPPED (2026-06-14)** · Q-0097 answered

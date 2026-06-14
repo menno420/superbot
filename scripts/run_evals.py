@@ -41,6 +41,32 @@ def _build_providers(selected: str) -> dict:
     return providers
 
 
+def _run_smoke() -> int:
+    """Run the offline deterministic smoke matrix — no creds, no budget.
+
+    This is the CI-runnable half of the versioned eval/smoke record: it proves
+    the gateway's deterministic contract (gates, fallback, tool dispatch, audit,
+    safety, redaction, config) with scripted providers. The faults the matrix
+    injects are logged by the gateway by design, so quiet that logger for a
+    clean scorecard.
+    """
+    import asyncio
+    import logging
+
+    logging.getLogger("bot.runtime.ai.gateway").setLevel(logging.CRITICAL)
+
+    from tests.evals.smoke import render_report, run_matrix
+
+    graded = asyncio.run(run_matrix())
+    print(render_report(graded))
+    failures = [case.id for case, grade in graded if not grade.passed]
+    if failures:
+        print(f"\nFAIL — {len(failures)} smoke case(s): {', '.join(failures)}")
+        return 1
+    print("\nPASS — offline smoke matrix all green")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run AI capability evals.")
     parser.add_argument(
@@ -54,7 +80,15 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="run only one category (e.g. tool_use)",
     )
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="run the offline deterministic smoke matrix (no API keys / budget)",
+    )
     args = parser.parse_args(argv)
+
+    if args.smoke:
+        return _run_smoke()
 
     if os.getenv("RUN_EVALS") != "1":
         print(
@@ -75,14 +109,19 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    from tests.evals.cases import CASES
+    from tests.evals.cases import CASES, GOLDEN_SET_VERSION
     from tests.evals.harness import run_suite
+    from tests.evals.smoke import SMOKE_MATRIX_VERSION
 
     cases = [c for c in CASES if args.category in (None, c.category)]
     if not cases:
         print(f"No cases match category {args.category!r}.")
         return 2
 
+    print(
+        f"Eval record — golden set v{GOLDEN_SET_VERSION} "
+        f"(live) · smoke matrix v{SMOKE_MATRIX_VERSION} (offline, run --smoke)",
+    )
     card = asyncio.run(run_suite(cases, providers=providers))
     print(card.render())
     ok = card.pass_rate >= args.threshold
