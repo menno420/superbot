@@ -2,7 +2,7 @@
 
 > **Status:** `complete`
 
-**Branch:** `claude/modest-ptolemy-2xipoh` · **PR:** #854 · **Date:** 2026-06-14 · **Type:** owner-directed docs (manual)
+**Branch:** `claude/modest-ptolemy-2xipoh` · **PR:** #856 · **Date:** 2026-06-14 · **Type:** owner-directed docs (manual)
 
 ## What this session did
 Owner asked me to document the external AI systems / workflows worth learning from (the shortlist I
