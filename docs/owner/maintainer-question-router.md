@@ -4958,7 +4958,18 @@ so it is *proposed*, not applied. Proposed ladder, least → most privileged:
     stays maintainer-only ("merge ≠ deploy; restarts / rollbacks / prod-checks stay the owner's",
     Q-0084 + production-deployment.md).
 **Recommendation:** **T1** next (pure read, high value, no new risk class); keep **T2** behind an explicit
-owner grant + audit; hold **T3**. *Owner: which tier should I build next?*
+owner grant + audit; hold **T3**.
+
+**DECIDED 2026-06-14 (owner, in-session) — env-var read+write GRANTED (a T3 subset), APPLIED.** Asked which
+tier, the owner chose to go straight to **service env-variable read _and write_**: *"would that mean that you
+could see and edit my env variables? honestly that would be kinda useful … I give you full access to
+implement this, I know there is some risk but honestly not a lot more than I already have, and I'm willing
+to take the gamble."* Shipped as `scripts/hermes/railway_vars.py` (`list` / `get` / `set` / `unset`) with
+guardrails: masked `list`, audit lines to stderr, secrets via stdin, and `--no-deploy` to stage without a
+redeploy (a `set` otherwise triggers a Railway redeploy). The **other** T3 powers — deploy / restart /
+scale / rollback — were **not** granted and stay maintainer-only. **T1 (read-only metrics)** remains open
+and available on request. Setup the owner must do: a **write-capable** token + all three ids in the agent
+environment (see `production-deployment.md` § "Env variable read/write (Railway API)").
 
 **Home:** `scripts/hermes/railway_logs.py` + `docs/operations/production-deployment.md` (access posture +
 setup) + the `log-triage` skill (doc + generated SKILL.md). This Q-block is provenance for T0 and the

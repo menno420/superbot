@@ -1,11 +1,12 @@
 # Production deployment — Railway
 
 > **Status:** `living-ledger` — operational facts about where production runs and how code
-> reaches it. Facts verified 2026-06-10 (PR #685); deploy-config + log-access facts added
-> 2026-06-14 (Q-0130). Maintainer owns the Railway dashboard. Agents have **no write/deploy
-> access** — those changes land repo-side (this doc, `.python-version`, `Procfile`) or via the
-> maintainer. **New (Q-0130): Hermes has opt-in _read-only_ log access** via the Railway API —
-> see "Hermes read-only log access (Railway API)" below.
+> reaches it. Facts verified 2026-06-10 (PR #685); deploy-config + Railway-API access added
+> 2026-06-14 (Q-0130). Maintainer owns the Railway dashboard. **Q-0130 grants agents two API
+> capabilities:** read-only **logs** (Hermes) and owner-authorised **read/write of service env
+> variables** — see the two sections below. Everything else (deploy / restart / scale /
+> rollback) stays the maintainer's; non-API changes land repo-side (this doc,
+> `.python-version`, `Procfile`).
 
 ## Where production runs
 
@@ -121,6 +122,44 @@ whichever env var is set (project token preferred when both are present). Endpoi
 
 **Network:** running it from a cloud routine/sandbox needs that environment's network
 policy to allow `backboard.railway.com`; on Hermes's VPS normal outbound is enough.
+
+## Env variable read/write (Railway API)
+
+**Posture (Q-0130, 2026-06-14 — owner-authorised _write_).** Beyond read-only logs,
+the owner explicitly granted agents **read _and write_ access to the bot's service
+environment variables** (the Discord token, `DATABASE_URL`, AI keys, …) via the Railway
+API — to verify them at a glance and change them quickly, accepting the risk. This is a
+genuine write capability. It is **separate from** deploy / restart / scale / rollback,
+which remain the maintainer's.
+
+**Tool:** [`scripts/hermes/railway_vars.py`](../../scripts/hermes/railway_vars.py)
+(reuses the logs reader's transport).
+
+```
+python3.10 scripts/hermes/railway_vars.py list             # names, values masked
+python3.10 scripts/hermes/railway_vars.py list --reveal     # names + values (SECRETS!)
+python3.10 scripts/hermes/railway_vars.py get DATABASE_URL  # one value, to verify it
+python3.10 scripts/hermes/railway_vars.py set NAME VALUE     # create/update (redeploys)
+echo -n "secret" | python3.10 scripts/hermes/railway_vars.py set NAME   # value via stdin
+python3.10 scripts/hermes/railway_vars.py set NAME VALUE --no-deploy   # stage only
+python3.10 scripts/hermes/railway_vars.py unset OLD_NAME    # delete
+```
+
+**Guardrails baked in:** `list` / `get` never mutate; `list` masks values unless
+`--reveal`; `set` / `unset` print an audit line to stderr and never echo the token;
+`set` reads the value from stdin when omitted so secrets stay out of `argv`.
+
+> **A `set` / `unset` triggers a Railway redeploy by default** — that is how the change
+> takes effect. Pass `--no-deploy` to stage a value without redeploying. So an env-var
+> edit *is* effectively a deploy unless you stage it; keep that in mind, since deploys
+> otherwise stay the maintainer's.
+
+**Setup (one-time, maintainer):** needs a **write-capable** token (a project token
+scoped to `reliable-grace`, or an account token) **and all three ids** — variables are
+per-environment, so `RAILWAY_ENVIRONMENT_ID` (production) is required alongside
+`RAILWAY_PROJECT_ID` and `RAILWAY_SERVICE_ID`. Put them in the agent's environment (the
+Claude Code cloud environment's variables and/or Hermes's VPS), and allow
+`backboard.railway.com` in that environment's network policy.
 
 ## Backups
 
