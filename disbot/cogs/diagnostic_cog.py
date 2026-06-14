@@ -637,6 +637,14 @@ class DiagnosticCog(commands.Cog):
         report = await collect_report(bot=self.bot, guild=ctx.guild)
         await ctx.send(embed=build_consistency_embed(report))
 
+    @platform_grp.command(name="backfill")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_backfill(self, ctx, action: str = "") -> None:
+        """Dry-run (default) or `apply` the legacy-pointer → binding backfill."""
+        from cogs.diagnostic._backfill import handle_platform_backfill
+
+        await handle_platform_backfill(ctx, action)
+
     @platform_grp.command(  # type: ignore[arg-type]
         name="command-access",
         aliases=["commandaccess"],
