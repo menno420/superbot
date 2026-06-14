@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from utils.db import youtube_video_cache as _db
 
@@ -22,6 +23,26 @@ class CachedVideoEntry:
     fetch_status: str
     fetched_at: datetime
     expires_at: datetime
+
+
+@dataclass(frozen=True)
+class MediaCacheHealth:
+    """Content-free aggregate health of the YouTube reference cache.
+
+    All fields are counts or row timestamps — no provider content (P0-2 /
+    Q-0099 follow-up).  ``with_transcript_rows`` is a null-check tally, not
+    transcript content.
+    """
+
+    total_rows: int
+    expired_rows: int
+    live_rows: int
+    ok_rows: int
+    error_rows: int
+    with_transcript_rows: int
+    oldest_fetched_at: datetime | None
+    newest_fetched_at: datetime | None
+    next_expiry_at: datetime | None
 
 
 async def get_cached(video_id: str) -> CachedVideoEntry | None:
@@ -78,4 +99,33 @@ async def purge_expired() -> int:
     return await _db.purge_expired_video_cache()
 
 
-__all__ = ["CachedVideoEntry", "get_cached", "put_cached", "purge_expired"]
+async def cache_health() -> MediaCacheHealth:
+    """Return a content-free aggregate health snapshot of the cache.
+
+    Delegates to the DB helper's aggregate query (no content columns) and
+    derives ``live_rows``.  Used by the ``!platform media`` operator diagnostic.
+    """
+    stats: dict[str, Any] = await _db.get_cache_stats()
+    total = int(stats.get("total_rows") or 0)
+    expired = int(stats.get("expired_rows") or 0)
+    return MediaCacheHealth(
+        total_rows=total,
+        expired_rows=expired,
+        live_rows=total - expired,
+        ok_rows=int(stats.get("ok_rows") or 0),
+        error_rows=int(stats.get("error_rows") or 0),
+        with_transcript_rows=int(stats.get("with_transcript_rows") or 0),
+        oldest_fetched_at=stats.get("oldest_fetched_at"),
+        newest_fetched_at=stats.get("newest_fetched_at"),
+        next_expiry_at=stats.get("next_expiry_at"),
+    )
+
+
+__all__ = [
+    "CachedVideoEntry",
+    "MediaCacheHealth",
+    "get_cached",
+    "put_cached",
+    "purge_expired",
+    "cache_health",
+]

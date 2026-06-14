@@ -72,3 +72,31 @@ async def purge_expired_video_cache() -> int:
         "DELETE FROM youtube_video_cache WHERE expires_at <= now()",
     )
     return int(result.split()[-1])
+
+
+async def get_cache_stats() -> dict[str, Any]:
+    """Return a **content-free** aggregate health snapshot of the cache table.
+
+    Content-free contract (P0-2 / Q-0099 follow-up): this query selects **no
+    content columns** — no ``metadata_json``, ``transcript_text``, ``video_id``,
+    title/description/etc.  ``with_transcript_rows`` is a ``COUNT(*) FILTER``
+    over a ``transcript_text IS NOT NULL`` predicate, which reads the column for
+    a null-check and returns only an integer; no transcript content leaves the
+    database.  The result is purely counts + row timestamps for the
+    ``!platform media`` operator diagnostic.
+    """
+    row = await pool.get().fetchrow(
+        """
+        SELECT
+            count(*)                                          AS total_rows,
+            count(*) FILTER (WHERE expires_at <= now())       AS expired_rows,
+            count(*) FILTER (WHERE fetch_status = 'ok')       AS ok_rows,
+            count(*) FILTER (WHERE fetch_status <> 'ok')      AS error_rows,
+            count(*) FILTER (WHERE transcript_text IS NOT NULL) AS with_transcript_rows,
+            min(fetched_at)                                   AS oldest_fetched_at,
+            max(fetched_at)                                   AS newest_fetched_at,
+            min(expires_at) FILTER (WHERE expires_at > now()) AS next_expiry_at
+        FROM youtube_video_cache
+        """,
+    )
+    return dict(row) if row else {}
