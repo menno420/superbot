@@ -25,7 +25,8 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/modest-ptolemy-2xipoh` · external-systems watchlist (owner-directed docs) ·
+  `docs/research/` (new README + watchlist) + orientation/idea cross-links · 2026-06-14
 
 ## Recently cleared
 

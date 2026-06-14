@@ -142,3 +142,11 @@ decomposes into reviewable, independently-valuable steps:
 Each step is shippable and reviewable on its own; none requires committing to the whole
 loop up front. Build them in that order, review each in production, and the autonomous loop
 assembles itself from verified parts rather than as one leap.
+
+## See also — external systems we learn from
+
+The published work this north-star draws on (automatic curriculum, self-reflection as memory,
+the independent-reviewer / LLM-as-judge seam Hermes embodies) is tracked in
+[`../research/external-systems-watchlist.md`](../research/external-systems-watchlist.md) — the
+watchlist of external AI-agent / memory / autonomous-SWE systems worth periodically re-checking
+for ideas that strengthen this loop.
