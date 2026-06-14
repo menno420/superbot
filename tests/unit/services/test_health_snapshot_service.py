@@ -428,6 +428,44 @@ def test_consistency_subsystem_skipped_sections_are_not_needs_attention() -> Non
     assert "Binding backfill" in sub.facts["skipped_section_names"]
 
 
+def test_empty_consistency_cache_drives_degraded_with_no_attention(monkeypatch) -> None:
+    """Document the false-alarm mechanism the startup fix targets.
+
+    When the process-local consistency cache is empty (every fresh boot, since
+    ``collect_report`` never runs at startup), ``_consistency_subsystem`` returns
+    a required ``UNKNOWN``. ``derive_overall_status`` rule 3 then forces the whole
+    snapshot to ``degraded`` — yet the summary lists no subsystem in ``attention:``
+    (``UNKNOWN`` is not ``DEGRADED``/``CRITICAL``). That confusing "degraded with
+    nothing to attend to" is exactly what production logged; the fix is to collect
+    a *fresh* consistency report at startup instead of reading the empty cache.
+    """
+    from services import platform_consistency as pc
+
+    monkeypatch.setattr(pc, "_LAST_REPORT", None)
+    sub = hss._consistency_subsystem()
+    assert sub.status is SnapshotStatus.UNKNOWN
+    assert sub.required is True
+
+    # Alongside healthy subsystems (the real boot shape — runtime/gateway/etc.
+    # are HEALTHY), the required UNKNOWN triggers rule 3, not the all-unknown
+    # rule 2.
+    healthy = SubsystemHealth(
+        name="runtime",
+        status=SnapshotStatus.HEALTHY,
+        summary="ok",
+        generated_at=hss._now(),
+        source="test",
+        required=True,
+    )
+    subsystems = (healthy, sub)
+    overall = hss.derive_overall_status(subsystems)
+    assert overall is SnapshotStatus.DEGRADED
+    # The smoking gun: degraded overall, but nothing named to attend to.
+    summary = hss._overall_summary(overall, subsystems)
+    assert summary == "Overall status: degraded."
+    assert "attention" not in summary
+
+
 def test_consistency_subsystem_all_skipped_has_no_findings() -> None:
     """If every blocking section is SKIPPED (e.g. health asked from a DM with no
     backfill rows), the subsystem surfaces zero "needs attention" findings.

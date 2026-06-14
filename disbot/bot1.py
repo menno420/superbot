@@ -205,6 +205,16 @@ async def _report_startup_health() -> None:
             HealthSnapshotRequest(
                 purpose="startup",
                 audience=HealthAudience.PLATFORM_OWNER,
+                # Collect a *fresh* consistency report rather than the
+                # process-local cache, which is guaranteed empty this early
+                # (collect_report only runs from !platform consistency / the
+                # platform panel, never at boot). Reading the empty cache made
+                # the consistency subsystem UNKNOWN-and-required, which dragged
+                # the whole startup snapshot to "degraded" with no attention
+                # list on every boot — a false alarm. Bounded by
+                # CONSISTENCY_TIMEOUT and off the readiness path, so it cannot
+                # block startup; it also primes the cache for later sync reads.
+                include_fresh_consistency=True,
             ),
             bot=bot,
         )
