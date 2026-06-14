@@ -117,16 +117,27 @@ in `.claude/CLAUDE.md`.
   `templates/agents/` subdir — same stdlib-embed reasoning as skills; the `${slot}` substitution gives
   the interview-population the plan wanted. The reviewer→§6-review-seam wiring is left for the
   review-seam work in PR 3.)* `test_agents.py` (11 cases). 102 kit tests; `--full` green.
-- **▶ RESUME HERE (next session) — PR 2 remainder: modes + triggers + hooks + contract templates.**
-  §3b/§3c (the capability layer) are DONE — stances (#805) + skills (#811) + personas (#812). The
-  remaining PR-2 scope: **(a)** the three integration modes' (observe/guided/active) per-session
-  *behaviors* (the field exists in state; wire what each does per session); **(b)** trigger / drift /
-  staleness detection (the mandatory-question machinery, §4); **(c)** the full contract-doc template
-  set (architecture / ownership / runtime_contracts / repo-nav / helper-policy) + owner-profile; **(d)**
-  templated hooks + `settings.template.json` — incl. the **PreToolUse out-of-stance guard** that calls
-  `is_out_of_stance` (the one piece that makes stances enforced, not just advisory); **(e)** simulation
-  asserts for mode/stance/skill behaviors. Then **PR 3** (self-maintenance loop + independent-review
-  seam + distribution polish). The CI gotchas in the entries above (tests under `tests/`,
+- **PR 2 — hooks / stance guard (2026-06-13) — DONE (#813). Item (d) — the enforcement half.**
+  `engine/hooks/stance_guard.py` — maps each Claude Code tool to a stance action
+  (Edit/Write/NotebookEdit → edit · Bash/WebFetch/WebSearch → run · Read/Grep/Glob → read);
+  `evaluate_tool(stance, tool)` returns an out-of-stance warning (Edit while `review`) or None,
+  **failing open** on any unknown tool/stance/malformed payload. `hook pretooluse` CLI = the runtime
+  entry point (reads the PreToolUse stdin payload, warns on stderr, always returns 0 — advisory per
+  §3b, never blocks); `hooks [--build]` stages a ready-to-merge `.claude/settings.json` PreToolUse
+  snippet. **This is what makes the stance layer enforced, not just declarative.** `test_hooks.py`
+  (15 cases). 117 kit tests; `--full` green.
+- **▶ RESUME HERE (next session) — PR 2 remainder: modes + contract templates + triggers.**
+  §3b/§3c (the capability layer) are DONE — stances (#805) + skills (#811) + personas (#812) — and
+  the PreToolUse out-of-stance guard ships (#813), so item (d) is **largely done** (the other engine
+  hooks — session_start orientation injection, post_edit, stop_check — remain). The remaining PR-2
+  scope: **(a)** the three integration modes' (observe/guided/active) per-session *behaviors* (the
+  field exists in state; wire what each does per session); **(b)** trigger / drift / staleness
+  detection (the mandatory-question machinery, §4); **(c)** the full contract-doc template set
+  (architecture / ownership / runtime_contracts / repo-nav / helper-policy) + owner-profile; **(d-rest)**
+  the remaining templated hooks + `settings.template.json` (incl. session-start orientation injection
+  of the stance briefing + user-style + reflection buffer); **(e)** simulation asserts for
+  mode/stance/skill behaviors. Then **PR 3** (self-maintenance loop + independent-review seam +
+  distribution polish). The CI gotchas in the entries above (tests under `tests/`,
   `print`/`assert`/`subprocess` bans on `engine/`, isort-checks-tests, **regenerate the bootstrap**
   after any `src/engine` edit, **keep `from engine…` imports single-line** where easy, black↔ruff
   COM812 on awkward wraps → hoist long strings to constants) all still apply.
