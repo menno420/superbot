@@ -22,9 +22,13 @@ Produce a LOG TRIAGE REPORT for SuperBot. Keep the output under 600 words.
 Do the following in order. Skip any step whose tool is unavailable and say so.
 
 1. PRODUCTION LOGS (Railway)
-   If the `railway` CLI is installed and logged in, run:
-     railway logs --service superbot 2>&1 | tail -n 400
-   (Adjust the service name if different.) If `railway` is not available, say
+   Preferred — the read-only API reader (no CLI or login needed):
+     python3.10 scripts/hermes/railway_logs.py -n 400 2>&1
+   It reads a read-only token + ids from the environment (RAILWAY_PROJECT_TOKEN
+   or RAILWAY_API_TOKEN, plus RAILWAY_PROJECT_ID and RAILWAY_SERVICE_ID) and
+   prints the bot's latest-deployment logs. If it prints "No Railway token found"
+   or another setup error, fall back to the `railway` CLI if present
+   (`railway logs --service worker 2>&1 | tail -n 400`). If neither works, say
    "production logs unavailable — read-only Railway token not configured" and
    continue to step 4 using the local gateway logs instead.
 
