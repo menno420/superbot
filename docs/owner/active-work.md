@@ -25,7 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/nifty-allen-uwt95o` · P1-1 Layer A — BTD6 path/line-aware resolution (absence-claim
+  trigger removal, design Rec #1) · `disbot/services/btd6_upgrade_service.py` +
+  `btd6_upgrade_detail_service.py` + `btd6_context_service.py` (Pass 3f) + new test ·
+  2026-06-14
 
 ## Recently cleared
 
