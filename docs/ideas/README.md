@@ -20,6 +20,12 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
+  **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
+  helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in
+  order, so the bespoke per-table **alignment tests never need manual repointing** when a
+  constraint is widened in a later migration (059→op_kind, 069→actor_type each hand-rolled it).
+  Small/safe grooming-lane candidate.
 - [`ux-lab-interface-gallery-2026-06-12.md`](./ux-lab-interface-gallery-2026-06-12.md) —
   **owner-commissioned design (2026-06-12):** the **UX Lab** — a zero-write, admin-gated
   gallery cog (`!uxlab`) exhibiting every Discord interaction/layout pattern the pinned

@@ -13,6 +13,16 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#738–#740 (2026-06-12, the cadence rule + owner research/decisions arc)** — **#738**: the
+  **Q-0107 reconciliation cadence** (a docs-only review + planning pass each time merged PRs
+  cross a multiple of 10; `scripts/check_reconciliation_due.py` guards the marker). **#739**:
+  owner research captured — [safety/automod ideas](ideas/server-safety-and-automod-2026-06-12.md) ·
+  [community-features ideas](ideas/community-platform-features-2026-06-12.md) · the
+  [Discord platform-limits reference](operations/discord-platform-limits.md). **#740**: owner
+  decisions **Q-0108–Q-0112** recorded (automod all-4 rule types + OpenAI-only image
+  moderation · logging v1 scope with owner-configurable channels · welcome embed-first, PIL
+  cards phase 2 · security tiers 1+2 only, 3+4 declined · NL event parsing from day one) →
+  routed to the roadmap's new **safety/community lane**.
 - **#737 (2026-06-12, Context7 MCP adopted)** — wired `@upstash/context7-mcp@3.2.0` (live
   library docs → kills the "API-from-memory" bug class) as a pinned `.mcp.json` server +
   [`docs/operations/mcp-servers.md`](operations/mcp-servers.md) (when-to-use, key setup, Q-0105
