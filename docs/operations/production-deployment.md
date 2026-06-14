@@ -1,9 +1,11 @@
 # Production deployment — Railway
 
 > **Status:** `living-ledger` — operational facts about where production runs and how code
-> reaches it. Facts verified 2026-06-10 (the build-outage session, PR #685).
-> Maintainer owns the Railway dashboard; agents have **no** Railway access — changes
-> land repo-side (this doc, `.python-version`, `Procfile`) or via the maintainer.
+> reaches it. Facts verified 2026-06-10 (PR #685); deploy-config + log-access facts added
+> 2026-06-14 (Q-0130). Maintainer owns the Railway dashboard. Agents have **no write/deploy
+> access** — those changes land repo-side (this doc, `.python-version`, `Procfile`) or via the
+> maintainer. **New (Q-0130): Hermes has opt-in _read-only_ log access** via the Railway API —
+> see "Hermes read-only log access (Railway API)" below.
 
 ## Where production runs
 
@@ -58,6 +60,67 @@
   **3.13** and always has (the unpinned default predates this doc). Alignment
   direction is an owner decision —
   [`owner/maintainer-question-router.md`](../owner/maintainer-question-router.md) §36.
+
+## Deploy configuration (Railway service settings)
+
+Verified from the dashboard 2026-06-14 (the `worker` service, `production`
+environment). These are the settings worth knowing; everything else is Railway's
+default.
+
+| Setting | Value | Note |
+|---|---|---|
+| Custom Start Command | `python disbot/bot1.py` | Set in the service UI; matches the `Procfile`. |
+| Custom Build Command | (none) | railpack autodetects Python + pip. |
+| Watch Paths | (none) | Every push to `main` builds; no path filter. |
+| Healthcheck Path | (none) | No HTTP healthcheck — the bot is a gateway worker, not a web service. |
+| Cron Schedule | (none) | Long-running process, not a scheduled job. |
+| Teardown | off | The old deployment is not force-stopped the instant a new one starts. |
+| Serverless | off | The bot must stay resident (persistent Discord gateway); never scale-to-zero. |
+| Skipped Builds | off | Always rebuild (this flag is GitHub-only). |
+| Railway config file | (none) | Config lives in the dashboard + repo `Procfile` / `.python-version`. |
+
+**Do not enable Serverless or a Healthcheck Path** without rethinking the bot's
+lifecycle: a Discord gateway bot has no inbound HTTP to health-check and must not
+sleep, so either would break it.
+
+## Hermes read-only log access (Railway API)
+
+**Posture (Q-0130, 2026-06-14):** the "no Railway access" rule now has one
+**read-only** exception — Hermes (and any agent) can read the bot's production logs
+through the Railway public GraphQL API. This unblocks the `superbot-log-triage`
+skill. It is **read-only by construction**: the reader issues GraphQL *queries*
+only, never a mutation — no deploy / restart / scale / delete. Operate/write access
+stays the maintainer's (the broader-access ladder is the open half of Q-0130).
+
+**Reader:** [`scripts/hermes/railway_logs.py`](../../scripts/hermes/railway_logs.py)
+(stdlib-only). It resolves the bot service's latest deployment and prints its logs.
+
+```
+python3.10 scripts/hermes/railway_logs.py -n 400     # latest deployment's logs
+python3.10 scripts/hermes/railway_logs.py --whoami   # verify the token works
+python3.10 scripts/hermes/railway_logs.py --json     # raw JSON for tooling
+```
+
+**One-time maintainer setup:**
+
+1. Create a **read-only token** at <https://railway.com/account/tokens>. A **project
+   token** scoped to the `reliable-grace` production project is least-privilege and
+   preferred; an account/workspace token also works (broader scope).
+2. Find the ids in the dashboard URL
+   `railway.com/project/<PROJECT_ID>/service/<SERVICE_ID>` (the `worker` service).
+   The production environment id is optional.
+3. Put them in **Hermes's environment** (the VPS — never the repo):
+   - `RAILWAY_PROJECT_TOKEN` (project token) **or** `RAILWAY_API_TOKEN` (account token)
+   - `RAILWAY_PROJECT_ID`, `RAILWAY_SERVICE_ID`, optional `RAILWAY_ENVIRONMENT_ID`
+4. Verify: `python3.10 scripts/hermes/railway_logs.py --whoami`, then `... -n 50`.
+
+**Auth detail:** account/workspace tokens use `Authorization: Bearer <token>`;
+project tokens use `Project-Access-Token: <token>` — the script picks the header from
+whichever env var is set (project token preferred when both are present). Endpoint:
+`https://backboard.railway.com/graphql/v2`.
+
+**Network:** running it from a cloud routine/sandbox needs that environment's network
+policy to allow `backboard.railway.com`; on Hermes's VPS normal outbound is enough.
 
 ## Backups
 

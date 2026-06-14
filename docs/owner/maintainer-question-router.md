@@ -4920,3 +4920,46 @@ in-session): a clause on the CLAUDE.md "Act vs. ask" bullet + a paragraph in
 **Home:** `.claude/CLAUDE.md` §Working agreement (Act vs. ask clause); `docs/collaboration-model.md`
 §"Why this system exists" (the endorsement); `.session-journal.md` §Cross-agent & git workflow (the
 `send_later` skip note). This Q-block is provenance.
+
+---
+
+### Q-0130 — Railway access for agents: read-only logs now; broader-access ladder to decide
+
+> **OBSERVED 2026-06-14 (owner, in-session, with two Railway dashboard screenshots).** Verbatim:
+> *"I also want to create a railway API for hermes so it can check the bots logs"* and *"if I can
+> grant claude more access to railway I'd love to do so."*
+
+**Area:** production access / security trust-tier · Hermes tooling · `production-deployment.md` posture
+**Type:** (1) read-only log access — **APPLIED** (owner-directed); (2) broader access — **DISCUSS** (owner picks the tier)
+
+**Context.** `docs/operations/production-deployment.md` had stated *"agents have no Railway access."*
+The `superbot-log-triage` skill was a stub — step 1 said "production logs unavailable — read-only
+Railway token not configured." The owner asked to close that gap and signalled openness to more.
+
+**(1) APPLIED — read-only log access (this PR).** New `scripts/hermes/railway_logs.py` (stdlib-only)
+reads the bot's latest-deployment logs via the Railway public GraphQL API
+(`backboard.railway.com/graphql/v2`; cookbook-verified queries `deployments` + `deploymentLogs`).
+**Read-only by construction** — queries only, no mutation. The `log-triage` skill is rewired to use it
+(doc source + regenerated `SKILL.md`). Owner setup (read-only token + ids as VPS env vars, least-priv
+project token) is documented in `production-deployment.md` § "Hermes read-only log access (Railway API)".
+Mocked unit test `tests/unit/scripts/test_railway_logs.py` (14 cases). The "no Railway access" posture
+is narrowed to "no *write/deploy* access; read-only logs allowed."
+
+**(2) DISCUSS — the broader-access ladder (owner picks how far to go).** Granting agents more Railway
+power is a deliberate trust-tier step (the collaboration-model "graduated trust tiers" / Q-0048 pattern),
+so it is *proposed*, not applied. Proposed ladder, least → most privileged:
+  - **T0 (done):** read-only **logs**.
+  - **T1:** read-only **status / metrics** — deployment status, restart count, resource usage, recent
+    deploy history (powers a richer health digest). Still query-only; same read-only token.
+  - **T2:** scoped **write — restart only** (`deploymentRestart` / `serviceInstanceRedeploy`). The first
+    *operate* power — recovers a crash-looped bot. Needs a mutating token (higher blast radius); gate
+    behind an explicit allow + an `emit_audit_action`-style log line, mirroring the Q-0084 merge grant.
+  - **T3:** broader **write** — env vars, scaling, rollbacks, new deploys. Highest risk; almost certainly
+    stays maintainer-only ("merge ≠ deploy; restarts / rollbacks / prod-checks stay the owner's",
+    Q-0084 + production-deployment.md).
+**Recommendation:** **T1** next (pure read, high value, no new risk class); keep **T2** behind an explicit
+owner grant + audit; hold **T3**. *Owner: which tier should I build next?*
+
+**Home:** `scripts/hermes/railway_logs.py` + `docs/operations/production-deployment.md` (access posture +
+setup) + the `log-triage` skill (doc + generated SKILL.md). This Q-block is provenance for T0 and the
+open decision for T1–T3.

@@ -1,9 +1,10 @@
 # Skill: `superbot-log-triage`
 
-> **Status:** `living-ledger` — ready-to-use Hermes skill prompt. **Gated:** needs a
-> read-only production log source on the VPS (see Setup below) before it can see live
-> bot logs; until then it triages only the VPS-local gateway logs. Update when the
-> deploy target or log source changes.
+> **Status:** `living-ledger` — ready-to-use Hermes skill prompt. **Gated:** the
+> read-only log reader (`scripts/hermes/railway_logs.py`) exists; it just needs a
+> read-only Railway **token** + ids on the VPS (see Setup below) before it can see
+> live bot logs. Until configured it triages only the VPS-local gateway logs.
+> Update when the deploy target or log source changes.
 
 **Window:** between sessions / after a deploy / when the bot misbehaves
 **Purpose:** Read SuperBot's production logs and turn them into a plain-language
@@ -28,9 +29,13 @@ Produce a LOG TRIAGE REPORT for SuperBot. Keep the output under 600 words.
 Do the following in order. Skip any step whose tool is unavailable and say so.
 
 1. PRODUCTION LOGS (Railway)
-   If the `railway` CLI is installed and logged in, run:
-     railway logs --service superbot 2>&1 | tail -n 400
-   (Adjust the service name if different.) If `railway` is not available, say
+   Preferred — the read-only API reader (no CLI or login needed):
+     python3.10 scripts/hermes/railway_logs.py -n 400 2>&1
+   It reads a read-only token + ids from the environment (RAILWAY_PROJECT_TOKEN
+   or RAILWAY_API_TOKEN, plus RAILWAY_PROJECT_ID and RAILWAY_SERVICE_ID) and
+   prints the bot's latest-deployment logs. If it prints "No Railway token found"
+   or another setup error, fall back to the `railway` CLI if present
+   (`railway logs --service worker 2>&1 | tail -n 400`). If neither works, say
    "production logs unavailable — read-only Railway token not configured" and
    continue to step 4 using the local gateway logs instead.
 
@@ -93,10 +98,17 @@ Format the output as:
 - **Read-only by design.** This skill diagnoses; it never restarts, redeploys, or
   scales the bot. Operating production stays a maintainer action (see
   `docs/operations/hermes-control-plane.md` § "Current safety model").
-- **Setup (one-time, maintainer):** install the Railway CLI on the VPS and log in
-  with a **read-only** token scoped to the SuperBot service. Until then the skill
-  still works — it triages the local `hermes-gateway` logs and tells you production
-  logs are unavailable.
+- **Setup (one-time, maintainer):** create a **read-only** Railway token
+  ([railway.com/account/tokens](https://railway.com/account/tokens) — a *project*
+  token scoped to the production project is least-privilege) and put it on the VPS
+  as `RAILWAY_PROJECT_TOKEN` (or `RAILWAY_API_TOKEN`), plus `RAILWAY_PROJECT_ID`
+  and `RAILWAY_SERVICE_ID` (from the dashboard URL
+  `railway.com/project/<id>/service/<id>`). Verify with
+  `python3.10 scripts/hermes/railway_logs.py --whoami`. Until configured the skill
+  still works — it triages the local `hermes-gateway` logs and reports production
+  logs unavailable. (The `railway` CLI remains an optional fallback.) Full
+  reference: `docs/operations/production-deployment.md` § "Hermes read-only log
+  access (Railway API)".
 - A Neon (Postgres) read-only role can be added later the same way for DB-level
   triage (connection health, migration state) — keep it read-only.
 - The output is a diagnosis artifact. If it points at a real bug, paste it into a
