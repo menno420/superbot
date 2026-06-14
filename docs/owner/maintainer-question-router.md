@@ -5200,3 +5200,28 @@ Operations as a first-class sector)? (2) move the executor to Hermes-dispatch + 
 (3) approve the staged-deep-clean shape + terminal condition before it's built? **Home on decision:**
 `docs/operations/autonomous-routines.md` (dispatch + deep-clean), `docs/roadmap.md` + `repo-review-map.md`
 (sectors).
+
+---
+
+### Q-0138 — Branch-freshness advisory hook (conflict/staleness guard) (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session — the Q-0106 exception: maintainer directs an
+> executable-config change live, so it is applied directly and recorded here with provenance).**
+
+**Context.** The owner asked for "a hook that tells any session that's about to merge something to
+check for recently merged PRs / outstanding PRs to fix any possible merge conflicts." Initially
+withdrawn (a parallel session self-handled a dirty merge), then re-requested after **#857 sat
+CONFLICTED and unmerged unnoticed** — a parallel PR (#855) merged a shared ledger file *after* #857
+was pushed, GitHub auto-merge silently waited on the dirty PR, and no event woke the session
+(webhooks don't deliver merge-conflict transitions).
+
+**Decision.** Add `scripts/check_branch_freshness.py`, a **non-blocking** advisory wired two ways in
+`.claude/settings.json`: (1) **PreToolUse on Bash** — acts only on `git push` (the "about to ship"
+moment, warn if already behind); (2) **Stop** — checks the branch every turn, so a branch that falls
+behind *after* its last push (the #857 case) is flagged on the next turn. It fetches `origin/main`,
+and if behind, lists the merged PRs + flags high-conflict ledger files (`active-work.md`,
+`current-state.md`, `ideas/README.md`, the router, `roadmap.md`), pointing at the fetch+UNION-merge
+fix. Always exits 0 (never blocks a push/turn). 7 unit tests; disposable kill-switch header per
+Q-0105 (delete if noisy over multiple sessions).
+
+**Home:** `scripts/check_branch_freshness.py` + `.claude/settings.json` (PreToolUse Bash + Stop).

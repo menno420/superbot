@@ -36,6 +36,17 @@ is intake + routing of owner intent.
   dirty`, merged `origin/main`, UNION-resolved `active-work.md` per the journal rule, re-ran CI. The
   orientation docs already drive that behaviour, so a hook is redundant. Not built.
 
+## Added later in session (owner-directed)
+- **Resolved #857's merge conflict** — a parallel PR (#855) merged a shared ledger file after #857
+  was pushed; UNION-merged `origin/main` (`active-work.md` + `ideas/README.md`), re-verified, re-pushed.
+  The PR had been sitting `dirty` unnoticed (webhooks don't deliver merge-conflict transitions).
+- **Backup secret verified live** — triggered `backup-db.yml`; it surfaced the real bug: the GitHub
+  `DATABASE_PUBLIC_URL` secret holds Railway's *unresolved* `${{RAILWAY_TCP_PROXY_PORT}}` template,
+  not the resolved port (`pg_dump: invalid integer value`). Owner must paste the *resolved* URL.
+- **Built `scripts/check_branch_freshness.py` (Q-0138)** — the conflict/staleness advisory hook the
+  owner directed (the #857 case is exactly what it catches). Non-blocking; wired PreToolUse-on-push +
+  Stop; 7 tests; disposable kill-switch header.
+
 ## 💡 Session idea (Q-0089)
 **A `scripts/check_open_pr_branch_health.py` sweep** — list open PRs with their mergeable/CI state +
 stale `claude/*` branches whose PR already merged, emitting a disposition punch-list. It's the
