@@ -44,6 +44,20 @@ cycle-avoidance pattern.
    guild's owner via `utils.visibility_rules.get_member_visibility_tier`. An
    **empty** `capability_required` resolves to this same floor — it does **not**
    mean "no auth" (the misleading `SettingSpec` docstring was corrected).
+   - **`setup_delegate` exception (Q-0098, P0-3 arc PR 3).** When the write carries
+     `actor_type="setup_delegate"`, this floor is satisfied **by the delegation
+     itself** — the server owner delegated *apply* authority to a (possibly
+     non-administrator) member via `/setup-delegate`. It is authorized here like
+     `system` / `backfill`, but deliberately **not** at step 1: a delegate must
+     still pass step 2 (target-guild membership) and **stays subject to** the
+     step-4 revoke overlay. The token is minted **only** by
+     `services.setup_operations.apply_operations`, which re-verifies the live
+     `setup_access.can_apply_setup` against a fresh `SetupSession` before doing so
+     (a stale view gate is never trusted), and the delegated write is **audited as
+     `setup_delegate`** so it stays distinguishable from an administrator write. An
+     AST fence (`tests/unit/invariants/test_setup_delegate_actor_boundary.py`)
+     confines the token to that minter, the resolver here, and the three pipelines'
+     allow-sets.
 4. **Revoke-only per-guild overlay.** For a declared (non-empty) capability, an
    explicit `allowed = False` row in `capability_execution_overrides` (read via
    `governance.execution.get_capability_override`, which reuses the existing cache —
@@ -182,6 +196,8 @@ the authority of the equivalent typed command.
 | Guarantee | Pinned by |
 |---|---|
 | Resolver policy (bypass, target-guild deny, admin/staff, empty-cap floor, revoke overlay, no-escalation, overlay-uses-target-id) | `tests/unit/governance/test_capability.py` |
+| `setup_delegate` authority (below-floor allow, still needs target-guild membership, still revocable) — Q-0098 | `tests/unit/governance/test_capability.py` |
+| `setup_delegate` minted only by `apply_operations` + live re-verification + threaded to the binding pipeline | `tests/unit/services/test_setup_delegate_apply.py`, `tests/unit/invariants/test_setup_delegate_actor_boundary.py` |
 | Settings: authorized/denied, revoke overlay, kill-switch default/disabled/fail-open, cross-guild deny | `tests/unit/services/test_settings_mutation_pipeline.py` |
 | Provisioning: authorized, below-admin deny, system bypass, kill-switch trio | `tests/unit/services/test_resource_provisioning_pipeline.py` |
 | Bindings: capability deny/allow (actor must be a member of the target guild) | `tests/unit/bindings/test_binding_mutation_pipeline.py` |

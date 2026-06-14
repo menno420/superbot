@@ -97,9 +97,12 @@ EVT_BINDING_CHANGED = "bindings.changed"
 # no CHECK on ``actor_type`` and its docstring anticipates
 # ``'user'`` / ``'system'`` / ``'backfill'``; we mirror the
 # ``settings_mutation`` set so the pipeline rejects a typo'd actor type
-# rather than writing an unrecognised discriminator.
+# rather than writing an unrecognised discriminator.  ``setup_delegate``
+# (Q-0098) is the delegated-Setup apply actor — minted only by
+# services.setup_operations.apply_operations; this table needs no migration
+# because it has no DB CHECK.
 _ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
-    {"user", "moderator", "admin", "system", "backfill"},
+    {"user", "moderator", "admin", "system", "backfill", "setup_delegate"},
 )
 
 

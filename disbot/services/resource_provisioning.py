@@ -101,12 +101,14 @@ EVT_RESOURCE_PROVISIONED = "resource.provisioned"
 
 
 # ---------------------------------------------------------------------------
-# Recognized literal sets — mirror migration 030 CHECK constraints.
+# Recognized literal sets — mirror migration 030 CHECK constraints (the
+# actor_type set was widened to include ``setup_delegate`` in migration 069,
+# Q-0098).
 # Pinned by tests/unit/invariants/test_resource_provisioning_audit_alignment.py.
 # ---------------------------------------------------------------------------
 
 _ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
-    {"user", "moderator", "admin", "system", "backfill"},
+    {"user", "moderator", "admin", "system", "backfill", "setup_delegate"},
 )
 _ALLOWED_MUTATION_TYPES: frozenset[str] = frozenset({"provision"})
 _ALLOWED_MODES: frozenset[str] = frozenset({"use_existing", "create"})

@@ -28,6 +28,9 @@ living ledger (`docs/current-state.md`).
 - `claude/trusting-goldberg-po4p7s` · CI-cost reduction + duplicate-work convention (Q-0126) ·
   `.github/workflows/code-quality.yml`, `scripts/check_quality.py`, `requirements-dev.txt`,
   `.claude/CLAUDE.md`, this file, the question router, idea doc · 2026-06-14 · PR #814
+- `claude/funny-bohr-skbaoz` · P0-3 arc PR 3 — delegated-Setup apply authority (Q-0098) ·
+  `governance/capability.py`, `services/{setup_operations,settings_mutation,resource_provisioning,binding_mutation}.py`,
+  migration 069, invariant + behavior tests · 2026-06-14
 
 ## Recently cleared
 

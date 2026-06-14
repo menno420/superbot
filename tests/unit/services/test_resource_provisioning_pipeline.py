@@ -1006,8 +1006,9 @@ def test_feature_flag_is_declared_and_default_off():
 
 
 def test_actor_type_allowlist_matches_documented_set():
+    # setup_delegate added in migration 069 (Q-0098, P0-3 arc PR 3).
     assert rp_mod._ALLOWED_ACTOR_TYPES == frozenset(
-        {"user", "moderator", "admin", "system", "backfill"},
+        {"user", "moderator", "admin", "system", "backfill", "setup_delegate"},
     )
 
 

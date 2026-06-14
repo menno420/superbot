@@ -132,7 +132,20 @@ keys, so the economy-logs preset was silently filtered out).
 
 ---
 
-## 4. Delegated-Setup apply authority contract (Q-0098 — decided, design here)
+## 4. Delegated-Setup apply authority contract (Q-0098 — DONE, arc PR 3)
+
+> **SHIPPED — arc PR 3.** The contract below was implemented exactly as
+> designed: the bounded `setup_delegate` actor_type authorized at the floor in
+> `governance.capability` (still member-checked + revocable), minted **only** by
+> `services.setup_operations.apply_operations` after a live
+> `can_apply_setup` re-check, threaded to all three capability pipelines
+> (binding now forwards `actor_type`), the `setup_delegate` literal added to
+> each pipeline's `_ALLOWED_ACTOR_TYPES` + the two audit-table CHECK constraints
+> (migration 069), and the four non-escalation guards in place (AST fence
+> `test_setup_delegate_actor_boundary.py`; setup-lane only; revoke overlay
+> applies; live re-verification). Verified on real Postgres (constraint accepts
+> `setup_delegate`, rejects unknown; idempotent; clean boot).
+
 
 **The gap (map Required #4, High):** Final Review's `_gate_apply` →
 `setup_access.can_apply_setup` authorizes the **server owner OR a delegated
@@ -244,7 +257,7 @@ Run on a real guild + Postgres after arc PR 2 (extends the
 |---|---|---|
 | **1 (this PR)** | Matrix tool · backfill reframe (Required #2) · 2 parity invariants · this plan · Q-0119 | shipped, behavior-preserving |
 | **2 (#794) ✅** | Retired XP-announce + economy-log scalars (families 1+2) · `test_no_dual_declared_pointer` invariant · `pointer_retired` binding-first decoupling · real-Postgres proof | DONE |
-| **3 (next)** | Delegated-apply contract (§4) — the `setup_delegate` actor_type + AST fence + audit | Q-0098 (answered); design pinned in §4 |
+| **3 (#NNN) ✅** | Delegated-apply contract (§4) — the `setup_delegate` actor_type + AST fence + audit (migration 069) · real-Postgres + clean-boot proof | DONE |
 | *(later)* | Families 3–5 (governance roles · welcome/counters/mod-public-log bindings) | family 3 **ready** (Q-0119 → reserved `governance` schema); 4–5 need new `BindingSpec`s minted first |
 | *(later)* | **Sunset the global `bindings.primary` flag** — once every pointer family is retired (each binding-first via `pointer_retired=True`) and the non-pointer migrated keys are homed (Q-0119), the global canary governs nothing and can be removed. Arc PR 2 proved the per-key model is cleaner + safer to deploy than a guild-wide flip. | after families 3–5 + Q-0119 |
 
