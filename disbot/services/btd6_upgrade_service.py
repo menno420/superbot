@@ -34,6 +34,24 @@ from services.btd6_data_service import get_dataset
 _KEY_BY_PATH = {1: "top", 2: "mid", 3: "bot"}
 _PATH_BY_KEY = {"top": 1, "mid": 2, "bot": 3}
 
+# Natural-language direction words → path key, for `<tower> <direction> path`
+# references ("bomb shooter middle path"). Kept conservative on purpose: only the
+# clearly-unambiguous directions, and resolution additionally requires the literal
+# word "path" so "the top tier" / "bottom of the screen" never fire (design §5,
+# "err toward precision").
+_PATH_DIRECTIONS = {
+    "top": "top",
+    "upper": "top",
+    "middle": "mid",
+    "mid": "mid",
+    "center": "mid",
+    "centre": "mid",
+    "central": "mid",
+    "bottom": "bot",
+    "bot": "bot",
+    "lower": "bot",
+}
+
 # A single-path tier code in text: three digits 0-5, optionally hyphenated,
 # bounded so it won't fire inside a longer number (game versions etc.).
 _CODE_RE = re.compile(r"(?<![\d-])([0-5])-?([0-5])-?([0-5])(?![\d-])")
@@ -68,6 +86,25 @@ class UpgradeResolution:
     @property
     def found(self) -> bool:
         return self.upgrade is not None
+
+
+@dataclass(frozen=True)
+class PathReference:
+    """A resolved ``<tower> <top|middle|bottom> path`` reference — the whole path.
+
+    Unlike :class:`UpgradeResolution` (one tier), this names a *line* of upgrades.
+    It exists so path/line phrasing ("bomb shooter middle path") grounds the path's
+    five tiers instead of resolving to nothing and licensing a confabulated absence
+    claim — the retrieval half (Layer A) of the absence-claim guard design,
+    ``docs/btd6/btd6-absence-claim-guard-design.md`` §4.1.
+    """
+
+    query: str
+    tower_id: str
+    tower_name: str
+    path: str  # "top" | "mid" | "bot"
+    path_index: int  # 1 | 2 | 3
+    tiers: tuple[UpgradeIdentity, ...]  # tier 1..5, in tier order
 
 
 # Curated alias / abbreviation / nickname -> exact canonical upgrade name. Only
@@ -405,11 +442,67 @@ def resolve_upgrade(query: str) -> UpgradeResolution:
     return UpgradeResolution(query, "none")
 
 
+def _path_direction_in_tokens(tokens: list[str]) -> str | None:
+    """The path key for a ``<direction> path`` phrase in ``tokens``, or None.
+
+    Requires the direction word **immediately followed by the literal "path"**
+    token — the precision constraint that keeps incidental "top tier" / "bottom of
+    the list" phrasing from being read as a path/line reference. The first such
+    phrase wins (order-stable).
+    """
+    for i, token in enumerate(tokens[:-1]):
+        path = _PATH_DIRECTIONS.get(token)
+        if path is not None and tokens[i + 1] == "path":
+            return path
+    return None
+
+
+def resolve_path_reference(query: str) -> PathReference | None:
+    """Resolve a ``<tower> <top|middle|bottom> path`` reference to its whole path.
+
+    Returns the path's tier upgrades (in tier order) when ``query`` names **both**
+    a resolvable tower **and** a ``<direction> path`` phrase; ``None`` otherwise.
+    Deterministic and dataset-only — the retrieval half (Layer A) of the
+    absence-claim guard: path/line phrasing that would otherwise resolve to nothing
+    (``resolve_upgrade("bomb shooter middle path")`` → ``none``) now surfaces the
+    path's committed tiers so the model cannot fill the vacuum with a false "no".
+    See ``docs/btd6/btd6-absence-claim-guard-design.md`` §4.1.
+    """
+    tokens = _tokens(query)
+    if len(tokens) < 3:  # need at least "<tower> <direction> path"
+        return None
+    path = _path_direction_in_tokens(tokens)
+    if path is None:
+        return None
+    reg = _registry()
+    tower_id = _tower_in_query(tokens, reg)
+    if tower_id is None:
+        return None
+    tiers = tuple(
+        sorted(
+            (u for u in reg.by_tower.get(tower_id, {}).values() if u.path == path),
+            key=lambda u: u.tier,
+        ),
+    )
+    if not tiers:
+        return None
+    return PathReference(
+        query=query,
+        tower_id=tower_id,
+        tower_name=tiers[0].tower_name,
+        path=path,
+        path_index=_PATH_BY_KEY[path],
+        tiers=tiers,
+    )
+
+
 __all__ = [
+    "PathReference",
     "UpgradeIdentity",
     "UpgradeResolution",
     "all_upgrades",
     "get_upgrade",
     "reset_cache",
+    "resolve_path_reference",
     "resolve_upgrade",
 ]

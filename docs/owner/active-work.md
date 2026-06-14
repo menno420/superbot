@@ -30,6 +30,8 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/nifty-allen-uwt95o` · P1-1 Layer A — BTD6 path/line-aware resolution (absence-claim
+  trigger removal, design Rec #1) · 2026-06-14 · **PR #855**
 - `claude/p0-2-content-free-media-diagnostics-2026-06-14` · P0-2 follow-up — content-free
   media diagnostics (`!platform media` + `media` provider + cache-health/provider-outcome
   counters) · 2026-06-14 · **PR #854 (open, auto-merge on green)**

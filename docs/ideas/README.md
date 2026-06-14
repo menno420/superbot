@@ -73,12 +73,21 @@ Current broad captures:
   tool calls. *Composes* the print-subjects idea (build that first); orientation-lane, not a
   checker change. Surfaced by this pass spending ~8 tool calls deriving the band by hand before any
   reconciliation thinking. Runtime-lane (hook + `scripts/`), so out of scope for a docs-only pass.
+- [`grounding-completeness-claim-primitive-2026-06-14.md`](./grounding-completeness-claim-primitive-2026-06-14.md) —
+  **AI faithfulness (2026-06-14, the #855 path-resolution session):** promote the ad-hoc "these
+  are every X" roster sentence (#855's path header, the rosters, the capabilities reply) into a
+  first-class grounding primitive that emits a **parseable completeness marker** — so the
+  faithfulness guard can gain a *completeness* check beside its value check and catch the
+  **BUG-0009** long-list drop/add class (which "maps have water" → 64 vs 69). Emit side is cheap
+  retrieval; the guard check rides with absence-guard Layer B. Routes to AI orchestration §7 /
+  the absence-claim family.
 - [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
   **tooling (2026-06-14, band-#820 reconciliation pass):** have
   `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its
   number (it already walks `git log`), collapsing the reconciler's manual `git log --grep` loop
   and reducing mis-attributed ledger entries. Runtime-lane (`scripts/`), so out of scope for a
-  docs-only self-merge pass. Small/safe grooming-lane candidate.
+  docs-only self-merge pass. Small/safe grooming-lane candidate. **Turn-key seam verified
+  2026-06-14 (#855 session): `_git_merged_pr_numbers` already holds each subject.**
 - [`cogs-layer-view-residence-guard-2026-06-14.md`](./cogs-layer-view-residence-guard-2026-06-14.md) —
   **tooling / arch invariant (2026-06-14):** a guard flagging `discord.ui.View`/`Modal`
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans

@@ -28,6 +28,17 @@ formatting change, not new data-gathering. It also gracefully covers the gaps a 
 otherwise has to investigate (a number with no merge commit = a closed/unmerged PR or a
 `continue` issue — the checker could annotate `(no merge commit — closed/unmerged?)`).
 
+### Turn-key seam (verified 2026-06-14)
+
+The seam is exact: `scripts/check_current_state_ledger.py::_git_merged_pr_numbers` already
+loops `for subject in result.stdout.splitlines(): match = _MERGE_SUBJECT_RE.search(subject)`
+over `git log origin/main --pretty=format:%s` — i.e. it **holds each PR's merge subject in
+`subject`** at the moment it extracts the number and currently discards it. Minimal change:
+have it return (or memoize) a `{pr_number: subject}` map, then `find_missing` / `main` print
+`f"  - #{n}  {subjects.get(n, '(no merge commit — closed/unmerged?)')}"` for each missing
+number. No new `git` call, no new regex (reuse `_MERGE_SUBJECT_RE`). ~10 lines + one test that
+a known PR number renders with its subject. This is genuinely turn-key for a tooling session.
+
 ## Why it's worth having
 
 - It collapses the single most repetitive manual step of every Q-0107 reconciliation pass

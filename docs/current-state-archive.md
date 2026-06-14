@@ -21,6 +21,19 @@
   *(Recorded here at the P1-2 session close to keep the strict ledger green — it merged
   without its own ledger entry on the same auto-merge race as #843; its full fold is the
   next pass's, per Q-0124.)*
+- **#772 (2026-06-13, safety/community family plan + automod v1 — band slot 4)** —
+  the safety/community lane's **entry doc**
+  ([family plan](planning/safety-community-family-plan-2026-06-13.md): shared
+  architecture + sliced build order for all five approved features, citing
+  `ux/pattern-library.md` pattern_ids) **+ the first slice, automod v1** (Q-0108):
+  a new `automod` subsystem (twin of `cleanup`) filtering spam bursts · `discord.gg/`
+  invite links · excessive caps · mass mentions. Pure detectors + `SpamTracker` in
+  `services/automod_service.py`; `AutomodPolicy` read-model in `services/automod_config.py`
+  (KV settings, **no migration**, all flags default OFF); an order-5 `AutomodStage`
+  in the message pipeline (never a parallel `on_message`); on a hit, delete + `warn`
+  through `moderation_service` (escalation/audit stay one authority — no second
+  ladder). New advisory event `automod.rule_triggered`; config via the `!settings`
+  widget. 31 tests; CI green; live-boot verified.
 - **#765 + #767 + #769 + #770 (2026-06-12/13, backup posture + autonomous-loop
   follow-ups)** — **#769** Postgres backup posture (band slot 3 — daily `pg_dump` to a
   GitHub Actions artifact; [production-deployment §Backups](operations/production-deployment.md))
