@@ -239,6 +239,10 @@ Before inspecting SuperBot, use /home/hermes/repos/superbot. Do not modify files
 
 ## Useful commands
 
+> **Full reference:** [`hermes-terminal-cheatsheet.md`](hermes-terminal-cheatsheet.md) — the
+> copy-paste command list (service control, repo sync, health checks, prod diagnostics). The
+> essentials are repeated here.
+
 Check service status:
 
 ```bash
