@@ -26,8 +26,8 @@ session N leaves session N+1 better-equipped.
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
 | **superbot autonomous dispatch** | API (`/fire`) | General work orders from Hermes/phone (`superbot-dispatch`). Classifies by `CLASS:`. | per work order (Q-0113/Q-0114) |
-| **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-20th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next ~9 PRs, contribute one idea. | `docs` → self-merge on green |
-| **superbot night executor** | Issue `continue` (cron-driven 03:00/05:00 + handoffs) | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0117) |
+| **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, contribute one idea. | `docs` → self-merge on green |
+| **superbot night executor** | Issue `continue` (cron-driven 01:17/03:17 UTC + handoffs) | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0117) |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
 pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
@@ -37,8 +37,9 @@ to exit), burning the daily run cap. The clean middle: **the issue *is* the trig
 two ways —
 1. **Automatically** by `.github/workflows/reconciliation-trigger.yml`: on every push to `main`
    it runs `scripts/check_reconciliation_due.py --strict` and, when merged PRs cross a
-   **multiple-of-20** band (Q-0107, raised from 10 on 2026-06-12 — small PRs inflate the
-   count), opens a deduped issue labeled `reconcile`.
+   **multiple-of-30** band (Q-0107, raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
+   Q-0134 — small PRs inflate the count and a 20-band crossed in under a day at burst
+   velocity), opens a deduped issue labeled `reconcile`.
 2. **By judgment** — *any agent or the maintainer* opens a `reconcile`-labeled issue the moment
    they spot docs needing reordering, even off-cycle. The routine treats the issue's existence
    as the go-signal (it does not re-gate on the cadence), does the pass, and closes the issue.
@@ -75,7 +76,7 @@ issue) and watch. They can both touch `main`; the docs routine UNION-resolves as
 ## Routine: superbot docs reconciliation
 
 - **Trigger:** GitHub → **Issue opened**, filtered to **label is one of `reconcile`**.
-  (The `reconcile` issue is opened by the Action above on the 20-PR boundary, or by hand when
+  (The `reconcile` issue is opened by the Action above on the 30-PR boundary, or by hand when
   an agent spots drift.)
 - **Repository:** `menno420/superbot`. **Model:** Sonnet or Opus (docs work — the volume tier
   is fine; §11). **Permissions:** unrestricted branch push **OFF**. **Behavior:** auto-fix PRs ON.
@@ -112,8 +113,15 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     (a `check_docs` reachability orphan is usually one missing README link), leave the owner's.
     "Noting" a PR is not disposition — act on it. (This sweep was missing: #766 sat red + #771
     redundant for ~21h, unnoticed by sessions and two prior passes.)
-  - Plan the next ~9 PRs (the upcoming band) — modular, each a meaningful slice — into the
-    decade-queue planning doc, ordered so the highest-value improvements come first.
+  - CONTROL-PLANE (Q-0135): run `python3.10 scripts/check_loop_health.py` (reads live GitHub via
+    `gh`) and reconcile the § Control-plane state table against its PASS/FAIL/SKIP verdicts —
+    tick/untick the verifiable rows (ROUTINE_PAT, DATABASE_PUBLIC_URL, loop-self-fired) so the
+    table can't silently drift the way it did before 2026-06-14 (it claimed the loop had never
+    self-fired when live GitHub already proved it had). If `gh` is unavailable, do the same read
+    via the GitHub MCP (`list_issues`): the *author* of the newest auto-opened trigger issue is
+    the live read of ROUTINE_PAT (a real-user login = set; `github-actions[bot]` = unset).
+  - Plan the next band of PRs (the upcoming ~30) — modular, each a meaningful slice — into the
+    band planning doc, ordered so the highest-value improvements come first.
   - IMPROVE THE SYSTEM: if you see a way to make the orientation / memory / tooling better for
     the next run (a confusing doc, a missing pointer, a guard that would have caught this drift),
     make that improvement too. This is the point of the loop.
@@ -149,7 +157,8 @@ Its primary job is to **advance the next big step of the plan** (not just small 
 
 - **Triggers:** **GitHub → Issue opened, label `continue`** — and that's all it needs. The
   overnight cadence is driven by `.github/workflows/executor-nightly.yml` (a cron that opens a
-  scheduled `continue` issue at 03:00 and 05:00 local), because the console Schedule trigger was
+  scheduled `continue` issue at 01:17 and 03:17 UTC — though GitHub's scheduler often runs it
+  hours late; see the timing caveat under Control-plane state), because the console Schedule trigger was
   unreliable in the research-preview UI. The same `continue` trigger also picks up real
   continuation handoffs. (No API trigger / no token — on-demand work goes through dispatch.)
 - **Repository:** `menno420/superbot`. **Model:** Opus 4.8 (the execution tier; §11).
@@ -227,7 +236,7 @@ STEP 5 — SHIP (merge gate, Q-0117):
 
 | Label | Opened by | Fires | Effect |
 |---|---|---|---|
-| `reconcile` | the cadence Action (every 20-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
+| `reconcile` | the cadence Action (every 30-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
 | `continue` | the **executor** when it hands off a partly-done plan step (or a maintainer) | the executor | resume the explicit handoff in the issue body; chain again if still unfinished |
 | `needs-hermes-review` | the **executor** on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0117) |
 
@@ -238,7 +247,7 @@ Claude's big steps and `main`.
 ## The `reconcile` issue — how to fire the docs pass by hand
 
 The docs-reconciliation routine triggers on a GitHub **issue labeled `reconcile`**. Beyond the
-automatic Action (every 20-PR band), **any agent or the maintainer should open one whenever the
+automatic Action (every 30-PR band), **any agent or the maintainer should open one whenever the
 docs visibly need reordering** — the ledger drifted, a plan is stale, links rot, priorities
 moved — without waiting for the cadence:
 
@@ -302,7 +311,8 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — the `/fire` mechanism + gates.
 - [`hermes-skills/dispatch.md`](./hermes-skills/dispatch.md) · [`hermes-skills/review.md`](./hermes-skills/review.md)
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
-- `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 20-PR boundary.
-- `.github/workflows/executor-nightly.yml` — cron that opens a scheduled `continue` issue at 03:00/05:00 local.
+- `scripts/check_loop_health.py` — live-GitHub probe of the Control-plane state table (Q-0135); run it in the reconciliation pass.
+- `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 30-PR boundary.
+- `.github/workflows/executor-nightly.yml` — cron that opens a scheduled `continue` issue at 01:17/03:17 UTC (best-effort — often hours late).
 - [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0117).
 - `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).

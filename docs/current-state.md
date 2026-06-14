@@ -169,11 +169,11 @@ Source code and merged PRs win over anything written here.
 >
 > **Last reconciliation pass:** PR #840 (2026-06-14, sixth Q-0107 cadence pass —
 > [the pass record + decade queue](planning/reconciliation-pass-2026-06-14-band840.md)). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #860 (every
-> multiple of **20** — Q-0107 cadence raised 10→20 on 2026-06-12; `check_reconciliation_due.py`
-> flags it, and `.github/workflows/reconciliation-trigger.yml` auto-opens a `reconcile` issue
-> at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
-> PR after a pass.
+> **docs-only review + planning reconciliation** is due once merged PRs cross #870 (every
+> multiple of **30** — Q-0107 cadence raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
+> Q-0134; `check_reconciliation_due.py` flags it, and `.github/workflows/reconciliation-trigger.yml`
+> auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
+> this marker to the latest PR after a pass.
 
 - **#849 (2026-06-14, born-red session merge-gate — Q-0133)** — closed the auto-merge race
   that landed **#843** without its ledger entry (native auto-merge, Q-0123, fires the instant
