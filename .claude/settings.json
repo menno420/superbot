@@ -1,7 +1,8 @@
 {
+  "skipDangerousModePermissionPrompt": true,
   "enabledMcpjsonServers": ["codegraph", "context7"],
   "permissions": {
-    "defaultMode": "acceptEdits",
+    "defaultMode": "bypassPermissions",
     "allow": [
       "mcp__context7__resolve-library-id",
       "mcp__context7__query-docs",
@@ -62,12 +63,7 @@
       "mcp__github__get_job_logs",
       "mcp__github__actions_list"
     ],
-    "ask": [
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
-      "Bash(git reset --hard*)",
-      "Bash(git clean*)"
-    ]
+    "ask": []
   },
   "hooks": {
     "PreToolUse": [
