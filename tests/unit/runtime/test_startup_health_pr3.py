@@ -151,6 +151,30 @@ async def test_report_startup_health_caches_snapshot(monkeypatch) -> None:
     assert hss.get_last_startup_snapshot() is snap
 
 
+async def test_report_startup_health_requests_fresh_consistency(monkeypatch) -> None:
+    """Regression: the once-per-process startup report must collect a *fresh*
+    consistency report, not the process-local cache.
+
+    The cache (``platform_consistency._LAST_REPORT``) is only ever populated by
+    ``collect_report`` (the ``!platform consistency`` command / platform panel),
+    never at boot — so reading it at startup yields a required ``UNKNOWN``
+    consistency subsystem, which dragged every fresh-boot snapshot to
+    ``degraded`` with an empty attention list (a false alarm). Requesting fresh
+    consistency fixes that and primes the cache.
+    """
+    captured: list = []
+
+    async def _capture(request, *, bot=None):  # noqa: ANN001
+        captured.append(request)
+        return _make_snapshot()
+
+    monkeypatch.setattr(hss, "collect_snapshot", _capture)
+    await bot1._report_startup_health()
+    assert len(captured) == 1
+    assert captured[0].purpose == "startup"
+    assert captured[0].include_fresh_consistency is True
+
+
 async def test_report_startup_health_swallows_errors(monkeypatch) -> None:
     monkeypatch.setattr(
         hss, "collect_snapshot", AsyncMock(side_effect=RuntimeError("down"))
