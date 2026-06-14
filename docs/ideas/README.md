@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`readiness-map-claim-vs-source-guard-2026-06-14.md`](./readiness-map-claim-vs-source-guard-2026-06-14.md) —
+  **tooling (2026-06-14, P0-4 PR 2 session):** a guard that fails when a readiness-map /
+  ownership row's **routing claim** ("routes through X", "uses the Y lane", "Done") contradicts
+  the cited source file (reusing the channel invariants' forbidden-call sets). Surfaced by a real
+  drift this session caught — `create_panel.py` was marked "uses the provisioning lane" while the
+  source called `guild.create_text_channel` directly. Lifts the per-PR `test_no_direct_*`
+  invariants up to the docs that describe them. Small/safe grooming-lane candidate.
 - [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
   **tooling (2026-06-14, band-#820 reconciliation pass):** have
   `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its
