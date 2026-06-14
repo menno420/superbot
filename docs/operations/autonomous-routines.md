@@ -275,15 +275,27 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 
 | # | Maintainer action | Why it matters | Source PR | Verified? |
 |---|---|---|---|---|
-| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ⬜ |
-| 2 | Add repo secret **`DATABASE_PUBLIC_URL`** (Railway Postgres public proxy URL) | the daily `backup-db.yml` `pg_dump` is inert without it (workflow fails + opens an issue) | #769 | ⬜ |
-| 3 | Railway → **Deploy** the staged `CLAUDE_ROUTINE_*` env vars | `/bugreport` + `/dispatch` (HermesCog #757) may be inactive until the worker redeploys with the vars live | #765 | ⬜ |
-| 4 | Confirm the **dispatch routine prompt** is the free-form version | the owner finished routine setup *before* the #761 free-form prompt was handed over — it may carry the older prompt | #761/#765 | ⬜ |
-| 5 | Confirm **routine models**: dispatch/executor = **Opus 4.8**, reconciliation = Sonnet/Opus (not **Fable 5**) | dispatch was last seen on Fable 5 (premium) → daily spend risk vs. the €30/mo Q-0082 cap | §11 / #765 | ⬜ |
-| 6 | After #1: **`workflow_dispatch` `executor-nightly.yml`** once | the **first real unattended executor run** (the Q-0105 "watch the first run" moment — still pending; the loop has never self-fired) | #778 | ⬜ |
+| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active.) |
+| 2 | Add repo secret **`DATABASE_PUBLIC_URL`** (Railway Postgres public proxy URL) | the daily `backup-db.yml` `pg_dump` is inert without it (workflow fails + opens an issue) | #769 | ⬜ **still unset** — `backup-db.yml` opens a "Postgres backup failed" issue every day (latest #823, 2026-06-14); the cron *fires* but the dump fails for lack of this secret. |
+| 3 | Railway → **Deploy** the staged `CLAUDE_ROUTINE_*` env vars | `/bugreport` + `/dispatch` (HermesCog #757) may be inactive until the worker redeploys with the vars live | #765 | ⬜ (not verifiable from the repo) |
+| 4 | Confirm the **dispatch routine prompt** is the free-form version | the owner finished routine setup *before* the #761 free-form prompt was handed over — it may carry the older prompt | #761/#765 | ⬜ (not verifiable from the repo) |
+| 5 | Confirm **routine models**: dispatch/executor = **Opus 4.8**, reconciliation = Sonnet/Opus (not **Fable 5**) | dispatch was last seen on Fable 5 (premium) → daily spend risk vs. the €30/mo Q-0082 cap | §11 / #765 | ⬜ (not verifiable from the repo) |
+| 6 | After #1: **`workflow_dispatch` `executor-nightly.yml`** once | the **first real unattended executor run** (the Q-0105 "watch the first run" moment) | #778 | ✅ **2026-06-14** — the loop **has now self-fired unattended**: scheduled executor issue #819 (auto-opened) ran on its own, opened the `continue` handoff #821, and that chain produced merged P0-4 work (#825). No manual `workflow_dispatch` was needed. |
 
-> Once #1 is done, the cron path self-serves (#6 is just to watch the first one promptly). The first
-> autonomous **reconciliation** fires when merged PRs cross **#780**.
+> Rows 1 + 6 are now verified live — the autonomous loop self-fires. Rows 2–5 remain maintainer-side
+> (row 2 is confirmed *still pending* by the daily backup-failure issues). The first autonomous
+> **reconciliation** has also fired (the band-#820/#840 cadence passes ran via #822/#841).
+>
+> **⏱️ Timing caveat — GitHub Actions cron lag (not a config bug).** GitHub's `schedule:` trigger is
+> best-effort and, on a low-activity repo, runs are frequently **hours late or occasionally dropped**.
+> Observed here: the executor cron (`17 1,3 * * *` = 01:17/03:17 UTC) fired at **01:20 UTC on
+> 2026-06-13** (on time) but at **06:04 UTC on 2026-06-14** (~4¾ h late); the `backup-db.yml` cron
+> (`0 2 * * *` = 02:00 UTC) opened its failure issue at **06:15 UTC (06-13)** and **06:39 UTC
+> (06-14)** — both ~4 h late. The `:17`-minute offset reduces top-of-hour congestion but does **not**
+> eliminate the multi-hour variance. The timezone is correct (crons are always UTC, documented in
+> `executor-nightly.yml`); the lag is GitHub's scheduler. If on-time firing ever matters, drive the
+> cadence from an external scheduler that calls `workflow_dispatch` (or accept the loop is
+> "sometime overnight", not "at 03:17").
 
 ## See also
 
