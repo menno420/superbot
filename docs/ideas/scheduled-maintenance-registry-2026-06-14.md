@@ -1,7 +1,10 @@
 # Idea: a central scheduled-maintenance registry (retire single-loop cogs)
 
-> **Status:** `ideas` — captured 2026-06-14 (P0-2 media-retention session). Tooling/arch lane. Medium.
-> **Provenance:** surfaced directly by minting a zero-command cog this session just to host one loop.
+> **Status:** `ideas` — captured 2026-06-14 (P0-2 media-retention session); **case strengthened
+> + observability half sharpened 2026-06-14 (P1-2 findings-retention session)**. Tooling/arch lane. Medium.
+> **Provenance:** surfaced by minting a zero-command cog (`MediaMaintenanceCog`, #829) to host one
+> loop — then **reinforced one week later when P1-2 (#843) minted another,
+> `HealthMaintenanceCog`, with the identical shape** (same copy-paste tax + doc-sync reconciliation).
 
 ## The friction that surfaced it
 
@@ -11,7 +14,8 @@ codebase today is **a whole cog with a `tasks.loop`** — so the session minted
 `MediaMaintenanceCog` purely to host one loop, no commands, no settings, no
 subsystem row. That cog joins a growing set of single-loop cogs:
 `counters_cog` (rename loop), `community_spotlight_cog` (refresh), `role_cog`
-(threshold sweep), and now `media_maintenance_cog`.
+(threshold sweep), `media_maintenance_cog`, and now `health_maintenance_cog`
+(the P1-2 findings-retention loop, #843 — minted the same way a week later).
 
 This is cog sprawl for what is really "run this coroutine every N hours," and it
 scatters the bot's periodic work across N files with no single place to see,
@@ -47,7 +51,17 @@ One lightweight runner cog (`MaintenanceCog`) starts every registered job after
   help/settings surface-count reconciliation (this session paid that doc-sync
   tax for a zero-command cog).
 - Gives periodic work the **observability** it currently lacks entirely — today
-  a silently-dead `tasks.loop` is invisible until something rots.
+  a silently-dead `tasks.loop` is invisible until something rots. **Concrete
+  mechanism (sharpened by the P1-2 session):** each registered job records a
+  `last_ran_at` heartbeat on success; the health snapshot's `_tasks_subsystem`
+  adapter — which the [health readiness map](../planning/production-readiness/health-diagnostics-production-readiness-map-2026-06-12.md)
+  rates **Partial** precisely because it "reports healthy from active count alone
+  and cannot report recent task failure" — degrades the `tasks` subsystem when a
+  job hasn't fired within ~2× its declared cadence. This makes "retention runs
+  daily" a *verifiable* claim on a long-lived replica instead of an untested one
+  (the #829 media purge and #843 findings retention are both currently
+  unobservable if their loop stops). It closes the readiness-map's
+  shallow-tasks-adapter gap as a side effect of the registry.
 - Aligns with the repo's existing "register once in a shared layer, don't add
   parallel controls" rule (ADR-007 reasoning, the readiness-map's "register
   diagnostics/lifecycle ownership once" recommendation).

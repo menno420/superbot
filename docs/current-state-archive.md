@@ -13,6 +13,24 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#844 (2026-06-14, the sixth Q-0107 reconciliation pass — band #841–#860 plan)** —
+  the band-#840 docs-only reconciliation that produced the current live ledger
+  ([record](planning/reconciliation-pass-2026-06-14-band840.md)): **P0 integrity spine
+  COMPLETE** (P0-2 #829 · P0-3 #817 · P0-4 #820/#825); priority advances to the P1
+  correctness tier; marker reset #820→#840 (next at #860); decade queue #841–#860 planned.
+  *(Recorded here at the P1-2 session close to keep the strict ledger green — it merged
+  without its own ledger entry on the same auto-merge race as #843; its full fold is the
+  next pass's, per Q-0124.)*
+- **#764 (2026-06-12 night, the P2 doc-drift sweep — band slot 2)** — all five
+  hardening-P2 fixes, source-verified then applied: smoke checklist's nonexistent
+  `!platform diagnostics` → `runtime`/`consistency` + the platform-panel
+  completeness claim honest · the AI runtime README rewritten ("inert scaffold" →
+  the live gateway/routing/NL-stage platform) · **ADR-006 dated status addendum**
+  (pause condition satisfied; decision untouched per ADR immutability) +
+  decode-status header v55.0→**v55.1** + duplicate backlog № fixed · media folio
+  states the **raw-payload reality** (bounded projection = the Q-0099/P0-2 target)
+  · `YOUTUBE_CONTEXT_ENABLED` owner `ai`→`platform` (ADR-007). P2 table marked
+  SWEPT.
 - **#763 (2026-06-12 night, the second Q-0107 reconciliation pass)** — band #741–#762
   scored ([record + next-band queue](planning/reconciliation-pass-2026-06-12-night.md):
   slots 1+3 executed; the hardening+safety queue carried intact — capacity went to the
