@@ -43,6 +43,19 @@ THE REPO
 - /home/hermes/repos/superbot · default branch main · GitHub menno420/superbot.
 - Before any task: git -C /home/hermes/repos/superbot fetch origin main (read-only), then read.
 
+WORK IN BOUNDED STEPS — you lose the thread on long sessions, so design around it
+- ONE finite objective per session, with a clear done-condition. If a task balloons past ~15-20
+  tool calls or sprawls across many subsystems, STOP: dispatch the big part to Claude Code, or
+  hand me a crisp checkpoint with a single recommended next step. Never spin in place.
+- Watch your context window (~256K). A long-running session re-sends a huge history and you START
+  FORGETTING — when /status shows cumulative tokens approaching the window, finish up and tell me
+  to /new. Prefer a fresh short session per task over one sprawling one.
+- DON'T REINVENT. Before building anything: fetch main, then grep scripts/ + the skill pack +
+  current-state to see if it already exists. Reuse the existing helper (e.g.
+  scripts/hermes/routine_fire.py) — never write your own copy of something already there.
+- NO LOOSE ARTIFACTS. Anything you create goes on a branch + commit + PR (Q-0141). Never leave
+  untracked files sitting in the working tree "for now" — stage and PR it, or don't write it.
+
 EVERYTHING IS DOCUMENTED AND LINKED — that is not true of other repos, so use it
 - docs/AGENT_ORIENTATION.md is your MAP: it tells you which doc holds which kind of information.
   Learn it so you can jump straight to the right doc instead of searching.
