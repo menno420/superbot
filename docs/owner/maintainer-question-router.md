@@ -4783,3 +4783,46 @@ per Q-0106 (owner-directed in-session).
 `.github/workflows/code-quality.yml` + `scripts/check_quality.py` (the CI wins). Follow-up (parallel-safe
 test suite → re-enable xdist) captured in
 [`docs/ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md`](../ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md).
+
+---
+
+### Q-0127 — Native auto-merge never arms for MCP-created PRs (the `auto-merge-enabler` doesn't fire)
+
+> **DISCUSS lane — agent-surfaced finding 2026-06-14 (PR #817 session). Proposing, not applying
+> (executable-config change, Q-0106 boundary).**
+
+**Area:** merge mechanics · the Q-0123 native-auto-merge workflow
+**Type:** automation gap — needs an owner call on the durable fix
+
+**The finding (measured).** `auto-merge-enabler.yml` triggers on `pull_request:[opened, reopened,
+ready_for_review]` and would have matched #817 (non-draft, `claude/` head, no carve-out label).
+But it had **0 workflow runs for `claude/funny-bohr-skbaoz`** — and **none for the concurrent
+`claude/trusting-goldberg-po4p7s` band (#815/#816) either** (checked `list_workflow_runs` for the
+enabler: newest run predates this band entirely). So native auto-merge was **never armed**; #817
+did not self-merge despite `code-quality` passing green and `mergeable_state: clean`. I merged it
+by hand in-turn per the Q-0123 carve-out (CI verified green on the final head, not deferred).
+
+**Likely root cause (same class as #778).** PRs opened via the GitHub MCP `create_pull_request`
+(an app/integration token) don't emit a `pull_request` event that triggers a workflow — GitHub's
+"events from `GITHUB_TOKEN` / a GitHub App don't start new workflow runs" recursion-guard, the
+**exact gotcha #778 documented for bot-authored issue triggers**. The Q-0123 design ("session just
+opens the PR; GitHub does the gated merge") therefore silently doesn't hold for the way agent
+sessions actually open PRs — they've apparently been merging by hand all along (the #786 "hands-off"
+claim predates this band and may have used a different path).
+
+**Proposed fix (two options — owner picks):**
+- **(a) Session arms it directly (smallest, works today).** After `create_pull_request`, the session
+  calls `mcp__github__enable_pr_auto_merge` (a PAT-authenticated MCP call, not a workflow trigger) →
+  native auto-merge arms regardless of the event gotcha. Add a CLAUDE.md bullet; the enabler workflow
+  becomes a backstop. *(Recommended — sidesteps the trigger entirely, keeps merge off the session's
+  critical path.)*
+- **(b) Re-trigger the enabler.** Have it also run on `workflow_dispatch` / a `push`-to-`claude/*`
+  branch event, or re-author PR creation so it fires `pull_request`. More moving parts; doesn't fix
+  the underlying app-token-doesn't-trigger rule.
+
+**Until decided:** after opening a PR, a session should call `enable_pr_auto_merge` **or** merge by
+hand once `code-quality` is green on the final head (Q-0123 carve-out). Recorded in the #817 session
+log handoff.
+
+**Home (once answered):** `.github/workflows/auto-merge-enabler.yml` + CLAUDE.md § Session & plan
+workflow (the merge-mechanics bullet).
