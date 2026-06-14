@@ -20,6 +20,14 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`scheduled-maintenance-registry-2026-06-14.md`](./scheduled-maintenance-registry-2026-06-14.md) —
+  **tooling / arch (2026-06-14, P0-2 media-retention session):** a central
+  `register_maintenance(name, interval, coro, owner)` registry + one runner cog, to retire the
+  "mint a whole cog per `tasks.loop`" tax (counters / spotlight / role / the new
+  `media_maintenance_cog`) and give periodic work the observability it currently lacks (last-run /
+  result / next-run / error per job — also feeds the P0-2 media-diagnostics follow-up). Surfaced
+  by this session minting a zero-command cog just to host one purge loop. Medium; slice
+  registry-first then migrate loop cogs one PR at a time.
 - [`readiness-map-claim-vs-source-guard-2026-06-14.md`](./readiness-map-claim-vs-source-guard-2026-06-14.md) —
   **tooling (2026-06-14, P0-4 PR 2 session):** a guard that fails when a readiness-map /
   ownership row's **routing claim** ("routes through X", "uses the Y lane", "Done") contradicts

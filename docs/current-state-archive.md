@@ -13,6 +13,17 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#755 (2026-06-12, UX Lab design — owner-commissioned)** — the **interface-gallery
+  cog design**: [capture](ideas/ux-lab-interface-gallery-2026-06-12.md) +
+  [full plan](planning/ux-lab-interface-gallery-plan-2026-06-12.md) for a zero-write,
+  admin-gated `!uxlab` gallery — 9 exhibit wings (~60 patterns: buttons / all 5 selects /
+  modals incl. Label-wrapped selects / embed archetypes / **Components V2** / PIL cards /
+  **mockups of the approved Q-0108–Q-0112 features**), a 10-probe platform-limit bench,
+  compare-with-verdict mode, a `PatternSpec` registry exporting to a pattern-library
+  doc in plan-PR C, AST zero-write fence, 3-PR slicing. **Found + fixed two
+  stale platform facts** (verified on installed discord.py 2.7.1): the limits doc's CV2
+  budget (25 → **40 children / 4 000-char text**) and the journal's "modals can't contain
+  selects" rule (Label, 2.6+). Scheduling + audience = router **Q-0116** (open). Docs-only.
 - **#746–#754 (2026-06-12, dispatch-bridge wiring + routine-fleet arc)** —
   the Hermes→Claude Code dispatch bridge went **live-verified end-to-end**: **#746**
   Context7 verify/tool-name fix · **#747** routine-creation step marked DONE (calibration
