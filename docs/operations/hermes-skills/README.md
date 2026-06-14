@@ -62,6 +62,11 @@ bash scripts/hermes/install-skills.sh --dry-run  # preview
 sudo systemctl restart hermes-gateway            # pick up the new skills
 ```
 
+The **operating prompt** (the always-on base identity) installs separately into `~/.hermes/SOUL.md`
+via its sibling installer — `bash scripts/hermes/install-soul.sh` (see
+[`../hermes-operating-prompt.md`](../hermes-operating-prompt.md)); SOUL.md loads fresh each message,
+so no restart is needed for that one.
+
 Hermes loads any `SKILL.md` under `~/.hermes/skills/` on next run — no registration step.
 Alternatively, each prompt is self-contained and works as a plain Telegram message too.
 
