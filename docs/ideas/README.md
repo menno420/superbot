@@ -20,6 +20,17 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`routine-system-improvements-2026-06-14.md`](./routine-system-improvements-2026-06-14.md) —
+  **workflow / routine-system (2026-06-14, owner-requested):** first-hand field notes from a live
+  routine run on making the unattended Hermes-dispatch loop smoother. Core orientation already
+  works (a 2-word trigger still produced a correct end-to-end run); the weak links are the *edges*.
+  Prioritized: **(1)** a standardized **run-report block** in the session log (the artifact Hermes
+  summarizes — with required "owner decisions needed" / "owner manual steps" fields that otherwise
+  vanish); **(2)** align the routine prompt with reality (the `PushNotification` it centers on isn't
+  provisioned — the human is reached via Hermes reading artifacts); **(3)** get Hermes to use the
+  dispatch contract it already has (my fire was bare "auth probe"); **(4)** a repo-area map for
+  non-overlapping parallel dispatch; **(5)** owner-directed-vs-agent-feature phase-gate clarity +
+  a "productive once started" fallback ladder.
 - [`agent-env-credential-smoke-check-2026-06-14.md`](./agent-env-credential-smoke-check-2026-06-14.md) —
   **tooling (2026-06-14, the `auth probe` routine / PR #840):** a stdlib `check_agent_env.py` that
   does a minimal authenticated round-trip for each external credential the env *claims* to provide
