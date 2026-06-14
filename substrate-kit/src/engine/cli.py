@@ -3,9 +3,10 @@
 Surface: ``init`` (idempotent), ``status``, ``mode <name>``, ``stance [name]``
 (show or set the task stance), ``ask`` (list the pending interview questions),
 ``render`` (write content docs), ``skills`` (list / ``--build`` the skill pack),
-``agents`` (list / ``--build`` the persona pack), ``check`` (run the doc +
-session-log hygiene checks), and ``--simulate N`` (the CI / proving smoke that
-drives the staged interview). Output goes through ``_emit``
+``agents`` (list / ``--build`` the persona pack), ``hooks`` (show / ``--build``
+the hook wiring), ``hook <event>`` (the runtime hook entry point), ``check`` (run
+the doc + session-log hygiene checks), and ``--simulate N`` (the CI / proving
+smoke that drives the staged interview). Output goes through ``_emit``
 (``sys.stdout.write``) rather than ``print`` to keep the engine lint-clean.
 """
 
@@ -19,6 +20,7 @@ from pathlib import Path
 from engine.agents.agents import AGENTS, agent_document, agent_relpath
 from engine.checks.check_docs import run_doc_checks
 from engine.checks.check_session_log import check_log, latest_session_log
+from engine.hooks.stance_guard import evaluate_tool, settings_snippet, tool_from_payload
 from engine.interview.interview import critical_slots, pending_questions, run_session
 from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config, config_path, load_config, save_config
@@ -234,6 +236,57 @@ def cmd_agents(target: Path, build: bool) -> int:
     return 0
 
 
+def _hook_command(config: Config) -> str:
+    """Return the shell command Claude Code runs for the PreToolUse guard."""
+    return f"{config.interpreter} bootstrap.py hook pretooluse"
+
+
+def cmd_hooks(target: Path, build: bool) -> int:
+    """Show the hook wiring, or ``--build`` the settings snippet into staging.
+
+    The only hook today is the **PreToolUse stance guard**. Building stages a
+    ``.claude/settings.json`` snippet into ``<state_dir>/hooks/`` that the host
+    merges into their own settings (adjusting the bootstrap path). Like the other
+    emitters, the kit stages; it never writes a live ``.claude/`` tree.
+    """
+    config = load_config(target)
+    command = _hook_command(config)
+    if not build:
+        _emit("hooks:")
+        _emit("  pretooluse — stance guard: warns on an out-of-stance tool (advisory).")
+        _emit(f"  wiring command: {command}")
+        return 0
+    out = target / config.state_dir / "hooks" / "settings.snippet.json"
+    atomic_write_text(out, settings_snippet(command))
+    _emit(f"hooks: wrote {out.relative_to(target)}")
+    _emit("hooks: merge its `hooks.PreToolUse` block into .claude/settings.json.")
+    return 0
+
+
+def cmd_hook(target: Path, event: str) -> int:
+    """Run a Claude Code hook check (currently: the ``pretooluse`` stance guard).
+
+    Reads the hook payload from stdin; for an out-of-stance tool it writes an
+    advisory warning to stderr. **Always returns 0** — the guard is advisory
+    (plan section 3b), so it never blocks a tool. Fails open on missing
+    state / stance / payload.
+    """
+    if event != "pretooluse":
+        return 0
+    tool_name = tool_from_payload(sys.stdin.read())
+    if not tool_name:
+        return 0
+    config = load_config(target)
+    backend = JsonStateBackend(_state_path(target, config))
+    stance = backend.data.get("stance") if backend.data else None
+    if not stance:
+        return 0
+    warning = evaluate_tool(stance, tool_name)
+    if warning:
+        sys.stderr.write(warning + "\n")
+    return 0
+
+
 def cmd_check(target: Path, strict: bool) -> int:
     """Run the doc-hygiene + session-log checks against ``target``.
 
@@ -341,6 +394,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="emit agent .md files into <state_dir>/agents/",
     )
     agents.add_argument("--target", type=Path, default=Path.cwd())
+    hooks = sub.add_parser("hooks", help="show or --build the hook wiring")
+    hooks.add_argument(
+        "--build",
+        action="store_true",
+        help="emit the PreToolUse settings snippet into <state_dir>/hooks/",
+    )
+    hooks.add_argument("--target", type=Path, default=Path.cwd())
+    hook = sub.add_parser("hook", help="run a hook check (e.g. `hook pretooluse`)")
+    hook.add_argument("event")
+    hook.add_argument("--target", type=Path, default=Path.cwd())
     check = sub.add_parser("check", help="run the doc + session-log hygiene checks")
     check.add_argument("--target", type=Path, default=Path.cwd())
     check.add_argument("--strict", action="store_true", help="exit 1 if any violation")
@@ -370,6 +433,10 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_skills(args.target, args.build)
         if args.command == "agents":
             return cmd_agents(args.target, args.build)
+        if args.command == "hooks":
+            return cmd_hooks(args.target, args.build)
+        if args.command == "hook":
+            return cmd_hook(args.target, args.event)
         if args.command == "check":
             return cmd_check(args.target, args.strict)
     except UnsafeTargetError as exc:
