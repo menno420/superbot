@@ -26,6 +26,7 @@ _FORBIDDEN_ANY_RECEIVER = {
     "update_mining_item",
     "apply_inventory_deltas",
     "set_mining_inventory",
+    "update_vault_item",
     "set_gear_wear",
     "clear_gear_wear",
     "set_last_broken",
