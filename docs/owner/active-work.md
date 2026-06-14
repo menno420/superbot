@@ -27,6 +27,8 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/ecstatic-euler-bslyvd` · dispatch-test fixes — executor dimension + startability tags +
+  S1 freshness · docs-only (`repo-sector-map.md` · `roadmap.md` · router Q-0143) · 2026-06-14
 ## Recently cleared
 
 - `claude/wizardly-edison-xw34kb` · P1-1 — versioned AI eval/smoke matrix (offline half:
