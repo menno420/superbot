@@ -37,6 +37,7 @@ MODULE_ORDER = (
     "stances/stances.py",
     "skills/skills.py",
     "agents/agents.py",
+    "hooks/stance_guard.py",
     "render.py",
     "cli.py",
 )
@@ -48,6 +49,7 @@ PACKAGE_FILES = (
     "stances/__init__.py",
     "skills/__init__.py",
     "agents/__init__.py",
+    "hooks/__init__.py",
 )
 
 # Intra-package imports are dropped: in the concatenated file the referenced
