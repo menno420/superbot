@@ -27,11 +27,15 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+
 ## Recently cleared
 
 - `claude/wizardly-edison-xw34kb` · P1-1 — close eval-coverage gap on BTD6 hotspot tools (dog-food
   #879; 8→14/34) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-14 ·
   **PR #881 (open, auto-merge on green)**
+- `claude/ecstatic-euler-bslyvd` · dispatch-test fixes — executor dimension + startability tags +
+  S1 freshness (Q-0143) · docs-only (`repo-sector-map.md` · `roadmap.md` · router · `current-state.md`) ·
+  2026-06-14 · **PR #880**
 - `claude/wizardly-edison-xw34kb` · eval-coverage drift guard (Q-0089 idea, owner-approved) ·
   `tests/evals/test_eval_coverage.py` · 2026-06-14 · **PR #879 (merged)**
 - `claude/wizardly-edison-xw34kb` · P1-1 — versioned AI eval/smoke matrix (offline half:

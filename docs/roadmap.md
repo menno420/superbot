@@ -68,10 +68,14 @@
 > the [area drill-down](#area-drill-down-each-area-homed-to-a-sector) further down, every area homed
 > to exactly one sector.
 >
-> **Why sectors — the dispatch model.** A worker is dispatched by **sector + action**: e.g.
+> **Why sectors — the dispatch model.** A worker is dispatched by **sector + action + executor**: e.g.
 > *"continue the S2 BTD6 plan execution"* or *"plan the S3 AI-Memory sector, then an hour later execute
 > it."* The worker reads its sector's **Now** here, opens the linked plan/folio, and advances it. Each
-> sector's **Dispatch** line says what *plan* vs *execute·continue* mean for it. This index makes the
+> `Now` item is tagged **▶ startable / ⛔ gated / 👤 maintainer**, and each sector carries a default
+> **executor** (Claude-in-repo · Hermes-VPS · maintainer) — both defined in the dispatch contract
+> ([`repo-sector-map.md`](repo-sector-map.md) § "dispatch targets"); a `Now` that is entirely ⛔/👤 is
+> **not** autonomously dispatchable (fall through to the first ▶). Each sector's **Dispatch** line says
+> what *plan* vs *execute·continue* mean for it. This index makes the
 > sectors **dispatch-ready**; the Hermes/routine **wiring** that turns a phone message into a `/fire`
 > is **Q-0137 Thread 1** (owner-undecided) and is *not* built here — the actions map onto the existing
 > routine fleet in [`operations/autonomous-routines.md`](operations/autonomous-routines.md).
@@ -82,39 +86,43 @@
 > scope a PR review → use **review unit**.
 
 ### S1 — Bot product  ·  *the Discord bot users interact with (in-bot AI is a slice within it)*
-- **Now:** the **P1-1 AI eval-smoke matrix** — in-bot AI correctness (gates · fallback ·
-  grounding-refusal), with the absence-guard **Layer B** (Layer A ✅ #855); offline half buildable
-  now, live half creds-gated; BUG-0009 open ([bug book](health/bug-book.md)). **The P0 integrity spine
-  AND P1-2 are COMPLETE.** Product lanes run as **owner-steered alternates**: mining V-16 phase 2
-  (gated on the owner PNG pack) · games **P0-1 wager money-safety** · AI §7 workflow families
-  (post-prod-check).
+- **Now:** the **P1-1 AI eval-smoke matrix**
+  ([plan §P1-1](planning/production-readiness/hardening-roadmap-2026-06-12.md)) — in-bot AI correctness
+  (gates · fallback · grounding-refusal). Layer A ✅ #855; the **offline eval/smoke matrix ✅ SHIPPED
+  #878** (`tests/evals/smoke.py`, CI-gated); **▶ Layer B** (the absence-guard negative-existential gate)
+  is startable; the **⛔ live half** is creds-gated (owner-led P1-4); BUG-0009 open
+  ([bug book](health/bug-book.md)). **The P0 integrity spine AND P1-2 are COMPLETE.** Product alternates
+  (owner-steered): **▶ games P0-1 wager money-safety** · **⛔ mining V-16 phase 2** (owner PNG pack) ·
+  **⛔ AI §7 workflow families** (post-prod-check).
 - **Next:** safety/community remainder (image moderation · security tiers 1+2 · NL event scheduler) ·
   `myprofile` PR A (turn-key) · help home/navigation plan · settings Phase 2 tail → Phase 3.
 - **Later:** server-mgmt **PR13 AI generation layer** + governance setup (gated Q-0008/Q-0011) · media
   channel-summary (gated Q-0099) · the 4-button Help Home navigation doctrine (Q-0078) · games deferred
   follow-ups · the product-growth drafts (most of the Later/Someday product-growth list below).
-- **Dispatch:** `S1` · *plan* = pick a verified slice from a folio / production-readiness map and write
-  or refine its plan · *execute·continue* = advance the active **Now** slice (next P1-1 step, or an
-  owner-steered product lane). **Live queue →** the eight S1 areas in the drill-down below; folios:
-  [`subsystems/`](subsystems/README.md).
+- **Dispatch:** `S1` (executor **Claude-in-repo**) · *plan* = pick a verified slice from a folio /
+  production-readiness map and write or refine its plan · *execute·continue* = advance the next **▶
+  startable** Now item (currently Layer B or games P0-1). **Live queue →** the eight S1 areas in the
+  drill-down below; folios: [`subsystems/`](subsystems/README.md).
 
 ### S2 — BTD6  ·  *the Bloons TD 6 vertical — runtime + offline data, one standing sector*
 - **Now:** **the cutover is DONE.** Post-cutover decode backlog: ⭐ **item 3** (buff/zone tail —
-  demand-driven) · **item 4** (the maintainer's live spot-check, owed). Triage tool:
-  `scripts/btd6_probe.py "<exact user text>"`.
-- **Next:** the **P1-1 BTD6 eval cases** (the #704 finding — the capability message must match the
+  **⛔ demand-driven**) · **item 4** (the maintainer's live spot-check — **👤 maintainer**, owed). Triage
+  tool: `scripts/btd6_probe.py "<exact user text>"`. *Both Now items are blocked, so a "dispatch S2
+  execute" falls through to the ▶ startable item in Next.*
+- **Next:** the **▶ P1-1 BTD6 eval cases** (the #704 finding — the capability message must match the
   actual grounding-refusal behaviour, and asserted numbers (Despo price, Elite Lych HP) must be
   grounded). *The in-bot AI eval **harness** is S1; the BTD6 **data/grounding** correctness it checks
   is S2.*
 - **Later:** BTD6 product-extension routing (rules/trivia · challenges · runs · leaderboards) — gated
   on ADR-006 provenance / source-health.
-- **Dispatch:** `S2` · *plan* = structure a decode item or an extension feature into a plan · *execute·
-  continue* = run the decode/answerability backlog or a data refresh. **Live queue →** the **S2 BTD6**
+- **Dispatch:** `S2` (executor **Claude-in-repo**) · *plan* = structure a decode item or an extension
+  feature into a plan · *execute·continue* = the next **▶ startable** item (the BTD6 grounding-eval
+  cases — both Now items are ⛔/👤). **Live queue →** the **S2 BTD6**
   area in the drill-down below; folio: [`subsystems/btd6.md`](subsystems/btd6.md) · provenance:
   [ADR-006](decisions/006-btd6-data-provenance-ownership.md).
 
 ### S3 — AI-Memory system  ·  *the mechanism — the self-improving-agent engine (shippable on its own)*
-- **Now:** the owner's **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
+- **Now:** **▶** the owner's **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
   OSS arc — resume at the **PR-2 remainder** (modes + contract-doc templates + trigger/drift detection
   → PR 3). The **autonomous-loop mechanism** is live (#742/#753–#761; operating layer hardened
   #863/#865/#868/#869/#870) — its *operation* is S5, its *design* is here.
@@ -124,37 +132,42 @@
 - **Later:** promote the journal's earned candidate rules into CLAUDE.md (Q-0120) · the Context7-adopted
   plugins remainder (Postgres-MCP · pyright-LSP, Q-0096) · substrate-as-product productization (the
   future S5-of-S3 outward face).
-- **Dispatch:** `S3` · *plan* = design a new mechanism (a checker, a hook, a loop seam, a substrate-kit
-  layer) · *execute·continue* = build the next substrate-kit / tooling slice. **Live queue →** the
+- **Dispatch:** `S3` (executor **Claude-in-repo**) · *plan* = design a new mechanism (a checker, a hook,
+  a loop seam, a substrate-kit layer) · *execute·continue* = build the next substrate-kit / tooling
+  slice. **Live queue →** the
   **S3** area in the drill-down below; refs:
   [`operations/autonomous-routines.md`](operations/autonomous-routines.md) ·
   [`operations/hook-policy.md`](operations/hook-policy.md) ·
   [the loop vision](ideas/autonomous-improvement-loop-vision-2026-06-12.md).
 
 ### S4 — Documentation system  ·  *the content the engine produces — memory, folios, contracts*
-- **Now:** **this sector-roadmap mapping** (executing) · the 3-tap nav **middle/bottom layers** (folio
-  completeness + cog/idea leaf-wiring — the "larger nav build" the sector-map session flagged).
+- **Now:** sector-roadmap mapping **✅ #877** (+ the dispatch-test follow-up #880) · **▶** the 3-tap nav
+  **middle/bottom layers** (folio completeness + cog/idea leaf-wiring — the "larger nav build" the
+  sector-map session flagged).
 - **Next:** idea-backlog **grooming** cadence (Q-0015 — every idea ends implemented or discussed) ·
   orientation-route upkeep mined from `.sessions/` **context-deltas** · doc-reachability maintenance.
 - **Later / recurring:** the **Q-0107 reconciliation** *content* pass (de-stale docs · refactor the
   roadmap · keep the ledger honest) — its trigger/checker **machinery** is S3, the docs it produces are
   S4. Cadence: every 30th PR (Q-0134).
-- **Dispatch:** `S4` · *plan* = identify a doc gap / drift and scope its fix · *execute·continue* =
-  groom the idea backlog, de-stale a doc area, or run the docs-reconciliation pass. **Live queue →** the
+- **Dispatch:** `S4` (executor **Claude-in-repo**) · *plan* = identify a doc gap / drift and scope its
+  fix · *execute·continue* = groom the idea backlog, de-stale a doc area, or run the docs-reconciliation
+  pass. **Live queue →** the
   **S4** area in the drill-down below; refs:
   [`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) · [`repo-sector-map.md`](repo-sector-map.md).
 
 ### S5 — Operations / control-plane  ·  *the operational health that isn't a file — deploy · secrets · loop*
-- **Now:** the read-only **Railway log-triage skill** (Railway access verified live #840 — the reserved
-  decade-queue slot) · **verify the daily backup cron end-to-end** (next scheduled `backup-db.yml` run
-  after the #862 pg18-client fix).
+- **Now:** the read-only **Railway log-triage skill** (**👤 maintainer** one-time Railway token on the
+  VPS → then **Hermes-run**; access verified live #840) · **verify the daily backup cron end-to-end**
+  (**👤 maintainer / observe** the next scheduled `backup-db.yml` run after the #862 pg18-client fix).
+  *S5's Claude-in-repo work is thin — mostly the in-repo control-plane tooling (a `check_*`, a workflow guard).*
 - **Next:** **dispatch reliability** (Q-0137 Thread 1 — move the night executor off GitHub's flaky
   `schedule:` cron onto the always-on Hermes VPS **and keep cron as a degraded backstop**;
   owner-undecided) · `ROUTINE_PAT` expiry monitoring · a Neon read-only role for DB-level checks.
 - **Later:** Hermes Docker backend + SSH-key hardening · security/authority tracking as Hermes gains
   write scope (Q-0117/Q-0121) · `BUG-0011` Hermes gateway restart crash-loop ([bug book](health/bug-book.md)).
-- **Dispatch:** `S5` · *plan* = design an ops check / a control-plane improvement · *execute·continue* =
-  build a read-only ops skill, verify a live control-plane row, or harden the loop's reliability.
+- **Dispatch:** `S5` (executor **Hermes-VPS / maintainer** — the outlier; only in-repo `check_*` /
+  workflow tooling is Claude-in-repo) · *plan* = design an ops check / a control-plane improvement ·
+  *execute·continue* = build a read-only ops skill, verify a live control-plane row, or harden the loop's reliability.
   **Live queue →** the **S5** area in the drill-down below; refs:
   [`operations/production-deployment.md`](operations/production-deployment.md) ·
   [`operations/hermes-control-plane.md`](operations/hermes-control-plane.md) ·

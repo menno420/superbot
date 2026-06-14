@@ -5340,3 +5340,41 @@ artifact regenerated via `build_skills.py`), `docs/operations/hermes-operating-p
 description, not PR number"), `docs/planning/reconciliation-pass-2026-06-14-band840.md` §4 heading.
 **Re-paste the operating prompt + `superbot-dispatch` skill into Hermes' config on the VPS for this
 to take effect.**
+
+---
+
+### Q-0143 — Dispatch contract: the executor dimension + the startability tag (2026-06-14)
+
+> **DECIDED 2026-06-14 (owner-delegated "decided-by-derivation").** Refines **Q-0137 Thread 1**
+> (dispatch). Provenance: a live **dogfooding test** of the 5-sector dispatch structure this session
+> (traced S1/S2/S5 from *dispatched → ready-to-work*). The owner reviewed the three findings and chose
+> to build all three into one docs PR, delegating the design call to the agent. Recorded here so the
+> derivation is durable.
+
+**Context — what the test found.** The structure passed on **speed** (dispatch-to-ready was 2–3
+targeted reads per sector; all links resolved; the index ranked even the 8-area S1 down to one `Now`;
+a 20-min-stale `Now` self-corrected at the linked authority in one hop). It surfaced three gaps in the
+*dispatch model* (not the structure): (1) per-sector `Now` lags merges until the next reconciliation;
+(2) a non-empty `Now` can be **un-startable** (S2's was demand-driven + maintainer-only — the startable
+item was in `Next`); (3) the model `sector + action` silently assumed a **Claude-in-repo** executor,
+but most of **S5** runs on the Hermes VPS or is a maintainer action.
+
+**Decision (derived).** A complete dispatch is **`sector + action + executor`**, and every roadmap
+`Now` item carries a **startability tag**:
+
+- **Executor dimension** — three runners: **Claude-in-repo** (default for S1–S4), **Hermes-on-VPS**
+  (read-only ops; sanctioned writes = Q-0117 review-merge + Q-0140 docs-only PRs), **maintainer**
+  (deploy · secrets · Railway token · live spot-checks). **S5 is the outlier** — route an S5
+  token/deploy task to Hermes or the maintainer, *not* a repo-editing agent. (This sharpens Q-0137
+  Thread 1's "every routine started by Hermes": *which* runner depends on the sector.)
+- **Startability tag** — **▶ startable** (no gate) · **⛔ gated** (decision/dependency/creds) ·
+  **👤 maintainer**. A sector whose `Now` is entirely ⛔/👤 is **not autonomously dispatchable** —
+  surface the first ▶ item (often in `Next`) as the de-facto target.
+
+Also fixed in the same PR (finding 1): S1's `Now` de-drifted for #878 (offline eval/smoke matrix
+shipped) + P1-1's plan linked directly from the S1 block.
+
+**Home:** `docs/repo-sector-map.md` § "The sectors as dispatch targets" (the stable contract — executor
+table + startability legend) · `docs/roadmap.md` per-sector `Now` (the live tags + per-sector executor
+on each Dispatch line). **Open follow-on (not built):** a `check_sector_map.py` could later assert every
+`Now` item carries a tag and every sector a default executor — graduates the convention to enforced.
