@@ -4974,3 +4974,30 @@ environment (see `production-deployment.md` § "Env variable read/write (Railway
 **Home:** `scripts/hermes/railway_logs.py` + `docs/operations/production-deployment.md` (access posture +
 setup) + the `log-triage` skill (doc + generated SKILL.md). This Q-block is provenance for T0 and the
 open decision for T1–T3.
+
+---
+
+### Q-0131 — Maintainer follows provided steps without vetting → label the risk class of every manual step
+
+> **OBSERVED 2026-06-14 (owner, in-session).** Verbatim: *"the only thing I do is follow the steps
+> you provide, so if you wanted to add something destructive you could have easily achieved that by
+> steering me, since I don't really know what I'm doing anyways."*
+
+**Area:** owner working profile · agent-behavior safeguard
+**Type:** owner-surfaced trust dynamic → guideline **ADOPTED** (in the working profile)
+
+**The dynamic.** The maintainer executes agent-provided manual steps literally, without the technical
+judgment to vet them himself (consistent with the §2 "harder for him to: read coding jargon; tell at a
+glance whether a decision is architectural/…"). That makes any manual step an agent hands him a real
+position of trust.
+
+**Guideline (adopted in `maintainer-working-profile.md` §2).** When handing the maintainer a manual step
+— especially anything touching secrets, production, money, deletion, or an external service — **label its
+risk class plainly** (`✅ safe/read-only` · `↩️ reversible` · `⚠️ irreversible/destructive`) so he can
+judge it without the internals, and never bury a destructive/irreversible action inside routine-looking
+steps. The structural safeguards that keep the trust sound — reviewable/revertible PRs, cross-agent
+review, and "ask what it does" always being answerable — must be preserved, not eroded.
+
+**Home:** `docs/owner/maintainer-working-profile.md` §2 (the observation + rule). If this should be
+elevated to a *binding* executor rule (`docs/collaboration-model.md` / CLAUDE.md), that's a one-line owner
+yes — flagged here, not self-applied (Q-0106).
