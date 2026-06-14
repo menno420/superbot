@@ -1,11 +1,12 @@
 # 2026-06-14 — born-red session merge-gate (Q-0133)
 
-> **Status:** `in-progress`
-<!-- born-red flow (Q-0133): in-progress while open → flip to `complete` as the final
-     close step so the merge-gate goes green and auto-merge fires. -->
+> **Status:** `complete`
+<!-- born-red flow (Q-0133): was `in-progress` (PR born red); flipped to `complete` as the
+     deliberate final close step so the merge-gate goes green and auto-merge fires. -->
 
-**PR:** (this PR) — enforce the owner's "hold the merge until the session flips its
-plan/outcome doc green" rule. **Branch:** `claude/session-gate-born-red`.
+**PR:** [#849](https://github.com/menno420/superbot/pull/849) — enforce the owner's "hold the
+merge until the session flips its plan/outcome doc green" rule. **Branch:**
+`claude/session-gate-born-red`.
 
 This is the second piece of the 2026-06-14 session (the first — hardening **P1-2**,
 health findings lifecycle + retention — shipped as **#843** + **#846**). The owner asked
