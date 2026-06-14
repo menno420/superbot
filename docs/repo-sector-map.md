@@ -95,10 +95,11 @@ specific knowledge?"* → **S3 (mechanism)**. *"Is this SuperBot's specific know
 ## The sectors as dispatch targets
 
 The point of a small, memorable top layer is that a **sector is a dispatch unit**: an autonomous
-worker (or a Hermes-fired routine) is dispatched by naming a **sector + an action** — e.g. *"continue
-the S2 BTD6 plan execution"* or *"plan the S3 AI-Memory sector, then an hour later execute it."* The
-worker reads that sector's **live queue** and advances it. This makes the five sectors the **menu** a
-dispatcher picks from.
+worker (or a Hermes-fired routine) is dispatched by naming a **sector + an action + an executor** (the
+executor is usually implied by the sector — see "Who runs it" below) — e.g. *"continue the S2 BTD6 plan
+execution"* or *"plan the S3 AI-Memory sector, then an hour later execute it."* The worker reads that
+sector's **live queue**, checks the next item's **startability tag**, and advances it. This makes the
+five sectors the **menu** a dispatcher picks from.
 
 **Where the live queue lives:** each sector's `Now / Next / Later` is the
 [roadmap's per-sector dispatch index](roadmap.md#by-sector--the-live-dispatch-queues). This map
@@ -113,13 +114,43 @@ truth each, so they don't drift.
 | **execute · continue** | advance the sector's active `Now` slice (or resume a `continue` handoff) | the linked plan + `docs/current-state.md` ▶ | the night-executor / a dispatch work order |
 | *reconcile / deep-clean* | *(sector-spanning, not a per-sector dispatch)* — the Q-0107 docs pass over **all** sectors | the ledger + every sector's queue | **kept independent of Hermes** (the watchdog, Q-0137 Thread 1) |
 
-| Sector | A worker dispatched here… | Live queue |
-|---|---|---|
-| **S1 Bot** | builds/fixes a bot subsystem slice (incl. the in-bot AI) | roadmap → S1 |
-| **S2 BTD6** | runs the decode/answerability backlog or a data refresh | roadmap → S2 |
-| **S3 AI-Memory** | builds a mechanism (checker · hook · loop seam · substrate-kit slice) | roadmap → S3 |
-| **S4 Docs** | grooms ideas, de-stales a doc area, or runs the docs pass | roadmap → S4 |
-| **S5 Operations** | builds a read-only ops skill or verifies/hardens the control plane | roadmap → S5 |
+| Sector | Default executor | A worker dispatched here… | Live queue |
+|---|---|---|---|
+| **S1 Bot** | Claude-in-repo | builds/fixes a bot subsystem slice (incl. the in-bot AI) | roadmap → S1 |
+| **S2 BTD6** | Claude-in-repo | runs the decode/answerability backlog or a data refresh | roadmap → S2 |
+| **S3 AI-Memory** | Claude-in-repo | builds a mechanism (checker · hook · loop seam · substrate-kit slice) | roadmap → S3 |
+| **S4 Docs** | Claude-in-repo | grooms ideas, de-stales a doc area, or runs the docs pass | roadmap → S4 |
+| **S5 Operations** | **Hermes-VPS / maintainer** | builds a read-only ops skill or verifies/hardens the control plane | roadmap → S5 |
+
+### Who runs it — the executor dimension
+A complete dispatch is **sector + action + executor**. The executor is *usually implied by the
+sector*, but naming it is what makes a dispatch unambiguous — three runners:
+
+- **Claude-in-repo** — a Claude Code session/routine that edits the repo and opens a PR. The default
+  for **S1–S4** (subsystem code · BTD6 data/answerability · mechanism · docs).
+- **Hermes-on-VPS** — the always-on VPS agent: read-only ops, log-triage, dispatch. It edits *nothing*
+  in the repo by default (its sanctioned writes are Q-0117 review-merge + Q-0140 docs-only PRs).
+- **maintainer** — the human: deploy, secrets, the Railway token, live prod spot-checks.
+
+**S5 is the executor outlier.** Most of S5 is *not* Claude-in-repo — it runs on the **Hermes VPS** or
+is a **maintainer** action (every recent silent failure lived here precisely *because* it isn't a file
+an agent edits). Only S5's in-repo control-plane *tooling* (a `check_*` script, a workflow guard) is
+Claude-shaped. So **don't fire a repo-editing agent at an S5 token/deploy task** — route it to Hermes
+or the maintainer. *(Derived 2026-06-14 from the dispatch test — **Q-0143**; the refinement of Q-0137
+Thread 1's "every routine started by Hermes": **which** runner depends on the sector.)*
+
+### Is it dispatchable at all — the startability tag
+A non-empty `Now` is **necessary but not sufficient** for a dispatch — an item can be blocked. So each
+`Now` item in the [roadmap](roadmap.md#by-sector--the-live-dispatch-queues) carries one tag:
+
+- **▶ startable** — an autonomous executor can begin now (no gate).
+- **⛔ gated** — blocked on a decision, dependency, or credentials.
+- **👤 maintainer** — only the maintainer can do it (deploy · secrets · a live spot-check).
+
+A sector whose `Now` is entirely `⛔`/`👤` is **not autonomously dispatchable** — surface its first
+**▶ startable** item (often in `Next`) as the de-facto target. *(S2's `Now` was exactly this: item 3
+`⛔` demand-driven, item 4 `👤` maintainer-only — so a "dispatch S2 execute" falls to the `▶` BTD6
+grounding-eval cases in `Next`. Q-0143.)*
 
 **What this map does *not* do:** it does not wire Hermes. Turning a phone message into a `/fire`
 dispatch — and moving the night executor off GitHub cron onto the always-on Hermes VPS — is **Q-0137

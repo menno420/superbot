@@ -20,7 +20,15 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-14, **roadmap restructured by sector → dispatchable per-sector queues
+> **Last updated:** 2026-06-14, **dispatch contract sharpened — executor dimension + startability tags
+> (PR #880, Q-0143)** — a live dogfooding test of the sector dispatch structure (owner-requested) passed
+> on speed (2–3 hops/sector, links resolve, the index ranks, a stale `Now` self-corrected in one hop)
+> and surfaced 3 findings, all built into one docs PR: a complete dispatch is now **sector + action +
+> executor** (Claude-in-repo / Hermes-VPS / maintainer — **S5 is the executor outlier**), each `Now`
+> item carries a **startability tag** (▶/⛔/👤), and S1's `Now` was de-drifted for #878 (offline
+> eval/smoke matrix shipped). Homes: `repo-sector-map.md` § dispatch targets + `roadmap.md` per-sector
+> `Now`. ·
+> 2026-06-14, **roadmap restructured by sector → dispatchable per-sector queues
 > (PR #877)** — owner-directed; the next-session sector-mapping brief executed. `roadmap.md` is now
 > organised under the **5 planning sectors** (S1–S5, Q-0137): a **per-sector dispatch index**
 > (Now/Next/Later each) is the new top layer, and the former "Agent ecosystem" lane is split into its
