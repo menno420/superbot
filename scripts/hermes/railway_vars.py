@@ -16,7 +16,9 @@ Config comes from the environment (never the repo):
 
     RAILWAY_TOKEN           a **write-capable** project token (preferred; the var
                             Railway's Tokens page tells you to set). RAILWAY_API_TOKEN
-                            works too (account token). RAILWAY_PROJECT_TOKEN is an alias.
+                            works too (account token); RAILWAY_API_KEY is an alias for
+                            it (the var the owner provisioned, 2026-06-14).
+                            RAILWAY_PROJECT_TOKEN is an alias for RAILWAY_TOKEN.
     RAILWAY_PROJECT_ID      the project's id
     RAILWAY_ENVIRONMENT_ID  the environment's id (required — variables are per-environment)
     RAILWAY_SERVICE_ID      the bot service's id
@@ -72,15 +74,20 @@ def resolve_token() -> tuple[str, bool]:
         os.environ.get("RAILWAY_TOKEN", "").strip()
         or os.environ.get("RAILWAY_PROJECT_TOKEN", "").strip()
     )
-    account = os.environ.get("RAILWAY_API_TOKEN", "").strip()
+    # ``RAILWAY_API_KEY`` aliases RAILWAY_API_TOKEN (account/workspace token) —
+    # the var name the owner provisioned in the agent env (2026-06-14).
+    account = (
+        os.environ.get("RAILWAY_API_TOKEN", "").strip()
+        or os.environ.get("RAILWAY_API_KEY", "").strip()
+    )
     if project:
         return project, True
     if account:
         return account, False
     raise RailwayError(
         "No Railway token found. Editing variables needs a WRITE-capable token in "
-        "RAILWAY_TOKEN (project token) or RAILWAY_API_TOKEN (account token). "
-        "Get one at https://railway.com/account/tokens.",
+        "RAILWAY_TOKEN (project token) or RAILWAY_API_TOKEN / RAILWAY_API_KEY "
+        "(account token). Get one at https://railway.com/account/tokens.",
     )
 
 

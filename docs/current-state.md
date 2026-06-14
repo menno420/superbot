@@ -243,10 +243,14 @@ Source code and merged PRs win over anything written here.
   **env-var read/write** (`scripts/hermes/railway_vars.py` — list/get/set/unset, masked list,
   audit lines, stdin secrets, `--no-deploy`), both Q-0130; **#836** aligned token config to
   `RAILWAY_TOKEN` + a "which token?" guide; **#837** recorded the manual-step risk-labelling rule
-  (Q-0131). **Owner set the Railway token + project/service/env IDs in the agent env after the
-  session — the next *fresh* session must verify live:** `python3.10
-  scripts/hermes/railway_logs.py --whoami` then `railway_vars.py list`. *(Ledger: #824/#830/#833
-  from concurrent routines still pending the due Q-0107 reconciliation pass.)*
+  (Q-0131). **Owner set the Railway credential + project/service/env IDs in the agent env after
+  the session. VERIFIED LIVE 2026-06-14 by an auth-probe routine — and it surfaced two blockers
+  that made the access inert, both fixed (see the Railway-auth-fix PR below):** (1) the credential
+  is an **account token provisioned under `RAILWAY_API_KEY`**, a var name the scripts didn't read
+  (they read `RAILWAY_API_TOKEN`/`RAILWAY_TOKEN`); (2) Cloudflare fronts `backboard.railway.com`
+  and 1010-bans urllib's default User-Agent, so every call 403'd. After the fixes, `railway_logs.py
+  --whoami` returns the owner identity and `railway_vars.py list` reads live prod vars. *(Ledger:
+  #824/#830/#833 from concurrent routines still pending the due Q-0107 reconciliation pass.)*
 - **#788 + #789 + #790 + #791 + #792 + #793 + #795 + #796 + #798 (2026-06-13, the portable
   substrate-kit extraction — PR 1a + 1b)** — the owner's strategic refocus (the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md) idea)

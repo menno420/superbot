@@ -32,7 +32,12 @@ def mod():
 @pytest.fixture(autouse=True)
 def _clean_token_env(monkeypatch):
     # Deterministic token resolution regardless of the CI/host environment.
-    for var in ("RAILWAY_TOKEN", "RAILWAY_PROJECT_TOKEN", "RAILWAY_API_TOKEN"):
+    for var in (
+        "RAILWAY_TOKEN",
+        "RAILWAY_PROJECT_TOKEN",
+        "RAILWAY_API_TOKEN",
+        "RAILWAY_API_KEY",
+    ):
         monkeypatch.delenv(var, raising=False)
 
 
@@ -47,6 +52,19 @@ def test_railway_token_is_treated_as_project(mod, monkeypatch):
 
 def test_api_token_is_account_when_no_project(mod, monkeypatch):
     monkeypatch.setenv("RAILWAY_API_TOKEN", "at")
+    assert mod._resolve_token() == ("at", False)
+
+
+def test_api_key_aliases_account_token(mod, monkeypatch):
+    # The owner provisioned the credential under RAILWAY_API_KEY (an account
+    # token); it must resolve as a (Bearer) account token, not a project token.
+    monkeypatch.setenv("RAILWAY_API_KEY", "ak")
+    assert mod._resolve_token() == ("ak", False)
+
+
+def test_explicit_api_token_wins_over_api_key(mod, monkeypatch):
+    monkeypatch.setenv("RAILWAY_API_TOKEN", "at")
+    monkeypatch.setenv("RAILWAY_API_KEY", "ak")
     assert mod._resolve_token() == ("at", False)
 
 
@@ -176,6 +194,22 @@ def test_build_poster_project_uses_project_header(mod, monkeypatch):
     post(mod.WHOAMI_QUERY, {})
     assert captured["auth"] is None
     assert captured["proj"] == "proj-tok"
+
+
+def test_build_poster_sets_non_default_user_agent(mod, monkeypatch):
+    # Cloudflare fronts the API and 1010-bans urllib's default UA; the request
+    # must carry an explicit non-``Python-urllib`` User-Agent or every call 403s.
+    captured: dict = {}
+
+    def fake_urlopen(req, timeout=None):
+        captured["ua"] = req.get_header("User-agent")
+        return _FakeResp({"data": {}})
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
+    post = mod.build_poster("tok", is_project_token=False)
+    post(mod.WHOAMI_QUERY, {})
+    assert captured["ua"] == mod.USER_AGENT
+    assert "urllib" not in captured["ua"].lower()
 
 
 def test_post_raises_on_graphql_errors(mod, monkeypatch):

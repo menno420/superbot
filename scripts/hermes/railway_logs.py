@@ -16,6 +16,8 @@ Auth + config come from the environment (never the repo):
                             least-privilege; this is the var Railway's own Tokens
                             page tells you to set). RAILWAY_PROJECT_TOKEN is an alias.
     RAILWAY_API_TOKEN       account / workspace token -> ``Authorization: Bearer``
+                            (RAILWAY_API_KEY is an alias — the var the owner
+                            provisioned in the agent env, 2026-06-14)
     RAILWAY_PROJECT_ID      the project's id
     RAILWAY_SERVICE_ID      the bot service's id ("worker")
     RAILWAY_ENVIRONMENT_ID  optional; scopes the lookup to one environment
@@ -46,6 +48,9 @@ from collections.abc import Callable
 from typing import Any
 
 API_URL = "https://backboard.railway.com/graphql/v2"
+#: Non-default User-Agent: Cloudflare bans urllib's ``Python-urllib/X.Y`` default
+#: with error 1010, so every Railway API call must present a plain client UA.
+USER_AGENT = "superbot-railway-tool/1.0"
 
 #: A GraphQL transport: ``post(query, variables) -> data``. Injected so the
 #: query/parse logic is unit-testable without touching the network.
@@ -93,6 +98,11 @@ def build_poster(
         payload = json.dumps({"query": query, "variables": variables}).encode("utf-8")
         req = urllib.request.Request(API_URL, data=payload, method="POST")
         req.add_header("Content-Type", "application/json")
+        # Cloudflare fronts backboard.railway.com and bans urllib's default
+        # ``Python-urllib/X.Y`` User-Agent with error 1010 (TLS/client-signature
+        # block) — every call 403s without this, regardless of token. A plain
+        # client UA passes. (Discovered by an auth-probe routine, 2026-06-14.)
+        req.add_header("User-Agent", USER_AGENT)
         req.add_header(header_name, header_value)
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -169,7 +179,13 @@ def _resolve_token() -> tuple[str, bool]:
         os.environ.get("RAILWAY_TOKEN", "").strip()
         or os.environ.get("RAILWAY_PROJECT_TOKEN", "").strip()
     )
-    account = os.environ.get("RAILWAY_API_TOKEN", "").strip()
+    # ``RAILWAY_API_KEY`` is the var name the owner provisioned in the agent env
+    # (2026-06-14); it holds an account/workspace token, so it aliases
+    # RAILWAY_API_TOKEN, not the project-token slot.
+    account = (
+        os.environ.get("RAILWAY_API_TOKEN", "").strip()
+        or os.environ.get("RAILWAY_API_KEY", "").strip()
+    )
     if project:
         return project, True
     if account:
@@ -177,7 +193,7 @@ def _resolve_token() -> tuple[str, bool]:
     raise RailwayError(
         "No Railway token found. Set RAILWAY_TOKEN (a project token — "
         "least-privilege, and the var Railway's Tokens page tells you to set) or "
-        "RAILWAY_API_TOKEN (account/workspace token). "
+        "RAILWAY_API_TOKEN / RAILWAY_API_KEY (account/workspace token). "
         "Get one at https://railway.com/account/tokens.",
     )
 

@@ -33,13 +33,24 @@ def mod():
 
 @pytest.fixture(autouse=True)
 def _clean_token_env(monkeypatch):
-    for var in ("RAILWAY_TOKEN", "RAILWAY_PROJECT_TOKEN", "RAILWAY_API_TOKEN"):
+    for var in (
+        "RAILWAY_TOKEN",
+        "RAILWAY_PROJECT_TOKEN",
+        "RAILWAY_API_TOKEN",
+        "RAILWAY_API_KEY",
+    ):
         monkeypatch.delenv(var, raising=False)
 
 
 def test_railway_token_is_treated_as_project(mod, monkeypatch):
     monkeypatch.setenv("RAILWAY_TOKEN", "pt")
     assert mod.resolve_token() == ("pt", True)
+
+
+def test_api_key_aliases_account_token(mod, monkeypatch):
+    # The owner provisioned the write token under RAILWAY_API_KEY (account token).
+    monkeypatch.setenv("RAILWAY_API_KEY", "ak")
+    assert mod.resolve_token() == ("ak", False)
 
 
 def _recording_post(records: list, variables: dict | None = None):
