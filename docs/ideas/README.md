@@ -88,12 +88,10 @@ Current broad captures:
   retrieval; the guard check rides with absence-guard Layer B. Routes to AI orchestration §7 /
   the absence-claim family.
 - [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
-  **tooling (2026-06-14, band-#820 reconciliation pass):** have
-  `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its
-  number (it already walks `git log`), collapsing the reconciler's manual `git log --grep` loop
-  and reducing mis-attributed ledger entries. Runtime-lane (`scripts/`), so out of scope for a
-  docs-only self-merge pass. Small/safe grooming-lane candidate. **Turn-key seam verified
-  2026-06-14 (#855 session): `_git_merged_pr_numbers` already holds each subject.**
+  **✅ implemented (2026-06-14, band-#840 queue slot 9):** `check_current_state_ledger.py` now
+  prints each **missing PR's merge-commit subject** next to its number (via the memoized
+  `_git_merged_pr_map`), collapsing the reconciler's manual `git log --grep` loop and reducing
+  mis-attributed ledger entries.
 - [`cogs-layer-view-residence-guard-2026-06-14.md`](./cogs-layer-view-residence-guard-2026-06-14.md) —
   **tooling / arch invariant (2026-06-14):** a guard flagging `discord.ui.View`/`Modal`
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans
@@ -272,14 +270,20 @@ Current broad captures:
   non-`historical` `reconciliation-pass-*.md`, and the current-state ▶ + roadmap pointers both
   resolve to it. Turns a convention every pass must remember into a CI guard; motivated by the
   three pointers this pass hand-verified. Workflow lane; quick-win when capacity allows.
+- [`ledger-guard-benign-lag-vs-drift-2026-06-14.md`](./ledger-guard-benign-lag-vs-drift-2026-06-14.md) —
+  **session idea (2026-06-14, Q-0089, from the ledger-guard-hardening slice):** have
+  `check_current_state_ledger.py` distinguish **benign newest-merge lag** (the newest ~2 merges,
+  or anything newer than the `Last reconciliation pass: #M` marker — expected, informational)
+  from **real drift** (an older PR never recorded — actionable), and gate `--strict` on drift
+  only. Removes the standing false-red `/session-close --strict` hits on every session whose
+  newest sibling merge lags. Workflow lane; small. Pairs with the two shipped guard slices.
 - [`ledger-checker-range-scope-2026-06-13.md`](./ledger-checker-range-scope-2026-06-13.md) —
-  **session idea (2026-06-13, Q-0089, from the fourth/band-#800 Q-0107 reconciliation pass):**
-  scope `check_current_state_ledger.py`'s `#AAA–#BBB` range-expansion to the `## Recently
-  shipped` section only, so a forward-looking planning range in the `▶ Next action` pointer
-  can't silently mask a whole merged band from the ledger guard (the false-green this pass
-  found + fixed by convention; ~14 PRs were hidden). The structural complement to the pointer
-  invariant above. Workflow lane; small (logic + one test), high-leverage for the autonomous
-  loop. Routed Next.
+  **✅ implemented (2026-06-14, paired with the print-subjects slice):**
+  `check_current_state_ledger.py`'s `known_ledger_numbers` now expands `#AAA–#BBB` ranges only
+  inside `## Recently shipped` (+ the whole archive), so a forward-looking planning range in the
+  `▶ Next action` pointer can no longer silently mask a whole merged band from the ledger guard
+  (the band-#800 false-green that hid ~14 PRs). Individual `#N` refs still count everywhere; the
+  convention mitigation stays good practice but is no longer load-bearing.
 - [`executable-verification-over-prose-verified-2026-06-12.md`](./executable-verification-over-prose-verified-2026-06-12.md) —
   **orientation-review capture (2026-06-12):** make evidence status machine-checkable — turn prose
   "verified" checklist items into executable checks/CI tests, or label them explicitly manual with a

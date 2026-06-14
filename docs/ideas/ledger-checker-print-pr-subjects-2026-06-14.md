@@ -1,8 +1,10 @@
 # Idea — `check_current_state_ledger` should print each missing PR's merge-commit subject
 
-> **Status:** `ideas` — capture, **not** a plan, **not** approval. Source code and the
-> binding contracts win over this file. Small/safe grooming-lane candidate (a tooling
-> convenience for the reconciliation routine).
+> **Status:** `historical` — **IMPLEMENTED 2026-06-14** (band-#840 queue slot 9) — shipped in
+> `scripts/check_current_state_ledger.py`: `_git_merged_pr_map` memoizes `{pr: merge-subject}`
+> and `main()` prints `  - #N  <subject>` for each missing PR (degrading to
+> `(no merge commit found — closed/unmerged?)`). Kept here as the implemented-idea record.
+> Source code wins over this file.
 
 ## The friction (observed this pass)
 
