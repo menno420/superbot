@@ -1,4 +1,4 @@
-<img width="476" height="138" alt="image" src="https://github.com/user-attachments/assets/26f5d331-6306-4910-b807-46ede543d4d6" /><img width="525" height="306" alt="image" src="https://github.com/user-attachments/assets/2563b1f8-cc90-48ee-9f9f-353a62d54ad2" /># Untested-surface testing checklist
+# Untested-surface testing checklist
 
 > **Status:** `audit` — maintained live-walk checklist for every command/UI
 > flow that automated tests **cannot** verify.
@@ -45,10 +45,10 @@
 
 ### 1.1 Economy loop
 
-- `[ ]` `!daily` — **Expect:** coins credited, cooldown message on repeat.
-  **Report if:** no coins credited, or the cooldown doesn't reset after 24 h.
-- `[ ]` `!work` — **Expect:** coins/XP from a "job" result; different jobs
-  appear on repeat. **Report if:** always the same job, or zero reward.
+- `[✅]` `!daily` — **Expect:** coins credited, cooldown message on repeat.
+  **Report if:** no coins credited, or the cooldown doesn't reset after 24 h. `live walk 2026-06-14`
+- `[✅]` `!work` — **Expect:** coins/XP from a "job" result; different jobs
+  appear on repeat. **Report if:** always the same job, or zero reward. `live walk 2026-06-14`
 - `[✅]` `!balance` (aliases: `!bal`, `!wallet`) — **Expect:** embed showing
   your coin count and inventory summary. Try `!balance @someone` too. `live walk 2026-06-13`
 - `[✅]` `!shop` — **Expect:** the shop embed renders with prices; nothing
