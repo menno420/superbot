@@ -1,8 +1,11 @@
 # Idea — scope the ledger guard's range-expansion to the Recently-shipped section
 
-> **Status:** `ideas` — **not a plan, not approval.** A captured workflow/tooling idea
-> surfaced by the band-#800 Q-0107 reconciliation pass (2026-06-13). Source code and the
-> binding contracts win over anything here.
+> **Status:** `historical` — **IMPLEMENTED 2026-06-14** (paired with the print-subjects slice) — shipped in
+> `scripts/check_current_state_ledger.py`: `known_ledger_numbers` partitions `current-state.md`
+> at `## Recently shipped` and expands `#AAA–#BBB` ranges only in that tail (+ the whole
+> archive); individual `#N` refs still count everywhere. The convention mitigation stays good
+> practice but is no longer load-bearing. Kept here as the implemented-idea record. Source code
+> wins over anything below.
 
 ## The idea
 

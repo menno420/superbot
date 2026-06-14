@@ -20,16 +20,15 @@ GitHub across a few sessions before trusting it. If it proves unreliable (false 
 from an unusual commit-subject format, or a missed real drift) over multiple sessions,
 **delete it** — it is a convenience guard, not load-bearing.
 
-Known false-green (band-#800 reconciliation pass, 2026-06-13): this check expands every
-``#AAA-#BBB`` range it finds *anywhere* in ``current-state.md`` into "present" coverage
-(see ``ledger_pr_numbers``). A **forward-looking planning range** in the ``> Next action``
-pointer — e.g. naming the band the queue plans — therefore masks that whole band the moment
-it merges, and the guard reports green while the ledger is short (~14 substrate-kit /
-auto-merge PRs were hidden this way). Mitigation by **convention**: the live-queue pointer
-references the reconciliation pass *by name*, never by an inline PR-number range (the band
-range lives in the pass doc, which is not scanned here). The deeper structural fix — scope
-range-expansion to the ``## Recently shipped`` section only — needs a logic + test change;
-it is captured in ``docs/ideas/ledger-checker-range-scope-2026-06-13.md``.
+Range-scope (band-#800 false-green, structurally fixed 2026-06-14): this check used to
+expand every ``#AAA-#BBB`` range it found *anywhere* in ``current-state.md`` into "present"
+coverage, so a **forward-looking planning range** in the ``▶ Next action`` pointer — e.g.
+naming the band the queue plans — masked that whole band the moment it merged, and the guard
+reported green while the ledger was short (~14 substrate-kit / auto-merge PRs were hidden this
+way). ``known_ledger_numbers`` now expands ranges **only** inside ``## Recently shipped`` (and
+the whole archive); above that header only individual ``#N`` refs count. The convention
+(reference the pass *by name*, never an inline range) stays good practice but is no longer
+load-bearing. (Idea: ``docs/ideas/ledger-checker-range-scope-2026-06-13.md``.)
 
 Usage:
     python3.10 scripts/check_current_state_ledger.py            # advisory report (exit 0)
@@ -51,6 +50,10 @@ ARCHIVE = REPO_ROOT / "docs" / "current-state-archive.md"
 
 DEFAULT_WINDOW = 15
 
+# Range-expansion is scoped to the ledger proper (this header onward) + the archive, so a
+# forward-looking planning range in the ``▶ Next action`` pointer can't mask a merged band.
+RECENTLY_SHIPPED_HEADER = "## Recently shipped"
+
 # A PR reference in a commit subject: "Merge pull request #734" (GitHub web),
 # "Merge PR #734: ..." (MCP merges with a custom title — the dominant style
 # since 2026-06), or "title (#734)". The missing "PR #" alternative let five
@@ -63,19 +66,35 @@ _LEDGER_REF_RE = re.compile(r"#(\d+)")
 _LEDGER_RANGE_RE = re.compile(r"#(\d+)\s*[–-]\s*#?(\d+)")
 
 
-def ledger_pr_numbers(text: str) -> set[int]:
-    """Every PR number a ledger references, expanding ``#AAA–#BBB`` ranges."""
+def ledger_pr_numbers(text: str, *, expand_ranges: bool = True) -> set[int]:
+    """Every PR number a ledger references.
+
+    With ``expand_ranges`` (default), ``#AAA–#BBB`` spans expand into every member.
+    With ``expand_ranges=False`` only individual ``#N`` refs count (a range's two
+    endpoints still match as individual refs, but its interior does not) — used for the
+    portion of ``current-state.md`` *above* ``## Recently shipped`` so a forward-looking
+    planning range in the ``▶ Next action`` pointer cannot mask a just-merged band.
+    """
     numbers: set[int] = set()
-    for lo, hi in _LEDGER_RANGE_RE.findall(text):
-        a, b = int(lo), int(hi)
-        if a <= b and b - a < 100:  # guard against a stray huge "range"
-            numbers.update(range(a, b + 1))
+    if expand_ranges:
+        for lo, hi in _LEDGER_RANGE_RE.findall(text):
+            a, b = int(lo), int(hi)
+            if a <= b and b - a < 100:  # guard against a stray huge "range"
+                numbers.update(range(a, b + 1))
     numbers.update(int(n) for n in _LEDGER_REF_RE.findall(text))
     return numbers
 
 
-def _git_merged_pr_numbers(limit: int) -> list[int]:
-    """Recent merged PR numbers from origin/main history, newest-first, de-duped."""
+def _git_merged_pr_map(limit: int) -> dict[int, str]:
+    """Recent merged PRs from origin/main as an ordered ``{number: merge-subject}`` map.
+
+    Newest-first, de-duped (the first/newest subject wins for a repeated number).
+    ``dict`` preserves insertion order, so ``list(map)`` recovers the newest-first
+    number sequence ``_git_merged_pr_numbers`` returns. The subject is the merge-commit
+    ``%s`` already in hand at extraction time — kept so callers can show *what* each
+    missing PR did, not just its number (the manual ``git log --grep`` step every
+    reconciliation pass otherwise runs by hand).
+    """
     try:
         result = subprocess.run(
             ["git", "log", "origin/main", "--pretty=format:%s", "-n", str(limit * 4)],
@@ -84,33 +103,58 @@ def _git_merged_pr_numbers(limit: int) -> list[int]:
             cwd=REPO_ROOT,
         )
     except OSError:
-        return []
+        return {}
     if result.returncode != 0:
-        return []
-    seen: list[int] = []
+        return {}
+    mapping: dict[int, str] = {}
     for subject in result.stdout.splitlines():
         match = _MERGE_SUBJECT_RE.search(subject)
         if match:
             pr = int(match.group(1))
-            if pr not in seen:
-                seen.append(pr)
-    return seen
+            if pr not in mapping:
+                mapping[pr] = subject.strip()
+    return mapping
 
 
-def _ledger_text() -> str:
-    parts: list[str] = []
-    for f in (CURRENT_STATE, ARCHIVE):
-        try:
-            parts.append(f.read_text(encoding="utf-8"))
-        except OSError:
-            continue
-    return "\n".join(parts)
+def _git_merged_pr_numbers(limit: int) -> list[int]:
+    """Recent merged PR numbers from origin/main history, newest-first, de-duped."""
+    return list(_git_merged_pr_map(limit))
+
+
+def _read(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def known_ledger_numbers(
+    current_state_text: str | None = None,
+    archive_text: str | None = None,
+) -> set[int]:
+    """PR numbers the ledger covers, with range-expansion scoped to the ledger proper.
+
+    Ranges expand **only** inside ``## Recently shipped`` (and the whole archive); above
+    that header — the ``▶ Next action`` pointer and the status preamble — only individual
+    ``#N`` refs count. This closes the band-#800 false-green: a forward-looking planning
+    range written into the ``▶ Next action`` pointer (e.g. ``(band #781–#800)``) used to
+    mark that whole band "present" the instant it merged, so the guard reported green while
+    the ledger was ~14 entries short. The convention mitigation (reference the pass by name,
+    never an inline range) stays good practice; this makes it structural.
+    """
+    cs = _read(CURRENT_STATE) if current_state_text is None else current_state_text
+    archive = _read(ARCHIVE) if archive_text is None else archive_text
+    head, sep, tail = cs.partition(RECENTLY_SHIPPED_HEADER)
+    numbers = ledger_pr_numbers(head, expand_ranges=False)
+    numbers |= ledger_pr_numbers(sep + tail, expand_ranges=True)
+    numbers |= ledger_pr_numbers(archive, expand_ranges=True)
+    return numbers
 
 
 def find_missing(window: int = DEFAULT_WINDOW) -> list[int]:
     """Merged PRs in the recent window absent from current-state + archive."""
     recent = _git_merged_pr_numbers(window)[:window]
-    known = ledger_pr_numbers(_ledger_text())
+    known = known_ledger_numbers()
     return [pr for pr in recent if pr not in known]
 
 
@@ -132,16 +176,19 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
+    # Show each missing PR's merge-commit subject so the reconciler can write an honest
+    # ledger entry without the manual `git log --grep "#N"` loop (Q-0089 grooming idea).
+    subjects = _git_merged_pr_map(args.window)
     print(
         f"check_current_state_ledger: {len(missing)} recent merged PR(s) not in "
         "current-state.md / current-state-archive.md:",
     )
     for pr in missing:
-        print(
-            f"  - #{pr} (add to docs/current-state.md § Recently shipped, or archive)",
-        )
+        subject = subjects.get(pr, "(no merge commit found — closed/unmerged?)")
+        print(f"  - #{pr}  {subject}")
     print(
-        "\nThis is the living-ledger drift class. Reconcile before closing the session "
+        "\nThis is the living-ledger drift class. Add each to docs/current-state.md "
+        "§ Recently shipped (or archive) before closing the session "
         "(verify the #number against live GitHub first).",
     )
     return 1 if args.strict else 0
