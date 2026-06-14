@@ -86,35 +86,55 @@ mechanics needed adjusting:
 3. **WIP issue.** Manifest as a `wip-claim` issue (no CI, no merge risk). Adds a surface agents
    must also check.
 
-## Follow-up: make the test suite parallel-safe, then re-enable xdist (the ~3× unlock)
+## Follow-up: make the test suite parallel-safe, then re-enable xdist — DONE (2026-06-14)
 
-This is the **live idea** that remains. xdist would cut pytest from ~109s to ~35s, but CI proved
-the suite isn't parallel-safe. The evidence (all on a 4-core box, matching CI):
+xdist cuts pytest from ~109s serial to ~35s (~3×), but the first attempt (PR #814) had to be
+reverted: the suite had non-deterministic cross-test state pollution that only surfaced in
+parallel. The original evidence:
 
 | Run | Result |
 |---|---|
 | CI `-n auto` | **9 failed** (`test_slash_access_check` ×7, `test_platform_consistency`, `test_flag_manager`) |
 | local `-n auto` | 0 failed (green) |
-| local `-n 4` | 0 failed (green) |
 | local `-n 4 --dist loadscope` (run 1) | **7 failed** (slash cluster) |
-| local `-n 4 --dist loadscope` (run 2) | **1 failed** — `test_platform_flags_embed` (in neither CI nor run 1) |
+| local `-n 4 --dist loadscope` (run 2) | **1 failed** — `test_platform_flags_embed` |
 
-A *different* set fails each run → **non-deterministic cross-test state pollution** that only
-surfaces under parallel scheduling. **Green locally ≠ green in CI**, and no `--dist` flag fixes
-it (loadscope made it worse). The culprits are global singletons mutated by one test and read by
-another without reset — candidates from the failures: the readiness-snapshot registry, the slash
-access-control config, the flag registry, the platform-flags embed state.
+A *different* set failed each run → process-global singletons mutated by one test and read by
+another without reset; a polluter only collides with a reader under parallel scheduling. **`--dist
+loadscope` reproduced it reliably locally** (default `load` was green locally — that was the trap).
 
-**Plan when picked up:** (1) add autouse reset/isolation fixtures for those globals (start with
-the 4+ implicated modules, then audit for more); (2) re-run `pytest -n auto` several times until
-deterministically green; (3) re-enable `-n auto` in `code-quality.yml` + `scripts/check_quality.py`
-and re-pin `pytest-xdist` in `requirements-dev.txt`; (4) verify across **multiple CI runs**, not
-just locally (that's the trap this idea documents). Likely a `docs/planning/` plan, not a one-shot.
+### Root cause (three process-global singletons, all confirmed by repro)
+
+1. **`core.runtime.lifecycle`** phase → the access-check cluster (`test_bootstrap_access_cog`
+   `test_channel_guard_*` + `test_slash_access_check` `test_slash_check_*`). A test that left
+   lifecycle in shutdown made the access resolver short-circuit for the next reader.
+2. **`core.runtime.feature_flags._REGISTRY`** → `test_platform_flags_embed`. A test that wiped the
+   registry via `_reset_for_tests()` (which clears to *empty*) left the import-time default flag
+   declarations gone for the next reader.
+3. **`core.events.bus`** leaked subscription → `test_event_bus_delivery`. `server_logging.setup()`
+   registered `_on_audit_action` on the global bus, but `server_logging._reset_for_tests()`
+   **deliberately never unsubscribed** ("registered once per process") — so the orphaned subscriber
+   fired on another test's `audit.action_recorded` emit and skewed its delivery-stats assertion.
+
+### Fix (root-cause, test-only + one service reset)
+
+- `tests/conftest.py` — one autouse fixture resets `lifecycle` + `startup_outcome` + `feature_flags`
+  before/after every test. Each module already shipped a reset hook (`startup_outcome`'s docstring
+  literally asks for an autouse fixture); they were never wired suite-wide. `feature_flags` is
+  **snapshot/restored** to its import-time baseline, not wiped (wiping would drop the defaults).
+- `services/server_logging._reset_for_tests()` — now tears down its bus subscription + drops the
+  `_SUBSCRIBED` latch, so `setup()` re-registers cleanly and the leak dies at its source.
+
+### Verification
+
+8 parallel runs, all `9422 passed, 0 failed`: 5× `--dist loadscope` (the reliable-failure mode) +
+3× `-n auto`, ~34-38s each vs ~109s serial. Re-enabled `-n auto` in `code-quality.yml` +
+`scripts/check_quality.py`; re-pinned `pytest-xdist==3.6.1` in `requirements-dev.txt`. The real
+final proof is **CI itself across multiple runs** (the trap this idea documents) — watch the PR.
 
 ## Lifecycle
 
-- (a) concurrency + caching → **implemented** (PR #814); re-badge `historical` after merge.
-- (a) xdist → **reverted**; folded into the Follow-up above.
-- (b) claim ledger + push-batching → **decided & implemented** this session (CLAUDE.md +
-  `docs/owner/active-work.md`).
-- **Follow-up (parallel-safe suite)** → the remaining live idea; groom into a plan when prioritized.
+- (a) concurrency + caching → **implemented** (PR #814, merged); re-badge `historical`.
+- (a) xdist → reverted in #814, then **re-enabled parallel-safe** in the follow-up (this PR).
+- (b) claim ledger + push-batching → **decided & implemented** (CLAUDE.md + `docs/owner/active-work.md`).
+- **Follow-up (parallel-safe suite)** → **DONE** (this PR) — root-fixed + verified across 8 runs.
