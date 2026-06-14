@@ -12,12 +12,21 @@ mutation flows through here, returning a typed
 
 Boundaries (P0-4 convergence, Q-0100):
 
-* Channel *creation* / category creation stays with the provisioning pipeline
-  (the no-silent-auto-create invariant owns that path); this service does not
-  create channels.  ``set_permissions``/overwrite changes and ``clone`` were
-  the deliberate follow-up and are now **owned here** (Q-0100: clone/overwrite
-  → ChannelLifecycleService with audit+events), so the convergence invariant
-  pins ``.delete`` / ``.edit`` / ``.set_permissions`` / ``.clone``.
+* **Subsystem-bound** channel/category creation (a channel that becomes a
+  declared ``(subsystem, binding_name)`` binding) stays with
+  :class:`services.resource_provisioning.ResourceProvisioningPipeline` — it is
+  catalogue-driven and writes the binding row.
+* **Ad-hoc operator** channel creation (``!create`` / ``!evt`` / ``!bulkcreate``
+  / the create panel) has *no* declared binding, so it does not fit that
+  pipeline; it is now owned **here** via :meth:`create_channels` (P0-4 PR 2),
+  the channel-domain sibling of
+  :class:`services.role_lifecycle_service.RoleLifecycleService` (the audited
+  manual-role creator).  ``set_permissions``/overwrite and ``clone`` were the
+  earlier follow-up and are also **owned here** (P0-4 PR 1).  The convergence
+  invariant pins ``.delete`` / ``.edit`` / ``.set_permissions`` / ``.clone`` and
+  the operator ``create_*`` calls in the cog + channel views; this service is
+  the one sanctioned manual ``guild.create_*`` caller (no-silent-auto-create
+  allowlist).
 
 Authorisation: the bot's Discord permission (``manage_channels``) is checked
 here; the *actor's* authority stays at the cog/view layer (the channel
@@ -34,6 +43,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import discord
@@ -226,6 +236,121 @@ class ChannelLifecycleService:
             event_emitted=event_emitted,
         )
 
+    async def create_channels(
+        self,
+        guild: discord.Guild,
+        names: Sequence[str],
+        actor: object | None,
+        *,
+        category_id: int | None = None,
+        category_name: str | None = None,
+        kind: str = "text",
+        reason: str | None = None,
+        actor_type: str = "user",
+    ) -> lc.LifecycleResult:
+        """Create one or more channels through the audited lifecycle seam.
+
+        This is the audited *manual* channel creator — the channel-domain sibling
+        of :class:`services.role_lifecycle_service.RoleLifecycleService` (Q-0100,
+        P0-4).  Ad-hoc operator channels (``!create`` / ``!evt`` / ``!bulkcreate``
+        / the create panel) have **no declared subsystem binding**, so they do not
+        fit the catalogue-driven
+        :class:`services.resource_provisioning.ResourceProvisioningPipeline`
+        (which resolves a ``(subsystem, binding_name)`` option and always writes a
+        binding row); routing them here gives them the same audit companion +
+        ``channel.lifecycle_changed`` event as every other operator channel
+        mutation, without minting a fake binding.
+
+        Channels are created with safe (auto-incremented) names.  An optional
+        category is resolved by id (``category_id``) or get-or-created by name
+        (``category_name``); a category failure aborts the whole batch (every
+        channel would otherwise land in the wrong place).  ``StepResult.target_id``
+        carries each new channel's id (``0`` on failure) so callers can re-resolve
+        the created channel (e.g. to apply a follow-up overwrite).
+        """
+        operation = "create"
+        reversibility = lc.COMPENSATABLE
+        mutation_id = str(uuid.uuid4())
+        actor_id = getattr(actor, "id", None) if actor is not None else None
+
+        if not self._bot_can_manage(guild):
+            return self._terminal(
+                mutation_id,
+                guild.id,
+                operation,
+                reversibility,
+                lc.BLOCKED,
+                "bot lacks the Manage Channels permission",
+            )
+
+        category, cat_error = await self._resolve_create_category(
+            guild,
+            category_id,
+            category_name,
+        )
+        if cat_error is not None:
+            return self._terminal(
+                mutation_id,
+                guild.id,
+                operation,
+                reversibility,
+                lc.BLOCKED,
+                cat_error,
+            )
+
+        steps: list[lc.StepResult] = []
+        for requested in names:
+            try:
+                channel = await self._create_one(
+                    guild,
+                    kind,
+                    requested,
+                    category,
+                    reason,
+                )
+            except discord.Forbidden:
+                steps.append(lc.StepResult(0, requested, False, "missing permission"))
+            except discord.HTTPException as exc:
+                steps.append(lc.StepResult(0, requested, False, f"Discord: {exc}"))
+            else:
+                steps.append(lc.StepResult(int(channel.id), requested, True))
+
+        steps_t = tuple(steps)
+        outcome = lc.classify_outcome(steps_t)
+        committed_at = lc.now_utc()
+        summary = self._create_summary(names, category, kind, steps_t)
+        audit_emitted = await lc.emit_lifecycle_audit(
+            mutation_id=mutation_id,
+            domain=DOMAIN,
+            operation=operation,
+            guild_id=guild.id,
+            target=f"channels:{len(names)}",
+            summary=summary,
+            actor_id=actor_id,
+            actor_type=actor_type,
+            occurred_at=committed_at,
+        )
+        event_emitted = await self._emit_event(
+            mutation_id=mutation_id,
+            guild_id=guild.id,
+            operation=operation,
+            outcome=outcome,
+            steps=steps_t,
+            committed_at=committed_at,
+        )
+        return lc.LifecycleResult(
+            mutation_id=mutation_id,
+            guild_id=guild.id,
+            domain=DOMAIN,
+            operation=operation,
+            outcome=outcome,
+            reversibility=reversibility,
+            steps=steps_t,
+            committed_at=committed_at,
+            audit_emitted=audit_emitted,
+            event_emitted=event_emitted,
+        )
+
     # ------------------------------------------------------------------
     # Internals
     # ------------------------------------------------------------------
@@ -281,6 +406,78 @@ class ChannelLifecycleService:
             )
         elif operation == "clone":
             await channel.clone(name=request.clone_name, reason=reason)  # type: ignore[attr-defined]
+
+    async def _resolve_create_category(
+        self,
+        guild: discord.Guild,
+        category_id: int | None,
+        category_name: str | None,
+    ) -> tuple[discord.CategoryChannel | None, str | None]:
+        """Resolve the target category for a create batch.
+
+        ``category_id`` resolves an existing category (error if it is gone);
+        ``category_name`` get-or-creates one by name (the long-standing
+        ``!evt`` / create-panel behaviour); neither given → no category.
+        Returns ``(category, error)`` — ``error`` is non-None on failure and the
+        caller aborts the whole batch.
+        """
+        if category_id is not None:
+            from core.runtime import guild_resources
+
+            cat = guild_resources.resolve_category(guild, category_id=category_id)
+            if cat is None:
+                return None, f"category {category_id} not found"
+            return cat, None
+        if category_name:
+            from utils.channels import get_or_create_category
+
+            try:
+                cat = await get_or_create_category(guild, category_name)
+            except discord.Forbidden:
+                return None, "missing permission to create the category"
+            except discord.HTTPException as exc:
+                return None, f"Discord: {exc}"
+            return cat, None
+        return None, None
+
+    async def _create_one(
+        self,
+        guild: discord.Guild,
+        kind: str,
+        requested_name: str,
+        category: discord.CategoryChannel | None,
+        reason: str | None,
+    ) -> discord.abc.GuildChannel:
+        """Create a single channel with a collision-safe name.
+
+        This is the one sanctioned ``guild.create_*`` call for *manual* operator
+        channels (allowlisted in ``test_no_silent_auto_create.py`` as the channel
+        sibling of ``role_lifecycle_service``).
+        """
+        from utils.channels import safe_channel_name
+
+        safe = await safe_channel_name(guild, requested_name)
+        if kind == "voice":
+            return await guild.create_voice_channel(
+                safe,
+                category=category,
+                reason=reason,
+            )
+        return await guild.create_text_channel(safe, category=category, reason=reason)
+
+    def _create_summary(
+        self,
+        names: Sequence[str],
+        category: discord.CategoryChannel | None,
+        kind: str,
+        steps: tuple[lc.StepResult, ...],
+    ) -> str:
+        applied = sum(1 for s in steps if s.ok)
+        where = f" in category {category.name!r}" if category is not None else ""
+        return (
+            f"create {len(names)} {kind} channel(s){where} "
+            f"({applied}/{len(steps)} applied)"
+        )
 
     def _resolve_overwrite_target(
         self,

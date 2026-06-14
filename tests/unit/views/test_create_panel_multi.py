@@ -23,7 +23,28 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
+from services.lifecycle import PARTIAL, SUCCESS
+from services.lifecycle.contracts import LifecycleResult, StepResult
 from views.selectors import MultiSelect
+
+
+def _lifecycle_result(steps, outcome):
+    return LifecycleResult(
+        mutation_id="m1",
+        guild_id=1,
+        domain="channel",
+        operation="create",
+        outcome=outcome,
+        reversibility="compensatable",
+        steps=tuple(steps),
+    )
+
+
+def _made_channel(name):
+    ch = MagicMock()
+    ch.mention = f"#{name}"
+    ch.name = name
+    return ch
 
 
 def _build_view():
@@ -83,18 +104,17 @@ async def test_create_makes_every_channel_under_one_category():
     view.chosen_cat = "Community"
 
     interaction = MagicMock()
+    chans = {1: _made_channel("alpha"), 2: _made_channel("beta")}
     interaction.guild = MagicMock()
+    interaction.guild.get_channel.side_effect = lambda cid: chans.get(cid)
     interaction.channel = MagicMock()
 
-    made: list[str] = []
-
-    async def _create(name, category=None):  # noqa: ARG001
-        made.append(name)
-        ch = MagicMock()
-        ch.mention = f"#{name}"
-        return ch
-
-    interaction.guild.create_text_channel = AsyncMock(side_effect=_create)
+    result = _lifecycle_result(
+        [StepResult(1, "alpha", True), StepResult(2, "beta", True)],
+        SUCCESS,
+    )
+    svc = MagicMock()
+    svc.create_channels = AsyncMock(return_value=result)
     embeds: list[discord.Embed] = []
 
     async def _restore(*, parent_message, channel, embed, view):  # noqa: ARG001
@@ -104,12 +124,8 @@ async def test_create_makes_every_channel_under_one_category():
     with (
         patch("views.channels.create_panel.safe_defer", AsyncMock(return_value=True)),
         patch(
-            "views.channels.create_panel.safe_channel_name",
-            AsyncMock(side_effect=lambda _g, n: n),
-        ),
-        patch(
-            "views.channels.create_panel.get_or_create_category",
-            AsyncMock(return_value=MagicMock()),
+            "views.channels.create_panel.ChannelLifecycleService",
+            return_value=svc,
         ),
         patch(
             "views.channels.create_panel.restore_parent_or_send_fresh",
@@ -119,7 +135,9 @@ async def test_create_makes_every_channel_under_one_category():
     ):
         await _click(view, "Create Channel", interaction)
 
-    assert made == ["alpha", "beta"]
+    # Creation routes through the audited lifecycle seam (P0-4 PR 2).
+    assert svc.create_channels.await_args.args[1] == ["alpha", "beta"]
+    assert svc.create_channels.await_args.kwargs["category_name"] == "Community"
     # First restore call carries the result embed (second is the manager panel).
     field_text = " ".join(f.value for f in embeds[0].fields)
     assert "#alpha" in field_text and "#beta" in field_text
@@ -131,19 +149,21 @@ async def test_create_partitions_partial_failures():
     view.selected_presets = ["ok", "denied", "boom"]
 
     interaction = MagicMock()
+    chans = {1: _made_channel("ok")}
     interaction.guild = MagicMock()
+    interaction.guild.get_channel.side_effect = lambda cid: chans.get(cid)
     interaction.channel = MagicMock()
 
-    async def _create(name, category=None):  # noqa: ARG001
-        if name == "denied":
-            raise discord.Forbidden(MagicMock(), "no")
-        if name == "boom":
-            raise discord.HTTPException(MagicMock(), "boom")
-        ch = MagicMock()
-        ch.mention = f"#{name}"
-        return ch
-
-    interaction.guild.create_text_channel = AsyncMock(side_effect=_create)
+    result = _lifecycle_result(
+        [
+            StepResult(1, "ok", True),
+            StepResult(0, "denied", False, "missing permission"),
+            StepResult(0, "boom", False, "Discord: boom"),
+        ],
+        PARTIAL,
+    )
+    svc = MagicMock()
+    svc.create_channels = AsyncMock(return_value=result)
     embeds: list[discord.Embed] = []
 
     async def _restore(*, parent_message, channel, embed, view):  # noqa: ARG001
@@ -153,8 +173,8 @@ async def test_create_partitions_partial_failures():
     with (
         patch("views.channels.create_panel.safe_defer", AsyncMock(return_value=True)),
         patch(
-            "views.channels.create_panel.safe_channel_name",
-            AsyncMock(side_effect=lambda _g, n: n),
+            "views.channels.create_panel.ChannelLifecycleService",
+            return_value=svc,
         ),
         patch(
             "views.channels.create_panel.restore_parent_or_send_fresh",

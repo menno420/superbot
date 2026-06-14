@@ -309,6 +309,157 @@ async def test_clone_calls_clone_and_is_compensatable(svc):
     assert result.reversibility == COMPENSATABLE
 
 
+# ---------------------------------------------------------------------------
+# create_channels — the audited manual-channel creator (P0-4 PR 2, Q-0100)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_create_channels_success_no_category(svc):
+    guild = _guild([])
+    made = SimpleNamespace(id=500, name="announcements")
+    guild.create_text_channel = AsyncMock(return_value=made)
+    with patch(
+        "utils.channels.safe_channel_name",
+        new_callable=AsyncMock,
+        side_effect=lambda g, n: n,
+    ):
+        result = await svc.create_channels(
+            guild,
+            ["announcements"],
+            _actor(),
+            actor_type="admin",
+        )
+    guild.create_text_channel.assert_awaited_once_with(
+        "announcements",
+        category=None,
+        reason=None,
+    )
+    assert result.outcome == SUCCESS
+    assert result.operation == "create"
+    assert result.reversibility == COMPENSATABLE
+    assert [s.target_id for s in result.applied] == [500]
+
+
+@pytest.mark.asyncio
+async def test_create_channels_get_or_creates_category_by_name(svc):
+    guild = _guild([])
+    cat = SimpleNamespace(id=42, name="Events")
+    made = SimpleNamespace(id=501, name="party")
+    guild.create_text_channel = AsyncMock(return_value=made)
+    with (
+        patch(
+            "utils.channels.safe_channel_name",
+            new_callable=AsyncMock,
+            side_effect=lambda g, n: n,
+        ),
+        patch(
+            "utils.channels.get_or_create_category",
+            new_callable=AsyncMock,
+            return_value=cat,
+        ),
+    ):
+        result = await svc.create_channels(
+            guild,
+            ["party"],
+            _actor(),
+            category_name="Events",
+        )
+    guild.create_text_channel.assert_awaited_once_with(
+        "party",
+        category=cat,
+        reason=None,
+    )
+    assert result.outcome == SUCCESS
+
+
+@pytest.mark.asyncio
+async def test_create_channels_resolves_existing_category_by_id_voice(svc):
+    guild = _guild([])
+    cat = SimpleNamespace(id=42, name="Voice")
+    made = SimpleNamespace(id=502, name="lounge")
+    guild.create_voice_channel = AsyncMock(return_value=made)
+    with (
+        patch(
+            "utils.channels.safe_channel_name",
+            new_callable=AsyncMock,
+            side_effect=lambda g, n: n,
+        ),
+        patch(
+            "core.runtime.guild_resources.resolve_category",
+            return_value=cat,
+        ),
+    ):
+        result = await svc.create_channels(
+            guild,
+            ["lounge"],
+            _actor(),
+            category_id=42,
+            kind="voice",
+        )
+    guild.create_voice_channel.assert_awaited_once_with(
+        "lounge",
+        category=cat,
+        reason=None,
+    )
+    assert result.outcome == SUCCESS
+
+
+@pytest.mark.asyncio
+async def test_create_channels_blocked_when_category_id_missing(svc):
+    guild = _guild([])
+    guild.create_text_channel = AsyncMock()
+    with patch("core.runtime.guild_resources.resolve_category", return_value=None):
+        result = await svc.create_channels(guild, ["x"], _actor(), category_id=999)
+    assert result.outcome == BLOCKED
+    guild.create_text_channel.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_create_channels_blocked_without_manage_perm(svc):
+    guild = _guild([], manage_channels=False)
+    guild.create_text_channel = AsyncMock()
+    result = await svc.create_channels(guild, ["x"], _actor())
+    assert result.outcome == BLOCKED
+    guild.create_text_channel.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_create_channels_partial_failure_buckets_forbidden(svc):
+    guild = _guild([])
+    good = SimpleNamespace(id=600, name="ok")
+    guild.create_text_channel = AsyncMock(
+        side_effect=[good, discord.Forbidden(MagicMock(), "no perms")],
+    )
+    with patch(
+        "utils.channels.safe_channel_name",
+        new_callable=AsyncMock,
+        side_effect=lambda g, n: n,
+    ):
+        result = await svc.create_channels(guild, ["ok", "bad"], _actor())
+    assert result.outcome == PARTIAL
+    assert [s.target_id for s in result.applied] == [600]
+    assert result.failed[0].error == "missing permission"
+
+
+@pytest.mark.asyncio
+async def test_create_channels_emits_audit_and_event(svc, _no_side_effects):
+    guild = _guild([])
+    made = SimpleNamespace(id=700, name="general")
+    guild.create_text_channel = AsyncMock(return_value=made)
+    with patch(
+        "utils.channels.safe_channel_name",
+        new_callable=AsyncMock,
+        side_effect=lambda g, n: n,
+    ):
+        result = await svc.create_channels(guild, ["general"], _actor())
+    _no_side_effects.audit.assert_awaited_once()
+    _no_side_effects.event.assert_awaited_once()
+    assert _no_side_effects.audit.await_args.kwargs["operation"] == "create"
+    assert _no_side_effects.event.await_args.kwargs["mutation_id"] == result.mutation_id
+    assert _no_side_effects.event.await_args.args[0] == EVT_CHANNEL_LIFECYCLE
+
+
 @pytest.mark.asyncio
 async def test_preview_is_side_effect_free(svc):
     ch = _channel(10, "general")

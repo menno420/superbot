@@ -25,7 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/gracious-ramanujan-a8nnjf` · P0-4 PR 2 — converge channel creation + category
+  lifecycle under the audited `ChannelLifecycleService` (Q-0100, issue #821) ·
+  `services/channel_lifecycle_service.py` · `cogs/channel_cog.py` ·
+  `views/channels/create_panel.py` · the two channel invariants · 2026-06-14
 
 ## Recently cleared
 

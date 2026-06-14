@@ -23,7 +23,8 @@ from discord.ext import commands
 
 from core.runtime.interaction_helpers import safe_defer
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
-from utils.channels import get_or_create_category, safe_channel_name
+from services.channel_lifecycle_service import ChannelLifecycleService
+from services.lifecycle import BLOCKED
 from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _CATEGORY_PRESETS, _NAME_PRESETS
@@ -190,42 +191,40 @@ class _CreateSubView(BaseView):
 
         guild = interaction.guild
 
-        # Resolve the shared category once — a failure here aborts the whole
-        # batch (every channel would land in the same place).
-        category = None
-        if self.chosen_cat:
-            try:
-                category = await get_or_create_category(guild, self.chosen_cat)
-            except discord.Forbidden:
-                await interaction.followup.send(
-                    "❌ I don't have permission to create categories.",
-                    ephemeral=True,
-                )
-                return
-            except discord.HTTPException as exc:
-                await interaction.followup.send(
-                    f"❌ Failed to create category: {exc}",
-                    ephemeral=True,
-                )
-                return
+        # Channel + category creation route through the audited lifecycle seam
+        # (P0-4 PR 2, Q-0100). A category failure blocks the whole batch — every
+        # channel would otherwise land in the wrong place.
+        result = await ChannelLifecycleService().create_channels(
+            guild,
+            names,
+            interaction.user,
+            category_name=self.chosen_cat or None,
+            actor_type="admin",
+        )
+        if result.outcome == BLOCKED:
+            await interaction.followup.send(f"❌ {result.first_error}", ephemeral=True)
+            return
 
         created: list[str] = []
         renamed: list[str] = []
         forbidden: list[str] = []
         failed: list[str] = []
-        for requested in names:
-            safe = await safe_channel_name(guild, requested)
-            try:
-                ch = await guild.create_text_channel(safe, category=category)
-            except discord.Forbidden:
-                forbidden.append(requested)
-            except discord.HTTPException as exc:
-                logger.warning("Channel create failed | name=%r exc=%s", requested, exc)
-                failed.append(requested)
+        for step in result.steps:
+            if step.ok:
+                ch = guild.get_channel(step.target_id)
+                mention = ch.mention if ch is not None else step.target_name
+                created.append(mention)
+                if ch is not None and ch.name != step.target_name:
+                    renamed.append(f"`{step.target_name}` → {mention}")
+            elif step.error == "missing permission":
+                forbidden.append(step.target_name)
             else:
-                created.append(ch.mention)
-                if safe != requested:
-                    renamed.append(f"`{requested}` → {ch.mention}")
+                logger.warning(
+                    "Channel create failed | name=%r err=%s",
+                    step.target_name,
+                    step.error,
+                )
+                failed.append(step.target_name)
 
         result_embed = self._build_result_embed(
             created=created,
