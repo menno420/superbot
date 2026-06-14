@@ -93,6 +93,25 @@ Inspect the snapshot's `tasks` block (or `!platform tasks`):
       double-supervision of the automation scheduler.  Two entries
       with the same name is a regression.
 
+## Health findings lifecycle (P1-2)
+
+Not `ReadinessSnapshot` fields — these verify the persistent
+operational-health findings store's operator surface and retention
+owner.  Inspect via `!platform findings <open|resolved|ignored|all>`.
+
+- [ ] **`!platform findings`** renders persisted findings with an
+      accumulating occurrence count (recurrence survives a restart).
+- [ ] **`!platform finding resolve <fingerprint>`** transitions an
+      open finding to `resolved` and reports the change; it then drops
+      out of the default `open` list.  `ignore` / `reopen` likewise.
+- [ ] **Audit trail** — a transition emits `audit.action_recorded`
+      (subsystem `health`, type `finding_resolved`/`_ignored`/`_open`),
+      visible in the audit log channel if logging is configured.
+- [ ] **Retention loop** — `HealthMaintenanceCog` is loaded and its
+      daily `_retention_loop` task runs on a long-lived replica (not
+      startup-only); resolved/ignored detail older than 30 days is
+      rolled into the aggregates table and pruned.
+
 ## Setup wizard smoke
 
 The 5 setup slash commands are all live; smoke each one to confirm

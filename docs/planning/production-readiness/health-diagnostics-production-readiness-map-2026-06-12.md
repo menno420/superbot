@@ -6,14 +6,14 @@
 > execution-subsystem bug is reclassified as a Health / Diagnostics bug unless the
 > reporting path itself is wrong.
 >
-> **Verdict:** **Partial**. The deterministic health contracts, isolated snapshot
-> aggregator, provider registry, consistency report, persistent findings schema, and
-> principal Discord/AI read surfaces are implemented and heavily unit-tested. The
-> subsystem is not yet production-ready because the maintainer live-verification debt
-> recorded by the canonical folio remains open, the smoke checklist does not cover the
-> newer health/startup/findings/AI/grouped-error surfaces, persisted finding lifecycle
-> states have no service/operator transition path, and several operator-facing claims
-> drift from the actual routes.
+> **Verdict:** **Partial** (improving). The deterministic health contracts, isolated
+> snapshot aggregator, provider registry, consistency report, persistent findings schema,
+> and principal Discord/AI read surfaces are implemented and heavily unit-tested.
+> **P1-2 closed the two code gaps (2026-06-14):** the persisted finding lifecycle now has a
+> sole-writer operator transition path (`set_status` + `!platform finding`, Q-0097) and
+> retention runs on a long-lived daily loop, not startup-only. The remaining gap to
+> production-ready is the **maintainer live-verification debt** recorded by the canonical
+> folio (the live Discord/AI walk — owner-led).
 
 ## Current verified state
 
@@ -127,8 +127,8 @@ That corrected contract shipped in PR #650.
 | Sole-writer service | `disbot/services/health_findings_service.py` | finding store owner | **Done** | Best-effort recording/list/count/retention boundary is isolated and metrics-backed. | `health_findings_service.py:1-116`; sole-writer invariant test |
 | `record_findings` boot persistence | `health_findings_service.py::record_findings`; `bot1.py::_report_startup_health` | write path | **Partial** | Correctly persists startup-snapshot findings across boots, but no periodic/live snapshot persistence path exists; recurrence visibility is therefore boot-sampled. | `health_findings_service.py:31-70`; `bot1.py:220-235` |
 | `list_by_status` and `count_by_status` | `health_findings_service.py` | read path | **Done** | Powers the typed findings command without bypassing the owner. | `health_findings_service.py:73-89` |
-| Retention sweep | `health_findings_service.py::run_retention` | retention path | **Partial** | Correct 30-day roll-up/prune logic exists, but it only runs from the one-shot startup-health task. Long-lived replicas do not schedule another sweep. | `health_findings_service.py:92-116`; `bot1.py:228-235` |
-| Finding lifecycle transitions (`open` → `resolved` / `ignored`) | no service/cog mutation path found | lifecycle | **Not Done** | Schema and filters support states, but no canonical service API or operator command changes them. Owner intent is routed as Q-0097. | migration `057`; `health_findings_service.py`; `diagnostic_cog.py:389-419` |
+| Retention sweep | `health_findings_service.py::run_retention` | retention path | **Done** | Correct 30-day roll-up/prune logic runs at startup **and** on a daily `HealthMaintenanceCog._retention_loop` (P1-2), so long-lived replicas re-sweep. | `health_findings_service.py`; `cogs/health_maintenance_cog.py`; `bot1.py:228-235` |
+| Finding lifecycle transitions (`open` → `resolved` / `ignored`) | `health_findings_service.py::set_status`; `diagnostic_cog.py::platform_finding` (`!platform finding`) | lifecycle | **Done** | Q-0097 (operator-managed): `set_status` is the sole transition path (DB primitive `set_finding_status`, pinned by the sole-writer AST guard); a real transition emits `audit.action_recorded`. `!platform finding resolve/ignore/reopen <fingerprint>` is the admin command. | migration `057`; `health_findings_service.py`; `cogs/diagnostic_cog.py` |
 | DB primitives: upsert/list/count/roll-up/prune | `disbot/utils/db/health_findings.py` | DB primitives | **Done** | Pool-only primitives sit behind the sole writer and are real-Postgres integration-tested. | `health_findings.py:22-171`; PR #548 |
 | `operational_health_findings` | `disbot/migrations/057_operational_health_findings.sql` | table | **Done** | Idempotent per-fingerprint durable detail store with bounded statuses and occurrence count. | migration `057`:38-60 |
 | `operational_health_finding_aggregates` | `disbot/migrations/057_operational_health_findings.sql` | table | **Done** | Retention roll-up preserves bounded long-run counters. | migration `057`:62-69 |
@@ -198,12 +198,13 @@ That corrected contract shipped in PR #650.
    across a restart, owner/admin redaction difference, and the owner-gated
    `diagnostics_health_snapshot` AI tool. This is the highest-confidence remaining gate
    because the canonical folio already names it.
-2. **Resolve Q-0097** and implement the selected finding-lifecycle policy. If
-   `resolved`/`ignored` are meant to be operator-managed, add transitions only through
-   `health_findings_service`; do not add a second findings writer.
-3. **Make retention operational on long-lived replicas.** Either explicitly accept
-   startup-only sweeping as the production policy or schedule the existing
-   `health_findings_service.run_retention()` through the managed-task owner.
+2. ✅ **DONE (P1-2).** Q-0097 = operator-managed: `health_findings_service.set_status`
+   is the sole transition path (no second writer; DB primitive `set_finding_status`,
+   pinned by the AST guard), surfaced by `!platform finding resolve/ignore/reopen
+   <fingerprint>` and audited via `audit.action_recorded`.
+3. ✅ **DONE (P1-2).** Retention is now operational on long-lived replicas:
+   `health_findings_service.run_retention()` runs at startup **and** on the daily
+   `HealthMaintenanceCog._retention_loop` (mirrors `MediaMaintenanceCog`).
 4. **Reconcile Platform hub completeness.** Either add read-only `startup` and
    `findings` routes to the existing hub or correct the hub's “every existing
    subcommand” claim and document why those typed-only routes are intentionally absent.
@@ -227,11 +228,11 @@ That corrected contract shipped in PR #650.
   `!platform diagnostics`; no such Platform subcommand exists. `!platform runtime`
   renders `snapshot_all()`, while `!platform consistency` populates/reads the unified
   report.
-- **Finding lifecycle is schema-only.** Rows can be filtered as resolved/ignored and
-  retention only prunes those states, but no canonical path can put a row into either
-  state. In normal operation, all findings remain open forever and aggregate roll-up is
-  effectively unreachable.
-- **Retention is startup-only.** A long-lived process does not rerun the 30-day sweep.
+- ~~**Finding lifecycle is schema-only.**~~ **FIXED (P1-2):** `health_findings_service.set_status`
+  + `!platform finding resolve/ignore/reopen <fingerprint>` is the operator transition path
+  (Q-0097); aggregate roll-up is now reachable.
+- ~~**Retention is startup-only.**~~ **FIXED (P1-2):** `HealthMaintenanceCog` reruns the
+  30-day sweep daily on a long-lived process.
 - **Tasks health is shallow.** The health adapter always marks the task subsystem healthy
   from active count alone; it cannot report the “recent task terminal failure” behavior
   described by the implementation plan.
