@@ -119,6 +119,18 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
 <!-- SESSION_WORKFLOW_START -->
 ## Session & plan workflow
 
+- **Claim work before starting; batch pushes after (owner decision Q-0126, 2026-06-14).**
+  *Before* starting, scan `docs/owner/active-work.md` **and** open / recently-closed PRs
+  (`list_pull_requests`) for overlap — if your task is already claimed or in flight,
+  coordinate or pick something else instead of duplicating it (the parallel-agent waste this
+  prevents). Then **append a one-line claim** to `docs/owner/active-work.md` (`branch · scope ·
+  expected files/area · date`) and remove/archive it at session close. The claim ledger is the
+  *early* duplicate-work signal — it makes intent visible **before** a PR exists, so it does
+  **not** change the "open the real PR right after your first push" rule below. After the PR is
+  open, **don't re-push on every commit** — batch your work and push when it's meaningfully
+  complete and ready for the Code Quality check. `code-quality.yml` is the repo's dominant
+  Actions cost; it now *cancels superseded PR runs* (Q-0126), and push-batching is the
+  behavioral half of that saving (fewer runs, no minutes burned on commits you'll amend).
 - **Always create a PR every session — open it right after your first push (owner decision
   Q-0052, 2026-06-09), not at the end. Open it READY, not draft (owner decision Q-0103,
   2026-06-12).** The early *open* gives the session a real PR number while docs are still

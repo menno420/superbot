@@ -68,11 +68,12 @@ Current broad captures:
   Strongest near-term candidates: crafting UX polish + AI settings clarity.
 - [`ci-cost-and-duplicate-work-prevention-2026-06-14.md`](./ci-cost-and-duplicate-work-prevention-2026-06-14.md) —
   **owner-asked (2026-06-14, Q-0126):** `code-quality.yml` is the repo's dominant CI cost
-  (940 runs / 2,396 min/month). **(a) CI efficiency — IMPLEMENTED same session:** concurrency
-  cancellation of superseded PR runs + pip/mypy caching + `pytest -n auto` (verified 109s→35s).
-  **(b) duplicate-work prevention — OPEN for owner pick:** a claim-ledger / WIP-PR / WIP-issue
-  to declare intent early so parallel agents don't collide, plus push-batching. Decision tracked
-  in Q-0126.
+  (940 runs / 2,396 min/month). **(a) CI efficiency — SHIPPED (PR #814):** concurrency
+  cancellation of superseded PR runs + pip/mypy caching. `pytest -n auto` was tried (3× faster)
+  but **reverted** — CI proved the suite isn't parallel-safe (non-deterministic state pollution).
+  **(b) duplicate-work prevention — DECIDED & implemented:** claim ledger (`docs/owner/active-work.md`)
+  + push-batching. **Live remaining idea:** make the suite parallel-safe → re-enable xdist (the
+  ~3× unlock).
 
 > **Standing intake note (Q-0089, 2026-06-10):** every session now *generates*
 > one new `💡 Session idea` at END (owner directive — consistent generation

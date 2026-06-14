@@ -1,8 +1,10 @@
 # Code-quality CI cost + duplicate-work prevention (early-claim convention)
 
 > **Status:** `ideas` — captured 2026-06-14 (owner-asked, in-session; routed via Q-0126).
-> Not a plan; not approval. Source + merged PRs win. The CI-efficiency half (a) was
-> **applied the same session**; the convention half (b) is **open for owner decision**.
+> Not a plan; not approval. Source + merged PRs win. The CI-efficiency half (a) shipped
+> **concurrency + caching** (PR #814); **xdist was tried and reverted** (see Follow-up). The
+> convention half (b) was **decided in-session** (claim ledger + push-batching). The live
+> remaining idea here is the **Follow-up: parallel-safe test suite**.
 
 ## Why this exists
 
@@ -31,17 +33,16 @@ concurrency cancellation.
 
 ## (a) CI efficiency — APPLIED this session (PR via Q-0126)
 
-| Change | Lever | Effect |
+| Change | Lever | Status |
 |---|---|---|
-| `concurrency: { group: code-quality-${{ github.ref }}, cancel-in-progress: <non-main> }` | fewer **runs** | cancels superseded PR runs; `main` runs to completion |
-| `cache: pip` (setup-python) | per-run **minutes** | no re-download of pinned tools + requirements.txt |
-| `.mypy_cache` via `actions/cache` | per-run **minutes** | mypy re-checks only changed modules |
-| `pytest -n auto` (pytest-xdist) | per-run **minutes** | **verified 109s → 35s (~3×)**, identical 9,422 passed / 34 skipped |
+| `concurrency: { group: code-quality-${{ github.ref }}, cancel-in-progress: <non-main> }` | fewer **runs** | **shipped** — cancels superseded PR runs; `main` runs to completion |
+| `cache: pip` (setup-python) | per-run **minutes** | **shipped** — no re-download of pinned tools + requirements.txt |
+| `.mypy_cache` via `actions/cache` | per-run **minutes** | **shipped** — mypy re-checks only changed modules |
+| `pytest -n auto` (pytest-xdist) | per-run **minutes** | **reverted** — 3× faster but the suite isn't parallel-safe (see Follow-up) |
 
-`-n auto` is wired into CI **and** `scripts/check_quality.py` (graceful serial fallback when
-xdist is absent) **and** `requirements-dev.txt`, so the local pre-PR mirror matches CI. Kill
-switch: drop `-n auto` if it ever flakes under parallelism (a test sharing a fixed temp
-path/port would be the cause).
+Concurrency-cancel is the biggest lever on the *run count* (940); caching trims install + mypy.
+With xdist reverted, pytest time is unchanged — the per-run win is install/mypy caching, and the
+total-minutes win is the cancelled redundant runs.
 
 ### Considered but not shipped (with reasons)
 
@@ -56,11 +57,16 @@ path/port would be the cause).
 - **`[skip ci]` on WIP commits.** Error-prone and only skips the triggering commit; concurrency
   cancellation is cleaner and automatic.
 
-## (b) Duplicate-work prevention — OPEN for owner decision
+## (b) Duplicate-work prevention — DECIDED in-session (claim ledger + push-batching)
+
+> **Decision (owner via AskUserQuestion, 2026-06-14):** **option 1 — claim ledger**, paired with
+> **push-batching**. Gate-workflow changes **auto-merge like normal** (no auto-`do-not-automerge`).
+> Implemented this session: `docs/owner/active-work.md` + the CLAUDE.md § Session & plan workflow
+> bullet. The options below are kept as the design record.
 
 The owner's flow — *open a small PR immediately listing intended changes; others check open +
 recent PRs before starting; hold pushes until the PR is complete* — is right in spirit. Two
-mechanics need adjusting:
+mechanics needed adjusting:
 
 - GitHub can't open a PR with an **empty** diff (needs ≥1 commit → a one-line manifest commit).
 - **Auto-merge collision (the blocker):** a ready docs-only PR arms native auto-merge (Q-0123)
@@ -80,15 +86,35 @@ mechanics need adjusting:
 3. **WIP issue.** Manifest as a `wip-claim` issue (no CI, no merge risk). Adds a surface agents
    must also check.
 
-### Recommendation
+## Follow-up: make the test suite parallel-safe, then re-enable xdist (the ~3× unlock)
 
-Adopt **push-batching** (hold intermediate pushes; push once the PR is complete) as the cost
-rule — it compounds with (a)'s concurrency cancel — and **option 1 (claim ledger)** for the
-duplicate-work signal, keeping the existing early-PR rule for the *real* PR. If the owner
-prefers the PR-based feel, option 2 is the fallback. Decision tracked in Q-0126; once picked,
-the convention lands in CLAUDE.md § Session & plan workflow (+ `active-work.md` if option 1).
+This is the **live idea** that remains. xdist would cut pytest from ~109s to ~35s, but CI proved
+the suite isn't parallel-safe. The evidence (all on a 4-core box, matching CI):
+
+| Run | Result |
+|---|---|
+| CI `-n auto` | **9 failed** (`test_slash_access_check` ×7, `test_platform_consistency`, `test_flag_manager`) |
+| local `-n auto` | 0 failed (green) |
+| local `-n 4` | 0 failed (green) |
+| local `-n 4 --dist loadscope` (run 1) | **7 failed** (slash cluster) |
+| local `-n 4 --dist loadscope` (run 2) | **1 failed** — `test_platform_flags_embed` (in neither CI nor run 1) |
+
+A *different* set fails each run → **non-deterministic cross-test state pollution** that only
+surfaces under parallel scheduling. **Green locally ≠ green in CI**, and no `--dist` flag fixes
+it (loadscope made it worse). The culprits are global singletons mutated by one test and read by
+another without reset — candidates from the failures: the readiness-snapshot registry, the slash
+access-control config, the flag registry, the platform-flags embed state.
+
+**Plan when picked up:** (1) add autouse reset/isolation fixtures for those globals (start with
+the 4+ implicated modules, then audit for more); (2) re-run `pytest -n auto` several times until
+deterministically green; (3) re-enable `-n auto` in `code-quality.yml` + `scripts/check_quality.py`
+and re-pin `pytest-xdist` in `requirements-dev.txt`; (4) verify across **multiple CI runs**, not
+just locally (that's the trap this idea documents). Likely a `docs/planning/` plan, not a one-shot.
 
 ## Lifecycle
 
-- (a) → **implemented** this session; re-badge `historical` after the PR merges.
-- (b) → **discussed**; awaiting the owner's pick in Q-0126 before any CLAUDE.md edit.
+- (a) concurrency + caching → **implemented** (PR #814); re-badge `historical` after merge.
+- (a) xdist → **reverted**; folded into the Follow-up above.
+- (b) claim ledger + push-batching → **decided & implemented** this session (CLAUDE.md +
+  `docs/owner/active-work.md`).
+- **Follow-up (parallel-safe suite)** → the remaining live idea; groom into a plan when prioritized.

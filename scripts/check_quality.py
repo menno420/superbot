@@ -14,7 +14,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import shutil
 import subprocess
 import sys
@@ -130,21 +129,11 @@ def run_mypy() -> int:
 
 
 def run_pytest() -> int:
-    # CI runs the suite under pytest-xdist (`-n auto`) — ~3x faster on the full
-    # 9.4k-test suite (109s -> 35s, Q-0126). Mirror that here so a parallel-only
-    # failure can't pass locally then redden CI. Fall back to serial when xdist
-    # isn't installed (e.g. a cold container before setup_dev_env.sh has run) so
-    # the Stop hook still works.
-    if importlib.util.find_spec("xdist") is not None:
-        parallel = ["-n", "auto"]
-    else:
-        note = (
-            "  (pytest-xdist not installed — running serially; "
-            "install requirements-dev.txt to match CI)"
-        )
-        print(note)
-        parallel = []
-    return _run("pytest", _tool("pytest", "tests/", *parallel, "-q", "--tb=short"))
+    # Serial on purpose: `pytest -n auto` (xdist) was tried under Q-0126 and reverted
+    # — the suite has non-deterministic cross-test state pollution under parallel
+    # scheduling. Re-enable only after the isolation follow-up lands (so CI and this
+    # mirror flip together). See code-quality.yml's pytest step + the Q-0126 idea doc.
+    return _run("pytest", _tool("pytest", "tests/", "-q", "--tb=short"))
 
 
 def run_check_docs() -> int:
