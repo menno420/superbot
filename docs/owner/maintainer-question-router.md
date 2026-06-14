@@ -4826,3 +4826,54 @@ log handoff.
 
 **Home (once answered):** `.github/workflows/auto-merge-enabler.yml` + CLAUDE.md § Session & plan
 workflow (the merge-mechanics bullet).
+
+---
+
+### Q-0128 — Eliminate all permission-confirmation prompts (bypassPermissions in committed settings)
+
+> **OBSERVED 2026-06-14 (owner, in-session, via mobile screenshot of a routine session).** Verbatim:
+> *"This happened during a routine, so that's a session I would normally not check, this needs to be
+> prevented, I never want to see such a prompt asking me for my confirmation ever again, no matter
+> what it is for I want them gone completely from every chat and every action."* The screenshot showed
+> the standard CLI permission prompt ("Allow Claude to run … `git checkout … ; git reset --hard
+> origin/main ; … check_docs.py`") blocking the **superbot docs reconciliation** routine.
+
+**Area:** harness permission config · executable config (`.claude/settings.json`) · autonomous routines
+**Type:** owner-directed config change — **APPLIED** (Q-0106 in-session exception: owner is the live reviewer)
+
+**Root cause (measured this session).** `.claude/settings.json` ran `permissions.defaultMode:
+"acceptEdits"` with a curated `allow` list and an `ask` list containing `git reset --hard*`,
+`git push --force*`/`-f*`, `git clean*`. `acceptEdits` auto-accepts file edits but still **prompts for
+any Bash command outside `allow`** — and the routine's command was both a *compound* command (`;`-joined)
+and contained `git reset --hard`, which was explicitly in `ask`. So it prompted, and a routine session
+(which the owner doesn't watch) silently stalled on the confirmation.
+
+**Why this mechanism (verified against the docs + live evidence):**
+- Claude Code on the web confirms *"user-level settings don't carry over to cloud sessions … only [config]
+  committed to the repo run[s],"* and the repo's `.claude/settings.json` is "part of the clone." So the
+  durable home for routine (cloud) sessions is the **committed** `.claude/settings.json` — not
+  `~/.claude/settings.json` (lost on the ephemeral container) and not a gitignored local file.
+- The routine *prompted* (rather than running prompt-free) — proof it is driven by this file's `defaultMode`,
+  not a higher-precedence CLI/managed override (precedence: Managed > CLI > Local > Project > User). Flipping
+  `defaultMode` here therefore takes effect for routines.
+- `bypassPermissions` is the only `defaultMode` that skips **all** prompts regardless of command (`auto`
+  still prompts on classifier-flagged/destructive commands — i.e. the exact `git reset --hard` case). The
+  cloud sandbox ("Security and isolation") is the safety envelope that makes prompt-free autonomous
+  execution the documented intent.
+
+**Applied (this session):** in committed `.claude/settings.json` — `defaultMode` `acceptEdits` →
+`bypassPermissions`; `ask` list emptied (`[]`); added top-level `skipDangerousModePermissionPrompt: true`
+(pre-accepts the bypass-mode dialog so it never surfaces, incl. local/desktop opens). The `allow` list is
+kept as a harmless documented fallback if the mode is ever reverted; all hooks (pre/post-edit, Stop,
+SessionStart) are untouched — bypass removes permission *prompts*, not the repo's quality gates. Verified no
+repo hook emits an interactive `ask` permissionDecision, so the permission system was the only prompt source.
+
+**Trade-off (explicitly accepted by owner).** Every tool/command — including destructive/irreversible ones
+(`git reset --hard`, force-push, `rm`, external publishes) — now runs without confirmation in every session
+on this repo. The owner directed exactly this ("no matter what it is for"). Reversible at any time by setting
+`defaultMode` back to `acceptEdits`/`auto` (and restoring the `ask` entries). If prompts are ever wanted for a
+specific dangerous class only, prefer `defaultMode: "auto"` + an `ask` list over full `acceptEdits`.
+
+**Home:** `.claude/settings.json` (the change); this Q-block (provenance per Q-0106). The
+`docs/current-state.md` Recently-shipped entry lands when the PR merges (merged-PRs-only convention).
+CLAUDE.md is unchanged — this configures the harness, it does not alter a written rule.
