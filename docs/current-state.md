@@ -232,6 +232,21 @@ Source code and merged PRs win over anything written here.
   from issues #229/#232 into `docs/ideas/` before closing them. **#818** the #817 merge note + router
   **Q-0127** (the `auto-merge-enabler` workflow doesn't fire for MCP-created PRs). **#810/#816**
   session-close logs (workflow cleanup · the CI-efficiency arc).
+- **#827 + #828 + #831 + #832 + #835 + #836 + #837 (2026-06-14, the Railway agent-access +
+  permission-autonomy session — owner-directed, manual)** — **#827** set
+  `permissions.defaultMode: bypassPermissions` (+ empty `ask`, pre-accepted bypass dialog) in
+  `.claude/settings.json` so routines never stall on confirmation prompts (Q-0128); **#828** made
+  unattended self-initiated action explicit in CLAUDE.md + `collaboration-model.md` and recorded
+  that `send_later` isn't provisioned here (Q-0129); **#831** captured the
+  routine-activity-visibility idea; **#832** shipped read-only Railway **logs** access
+  (`scripts/hermes/railway_logs.py`, unblocking the gated log-triage skill) + **#835** Railway
+  **env-var read/write** (`scripts/hermes/railway_vars.py` — list/get/set/unset, masked list,
+  audit lines, stdin secrets, `--no-deploy`), both Q-0130; **#836** aligned token config to
+  `RAILWAY_TOKEN` + a "which token?" guide; **#837** recorded the manual-step risk-labelling rule
+  (Q-0131). **Owner set the Railway token + project/service/env IDs in the agent env after the
+  session — the next *fresh* session must verify live:** `python3.10
+  scripts/hermes/railway_logs.py --whoami` then `railway_vars.py list`. *(Ledger: #824/#830/#833
+  from concurrent routines still pending the due Q-0107 reconciliation pass.)*
 - **#788 + #789 + #790 + #791 + #792 + #793 + #795 + #796 + #798 (2026-06-13, the portable
   substrate-kit extraction — PR 1a + 1b)** — the owner's strategic refocus (the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md) idea)
