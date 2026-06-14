@@ -2,7 +2,7 @@
 
 > **Status:** `complete`
 
-**Branch:** `claude/modest-ptolemy-2xipoh` · **PR:** TBD · **Date:** 2026-06-14 · **Type:** owner design discussion — capture + opinion (manual)
+**Branch:** `claude/modest-ptolemy-2xipoh` · **PR:** #857 · **Date:** 2026-06-14 · **Type:** owner design discussion — capture + opinion (manual)
 
 ## What this session did
 Owner dropped a substantial design direction in chat across several messages; I delivered my opinion
