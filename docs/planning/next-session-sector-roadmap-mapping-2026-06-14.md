@@ -1,8 +1,11 @@
 # Next-session brief — map the roadmaps/plans onto the 5 planning sectors
 
-> **Status:** `plan` — a handoff brief for the next session (owner-requested, 2026-06-14). Now that
-> the planning-sector top layer exists ([`../repo-sector-map.md`](../repo-sector-map.md), S1–S5), the
-> roadmaps and plans should be *organised under those sectors*. This is the suggested next focus.
+> **Status:** `historical` — **EXECUTED 2026-06-14 in PR #877.** This handoff brief is done:
+> [`../roadmap.md`](../roadmap.md) is now organised under the S1–S5 sectors (a per-sector dispatch
+> index is the new top layer; the "Agent ecosystem" lane is split into S3/S4/S5), the dispatch
+> contract lives in [`../repo-sector-map.md`](../repo-sector-map.md) § "dispatch targets", and the
+> S↔A taxonomies are reconciled in both maps. Kept as the record of what was asked; the live docs win.
+> *(Original brief below.)*
 
 ## Why
 This session built the **top layer** of the 3-tap map — five planning sectors
