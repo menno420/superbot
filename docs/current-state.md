@@ -20,7 +20,13 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-14, **hardening P1-2 — health findings lifecycle + operational
+> **Last updated:** 2026-06-14, **born-red session merge-gate (#849, Q-0133)**. Every
+> `claude/*` session now opens its PR **born red** via an `in-progress` `.sessions/` card and
+> flips it to `complete` as the deliberate final step — so native auto-merge fires on a
+> *complete* PR, never a partial one (the #843 race). Folded into the required `code-quality`
+> check (`scripts/check_session_gate.py`); engage-when-present so routines never deadlock;
+> dogfooded on its own PR. ·
+> 2026-06-14, **hardening P1-2 — health findings lifecycle + operational
 > retention (#843, Q-0097)**. The persistent operational-health findings store gained an
 > operator-managed transition path through the sole writer (`health_findings_service.set_status`
 > + DB primitive `set_finding_status`, audited via `audit.action_recorded`), surfaced as
@@ -169,6 +175,19 @@ Source code and merged PRs win over anything written here.
 > at the boundary that fires the docs-reconciliation routine). Reset this marker to the latest
 > PR after a pass.
 
+- **#849 (2026-06-14, born-red session merge-gate — Q-0133)** — closed the auto-merge race
+  that landed **#843** without its ledger entry (native auto-merge, Q-0123, fires the instant
+  Code Quality is green, so a session pushing code first and close-out docs second merges a
+  *partial* PR). The owner's fix, as refined live: one per-session file that is **both** the
+  start-declaration (*what's about to happen*, visible to parallel/next sessions on the open PR)
+  **and** the end-record (*what happened*) — the existing `.sessions/<date>-<slug>.md` log —
+  whose `> **Status:**` badge gates the merge. Created in the **first** commit as `in-progress`
+  (PR **born red**, race-free), flipped to `complete` as the deliberate **final** step → green →
+  merge. `scripts/check_session_gate.py` (folded into the required `code-quality` check — no
+  branch-protection change) fails when a PR *adds* a session card that isn't ready;
+  **engage-when-present** (a PR adding no card isn't gated, so routines / workflow-authored PRs
+  never deadlock); only newly-*added* cards inspected. +11 tests; the gate was **dogfooded on its
+  own PR** (born red, then flipped). Follow-up: tighten to airtight once routine adoption is proven.
 - **#843 (2026-06-14, hardening P1-2 — health findings lifecycle + operational retention,
   Q-0097)** — closed the two **code** gaps in the health/diagnostics readiness map (the
   remaining gap to production-ready is now the owner-led live walk only). Before: in normal
@@ -437,16 +456,7 @@ Source code and merged PRs win over anything written here.
   ladder). New advisory event `automod.rule_triggered`; config via the `!settings`
   widget. 31 tests; CI green; live-boot verified. **Next band slot: server event
   logging v1 (slot 5).**
-- **#765 + #767 + #769 + #770 (2026-06-12/13, backup posture + autonomous-loop
-  follow-ups)** — **#769** Postgres backup posture (band slot 3 — daily `pg_dump` to a
-  GitHub Actions artifact; [production-deployment §Backups](operations/production-deployment.md))
-  · **#767** `executor-nightly.yml` cron moved off `:00` to dodge scheduler congestion ·
-  **#770** permissions: the autonomous executor may push to `main` without prompting ·
-  **#765** the autonomous-loop session close (loop live + Hermes dual-platform control
-  plane — [session log](../.sessions/2026-06-13-autonomous-loop-hermes-control-plane.md)).
-  *(Reconciled here by the automod session; #771 is a parallel ledger-update PR for the
-  same band — UNION-merge if both land.)*
-- **Older merges (#764 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #764 P2 doc-drift-sweep entry was archived 2026-06-14 to offset the #843 entry added above; the band-#840 reconciliation pass archived three entries — the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry was archived earlier the same day to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#765 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #765+#767+#769+#770 backup-posture entry was archived 2026-06-14 to offset the #849 entry added above; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived three entries — the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

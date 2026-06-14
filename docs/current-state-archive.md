@@ -21,6 +21,13 @@
   *(Recorded here at the P1-2 session close to keep the strict ledger green — it merged
   without its own ledger entry on the same auto-merge race as #843; its full fold is the
   next pass's, per Q-0124.)*
+- **#765 + #767 + #769 + #770 (2026-06-12/13, backup posture + autonomous-loop
+  follow-ups)** — **#769** Postgres backup posture (band slot 3 — daily `pg_dump` to a
+  GitHub Actions artifact; [production-deployment §Backups](operations/production-deployment.md))
+  · **#767** `executor-nightly.yml` cron moved off `:00` to dodge scheduler congestion ·
+  **#770** permissions: the autonomous executor may push to `main` without prompting ·
+  **#765** the autonomous-loop session close (loop live + Hermes dual-platform control
+  plane — [session log](../.sessions/2026-06-13-autonomous-loop-hermes-control-plane.md)).
 - **#764 (2026-06-12 night, the P2 doc-drift sweep — band slot 2)** — all five
   hardening-P2 fixes, source-verified then applied: smoke checklist's nonexistent
   `!platform diagnostics` → `runtime`/`consistency` + the platform-panel
