@@ -27,6 +27,9 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/ecstatic-euler-bslyvd` · sector tooling — `check_sector_map.py` (validator) +
+  `dispatch_menu.py` (resolver) + tests · `scripts/` + `tests/unit/scripts/` +
+  `repo-sector-map.md` folio map · 2026-06-14
 
 ## Recently cleared
 
