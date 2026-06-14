@@ -1,6 +1,6 @@
 # Session: install-soul.sh — scripted operating-prompt install + SOUL.md doc fix
 
-> **Status:** `in-progress` — adding the SOUL.md installer + fixing the wiring doc; flip to complete last.
+> **Status:** `complete` — PR #873; born-red card flipped as the deliberate final step (Q-0133).
 
 **Branch:** `claude/sharp-ptolemy-5mzbvb` · **Date:** 2026-06-14 · **Type:** tooling + docs fix (owner-driven, in-session)
 
