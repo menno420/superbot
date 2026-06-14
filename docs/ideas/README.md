@@ -26,6 +26,13 @@ Current broad captures:
   resumable **deep-clean** with a checkable terminal condition; (3) a **planning-sector** taxonomy
   (bot · BTD6 · agent substrate · **+ a forgotten Operations/control-plane sector**) distinct from the
   `repo-review-map.md` review taxonomy. Captured owner direction + agent opinion; not approved.
+- [`dispatch-resolution-json-hermes-2026-06-14.md`](./dispatch-resolution-json-hermes-2026-06-14.md) —
+  **session idea (2026-06-14, Q-0089, from the sector-tooling session #882; owner-invited):** give
+  `scripts/dispatch_menu.py` a **`--json`** mode and wire it into the Hermes `superbot-dispatch` skill, so
+  *"dispatch S2"* resolves to a concrete work order **and** routes by the resolved **executor**
+  (`Claude-in-repo` → `/fire`; `Hermes-VPS` → Hermes does it; `maintainer` → tell the owner). The
+  read-side of **Q-0137 Thread 1**: turns the Q-0143 contract + the dispatch menu from dispatch-*ready*
+  into dispatch-*resolved*. `--json` half = safe quick-win; Hermes-wiring half gated on Thread 1.
 - [`routine-system-improvements-2026-06-14.md`](./routine-system-improvements-2026-06-14.md) —
   **workflow / routine-system (2026-06-14, owner-requested):** first-hand field notes from a live
   routine run on making the unattended Hermes-dispatch loop smoother. Core orientation already
