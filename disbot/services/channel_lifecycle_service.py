@@ -2,20 +2,22 @@
 
 The canonical owner of the channel *change* operations that
 :class:`services.resource_provisioning.ResourceProvisioningPipeline` does not
-own — **rename**, **move** (to/from a category), and **delete** (single or
-batch).  Cogs and views authorise and render; every Discord mutation flows
-through here, returning a typed :class:`services.lifecycle.LifecycleResult`
-with per-channel :class:`services.lifecycle.StepResult` and a best-effort
-audit companion + ``channel.lifecycle_changed`` event.
+own — **rename**, **move** (to/from a category), **reorder**, **delete**
+(single or batch), **set_overwrite** (permission overwrites: lock/unlock/grant/
+deny), and **clone**.  Cogs and views authorise and render; every Discord
+mutation flows through here, returning a typed
+:class:`services.lifecycle.LifecycleResult` with per-channel
+:class:`services.lifecycle.StepResult` and a best-effort audit companion +
+``channel.lifecycle_changed`` event.
 
-Boundaries (this PR):
+Boundaries (P0-4 convergence, Q-0100):
 
-* Channel *creation* stays with ``utils.channels`` / the provisioning pipeline
+* Channel *creation* / category creation stays with the provisioning pipeline
   (the no-silent-auto-create invariant owns that path); this service does not
-  create channels.
-* ``set_permissions``/overwrite changes and ``clone`` are a deliberate
-  follow-up — they keep their current cog paths until routed here in a later
-  PR, so the convergence invariant pins only ``.delete`` / ``.edit`` for now.
+  create channels.  ``set_permissions``/overwrite changes and ``clone`` were
+  the deliberate follow-up and are now **owned here** (Q-0100: clone/overwrite
+  → ChannelLifecycleService with audit+events), so the convergence invariant
+  pins ``.delete`` / ``.edit`` / ``.set_permissions`` / ``.clone``.
 
 Authorisation: the bot's Discord permission (``manage_channels``) is checked
 here; the *actor's* authority stays at the cog/view layer (the channel
@@ -43,12 +45,17 @@ logger = logging.getLogger("bot.services.channel_lifecycle")
 DOMAIN = "channel"
 EVT_CHANNEL_LIFECYCLE = "channel.lifecycle_changed"
 
-_OPERATIONS = ("rename", "move", "delete", "reorder")
+_OPERATIONS = ("rename", "move", "delete", "reorder", "set_overwrite", "clone")
 _REVERSIBILITY = {
     "rename": lc.REVERSIBLE,
     "move": lc.COMPENSATABLE,
     "delete": lc.IRREVERSIBLE,
     "reorder": lc.COMPENSATABLE,
+    # An overwrite can be flipped back; a clone can be compensated by deleting
+    # the copy.  Neither is irreversible, so neither demands ``confirmed=True``
+    # (preserving the existing lock/unlock/clone command UX).
+    "set_overwrite": lc.REVERSIBLE,
+    "clone": lc.COMPENSATABLE,
 }
 
 
@@ -56,12 +63,20 @@ _REVERSIBILITY = {
 class ChannelLifecycleRequest:
     """Typed request — one operation over one or more channels."""
 
-    operation: str  # "rename" | "move" | "delete" | "reorder"
+    operation: (
+        str  # "rename" | "move" | "delete" | "reorder" | "set_overwrite" | "clone"
+    )
     channel_ids: tuple[int, ...]
     new_name: str | None = None  # rename
     category_id: int | None = None  # move (None = remove from category)
     position: str | None = None  # reorder: "top" | "bottom" (default bottom)
     reason: str | None = None
+    # set_overwrite: who the overwrite is for + the permission deltas.
+    overwrite_target_id: int | None = None
+    overwrite_target_type: str | None = None  # "role" (default) | "member"
+    overwrites: dict[str, bool | None] | None = None  # permission name → allow/deny
+    # clone: the new channel's name.
+    clone_name: str | None = None
 
 
 class ChannelLifecycleService:
@@ -167,6 +182,9 @@ class ChannelLifecycleService:
                 )
             except discord.HTTPException as exc:
                 steps.append(lc.StepResult(cid, channel.name, False, f"Discord: {exc}"))
+            except LookupError as exc:
+                # e.g. a set_overwrite whose target role/member no longer exists.
+                steps.append(lc.StepResult(cid, channel.name, False, str(exc)))
 
         steps_t = tuple(steps)
         outcome = lc.classify_outcome(steps_t)
@@ -247,6 +265,41 @@ class ChannelLifecycleService:
                 await channel.move(end=True, reason=reason)
         elif operation == "delete":
             await channel.delete(reason=reason)
+        elif operation == "set_overwrite":
+            target = self._resolve_overwrite_target(guild, request)
+            if target is None:
+                raise LookupError(
+                    f"overwrite target {request.overwrite_target_type or 'role'} "
+                    f"{request.overwrite_target_id} not found",
+                )
+            # **permissions replaces the whole overwrite for *target* (discord.py
+            # semantics) — identical to the prior direct cog/view calls.
+            await channel.set_permissions(  # type: ignore[attr-defined]
+                target,
+                reason=reason,
+                **(request.overwrites or {}),
+            )
+        elif operation == "clone":
+            await channel.clone(name=request.clone_name, reason=reason)  # type: ignore[attr-defined]
+
+    def _resolve_overwrite_target(
+        self,
+        guild: discord.Guild,
+        request: ChannelLifecycleRequest,
+    ) -> discord.Role | discord.Member | None:
+        """Resolve the overwrite subject by id (defaults to a role lookup, which
+        also covers ``guild.default_role`` for @everyone lock/unlock).
+        """
+        from core.runtime import guild_resources
+
+        if request.overwrite_target_id is None:
+            return None
+        if request.overwrite_target_type == "member":
+            return guild_resources.resolve_member(guild, request.overwrite_target_id)
+        return guild_resources.resolve_role(
+            guild,
+            role_id=request.overwrite_target_id,
+        )
 
     def _target(self, request: ChannelLifecycleRequest) -> str:
         if len(request.channel_ids) == 1:
@@ -273,6 +326,13 @@ class ChannelLifecycleService:
             return f"move {n} channel(s) to category {request.category_id}{suffix}"
         if request.operation == "reorder":
             return f"send {n} channel(s) to {request.position or 'bottom'}{suffix}"
+        if request.operation == "set_overwrite":
+            keys = ", ".join(sorted((request.overwrites or {}).keys())) or "(none)"
+            who = f"{request.overwrite_target_type or 'role'} {request.overwrite_target_id}"
+            return f"set overwrite [{keys}] on {n} channel(s) for {who}{suffix}"
+        if request.operation == "clone":
+            name = getattr(channels[0], "name", "?") if channels else "?"
+            return f"clone channel {name!r} → {request.clone_name!r}{suffix}"
         return f"delete {n} channel(s){suffix}"
 
     def _terminal(

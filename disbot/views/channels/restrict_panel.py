@@ -17,9 +17,12 @@ import logging
 import discord
 from discord.ext import commands
 
-from core.runtime import resources
 from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followup
 from core.runtime.panel_recovery import restore_parent_or_send_fresh
+from services.channel_lifecycle_service import (
+    ChannelLifecycleRequest,
+    ChannelLifecycleService,
+)
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
@@ -162,35 +165,35 @@ class _RestrictSubView(BaseView):
         if not await safe_defer(interaction):
             return
 
+        # Route every overwrite through the audited lifecycle seam (P0-4,
+        # Q-0100) — one batched apply, then map the typed steps back to the
+        # panel's succeeded / forbidden / not-found buckets.
+        result = await ChannelLifecycleService().apply(
+            interaction.guild,
+            ChannelLifecycleRequest(
+                operation="set_overwrite",
+                channel_ids=tuple(self.selected_channel_ids),
+                overwrite_target_id=interaction.guild.default_role.id,
+                overwrite_target_type="role",
+                overwrites={"send_messages": send_messages},
+            ),
+            interaction.user,
+            actor_type="admin",
+        )
         succeeded: list[str] = []
         forbidden: list[str] = []
         failed: list[str] = []
-        for channel_id in self.selected_channel_ids:
-            name = self._option_names.get(channel_id, str(channel_id))
-            channel = resources.resolve_channel(
-                interaction.guild,
-                channel_id=channel_id,
-                kind="any",
+        for step in result.steps:
+            name = self._option_names.get(
+                step.target_id,
+                step.target_name or str(step.target_id),
             )
-            if channel is None:
-                failed.append(name)
-                continue
-            try:
-                await channel.set_permissions(
-                    interaction.guild.default_role,
-                    send_messages=send_messages,
-                )
-            except discord.Forbidden:
-                forbidden.append(name)
-            except discord.HTTPException as exc:
-                logger.warning(
-                    "Restrict apply failed | channel=%r exc=%s",
-                    name,
-                    exc,
-                )
-                failed.append(name)
-            else:
+            if step.ok:
                 succeeded.append(name)
+            elif step.error and "permission" in step.error:
+                forbidden.append(name)
+            else:
+                failed.append(name)
 
         result_embed = self._build_result_embed(
             action_label=action_label,

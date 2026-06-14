@@ -20,6 +20,11 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`cogs-layer-view-residence-guard-2026-06-14.md`](./cogs-layer-view-residence-guard-2026-06-14.md) —
+  **tooling / arch invariant (2026-06-14):** a guard flagging `discord.ui.View`/`Modal`
+  subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans
+  `views/`). Surfaced when the `!list` paginator was found mislayered in `channel_cog.py`
+  only by tripping the cog-size ceiling. Warn → ratchet. Small/safe grooming-lane candidate.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in

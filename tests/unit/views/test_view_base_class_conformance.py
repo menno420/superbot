@@ -39,6 +39,13 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         # follow-ups (no local interaction_check/on_timeout); btd6 panels
         # carry bespoke admin checks; rank_view has a documented direct
         # subclass reason. Migrate only with a concrete gain.
+        # Relocated (not new debt): the `!list` paginator moved from
+        # cogs/channel_cog.py to views/channels/list_panel.py in the P0-4
+        # channel-ownership convergence (cogs/ are not scanned by this ratchet,
+        # so it surfaced on the move). It is an ephemeral inline paginator with
+        # its own author interaction_check + on_timeout — migrate only with a
+        # concrete gain.
+        ("views/channels/list_panel.py", "_ChannelListPaginatorView"),
         ("views/roles/management_panel.py", "_DeleteRoleView"),
         ("views/roles/time_roles_panel.py", "_TimeRemoveView"),
         ("views/roles/xp_roles_panel.py", "_XpRemoveView"),
