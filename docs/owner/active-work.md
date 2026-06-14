@@ -27,6 +27,11 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/ecstatic-euler-bslyvd` · map roadmaps/plans onto the 5 sectors → make sectors
+  dispatchable queues · **docs-only**: `roadmap.md` (by-sector restructure) ·
+  `repo-sector-map.md` (dispatch surfaces) · `repo-review-map.md` (S↔A pointers) ·
+  `current-state.md` ▶ · 2026-06-14 · ⚠️ note: a parallel **bot** session is running — see this
+  branch's `.sessions/` card for roadmap.md UNION-merge guidance
 
 ## Recently cleared
 
