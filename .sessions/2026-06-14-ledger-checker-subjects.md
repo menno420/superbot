@@ -1,7 +1,7 @@
 # 2026-06-14 — ledger-checker prints missing-PR merge subjects (band-#840 queue slot 9)
 
-> **Status:** `in-progress` — born-red card (Q-0133). Flips to `complete` as the deliberate
-> final step once code + tests + close-out docs are all in.
+> **Status:** `complete` — PR **#864**; born-red card flipped as the deliberate final step
+> (Q-0133) once code + tests + close-out docs were all in.
 
 **About to do:** the band-#840 reconciliation queue's **slot 9** (turn-key tooling) — make
 `scripts/check_current_state_ledger.py` print each missing PR's **merge-commit subject** beside
