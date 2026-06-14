@@ -224,6 +224,20 @@ async def _report_startup_health() -> None:
             snapshot.status.value,
             snapshot.summary,
         )
+        # When not healthy, name the actual findings in the log so the
+        # degradation is diagnosable from logs alone — without the DB or the
+        # `!platform consistency` Discord command. The aggregate summary only
+        # names which *subsystems* need attention; this prints the per-finding
+        # severity + subsystem + message (already bounded + secret-scrubbed at
+        # adapter time), so a log-only operator can see exactly what fired.
+        if snapshot.status.value != "healthy" and snapshot.findings:
+            for finding in snapshot.findings:
+                logger.info(
+                    "Startup health finding: [%s] %s — %s",
+                    finding.severity.value,
+                    finding.related_subsystem or "?",
+                    finding.message,
+                )
         # Bot-awareness PR6: persist this snapshot's findings (best-effort, off
         # the readiness path) so recurrence survives restarts, then run the
         # 30-day retention sweep. Both calls are internally best-effort; the
