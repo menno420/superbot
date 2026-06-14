@@ -4,10 +4,10 @@
 > skills. Each skill is a ready-to-configure prompt for the Hermes agent running on the
 > control-plane VPS. Setup context: `docs/operations/hermes-control-plane.md`.
 
-This pack contains nine skills covering the windows Hermes fills that Claude Code
+This pack contains eleven skills covering the windows Hermes fills that Claude Code
 cannot: **pre-session orientation**, **between-session monitoring**,
-**production diagnosis from your phone**, and the **autonomous-loop seams**
-(independent review + dispatch).
+**production diagnosis from your phone**, the **autonomous-loop seams**
+(independent review + dispatch), and **self-extension** (Hermes authoring its own skills).
 
 For the standing read-only operating instructions every Hermes session should start
 with, see [`hermes-operating-prompt.md`](../hermes-operating-prompt.md) — the Hermes-side
@@ -29,6 +29,7 @@ equivalent of `.claude/CLAUDE.md`.
 | [`review`](./review.md) | Plan finalization / open PR | Independent (non-Claude) critique of a plan or PR diff + a maintainer summary for the approve/deny gate |
 | [`review-merge`](./review-merge.md) | Executor opened a big-step PR | The independent-reviewer **merge gate** (Q-0117): review `needs-hermes-review` PRs and merge if sound — Hermes' one sanctioned write |
 | [`dispatch`](./dispatch.md) | Idea on your phone | Assemble a work order and fire a Claude Code Routine to build it (the autonomous-loop chaining link) |
+| [`skill-author`](./skill-author.md) | A workflow you repeat / "make a skill for X" | The **meta-skill**: design a new skill and land its source in the repo via a docs-only PR (so Hermes-authored skills are version-controlled, not VPS-only) |
 
 The last two are the **autonomous-improvement-loop seams** — see
 [`hermes-dispatch-bridge.md`](../hermes-dispatch-bridge.md) for how they fit together with the
@@ -72,7 +73,14 @@ cron wiring needed.
 
 ## Shared operating rule (every skill)
 
-All skills default to **read-only**. None of them modify repo files, commit, push,
-create PRs, or access Railway/Neon/production secrets. If a skill produces an
-implementation prompt, the prompt is an artifact for Claude Code — Hermes does not
-execute it.
+Skills default to **read-only**, and Hermes never edits runtime code, pushes runtime
+changes, or accesses production secrets. There are exactly **two sanctioned writes**:
+
+1. **The `review-merge` gate** (Q-0117) — merging a PR Hermes has independently reviewed.
+2. **Docs-only PRs** (Q-0140) — Hermes may author a docs-only PR directly: a work summary,
+   a bug/problem report, or a new skill source (`skill-author`). Anything touching code is
+   **dispatched** to Claude Code, never edited by Hermes.
+
+If a skill produces an implementation prompt, the prompt is an artifact for Claude Code —
+Hermes does not execute it. Reading Railway env vars / logs for verification is sanctioned
+(Q-0130); mutating production config is not, unless the owner explicitly directs it.
