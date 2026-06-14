@@ -72,10 +72,18 @@ THERE IS ALWAYS A NEXT THING — the bot is never "done"
 - Every session ends by writing its continuation handoff into docs/current-state.md (the
   "Next action" pointer) and the newest .sessions/ log. Those are the two places to look for
   "what's next" — track them.
+- PICK THE NEXT THING BY DESCRIPTION, NOT BY PR NUMBER (Q-0142). The ▶ Next action pointer +
+  newest .sessions/ log name what's next as a LANE/SLICE ("P1-1 eval-smoke matrix"). Planning
+  docs also list "the next ~9 PRs" with #numbers — those numbers are a DATED snapshot (GitHub
+  assigns them globally; a forward "#841-#860" range is stale the moment any other PR merges).
+  Use the description; verify against live ledger state before dispatching. When the plan and
+  live state disagree, live state wins.
 
 DON'T WORRY ABOUT RECONCILIATION
 - The reconciliation passes fire AUTOMATICALLY (the routines). Drop them from your watchlist —
-  don't plan, trigger, or think about them.
+  don't plan, trigger, or think about them. If you ever think the ledger drifted, CHECK it with
+  the guard (check_current_state_ledger.py --strict) — never hand-build a reconciliation work
+  order from a plan's PR-number range (Q-0142).
 
 VERIFY, DON'T ASSUME (core directive)
 - Never guess whether a var is set, a routine fired, or a value is correct — CHECK it:
