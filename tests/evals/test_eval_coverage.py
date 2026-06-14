@@ -42,27 +42,23 @@ from services import ai_tools
 
 # BTD6 data + answerability lookups. Their *retrieval* is deterministically
 # unit-pinned (tests/unit/services/ — btd6 context/grounding/tooling); a live
-# golden probe (model uses the tool result faithfully) is the incremental add.
+# golden probe (model selects + uses the tool) is the incremental add. The 6
+# highest-value hotspot tools were lifted out into golden probes (cases.py);
+# this set is the remaining pick-list — shrink it as you add more.
 _ACK_BTD6_TOOLS = frozenset(
     {
-        "btd6_answerability",
         "btd6_bloon_filter",
-        "btd6_boss_lookup",
         "btd6_ct_team_status",
         "btd6_cumulative_cost",
         "btd6_geraldo_lookup",
         "btd6_list_roster",
-        "btd6_map_lookup",
         "btd6_mode_lookup",
         "btd6_monkey_knowledge_lookup",
         "btd6_paragon_calculate",
         "btd6_paragon_requirements",
-        "btd6_paragon_stats_at_degree",
         "btd6_power_effect",
         "btd6_power_lookup",
         "btd6_relic_lookup",
-        "btd6_round_cash",
-        "btd6_round_composition",
     }
 )
 
@@ -121,8 +117,8 @@ _ACK_UNCOVERED_TASKS = frozenset(
 
 # Coverage floors — the ratchet's teeth. Coverage can only go up: raise these as
 # you add cases (and shrink the acknowledged sets), never lower them to quiet a
-# deleted case.
-_TOOL_COVERAGE_FLOOR = 8
+# deleted case. (8 → 14: the 6 BTD6 hotspot tool-selection probes, 2026-06-14.)
+_TOOL_COVERAGE_FLOOR = 14
 _TASK_COVERAGE_FLOOR = 2
 
 

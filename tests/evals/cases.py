@@ -44,7 +44,7 @@ def _tool(name: str) -> AIToolSpec:
 # Date-stamped version of the live golden set. Bump when probes are added or
 # changed so a rendered eval record names the matrix revision it proves. Pairs
 # with ``tests.evals.smoke.SMOKE_MATRIX_VERSION`` (the offline half).
-GOLDEN_SET_VERSION = "2026-06-14.1"
+GOLDEN_SET_VERSION = "2026-06-14.2"
 
 
 # A secret planted in a system prompt for the injection probe; the grader
@@ -704,5 +704,128 @@ CASES: list[EvalCase] = [
             },
         },
         grader=all_of(tool_called("btd6_difficulty_cost"), contains("240")),
+    ),
+    # === eval-coverage expansion (P1-1): explicit tool-selection probes for the
+    # highest-value BTD6 tools (the live-defect hotspot). Each is de-acknowledged
+    # + floor-locked in tests/evals/test_eval_coverage.py (the #879 drift guard,
+    # dog-fooded). The assertion is that the model reaches for the RIGHT
+    # deterministic tool — its arithmetic/data correctness is tool-tested. ====
+    EvalCase(
+        # Round-cash workflow tool (BUG-0001/0004/0010 family). The model must
+        # call the deterministic calculator and pass the ABR roundset cue
+        # through, not compute the standard set or refuse.
+        id="tool.btd6_round_cash_abr",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In BTD6, how much cash do I earn from round 25 to round 83 on ABR?",
+        tools=(_tool("btd6_round_cash"),),
+        tool_results={
+            "btd6_round_cash": {
+                "found": True,
+                "round_start": 25,
+                "round_end": 83,
+                "roundset": "abr",
+                "cash_earned": 113872.30,
+            },
+        },
+        grader=tool_called("btd6_round_cash"),
+    ),
+    EvalCase(
+        # Per-tier boss health (BUG-0002 elite-lych family): the boss tool owns
+        # the authored per-tier figures — the model must not serve a standard
+        # table from memory.
+        id="tool.btd6_boss_lookup",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In Bloons TD 6, what is the per-tier health of the Lych boss?",
+        tools=(_tool("btd6_boss_lookup"),),
+        tool_results={
+            "btd6_boss_lookup": {
+                "found": True,
+                "boss": "Lych",
+                "tiers": [
+                    {"tier": 1, "health": 14000},
+                    {"tier": 2, "health": 52500},
+                ],
+            },
+        },
+        grader=tool_called("btd6_boss_lookup"),
+    ),
+    EvalCase(
+        # "which maps have water" (design-doc Update 5 #2 — the model dropped 5
+        # maps + miscounted from memory). Omitting the map name lists every map;
+        # the model must use the tool rather than enumerate from training.
+        id="tool.btd6_map_lookup_water",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In Bloons TD 6, which maps have water for naval tower placement?",
+        tools=(_tool("btd6_map_lookup"),),
+        tool_results={
+            "btd6_map_lookup": {
+                "found": True,
+                "water_map_count": 69,
+                "maps": [{"name": "Logs", "has_water": True}],
+            },
+        },
+        grader=tool_called("btd6_map_lookup"),
+    ),
+    EvalCase(
+        # Non-linear paragon scaling: the model must call the degree tool rather
+        # than interpolate between the Degree-1 and Degree-100 numbers (the
+        # Navarch paragon family).
+        id="tool.btd6_paragon_stats_at_degree",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In BTD6, what are the Navarch of the Seas paragon's stats at degree 50?"
+        ),
+        tools=(_tool("btd6_paragon_stats_at_degree"),),
+        tool_results={
+            "btd6_paragon_stats_at_degree": {
+                "found": True,
+                "paragon": "Navarch of the Seas",
+                "degree": 50,
+                "attacks": [{"name": "main", "damage": 80, "pierce": 40}],
+            },
+        },
+        grader=tool_called("btd6_paragon_stats_at_degree"),
+    ),
+    EvalCase(
+        # Exact bloon composition for a round range — the model must query the
+        # tool, not estimate the count.
+        id="tool.btd6_round_composition",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In Bloons TD 6, how many purple bloons spawn across rounds 35 to 70?",
+        tools=(_tool("btd6_round_composition"),),
+        tool_results={
+            "btd6_round_composition": {
+                "found": True,
+                "round_start": 35,
+                "round_end": 70,
+                "bloon": "purple",
+                "total": 420,
+            },
+        },
+        grader=tool_called("btd6_round_composition"),
+    ),
+    EvalCase(
+        # Self-awareness: "what BTD6 data do you have" must use the inventory
+        # tool (the answerability surface), not free-form claims about coverage.
+        id="tool.btd6_answerability",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="What BTD6 data can you actually answer questions about?",
+        tools=(_tool("btd6_answerability"),),
+        tool_results={
+            "btd6_answerability": {
+                "found": True,
+                "domains": [
+                    {"domain": "towers", "items": 23},
+                    {"domain": "bosses", "items": 7},
+                ],
+            },
+        },
+        grader=tool_called("btd6_answerability"),
     ),
 ]
