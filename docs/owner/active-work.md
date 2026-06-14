@@ -25,12 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/trusting-goldberg-po4p7s` · parallel-safe test suite → re-enable xdist (the ~3×
-  pytest CI win; follow-up from the #814 idea doc) · test-only: autouse isolation fixtures in
-  `tests/conftest.py` + implicated test modules, then re-pin `pytest-xdist` & flip `-n auto`
-  in `.github/workflows/code-quality.yml` + `scripts/check_quality.py` · 2026-06-14
+_(no active claims)_
 
 ## Recently cleared
 
+- `claude/trusting-goldberg-po4p7s` · parallel-safe test suite → re-enabled `pytest -n auto`
+  (~3× CI speedup; #814 follow-up) · autouse singleton resets + server_logging bus teardown ·
+  2026-06-14 · **#815 (open, auto-merge on green)**
 - `claude/trusting-goldberg-po4p7s` · CI-cost reduction + duplicate-work convention (Q-0126) ·
   concurrency-cancel + pip/mypy caching + claim ledger + push-batching · 2026-06-14 · **#814 (merged)**
