@@ -30,6 +30,8 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/ecstatic-euler-bslyvd` · sector tooling — `check_sector_map.py` (validator) +
+  `dispatch_menu.py` (resolver) + 19 tests + folio map · 2026-06-14 · **PR #882**
 - `claude/wizardly-edison-xw34kb` · P1-1 — close eval-coverage gap on BTD6 hotspot tools (dog-food
   #879; 8→14/34) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-14 ·
   **PR #881 (open, auto-merge on green)**
