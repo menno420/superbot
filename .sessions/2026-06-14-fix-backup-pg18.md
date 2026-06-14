@@ -2,7 +2,7 @@
 
 > **Status:** `complete`
 
-**Branch:** `claude/fix-backup-pg-version` · **PR:** TBD · **Date:** 2026-06-14 · **Type:** owner-directed ops bugfix (manual)
+**Branch:** `claude/fix-backup-pg-version` · **PR:** #862 · **Date:** 2026-06-14 · **Type:** owner-directed ops bugfix (manual)
 
 ## What this session did
 Live-verifying the backup (after the owner set `DATABASE_PUBLIC_URL`) drove a real production bug to
