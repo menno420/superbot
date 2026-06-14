@@ -1,6 +1,12 @@
 # /session-close
 
-End the current session correctly: write the session log (with a previous-session review), groom one idea, add one new idea, verify quality, commit, push, open the PR (ready, not draft), and drive it to a terminal state — merge when CI is green, or close.
+End the current session correctly: finish the session card (the `.sessions/` log — write the previous-session review + new idea), groom one idea, verify quality, commit, push, and **flip the card's Status badge to `complete`** as the deliberate final step so the born-red merge-gate goes green and native auto-merge fires (Q-0133). Drive the PR to a terminal state — merge when CI is green, or close.
+
+> **Born-red flow (Q-0133):** the session card should already exist — you create
+> `.sessions/<date>-<slug>.md` with `> **Status:** \`in-progress\`` in your **first**
+> commit (it opens the PR born red so auto-merge can't fire on a partial PR). This skill
+> finishes that same file and flips it to `\`complete\``. If you skipped the start step,
+> create the card here.
 
 ## What this does
 
@@ -37,6 +43,10 @@ When this skill is invoked:
 
 ```markdown
 # YYYY-MM-DD — <session title>
+
+> **Status:** `complete`
+<!-- born-red flow (Q-0133): `in-progress` while the session is open; flip to
+     `complete` as the final close step so the merge-gate goes green. -->
 
 **PR:** [#NNN](link) — brief description.
 **Branch:** `<branch-name>`
@@ -100,11 +110,13 @@ planning-reconciliation pass (Q-0107: reconcile repo state + plan the next ~9 PR
 not over-segmented); after that pass, reset the `Last reconciliation pass:** PR #N` marker in
 `current-state.md` to the latest PR.
 
-If `check_docs` fails on the new session log file: add the required `> **Status:**` badge.
-Session logs use the `audit` badge token. If `check_session_log` fails, add the missing
-`💡 Session idea` / `⟲ Previous-session review` section it names. If
-`check_current_state_ledger` flags a merged PR, **verify its #number against live GitHub**
-then add it to `docs/current-state.md` § Recently shipped (or an aggregated range entry).
+If `check_session_log` fails, add the missing `💡 Session idea` / `⟲ Previous-session
+review` section it names. The session card carries a `> **Status:**` badge:
+`in-progress` while the session is open (the born-red gate, Q-0133) and `complete` at
+close — `check_session_gate` holds the merge until it is a ready token
+(`complete`/`done`/`ready`/`final`/`merged`/`shipped`). If `check_current_state_ledger`
+flags a merged PR, **verify its #number against live GitHub** then add it to
+`docs/current-state.md` § Recently shipped (or an aggregated range entry).
 
 **Documentation audit (Q-0104) — the judgment half.** The checks above are the automated
 half. Also ask yourself: *"is anything important from this session captured only in chat?"*
@@ -140,8 +152,14 @@ before ending. An abandoned open PR is the failure this prevents.**
 2. If no PR: create one **ready** (`mcp__github__create_pull_request`, `draft: false`).
 3. Subscribe to it (`mcp__github__subscribe_pr_activity`).
 4. Reconcile with main first (fetch + merge `origin/main`, UNION-resolve conflicts).
-5. Wait for CI: `mcp__github__pull_request_read` method `get_check_runs` until `completed`.
-6. If CI green: **merge** with `mcp__github__merge_pull_request` (merge-commit method).
+5. **Flip the card to ready (the merge trigger, Q-0133):** set the session card's
+   `> **Status:**` badge to `complete` and commit/push it **in the same push** as the
+   close-out docs. This is the deliberate final step — it turns the born-red gate green,
+   so native auto-merge fires on a *complete* PR (never the #843 partial-merge race).
+6. Auto-merge (Q-0123) merges the PR the instant **Code Quality** is green — you do not
+   merge by hand. Confirm via `mcp__github__pull_request_read` (`get_check_runs`) and the
+   merge webhook. *(Manual `mcp__github__merge_pull_request` only for a carve-out or if
+   auto-merge is down — then re-verify CI green on the final head.)*
 7. If CI red: diagnose, fix, push, re-check.
 8. If the work should not merge: **close** the PR with a one-line reason. Do not leave it open.
 
