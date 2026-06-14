@@ -103,9 +103,18 @@ def _reset_for_tests() -> None:
     for k in list(_COUNTERS):
         _COUNTERS[k] = 0
     _BOT = None
-    # Note: bus subscription is intentionally NOT cleared — tests that
-    # need to exercise the subscriber call it directly and assert on
-    # counters; the bus binding is registered once per process.
+    # Tear the bus subscription down too, so a test that called setup()
+    # cannot leak _on_audit_action / _on_moderation_action onto the
+    # process-global bus for every later test (the leak surfaced under
+    # parallel xdist scheduling: the orphaned subscriber fired on another
+    # test's audit.action_recorded emit and skewed its delivery stats).
+    # setup() re-registers cleanly because we also drop the _SUBSCRIBED
+    # latch; tests that call the subscriber directly are unaffected.
+    if _SUBSCRIBED:
+        bus.off(EVT_MOD_ACTION, _on_moderation_action)
+        bus.off(EVT_MOD_ACTION, _on_moderation_action_public)
+        bus.off(EVT_AUDIT_ACTION_RECORDED, _on_audit_action)
+    _SUBSCRIBED = False
 
 
 # ---------------------------------------------------------------------------

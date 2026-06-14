@@ -25,13 +25,16 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/trusting-goldberg-po4p7s` · CI-cost reduction + duplicate-work convention (Q-0126) ·
-  `.github/workflows/code-quality.yml`, `scripts/check_quality.py`, `requirements-dev.txt`,
-  `.claude/CLAUDE.md`, this file, the question router, idea doc · 2026-06-14 · PR #814
+_(no active claims)_
 
 ## Recently cleared
 
 - `claude/funny-bohr-skbaoz` · P0-3 arc PR 3 — delegated-Setup apply authority (Q-0098) ·
   2026-06-14 · PR #817
+- `claude/trusting-goldberg-po4p7s` · parallel-safe test suite → re-enabled `pytest -n auto`
+  (~3× CI speedup; #814 follow-up) · autouse singleton resets + server_logging bus teardown ·
+  2026-06-14 · **#815 (open, auto-merge on green)**
+- `claude/trusting-goldberg-po4p7s` · CI-cost reduction + duplicate-work convention (Q-0126) ·
+  concurrency-cancel + pip/mypy caching + claim ledger + push-batching · 2026-06-14 · **#814 (merged)**
 
 _(move claims here with their PR # as they close, then prune older entries)_

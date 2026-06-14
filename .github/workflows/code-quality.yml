@@ -86,7 +86,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install black==26.5.1 isort==8.0.1 ruff==0.15.14 mypy==2.1.0
-          pip install pytest==9.0.3 pytest-asyncio==1.4.0
+          pip install pytest==9.0.3 pytest-asyncio==1.4.0 pytest-xdist==3.6.1
           pip install -r requirements.txt
 
       - name: Run Black (check only)
@@ -119,15 +119,17 @@ jobs:
 
       - name: Run pytest
         if: steps.changes.outputs.code == 'true'
-        # pytest is the dominant per-run cost (~109s for the 9.4k-test suite), so
-        # parallelizing it (`pytest -n auto`) is the obvious speed win — but it was
-        # tried under Q-0126 (2026-06-14) and reverted: the suite has non-deterministic
-        # cross-test state pollution that only surfaces under parallel scheduling
-        # (different tests fail each run; green locally != green in CI; `--dist
-        # loadscope` made it worse, not better). Parallelization is deferred until the
-        # suite is made isolation-safe — see the follow-up in
-        # docs/ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md.
-        run: pytest tests/ -v --tb=short
+        # pytest is the dominant per-run cost (was ~109s serial for the 9.4k-test
+        # suite). `-n auto` (pytest-xdist) spreads it across the runner's cores for a
+        # ~3x speedup (~35s on the 4-core runner). This was tried + reverted once under
+        # Q-0126 (2026-06-14) because the suite had non-deterministic cross-test
+        # global-state pollution that only surfaced in parallel (a different subset
+        # failed each run). That was root-fixed in the Q-0126 follow-up: autouse reset
+        # of the lifecycle / startup-outcome / feature-flag singletons in
+        # tests/conftest.py + the server_logging bus-subscription teardown. Proven
+        # green across 8 parallel runs (5x --dist loadscope + 3x -n auto). Keep `-n
+        # auto` in lockstep with scripts/check_quality.py's run_pytest().
+        run: pytest tests/ -v -n auto --tb=short
 
       - name: Docs-only change — heavy checks skipped
         if: steps.changes.outputs.code != 'true'
