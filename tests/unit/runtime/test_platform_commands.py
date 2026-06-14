@@ -115,3 +115,72 @@ async def test_platform_identity_clean_state():
     embed = ctx.send.call_args.kwargs["embed"]
     assert "All four identity surfaces agree" in embed.description
     assert embed.fields == []
+
+
+# ---------------------------------------------------------------------------
+# !platform finding — operator-managed lifecycle transition (Q-0097)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_platform_finding_resolve_reports_transition():
+    from cogs.diagnostic_cog import DiagnosticCog
+    from services.health_findings_service import TransitionResult
+
+    cog = DiagnosticCog(MagicMock())
+    ctx = MagicMock()
+    ctx.send = AsyncMock()
+    ctx.author.id = 7
+
+    with patch(
+        "services.health_findings_service.set_status",
+        new_callable=AsyncMock,
+        return_value=TransitionResult(outcome="applied", previous_status="open"),
+    ) as set_status:
+        await cog.platform_finding.callback(
+            cog, ctx, "resolve", fingerprint="diagnostics.provider_failed:ai",
+        )
+
+    set_status.assert_awaited_once_with(
+        "diagnostics.provider_failed:ai", "resolved", actor_id=7,
+    )
+    msg = ctx.send.call_args.args[0]
+    assert "✅" in msg and "resolved" in msg
+
+
+@pytest.mark.asyncio
+async def test_platform_finding_unknown_action_does_not_call_service():
+    from cogs.diagnostic_cog import DiagnosticCog
+
+    cog = DiagnosticCog(MagicMock())
+    ctx = MagicMock()
+    ctx.send = AsyncMock()
+
+    with patch(
+        "services.health_findings_service.set_status",
+        new_callable=AsyncMock,
+    ) as set_status:
+        await cog.platform_finding.callback(cog, ctx, "frobnicate", fingerprint="x")
+
+    set_status.assert_not_awaited()
+    assert "Unknown action" in ctx.send.call_args.args[0]
+
+
+@pytest.mark.asyncio
+async def test_platform_finding_not_found_reports_warning():
+    from cogs.diagnostic_cog import DiagnosticCog
+    from services.health_findings_service import TransitionResult
+
+    cog = DiagnosticCog(MagicMock())
+    ctx = MagicMock()
+    ctx.send = AsyncMock()
+    ctx.author.id = 1
+
+    with patch(
+        "services.health_findings_service.set_status",
+        new_callable=AsyncMock,
+        return_value=TransitionResult(outcome="not_found", previous_status=None),
+    ):
+        await cog.platform_finding.callback(cog, ctx, "ignore", fingerprint="ghost")
+
+    assert "No finding" in ctx.send.call_args.args[0]

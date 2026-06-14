@@ -69,6 +69,12 @@ health system for a failure it merely displays.
   the owner-gated AI tool, and persistent operational-health findings.
 - Grouping is controlled by `HEALTH_GROUPED_FINDINGS`; persistent dedupe/counting is
   backed by migration `057` and `health_findings_service`.
+- **Finding lifecycle (P1-2, Q-0097 — operator-managed):** an operator transitions a
+  finding through `health_findings_service.set_status` (the sole transition path, audited
+  via `audit.action_recorded`), surfaced as `!platform finding resolve/ignore/reopen
+  <fingerprint>`. Retention runs at startup **and** on `HealthMaintenanceCog`'s daily loop,
+  so resolved/ignored detail is actually pruned on a long-lived replica. The AI tool stays
+  read-only (it may explain, never transition).
 - Deterministic and DB paths are bootable/testable in the sandbox. The migration-`057`
   persistence/dedupe/retention SQL is now covered by a real-Postgres integration suite
   (`tests/unit/db/test_health_findings_integration.py`) plus a CI-safe static SQL-shape

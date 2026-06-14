@@ -25,7 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
+  `services/health_findings_service.py` + `utils/db/health_findings.py` + `cogs/diagnostic_cog.py`
+  + new `cogs/health_maintenance_cog.py` · 2026-06-14
 
 ## Recently cleared
 

@@ -23,17 +23,19 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 32 of the 42 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 32 of the 43 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 30 of the 31 subsystem-owning
-  cogs expose it. The 10 extensions without the hook: the bootstrap
+  cogs expose it. The 11 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
   `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
   commands route under the one `btd6` subsystem via `btd6_cog`'s hook),
   `setup_cog` (an orchestrator with no `SUBSYSTEMS` row),
   `hermes_cog` (the Hermes→Claude dispatch bridge — admin-only slash
-  commands, no subsystem row), and `media_maintenance_cog` (the YouTube
-  cache-retention task owner — no commands, no subsystem row). "Loaded
+  commands, no subsystem row), `media_maintenance_cog` (the YouTube
+  cache-retention task owner — no commands, no subsystem row), and
+  `health_maintenance_cog` (the health-findings retention task owner —
+  no commands, no subsystem row). "Loaded
   extension", "subsystem", and "Help category" are different concepts —
   do not conflate them (help audit §4).
 - The hub key `diagnostic` is "Platform / Diagnostics". The override
@@ -73,7 +75,7 @@ Post-PR-#142 routing summary (relevant to every row in §2):
 ## 2. Subsystem inventory
 
 33 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 42 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+each below); 43 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 10 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route
