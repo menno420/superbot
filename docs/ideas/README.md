@@ -20,6 +20,12 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
+  **tooling (2026-06-14, band-#820 reconciliation pass):** have
+  `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its
+  number (it already walks `git log`), collapsing the reconciler's manual `git log --grep` loop
+  and reducing mis-attributed ledger entries. Runtime-lane (`scripts/`), so out of scope for a
+  docs-only self-merge pass. Small/safe grooming-lane candidate.
 - [`cogs-layer-view-residence-guard-2026-06-14.md`](./cogs-layer-view-residence-guard-2026-06-14.md) —
   **tooling / arch invariant (2026-06-14):** a guard flagging `discord.ui.View`/`Modal`
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans

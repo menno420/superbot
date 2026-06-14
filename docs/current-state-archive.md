@@ -13,6 +13,43 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#748 (2026-06-12, hardening P0-1 — wager money safety)** — new
+  `services/game_wager_workflow.py`: the audited money boundary for every two-party /
+  paid-entry game move, composing `economy_service.*_in_txn` inside one
+  `db.transaction()` (the mining_workflow precedent). **D1 escrow-at-accept** —
+  `open_pvp_wager` debits both stakes + writes per-player `*_escrow` rows when a PvP
+  challenge is accepted, deleting the old credit-then-overdraft-debit **mint window**;
+  `settle_pvp`/`refund_pvp`/`payout_tournament` are idempotent by `FOR UPDATE`
+  row-consumption (no double-pay); `enter_tournament` debits the fee + writes the
+  recovery row in one txn (closes the lost-fee window). All four call sites migrated
+  (RPS + blackjack PvP and tournament); dead un-escrowed `deduct_fees` removed; AST fence
+  (`test_game_wager_write_boundary`) bans `economy_service.credit/.debit` in the wager
+  files + `allow_overdraft=True` outside solo views. Failure-injection / terminal-matrix /
+  idempotency tests (real-Postgres integration + mock CI). No schema migration (escrow
+  rides existing `game_state`). Executes
+  [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md);
+  **closes hardening P0-1** → next P0 track = P0-2.
+- **#745 (2026-06-12, the direction-lock round)** — owner question-panel round: **next
+  implementation session = P0-1 wager money-safety** (design pinned:
+  [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md)) ·
+  **Q-0097 = operator-managed findings lifecycle** (every hardening gate now answered) ·
+  **Q-0082 interim global AI ceiling = €30/month** · **Q-0115**: Stage 0 folded into the
+  #742 Routine bridge (one continuation-dispatch seam; bounded protocol activates on
+  wired + calibrated). (#743/#744 same day: the loop session's close + a journal
+  draft-first wording fix.)
+- **#742 (2026-06-12, the autonomous-loop seams — parallel Hermes session)** — Hermes
+  `superbot-review` skill (independent non-Claude plan/PR critique with a maintainer
+  summary) · `scripts/check_phase_gate.py` (machine-readable **fix-phase vs. invent-phase**;
+  invent requires zero OPEN bugs + zero Not-Done readiness rows — reports FIX-PHASE today) ·
+  the `superbot-dispatch` skill + runbook (Hermes → Claude Code Routine `/fire`). Owner
+  decisions **Q-0113** (routine PRs self-merge on green CI) + **Q-0114** (human approve/deny
+  for agent-originated features; invent-phase-only origination) — workflow §12. Maintainer
+  follow-ups: wire the Routine + token, calibrate per Q-0105 before trusting unattended.
+- **#741 (2026-06-12, the first Q-0107 reconciliation pass)** — every plan added in
+  #715–#740 mapped ([pass record + decade queue](planning/reconciliation-pass-2026-06-12.md)):
+  new roadmap lanes **safety/community** (Q-0108–Q-0112) + **agent ecosystem/workflow**;
+  the next ~9 PRs planned (hardening P0s · backup posture · the safety lane's first
+  slices); ledger drift reconciled; the cadence checker taught to fetch `origin/main`.
 - **#738–#740 (2026-06-12, the cadence rule + owner research/decisions arc)** — **#738**: the
   **Q-0107 reconciliation cadence** (a docs-only review + planning pass each time merged PRs
   cross a multiple of 10; `scripts/check_reconciliation_due.py` guards the marker). **#739**:
