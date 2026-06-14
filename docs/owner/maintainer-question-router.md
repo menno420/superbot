@@ -4877,3 +4877,46 @@ specific dangerous class only, prefer `defaultMode: "auto"` + an `ask` list over
 **Home:** `.claude/settings.json` (the change); this Q-block (provenance per Q-0106). The
 `docs/current-state.md` Recently-shipped entry lands when the PR merges (merged-PRs-only convention).
 CLAUDE.md is unchanged — this configures the harness, it does not alter a written rule.
+
+---
+
+### Q-0129 — `send_later` noise + owner endorsement of unattended self-initiated work
+
+> **OBSERVED 2026-06-14 (owner, in-session, same conversation as Q-0128).** Two things. (1) On the
+> harness referencing a `send_later` tool: *"i noticed a lot of sessions mention that, but that only
+> started about a week ago … now all of the sudden every session is trying to use send later but it's
+> never there."* (2) Directive on autonomy: *"it should be clear in the repo that I do not oppose
+> unattended action, as long as it is something that improves the workflow, this whole project's main
+> idea is that AI gets more freedom to run its own project with only a little guidance"* — and earlier
+> in the thread, approving the self-initiated journal note: *"that is exactly the kind of self
+> initiated action I like."*
+
+**Area:** harness/system-prompt behavior · collaboration-model autonomy stance
+**Type:** (1) operational note — **APPLIED** (journal); (2) owner directive — **APPLIED** (ethos to docs)
+
+**(1) `send_later` — what it is and why the noise.** `send_later` is a tool from Anthropic's internal
+**`claude-code-remote`** MCP server that lets a session schedule a future self check-in (re-wake to
+re-check a PR's CI/merge state — the events webhooks don't push). ~A week ago the remote/web harness
+**system prompt** (platform-injected, *not* this repo) gained a PR-watching instruction: "arm a
+`send_later` self check-in before ending your turn, *if available*." The tool is **not provisioned in
+this environment** (a direct ToolSearch returns only `Monitor`/`WebFetch`), so every session checks,
+falls back to subscribe-and-report, and narrates the attempt — the noise the owner saw. Harmless
+(conditional instruction; PRs auto-merge server-side regardless). **Recorded the skip-it note in the
+journal** (§Cross-agent & git workflow): don't chase it; subscribe + report (+ optional git-ancestor
+`Monitor`) is the working fallback; delete the note if `send_later` ever resolves. The human-set-up
+equivalent is a one-off Routine (`/schedule in 1h, check PR #N`). Not in this repo's power to enable —
+it's platform/feature-flag gated.
+
+**(2) Unattended initiative is *wanted*, not merely tolerated.** The owner made his autonomy stance
+explicit: unattended, self-initiated action is welcome **whenever it improves the workflow** — the
+project's premise is AI running its own project with light guidance. This *strengthens* (does not
+replace) the existing "Autonomy boundary — docs free, config asks" rail: the irreversible / external /
+new-enforced-rule pauses still hold, but inside them the default posture is **act and improve**, not
+wait to be watched. Homed as **ethos** (not a new *enforced* rule — so "docs," free-rein per
+collaboration-model.md §"Autonomy boundary"; recorded here for provenance since owner-directed
+in-session): a clause on the CLAUDE.md "Act vs. ask" bullet + a paragraph in
+`docs/collaboration-model.md` §"Why this system exists."
+
+**Home:** `.claude/CLAUDE.md` §Working agreement (Act vs. ask clause); `docs/collaboration-model.md`
+§"Why this system exists" (the endorsement); `.session-journal.md` §Cross-agent & git workflow (the
+`send_later` skip note). This Q-block is provenance.

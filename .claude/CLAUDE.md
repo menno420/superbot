@@ -50,7 +50,11 @@ The short version that governs how you work:
   expected, not scope creep). *Ask* only when it's irreversible (data loss /
   external publish), large/cross-cutting (architectural), or the goal itself is
   genuinely ambiguous. If you're about to offer options you expect rejected,
-  you've answered your own question — act.
+  you've answered your own question — act. **Unattended ≠ off-limits (owner directive
+  Q-0129, 2026-06-14):** the maintainer *welcomes* self-initiated action taken in sessions he
+  isn't watching **when it improves the workflow** — the project's whole premise is AI running
+  its own project with only light guidance. Within the rails above, default to **acting and
+  improving**; never hold back a contained, reversible improvement just because no one is watching.
 - **Unclear owner intent.** Consult or add to
   `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
   unclear; unanswered questions are not approval. Preserve maintainer answers and

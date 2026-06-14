@@ -45,6 +45,16 @@ ships a feature **and** leaves the workflow sharper is the ideal session, not an
 over-reaching one. Over many slightly-different sessions, all feeding the same
 shared memory, the system converges on *exactly the right context per task*.
 
+**Owner's standing endorsement — unattended initiative is wanted, not merely tolerated
+(Q-0129, 2026-06-14):** the maintainer has stated plainly that he **does not oppose unattended
+action** — work done on the agent's own initiative in a session he is not watching — **as long
+as it improves the workflow.** In his words, "this whole project's main idea is that AI gets more
+freedom to run its own project with only a little guidance," and a self-initiated docs/tooling
+improvement is "exactly the kind of self-initiated action I like." So the default posture is
+**act and improve**, not wait to be watched or asked. The autonomy boundary below still holds
+(irreversible / external publish / a new *enforced* rule or hook still merit a pause) — but inside
+it, unattended initiative is the goal, not a risk to minimize.
+
 **North star (Q-0083, 2026-06-10):** the owner's declared end-state for this
 workflow is **full self-driving** — the bot detecting its own issues, spawning
 its own fix sessions, merging green work, deploying with canary + rollback,
