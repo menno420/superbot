@@ -5164,10 +5164,17 @@ first-pass fix.
 
 ### Q-0137 — Planning sectors + Hermes-dispatched routines + staged deep-clean reconciliation (2026-06-14)
 
-> **DISCUSS (open) — owner design conversation, 2026-06-14.** Three linked threads dropped in chat;
+> **PARTLY DECIDED — owner design conversation, 2026-06-14.** Three linked threads dropped in chat;
 > captured in full (owner direction + agent opinion) in
 > [`../ideas/routine-dispatch-and-staged-reconciliation-2026-06-14.md`](../ideas/routine-dispatch-and-staged-reconciliation-2026-06-14.md).
-> Not approved — this block records the open decisions.
+>
+> **DECISION 2026-06-14 (Thread 3 — sectors):** owner adopted a **5-sector** planning taxonomy with
+> the **mechanism-vs-content split** — **S1 Bot · S2 BTD6 · S3 AI-Memory system (the *mechanism* — a
+> shippable engine of its own) · S4 Documentation system (the *content/product* the engine generates) ·
+> S5 Operations/control-plane.** Owner's rationale: "the docs are not the system, the docs are a product
+> of the system" — so Memory and Docs are separate sectors (the substrate is NOT folded into the docs).
+> Built as [`../repo-sector-map.md`](../repo-sector-map.md) (the 3-tap nav top layer). **Threads 1 & 2
+> (dispatch + staged deep-clean) remain open** for owner decision.
 
 **Thread 1 — dispatch.** Owner wants a more reliable dispatch with **every routine started by Hermes
 except reconciliation**. *Agent view:* endorse — dispatch is already Hermes (`/fire`); the concrete
@@ -5225,3 +5232,22 @@ fix. Always exits 0 (never blocks a push/turn). 7 unit tests; disposable kill-sw
 Q-0105 (delete if noisy over multiple sessions).
 
 **Home:** `scripts/check_branch_freshness.py` + `.claude/settings.json` (PreToolUse Bash + Stop).
+
+---
+
+### Q-0139 — Hook policy: when a fix becomes a hook vs. a rule/checker/config/doc (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session).** Owner asked for "a ruleset for what a hook
+> should define — what something needs to have/do/cause to qualify for a hook, so we know in which
+> future situations to fix something by making it a hook vs. adding it to CLAUDE.md / settings.json."
+
+**Decision.** Created [`../operations/hook-policy.md`](../operations/hook-policy.md) — the
+executable-config analogue of `helper-policy.md`. It names the **five mechanisms** (hook · checker ·
+CLAUDE.md rule · settings.json config · doc), a **five-part test** for what qualifies as a hook
+(automatic & forgettable · event-anchored · mechanizable at fire-time · cheap & safe/non-blocking ·
+recurring), a **quality bar** (defensive, self-filtering, kill-switch header, paired test), a
+**decision tree**, and worked examples. Does **not** lift the Q-0106 boundary (hooks/settings.json/
+CLAUDE.md are still propose-unless-owner-directed). Prompted by the Q-0138 freshness hook built the
+same session.
+
+**Home:** `docs/operations/hook-policy.md`.

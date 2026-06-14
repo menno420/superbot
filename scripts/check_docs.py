@@ -97,7 +97,10 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # 2026-06-08: 41 -> 16 after the Q-0010 consolidation moved plans / audits /
 # inventories / historical snapshots into clustered subdirs (docs/ai/,
 # docs/setup-platform/, docs/health/) and the type buckets, behind their folios.
-_TOP_LEVEL_DOCS_BUDGET = 18
+# 2026-06-14: 18 -> 19 — the one sanctioned *raise*: repo-sector-map.md is a genuine
+# top-level navigation peer to repo-navigation-map.md / repo-review-map.md (the 3-tap nav
+# top layer, owner-directed Q-0137). Keep raising reserved for true top-level nav docs only.
+_TOP_LEVEL_DOCS_BUDGET = 19
 
 # Soft cap on `current-state.md` § Recently shipped (newest-first merged-PR bullets).
 # Keeps the 2nd-most-read doc lean — overflow is archived to current-state-archive.md.
