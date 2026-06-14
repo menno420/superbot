@@ -13,6 +13,15 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#802 + #805 + #811 + #812 + #813 (2026-06-13/14, portable substrate-kit — PR 1b tail + PR 2
+  capability layer)** — the owner's active OSS thread advanced inside the self-contained
+  `substrate-kit/` tree ([extraction plan](planning/portable-substrate-kit-extraction-2026-06-13.md)).
+  **#802** the PR 1b tail (the two stdlib checker ports — generic doc-reachability + session-log
+  guards). **PR 2 (the capability/modes layer) §3b/§3c COMPLETE:** **#805** task-stances (the
+  capability layer) · **#811** an invokable skill pack + skill/stance precedence · **#812**
+  spawnable read-only persona specialists · **#813** a PreToolUse stance-guard hook (stances now
+  *enforced*, not advisory). Stdlib-only; green in-repo; never mutates superbot's live
+  `.claude/`/`docs/`. **Resume: the PR-2 remainder — modes + contract templates + triggers.**
 - **#827 + #828 + #831 + #832 + #835 + #836 + #837 (2026-06-14, the Railway agent-access +
   permission-autonomy session — owner-directed, manual)** — **#827** set
   `permissions.defaultMode: bypassPermissions` (+ empty `ask`, pre-accepted bypass dialog) in

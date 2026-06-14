@@ -207,6 +207,17 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#878 (2026-06-14, P1-1 — versioned AI eval/smoke matrix, offline half)** — the standing #1
+  priority's deterministic, CI-gated half. The live golden set (`tests/evals/cases.py`) is
+  creds-only (`scripts/run_evals.py`), and CI exercised only the harness *machinery* — there was
+  no CI proof of the AI path's **deterministic contract**. New **`tests/evals/smoke.py`** drives
+  the **real gateway** with scripted providers (no API) — 16 cases across **gates · fallback ·
+  tool-dispatch · audit-visibility · safety · redaction · config** — gated by
+  `tests/evals/test_smoke_matrix.py` on every PR, and rendered as one **versioned scorecard**
+  (`scripts/run_evals.py --smoke`, creds-free). Both halves are now version-stamped
+  (`GOLDEN_SET_VERSION` / `SMOKE_MATRIX_VERSION`); the **#855 Layer-A** MOAB-path probe was added
+  to the golden set. `check_quality --full` green (9633); arch 0. **Still owed (P1-1):** the
+  live-quality battery (needs prod creds) + absence-guard **Layer B** (design-for-review).
 - **#870 + #869 + #868 (2026-06-14, Hermes operating-layer hardening arc)** — three docs-only PRs
   maturing the Hermes autonomous-loop control plane. **#868 (Q-0142):** fixed a real misread — a
   stale reconciliation dispatch fired because a decade-queue slot was read as a reserved PR number;
@@ -412,16 +423,7 @@ Source code and merged PRs win over anything written here.
   test + `server_logging._reset_for_tests()` now tears down its subscription, then re-enabled
   `pytest -n auto` (pinned `pytest-xdist==3.6.1`). CI ~109s→~35s, 8 parallel runs all green;
   auto-merged hands-off (Q-0123).
-- **#802 + #805 + #811 + #812 + #813 (2026-06-13/14, portable substrate-kit — PR 1b tail + PR 2
-  capability layer)** — the owner's active OSS thread advanced inside the self-contained
-  `substrate-kit/` tree ([extraction plan](planning/portable-substrate-kit-extraction-2026-06-13.md)).
-  **#802** the PR 1b tail (the two stdlib checker ports — generic doc-reachability + session-log
-  guards). **PR 2 (the capability/modes layer) §3b/§3c COMPLETE:** **#805** task-stances (the
-  capability layer) · **#811** an invokable skill pack + skill/stance precedence · **#812**
-  spawnable read-only persona specialists · **#813** a PreToolUse stance-guard hook (stances now
-  *enforced*, not advisory). Stdlib-only; green in-repo; never mutates superbot's live
-  `.claude/`/`docs/`. **Resume: the PR-2 remainder — modes + contract templates + triggers.**
-- **Older merges (#827 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#813 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
