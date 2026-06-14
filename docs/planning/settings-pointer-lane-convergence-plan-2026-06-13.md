@@ -290,16 +290,20 @@ forever, and Config arbitration warns on every boot.
 consistency WARNING that masks any *other* config-arbitration regression, and a
 migration that can never reach "done".
 
-**Remediation options (needs an owner decision before building — it is a
-cross-guild production data mutation):**
-1. An **admin-gated `!platform backfill` command** (dry-run → apply, audited via
-   the existing `BindingMutationPipeline`/`setup_delegate` seam) — the operator
-   runs it per guild; cleanest fit with the existing audited mutation lane.
-2. A **one-shot startup backfill** behind a flag — runs `apply_backfill` once per
-   guild at boot until checkpoints exist; lower-touch but mutates on boot.
-3. Accept the warning as expected-until-families-3–5 and **suppress
-   Config-arbitration `fallback` from the *startup* snapshot** while the migration
-   is in flight (documents intent, keeps the signal for `!platform consistency`).
+**Remediation options (considered):**
+1. **✅ SHIPPED — an admin-gated `!platform backfill` command** (owner-approved
+   2026-06-14): `!platform backfill` dry-runs (read-only preview); `!platform
+   backfill apply` writes the `candidate_valid` rows through the audited
+   `apply_backfill` seam (`actor_type='backfill'`, per-guild, idempotent —
+   already-bound rows are skipped, advisory-lock guarded). This wires the
+   already-built+tested `services.binding_backfill` to an operator surface so the
+   migration can finally be completed in production.
+2. A **one-shot startup backfill** behind a flag — not chosen (mutating on boot is
+   riskier than an explicit operator action).
+3. Suppress Config-arbitration `fallback` from the *startup* snapshot — not
+   needed once the operator runs the command per guild.
 
-Option 1 is recommended (explicit, audited, per-guild). Until one ships, the
-startup `degraded — attention: consistency` is expected and benign.
+**Operator action (clears the warning for good):** run `!platform backfill` then
+`!platform backfill apply` in each guild that still shows the Config-arbitration
+fallback. Until apply runs, the startup `degraded — attention: consistency` is
+expected and benign (legacy KV is the correct fallback).

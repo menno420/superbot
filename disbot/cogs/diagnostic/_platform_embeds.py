@@ -28,6 +28,7 @@ from services.platform_consistency import (
 
 if TYPE_CHECKING:
     from governance.models import CleanupPolicy, GovernanceSnapshot
+    from services.binding_backfill import ApplyResult, DryRunSummary
 
 
 # ---------------------------------------------------------------------------
@@ -1944,8 +1945,87 @@ async def build_command_access_diagnostic_embed(
     return embed
 
 
+def build_backfill_dryrun_embed(summary: DryRunSummary) -> discord.Embed:
+    """Render ``!platform backfill`` (dry run) — what *would* be written.
+
+    Pure renderer over a :class:`services.binding_backfill.DryRunSummary`
+    (fields are already stringified / scrubbed). The operator reviews this,
+    then runs ``!platform backfill apply`` to write the ``candidate_valid`` rows.
+    """
+    writable = summary.counts.get("candidate_valid", 0)
+    embed = discord.Embed(
+        title="🧩 Binding backfill — dry run",
+        description=(
+            f"**{writable}** legacy pointer(s) ready to migrate into binding rows."
+            if writable
+            else "Nothing to migrate — no `candidate_valid` legacy pointers."
+        ),
+        color=discord.Color.gold() if writable else discord.Color.green(),
+    )
+    counts_line = (
+        ", ".join(f"{k}={v}" for k, v in sorted(summary.counts.items()) if v)
+        or "*(no candidates)*"
+    )
+    embed.add_field(name="Classification counts", value=counts_line, inline=False)
+    lines = [
+        f"`{c.legacy_key}` → **{c.subsystem}.{c.binding_name}** — {c.classification}"
+        + (f" (target {c.legacy_target_id})" if c.legacy_target_id else "")
+        for c in summary.candidates[:12]
+    ]
+    embed.add_field(
+        name="Candidates",
+        value=_capped(lines, empty="*(none)*"),
+        inline=False,
+    )
+    embed.set_footer(
+        text="Run `!platform backfill apply` to write the candidate_valid rows "
+        "(idempotent + audited).",
+    )
+    return embed
+
+
+def build_backfill_apply_embed(result: ApplyResult) -> discord.Embed:
+    """Render ``!platform backfill apply`` — the write-phase outcome.
+
+    Pure renderer over a :class:`services.binding_backfill.ApplyResult`.
+    """
+    failed = result.is_failure
+    written = result.write_status_counts.get("written", 0)
+    embed = discord.Embed(
+        title="🧩 Binding backfill — " + ("failed" if failed else "applied"),
+        description=(
+            f"⚠️ Backfill completed with failures — {written} written; see below."
+            if failed
+            else f"✅ Backfill complete — {written} binding row(s) written."
+        ),
+        color=discord.Color.red() if failed else discord.Color.green(),
+    )
+    status_line = (
+        ", ".join(
+            f"{k}={v}" for k, v in sorted(result.write_status_counts.items()) if v
+        )
+        or "*(no writes)*"
+    )
+    embed.add_field(name="Write status", value=status_line, inline=False)
+    write_lines = [
+        f"`{w.legacy_key}` — {w.write_status}" + (f" ⚠️ {w.error}" if w.error else "")
+        for w in result.writes[:12]
+    ]
+    embed.add_field(
+        name="Writes",
+        value=_capped(write_lines, empty="*(none)*"),
+        inline=False,
+    )
+    if result.error:
+        embed.add_field(name="Error", value=str(result.error)[:1000], inline=False)
+    embed.set_footer(text="Re-running is idempotent — already-bound rows are skipped.")
+    return embed
+
+
 __all__ = [
     "build_anchors_embed",
+    "build_backfill_apply_embed",
+    "build_backfill_dryrun_embed",
     "build_bindings_embed",
     "build_caches_embed",
     "build_command_access_diagnostic_embed",
