@@ -1,6 +1,6 @@
 # Session: fix Hermes "always a bit behind" — pick next slice from live state, not plan PR-numbers
 
-> **Status:** `in-progress` — fixing the Hermes dispatch "pick next slice" gap (Q-0142); flip to complete last.
+> **Status:** `complete` — PR #868; born-red card flipped as the deliberate final step (Q-0133).
 
 **Branch:** `claude/sharp-ptolemy-5mzbvb` · **Date:** 2026-06-14 · **Type:** owner-directed workflow fix (Q-0142, in-session)
 
