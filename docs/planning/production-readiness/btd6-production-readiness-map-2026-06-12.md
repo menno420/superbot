@@ -42,7 +42,7 @@
 | Static fixture corpus | `disbot/data/btd6/` | production reference data | Partial | 70 committed JSON blobs cover broad v55.1 reference/stats data, but decode docs explicitly retain undecoded buff/zone and unexamined areas. | decode-status backlog; inventory/audit scripts |
 | CSV staging corpus | `data/btd6/` | tooling input | Partial | README plus tower/hero CSVs support import preparation; it is not the production served-data lane. | import/fetch scripts |
 | Stats owner | `disbot/services/btd6_stats_service.py` | query owner | Partial | Tower/hero/paragon combat structures and degree stats are broadly mapped; remaining buff/zone decode tail and accepted paragon fallback edge prevent full completeness. | decode-status; stats/paragon tests |
-| Upgrade resolver/detail | `disbot/services/btd6_upgrade_service.py`; `btd6_upgrade_detail_service.py` | resolver/query owners | Partial | Named upgrade, aliases, notation, attacks/minions/buffs/zones are reachable; path-level phrasing and synonym/absence handling remain incomplete. | resolver/detail/minion tests; absence-claim design |
+| Upgrade resolver/detail | `disbot/services/btd6_upgrade_service.py`; `btd6_upgrade_detail_service.py` | resolver/query owners | Partial | Named upgrade, aliases, notation, attacks/minions/buffs/zones are reachable; **path-level phrasing ("middle path") now resolves to its tier line and grounds (Layer A, #855)**; attribute-synonym handling + the absence *gate* (Layer B) remain incomplete. | resolver/detail/minion/path tests; absence-claim design |
 | Resolver/vocabulary | `disbot/services/btd6_resolver_service.py`; `btd6_resolver_vocabulary.py` | routing path | Partial | Broad deterministic entity routing and recent alias/plural fixes exist; recent PRs demonstrate continuing phrasing/routing misses. | recent #703/#707/#709; resolver tests |
 | Context owner | `disbot/services/btd6_context_service.py` | AI grounding composer | Partial | Large deterministic grounding path auto-attaches catalogs, costs, stats, live facts, and carryover; known long-list/model-faithfulness and unresolved-subject gaps remain. | context/carryover/grounding tests; faithfulness findings |
 | AI-safe live context facade | `disbot/services/btd6_ai_context_service.py` | read facade | Done | Typed, read-only summaries for events, entities, restrictions, leaderboard, source status, and fact search. | AI context tests |
@@ -138,7 +138,7 @@
 
 - The AI tool surface is broad, deterministic-first, and heavily tested, but recent PRs show that entity aliases, qualifiers, follow-ups, shorthand, and default-profile tool access continue to expose gaps.
 - Tool availability is not tool discipline: the model may omit a needed deterministic call, ignore correct grounding, or freehand a derived value.
-- The absence-claim backstop remains unimplemented. The safe behavior for unresolved subjects or unmodelled attributes is a bounded “I do not have that in committed data,” not an absolute negative.
+- The absence-claim backstop is partially closed: **Layer A (retrieval) shipped** — path/line phrasing now grounds its tier set instead of resolving to nothing (#855), removing the canonical trigger — but the **Layer B gate remains unimplemented**. The safe behavior for unresolved subjects or unmodelled attributes is a bounded “I do not have that in committed data,” not an absolute negative.
 - Long-list answers need a deterministic rendering or completeness check; grounding the full list is insufficient if the model can drop entries.
 - The passive BTD6 message stage is configuration/channel/confidence/cooldown gated; its existence does not establish universal answerability.
 - Carryover grounding has a first shipped slice, not a proof that all conversational references and qualifier inheritance are reliable.
@@ -156,7 +156,7 @@
 - Broad BTD6 expansion remains gated by the global stability/caching/AI-config and behavior requirements.
 - New extraction must follow the current decode-status backlog and evidence rules; do not create a parallel extraction path.
 - The remaining buff/zone tail is demand-driven and requires confirmed semantics/evidence before values are committed.
-- The absence-claim gate is design-only and requires review before implementation.
+- The absence-claim **gate** (Layer B) is design-only and requires review before implementation; Layer A retrieval (path/line resolution) shipped in #855.
 - Strategy channel intake and cache tuning settings are reserved/unwired.
 - Auto-seed-on-boot is an open owner decision (Q-0077).
 - Shared media/YouTube work is outside BTD6 ownership and must remain in the shared subsystem.

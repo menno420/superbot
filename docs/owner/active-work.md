@@ -25,13 +25,12 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/nifty-allen-uwt95o` · P1-1 Layer A — BTD6 path/line-aware resolution (absence-claim
-  trigger removal, design Rec #1) · `disbot/services/btd6_upgrade_service.py` +
-  `btd6_upgrade_detail_service.py` + `btd6_context_service.py` (Pass 3f) + new test ·
-  2026-06-14
+_(no active claims)_
 
 ## Recently cleared
 
+- `claude/nifty-allen-uwt95o` · P1-1 Layer A — BTD6 path/line-aware resolution (absence-claim
+  trigger removal, design Rec #1) · 2026-06-14 · **PR #855**
 - `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
   2026-06-14 · **PR #843 (merged; session-close docs in a small follow-up PR)**
 - `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
