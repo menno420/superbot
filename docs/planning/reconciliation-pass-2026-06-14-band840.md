@@ -97,11 +97,15 @@ the parallel owner threads**:
 6. **Owner-led in parallel:** add `ROUTINE_PAT` · the P1-4 live walks · `!uxlab` walk · #704 +
    #834 disposition.
 
-## 4. The next ~9 PRs (band #841–#860)
+## 4. The next ~9 slices (planned after #840)
 
-> Modular but not over-segmented (Q-0107): each slot is a real slice. Numbers are
-> **sequence, not reserved PR numbers**. Owner steers override freely; note swaps here.
-> Ordered highest-value-first now that the P0 spine is complete.
+> Modular but not over-segmented (Q-0107): each slot is a real slice. The `#` column is
+> **slot sequence, NOT reserved PR numbers** — GitHub assigns PR numbers globally across all
+> parallel + housekeeping work, so do NOT map a slot to a predicted PR number or read this as a
+> "#841–#860" schedule (Q-0142 — that misread fired a stale reconciliation dispatch on
+> 2026-06-14). Pick the next slice by its **description**, verified against the live ledger.
+> Owner steers override freely; note swaps here. Ordered highest-value-first now that the P0
+> spine is complete.
 
 | # | PR (one session each) | Scope anchor | Gate |
 |---|---|---|---|

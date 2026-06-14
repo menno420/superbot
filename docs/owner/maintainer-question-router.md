@@ -5310,3 +5310,33 @@ the owner is running a "nice test" — Hermes is authoring its own version in pa
 
 **Home:** `docs/operations/hermes-operating-prompt.md`, `docs/operations/hermes-skills/README.md`,
 `scripts/hermes/routine_fire.py`, `docs/operations/hermes-skills/dispatch.md`.
+
+### Q-0142 — Hermes picks the next slice from LIVE state, never a plan's PR numbers (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session).** The owner showed the Telegram trace of a
+> "dispatch a continuation worker" run: Hermes built a work order to *reconcile the ledger for
+> #848–#856* — work that no longer existed. He'd run the live ledger guard (it returned CLEAN) but
+> dispatched a reconciliation task anyway, because he read the band-#840 reconciliation plan's
+> forward range — *"the next ~9 PRs (band #841–#860)"* — as the schedule. The plan was written at
+> HEAD #840; by dispatch time live `main` was at #866, so those numbers were stale. Owner: *"he
+> always seems to be a bit behind which is weird"* → asked to fix how Hermes picks work.
+
+**Root cause.** PR numbers in planning docs are a **dated snapshot** — GitHub assigns them globally
+across all parallel + housekeeping PRs, so any forward "#AAA–#BBB" band range (or "slot N = #NNN"
+mapping) is wrong the moment an unplanned PR merges. The `superbot-dispatch` skill had **no procedure
+for the no-explicit-task ("continuation worker") case**, so Hermes fell back to those plan numbers
+instead of live state.
+
+**Decision / fix (this PR).** When no specific task is given, Hermes derives the next slice from
+**live state**: (1) read `current-state.md` ▶ Next action; (2) run `check_current_state_ledger.py
+--strict` — drift = the only reconciliation task, CLEAN = nothing to reconcile (reconciliation passes
+fire automatically — never hand-dispatch one); (3) pick the slice by **description/lane**, not a PR
+number; (4) confirm it isn't already shipped. Standing rule: **when a plan and live state disagree,
+live state wins** (merged PRs > current-state > plans). Plan-doc forward ranges are de-numbered to
+slot-sequence framing so the misleading artifact is gone at the source.
+
+**Home:** `docs/operations/hermes-skills/dispatch.md` (STEP 1b + the PLAN-NUMBERS-ARE-DATED rule;
+artifact regenerated via `build_skills.py`), `docs/operations/hermes-operating-prompt.md` ("pick by
+description, not PR number"), `docs/planning/reconciliation-pass-2026-06-14-band840.md` §4 heading.
+**Re-paste the operating prompt + `superbot-dispatch` skill into Hermes' config on the VPS for this
+to take effect.**

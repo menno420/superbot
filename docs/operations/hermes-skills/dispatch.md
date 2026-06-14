@@ -35,6 +35,23 @@ STEP 1 — ORIENT (read-only). Ground the work order so the routine starts orien
   - Establish: what exactly is being asked, which files/subsystem it touches, and the
     acceptance check (a test, a command, a behavior). If unclear, ASK ME — do not guess.
 
+STEP 1b — IF I GAVE NO SPECIFIC TASK ("dispatch a continuation worker" / "pick the next thing"):
+  derive it from LIVE state, never from a plan's PR numbers (Q-0142 — the trap that fired stale
+  #848-#856 work on 2026-06-14: a planning doc's forward "#841-#860" range was read as the schedule
+  while live main had already advanced past it).
+    1. Read docs/current-state.md ▶ Next action — the live standing handoff. That pointer + the
+       newest .sessions/ log are the authority for "what's next".
+    2. Run the ledger guard against fresh main:
+         git -C /home/hermes/repos/superbot fetch origin main
+         python3.10 scripts/check_current_state_ledger.py --strict
+       Drift reported -> THAT is the only reconciliation task. CLEAN -> there is nothing to
+       reconcile; do NOT build a reconciliation work order from a planning doc's band range.
+       (Reconciliation passes fire automatically — the routines. You don't hand-dispatch them.)
+    3. Pick the next slice by its DESCRIPTION / lane ("P1-1 eval-smoke matrix"), NOT by a
+       "#841-#860" range or "slot N = #NNN" mapping. Those numbers were written at a past HEAD.
+    4. Confirm it isn't already done: grep current-state Recently-shipped + scan open PRs for it.
+       If it shipped, move to the next slice. THEN assemble the work order (STEP 3).
+
 STEP 2 — CLASSIFY (this decides the merge gate the routine will use):
   - BUG FIX / UX / DOCS / CORRECTNESS  -> the routine builds, tests, and SELF-MERGES on green CI.
   - AGENT-ORIGINATED FEATURE           -> the routine builds and OPENS a PR but must NOT merge;
@@ -80,6 +97,12 @@ RULES:
 - Never print secrets (tokens, the `.env`) to me. Reference env vars by name only.
 - One work order per fire. If the idea is really several changes, say so and dispatch the
   first, or hand me a multi-task plan for a session instead.
+- PLAN NUMBERS ARE DATED (Q-0142). Any "#AAA-#BBB" range or "slot N = #NNN" mapping in a
+  planning / reconciliation doc is a snapshot from when it was written — GitHub assigns PR
+  numbers globally across all parallel + housekeeping work, so a forward range is wrong the
+  moment an unplanned PR merges. Pick work by DESCRIPTION + live ledger state. When the plan
+  and live state disagree, LIVE STATE WINS (the repo's standing precedence rule: merged PRs >
+  current-state > plans). A clean ledger guard means nothing to reconcile — full stop.
 ```
 
 ---
