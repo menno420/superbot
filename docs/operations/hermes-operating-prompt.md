@@ -12,11 +12,24 @@ Hermes does not carry SuperBot's working agreement the way a Claude Code session
 the **portable orientation** that gives Hermes the same starting context: where the repo
 is, what it may and may not do, the mental model, what to read first, and how to format output.
 
-**How to wire it in (one-time, maintainer):** put the block below into Hermes' standing
-instructions — either as the agent system prompt in `~/.hermes/config.yaml`, or as a
-base skill in `~/.hermes/skills/` that the other SuperBot skills assume. Re-paste it when
-this doc changes. (The per-task skills in `hermes-skills/` repeat the safety rules so they
-are safe even without this loaded — but loading it makes every ad-hoc prompt safe too.)
+**How to wire it in (one-time, maintainer):** the operating prompt is Hermes' durable
+identity, so it belongs in **`~/.hermes/SOUL.md`** — the plain-text file Hermes loads as
+slot #1 of its system prompt, **fresh on every message (no restart)**; an empty SOUL.md
+falls back to Hermes' built-in default identity. The repeatable way (mirrors
+`install-skills.sh`):
+
+```bash
+cd /home/hermes/repos/superbot && git pull origin main
+bash scripts/hermes/install-soul.sh          # extracts the block below -> SOUL.md (backs up first)
+bash scripts/hermes/install-soul.sh --dry-run  # preview without writing
+```
+
+Or edit `~/.hermes/SOUL.md` by hand (`cp ~/.hermes/SOUL.md ~/.hermes/SOUL.md.bak` first).
+Re-run after this doc changes. **Not `config.yaml`** — that is the CLI-managed engine config
+(`hermes config edit` / `hermes config set`); its `agent.personalities` are only
+`/personality` tone overlays, not the base prompt. The per-task skills in `hermes-skills/`
+install **separately** into `~/.hermes/skills/` via `install-skills.sh` and repeat the safety
+rules so they are safe even without this loaded — but SOUL.md makes every ad-hoc prompt safe too.
 
 ---
 
