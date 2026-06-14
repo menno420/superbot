@@ -31,8 +31,9 @@ Do the following in order. Skip any step whose tool is unavailable and say so.
 1. PRODUCTION LOGS (Railway)
    Preferred — the read-only API reader (no CLI or login needed):
      python3.10 scripts/hermes/railway_logs.py -n 400 2>&1
-   It reads a read-only token + ids from the environment (RAILWAY_PROJECT_TOKEN
-   or RAILWAY_API_TOKEN, plus RAILWAY_PROJECT_ID and RAILWAY_SERVICE_ID) and
+   It reads a read-only token + ids from the environment (RAILWAY_TOKEN — a
+   project token — or RAILWAY_API_TOKEN, plus RAILWAY_PROJECT_ID and
+   RAILWAY_SERVICE_ID) and
    prints the bot's latest-deployment logs. If it prints "No Railway token found"
    or another setup error, fall back to the `railway` CLI if present
    (`railway logs --service worker 2>&1 | tail -n 400`). If neither works, say
@@ -101,8 +102,8 @@ Format the output as:
 - **Setup (one-time, maintainer):** create a **read-only** Railway token
   ([railway.com/account/tokens](https://railway.com/account/tokens) — a *project*
   token scoped to the production project is least-privilege) and put it on the VPS
-  as `RAILWAY_PROJECT_TOKEN` (or `RAILWAY_API_TOKEN`), plus `RAILWAY_PROJECT_ID`
-  and `RAILWAY_SERVICE_ID` (from the dashboard URL
+  as `RAILWAY_TOKEN` (project token; or `RAILWAY_API_TOKEN` for an account token),
+  plus `RAILWAY_PROJECT_ID` and `RAILWAY_SERVICE_ID` (from the dashboard URL
   `railway.com/project/<id>/service/<id>`). Verify with
   `python3.10 scripts/hermes/railway_logs.py --whoami`. Until configured the skill
   still works — it triages the local `hermes-gateway` logs and reports production

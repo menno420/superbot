@@ -84,6 +84,25 @@ default.
 lifecycle: a Discord gateway bot has no inbound HTTP to health-check and must not
 sleep, so either would break it.
 
+## Which Railway token? (account vs project)
+
+Railway has **two** kinds of API token, on two different pages — this is the part that
+trips people up. Both work with the tools here; pick by how much scope you want.
+
+| | **Project token** (preferred) | **Account / workspace token** |
+|---|---|---|
+| Where | **Project → Settings → Tokens** (set environment `production`) | Account **Settings → Tokens** |
+| Scope | just this one project + environment (least-privilege) | your whole account / workspace |
+| Env var to set | **`RAILWAY_TOKEN`** (the var Railway's own hint names) | `RAILWAY_API_TOKEN` |
+| GraphQL header | `Project-Access-Token` (the tools set this for you) | `Authorization: Bearer` |
+| Verify with | `railway_vars.py list` (a project token has no `--whoami` identity) | `railway_logs.py --whoami` |
+
+**Recommendation:** create a **project token** (e.g. named `claude`, environment
+`production`) and set it as **`RAILWAY_TOKEN`** in the agent's environment. Only reach for
+an account token if a project token returns "Not Authorized". (`RAILWAY_PROJECT_TOKEN` is
+accepted as an alias for `RAILWAY_TOKEN`.) The **ids** are still required either way — the
+token says *who you are*, the ids say *which resource*.
+
 ## Hermes read-only log access (Railway API)
 
 **Posture (Q-0130, 2026-06-14):** the "no Railway access" rule now has one
@@ -111,9 +130,11 @@ python3.10 scripts/hermes/railway_logs.py --json     # raw JSON for tooling
    `railway.com/project/<PROJECT_ID>/service/<SERVICE_ID>` (the `worker` service).
    The production environment id is optional.
 3. Put them in **Hermes's environment** (the VPS — never the repo):
-   - `RAILWAY_PROJECT_TOKEN` (project token) **or** `RAILWAY_API_TOKEN` (account token)
+   - **`RAILWAY_TOKEN`** (project token) **or** `RAILWAY_API_TOKEN` (account token) —
+     see *Which Railway token?* above
    - `RAILWAY_PROJECT_ID`, `RAILWAY_SERVICE_ID`, optional `RAILWAY_ENVIRONMENT_ID`
-4. Verify: `python3.10 scripts/hermes/railway_logs.py --whoami`, then `... -n 50`.
+4. Verify: `railway_vars.py list` (project token) or `railway_logs.py --whoami` (account
+   token), then `python3.10 scripts/hermes/railway_logs.py -n 50`.
 
 **Auth detail:** account/workspace tokens use `Authorization: Bearer <token>`;
 project tokens use `Project-Access-Token: <token>` — the script picks the header from
@@ -154,12 +175,13 @@ python3.10 scripts/hermes/railway_vars.py unset OLD_NAME    # delete
 > edit *is* effectively a deploy unless you stage it; keep that in mind, since deploys
 > otherwise stay the maintainer's.
 
-**Setup (one-time, maintainer):** needs a **write-capable** token (a project token
-scoped to `reliable-grace`, or an account token) **and all three ids** — variables are
-per-environment, so `RAILWAY_ENVIRONMENT_ID` (production) is required alongside
-`RAILWAY_PROJECT_ID` and `RAILWAY_SERVICE_ID`. Put them in the agent's environment (the
-Claude Code cloud environment's variables and/or Hermes's VPS), and allow
-`backboard.railway.com` in that environment's network policy.
+**Setup (one-time, maintainer):** needs a **write-capable** token (a project token set as
+**`RAILWAY_TOKEN`** — see *Which Railway token?* above — or an account token as
+`RAILWAY_API_TOKEN`) **and all three ids** — variables are per-environment, so
+`RAILWAY_ENVIRONMENT_ID` (production) is required alongside `RAILWAY_PROJECT_ID` and
+`RAILWAY_SERVICE_ID`. Put them in the agent's environment (the Claude Code cloud
+environment's variables and/or Hermes's VPS), and allow `backboard.railway.com` in that
+environment's network policy.
 
 ## Backups
 
