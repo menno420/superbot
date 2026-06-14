@@ -200,3 +200,35 @@ conversation with a session about its own ephemerality* — that nothing said
 would be remembered unless documented — which "finalized the idea that had
 been lingering for a while." The system's first cause was a session being
 honest about its own death; every doc here descends from that exchange.
+
+## 7. Operating reality + verification discipline (mined 2026-06-14 from the owner's strategy-chat export, Q-0132)
+
+Working-style facts the owner stated directly in his 2026-06-02→07 planning chats. They sharpen §2/§6:
+
+- **It's a phone-only, zero-stakes hobby — and that is *why* the low-guarding autonomy works.** "I am
+  doing all this from my phone, while I am at work, or while I am with friends… that's why I really like
+  my current workflow, I don't have to spend a lot of time 'guarding' the AI." He keeps it deliberately
+  stress-free. Upshot: durable docs + clean handoffs matter *more* (he is rarely watching live), and any
+  friction he can't action from a phone is real cost.
+- **His code-reading boundary, precisely:** he catches common errors — "missing awaits in async
+  functions, wrong imports etc, but not a lot more" — and can usually tell whether code *would run* and
+  what it would do, but not deeper. So **show your reasoning/evidence** so he can verify you; he explicitly
+  values this ("I have caught you… stating things as facts when there was no proof") and routes the bot's
+  AI to Claude partly for that honesty.
+- **Do the arithmetic; don't hand it back.** "You're much faster in those things than I am, this is where
+  your role gets important." When work is counting / reconciling / cross-checking numbers or strings,
+  **run it and give the answer** — don't assemble a verification checklist for *him* to execute. He
+  supplies domain judgment (flags an implausible number); the agent does the math.
+- **"Green tests are not the verdict — production behavior is."** A guard shipped with 7,000+ green tests
+  and still produced three *live* regressions (refused data it had, formatting collapsed, irrelevant data
+  leaked), because mocked tests can't exercise runtime wiring and nothing asserts "readable" or
+  "relevant." His binding formulation: **extracted ≠ reachable ≠ answerable**; "done" means verified live.
+- **Friends'/testers' exact phrasings ARE the regression suite.** Every phrasing-dependent bug
+  ("Juggernaut" vs "Ultra-Juggernaut", "multiplier" vs the flat bonus) came from real testers. Keep the
+  **literal wording that broke things** as the test case, and re-ask the original wording (not a
+  cleaned-up version) to verify a fix.
+- **Cost tendency to manage for him:** "I just have a hard time choosing for a 'lesser' model when a
+  better one is available." One 22-agent repo audit burned his full 5-hour limit + ~$60 extra credits
+  (~3.2M tokens) — heavy parallel fan-out *feels* like one cheap action but isn't. Reinforces the
+  bounded-session / subagent-on-Sonnet calibration in [`ai-project-workflow.md`](./ai-project-workflow.md)
+  §10–11.

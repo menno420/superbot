@@ -5001,3 +5001,47 @@ review, and "ask what it does" always being answerable — must be preserved, no
 **Home:** `docs/owner/maintainer-working-profile.md` §2 (the observation + rule). If this should be
 elevated to a *binding* executor rule (`docs/collaboration-model.md` / CLAUDE.md), that's a one-line owner
 yes — flagged here, not self-applied (Q-0106).
+
+---
+
+### Q-0132 — Durable items mined from the owner's exported strategy chats (2026-06-14)
+
+> **CAPTURE 2026-06-14 (owner-directed).** The owner exported his claude.ai chat history (13 plain
+> chats — Claude Code *sessions* are not in that export) and asked the session to "see if anything is
+> worth remembering in the repo." A sub-agent mined all 13 (human messages prioritized) + dedup-grepped
+> the owner docs; the durable, novel items were captured to their homes (below). This block is the
+> provenance index.
+
+**Headline owner-decision rationale recorded here (its proper home): why the bot's AI routes to
+Anthropic/Claude, not GPT.** The bot routes its NL tasks to `anthropic:claude-haiku-4-5` (Sonnet
+fallback) — the *env wiring* is in the repo but the *why* was never recorded. The owner's reason, stated
+repeatedly: GPT **failed his eval battery** on the two axes a moderation/server-management bot cannot
+compromise — *prompt-injection resistance* and *reliable instruction/tool-calling*: "I can't trust
+chatGPT's AI… not resistant against weaponized prompts… very bad at correctly following instructions and
+tool calling," vs. Claude where "it's 99.9% impossible to 'trick'… into saying something it isn't allowed
+to." So the model routing is a **trust/safety decision**, not a cost/quality one — keep it Anthropic for
+any path handling untrusted user input or relying on trustable data. (Source: "Comparing
+Grok/Claude/ChatGPT/Gemini" + "Verifying ChatPlayground…", 2026-06-02.)
+
+**Other captures (homes):**
+- **`maintainer-working-profile.md` §7** — operating reality + verification discipline: phone-only
+  zero-stakes hobby (why low-guarding autonomy works) · his code-reading boundary (catches
+  awaits/imports + run-correctness, not deeper → show your reasoning) · "do the math, don't hand it
+  back" · "green tests ≠ verdict; extracted ≠ reachable ≠ answerable" · friends' exact phrasings ARE the
+  regression suite · the "can't pick the lesser model" cost tendency (a 22-agent audit burned the 5-hr
+  limit + ~$60).
+- **`.session-journal.md` §Cross-agent & git workflow** — generalized the `send_later` skip-note to the
+  **phantom-tool keyword-injection pattern** (the owner-traced `workflow`→non-existent `Workflow` tool, a
+  platform-side dangling reference).
+- **`.session-journal.md` §CI & quality gates** — candidate rule: a doc claim mirroring code state must be
+  **CI-backed (a test that fails on divergence)** or date-stamped as a snapshot, never refreshed by
+  per-session human discipline (the rebuttal to "document every mention-worthy edit" at 10–40 PRs/day).
+- **`docs/ideas/future-product-direction-2026-06-07.md`** — BTD6 answer-cache design constraint: key on
+  resolved-entity + data-version (never question text), cache only provenance-stamped tool results,
+  invalidate on ingest.
+
+**Considered, not captured:** the AI read-only-actions ceiling + DnD-quest concept (already in
+future-product-direction's "AI explanations only, no write tools") and the ChatGPT "Revision project"
+grounding contract (the repo already enforces grounding-first/cite-everything) — both already covered.
+
+**Home:** this block (provenance index); the four docs above hold the items.
