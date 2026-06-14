@@ -1,6 +1,6 @@
 # Session: Hermes tooling runs under python3 (VPS has 3.11, not 3.10)
 
-> **Status:** `in-progress` — de-pinning Hermes stdlib tooling from python3.10; flip to complete last.
+> **Status:** `complete` — PR #869; born-red card flipped as the deliberate final step (Q-0133).
 
 **Branch:** `claude/sharp-ptolemy-5mzbvb` · **Date:** 2026-06-14 · **Type:** fix (tooling portability, Q-0142 follow-up)
 
