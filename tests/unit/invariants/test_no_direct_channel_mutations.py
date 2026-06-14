@@ -1,11 +1,12 @@
-"""Channel-lifecycle convergence invariant (server-management PR4 + PR A).
+"""Channel-lifecycle convergence invariant (server-management PR4 + PR A + P0-4).
 
 Channel *mutations* must route through
 ``services.channel_lifecycle_service.ChannelLifecycleService`` — no direct
-``channel.delete()`` / ``channel.edit()`` on the user-facing surfaces.  PR4
-pinned the ``ChannelCog`` command surface; **PR A widens the scan to the
-``disbot/views/channels/`` panels**, which is where the delete-confirmation
-view (``_DeleteConfirmView.confirm_btn``) was bypassing the service.
+``channel.delete()`` / ``channel.edit()`` / ``channel.set_permissions()`` /
+``channel.clone()`` on the user-facing surfaces.  PR4 pinned the ``ChannelCog``
+command surface; **PR A widened the scan to the ``disbot/views/channels/``
+panels** (the delete-confirmation bypass); **P0-4 (Q-0100) converged the
+permission-overwrite and clone paths** through the same seam and pins them here.
 
 Scope notes:
 
@@ -13,9 +14,11 @@ Scope notes:
   ``interaction.message.edit`` (panel re-renders) are excluded by receiver
   name, and the panels otherwise edit messages through ``safe_edit`` /
   ``response.edit_message`` (attribute ``edit_message`` — never matched).
-* Only ``.delete`` / ``.edit`` are pinned — the operations the service owns.
-  ``.set_permissions`` (overwrites) and ``.clone`` keep their current view/cog
-  paths and will be pinned when routed in a later PR, so they are not flagged.
+* ``.delete`` / ``.edit`` / ``.set_permissions`` / ``.clone`` are pinned — the
+  change operations the lifecycle service owns (Q-0100: clone/overwrite →
+  ChannelLifecycleService).  Channel *creation* (``.create_text_channel`` etc.)
+  is NOT pinned here: it converges under ``ResourceProvisioningPipeline`` in the
+  P0-4 creation follow-up, and is guarded by ``test_no_silent_auto_create.py``.
 """
 
 from __future__ import annotations
@@ -28,7 +31,7 @@ _CHANNEL_COG = _REPO_ROOT / "disbot" / "cogs" / "channel_cog.py"
 _CHANNEL_VIEWS = _REPO_ROOT / "disbot" / "views" / "channels"
 
 # Channel mutations routed through ChannelLifecycleService.
-_FORBIDDEN = {"delete", "edit"}
+_FORBIDDEN = {"delete", "edit", "set_permissions", "clone"}
 
 # Receiver expressions whose ``.delete()``/``.edit()`` are *message* operations
 # (panel re-renders), not channel mutations — excluded by the trailing name.

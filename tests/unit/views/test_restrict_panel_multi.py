@@ -6,8 +6,9 @@ pin:
 
 - the picker is a MultiSelect (not a single-select);
 - selecting channels records every id and refreshes the embed;
-- applying a restriction calls ``set_permissions`` once per channel and
-  partitions the result into succeeded / forbidden / failed.
+- applying a restriction routes one batched ``set_overwrite`` through the
+  audited ``ChannelLifecycleService`` (P0-4, Q-0100) and partitions the typed
+  result steps into succeeded / forbidden / failed.
 """
 
 from __future__ import annotations
@@ -17,7 +18,27 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
+from services.lifecycle import contracts as lc
 from views.selectors import MultiSelect
+
+
+def _result(*steps: lc.StepResult) -> lc.LifecycleResult:
+    return lc.LifecycleResult(
+        mutation_id="m",
+        guild_id=1,
+        domain="channel",
+        operation="set_overwrite",
+        outcome=lc.classify_outcome(steps),
+        reversibility=lc.REVERSIBLE,
+        steps=steps,
+    )
+
+
+def _patched_service(result: lc.LifecycleResult):
+    """A ChannelLifecycleService whose .apply returns *result*."""
+    svc = MagicMock()
+    svc.apply = AsyncMock(return_value=result)
+    return svc
 
 
 def _options(*pairs: tuple[int, str]) -> list[discord.SelectOption]:
@@ -70,18 +91,18 @@ async def test_apply_requires_a_selection():
 
 
 @pytest.mark.asyncio
-async def test_lock_applies_to_every_selected_channel():
+async def test_lock_routes_one_batched_overwrite_through_the_service():
     view = _build_view(_options((10, "alpha"), (20, "beta")))
     view.selected_channel_ids = [10, 20]
     interaction = MagicMock()
     interaction.guild = MagicMock()
+    interaction.guild.default_role.id = 999
     interaction.channel = MagicMock()
+    interaction.user = MagicMock()
 
-    ch_a = MagicMock()
-    ch_a.set_permissions = AsyncMock()
-    ch_b = MagicMock()
-    ch_b.set_permissions = AsyncMock()
-    by_id = {10: ch_a, 20: ch_b}
+    svc = _patched_service(
+        _result(lc.StepResult(10, "alpha", True), lc.StepResult(20, "beta", True)),
+    )
 
     captured: dict[str, discord.Embed] = {}
 
@@ -90,7 +111,10 @@ async def test_lock_applies_to_every_selected_channel():
         return True
 
     with (
-        patch("views.channels.restrict_panel.resources") as mock_res,
+        patch(
+            "views.channels.restrict_panel.ChannelLifecycleService",
+            return_value=svc,
+        ),
         patch("views.channels.restrict_panel.safe_defer", AsyncMock(return_value=True)),
         patch("views.channels.restrict_panel.safe_edit", AsyncMock(side_effect=_edit)),
         patch(
@@ -99,9 +123,6 @@ async def test_lock_applies_to_every_selected_channel():
         ),
         patch("views.channels.restrict_panel.asyncio.sleep", AsyncMock()),
     ):
-        mock_res.resolve_channel = MagicMock(
-            side_effect=lambda _g, *, channel_id, kind: by_id.get(channel_id)
-        )
         await view._apply_restriction(
             interaction,
             send_messages=False,
@@ -110,8 +131,13 @@ async def test_lock_applies_to_every_selected_channel():
             embed_color=discord.Color.red(),
         )
 
-    ch_a.set_permissions.assert_awaited_once()
-    ch_b.set_permissions.assert_awaited_once()
+    # one batched set_overwrite over both channels, not per-channel writes.
+    svc.apply.assert_awaited_once()
+    request = svc.apply.await_args.args[1]
+    assert request.operation == "set_overwrite"
+    assert set(request.channel_ids) == {10, 20}
+    assert request.overwrite_target_id == 999
+    assert request.overwrites == {"send_messages": False}
     # both channels reported as succeeded
     field_values = " ".join(f.value for f in captured["embed"].fields)
     assert "alpha" in field_values
@@ -124,15 +150,17 @@ async def test_partial_failure_partitions_results():
     view.selected_channel_ids = [10, 20, 30]
     interaction = MagicMock()
     interaction.guild = MagicMock()
+    interaction.guild.default_role.id = 999
     interaction.channel = MagicMock()
+    interaction.user = MagicMock()
 
-    ch_ok = MagicMock()
-    ch_ok.set_permissions = AsyncMock()
-    ch_forbidden = MagicMock()
-    ch_forbidden.set_permissions = AsyncMock(
-        side_effect=discord.Forbidden(MagicMock(), "nope")
+    svc = _patched_service(
+        _result(
+            lc.StepResult(10, "ok", True),
+            lc.StepResult(20, "forbidden", False, "missing permission"),
+            lc.StepResult(30, "gone", False, "channel not found"),
+        ),
     )
-    by_id = {10: ch_ok, 20: ch_forbidden}  # 30 resolves to None (gone)
 
     captured: dict[str, discord.Embed] = {}
 
@@ -141,7 +169,10 @@ async def test_partial_failure_partitions_results():
         return True
 
     with (
-        patch("views.channels.restrict_panel.resources") as mock_res,
+        patch(
+            "views.channels.restrict_panel.ChannelLifecycleService",
+            return_value=svc,
+        ),
         patch("views.channels.restrict_panel.safe_defer", AsyncMock(return_value=True)),
         patch("views.channels.restrict_panel.safe_edit", AsyncMock(side_effect=_edit)),
         patch(
@@ -150,9 +181,6 @@ async def test_partial_failure_partitions_results():
         ),
         patch("views.channels.restrict_panel.asyncio.sleep", AsyncMock()),
     ):
-        mock_res.resolve_channel = MagicMock(
-            side_effect=lambda _g, *, channel_id, kind: by_id.get(channel_id)
-        )
         await view._apply_restriction(
             interaction,
             send_messages=False,
@@ -163,6 +191,7 @@ async def test_partial_failure_partitions_results():
 
     names = {f.name: f.value for f in captured["embed"].fields}
     joined = " || ".join(f"{k}={v}" for k, v in names.items())
+    # ok → succeeded; forbidden (permission) → its own bucket; gone → not-found.
     assert "ok" in joined
     assert "forbidden" in joined
     assert "gone" in joined

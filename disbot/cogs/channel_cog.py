@@ -48,6 +48,15 @@ from views.channels import (  # noqa: F401 — backward-compat re-exports
     _VisibilitySubView,
 )
 
+# !list pagination moved to views/channels/list_panel.py (P0-4); re-exported
+# here so callers/tests importing them from cogs.channel_cog keep working.
+from views.channels.list_panel import (  # noqa: F401 — backward-compat re-exports
+    _CHANNELS_PER_PAGE_CATEGORIES,
+    _MAX_FIELD_VALUE,
+    _build_channel_list_pages,
+    _ChannelListPaginatorView,
+)
+
 logger = logging.getLogger("bot")
 
 
@@ -99,12 +108,16 @@ class ChannelCog(commands.Cog):
             query,
         )
 
-    async def set_permissions(self, target, role, read_messages):
+    @staticmethod
+    def _overwrite_channel_ids(target) -> tuple[int, ...]:
+        """Channel ids an overwrite applies to: a category fans out to its
+        text/voice children, a single channel is itself.
+        """
         if isinstance(target, discord.CategoryChannel):
-            for channel in target.channels:
-                await channel.set_permissions(role, read_messages=read_messages)
-        elif isinstance(target, (discord.TextChannel, discord.VoiceChannel)):
-            await target.set_permissions(role, read_messages=read_messages)
+            return tuple(ch.id for ch in target.channels)
+        if isinstance(target, (discord.TextChannel, discord.VoiceChannel)):
+            return (target.id,)
+        return ()
 
     def format_overwrites(self, overwrites):
         formatted = ""
@@ -137,6 +150,39 @@ class ChannelCog(commands.Cog):
                 return step.error
         return "operation could not be completed"
 
+    async def _apply_overwrite(
+        self,
+        ctx,
+        channel_ids: tuple[int, ...],
+        target_id: int,
+        overwrites: dict[str, bool | None],
+        *,
+        success: str,
+        fail_label: str,
+    ) -> None:
+        """Route permission overwrite(s) through the audited
+        ChannelLifecycleService (P0-4, Q-0100) and report the typed outcome.
+        """
+        if not channel_ids:
+            await ctx.send(f"{fail_label}: no channels to update.")
+            return
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="set_overwrite",
+                channel_ids=channel_ids,
+                overwrite_target_id=target_id,
+                overwrite_target_type="role",
+                overwrites=overwrites,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            await ctx.send(success)
+        else:
+            await ctx.send(f"❌ {fail_label}: {self._channel_result_error(result)}")
+
     # -------------------
     # Commands
     # -------------------
@@ -167,14 +213,21 @@ class ChannelCog(commands.Cog):
     @is_admin_or_owner()
     async def set_access(self, ctx, target: str, role: discord.Role, permission: bool):
         target_channel = self.get_category_or_channel(ctx.guild, target)
-        if target_channel:
-            await self.set_permissions(target_channel, role, read_messages=permission)
-            state = "opened" if permission else "closed"
-            await ctx.send(
-                f'{target_channel.type} "{target_channel.name}" {state} for {role.name}!',
-            )
-        else:
+        if not target_channel:
             await ctx.send(f'Channel or Category "{target}" not found.')
+            return
+        state = "opened" if permission else "closed"
+        await self._apply_overwrite(
+            ctx,
+            self._overwrite_channel_ids(target_channel),
+            role.id,
+            {"read_messages": permission},
+            success=(
+                f'{target_channel.type} "{target_channel.name}" {state} '
+                f"for {role.name}!"
+            ),
+            fail_label=f'Could not update "{target_channel.name}"',
+        )
 
     @commands.command(
         name="evt",
@@ -230,12 +283,23 @@ class ChannelCog(commands.Cog):
                 await ctx.send(f'Category "{category_name}" not found!')
                 return
 
+        # NOTE: channel *creation* converges under ResourceProvisioningPipeline
+        # in the P0-4 follow-up (Q-0100); for now creation stays direct here, but
+        # the permission overwrite on the new channel routes through the audited
+        # lifecycle seam.
         new_channel = await ctx.guild.create_text_channel(safe_name, category=category)
-        await new_channel.set_permissions(role, read_messages=permission)
         state = "granted" if permission else "restricted"
         suffix = f' (renamed to "{safe_name}")' if safe_name != channel_name else ""
-        await ctx.send(
-            f'Channel "{safe_name}" created with {state} access for {role.name}!{suffix}',
+        await self._apply_overwrite(
+            ctx,
+            (new_channel.id,),
+            role.id,
+            {"read_messages": permission},
+            success=(
+                f'Channel "{safe_name}" created with {state} access '
+                f"for {role.name}!{suffix}"
+            ),
+            fail_label=f'Channel "{safe_name}" created, but access setup failed',
         )
 
     @commands.command(
@@ -358,11 +422,26 @@ class ChannelCog(commands.Cog):
         new_channel_name: str,
     ):
         existing = self._resolve_channel(ctx.guild, existing_channel_name)
-        if existing:
-            await existing.clone(name=new_channel_name)
-            await ctx.send(f'"{existing.name}" cloned as "{new_channel_name}".')
-        else:
+        if not existing:
             await ctx.send(f'"{existing_channel_name}" not found.')
+            return
+        name = existing.name
+        result = await ChannelLifecycleService().apply(
+            ctx.guild,
+            ChannelLifecycleRequest(
+                operation="clone",
+                channel_ids=(existing.id,),
+                clone_name=new_channel_name,
+            ),
+            ctx.author,
+            actor_type="admin",
+        )
+        if result.outcome == SUCCESS:
+            await ctx.send(f'"{name}" cloned as "{new_channel_name}".')
+        else:
+            await ctx.send(
+                f'❌ Could not clone "{name}": {self._channel_result_error(result)}',
+            )
 
     @commands.command(
         name="move",
@@ -397,21 +476,33 @@ class ChannelCog(commands.Cog):
     @is_admin_or_owner()
     async def lock_channel(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
-        if channel:
-            await channel.set_permissions(ctx.guild.default_role, send_messages=False)
-            await ctx.send(f'"{channel.name}" locked.')
-        else:
+        if not channel:
             await ctx.send(f'"{channel_name}" not found.')
+            return
+        await self._apply_overwrite(
+            ctx,
+            (channel.id,),
+            ctx.guild.default_role.id,
+            {"send_messages": False},
+            success=f'"{channel.name}" locked.',
+            fail_label=f'Could not lock "{channel.name}"',
+        )
 
     @commands.command(name="unlock", help="Unlock a channel. Usage: !unlock <name|id>")
     @is_admin_or_owner()
     async def unlock_channel(self, ctx, channel_name: str):
         channel = self._resolve_channel(ctx.guild, channel_name)
-        if channel:
-            await channel.set_permissions(ctx.guild.default_role, send_messages=True)
-            await ctx.send(f'"{channel.name}" unlocked.')
-        else:
+        if not channel:
             await ctx.send(f'"{channel_name}" not found.')
+            return
+        await self._apply_overwrite(
+            ctx,
+            (channel.id,),
+            ctx.guild.default_role.id,
+            {"send_messages": True},
+            success=f'"{channel.name}" unlocked.',
+            fail_label=f'Could not unlock "{channel.name}"',
+        )
 
     @commands.command(
         name="channelinfo",
@@ -493,21 +584,23 @@ class ChannelCog(commands.Cog):
         action: str,
     ):
         channel = self._resolve_channel(ctx.guild, channel_name)
-        if channel:
-            if action.lower() == "allow":
-                await channel.set_permissions(role, send_messages=True)
-                await ctx.send(
-                    f'Send messages **allowed** for {role.name} in "{channel.name}".',
-                )
-            elif action.lower() == "deny":
-                await channel.set_permissions(role, send_messages=False)
-                await ctx.send(
-                    f'Send messages **denied** for {role.name} in "{channel.name}".',
-                )
-            else:
-                await ctx.send('Invalid action. Use "allow" or "deny".')
-        else:
+        if not channel:
             await ctx.send(f'"{channel_name}" not found.')
+            return
+        act = action.lower()
+        if act not in ("allow", "deny"):
+            await ctx.send('Invalid action. Use "allow" or "deny".')
+            return
+        allow = act == "allow"
+        word = "allowed" if allow else "denied"
+        await self._apply_overwrite(
+            ctx,
+            (channel.id,),
+            role.id,
+            {"send_messages": allow},
+            success=f'Send messages **{word}** for {role.name} in "{channel.name}".',
+            fail_label=f'Could not update permissions in "{channel.name}"',
+        )
 
     @commands.command(
         name="bulkcreate",
@@ -542,196 +635,6 @@ class ChannelCog(commands.Cog):
         if failed:
             response += f'❌ Failed: {", ".join(failed)}.'
         await ctx.send(response)
-
-
-# ---------------------------------------------------------------------------
-# !list pagination (PR F)
-# ---------------------------------------------------------------------------
-
-# Discord limits an embed to 25 fields and 6000 characters total, and
-# each field value to 1024 characters. Conservative chunk to stay under
-# both: 12 categories per page leaves headroom for the uncategorized
-# bucket on the last page and respects the 6000-char total.
-_CHANNELS_PER_PAGE_CATEGORIES = 12
-_MAX_FIELD_VALUE = 1024
-
-
-def _channel_block_for_category(
-    category: discord.CategoryChannel,
-) -> str:
-    """Render one category's channels as a newline-separated block.
-
-    Truncates the block at ``_MAX_FIELD_VALUE`` characters with an
-    ellipsis so a category with hundreds of channels does not push
-    the embed over Discord's per-field 1024-char cap.
-    """
-    if not category.channels:
-        return "No channels"
-    lines = [f" - {ch.name}" for ch in category.channels]
-    block = "\n".join(lines)
-    if len(block) > _MAX_FIELD_VALUE:
-        # Reserve room for the truncation marker.
-        return block[: _MAX_FIELD_VALUE - 4] + "\n..."
-    return block
-
-
-def _uncategorized_block(guild: discord.Guild) -> str | None:
-    uncategorized = [
-        ch
-        for ch in guild.channels
-        if ch.category is None and not isinstance(ch, discord.CategoryChannel)
-    ]
-    if not uncategorized:
-        return None
-    lines = [f" - {ch.name}" for ch in sorted(uncategorized, key=lambda c: c.position)]
-    block = "\n".join(lines)
-    if len(block) > _MAX_FIELD_VALUE:
-        return block[: _MAX_FIELD_VALUE - 4] + "\n..."
-    return block
-
-
-def _build_channel_list_pages(
-    guild: discord.Guild,
-) -> list[discord.Embed]:
-    """Split the categories + uncategorized bucket into paginated embeds.
-
-    Pagination math:
-
-    * Each page renders up to ``_CHANNELS_PER_PAGE_CATEGORIES`` (12)
-      category fields. With a guild's 25-field embed cap this leaves
-      13 fields of slack — plenty for the uncategorized field on
-      the final page and any future per-page metadata.
-    * The uncategorized bucket lands as the last field on the LAST
-      page; it does not occupy its own page.
-    * If the guild has no categories AND no uncategorized channels,
-      :func:`list_channels` short-circuits to an empty-state embed.
-    """
-    categories = list(guild.categories)
-    pages: list[discord.Embed] = []
-
-    chunks = [
-        categories[i : i + _CHANNELS_PER_PAGE_CATEGORIES]
-        for i in range(0, len(categories), _CHANNELS_PER_PAGE_CATEGORIES)
-    ] or [[]]
-
-    uncat_block = _uncategorized_block(guild)
-    last_chunk_idx = len(chunks) - 1
-
-    for idx, chunk in enumerate(chunks):
-        embed = discord.Embed(title="Categories and Channels", color=INFO_COLOR)
-        for category in chunk:
-            embed.add_field(
-                name=category.name,
-                value=_channel_block_for_category(category),
-                inline=False,
-            )
-        # Attach the uncategorized bucket to the last page so the
-        # operator sees it without paging past empty content.
-        if idx == last_chunk_idx and uncat_block is not None:
-            embed.add_field(
-                name="— Uncategorized —",
-                value=uncat_block,
-                inline=False,
-            )
-        if not embed.fields:
-            # Empty guild — the caller short-circuits before reaching
-            # this branch, but defend against a future refactor.
-            continue
-        if len(chunks) > 1:
-            embed.set_footer(text=f"Page {idx + 1} / {len(chunks)}")
-        pages.append(embed)
-
-    return pages
-
-
-class _ChannelListPaginatorView(discord.ui.View):
-    """Tiny inline paginator for ``!list`` output (PR F).
-
-    Mirrors the leaderboard pagination style — ``◀``, ``▶``, and a
-    ``↩ Close`` button on a single row. No new framework; this view
-    only exists so guilds with many categories don't hit Discord's
-    embed-field cap.
-    """
-
-    def __init__(
-        self,
-        author: discord.Member | discord.User,
-        pages: list[discord.Embed],
-    ) -> None:
-        super().__init__(timeout=180)
-        self._author = author
-        self._pages = pages
-        self._idx = 0
-        self.message: discord.Message | None = None
-        self._rebuild()
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self._author.id:
-            await interaction.response.send_message(
-                "This list isn't yours.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-    def _rebuild(self) -> None:
-        self.clear_items()
-        prev_btn = discord.ui.Button(  # type: ignore[var-annotated]
-            label="◀ Prev",
-            style=discord.ButtonStyle.grey,
-            disabled=self._idx == 0,
-            row=0,
-        )
-        prev_btn.callback = self._on_prev  # type: ignore[method-assign]
-        self.add_item(prev_btn)
-
-        next_btn = discord.ui.Button(  # type: ignore[var-annotated]
-            label="Next ▶",
-            style=discord.ButtonStyle.grey,
-            disabled=self._idx >= len(self._pages) - 1,
-            row=0,
-        )
-        next_btn.callback = self._on_next  # type: ignore[method-assign]
-        self.add_item(next_btn)
-
-        close_btn = discord.ui.Button(  # type: ignore[var-annotated]
-            label="↩ Close",
-            style=discord.ButtonStyle.secondary,
-            row=0,
-        )
-        close_btn.callback = self._on_close  # type: ignore[method-assign]
-        self.add_item(close_btn)
-
-    async def _on_prev(self, interaction: discord.Interaction) -> None:
-        self._idx = max(0, self._idx - 1)
-        self._rebuild()
-        await interaction.response.edit_message(
-            embed=self._pages[self._idx],
-            view=self,
-        )
-
-    async def _on_next(self, interaction: discord.Interaction) -> None:
-        self._idx = min(len(self._pages) - 1, self._idx + 1)
-        self._rebuild()
-        await interaction.response.edit_message(
-            embed=self._pages[self._idx],
-            view=self,
-        )
-
-    async def _on_close(self, interaction: discord.Interaction) -> None:
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        await interaction.response.edit_message(view=self)
-        self.stop()
-
-    async def on_timeout(self) -> None:
-        for item in self.children:
-            item.disabled = True  # type: ignore[attr-defined]
-        if self.message:
-            try:
-                await self.message.edit(view=self)
-            except Exception:
-                pass
 
 
 async def setup(bot):
