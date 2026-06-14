@@ -1,8 +1,10 @@
 # BTD6 absence-claim guard — design proposal
 
-> **Status:** `reference` — DESIGN PROPOSAL — *not* binding, *not* implemented. Written for
-> independent review (ChatGPT / Analysis side) before any guard code is merged,
-> per the v55 hand-off ("Task 1: DESIGN FIRST, do NOT implement blind").
+> **Status:** `reference` — DESIGN PROPOSAL. **Layer A (retrieval) is now SHIPPED**
+> (path/line-aware resolution, PR #855, 2026-06-14 — see Update 6); **Layer B (the
+> negative-existential gate) remains design-only, *not* implemented**, pending review
+> per the v55 hand-off ("Task 1: DESIGN FIRST, do NOT implement blind"). Written for
+> independent review (ChatGPT / Analysis side) before any *guard* code is merged.
 > The companion status ledger is `btd6-gamedata-decode-status.md`.
 >
 > **One-line ask of the reviewer:** does the layered design below (a cheap
@@ -196,6 +198,41 @@ exactly this doc's family, now with three clean live repros:
 value next step is the faithfulness layer — "answer/list **only** the grounded
 entity, never a similarly-named one from memory; don't drop grounded list items."
 These three are the regression cases to pin before changing behaviour.
+
+## Update 6 (2026-06-14) — Layer A path/line resolution SHIPPED (PR #855)
+
+The §4.1 Layer A **path/line bullet** is now implemented (the §4.1 mechanism-2
+parent-tower enrichment shipped earlier — Update 4 / Pass 3d). Re-verified live this
+session that the canonical trigger was still open: `resolve_upgrade("bomb shooter
+middle path")` → `none` (no name, no alias, no digit code), so the path grounded
+nothing and the model could confabulate a "no".
+
+**What shipped (retrieval only — no guard):**
+
+- `btd6_upgrade_service.resolve_path_reference(query) -> PathReference | None` —
+  detects a `<tower> <top|middle|bottom> path` reference (direction synonyms
+  top/upper, middle/mid/center/centre/central, bottom/bot/lower) and returns that
+  path's five tier identities. **Conservative per §5:** requires a resolvable tower
+  **and** the literal `path` token adjacent to the direction, so "top tier" /
+  "bottom line" / a bare "middle path" (no tower) never fire.
+- `btd6_upgrade_detail_service.path_grounding_for_query(query)` — a header line
+  naming **every tier on the path** ("these are every tier; do not claim the path
+  lacks a tier/effect listed here" — the direct absence antidote) + each tier's full
+  grounding. A tier the user named outright is skipped (Pass 3c grounds it).
+- `btd6_context_service.build` **Pass 3f** wires it in, isolated like its siblings.
+
+The +15/+30/+99 vs MOAB-Class data the §2 table proved reachable-but-unqueried now
+grounds for the path phrasing. This is the design's **Recommendation #1** ("ship
+Layer A first, separately, low risk; verifiable live the same way the round/map/mode
+tools were"). Pinned by `tests/unit/services/test_btd6_path_resolution.py` (22 cases:
+resolution, synonyms, the tower/keyword requirements, the conservatism negatives, the
+MOAB grounding, and the `build()` integration).
+
+**Still design-only (unchanged):** Layer B — the negative-existential **gate** (§4.2 /
+§4.3 crux: resolution-status, not result-emptiness) — and the §4.4 attribute-synonym
+map that its record-check consumes. Those need the review this doc asks for, plus the
+prod-creds live half. Layer A shrinks sub-mode A (never-resolved) so the eventual gate
+fires rarely, exactly as §4.1 intended.
 
 ---
 

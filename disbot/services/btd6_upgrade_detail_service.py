@@ -523,6 +523,41 @@ def grounding_for_query(query: str) -> list[str]:
     return render_upgrade_grounding(detail) if detail is not None else []
 
 
+def path_grounding_for_query(query: str) -> list[str]:
+    """Ground a ``<tower> <top|middle|bottom> path`` reference's whole tier line.
+
+    Layer A of the absence-claim guard (``docs/btd6/btd6-absence-claim-guard-design.md``
+    §4.1): path/line phrasing like "bomb shooter middle path" resolves to no single
+    upgrade, so without this it grounds nothing and the model confabulates a false
+    "no". This surfaces a **header line naming all five tiers on the path** (so the
+    model always sees the complete line — the direct absence-claim antidote) followed
+    by each tier's full grounding. Tiers the user **named explicitly** are skipped —
+    :func:`grounding_for_query` (Pass 3c) already grounds those. Returns ``[]`` for a
+    non-path query so a caller can splice it straight in.
+    """
+    ref = btd6_upgrade_service.resolve_path_reference(query)
+    if ref is None:
+        return []
+    path_label = _PATH_LABEL.get(ref.path, ref.path)
+    roster = ", ".join(f"{u.tier}) {u.canonical}" for u in ref.tiers)
+    lines: list[str] = [
+        _cap(
+            f"[btd6_path] {ref.tower_name} {path_label} path tiers: {roster} "
+            "(source: BTD6 game data). These are every tier on that path; do not "
+            "claim the path lacks a tier or effect that is listed here.",
+        ),
+    ]
+    query_lc = (query or "").lower()
+    for identity in ref.tiers:
+        # Skip a tier the user named outright — Pass 3c grounds it in full already.
+        if identity.canonical.lower() in query_lc:
+            continue
+        detail = get_upgrade_detail(identity.upgrade_id)
+        if detail is not None:
+            lines.extend(render_upgrade_grounding(detail))
+    return lines
+
+
 __all__ = [
     "AbilitySpec",
     "AttackSpec",
@@ -531,6 +566,7 @@ __all__ = [
     "UpgradeDetail",
     "get_upgrade_detail",
     "grounding_for_query",
+    "path_grounding_for_query",
     "power_effect",
     "render_upgrade_grounding",
     "tier_effect_lines",

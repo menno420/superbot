@@ -26,6 +26,17 @@ Current broad captures:
   resumable **deep-clean** with a checkable terminal condition; (3) a **planning-sector** taxonomy
   (bot · BTD6 · agent substrate · **+ a forgotten Operations/control-plane sector**) distinct from the
   `repo-review-map.md` review taxonomy. Captured owner direction + agent opinion; not approved.
+- [`routine-system-improvements-2026-06-14.md`](./routine-system-improvements-2026-06-14.md) —
+  **workflow / routine-system (2026-06-14, owner-requested):** first-hand field notes from a live
+  routine run on making the unattended Hermes-dispatch loop smoother. Core orientation already
+  works (a 2-word trigger still produced a correct end-to-end run); the weak links are the *edges*.
+  Prioritized: **(1)** a standardized **run-report block** in the session log (the artifact Hermes
+  summarizes — with required "owner decisions needed" / "owner manual steps" fields that otherwise
+  vanish); **(2)** align the routine prompt with reality (the `PushNotification` it centers on isn't
+  provisioned — the human is reached via Hermes reading artifacts); **(3)** get Hermes to use the
+  dispatch contract it already has (my fire was bare "auth probe"); **(4)** a repo-area map for
+  non-overlapping parallel dispatch; **(5)** owner-directed-vs-agent-feature phase-gate clarity +
+  a "productive once started" fallback ladder.
 - [`agent-env-credential-smoke-check-2026-06-14.md`](./agent-env-credential-smoke-check-2026-06-14.md) —
   **tooling (2026-06-14, the `auth probe` routine / PR #840):** a stdlib `check_agent_env.py` that
   does a minimal authenticated round-trip for each external credential the env *claims* to provide
@@ -68,12 +79,21 @@ Current broad captures:
   tool calls. *Composes* the print-subjects idea (build that first); orientation-lane, not a
   checker change. Surfaced by this pass spending ~8 tool calls deriving the band by hand before any
   reconciliation thinking. Runtime-lane (hook + `scripts/`), so out of scope for a docs-only pass.
+- [`grounding-completeness-claim-primitive-2026-06-14.md`](./grounding-completeness-claim-primitive-2026-06-14.md) —
+  **AI faithfulness (2026-06-14, the #855 path-resolution session):** promote the ad-hoc "these
+  are every X" roster sentence (#855's path header, the rosters, the capabilities reply) into a
+  first-class grounding primitive that emits a **parseable completeness marker** — so the
+  faithfulness guard can gain a *completeness* check beside its value check and catch the
+  **BUG-0009** long-list drop/add class (which "maps have water" → 64 vs 69). Emit side is cheap
+  retrieval; the guard check rides with absence-guard Layer B. Routes to AI orchestration §7 /
+  the absence-claim family.
 - [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
   **tooling (2026-06-14, band-#820 reconciliation pass):** have
   `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its
   number (it already walks `git log`), collapsing the reconciler's manual `git log --grep` loop
   and reducing mis-attributed ledger entries. Runtime-lane (`scripts/`), so out of scope for a
-  docs-only self-merge pass. Small/safe grooming-lane candidate.
+  docs-only self-merge pass. Small/safe grooming-lane candidate. **Turn-key seam verified
+  2026-06-14 (#855 session): `_git_merged_pr_numbers` already holds each subject.**
 - [`cogs-layer-view-residence-guard-2026-06-14.md`](./cogs-layer-view-residence-guard-2026-06-14.md) —
   **tooling / arch invariant (2026-06-14):** a guard flagging `discord.ui.View`/`Modal`
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans
@@ -281,6 +301,12 @@ Current broad captures:
   Final Review, with confidence/conflict-detection/completeness-scoring/post-setup-summary. Much
   is now the active setup-platform lane; this preserves the original vision + the open-tail
   enhancements. Settings/setup lane.
+- [`media-quota-health-finding-2026-06-14.md`](./media-quota-health-finding-2026-06-14.md) —
+  **small, decided-lane (Q-0089 session idea):** bridge PR #854's process-local media
+  provider-outcome counters (quota_limited / timeout) into the persistent health-findings
+  store (#843, Q-0097) so recurring YouTube quota exhaustion is visible across restarts, not
+  just within one boot. Content-free; reuses the findings seam. Sequence after the
+  provider-execution hardening follow-up.
 - [`rps-tournament-service-refactor.md`](./rps-tournament-service-refactor.md) —
   **preserved refactor spec (from closed issue #229, owner 2026-05-20):** move RPS tournament
   orchestration/state out of `rps_tournament_cog.py` into an `RpsTournamentService` (5-step

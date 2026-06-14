@@ -122,6 +122,7 @@ def test_select_values_cover_every_platform_subcommand():
         "runtime",
         "lifecycle",
         "caches",
+        "media",
         "locks",
         "tasks",
         "views",

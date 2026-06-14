@@ -461,3 +461,21 @@ ai_request_total = Counter(
     "AI gateway requests by task and outcome.",
     ["task", "outcome"],
 )
+
+# ---------------------------------------------------------------------------
+# Media / YouTube provider requests — services/youtube_fetch_service.py
+# Every metadata fetch lands one observation, categorised into the bounded
+# content-free outcome taxonomy (see services/youtube_diagnostics.py):
+# success | key_missing | private_or_deleted | quota_limited | timeout |
+# fetch_error.  Sustained non-zero ``quota_limited`` indicates the daily
+# YouTube Data API quota is exhausted; ``timeout``/``fetch_error`` indicate
+# provider-side instability; ``key_missing`` means the credential is absent.
+# Content-free: only the outcome category is a label — never a video id,
+# title, or any provider content.
+# ---------------------------------------------------------------------------
+
+youtube_provider_request_total = Counter(
+    "youtube_provider_request_total",
+    "YouTube metadata-fetch requests by content-free outcome category.",
+    ["outcome"],
+)

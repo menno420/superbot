@@ -52,3 +52,56 @@ async def test_purge_expired_delegates_and_returns_count(monkeypatch):
 
     purge.assert_called_once()
     assert removed == 4
+
+
+async def test_cache_health_derives_live_rows_and_passes_timestamps(monkeypatch):
+    from datetime import datetime, timezone
+
+    oldest = datetime(2026, 6, 1, tzinfo=timezone.utc)
+    newest = datetime(2026, 6, 14, tzinfo=timezone.utc)
+    next_expiry = datetime(2026, 6, 15, tzinfo=timezone.utc)
+    stats = AsyncMock(
+        return_value={
+            "total_rows": 10,
+            "expired_rows": 3,
+            "ok_rows": 8,
+            "error_rows": 2,
+            "with_transcript_rows": 6,
+            "oldest_fetched_at": oldest,
+            "newest_fetched_at": newest,
+            "next_expiry_at": next_expiry,
+        },
+    )
+    monkeypatch.setattr(svc._db, "get_cache_stats", stats)
+
+    health = await svc.cache_health()
+
+    assert health.total_rows == 10
+    assert health.expired_rows == 3
+    assert health.live_rows == 7  # derived
+    assert health.ok_rows == 8
+    assert health.error_rows == 2
+    assert health.with_transcript_rows == 6
+    assert health.oldest_fetched_at == oldest
+    assert health.next_expiry_at == next_expiry
+
+
+async def test_cache_health_handles_empty_table(monkeypatch):
+    """A fresh/empty table returns NULL aggregates — must not crash."""
+    monkeypatch.setattr(svc._db, "get_cache_stats", AsyncMock(return_value={}))
+
+    health = await svc.cache_health()
+
+    assert health.total_rows == 0
+    assert health.live_rows == 0
+    assert health.oldest_fetched_at is None
+    assert health.next_expiry_at is None
+
+
+def test_cache_health_dataclass_has_no_content_fields():
+    """The health read model exposes only counts/timestamps — no content
+    column (P0-2 / Q-0099 content-free contract)."""
+    fields = set(svc.MediaCacheHealth.__dataclass_fields__)
+    for forbidden in ("metadata_json", "transcript_text", "video_id", "title"):
+        assert forbidden not in fields
+

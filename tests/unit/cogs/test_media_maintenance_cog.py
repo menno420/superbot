@@ -41,3 +41,52 @@ async def test_purge_loop_swallows_errors(monkeypatch):
     cog = _cog()
     # Should not raise.
     await cog._purge_loop.coro(cog)
+
+
+async def test_purge_loop_records_success_outcome(monkeypatch):
+    from services import youtube_diagnostics
+
+    youtube_diagnostics._reset_for_tests()
+    monkeypatch.setattr(
+        "services.video_reference_cache_service.purge_expired",
+        AsyncMock(return_value=2),
+    )
+    cog = _cog()
+    await cog._purge_loop.coro(cog)
+    snap = youtube_diagnostics.last_purge_snapshot()
+    assert snap is not None and snap["rows"] == 2 and snap["ok"] is True
+    youtube_diagnostics._reset_for_tests()
+
+
+async def test_purge_loop_records_failure_outcome(monkeypatch):
+    from services import youtube_diagnostics
+
+    youtube_diagnostics._reset_for_tests()
+    monkeypatch.setattr(
+        "services.video_reference_cache_service.purge_expired",
+        AsyncMock(side_effect=RuntimeError("db down")),
+    )
+    cog = _cog()
+    await cog._purge_loop.coro(cog)
+    snap = youtube_diagnostics.last_purge_snapshot()
+    assert snap is not None and snap["ok"] is False
+    youtube_diagnostics._reset_for_tests()
+
+
+async def test_setup_registers_media_diagnostics_provider(monkeypatch):
+    from cogs import media_maintenance_cog
+    from services import diagnostics_service
+
+    # Register only the media provider and clean it up — do NOT wipe the
+    # shared import-populated diagnostics registry (that would leak an empty
+    # registry into sibling tests under a parallel run).
+    bot = MagicMock()
+    bot.add_cog = AsyncMock()
+    try:
+        await media_maintenance_cog.setup(bot)
+        assert "media" in diagnostics_service.registered_names()
+        # the provider returns the content-free snapshot shape
+        snap = diagnostics_service.snapshot("media")
+        assert set(snap) == {"provider_outcomes", "last_purge"}
+    finally:
+        diagnostics_service.unregister("media")
