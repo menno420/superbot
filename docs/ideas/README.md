@@ -20,6 +20,12 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`routine-activity-visibility-2026-06-14.md`](./routine-activity-visibility-2026-06-14.md) —
+  **workflow / UX (2026-06-14, owner-observed):** routine *run* sessions are hidden from the
+  Recents tab (intentional upstream behavior; open FR
+  [anthropics/claude-code#54517](https://github.com/anthropics/claude-code/issues/54517)), so there
+  is no at-a-glance "is a session active?" signal. Can't change the app UI — the DIY fit is a
+  **Discord webhook ping** from each routine on start/finish (ask-gated: needs a channel + webhook).
 - [`scheduled-maintenance-registry-2026-06-14.md`](./scheduled-maintenance-registry-2026-06-14.md) —
   **tooling / arch (2026-06-14, P0-2 media-retention session):** a central
   `register_maintenance(name, interval, coro, owner)` registry + one runner cog, to retire the
