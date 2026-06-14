@@ -60,22 +60,78 @@ def test_merge_subject_extraction(monkeypatch) -> None:
     assert nums == [734, 733, 730, 762]  # order preserved, de-duped, non-PR skipped
 
 
+def test_merge_subject_map(monkeypatch) -> None:
+    subjects = "\n".join(
+        [
+            "Merge pull request #734 from menno420/branch",
+            "Merge PR #762: UX Lab PR C — mock studio",
+            "chore: no pr number here",
+            # A second, older subject for #734 must NOT overwrite the newest one.
+            "Merge pull request #734 from menno420/dup",
+        ]
+    )
+
+    class _R:
+        returncode = 0
+        stdout = subjects
+
+    monkeypatch.setattr(csl.subprocess, "run", lambda *a, **k: _R())
+    mapping = csl._git_merged_pr_map(10)
+    assert mapping == {
+        734: "Merge pull request #734 from menno420/branch",
+        762: "Merge PR #762: UX Lab PR C — mock studio",
+    }
+    # The number list derives from the map, order preserved.
+    assert csl._git_merged_pr_numbers(10) == [734, 762]
+
+
+def test_main_prints_missing_pr_subjects(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(csl, "find_missing", lambda window: [814, 999])
+    monkeypatch.setattr(
+        csl,
+        "_git_merged_pr_map",
+        lambda limit: {814: "Merge PR #814: ci — cut code-quality cost"},
+    )
+    assert csl.main([]) == 0
+    out = capsys.readouterr().out
+    # The known PR shows its merge subject; an unmapped one degrades gracefully.
+    assert "#814  Merge PR #814: ci — cut code-quality cost" in out
+    assert "#999  (no merge commit found — closed/unmerged?)" in out
+
+
 def test_find_missing_flags_unlisted(monkeypatch) -> None:
     monkeypatch.setattr(csl, "_git_merged_pr_numbers", lambda limit: [734, 733, 730])
-    monkeypatch.setattr(csl, "_ledger_text", lambda: "shipped **#733** and **#730**")
+    monkeypatch.setattr(csl, "known_ledger_numbers", lambda: {733, 730})
     assert csl.find_missing(window=15) == [734]
 
 
 def test_find_missing_empty_when_all_present(monkeypatch) -> None:
     monkeypatch.setattr(csl, "_git_merged_pr_numbers", lambda limit: [733, 730])
-    monkeypatch.setattr(csl, "_ledger_text", lambda: "#730 #733")
+    monkeypatch.setattr(csl, "known_ledger_numbers", lambda: {730, 733})
     assert csl.find_missing() == []
 
 
-def test_range_in_ledger_covers_member(monkeypatch) -> None:
-    monkeypatch.setattr(csl, "_git_merged_pr_numbers", lambda limit: [719])
-    monkeypatch.setattr(csl, "_ledger_text", lambda: "- **#715–#723** the set")
-    assert csl.find_missing() == []
+def test_range_in_recently_shipped_covers_member() -> None:
+    cs = "## Recently shipped\n- **#715–#723** the map set"
+    assert 719 in csl.known_ledger_numbers(current_state_text=cs, archive_text="")
+
+
+def test_planning_range_in_next_action_does_not_mask_band() -> None:
+    # The band-#800 false-green: a forward-looking range *above* ## Recently shipped
+    # must NOT mark its interior present (only its endpoints match as bare #N refs).
+    cs = (
+        "> ▶ Next action — the band #900–#919 decade queue\n\n"
+        "## Recently shipped\n- nothing here yet"
+    )
+    known = csl.known_ledger_numbers(current_state_text=cs, archive_text="")
+    assert 905 not in known  # interior no longer masked
+    assert 910 not in known
+
+
+def test_range_in_archive_covers_member() -> None:
+    assert 719 in csl.known_ledger_numbers(
+        current_state_text="## Recently shipped\n", archive_text="- **#715–#723**"
+    )
 
 
 def test_strict_exit_code(monkeypatch) -> None:
