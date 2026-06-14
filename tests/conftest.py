@@ -48,30 +48,23 @@ def _feature_flag_registry_baseline():
 def _isolate_global_runtime_state(_feature_flag_registry_baseline):
     """Reset process-global runtime singletons before/after every test.
 
-    The bot keeps several module-level singletons — the lifecycle phase,
-    the startup-outcome ledger, and the feature-flag registry/cache — that
-    one test can mutate and the next can read. Under serial collection the
-    deterministic ordering happens to hide the leakage; under ``pytest-xdist``
-    parallel scheduling a polluting test can land on the same worker *before*
-    a reader with no reset between them, so the suite was not parallel-safe
-    (a different subset failed each parallel run). Each of these modules
-    already ships a test-reset hook — ``startup_outcome.reset_for_tests``'s
-    docstring even asks for exactly this autouse fixture — they were just
-    never wired suite-wide. Resetting before *and* after each test makes the
-    starting state independent of execution order.
+    The bot keeps many module-level singletons — the lifecycle phase, the
+    startup-outcome ledger, the feature-flag registry/cache, and a handful of
+    runtime caches/ledgers — that one test can mutate and the next can read.
+    Under serial collection the deterministic ordering happens to hide the
+    leakage; under ``pytest-xdist`` parallel scheduling a polluting test can land
+    on the same worker *before* a reader with no reset between them, so the suite
+    was not parallel-safe (a different subset failed each parallel run — PR #815).
+
+    The set of globally-reset modules is the single source of truth in
+    ``tests/_isolation.py`` (``GLOBAL_RESET_HOOKS``); a guardrail test
+    (``tests/unit/invariants/test_global_state_isolation.py``) ensures every
+    reset hook in ``disbot/`` is classified there, so a new global-state module
+    cannot silently go unwired. Resetting before *and* after each test makes a
+    test's starting state independent of execution order.
     """
-    from core.runtime import feature_flags, lifecycle, startup_outcome
+    from tests._isolation import apply_global_resets
 
-    def _restore() -> None:
-        lifecycle.reset_for_tests()
-        startup_outcome.reset_for_tests()
-        # Restore the registry to its import-time baseline (not empty),
-        # then clear the per-evaluation cache + bootstrap-fallback counter.
-        feature_flags._REGISTRY.clear()
-        feature_flags._REGISTRY.update(_feature_flag_registry_baseline)
-        feature_flags._CACHE.clear()
-        feature_flags._reset_metrics_for_tests()
-
-    _restore()
+    apply_global_resets(_feature_flag_registry_baseline)
     yield
-    _restore()
+    apply_global_resets(_feature_flag_registry_baseline)

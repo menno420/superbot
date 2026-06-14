@@ -25,7 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
+  guardrail) · `tests/_isolation.py` + `tests/conftest.py` refactor + a lint test that every
+  disbot `_reset_for_tests` hook is classified (global vs per-file) · 2026-06-14
 
 ## Recently cleared
 
