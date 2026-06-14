@@ -32,7 +32,7 @@ STEP 1b — IF I GAVE NO SPECIFIC TASK ("dispatch a continuation worker" / "pick
        newest .sessions/ log are the authority for "what's next".
     2. Run the ledger guard against fresh main:
          git -C /home/hermes/repos/superbot fetch origin main
-         python3.10 scripts/check_current_state_ledger.py --strict
+         python3 scripts/check_current_state_ledger.py --strict
        Drift reported -> THAT is the only reconciliation task. CLEAN -> there is nothing to
        reconcile; do NOT build a reconciliation work order from a planning doc's band range.
        (Reconciliation passes fire automatically — the routines. You don't hand-dispatch them.)
@@ -46,7 +46,7 @@ STEP 2 — CLASSIFY (this decides the merge gate the routine will use):
   - AGENT-ORIGINATED FEATURE           -> the routine builds and OPENS a PR but must NOT merge;
                                           it pings me for approve/deny (Q-0114).
   Also run the phase gate to sanity-check feature work is even in-season:
-    python3.10 /home/hermes/repos/superbot/scripts/check_phase_gate.py --phase
+    python3 /home/hermes/repos/superbot/scripts/check_phase_gate.py --phase
   If it prints `fix` and this is an agent-originated feature, STOP and tell me we're in
   fix-phase — propose it as an idea capture instead of dispatching it.
 

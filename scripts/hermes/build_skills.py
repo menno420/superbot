@@ -19,9 +19,15 @@ generated file** — every emitted ``SKILL.md`` carries a ``GENERATED`` marker.
 Pure stdlib (no PyYAML) so the freshness test runs in CI without installing
 anything — same discipline as ``scripts/check_docs.py``.
 
+Interpreter: invoke with **``python3``** (version-agnostic, runs under any 3.9+).
+The Hermes VPS has Python 3.11, not 3.10, and this is a stdlib markdown generator —
+NOT one of the CI-parity tools (black/mypy/pytest via ``check_quality``) that
+``.claude/CLAUDE.md`` pins to ``python3.10``. Do not "correct" these usage lines back
+to ``python3.10`` — that breaks Hermes, which only has ``python3`` (Q-0142 follow-up).
+
 Usage:
-    python3.10 scripts/hermes/build_skills.py            # (re)generate artifacts
-    python3.10 scripts/hermes/build_skills.py --check    # exit 1 if stale (CI)
+    python3 scripts/hermes/build_skills.py            # (re)generate artifacts
+    python3 scripts/hermes/build_skills.py --check    # exit 1 if stale (CI)
 """
 
 from __future__ import annotations
@@ -245,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
             print("build_skills --check: stale or missing generated skill(s):")
             for p in sorted(stale):
                 print(f"  {p.relative_to(REPO_ROOT)}")
-            print("\nRun: python3.10 scripts/hermes/build_skills.py")
+            print("\nRun: python3 scripts/hermes/build_skills.py")
             return 1
         print(f"build_skills --check: {len(rendered)} skill(s) up to date ✓")
         return 0

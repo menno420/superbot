@@ -83,7 +83,9 @@ Format the output as:
 
 ## Notes
 
-- If `python3` is not on the path, try `python3.10` (the repo uses Python 3.10 for CI).
+- Invoke the repo's stdlib checkers with **`python3`** (the VPS has 3.11, not 3.10) — they are
+  version-agnostic and run under any Python 3.9+. The `python3.10` pin in `.claude/CLAUDE.md` is
+  **only** for CI-parity tools (`check_quality` / black / mypy / pytest), which Hermes does not run.
 - The architecture check may produce warnings for known violations — these are tracked in
   `architecture_rules/` YAML files and are expected. Warnings alone are not a blocker.
 - If `gh` is not authenticated, skip steps 3 and 4 and mark them ⚠️ "gh not available".

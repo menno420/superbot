@@ -67,9 +67,9 @@ STEP 3 — WRITE THE SOURCE. Create docs/operations/hermes-skills/<name>.md in t
 
 STEP 4 — REGISTER + BUILD. Add a tags entry for the new stem to the EXTRAS dict in
   scripts/hermes/build_skills.py (copy a sibling's line). Then regenerate the installable artifact:
-      python3.10 scripts/hermes/build_skills.py
-      python3.10 scripts/hermes/build_skills.py --check     # must pass
-      python3.10 scripts/check_docs.py --strict             # reachability/pins
+      python3 scripts/hermes/build_skills.py
+      python3 scripts/hermes/build_skills.py --check     # must pass
+      python3 scripts/check_docs.py --strict             # reachability/pins
   (build_skills.py edits scripts/hermes/build_skills.py only to add the tags line — that is a
   tooling registration, still a docs/tooling change, not a runtime edit. If you are unsure, ask.)
 

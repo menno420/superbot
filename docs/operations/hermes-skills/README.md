@@ -46,7 +46,7 @@ those from these docs (the same source → builder → generated-artifact patter
 
 ```bash
 # Regenerate the installable SKILL.md artifacts after editing any skill doc:
-python3.10 scripts/hermes/build_skills.py
+python3 scripts/hermes/build_skills.py
 ```
 
 This writes `scripts/hermes/skills/<name>/SKILL.md` (frontmatter + prompt body, marked
