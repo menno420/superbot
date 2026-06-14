@@ -25,7 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/gracious-ramanujan-o5wcw1` · P0-2 PR 1 — media/YouTube data-minimization +
+  retention enforcement (Q-0099): bounded metadata projection at cache write + scheduled
+  physical purge owner + thumbnail-URL validation · `services/youtube_context_service.py` ·
+  `services/video_reference_cache_service.py` · new `cogs/media_maintenance_cog.py` ·
+  `docs/ownership.md` + media readiness map · 2026-06-14
 
 ## Recently cleared
 

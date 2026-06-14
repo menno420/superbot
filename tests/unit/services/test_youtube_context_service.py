@@ -35,9 +35,12 @@ _FAKE_METADATA = {
         "channelTitle": "Test Channel",
         "publishedAt": "2024-01-15T10:00:00Z",
         "description": "A test video description.",
-        "thumbnails": {"high": {"url": "https://example.com/thumb.jpg"}},
+        "thumbnails": {"high": {"url": "https://i.ytimg.com/vi/abc/hqdefault.jpg"}},
     },
     "contentDetails": {"duration": "PT5M30S"},
+    # Raw provider fields that must NEVER reach storage (data-minimisation).
+    "id": "dQw4w9WgXcQ",
+    "statistics": {"viewCount": "9999"},
 }
 
 
@@ -241,3 +244,101 @@ def test_parse_iso8601_duration():
     assert youtube_context_service._parse_iso8601_duration("PT1H") == 3600
     assert youtube_context_service._parse_iso8601_duration("PT2H15M") == 8100
     assert youtube_context_service._parse_iso8601_duration("invalid") is None
+
+
+# ---------------------------------------------------------------------------
+# Data-minimisation projection (P0-2 / Q-0099)
+# ---------------------------------------------------------------------------
+
+_BOUNDED_KEYS = {
+    "title",
+    "channel_name",
+    "published_at",
+    "duration_seconds",
+    "description_excerpt",
+    "thumbnail_url",
+}
+
+
+def test_project_metadata_extracts_only_bounded_fields():
+    projected = youtube_context_service._project_metadata(_FAKE_METADATA)
+    # Only the bounded keys — no raw provider keys leak through.
+    assert set(projected) == _BOUNDED_KEYS
+    assert "snippet" not in projected
+    assert "contentDetails" not in projected
+    assert "statistics" not in projected
+    assert "id" not in projected
+    assert projected["title"] == "Test Video"
+    assert projected["channel_name"] == "Test Channel"
+    assert projected["duration_seconds"] == 330
+    assert projected["thumbnail_url"] == "https://i.ytimg.com/vi/abc/hqdefault.jpg"
+
+
+def test_project_metadata_is_idempotent():
+    once = youtube_context_service._project_metadata(_FAKE_METADATA)
+    twice = youtube_context_service._project_metadata(once)
+    assert once == twice
+
+
+def test_project_metadata_empty_is_empty():
+    assert youtube_context_service._project_metadata({}) == {}
+
+
+def test_description_excerpt_is_capped():
+    raw = {"snippet": {"description": "x" * 5000}}
+    projected = youtube_context_service._project_metadata(raw)
+    assert len(projected["description_excerpt"]) <= youtube_context_service._MAX_DESCRIPTION_CHARS
+
+
+async def test_cache_miss_stores_only_bounded_projection(monkeypatch):
+    """The fresh-fetch path must persist the bounded projection, not the raw
+    provider payload (the headline Q-0099 privacy guarantee)."""
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
+    monkeypatch.setattr(
+        "services.video_reference_cache_service.get_cached",
+        AsyncMock(return_value=None),
+    )
+    monkeypatch.setattr(
+        "services.youtube_fetch_service.fetch_video_metadata",
+        AsyncMock(return_value=_FAKE_METADATA),
+    )
+    monkeypatch.setattr(
+        "services.youtube_fetch_service.fetch_transcript",
+        AsyncMock(return_value=[]),
+    )
+    put_mock = AsyncMock()
+    monkeypatch.setattr("services.video_reference_cache_service.put_cached", put_mock)
+
+    await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
+
+    put_mock.assert_called_once()
+    stored = put_mock.call_args.args[1]
+    assert set(stored) == _BOUNDED_KEYS
+    assert "snippet" not in stored and "statistics" not in stored and "id" not in stored
+
+
+# ---------------------------------------------------------------------------
+# Thumbnail URL validation
+# ---------------------------------------------------------------------------
+
+
+def test_safe_thumbnail_url_accepts_youtube_hosts():
+    assert (
+        youtube_context_service._safe_thumbnail_url(
+            "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+        )
+        == "https://i.ytimg.com/vi/abc/hqdefault.jpg"
+    )
+    assert (
+        youtube_context_service._safe_thumbnail_url("https://img.youtube.com/vi/abc/0.jpg")
+        == "https://img.youtube.com/vi/abc/0.jpg"
+    )
+
+
+def test_safe_thumbnail_url_rejects_foreign_and_insecure():
+    assert youtube_context_service._safe_thumbnail_url("https://example.com/thumb.jpg") is None
+    assert youtube_context_service._safe_thumbnail_url("http://i.ytimg.com/x.jpg") is None
+    assert youtube_context_service._safe_thumbnail_url("https://evil-ytimg.com/x.jpg") is None
+    assert youtube_context_service._safe_thumbnail_url(None) is None
+    assert youtube_context_service._safe_thumbnail_url("not a url") is None

@@ -80,6 +80,7 @@ writes must come from the owning cog or a shared service.
 | `proof_channel`| (uses Discord API; balance via economy)        | economy_service |
 | `utility`      | (no DB tables of its own)                      | n/a |
 | `leaderboard`  | (reads every owner's tables; no writes)        | n/a |
+| `media` (YouTube) | `youtube_video_cache` (migration 049 — provider metadata/transcript cache) | **Shared platform** subsystem (ADR-007), not AI/BTD6-owned; AI is one consumer. Reads/writes via `services/video_reference_cache_service.py` (raw SQL isolated in `utils/db/youtube_video_cache.py`). **Data-minimisation (Q-0099):** only the bounded projection is stored — never the raw provider payload (`services/youtube_context_service._project_metadata`). **Retention:** physical purge of expired rows is owned by `cogs/media_maintenance_cog.py` (scheduled `tasks.loop` → `video_reference_cache_service.purge_expired`) |
 
 ### Shared columns
 
