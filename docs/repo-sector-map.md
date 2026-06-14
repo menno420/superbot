@@ -92,6 +92,41 @@ specific knowledge?"* → **S3 (mechanism)**. *"Is this SuperBot's specific know
 - **Note:** under-represented in any file-based partition precisely because much of it is *live state*,
   not code — every recent silent failure (backups inert, routines not firing, cron lag) lived here.
 
+## The sectors as dispatch targets
+
+The point of a small, memorable top layer is that a **sector is a dispatch unit**: an autonomous
+worker (or a Hermes-fired routine) is dispatched by naming a **sector + an action** — e.g. *"continue
+the S2 BTD6 plan execution"* or *"plan the S3 AI-Memory sector, then an hour later execute it."* The
+worker reads that sector's **live queue** and advances it. This makes the five sectors the **menu** a
+dispatcher picks from.
+
+**Where the live queue lives:** each sector's `Now / Next / Later` is the
+[roadmap's per-sector dispatch index](roadmap.md#by-sector--the-live-dispatch-queues). This map
+defines the *stable* dispatch contract (below); the roadmap holds the *live* horizons — one source of
+truth each, so they don't drift.
+
+**The action vocabulary** (small on purpose):
+
+| Action | Means | Reads | Routine seam |
+|---|---|---|---|
+| **plan** | draft or refine the plan for the sector's next slice | the sector's `Now`/`Next` + its folios/plans | a dispatch work order (`CLASS: plan`) |
+| **execute · continue** | advance the sector's active `Now` slice (or resume a `continue` handoff) | the linked plan + `docs/current-state.md` ▶ | the night-executor / a dispatch work order |
+| *reconcile / deep-clean* | *(sector-spanning, not a per-sector dispatch)* — the Q-0107 docs pass over **all** sectors | the ledger + every sector's queue | **kept independent of Hermes** (the watchdog, Q-0137 Thread 1) |
+
+| Sector | A worker dispatched here… | Live queue |
+|---|---|---|
+| **S1 Bot** | builds/fixes a bot subsystem slice (incl. the in-bot AI) | roadmap → S1 |
+| **S2 BTD6** | runs the decode/answerability backlog or a data refresh | roadmap → S2 |
+| **S3 AI-Memory** | builds a mechanism (checker · hook · loop seam · substrate-kit slice) | roadmap → S3 |
+| **S4 Docs** | grooms ideas, de-stales a doc area, or runs the docs pass | roadmap → S4 |
+| **S5 Operations** | builds a read-only ops skill or verifies/hardens the control plane | roadmap → S5 |
+
+**What this map does *not* do:** it does not wire Hermes. Turning a phone message into a `/fire`
+dispatch — and moving the night executor off GitHub cron onto the always-on Hermes VPS — is **Q-0137
+Thread 1** (owner-undecided). The actions above map onto the existing routine fleet documented in
+[`operations/autonomous-routines.md`](operations/autonomous-routines.md); this map just makes the
+sectors *dispatch-ready*.
+
 ## Two taxonomies (don't let them compete)
 
 This **planning** map coarsens the **review** map; they answer different questions and both are valid:
