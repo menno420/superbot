@@ -51,6 +51,19 @@ becomes implementation work. That routing is the job of
 [`maintainer-question-router.md`](./maintainer-question-router.md), so the maintainer does
 not have to carry it.
 
+**He executes agent-provided steps without independently vetting them (observed 2026-06-14).**
+In his words: *"the only thing I do is follow the steps you provide … if you wanted to add
+something destructive you could have easily achieved that by steering me, since I don't really
+know what I'm doing."* This is an explicit high-trust execution relationship, and a real
+responsibility. **Standing rule for agents (not just a nicety): when you hand the maintainer a
+manual step — anything touching secrets, production, money, deletion, or an external service —
+label its risk class plainly** so he can judge it without the technical context: `✅ safe /
+read-only`, `↩️ reversible`, or `⚠️ irreversible / destructive`. Never bury a destructive or
+irreversible action inside routine-looking steps. What keeps this trust *sound* — and must stay
+true — is the safety net under it: everything an agent does lands as a **reviewable, revertible
+PR**; cross-agent review checks any single agent; and he can always ask *"what does this actually
+do?"* and get a plain answer. (See router Q-0131.)
+
 **How he runs it day-to-day (observed 2026-06-08).** The maintainer runs **several chats in
 parallel by default** — typically a Claude Code *implementation* chat, plus ChatGPT *projects*
 per pipeline stage (`SuperBot Prompts` = Prompt Forge, `SuperBot Decisions`, `SuperBot
