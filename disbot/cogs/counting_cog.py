@@ -29,6 +29,7 @@ from cogs.counting._stage import COUNTING_STAGE_NAME, CountingStage
 from core.runtime import resources, scope_locks, tasks
 from core.runtime.interaction_helpers import help_ctx_shim
 from utils import db
+from utils.visibility_rules import get_member_visibility_tier, is_tier_sufficient
 from views.base import send_panel
 
 # _CountingHubView is instantiated below by the !countingmenu command
@@ -105,11 +106,26 @@ class CountingCog(commands.Cog):
     # --------------------------------------------
 
     async def is_staff_or_owner(self, ctx):
-        """Check if the user is staff or the bot owner."""
+        """Check if the user is staff or the bot owner.
+
+        Security (BUG-0012): gate on **real Discord permissions** via the
+        canonical governance visibility tier — never on role *names*.  The
+        previous implementation granted access to anyone holding a role merely
+        *named* ``"Admin"`` or ``"Moderator"``, regardless of whether that role
+        carried any actual permissions, so a powerless cosmetic role with a
+        matching name bypassed the permission system entirely.  Now a member
+        qualifies only if Discord reports them at moderator tier or above
+        (``moderate_members`` / ``administrator`` / guild owner) — a name match
+        confers nothing.
+        """
         if await self.bot.is_owner(ctx.author):
             return True
-        staff_roles = ["Admin", "Moderator"]
-        return any(role.name in staff_roles for role in ctx.author.roles)
+        member = ctx.author
+        guild = getattr(ctx, "guild", None)
+        if guild is None or getattr(member, "guild_permissions", None) is None:
+            return False
+        tier = get_member_visibility_tier(member, guild.owner_id)
+        return is_tier_sufficient(tier, "moderator")
 
     def staff_or_owner():  # type: ignore[misc]
         """Decorator to check if the user is staff or owner."""
