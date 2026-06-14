@@ -64,13 +64,14 @@ EVT_SETTINGS_CHANGED = "settings.changed"
 
 
 # ---------------------------------------------------------------------------
-# Recognized literal sets — mirror migration 029 CHECK constraints.
-# Alignment tests in tests/unit/invariants/ pin these to the SQL CHECK
+# Recognized literal sets — mirror migration 029 CHECK constraints (the
+# actor_type set was widened to include ``setup_delegate`` in migration 069,
+# Q-0098). Alignment tests in tests/unit/invariants/ pin these to the SQL CHECK
 # literals so a drift on either side fails CI.
 # ---------------------------------------------------------------------------
 
 _ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
-    {"user", "moderator", "admin", "system", "backfill"},
+    {"user", "moderator", "admin", "system", "backfill", "setup_delegate"},
 )
 _ALLOWED_MUTATION_TYPES: frozenset[str] = frozenset({"set_value"})
 

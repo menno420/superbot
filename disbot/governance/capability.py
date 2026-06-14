@@ -8,6 +8,16 @@ declares (``SettingSpec.capability_required`` / ``BindingSpec.capability_require
 Policy (v1):
 
 * ``system`` / ``backfill`` actors bypass the check (scripted ops, migrations).
+* ``setup_delegate`` (Q-0098) — a member the server owner delegated *apply*
+  authority to via ``/setup-delegate``.  Authorized at the floor like
+  ``system`` / ``backfill``, but unlike them it is **not** a blind
+  short-circuit: it must still be a member of the target guild and stays
+  subject to the revoke overlay.  It is minted only by
+  :func:`services.setup_operations.apply_operations`, which re-verifies the live
+  delegation (``setup_access.can_apply_setup``) before doing so — so the
+  delegation itself is the floor.  An AST fence
+  (``tests/unit/invariants/test_setup_delegate_actor_boundary.py``) keeps the
+  ``"setup_delegate"`` token confined to this authority contract.
 * An actor that is not a member of the **target** guild is denied (authority is
   bound to the write target, so privilege in guild A cannot authorize a write to
   guild B).
@@ -101,15 +111,30 @@ async def actor_holds_capability(
             ),
         )
 
-    # 3. Administrator floor, keyed on the declared capability.  Tier is computed
+    # 3. Authority floor, keyed on the declared capability.  Tier is computed
     #    against the target guild's owner (actor_guild.id == guild.id here).
     guild_owner_id = getattr(guild, "owner_id", 0) or 0
     member_tier = get_member_visibility_tier(actor, guild_owner_id)
-    allowed = is_tier_sufficient(member_tier, _DEFAULT_REQUIRED_TIER)
+    if actor_type == "setup_delegate":
+        # Q-0098 — Setup-delegate apply authority.  The server owner delegated
+        # apply authority to this (possibly NON-administrator) member.  Only
+        # services.setup_operations.apply_operations mints this actor_type, and
+        # only after re-verifying setup_access.can_apply_setup() against a fresh
+        # SetupSession at apply time — so the delegation itself satisfies the
+        # floor, exactly as system/backfill satisfy it by being scripted ops.
+        # This is deliberately NOT the step-1 short-circuit: a delegate must
+        # still be a member of the target guild (step 2) and stays subject to
+        # the revoke-only overlay (step 4).  The tier is still computed so the
+        # audit reason names who actually applied.
+        allowed = True
+    else:
+        allowed = is_tier_sufficient(member_tier, _DEFAULT_REQUIRED_TIER)
 
     # 4. Revoke-only per-guild overlay (declared capabilities only).  An explicit
     #    disable flips allow -> deny; an explicit enable is NOT used to grant a
-    #    below-floor actor (no privilege escalation via guild config).
+    #    below-floor actor (no privilege escalation via guild config).  This
+    #    applies to a setup_delegate too: an owner can revoke a capability from a
+    #    delegate just as from any member.
     if capability and guild is not None:
         try:
             from governance.execution import get_capability_override
@@ -122,10 +147,21 @@ async def actor_holds_capability(
             allowed = False
 
     actor_id = getattr(actor, "id", None)
-    if allowed:
+    if allowed and actor_type == "setup_delegate":
+        reason = (
+            f"delegated setup admin {actor_id!r} (tier={member_tier!r}) "
+            f"authorized for capability={capability or '(default)'!r} via "
+            f"setup-delegate apply authority (Q-0098)"
+        )
+    elif allowed:
         reason = (
             f"member {actor_id!r} (tier={member_tier!r}) authorized for "
             f"capability={capability or '(default)'!r}"
+        )
+    elif actor_type == "setup_delegate":
+        reason = (
+            f"delegated setup admin {actor_id!r} (tier={member_tier!r}) REVOKED "
+            f"for capability={capability or '(default)'!r}"
         )
     else:
         reason = (

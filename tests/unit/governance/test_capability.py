@@ -173,3 +173,59 @@ async def test_overlay_uses_target_guild_id(monkeypatch):
     actor = _FakeMember(guild=guild, tier="administrator")
     await actor_holds_capability(actor, guild, _CAP)
     assert seen.get("guild_id") == 4242
+
+
+# ---------------------------------------------------------------------------
+# Q-0098 — Setup-delegate apply authority.
+#
+# A below-floor (non-administrator) member the server owner delegated apply
+# authority to is authorized when, and only when, the write carries
+# actor_type="setup_delegate" — which only setup_operations.apply_operations
+# mints (re-verifying the live delegation first). Unlike system/backfill it is
+# NOT a blind short-circuit: target-guild membership and the revoke overlay
+# still apply.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_authorized_below_floor():
+    guild = _FakeGuild()
+    # A plain member (below the administrator floor) — denied as a normal user,
+    # allowed as a setup_delegate.
+    actor = _FakeMember(guild=guild, tier="user")
+    assert (await actor_holds_capability(actor, guild, _CAP)).allowed is False
+    decision = await actor_holds_capability(
+        actor, guild, _CAP, actor_type="setup_delegate"
+    )
+    assert decision.allowed is True
+    assert "delegated setup admin" in decision.reason
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_still_requires_target_guild_membership():
+    # A delegate flag from a member of a DIFFERENT guild is still denied at the
+    # membership step — the bypass is not a step-1 short-circuit.
+    actor = _FakeMember(guild=_FakeGuild(1), tier="user")
+    target = _FakeGuild(2)
+    decision = await actor_holds_capability(
+        actor, target, _CAP, actor_type="setup_delegate"
+    )
+    assert decision.allowed is False
+    assert "target guild" in decision.reason
+
+
+@pytest.mark.asyncio
+async def test_setup_delegate_subject_to_revoke_overlay(monkeypatch):
+    # An explicit per-guild capability disable flips a delegate OFF, same as any
+    # actor — the owner can revoke a capability from a delegate.
+    monkeypatch.setattr(
+        "governance.execution.get_capability_override",
+        AsyncMock(return_value=False),
+    )
+    guild = _FakeGuild()
+    actor = _FakeMember(guild=guild, tier="user")
+    decision = await actor_holds_capability(
+        actor, guild, _CAP, actor_type="setup_delegate"
+    )
+    assert decision.allowed is False
+    assert "REVOKED" in decision.reason

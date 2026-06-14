@@ -16,12 +16,12 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-_MIGRATION = (
-    Path(__file__).resolve().parents[3]
-    / "disbot"
-    / "migrations"
-    / "029_settings_mutation_audit.sql"
-)
+_MIGRATIONS = Path(__file__).resolve().parents[3] / "disbot" / "migrations"
+_MIGRATION = _MIGRATIONS / "029_settings_mutation_audit.sql"
+# actor_type was widened to add 'setup_delegate' in migration 069 (Q-0098).
+# Read the effective set from the migration that now OWNS the constraint, the
+# way test_setup_draft_op_kind_parity reads migration 059 for op_kind.
+_ACTOR_TYPE_MIGRATION = _MIGRATIONS / "069_setup_delegate_actor_type.sql"
 
 
 def _read() -> str:
@@ -33,6 +33,24 @@ def _extract_in_set(column: str) -> set[str]:
     pattern = rf"CHECK\s*\(\s*{column}\s+IN\s*\(([^)]+)\)\s*\)"
     match = re.search(pattern, sql)
     assert match, f"could not locate {column} CHECK constraint in migration 029"
+    return {
+        tok.strip().strip("'\"") for tok in match.group(1).split(",") if tok.strip()
+    }
+
+
+def _extract_actor_type_set() -> set[str]:
+    """Effective actor_type literals, read from migration 069's named CHECK.
+
+    Anchored on the constraint NAME so the two audit tables widened in the same
+    migration can't silently diverge.
+    """
+    sql = _ACTOR_TYPE_MIGRATION.read_text()
+    pattern = (
+        r"settings_mutation_audit_actor_type_check\s+CHECK\s*\(\s*actor_type"
+        r"\s+IN\s*\(([^)]+)\)"
+    )
+    match = re.search(pattern, sql)
+    assert match, "could not locate settings actor_type CHECK in migration 069"
     return {
         tok.strip().strip("'\"") for tok in match.group(1).split(",") if tok.strip()
     }
@@ -61,12 +79,14 @@ def test_actor_type_literals_match_pipeline_allowed_set():
     """
     from services.settings_mutation import _ALLOWED_ACTOR_TYPES
 
-    db_check = _extract_in_set("actor_type")
+    db_check = _extract_actor_type_set()
     python = set(_ALLOWED_ACTOR_TYPES)
     assert db_check == python, (
         "actor_type drift:\n"
         f"  in Python but not DB CHECK: {sorted(python - db_check)}\n"
-        f"  in DB CHECK but not Python: {sorted(db_check - python)}"
+        f"  in DB CHECK but not Python: {sorted(db_check - python)}\n"
+        "Fix: extend the CHECK in migration 069 AND _ALLOWED_ACTOR_TYPES in "
+        "services/settings_mutation.py."
     )
 
 

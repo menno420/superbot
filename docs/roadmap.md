@@ -31,9 +31,11 @@
 > risk-ranked "what's left to be production-ready" view across all subsystems. Index:
 > [`planning/production-readiness/`](planning/production-readiness/README.md).
 > **All gating decisions answered as of 2026-06-12 evening** (Q-0098/Q-0099/Q-0100 + Q-0097
-> = operator-managed findings lifecycle); no hardening track waits on a decision. **Next
-> implementation session (owner-picked): P0-1 —**
-> [games-wager-money-safety-plan](planning/games-wager-money-safety-plan-2026-06-12.md).
+> = operator-managed findings lifecycle); no hardening track waits on a decision. **P0 spine
+> progress:** P0-1 wager money-safety (#748) ✅ · P0-3 settings pointer-lane (#777/#794) +
+> **P0-3 arc PR 3 delegated-Setup apply authority (Q-0098)** ✅. **Next = P0-4** (server-mgmt
+> channel-ownership convergence, Q-0100), then P0-2 (media/YouTube retention, Q-0099) — see
+> the [band-#800 decade queue](planning/reconciliation-pass-2026-06-13-band800.md) §4.
 
 ## How to read
 

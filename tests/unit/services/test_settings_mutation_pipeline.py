@@ -763,8 +763,9 @@ def test_actor_type_allowlist_matches_documented_set():
     CHECK constraint.  The alignment test does the SQL side; this test
     pins the Python side to a fixed shape so future changes are
     intentional."""
+    # setup_delegate added in migration 069 (Q-0098, P0-3 arc PR 3).
     assert sm_mod._ALLOWED_ACTOR_TYPES == frozenset(
-        {"user", "moderator", "admin", "system", "backfill"},
+        {"user", "moderator", "admin", "system", "backfill", "setup_delegate"},
     )
 
 

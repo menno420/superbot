@@ -734,6 +734,63 @@ async def _preflight_create_managed_role(
     return (ABSENT, proposed, True, None)
 
 
+async def _resolve_apply_actor_type(actor: Any, guild: Any, actor_type: str) -> str:
+    """Resolve the effective ``actor_type`` for an apply batch (Q-0098).
+
+    This seam is the **sole minter** of ``actor_type="setup_delegate"`` — the
+    Final Review view never passes it (an AST fence,
+    ``tests/unit/invariants/test_setup_delegate_actor_boundary.py``, forbids the
+    literal outside this module).  Instead this function decides, re-verifying
+    the delegation **live** so a stale view gate can never be trusted (the same
+    fresh-session ``can_apply_setup`` re-check ``final_review._gate_apply``
+    does):
+
+    * Explicit non-``user`` callers (scripted ``system`` / ``backfill`` paths)
+      pass through unchanged — only the human apply path is delegate-eligible.
+    * The server **owner** or any **administrator** already clears the per-op
+      administrator floor, so they write as ``"user"``.  Keeping them ``"user"``
+      keeps the audit honest: a delegate write must stay distinguishable from an
+      administrator write.
+    * A non-admin member writes as ``"setup_delegate"`` **only** when a fresh
+      :class:`~services.setup_session.SetupSession` still lists them in
+      ``delegated_admins`` (``setup_access.can_apply_setup``).  Delegation lost
+      since Final Review opened ⇒ stays ``"user"`` ⇒ the per-op administrator
+      floor denies the write — exactly the intended live re-verification.
+
+    On any ambiguity or error the original ``actor_type`` is returned — this
+    function never escalates.  For the common owner case it is sync and does no
+    DB read (``is_server_owner`` short-circuits before ``resume_session``).
+    """
+    if actor_type != "user":
+        return actor_type
+    if actor is None or guild is None:
+        return actor_type
+    try:
+        from services import setup_access
+
+        # Owner / administrator already satisfy the administrator floor; keep
+        # the honest "user" (admin-tier) audit label and skip the session read.
+        if setup_access.is_server_owner(actor) or setup_access.is_administrator(
+            actor,
+        ):
+            return "user"
+        from services import setup_session
+
+        guild_id = getattr(guild, "id", None)
+        if guild_id is None:
+            return "user"
+        session = await setup_session.resume_session(guild_id)
+        if setup_access.can_apply_setup(actor, session):
+            return "setup_delegate"
+    except Exception:  # noqa: BLE001 — resolution never escalates; fall back
+        logger.exception(
+            "apply_operations: delegated-apply actor_type resolution failed; "
+            "falling back to actor_type=%r (the per-op floor still governs)",
+            actor_type,
+        )
+    return "user"
+
+
 async def apply_operations(
     ops: list[SetupOperation],
     *,
@@ -748,17 +805,25 @@ async def apply_operations(
     ``label``, ``mutation_id`` (when the pipeline returned one), and
     ``error`` (when the pipeline raised or the kind is unsupported).
 
+    Authority (Q-0098): the incoming ``actor_type`` is resolved through
+    :func:`_resolve_apply_actor_type`, which is the only place a
+    ``"setup_delegate"`` actor is minted — and only after re-verifying the live
+    delegation.  The resolved type flows to the three capability-gated pipelines
+    (binding / settings / resource), where a delegated apply is authorized at
+    the floor (``governance.capability``) and audited as ``setup_delegate``.
+
     Returns :class:`SetupOperationBatchResult` whose ``.applied``,
     ``.failed``, ``.skipped``, and ``.not_yet_implemented`` properties
     provide pre-partitioned views for embed rendering.
     """
+    effective_actor_type = await _resolve_apply_actor_type(actor, guild, actor_type)
     batch = SetupOperationBatchResult()
     for op in ops:
         result = await _dispatch_one(
             op,
             guild=guild,
             actor=actor,
-            actor_type=actor_type,
+            actor_type=effective_actor_type,
         )
         batch.results.append(result)
     return batch
@@ -991,10 +1056,22 @@ async def _dispatch_one(
 
     try:
         if op.kind in _BINDING_KINDS:
-            return await _apply_binding(op, guild=guild, actor=actor, label=label)
+            return await _apply_binding(
+                op,
+                guild=guild,
+                actor=actor,
+                actor_type=actor_type,
+                label=label,
+            )
 
         if op.kind == "clear_binding":
-            return await _apply_clear_binding(op, guild=guild, actor=actor, label=label)
+            return await _apply_clear_binding(
+                op,
+                guild=guild,
+                actor=actor,
+                actor_type=actor_type,
+                label=label,
+            )
 
         if op.kind == "set_setting":
             return await _apply_set_setting(
@@ -1090,6 +1167,7 @@ async def _apply_binding(
     *,
     guild: Any,
     actor: Any,
+    actor_type: str,
     label: str,
 ) -> SetupOperationResult:
     from core.runtime.subsystem_schema import BindingKind
@@ -1113,6 +1191,7 @@ async def _apply_binding(
         kind,
         op.target_id,  # type: ignore[arg-type]
         actor,
+        actor_type=actor_type,
     )
     return SetupOperationResult(
         status="applied",
@@ -1127,6 +1206,7 @@ async def _apply_clear_binding(
     *,
     guild: Any,
     actor: Any,
+    actor_type: str,
     label: str,
 ) -> SetupOperationResult:
     from core.runtime.subsystem_schema import BindingKind
@@ -1149,6 +1229,7 @@ async def _apply_clear_binding(
         op.binding_name,  # type: ignore[arg-type]
         kind,
         actor,
+        actor_type=actor_type,
     )
     return SetupOperationResult(
         status="applied",
