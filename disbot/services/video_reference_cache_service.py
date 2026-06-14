@@ -46,6 +46,14 @@ async def put_cached(
     fetch_status: str = "ok",
     last_error_code: str | None = None,
 ) -> None:
+    """Persist a cache row.
+
+    **Data-minimisation contract (P0-2 / Q-0099):** ``metadata`` MUST be the
+    *bounded projection* (the small set of fields surfaced to AI facts), never
+    the raw YouTube provider payload — projection happens in the caller
+    (:func:`services.youtube_context_service._project_metadata`).  This module
+    is provider-shape-agnostic and stores whatever bounded dict it is given.
+    """
     ttl_s = _CACHE_TTL_OK_S if fetch_status == "ok" else _CACHE_TTL_ERROR_S
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_s)
     await _db.upsert_video_cache(
@@ -60,4 +68,14 @@ async def put_cached(
     )
 
 
-__all__ = ["CachedVideoEntry", "get_cached", "put_cached"]
+async def purge_expired() -> int:
+    """Physically delete expired cache rows; return the number removed.
+
+    Retention enforcement (P0-2 / Q-0099): reads already ignore expired rows,
+    but the content (transcript excerpts + metadata) lingered in storage until
+    this is called.  The media-maintenance loop owns the schedule.
+    """
+    return await _db.purge_expired_video_cache()
+
+
+__all__ = ["CachedVideoEntry", "get_cached", "put_cached", "purge_expired"]
