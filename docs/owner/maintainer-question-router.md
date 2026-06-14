@@ -5251,3 +5251,33 @@ CLAUDE.md are still propose-unless-owner-directed). Prompted by the Q-0138 fresh
 same session.
 
 **Home:** `docs/operations/hook-policy.md`.
+
+---
+
+### Q-0140 — Hermes may author docs-only PRs directly (second sanctioned write) (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session, relayed from the owner's Telegram chat with
+> Hermes).** The owner told Hermes: *"the only thing you should edit directly is a docs-only PR,
+> that either contains a summary of the expected work done, or contains some bugs or problems I or
+> someone in the discord told you."*
+
+**Decision.** Hermes' write scope expands from "read-only **except** the `review-merge` gate
+(Q-0117)" to **two** sanctioned writes: (1) the review-merge gate, and (2) **docs-only PRs** —
+a work summary, a bug/problem report, or a new skill source (`superbot-skill-author`). Anything
+touching **code/runtime** is still **dispatched** to Claude Code, never edited by Hermes. Reading
+Railway env vars/logs for verification stays sanctioned (Q-0130); mutating production config is not,
+unless the owner explicitly directs it.
+
+**Why:** it lets Hermes close its own loop — capture a Discord/owner bug as a tracked docs PR, post
+a verified work summary, and (with `skill-author`, Q-0140's first use) author new skills back into
+the repo instead of leaving them VPS-only — without granting it code-write power.
+
+**Also recorded this session (related):** the **`superbot-skill-author` meta-skill** (the
+self-extension bootstrap), and the owner's operating directives now in
+`docs/operations/hermes-operating-prompt.md`: there is always a next thing (review ideas + propose
+a continuation when nothing's obvious; the continuation handoff lives in `current-state.md` + the
+newest `.sessions/` log); reconciliation is automated (ignore it); verify-don't-assume; the
+five-sector mental model.
+
+**Home:** `docs/operations/hermes-operating-prompt.md`, `docs/operations/hermes-skills/README.md`
+(Shared operating rule), `docs/operations/hermes-skills/skill-author.md`.
