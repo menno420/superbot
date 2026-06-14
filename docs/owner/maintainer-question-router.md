@@ -4727,3 +4727,71 @@ sweep; journal Quick-reference updated.
 
 **Home:** CLAUDE.md § Session & plan workflow (Q-0107 bullet); `docs/operations/autonomous-routines.md`
 (reconcile routine prompt); `.session-journal.md` (Quick reference + Rules). This entry is provenance.
+
+### Q-0126 — Code-quality CI cost + duplicate-work prevention (early-claim convention)
+
+> **OBSERVED 2026-06-14 (owner, in-session).** Verbatim: *"can you come up with a good way to
+> make the code quality work more efficient or have it get triggered less … also something
+> [to] help prevent agents from duplicating work … they should immediately open a small docs
+> only PR or an empty PR … where they will shortly list all the things they expect to ship …
+> so when another agent thinks to work on something they can first check the open and closed
+> recent PRs so they can prevent duplicate work, and once that is done just wait pushing until
+> the PR is complete and ready for the code quality check … how does it currently work? does
+> it always scan the entire repo or only the new files?"*
+
+**Area:** CI cost · session/PR workflow · duplicate-work prevention
+**Type:** (a) infra improvement — **APPLIED in-session**; (b) workflow convention — **OPEN for owner decision**
+
+**Context (measured this session).** `code-quality.yml` is the repo's dominant CI cost —
+**940 runs / 2,396 min this month** (next workflow: 52 runs). Avg run 1m50s. Root causes:
+1. **No `concurrency` block** — every push to a PR ran to completion even when a newer push
+   superseded it (every other workflow already cancels; this one didn't).
+2. **No pip / mypy caching** — every run re-downloaded the pinned tools + `requirements.txt`
+   and re-type-checked all of `disbot/` from scratch.
+3. **Full-repo scope, all-or-nothing** — there is a docs-only detector (skips the heavy steps
+   when only `*.md` / `docs/` changed), but when *any* non-docs file changes it runs
+   black/isort/ruff over the whole repo, `mypy disbot/`, and the **entire 9,422-test suite**.
+   It does **not** scope checks to changed files; the diff is only used for the docs-only skip.
+4. **pytest is the bottleneck** — measured 9,422 tests in **109s** serial.
+
+**(a) APPLIED this session (PR #___).** Contained/reversible infra, held from auto-merge
+(`do-not-automerge`) so a change to the gate workflow itself gets owner review first:
+  - **Concurrency cancellation** — `group: code-quality-${{ github.ref }}`,
+    `cancel-in-progress` on everything except `main`. Biggest lever on the 940-run count.
+  - **pip download cache** (setup-python) + **`.mypy_cache`** (`actions/cache`) — cut per-run
+    minutes (no re-download; mypy re-checks only changed modules).
+  - **`pytest -n auto`** (pytest-xdist) — **verified 109s → 35s (~3×)**, identical
+    9,422 passed / 34 skipped. Wired into CI + `scripts/check_quality.py` (graceful serial
+    fallback) + `requirements-dev.txt` so local mirrors CI. Drop `-n auto` if it ever flakes.
+
+**(b) OPEN — owner decision on the duplicate-work convention.** The owner's instinct (declare
+intent early so parallel agents don't collide; hold pushes until the PR is complete) is sound,
+and **push-batching is a real CI-cost win** that compounds with (a)'s concurrency cancel. But
+the literal *"open a small docs-only / empty PR immediately"* has two snags:
+  - GitHub can't open a PR with an **empty** diff — it needs ≥1 commit (so "empty PR" → a
+    one-line manifest commit).
+  - **Auto-merge collision (the real blocker):** a ready docs-only PR *arms native auto-merge*
+    (Q-0123) and GitHub **merges it the moment the trivially-green docs CI passes** — before any
+    real work is pushed. So an early manifest-PR would self-merge empty.
+
+  Options to give the owner what he wants without fighting the merge machinery:
+  1. **Claim ledger (recommended).** Agents append a one-line intent stanza
+     (`branch · scope · expected files · session`) to a new append-only `docs/owner/active-work.md`
+     at session start; archive/remove at close. **Zero CI, greppable, no merge risk,** and it
+     reuses the existing concurrent-chat append-only convention. "Check before starting" =
+     scan open PRs (already required by Q-0060 titles / Q-0125 health) **+ this file**.
+  2. **WIP PR + label.** Keep the owner's PR-based version, but open it `do-not-automerge` and
+     remove the label only when work is pushed & ready — *a forgettable step, the same failure
+     mode Q-0103 cited against draft PRs.*
+  3. **WIP issue.** Manifest as a `wip-claim` GitHub issue (no CI, no merge risk); adds a surface.
+
+**Recommendation.** Ship (a) now (done). For (b): adopt **push-batching** (hold intermediate
+pushes; push once when the PR is complete) as the cost rule, and **option 1 (claim ledger)** for
+duplicate-work prevention — keeping the existing early-PR rule for the *real* PR (opened when
+work is ready, not as the claim). Awaiting owner pick between options 1 / 2 / 3 (and confirmation
+of push-batching) before editing CLAUDE.md § Session & plan workflow.
+
+**Home (once decided):** CLAUDE.md § Session & plan workflow (the convention) + a new
+`docs/owner/active-work.md` if option 1. (a) already lives in `.github/workflows/code-quality.yml`,
+`scripts/check_quality.py`, `requirements-dev.txt`. Full design captured in
+[`docs/ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md`](../ideas/ci-cost-and-duplicate-work-prevention-2026-06-14.md).

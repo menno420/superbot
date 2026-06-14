@@ -15,6 +15,9 @@ ruff==0.15.14
 mypy==2.1.0
 pytest==9.0.3
 pytest-asyncio==1.4.0
+# Parallel test execution (`pytest -n auto`) — CI and scripts/check_quality.py run
+# the suite across all cores (~3x: 109s -> 35s). Pinned to match code-quality.yml.
+pytest-xdist==3.6.1
 
 # Import-graph engine for scripts/context_map.py (the file-context tool).
 # Developer/agent-only — NOT a bot-runtime dep and NOT installed in CI; the tool

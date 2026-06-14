@@ -66,6 +66,13 @@ Current broad captures:
   modernization, crafting filters, craft-and-equip shortcut, deeper mining/chopping progression,
   world/exploration hub concept, idle/pets/co-op/NPC ideas, and routing notes per candidate.
   Strongest near-term candidates: crafting UX polish + AI settings clarity.
+- [`ci-cost-and-duplicate-work-prevention-2026-06-14.md`](./ci-cost-and-duplicate-work-prevention-2026-06-14.md) —
+  **owner-asked (2026-06-14, Q-0126):** `code-quality.yml` is the repo's dominant CI cost
+  (940 runs / 2,396 min/month). **(a) CI efficiency — IMPLEMENTED same session:** concurrency
+  cancellation of superseded PR runs + pip/mypy caching + `pytest -n auto` (verified 109s→35s).
+  **(b) duplicate-work prevention — OPEN for owner pick:** a claim-ledger / WIP-PR / WIP-issue
+  to declare intent early so parallel agents don't collide, plus push-batching. Decision tracked
+  in Q-0126.
 
 > **Standing intake note (Q-0089, 2026-06-10):** every session now *generates*
 > one new `💡 Session idea` at END (owner directive — consistent generation
