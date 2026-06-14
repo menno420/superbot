@@ -1,6 +1,6 @@
 # Session: record Python 3.10 VPS prerequisite (deadsnakes, verified)
 
-> **Status:** `in-progress` — recording the verified VPS python3.10 prereq; flip to complete last.
+> **Status:** `complete` — PR #870; born-red card flipped as the deliberate final step (Q-0133).
 
 **Branch:** `claude/sharp-ptolemy-5mzbvb` · **Date:** 2026-06-14 · **Type:** docs (ops record, owner-verified)
 
