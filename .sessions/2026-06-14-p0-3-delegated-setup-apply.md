@@ -82,9 +82,21 @@ in `governance.capability` and silently failed.
 
 ## Gates / handoff for the next session
 
-- **#817 will self-merge** on green `code-quality` (auto-merge armed; subscribed for CI). No
-  manual merge needed. **Next P0 = P0-4** (server-mgmt channel-ownership convergence, Q-0100),
-  then P0-2 (media/YouTube retention, Q-0099) — band-#800 decade queue §4 slots 3–4.
+- **#817 is MERGED** (merge commit `73002b4`, by hand). **Next P0 = P0-4** (server-mgmt
+  channel-ownership convergence, Q-0100), then P0-2 (media/YouTube retention, Q-0099) —
+  band-#800 decade queue §4 slots 3–4.
+- **⚠ Auto-merge did NOT arm — heads-up for tonight's sessions (router Q-0127).** The
+  `auto-merge-enabler` workflow had **0 runs for `claude/funny-bohr-skbaoz`** (and none for the
+  concurrent `claude/trusting-goldberg-po4p7s` band either). MCP-created PRs (`create_pull_request`)
+  don't fire the `pull_request:[opened]` trigger — the **same app-token-doesn't-trigger-workflows
+  class as #778's bot-authored-issue gotcha**. So the Q-0123 "open ready → it self-merges" path
+  silently doesn't work for MCP PRs; I merged #817 by hand (Q-0123 carve-out: CI green on the
+  final head `6e98721` + `mergeable_state: clean`, merged in-turn, not deferred). **Practical fix
+  a session can apply itself today:** call `mcp__github__enable_pr_auto_merge` right after
+  `create_pull_request` — it arms native auto-merge directly (no workflow trigger needed). Filed
+  as **router Q-0127** for the owner to decide the durable fix (enable-at-open vs. workflow
+  re-trigger). Until then: **after opening a PR, either call `enable_pr_auto_merge` or merge by
+  hand once `code-quality` is green on the final head.**
 - **Mid-session merge:** main advanced (#815 parallel-safe suite + `pytest -n auto`; #816
   session-close) **while I worked** — the PR went `dirty`. Merged `origin/main` in, resolved the
   one conflict (the `active-work.md` claim ledger, by UNION), re-ran the full mirror under the
