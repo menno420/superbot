@@ -71,6 +71,14 @@ Current broad captures:
   drift this session caught — `create_panel.py` was marked "uses the provisioning lane" while the
   source called `guild.create_text_channel` directly. Lifts the per-PR `test_no_direct_*`
   invariants up to the docs that describe them. Small/safe grooming-lane candidate.
+- [`reconciliation-slot-carry-tracker-2026-06-14.md`](./reconciliation-slot-carry-tracker-2026-06-14.md) —
+  **workflow / tooling (2026-06-14, band-#870 reconciliation pass):** a stdlib check that parses the
+  chain of `reconciliation-pass-*.md` §4 queue tables and reports, per recurring slot, how many
+  consecutive bands it has **carried unexecuted** (matched on scope-anchor text, not the unstable
+  `#` column). Turns the band-#870 §6 "escalate if a slot carries a fourth band" rule into a
+  self-firing guard so gated/owner-steered work can't silently rot in a plan that keeps re-listing
+  it — the plan-slot cousin of the open-PR-with-state stale-PR snapshot. Composes with the
+  print-subjects/pre-brief family. Runtime-lane (new `scripts/` check), out of scope for a docs-only pass.
 - [`reconciliation-prebrief-at-session-start-2026-06-14.md`](./reconciliation-prebrief-at-session-start-2026-06-14.md) —
   **workflow / orientation (2026-06-14, band-#840 reconciliation pass):** when a recon pass is
   due, have the SessionStart hook drop a `reconcile-prebrief.txt` with the band computed —
