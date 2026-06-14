@@ -1,14 +1,15 @@
 #!/usr/bin/env python3.10
 """Reconciliation-cadence guard — flag when a docs-only review/planning pass is due.
 
-Owner directive Q-0107: PR numbers crossing a **multiple of 20** (#20, #40, #60, …) are
+Owner directive Q-0107: PR numbers crossing a **multiple of 30** (#30, #60, #90, …) are
 reserved for a **docs-only repo review + planning-reconciliation** pass — review the state
 of the repo (ledger, active lanes, open Q-blocks, idea backlog, roadmap), prune stale docs,
 and refocus the next priorities. This guard tracks the cadence against the
 ``Last reconciliation pass:** PR #N`` marker in ``docs/current-state.md``: a pass is **due**
-once merged PRs have crossed into a new multiple-of-20 band since the last marked pass.
-(Cadence raised 10 → 20 on 2026-06-12, owner-directed: small PRs inflate the count, so every
-10 fired too often; the band size is the ``STEP`` constant below — retune there.)
+once merged PRs have crossed into a new multiple-of-30 band since the last marked pass.
+(Cadence raised 10 → 20 on 2026-06-12, then 20 → 30 on 2026-06-14 (Q-0134) — at burst
+velocity a 20-band crossed in under a day and fired the docs pass several times daily; the
+band size is the ``STEP`` constant below — retune there.)
 
 Advisory by default (exit 0); ``--strict`` for an explicit gate (e.g. ``/session-close``).
 After completing a pass, reset the marker to the latest PR. Pure stdlib, like ``check_docs.py``.
@@ -33,7 +34,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CURRENT_STATE = REPO_ROOT / "docs" / "current-state.md"
 
-STEP = 20  # the cadence: a pass per multiple-of-20 PR band (raised from 10, 2026-06-12)
+STEP = 30  # the cadence: a pass per multiple-of-30 PR band (10→20 2026-06-12; 20→30 2026-06-14, Q-0134)
 
 _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 # Match all three merge-subject styles in this repo's history:
@@ -94,7 +95,7 @@ def is_due(
     latest: int | None = None,
     marker: int | None = None,
 ) -> tuple[bool, int | None, int | None]:
-    """Return (due, latest_pr, marker_pr). Due once we cross a new multiple-of-10 band."""
+    """Return (due, latest_pr, marker_pr). Due once we cross a new multiple-of-STEP band."""
     if latest is None:
         latest = _latest_merged_pr()
     if marker is None:

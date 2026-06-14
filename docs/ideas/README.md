@@ -38,6 +38,12 @@ Current broad captures:
   present-but-broken = FAIL. Surfaced because the owner's Railway access sat **silently inert** (a
   var-name mismatch + a Cloudflare UA block) until a routine happened to probe it by hand — this
   would have flagged both on the first session after provisioning. Small; one script + a hook line.
+- [`external-cron-trigger-for-routines-2026-06-14.md`](./external-cron-trigger-for-routines-2026-06-14.md) —
+  **workflow / ops (2026-06-14, workflow-health review):** drive the overnight cadence from an
+  external scheduler hitting `workflow_dispatch` (a VPS cron, a Worker) instead of GitHub's
+  best-effort `schedule:` cron — observed firing ~4¾ h late / occasionally dropped this session.
+  Converts "sometime in a ~5 h window" into "at the time I chose". Small; one cron line on the
+  already-live Hermes VPS, GitHub `schedule:` kept as a backstop.
 - [`routine-activity-visibility-2026-06-14.md`](./routine-activity-visibility-2026-06-14.md) —
   **workflow / UX (2026-06-14, owner-observed):** routine *run* sessions are hidden from the
   Recents tab (intentional upstream behavior; open FR

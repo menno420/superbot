@@ -218,9 +218,10 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   This is the automated-plus-judgment complement to the Q-0102 review; it exists because this
   exact question, asked once (2026-06-12), surfaced multiple drifted ledger entries. The
   `/session-close` skill runs the automated half.
-- **Reconciliation + planning pass at every 20th PR — required (owner directive Q-0107,
-  2026-06-12; cadence raised 10 → 20 same day — small PRs inflate the count, so every 10 fired
-  too often).** PR numbers crossing a **multiple of 20** (#20, #40, #60, …) are reserved for a
+- **Reconciliation + planning pass at every 30th PR — required (owner directive Q-0107,
+  2026-06-12; cadence raised 10 → 20 same day, then 20 → 30 on 2026-06-14 per Q-0134 — at burst
+  velocity a 20-band crossed in under a day and fired the docs pass several times daily).** PR
+  numbers crossing a **multiple of 30** (#30, #60, #90, …) are reserved for a
   **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things:
   **(1) reconcile** — review the living ledger, active lanes, open Q-blocks, idea backlog, and
   roadmap; **disposition open PRs** (via the GitHub MCP — `list_pull_requests` + each one's

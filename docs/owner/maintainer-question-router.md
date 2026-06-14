@@ -5087,3 +5087,75 @@ are deletable if the gate ever holds a PR it shouldn't.
 **Home:** `.claude/CLAUDE.md` § Session & plan workflow (the rule); `scripts/check_session_gate.py`
 + `.github/workflows/code-quality.yml` (the gate); `.claude/skills/session-close/SKILL.md` (the
 flip-ready step). Shipped this session (born-red dogfooded on its own PR).
+
+---
+
+### Q-0134 — Reconciliation cadence widened 20 → 30 PRs (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session — the live reviewer for this workflow change,
+> per the Q-0106 in-session exception).** Asked during the workflow-health review session.
+
+**Problem.** The Q-0107 docs-reconciliation cadence fired on every **multiple-of-20** PR band.
+At the project's burst velocity a 20-band crossed in **under a day** (#800→#820→#840 all on
+2026-06-13/14), so the docs-only pass fired **several times per day** — re-scoring a band that
+had barely moved and spending a cloud session each time. The owner had already raised it 10→20
+(2026-06-12) for the same reason; the symptom returned.
+
+**Decision.** Widen the band to **30** (`STEP = 30` in `scripts/check_reconciliation_due.py`).
+Considered a time-floor hybrid (≥N PRs AND ≥M hours) but the owner chose the simpler one-number
+change. Retune the constant if it drifts again. With the marker at #840 the next pass is due at
+**#870** (was #860).
+
+**Home:** `scripts/check_reconciliation_due.py` (`STEP`); `.claude/CLAUDE.md` § Session & plan
+workflow (the rule); `docs/current-state.md` marker note; `docs/operations/autonomous-routines.md`.
+The `reconciliation-trigger.yml` workflow reads the script, so the change propagates with no
+workflow edit.
+
+---
+
+### Q-0135 — Loop-health probe: re-verify the control-plane state from live GitHub (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session).** Asked in the same review session.
+
+**Problem.** The autonomous loop's wiring (ROUTINE_PAT, backups, whether it has self-fired) lived
+only in a hand-ticked table in `autonomous-routines.md` § Control-plane state, which no repo
+checker can see — and it **drifted**: it marked `ROUTINE_PAT` unverified and the loop "never
+self-fired" when live GitHub already proved both true (the trigger issues were authored by the
+PAT owner, and #819→#821→#825 had run unattended).
+
+**Decision.** Add `scripts/check_loop_health.py` — a stdlib, `gh`-backed, read-only probe that
+re-derives the verifiable rows from recent issues (trigger-issue author = ROUTINE_PAT state;
+open backup-failure issue = DATABASE_PUBLIC_URL unset; closed scheduled-executor issue = loop
+self-fired) and prints PASS/FAIL/SKIP. Degrades to SKIP where `gh` is absent (never reddens a
+session). Folded into the **reconciliation routine** STEP 2 (not a new fleet routine — no extra
+run-cap cost) so the table is re-checked every pass. Pure `classify` core unit-tested (+9 tests).
+Reliability (Q-0105): unverified — delete if its heuristics misclassify over multiple sessions.
+The repo-side sibling — an env-credential preflight at SessionStart — stays the captured idea
+`docs/ideas/agent-env-credential-smoke-check-2026-06-14.md`.
+
+**Home:** `scripts/check_loop_health.py`; `tests/unit/scripts/test_check_loop_health.py`;
+`docs/operations/autonomous-routines.md` (STEP 2 + See also).
+
+---
+
+### Q-0136 — Hermes dispatch: authorize secret-env use (the "sensitive information" balk) (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session).** The owner reported Hermes "has a problem
+> dispatching the routines, something about sensitive information"; asked me to diagnose.
+
+**Diagnosis.** The `superbot-dispatch` skill prompt gave Hermes only a *prohibition* — "Never
+print secrets … reference env vars by name only" — with no explicit *authorization* of the
+action it must take (sourcing `$CLAUDE_ROUTINE_TOKEN` into the `/fire` curl). A safety-cautious
+Claude-based agent reads "this involves a credential" and declines/stalls. Most likely the whole
+cause; the only other candidate is mechanical (`~/.hermes/routine.env` not loading / token
+expired → a *correct* refusal per STEP 4).
+
+**Decision.** Add an AUTHORIZED rule to the dispatch prompt: using the named secret env vars in
+the authenticated `/fire` call is sanctioned, not a leak (the value goes only to the Anthropic
+endpoint, never printed/logged/echoed) — do not refuse on a sensitive-data basis. Documented the
+diagnosis + both hypotheses + the VPS env-file check in the skill's Notes. **Owner action:**
+re-paste the updated skill into Hermes' config; if the balk persists, check the env file on the
+VPS. Deferred deeper investigation (owner: "we'll come back to that later") — this is the
+first-pass fix.
+
+**Home:** `docs/operations/hermes-skills/dispatch.md` (the AUTHORIZED rule + Notes diagnosis).
