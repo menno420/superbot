@@ -2822,6 +2822,25 @@ async def build(
                 exc,
             )
 
+        # Pass 3f: path/line-aware grounding — a "<tower> <top|middle|bottom> path"
+        # reference ("bomb shooter middle path") resolves to no single upgrade, so
+        # Pass 3c grounds nothing and the model fills the vacuum with a confident
+        # false "no" ("that path has no MOAB bonus"). Ground the whole path's tier
+        # line so the absence claim can't form. Retrieval only — the other half of
+        # Layer A, see docs/btd6/btd6-absence-claim-guard-design.md §4.1 (Pass 3d is
+        # mechanism 2; this is the path/line bullet). Isolated like its siblings.
+        try:
+            from services import btd6_upgrade_detail_service
+
+            facts.extend(
+                btd6_upgrade_detail_service.path_grounding_for_query(message_text),
+            )
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: path grounding unavailable (%s)",
+                exc,
+            )
+
         # Pass 4: coverage + freshness signals (raw lines; the instruction
         # stack wraps the whole bundle as untrusted data). Paired with the
         # _TASK_CONTRACT live-event directive.
