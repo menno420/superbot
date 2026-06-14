@@ -327,6 +327,10 @@ has already been done.
   (Axis B = the vertical subsystem slice vs. the shared platform layers). Read when
   scoping what a given change's self-contained review unit is. Companion to the
   navigation map (paths), architecture (layers), and ownership (tables).
+- [`docs/research/external-systems-watchlist.md`](research/external-systems-watchlist.md) —
+  external AI-agent / memory / autonomous-SWE systems (and human-org practice) worth learning
+  from, each with the one transferable lesson + our adoption status. Re-checked on the grooming
+  cadence; the place to look when asking "what is the field doing that we should steal?"
 
 ### Plans / roadmaps (read for context only)
 
