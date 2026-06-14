@@ -5281,3 +5281,32 @@ five-sector mental model.
 
 **Home:** `docs/operations/hermes-operating-prompt.md`, `docs/operations/hermes-skills/README.md`
 (Shared operating rule), `docs/operations/hermes-skills/skill-author.md`.
+
+---
+
+### Q-0141 — Hermes may write code (not docs-only); + routine_fire.py dispatch helper (2026-06-14)
+
+> **DECISION 2026-06-14 (owner-directed in-session).** While live-testing Hermes' new operating
+> prompt, Hermes diagnosed a real bug (the dispatch curl is shell-quoting-fragile for multi-line
+> work orders) and started writing `scripts/hermes/routine_fire.py` itself — crossing the Q-0140
+> docs-only boundary. Asked the owner whether to hold that line; owner answered: *"yes it may write
+> its own code, I also think it can be pretty capable"* (Hermes runs StepFun Step 3.7 Flash,
+> ~74.4% SWE-bench).
+
+**Decision.** Hermes' write scope **expands beyond docs-only to code**, via **PRs (CI-gated)**:
+- It may author code — including its own small self-tooling — through PRs; it never pushes to `main`
+  and never mutates production config outside the gates.
+- It should still **prefer to DISPATCH big/risky code to Claude Code** (the primary builder, full CI
+  mirror; Hermes is self-admittedly weaker on long 20+-tool-call loops). Write directly when small,
+  self-contained, verifiable.
+- `review-merge` (Q-0117) remains its merge action (calibrating). Q-0140's docs-only framing is
+  superseded by this broader scope; the *content* (Hermes may PR work summaries / bug reports / skill
+  sources) still holds.
+
+**Also shipped:** `scripts/hermes/routine_fire.py` — the canonical robust dispatch helper (work order
+on stdin → no shell quoting; loads CLAUDE_ROUTINE_* from env/`~/.hermes/routine.env`; never prints the
+token; `--dry-run`). The `superbot-dispatch` skill now fires via it. **Opened as a DRAFT PR on purpose:
+the owner is running a "nice test" — Hermes is authoring its own version in parallel, to be compared.**
+
+**Home:** `docs/operations/hermes-operating-prompt.md`, `docs/operations/hermes-skills/README.md`,
+`scripts/hermes/routine_fire.py`, `docs/operations/hermes-skills/dispatch.md`.

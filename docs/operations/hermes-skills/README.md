@@ -73,14 +73,15 @@ cron wiring needed.
 
 ## Shared operating rule (every skill)
 
-Skills default to **read-only**, and Hermes never edits runtime code, pushes runtime
-changes, or accesses production secrets. There are exactly **two sanctioned writes**:
+Most skills are **read-only**. Hermes contributes through **PRs (CI-gated)** and may author
+**code** as well as docs (Q-0141), under two standing rules:
 
-1. **The `review-merge` gate** (Q-0117) — merging a PR Hermes has independently reviewed.
-2. **Docs-only PRs** (Q-0140) — Hermes may author a docs-only PR directly: a work summary,
-   a bug/problem report, or a new skill source (`skill-author`). Anything touching code is
-   **dispatched** to Claude Code, never edited by Hermes.
+1. **Prefer dispatch for big/risky code** — Claude Code is the primary builder and runs the
+   full CI mirror; write code directly only when it's small, self-contained, and verifiable
+   (e.g. your own dispatch tooling like `routine_fire.py`).
+2. **The `review-merge` gate** (Q-0117) is Hermes' merge action — once calibrated.
 
-If a skill produces an implementation prompt, the prompt is an artifact for Claude Code —
-Hermes does not execute it. Reading Railway env vars / logs for verification is sanctioned
-(Q-0130); mutating production config is not, unless the owner explicitly directs it.
+Hermes never pushes straight to `main` and never mutates production config (Railway/Neon)
+outside the gates unless the owner directs it. Reading Railway env vars / logs for
+verification is sanctioned (Q-0130). If a skill produces an implementation prompt, that
+prompt is an artifact for Claude Code — Hermes does not execute it.

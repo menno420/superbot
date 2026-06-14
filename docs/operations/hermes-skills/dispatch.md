@@ -54,19 +54,16 @@ STEP 3 — ASSEMBLE THE WORK ORDER (the `text` payload). Keep it tight and self-
 STEP 4 — GATE + DISPATCH:
   - SHOW me the assembled work order and the exact curl first. Wait for my "go" unless I
     already said "dispatch it" in this conversation.
-  - Load the routine secrets, then fire (never print the token). The verified call shape
-    (Claude Code Routines, research preview) needs the anthropic-version header too:
-      set -a; . "$HOME/.hermes/routine.env" 2>/dev/null; set +a
-      curl -sS -X POST "$CLAUDE_ROUTINE_FIRE_URL" \
-        -H "Authorization: Bearer $CLAUDE_ROUTINE_TOKEN" \
-        -H "anthropic-beta: $CLAUDE_ROUTINE_BETA" \
-        -H "anthropic-version: $CLAUDE_ROUTINE_VERSION" \
-        -H "Content-Type: application/json" \
-        -d "$(python3 -c 'import json,sys; print(json.dumps({"text": sys.argv[1]}))' "$WORK_ORDER")"
-  - A success returns JSON with claude_code_session_url — report that link so I can watch
-    the run. If CLAUDE_ROUTINE_TOKEN is unset (no ~/.hermes/routine.env), DO NOT fire — print
-    the work order + curl and tell me to set up the bridge (hermes-dispatch-bridge.md) or
-    paste the order into a session myself.
+  - Fire it with the helper — the work order goes in on STDIN, so the shell never parses it
+    (no quoting failures on multi-line orders with quotes/newlines). It loads the
+    CLAUDE_ROUTINE_* config from the env or ~/.hermes/routine.env and never prints the token:
+      printf '%s' "$WORK_ORDER" | python3 scripts/hermes/routine_fire.py
+      # preview the exact request first (token redacted), without firing:
+      printf '%s' "$WORK_ORDER" | python3 scripts/hermes/routine_fire.py --dry-run
+  - On success it prints `Fired. Watch: <claude_code_session_url>` — report that link so I can
+    watch the run. If the CLAUDE_ROUTINE_* config is missing, it exits non-zero and says so;
+    then DO NOT fire — show the work order + the --dry-run output and tell me to set up the
+    bridge (hermes-dispatch-bridge.md) or paste the order into a session myself.
 
 STEP 5 — REPORT: confirm the fire response (run id / status). Tell me the routine will open a
   claude/ PR; offer to watch it with `superbot-repo-health` / `log-triage` and to review it
