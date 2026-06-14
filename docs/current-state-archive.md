@@ -13,6 +13,30 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#827 + #828 + #831 + #832 + #835 + #836 + #837 (2026-06-14, the Railway agent-access +
+  permission-autonomy session — owner-directed, manual)** — **#827** set
+  `permissions.defaultMode: bypassPermissions` (+ empty `ask`, pre-accepted bypass dialog) in
+  `.claude/settings.json` so routines never stall on confirmation prompts (Q-0128); **#828** made
+  unattended self-initiated action explicit in CLAUDE.md + `collaboration-model.md` and recorded
+  that `send_later` isn't provisioned here (Q-0129); **#831** captured the
+  routine-activity-visibility idea; **#832** shipped read-only Railway **logs** access
+  (`scripts/hermes/railway_logs.py`, unblocking the gated log-triage skill) + **#835** Railway
+  **env-var read/write** (`scripts/hermes/railway_vars.py` — list/get/set/unset, masked list,
+  audit lines, stdin secrets, `--no-deploy`), both Q-0130; **#836** aligned token config to
+  `RAILWAY_TOKEN` + a "which token?" guide; **#837** recorded the manual-step risk-labelling rule
+  (Q-0131). **Owner set the Railway credential + project/service/env IDs in the agent env after
+  the session; VERIFIED LIVE 2026-06-14** by an auth-probe routine (the `RAILWAY_API_KEY` alias +
+  Cloudflare-UA fixes landed in #840). *(Archived by the band-#870 reconciliation pass.)*
+- **#803 + #806 + #808 + #810 + #816 + #818 (2026-06-13/14, reconciliation + workflow rules +
+  session-close housekeeping)** — **#803** the **band-#800 Q-0107 reconciliation pass** (scored
+  #781–#800, planned #801–#820, fixed the masking-range ledger drift; now `historical`). **#806**
+  two workflow rules: **Q-0124** (a manually-started session does NOT run the reconciliation pass —
+  the routines always do, automatically) + **Q-0125** (reconciliation passes must disposition stale
+  open PRs via the GitHub MCP — the gap that left #766/#771 rotting). **#808** preserved the specs
+  from issues #229/#232 into `docs/ideas/` before closing them. **#818** the #817 merge note + router
+  **Q-0127** (the `auto-merge-enabler` workflow doesn't fire for MCP-created PRs). **#810/#816**
+  session-close logs (workflow cleanup · the CI-efficiency arc). *(Archived by the band-#870
+  reconciliation pass.)*
 - **#788 + #789 + #790 + #791 + #792 + #793 + #795 + #796 + #798 (2026-06-13, the portable
   substrate-kit extraction — PR 1a + 1b)** — the owner's strategic refocus (the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md) idea)
