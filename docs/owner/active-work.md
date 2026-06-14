@@ -27,13 +27,13 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
-- `claude/wizardly-edison-xw34kb` · eval-coverage drift guard (Q-0089 idea, owner-approved) ·
-  `tests/evals/test_eval_coverage.py` · 2026-06-14
 ## Recently cleared
 
+- `claude/wizardly-edison-xw34kb` · eval-coverage drift guard (Q-0089 idea, owner-approved) ·
+  `tests/evals/test_eval_coverage.py` · 2026-06-14 · **PR #879 (open, auto-merge on green)**
 - `claude/wizardly-edison-xw34kb` · P1-1 — versioned AI eval/smoke matrix (offline half:
   gates/fallback/tool-dispatch/audit) · `tests/evals/` + `scripts/run_evals.py` · 2026-06-14 ·
-  **PR #878 (open, auto-merge on green)**
+  **PR #878 (merged)**
 - `claude/ecstatic-euler-bslyvd` · map roadmaps/plans onto the 5 sectors → dispatchable per-sector
   queues + dispatch contract + S↔A reconcile · docs-only (`roadmap.md` · `repo-sector-map.md` ·
   `repo-review-map.md` · `current-state.md`) · 2026-06-14 · **PR #877**
