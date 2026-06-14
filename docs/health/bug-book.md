@@ -10,6 +10,47 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0012 — counting staff check trusts role *names*, not permissions (privilege bypass) — FIXED
+
+- **Symptom (owner-reported, 2026-06-14):** "you could give yourself a role
+  called 'admin' while the admin role did not have any actual permissions — the
+  fact that it was named 'admin' overruled the bot's permission system and
+  allowed users to execute admin commands." A non-privileged member who holds
+  (or can self-assign) a **cosmetic role merely named** `Admin` or `Moderator`
+  — carrying zero Discord permissions — passed the counting staff gate.
+- **Affected surface:** `CountingCog.is_staff_or_owner` (`disbot/cogs/counting_cog.py`),
+  which gates the `@staff_or_owner()`-decorated counting management commands
+  (`!countingmenu`/`!cm` and siblings). Scope was limited to the counting cog;
+  every other cog already gates on real permissions
+  (`@commands.has_permissions(...)`) or the governance visibility tier.
+- **Root cause:** the check was `staff_roles = ["Admin", "Moderator"]; return
+  any(role.name in staff_roles for role in ctx.author.roles)` — a **role-name
+  string match**, never the role's actual permissions. Discord role names are
+  arbitrary and self-assignable, so the name `"Admin"` granted authority a
+  powerless role does not actually carry. This is the owner's "missing bindings"
+  class: with no permission/binding check, authority fell back to a name. The
+  gap was **noted as a code-quality observation since 2026-06-05**
+  (`docs/audits/general-feature-layer-analysis-2026-06-05.md` §"Counting uses
+  hardcoded role names") but never recognized as a security issue or fixed.
+- **Impact:** privilege escalation within the counting subsystem on any guild
+  where a non-privileged member can obtain a role named `Admin`/`Moderator`.
+  No data-loss path, but it defeats the permission model for that surface.
+- **Fix (PR — this entry):** `is_staff_or_owner` now resolves the member's
+  **real** tier via the canonical `utils.visibility_rules.get_member_visibility_tier`
+  (which reads `guild_permissions`: `administrator` / `moderate_members` /
+  guild-owner) and requires `is_tier_sufficient(tier, "moderator")`; the bot
+  owner still short-circuits true. A role *name* now confers nothing.
+- **Regression test:** `tests/unit/cogs/test_counting_permissions.py` — pins
+  that a powerless role named `Admin`/`Moderator` is denied, while real
+  administrator / moderator / bot-owner / guild-owner are allowed and a plain
+  member is denied.
+- **Process note:** this bug had been captured by a routine as a vague
+  *permissions-arrangement review* idea in `docs/ideas/` (PR #834) — the wrong
+  home for a concrete bug. It belongs here in the bug book; #834 should be
+  closed (or refocused into a router DISCUSS item if a broader permission-model
+  audit is still wanted).
+- **Status:** FIXED — root-caused + fixed + regression-tested 2026-06-14.
+
 ## BUG-0011 — Hermes gateway crash-loops on restart (Telegram 409) + periodic status=1 — OPEN
 
 - **Symptom:** the `hermes-gateway` systemd service exits `Main process exited, code=exited,
