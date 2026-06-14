@@ -1,6 +1,6 @@
 # Session: Hermes terminal cheatsheet doc + Acode/GitHub setup guidance
 
-> **Status:** `in-progress` — adding the versioned command cheatsheet; flip to complete last.
+> **Status:** `complete` — PR #874; born-red card flipped as the deliberate final step (Q-0133).
 
 **Branch:** `claude/sharp-ptolemy-5mzbvb` · **Date:** 2026-06-14 · **Type:** docs (owner-requested ops reference)
 
