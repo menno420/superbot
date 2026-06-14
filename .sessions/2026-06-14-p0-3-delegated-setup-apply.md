@@ -85,31 +85,35 @@ in `governance.capability` and silently failed.
 - **#817 will self-merge** on green `code-quality` (auto-merge armed; subscribed for CI). No
   manual merge needed. **Next P0 = P0-4** (server-mgmt channel-ownership convergence, Q-0100),
   then P0-2 (media/YouTube retention, Q-0099) — band-#800 decade queue §4 slots 3–4.
-- **Pre-existing ledger drift (NOT this PR):** `check_current_state_ledger --strict` flags
-  **#802–#814** (other sessions' band merges) absent from the ledger — this is the normal
-  band-accumulation reconciled at the **#820** Q-0107 pass (a manual session does not run it,
-  Q-0124). It is **not** a CI gate (CI runs `check_docs --strict`, which is green). Left for the
-  #820 reconciliation routine.
-- **Pre-existing flaky test (NOT this PR, confirmed on clean HEAD):**
-  `test_platform_consistency.py::test_build_readiness_snapshot_after_collect_includes_status`
-  fails when `invariants/` runs before it in the same process (its `_reset_pc_state` fixture
-  doesn't reset the `pc` global snapshot a prior invariants test leaves at `warning`). Latent in
-  the full suite (an intervening service test resets it → CI green). This is the same cross-test
-  state pollution the Q-0126 session named. → session idea / promote to tracked debt.
+- **Mid-session merge:** main advanced (#815 parallel-safe suite + `pytest -n auto`; #816
+  session-close) **while I worked** — the PR went `dirty`. Merged `origin/main` in, resolved the
+  one conflict (the `active-work.md` claim ledger, by UNION), re-ran the full mirror under the
+  **new parallel config** (installed `pytest-xdist==3.6.1` to match CI): **9473 passed in 36s**
+  (the ~3× speedup). My new tests are parallel-safe. No migration collision (069 unique).
+- **Pre-existing ledger drift (NOT this PR):** `check_current_state_ledger --strict` flags the
+  current band's merges (~#802–#816) absent from the ledger — normal band-accumulation reconciled
+  at the **#820** Q-0107 pass (a manual session does not run it, Q-0124). It is **not** a CI gate
+  (CI runs `check_docs --strict`, which is green). Left for the #820 reconciliation routine.
+- **The `test_platform_consistency` flake I hit is now FIXED by #815** (merged into this branch):
+  its `tests/conftest.py` autouse singleton resets clear the `pc` global the flake depended on,
+  and the suite is green under `-n auto`. The session idea below still stands on its own merits
+  (constraint-alignment, a different drift-guard class).
 
 ## ⟲ Previous-session review
 
-Previous: the **Q-0126 CI-cost reduction** session (#814). **Did well:** strong empirical
-discipline — it backed `pytest -n auto` out of CI the moment CI (not local) caught the suite's
-non-determinism, and it shipped the `active-work.md` claim ledger I used at the *start* of this
-session (it works). **Missed / could improve:** it correctly diagnosed the suite's cross-test
-state pollution but parked the fix as a follow-up *idea*, leaving the pollution latent — and
-this session walked straight into it (the `test_platform_consistency` flake), spending real time
-proving it pre-existing on clean HEAD. **System improvement:** that pollution is now a *named,
-reproducible* blocker for both a 3× CI speedup (parallel suite) **and** per-session red-herring
-cost — it deserves promotion from "idea" to a tracked debt item carrying the concrete reproducer
-(`invariants/` → `test_platform_consistency` global-snapshot leak), so the next agent recognizes
-it instantly instead of re-deriving "is this mine?".
+Previous: the **Q-0126 CI-cost** arc (#814, then the follow-up #815). **Did well:** strong
+empirical discipline — #814 backed `pytest -n auto` out of CI the moment CI (not local) caught
+the suite's non-determinism, and it shipped the `active-work.md` claim ledger I used at the
+*start* of this session (it works). **Then the follow-up #815 actually landed the parallel-safe
+fix** (autouse singleton resets in `conftest.py`) and re-enabled `-n auto` — exactly the right
+arc: park-then-fix, not park-and-forget. **The near-miss it left:** #814→#815 didn't *name* the
+latent pollution anywhere a mid-flight session would see it, so I spent real time proving the
+`test_platform_consistency` flake pre-existing on clean HEAD — only to merge #815 and watch it
+vanish. **System improvement:** when a session knowingly ships with a latent test-pollution
+follow-up still open, a one-line note in `current-state.md` § "Near-term technical debt" (the
+named reproducer) would save the *next* concurrent session the "is this mine?" investigation —
+cheaper than the idea backlog for a short-lived, actively-being-fixed gap. (Now moot — #815
+fixed it — but the pattern recurs whenever a fix spans two sessions.)
 
 ## 💡 Session idea
 
