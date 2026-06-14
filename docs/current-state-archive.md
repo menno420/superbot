@@ -13,6 +13,12 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#872 + #873 + #874 + #875 + #876 (2026-06-14, autonomous-loop / Hermes ops + docs housekeeping)**
+  — five small ops/docs PRs from two parallel sessions, cleared straight to the archive (each is
+  durably recorded in its own `.sessions/` card; not a reconciliation pass — the #900 cadence routine
+  will regroup as needed): **#872** the band-#870 Q-0107 reconciliation pass (`loving-meitner`);
+  **#873** install-soul-script; **#874** Hermes terminal cheatsheet; **#875** branch-hygiene
+  cheatsheet; **#876** backup-status correction (`sharp-ptolemy`). Docs/ops only.
 - **#802 + #805 + #811 + #812 + #813 (2026-06-13/14, portable substrate-kit — PR 1b tail + PR 2
   capability layer)** — the owner's active OSS thread advanced inside the self-contained
   `substrate-kit/` tree ([extraction plan](planning/portable-substrate-kit-extraction-2026-06-13.md)).
