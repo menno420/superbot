@@ -25,12 +25,13 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
-  guardrail) · `tests/_isolation.py` + `tests/conftest.py` refactor + a lint test that every
-  disbot `_reset_for_tests` hook is classified (global vs per-file) · 2026-06-14
+_(no active claims)_
 
 ## Recently cleared
 
+- `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
+  guardrail) · `tests/_isolation.py` + conftest + guardrail invariant test · 2026-06-14 ·
+  **PR #833 (open, auto-merge on green)**
 - `claude/gracious-ramanujan-o5wcw1` · P0-2 PR 1 — media/YouTube data-minimization +
   retention enforcement (Q-0099) · 2026-06-14 · **PR #829 (merged)**
 - `claude/gracious-ramanujan-a8nnjf` · P0-4 PR 2 — channel creation + category lifecycle
