@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`agent-env-credential-smoke-check-2026-06-14.md`](./agent-env-credential-smoke-check-2026-06-14.md) —
+  **tooling (2026-06-14, the `auth probe` routine / PR #840):** a stdlib `check_agent_env.py` that
+  does a minimal authenticated round-trip for each external credential the env *claims* to provide
+  (Railway / Anthropic / OpenAI), printing PASS/SKIP/FAIL at SessionStart. Absence = SKIP, only
+  present-but-broken = FAIL. Surfaced because the owner's Railway access sat **silently inert** (a
+  var-name mismatch + a Cloudflare UA block) until a routine happened to probe it by hand — this
+  would have flagged both on the first session after provisioning. Small; one script + a hook line.
 - [`routine-activity-visibility-2026-06-14.md`](./routine-activity-visibility-2026-06-14.md) —
   **workflow / UX (2026-06-14, owner-observed):** routine *run* sessions are hidden from the
   Recents tab (intentional upstream behavior; open FR
