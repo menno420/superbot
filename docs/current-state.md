@@ -207,7 +207,7 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
-- **#878 + #879 (2026-06-14, P1-1 — versioned AI eval/smoke matrix, offline half + its drift guard)**
+- **#878 + #879 + #881 (2026-06-14, P1-1 — versioned AI eval/smoke matrix, offline half + drift guard + hotspot coverage)**
   — the standing #1 priority's deterministic, CI-gated half. The live golden set
   (`tests/evals/cases.py`) is creds-only (`scripts/run_evals.py`), and CI exercised only the harness
   *machinery* — there was no CI proof of the AI path's **deterministic contract**. **#878:** new
@@ -218,7 +218,10 @@ Source code and merged PRs win over anything written here.
   `SMOKE_MATRIX_VERSION`); the **#855 Layer-A** MOAB-path probe added to the golden set. **#879:** an
   **eval-coverage drift guard** (`tests/evals/test_eval_coverage.py`) — a self-cleaning ratchet so a
   new canonical AI tool/`AITask` can't silently fall outside the matrix (referenced ∪ acknowledged ==
-  surface; coverage floor; meta-tested to actually fire). `check_quality --full` green (9645); arch 0.
+  surface; coverage floor; meta-tested to actually fire). **#881:** dog-fooded that guard — 6 golden
+  tool-selection probes for the highest-value uncovered **BTD6** tools (the live-defect hotspot:
+  round-cash/boss/map/paragon-degree/round-composition/answerability, each modeled on a real live
+  miss), moving the ratchet **8 → 14/34** covered. `check_quality --full` green (9645); arch 0.
   **Still owed (P1-1):** the live-quality battery (needs prod creds) + absence-guard **Layer B**
   (design-for-review).
 - **#870 + #869 + #868 (2026-06-14, Hermes operating-layer hardening arc)** — three docs-only PRs
