@@ -17,29 +17,29 @@ _spec.loader.exec_module(crd)
 
 
 def test_not_due_same_band() -> None:
-    # STEP=20: marker #737 (band 36), latest #739 (band 36) → not due
+    # STEP=30: marker #737 (band 24: 720–749), latest #739 (band 24) → not due
     due, latest, marker = crd.is_due(latest=739, marker=737)
     assert due is False
     assert (latest, marker) == (739, 737)
 
 
 def test_due_when_crossing_band() -> None:
-    # STEP=20: marker #737 (band 36), latest #740 (band 37) → due
-    due, _, _ = crd.is_due(latest=740, marker=737)
+    # STEP=30: marker #737 (band 24: 720–749), latest #750 (band 25) → due
+    due, _, _ = crd.is_due(latest=750, marker=737)
     assert due is True
 
 
 def test_due_when_crossing_multiple_bands() -> None:
-    # STEP=20: marker #737 (band 36), latest #780 (band 39) → due
-    due, _, _ = crd.is_due(latest=780, marker=737)
+    # STEP=30: marker #737 (band 24), latest #810 (band 27) → due
+    due, _, _ = crd.is_due(latest=810, marker=737)
     assert due is True
 
 
 def test_exactly_on_band_boundary_marker() -> None:
-    # STEP=20: last pass landed on #740 (band 37); latest #759 still band 37 → not due
-    assert crd.is_due(latest=759, marker=740)[0] is False
-    # latest #760 → new band (38) → due
-    assert crd.is_due(latest=760, marker=740)[0] is True
+    # STEP=30: last pass landed on #750 (band boundary); latest #779 still band 25 → not due
+    assert crd.is_due(latest=779, marker=750)[0] is False
+    # latest #780 → new band (26) → due
+    assert crd.is_due(latest=780, marker=750)[0] is True
 
 
 def test_no_marker_is_not_due(monkeypatch) -> None:
