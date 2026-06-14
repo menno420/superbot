@@ -2,7 +2,7 @@
 
 > **Status:** `complete`
 
-**Branch:** `claude/sector-map-and-hook-policy` · **PR:** TBD · **Date:** 2026-06-14 · **Type:** owner-directed workflow substrate (manual)
+**Branch:** `claude/sector-map-and-hook-policy` · **PR:** #859 · **Date:** 2026-06-14 · **Type:** owner-directed workflow substrate (manual)
 
 ## What this session did
 Two owner-directed substrate pieces.
