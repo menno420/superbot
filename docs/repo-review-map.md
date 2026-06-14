@@ -152,6 +152,12 @@ This map is a **partition over** the existing structure, not a replacement for i
 - **Layering / invariants** ("may this import that?") → [`architecture.md`](architecture.md).
 - **Ownership** ("who writes this table/event?") → [`ownership.md`](ownership.md).
 - **Per-area working context** ("I'm building in area X") → [`subsystems/`](subsystems/README.md) folio.
+- **Planning / roadmap scoping** ("what standing **sector** + horizon is this, and where's its live
+  queue?") → [`repo-sector-map.md`](repo-sector-map.md) (the **S1–S5 planning sectors**) +
+  [`roadmap.md`](roadmap.md) (the per-sector queues). **This is a different taxonomy from the one
+  below** — *planning* coarsens *review*. The S→A mapping (S1↔A1-minus-BTD6, S2↔A1-BTD6+A2,
+  S3↔A3, S4↔A4, S5↔A3-config+live-state) lives in `repo-sector-map.md` § "Two taxonomies"; route by
+  the **question you're asking** (planning a roadmap → sector; scoping a PR review → review unit).
 - **Review/refactor scoping** ("what's the self-contained unit for *this* change?") → **this file.**
 
 When this file and any of those disagree, they win — and fix this file in the same PR.
@@ -168,3 +174,7 @@ Update when the *partition* changes, not when individual files move:
 
 Do **not** update for: a new file inside an existing slice, a new command in an existing cog,
 or a new individual doc/test. Those are covered by the navigation map and the folios.
+
+When a change here touches the *partition* (a new top-level directory, a new standing body of work),
+check whether it also shifts a **planning sector** in [`repo-sector-map.md`](repo-sector-map.md) — keep
+the two maps' S↔A correspondence consistent so they don't grow into competing taxonomies.

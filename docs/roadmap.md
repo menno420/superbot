@@ -1,7 +1,9 @@
 # SuperBot — Implementation Roadmap
 
-> **Status:** `living-ledger` — the one cross-area "what's planned, for which area, in
-> what order" index. **Last updated:** 2026-06-14 (band-#840 Q-0107 reconciliation pass).
+> **Status:** `living-ledger` — the one cross-area "what's planned, for which sector, in
+> what order" index, now organised under the **5 planning sectors** (S1–S5, Q-0137) so each
+> sector is a self-contained dispatch queue. **Last updated:** 2026-06-14 (restructured by
+> sector — the next-session brief acting on the [sector map](repo-sector-map.md)).
 >
 > **▶ The live decade queue (next ~9 PRs):**
 > [`planning/reconciliation-pass-2026-06-14-band870.md`](planning/reconciliation-pass-2026-06-14-band870.md)
@@ -57,7 +59,113 @@
   [`ideas/README.md`](ideas/README.md) — promoting a backlog idea to a horizon is standing
   grooming work, not scope creep.
 
-## At a glance
+## By sector — the live dispatch queues
+
+> **This is the top layer.** The repo divides into **five planning sectors**
+> ([`repo-sector-map.md`](repo-sector-map.md), owner decision Q-0137): **S1 Bot product · S2 BTD6 ·
+> S3 AI-Memory system (the *mechanism*) · S4 Documentation system (the *content*) · S5 Operations /
+> control-plane.** Each has a self-contained **Now / Next / Later** below; the detailed plans are in
+> the [area drill-down](#area-drill-down-each-area-homed-to-a-sector) further down, every area homed
+> to exactly one sector.
+>
+> **Why sectors — the dispatch model.** A worker is dispatched by **sector + action**: e.g.
+> *"continue the S2 BTD6 plan execution"* or *"plan the S3 AI-Memory sector, then an hour later execute
+> it."* The worker reads its sector's **Now** here, opens the linked plan/folio, and advances it. Each
+> sector's **Dispatch** line says what *plan* vs *execute·continue* mean for it. This index makes the
+> sectors **dispatch-ready**; the Hermes/routine **wiring** that turns a phone message into a `/fire`
+> is **Q-0137 Thread 1** (owner-undecided) and is *not* built here — the actions map onto the existing
+> routine fleet in [`operations/autonomous-routines.md`](operations/autonomous-routines.md).
+>
+> **Sector ⇄ review-unit:** S1–S5 (planning) coarsen the A1–A5 **review** domains
+> ([`repo-review-map.md`](repo-review-map.md)); the mapping table lives in
+> [`repo-sector-map.md`](repo-sector-map.md) § "Two taxonomies". Plan a roadmap → use **sector**;
+> scope a PR review → use **review unit**.
+
+### S1 — Bot product  ·  *the Discord bot users interact with (in-bot AI is a slice within it)*
+- **Now:** the **P1-1 AI eval-smoke matrix** — in-bot AI correctness (gates · fallback ·
+  grounding-refusal), with the absence-guard **Layer B** (Layer A ✅ #855); offline half buildable
+  now, live half creds-gated; BUG-0009 open ([bug book](health/bug-book.md)). **The P0 integrity spine
+  AND P1-2 are COMPLETE.** Product lanes run as **owner-steered alternates**: mining V-16 phase 2
+  (gated on the owner PNG pack) · games **P0-1 wager money-safety** · AI §7 workflow families
+  (post-prod-check).
+- **Next:** safety/community remainder (image moderation · security tiers 1+2 · NL event scheduler) ·
+  `myprofile` PR A (turn-key) · help home/navigation plan · settings Phase 2 tail → Phase 3.
+- **Later:** server-mgmt **PR13 AI generation layer** + governance setup (gated Q-0008/Q-0011) · media
+  channel-summary (gated Q-0099) · the 4-button Help Home navigation doctrine (Q-0078) · games deferred
+  follow-ups · the product-growth drafts (most of the Later/Someday product-growth list below).
+- **Dispatch:** `S1` · *plan* = pick a verified slice from a folio / production-readiness map and write
+  or refine its plan · *execute·continue* = advance the active **Now** slice (next P1-1 step, or an
+  owner-steered product lane). **Live queue →** the eight S1 areas in the drill-down below; folios:
+  [`subsystems/`](subsystems/README.md).
+
+### S2 — BTD6  ·  *the Bloons TD 6 vertical — runtime + offline data, one standing sector*
+- **Now:** **the cutover is DONE.** Post-cutover decode backlog: ⭐ **item 3** (buff/zone tail —
+  demand-driven) · **item 4** (the maintainer's live spot-check, owed). Triage tool:
+  `scripts/btd6_probe.py "<exact user text>"`.
+- **Next:** the **P1-1 BTD6 eval cases** (the #704 finding — the capability message must match the
+  actual grounding-refusal behaviour, and asserted numbers (Despo price, Elite Lych HP) must be
+  grounded). *The in-bot AI eval **harness** is S1; the BTD6 **data/grounding** correctness it checks
+  is S2.*
+- **Later:** BTD6 product-extension routing (rules/trivia · challenges · runs · leaderboards) — gated
+  on ADR-006 provenance / source-health.
+- **Dispatch:** `S2` · *plan* = structure a decode item or an extension feature into a plan · *execute·
+  continue* = run the decode/answerability backlog or a data refresh. **Live queue →** the **S2 BTD6**
+  area in the drill-down below; folio: [`subsystems/btd6.md`](subsystems/btd6.md) · provenance:
+  [ADR-006](decisions/006-btd6-data-provenance-ownership.md).
+
+### S3 — AI-Memory system  ·  *the mechanism — the self-improving-agent engine (shippable on its own)*
+- **Now:** the owner's **[portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)**
+  OSS arc — resume at the **PR-2 remainder** (modes + contract-doc templates + trigger/drift detection
+  → PR 3). The **autonomous-loop mechanism** is live (#742/#753–#761; operating layer hardened
+  #863/#865/#868/#869/#870) — its *operation* is S5, its *design* is here.
+- **Next:** the **bot self-test walker** eval harness (pairs with S1 P1-1) · the **Hermes bug-triage
+  flow** mechanism (gated Q-0121) · **`scripts/check_sector_map.py`** (assert every area/folio is
+  reachable from exactly one sector — makes this partition self-checking).
+- **Later:** promote the journal's earned candidate rules into CLAUDE.md (Q-0120) · the Context7-adopted
+  plugins remainder (Postgres-MCP · pyright-LSP, Q-0096) · substrate-as-product productization (the
+  future S5-of-S3 outward face).
+- **Dispatch:** `S3` · *plan* = design a new mechanism (a checker, a hook, a loop seam, a substrate-kit
+  layer) · *execute·continue* = build the next substrate-kit / tooling slice. **Live queue →** the
+  **S3** area in the drill-down below; refs:
+  [`operations/autonomous-routines.md`](operations/autonomous-routines.md) ·
+  [`operations/hook-policy.md`](operations/hook-policy.md) ·
+  [the loop vision](ideas/autonomous-improvement-loop-vision-2026-06-12.md).
+
+### S4 — Documentation system  ·  *the content the engine produces — memory, folios, contracts*
+- **Now:** **this sector-roadmap mapping** (executing) · the 3-tap nav **middle/bottom layers** (folio
+  completeness + cog/idea leaf-wiring — the "larger nav build" the sector-map session flagged).
+- **Next:** idea-backlog **grooming** cadence (Q-0015 — every idea ends implemented or discussed) ·
+  orientation-route upkeep mined from `.sessions/` **context-deltas** · doc-reachability maintenance.
+- **Later / recurring:** the **Q-0107 reconciliation** *content* pass (de-stale docs · refactor the
+  roadmap · keep the ledger honest) — its trigger/checker **machinery** is S3, the docs it produces are
+  S4. Cadence: every 30th PR (Q-0134).
+- **Dispatch:** `S4` · *plan* = identify a doc gap / drift and scope its fix · *execute·continue* =
+  groom the idea backlog, de-stale a doc area, or run the docs-reconciliation pass. **Live queue →** the
+  **S4** area in the drill-down below; refs:
+  [`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) · [`repo-sector-map.md`](repo-sector-map.md).
+
+### S5 — Operations / control-plane  ·  *the operational health that isn't a file — deploy · secrets · loop*
+- **Now:** the read-only **Railway log-triage skill** (Railway access verified live #840 — the reserved
+  decade-queue slot) · **verify the daily backup cron end-to-end** (next scheduled `backup-db.yml` run
+  after the #862 pg18-client fix).
+- **Next:** **dispatch reliability** (Q-0137 Thread 1 — move the night executor off GitHub's flaky
+  `schedule:` cron onto the always-on Hermes VPS **and keep cron as a degraded backstop**;
+  owner-undecided) · `ROUTINE_PAT` expiry monitoring · a Neon read-only role for DB-level checks.
+- **Later:** Hermes Docker backend + SSH-key hardening · security/authority tracking as Hermes gains
+  write scope (Q-0117/Q-0121) · `BUG-0011` Hermes gateway restart crash-loop ([bug book](health/bug-book.md)).
+- **Dispatch:** `S5` · *plan* = design an ops check / a control-plane improvement · *execute·continue* =
+  build a read-only ops skill, verify a live control-plane row, or harden the loop's reliability.
+  **Live queue →** the **S5** area in the drill-down below; refs:
+  [`operations/production-deployment.md`](operations/production-deployment.md) ·
+  [`operations/hermes-control-plane.md`](operations/hermes-control-plane.md) ·
+  [autonomous-routines § Control-plane state](operations/autonomous-routines.md) · `scripts/check_loop_health.py`.
+
+---
+
+## Cross-horizon snapshot (all sectors)
+
+> The pre-sector view, kept for the cross-cutting band picture. The **active band** is always the
+> live decade queue (the `▶` pointer at the top); the per-sector queues above are the standing home.
 
 | Horizon | Items |
 |---|---|
@@ -84,9 +192,14 @@
 
 ---
 
-## By area
+## Area drill-down (each area homed to a sector)
 
-### 🛡️ Server management — **structurally complete** (gated tail only)
+> The detailed per-area plans. Each area heading carries its **sector chip** (S1–S5); the live
+> per-sector queues are the [dispatch index](#by-sector--the-live-dispatch-queues) above. The eight
+> bot areas are **S1**; **BTD6** is **S2**; the former "agent ecosystem" lane is split into **S3 /
+> S4 / S5** at the end.
+
+### 🛡️ Server management · **S1 Bot** — structurally complete (gated tail only)
 
 Folio: [server-management](subsystems/server-management.md) · **historical record** (initiative
 complete through PR14; the gated PR13 AI tail is in *Later* below):
@@ -105,7 +218,7 @@ complete through PR14; the gated PR13 AI tail is in *Later* below):
   (target architecture) · [implementation-plan](planning/server-management-implementation-plan-2026-06-05.md)
   (PR scope; shipped through PR14 — the tracker is authoritative).
 
-### 🚨 Server safety & community platform — **first band shipped; remainder Next**
+### 🚨 Server safety & community platform · **S1 Bot** — first band shipped; remainder Next
 
 **New lane (2026-06-12):** the owner uploaded competitor/safety research (#739 →
 [server-safety-and-automod](ideas/server-safety-and-automod-2026-06-12.md) ·
@@ -137,7 +250,7 @@ numbers: [discord-platform-limits](operations/discord-platform-limits.md).
   summarization enrichment layer rides the Q-0082 ceiling). Other sources + custom
   commands: Someday (see below).
 
-### ⚙️ Settings / bindings / provisioning — **Next**
+### ⚙️ Settings / bindings / provisioning · **S1 Bot** — Next
 
 Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisioning.md)
 
@@ -167,7 +280,7 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
 - **Later** — [setup-platform roadmap](setup-platform/roadmap_setup_platform.md) is the *aspirational*
   8-phase vision; the shipped wizard is a pragmatic subset. Direction, not queue.
 
-### 🖥️ Building / interface (Discord-native UI) — **Next**
+### 🖥️ Building / interface (Discord-native UI) · **S1 Bot** — Next
 
 - **Complete (2026-06-10)** — the **platform-surface mapping campaign**: the
   [mapping standard](planning/platform-surface-mapping-standard-2026-06-09.md) (#641),
@@ -219,7 +332,7 @@ Folio: [settings-bindings-provisioning](subsystems/settings-bindings-provisionin
   [hub-ui](building-roadmap/hub-ui-standard.md) ·
   [config-input](building-roadmap/config-input-standard.md).
 
-### 🩺 Health / diagnostics — **Now** (verification owed)
+### 🩺 Health / diagnostics · **S1 Bot** — Now (verification owed)
 
 Folio: [health-diagnostics](subsystems/health-diagnostics.md)
 
@@ -230,7 +343,7 @@ Folio: [health-diagnostics](subsystems/health-diagnostics.md)
   a fresh approved plan. Execution authority:
   [bot-awareness-implementation-plan](health/bot-awareness-implementation-plan.md).
 
-### 🤖 AI — **Now** (active lane; per-exposure gate lifts)
+### 🤖 AI (in-bot slice) · **S1 Bot** — Now (active lane; per-exposure gate lifts)
 
 Folio: [ai](subsystems/ai.md) · **Gate (re-postured 2026-06-09, Q-0048):** **read-only,
 deterministic tools carry a standing lift** (no per-case ask; audience-tiered, no writes /
@@ -275,7 +388,7 @@ dedicated decision** for any action capability.
   direction + a source-confirmed scope sketch in the idea file; wants its own planning
   session before code.
 
-### 🎈 BTD6 data / tools — **Now** (THE CUTOVER IS DONE — post-cutover decode backlog)
+### 🎈 BTD6 data / tools · **S2 BTD6** — Now (THE CUTOVER IS DONE — post-cutover decode backlog)
 
 Folio: [btd6](subsystems/btd6.md) · index: [docs/btd6/](btd6/README.md) · ADR-006
 provenance schema is implemented.
@@ -324,7 +437,7 @@ provenance schema is implemented.
   Remaining: the first real dispatch from the Actions tab. Plan + how-to-run:
   [data-refresh-pipeline](btd6/btd6-data-refresh-pipeline-plan.md).
 
-### 🎮 Games — **Now** (mining character platform active lane)
+### 🎮 Games · **S1 Bot** — Now (mining character platform active lane)
 
 Folio: [games](subsystems/games.md) · **Boundary:** ADR-002 (game state not restart-safe —
 accepted, not a target).
@@ -369,7 +482,7 @@ accepted, not a target).
   owner numbers-confirm (plan G1/G2). Its D6 (duel XP both sides) is a standalone
   quick-win.
 
-### 📺 Media / YouTube — **Later** (needs an approved plan)
+### 📺 Media / YouTube · **S1 Bot** — Later (needs an approved plan)
 
 Folio: [media-youtube](subsystems/media-youtube.md) · **Gate:** ADR-007 + a
 privacy/provenance/moderation review before any public surface.
@@ -382,39 +495,22 @@ privacy/provenance/moderation review before any public surface.
   hardening · maintainer live-verify) are queued behind P1-1 in the
   [band-#840 decade queue](planning/reconciliation-pass-2026-06-14-band840.md) §3.
 
-### 🤝 Agent ecosystem / workflow — standing lane
+> **The former "Agent ecosystem / workflow" lane is split here into its three sectors** — **S3**
+> (the mechanism/engine), **S4** (the docs content it produces), **S5** (the live operations). The
+> workflow substrate is first-class work (CLAUDE.md working agreement); these three sections map its
+> *plans* so they're sequenced like any other area.
 
-The workflow substrate is first-class work (CLAUDE.md working agreement); this section maps
-its *plans* so they're sequenced like any other area. Ops shelf:
+### 🧠 AI-Memory system (mechanism) · **S3** — standing lane
+
+The self-improving-agent **engine** — the shippable substrate (hooks · autonomous loop · checkers ·
+context-compiler · governance scaffolding). Content-agnostic and liftable; the
+`portable-substrate-kit` is S3 extracted. Mechanism shelf:
 [hooks & plugins](operations/claude-code-hooks-and-plugins.md) ·
 [MCP servers](operations/mcp-servers.md) ·
-[Hermes control plane](operations/hermes-control-plane.md) +
-[operating prompt](operations/hermes-operating-prompt.md) ·
-[autonomous routines + control-plane state ledger](operations/autonomous-routines.md).
+[hook policy](operations/hook-policy.md) ·
+[autonomous routines](operations/autonomous-routines.md).
 
-- **Standing** — the **Q-0107 reconciliation cadence** (docs-only pass each time merged PRs
-  cross a multiple of **20** (#753); fired automatically by the `reconcile`-issue trigger —
-  **first auto-fire proven by issue #781**; current pass: [2026-06-13 third Q-0107](planning/reconciliation-pass-2026-06-13-q0107.md))
-  · the session enders (Q-0089 idea · Q-0102 prev-session review · Q-0104 closing audit).
-- **Later — continuation dispatch = the Routine seam (Q-0115, 2026-06-12):** Stage 0's
-  separate `workflow_dispatch` GH Action is **folded into the #742 Routine bridge** — one
-  dispatch mechanism for Hermes-fired, one-click, and later scheduled runs. The
-  bounded-session protocol ([ai-project-workflow §10](owner/ai-project-workflow.md), Q-0088)
-  activates once the Routine is **wired + calibrated** (the bridge runbook's ⬜ steps).
-- **Open decisions** — **Q-0096 remainder** (Context7 adopted #737; Postgres-MCP + pyright-LSP still
-  open — [plugins eval](ideas/claude-code-plugins-evaluation-2026-06-12.md)) · **Q-0120** (promote the
-  journal's earned candidate rules into CLAUDE.md) · **Q-0121** (Hermes's 2nd write `gh issue create`,
-  gating the bug-triage flow). **Open bug:** **BUG-0011** — Hermes gateway restart crash-loop
-  ([bug book](health/bug-book.md)).
-- **Later (structure-or-defer, 2026-06-13)** — [bot self-test walker](ideas/bot-self-test-walker-2026-06-10.md):
-  the owner-gated in-process command walker + AI eval mode; clear direction, wants its own plan (pairs
-  with P1-1 AI eval matrix) before building.
-- **Next (gated Q-0121)** — [Hermes bug-triage flow](ideas/hermes-bug-triage-flow-2026-06-13.md): route
-  `/bugreport` through Hermes (triage → curated `bug` issue → nightly executor batch-fix), replacing the
-  cap-hungry direct instant-fire. Build waits on the Q-0121 write decision.
-- **Quick-win (executing 2026-06-13)** — [backup-dump integrity check](ideas/backup-integrity-check-2026-06-13.md):
-  a `CREATE TABLE`-count gate in `backup-db.yml` so a silent empty dump never uploads as a "backup".
-- **Now (executing 2026-06-13 — #813)** — the
+- **Now (owner-steered OSS arc — #813)** — the
   [portable substrate-kit extraction](planning/portable-substrate-kit-extraction-2026-06-13.md):
   externalize the workflow substrate into a single-file, stdlib-only kit (`substrate-kit/`) that
   bootstraps the loop in any project. **PRs 1a/1b + the 1b tail are DONE** (#789 · #791–#793 · #802 —
@@ -423,30 +519,87 @@ its *plans* so they're sequenced like any other area. Ops shelf:
   personas (#812)** — and the **PreToolUse stance-guard hook (#813)** makes stances *enforced*.
   **Next = the PR-2 remainder** (the three modes' per-session behaviors + contract-doc templates +
   trigger/drift detection + the remaining engine hooks), then PR 3 (self-maintenance loop + review
-  seam + productization).
-- **Now (seams wired 2026-06-12 — #742, Q-0113/Q-0114, parallel session)** — the
+  seam + productization). **— third carry; escalate if a fourth.**
+- **Live (mechanism is built)** — the
   [autonomous self-improvement loop](ideas/autonomous-improvement-loop-vision-2026-06-12.md)'s
-  three repo-side seams: the Hermes `superbot-review` skill (independent non-Claude critique) ·
-  `scripts/check_phase_gate.py` (fix-phase vs. invent-phase; invent requires zero OPEN bugs +
-  zero Not-Done readiness rows — currently **FIX-PHASE**) · the
+  repo-side seams (#742, Q-0113/Q-0114): the Hermes `superbot-review` skill (independent non-Claude
+  critique) · `scripts/check_phase_gate.py` (fix-phase vs. invent-phase; invent requires zero OPEN
+  bugs + zero Not-Done readiness rows — currently **FIX-PHASE**) · the
   [Hermes → Claude dispatch bridge](ideas/hermes-claude-dispatch-bridge-2026-06-12.md)
-  (`superbot-dispatch` + runbook). Gates: routine PRs self-merge on green CI (**Q-0113**);
-  human approve/deny applies to **agent-originated features only**, originated in
-  invent-phase only (**Q-0114**).
-- **LIVE (2026-06-12, the #753–#761 wiring arc — parallel lane):** the loop now *runs* —
-  issue-triggered reconciliation (#753) · routine prompts as loop turns (#754) · the
-  **Q-0117 Hermes independent-review merge gate** for substantial executor steps (#756) ·
-  the **executor-nightly cron** (#759) · free-form `/bugreport` dispatch (#761); the
-  HermesCog Discord entry point is in flight (**#757**, its own lane). Posture: **Q-0105
-  calibration** — verify runs against ground truth before trusting unattended (the night
-  reconciliation pass's checker-regex catch is calibration working).
+  (`superbot-dispatch`) + the **#753–#761 wiring arc** (issue-triggered reconciliation · routine
+  prompts as loop turns · the Q-0117 review-merge gate · `/bugreport` dispatch). *The loop's live
+  **operation** — firing, cron lag, reliability — is **S5**.*
+- **Next (structure-or-defer, 2026-06-13)** — [bot self-test walker](ideas/bot-self-test-walker-2026-06-10.md):
+  the owner-gated in-process command walker + AI eval mode; clear direction, wants its own plan (pairs
+  with the **S1 P1-1 AI eval matrix** — the walker harness is S3, the bot behaviour it checks is S1).
+- **Next (gated Q-0121)** — [Hermes bug-triage flow](ideas/hermes-bug-triage-flow-2026-06-13.md): route
+  `/bugreport` through Hermes (triage → curated `bug` issue → nightly executor batch-fix), replacing the
+  cap-hungry direct instant-fire. The dispatch *mechanism* is S3; build waits on the Q-0121 write
+  decision (the live Hermes *operation* is S5).
+- **Next (tooling)** — **`scripts/check_sector_map.py`**: assert every top-level `disbot/` area and
+  every `docs/subsystems/` folio is reachable from **exactly one** sector — turns the "≤3 taps" promise
+  + this roadmap's sector-homing into a checkable completeness invariant (no orphan, no double-home).
+- **Open mechanism decisions** — **Q-0096 remainder** (Context7 adopted #737; Postgres-MCP +
+  pyright-LSP still open — [plugins eval](ideas/claude-code-plugins-evaluation-2026-06-12.md)) ·
+  **Q-0120** (promote the journal's earned candidate rules into CLAUDE.md).
 - **Someday (vision, not approved)** — the
   [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md)
-  (owner-shaped strategic direction).
+  (owner-shaped strategic direction; the outward S5-of-S3 face once the kit is real).
+
+### 📚 Documentation system (content) · **S4** — standing lane
+
+SuperBot's knowledge corpus — what S3 produces and consumes (current-state · journal · sessions ·
+ideas · folios · binding contracts · this roadmap). Entry:
+[`AGENT_ORIENTATION.md`](AGENT_ORIENTATION.md) · [`repo-sector-map.md`](repo-sector-map.md). *This
+sector was under-planned; populated here so it has a live queue (the Q-0137 deep-clean terminal
+condition — every sector non-empty).*
+
+- **Now** — **this sector-roadmap mapping** (organising the roadmap + plans under S1–S5, making each
+  sector a dispatch target) · the **3-tap nav middle/bottom layers** (folio completeness + cog/idea
+  leaf-wiring — the "larger nav build" the sector-map session flagged as next).
+- **Standing (recurring)** — the **Q-0107 reconciliation** *content* pass (docs-only — de-stale docs,
+  fix the ledger, refactor the roadmap) each time merged PRs cross a **multiple of 30** (Q-0134; the
+  trigger/checker **machinery is S3**, the docs it writes are S4) · the session enders (Q-0089 idea ·
+  Q-0102 prev-session review · Q-0104 closing audit).
+- **Next** — idea-backlog **grooming** (Q-0015 — every idea ends implemented or discussed) ·
+  orientation-route upkeep mined from `.sessions/` **context-deltas** · doc-reachability maintenance
+  (`check_docs --strict`).
+
+### 🛠️ Operations / control-plane · **S5** — standing lane
+
+The operational health that **isn't a file**: is the loop firing? is the backup working? are the
+secrets set? is Hermes up? **Every recent silent failure lived here.** Entry:
+[Hermes control plane](operations/hermes-control-plane.md) +
+[operating prompt](operations/hermes-operating-prompt.md) ·
+[production deployment](operations/production-deployment.md) ·
+[autonomous routines + control-plane state ledger](operations/autonomous-routines.md). *The "forgotten
+sector" (Q-0137); under-planned before — populated here.*
+
+- **Now** — the read-only **Railway log-triage skill** (Railway access verified live #840 — the
+  reserved decade-queue slot; look-but-don't-touch ops graduation) · **verify the daily backup cron
+  end-to-end** (the next scheduled `backup-db.yml` run confirms the cron path after the #862
+  pg18-client fix).
+- **Now (reliability posture)** — the **live loop runs** (issue-triggered reconciliation ·
+  executor-nightly cron · `/bugreport` dispatch, #753–#761) but on GitHub's best-effort `schedule:` —
+  measured **hours late**; **Q-0105 calibration** holds (verify each run against ground truth before
+  trusting it unattended).
+- **Next — dispatch reliability (Q-0137 Thread 1, owner-undecided)** — move the night executor off
+  GitHub cron onto the always-on **Hermes VPS**, keeping `schedule:` as a **degraded backstop** (an
+  outage means "late," not "stopped"). This supersedes the framing of continuation dispatch as the
+  Routine seam (Q-0115); the bounded-session protocol ([§10](owner/ai-project-workflow.md), Q-0088)
+  activates once dispatch is **wired + calibrated**.
+- **Quick-win** — [backup-dump integrity check](ideas/backup-integrity-check-2026-06-13.md): a
+  `CREATE TABLE`-count gate in `backup-db.yml` so a silent empty dump never uploads as a "backup".
+- **Later** — `ROUTINE_PAT` expiry monitoring · a Neon read-only role for DB-level checks · Hermes
+  Docker backend + SSH-key hardening · security/authority tracking as Hermes gains write scope
+  (Q-0117/Q-0121) · **BUG-0011** Hermes gateway restart crash-loop ([bug book](health/bug-book.md)).
 
 ---
 
 ## Product-growth roadmap drafts — **Later / Someday** (not approved)
+
+> **Sector:** these are all **S1 Bot product** (BTD6 product-extension → **S2**) — captured drafts on
+> the *Later/Someday* horizon, not active dispatch targets. They feed S1/S2's *Later* once a gate clears.
 
 - **Later** — [social/community/progression](planning/social-community-progression-roadmap-2026-06-08.md): guilds, achievements, profiles, leaderboards, and notifications; gate: privacy/new-owner decision (Q-0038 answered 2026-06-09: server-scoped clans).
 - **Later** — [economy/marketplace/rewards](planning/economy-marketplace-rewards-roadmap-2026-06-08.md): trade, rewards, sinks, onboarding, and crafting; gate: economy-health review + chance-reward review (Q-0039 answered 2026-06-09: donation = cosmetic-only, no bot-side billing).
@@ -501,9 +654,12 @@ its *plans* so they're sequenced like any other area. Ops shelf:
 
 When a new plan doc lands (e.g. a fresh Codex/Opus planning doc):
 
-1. Add a **one-line row under its area** above — description + link to the plan + a
-   horizon + a gate (or "—" if none). If it doesn't fit an existing area, add it under the
-   closest one and note that the folio assignment is pending.
+1. **Home it to a sector first** (S1–S5 — use the [sector map](repo-sector-map.md) test: mechanism →
+   S3, content → S4, ops → S5, BTD6 → S2, else S1). Add a **one-line row under its area** in that
+   sector's drill-down — description + link to the plan + a horizon + a gate (or "—" if none) — and, if
+   it changes the sector's live state, update that sector's **Now/Next** in the [dispatch
+   index](#by-sector--the-live-dispatch-queues). If it fits no existing area, add it under the closest
+   one and note the folio assignment is pending.
 2. A new plan is **not auto-prioritized** — idea-order ≠ implementation-order. Default it
    to *Later* (or *Next* only if the maintainer says it's ready and nothing gates it).
 3. Link the plan from its area **folio** too, so it's reachable both ways (the

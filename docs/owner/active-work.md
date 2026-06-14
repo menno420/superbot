@@ -32,6 +32,10 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/ecstatic-euler-bslyvd` · map roadmaps/plans onto the 5 sectors → dispatchable per-sector
+  queues + dispatch contract + S↔A reconcile · docs-only (`roadmap.md` · `repo-sector-map.md` ·
+  `repo-review-map.md` · `current-state.md`) · 2026-06-14 · **PR #877**
+
 - `claude/modest-ptolemy-2xipoh` · external-systems watchlist (owner-directed docs) ·
   `docs/research/` + orientation/idea cross-links · 2026-06-14 · **PR #856 (merged)**
 - `claude/nifty-allen-uwt95o` · P1-1 Layer A — BTD6 path/line-aware resolution (absence-claim
