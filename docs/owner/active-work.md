@@ -25,7 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-_(no active claims)_
+- `claude/p0-2-content-free-media-diagnostics-2026-06-14` · P0-2 follow-up — content-free
+  media diagnostics (cache health metrics + provider outcome counters, `!platform media`) ·
+  `services/youtube_diagnostics.py` · `utils/db/youtube_video_cache.py` ·
+  `services/video_reference_cache_service.py` · `services/youtube_fetch_service.py` ·
+  `cogs/media_maintenance_cog.py` · `cogs/diagnostic/_platform_embeds.py` · 2026-06-14
 
 ## Recently cleared
 
