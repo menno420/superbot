@@ -266,3 +266,40 @@ invariant for the *non-pointer* settings) is deliberately not in this arc — th
 map sequences P1-3 "one per track as it lands," and a reliable consumer check is
 its own slice. The pointer subset (the privacy/authority-relevant one) is already
 ratcheted by `test_pointer_lane_ledger`.
+
+---
+
+## 8. Open finding — the backfill has no production trigger (2026-06-14)
+
+Surfaced while diagnosing a live production `Startup health: degraded — attention:
+consistency` (via the #845/#848 startup-health work). The settled-startup
+consistency report flags **Config arbitration** with `fallback > 0`: the two
+retired pointers (`xp.announce_channel` / `economy.log_channel`, arc PR 2) read
+binding-first but fall back to legacy KV because their **binding rows are never
+populated** in production.
+
+**Root cause:** `services.binding_backfill.apply_backfill` (and `dry_run`) are
+implemented + fully tested, but have **no runtime trigger** — the only non-test
+reference in the tree is `scripts/settings_lane_matrix.py` (inventory). No cog
+command, startup hook, or migration invokes `apply_backfill`, so a deployed bot
+has no way to complete the migration. The retired pointers therefore fall back
+forever, and Config arbitration warns on every boot.
+
+**Behavioral impact:** none today — legacy KV is the intended rollback fallback
+(arc PR 2 design), so reads return correct values. The cost is a permanent
+consistency WARNING that masks any *other* config-arbitration regression, and a
+migration that can never reach "done".
+
+**Remediation options (needs an owner decision before building — it is a
+cross-guild production data mutation):**
+1. An **admin-gated `!platform backfill` command** (dry-run → apply, audited via
+   the existing `BindingMutationPipeline`/`setup_delegate` seam) — the operator
+   runs it per guild; cleanest fit with the existing audited mutation lane.
+2. A **one-shot startup backfill** behind a flag — runs `apply_backfill` once per
+   guild at boot until checkpoints exist; lower-touch but mutates on boot.
+3. Accept the warning as expected-until-families-3–5 and **suppress
+   Config-arbitration `fallback` from the *startup* snapshot** while the migration
+   is in flight (documents intent, keeps the signal for `!platform consistency`).
+
+Option 1 is recommended (explicit, audited, per-guild). Until one ships, the
+startup `degraded — attention: consistency` is expected and benign.
