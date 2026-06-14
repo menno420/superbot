@@ -175,6 +175,58 @@ async def test_report_startup_health_requests_fresh_consistency(monkeypatch) -> 
     assert captured[0].include_fresh_consistency is True
 
 
+async def test_report_startup_health_logs_finding_detail_when_degraded(
+    monkeypatch, caplog
+) -> None:
+    """When the snapshot is not healthy, each finding is logged so the
+    degradation is diagnosable from logs alone (no DB / Discord command)."""
+    import datetime
+
+    from services.health_contracts import (
+        FindingSeverity,
+        HealthSnapshot,
+        OperationalHealthFinding,
+    )
+
+    finding = OperationalHealthFinding(
+        fingerprint="consistency.blocking:feature_flags",
+        severity=FindingSeverity.WARNING,
+        category="consistency.blocking_section",
+        message="Consistency check needs attention: Feature flags",
+        related_subsystem="consistency",
+    )
+    snap = HealthSnapshot(
+        snapshot_id="degradedx",
+        generated_at=datetime.datetime.now(tz=datetime.timezone.utc),
+        purpose="startup",
+        status=SnapshotStatus.DEGRADED,
+        summary="Overall status: degraded — attention: consistency.",
+        subsystems=(),
+        findings=(finding,),
+        redaction_audience=HealthAudience.PLATFORM_OWNER,
+    )
+    monkeypatch.setattr(hss, "collect_snapshot", AsyncMock(return_value=snap))
+
+    with caplog.at_level("INFO"):
+        await bot1._report_startup_health()
+
+    detail_lines = [r for r in caplog.records if "Startup health finding:" in r.message]
+    assert detail_lines, "expected a per-finding log line when degraded"
+    rendered = detail_lines[0].getMessage()
+    assert "consistency" in rendered
+    assert "Feature flags" in rendered
+
+
+async def test_report_startup_health_no_finding_lines_when_healthy(
+    monkeypatch, caplog
+) -> None:
+    """A healthy snapshot logs no per-finding detail lines."""
+    monkeypatch.setattr(hss, "collect_snapshot", AsyncMock(return_value=_make_snapshot()))
+    with caplog.at_level("INFO"):
+        await bot1._report_startup_health()
+    assert not [r for r in caplog.records if "Startup health finding:" in r.message]
+
+
 async def test_report_startup_health_swallows_errors(monkeypatch) -> None:
     monkeypatch.setattr(
         hss, "collect_snapshot", AsyncMock(side_effect=RuntimeError("down"))
