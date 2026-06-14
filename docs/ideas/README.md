@@ -48,6 +48,14 @@ Current broad captures:
   drift this session caught — `create_panel.py` was marked "uses the provisioning lane" while the
   source called `guild.create_text_channel` directly. Lifts the per-PR `test_no_direct_*`
   invariants up to the docs that describe them. Small/safe grooming-lane candidate.
+- [`reconciliation-prebrief-at-session-start-2026-06-14.md`](./reconciliation-prebrief-at-session-start-2026-06-14.md) —
+  **workflow / orientation (2026-06-14, band-#840 reconciliation pass):** when a recon pass is
+  due, have the SessionStart hook drop a `reconcile-prebrief.txt` with the band computed —
+  every merged PR since the marker annotated `[in-ledger|MISSING]` + subject, the open-PR-with-state
+  snapshot, and the ratchet delta — so the routine reads one file instead of re-deriving with ~10
+  tool calls. *Composes* the print-subjects idea (build that first); orientation-lane, not a
+  checker change. Surfaced by this pass spending ~8 tool calls deriving the band by hand before any
+  reconciliation thinking. Runtime-lane (hook + `scripts/`), so out of scope for a docs-only pass.
 - [`ledger-checker-print-pr-subjects-2026-06-14.md`](./ledger-checker-print-pr-subjects-2026-06-14.md) —
   **tooling (2026-06-14, band-#820 reconciliation pass):** have
   `check_current_state_ledger.py` print each **missing PR's merge-commit subject** next to its

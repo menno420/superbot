@@ -116,3 +116,88 @@ async def test_run_retention_swallows_error(monkeypatch) -> None:
 
     monkeypatch.setattr(svc._db, "roll_up_to_aggregates", boom)
     assert await svc.run_retention() == 0
+
+
+# ---------------------------------------------------------------------------
+# set_status — operator-managed lifecycle transitions (Q-0097)
+# ---------------------------------------------------------------------------
+
+
+def _patch_audit(monkeypatch) -> list[dict]:
+    """Capture emit_audit_action calls; return the recorded kwargs list."""
+    from services import audit_events
+
+    emitted: list[dict] = []
+
+    async def fake_emit(**kwargs):
+        emitted.append(kwargs)
+        return True
+
+    monkeypatch.setattr(audit_events, "emit_audit_action", fake_emit)
+    return emitted
+
+
+async def test_set_status_applied_emits_audit(monkeypatch) -> None:
+    async def fake_set(fp, status):
+        assert fp == "errors:x"
+        assert status == "resolved"
+        return "open"  # previous status
+
+    monkeypatch.setattr(svc._db, "set_finding_status", fake_set)
+    emitted = _patch_audit(monkeypatch)
+
+    result = await svc.set_status("errors:x", "resolved", actor_id=42)
+
+    assert result.outcome == "applied"
+    assert result.previous_status == "open"
+    assert len(emitted) == 1
+    rec = emitted[0]
+    assert rec["subsystem"] == "health"
+    assert rec["mutation_type"] == "finding_resolved"
+    assert rec["target"] == "finding:errors:x"
+    assert rec["prev_value"] == "open"
+    assert rec["new_value"] == "resolved"
+    assert rec["actor_id"] == 42
+    assert rec["actor_type"] == "user"
+    assert rec["scope"] == "global"
+    assert rec["guild_id"] is None
+
+
+async def test_set_status_not_found_does_not_emit(monkeypatch) -> None:
+    async def fake_set(fp, status):
+        return None  # no row
+
+    monkeypatch.setattr(svc._db, "set_finding_status", fake_set)
+    emitted = _patch_audit(monkeypatch)
+
+    result = await svc.set_status("missing", "resolved", actor_id=1)
+
+    assert result.outcome == "not_found"
+    assert result.previous_status is None
+    assert emitted == []  # no mutation -> no audit
+
+
+async def test_set_status_unchanged_does_not_emit(monkeypatch) -> None:
+    async def fake_set(fp, status):
+        return "resolved"  # already in the requested status
+
+    monkeypatch.setattr(svc._db, "set_finding_status", fake_set)
+    emitted = _patch_audit(monkeypatch)
+
+    result = await svc.set_status("errors:x", "resolved", actor_id=1)
+
+    assert result.outcome == "unchanged"
+    assert result.previous_status == "resolved"
+    assert emitted == []  # idempotent no-op -> no audit
+
+
+async def test_set_status_rejects_invalid_status(monkeypatch) -> None:
+    async def fake_set(fp, status):  # pragma: no cover - must not be reached
+        raise AssertionError("DB must not be called for an invalid status")
+
+    monkeypatch.setattr(svc._db, "set_finding_status", fake_set)
+
+    import pytest
+
+    with pytest.raises(ValueError, match="invalid finding status"):
+        await svc.set_status("errors:x", "bogus", actor_id=1)

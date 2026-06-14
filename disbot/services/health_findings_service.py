@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import datetime
 import logging
+import uuid
+from dataclasses import dataclass
 from typing import Any
 
 from services import metrics
@@ -30,6 +32,25 @@ from utils.db import health_findings as _db
 logger = logging.getLogger("bot.health_findings")
 
 RETENTION_DAYS = 30
+
+#: Operator-managed lifecycle states. ``open`` is the initial/recurrence state;
+#: ``resolved``/``ignored`` are deliberate operator transitions (Q-0097 —
+#: operator-managed). Mirrors the migration-057 CHECK constraint.
+VALID_STATUSES = ("open", "resolved", "ignored")
+
+
+@dataclass(frozen=True)
+class TransitionResult:
+    """Outcome of an operator finding-status transition.
+
+    ``outcome`` is one of ``"applied"`` (status changed), ``"unchanged"`` (the
+    finding was already in the requested status), or ``"not_found"`` (no finding
+    with that fingerprint). ``previous_status`` is the prior status, or ``None``
+    when the finding did not exist.
+    """
+
+    outcome: str
+    previous_status: str | None
 
 
 def _now() -> datetime.datetime:
@@ -98,6 +119,54 @@ async def list_by_status(
 async def count_by_status() -> dict[str, int]:
     """``{status: count}`` across all stored findings."""
     return await _db.count_by_status()
+
+
+async def set_status(
+    fingerprint: str,
+    status: str,
+    *,
+    actor_id: int | None,
+    actor_type: str = "user",
+) -> TransitionResult:
+    """Transition a finding to ``status`` on behalf of an operator (Q-0097).
+
+    This is the **sole** lifecycle-transition path — the operator-managed twin
+    of :func:`record_findings` (which is system-driven and emits no audit). A
+    deliberate transition *does* have a user actor, so on a real change it emits
+    ``audit.action_recorded`` through :mod:`services.audit_events` (failure-safe;
+    the DB write is authoritative regardless of the bus).
+
+    Validates ``status`` against :data:`VALID_STATUSES` and raises ``ValueError``
+    for anything else (defence-in-depth above the DB CHECK constraint). Returns a
+    :class:`TransitionResult`; never raises for a missing/unchanged finding.
+    """
+    if status not in VALID_STATUSES:
+        raise ValueError(
+            f"invalid finding status {status!r}; expected one of {VALID_STATUSES}",
+        )
+    previous = await _db.set_finding_status(fingerprint, status)
+    if previous is None:
+        return TransitionResult(outcome="not_found", previous_status=None)
+    if previous == status:
+        return TransitionResult(outcome="unchanged", previous_status=previous)
+
+    # A genuine operator mutation — record it on the canonical audit seam.
+    from services import audit_events
+
+    await audit_events.emit_audit_action(
+        mutation_id=str(uuid.uuid4()),
+        subsystem="health",
+        mutation_type=f"finding_{status}",
+        target=f"finding:{fingerprint}",
+        scope="global",
+        guild_id=None,
+        prev_value=previous,
+        new_value=status,
+        actor_id=actor_id,
+        actor_type=actor_type,
+        occurred_at=_now(),
+    )
+    return TransitionResult(outcome="applied", previous_status=previous)
 
 
 async def run_retention(*, ttl_days: int = RETENTION_DAYS) -> int:

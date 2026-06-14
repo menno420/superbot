@@ -30,7 +30,7 @@ session". Tracks needing an owner decision name the routed Q-block.
 | Server management | Partial | ~~Mixed channel-mutation ownership~~ → **converged (P0-4 complete)**; remaining gap = live verification only | [server-mgmt](server-management-production-readiness-map-2026-06-12.md) |
 | AI / Setup Advisor | Partial | Live-eval defect rate; no versioned eval/smoke matrix | [ai](ai-production-readiness-map-2026-06-12.md) |
 | BTD6 | Partial (gated) | Model-faithfulness + absence-claim safety; manual blob seeding | [btd6](btd6-production-readiness-map-2026-06-12.md) |
-| Health / diagnostics | Partial | Findings have no lifecycle transition; smoke/hub drift | [health](health-diagnostics-production-readiness-map-2026-06-12.md) |
+| Health / diagnostics | Partial (improving) | ~~Findings have no lifecycle transition~~ → **transitions + scheduled retention shipped (P1-2)**; remaining gap = owner live walk | [health](health-diagnostics-production-readiness-map-2026-06-12.md) |
 
 ---
 
@@ -118,14 +118,20 @@ long-list omission/miscount, absence-claim guard **unimplemented**).
 use · BTD6 prompts · grounding refusal · audit) run with production-like credentials, and
 implement the BTD6 absence-claim guard. *(BTD6 broad expansion stays gated regardless.)*
 
-### P1-2 · Health findings lifecycle + retention + diagnostics drift  ·  needs **Q-0097**
-**Evidence:** [health map](health-diagnostics-production-readiness-map-2026-06-12.md) —
+### P1-2 · Health findings lifecycle + retention + diagnostics drift  ·  ✅ **SHIPPED (2026-06-14)** · Q-0097 answered
+**Done:** the operator-managed lifecycle (Q-0097) shipped through the sole writer:
+`health_findings_service.set_status` (DB primitive `set_finding_status`, pinned by the
+sole-writer AST guard) transitions `open`↔`resolved`/`ignored` and emits
+`audit.action_recorded`; `!platform finding resolve/ignore/reopen <fingerprint>` is the
+admin command. Retention is now operational on long-lived replicas — `run_retention()` runs
+at startup **and** on the daily `HealthMaintenanceCog._retention_loop` (mirrors
+`MediaMaintenanceCog`). The Platform-hub typed-only exclusion of `startup`/`findings`/`finding`
+is now pinned by a test; smoke `!platform diagnostics` drift was already fixed in the P2 sweep
+(#764). **Remaining = the owner-led live walk only.**
+
+**Evidence (original):** [health map](health-diagnostics-production-readiness-map-2026-06-12.md) —
 findings are filterable as `resolved`/`ignored` but **nothing transitions them** (open
-forever); retention is startup-only on a long-lived process; the smoke checklist points at a
-nonexistent `!platform diagnostics`; the Platform-hub "groups every subcommand" claim is false.
-**Bounded session:** answer Q-0097, implement the chosen lifecycle through the sole writer
-`health_findings_service`, schedule retention via the managed-task owner, fix the smoke/hub
-drift (P2-1 overlaps). → health map "Recommended next session".
+forever); retention is startup-only on a long-lived process.
 
 ### P1-3 · Machine-checkable contract invariants (cross-cutting)
 **Evidence:** recurs in settings (declared-setting → runtime-consumer parity; no dual
@@ -168,7 +174,7 @@ against source before editing:
 | Q | Decision | Gates | Status |
 |---|---|---|---|
 | Q-0077 | BTD6 auto-seed-on-boot | BTD6 data-lane proof | pre-existing |
-| Q-0097 | Health finding lifecycle (open/resolved/ignored) | P1-2 | ✅ **ANSWERED 2026-06-12 — (a) operator-managed** via the sole writer → P1-2 unblocked |
+| Q-0097 | Health finding lifecycle (open/resolved/ignored) | P1-2 | ✅ **ANSWERED 2026-06-12 — (a) operator-managed** via the sole writer → **P1-2 SHIPPED 2026-06-14** |
 | Q-0098 | Delegated-Setup apply authority contract | P0-3 | ✅ **ANSWERED 2026-06-12 — (a) delegates may apply** → P0-3 unblocked |
 | Q-0099 | Media/YouTube retention & data-minimization policy | P0-2 | ✅ **ANSWERED 2026-06-12 — (a) bounded projection + scheduled purge** → P0-2 unblocked |
 | Q-0100 | Canonical owner for direct channel mutations | P0-4 | ✅ **ANSWERED 2026-06-12 — (a) converge under existing seams** → P0-4 unblocked |

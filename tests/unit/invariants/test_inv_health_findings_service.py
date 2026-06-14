@@ -28,7 +28,12 @@ _ALLOWED_PATHS = {
     _DISBOT / "utils" / "db" / "pool.py",
 }
 
-_FORBIDDEN_NAMES = {"upsert_finding", "prune_expired", "roll_up_to_aggregates"}
+_FORBIDDEN_NAMES = {
+    "upsert_finding",
+    "prune_expired",
+    "roll_up_to_aggregates",
+    "set_finding_status",
+}
 
 # Raw SQL writes to the findings tables (SELECTs are read-only and allowed).
 _SQL_WRITE_RE = re.compile(

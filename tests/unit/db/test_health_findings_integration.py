@@ -309,6 +309,45 @@ async def test_list_and_count_by_status(postgres_pool):
 
 
 # ---------------------------------------------------------------------------
+# set_finding_status — operator transition primitive (Q-0097)
+# ---------------------------------------------------------------------------
+
+
+async def test_set_finding_status_returns_previous_and_transitions(postgres_pool):
+    """The primitive sets the new status and returns the prior one."""
+    fp = _fp("set-status")
+    await _upsert(fp, count=1)
+    assert (await _row(fp))["status"] == "open"
+
+    prev = await hf.set_finding_status(fp, "resolved")
+    assert prev == "open"  # prior status returned
+    assert (await _row(fp))["status"] == "resolved"
+
+    prev2 = await hf.set_finding_status(fp, "ignored")
+    assert prev2 == "resolved"
+    assert (await _row(fp))["status"] == "ignored"
+
+
+async def test_set_finding_status_missing_returns_none(postgres_pool):
+    """A fingerprint with no row yields ``None`` and writes nothing."""
+    prev = await hf.set_finding_status(_fp("set-status-missing"), "resolved")
+    assert prev is None
+
+
+async def test_set_finding_status_reopen_is_explicit(postgres_pool):
+    """Unlike recurrence, an explicit operator transition can reopen an ignored
+    finding (recurrence keeps ignored rows ignored; the operator can override)."""
+    fp = _fp("set-status-reopen")
+    await _upsert(fp, count=1)
+    await hf.set_finding_status(fp, "ignored")
+    assert (await _row(fp))["status"] == "ignored"
+
+    prev = await hf.set_finding_status(fp, "open")
+    assert prev == "ignored"
+    assert (await _row(fp))["status"] == "open"
+
+
+# ---------------------------------------------------------------------------
 # retention: roll-up then prune
 # ---------------------------------------------------------------------------
 

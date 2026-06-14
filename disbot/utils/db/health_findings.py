@@ -119,6 +119,37 @@ async def count_by_status() -> dict[str, int]:
     return {str(r["status"]): int(r["n"]) for r in rows}
 
 
+async def set_finding_status(fingerprint: str, status: str) -> str | None:
+    """Transition one finding to ``status`` (``open`` / ``resolved`` / ``ignored``).
+
+    Returns the finding's **previous** status, or ``None`` if no row with that
+    fingerprint exists. The ``status`` CHECK constraint (migration 057) rejects
+    any value outside the allowed set, so an invalid status surfaces as a DB
+    error rather than a silent write — the calling service validates first.
+
+    Unlike :func:`upsert_finding`'s recurrence rule (which keeps an ``ignored``
+    row ignored), this is a *deliberate operator transition*: it always sets the
+    requested status. Re-opening an ``ignored`` finding is therefore an explicit
+    operator action here, never an automatic recurrence.
+    """
+    row = await pool.fetchone(
+        """
+        WITH prev AS (
+            SELECT status AS previous_status
+            FROM operational_health_findings
+            WHERE fingerprint = $1
+        )
+        UPDATE operational_health_findings AS t
+        SET status = $2
+        FROM prev
+        WHERE t.fingerprint = $1
+        RETURNING prev.previous_status
+        """,
+        (fingerprint, status),
+    )
+    return str(row["previous_status"]) if row else None
+
+
 async def roll_up_to_aggregates(cutoff: datetime.datetime) -> None:
     """Fold soon-to-be-pruned resolved/ignored detail into the aggregates
     table so per-fingerprint occurrence counters survive expiry.

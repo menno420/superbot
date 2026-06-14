@@ -91,7 +91,9 @@ cog. The 9 loaded extensions that are **not** one-to-one subsystems are
 `bootstrap_access_cog` (command-admission guard), `hermes_cog` (the
 Hermes→Claude dispatch bridge — admin-only slash commands with no subsystem
 row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
-commands, no subsystem row), `setup_cog` (the setup wizard surface), and the
+commands, no subsystem row), `health_maintenance_cog` (the health-findings
+retention task owner — no commands, no subsystem row), `setup_cog` (the setup
+wizard surface), and the
 five split BTD6 cogs (`btd6_reference_cog`, `btd6_events_cog`,
 `btd6_strategy_cog`, `paragon_cog`, `btd6_ops_cog`), which all surface under
 the single `btd6` subsystem. (Counts re-verified against source 2026-06-12.)

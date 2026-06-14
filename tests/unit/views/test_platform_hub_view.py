@@ -149,6 +149,29 @@ def test_select_values_cover_every_platform_subcommand():
     assert seen == expected, seen.symmetric_difference(expected)
 
 
+def test_typed_only_platform_commands_are_intentionally_excluded():
+    """``startup``/``findings`` (read-only) and ``finding`` (a mutation) are
+    deliberately NOT grouped into the read-only hub — they remain typed-only.
+
+    Pinning the exclusion keeps the platform_panel docstring honest (health
+    readiness map P1-2 / P2 sweep): the four category Selects are read-only, so
+    the ``finding`` lifecycle mutation must never appear there, and the verbose
+    ``startup``/``findings`` reports stay power-user text paths. If a future
+    session deliberately groups one of these, update both this test and the
+    module docstring together."""
+    view = _PlatformHubView(_author())
+    grouped = {
+        opt.value
+        for child in view.children
+        if isinstance(child, discord.ui.Select)
+        for opt in child.options
+    }
+    assert {"startup", "findings", "finding"}.isdisjoint(grouped), (
+        "typed-only platform commands leaked into the read-only hub: "
+        f"{{'startup', 'findings', 'finding'}} & {grouped}"
+    )
+
+
 def test_overview_button_is_on_last_row_and_secondary_style():
     view = _PlatformHubView(_author())
     overview = next(

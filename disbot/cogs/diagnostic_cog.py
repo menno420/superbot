@@ -418,6 +418,54 @@ class DiagnosticCog(commands.Cog):
             ),
         )
 
+    @platform_grp.command(name="finding")  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_finding(self, ctx, action: str, *, fingerprint: str):
+        """Transition a persistent finding: `resolve` / `ignore` / `reopen` <fingerprint>.
+
+        The operator-managed lifecycle (Q-0097) for the rows shown by
+        `!platform findings`. Resolving/ignoring lets retention eventually prune
+        a row (open findings are retained forever); `reopen` returns it to open.
+        Copy the fingerprint from a finding (e.g. `diagnostics.provider_failed:ai`).
+        The transition routes through the sole writer `health_findings_service`
+        and is recorded on the canonical audit seam. Admin-gated.
+        """
+        from services import health_findings_service
+
+        action_to_status = {
+            "resolve": "resolved",
+            "resolved": "resolved",
+            "ignore": "ignored",
+            "ignored": "ignored",
+            "reopen": "open",
+            "open": "open",
+        }
+        target_status = action_to_status.get(action.lower().strip())
+        if target_status is None:
+            await ctx.send(
+                "❓ Unknown action. Use `resolve`, `ignore`, or `reopen` "
+                "followed by the finding fingerprint.",
+            )
+            return
+
+        fp = fingerprint.strip()
+        result = await health_findings_service.set_status(
+            fp,
+            target_status,
+            actor_id=ctx.author.id,
+        )
+        if result.outcome == "not_found":
+            await ctx.send(
+                f"⚠️ No finding with fingerprint `{fp}` "
+                "(see `!platform findings all`).",
+            )
+        elif result.outcome == "unchanged":
+            await ctx.send(f"ℹ️ `{fp}` is already `{target_status}` — no change.")
+        else:
+            await ctx.send(
+                f"✅ `{fp}`: `{result.previous_status}` → `{target_status}`.",
+            )
+
     @platform_grp.command(name="lifecycle")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_lifecycle(self, ctx):
