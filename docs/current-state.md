@@ -184,6 +184,51 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#866 (2026-06-14, #704 live-test triage + close + sector-roadmap handoff)** — triaged all
+  11 PR #704 live-test Discord screenshots (2026-06-11): verdict **predominantly working**
+  (mining/crafting RPG + BTD6 hub functional and polished). One substantive finding — the BTD6
+  capability message ("round cash per-round/range") **over-states** vs. the bot's correct
+  grounding-refusal on round-economy questions, plus a grounding-consistency check (asserted Despo
+  price / Elite Lych HP must be confirmed grounded) → routed to the active **P1-1 eval-smoke** lane.
+  Wrote [`audits/pr704-live-test-triage-2026-06-14.md`](audits/pr704-live-test-triage-2026-06-14.md)
+  and **closed #704** (findings preserved; images stay in git history). A chat sweep confirmed the
+  day's substantive items (Q-0134–Q-0141, sector map, refreshed operating prompt) are captured. Docs only.
+- **#865 (2026-06-14, fix: robust `routine_fire.py` dispatch helper — Q-0141)** — live-testing
+  Hermes' new operating prompt, Hermes diagnosed a **real bug**: the dispatch skill's inline
+  `curl -d "$(python3 -c … "$WORK_ORDER")"` is shell-quoting-fragile for multi-line work orders.
+  The owner then decided **Hermes may write its own code (Q-0141)**, making it a parallel build.
+  `scripts/hermes/routine_fire.py` (stdlib-only) takes the work order on **stdin** (zero shell
+  quoting), loads `CLAUDE_ROUTINE_*` from env / `~/.hermes/routine.env`, POSTs `{"text": …}`,
+  **never prints the token**, and supports `--dry-run`; plus a bounded-work prompt addition.
+- **#864 (2026-06-14, tooling: harden the ledger drift guard — band-#840 slot 9)** — two paired
+  slices on `scripts/check_current_state_ledger.py` (the very checker the autonomous loop relies on
+  to catch `current-state.md` drift between reconciliation passes): (1) it now **prints each missing
+  PR's merge-commit subject** beside its number, collapsing the manual `git log --grep "#N"` loop
+  every Q-0107 pass ran by hand; (2) **scoped range-expansion to the ledger proper** so a
+  forward-looking planning range in the `▶ Next action` pointer can't mask a merged band (the
+  band-#800 false-green class, now structural). Pure stdlib.
+- **#863 (2026-06-14, Hermes skill-author meta-skill + docs-only-PR write scope — Q-0140)** —
+  built the Hermes self-extension layer: the **`superbot-skill-author`** meta-skill
+  (`docs/operations/hermes-skills/skill-author.md` + generated artifact; 11 skills) guides Hermes to
+  design/write a new skill in the canonical format and **commit it as a docs-only PR**, closing the
+  "Hermes-authored skills are VPS-only" round-trip gap. **Q-0140** expands Hermes' sanctioned writes
+  to two — review-merge (Q-0117) **+** docs-only PRs (work summary / bug report / new skill source);
+  code still routes via dispatch. Operating prompt refreshed. Docs only.
+- **#862 (2026-06-14, fix: repair the daily Postgres backup — PGDG pg18 client)** — live-verifying
+  the backup (after the owner set `DATABASE_PUBLIC_URL`) drove a real production bug to ground:
+  Railway Postgres is **v18.3** but the workflow used the Ubuntu-default client **v16**, and pg_dump
+  refuses to dump a newer server with an older client. Fixed in two parts — install the **PGDG v18
+  client** (apt default is v16 on Ubuntu 24.04) **and** invoke pg_dump by explicit **highest-version
+  path** (`/usr/lib/postgresql/*/bin`, since pg16 at `/usr/bin/pg_dump` shadows it on PATH); both
+  future-proof. Verified by dispatching the fixed workflow on the branch ref; documented the
+  version-mismatch failure mode in the workflow's failure-issue body.
+- **#859 (2026-06-14, docs: 3-tap sector map + hook-vs-rule policy — Q-0137/Q-0139)** — two
+  owner-directed substrate pieces. **`docs/repo-sector-map.md`** — the 3-tap nav top layer: **5
+  sectors** on a mechanism-vs-content axis — S1 Bot · S2 BTD6 · **S3 AI-Memory system** (the
+  *mechanism*, a shippable engine of its own) · **S4 Documentation system** (the *product* the
+  engine generates) · S5 Operations (owner's load-bearing clarification: *"the docs are not the
+  system, the docs are a product of the system"*). Plus a **hook-vs-rule decision policy** (Q-0139).
+  Docs only.
 - **#855 (2026-06-14, P1-1 Layer A — BTD6 path/line-aware resolution)** — the first concrete,
   fully-completable slice of P1-1 (the standing #1 priority): the BTD6 absence-claim guard's
   **Layer A** (the design's Recommendation #1, "ship Layer A first"). Path/line phrasing like
@@ -231,6 +276,17 @@ Source code and merged PRs win over anything written here.
   #843; this ledger entry + the session-close docs land as a small follow-up — the auto-merge fired
   on the first green before the session-close push, see the session log.)* **Next P1 = P1-1
   eval-matrix** (needs prod-like creds for the live half).
+- **#856 + #853 (2026-06-14, external-systems watchlist + workflow-health review)** — **#856:** a
+  new **`docs/research/`** home for *external* intelligence (vs. `docs/ideas/` for our own);
+  `external-systems-watchlist.md` — 7 lesson-first entries (Voyager · Reflexion · Generative Agents
+  · MemGPT/Letta · SWE-agent · OpenHands/Devin · …) a future session can re-check for ideas. **#853:**
+  a workflow-health review verifying the autonomous loop fires live + documenting the cron lag. Docs only.
+- **#851 + #850 + #848 + #852 (2026-06-14, P0-3 legacy-pointer backfill command + health/routine
+  housekeeping)** — **#851/#850:** root-caused the production consistency warning — the
+  binding-backfill had **no runtime trigger** (it only ran in tests) — and shipped the **`!platform
+  backfill`** admin command to complete the legacy-pointer migration in production. **#848:** the
+  startup-health check now **logs finding detail when not healthy** (follow-up to #845). **#852:**
+  field-notes improvements for the Hermes-dispatch loop.
 - **#840 (2026-06-14, Railway agent-access — live-verify fix: `RAILWAY_API_KEY` alias +
   Cloudflare User-Agent)** — an `auth probe` routine verifying the owner-provisioned Railway
   credentials (the standing next-fresh-session action from the #827–#837 session) found the
@@ -356,118 +412,7 @@ Source code and merged PRs win over anything written here.
   and 1010-bans urllib's default User-Agent, so every call 403'd. After the fixes, `railway_logs.py
   --whoami` returns the owner identity and `railway_vars.py list` reads live prod vars. *(Ledger:
   #824/#830/#833 from concurrent routines still pending the due Q-0107 reconciliation pass.)*
-- **#788 + #789 + #790 + #791 + #792 + #793 + #795 + #796 + #798 (2026-06-13, the portable
-  substrate-kit extraction — PR 1a + 1b)** — the owner's strategic refocus (the
-  [portable agent-memory package](ideas/portable-agent-memory-package-2026-06-12.md) idea)
-  executed under a self-contained `substrate-kit/` tree that **never mutates superbot's live
-  `.claude/`/`docs/`** ([extraction plan](planning/portable-substrate-kit-extraction-2026-06-13.md),
-  owner-approved after 10 external-review rounds; [revision report](planning/portable-agent-substrate-revision-2026-06-13.md)).
-  **PR 1a (#789)** the locked-contract skeleton + state-backend interface; **PR 1b
-  (#791→#792→#793)** the staged-learning loop — interview engine (provisional self-answers
-  never self-graduate), template render + core orientation docs, the 6-doc orientation
-  template set. Plus the revision report (#788/#795), the PR-1b-done resume recipe (#796), a
-  main→branch sync (#790), and the dev-command allowlist (#798). **Resume point: the 1b tail
-  (two stdlib checker ports) → PR 2 (capability/modes layer).** Stdlib-only; green in-repo.
-  *(Recorded by the band-#800 reconciliation pass — these PRs had been masked from the ledger
-  guard by a planning range; see the [pass record §5–6](planning/reconciliation-pass-2026-06-13-band800.md).)*
-- **#817 (2026-06-14, hardening P0-3 arc PR 3 — delegated-Setup apply authority, Q-0098)** —
-  closed the "you may apply, then every per-op write fails" gap for a server-owner-delegated
-  **non-administrator** member. A bounded `actor_type="setup_delegate"` is authorized at the
-  capability floor (`governance.capability`) like `system`/`backfill` — but, deliberately not
-  the step-1 short-circuit, it still requires target-guild membership AND stays subject to the
-  revoke overlay, and is **audited as `setup_delegate`** (distinguishable from an admin write).
-  It is minted **only** by `services.setup_operations.apply_operations`, which re-verifies the
-  live delegation (`setup_access.can_apply_setup`) against a fresh `SetupSession` before
-  minting (never trusts the view gate); owner/admin keep `"user"`, delegation-lost falls back
-  to `"user"` so the floor denies. Threaded to all three capability pipelines (binding now
-  forwards `actor_type`); `setup_delegate` added to their `_ALLOWED_ACTOR_TYPES` + the
-  settings/resource audit CHECK constraints (**migration 069** — finds each auto-named
-  constraint by definition, re-adds a named idempotent widened one). Four non-escalation
-  guards: AST fence (`test_setup_delegate_actor_boundary`) confines the token to 5 contract
-  files; setup-lane only; revoke overlay; live re-verification. `check_quality --full` green
-  (9442); arch 0 errors; real-Postgres + clean-boot proof (constraint accepts `setup_delegate`
-  / rejects unknown; idempotent). **P0-3 complete; next P0 = P0-4 channel-ownership (Q-0100).**
-- **#794 (2026-06-13, hardening P0-3 arc PR 2 — retire XP-announce + economy-log scalar
-  pointers)** — deleted both editable scalar `SettingSpec`s so each Discord-resource pointer
-  has one canonical binding owner; repointed the writers (XP channel modal, economy
-  `_record_log_channel` ×3) + the stale legacy reads to the binding lane. A *retired* pointer
-  reads binding-first regardless of the OFF-by-default `bindings.primary` flag (new
-  `config_arbitration` `pointer_retired=True`), so it deploys with no coordinated flag flip
-  (legacy KV = rollback fallback). Extended `BindingMutationPipeline` for `actor_type='system'`
-  writes; fixed two adjacent binding-name bugs (`logging_presets.py` + `channels.py`); emptied
-  `CONVERGEABLE_POINTERS`; added `test_no_dual_declared_pointer`. CI green (9328); arch 0
-  errors; proven on real Postgres + clean boot. **Next P0 = arc PR 3 (delegated-apply, Q-0098).**
-- **#786 + #787 (2026-06-13, native auto-merge migration — Q-0123)** + **#781–#785 / #797 /
-  #799 / #800 (reconciliation + session-close + owner-decision housekeeping)** — merge
-  mechanics moved off the Claude session (`auto-merge-enabler.yml` arms GitHub-native
-  auto-merge on every non-draft `claude/*` PR; the Q-0084 manual self-merge envelope struck
-  from CLAUDE.md — removes the #778 forgotten-deferred-merge class server-side), the **third
-  Q-0107 reconciliation pass** (#781, now `historical`), four session-close PRs (#782–#785,
-  #797), the **Q-0119** decision (governance role pointers get a reserved-namespace
-  `governance` schema home — P0-3 family 3 unblocked, #799), and two earned calibration rules
-  captured to the journal (#800).
-- **#778 (2026-06-13, fix: routine-trigger issues now authored by `ROUTINE_PAT`)** —
-  root-caused why the autonomous loop had **never self-fired**: `executor-nightly.yml` +
-  `reconciliation-trigger.yml` created their trigger issue with `GITHUB_TOKEN`, so it was authored
-  by `github-actions[bot]` — and a **bot-authored issue does not start a Claude routine**
-  (A/B-verified: real-user issue #776 fired in <1 min; the cron's #768 sat ~12h, never fired). Both
-  workflows now author with `secrets.ROUTINE_PAT` (fallback `GITHUB_TOKEN` + a loud `::warning::`
-  when unset). **Inert until the owner adds the `ROUTINE_PAT` repo secret** — tracked with the other
-  maintainer-side actions in [`operations/autonomous-routines.md`](operations/autonomous-routines.md)
-  § Control-plane state. Docs + workflows only.
-- **#777 (2026-06-13, hardening P0-3 settings pointer-lane convergence — FOUNDATION)** —
-  the [pointer-lane convergence + Setup-delegate authority plan](planning/settings-pointer-lane-convergence-plan-2026-06-13.md)
-  (arc PR 1, behavior-preserving). **Root-fix (settings readiness map "Required #2",
-  High):** the binding-backfill's governance trusted/moderator role pointers targeted a
-  `(governance, *)` binding with no schema home — `governance` is a *reserved* capability
-  namespace, not a feature subsystem — so every guild got a permanent `BLOCKED_NO_SCHEMA`.
-  Reframed: split honest `MIGRATED_KEYS` (xp, economy — homed) from new `DEFERRED_KEYS`
-  (governance roles — home TBD); no runtime read/write change. **Durable layer (P1-3):**
-  `test_backfill_target_declaration_parity` (every migrated target is a declared
-  `BindingSpec`; deferred targets are not) + `test_pointer_lane_ledger` (the ratchet — every
-  channel/role pointer is in a known bucket; a new pointer-as-scalar fails, catching the #775
-  welcome/counters pattern). **Tooling:** `scripts/settings_lane_matrix.py` (the rec-#1 lane
-  matrix; ground truth 65 settings / 17 bindings vs the dated map's 36/13). **Decision:**
-  router **Q-0119** (OPEN) — the governance role-pointer binding home. **Sequenced (arc PRs
-  2–3):** scalar retirement + the `setup_delegate` delegated-apply authority route (Q-0098,
-  designed in plan §4). `check_quality --full` green (9303); arch 0 errors; `check_docs`
-  clean.
-- **#775 (2026-06-13, welcome v1 + server counters — band slot 6, Q-0110)** — the
-  safety/community lane's final two slices ([family plan](planning/safety-community-family-plan-2026-06-13.md)
-  §4), shipped as **two hub-less new subsystems** (checked the extend-before-mint rubric:
-  nothing existed to extend; both kept off the user-tier Community hub so operator config
-  doesn't clutter it). **welcome** — `services/welcome_service.py` + `welcome_config.py` +
-  `cogs/welcome_cog.py`: greet on join · optional farewell · optional **entry role** granted
-  on join via the audited `role_automation.apply` (no parallel role/audit path);
-  injection-safe `{user}/{server}/{count}` templates; embed-first (PIL card = phase 2);
-  advisory `welcome.member_greeted`. **counters** — `services/counter_service.py` +
-  `counter_config.py` + `cogs/counters_cog.py`: statdock channel renames (total/humans/bots)
-  on a 10-min `tasks.loop`, **never per join** (Discord's ~2/10-min rename cap) +
-  change-detection; advisory `counters.updated`. Both default OFF (master switch) → a fresh
-  guild is unaffected; **no migration** (scalar `welcome_*`/`counters_*` KV settings,
-  channel/role pickers via `input_hint`). Root-fix: channel/role lookups route through
-  `core.runtime.resources.resolve_*` (the guild-resource invariant), not raw `guild.get_*`.
-  65 new tests; `check_quality --full` green (9292); `check_architecture` 0 errors; live
-  boot on Galaxy Bot (real Postgres): both cogs loaded, 0 ERROR/CRITICAL. **The
-  safety/community band (slots 4–6) is COMPLETE; next = the carried hardening spine (P0-3).**
-- **#774 (2026-06-13, server event logging v1 — band slot 5)** — the safety/community
-  family plan's slot 5 (Q-0109): a passive Discord-event layer **extending the existing
-  `logging` subsystem** (no new subsystem → no pinned-surface cascade). Logs **message
-  edits/deletions · member joins/leaves · role grants/revocations**. New
-  `services/server_logging_config.py` (`EventLoggingPolicy`/`load_policy` over `logging_*`
-  KV settings, **no migration**); five `format_*_embed` builders + five fail-safe `log_*`
-  handlers + `resolve_event_channel` in `services/server_logging.py`; four event routes on
-  the shared route table (`events` + per-category, falling back to `events` never `mod`);
-  five `@commands.Cog.listener()` methods on `LoggingCog` (cheap filters → delegate). Each
-  category needs the master `logging.enabled` **and** its per-category flag — all default
-  OFF. Owner-configurable routing (`logging.event_routing` = `combined`/`per_category`,
-  the `mock_logging_routing` choice made real). Schema **v3** (3 flags + routing enum + 4
-  channel bindings + 4 resource reqs). Deleted-message **privacy disclosed** in the
-  `messages_enabled` hint + the setup wizard. Root-fix: the routes panel's hardcoded
-  "(via mod fallback)" label now names the real fallback target. New
-  `test_server_logging_events.py`; CI green; live-boot verified. **Next band slot:
-  welcome v1 + counters (slot 6).**
-- **Older merges (#772 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #772 automod-v1 entry was archived 2026-06-14 to offset the #855 entry added above; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived three entries — the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#794 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The band #841–#860 ledger-reconciliation (2026-06-14) added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest to hold the ratchet at 20: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
