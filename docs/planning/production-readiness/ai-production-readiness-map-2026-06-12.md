@@ -190,7 +190,7 @@ These are not blockers for the current opt-in read-only/advisory feature set, bu
 - The **deterministic** half of the eval/smoke matrix is now CI-gated (`tests/evals/smoke.py`, #878 — gates · fallback · tool-dispatch · audit · safety · redaction · config). The remaining gap is the **live-quality** artifact (the golden set), which still isn't auto-required by CI after router/grounding/tool changes (it needs paid provider creds — run `scripts/run_evals.py`).
 - External-provider Setup Advisor needs production-like validation for timeout/fallback/redaction and recommendation quality.
 - `diagnostics_health_snapshot` still needs an operator live-test record across audience/redaction and fresh/cached modes.
-- The broader natural-language phrase space and BTD6 vocabulary cannot be exhaustively unit-tested; regression prompts from each live miss should continue to enter the eval suite.
+- The broader natural-language phrase space and BTD6 vocabulary cannot be exhaustively unit-tested; regression prompts from each live miss should continue to enter the eval suite. A CI **eval-coverage drift guard** (`tests/evals/test_eval_coverage.py`, #879) now enforces that a new canonical AI tool / `AITask` cannot silently fall outside the matrix — `8/34` tools and `2/16` tasks are eval-covered today, ratcheting up.
 - The Setup Advisor’s OpenAI path is tested through mocks/contracts, while Anthropic is intentionally absent.
 - Docs checks can verify links/pins/structure but cannot prove live provider or Discord behavior.
 
