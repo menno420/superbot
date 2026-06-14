@@ -25,14 +25,13 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/p0-2-content-free-media-diagnostics-2026-06-14` · P0-2 follow-up — content-free
-  media diagnostics (cache health metrics + provider outcome counters, `!platform media`) ·
-  `services/youtube_diagnostics.py` · `utils/db/youtube_video_cache.py` ·
-  `services/video_reference_cache_service.py` · `services/youtube_fetch_service.py` ·
-  `cogs/media_maintenance_cog.py` · `cogs/diagnostic/_platform_embeds.py` · 2026-06-14
+_(no active claims)_
 
 ## Recently cleared
 
+- `claude/p0-2-content-free-media-diagnostics-2026-06-14` · P0-2 follow-up — content-free
+  media diagnostics (`!platform media` + `media` provider + cache-health/provider-outcome
+  counters) · 2026-06-14 · **PR #854 (open, auto-merge on green)**
 - `claude/epic-turing-p8tyux` · P1-2 health findings lifecycle + operational retention (Q-0097) ·
   2026-06-14 · **PR #843 (merged; session-close docs in a small follow-up PR)**
 - `claude/trusting-goldberg-po4p7s` · central test-isolation registry (Q-0089, owner-directed
