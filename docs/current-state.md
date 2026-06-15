@@ -20,7 +20,16 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-14, **dispatch contract sharpened — executor dimension + startability tags
+> **Last updated:** 2026-06-14, **sector tooling — the partition is now self-maintaining (PR #882)** —
+> closed the loose ends from the dispatch work: `scripts/check_sector_map.py` (validator — folio homing
+> + executor + startability convention, was prose-asserted) and `scripts/dispatch_menu.py` (resolver —
+> the machine version of the dispatch test: per sector, the first ▶ startable item + executor, flags a
+> starving/blocked sector). Both stdlib, read-only, disposable (Q-0105), tested (19 tests); not CI-wired
+> (ask-first). Building `dispatch_menu` caught a real convention bug (a ▶ glyph used in S2 `Now` *prose*,
+> not as an item tag) — fixed. CI green (9664); arch 0. **(PR #885 same session captured a
+> dispatch-resolution idea — `dispatch_menu --json` + Hermes wiring — and a checker-with-convention
+> rule.)** ·
+> 2026-06-14, **dispatch contract sharpened — executor dimension + startability tags
 > (PR #880, Q-0143)** — a live dogfooding test of the sector dispatch structure (owner-requested) passed
 > on speed (2–3 hops/sector, links resolve, the index ranks, a stale `Now` self-corrected in one hop)
 > and surfaced 3 findings, all built into one docs PR: a complete dispatch is now **sector + action +

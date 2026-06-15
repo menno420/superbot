@@ -176,8 +176,28 @@ This **planning** map coarsens the **review** map; they answer different questio
 When the two disagree on where a file belongs, route by the **question you're asking**: planning a
 roadmap → sector; scoping a PR review → review unit.
 
+## Folio homing (machine-readable — the source of truth for `check_sector_map.py`)
+
+Every `docs/subsystems/*.md` folio (the middle layer) homes to **exactly one** sector. Only **S1** and
+**S2** have subsystem folios — S3/S4/S5 are mechanism/content/ops, not bot subsystems. The block below
+is the machine-readable source of truth that
+[`scripts/check_sector_map.py`](../scripts/check_sector_map.py) validates against `docs/subsystems/`:
+it fails if a folio on disk is missing here (orphan), listed but absent (phantom), or listed twice
+(double-home). When you add/rename/remove a folio, update its sector line here.
+
+<!-- BEGIN sector-folio-map (machine-readable — do not reformat; check_sector_map.py parses S<n>: lines) -->
+```
+S1: ai, games, health-diagnostics, media-youtube, server-management, settings-bindings-provisioning
+S2: btd6
+```
+<!-- END sector-folio-map -->
+
 ## How to keep this alive
 - A **new top-level directory** or a **new standing body of work** → add/extend a sector here.
 - A **new subsystem** → it lands in its sector's middle layer (a `docs/subsystems/` folio), not here.
 - Keep it to **five sectors** unless a genuinely new *kind* of work appears — the value is a small,
   memorable top layer. If it grows past ~7, it has stopped being a top layer.
+- **After changing the sectors, run the guards:** `python3.10 scripts/check_sector_map.py` (asserts
+  every folio is homed exactly once + every sector's Dispatch names an executor + every `Now` is
+  tagged) and `python3.10 scripts/dispatch_menu.py` (previews the live per-sector dispatch menu). Both
+  are disposable convenience tools (Q-0105/Q-0143), read-only, **not** CI-wired.

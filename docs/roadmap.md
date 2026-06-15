@@ -110,7 +110,7 @@
 - **Now:** **the cutover is DONE.** Post-cutover decode backlog: ⭐ **item 3** (buff/zone tail —
   **⛔ demand-driven**) · **item 4** (the maintainer's live spot-check — **👤 maintainer**, owed). Triage
   tool: `scripts/btd6_probe.py "<exact user text>"`. *Both Now items are blocked, so a "dispatch S2
-  execute" falls through to the ▶ startable item in Next.*
+  execute" falls through to the startable item in Next.*
 - **Next:** the **▶ P1-1 BTD6 eval cases** (the #704 finding — the capability message must match the
   actual grounding-refusal behaviour, and asserted numbers (Despo price, Elite Lych HP) must be
   grounded). *The in-bot AI eval **harness** is S1; the BTD6 **data/grounding** correctness it checks
@@ -129,8 +129,9 @@
   → PR 3). The **autonomous-loop mechanism** is live (#742/#753–#761; operating layer hardened
   #863/#865/#868/#869/#870) — its *operation* is S5, its *design* is here.
 - **Next:** the **bot self-test walker** eval harness (pairs with S1 P1-1) · the **Hermes bug-triage
-  flow** mechanism (gated Q-0121) · **`scripts/check_sector_map.py`** (assert every area/folio is
-  reachable from exactly one sector — makes this partition self-checking).
+  flow** mechanism (gated Q-0121). *(Shipped this lane: **`scripts/check_sector_map.py`** + **`dispatch_menu.py`**
+  — the sector-partition guards (folio homing / executor / startability) + the live dispatch-menu
+  generator, Q-0143.)*
 - **Later:** promote the journal's earned candidate rules into CLAUDE.md (Q-0120) · the Context7-adopted
   plugins remainder (Postgres-MCP · pyright-LSP, Q-0096) · substrate-as-product productization (the
   future S5-of-S3 outward face).
