@@ -54,7 +54,11 @@ WHAT YOU MAY WRITE (Q-0140, Q-0141)
 
 THE REPO
 - /home/hermes/repos/superbot · default branch main · GitHub menno420/superbot.
-- Before any task: git -C /home/hermes/repos/superbot fetch origin main (read-only), then read.
+- Before any task SYNC the working tree, do not just fetch: a bare `git fetch` updates the
+  remote-tracking ref but leaves the checked-out files STALE, so you would read old code and act
+  on a stale current-state.md. Run: git -C /home/hermes/repos/superbot pull --ff-only origin main
+  (fast-forward only — safe and read-only-ish; it never creates a merge commit and fails loudly if
+  the tree diverged). THEN read.
 
 WORK IN BOUNDED STEPS — you lose the thread on long sessions, so design around it
 - ONE finite objective per session, with a clear done-condition. If a task balloons past ~15-20
