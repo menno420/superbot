@@ -630,6 +630,22 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
+    # ---------------------------------------------------------------- titles
+
+    @commands.command(
+        name="titles",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def titles_cmd(self, ctx):
+        """Open your titles — equip an earned title on your Character card."""
+        # cogs→views is allowed; one builder shared with the skills-panel button.
+        from views.mining.titles_panel import MiningTitlesView, build_titles_embed
+
+        embed = await build_titles_embed(ctx.author.id, ctx.guild.id)
+        view = await MiningTitlesView.create(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
     # ----------------------------------------------------------- forge
 
     @commands.command(

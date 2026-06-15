@@ -125,7 +125,18 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   precedent). Pure `utils/mining/skills.py` (`skill_stats`) merges with gear through
   `utils/mining/character.py` `character_stats`, adopted at `mining_workflow.descend` —
   **empty allocations are byte-identical to gear-only stats** (invariant-tested). Surfaced via
-  `!skills`/`!skill <branch>` and a `🌳 Skills` hub panel.
+  `!skills`/`!skill <branch>` and a `🌳 Skills` hub panel. **Respec polish (Slice E, #912):** the
+  Respec button now opens a confirm card (cost + point preview, nothing charged until you choose) and
+  offers a cheaper **single-branch** respec (`skill_service.respec_branch`).
+- **Titles — earned identity text (§7.6, Slice F, #912)** — pure `utils/mining/titles.py` catalogue;
+  the **earned** set is *derived* from existing progression (a skill branch at cap, deepest biome
+  reached, game level), so nothing is granted on a mutation path — only the equipped *choice* persists
+  (`mining_player_state.equipped_title`, migration 074). `services/title_service.py` owns equip/unequip
+  (the `set_equipped_title` write primitive is on the RS02 boundary ratchet) and gates the displayed
+  title on still being earned (a respec silently un-displays a mastery title). Surfaced via `!titles`,
+  a `🏆 Titles` button on the Skills panel, and the equipped title on the Character embed. **Additive
+  — no title equipped → byte-identical.** Depth-milestone titles are biome-*named* so they extend
+  cleanly when the **P6 grid** deepens the world.
 - **Character overview: `views/mining/character_panel.py`** — a read-only profile embed
   (`!character`/`!profile` + a hub Character button) that **aggregates, owns nothing**:
   position + deepest record, game level + XP bar, equipped gear + `EffectiveStats`, coins,

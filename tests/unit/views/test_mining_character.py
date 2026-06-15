@@ -45,6 +45,10 @@ async def test_build_character_embed_aggregates_every_owner():
         "views.mining.character_panel.game_xp_service.level_info",
         new_callable=AsyncMock,
         return_value=(3, 40, 145),
+    ), patch(
+        "views.mining.character_panel.title_service.equipped_title",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         embed = await build_character_embed(123, 7, name="Digger")
 
@@ -59,3 +63,48 @@ async def test_build_character_embed_aggregates_every_owner():
     assert "24" in blob  # net worth = diamond value (12) × 2
     assert "Level **3**" in blob  # shared game level (game_xp_service)
     assert "Deepest" in blob  # the 065 depth record
+    # No title equipped → no description (byte-identical to the pre-titles card).
+    assert not embed.description
+
+
+@pytest.mark.asyncio
+async def test_character_embed_shows_equipped_title_when_set():
+    from utils.mining import titles
+
+    title = titles.get_title("the_deep")
+    with patch(
+        "views.mining.character_panel.db.get_mining_inventory",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "views.mining.character_panel.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "views.mining.character_panel.db.get_gear_wear",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "views.mining.character_panel.db.get_depth",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
+        "views.mining.character_panel.db.get_max_depth",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
+        "views.mining.character_panel.db.get_coins",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
+        "views.mining.character_panel.game_xp_service.level_info",
+        new_callable=AsyncMock,
+        return_value=(1, 0, 100),
+    ), patch(
+        "views.mining.character_panel.title_service.equipped_title",
+        new_callable=AsyncMock,
+        return_value=title,
+    ):
+        embed = await build_character_embed(123, 7, name="Digger")
+
+    assert embed.description and "the Deep One" in embed.description
