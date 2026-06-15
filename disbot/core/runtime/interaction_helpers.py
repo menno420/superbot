@@ -262,6 +262,7 @@ async def safe_edit(
     content: str | None = None,
     embed: discord.Embed | None = None,
     view: discord.ui.View | None = None,
+    attachments: list[discord.File] | None = None,
 ) -> bool:
     """Edit the original message regardless of deferred state.
 
@@ -269,6 +270,18 @@ async def safe_edit(
     uses ``followup.edit_original_response``; otherwise it uses
     ``response.edit_message`` (which only works on component
     interactions before the first response).
+
+    ``attachments`` controls the message's files **in place**, so a panel
+    that swaps screens on one anchor message can carry an image (e.g. a PIL
+    stat card) without spawning a separate ephemeral follow-up that stacks:
+
+    * ``attachments=[file]`` sets that file (pair with an embed
+      ``set_image("attachment://<name>")``).
+    * ``attachments=[]`` clears any existing attachment — what a navigate-away
+      edit passes so a prior screen's image does not linger on the next screen.
+    * ``attachments=None`` (the default) leaves attachments untouched —
+      Discord preserves whatever the message already had, the historical
+      behaviour for every text-only panel edit.
 
     Returns ``True`` on success, ``False`` if the edit failed.
     """
@@ -282,6 +295,8 @@ async def safe_edit(
         kwargs["embed"] = clamp_embed(embed)
     if view is not None:
         kwargs["view"] = view
+    if attachments is not None:
+        kwargs["attachments"] = attachments
 
     try:
         if interaction.response.is_done():

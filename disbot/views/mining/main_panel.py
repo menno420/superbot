@@ -132,33 +132,56 @@ async def build_overview_embed(
     return embed
 
 
-async def _send_inventory_card(
+_INVENTORY_FILENAME = "inventory.png"
+
+
+async def _edit_in_place(
     interaction: discord.Interaction,
-    inventory: dict[str, int],
+    *,
+    embed: discord.Embed,
+    view: discord.ui.View,
+    image: discord.File | None = None,
 ) -> None:
-    """Send the PIL inventory card as an ephemeral follow-up (additive —
-    the embed already rendered; a missing/broken Pillow changes nothing).
+    """Edit the hub's anchor message in place, owning its optional image.
+
+    The inventory card and the gear paper-doll render *into* this one message
+    (``image=...``) instead of a separate ephemeral follow-up that piles up on
+    every click (the owner's 2026-06-15 "too many ephemeral panels"). Every
+    other action passes no image, which clears a prior card so it never lingers
+    on the next screen.
+    """
+    await safe_edit(
+        interaction,
+        embed=embed,
+        view=view,
+        attachments=[image] if image is not None else [],
+    )
+
+
+def _render_inventory_file(
+    display_name: str,
+    inventory: dict[str, int],
+    embed: discord.Embed,
+) -> discord.File | None:
+    """Render the PIL inventory card and wire it into *embed* as the in-place
+    image.  Returns the File to attach (or ``None`` without Pillow — additive,
+    the text embed already carries the full inventory).
     """
     import io
 
     from utils.mining_render import build_card_spec, render_inventory_card
 
     spec = build_card_spec(
-        f"{interaction.user.display_name}'s Mining Inventory",
+        f"{display_name}'s Mining Inventory",
         items.sort_inventory(inventory),
         classify_kind=lambda n: items.classify(n).value,
         footer=f"Net worth: {items.total_value(inventory)}",
     )
     png = render_inventory_card(spec)
     if png is None:
-        return
-    try:
-        await interaction.followup.send(
-            file=discord.File(io.BytesIO(png), filename="inventory.png"),
-            ephemeral=True,
-        )
-    except discord.HTTPException:
-        pass  # the embed already served the data
+        return None
+    embed.set_image(url=f"attachment://{_INVENTORY_FILENAME}")
+    return discord.File(io.BytesIO(png), filename=_INVENTORY_FILENAME)
 
 
 @register
@@ -194,6 +217,7 @@ class MiningHubView(PersistentView):
         await interaction.response.edit_message(
             embed=_build_mine_prompt_embed(),
             view=view,
+            attachments=[],  # clear a prior inventory/gear card so it doesn't linger
         )
         view.message = interaction.message
 
@@ -231,7 +255,7 @@ class MiningHubView(PersistentView):
             color=SUCCESS_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
-        await safe_edit(interaction, embed=embed, view=self)
+        await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🗺️ Explore",
@@ -269,7 +293,7 @@ class MiningHubView(PersistentView):
             color=SUCCESS_COLOR if result.amount >= 0 else ERROR_COLOR,
         )
         embed.set_footer(text="Pick another action above to continue.")
-        await safe_edit(interaction, embed=embed, view=self)
+        await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="📦 Inventory",
@@ -318,9 +342,12 @@ class MiningHubView(PersistentView):
                     "Pick another action above to continue."
                 ),
             )
-        await safe_edit(interaction, embed=embed, view=self)
-        if inventory:
-            await _send_inventory_card(interaction, inventory)
+        image = (
+            _render_inventory_file(interaction.user.display_name, inventory, embed)
+            if inventory
+            else None
+        )
+        await _edit_in_place(interaction, embed=embed, view=self, image=image)
 
     @discord.ui.button(
         label="📊 Stats",
@@ -350,7 +377,7 @@ class MiningHubView(PersistentView):
         embed.add_field(name="Unique Items", value=str(unique_items))
         embed.add_field(name="Net Worth", value=str(items.total_value(inventory)))
         embed.set_footer(text="Pick another action above to continue.")
-        await safe_edit(interaction, embed=embed, view=self)
+        await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🔨 Build",
@@ -386,7 +413,7 @@ class MiningHubView(PersistentView):
 
         embed = await build_workshop_embed(interaction.user.id, interaction.guild_id)
         view = await MiningWorkshopView.create(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
         label="⬇️ Descend",
@@ -428,7 +455,7 @@ class MiningHubView(PersistentView):
             color=color,
         )
         embed.set_footer(text="Pick another action above to continue.")
-        await safe_edit(interaction, embed=embed, view=self)
+        await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="⬆️ Ascend",
@@ -465,7 +492,7 @@ class MiningHubView(PersistentView):
             color=color,
         )
         embed.set_footer(text="Pick another action above to continue.")
-        await safe_edit(interaction, embed=embed, view=self)
+        await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🛒 Market",
@@ -489,7 +516,7 @@ class MiningHubView(PersistentView):
 
         embed = await build_market_embed(interaction.user.id, interaction.guild_id)
         view = MiningMarketView(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
         label="🏦 Vault",
@@ -512,7 +539,7 @@ class MiningHubView(PersistentView):
 
         embed = await build_vault_embed(interaction.user.id, interaction.guild_id)
         view = MiningVaultView(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
         label="🧰 Gear",
@@ -534,15 +561,15 @@ class MiningHubView(PersistentView):
         from views.mining.gear_panel import (
             MiningGearView,
             build_gear_embed,
-            send_character_doll,
+            render_gear_doll,
         )
 
         embed = await build_gear_embed(interaction.user.id, interaction.guild_id)
         view = await MiningGearView.create(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
-        # V-16: the paper-doll render rides along as an ephemeral follow-up
-        # (the _send_inventory_card pattern — additive, embed always kept).
-        await send_character_doll(interaction)
+        # V-16: the paper-doll renders *into* this message (one self-replacing
+        # panel) instead of a separate ephemeral follow-up that stacks per click.
+        doll = await render_gear_doll(embed, interaction.user.id, interaction.guild_id)
+        await _edit_in_place(interaction, embed=embed, view=view, image=doll)
 
     @discord.ui.button(
         label="📖 Recipes",
@@ -575,7 +602,7 @@ class MiningHubView(PersistentView):
             interaction.user,
             interaction.guild_id,
         )
-        await safe_edit(interaction, embed=embed, view=view)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
         label="🧍 Character",
@@ -606,7 +633,7 @@ class MiningHubView(PersistentView):
             name=interaction.user.display_name,
         )
         embed.set_footer(text="Pick another action above to continue.")
-        await safe_edit(interaction, embed=embed, view=self)
+        await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
         label="🌳 Skills",
@@ -629,7 +656,7 @@ class MiningHubView(PersistentView):
 
         embed = await build_skills_embed(interaction.user.id, interaction.guild_id)
         view = MiningSkillsView(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
         label="🔥 Forge",
@@ -652,7 +679,7 @@ class MiningHubView(PersistentView):
 
         embed = await build_forge_embed(interaction.user.id, interaction.guild_id)
         view = MiningForgeView(interaction.user, interaction.guild_id)
-        await safe_edit(interaction, embed=embed, view=view)
+        await _edit_in_place(interaction, embed=embed, view=view)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]
