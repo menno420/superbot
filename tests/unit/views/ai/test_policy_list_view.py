@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-
 _DISBOT = Path(__file__).parents[4] / "disbot"
 if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
