@@ -31,3 +31,8 @@ WELCOME_LEAVE_MESSAGE = "welcome_leave_message"
 
 # Optional entry role granted on join — a role id (str).  Empty grants none.
 WELCOME_ENTRY_ROLE = "welcome_entry_role"
+
+# Welcome phase 2 (Q-0110): attach a rendered PIL welcome card to the join
+# greeting.  Off by default — the embed-first v1 behaviour is unchanged until an
+# operator opts the card in.
+WELCOME_CARD_ENABLED = "welcome_card_enabled"

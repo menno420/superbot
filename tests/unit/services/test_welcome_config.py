@@ -105,6 +105,36 @@ async def test_load_policy_composes_typed_values(monkeypatch):
     assert pol.greet_on_join and pol.greet_on_leave and pol.assigns_entry_role
 
 
+def test_renders_card_folds_greet_and_card_flag():
+    """The card only renders when a greeting posts AND the card flag is on."""
+    base = dict(enabled=True, join_enabled=True, channel_id=10)
+    # Card off (the default) -> no card even though a greeting posts.
+    assert WelcomePolicy(**base).greet_on_join
+    assert not WelcomePolicy(**base).renders_card
+    # Card on -> renders.
+    assert WelcomePolicy(**base, card_enabled=True).renders_card
+    # Card on but no greeting (no channel) -> no card (an attachment to the
+    # greeting, never standalone).
+    assert not WelcomePolicy(
+        enabled=True, join_enabled=True, card_enabled=True
+    ).renders_card
+
+
+@pytest.mark.asyncio
+async def test_load_policy_resolves_card_flag(monkeypatch):
+    async def fake_resolve(guild_id, subsystem, name, fallback):
+        if name == "card_enabled":
+            return True
+        return fallback
+
+    import services.settings_resolution as sr
+
+    monkeypatch.setattr(sr, "resolve_value", fake_resolve)
+
+    pol = await welcome_config.load_policy(guild_id=1)
+    assert pol.card_enabled is True
+
+
 @pytest.mark.asyncio
 async def test_load_policy_blank_channel_degrades_to_none(monkeypatch):
     async def fake_resolve(guild_id, subsystem, name, fallback):

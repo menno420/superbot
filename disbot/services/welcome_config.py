@@ -50,6 +50,11 @@ DEFAULT_ENTRY_ROLE = ""  # role id string; empty grants none
 DEFAULT_JOIN_MESSAGE = "👋 Welcome {user} to **{server}**! You're member #{count}."
 DEFAULT_LEAVE_MESSAGE = "👋 **{user}** has left {server}. We're now {count} members."
 
+# Welcome phase 2 (Q-0110): attach a rendered PIL welcome card to the join
+# greeting.  Off by default so the embed-first v1 behaviour is byte-identical
+# until an operator opts the card in.
+DEFAULT_CARD_ENABLED = False
+
 # Template length cap — keeps an embed description well within Discord's limit
 # even after placeholder expansion.
 MAX_MESSAGE_LENGTH = 500
@@ -71,11 +76,22 @@ class WelcomePolicy:
     entry_role_id: int | None = None
     join_message: str = DEFAULT_JOIN_MESSAGE
     leave_message: str = DEFAULT_LEAVE_MESSAGE
+    card_enabled: bool = DEFAULT_CARD_ENABLED
 
     @property
     def greet_on_join(self) -> bool:
         """True when a join should post a greeting (needs a destination)."""
         return self.enabled and self.join_enabled and self.channel_id is not None
+
+    @property
+    def renders_card(self) -> bool:
+        """True when a join greeting should attach the rendered welcome card.
+
+        Folds the card flag onto :pyattr:`greet_on_join` so the card is only
+        rendered when a greeting actually posts — the card is an *attachment to*
+        the join greeting, never a standalone post.
+        """
+        return self.greet_on_join and self.card_enabled
 
     @property
     def greet_on_leave(self) -> bool:
@@ -173,6 +189,12 @@ async def load_policy(guild_id: int) -> WelcomePolicy:
         "leave_message",
         DEFAULT_LEAVE_MESSAGE,
     )
+    card_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "card_enabled",
+        DEFAULT_CARD_ENABLED,
+    )
 
     return WelcomePolicy(
         enabled=enabled,
@@ -182,10 +204,12 @@ async def load_policy(guild_id: int) -> WelcomePolicy:
         entry_role_id=parse_id(entry_role_raw),
         join_message=join_message,
         leave_message=leave_message,
+        card_enabled=card_enabled,
     )
 
 
 __all__ = [
+    "DEFAULT_CARD_ENABLED",
     "DEFAULT_CHANNEL",
     "DEFAULT_ENABLED",
     "DEFAULT_ENTRY_ROLE",

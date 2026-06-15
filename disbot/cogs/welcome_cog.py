@@ -90,6 +90,7 @@ class WelcomeCog(commands.Cog):
             "",
             f"👋 **Greet on join** — {_flag(policy.join_enabled)}",
             f"🚪 **Farewell on leave** — {_flag(policy.leave_enabled)}",
+            f"🖼️ **Welcome card** — {_flag(policy.card_enabled)}",
             f"📢 **Channel:** {channel_str}",
             f"🎟️ **Entry role:** {role_str}",
         ]

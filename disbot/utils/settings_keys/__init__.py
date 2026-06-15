@@ -101,6 +101,7 @@ from utils.settings_keys.moderation import (
 )
 from utils.settings_keys.role import SKIP_ROLES, TIME_ROLES_STACK, XP_ROLES_STACK
 from utils.settings_keys.welcome import (
+    WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
     WELCOME_ENABLED,
     WELCOME_ENTRY_ROLE,
@@ -188,6 +189,7 @@ __all__ = [
     "TRUSTED_TIER_ROLE_ID",
     "WARN_THRESHOLD",
     "WARN_TIMEOUT_MINS",
+    "WELCOME_CARD_ENABLED",
     "WELCOME_CHANNEL",
     "WELCOME_ENABLED",
     "WELCOME_ENTRY_ROLE",

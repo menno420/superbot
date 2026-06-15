@@ -22,6 +22,8 @@ The cog (:mod:`cogs.welcome_cog`) is glue: it filters bots and delegates to
 
 from __future__ import annotations
 
+import asyncio
+import io
 import logging
 from typing import Any
 
@@ -100,10 +102,17 @@ def _resolve_text_channel(
     return None
 
 
-async def _post(channel: discord.abc.Messageable, embed: discord.Embed) -> bool:
-    """Send ``embed`` to ``channel`` — fail-safe (logs, never raises)."""
+async def _post(
+    channel: discord.abc.Messageable,
+    embed: discord.Embed,
+    file: discord.File | None = None,
+) -> bool:
+    """Send ``embed`` (and an optional ``file``) — fail-safe (logs, never raises)."""
     try:
-        await channel.send(embed=embed)
+        if file is not None:
+            await channel.send(embed=embed, file=file)
+        else:
+            await channel.send(embed=embed)
     except discord.Forbidden:
         logger.warning("welcome: missing send permission in greeting channel")
         return False
@@ -114,6 +123,50 @@ async def _post(channel: discord.abc.Messageable, embed: discord.Embed) -> bool:
         logger.exception("welcome: unexpected error posting greeting")
         return False
     return True
+
+
+def _accent_for(member: discord.Member) -> tuple[int, int, int] | None:
+    """The member's top-role colour as an RGB triple, or None for the default.
+
+    Discord's "default" role colour is 0x000000; treat it (and any read fault)
+    as "no override" so the card uses its blurple accent rather than a flat
+    black ring.
+    """
+    try:
+        colour = member.top_role.color
+    except Exception:  # noqa: BLE001 — top_role may be absent on a test double
+        return None
+    if colour is None or colour.value == 0:
+        return None
+    return (colour.r, colour.g, colour.b)
+
+
+async def _build_welcome_card(
+    member: discord.Member,
+    member_count: int,
+) -> discord.File | None:
+    """Render the welcome card off-thread and wrap it as a ``discord.File``.
+
+    Fail-safe: a Pillow-unavailable (``None`` bytes) or any render fault yields
+    ``None`` so the caller posts the embed without an attachment — the card is
+    always an enhancement, never a precondition for the greeting.
+    """
+    from utils import welcome_render
+
+    try:
+        png = await asyncio.to_thread(
+            welcome_render.render_welcome_card,
+            member_name=member.display_name,
+            server_name=member.guild.name,
+            member_number=member_count,
+            accent=_accent_for(member),
+        )
+    except Exception:  # noqa: BLE001 — a render fault must not skip the greeting
+        logger.exception("welcome: card render failed for member=%s", member.id)
+        return None
+    if png is None:
+        return None
+    return discord.File(io.BytesIO(png), filename=welcome_render.CARD_FILENAME)
 
 
 async def _grant_entry_role(member: discord.Member, role_id: int) -> None:
@@ -203,8 +256,14 @@ async def handle_member_join(member: discord.Member) -> None:
     if policy.greet_on_join:
         channel = _resolve_text_channel(guild, policy.channel_id)
         if channel is not None:
-            embed = format_join_embed(member, policy, _member_count(guild))
-            if await _post(channel, embed):
+            member_count = _member_count(guild)
+            embed = format_join_embed(member, policy, member_count)
+            card = (
+                await _build_welcome_card(member, member_count)
+                if policy.renders_card
+                else None
+            )
+            if await _post(channel, embed, card):
                 await _emit_greeted(member)
 
 

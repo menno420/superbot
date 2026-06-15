@@ -124,7 +124,9 @@ async def test_join_grants_entry_role(monkeypatch):
         welcome_service.welcome_config,
         "load_policy",
         AsyncMock(
-            return_value=WelcomePolicy(enabled=True, join_enabled=False, entry_role_id=777),
+            return_value=WelcomePolicy(
+                enabled=True, join_enabled=False, entry_role_id=777
+            ),
         ),
     )
     apply = AsyncMock()
@@ -210,6 +212,129 @@ async def test_join_send_forbidden_is_swallowed(monkeypatch):
 
     await welcome_service.handle_member_join(member)  # no raise
     emit.assert_not_called()  # failed post → no greeted event
+
+
+# ---------------------------------------------------------------------------
+# Welcome card (phase 2)
+# ---------------------------------------------------------------------------
+
+
+def _card_policy() -> WelcomePolicy:
+    return WelcomePolicy(
+        enabled=True,
+        join_enabled=True,
+        channel_id=100,
+        card_enabled=True,
+    )
+
+
+@pytest.mark.asyncio
+async def test_join_attaches_card_when_enabled(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(return_value=_card_policy()),
+    )
+    render = MagicMock(return_value=b"\x89PNG-bytes")
+    monkeypatch.setattr("utils.welcome_render.render_welcome_card", render)
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_awaited_once()
+    kwargs = channel.send.await_args.kwargs
+    assert "embed" in kwargs
+    assert isinstance(kwargs.get("file"), discord.File)
+    # The card is rendered from the member's display name + the live count.
+    assert render.call_args.kwargs["member_name"] == "Astro"
+    assert render.call_args.kwargs["member_number"] == 1235
+
+
+@pytest.mark.asyncio
+async def test_join_no_card_when_disabled(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(enabled=True, join_enabled=True, channel_id=100),
+        ),
+    )
+    render = MagicMock(return_value=b"unused")
+    monkeypatch.setattr("utils.welcome_render.render_welcome_card", render)
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_awaited_once()
+    assert "file" not in channel.send.await_args.kwargs
+    render.assert_not_called()  # card disabled -> renderer never invoked
+
+
+@pytest.mark.asyncio
+async def test_join_card_render_none_still_posts(monkeypatch):
+    """Pillow unavailable (render -> None): greeting posts without an attachment."""
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(return_value=_card_policy()),
+    )
+    monkeypatch.setattr(
+        "utils.welcome_render.render_welcome_card",
+        MagicMock(return_value=None),
+    )
+    import core.events
+
+    emit = AsyncMock()
+    monkeypatch.setattr(core.events.bus, "emit", emit)
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_awaited_once()
+    assert "file" not in channel.send.await_args.kwargs
+    emit.assert_awaited_once()  # the greeting still posted
+
+
+@pytest.mark.asyncio
+async def test_join_card_render_fault_still_posts(monkeypatch):
+    """A render exception is swallowed: greeting posts without an attachment."""
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(return_value=_card_policy()),
+    )
+    monkeypatch.setattr(
+        "utils.welcome_render.render_welcome_card",
+        MagicMock(side_effect=RuntimeError("boom")),
+    )
+
+    await welcome_service.handle_member_join(member)  # no raise
+
+    channel.send.assert_awaited_once()
+    assert "file" not in channel.send.await_args.kwargs
+
+
+def test_accent_for_default_role_is_none():
+    member = _member()
+    member.top_role = MagicMock()
+    member.top_role.color = discord.Color(0)  # Discord default colour
+    assert welcome_service._accent_for(member) is None
+
+
+def test_accent_for_uses_top_role_colour():
+    member = _member()
+    member.top_role = MagicMock()
+    member.top_role.color = discord.Color(0x5865F2)  # blurple
+    assert welcome_service._accent_for(member) == (0x58, 0x65, 0xF2)
 
 
 # ---------------------------------------------------------------------------
