@@ -1,6 +1,6 @@
 # 2026-06-15 — mining Phase-2 feature dispatch: gated (fix-phase) + loop cleanup
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **Branch:** claude/sharp-ptolemy-5z8at5
 **Type:** routine run (dispatched work order) · **Class:** feature → **gated**
