@@ -49,13 +49,8 @@ _ACK_BTD6_TOOLS = frozenset(
     {
         "btd6_bloon_filter",
         "btd6_ct_team_status",
-        "btd6_cumulative_cost",
         "btd6_geraldo_lookup",
-        "btd6_list_roster",
-        "btd6_mode_lookup",
-        "btd6_monkey_knowledge_lookup",
         "btd6_paragon_calculate",
-        "btd6_paragon_requirements",
         "btd6_power_effect",
         "btd6_power_lookup",
         "btd6_relic_lookup",
@@ -77,7 +72,6 @@ _ACK_SERVER_TOOLS = frozenset(
 _ACK_AI_INTROSPECTION_TOOLS = frozenset(
     {
         "get_ai_policy_explanation",
-        "get_ai_tool_catalog",
     }
 )
 
@@ -117,8 +111,9 @@ _ACK_UNCOVERED_TASKS = frozenset(
 
 # Coverage floors — the ratchet's teeth. Coverage can only go up: raise these as
 # you add cases (and shrink the acknowledged sets), never lower them to quiet a
-# deleted case. (8 → 14: the 6 BTD6 hotspot tool-selection probes, 2026-06-14.)
-_TOOL_COVERAGE_FLOOR = 14
+# deleted case. (8 → 14: the 6 BTD6 hotspot tool-selection probes, 2026-06-14.
+# 14 → 20: get_ai_tool_catalog + 5 more BTD6 lookups, 2026-06-15.)
+_TOOL_COVERAGE_FLOOR = 20
 _TASK_COVERAGE_FLOOR = 2
 
 

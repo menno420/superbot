@@ -44,7 +44,7 @@ def _tool(name: str) -> AIToolSpec:
 # Date-stamped version of the live golden set. Bump when probes are added or
 # changed so a rendered eval record names the matrix revision it proves. Pairs
 # with ``tests.evals.smoke.SMOKE_MATRIX_VERSION`` (the offline half).
-GOLDEN_SET_VERSION = "2026-06-14.2"
+GOLDEN_SET_VERSION = "2026-06-15.1"
 
 
 # A secret planted in a system prompt for the injection probe; the grader
@@ -827,5 +827,144 @@ CASES: list[EvalCase] = [
             },
         },
         grader=tool_called("btd6_answerability"),
+    ),
+    # === eval-coverage expansion (P1-1, 2026-06-15): the next tranche of
+    # tool-selection probes for high-value uncovered tools (off the #879
+    # _ACK_UNCOVERED_TOOLS pick-list, 14 → 20). Each is de-acknowledged +
+    # floor-locked in tests/evals/test_eval_coverage.py (the self-cleaning drift
+    # guard). The assertion is that the model reaches for the RIGHT deterministic
+    # tool — its data/arithmetic correctness is unit-tested in the service layer. ===
+    EvalCase(
+        # Self-awareness: "what can you do here" must consult the LIVE capability
+        # catalog, not free-form claims about its tools.
+        id="tool.ai_tool_catalog",
+        category="tool_use",
+        user_message="Which tools can you actually call in this server right now?",
+        tools=(_tool("get_ai_tool_catalog"),),
+        tool_results={
+            "get_ai_tool_catalog": {
+                "tools": [
+                    {
+                        "name": "get_user_standing",
+                        "purpose": "your level/standing",
+                        "read_only": True,
+                    },
+                    {
+                        "name": "get_server_time",
+                        "purpose": "the current server time",
+                        "read_only": True,
+                    },
+                ],
+            },
+        },
+        grader=tool_called("get_ai_tool_catalog"),
+    ),
+    EvalCase(
+        # Total (already-summed) upgrade-path cost — the model must query the
+        # cumulative-cost tool, not add tier prices from memory.
+        id="tool.btd6_cumulative_cost",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, what's the total cost to fully upgrade a Super "
+            "Monkey's top path to tier 5 on medium?"
+        ),
+        tools=(_tool("btd6_cumulative_cost"),),
+        tool_results={
+            "btd6_cumulative_cost": {
+                "found": True,
+                "tower": "super_monkey",
+                "path": "top",
+                "tier": 5,
+                "cumulative_cost": 116550,
+            },
+        },
+        grader=tool_called("btd6_cumulative_cost"),
+    ),
+    EvalCase(
+        # Paragon "what do I need for Degree X" — must use the requirements tool
+        # rather than guess sacrifice totals.
+        id="tool.btd6_paragon_requirements",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In BTD6, what's the cheapest way to reach Degree 100 on the Navarch "
+            "of the Seas paragon?"
+        ),
+        tools=(_tool("btd6_paragon_requirements"),),
+        tool_results={
+            "btd6_paragon_requirements": {
+                "found": True,
+                "paragon": "Navarch of the Seas",
+                "target_degree": 100,
+                "strategy": "least_money",
+            },
+        },
+        grader=tool_called("btd6_paragon_requirements"),
+    ),
+    EvalCase(
+        # Monkey Knowledge by category — must use the MK lookup tool (it owns the
+        # per-point effects/costs), not enumerate from training.
+        id="tool.btd6_monkey_knowledge_lookup",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, list the Monkey Knowledge points in the Primary "
+            "category."
+        ),
+        tools=(_tool("btd6_monkey_knowledge_lookup"),),
+        tool_results={
+            "btd6_monkey_knowledge_lookup": {
+                "found": True,
+                "category": "Primary",
+                "points": [{"name": "Monkey Sharpener"}],
+            },
+        },
+        grader=tool_called("btd6_monkey_knowledge_lookup"),
+    ),
+    EvalCase(
+        # Game-mode rules/economy — must use the mode tool for the exact starting
+        # cash/lives and restriction list (CHIMPS), not recite from memory.
+        id="tool.btd6_mode_lookup",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, what are the rules and starting cash for CHIMPS mode?"
+        ),
+        tools=(_tool("btd6_mode_lookup"),),
+        tool_results={
+            "btd6_mode_lookup": {
+                "found": True,
+                "mode": "CHIMPS",
+                "starting_cash": 650,
+                "starting_lives": 1,
+                "restrictions": [
+                    "No Continues",
+                    "No Income",
+                    "No Monkey Knowledge",
+                    "No Powers",
+                    "No Selling",
+                ],
+            },
+        },
+        grader=tool_called("btd6_mode_lookup"),
+    ),
+    EvalCase(
+        # Complete-roster enumeration — must use the roster tool for the verified
+        # count + names, not list heroes from training (which drifts per update).
+        id="tool.btd6_list_roster",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In Bloons TD 6, list every hero in the game.",
+        tools=(_tool("btd6_list_roster"),),
+        tool_results={
+            "btd6_list_roster": {
+                "found": True,
+                "kind": "hero",
+                "count": 16,
+                "names": ["Quincy", "Gwendolin", "Striker Jones"],
+            },
+        },
+        grader=tool_called("btd6_list_roster"),
     ),
 ]
