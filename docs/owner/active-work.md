@@ -30,9 +30,9 @@ living ledger (`docs/current-state.md`).
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
   `disbot/{utils/mining/structures,services/mining_workflow,utils/character_render,views/mining,
   cogs/mining_cog,utils/mining/market}` + plan/numbers · 2026-06-15
-- `claude/brave-sagan-s9th8h` · Hermes research deepening — verify ChatGPT report vs. Hermes
-  source, correct the context-management root cause + fix SOUL sync bug · docs-only
-  (`hermes-token-efficiency-investigation` · `hermes-operating-prompt`) · 2026-06-15
+- `claude/brave-sagan-s9th8h` · Hermes context work — #913 (research + SOUL sync fix) MERGED;
+  follow-up in progress: SOUL size guard + sharpen context diagnosis (owner 5-msg data point) ·
+  `scripts/hermes/install-soul.sh` + investigation doc · 2026-06-15
 
 ## Recently cleared
 
