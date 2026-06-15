@@ -104,6 +104,19 @@ STAT_LABELS: dict[str, str] = {
     "max_health": "Max health",
 }
 
+# Compact glyphs for tight surfaces (shop rows, recipe pickers), damage/defence
+# first so combat gear compares at a glance.  Keys MUST be EffectiveStats fields.
+STAT_GLYPHS: dict[str, str] = {
+    "damage": "⚔️",
+    "defense": "🛡️",
+    "max_health": "❤️",
+    "mining_power": "⛏️",
+    "light_radius": "💡",
+    "depth_access": "🔽",
+    "luck": "🍀",
+    "loot_bonus": "💰",
+}
+
 
 # Which slot each gear item fits, and the stats it contributes.
 #
@@ -343,6 +356,20 @@ def describe_stats(stats: EffectiveStats) -> list[tuple[str, int]]:
     ]
 
 
+def describe_stats_compact(item_name: str) -> str:
+    """Compact glyph stat line for *item_name* — ``"⚔️+6"`` /
+    ``"⚔️+1 🛡️+3 ❤️+14"`` (damage/defence first), or ``""`` for an item with no
+    stats.  The tight-surface sibling of :func:`describe_stats` (shop rows,
+    recipe pickers) so the same preview renders everywhere.
+    """
+    stats = item_stats(item_name)
+    return " ".join(
+        f"{STAT_GLYPHS[field]}+{getattr(stats, field)}"
+        for field in STAT_GLYPHS
+        if getattr(stats, field)
+    )
+
+
 __all__ = [
     "TOOL",
     "LIGHT",
@@ -360,6 +387,7 @@ __all__ = [
     "SET_BONUS_HEALTH_PER_TIER",
     "EffectiveStats",
     "STAT_LABELS",
+    "STAT_GLYPHS",
     "MAX_DURABILITY",
     "max_durability",
     "gear_names",
@@ -374,4 +402,5 @@ __all__ = [
     "set_progress",
     "compute_stats",
     "describe_stats",
+    "describe_stats_compact",
 ]

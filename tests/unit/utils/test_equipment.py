@@ -54,6 +54,16 @@ def test_combat_gear_slots_and_stats():
     assert (shield.defense, shield.max_health) == (2, 10)
 
 
+def test_describe_stats_compact_is_glyphs_damage_first():
+    # The tight-surface preview (shop rows, recipe pickers): glyphs, damage/
+    # defence first, empty for a no-stat item.
+    assert eq.describe_stats_compact("iron sword") == "⚔️+6"
+    shield = eq.describe_stats_compact("iron shield")
+    assert shield.startswith("⚔️+1") and "🛡️+3" in shield and "❤️+14" in shield
+    assert eq.describe_stats_compact("iron pickaxe") == "⛏️+4"
+    assert eq.describe_stats_compact("stone hut") == ""
+
+
 def test_compute_stats_mixes_mining_and_combat_gear():
     # A character equips mining AND combat gear at once; stats sum across the
     # slots into one neutral block that each game reads its subset of.

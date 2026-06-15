@@ -13,7 +13,7 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
-from utils import db
+from utils import db, equipment
 from utils.mining import market
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
@@ -54,7 +54,15 @@ async def build_market_embed(
     for label, rows in market.shop_sections():
         embed.add_field(
             name=f"Buy: {label}",
-            value="\n".join(f"**{name.title()}** — {price} 🪙" for name, price in rows),
+            value="\n".join(
+                f"**{name.title()}** — {price} 🪙"
+                + (
+                    f"  {preview}"
+                    if (preview := equipment.describe_stats_compact(name))
+                    else ""
+                )
+                for name, price in rows
+            ),
             inline=False,
         )
     embed.set_footer(
@@ -110,7 +118,11 @@ class MiningMarketView(HubView):
         self.guild_id = guild_id
         for row, (label, rows) in enumerate(market.shop_sections()[:3]):
             options = [
-                discord.SelectOption(label=f"{name.title()} — {price} 🪙", value=name)
+                discord.SelectOption(
+                    label=f"{name.title()} — {price} 🪙",
+                    value=name,
+                    description=equipment.describe_stats_compact(name) or None,
+                )
                 for name, price in rows
             ]
             self.add_item(
