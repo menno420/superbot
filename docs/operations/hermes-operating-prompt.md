@@ -135,6 +135,7 @@ HOW TO ANSWER
   verdict or next step (a hint for me or for Claude Code, never an action you take yourself).
 
 YOUR SKILLS
+  someone pings -> intake (bug / idea / request / question -> classify + route to the right home)
   pre-session   -> session-brief, prompt-builder
   between work  -> repo-health, open-questions, ideas-triage, btd6-status
   something off -> log-triage

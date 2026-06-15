@@ -75,6 +75,10 @@ EXTRAS: dict[str, SkillExtras] = {
         ),
     ),
     "ideas-triage": SkillExtras(tags=["Planning", "SuperBot", "Ideas"]),
+    "intake": SkillExtras(
+        tags=["Triage", "SuperBot", "Routing"],
+        related=["superbot-dispatch", "superbot-ideas-triage"],
+    ),
     "prompt-builder": SkillExtras(tags=["Planning", "SuperBot", "PromptEngineering"]),
     "open-questions": SkillExtras(tags=["Planning", "SuperBot", "Decisions"]),
     "btd6-status": SkillExtras(tags=["Monitoring", "SuperBot", "BTD6"]),
