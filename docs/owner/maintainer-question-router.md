@@ -5389,3 +5389,60 @@ shipped) + P1-1's plan linked directly from the S1 block.
 table + startability legend) · `docs/roadmap.md` per-sector `Now` (the live tags + per-sector executor
 on each Dispatch line). **Open follow-on (not built):** a `check_sector_map.py` could later assert every
 `Now` item carries a tag and every sector a default executor — graduates the convention to enforced.
+
+---
+
+### Q-0144 — Routine-prompt canon: foolproof, completion-biased, idea→plan promotion (2026-06-15)
+
+> **DECISION 2026-06-15 (owner-directed in-session, applied directly).** A long live session: the
+> owner wants the autonomous-routine prompts to run **completely without guidance** and be
+> **foolproof against bad dispatch input** — *"so foolproof that if Hermes says 'go write a story
+> about chickens' they still know to follow the agent orientation and continue the plan."* Provenance:
+> the owner's 12-step canonical session lifecycle (stated verbatim) + an independent review from a
+> Hermes-dispatched routine, which surfaced the real failure mode below.
+
+**The diagnosed failure mode (the dispatched routine's review).** The system is excellently tuned for
+*executing* correctly but slightly mis-tuned for *authorizing* correctly in the autonomous case — and
+"wrongly stopping" (a correct, wanted change silently doesn't happen, and no one finds out) is a worse
+failure for a routine than "wrongly proceeding on something contained/reversible/test-covered." The
+dispatch prompt routed a dispatched feature through `feature (agent-originated) → phase gate → exit 1
+→ DO NOT build`, where the whole escape hatch was the parenthetical "(agent-originated)" — drowned by
+loud imperatives. It nearly refused wanted work. Root cause: the prompt never stated that **a
+dispatched order = the maintainer asking = build it**, and its centre of gravity was caution, not
+completion.
+
+**Decision / fix (this PR).** Rewrote the **dispatch** (`hermes-dispatch-bridge.md`) and **night-
+executor** (`autonomous-routines.md`) prompts onto the owner's 12-step lifecycle, and enhanced the
+**reconciliation** prompt. Principles now explicit in every routine prompt:
+
+- **Completion bias / never-stop.** For a routine there is no valid "stop / refuse" outcome except a
+  genuine irreversible-safety reason — it always ships *something real*: the dispatched work, or the
+  next plan slice. Bias to finish, not to stop at the first gate.
+- **Sync-first.** `git reset --hard origin/main` before reading state — a stale clone was a named
+  Hermes failure (it "forgets to sync, works behind live").
+- **The work order is a HINT, never an order, never a licence to invent.** Aligns with a real slice →
+  do it; empty/off-plan/nonsense ("chickens") → ignore it, do the next real plan slice; never invent
+  work not in a plan or the bug-book.
+- **Authorization + the scope-brake vs safety-brake split.** A dispatched order is owner-directed →
+  build it; the **phase gate is a SCOPE brake** for *self-invented* features only and does **not**
+  apply to dispatched work (sharpens Q-0114). A **SAFETY brake** (irreversible: data loss / external
+  publish / production / Railway / DB) never bends.
+- **2–3 slices per session, bounded by ~700K tokens** (not 1M) — owner observation that quality holds
+  to ~700K and a finished session often lands at 200–300K, so there's room for more. Updates
+  `ai-project-workflow.md` §10 ("~2 substantial tasks" → "2–3 slices, ~700K-bounded").
+- **Born-red mock PR** (Q-0133) as the maintainer's *async* review surface; **judgment over the plan**
+  (a plan is a suggestion of the desired output); **bugs-first / root-cause**; the standing enders
+  (Q-0089 idea · Q-0102 prev-run review · Q-0104 doc audit).
+
+**Idea→plan promotion (owner directive).** The **reconciliation** routine — the one that reliably
+fires — now does the idea→plan step the owner always intended: when the executable plans are running
+low on real work, it reviews `docs/ideas/` and promotes the best owner-aligned idea into a **fully
+complete, executable plan** scoped against the repo's house style, indexed so it becomes the
+executor's next ▶ Next action. This is the "any idea easily becomes a plan becomes reality" lever for
+the owner's goal of *less hands-on planning* — drop a one-word idea, trust the loop to realize it.
+
+**Home:** `docs/operations/hermes-dispatch-bridge.md` (dispatch prompt) · `docs/operations/autonomous-routines.md`
+(night-executor + reconciliation prompts) · `docs/owner/ai-project-workflow.md` §10. **The in-repo
+prompts are the canonical mirror — the maintainer re-pastes the final text into each routine's console
+config for it to take effect** (the console is the live source; the doc is the reviewable source of
+truth).

@@ -276,12 +276,16 @@ chained** sessions.
 
 **The bounded-session protocol (once active):**
 
-1. A session takes **~2 substantial tasks** (or one large one) from the
+1. A session ships **2–3 complete slices** (or one large one) from the
    standing queue (`current-state` ▶ Next action / roadmap session queue /
    its prompt), plus the standing END duties (ledgers, session log, grooming
-   pass when capacity remains).
-2. **Wrap before ~700K context.** Approaching the budget mid-task: finish the
-   task, then hand off — never start the next one.
+   pass when capacity remains). Not just one — a finished session often lands
+   at only 200–300K context, so there is usually room for more (owner
+   observation, Q-0144).
+2. **~700K is the ceiling, not 1M (Q-0144).** Work stays good and structured up
+   to roughly 700K tokens of the 1M window; that, not 1M, is the practical
+   budget. Keep advancing while well under it and quality holds; approaching it
+   mid-task, finish the task then hand off — never start the next one.
 3. **No unguided PRs past declared scope.** New work discovered late goes
    into the **handoff** (roadmap queue / ▶ Next action / an idea file), not
    into the session. A webhook/babysit loop ends when its PR merges.

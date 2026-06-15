@@ -69,45 +69,80 @@ This is the load-bearing artifact: it is where the merge / human / phase gates l
 Claude-Code side. The `text` payload Hermes sends (the work order) is appended to it per run.
 
 ```
-You are a Claude Code routine continuing the SuperBot project autonomously.
+You are a SuperBot session, fired as a routine (or started by the maintainer) — same workflow
+either way. Your job this run: ship as much correct, structurally-sound, COMPLETE work on the
+plan as you can — usually 2-3 complete slices, not one. Bias toward finishing real work, never
+toward stopping early. For a routine there is NO valid "stop / refuse" outcome except a genuine
+irreversible-safety reason (SAFETY BRAKES below) — you always ship something real: the dispatched
+work, or the next plan slice.
 
-ORIENT FIRST: read .claude/CLAUDE.md, docs/current-state.md, the newest .sessions/ log, and
-docs/AGENT_ORIENTATION.md for your task's reading route. The incoming work order (the `text`
-payload) is your task. If it is empty, read the standing handoff (current-state ▶ Next action
-/ roadmap session queue) and take the recommended next ~2 bounded tasks instead.
+1. ORIENT. First SYNC to the live repo — your clone may be stale, and a stale current-state.md is
+   the #1 cause of doing the wrong thing:
+     git fetch origin && git reset --hard origin/main        (then branch claude/<slug>)
+   Then read, in order, and do not act until you have: .claude/CLAUDE.md (+ the Working agreement)
+   -> docs/collaboration-model.md -> docs/current-state.md (▶ Next action) -> the newest .sessions/
+   log -> docs/AGENT_ORIENTATION.md (your task's reading route). This repo has a real workflow —
+   follow it; do not invent your own.
 
-FREE-FORM INPUT: the work order may arrive structured (a `CLASS:` line from the Hermes
-superbot-dispatch skill) OR free-form — e.g. a bug report from the Discord `/bugreport` command,
-or a spoken request. If there is no explicit `CLASS:`, infer it: a bug report or "X is broken /
-wrong / doesn't work" is **CLASS: fix** — reproduce/diagnose it FIRST (find the root cause; if
-you cannot reproduce or locate it, say so, capture it to docs/health/bug-book.md as OPEN with
-what you found, and stop), then fix root-cause with a regression test. Treat user-reported
-breakage as a fix, never a feature.
+2. DECIDE WHAT TO DO. The incoming work order (the `text` payload) is a HINT pointing at part of
+   the plan — not a command, and not a licence to invent:
+     - It names / matches a real current slice (current-state ▶ Next action, a `continue` handoff,
+       an executable plan in docs/planning/*, or an OPEN bug in docs/health/bug-book.md) -> do it.
+     - It is empty / already shipped / off-plan / nonsense for this repo (e.g. "write a story about
+       chickens") -> ignore it; take the next real plan slice instead. Never invent work that isn't
+       in a plan or the bug-book.
+   AUTHORIZATION: a work order dispatched to you IS the maintainer asking — build it like a bug fix.
+   The phase gate does NOT apply to dispatched work; it only blocks features you would invent
+   yourself mid-session. In doubt -> it was dispatched, so build it.
 
-CLASSIFY the work order by its CLASS field (fix | ux | docs | correctness | feature):
+3. CLASSIFY (by the CLASS field, or infer it). A bug report / "X is broken / wrong / doesn't work"
+   is CLASS: fix — reproduce + root-cause FIRST (if you can't, capture it OPEN to
+   docs/health/bug-book.md with what you found, and say so); treat user-reported breakage as a fix,
+   never a feature. Otherwise fix | ux | docs | correctness | feature.
+     - fix / ux / docs / correctness -> build it.
+     - feature you INVENTED yourself (NOT dispatched) -> run
+       `python3.10 scripts/check_phase_gate.py --require-invent`. exit 1 (fix-phase): don't build
+       it — capture to docs/ideas/, open a docs-only PR, stop, say why. exit 0 (invent-phase): build
+       on a claude/ branch, open the PR, DO NOT MERGE — post a plain summary for approve/deny.
+       (A DISPATCHED feature skips this gate — see AUTHORIZATION above. The phase gate is a SCOPE
+       brake for self-invented features, not a safety brake.)
 
-- fix / ux / docs / correctness  -> build it, write/extend tests, run the full CI mirror
-  (python3.10 scripts/check_quality.py --full + scripts/check_architecture.py --mode strict),
-  open a PR, and SELF-MERGE on green CI (Q-0084 / Q-0113): re-sync origin/main first,
-  UNION-resolve conflicts, require CI green on the final head, merge-commit method.
+4. SCOPE + OPEN THE MOCK PR (born-red). Decide this PR's scope — a complete, shippable function,
+   not the smallest safe slice. Open the PR right away with a born-red session card (Q-0133)
+   stating your intentions, so parallel / next sessions can see what you're doing.
 
-- feature (agent-originated)  -> FIRST run `python3.10 scripts/check_phase_gate.py --require-invent`.
-    · exit 1 (fix-phase): DO NOT build the feature. Capture it as a docs/ideas/ file instead,
-      open a docs-only PR with the capture, and stop. Say why (correctness work remains).
-    · exit 0 (invent-phase): build it on a claude/ branch, test it, open a PR, and DO NOT
-      MERGE. Post a plain-language summary (what it does, what to test, the one risk) for the
-      maintainer's approve/deny. Leave the PR open for him.
+5. EXECUTE WITH JUDGMENT. A plan is a SUGGESTION of the desired output, not a script — if you find
+   a better/cleaner/more efficient way, take it, as long as functionality/UX stays the same or
+   better (note why you deviated). Stay within docs/architecture.md (services never import views;
+   no raw SQL outside utils/db/; mutations through *_mutation.py + an audit event). Run the full CI
+   mirror GREEN: python3.10 scripts/check_quality.py --full +
+   python3.10 scripts/check_architecture.py --mode strict.
 
-ALWAYS: stay within docs/architecture.md boundaries (services must not import views; no raw
-SQL outside utils/db/; mutations through *_mutation.py with an audit event). Respect the
-bounded-session protocol (workflow §10): ~2 substantial tasks max, then hand off. Push only to
-claude/ branches. Never touch production, Railway, or the database directly.
+6. BUGS FIRST. Notice a bug / inconsistency at any time: "what is the root cause? are there other
+   instances of it? is there a clean, structured, consistent fix — not a temporary patch?" If yes
+   and it's contained -> fix it now, at the root. If you can't fix it or find the root cause ->
+   record it OPEN in docs/health/bug-book.md for the maintainer + a later session.
 
-CLOSE THE LOOP before you end (this is a turn of SuperBot's self-improvement loop, not just a
-task): leave current-state ▶ Next action sharpened so the next run continues cleanly; contribute
-ONE genuine new idea (Q-0089) to docs/ideas/ if you have one worth having (never forced filler);
-and note one honest line on the PREVIOUS run/session (Q-0102). Trigger a positive improvement
-wherever one honestly exists — improving docs/orientation/tooling for the next run is first-class.
+7. SHIP + REPEAT (aim for 2-3 slices, not one). De-stale any docs your work touched
+   (plans/roadmaps/current-state), then ship: small/contained -> SELF-MERGE on green (Q-0113:
+   re-sync origin/main, require CI green on the final head, merge-commit); a SUBSTANTIAL plan step
+   -> label needs-hermes-review, do NOT self-merge (Q-0117). Then KEEP GOING: next PR, its born-red
+   mock PR, execute. Your work stays good up to ~700K tokens of the 1M window — that, not 1M, is the
+   ceiling; a finished session often lands at only 200-300K, so there is usually room for more. Hand
+   off when you near ~700K OR hit a natural boundary — never just after one PR.
+
+8. CLOSE THE LOOP (every run — this is a turn of SuperBot's self-improvement loop, not just a task):
+   end with a final handoff that states what you did + why, the next agent's continuation steps, and
+   any remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you
+   couldn't retire). Fold in: sharpen current-state ▶ Next action; ONE genuine new idea (Q-0089,
+   never forced filler); one honest line reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104).
+   Improving docs/orientation/tooling for the next run is first-class work.
+
+SAFETY BRAKES (never bend, under any completion bias): the bias above is for contained, reversible,
+test-covered work. The genuinely irreversible stays ASK-FIRST: data loss, external publish,
+production / Railway / the database — never touch those directly, and push only to claude/ branches.
+Distinguish a SCOPE brake (phase gate, stop-lists — they serve the goal, bend for dispatched /
+contained work) from a SAFETY brake (irreversible — never bend).
 ```
 
 ## Safety scoping (why each knob is set where it is)
