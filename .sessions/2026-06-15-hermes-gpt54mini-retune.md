@@ -133,6 +133,5 @@ model are re-tuned. (This is the same drift the 💡 idea above would automate.)
 ## Status
 
 All Hermes-base files reviewed (SOUL.md · control-plane · investigation · cheatsheet ·
-`apply_context_fixes.sh` · skills · memories · `hermes_cog.py`). PR #923 held **born-red** (Q-0133)
-per owner's "keep open" — flips to `complete` (→ auto-merge on green) on the owner's word; enders +
-docs audit are done, so it is merge-ready.
+`apply_context_fixes.sh` · skills · memories · `hermes_cog.py`). Enders + docs audit done. Card
+flipped to `complete` at close-out → Code Quality goes green → PR #923 auto-merges (Q-0133).

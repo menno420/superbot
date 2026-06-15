@@ -116,6 +116,24 @@ Hermes config/data paths shown during setup:
   independence is dropped. For the **review** role specifically, a stronger model than the cheap mini
   is worth considering.
 
+#### Calibrating gpt-5.4-mini in the role (a 10-minute probe)
+
+The model is the biggest behaviour lever, so **calibrate it, don't assume it.** Run these read-only
+tasks from Telegram (fresh `/new` each) — each targets a way the old weak model failed (e.g. #888's
+invented scope). Judge against "what good looks like"; if one fails, that's the real signal to raise
+`reasoning_effort`, shorten sessions, or reconsider the model for that role.
+
+| Probe (paste to Hermes) | What good looks like |
+|---|---|
+| "Sync, then read `current-state.md` and name the next ▶ startable slice **by description**." | Actually runs the sync, opens the file, names the real lane + cites it — not a slice invented from memory (#888). |
+| "Run repo-health: `check_loop_health`, open PRs, and the ledger guard, then give ONE verdict." | Runs all three read-only checks and synthesizes — doesn't collapse/forget after 2 tool calls. |
+| "Assemble (do **not** fire) a work order for <a real slice> in the four-section format." | Exact TASK/CONTEXT/ACCEPTANCE/NOTES, real file scope, an acceptance command, **no invented PR numbers** (Q-0142). |
+| Ask about something **not** in the repo. | Says it checked and found nothing (verify-don't-assume) — does **not** confabulate a confident false answer. |
+| Watch any multi-file read. | Greps / targeted-reads sections, not whole-file dumps — the cheap-and-grounded habit SOUL.md asks for. |
+
+Record outcomes in a `.sessions/` note or here if a pattern emerges; that's how the role's model
+choice (mini vs. a stronger review model, Q-0117) gets decided on evidence rather than vibes.
+
 #### Model-switch playbook (the ~3-hour maze — so it's 5 minutes next time)
 
 Moving Hermes to a capable own-key model hit these traps, in order:
