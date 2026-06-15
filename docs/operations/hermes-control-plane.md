@@ -92,12 +92,47 @@ Hermes config/data paths shown during setup:
   slowly and flap on the way. **If it ever flaps again,** pin the **exact dated snapshot
   `gpt-5.4-mini-2026-03-17`** (re-run `hermes model`, set the custom provider's model to it) — the
   exact id is granted deterministically and skips the alias-propagation wait.
+- **Verified specs (gpt-5.4-mini — fetched 2026-06-15; released 2026-03-17, after the Claude build
+  cutoff, so these are from current OpenAI / aggregator sources, not model memory):** **400K context
+  / 128K max output**, **$0.75 per 1M input · $4.50 per 1M output**, **Aug 2025 knowledge cutoff**, a
+  **reasoning** model with tool calling + structured output + text/image input. The `400K (detected)`
+  Hermes reports is correct. **Tuning lever:** it honours `agent.reasoning_effort` (the param that
+  400'd the non-reasoning gpt-4o-mini) — keep it on a reasoning setting; consider raising it for the
+  *review* role and lowering it (`minimal`/`low`) for cheap high-throughput dispatch triage. **Cost
+  note:** at $4.50/1M output a long accumulating gateway session is the real spend driver (not the
+  window) — so the bounded-session / `/new`-per-task habit is now a **cost** lever, not a capability
+  crutch.
+- **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
+  Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
+  which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
+  `compression.threshold: 0.50` (the default) is fine now — on a 400K window that already leaves
+  ~200K before compaction, so the old `apply_context_fixes.sh` 0.75 bump is **optional**, not
+  required. `prompt_caching.cache_ttl: 1h` trims cost on long sessions. Pin
+  `model: gpt-5.4-mini-2026-03-17` (the dated id) **only** if the alias ever flaps again (playbook).
 - **Rationale (independence vs. reliability):** Hermes is deliberately a **non-Claude** mind so its
   review is independent of the Claude that builds (Q-0117). The reliability fix was *capability*, not
   *Claude* — a frontier **non-Claude** model (gpt-5.4-mini, or gpt-5.5) keeps the independence and
   fixes the weakness. A Claude key (`anthropic/claude-sonnet-4-6`) is the most-reliable fallback if
   independence is dropped. For the **review** role specifically, a stronger model than the cheap mini
   is worth considering.
+
+#### Calibrating gpt-5.4-mini in the role (a 10-minute probe)
+
+The model is the biggest behaviour lever, so **calibrate it, don't assume it.** Run these read-only
+tasks from Telegram (fresh `/new` each) — each targets a way the old weak model failed (e.g. #888's
+invented scope). Judge against "what good looks like"; if one fails, that's the real signal to raise
+`reasoning_effort`, shorten sessions, or reconsider the model for that role.
+
+| Probe (paste to Hermes) | What good looks like |
+|---|---|
+| "Sync, then read `current-state.md` and name the next ▶ startable slice **by description**." | Actually runs the sync, opens the file, names the real lane + cites it — not a slice invented from memory (#888). |
+| "Run repo-health: `check_loop_health`, open PRs, and the ledger guard, then give ONE verdict." | Runs all three read-only checks and synthesizes — doesn't collapse/forget after 2 tool calls. |
+| "Assemble (do **not** fire) a work order for <a real slice> in the four-section format." | Exact TASK/CONTEXT/ACCEPTANCE/NOTES, real file scope, an acceptance command, **no invented PR numbers** (Q-0142). |
+| Ask about something **not** in the repo. | Says it checked and found nothing (verify-don't-assume) — does **not** confabulate a confident false answer. |
+| Watch any multi-file read. | Greps / targeted-reads sections, not whole-file dumps — the cheap-and-grounded habit SOUL.md asks for. |
+
+Record outcomes in a `.sessions/` note or here if a pattern emerges; that's how the role's model
+choice (mini vs. a stronger review model, Q-0117) gets decided on evidence rather than vibes.
 
 #### Model-switch playbook (the ~3-hour maze — so it's 5 minutes next time)
 
@@ -363,215 +398,64 @@ cd /home/hermes/repos/superbot
 hermes gateway
 ```
 
-## Suggested next steps
+## Roadmap — what's open vs. shipped
 
-> **▶ Owner-prioritized next (2026-06-15): token efficiency.** Hermes `/status` showed **2.2M
-> cumulative tokens "re-sent each call"** after only a few messages (~8–9× the working window) →
-> context collapse by the 3rd–4th tool call. Root cause + investigation questions + candidate fixes
-> (stateless bounded dispatch · history cap · `soul.md` injection strategy) are captured in
-> [`hermes-token-efficiency-investigation-2026-06-15.md`](hermes-token-efficiency-investigation-2026-06-15.md).
+> **✅ RESOLVED (2026-06-15): token efficiency / "forgetting."** Root-caused to the **weak free model**,
+> not the window — Hermes ran on `stepfun/step-3.7-flash:free` (quantized, ~256K). Fixed by the model
+> swap to the capable 400K `gpt-5.4-mini` on the owner's own key (§ Model/provider; arc #913→#921). The
+> diagnosis (compaction at 50%, not unbounded growth) is kept in
+> [`hermes-token-efficiency-investigation-2026-06-15.md`](hermes-token-efficiency-investigation-2026-06-15.md)
+> (now `historical`); the `compression.*` knobs remain optional secondary levers.
 
-### 1. Add SSH key login
+### Still open (infrastructure to-dos)
 
-Current access still relies on password login. Long-term, add SSH key login through Termius or another SSH client.
+- **SSH key login** — access still uses password login. Add key-based login (Termius), then disable
+  root/password SSH. Do this before the VPS becomes important infrastructure.
+- **Docker terminal backend** — Hermes runs the `local` backend today; Docker would give safer
+  command isolation (install Docker → add `hermes` to the docker group → set
+  `terminal.backend: docker` → retest from Telegram). Do it before Hermes runs heavier tooling.
+- **Backups** — not urgent, but matters once memory/skills/schedules accumulate. Targets: `~/.hermes`
+  (config + `state.db` memory) and the systemd unit; the skill/doc sources are already git-tracked.
+  Methods: Hetzner snapshot · periodic `tar`.
+- **Discord integration (later)** — Telegram stays the private control surface; a private admin/dev
+  channel could later receive repo-health / CI / review summaries. Not a priority.
 
-Recommended later state:
+### Done — items that were on this list (kept as a record)
 
-```text
-SSH key login enabled
-Root password login disabled
-Password SSH disabled if comfortable
-Termius configured with key-based login
-```
+- **Skill pack** ✅ — the read-only skills in [`hermes-skills/`](./hermes-skills/README.md) are the
+  source of truth; `scripts/hermes/build_skills.py` generates installable `SKILL.md` files and
+  `install-skills.sh` deploys them to the VPS. (Superseded the aspirational `superbot-*` skill list.)
+- **Standing operating prompt** ✅ — [`hermes-operating-prompt.md`](./hermes-operating-prompt.md) is
+  installed to `~/.hermes/SOUL.md` via `install-soul.sh` (loads fresh each message).
+- **Scheduled work** ✅ — execution runs as bounded **Claude Code routines** on the console
+  **Schedule** trigger (every 2h, Q-0146); reconciliation auto-fires at the PR-band boundary. Hermes'
+  own cron can still post read-only Telegram reports if wanted. See
+  [`autonomous-routines.md`](./autonomous-routines.md).
+- **GitHub write access** ✅ (scoped) — Hermes may now author **PRs** (docs, bug reports, small
+  self-tooling — Q-0140/Q-0141) and **merge** a PR it independently reviewed (the review-merge gate,
+  Q-0117). It never pushes to `main` and never merges outside that gate; the exact boundary is the
+  operating prompt's "WHAT YOU MAY WRITE". (Supersedes the old "keep Hermes read-only only" note.)
 
-This should be done before the VPS becomes important infrastructure.
+### Autonomous-loop seams (built 2026-06-12; dispatch now wired)
 
-### 2. Install Docker and switch Hermes to Docker backend
-
-Hermes currently uses local terminal execution. This works, but Docker would give safer command isolation.
-
-Recommended future sequence:
-
-```text
-Install Docker
-Add hermes user to docker group
-Test docker run hello-world
-Switch Hermes terminal backend to docker
-Limit container resources if supported
-Retest repo inspection from Telegram
-```
-
-This should happen before allowing Hermes to run heavier commands or experimental tooling.
-
-### 3. Create SuperBot-specific Hermes skills
-
-Create reusable Hermes skills so prompts can be shorter and behavior is more consistent.
-
-Recommended skills:
-
-```text
-superbot-repo-health
-superbot-pr-review
-superbot-doc-consistency
-superbot-ci-triage
-superbot-btd6-audit
-superbot-ai-cog-audit
-superbot-release-summary
-superbot-agent-session-briefing
-```
-
-Each skill should include:
-
-- Repo path
-- Read-only default
-- Docs to inspect first
-- Architecture boundaries
-- Required output format
-- Verification commands
-- Stop conditions
-- No production mutation rule
-
-### 4. Add scheduled reports
-
-Use Hermes cron or system-level scheduling for regular Telegram reports.
-
-Useful schedules:
-
-```text
-Daily repo health summary
-Daily failed CI check
-Weekly stale docs scan
-Weekly open plan summary
-After-merge docs consistency check
-Before-agent-session repo briefing
-```
-
-Reports should be read-only and should not modify repo files.
-
-### 5. Improve GitHub access carefully
-
-GitHub CLI is authenticated. Keep Hermes read-only for now.
-
-Possible later permissions:
-
-```text
-Read PRs/issues/checks
-Draft issue comments
-Draft PR review summaries
-Create local markdown reports
-Open draft PRs only when explicitly requested
-```
-
-Avoid for now:
-
-```text
-Auto-merge
-Direct pushes
-Repo admin permissions
-Production secret access
-Railway deploy access
-Neon database access
-Broad personal access tokens
-```
-
-### 6. Add a stable SuperBot operating prompt
-
-Create a short operating guide for Hermes that defines how it should work in this repo.
-
-Suggested contents:
-
-```text
-Repo path
-Default branch
-No-edit default
-Architecture docs to read first
-Decision vs analysis boundaries
-Affected-system reporting format
-Migration/test/docs verification expectations
-How to classify risks and ownership
-```
-
-This can either be a Hermes skill, a repo doc, or both.
-
-### 7. Add Discord integration later
-
-Telegram is the best private control surface. Discord can be added later for SuperBot ecosystem visibility.
-
-Potential Discord use cases:
-
-```text
-Post repo health summaries
-Post CI failure alerts
-Post PR review summaries
-Post docs drift reports
-Support private admin/dev channel workflows
-```
-
-Keep Discord restricted to a private admin/dev channel.
-
-### 8. Add backup strategy
-
-Backups are not urgent yet, but they become important after adding custom Hermes skills, memory, or schedules.
-
-Recommended backup targets:
-
-```text
-/home/hermes/.hermes
-/home/hermes/repos/superbot/docs/operations/hermes-control-plane.md
-custom skills
-systemd service file
-```
-
-Possible backup methods:
-
-```text
-Hetzner backup
-manual snapshot
-git-tracked skill/docs files
-periodic tar archive
-```
-
-## Recommended next project phase
-
-The next best phase is not more infrastructure. The next best phase is a **SuperBot Hermes skill pack**.
-
-Goal:
-
-```text
-Make Hermes consistently useful for SuperBot repo review, doc consistency checks, PR summaries, CI triage, and agent-session preparation while preserving a read-only default.
-```
-
-This gives the highest value with the lowest risk because it improves behavior without giving Hermes broader write or production access.
-
-**The skill pack has been implemented** — see [`hermes-skills/`](./hermes-skills/README.md)
-for the ready-to-use skill prompts. They are now **scripted to install**: the docs are the
-source of truth, `scripts/hermes/build_skills.py` generates installable `SKILL.md` files,
-and `scripts/hermes/install-skills.sh` copies them onto the VPS. A standing read-only
-operating prompt (step 6 below) is implemented as
-[`hermes-operating-prompt.md`](./hermes-operating-prompt.md).
-
-### Autonomous-loop seams (built 2026-06-12)
-
-Three repo-side seams of the autonomous-improvement loop now exist (owner decisions
-Q-0113/Q-0114), keeping Hermes read-only while letting it review and dispatch:
+Three repo-side seams keep Hermes safe while letting it review and dispatch (Q-0113/Q-0114):
 
 - **`superbot-review`** — independent (non-Claude) critique of a plan or PR diff, with a
   plain-language maintainer summary for the approve/deny gate.
 - **`scripts/check_phase_gate.py`** — the fix-phase vs. invent-phase signal (agent-originated
   features stay gated until correctness is done).
-- **`superbot-dispatch`** + **[`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md)** — turn
-  a work order into a Claude Code Routine `/fire` call. **Maintainer wiring required** (Routine +
-  token) before it can fire; see the runbook's ⬜ steps. The merge gate is full self-merge on
-  green CI (Q-0113); agent-originated features open a PR and wait for your approve/deny (Q-0114).
+- **`superbot-dispatch`** + [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — turns a
+  work order into a Claude Code Routine `/fire` call. **Now wired** via the console **Schedule**
+  trigger (every 2h, Q-0146) — no longer pending maintainer setup. Merge gate: self-merge on green
+  CI (Q-0113); agent-originated features open a PR and wait for your approve/deny (Q-0114).
 
-### Next sanctioned capability: read-only log triage
+### Read-only log triage — shipped
 
-The highest-value graduation from "repo assistant" to "operations assistant" is letting
-Hermes **read production logs** and diagnose problems — without granting any write/deploy
-power. This stays inside the safety model: it is look-but-don't-touch.
+Letting Hermes **read production logs** to diagnose problems (look-but-don't-touch) is live:
 
-- The [`log-triage`](./hermes-skills/log-triage.md) skill is ready; it triages the
-  VPS-local `hermes-gateway` logs today and the production (Railway) logs once a
-  **read-only** Railway token + CLI is set up on the VPS.
-- A Neon read-only role can follow the same pattern for DB-level checks.
-- Operating production (restart / redeploy / scale) remains a maintainer action.
+- The [`log-triage`](./hermes-skills/log-triage.md) skill + the `scripts/hermes/log_triage.py`
+  analyzer (content-free, redacted, deterministic — #906) triage the VPS-local `hermes-gateway`
+  logs today and Railway production logs via `scripts/hermes/railway_logs.py`. **Remaining gate:**
+  the read-only Railway token on the VPS (owner-provisioned).
+- A Neon read-only role can follow the same pattern for DB-level checks. Operating production
+  (restart / redeploy / scale) remains a maintainer action.

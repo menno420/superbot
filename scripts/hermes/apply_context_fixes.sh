@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 # Apply the recommended Hermes context-management fixes on the control-plane VPS.
 #
-# WHY: Hermes "forgets / misunderstands / loses the thread" because its gateway
+# STATUS (2026-06-15): OPTIONAL / secondary. The root cause of the "forgetting" was the weak free
+# model, fixed by switching Hermes to the capable 400K gpt-5.4-mini (arc #913->#921). On a 400K
+# window the 50% compaction leaves ~200K headroom, so these compaction knobs are no longer the
+# primary fix — keep them only as a marginal tuning lever, not a required step. See
+# docs/operations/hermes-control-plane.md § Model/provider.
+#
+# WHY (original diagnosis): Hermes "forgets / misunderstands / loses the thread" because its gateway
 # COMPACTS context at 50% of the model window — it summarizes the middle of the
 # conversation and DELETES tool outputs larger than ~200 chars. SuperBot's docs are
 # large, so even a short, clearly-directed session can cross 50% on the FIRST doc

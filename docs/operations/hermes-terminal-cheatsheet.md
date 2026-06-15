@@ -61,6 +61,46 @@ cat ~/.hermes/SOUL.md                          # View Hermes' current base ident
 ls ~/.hermes/skills/                           # List the skills Hermes has installed.
 ```
 
+## Hermes memory (built-in — plain-text markdown)
+
+Hermes' persistent memory is two files under `~/.hermes/memories/`, loaded into the system prompt as
+a **frozen snapshot at session start** — so an edit takes effect on the next `/new`, never mid-session:
+
+- `MEMORY.md` — the agent's own notes (~2,200 char / ~800 token cap).
+- `USER.md` — owner profile / preferences (~1,375 char / ~500 token cap).
+
+```bash
+cat ~/.hermes/memories/MEMORY.md            # View what Hermes remembers (its own notes).
+cat ~/.hermes/memories/USER.md              # View the owner-profile memory.
+cp ~/.hermes/memories/MEMORY.md ~/.hermes/memories/MEMORY.md.bak   # Back up before any hand-edit.
+nano ~/.hermes/memories/MEMORY.md           # Hand-edit (allowed, but not the intended path; mind the char cap).
+```
+
+**Intended way — let Hermes edit its own memory.** It has a `memory` tool (add / replace / remove by
+substring), so in Telegram just instruct it plainly (e.g. *"Remove your memory entry 'Dispatch bridge
+pattern'; keep only …"*), then `/new` so it reloads. Keep memory to **stickies only** (owner prefs,
+infra ids) — procedures belong in SOUL.md + the skills, which reload every session anyway.
+
+- `/memory pending` · `/memory approve <id>` · `/memory reject <id>` — staged-write approval, **only**
+  relevant if `write_approval: true` in `config.yaml` (off by default). `memory_enabled` toggles
+  memory entirely. There is **no** `hermes` CLI subcommand that deletes a memory by content — use the
+  conversational `memory` tool or a hand-edit.
+
+## Hermes skills — keep the set focused
+
+Skills load by **progressive disclosure**: every turn the agent sees a Level-0 list of *all*
+installed skills' names + descriptions (~3k+ tokens), and only loads a skill's full body on demand.
+So a bloated catalog costs context **and** adds choice-noise on every message — keep Hermes to the
+skills its SuperBot control-plane role uses (the `superbot/*` pack + the github / repo / review /
+dispatch skills). The bundled non-SuperBot skills (creative / media / productivity / smart-home /
+mlops / note-taking / social-media / etc.) are safe to remove and re-installable later.
+
+```bash
+hermes skills list                       # What's installed.
+hermes skills uninstall <skill-name>     # Remove one (or `/skills uninstall <name>` in chat).
+bash scripts/hermes/install-skills.sh    # (Re)install the SuperBot skill pack from the repo.
+```
+
 ## Repo state & health (read-only)
 
 ```bash
