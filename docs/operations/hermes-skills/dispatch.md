@@ -49,8 +49,13 @@ STEP 1b — IF I GAVE NO SPECIFIC TASK ("dispatch a continuation worker" / "pick
        (Reconciliation passes fire automatically — the routines. You don't hand-dispatch them.)
     3. Pick the next slice by its DESCRIPTION / lane ("P1-1 eval-smoke matrix"), NOT by a
        "#841-#860" range or "slot N = #NNN" mapping. Those numbers were written at a past HEAD.
-    4. Confirm it isn't already done: grep current-state Recently-shipped + scan open PRs for it.
-       If it shipped, move to the next slice. THEN assemble the work order (STEP 3).
+    4. Confirm it isn't already done OR already in flight: grep current-state Recently-shipped +
+       `gh pr list` + grep the slice name in `.sessions/`. If it shipped, move to the next slice;
+       if an open PR already covers it, DO NOT fire a duplicate — say so and stop. THEN assemble the
+       work order (STEP 3).
+       LEAN: this overlap check is `gh pr list` + a `.sessions/` grep — do NOT load other skills or
+       deep-search the whole codebase for it (one task → one skill; the heavy multi-search version
+       can hit the model's per-minute token cap and errors the turn).
 
 STEP 2 — CLASSIFY (this decides the merge gate the routine will use):
   - BUG FIX / UX / DOCS / CORRECTNESS  -> the routine builds, tests, and SELF-MERGES on green CI.
