@@ -24,8 +24,25 @@ ephemeral follow-up, and clear a stale image when navigating to another action �
 - `views/mining/gear_panel.py`: the doll renders onto the gear panel message; cleared on back-to-hub
 - tests pin: no ephemeral image follow-up; image rides the in-place edit; navigation clears it
 
-PR 2 (separate session) = the AI panel **navigation** half (`!aimenu` → policy/behavior/tools subtrees
-stop spawning a fresh ephemeral per step) via `navigation.transition_to` + Back buttons.
+## Progress (live session — expanded scope)
+
+The owner steered this into a fuller **mining hub UX overhaul** (live, 2026-06-15):
+
+- **PR 1 — in-place image cards ✅** committed (PR #911), `check_quality --full` green (9784).
+- **Hub declutter (Option A) confirmed** via rendered mockups — 16 buttons → 6 main; Character +
+  Workshop sub-hubs; Build/Craft/Recipes consolidated into one **Craft**; Explore → open-world stub;
+  Mine → 3D grid navigator (new world model, v1 proposed, awaiting sign-off). Full IA captured in
+  [`docs/planning/mining-hub-redesign-2026-06-15.md`](../docs/planning/mining-hub-redesign-2026-06-15.md).
+- **Live test blocked on the token:** `DISCORD_BOT_TOKEN_PRODUCTION` is malformed/truncated —
+  Discord 401s it (the bot's own login). Postgres + all cogs boot clean; only the token blocks.
+  Owner asked to regenerate + set it as the env secret. The restructure build is best done **live**
+  with the owner once the token is restored (their iterate-live preference).
+
+## AI panels (the other ephemeral-panel half — deferred)
+
+`!aimenu` → policy/behavior/tools subtrees spawn a fresh ephemeral per navigation step; migrate to
+in-place via `navigation.transition_to` + Back buttons (`docs/ideas/ai-panel-inplace-navigation-2026-06-11.md`).
+Separate follow-up.
 
 ## Context delta
 
