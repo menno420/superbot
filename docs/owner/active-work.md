@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/amazing-volta-auxt2d` · UX: ephemeral-panel cleanup PR 1 — mining in-place image
+  cards (inventory card + character doll stop stacking as separate ephemerals; render into the
+  panel message) · `core/runtime/interaction_helpers.py` + `views/mining/{main_panel,gear_panel}.py`
+  + tests · 2026-06-15
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 
