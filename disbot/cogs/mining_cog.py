@@ -624,6 +624,22 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
+    # ----------------------------------------------------------- forge
+
+    @commands.command(
+        name="forge",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def forge_cmd(self, ctx):
+        """Open the Forge — build it to unlock higher-tier gear crafting."""
+        # cogs→views is allowed; one builder shared with the hub button.
+        from views.mining.forge_panel import MiningForgeView, build_forge_embed
+
+        embed = await build_forge_embed(ctx.author.id, ctx.guild.id)
+        view = MiningForgeView(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
     # ---------------------------------------------------------- workshop
 
     @commands.command(

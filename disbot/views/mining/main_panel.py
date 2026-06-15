@@ -60,6 +60,7 @@ _ACTIONS_GUIDE = (
     "**🏦 Vault** — stash loot safely, separate from your pack\n"
     "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
     "**🌳 Skills** — spend skill points to specialize your character\n"
+    "**🔥 Forge** — build it to unlock gold/diamond gear crafting\n"
     "**📖 Recipes** — browse and craft by category\n"
     "**🧍 Character** — your full character overview"
 )
@@ -628,6 +629,29 @@ class MiningHubView(PersistentView):
 
         embed = await build_skills_embed(interaction.user.id, interaction.guild_id)
         view = MiningSkillsView(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
+        label="🔥 Forge",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:forge",
+        row=4,
+    )
+    async def forge_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.forge_panel import MiningForgeView, build_forge_embed
+
+        embed = await build_forge_embed(interaction.user.id, interaction.guild_id)
+        view = MiningForgeView(interaction.user, interaction.guild_id)
         await safe_edit(interaction, embed=embed, view=view)
 
 

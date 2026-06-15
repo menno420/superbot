@@ -17,7 +17,7 @@ import discord
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
 from utils import db
-from utils.mining import items, workshop
+from utils.mining import items, structures, workshop
 from utils.mining.recipes import load_recipes
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
@@ -60,6 +60,7 @@ async def build_recipe_embed(
 ) -> discord.Embed:
     """One page of recipes with per-material have/need lines."""
     inventory = await db.get_mining_inventory(str(user_id), guild_id)
+    forge_level = (await db.get_structures(user_id, guild_id)).get(structures.FORGE, 0)
     rows = _recipes_for(category)
     pages = _page_count(len(rows))
     page = max(0, min(page, pages - 1))
@@ -82,9 +83,18 @@ async def build_recipe_embed(
             f"{mat} {min(inventory.get(mat, 0), qty)}/{qty}"
             for mat, qty in sorted(materials.items())
         )
-        craftable = all(inventory.get(mat, 0) >= qty for mat, qty in materials.items())
+        has_materials = all(
+            inventory.get(mat, 0) >= qty for mat, qty in materials.items()
+        )
+        forge_locked = not structures.meets_forge_requirement(name, forge_level)
+        if forge_locked:
+            marker = "🔒"
+            need = structures.forge_level_name(structures.forge_level_required(name))
+            have_lines += f"\n🔥 needs **{need}** (`!forge`)"
+        else:
+            marker = "✅" if has_materials else "▫️"
         embed.add_field(
-            name=f"{'✅' if craftable else '▫️'} {name.title()}",
+            name=f"{marker} {name.title()}",
             value=have_lines,
             inline=True,
         )
