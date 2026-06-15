@@ -13,6 +13,21 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#843 (2026-06-14, hardening P1-2 — health findings lifecycle + operational retention,
+  Q-0097)** — closed the two **code** gaps in the health/diagnostics readiness map (the
+  remaining gap to production-ready is now the owner-led live walk only). Before: in normal
+  operation every persisted finding stayed `open` forever (no transition path → the retention
+  roll-up was unreachable) and retention ran **only at startup** (a long-lived replica never
+  re-swept). Now, **operator-managed (Q-0097)** through the **sole writer**: (1)
+  `utils/db/health_findings.set_finding_status` (CTE `UPDATE … RETURNING` the prior status; added
+  to the sole-writer AST guard) + `health_findings_service.set_status` (the one transition path,
+  `open`↔`resolved`/`ignored`, validates status, emits `audit.action_recorded` on a real operator
+  change — system recording stays audit-free) + `!platform finding resolve/ignore/reopen
+  <fingerprint>` (admin command, kept **out** of the read-only platform hub). (2) A new
+  `HealthMaintenanceCog` reruns `run_retention()` on a daily `tasks.loop` (mirrors
+  `MediaMaintenanceCog`); the startup sweep stays. Pinned the platform-hub typed-only exclusion of
+  `startup`/`findings`/`finding`. +15 tests; `check_quality --full` green (9551); arch 0; the new
+  `set_finding_status` SQL verified on real Postgres.
 - **#856 + #853 (2026-06-14, external-systems watchlist + workflow-health review)** — **#856:** a
   new **`docs/research/`** home for *external* intelligence (vs. `docs/ideas/` for our own);
   `external-systems-watchlist.md` — 7 lesson-first entries (Voyager · Reflexion · Generative Agents

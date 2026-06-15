@@ -262,6 +262,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#918 (2026-06-15, settings reverse-parity invariant — complete the declared ⇔ consumed
+  bijection)** — second slice of the #917 dispatch run, promoting that PR's Q-0089 idea straight to
+  shipped code. #917 added settings *forward* parity (every declared `SettingSpec` has a reader);
+  this adds the *reverse* direction —
+  `test_settings_declared_vs_consumed_parity.py::test_every_literal_setting_read_targets_a_declared_setting`
+  asserts every literal `resolve_value`/`resolve_setting(g, subsystem, name)` read targets a
+  *declared* setting. Closes the silent-bug class where a typo'd/stale read
+  (`resolve_value(g, "welcom", "enabld", default)`) never matches a written key and resolves to the
+  fallback forever (invisible, uncaught). 0 violations across 48 literal reads; reuses the same AST
+  walk; verified to fire. `check_quality --full` green (9811); arch 0; test-only.
 - **#917 (2026-06-15, P1-3 contract invariants — close the cross-cutting "stays fixed" layer)** —
   the next ▶ startable plan slice (band-#900 decade queue slot 3 · hardening roadmap §P1-3). Reviewed
   all four named tracks and closed the **two** genuine buildable-now gaps with CI-runnable AST
@@ -499,25 +509,7 @@ Source code and merged PRs win over anything written here.
   **engage-when-present** (a PR adding no card isn't gated, so routines / workflow-authored PRs
   never deadlock); only newly-*added* cards inspected. +11 tests; the gate was **dogfooded on its
   own PR** (born red, then flipped). Follow-up: tighten to airtight once routine adoption is proven.
-- **#843 (2026-06-14, hardening P1-2 — health findings lifecycle + operational retention,
-  Q-0097)** — closed the two **code** gaps in the health/diagnostics readiness map (the
-  remaining gap to production-ready is now the owner-led live walk only). Before: in normal
-  operation every persisted finding stayed `open` forever (no transition path → the retention
-  roll-up was unreachable) and retention ran **only at startup** (a long-lived replica never
-  re-swept). Now, **operator-managed (Q-0097)** through the **sole writer**: (1)
-  `utils/db/health_findings.set_finding_status` (CTE `UPDATE … RETURNING` the prior status; added
-  to the sole-writer AST guard) + `health_findings_service.set_status` (the one transition path,
-  `open`↔`resolved`/`ignored`, validates status, emits `audit.action_recorded` on a real operator
-  change — system recording stays audit-free) + `!platform finding resolve/ignore/reopen
-  <fingerprint>` (admin command, kept **out** of the read-only platform hub). (2) A new
-  `HealthMaintenanceCog` reruns `run_retention()` on a daily `tasks.loop` (mirrors
-  `MediaMaintenanceCog`); the startup sweep stays. Pinned the platform-hub typed-only exclusion of
-  `startup`/`findings`/`finding`. +15 tests; `check_quality --full` green (9551); arch 0; the new
-  `set_finding_status` SQL verified on real Postgres. *(The code + Slice-A/B/C doc updates merged in
-  #843; this ledger entry + the session-close docs land as a small follow-up — the auto-merge fired
-  on the first green before the session-close push, see the session log.)* **Next P1 = P1-1
-  eval-matrix** (needs prod-like creds for the live half).
-- **Older merges (#856 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#856 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
