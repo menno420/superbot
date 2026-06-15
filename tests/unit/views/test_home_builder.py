@@ -141,7 +141,7 @@ async def test_reset_writes_all_none_and_clears_draft():
         AsyncMock(return_value=MagicMock()),
     ) as set_mock:
         await next(c for c in view.children if isinstance(c, _ResetButton)).callback(
-            interaction
+            interaction,
         )
 
     kwargs = set_mock.await_args.kwargs

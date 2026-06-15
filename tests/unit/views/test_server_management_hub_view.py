@@ -196,7 +196,7 @@ async def test_open_manager_resolves_each_routed_cog_name():
         interaction = _interaction()
         fake_cog = MagicMock()
         fake_cog.build_help_menu_view = AsyncMock(
-            return_value=(discord.Embed(), discord.ui.View())
+            return_value=(discord.Embed(), discord.ui.View()),
         )
         interaction.client.get_cog.return_value = fake_cog
         await view._open_manager(interaction, key)
@@ -241,7 +241,7 @@ async def test_manager_buttons_delegate_to_open_manager():
         view = ServerManagementHubView()
         interaction = _interaction()
         with patch.object(
-            ServerManagementHubView, "_open_manager", new=AsyncMock()
+            ServerManagementHubView, "_open_manager", new=AsyncMock(),
         ) as mock_open:
             await _button(view, custom_id).callback(interaction)
         mock_open.assert_awaited_once_with(interaction, key)
@@ -270,7 +270,7 @@ async def test_refresh_recomposes_in_place():
     interaction = _interaction()
     with (
         patch.object(
-            hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status())
+            hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status()),
         ),
         patch.object(hub_mod, "safe_defer", new=AsyncMock(return_value=True)),
         patch.object(hub_mod, "safe_edit", new=AsyncMock()) as mock_edit,
@@ -297,7 +297,7 @@ async def test_refresh_outside_guild_sends_ephemeral():
 @pytest.mark.asyncio
 async def test_build_server_management_hub_returns_embed_and_view():
     with patch.object(
-        hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status())
+        hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status()),
     ):
         embed, view = await build_server_management_hub(MagicMock())
     assert isinstance(embed, discord.Embed)
@@ -330,5 +330,5 @@ def test_no_module_level_cogs_import():
         if isinstance(node, ast.Import):
             for alias in node.names:
                 assert not alias.name.startswith(
-                    "cogs"
+                    "cogs",
                 ), f"module-level cogs import: {alias.name}"

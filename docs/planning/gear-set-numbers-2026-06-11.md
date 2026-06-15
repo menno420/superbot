@@ -56,15 +56,21 @@ Duel math (`cogs/deathmatch_cog.py`): attack = 15 base (30 crit, 10%)
 | Family | Stat(s) | Values |
 |---|---|---|
 | sword | damage | 4 · 6 · 7 · 8 · 10 *(iron/diamond preserved pre-set anchors)* |
-| shield | defense / max_health | 2/12 · 3/14 · 3/16 · 4/18 · 4/20 |
+| shield | defense / max_health / damage | 2/12/1 · 3/14/1 · 3/16/2 · 4/18/2 · 4/20/2 *(damage added 2026-06-15)* |
 | helmet | defense / max_health | 1/2 · 1/3 · 2/4 · 2/5 · 2/6 |
 | chestplate | defense / max_health | 2/6 · 2/8 · 3/10 · 3/12 · 4/15 |
 | leggings | defense / max_health | 1/4 · 1/5 · 2/6 · 2/8 · 2/10 |
 | boots | defense / max_health | 1/2 · 1/3 · 1/4 · 2/5 · 2/6 |
 
-Full-set totals (set bonus included): damage 5/8/10/12/15 · defense
+Full-set totals (set bonus included): damage 6/9/12/14/17 · defense
 7/8/11/13/14 · max_health 29/39/49/60/72. Starters: sword damage 3,
-shield 2 def / 10 hp.
+shield 2 def / 10 hp (no damage).
+
+> **2026-06-15 (owner):** tiered shields gained a gentle damage jab
+> (1/1/2/2/2), so a shield is a light off-hand weapon as well as a defensive
+> anchor; the starter `shield` stays defense-only. Diamond was tuned to +2 (not
+> +3) to keep the one-tier-gap duel-sim band — the bands in
+> `tests/unit/utils/test_gear_set_numbers.py` still hold.
 
 ## Economy ladders
 

@@ -29,8 +29,9 @@ def test_mining_hub_view_has_no_root_overview_button():
 
 
 def test_mining_hub_view_action_buttons_still_present():
-    """The Mine / Harvest / Explore / Inventory / Stats / Build action
-    buttons remain — only the no-op Overview is removed.
+    """The Mine / Harvest / Explore / Inventory / Stats action buttons remain —
+    the no-op Overview is removed, and (Option A declutter, 2026-06-15) Build /
+    Recipes / Forge / Market moved into the Workshop sub-hub.
     """
     view = MiningHubView()
     ids = [getattr(c, "custom_id", None) for c in view.children]
@@ -40,22 +41,20 @@ def test_mining_hub_view_action_buttons_still_present():
         "mining:explore",
         "mining:inventory",
         "mining:stats",
-        "mining:build",
+        "mining:workshop",
     }
     for expected_id in expected:
         assert expected_id in ids, f"Missing action button {expected_id!r}; got {ids}"
 
 
-def test_mining_hub_view_button_count_after_overview_removal():
-    """Seventeen action buttons, no Overview: the six core actions (Mine /
-    Harvest / Explore / Inventory / Stats / Build), Workshop, the two
-    depth-navigation buttons (Descend / Ascend), Market, Vault, Gear, Skills,
-    Forge, Home (Slice C), Recipes, and Character. The count is pinned so an
-    accidental no-op control can't creep back in.
+def test_mining_hub_view_button_count_after_declutter():
+    """After the Option A declutter (2026-06-15) merged with Slice C's Home:
+    the Workshop sub-hub absorbed Build/Craft/Recipes (consolidated) + Forge +
+    Market — four buttons off the main hub — while Home (Slice C) was added.
+    Pinned so the panel can't quietly re-bloat. (Character/Skills/Vault move next.)
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 17
-    # The Home structure button (Slice C) is wired into the hub.
     ids = [getattr(c, "custom_id", None) for c in buttons]
-    assert "mining:home" in ids
+    assert "mining:home" in ids  # Slice C's Home button survived the merge
+    assert len(buttons) == 13

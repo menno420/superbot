@@ -328,7 +328,7 @@ async def test_view_apply_preserves_draft_on_failed_result():
 
 @pytest.mark.asyncio
 async def test_view_apply_preserves_draft_on_skipped_result():
-    """skipped results (including NYI-folded ones) block completion."""
+    """Skipped results (including NYI-folded ones) block completion."""
     view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
     interaction = _interaction_with_guild()
 
@@ -698,7 +698,8 @@ async def test_recovery_view_cancel_preserves_draft():
 async def test_recovery_view_finish_anyway_clears_draft_and_marks_complete():
     """Finish anyway drops the remaining draft and marks setup complete —
     the escape hatch from the partial-apply stickiness trap so a single
-    un-appliable op can't keep the wizard stuck forever."""
+    un-appliable op can't keep the wizard stuck forever.
+    """
     from views.setup.final_review import ApplySummary
 
     recovery = PartialApplyRecoveryView(
@@ -882,7 +883,8 @@ def test_full_success_embed_says_setup_complete():
 
 def test_partial_success_embed_says_partially_applied():
     """Partial-failure copy from Phase 0 stays exactly as the plan
-    documents in Phase 7."""
+    documents in Phase 7.
+    """
     from views.setup.final_review import ApplySummary
 
     summary = ApplySummary(applied=["a"], failed=["b: boom"])

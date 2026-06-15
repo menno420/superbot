@@ -104,6 +104,19 @@ STAT_LABELS: dict[str, str] = {
     "max_health": "Max health",
 }
 
+# Compact glyphs for tight surfaces (shop rows, recipe pickers), damage/defence
+# first so combat gear compares at a glance.  Keys MUST be EffectiveStats fields.
+STAT_GLYPHS: dict[str, str] = {
+    "damage": "⚔️",
+    "defense": "🛡️",
+    "max_health": "❤️",
+    "mining_power": "⛏️",
+    "light_radius": "💡",
+    "depth_access": "🔽",
+    "luck": "🍀",
+    "loot_bonus": "💰",
+}
+
 
 # Which slot each gear item fits, and the stats it contributes.
 #
@@ -135,12 +148,16 @@ _GEAR: dict[str, tuple[str, EffectiveStats]] = {
     "silver sword": (WEAPON, EffectiveStats(damage=7)),
     "gold sword": (WEAPON, EffectiveStats(damage=8)),
     "diamond sword": (WEAPON, EffectiveStats(damage=10)),
-    # Shields — the heaviest single defense piece (and the HP anchor).
-    "bronze shield": (SHIELD, EffectiveStats(defense=2, max_health=12)),
-    "iron shield": (SHIELD, EffectiveStats(defense=3, max_health=14)),
-    "silver shield": (SHIELD, EffectiveStats(defense=3, max_health=16)),
-    "gold shield": (SHIELD, EffectiveStats(defense=4, max_health=18)),
-    "diamond shield": (SHIELD, EffectiveStats(defense=4, max_health=20)),
+    # Shields — a defensive HP anchor that also lands a light offensive jab
+    # (owner 2026-06-15: tiered shields give a small damage bonus; the starter
+    # "shield" stays defense-only).  The damage ladder is gentle (1→3) so a
+    # shield is an off-hand nudge, not a second weapon — the duel-sim bands in
+    # tests/unit/utils/test_gear_set_numbers.py pin that it stays in balance.
+    "bronze shield": (SHIELD, EffectiveStats(defense=2, max_health=12, damage=1)),
+    "iron shield": (SHIELD, EffectiveStats(defense=3, max_health=14, damage=1)),
+    "silver shield": (SHIELD, EffectiveStats(defense=3, max_health=16, damage=2)),
+    "gold shield": (SHIELD, EffectiveStats(defense=4, max_health=18, damage=2)),
+    "diamond shield": (SHIELD, EffectiveStats(defense=4, max_health=20, damage=2)),
     # Helmets.
     "bronze helmet": (HELMET, EffectiveStats(defense=1, max_health=2)),
     "iron helmet": (HELMET, EffectiveStats(defense=1, max_health=3)),
@@ -263,6 +280,18 @@ def tier_index(tier: str) -> int:
     return TIER_ORDER.index(tier) + 1
 
 
+def material_rank(item_name: str) -> int:
+    """Rarity rank of any item by its material prefix — ``0`` for a starter/base
+    item (no metal prefix, e.g. ``"sword"``/``"pickaxe"``), else the 1-based tier
+    rank (bronze=1 … diamond=5).
+
+    Unlike :func:`gear_tier` (set-slot gear only), this works for *any* item —
+    pickaxes, lanterns, structures — so pickers can order variants by rarity.
+    """
+    first = item_name.lower().split()[0] if item_name else ""
+    return TIER_ORDER.index(first) + 1 if first in TIER_ORDER else 0
+
+
 def active_set_tier(equipped: dict[str, str]) -> str | None:
     """The tier of a complete same-tier combat set, or None.
 
@@ -327,6 +356,20 @@ def describe_stats(stats: EffectiveStats) -> list[tuple[str, int]]:
     ]
 
 
+def describe_stats_compact(item_name: str) -> str:
+    """Compact glyph stat line for *item_name* — ``"⚔️+6"`` /
+    ``"⚔️+1 🛡️+3 ❤️+14"`` (damage/defence first), or ``""`` for an item with no
+    stats.  The tight-surface sibling of :func:`describe_stats` (shop rows,
+    recipe pickers) so the same preview renders everywhere.
+    """
+    stats = item_stats(item_name)
+    return " ".join(
+        f"{STAT_GLYPHS[field]}+{getattr(stats, field)}"
+        for field in STAT_GLYPHS
+        if getattr(stats, field)
+    )
+
+
 __all__ = [
     "TOOL",
     "LIGHT",
@@ -344,6 +387,7 @@ __all__ = [
     "SET_BONUS_HEALTH_PER_TIER",
     "EffectiveStats",
     "STAT_LABELS",
+    "STAT_GLYPHS",
     "MAX_DURABILITY",
     "max_durability",
     "gear_names",
@@ -352,9 +396,11 @@ __all__ = [
     "item_stats",
     "gear_tier",
     "tier_index",
+    "material_rank",
     "active_set_tier",
     "set_bonus",
     "set_progress",
     "compute_stats",
     "describe_stats",
+    "describe_stats_compact",
 ]

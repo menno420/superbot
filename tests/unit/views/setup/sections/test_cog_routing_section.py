@@ -338,7 +338,8 @@ async def test_run_rejects_dm_context():
 @pytest.mark.asyncio
 async def test_run_opens_section_card_in_guild():
     """``run`` shows the section card; the detailed routing picker is
-    reachable via the card's Customize button."""
+    reachable via the card's Customize button.
+    """
     from unittest.mock import AsyncMock, patch
 
     from views.setup.section_card import SectionCardView
@@ -390,7 +391,8 @@ async def test_customize_run_sends_routing_picker_in_guild():
 @pytest.mark.asyncio
 async def test_routing_profile_select_stages_every_op():
     """Picking a routing profile stages each of its ops via setup_draft.append
-    with metadata.source = 'cog_routing_profile:<slug>'."""
+    with metadata.source = 'cog_routing_profile:<slug>'.
+    """
     from types import SimpleNamespace
     from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -447,7 +449,8 @@ async def test_routing_profile_select_stages_every_op():
 
 def test_cog_routing_section_view_includes_profile_select():
     """The section view exposes both the scope select AND the new
-    routing-profile batch select to the operator."""
+    routing-profile batch select to the operator.
+    """
     from types import SimpleNamespace
 
     from views.setup.sections.cog_routing import (

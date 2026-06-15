@@ -6,8 +6,6 @@ import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 _DISBOT = Path(__file__).parents[4] / "disbot"
 if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
@@ -213,7 +211,8 @@ async def test_view_rejects_non_admin():
 async def test_chooser_list_button_opens_real_list_view(monkeypatch):
     """The list button now calls collect_entries + ships
     PolicyListView, replacing the placeholder follow-up that
-    test_policy_chooser exercised in commits 1–3."""
+    test_policy_chooser exercised in commits 1–3.
+    """
     from views.ai.policy.chooser import PolicyChooserView
 
     async def _entries(_guild):

@@ -166,7 +166,8 @@ async def test_help_preview_buckets_advertised_locked_hidden():
     """The preview consumes the Help projection seam (Tier-2 fix,
     2026-06-10): buckets come from reason-coded ``HelpEntryState``, not
     re-derived access axes — and the projection runs on the Q-0045
-    declared-tier context."""
+    declared-tier context.
+    """
     projection = _projection(
         (
             _help_decision("economy", HelpEntryState.SHOWN),
@@ -204,7 +205,8 @@ async def test_help_preview_buckets_advertised_locked_hidden():
 async def test_help_preview_governance_deny_is_hidden_not_locked():
     """THE Tier-2 case: a governance-denied subsystem must render in the
     Hidden bucket (live Help hides it) — the pre-seam panel showed it as
-    "Shown as locked"."""
+    "Shown as locked".
+    """
     projection = _projection(
         (
             _help_decision(
@@ -230,7 +232,8 @@ async def test_help_preview_governance_deny_is_hidden_not_locked():
 async def test_help_preview_renders_overlay_hide_and_rename():
     """HLP-3 overlay state renders: a display-hidden subsystem lands in
     Hidden annotated *(overlay)*, and a renamed one shows its custom name
-    beside the stable key (the pre-seam panel ignored the overlay)."""
+    beside the stable key (the pre-seam panel ignored the overlay).
+    """
     presentation = MagicMock()
     presentation.display_name = "Bank"
     presentation.default_display_name = "Economy"
@@ -261,7 +264,8 @@ async def test_help_preview_renders_overlay_hide_and_rename():
 async def test_help_preview_reports_orphaned_overlay_rows():
     """The preview is the operator surface the HLP-3 orphan contract
     names: rows for retired catalogue keys are reported, never rendered
-    as entries."""
+    as entries.
+    """
     orphan = HelpDecision(
         key="retired_subsystem",
         kind="subsystem",
@@ -311,7 +315,8 @@ async def test_panels_admit_admin_at_interaction_time():
 @pytest.mark.asyncio
 async def test_panels_are_not_ownership_locked():
     """Authority-gated, not ownership-gated: a *different* admin may use the
-    shared panel (the hub edits one message in place)."""
+    shared panel (the hub edits one message in place).
+    """
     view = AccessMapView(MagicMock(id=1), (_decision("economy"),))
     other_admin = _interaction(admin=True)
     other_admin.user.id = 42  # not the opener
@@ -326,7 +331,8 @@ async def test_panels_are_not_ownership_locked():
 @pytest.mark.asyncio
 async def test_tier_select_rerenders_with_chosen_tier():
     """Driving the unbound callback with a mock select (journal pattern —
-    the decorator-less Select subclass stores the coroutine on the class)."""
+    the decorator-less Select subclass stores the coroutine on the class).
+    """
     from views.server_management.access_map import _AudienceTierSelect
 
     rerender = AsyncMock()

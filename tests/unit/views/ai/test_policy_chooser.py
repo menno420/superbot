@@ -6,8 +6,6 @@ import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
-
 _DISBOT = Path(__file__).parents[4] / "disbot"
 if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
@@ -36,7 +34,7 @@ def test_chooser_embed_describes_all_four_scopes():
     embed = build_chooser_embed()
     text = "\n".join(
         [embed.title or "", embed.description or ""]
-        + [f"{f.name}: {f.value}" for f in embed.fields]
+        + [f"{f.name}: {f.value}" for f in embed.fields],
     )
     assert "Channel" in text
     assert "Category" in text
@@ -91,7 +89,8 @@ async def test_channel_button_opens_channel_select_view():
 
 async def test_all_scope_buttons_have_real_implementations():
     """After PR4A commit 4, every chooser sub-button opens a real
-    follow-up view. The placeholder phase is done."""
+    follow-up view. The placeholder phase is done.
+    """
     view = PolicyChooserView()
     for attr in ("channel_btn", "category_btn", "role_btn", "list_btn"):
         handler = getattr(view, attr)

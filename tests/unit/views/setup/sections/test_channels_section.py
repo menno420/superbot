@@ -23,10 +23,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from services.guild_snapshot import (
-    CategoryMeta,
     ChannelMeta,
     GuildSnapshot,
-    RoleMeta,
 )
 from services.setup_sections import REGISTRY
 from views.setup.sections import channels
@@ -63,7 +61,7 @@ def _ensure_schemas_loaded():
     registry between collection and execution.
     """
     _load_all_schemas()
-    yield
+    return
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +369,8 @@ async def test_stage_channel_binding_surfaces_append_failure():
 @pytest.mark.asyncio
 async def test_run_rejects_dm_context():
     """``run`` routes through the section card, which rejects DMs with
-    a 'server'/'guild' phrasing."""
+    a 'server'/'guild' phrasing.
+    """
     interaction = MagicMock()
     interaction.user = SimpleNamespace(id=99)
     interaction.guild = None
@@ -386,7 +385,8 @@ async def test_run_rejects_dm_context():
 @pytest.mark.asyncio
 async def test_run_opens_section_card_in_guild():
     """``run`` now shows the shared section card; the detailed channel
-    picker is reachable via the card's Customize button."""
+    picker is reachable via the card's Customize button.
+    """
     from views.setup.section_card import SectionCardView
 
     interaction = _interaction()
@@ -420,7 +420,8 @@ async def test_run_opens_section_card_in_guild():
 @pytest.mark.asyncio
 async def test_customize_run_uses_cached_snapshot_when_present():
     """The detailed picker (Customize target) still surfaces the
-    cached snapshot's classifier hints in the embed."""
+    cached snapshot's classifier hints in the embed.
+    """
     interaction = _interaction()
     hub = SimpleNamespace()
     snap = _snap(channels_list=[_ch("mod-log", ch_id=42)])
@@ -442,7 +443,8 @@ async def test_customize_run_uses_cached_snapshot_when_present():
 async def test_recommended_channel_ops_stages_high_confidence_picks():
     """``_recommended_channel_ops`` walks the binding catalogue, asks
     the recommender for a top pick per intent, and stages bind_channel
-    ops only for high-confidence matches."""
+    ops only for high-confidence matches.
+    """
     from services.channel_recommender import ChannelRecommendation
 
     guild = MagicMock()
@@ -518,7 +520,8 @@ async def test_recommended_channel_ops_returns_empty_when_snapshot_fails():
 def test_embed_surfaces_recommender_confidence_for_recognised_binding():
     """When the snapshot contains a channel that matches a binding's
     intent in ``channel_recommender``, the embed renders the confidence
-    glyph + a one-line reason alongside the legacy 'likely #...' hint."""
+    glyph + a one-line reason alongside the legacy 'likely #...' hint.
+    """
     snapshot = _snap(channels_list=[_ch("mod-log", ch_id=42)])
     embed = channels.build_channels_embed(snapshot)
     logging_field = next((f for f in embed.fields if f.name == "logging"), None)
@@ -533,7 +536,8 @@ def test_embed_surfaces_recommender_confidence_for_recognised_binding():
 
 def test_embed_falls_back_to_legacy_match_when_no_recommender_intent():
     """Bindings without a registered intent slug still show the legacy
-    tag-based 'likely #channel' hint via ``_scan_match_for``."""
+    tag-based 'likely #channel' hint via ``_scan_match_for``.
+    """
     # Construct a snapshot the recommender wouldn't know how to score
     # for a binding without an intent entry — the legacy path still fires.
     snapshot = _snap(channels_list=[_ch("info-feed", ch_id=42)])
@@ -545,7 +549,8 @@ def test_embed_falls_back_to_legacy_match_when_no_recommender_intent():
 
 def test_recommendation_for_known_binding_returns_top_pick():
     """``_recommendation_for`` plumbs the binding name through to the
-    recommender's ``top_pick`` and returns the resulting object."""
+    recommender's ``top_pick`` and returns the resulting object.
+    """
     snapshot = _snap(channels_list=[_ch("mod-log", ch_id=42)])
     rec = channels._recommendation_for(snapshot, "mod_channel")
     assert rec is not None

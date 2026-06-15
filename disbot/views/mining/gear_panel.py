@@ -98,30 +98,58 @@ async def build_gear_embed(
     return embed
 
 
-async def send_character_doll(interaction: discord.Interaction) -> None:
-    """Follow up with the paper-doll PNG (additive — the embed already
-    rendered; a missing/broken Pillow changes nothing).  V-16 phase 1.
+_DOLL_FILENAME = "character_doll.png"
+
+
+async def render_gear_doll(
+    embed: discord.Embed,
+    user_id: int,
+    guild_id: int,
+) -> discord.File | None:
+    """Render the paper-doll and wire it into *embed* as the in-place image.
+
+    Returns the :class:`discord.File` to attach to the gear panel's **own**
+    message (or ``None`` without Pillow), so the doll rides one self-replacing
+    message instead of a separate ephemeral follow-up that stacks on every Gear
+    click (V-16 phase 1; the owner's 2026-06-15 "too many ephemeral panels").
+    Additive: a missing/broken Pillow returns ``None`` and the embed renders
+    exactly as before.
     """
     import io
 
     from utils.character_render import render_character_for
     from utils.mining import structures
 
-    if interaction.guild_id is None:
-        return
-    equipped = await db.get_equipment(str(interaction.user.id), interaction.guild_id)
+    equipped = await db.get_equipment(str(user_id), guild_id)
     # Slice C: the player's built Home selects the card backdrop (0 = default).
-    built = await db.get_structures(interaction.user.id, interaction.guild_id)
+    built = await db.get_structures(user_id, guild_id)
     png = render_character_for(equipped, home_level=built.get(structures.HOME, 0))
     if png is None:
-        return
-    try:
-        await interaction.followup.send(
-            file=discord.File(io.BytesIO(png), filename="character_doll.png"),
-            ephemeral=True,
-        )
-    except discord.HTTPException:
-        pass  # the embed already served the data
+        return None
+    embed.set_image(url=f"attachment://{_DOLL_FILENAME}")
+    return discord.File(io.BytesIO(png), filename=_DOLL_FILENAME)
+
+
+async def _edit_gear_screen(
+    interaction: discord.Interaction,
+    *,
+    embed: discord.Embed,
+    view: MiningGearView,
+    user_id: int,
+    guild_id: int,
+) -> None:
+    """Edit the gear panel in place with a freshly-rendered doll attached.
+
+    Always passes ``attachments`` explicitly so the doll refreshes when gear
+    changes and never lingers as a stale image when Pillow is unavailable.
+    """
+    doll = await render_gear_doll(embed, user_id, guild_id)
+    await safe_edit(
+        interaction,
+        embed=embed,
+        view=view,
+        attachments=[doll] if doll is not None else [],
+    )
 
 
 class _SlotSelect(discord.ui.Select):
@@ -157,7 +185,13 @@ class _SlotSelect(discord.ui.Select):
             slot=self.values[0],
         )
         embed = await build_gear_embed(view._author.id, view.guild_id)
-        await safe_edit(interaction, embed=embed, view=new_view)
+        await _edit_gear_screen(
+            interaction,
+            embed=embed,
+            view=new_view,
+            user_id=view._author.id,
+            guild_id=view.guild_id,
+        )
         view.stop()
 
 
@@ -250,7 +284,13 @@ async def _rerender(
     embed = await build_gear_embed(view._author.id, view.guild_id, note=note)
     embed.color = SUCCESS_COLOR if result.ok else ERROR_COLOR
     new_view = await MiningGearView.create(view._author, view.guild_id)
-    await safe_edit(interaction, embed=embed, view=new_view)
+    await _edit_gear_screen(
+        interaction,
+        embed=embed,
+        view=new_view,
+        user_id=view._author.id,
+        guild_id=view.guild_id,
+    )
     view.stop()
 
 
@@ -349,8 +389,9 @@ class MiningGearView(HubView):
             name=getattr(self._author, "display_name", None),
         )
         view = MiningHubView()
-        await interaction.response.edit_message(embed=embed, view=view)
+        # Clear the paper-doll attachment so it does not linger on the hub.
+        await interaction.response.edit_message(embed=embed, view=view, attachments=[])
         self.stop()
 
 
-__all__ = ["MiningGearView", "build_gear_embed", "send_character_doll"]
+__all__ = ["MiningGearView", "build_gear_embed", "render_gear_doll"]

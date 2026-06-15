@@ -221,7 +221,8 @@ def test_view_has_five_buttons():
 def test_view_disables_customize_for_read_only_section():
     """Sections with no op_kinds AND no builder (e.g. server_scan,
     readiness, final_review) have no useful detail view — disable
-    the Customize button rather than open something empty."""
+    the Customize button rather than open something empty.
+    """
     readonly = _section(op_kinds=frozenset(), builder=None)
     view = SectionRecoveryView(_owner_member(), context=_context(section=readonly))
     customize_btn = next(
@@ -463,7 +464,8 @@ def _all_children_disabled(view: SectionRecoveryView) -> bool:
 @pytest.mark.asyncio
 async def test_continue_disables_buttons_when_resume_callback_doesnt_touch_view():
     """Resume callback that repaints a separate host anchor must NOT
-    leave the recovery view's buttons clickable after ``self.stop()``."""
+    leave the recovery view's buttons clickable after ``self.stop()``.
+    """
 
     async def _resume_without_touching_recovery(_inter):
         return None  # repaint happens on a different message
@@ -487,7 +489,8 @@ async def test_continue_disables_buttons_when_resume_callback_doesnt_touch_view(
 async def test_continue_close_routes_through_followup_when_already_responded():
     """If the resume callback already consumed the response slot,
     `_close_in_place` must route through `followup.edit_message`
-    (the post-defer/post-response path) to still disable the buttons."""
+    (the post-defer/post-response path) to still disable the buttons.
+    """
 
     async def _resume_that_responds(inter):
         inter.response.is_done.return_value = True
@@ -513,7 +516,8 @@ async def test_continue_close_routes_through_followup_when_already_responded():
 async def test_retry_disables_buttons_after_section_run():
     """After ``section.run`` (which consumes the response slot via
     ``response.send_message``), the recovery view's buttons must still
-    be disabled so they don't outlive ``self.stop()``."""
+    be disabled so they don't outlive ``self.stop()``.
+    """
 
     async def _section_run(inter, _hub):
         inter.response.is_done.return_value = True
@@ -546,8 +550,8 @@ async def test_skip_with_resume_callback_disables_buttons_and_shows_skip_label()
     """The plan's B3 bug: skip with resume_callback used to call
     ``self.stop()`` without disabling the recovery view's buttons.
     The fix runs ``_close_in_place`` after the resume callback so the
-    recovery message becomes a disabled "⏭ Skipped" shell."""
-
+    recovery message becomes a disabled "⏭ Skipped" shell.
+    """
     captured: dict = {}
 
     async def _resume(_inter):
@@ -596,7 +600,8 @@ async def test_skip_with_resume_callback_disables_buttons_and_shows_skip_label()
 async def test_close_in_place_swallows_notfound_when_message_was_deleted():
     """If the upstream branch deleted/replaced the recovery message,
     ``safe_edit`` raises (and swallows) ``discord.NotFound`` — the
-    callback must still complete and stop the view."""
+    callback must still complete and stop the view.
+    """
     view = SectionRecoveryView(_owner_member(), context=_context())
     interaction = _interaction(_owner_member())
 

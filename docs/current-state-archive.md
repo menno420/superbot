@@ -13,6 +13,58 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#843 (2026-06-14, hardening P1-2 — health findings lifecycle + operational retention,
+  Q-0097)** — closed the two **code** gaps in the health/diagnostics readiness map (the
+  remaining gap to production-ready is now the owner-led live walk only). Before: in normal
+  operation every persisted finding stayed `open` forever (no transition path → the retention
+  roll-up was unreachable) and retention ran **only at startup** (a long-lived replica never
+  re-swept). Now, **operator-managed (Q-0097)** through the **sole writer**: (1)
+  `utils/db/health_findings.set_finding_status` (CTE `UPDATE … RETURNING` the prior status; added
+  to the sole-writer AST guard) + `health_findings_service.set_status` (the one transition path,
+  `open`↔`resolved`/`ignored`, validates status, emits `audit.action_recorded` on a real operator
+  change — system recording stays audit-free) + `!platform finding resolve/ignore/reopen
+  <fingerprint>` (admin command, kept **out** of the read-only platform hub). (2) A new
+  `HealthMaintenanceCog` reruns `run_retention()` on a daily `tasks.loop` (mirrors
+  `MediaMaintenanceCog`); the startup sweep stays. Pinned the platform-hub typed-only exclusion of
+  `startup`/`findings`/`finding`. +15 tests; `check_quality --full` green (9551); arch 0; the new
+  `set_finding_status` SQL verified on real Postgres.
+- **#856 + #853 (2026-06-14, external-systems watchlist + workflow-health review)** — **#856:** a
+  new **`docs/research/`** home for *external* intelligence (vs. `docs/ideas/` for our own);
+  `external-systems-watchlist.md` — 7 lesson-first entries (Voyager · Reflexion · Generative Agents
+  · MemGPT/Letta · SWE-agent · OpenHands/Devin · …) a future session can re-check for ideas. **#853:**
+  a workflow-health review verifying the autonomous loop fires live + documenting the cron lag. Docs only.
+- **#851 + #850 + #848 + #852 (2026-06-14, P0-3 legacy-pointer backfill command + health/routine
+  housekeeping)** — **#851/#850:** root-caused the production consistency warning — the
+  binding-backfill had **no runtime trigger** (it only ran in tests) — and shipped the **`!platform
+  backfill`** admin command to complete the legacy-pointer migration in production. **#848:** the
+  startup-health check now **logs finding detail when not healthy** (follow-up to #845). **#852:**
+  field-notes improvements for the Hermes-dispatch loop.
+- **#840 (2026-06-14, Railway agent-access — live-verify fix: `RAILWAY_API_KEY` alias +
+  Cloudflare User-Agent)** — an `auth probe` routine verifying the owner-provisioned Railway
+  credentials (the standing next-fresh-session action from the #827–#837 session) found the
+  access was **entirely inert** for two independent reasons, both fixed: (1) the credential was
+  provisioned under **`RAILWAY_API_KEY`**, a var name `railway_logs.py`/`railway_vars.py` didn't
+  read → added it as an account-token alias (`RAILWAY_API_TOKEN` still wins when both are set); (2)
+  Cloudflare fronts `backboard.railway.com` and **1010-bans urllib's default User-Agent** → the
+  GraphQL transport now sends an explicit non-default UA. **Verified live after the fix:**
+  `railway_logs.py --whoami` returns the owner identity, `railway_vars.py list` reads live prod
+  vars (masked). +5 regression tests; `check_quality --full` green (9509); arch 0. *(The
+  Railway-auth-fix PR referenced by the #827… entry below — this is "below". Its docs-only
+  session close-loop merged as **#842**: the `agent-env-credential-smoke-check` Q-0089 idea + the
+  Q-0102 review that this exact breakage class sat silent until a routine probed it by hand.)*
+- **#839 + housekeeping #838/#833/#830/#826/#824 (2026-06-14, Q-0132 chat-export capture +
+  Railway-session ledger/session-close handoffs)** — **#839 (Q-0132):** mined the owner's exported
+  plain-claude.ai chats (a sub-agent read all 13, dedup-grepped the owner docs) and captured the
+  genuinely-durable items to their homes — router **Q-0132** as the provenance index + the headline
+  decision rationale (**why the bot's AI routes to Anthropic/Claude, not GPT**: GPT failed the
+  owner's prompt-injection-resistance + tool-calling eval battery, so it is a **trust/safety**
+  decision — the env wiring was in the repo, the *why* never was) · `maintainer-working-profile.md`
+  §7 (phone-only zero-stakes operating reality · the code-reading boundary · "green tests ≠
+  verdict; extracted ≠ reachable ≠ answerable") · the journal **phantom-tool keyword-injection
+  pattern** · a BTD6 answer-cache key constraint. Docs only; `check_docs --strict` ✓. **#838 +
+  #833/#830/#826/#824:** ledger reconciliation + session-close handoffs for the Railway
+  agent-access session (docs only — the routine-spawned ledger updates that batch the session's
+  current-state + `.sessions/` writes).
 - **#829 (2026-06-14, hardening P0-2 PR 1 — media/YouTube data-minimization + retention
   enforcement, Q-0099)** — closed the two privacy/retention P0 gaps in the media readiness map.
   The video-reference cache stored the **full raw YouTube provider payload** (descriptions, id,

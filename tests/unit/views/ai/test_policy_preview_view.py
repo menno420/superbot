@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import discord
-import pytest
 
 _DISBOT = Path(__file__).parents[4] / "disbot"
 if str(_DISBOT) not in sys.path:
@@ -280,7 +279,8 @@ async def test_build_preview_embed_renders_hard_kill_marker(monkeypatch):
 async def test_build_preview_embed_renders_baseline_disabled_marker(monkeypatch):
     """``AI_NL_DISABLED_FOR_GUILD`` is the baseline reason — admins
     can override per channel/category, so it renders as baseline-denied
-    rather than hard-disabled."""
+    rather than hard-disabled.
+    """
     async def _resolve(ctx, *, dry_run=False):
         return nlp.PolicyDecision(
             allowed=False,

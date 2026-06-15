@@ -136,7 +136,8 @@ def test_build_hub_embed_shows_zero_pending_when_drafts_empty():
 
 def test_build_hub_embed_renders_section_status_badges_when_draft_ops_provided():
     """When ``draft_ops`` is passed, every Sections-field row gets a status
-    glyph; sections with matching staged ops show their op count."""
+    glyph; sections with matching staged ops show their op count.
+    """
     from services.setup_operations import SetupOperation
 
     ops = [
@@ -159,7 +160,8 @@ def test_build_hub_embed_renders_section_status_badges_when_draft_ops_provided()
 
 def test_build_hub_embed_without_draft_ops_falls_back_to_legacy_layout():
     """Existing callers that don't pass ``draft_ops`` see the original
-    numbered-label list with no badges."""
+    numbered-label list with no badges.
+    """
     embed = build_hub_embed(None, pending_ops=0)
     sections_field = next(
         f for f in embed.fields if (f.name or "").lower() == "sections"
@@ -174,7 +176,8 @@ def test_build_hub_embed_without_draft_ops_falls_back_to_legacy_layout():
 
 def test_build_hub_embed_marks_skipped_sections_with_warning_badge():
     """A section slug in ``session.skipped_sections`` renders as SKIPPED
-    even when no draft ops match its op_kinds."""
+    even when no draft ops match its op_kinds.
+    """
     session = SetupSession(
         guild_id=1,
         guild_name="x",
@@ -322,7 +325,8 @@ async def test_hub_readiness_button_owner_posts_embed_and_marks_progress():
 async def test_hub_suggestions_button_opens_ai_review_panel():
     """The suggestions section opens the AIReviewPanelView (which carries
     the Stage & open Final review button) rather than a read-only embed —
-    so Smart Suggestions routes through the shared draft, not a dead end."""
+    so Smart Suggestions routes through the shared draft, not a dead end.
+    """
     import services.guild_snapshot  # noqa: F401
     from services.setup_plan import SetupPlanDraft
     from views.setup.ai_review.main_panel import AIReviewPanelView
@@ -485,7 +489,8 @@ def test_final_review_view_disables_apply_when_empty():
 @pytest.mark.asyncio
 async def test_final_review_apply_calls_setup_operations_dispatcher():
     """FinalReviewView.Apply routes through setup_operations.apply_operations,
-    not directly through BindingMutationPipeline."""
+    not directly through BindingMutationPipeline.
+    """
     from services.setup_operations import (
         SetupOperationBatchResult,
         SetupOperationResult,
@@ -523,7 +528,8 @@ async def test_final_review_apply_calls_setup_operations_dispatcher():
 @pytest.mark.asyncio
 async def test_final_review_apply_does_not_call_binding_pipeline_directly():
     """After the dispatcher migration, BindingMutationPipeline must NOT be
-    instantiated directly by FinalReviewView._apply."""
+    instantiated directly by FinalReviewView._apply.
+    """
     from services.setup_operations import (
         SetupOperationBatchResult,
         SetupOperationResult,
@@ -536,8 +542,8 @@ async def test_final_review_apply_does_not_call_binding_pipeline_directly():
                 operation=MagicMock(),
                 label="x",
                 mutation_id="m1",
-            )
-        ]
+            ),
+        ],
     )
 
     view = FinalReviewView(_owner_member(), accepted=[_rec()])
@@ -560,7 +566,8 @@ async def test_final_review_apply_does_not_call_binding_pipeline_directly():
 @pytest.mark.asyncio
 async def test_final_review_apply_isolates_per_rec_failures():
     """One failed operation in the batch does not abort later ones; the
-    summary receives correct applied/failed counts."""
+    summary receives correct applied/failed counts.
+    """
     from services.setup_operations import (
         SetupOperationBatchResult,
         SetupOperationResult,
@@ -570,12 +577,12 @@ async def test_final_review_apply_isolates_per_rec_failures():
     fake_batch = SetupOperationBatchResult(
         results=[
             SetupOperationResult(
-                status="applied", operation=op, label="a", mutation_id="m1"
+                status="applied", operation=op, label="a", mutation_id="m1",
             ),
             SetupOperationResult(
-                status="failed", operation=op, label="b", error="boom"
+                status="failed", operation=op, label="b", error="boom",
             ),
-        ]
+        ],
     )
     view = FinalReviewView(
         _owner_member(),
@@ -600,7 +607,8 @@ async def test_final_review_apply_isolates_per_rec_failures():
 @pytest.mark.asyncio
 async def test_final_review_apply_skips_unsupported_target_kind():
     """Unsupported/not_yet_implemented operations land in summary.skipped,
-    not in failed, and do not crash the apply."""
+    not in failed, and do not crash the apply.
+    """
     from services.setup_operations import (
         SetupOperationBatchResult,
         SetupOperationResult,
@@ -614,8 +622,8 @@ async def test_final_review_apply_skips_unsupported_target_kind():
                 operation=op,
                 label="logging.mod_channel → ?",
                 error="operation kind 'bind_totally_made_up_kind' is not a known OperationKind",
-            )
-        ]
+            ),
+        ],
     )
     view = FinalReviewView(
         _owner_member(),
@@ -649,13 +657,13 @@ async def test_final_review_apply_partial_success_renders_applied_failed_skipped
     fake_batch = SetupOperationBatchResult(
         results=[
             SetupOperationResult(
-                status="applied", operation=op, label="a", mutation_id="x"
+                status="applied", operation=op, label="a", mutation_id="x",
             ),
             SetupOperationResult(status="failed", operation=op, label="b", error="err"),
             SetupOperationResult(
-                status="not_yet_implemented", operation=op, label="c", error="nyi"
+                status="not_yet_implemented", operation=op, label="c", error="nyi",
             ),
-        ]
+        ],
     )
     view = FinalReviewView(
         _owner_member(),
@@ -703,7 +711,8 @@ def test_hub_embed_next_step_hint_complete_session():
 
 def test_hub_embed_next_step_hint_suggests_apply_all_when_nothing_staged():
     """No pending ops + at least one section has a recommended builder
-    → hint mentions Apply all recommended."""
+    → hint mentions Apply all recommended.
+    """
     session = SetupSession(
         guild_id=1,
         guild_name="x",
@@ -726,7 +735,8 @@ def test_hub_embed_next_step_hint_suggests_apply_all_when_nothing_staged():
 
 def test_hub_embed_next_step_hint_routes_to_final_review_when_ops_staged():
     """Pending ops + some sections not started → hint nudges toward
-    either more sections or Final Review."""
+    either more sections or Final Review.
+    """
     from services.setup_operations import SetupOperation
 
     session = SetupSession(
@@ -757,7 +767,8 @@ def test_hub_embed_next_step_hint_routes_to_final_review_when_ops_staged():
 
 def test_hub_embed_omits_next_step_hint_without_draft_ops():
     """Legacy callers that don't pass draft_ops also don't get the
-    next-step hint — there's not enough info to compute it."""
+    next-step hint — there's not enough info to compute it.
+    """
     embed = build_hub_embed(None, pending_ops=0)
     field_names = {f.name for f in embed.fields}
     assert "Next step" not in field_names
@@ -765,7 +776,8 @@ def test_hub_embed_omits_next_step_hint_without_draft_ops():
 
 def test_hub_embed_surfaces_depth_when_set():
     """When the operator has picked a depth, the status line shows it
-    alongside the existing status / step / readiness markers."""
+    alongside the existing status / step / readiness markers.
+    """
     session = SetupSession(
         guild_id=1,
         guild_name="x",

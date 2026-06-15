@@ -121,7 +121,8 @@ def test_ai_setup_section_stages_no_ops():
 
 def test_ai_setup_section_runs_in_standard_and_advanced():
     """AI setup is omitted from the lean quick path (which focuses on
-    preset + channels + logging) and appears in standard and advanced."""
+    preset + channels + logging) and appears in standard and advanced.
+    """
     section = REGISTRY.get(SLUG)
     assert section is not None
     assert section.depths == frozenset({"standard", "advanced"})
@@ -164,7 +165,8 @@ async def test_resolve_link_returns_mention_when_command_found():
 @pytest.mark.asyncio
 async def test_resolve_link_falls_back_when_tree_missing():
     """A client without a tree (test harness, lightweight stand-in)
-    falls back to plain text without raising."""
+    falls back to plain text without raising.
+    """
     interaction = _interaction(_owner_member(), fetched_commands=None)
     link = await resolve_ai_policy_link(interaction)
     assert link == f"`/{AI_POLICY_COMMAND_NAME}`"
@@ -184,7 +186,8 @@ async def test_resolve_link_falls_back_when_fetch_raises():
 @pytest.mark.asyncio
 async def test_resolve_link_falls_back_when_no_matching_command():
     """No aimenu command in the synced set (just-deployed bot) →
-    plain text fallback."""
+    plain text fallback.
+    """
     # Fetch returns a different command set.
     other = MagicMock()
     other.name = "ping"
@@ -247,7 +250,8 @@ def test_embed_always_notes_zero_staging():
 
 def test_view_has_open_and_skip_buttons_no_coming_soon_placeholder():
     """Only the two real actions render — the dead 'Ask SuperBot
-    (coming soon)' placeholder button has been removed."""
+    (coming soon)' placeholder button has been removed.
+    """
     view = AISetupView(_owner_member(), acknowledged=False, skipped=False)
     custom_ids = {
         c.custom_id

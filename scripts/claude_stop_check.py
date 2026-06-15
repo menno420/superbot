@@ -4,6 +4,9 @@
 Called by Claude Code on the Stop event (end of each assistant turn).
 Runs check-only verification on Python files changed vs origin/main:
 
+  0. Merge-conflict guard   — hard-fails if the branch conflicts with
+                              origin/main (a conflict silently parks the PR:
+                              auto-merge won't run and no webhook warns).
   1. Architecture (strict)  — layer boundaries, SQL location, etc.
   2. Black --check          — formatting
   3. isort --check-only     — import ordering
@@ -92,6 +95,51 @@ def _commits_ahead_of_main() -> int:
         return 0
 
 
+def _merge_conflicts_with_main() -> list[str] | None:
+    """Paths that would conflict if ``origin/main`` were merged into HEAD.
+
+    Returns ``[]`` (clean), a non-empty list of conflicted paths, or ``None``
+    (undeterminable — git < 2.38 without ``merge-tree --write-tree``, no
+    ``origin/main``, or offline). Writes only to the object store — it never
+    touches the working tree or the index.
+
+    Owner-directed, in-session 2026-06-15 (Q-0106 carve-out): a conflict with
+    ``origin/main`` silently parks a PR — native auto-merge will not run, and PR
+    webhooks do not deliver merge-conflict transitions — so "auto-merge on green"
+    can be declared on a branch that can never merge. This is the missing guard.
+    """
+    # Best-effort refresh so we check against the *latest* main (a stale local
+    # ref is exactly how the conflict was missed). Offline / slow → fall back to
+    # whatever origin/main is already fetched.
+    try:
+        subprocess.run(
+            ["git", "fetch", "--quiet", "origin", "main"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            timeout=20,
+        )
+    except Exception:  # noqa: BLE001 — best-effort; never break the hook
+        pass
+    try:
+        proc = subprocess.run(
+            ["git", "merge-tree", "--write-tree", "--name-only", "origin/main", "HEAD"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    if proc.returncode == 0:
+        return []  # clean merge
+    if proc.returncode == 1:
+        # Conflict. With --write-tree the first stdout line is the tree oid;
+        # --name-only makes the remaining lines the conflicted paths.
+        lines = [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]
+        return lines[1:] or ["(merge conflict — run: git merge origin/main)"]
+    return None  # unknown option (old git) / other error → never false-alarm
+
+
 def _end_of_session_advisory() -> None:
     """Non-blocking end-of-session reminders, printed when HEAD is ahead of
     origin/main (i.e. this session produced real work).
@@ -148,6 +196,40 @@ def _end_of_session_advisory() -> None:
 
 def main() -> int:
     _end_of_session_advisory()
+
+    # Merge-conflict guard (owner-directed in-session 2026-06-15, Q-0106 carve-out).
+    # A real conflict with origin/main means the PR cannot merge — fail the Stop so
+    # it is resolved, not silently parked behind a green "auto-merge on green" (the
+    # exact gap that let a conflicting PR be declared done). Only a *genuine*
+    # conflict fails; mere divergence merges clean. Kill-switch (Q-0105): if this
+    # proves noisy in high-parallelism work, downgrade `return 1` to an advisory
+    # print — the detection is reliable, only the severity is a judgement call.
+    if _commits_ahead_of_main() >= 1:
+        conflicts = _merge_conflicts_with_main()
+        if conflicts:
+            print(
+                "\n── stop-check ──────────────────────────────────────────────",
+                file=sys.stderr,
+            )
+            print("  ✗ merge conflict with origin/main", file=sys.stderr)
+            print(
+                "\n[stop-check] HARD FAILURE — this branch conflicts with "
+                "origin/main, so the PR cannot merge until you resolve it. "
+                "Auto-merge will NOT run and no webhook will warn you.\n\n"
+                "  Conflicted paths:",
+                file=sys.stderr,
+            )
+            for path in conflicts[:25]:
+                print(f"    • {path}", file=sys.stderr)
+            print(
+                "\n  Resolve before treating the PR as done:\n"
+                "    git fetch origin main && git merge origin/main\n"
+                "    # fix conflicts, then "
+                f"{PY} scripts/check_quality.py --full, commit, push\n",
+                file=sys.stderr,
+            )
+            return 1
+
     changed = _changed_py_files()
     if not changed:
         return 0

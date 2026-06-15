@@ -42,7 +42,7 @@ def _item(entity_key: str, kind: str = "race") -> EventListItem:
 
 
 def _vm(
-    kind: str, items: list[EventListItem], total: int | None = None
+    kind: str, items: list[EventListItem], total: int | None = None,
 ) -> EventListViewModel:
     return EventListViewModel(
         kind=kind,

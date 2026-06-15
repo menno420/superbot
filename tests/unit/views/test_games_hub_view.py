@@ -418,7 +418,7 @@ async def test_handle_select_hook_failure_renders_fallback():
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
 
     with _all_visible(), patch(
-        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog,
     ):
         await view.handle_select(interaction, "blackjack")
 
@@ -440,7 +440,7 @@ async def test_handle_select_success_attaches_back_button():
     fake_cog.build_help_menu_view = AsyncMock(return_value=(child_embed, child_view))
 
     with _all_visible(), patch(
-        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog,
     ):
         await view.handle_select(interaction, "blackjack")
 

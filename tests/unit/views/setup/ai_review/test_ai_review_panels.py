@@ -296,7 +296,8 @@ async def test_stage_final_stages_accepted_into_draft_and_opens_final_review():
     """The Stage & open Final review button adapts the accepted set to
     SetupOperations, writes them through the recommended-staging helper,
     and swaps the panel for the draft-driven FinalReviewView — closing the
-    old dead end where accepted suggestions never applied."""
+    old dead end where accepted suggestions never applied.
+    """
     import discord
 
     from views.setup.final_review import FinalReviewView
@@ -340,7 +341,8 @@ async def test_stage_final_stages_accepted_into_draft_and_opens_final_review():
 @pytest.mark.asyncio
 async def test_stage_final_requires_accepted_recommendations():
     """With nothing accepted, the button nudges the operator instead of
-    staging an empty draft."""
+    staging an empty draft.
+    """
     import discord
 
     member = MagicMock(spec=discord.Member)
