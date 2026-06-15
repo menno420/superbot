@@ -8,11 +8,19 @@ import discord
 
 from views.mining.main_panel import MiningHubView
 from views.mining.market_panel import MiningMarketView
+from views.mining.workshop_hub import MiningWorkshopHubView
 
 
-def test_hub_has_market_button():
-    ids = {getattr(c, "custom_id", None) for c in MiningHubView().children}
-    assert "mining:market" in ids
+def test_market_reachable_via_workshop_hub():
+    # Declutter (Option A, 2026-06-15): Market moved off the main hub into the
+    # Workshop sub-hub, which the hub's Workshop button opens.
+    hub_ids = {getattr(c, "custom_id", None) for c in MiningHubView().children}
+    assert "mining:workshop" in hub_ids
+    workshop_labels = {
+        getattr(c, "label", "") or ""
+        for c in MiningWorkshopHubView(SimpleNamespace(id=1), 2).children
+    }
+    assert any("Market" in lbl for lbl in workshop_labels)
 
 
 def test_market_view_has_buy_selects_sell_and_back():

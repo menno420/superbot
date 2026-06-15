@@ -380,17 +380,8 @@ class MiningHubView(PersistentView):
         await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
-        label="🔨 Build",
-        style=discord.ButtonStyle.grey,
-        custom_id="mining:build",
-        row=1,
-    )
-    async def build_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        await interaction.response.send_modal(_BuildModal())
-
-    @discord.ui.button(
-        label="🔧 Workshop",
-        style=discord.ButtonStyle.grey,
+        label="🔨 Workshop",
+        style=discord.ButtonStyle.primary,
         custom_id="mining:workshop",
         row=1,
     )
@@ -408,11 +399,15 @@ class MiningHubView(PersistentView):
                 ephemeral=True,
             )
             return
-        # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.workshop_panel import MiningWorkshopView, build_workshop_embed
+        # Declutter (Option A, 2026-06-15): one Workshop sub-hub groups
+        # Craft (consolidated build/craft/recipes) · Repair · Forge · Market.
+        from views.mining.workshop_hub import (
+            MiningWorkshopHubView,
+            build_workshop_hub_embed,
+        )
 
-        embed = await build_workshop_embed(interaction.user.id, interaction.guild_id)
-        view = await MiningWorkshopView.create(interaction.user, interaction.guild_id)
+        embed = build_workshop_hub_embed()
+        view = MiningWorkshopHubView(interaction.user, interaction.guild_id)
         await _edit_in_place(interaction, embed=embed, view=view)
 
     @discord.ui.button(
@@ -495,30 +490,6 @@ class MiningHubView(PersistentView):
         await _edit_in_place(interaction, embed=embed, view=self)
 
     @discord.ui.button(
-        label="🛒 Market",
-        style=discord.ButtonStyle.primary,
-        custom_id="mining:market",
-        row=2,
-    )
-    async def market_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (avoids any import-order surprise
-        # with the back-link the market panel makes to this hub).
-        from views.mining.market_panel import MiningMarketView, build_market_embed
-
-        embed = await build_market_embed(interaction.user.id, interaction.guild_id)
-        view = MiningMarketView(interaction.user, interaction.guild_id)
-        await _edit_in_place(interaction, embed=embed, view=view)
-
-    @discord.ui.button(
         label="🏦 Vault",
         style=discord.ButtonStyle.primary,
         custom_id="mining:vault",
@@ -572,39 +543,6 @@ class MiningHubView(PersistentView):
         await _edit_in_place(interaction, embed=embed, view=view, image=doll)
 
     @discord.ui.button(
-        label="📖 Recipes",
-        style=discord.ButtonStyle.grey,
-        custom_id="mining:recipes",
-        row=3,
-    )
-    async def recipes_btn(
-        self,
-        interaction: discord.Interaction,
-        _: discord.ui.Button,
-    ):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.recipe_browser import (
-            MiningRecipeBrowserView,
-            build_recipe_embed,
-        )
-
-        embed = await build_recipe_embed(interaction.user.id, interaction.guild_id)
-        view = await MiningRecipeBrowserView.create(
-            interaction.user,
-            interaction.guild_id,
-        )
-        await _edit_in_place(interaction, embed=embed, view=view)
-
-    @discord.ui.button(
         label="🧍 Character",
         style=discord.ButtonStyle.grey,
         custom_id="mining:character",
@@ -656,29 +594,6 @@ class MiningHubView(PersistentView):
 
         embed = await build_skills_embed(interaction.user.id, interaction.guild_id)
         view = MiningSkillsView(interaction.user, interaction.guild_id)
-        await _edit_in_place(interaction, embed=embed, view=view)
-
-    @discord.ui.button(
-        label="🔥 Forge",
-        style=discord.ButtonStyle.primary,
-        custom_id="mining:forge",
-        row=4,
-    )
-    async def forge_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        if not await safe_defer(interaction):
-            return
-        if interaction.guild_id is None:
-            await safe_followup(
-                interaction,
-                "Mining is only available inside a guild.",
-                ephemeral=True,
-            )
-            return
-        # Lazy import: views→views child panel (mirrors the Market button).
-        from views.mining.forge_panel import MiningForgeView, build_forge_embed
-
-        embed = await build_forge_embed(interaction.user.id, interaction.guild_id)
-        view = MiningForgeView(interaction.user, interaction.guild_id)
         await _edit_in_place(interaction, embed=embed, view=view)
 
 

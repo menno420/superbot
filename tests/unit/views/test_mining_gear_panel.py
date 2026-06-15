@@ -35,10 +35,12 @@ def _db_patches(inventory=None, equipped=None, wear=None):
     )
 
 
-def test_hub_has_gear_and_recipes_buttons():
+def test_hub_has_gear_button_and_workshop_hub():
+    # Gear stays on the main hub; Recipes/Craft moved into the Workshop sub-hub
+    # (Option A declutter, 2026-06-15).
     ids = {getattr(c, "custom_id", None) for c in MiningHubView().children}
     assert "mining:gear" in ids
-    assert "mining:recipes" in ids
+    assert "mining:workshop" in ids
 
 
 @pytest.mark.asyncio

@@ -29,8 +29,9 @@ def test_mining_hub_view_has_no_root_overview_button():
 
 
 def test_mining_hub_view_action_buttons_still_present():
-    """The Mine / Harvest / Explore / Inventory / Stats / Build action
-    buttons remain — only the no-op Overview is removed.
+    """The Mine / Harvest / Explore / Inventory / Stats action buttons remain —
+    the no-op Overview is removed, and (Option A declutter, 2026-06-15) Build /
+    Recipes / Forge / Market moved into the Workshop sub-hub.
     """
     view = MiningHubView()
     ids = [getattr(c, "custom_id", None) for c in view.children]
@@ -40,19 +41,18 @@ def test_mining_hub_view_action_buttons_still_present():
         "mining:explore",
         "mining:inventory",
         "mining:stats",
-        "mining:build",
+        "mining:workshop",
     }
     for expected_id in expected:
         assert expected_id in ids, f"Missing action button {expected_id!r}; got {ids}"
 
 
-def test_mining_hub_view_button_count_after_overview_removal():
-    """Sixteen action buttons, no Overview: the six core actions (Mine /
-    Harvest / Explore / Inventory / Stats / Build), Workshop, the two
-    depth-navigation buttons (Descend / Ascend), Market, Vault, Gear, Skills,
-    Forge, Recipes, and Character. The count is pinned so an accidental no-op
-    control can't creep back in.
+def test_mining_hub_view_button_count_after_declutter():
+    """Twelve buttons after the Option A declutter (2026-06-15): the Workshop
+    sub-hub absorbed Build/Craft/Recipes (consolidated) + Forge + Market, so the
+    four scattered Build/Recipes/Forge/Market buttons left the main hub. Pinned
+    so the panel can't quietly re-bloat. (Character/Skills/Vault move next.)
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 16
+    assert len(buttons) == 12
