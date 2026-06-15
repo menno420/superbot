@@ -1,8 +1,9 @@
 # Reconciliation pass — 2026-06-15 · the band-#900 Q-0107 cadence pass
 
-> **Status:** `plan` — the docs-only review + planning pass for the band that crossed
+> **Status:** `historical` — superseded by the [band-#930 pass](reconciliation-pass-2026-06-15-band930.md)
+> (its band #901–#930 is scored there §2). The docs-only review + planning pass for the band that crossed
 > **#900** (cadence = every **30th** merged PR per Q-0134; previous cadence pass
-> [the band-#870 pass](reconciliation-pass-2026-06-14-band870.md), now `historical`).
+> [the band-#870 pass](reconciliation-pass-2026-06-14-band870.md), `historical`).
 > Triggered by the auto-opened `reconcile` issue **#901**
 > (`.github/workflows/reconciliation-trigger.yml`) — the **sixth** consecutive real cadence
 > fire of the autonomous issue-trigger (after #781, #801/#822, #841, #871), so the self-fire
