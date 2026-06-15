@@ -25,11 +25,28 @@ sudo journalctl -u hermes-gateway -f           # Live-tail the logs (Ctrl+C to s
 
 ```bash
 cd /home/hermes/repos/superbot                 # Go to the repo (lines below assume you're here).
-git pull origin main                           # Pull the latest changes. Always do this before re-installing.
+git fetch origin main && git reset --hard origin/main   # Sync the mirror to GitHub before re-installing. Discards local repo edits (it's a read-only mirror); never aborts on divergence.
 bash scripts/hermes/install-soul.sh            # Write the operating prompt → ~/.hermes/SOUL.md (backs up first). No restart needed.
 bash scripts/hermes/install-skills.sh          # Copy skill files → ~/.hermes/skills/. Restart the gateway after this one.
 bash scripts/hermes/install-soul.sh --dry-run  # Preview the prompt without writing it.
 ```
+
+## Clone diverged from main → `git pull` won't fast-forward (recovery)
+
+`git pull` aborting with *"Not possible to fast-forward"* / *"diverging branches"* means the VPS
+clone has local commits that aren't on GitHub. The clone is a read-only **mirror** — reset it to
+match (the deploy command above already does this; this is the same fix with a safety snapshot):
+
+```bash
+cd /home/hermes/repos/superbot
+git branch backup-vps-$(date +%Y%m%d)   # Snapshot the local-only commits first (recoverable via: git log backup-vps-…).
+git fetch origin main
+git reset --hard origin/main             # Make the clone exactly match GitHub.
+git log --oneline -1                     # Confirm you're on the latest commit.
+```
+
+Never commit directly to the clone's `main` — Hermes writes on `claude/*` branches it pushes, so
+the mirror stays clean and this won't recur.
 
 ## Hermes config & identity
 
