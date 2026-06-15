@@ -73,34 +73,59 @@ Hermes config/data paths shown during setup:
 > The model is the single biggest driver of Hermes' behaviour, so it belongs in this record.
 
 - **Free default (what Hermes ships with):** `stepfun/step-3.7-flash:free`, served by **Nous
-  Research's own free inference endpoint** — `hermes config` shows `provider: nous`,
-  `base_url: https://inference-api.nousresearch.com/v1`. Not OpenRouter. A free, quantized,
-  lightweight tier — fine for chat, but too weak for reliable agentic control-plane work over this
-  repo (it was the root cause of the "misunderstands assignments / errors" the owner reported; no
-  config knob fixes a capability ceiling).
-- **Switched 2026-06-15 →** `openai/gpt-5.4-mini` on the **owner's own OpenAI key**
-  (`OPENAI_API_KEY` in `~/.hermes/.env`). `/model` confirms `Provider: openai-api` (routing left the
-  Nous endpoint). 400K context, ~$0.75/$4.50 per 1M tokens. **Live-reply verification pending** — the
-  config is set and the provider switched, but a fresh `/status` still showed `Agent Running: No`, so
-  confirm Hermes actually answers a task on it.
-- **⚠️ The `/model` Telegram quick-picker is stale** — for `openai-api` it only lists the old
-  `gpt-4o-mini` (a 2024 model). That is NOT what runs; `hermes config set model …` is authoritative.
-  Don't tap `gpt-4o-mini` expecting an upgrade — it's a downgrade from gpt-5.4-mini (keep it only as a
-  known-good fallback if a newer id won't route).
-- **Switch the model / use your own key** (no OpenRouter credits needed — own provider keys work
-  directly):
-  ```bash
-  hermes config set OPENAI_API_KEY sk-...        # or ANTHROPIC_API_KEY sk-ant-...  (set on the VPS; never share)
-  hermes config set model openai/gpt-5.4-mini    # or anthropic/claude-sonnet-4-6 · openai/gpt-5.5 · …
-  sudo systemctl restart hermes-gateway
-  hermes config | grep -i model                  # verify
-  ```
+  Research's own free inference endpoint** (`provider: nous`,
+  `base_url: https://inference-api.nousresearch.com/v1` — not OpenRouter), with only ~**$0.10 trial
+  credit**. Free, quantized, lightweight — fine for chat, too weak *and* too small for reliable
+  agentic control-plane work over this repo. Root cause of the "misunderstands / errors" the owner
+  reported; no config knob fixes a capability ceiling.
+- **Current target (2026-06-15):** `gpt-5.4-mini` on the **owner's own OpenAI key**, via a **custom
+  OpenAI-compatible provider** added with the `hermes model` wizard (base url
+  `https://api.openai.com/v1`, key in `~/.hermes/.env`). `/new` shows `Provider: openai-api · 400K
+  (detected)`. Non-Claude → keeps the independent-reviewer property (Q-0117) while fixing capability;
+  output is good when it runs (a coherent repo-health review confirmed the quality).
+- **⬜ NOT YET STABLE — STILL NEEDS CHECKING (open item, 2026-06-15 ~19:40).** Hermes answers some
+  turns but **intermittently** returns `Project proj_OJ… does not have access to model gpt-5.4-mini`,
+  and it flapped for >15 min (so it is *not* just propagation lag). Likely cause: the project allowlist
+  was given the **alias** `gpt-5.4-mini`, which OpenAI resolves unevenly. **Next step to try:** point
+  Hermes at the **exact dated snapshot `gpt-5.4-mini-2026-03-17`** (the project has had that granted
+  from the start, fully) instead of the alias — re-run `hermes model`, set the custom provider's model
+  to `gpt-5.4-mini-2026-03-17` (typed; the menu won't list it), `/new`, run several tasks. **If it
+  still flaps on the exact id:** a secondary path is resolving the alias — inspect `auxiliary.*` and
+  `delegation` in `~/.hermes/config.yaml` (both `provider: auto`) and pin them. Until verified stable
+  across several tasks, treat the gpt-5.4-mini switch as **in-progress, not done.**
 - **Rationale (independence vs. reliability):** Hermes is deliberately a **non-Claude** mind so its
   review is independent of the Claude that builds (Q-0117). The reliability fix was *capability*, not
   *Claude* — a frontier **non-Claude** model (gpt-5.4-mini, or gpt-5.5) keeps the independence and
   fixes the weakness. A Claude key (`anthropic/claude-sonnet-4-6`) is the most-reliable fallback if
   independence is dropped. For the **review** role specifically, a stronger model than the cheap mini
   is worth considering.
+
+#### Model-switch playbook (the ~3-hour maze — so it's 5 minutes next time)
+
+Moving Hermes to a capable own-key model hit these traps, in order:
+
+1. **`providers: {}` empty by default** → the model resolves via the remote `model_catalog` and
+   defaults to **`nous`** (Nous Portal). `hermes config set model X` changes only the *name*, not the
+   *provider* — it stays on `nous`. (Symptom: "I set the model but it still says nous.")
+2. **Prefix routing:** `openai/gpt-5.4-mini` (with the `openai/` prefix) routes to the **Nous Portal
+   catalog**, not OpenAI. Don't trust the prefix to pick the provider.
+3. **Built-in `openai-api` provider has a stale model list** — only `gpt-4o-mini`; rejects gpt-5.x
+   ("Model … not found in this provider's model listing"). For a newer OpenAI model, add a **custom
+   OpenAI-compatible provider** via `hermes model` (base url `https://api.openai.com/v1`).
+4. **`gpt-4o-mini` then 400s: "Encrypted content is not supported with this model."** Hermes sends
+   reasoning/`include` params (driven by `agent.reasoning_effort`) that non-reasoning models reject.
+   Use a reasoning model (gpt-5.x), or set `agent.reasoning_effort none` for gpt-4o-mini.
+5. **OpenAI gates the gpt-5 family behind org verification** — Settings → Organization → Verify
+   (one-time; unlocks all gated models).
+6. **Exact-match project allowlist.** OpenAI "Allowed models" lists match the **exact id**. The project
+   had the dated `gpt-5.4-mini-2026-03-17` but Hermes requested the alias `gpt-5.4-mini` → "no access."
+   Add the alias, or — more reliably (the alias resolves unevenly) — use the **exact dated id**.
+   **Diagnostic shortcut:** reproduce in OpenAI's own Playground (same project + model) — if it fails
+   there too, it's 100 % OpenAI-side, not Hermes.
+
+**To change the model later** (now the custom provider exists): re-run `hermes model` (keeps the
+custom-provider routing) — *not* `hermes config set model …` (reverts to the nous catalog default).
+Verify with `/new` (model · provider · context) + a real task.
 
 ### Terminal backend
 
