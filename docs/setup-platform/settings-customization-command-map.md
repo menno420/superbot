@@ -689,12 +689,15 @@ through `services/role_automation.py` (audited — no parallel role/audit path).
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
 9. **existing_SettingSpec_declarations**: `enabled`, `join_enabled`,
-   `leave_enabled`, `channel`, `join_message`, `leave_message`, `entry_role`
-   (`disbot/cogs/welcome/schemas.py`). The master flag defaults OFF; defaults
-   are the single source of truth in `disbot/services/welcome_config.py`.
+   `leave_enabled`, `channel`, `join_message`, `leave_message`, `entry_role`,
+   `card_enabled` (`disbot/cogs/welcome/schemas.py`). The master flag defaults
+   OFF; defaults are the single source of truth in
+   `disbot/services/welcome_config.py`. `card_enabled` is the welcome **phase 2**
+   (Q-0110) toggle — attaches a rendered PIL greeting card to the join embed,
+   off by default, degrading to embed-only when Pillow is unavailable.
 10. **existing_settings_keys**: `WELCOME_ENABLED`, `WELCOME_JOIN_ENABLED`,
     `WELCOME_LEAVE_ENABLED`, `WELCOME_CHANNEL`, `WELCOME_JOIN_MESSAGE`,
-    `WELCOME_LEAVE_MESSAGE`, `WELCOME_ENTRY_ROLE`
+    `WELCOME_LEAVE_MESSAGE`, `WELCOME_ENTRY_ROLE`, `WELCOME_CARD_ENABLED`
     (`disbot/utils/settings_keys/welcome.py`). Stored as scalar guild settings —
     **no migration**. The `channel`/`entry_role` settings carry
     `input_hint="channel"`/`"role"` (channel-id-as-str duality).

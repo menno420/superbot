@@ -46,6 +46,7 @@ _EXPECTED_DEFAULTS = {
     "join_message": welcome_config.DEFAULT_JOIN_MESSAGE,
     "leave_message": welcome_config.DEFAULT_LEAVE_MESSAGE,
     "entry_role": welcome_config.DEFAULT_ENTRY_ROLE,
+    "card_enabled": welcome_config.DEFAULT_CARD_ENABLED,
 }
 
 

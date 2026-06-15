@@ -100,10 +100,44 @@ def _resolve_text_channel(
     return None
 
 
-async def _post(channel: discord.abc.Messageable, embed: discord.Embed) -> bool:
-    """Send ``embed`` to ``channel`` — fail-safe (logs, never raises)."""
+_WELCOME_CARD_FILENAME = "welcome.jpg"
+
+
+def render_join_card(
+    member: discord.Member,
+    member_count: int,
+) -> discord.File | None:
+    """Render the phase-2 greeting card as a :class:`discord.File`, or ``None``.
+
+    Pure / no-network (the avatar is an initials disc — the embed still carries
+    the member's real avatar thumbnail).  Returns ``None`` when Pillow is
+    unavailable so the caller posts the embed-only greeting unchanged.
+    """
+    import io
+
+    from utils.welcome_render import render_welcome_card
+
+    jpeg = render_welcome_card(
+        member_name=member.display_name,
+        server_name=member.guild.name,
+        member_number=member_count,
+    )
+    if jpeg is None:
+        return None
+    return discord.File(io.BytesIO(jpeg), filename=_WELCOME_CARD_FILENAME)
+
+
+async def _post(
+    channel: discord.abc.Messageable,
+    embed: discord.Embed,
+    file: discord.File | None = None,
+) -> bool:
+    """Send ``embed`` (plus optional ``file``) — fail-safe (logs, never raises)."""
     try:
-        await channel.send(embed=embed)
+        if file is not None:
+            await channel.send(embed=embed, file=file)
+        else:
+            await channel.send(embed=embed)
     except discord.Forbidden:
         logger.warning("welcome: missing send permission in greeting channel")
         return False
@@ -203,8 +237,14 @@ async def handle_member_join(member: discord.Member) -> None:
     if policy.greet_on_join:
         channel = _resolve_text_channel(guild, policy.channel_id)
         if channel is not None:
-            embed = format_join_embed(member, policy, _member_count(guild))
-            if await _post(channel, embed):
+            count = _member_count(guild)
+            embed = format_join_embed(member, policy, count)
+            file: discord.File | None = None
+            if policy.show_join_card:
+                file = render_join_card(member, count)
+                if file is not None:
+                    embed.set_image(url=f"attachment://{_WELCOME_CARD_FILENAME}")
+            if await _post(channel, embed, file):
                 await _emit_greeted(member)
 
 

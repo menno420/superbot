@@ -101,5 +101,3 @@ living ledger (`docs/current-state.md`).
   concurrency-cancel + pip/mypy caching + claim ledger + push-batching · 2026-06-14 · **#814 (merged)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
-
-- `claude/hopeful-allen-oh93is` · welcome phase 2 PIL card (slot 7, Q-0110) · disbot/services/welcome_*, disbot/utils/welcome_render.py, disbot/cogs/welcome/schemas.py · 2026-06-15
