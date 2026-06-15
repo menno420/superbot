@@ -262,6 +262,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#906 (2026-06-15, Railway log-triage analyzer — Slice 4, Q-0130)** — the band-#900 queue's
+  reserved autonomous-loop slot, taken because the work order was empty/stale and the mining lane
+  it pointed at was **in flight as #905** (Forge, parallel session — not duplicated). The
+  `superbot-log-triage` skill's error-scan + crash-loop steps used to ask the model to *eyeball*
+  raw logs and group by hand — the fragile "model assembles the answer" class. New
+  **`scripts/hermes/log_triage.py`** (stdlib, read-only, **content-free**) owns those steps
+  deterministically: parses the `railway_logs.py` text format (or stdin/file), groups errors by
+  signature (traceback · login/connection · database · command/interaction · generic), **redacts**
+  every example (snowflakes/tokens/emails/urls/ips → placeholders — no log bodies/PII leak),
+  detects restart loops, and prints a one-line production status + the report blocks the skill
+  pastes verbatim. Skill doc rewired (steps 2–3 → pipe the analyzer) + the `log-triage/SKILL.md`
+  artifact regenerated. 18 tests; `check_quality --full` green (9737); arch 0. **Slot 4 done; the
+  read-only Railway *token* is still the only thing gating live-data triage (owner-provisioned).**
 - **#897 (2026-06-15, mining Slice A — Vault v2: inventory soft-cap + vault-cap upgrade path)** —
   the next mining-structures slice, a **dispatched (owner-directed)** `CLASS: feature` work order.
   The phase gate read FIX, but Q-0114 gates only *agent-self-originated* features — the owner
