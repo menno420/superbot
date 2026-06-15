@@ -102,6 +102,13 @@ Hermes config/data paths shown during setup:
   note:** at $4.50/1M output a long accumulating gateway session is the real spend driver (not the
   window) — so the bounded-session / `/new`-per-task habit is now a **cost** lever, not a capability
   crutch.
+- **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
+  Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
+  which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
+  `compression.threshold: 0.50` (the default) is fine now — on a 400K window that already leaves
+  ~200K before compaction, so the old `apply_context_fixes.sh` 0.75 bump is **optional**, not
+  required. `prompt_caching.cache_ttl: 1h` trims cost on long sessions. Pin
+  `model: gpt-5.4-mini-2026-03-17` (the dated id) **only** if the alias ever flaps again (playbook).
 - **Rationale (independence vs. reliability):** Hermes is deliberately a **non-Claude** mind so its
   review is independent of the Claude that builds (Q-0117). The reliability fix was *capability*, not
   *Claude* — a frontier **non-Claude** model (gpt-5.4-mini, or gpt-5.5) keeps the independence and

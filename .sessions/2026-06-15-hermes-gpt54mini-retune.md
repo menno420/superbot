@@ -107,7 +107,32 @@ oversight/dispatch/review control plane uses:
 
 Cheatsheet now documents the principle + `hermes skills uninstall` (the repo only had install).
 
+## 💡 Session idea (Q-0089)
+
+**A repeatable "Hermes base hygiene" check.** This session audited Hermes' live state against the
+repo's intent **by hand** — found 79 installed skills (only ~30 relevant), 4 MEMORY.md entries that
+duplicate SOUL.md/the dispatch skill, and a stale "read-only default" USER.md entry that now
+contradicts SOUL.md. All three are *drift between Hermes' live config and the durable docs*. Idea: a
+small read-only helper/skill (`hermes-base-hygiene`) that flags this drift — e.g. "installed skills ≫
+the focused set," "a memory entry's text substring-matches SOUL.md (likely redundant)," "a USER.md
+line contradicts WHAT YOU MAY WRITE." Worth having because the base will re-drift every time bundled
+skills update or memory accretes; doing the audit by hand each time is the waste it removes.
+
+## ⟲ Previous-session review (Q-0102)
+
+Previous session = **#921** (Hermes model-swap RESOLVED). **Did well:** cleanly closed the long
+model arc and captured the genuinely-useful propagation-flap lesson (don't conclude "not propagation"
+at 15 min). **Missed / could've done better:** it confirmed the *capable* model worked but stopped
+there — it left the entire Hermes base (SOUL.md, control-plane doc, the token-efficiency
+investigation) still written defensively for the **old weak model**, so the docs actively
+contradicted the live reality until this session caught it. **System improvement:** the
+**model-switch playbook should end with a "sweep the base for old-model assumptions" step** — a model
+swap isn't done when the model answers; it's done when the prompt/docs written around the *prior*
+model are re-tuned. (This is the same drift the 💡 idea above would automate.)
+
 ## Status
 
-Checkpoint PR opened born-red (Q-0133); flips to `complete` as the final step after the cleanup
-sweep + close-out enders land.
+All Hermes-base files reviewed (SOUL.md · control-plane · investigation · cheatsheet ·
+`apply_context_fixes.sh` · skills · memories · `hermes_cog.py`). PR #923 held **born-red** (Q-0133)
+per owner's "keep open" — flips to `complete` (→ auto-merge on green) on the owner's word; enders +
+docs audit are done, so it is merge-ready.
