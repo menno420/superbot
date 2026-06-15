@@ -36,11 +36,17 @@ idea / nightly diagnosis
 
 ## Maintainer setup (one-time)
 
-- ✅ **Create the routine** — DONE 2026-06-12: the routine **superbot autonomous dispatch**
-  is live in the Claude Code console (https://code.claude.com/docs/en/routines) with the API
-  trigger enabled. prompt = the saved prompt below · repo = `menno420/superbot` · environment
-  network policy scoped tight · branch-push setting left at the default **`claude/`-only** ·
-  API trigger enabled (you get a per-routine `/fire` URL + bearer token).
+- ✅ **Create the routine** — DONE 2026-06-12: the routine **superbot dispatch** is live in the
+  Claude Code console (https://code.claude.com/docs/en/routines). prompt = the saved prompt below ·
+  repo = `menno420/superbot` · environment network policy scoped tight · branch-push setting left at
+  the default **`claude/`-only**.
+  - **Schedule trigger (the cadence, Q-0146, 2026-06-15):** the console **Schedule** fires it every
+    **2 hours** — cron **`0 */2 * * *`** (UTC). A scheduled fire carries no work order, so the
+    routine advances the next plan slice from `current-state.md` ▶ Next action. This replaced the
+    earlier Hermes-VPS-cron / GitHub-`schedule:` plan (both proved unreliable for cadence); the
+    owner enabled it 2026-06-15 for the first autonomous day.
+  - **API trigger (on-demand):** also enabled — a per-routine `/fire` URL + bearer token for
+    work-order fires (a `/bugreport`, a phone request, a one-off).
 - ✅ **Store the secrets on the VPS** for the `hermes` user (never commit them). The
   `superbot-dispatch` skill sources `~/.hermes/routine.env`, so put them there (chmod 600):
   ```bash
@@ -70,8 +76,9 @@ Claude-Code side. The `text` payload Hermes sends (the work order) is appended t
 
 ```
 You are the SuperBot DISPATCH routine — the single execution routine that does ALL the project's
-build work (everything except the docs-reconciliation routine). You are fired with a work order
-(Hermes VPS cron / a Discord /bugreport / a continuation / a maintainer request), and you are one
+build work (everything except the docs-reconciliation routine). You are fired by the console
+Schedule (every ~2 hours, with no work order — your job is then to advance the next plan slice) OR
+with a work order (a Discord /bugreport · a continuation · a maintainer request), and you are one
 turn of SuperBot's self-improvement loop. Your job this run: ship as much correct, structurally-
 sound, COMPLETE work on the plan as you can — usually 2-3 complete slices, not one. Bias toward
 finishing real work, never toward stopping early. There is NO valid "stop / refuse" outcome except
@@ -136,7 +143,7 @@ dispatched work, or the next plan slice.
 8. HAND OFF + CLOSE THE LOOP (every run — this is a turn of SuperBot's self-improvement loop). When
    you stop (you neared ~700K, or finished a clean sub-step whose remaining work is clearly scoped —
    never mid-sub-step), SHARPEN current-state ▶ Next action with the explicit handoff (what's DONE,
-   what REMAINS, where you stopped, the files/tests) — that IS the continuation; the next Hermes-cron
+   what REMAINS, where you stopped, the files/tests) — that IS the continuation; the next scheduled
    dispatch reads it from live state. Do NOT open a `continue` issue (no routine consumes them now).
    End with a final handoff stating what you did + why, the next agent's continuation steps, and any
    remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you

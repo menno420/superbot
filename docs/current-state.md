@@ -41,9 +41,9 @@
 > **dispatch** prompt (`hermes-dispatch-bridge.md`), which absorbed the executor's bug-book orient +
 > bounded-continuation handoff; the `autonomous-routines.md` night-executor section → a pointer; fleet
 > + label tables de-staled. **2 routine prompts now: dispatch (all execution) + docs reconciliation.**
-> Trigger consequence (owner-managed, not in this PR): dispatch is fired by **Hermes' VPS cron →
-> `routine_fire.py`** (reliable), replacing the GitHub `schedule:` cron (proven ~1 run/night, hours
-> late); the legacy `executor-nightly.yml` should be disabled/repointed. Docs only. ·
+> Trigger (Q-0146, 2026-06-15): dispatch's cadence is the Claude Code console **Schedule** trigger —
+> every **2h**, cron `0 */2 * * *`, owner-enabled — superseding the Hermes-VPS-cron / GitHub-`schedule:`
+> plan (both unreliable for cadence); the legacy `executor-nightly.yml` is superseded. Docs only. ·
 > 2026-06-15, **routine-prompt canon — foolproof, completion-biased, idea→plan
 > (PR #899, Q-0144)** — owner-directed in-session: rewrote the dispatch + night-executor routine
 > prompts onto the owner's 12-step lifecycle and made them foolproof against bad dispatch input (the
