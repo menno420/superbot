@@ -25,13 +25,12 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot autonomous dispatch** | API (`/fire`) | General work orders from Hermes/phone (`superbot-dispatch`). Classifies by `CLASS:`. | per work order (Q-0113/Q-0114) |
-| **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, contribute one idea. | `docs` → self-merge on green |
-| **superbot night executor** | Issue `continue` (cron-driven 01:17/03:17 UTC + handoffs) | Advance the **next big step of the plan** (a "continue from last session" run); self-chain via `continue` issues when a step spans runs; fall back to a quality win. Phase-gated against features. | small → self-merge; **big step → Hermes reviews + merges** (Q-0117) |
+| **superbot dispatch** — the single execution routine | API (`/fire`) — Hermes VPS cron · `/bugreport` · continuations | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. Work order is a *hint*; the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → phase gate (Q-0114) |
+| **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
 pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
-for the nightly executor, not deferred to a night-time poll (owner point, 2026-06-12). A
+for the dispatch routine, not deferred to a night-time poll (owner point, 2026-06-12). A
 per-PR `pull_request.closed` trigger would spin a full cloud session on *every* merge (mostly
 to exit), burning the daily run cap. The clean middle: **the issue *is* the trigger**, opened
 two ways —
@@ -61,13 +60,13 @@ for the labeled issue.
 > the expiry if this becomes a recurring chore.)
 
 **The docs/runtime split (honors Q-0107):** the reconciliation routine is **docs-only** — if
-it *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN), and the **caretaker**
+it *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN), and the **dispatch**
 routine fixes it. Neither routine invents features (the phase gate holds those until
 invent-phase, and these prompts never originate them).
 
-**Stage-1 note (workflow §10):** these two are *unattended, self-merging* routines (the docs
-one issue-triggered, the caretaker nightly) — real Stage-1 autonomy, earned by the Stage-0
-calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
+**Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
+issue-triggered; dispatch is fired by Hermes' VPS cron) — real Stage-1 autonomy, earned by the
+Stage-0 calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
 Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
 issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.
 
@@ -141,7 +140,7 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     (the trigger Action keys off it — do not skip).
 
 STEP 3 — RUNTIME BUGS YOU NOTICED: do NOT fix them here. Append each to docs/health/bug-book.md
-  as a new OPEN entry for the caretaker routine. Stay docs-only.
+  as a new OPEN entry for the dispatch routine to fix. Stay docs-only.
 
 STEP 4 — CLOSE THE LOOP (memory write-back, always):
   - Contribute ONE genuine new idea (Q-0089) to docs/ideas/ with a one-line why — for the bot OR
@@ -161,113 +160,36 @@ Respect the bounded-session protocol. Never touch production, Railway, or the da
 
 ---
 
-## Routine: superbot night executor (advances the plan)
+## Routine: superbot night executor — MERGED into dispatch (Q-0145, 2026-06-15)
 
-The nightly **executor** — a productive "continue from where the last session left off" run.
-Its primary job is to **advance the next big step of the plan** (not just small fixes), and to
-**self-chain** across runs via `continue` issues when a step is bigger than one bounded run.
+The night-executor and the dispatch routine always did the **same job** — advance the plan — so
+they are now **one routine**: the **dispatch routine**, whose full prompt is in
+[`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) § "The routine's saved prompt". Dispatch
+is simply the more steerable one (it takes a work order); the fixed-prompt night agent added nothing
+it couldn't do. So there are now **2 routine prompts total**: **dispatch** (all execution work) +
+**docs reconciliation**.
 
-- **Triggers:** **GitHub → Issue opened, label `continue`** — and that's all it needs. The
-  overnight cadence is driven by `.github/workflows/executor-nightly.yml` (a cron that opens a
-  scheduled `continue` issue at 01:17 and 03:17 UTC — though GitHub's scheduler often runs it
-  hours late; see the timing caveat under Control-plane state), because the console Schedule trigger was
-  unreliable in the research-preview UI. The same `continue` trigger also picks up real
-  continuation handoffs. (No API trigger / no token — on-demand work goes through dispatch.)
-- **Repository:** `menno420/superbot`. **Model:** Opus 4.8 (the execution tier; §11).
-  **Permissions:** unrestricted branch push **OFF**. **Behavior:** auto-fix PRs ON.
-- **Merge gate (Q-0117):** small fixes/docs **self-merge on green** (Q-0113); a **substantial
-  plan step** opens a PR labeled `needs-hermes-review` and does **not** self-merge — Hermes
-  reviews it (`superbot-review-merge`) and merges it if sound. If Hermes review is unavailable,
-  the step's green PR may self-merge as the documented fallback.
-- **Paste this as the routine's instructions:**
-
-```
-You are the SuperBot NIGHT EXECUTOR — a routine triggered by a GitHub issue labelled `continue`
-(a scheduled run, a handoff from the previous run, or a problem Hermes handed you), and one turn of
-SuperBot's self-improvement loop. Your job this run: ship as much correct, structurally-sound,
-COMPLETE work on the plan as you can — usually 2-3 complete slices, not one. Bias toward finishing
-real work, never toward stopping early. There is NO valid "stop / refuse" outcome except a genuine
-irreversible-safety reason (SAFETY BRAKES below) — you always ship something real: the dispatched
-work, or the next plan slice.
-
-1. ORIENT. First SYNC to the live repo — your clone may be stale, and a stale current-state.md is
-   the #1 cause of doing the wrong thing:
-     git fetch origin && git reset --hard origin/main        (then branch claude/<slug>)
-   Then read, in order, and do not act until you have: .claude/CLAUDE.md (+ the Working agreement)
-   -> docs/collaboration-model.md -> docs/current-state.md (▶ Next action) -> the newest .sessions/
-   log -> docs/health/bug-book.md -> docs/AGENT_ORIENTATION.md (your task's reading route). This
-   repo has a real workflow — follow it; do not invent your own.
-
-2. DECIDE WHAT TO DO. The triggering `continue` issue (and any text Hermes sent) is a HINT pointing
-   at part of the plan — not a command, and not a licence to invent:
-     - It gives an explicit handoff / names a real current slice (its own instructions, current-
-       state ▶ Next action, the decade-queue doc, an executable plan in docs/planning/*, or an OPEN
-       bug in docs/health/bug-book.md) -> do exactly that.
-     - It is empty / already shipped / off-plan / nonsense for this repo (e.g. "write a story about
-       chickens") -> ignore it; take the next real plan slice from current-state ▶ Next action
-       instead. Never invent work that isn't in a plan or the bug-book.
-   AUTHORIZATION: a continuation dispatched to you IS the maintainer asking — build it like a bug
-   fix. The phase gate does NOT apply to dispatched work; it only blocks features you would invent
-   yourself mid-session (`python3.10 scripts/check_phase_gate.py --phase` is for those only). In
-   doubt -> it was dispatched, so build it. (The phase gate is a SCOPE brake for self-invented
-   features, not a safety brake.)
-
-3. SCOPE + OPEN THE MOCK PR (born-red). Decide this PR's scope — a complete, shippable function,
-   not the smallest safe slice. Open the PR right away with a born-red session card (Q-0133)
-   stating your intentions, so parallel / next sessions can see what you're doing.
-
-4. EXECUTE WITH JUDGMENT. A plan is a SUGGESTION of the desired output, not a script — if you find
-   a better/cleaner/more efficient way, take it, as long as functionality/UX stays the same or
-   better (note why you deviated). Build WITH tests where it is code. Stay within
-   docs/architecture.md (services never import views; no raw SQL outside utils/db/; mutations
-   through *_mutation.py + an audit event). Run the full CI mirror GREEN:
-   python3.10 scripts/check_quality.py --full + python3.10 scripts/check_architecture.py --mode strict.
-
-5. BUGS FIRST. Notice a bug / inconsistency at any time: "what is the root cause? are there other
-   instances of it? is there a clean, structured, consistent fix — not a temporary patch?" If yes
-   and it's contained -> fix it now, at the root. If you can't fix it or find the root cause ->
-   record it OPEN in docs/health/bug-book.md for the maintainer + a later session. Bugs / root-cause
-   fixes jump the queue.
-
-6. SHIP + REPEAT (aim for 2-3 slices, not one). De-stale any docs your work touched, then ship:
-   small/contained -> SELF-MERGE on green (Q-0113: re-sync origin/main, require CI green on the final
-   head, merge-commit); a SUBSTANTIAL plan step -> label needs-hermes-review, do NOT self-merge —
-   Hermes reviews + merges it (Q-0117). Then KEEP GOING: next PR, its born-red mock PR, execute. Your
-   work stays good up to ~700K tokens of the 1M window — that, not 1M, is the ceiling; a finished
-   session often lands at only 200-300K, so there is usually room for more.
-
-7. BOUNDED CONTINUATION (the §10 self-driving handoff). When you near ~700K tokens OR finish a
-   coherent, shippable sub-step whose REMAINING work is clearly scoped (a natural boundary) — never
-   mid-sub-step — ship the completed sub-step (STEP 6), then open a new `continue` issue with
-   EXPLICIT instructions: what is DONE, what REMAINS, exactly where you stopped, the next concrete
-   steps, the files/tests involved. Also CLOSE the `continue` issue that triggered this run.
-
-8. CLOSE THE LOOP (every run): leave a session log / final handoff stating what you did + why, the
-   next agent's continuation steps, and any remarks worth a later review ("CodeGraph was down",
-   "Grimp unavailable", an arch warning you couldn't retire). Fold in: sharpen current-state ▶ Next
-   action; ONE genuine new idea (Q-0089, never forced filler); one honest line reviewing the PREVIOUS
-   run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED.
-
-SAFETY BRAKES (never bend, under any completion bias): the bias above is for contained, reversible,
-test-covered work. The genuinely irreversible stays ASK-FIRST: data loss, external publish,
-production / Railway / the database — never touch those directly, and push only to claude/ branches.
-Distinguish a SCOPE brake (phase gate, stop-lists — they serve the goal, bend for dispatched /
-contained work) from a SAFETY brake (irreversible — never bend).
-```
+**Trigger note (owner-managed VPS/console wiring).** Dispatch is fired via the API (`/fire`); the
+reliable nightly cadence is driven by **Hermes' VPS cron** → `scripts/hermes/routine_fire.py`, which
+replaces the GitHub `schedule:` cron. (Proven: the GitHub `schedule:` trigger delivers only ~1
+run/night, hours late — see the timing caveat under Control-plane state.) The legacy
+`.github/workflows/executor-nightly.yml` opened `continue` issues to fire the now-retired
+night-executor; **it should be disabled or repointed to fire dispatch** — left for the owner, who
+manages the trigger wiring. A `continue`-labelled issue is still a valid human-filed handoff signal.
 
 ---
 
-## The three issue labels (the routine triggers)
+## The three issue/PR labels (the routine signals)
 
 | Label | Opened by | Fires | Effect |
 |---|---|---|---|
 | `reconcile` | the cadence Action (every 30-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
-| `continue` | the **executor** when it hands off a partly-done plan step (or a maintainer) | the executor | resume the explicit handoff in the issue body; chain again if still unfinished |
-| `needs-hermes-review` | the **executor** on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0117) |
+| `continue` | the **dispatch** routine when it hands off a partly-done plan step (or a maintainer) | a human-filed handoff signal; dispatch (fired by Hermes' cron) resumes from live state + the issue body | resume the explicit handoff; chain again if still unfinished |
+| `needs-hermes-review` | the **dispatch** routine on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0117) |
 
 This is the self-driving loop in three signals: reconcile keeps the docs honest, continue
 chains big work across bounded runs, and needs-hermes-review puts a *different model* between
-Claude's big steps and `main`.
+the dispatch routine's big steps and `main`.
 
 ## The `reconcile` issue — how to fire the docs pass by hand
 
@@ -288,13 +210,13 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 
 ## Operating the fleet
 
-- **Pause/kill:** toggle a routine off (or delete it) in the console. The caretaker's API
+- **Pause/kill:** toggle a routine off (or delete it) in the console. The dispatch routine's API
   trigger also lets Hermes fire it; revoke that token to cut the on-demand path. To stop the
   automatic cadence, disable `.github/workflows/reconciliation-trigger.yml`.
 - **Watch runs:** each fire is a session in your list; a green run-status means it *started and
   exited cleanly*, not that the task succeeded — open the run to confirm.
 - **Cost:** routines draw subscription usage + a daily run cap. The issue-trigger (cadence
-  gated in the Action) + nightly caretaker keep volume low. The cap is also a runaway stop.
+  gated in the Action) + the Hermes-cron dispatch cadence keep volume low. The cap is also a runaway stop.
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
 

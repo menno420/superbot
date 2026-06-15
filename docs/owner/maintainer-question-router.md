@@ -5446,3 +5446,35 @@ the owner's goal of *less hands-on planning* — drop a one-word idea, trust the
 prompts are the canonical mirror — the maintainer re-pastes the final text into each routine's console
 config for it to take effect** (the console is the live source; the doc is the reviewable source of
 truth).
+
+---
+
+### Q-0145 — Consolidate to 2 routines: dispatch absorbs the night-executor (2026-06-15)
+
+> **DECISION 2026-06-15 (owner-directed in-session, applied directly).** Immediately after Q-0144 the
+> owner: *"the dispatch will just take the job of both routines, they were already meant to do the same
+> thing — the dispatch was just supposed to be more steerable while the night agent had a set prompt.
+> Now I'll just use the one dispatch routine for everything except the reconciliation, so please turn
+> both of their prompts into one, so we have a total of 2 prompts."*
+
+**Decision / fix (this PR).** The **night-executor** and the **dispatch** routine always did the same
+job — advance the plan. Dispatch is simply the more steerable one (it takes a work order) and the
+fixed-prompt night agent added nothing it couldn't do, so they are now **one routine**. The two
+prompts (already rewritten onto the identical 12-step lifecycle in Q-0144) are merged into the single
+**dispatch** prompt (canonical home `hermes-dispatch-bridge.md`), which absorbed the executor's three
+distinct bits: the "single execution routine" framing, `docs/health/bug-book.md` in the orient list,
+and the bounded-continuation handoff. The routine fleet is now **2 prompts**: **dispatch** (all
+execution) + **docs reconciliation**. The night-executor section in `autonomous-routines.md` is
+replaced with a pointer; the fleet/label tables and prose are de-staled (executor/caretaker → dispatch).
+
+**Trigger consequence (owner-managed, NOT changed in this PR).** Dispatch is fired via the API
+(`/fire`) — **Hermes' VPS cron → `scripts/hermes/routine_fire.py`** is now the reliable nightly
+cadence, replacing the GitHub `schedule:` cron (proven to deliver only ~1 run/night, hours late — run
+history 2026-06-13/14/15). The legacy `.github/workflows/executor-nightly.yml` opened `continue` issues
+to fire the now-retired night-executor; **it should be disabled or repointed to fire dispatch.** Left
+for the owner, who manages the VPS/console trigger wiring (this PR is docs-only).
+
+**Home:** `docs/operations/hermes-dispatch-bridge.md` (the one execution prompt) ·
+`docs/operations/autonomous-routines.md` (fleet table → 2 routines; night-executor section → pointer).
+Owner re-pastes the merged dispatch prompt into the routine console; deletes the separate
+night-executor routine.
