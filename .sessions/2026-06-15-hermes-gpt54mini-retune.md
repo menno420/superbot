@@ -67,6 +67,46 @@ current-state.md and should be **deleted** (they burn context and risk drifting 
 - *Dispatch bridge pattern* (the four-section TASK/CONTEXT/ACCEPTANCE/NOTES + `routine_fire.py`
   format) → verbatim in `dispatch.md` lines 65–79.
 
+### USER.md (the "about you / this workspace" file) — separate from MEMORY.md above
+
+The owner also shared the 8 `USER.md` entries. Mostly good (it already carries the `[infra]` +
+bug-location stickies), but:
+- **WRONG / stale — must fix:** *"default to read-only inspection unless you explicitly ask for
+  modifications."* This is the OLD safety model; SOUL.md's "WHAT YOU MAY WRITE" (Q-0140/0141/0117)
+  now lets Hermes author PRs + merge via the review gate. A wrong memory actively misleads — delete it.
+- **Conflicting:** *"capture ideas in docs/ideas/"* (alone) contradicts the bug-location entry —
+  merge into one rule: ideas → `docs/ideas/`; bugs/notes → bug-book / current-state, NEVER ideas.
+- **Redundant with SOUL.md (drop):** the oversight-rules block (sync-first, review, dispatch,
+  concise comms, reconciliation-is-automatic), the dispatch-workflow entry, and the work-order
+  grounding entry are all in SOUL.md + the `dispatch` skill.
+- **Keep:** the `[infra]` note (Railway reliable-grace/superbot · gpt-5.4-mini on owner's key · cron
+  `8c02f8431f37`) and the bug-location rule.
+
+Recommended lean USER.md: genuine owner **preferences** (concise/direct comms; owner can't code →
+relies on agents for correct end-to-end work) + the `[infra]` sticky + the merged ideas/bugs rule.
+On Hermes' offer to split into prefs / repo-conventions / runtime: yes for prefs + runtime, but
+**drop the repo-conventions** — they live in SOUL.md, which reloads every session, so memory copies
+only risk drift.
+
+## Hermes skills — prune the catalogue (79 → ~30; owner runs `hermes skills uninstall`)
+
+Skills load by progressive disclosure — the Level-0 list (all names+descriptions, ~3k+ tokens) is
+injected every turn, so 79 skills is real per-turn bloat + choice-noise. Keep only what the
+oversight/dispatch/review control plane uses:
+
+- **KEEP:** all `superbot/*` (13); `github/*` (6 — PR/issue/review/repo); `autonomous-ai-agents/`
+  claude-code · codex · hermes-agent · supervised-repo-oversight (it dispatches to these / is its
+  role); `software-development/` plan · requesting-code-review · simplify-code · systematic-debugging
+  · hermes-agent-skill-authoring.
+- **PRUNE (whole categories — nothing to do with SuperBot):** `creative/*`, `media/*`,
+  `productivity/*`, `smart-home/*`, `mlops/*`, `note-taking/*`, `social-media/*`, `data-science/*`,
+  `email/*`, `research/*`, `yuanbao`, plus `software-development/` node-inspect-debugger (SuperBot is
+  Python). ~46–50 skills.
+- **Your call:** `opencode`, `software-development/` spike · test-driven-development · python-debugpy
+  (Hermes dispatches code rather than debugging it live — lean prune).
+
+Cheatsheet now documents the principle + `hermes skills uninstall` (the repo only had install).
+
 ## Status
 
 Checkpoint PR opened born-red (Q-0133); flips to `complete` as the final step after the cleanup

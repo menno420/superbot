@@ -86,6 +86,21 @@ infra ids) — procedures belong in SOUL.md + the skills, which reload every ses
   memory entirely. There is **no** `hermes` CLI subcommand that deletes a memory by content — use the
   conversational `memory` tool or a hand-edit.
 
+## Hermes skills — keep the set focused
+
+Skills load by **progressive disclosure**: every turn the agent sees a Level-0 list of *all*
+installed skills' names + descriptions (~3k+ tokens), and only loads a skill's full body on demand.
+So a bloated catalog costs context **and** adds choice-noise on every message — keep Hermes to the
+skills its SuperBot control-plane role uses (the `superbot/*` pack + the github / repo / review /
+dispatch skills). The bundled non-SuperBot skills (creative / media / productivity / smart-home /
+mlops / note-taking / social-media / etc.) are safe to remove and re-installable later.
+
+```bash
+hermes skills list                       # What's installed.
+hermes skills uninstall <skill-name>     # Remove one (or `/skills uninstall <name>` in chat).
+bash scripts/hermes/install-skills.sh    # (Re)install the SuperBot skill pack from the repo.
+```
+
 ## Repo state & health (read-only)
 
 ```bash
