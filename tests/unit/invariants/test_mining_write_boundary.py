@@ -37,6 +37,7 @@ _FORBIDDEN_ANY_RECEIVER = {
     "record_depth",
     "add_game_xp",
     "set_skill_points",
+    "set_structure_level",
 }
 
 # Names that collide with other subsystems (``setup_session.set_depth`` is the

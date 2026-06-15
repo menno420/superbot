@@ -20,6 +20,7 @@ from utils.mining import items
 SELL_REASON = "mining:sell_ore"
 BUY_REASON = "mining:buy_gear"
 VAULT_UPGRADE_REASON = "mining:vault_upgrade"
+FORGE_BUILD_REASON = "mining:forge_build"
 
 # Gear shop — coins to buy each item (the sink).  Priced ~5-6× the sell value
 # of the materials it would take to craft, so crafting stays the cheaper path
@@ -169,6 +170,7 @@ __all__ = [
     "SELL_REASON",
     "BUY_REASON",
     "VAULT_UPGRADE_REASON",
+    "FORGE_BUILD_REASON",
     "sell_price",
     "sellable_inventory",
     "total_sale_value",

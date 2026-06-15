@@ -35,7 +35,15 @@ from dataclasses import dataclass
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db, equipment
-from utils.mining import capacity, character, market, rewards, workshop, world
+from utils.mining import (
+    capacity,
+    character,
+    market,
+    rewards,
+    structures,
+    workshop,
+    world,
+)
 from utils.mining.exploration import explore_from_state
 from utils.mining.market import TradeResult
 from utils.mining.recipes import load_recipes
@@ -257,6 +265,30 @@ def _resolve_recipe(item: str) -> dict[str, int] | TradeResult:
     return recipe
 
 
+async def _forge_gate(user_id: int, guild_id: int, item: str) -> TradeResult | None:
+    """The forge-requirement failure for *item*, or None when craftable (Slice B).
+
+    Forge-free recipes (every tool, structure, and bronze/iron/silver gear)
+    return immediately with **no DB read** — so existing craft paths are
+    unchanged in I/O and behaviour; only gold/diamond gear ever reads the
+    structures table.
+    """
+    required = structures.forge_level_required(item)
+    if required == 0:
+        return None
+    built = await db.get_structures(user_id, guild_id)
+    level = built.get(structures.FORGE, 0)
+    if level >= required:
+        return None
+    tier = equipment.gear_tier(item)
+    needed = structures.forge_level_name(required)
+    return TradeResult(
+        False,
+        f"Crafting **{item}** needs a **{needed}** 🔥 — "
+        f"build the Forge with `!forge` to unlock {tier}-tier gear.",
+    )
+
+
 def _check_materials(
     item: str,
     recipe: dict[str, int],
@@ -279,6 +311,9 @@ async def craft(user_id: int, guild_id: int, item: str) -> TradeResult:
     recipe = _resolve_recipe(item)
     if isinstance(recipe, TradeResult):
         return recipe
+    gated = await _forge_gate(user_id, guild_id, item)
+    if gated is not None:
+        return gated
     suid = str(user_id)
     inventory = await db.get_mining_inventory(suid, guild_id)
     missing = _check_materials(item, recipe, inventory)
@@ -320,6 +355,9 @@ async def quick_craft(user_id: int, guild_id: int) -> TradeResult:
     recipe = _resolve_recipe(last)
     if isinstance(recipe, TradeResult):
         return recipe
+    gated = await _forge_gate(user_id, guild_id, last)
+    if gated is not None:
+        return gated
     inventory = await db.get_mining_inventory(suid, guild_id)
     missing = _check_materials(last, recipe, inventory)
     if missing is not None:
@@ -607,6 +645,91 @@ async def vault_upgrade(user_id: int, guild_id: int) -> TradeResult:
     )
 
 
+async def build_structure(
+    user_id: int,
+    guild_id: int,
+    structure: str = structures.FORGE,
+) -> TradeResult:
+    """Build/upgrade *structure* one level — the §7.5 coin + material sink (Slice B).
+
+    Debits coins, consumes the build materials, and raises the structure level by
+    one in ONE transaction (the ``vault_upgrade`` precedent extended with a
+    material leg — every part commits together or not at all).  The forge gates
+    higher-tier gear crafting (``_forge_gate``); building it is never required to
+    play, only to reach gold/diamond gear.
+    """
+    structure = structure.strip().lower()
+    if not structures.is_structure(structure):
+        return TradeResult(
+            False,
+            f"**{structure or '(blank)'}** isn't a buildable structure — "
+            "try `!forge`.",
+        )
+    suid = str(user_id)
+    built = await db.get_structures(user_id, guild_id)
+    level = built.get(structure, 0)
+    cost = structures.forge_build_cost(level)
+    if cost is None:
+        name = structures.forge_level_name(level)
+        return TradeResult(
+            False,
+            f"Your Forge is already at its maximum level (**{name}**).",
+        )
+    # Material check first, for a clean message (the craft precedent) — the coin
+    # debit inside the txn handles the affordability failure.
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    missing = _check_materials(structure, cost.materials, inventory)
+    if missing is not None:
+        return TradeResult(
+            False,
+            f"Building the Forge needs {workshop.describe_materials(cost.materials)} "
+            f"plus {cost.coins} 🪙 — you're short on materials.",
+        )
+    deltas = {mat: -qty for mat, qty in cost.materials.items()}
+    try:
+        async with db.transaction() as conn:
+            new_balance = await economy_service.debit_in_txn(
+                conn,
+                guild_id,
+                user_id,
+                cost.coins,
+                reason=market.FORGE_BUILD_REASON,
+                actor_id=user_id,
+            )
+            await db.apply_inventory_deltas(suid, guild_id, deltas, conn=conn)
+            await db.set_structure_level(
+                user_id,
+                guild_id,
+                structure,
+                level + 1,
+                conn=conn,
+            )
+    except economy_service.InsufficientFundsError:
+        balance = await db.get_coins(user_id, guild_id)
+        return TradeResult(
+            False,
+            f"Building the Forge costs **{cost.coins}** 🪙 — you only have "
+            f"**{balance}** 🪙.",
+        )
+    await _emit_balance(
+        guild_id,
+        user_id,
+        -cost.coins,
+        new_balance,
+        market.FORGE_BUILD_REASON,
+    )
+    new_name = structures.forge_level_name(level + 1)
+    unlocked = structures.tiers_unlocked_at(level + 1)
+    unlock_line = f" Now crafts **{unlocked[-1]}-tier** gear." if unlocked else ""
+    return TradeResult(
+        True,
+        f"Forge built to **{new_name}** for {workshop.describe_materials(cost.materials)} "
+        f"+ {cost.coins} 🪙.{unlock_line} Balance: **{new_balance}** 🪙.",
+        -cost.coins,
+        new_balance,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Actions — mine / harvest / explore (loot grant + wear in one transaction)
 # ---------------------------------------------------------------------------
@@ -879,6 +1002,7 @@ __all__ = [
     "vault_withdraw",
     "vault_deposit_all_resources",
     "vault_upgrade",
+    "build_structure",
     "mine",
     "harvest",
     "explore",
