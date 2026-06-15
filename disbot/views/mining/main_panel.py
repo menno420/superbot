@@ -59,6 +59,7 @@ _ACTIONS_GUIDE = (
     "**🛒 Market** — sell ore for coins, buy gear\n"
     "**🏦 Vault** — stash loot safely, separate from your pack\n"
     "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
+    "**🌳 Skills** — spend skill points to specialize your character\n"
     "**📖 Recipes** — browse and craft by category\n"
     "**🧍 Character** — your full character overview"
 )
@@ -592,6 +593,29 @@ class MiningHubView(PersistentView):
         )
         embed.set_footer(text="Pick another action above to continue.")
         await safe_edit(interaction, embed=embed, view=self)
+
+    @discord.ui.button(
+        label="🌳 Skills",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:skills",
+        row=3,
+    )
+    async def skills_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.skills_panel import MiningSkillsView, build_skills_embed
+
+        embed = await build_skills_embed(interaction.user.id, interaction.guild_id)
+        view = MiningSkillsView(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]

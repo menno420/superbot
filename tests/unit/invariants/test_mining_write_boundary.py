@@ -30,10 +30,12 @@ _FORBIDDEN_ANY_RECEIVER = {
     "set_gear_wear",
     "clear_gear_wear",
     "set_last_broken",
-    # mining-adjacent progression writers (depth records, shared game-XP) —
-    # names unique to utils/db/games/, same one-owner rule as above.
+    # mining-adjacent progression writers (depth records, shared game-XP,
+    # skill tree) — names unique to utils/db/games/, same one-owner rule as
+    # above (skill writes flow through services/skill_service.py).
     "record_depth",
     "add_game_xp",
+    "set_skill_points",
 }
 
 # Names that collide with other subsystems (``setup_session.set_depth`` is the
