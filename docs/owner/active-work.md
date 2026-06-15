@@ -30,6 +30,10 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/exciting-brahmagupta-1duzde` · mining §7.5 **Vault** (safe stash) + turn-key
+  **structures/skill-tree plan** for the night session · `disbot/{migrations,utils/db/games,
+  services/mining_workflow,views/mining,cogs/mining_cog}` + the plan doc · 2026-06-14 ·
+  **PR #884 (open, auto-merge on green)**
 - `claude/ecstatic-euler-bslyvd` · sector tooling — `check_sector_map.py` (validator) +
   `dispatch_menu.py` (resolver) + 19 tests + folio map · 2026-06-14 · **PR #882**
 - `claude/wizardly-edison-xw34kb` · P1-1 — close eval-coverage gap on BTD6 hotspot tools (dog-food

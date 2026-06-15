@@ -92,7 +92,9 @@
   #878** (`tests/evals/smoke.py`, CI-gated); **▶ Layer B** (the absence-guard negative-existential gate)
   is startable; the **⛔ live half** is creds-gated (owner-led P1-4); BUG-0009 open
   ([bug book](health/bug-book.md)). **The P0 integrity spine AND P1-2 are COMPLETE.** Product alternates
-  (owner-steered): **▶ games P0-1 wager money-safety** · **⛔ mining V-16 phase 2** (owner PNG pack) ·
+  (owner-steered): **▶ games P0-1 wager money-safety** · **▶ mining structures/skill-tree**
+  ([turn-key plan](planning/mining-structures-skill-tree-plan-2026-06-14.md) — Vault shipped #884;
+  skill tree + cap + Forge/Home are startable; **⛔ V-16 phase 2** still owner PNG pack) ·
   **⛔ AI §7 workflow families** (post-prod-check).
 - **Next:** safety/community remainder (image moderation · security tiers 1+2 · NL event scheduler) ·
   `myprofile` PR A (turn-key) · help home/navigation plan · settings Phase 2 tail → Phase 3.
@@ -474,9 +476,13 @@ accepted, not a target).
   ladders** land (gold/diamond tiers — the diamond lantern finally unlocks MAGMA),
   the Gear panel / Recipe browser / fuzzy names / `!fastmine` modernize the old UX,
   **duels tick weapon/armor wear (Q-0054 closed)**, and the §7.6 PIL inventory +
-  stat cards ship (Q-0076). **Next slice: functional structures (§7.5
-  Forge/Vault/Home sinks)**, then the **§7.4 capped skill tree** (its `game_xp`
-  substrate + `EffectiveStats` merge point are now in place).
+  stat cards ship (Q-0076). **§7.5 structures started: the Vault (safe stash)
+  shipped 2026-06-14 (#884)** — `mining_vault` + audited deposit/withdraw + a
+  `🏦 Vault` panel (v1 has no cap yet). **The rest of §7.5 + the §7.4 skill tree are
+  now turn-key + ▶ startable** in [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](planning/mining-structures-skill-tree-plan-2026-06-14.md)
+  (recommended marquee = the **capped skill tree** — its `game_xp` substrate +
+  `EffectiveStats` merge point are in place; plus the Vault inventory-cap sink, Forge,
+  Home). **⛔ V-16 phase 2** paper-doll sprites stay owner-blocked on the PNG pack.
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded

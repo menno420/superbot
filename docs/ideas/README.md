@@ -20,6 +20,12 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`games-economy-faucet-sink-diagnostic-2026-06-14.md`](./games-economy-faucet-sink-diagnostic-2026-06-14.md) —
+  **S1 games / observability (2026-06-14, the mining Vault session #884):** a read-only
+  `diagnostics_service` provider that sums the economy audit reasons already emitted
+  (`mining:sell_ore` faucet vs. `buy`/`repair`/future `respec`/`build` sinks) into a per-guild net
+  coin-flow view — *observe* the self-balancing loop live, the complement to the static balance sims.
+  Gate: promote once a sink-heavy slice (skill-tree respec / structures) lands.
 - [`routine-dispatch-and-staged-reconciliation-2026-06-14.md`](./routine-dispatch-and-staged-reconciliation-2026-06-14.md) —
   **owner design conversation (2026-06-14, → Q-0137 DISCUSS):** three linked threads — (1) dispatch every
   routine via Hermes *except* reconciliation (the watchdog); (2) evolve reconciliation into a staged,

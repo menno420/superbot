@@ -57,6 +57,7 @@ _ACTIONS_GUIDE = (
     "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
     "(deeper = richer, gated by your light)\n"
     "**🛒 Market** — sell ore for coins, buy gear\n"
+    "**🏦 Vault** — stash loot safely, separate from your pack\n"
     "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
     "**📖 Recipes** — browse and craft by category\n"
     "**🧍 Character** — your full character overview"
@@ -473,6 +474,29 @@ class MiningHubView(PersistentView):
 
         embed = await build_market_embed(interaction.user.id, interaction.guild_id)
         view = MiningMarketView(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
+        label="🏦 Vault",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:vault",
+        row=2,
+    )
+    async def vault_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Market button).
+        from views.mining.vault_panel import MiningVaultView, build_vault_embed
+
+        embed = await build_vault_embed(interaction.user.id, interaction.guild_id)
+        view = MiningVaultView(interaction.user, interaction.guild_id)
         await safe_edit(interaction, embed=embed, view=view)
 
     @discord.ui.button(

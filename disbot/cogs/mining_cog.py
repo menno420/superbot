@@ -515,6 +515,62 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    # ---------------------------------------------------------------- vault
+
+    @commands.command(
+        name="vault",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def vault_cmd(self, ctx):
+        """Open your vault — a safe stash separate from your mining pack."""
+        # cogs→views is allowed; one builder shared with the hub button.
+        from views.mining.vault_panel import MiningVaultView, build_vault_embed
+
+        embed = await build_vault_embed(ctx.author.id, ctx.guild.id)
+        view = MiningVaultView(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
+    @commands.command(
+        name="stash",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def stash(self, ctx, item: str = None, amount: int = 1):
+        """Deposit an item into your vault (e.g. `!stash diamond 5`)."""
+        if not item:
+            return await ctx.send(
+                "Specify what to stash, e.g. `!stash diamond 5` — or `!vault`.",
+            )
+        item = resolve_item_name(item, catalog_names()) or item
+        result = await mining_workflow.vault_deposit(
+            ctx.author.id,
+            ctx.guild.id,
+            item,
+            amount,
+        )
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    @commands.command(
+        name="unstash",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def unstash(self, ctx, item: str = None, amount: int = 1):
+        """Withdraw an item from your vault (e.g. `!unstash diamond 5`)."""
+        if not item:
+            return await ctx.send(
+                "Specify what to withdraw, e.g. `!unstash diamond 5` — or `!vault`.",
+            )
+        item = resolve_item_name(item, catalog_names()) or item
+        result = await mining_workflow.vault_withdraw(
+            ctx.author.id,
+            ctx.guild.id,
+            item,
+            amount,
+        )
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
     # ---------------------------------------------------------- workshop
 
     @commands.command(

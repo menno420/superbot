@@ -469,6 +469,87 @@ async def _emit_balance(
 
 
 # ---------------------------------------------------------------------------
+# Vault — safe stash (move items between the active inventory and the vault)
+# ---------------------------------------------------------------------------
+
+
+async def vault_deposit(
+    user_id: int,
+    guild_id: int,
+    item: str,
+    qty: int,
+) -> TradeResult:
+    """Move *qty* of *item* from the active inventory into the safe vault.
+
+    Both legs (inventory debit + vault credit) commit in ONE transaction so a
+    mid-move failure can never duplicate the items or lose them between stores
+    (the §7.5 Vault is item-state, direct-lane — no coins move, so no
+    economy_service / audit leg; the atomicity is the whole contract).
+    """
+    item = item.strip().lower()
+    if qty <= 0:
+        return TradeResult(False, "Amount to deposit must be a positive number.")
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    have = inventory.get(item, 0)
+    if have < qty:
+        owned = f"only **{have}× {item}**" if have else f"no **{item}**"
+        return TradeResult(False, f"You have {owned} to deposit.")
+    async with db.transaction() as conn:
+        await db.update_mining_item(suid, guild_id, item, -qty, conn=conn)
+        await db.update_vault_item(suid, guild_id, item, qty, conn=conn)
+    return TradeResult(
+        True,
+        f"Deposited **{qty}× {item}** into your vault — safe and out of your pack.",
+    )
+
+
+async def vault_withdraw(
+    user_id: int,
+    guild_id: int,
+    item: str,
+    qty: int,
+) -> TradeResult:
+    """Move *qty* of *item* from the safe vault back into the active inventory."""
+    item = item.strip().lower()
+    if qty <= 0:
+        return TradeResult(False, "Amount to withdraw must be a positive number.")
+    suid = str(user_id)
+    vault = await db.get_vault(suid, guild_id)
+    have = vault.get(item, 0)
+    if have < qty:
+        owned = f"only **{have}× {item}**" if have else f"no **{item}**"
+        return TradeResult(False, f"Your vault holds {owned}.")
+    async with db.transaction() as conn:
+        await db.update_vault_item(suid, guild_id, item, -qty, conn=conn)
+        await db.update_mining_item(suid, guild_id, item, qty, conn=conn)
+    return TradeResult(
+        True,
+        f"Withdrew **{qty}× {item}** from your vault back into your pack.",
+    )
+
+
+async def vault_deposit_all_resources(user_id: int, guild_id: int) -> TradeResult:
+    """Stash every raw resource into the vault in ONE transaction.
+
+    The one-click "tuck away my ore" convenience (gear / tools / treasure stay
+    in the active pack — only sellable resources move).  All the moves commit
+    together so a mid-sweep failure leaves the pack and the vault consistent.
+    """
+    suid = str(user_id)
+    inventory = await db.get_mining_inventory(suid, guild_id)
+    resources = market.sellable_inventory(inventory)  # [(name, qty, price), …]
+    if not resources:
+        return TradeResult(False, "You have no raw resources to stash — go mine some!")
+    async with db.transaction() as conn:
+        for name, qty, _ in resources:
+            await db.update_mining_item(suid, guild_id, name, -qty, conn=conn)
+            await db.update_vault_item(suid, guild_id, name, qty, conn=conn)
+    moved = ", ".join(f"{qty}× {name}" for name, qty, _ in resources)
+    return TradeResult(True, f"Stashed {moved} into your vault.")
+
+
+# ---------------------------------------------------------------------------
 # Actions — mine / harvest / explore (loot grant + wear in one transaction)
 # ---------------------------------------------------------------------------
 
@@ -718,6 +799,9 @@ __all__ = [
     "sell",
     "sell_all",
     "buy",
+    "vault_deposit",
+    "vault_withdraw",
+    "vault_deposit_all_resources",
     "mine",
     "harvest",
     "explore",
