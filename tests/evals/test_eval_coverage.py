@@ -10,9 +10,10 @@ reason.
 
 The acknowledged sets are a **self-cleaning ratchet, not a permanent exemption**:
 they are the explicit, reviewable *pick-list of today's coverage gap* (8/34
-tools, 2/16 tasks at creation 2026-06-14; down to the 7 specialized BTD6 lookups
-as of 2026-06-15). This module fails on three drift directions, each with an
-actionable message:
+tools, 2/16 tasks at creation 2026-06-14; the **tool** gap reached **zero —
+34/34 covered** — on 2026-06-15, so `_ACK_UNCOVERED_TOOLS` is now empty and the
+floor equals the catalogue). This module fails on three drift directions, each
+with an actionable message:
 
 1. a **new** tool/task that is neither referenced nor acknowledged
    → add an eval case, or acknowledge it here with a reason;
@@ -41,28 +42,15 @@ from services import ai_tools
 # also covered (so the list can only shrink) or no longer exists.
 # --------------------------------------------------------------------------- #
 
-# BTD6 data + answerability lookups — the remaining gap. Their *retrieval* is
-# deterministically unit-pinned (tests/unit/services/ — btd6 context/grounding/
-# tooling); a live golden probe (model selects + uses the tool) is the
-# incremental add. The 6 highest-value hotspot tools (2026-06-14) plus 5 more
-# (2026-06-15) were lifted out into golden probes (cases.py); this set is the
-# remaining pick-list — shrink it as you add more. The read-only
-# server-introspection / AI-policy / diagnostics tools were all covered
-# 2026-06-15 (cases.py "non-BTD6 uncovered surface" tranche), so these 7
-# specialized BTD6 lookups are now the entire acknowledged-uncovered set.
-_ACK_BTD6_TOOLS = frozenset(
-    {
-        "btd6_bloon_filter",
-        "btd6_ct_team_status",
-        "btd6_geraldo_lookup",
-        "btd6_paragon_calculate",
-        "btd6_power_effect",
-        "btd6_power_lookup",
-        "btd6_relic_lookup",
-    }
-)
-
-_ACK_UNCOVERED_TOOLS = _ACK_BTD6_TOOLS
+# The acknowledged-uncovered tool set is now **EMPTY** — every canonical AI tool
+# (34/34) has at least one golden/smoke case as of 2026-06-15. The ratchet got
+# here in tranches: 8 → 14 (BTD6 hotspots) → 20 (catalog + 5 BTD6 lookups) → 27
+# (the non-BTD6 server-introspection / AI-policy / diagnostics surface) → 34 (the
+# final 7 specialized BTD6 lookups: bloon_filter, ct_team_status, geraldo_lookup,
+# paragon_calculate, power_effect, power_lookup, relic_lookup). A NEW tool added
+# to the surface now MUST get a case (the floor == full catalogue), or be added
+# back here with a reason — the guard fails closed either way.
+_ACK_UNCOVERED_TOOLS: frozenset[str] = frozenset()
 
 # --------------------------------------------------------------------------- #
 # Acknowledged-uncovered TASKS. Most are exercised by their own service/cog
@@ -93,8 +81,10 @@ _ACK_UNCOVERED_TASKS = frozenset(
 # deleted case. (8 → 14: the 6 BTD6 hotspot tool-selection probes, 2026-06-14.
 # 14 → 20: get_ai_tool_catalog + 5 more BTD6 lookups, 2026-06-15.
 # 20 → 27: the 5 server-introspection tools + get_ai_policy_explanation +
-# diagnostics_health_snapshot — the whole non-BTD6 uncovered surface, 2026-06-15.)
-_TOOL_COVERAGE_FLOOR = 27
+# diagnostics_health_snapshot — the whole non-BTD6 uncovered surface, 2026-06-15.
+# 27 → 34: the final 7 specialized BTD6 lookups — FULL tool-surface coverage,
+# 2026-06-15. The floor now equals the catalogue size: every tool stays covered.)
+_TOOL_COVERAGE_FLOOR = 34
 _TASK_COVERAGE_FLOOR = 2
 
 

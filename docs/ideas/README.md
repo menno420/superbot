@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`executor-chain-trigger-via-workflow-2026-06-15.md`](./executor-chain-trigger-via-workflow-2026-06-15.md) —
+  **session idea (2026-06-15, Q-0089, from the eval-coverage 34/34 run; owner live concern):** the
+  executor's STEP 3 self-chaining is unreliable because a `continue` issue opened by a routine *session*
+  doesn't re-fire a routine (loop-prevention by event actor — the same axis as the #768 bot-author miss),
+  while a cron/`ROUTINE_PAT` workflow-opened issue does (#894 fired, #887 didn't). Fix: a GitHub Action
+  opens the next `continue` issue via `ROUTINE_PAT` when a session *requests* a chain, so every chaining
+  trigger comes from the proven external path. → relates `docs/operations/autonomous-routines.md`.
 - [`dispatch-phase-gate-precheck-2026-06-15.md`](./dispatch-phase-gate-precheck-2026-06-15.md) —
   **session idea (2026-06-15, Q-0089, from the mining-Phase-2 feature dispatch):** run
   `check_phase_gate.py --phase` at the **dispatcher** before firing a `CLASS: feature` work
