@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db, equipment
-from utils.mining import character, market, rewards, workshop, world
+from utils.mining import capacity, character, market, rewards, workshop, world
 from utils.mining.exploration import explore_from_state
 from utils.mining.market import TradeResult
 from utils.mining.recipes import load_recipes
@@ -54,6 +54,8 @@ class MineResult:
     wear: WearReport
     #: Inline level-up notice (set only when the award crossed a level).
     xp_note: str | None = None
+    #: Gentle "pack full — stash at the vault" nudge (Slice A; never blocks).
+    pack_warning: str | None = None
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,8 @@ class HarvestResult:
 
     amount: int
     xp_note: str | None = None
+    #: Gentle "pack full — stash at the vault" nudge (Slice A; never blocks).
+    pack_warning: str | None = None
 
 
 @dataclass(frozen=True)
@@ -74,6 +78,8 @@ class ExploreActionResult:
     depth: int
     wear: WearReport
     xp_note: str | None = None
+    #: Gentle "pack full — stash at the vault" nudge (Slice A; never blocks).
+    pack_warning: str | None = None
 
 
 @dataclass(frozen=True)
@@ -549,9 +555,72 @@ async def vault_deposit_all_resources(user_id: int, guild_id: int) -> TradeResul
     return TradeResult(True, f"Stashed {moved} into your vault.")
 
 
+async def vault_upgrade(user_id: int, guild_id: int) -> TradeResult:
+    """Buy one vault-capacity tier — the §7.5 coin sink (Slice A).
+
+    Debits the rising upgrade cost and raises ``vault_level`` by one in ONE
+    transaction (the ``buy`` / ``skill_service.respec`` precedent: the coin
+    debit is economy-audited, the balance event emits after commit).  At the
+    top tier nothing is charged — the upgrade is a *capacity* feature, never a
+    block on storing or mining (owner: no hard cap).
+    """
+    suid = str(user_id)
+    level = await db.get_vault_level(suid, guild_id)
+    cost = capacity.vault_upgrade_cost(level)
+    if cost is None:
+        cap = capacity.vault_capacity(level)
+        return TradeResult(
+            False,
+            f"Your vault is already at its maximum capacity (**{cap}** item types).",
+        )
+    try:
+        async with db.transaction() as conn:
+            new_balance = await economy_service.debit_in_txn(
+                conn,
+                guild_id,
+                user_id,
+                cost,
+                reason=market.VAULT_UPGRADE_REASON,
+                actor_id=user_id,
+            )
+            await db.set_vault_level(suid, guild_id, level + 1, conn=conn)
+    except economy_service.InsufficientFundsError:
+        balance = await db.get_coins(user_id, guild_id)
+        return TradeResult(
+            False,
+            f"A vault upgrade costs **{cost}** 🪙 — you only have **{balance}** 🪙.",
+        )
+    await _emit_balance(
+        guild_id,
+        user_id,
+        -cost,
+        new_balance,
+        market.VAULT_UPGRADE_REASON,
+    )
+    new_cap = capacity.vault_capacity(level + 1)
+    return TradeResult(
+        True,
+        f"Vault upgraded to capacity **{new_cap}** item types for **{cost}** 🪙. "
+        f"Balance: **{new_balance}** 🪙.",
+        -cost,
+        new_balance,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Actions — mine / harvest / explore (loot grant + wear in one transaction)
 # ---------------------------------------------------------------------------
+
+
+def _pack_warning_after(inventory: dict[str, int], granted: str | None) -> str | None:
+    """The pack soft-cap nudge once *granted* lands in *inventory* (Slice A).
+
+    Computed from the pre-action read + the granted item (no extra query): a
+    gentle "stash at the vault" hint when the pack is at/over its distinct-type
+    soft cap.  Returns ``None`` below the cap — mining is never blocked.
+    """
+    projected = capacity.projected_distinct_types(inventory, granted)
+    return capacity.pack_warning(capacity.CapStatus(projected, capacity.PACK_SOFT_CAP))
 
 
 async def mine(user_id: int, guild_id: int) -> MineResult:
@@ -590,6 +659,7 @@ async def mine(user_id: int, guild_id: int) -> MineResult:
         depth=depth,
         wear=report,
         xp_note=xp.note if xp is not None and xp.leveled_up else None,
+        pack_warning=_pack_warning_after(inventory, found),
     )
 
 
@@ -612,6 +682,7 @@ async def harvest(user_id: int, guild_id: int) -> HarvestResult:
     return HarvestResult(
         amount=amount,
         xp_note=xp.note if xp is not None and xp.leveled_up else None,
+        pack_warning=_pack_warning_after(inventory, "wood"),
     )
 
 
@@ -653,6 +724,7 @@ async def explore(user_id: int, guild_id: int) -> ExploreActionResult:
         depth=depth,
         wear=report,
         xp_note=xp.note if xp is not None and xp.leveled_up else None,
+        pack_warning=_pack_warning_after(inventory, item),
     )
 
 
@@ -806,6 +878,7 @@ __all__ = [
     "vault_deposit",
     "vault_withdraw",
     "vault_deposit_all_resources",
+    "vault_upgrade",
     "mine",
     "harvest",
     "explore",

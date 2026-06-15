@@ -19,6 +19,7 @@ from utils.mining import items
 # Reason tags written to economy_audit_log (filterable money-flow events).
 SELL_REASON = "mining:sell_ore"
 BUY_REASON = "mining:buy_gear"
+VAULT_UPGRADE_REASON = "mining:vault_upgrade"
 
 # Gear shop — coins to buy each item (the sink).  Priced ~5-6× the sell value
 # of the materials it would take to craft, so crafting stays the cheaper path
@@ -167,6 +168,7 @@ __all__ = [
     "GEAR_SHOP",
     "SELL_REASON",
     "BUY_REASON",
+    "VAULT_UPGRADE_REASON",
     "sell_price",
     "sellable_inventory",
     "total_sale_value",

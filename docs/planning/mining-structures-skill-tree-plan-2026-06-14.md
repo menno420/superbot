@@ -104,7 +104,18 @@ over-cap, unknown branch); respec debits + clears; **the byte-identical-when-emp
 **Gate:** none — fully buildable now. **Size:** one focused PR (the table+service+merge), UI can be a
 second PR if it runs long.
 
-## Slice A — Vault v2: inventory soft-cap + the sink · **▶ startable** (builds on #884)
+## Slice A — Vault v2: inventory soft-cap + the sink · **✅ DONE (#897, 2026-06-15)**
+
+Shipped: pure cap math in `utils/mining/capacity.py` (distinct item-types; `PACK_SOFT_CAP=40`,
+vault capacity `30 + level×15` to a max tier 6, rising upgrade-cost ladder). The active pack gets a
+**soft cap** (warning only — the hub + every mine/harvest/explore swing nudge "stash at the 🏦
+Vault"; mining is **never** blocked). The vault gets an **upgradeable capacity** — `!vaultupgrade`
+/ the panel's ⬆️ Upgrade button spend coins through the audited economy lane
+(`mining_workflow.vault_upgrade`, migration 072 `vault_level` on `mining_player_state`). All
+**additive** (level 0 = the v1 base; nothing blocks deposits/withdrawals). Owner directive honored:
+warn at cap, no hard cap. Tests: `tests/unit/utils/test_mining_capacity.py` + vault-upgrade
+contract pins in `tests/unit/cogs/test_mining_vault.py`. **Follow-up (future slice, owner-gated):**
+hard enforcement (block a mine/deposit at cap) if the owner ever approves it.
 
 Turns the shipped Vault from a convenience into a **real sink** (the §7.5 intent: *"inventory cap +
 safe stash"*). The active pack gets a **soft cap**; the vault is uncapped-but-built.

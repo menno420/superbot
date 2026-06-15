@@ -92,6 +92,30 @@ literal agent can't repeat the mistake. (This is the same "owner-directed vs. ag
 clarity `routine-system-improvements-2026-06-14.md` Priority 5 asked for — now with a live
 failure proving it's load-bearing, not theoretical.)
 
+## Recurrence #3 + the discoverability gap (2026-06-15, the #897 run)
+
+A **third** dispatched mining-feature work order arrived ("Implement Mining Slice A — Vault v2")
+while the gate read FIX. The #897 routine made the **right** call — it built the feature (Vault v2
+soft-cap + vault-cap upgrade, #897) — but only after **grepping `docs/ideas/` and finding the ⚠
+Correction at the top of *this* file**. That is the real remaining gap: the owner's decision
+("a *dispatched* work order is owner-directed and flows freely; the gate is for *agent-self-originated*
+features") currently lives **only** in a `status: ideas` file. A literal agent reading just its
+routine prompt (which says, verbatim, `feature (agent-originated) → if fix-phase, capture-and-stop`)
++ CLAUDE.md + current-state would **not** find it, and could repeat the #888 mistake (gate a
+dispatched feature) — or, worse, the inverse (build an actually agent-invented feature in fix-phase).
+
+**The cheapest high-value fix is canonical homing, not mechanism:** promote the
+dispatched-vs-agent-originated distinction into a discoverable, authoritative home —
+- a numbered **router Q-block** (it is effectively a Q-0114 *scope clarification*, owner-decided), and
+- one sentence in **`scripts/check_phase_gate.py`**'s help/docstring + the phase-gate doc:
+  *"This gate is for **agent-self-originated** features. A **dispatched** work order is
+  owner-directed and is NOT gated — build it like a bug fix."*
+
+Then the routine prompt's `feature` branch (and any agent) resolves the ambiguity from a canonical
+source instead of from a grep into the ideas backlog. (Mechanism — the dispatch-side pre-check
+above — is still worth doing, but it is the *efficiency* layer; canonical homing is the
+*correctness* layer and is a one-paragraph docs change.)
+
 ## Routing
 
 - Mechanism (add the pre-check to the dispatch skill) is a small Hermes-side change once the

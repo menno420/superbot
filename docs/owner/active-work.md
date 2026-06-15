@@ -80,4 +80,3 @@ living ledger (`docs/current-state.md`).
   concurrency-cancel + pip/mypy caching + claim ledger + push-batching · 2026-06-14 · **#814 (merged)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
-branch · mining Vault v2 (soft-cap + vault-cap upgrade) · disbot/utils/mining/capacity.py + mining_workflow + vault_panel + migration 072 · 2026-06-15

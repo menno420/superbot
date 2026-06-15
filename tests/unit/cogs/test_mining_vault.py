@@ -198,3 +198,111 @@ async def test_stash_all_with_no_resources_writes_nothing():
     assert not result.ok
     mock_inv.assert_not_awaited()
     mock_vault.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# Pack soft-cap nudge on mining actions (Slice A — warns, never blocks)
+# ---------------------------------------------------------------------------
+
+
+def test_pack_warning_after_fires_only_when_a_new_type_reaches_the_cap():
+    from utils.mining import capacity
+
+    # One slot below the cap, granting a NEW type tips it over → nudge.
+    near_full = {f"item{i}": 1 for i in range(capacity.PACK_SOFT_CAP - 1)}
+    assert mining_workflow._pack_warning_after(near_full, "diamond") is not None
+    # Same pack, but the grant tops up an existing type → still below cap → quiet.
+    assert mining_workflow._pack_warning_after(near_full, "item0") is None
+    # A roomy pack never nags.
+    assert mining_workflow._pack_warning_after({"stone": 5}, "iron") is None
+
+
+# ---------------------------------------------------------------------------
+# Vault upgrade (Slice A — the coin sink)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_vault_upgrade_debits_coins_and_raises_level_atomically():
+    with (
+        patch(
+            "services.mining_workflow.db.get_vault_level",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.mining_workflow.economy_service.debit_in_txn",
+            new_callable=AsyncMock,
+            return_value=12345,
+        ) as mock_debit,
+        patch(
+            "services.mining_workflow.db.set_vault_level",
+            new_callable=AsyncMock,
+        ) as mock_level,
+        patch(
+            "services.mining_workflow._emit_balance",
+            new_callable=AsyncMock,
+        ) as mock_emit,
+    ):
+        result = await mining_workflow.vault_upgrade(123, 7)
+    assert result.ok
+    # Coin debit + level raise both run on the workflow's transaction conn.
+    mock_debit.assert_awaited_once()
+    mock_level.assert_awaited_once_with("123", 7, 1, conn=ANY)
+    # Balance event emits only after commit.
+    mock_emit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_vault_upgrade_at_max_level_charges_nothing():
+    from utils.mining import capacity
+
+    with (
+        patch(
+            "services.mining_workflow.db.get_vault_level",
+            new_callable=AsyncMock,
+            return_value=capacity.MAX_VAULT_LEVEL,
+        ),
+        patch(
+            "services.mining_workflow.economy_service.debit_in_txn",
+            new_callable=AsyncMock,
+        ) as mock_debit,
+        patch(
+            "services.mining_workflow.db.set_vault_level",
+            new_callable=AsyncMock,
+        ) as mock_level,
+    ):
+        result = await mining_workflow.vault_upgrade(1, 1)
+    assert not result.ok
+    assert "maximum" in result.message.lower()
+    mock_debit.assert_not_awaited()  # nothing charged at the ceiling
+    mock_level.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_vault_upgrade_insufficient_funds_writes_nothing():
+    with (
+        patch(
+            "services.mining_workflow.db.get_vault_level",
+            new_callable=AsyncMock,
+            return_value=0,
+        ),
+        patch(
+            "services.mining_workflow.economy_service.debit_in_txn",
+            new_callable=AsyncMock,
+            side_effect=mining_workflow.economy_service.InsufficientFundsError(),
+        ),
+        patch(
+            "services.mining_workflow.db.set_vault_level",
+            new_callable=AsyncMock,
+        ) as mock_level,
+        patch(
+            "services.mining_workflow.db.get_coins",
+            new_callable=AsyncMock,
+            return_value=5,
+        ),
+    ):
+        result = await mining_workflow.vault_upgrade(1, 1)
+    assert not result.ok
+    assert "🪙" in result.message
+    mock_level.assert_not_awaited()  # no level change without payment

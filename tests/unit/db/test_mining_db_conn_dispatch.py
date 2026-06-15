@@ -86,3 +86,11 @@ async def test_write_primitives_dispatch_conn_through_pool_helpers():
     ) as ex:
         await mining_player_state.set_last_broken("1", 99, None, conn=sentinel)
     assert ex.await_args.kwargs["conn"] is sentinel
+
+    # vault_upgrade composes set_vault_level inside the workflow transaction.
+    with patch(
+        "utils.db.games.mining_player_state.pool.execute",
+        new_callable=AsyncMock,
+    ) as ex:
+        await mining_player_state.set_vault_level("1", 99, 2, conn=sentinel)
+    assert ex.await_args.kwargs["conn"] is sentinel

@@ -115,6 +115,8 @@ class MiningCog(commands.Cog):
             message += "\n" + "\n".join(result.wear.notes)
         if result.xp_note:
             message += "\n" + result.xp_note
+        if result.pack_warning:
+            message += "\n" + result.pack_warning
         await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "panel_action"})
@@ -127,6 +129,8 @@ class MiningCog(commands.Cog):
         )
         if result.xp_note:
             message += "\n" + result.xp_note
+        if result.pack_warning:
+            message += "\n" + result.pack_warning
         await ctx.send(message)
 
     @commands.command(
@@ -274,6 +278,8 @@ class MiningCog(commands.Cog):
             message += "\n" + "\n".join(result.wear.notes)
         if result.xp_note:
             message += "\n" + result.xp_note
+        if result.pack_warning:
+            message += "\n" + result.pack_warning
         await ctx.send(message)
 
     @commands.command(hidden=True, extras={"classification": "hidden"})
@@ -569,6 +575,16 @@ class MiningCog(commands.Cog):
             item,
             amount,
         )
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    @commands.command(
+        name="vaultupgrade",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def vaultupgrade(self, ctx):
+        """Buy one vault-capacity tier with coins (e.g. more room to stash)."""
+        result = await mining_workflow.vault_upgrade(ctx.author.id, ctx.guild.id)
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
     # ---------------------------------------------------------------- skills

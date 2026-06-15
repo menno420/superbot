@@ -103,6 +103,8 @@ class MineView(BaseView):
             description += "\n" + "\n".join(result.wear.notes)
         if result.xp_note:
             description += "\n" + result.xp_note
+        if result.pack_warning:
+            description += "\n" + result.pack_warning
         result_embed = discord.Embed(
             title="⛏️ Mined!",
             description=description,
