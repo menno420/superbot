@@ -5496,7 +5496,8 @@ real plan slice" path handles this with no prompt change needed). The API (`/fir
 **on-demand** work-order fires (a `/bugreport`, a phone request). This **supersedes** the
 Hermes-VPS-cron / GitHub-`schedule:` cadence plan (both proved unreliable: GitHub `schedule:` delivered
 ~1 run/night hours late; Hermes proved unreliable for cadence). The legacy
-`.github/workflows/executor-nightly.yml` is superseded and should be disabled.
+`.github/workflows/executor-nightly.yml` was **removed 2026-06-15** (owner deleted the night-executor
+console routine; the workflow followed).
 
 **Prompt review (owner asked, "I don't think it needs changes").** Correct — functionally none: the
 scheduled (no-work-order) fire routes through the existing empty-input path → advance the plan. Only
@@ -5505,5 +5506,5 @@ PR. Owner fixed the console-pasted prompts directly; this PR brings the in-repo 
 
 **Home:** `docs/operations/hermes-dispatch-bridge.md` (prompt intro + step 8 + Maintainer setup) ·
 `docs/operations/autonomous-routines.md` (fleet table · Stage-1 note · trigger note · timing caveat) ·
-`docs/current-state.md` stamp-line. **Owner action:** disable `executor-nightly.yml` (the last legacy
-trigger).
+`docs/current-state.md` stamp-line. **Owner action — DONE:** `executor-nightly.yml` removed
+2026-06-15 (the last legacy trigger).

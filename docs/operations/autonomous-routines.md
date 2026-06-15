@@ -176,7 +176,7 @@ API (`/fire`) trigger stays for on-demand work-order fires. This replaced the ea
 the cadence from **Hermes' VPS cron** / the GitHub `schedule:` cron — both proved unreliable (the
 GitHub `schedule:` trigger delivered only ~1 run/night, hours late; see the timing caveat under
 Control-plane state). The legacy `.github/workflows/executor-nightly.yml` (it opened `continue`
-issues for the now-retired night-executor) is superseded and should be disabled. A `continue`-labelled
+issues for the now-retired night-executor) was **removed 2026-06-15**. A `continue`-labelled
 issue is still a valid human-filed handoff signal a dispatch run reads on its next fire.
 
 ---
@@ -255,7 +255,7 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 > `executor-nightly.yml`); the lag is GitHub's scheduler. **Resolved 2026-06-15 (Q-0146):** the
 > dispatch cadence moved off GitHub cron entirely onto the Claude Code console **Schedule** trigger
 > (`0 */2 * * *`, every 2h), which fires reliably — this caveat now applies only to the remaining
-> GitHub-`schedule:` workflows (e.g. `backup-db.yml`) and the superseded `executor-nightly.yml`.
+> GitHub-`schedule:` workflows (e.g. `backup-db.yml`); `executor-nightly.yml` was removed 2026-06-15.
 
 ## See also
 
@@ -264,6 +264,6 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - `scripts/check_reconciliation_due.py` · `scripts/check_phase_gate.py` · `scripts/check_current_state_ledger.py`
 - `scripts/check_loop_health.py` — live-GitHub probe of the Control-plane state table (Q-0135); run it in the reconciliation pass.
 - `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 30-PR boundary.
-- `.github/workflows/executor-nightly.yml` — cron that opens a scheduled `continue` issue at 01:17/03:17 UTC (best-effort — often hours late).
+  *(The dispatch cadence is the console Schedule, `0 */2 * * *`, Q-0146 — `executor-nightly.yml` was removed 2026-06-15.)*
 - [`hermes-skills/review-merge.md`](./hermes-skills/review-merge.md) — Hermes' independent review + merge gate for `needs-hermes-review` PRs (Q-0117).
 - `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).

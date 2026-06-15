@@ -60,7 +60,7 @@ specific knowledge?"* → **S3 (mechanism)**. *"Is this SuperBot's specific know
 - **Is:** the self-improving-agent **engine** — the substrate that makes any agent work correctly
   with little steering. Content-agnostic and liftable; the `portable-substrate-kit` is S3 extracted.
 - **Holds:** the **hooks** (`scripts/claude_*`, `check_branch_freshness.py`), the **autonomous loop**
-  (`.github/workflows/{executor-nightly,reconciliation-trigger,auto-merge-enabler}.yml`, the routines,
+  (`.github/workflows/{reconciliation-trigger,auto-merge-enabler}.yml`, the console-Schedule dispatch routine,
   Hermes orchestration + the skill *builder* `scripts/hermes/build_skills.py`), the **context-compiler
   machinery** (`tools/agent_context/build_pack.py`), the **checkers** (`scripts/check_*.py`), and the
   **governance scaffolding** (`.claude/CLAUDE.md` as a template, `settings.json`, the question-router
