@@ -95,7 +95,8 @@ def test_panel_modules_do_not_import_game_engines(module_path: Path):
 
 def test_blackjack_panel_has_no_practice_or_replay_button():
     """Practice / Replay / Change-Mode are not planned in PR 5. Any
-    reintroduction should be deliberate with engine support."""
+    reintroduction should be deliberate with engine support.
+    """
     view = blackjack_panel.BlackjackPanelView(_author())
     labels = [
         (c.label or "")
@@ -111,7 +112,8 @@ def test_blackjack_panel_has_no_practice_or_replay_button():
 
 def test_rps_panel_has_no_replay_or_best_of_button():
     """Replay / Best-of selectors are not planned in PR 4. Any
-    reintroduction should be deliberate."""
+    reintroduction should be deliberate.
+    """
     view = rps_panel.RPSPanelView(_author())
     labels = [
         (c.label or "")

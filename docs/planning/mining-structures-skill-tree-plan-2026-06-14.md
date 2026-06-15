@@ -15,7 +15,9 @@ standing steer (2026-06-14): *bot-side product work, mining cog + related, is we
 - The slices are **independent and additive** — pick any **▶ startable** one, ship it, pick the next.
   Recommended order is **D (skill tree) → A (vault cap) → B (forge) → E (respec) → F (titles) → C
   (home)**, but they don't hard-depend on each other except where noted. **Shipped: D (#891) · A
-  (#897) · B (#905). Next ▶ = E (respec polish) · F (titles) · C (home).**
+  (#897) · B (#905) · C (#910) · E + F (#912). All startable slices are done — see "Routing" to
+  re-badge this plan `historical`. What remains is owner-gated only: the Vault-cap *hard*-enforcement
+  follow-up and ⛔ V-16 phase 2 (real sprites).**
 - **One PR per slice**, born-red per Q-0133 (open the `.sessions/` card `in-progress`, flip to
   `complete` last). Keep runtime PRs small and focused (CLAUDE.md).
 - **Verify every slice** before flipping the card: `python3.10 scripts/check_quality.py --full`
@@ -151,20 +153,44 @@ taken by the Vault-cap slice) + `utils/db/games/mining_structures.py`; `mining_w
 browser. `🔥 Forge` panel. **Tests:** build debits + level-up; recipe gating; the
 free-tier-no-extra-I/O additive property. **Gate:** none. **Size:** medium.
 
-## Slice E — Respec polish · **▶ startable** (after D)
+## Slice E — Respec polish · **✅ SHIPPED (PR #912, 2026-06-15)**
 
-If Slice D shipped respec minimally, this adds the **UX** (confirm modal, cost preview, "are you sure"
-+ partial respec of one branch). **Gate:** Slice D. **Size:** small.
+> **Done 2026-06-15.** Slice D shipped a full respec on a one-click danger button (instant charge).
+> This adds the **confirm step** (`build_respec_confirm_embed` + `MiningRespecView` in
+> `views/mining/skills_panel.py`) — cost + point preview, "are you sure", nothing charged until you
+> pick an option — plus a **partial respec of one branch** (`skill_service.respec_branch`, a cheaper
+> level-scaled coin sink through the same audited economy lane / one-transaction atomicity). Numbers
+> pinned in [`respec-numbers-2026-06-15.md`](respec-numbers-2026-06-15.md). CI green; arch 0.
 
-## Slice F — Titles from skill mastery + milestones · **▶ startable** (after D)
+## Slice F — Titles from skill mastery + milestones · **✅ SHIPPED (PR #912, 2026-06-15)**
 
-The cheapest identity feature (text). Earned, equippable titles from **skill mastery** ("the Deep",
-"Ironclad", "Lucky", "Master Smith") + **milestones** ("depth 50", "first diamond"). Pure trigger
-table → a `player_titles` store + an equipped-title field surfaced on the Character card. **Gate:**
-Slice D (mastery triggers) for the skill titles; milestone titles need only existing depth/XP data.
-**Size:** small–medium.
+> **Done 2026-06-15.** Earned, equippable text titles (brainstorm §7.6 identity). Pure trigger table
+> `utils/mining/titles.py` (`Title` / `TitleContext` / `earned_titles` / `is_earned`) → the earned set
+> is **derived** from existing progression (skill branch at cap, deepest biome reached, game level),
+> so nothing is granted on a mutation path; only the equipped *choice* persists
+> (`mining_player_state.equipped_title`, migration 074). `services/title_service.py` owns equip/unequip
+> (the `set_equipped_title` write primitive is on the RS02 boundary ratchet) and gates the displayed
+> title on **still being earned** (a respec silently un-displays a mastery title). UI:
+> `views/mining/titles_panel.py` (a `🏆 Titles` button on the skills panel + `!titles` + a select to
+> display/clear) and the equipped title surfaced on the `character_panel.py` aggregator embed. **Fully
+> additive** — no title equipped → the Character card is byte-identical. The depth-milestone titles are
+> biome-*named* so they extend cleanly when the **P6 grid** deepens the world (no "depth = 3 forever"
+> assumption baked in). Numbers pinned in [`titles-numbers-2026-06-15.md`](titles-numbers-2026-06-15.md).
+> CI green; arch 0.
 
-## Slice C — Home structure / profile backdrop · **▶ startable (art-light)**
+## Slice C — Home structure / profile backdrop · **✅ SHIPPED (PR #910, 2026-06-15)**
+
+> **Done 2026-06-15.** A built **Home** structure (coin + material sink) that gives the Character
+> card a backdrop colour by level (Cozy Cabin → Stone Keep → Grand Hall), **art-light v1 — no
+> sprites**, so it is unrelated to the owner-blocked V-16 phase-2 PNG work. Reused #905's generic
+> `mining_structures` table + `build_structure` (generalized off the forge-specific copy: a
+> per-structure registry in `utils/mining/structures.py` — `build_cost`/`level_name`/`max_level`/
+> `display_name`; forge helpers delegate, byte-identical). `utils/character_render.py` gained a
+> `CharacterSpec.backdrop` + `home_backdrop(level)` palette (level 0 → `None` → byte-identical),
+> wired through `render_character_for(..., home_level=)` at both card render sites
+> (`gear_panel` · `mining_cog`). UI: `views/mining/home_panel.py` + a `🏠 Home` hub button + `!home`.
+> Numbers pinned in [`home-numbers-2026-06-15.md`](home-numbers-2026-06-15.md). **Follow-up
+> (owner-gated):** V-16 phase 2 swaps the flat backdrop for owner-art frames once the PNG pack lands.
 
 The §7.5 "Home (hub + profile backdrop)". v1 with **zero custom art**: a built Home structure that
 adds a personalized header/backdrop to the Character card (PIL `character_render` already composites;

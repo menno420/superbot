@@ -345,7 +345,8 @@ async def test_modal_buttons_never_defer_first():
     deferred modal silently dies (Discord rejects it after a defer). The
     merged editor behaves correctly; this pins the dead-modal regression
     class so a future "defer everything up front" refactor can't break
-    Rename/Re-describe. (Salvaged from the parallel PR A build, #678.)"""
+    Rename/Re-describe. (Salvaged from the parallel PR A build, #678.)
+    """
     view = HelpEntityEditorView(MagicMock(id=1), GUILD, "subsystem", "economy")
     for label in ("✏️ Rename…", "📝 Re-describe…"):
         button = next(

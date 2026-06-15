@@ -25,11 +25,28 @@ sudo journalctl -u hermes-gateway -f           # Live-tail the logs (Ctrl+C to s
 
 ```bash
 cd /home/hermes/repos/superbot                 # Go to the repo (lines below assume you're here).
-git pull origin main                           # Pull the latest changes. Always do this before re-installing.
+git fetch origin main && git reset --hard origin/main   # Sync the mirror to GitHub before re-installing. Discards local repo edits (it's a read-only mirror); never aborts on divergence.
 bash scripts/hermes/install-soul.sh            # Write the operating prompt → ~/.hermes/SOUL.md (backs up first). No restart needed.
 bash scripts/hermes/install-skills.sh          # Copy skill files → ~/.hermes/skills/. Restart the gateway after this one.
 bash scripts/hermes/install-soul.sh --dry-run  # Preview the prompt without writing it.
 ```
+
+## Clone diverged from main → `git pull` won't fast-forward (recovery)
+
+`git pull` aborting with *"Not possible to fast-forward"* / *"diverging branches"* means the VPS
+clone has local commits that aren't on GitHub. The clone is a read-only **mirror** — reset it to
+match (the deploy command above already does this; this is the same fix with a safety snapshot):
+
+```bash
+cd /home/hermes/repos/superbot
+git branch backup-vps-$(date +%Y%m%d)   # Snapshot the local-only commits first (recoverable via: git log backup-vps-…).
+git fetch origin main
+git reset --hard origin/main             # Make the clone exactly match GitHub.
+git log --oneline -1                     # Confirm you're on the latest commit.
+```
+
+Never commit directly to the clone's `main` — Hermes writes on `claude/*` branches it pushes, so
+the mirror stays clean and this won't recur.
 
 ## Hermes config & identity
 
@@ -37,6 +54,9 @@ bash scripts/hermes/install-soul.sh --dry-run  # Preview the prompt without writ
 hermes config                                  # Show Hermes' current configuration.
 hermes config edit                             # Safely edit config.yaml (e.g. trim joke personalities).
 hermes config check                            # Validate the config after editing.
+hermes model                                   # Interactive model picker. NOTE: the built-in list is stale (offers gpt-4o-mini) — `config set model` is authoritative.
+hermes config set model openai/gpt-5.4-mini    # Set the model (provider/model). Set the matching key first (below). Restart after.
+hermes config set OPENAI_API_KEY sk-...        # Use your own key directly — no OpenRouter needed (also ANTHROPIC_API_KEY for anthropic/* models). Set on the VPS; never share.
 hermes --help                                  # Explore the rest of the Hermes CLI.
 cat ~/.hermes/SOUL.md                          # View Hermes' current base identity / operating prompt.
 ls ~/.hermes/skills/                           # List the skills Hermes has installed.

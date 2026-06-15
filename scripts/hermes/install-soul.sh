@@ -52,6 +52,21 @@ sys.stdout.write(block + "\n")
 PYEOF
 )"
 
+# SOUL.md size guard. Hermes loads SOUL.md as system-prompt slot #1 and SILENTLY TRUNCATES it
+# if it is too large — an invisible cause of "Hermes forgets its own rules". The exact ceiling is
+# not published upstream; HERMES_SOUL_BUDGET defaults to 8000 (aligned with Hermes' documented
+# 8000-char per-context-file cap) — confirm against your installed version. Provenance: the Hermes
+# token-efficiency investigation, 2026-06-15. DELETE this guard if it proves noisy/wrong over time.
+SOUL_BUDGET="${HERMES_SOUL_BUDGET:-8000}"
+PROMPT_BYTES="$(printf '%s\n' "$PROMPT" | wc -c | tr -d ' ')"
+if [[ "$PROMPT_BYTES" -gt "$SOUL_BUDGET" ]]; then
+  echo "⚠ operating prompt is $PROMPT_BYTES bytes — OVER the ~$SOUL_BUDGET-byte budget." >&2
+  echo "  Hermes truncates an oversized SOUL.md SILENTLY (it loses rules past the cut)." >&2
+  echo "  Trim docs/operations/hermes-operating-prompt.md, or raise HERMES_SOUL_BUDGET if your version allows." >&2
+elif [[ "$PROMPT_BYTES" -gt $((SOUL_BUDGET * 8 / 10)) ]]; then
+  echo "ℹ operating prompt is $PROMPT_BYTES of ~$SOUL_BUDGET bytes (>80%) — little headroom before truncation." >&2
+fi
+
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "# would write to: $DEST"
   echo "---"

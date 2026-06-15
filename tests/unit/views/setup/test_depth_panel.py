@@ -64,7 +64,8 @@ def test_depth_panel_has_three_buttons():
 
 def test_depth_panel_highlights_current_choice():
     """When session.depth is set, the matching button is styled in
-    success colour to surface the existing pick."""
+    success colour to surface the existing pick.
+    """
     view = DepthPanelView(_owner_member(), session=_session(depth="standard"))
     by_id = {
         c.custom_id: c for c in view.children if isinstance(c, discord.ui.Button)
@@ -77,7 +78,8 @@ def test_depth_panel_highlights_current_choice():
 @pytest.mark.asyncio
 async def test_depth_panel_select_persists_and_opens_hub():
     """Clicking a depth button persists it and edits the message to
-    the hub view in place."""
+    the hub view in place.
+    """
     from views.setup.hub import SetupHubView
 
     view = DepthPanelView(_owner_member(), session=_session())
@@ -111,7 +113,8 @@ async def test_depth_panel_select_persists_and_opens_hub():
 async def test_depth_panel_select_after_wizard_transitions_to_wizard():
     """With after='wizard' (the first-run wizard entry), selecting a depth
     persists it and transitions the anchor into the linear wizard via
-    render_wizard_step — not the hub."""
+    render_wizard_step — not the hub.
+    """
     view = DepthPanelView(_owner_member(), session=_session(), after="wizard")
     interaction = _interaction()
 

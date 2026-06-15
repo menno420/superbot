@@ -134,7 +134,8 @@ def test_get_option_returns_none_for_unknown_and_none():
 
 def test_purpose_option_slugs_match_known_purposes():
     """Every option's slug must be in the DB-layer allowlist so a
-    selection actually persists."""
+    selection actually persists.
+    """
     from utils.db.setup_session import KNOWN_PURPOSES
 
     expected = {opt.slug for opt in PURPOSE_OPTIONS}
@@ -424,7 +425,8 @@ async def test_run_posts_picker_with_current_purpose():
 @pytest.mark.asyncio
 async def test_run_handles_resume_failure_gracefully():
     """A resume_session DB failure still opens the picker (with
-    purpose=None) rather than crashing the section button."""
+    purpose=None) rather than crashing the section button.
+    """
     interaction = _interaction(_owner_member())
 
     with (

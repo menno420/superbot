@@ -21,7 +21,6 @@ import pytest
 from services.automation_mutation import AutomationMutationResult
 from services.automation_templates import (
     TEMPLATES,
-    AutomationTemplate,
     get_template,
 )
 from views.setup.template_picker import (

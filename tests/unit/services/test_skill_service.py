@@ -143,3 +143,75 @@ async def test_respec_insufficient_funds_does_not_clear():
             result = await ss.respec(1, 2)
     assert not result.ok
     setp.assert_not_called()
+
+
+# --- Slice E: single-branch respec ------------------------------------------
+
+
+def test_respec_branch_cost_is_cheaper_than_full_and_scales():
+    assert ss.respec_branch_cost(0) == ss.RESPEC_BRANCH_BASE_COST
+    assert (
+        ss.respec_branch_cost(10)
+        == ss.RESPEC_BRANCH_BASE_COST + 10 * ss.RESPEC_BRANCH_COST_PER_LEVEL
+    )
+    # A single-branch respec must always cost less than the full one.
+    for level in (0, 5, 20, 40):
+        assert ss.respec_branch_cost(level) < ss.respec_cost(level)
+
+
+@pytest.mark.asyncio
+async def test_respec_branch_rejects_unknown_branch():
+    with _patch_level(5), _patch_skills({"mining": 3}):
+        with patch.object(ss.db, "set_skill_points", AsyncMock()) as setp:
+            result = await ss.respec_branch(1, 2, "digging")
+    assert not result.ok
+    setp.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_respec_branch_with_no_points_in_branch_is_a_noop():
+    with _patch_level(5), _patch_skills({"mining": 3}):
+        with patch.object(ss.db, "set_skill_points", AsyncMock()) as setp:
+            result = await ss.respec_branch(1, 2, "combat")
+    assert not result.ok
+    setp.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_respec_branch_debits_and_clears_only_that_branch():
+    alloc = {"mining": 4, "combat": 3}
+    with _patch_level(6), _patch_skills(alloc):
+        with patch.object(ss.db, "transaction", _fake_txn), patch.object(
+            ss.economy_service,
+            "debit_in_txn",
+            AsyncMock(return_value=420),
+        ) as debit, patch.object(
+            ss.db,
+            "set_skill_points",
+            AsyncMock(),
+        ) as setp, patch.object(ss.bus, "emit", AsyncMock()) as emit:
+            result = await ss.respec_branch(1, 2, "mining")
+    assert result.ok
+    assert result.new_balance == 420
+    assert debit.await_args.args[3] == ss.respec_branch_cost(6)
+    # Only "mining" cleared (to 0) — "combat" stays untouched.
+    setp.assert_awaited_once()
+    assert setp.await_args.args[:4] == (2, 1, "mining", 0)
+    emit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_respec_branch_insufficient_funds_does_not_clear():
+    with _patch_level(6), _patch_skills({"mining": 4}):
+        with patch.object(ss.db, "transaction", _fake_txn), patch.object(
+            ss.economy_service,
+            "debit_in_txn",
+            AsyncMock(side_effect=ss.economy_service.InsufficientFundsError("broke")),
+        ), patch.object(
+            ss.db,
+            "get_coins",
+            AsyncMock(return_value=10),
+        ), patch.object(ss.db, "set_skill_points", AsyncMock()) as setp:
+            result = await ss.respec_branch(1, 2, "mining")
+    assert not result.ok
+    setp.assert_not_called()

@@ -49,6 +49,26 @@ _REF_W, _REF_H = 200, 300
 _RENDER_SCALE = 2
 _BG = (24, 26, 32)
 
+# Home structure (mining Slice C): a built Home selects a Character-card
+# backdrop colour by level.  Level 0 (unbuilt) maps to ``None`` -> the default
+# ``_BG``, so an unbuilt Home renders byte-identical to before.  The level names
+# live in ``utils.mining.structures`` (Cozy Cabin / Stone Keep / Grand Hall).
+HOME_BACKDROPS: dict[int, tuple[int, int, int]] = {
+    1: (43, 34, 28),  # Cozy Cabin — warm brown
+    2: (40, 46, 54),  # Stone Keep — cool slate
+    3: (34, 30, 58),  # Grand Hall — regal indigo
+}
+
+
+def home_backdrop(level: int) -> tuple[int, int, int] | None:
+    """The Character-card backdrop colour for a Home at *level*, or ``None``.
+
+    ``None`` (level 0, or an unknown level) keeps the default ``_BG`` so the
+    card is byte-identical to the pre-Home render.
+    """
+    return HOME_BACKDROPS.get(level)
+
+
 # Built-in layout defaults, in reference-canvas coordinates:
 # slot -> (anchor_cx, anchor_cy, scale).  The six set families mirror the
 # seeded manifest (which overrides these when readable); tool/light/charm are
@@ -169,6 +189,9 @@ class CharacterSpec:
     layers: tuple[CharacterLayer, ...]
     width: int = _REF_W * _RENDER_SCALE
     height: int = _REF_H * _RENDER_SCALE
+    # Home-structure backdrop colour (mining Slice C); None → default _BG, so an
+    # unbuilt Home renders byte-identical (the spec stays hashable for the cache).
+    backdrop: tuple[int, int, int] | None = None
 
 
 def _existing(path: str) -> str | None:
@@ -179,6 +202,7 @@ def build_character_spec(
     equipped: dict[str, str],
     *,
     asset_dir: str | None = None,
+    backdrop: tuple[int, int, int] | None = None,
 ) -> CharacterSpec:
     """Compose the render spec for an ``{slot: item}`` loadout (pure layout).
 
@@ -186,7 +210,8 @@ def build_character_spec(
     the factor applied to a sprite's intrinsic size (the seeded sprites are
     uniform 256×256), expressed here as a box centred on the anchor; the
     placeholder shapes draw inside the same box.  Slots render in
-    body-first order (armor under the held items).
+    body-first order (armor under the held items).  *backdrop* (the Home
+    structure colour, Slice C) defaults to ``None`` → the standard ``_BG``.
     """
     directory = ASSET_DIR if asset_dir is None else asset_dir
     manifest = _load_manifest(directory)
@@ -232,6 +257,7 @@ def build_character_spec(
     return CharacterSpec(
         base_sprite_path=_existing(os.path.join(directory, base_name)),
         layers=tuple(layers),
+        backdrop=backdrop,
     )
 
 
@@ -360,7 +386,7 @@ def _render_cached(spec: CharacterSpec) -> bytes | None:
     except Exception:  # noqa: BLE001 — any import failure → graceful no-op
         return None
 
-    img = Image.new("RGBA", (spec.width, spec.height), _BG)
+    img = Image.new("RGBA", (spec.width, spec.height), spec.backdrop or _BG)
     draw = ImageDraw.Draw(img)
 
     base = None
@@ -412,9 +438,20 @@ def render_character_for(
     equipped: dict[str, str],
     *,
     asset_dir: str | None = None,
+    home_level: int = 0,
 ) -> bytes | None:
-    """One-call convenience: spec + render for an ``{slot: item}`` loadout."""
-    return render_character(build_character_spec(equipped, asset_dir=asset_dir))
+    """One-call convenience: spec + render for an ``{slot: item}`` loadout.
+
+    *home_level* (the player's built Home structure, Slice C) selects the card
+    backdrop; the default ``0`` keeps the standard background, byte-identical.
+    """
+    return render_character(
+        build_character_spec(
+            equipped,
+            asset_dir=asset_dir,
+            backdrop=home_backdrop(home_level),
+        ),
+    )
 
 
 __all__ = [
@@ -424,6 +461,8 @@ __all__ = [
     "DEFAULT_LAYOUT",
     "TIER_COLORS",
     "sprite_filename",
+    "HOME_BACKDROPS",
+    "home_backdrop",
     "CharacterLayer",
     "CharacterSpec",
     "build_character_spec",

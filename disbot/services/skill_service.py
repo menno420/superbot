@@ -32,6 +32,13 @@ RESPEC_BASE_COST = 200
 RESPEC_COST_PER_LEVEL = 50
 RESPEC_REASON = "mining:skill_respec"
 
+# Single-branch respec (Slice E polish): cheaper than a full respec — you only
+# re-spend one branch's points, so the scaler is halved.  Pinned in
+# docs/planning/respec-numbers-2026-06-15.md.
+RESPEC_BRANCH_BASE_COST = 75
+RESPEC_BRANCH_COST_PER_LEVEL = 25
+RESPEC_BRANCH_REASON = "mining:skill_respec_branch"
+
 
 @dataclass(frozen=True)
 class SkillResult:
@@ -47,6 +54,11 @@ class SkillResult:
 def respec_cost(level: int) -> int:
     """The coin cost to respec at *level* (base + per-level scaler)."""
     return RESPEC_BASE_COST + RESPEC_COST_PER_LEVEL * max(0, level)
+
+
+def respec_branch_cost(level: int) -> int:
+    """The coin cost to respec a single branch at *level* (cheaper than full)."""
+    return RESPEC_BRANCH_BASE_COST + RESPEC_BRANCH_COST_PER_LEVEL * max(0, level)
 
 
 async def available_points(guild_id: int, user_id: int) -> int:
@@ -153,13 +165,77 @@ async def respec(guild_id: int, user_id: int) -> SkillResult:
     )
 
 
+async def respec_branch(guild_id: int, user_id: int, branch: str) -> SkillResult:
+    """Clear ONE branch's allocation for a reduced coin fee (Slice E polish).
+
+    The cheaper, surgical sibling of :func:`respec`: refunds only *branch*'s
+    points (the others stay spent) for ``respec_branch_cost`` coins.  Same
+    one-transaction atomicity — the debit and the single-branch clear commit or
+    roll back together; the balance event emits after commit.
+    """
+    branch = branch.strip().lower()
+    if not skills.is_branch(branch):
+        names = ", ".join(skills.BRANCHES)
+        return SkillResult(
+            False,
+            f"**{branch or '(blank)'}** isn't a skill branch — pick one of: {names}.",
+        )
+    alloc = await db.get_skills(user_id, guild_id)
+    refunded = alloc.get(branch, 0)
+    if refunded <= 0:
+        return SkillResult(
+            False,
+            f"You have no points in **{branch}** to refund.",
+        )
+    level, _, _ = await game_xp_service.level_info(guild_id, user_id)
+    cost = respec_branch_cost(level)
+    try:
+        async with db.transaction() as conn:
+            new_balance = await economy_service.debit_in_txn(
+                conn,
+                guild_id,
+                user_id,
+                cost,
+                reason=RESPEC_BRANCH_REASON,
+                actor_id=user_id,
+            )
+            await db.set_skill_points(user_id, guild_id, branch, 0, conn=conn)
+    except economy_service.InsufficientFundsError:
+        balance = await db.get_coins(user_id, guild_id)
+        return SkillResult(
+            False,
+            f"Respeccing **{branch}** costs **{cost}** 🪙 — "
+            f"you only have **{balance}** 🪙.",
+        )
+    await bus.emit(
+        economy_service.EVT_BALANCE_CHANGED,
+        guild_id=guild_id,
+        user_id=user_id,
+        delta=-cost,
+        new_balance=new_balance,
+        reason=RESPEC_BRANCH_REASON,
+    )
+    return SkillResult(
+        True,
+        f"Refunded **{refunded}** point{'s' if refunded != 1 else ''} from "
+        f"**{branch}** for **{cost}** 🪙. Balance: **{new_balance}** 🪙.",
+        coins_delta=-cost,
+        new_balance=new_balance,
+    )
+
+
 __all__ = [
     "RESPEC_BASE_COST",
     "RESPEC_COST_PER_LEVEL",
     "RESPEC_REASON",
+    "RESPEC_BRANCH_BASE_COST",
+    "RESPEC_BRANCH_COST_PER_LEVEL",
+    "RESPEC_BRANCH_REASON",
     "SkillResult",
     "respec_cost",
+    "respec_branch_cost",
     "available_points",
     "allocate",
     "respec",
+    "respec_branch",
 ]

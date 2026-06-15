@@ -74,7 +74,7 @@ def test_weapons_category_includes_shields_after_swords():
 async def test_variant_picker_shows_the_stat_preview():
     with _inventory_patch():
         view = await MiningRecipeBrowserView.create(
-            _AUTHOR, 99, category="Weapons", base_type="sword"
+            _AUTHOR, 99, category="Weapons", base_type="sword",
         )
     select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
     iron = next(o for o in select.options if o.value == "iron sword")
@@ -115,7 +115,7 @@ async def test_category_opens_only_its_types():
 async def test_type_opens_only_that_type_variants():
     with _inventory_patch():
         view = await MiningRecipeBrowserView.create(
-            _AUTHOR, 99, category="Weapons", base_type="sword"
+            _AUTHOR, 99, category="Weapons", base_type="sword",
         )
     select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
     buttons = {b.label for b in view.children if isinstance(b, discord.ui.Button)}
@@ -127,7 +127,7 @@ async def test_type_opens_only_that_type_variants():
 async def test_variant_select_crafts_through_the_workflow():
     with _inventory_patch():
         view = await MiningRecipeBrowserView.create(
-            _AUTHOR, 99, category="Weapons", base_type="sword"
+            _AUTHOR, 99, category="Weapons", base_type="sword",
         )
     variant_select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
     interaction = MagicMock()

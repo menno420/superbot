@@ -52,16 +52,13 @@ _ACTIONS_GUIDE = (
     "**🗺️ Explore** — discover random events\n"
     "**📦 Inventory** — view your mining resources\n"
     "**📊 Stats** — view your mining statistics\n"
-    "**🔨 Build** — craft a structure\n"
-    "**🔧 Workshop** — repair worn gear, craft replacements\n"
+    "**🔨 Workshop** — craft & build · repair · 🔥 forge · 🛒 market (all here)\n"
     "**⬇️ Descend / ⬆️ Ascend** — move between depth bands "
     "(deeper = richer, gated by your light)\n"
-    "**🛒 Market** — sell ore for coins, buy gear\n"
     "**🏦 Vault** — stash loot safely, separate from your pack\n"
     "**🧰 Gear** — equip your best tools, lights, and combat gear\n"
     "**🌳 Skills** — spend skill points to specialize your character\n"
-    "**🔥 Forge** — build it to unlock gold/diamond gear crafting\n"
-    "**📖 Recipes** — browse and craft by category\n"
+    "**🏠 Home** — build it to personalize your Character card\n"
     "**🧍 Character** — your full character overview"
 )
 
@@ -595,6 +592,29 @@ class MiningHubView(PersistentView):
         embed = await build_skills_embed(interaction.user.id, interaction.guild_id)
         view = MiningSkillsView(interaction.user, interaction.guild_id)
         await _edit_in_place(interaction, embed=embed, view=view)
+
+    @discord.ui.button(
+        label="🏠 Home",
+        style=discord.ButtonStyle.primary,
+        custom_id="mining:home",
+        row=4,
+    )
+    async def home_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
+        if not await safe_defer(interaction):
+            return
+        if interaction.guild_id is None:
+            await safe_followup(
+                interaction,
+                "Mining is only available inside a guild.",
+                ephemeral=True,
+            )
+            return
+        # Lazy import: views→views child panel (mirrors the Forge button).
+        from views.mining.home_panel import MiningHomeView, build_home_embed
+
+        embed = await build_home_embed(interaction.user.id, interaction.guild_id)
+        view = MiningHomeView(interaction.user, interaction.guild_id)
+        await safe_edit(interaction, embed=embed, view=view)
 
 
 class _BuildModal(discord.ui.Modal, title="Build a Structure"):  # type: ignore[call-arg]

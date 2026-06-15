@@ -141,6 +141,49 @@ async def set_vault_level(
     )
 
 
+async def get_equipped_title(
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> str | None:
+    """The player's equipped title id, or None (none chosen / not yet earned).
+
+    Stored as a free choice (Slice F); whether it is still *earned* is the
+    service's call at display time — the column only records the selection.
+    """
+    row = await pool.fetchone(
+        "SELECT equipped_title FROM mining_player_state "
+        "WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+        conn=conn,
+    )
+    return row["equipped_title"] if row else None
+
+
+async def set_equipped_title(
+    user_id: str,
+    guild_id: int,
+    title_id: str | None,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> None:
+    """Set (or clear, with None) the player's equipped title id (upsert).
+
+    On the RS02 write-boundary ratchet — only ``services/title_service.py`` may
+    call it, never a cog or view (the ``set_skill_points`` precedent).  No coins
+    move, so it is a single self-service row write (no transaction needed).
+    """
+    await pool.execute(
+        """INSERT INTO mining_player_state (user_id, guild_id, equipped_title)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (user_id, guild_id)
+           DO UPDATE SET equipped_title=$3, updated_at=now()""",
+        (user_id, guild_id, title_id),
+        conn=conn,
+    )
+
+
 async def record_depth(
     user_id: str,
     guild_id: int,

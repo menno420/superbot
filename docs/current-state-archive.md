@@ -13,6 +13,19 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#829 (2026-06-14, hardening P0-2 PR 1 — media/YouTube data-minimization + retention
+  enforcement, Q-0099)** — closed the two privacy/retention P0 gaps in the media readiness map.
+  The video-reference cache stored the **full raw YouTube provider payload** (descriptions, id,
+  statistics) and **never physically purged** expired rows (`purge_expired_video_cache` had no
+  caller). Now: (1) `youtube_context_service._project_metadata` runs before the cache write so
+  only the bounded sanitized projection is persisted — never the raw payload; it is **idempotent**
+  so legacy raw rows re-project transparently on read (no migration / cutover flag). (2)
+  `_safe_thumbnail_url` keeps only HTTPS `*.ytimg.com`/`*.youtube.com` URLs before storage/embed.
+  (3) A new **`MediaMaintenanceCog`** owns a scheduled 6-hour `purge_expired` loop (content-free —
+  logs only a row count), the shared-platform lifecycle owner per ADR-007 (not AI/BTD6). (4)
+  Added the `media` (YouTube) subsystem row to `docs/ownership.md`. Output facts are byte-identical
+  for fresh fetches — only what is *stored* changed. +18 tests; `check_quality --full` green
+  (9467); arch 0; `check_docs` clean.
 - **#825 (2026-06-14, hardening P0-4 PR 2 — channel creation + category lifecycle convergence,
   Q-0100)** — the **second half** of the channel-ownership convergence; **closed the final P0
   integrity track.** Ad-hoc operator channel creation (`!create`/`!evt`/`!bulkcreate` + the

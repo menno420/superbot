@@ -72,7 +72,8 @@ async def test_timeout_disables_children_and_edits_message():
 async def test_timeout_edit_failure_is_swallowed():
     """A deleted message at timeout must not raise (BaseView logs at DEBUG
     — the old hand-rolled versions swallowed silently; behavior preserved,
-    now observable)."""
+    now observable).
+    """
     view = _WorkResultView(_AUTHOR)
     message = MagicMock()
     message.edit = AsyncMock(side_effect=RuntimeError("message deleted"))

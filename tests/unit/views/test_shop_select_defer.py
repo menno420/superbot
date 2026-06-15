@@ -142,7 +142,8 @@ async def test_shop_select_happy_path_defers_before_purchase():
 async def test_shop_select_raced_already_owned_renders_error_after_defer():
     """Pre-checks passed but the workflow says already-owned (raced click):
     the same copy is rendered as an ephemeral followup and no success
-    embed is sent."""
+    embed is sent.
+    """
     from views.economy.shop_panel import _ShopSelect
 
     select = _mock_select("car")

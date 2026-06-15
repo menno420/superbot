@@ -14,9 +14,9 @@ from __future__ import annotations
 
 import discord
 
-from services import game_xp_service
+from services import game_xp_service, title_service
 from utils import db, equipment
-from utils.mining import items, workshop, world
+from utils.mining import items, titles, workshop, world
 from utils.ui_constants import MINING_COLOR
 
 
@@ -35,6 +35,7 @@ async def build_character_embed(
     max_depth = await db.get_max_depth(suid, guild_id)
     coins = await db.get_coins(user_id, guild_id)
     level, into, needed = await game_xp_service.level_info(guild_id, user_id)
+    title = await title_service.equipped_title(guild_id, user_id)
     stats = equipment.compute_stats(equipped)
 
     def _gear_line(slot: str) -> str:
@@ -51,6 +52,10 @@ async def build_character_embed(
         title=f"🧍 {name}'s Character" if name else "🧍 Character",
         color=MINING_COLOR,
     )
+    # Equipped title (Slice F) — only when one is set AND still earned; no title
+    # → no field, so the card is byte-identical to the pre-titles version.
+    if title is not None:
+        embed.description = f"*{titles.display(title)}*"
     embed.add_field(
         name="📍 Location",
         value=(

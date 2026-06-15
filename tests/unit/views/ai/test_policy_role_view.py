@@ -108,7 +108,8 @@ async def test_submit_writes_through_set_role_policy(monkeypatch):
 
 async def test_submit_normalises_decision_case(monkeypatch):
     """Operators sometimes type 'Deny' or 'INHERIT'. The modal
-    lowercases before validation so the typed enum is respected."""
+    lowercases before validation so the typed enum is respected.
+    """
     captured: dict = {}
 
     async def _capture(guild_id, role_id, *, decision, **kw):

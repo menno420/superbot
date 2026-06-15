@@ -118,9 +118,12 @@ async def render_gear_doll(
     import io
 
     from utils.character_render import render_character_for
+    from utils.mining import structures
 
     equipped = await db.get_equipment(str(user_id), guild_id)
-    png = render_character_for(equipped)
+    # Slice C: the player's built Home selects the card backdrop (0 = default).
+    built = await db.get_structures(user_id, guild_id)
+    png = render_character_for(equipped, home_level=built.get(structures.HOME, 0))
     if png is None:
         return None
     embed.set_image(url=f"attachment://{_DOLL_FILENAME}")

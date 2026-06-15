@@ -104,7 +104,8 @@ def test_logging_presets_section_registered():
 
 def test_logging_presets_section_order_after_channels():
     """Logging presets renders right after the channels section so
-    operators see related steps grouped in the wizard."""
+    operators see related steps grouped in the wizard.
+    """
     section = REGISTRY.get(SLUG)
     channels = REGISTRY.get("channels")
     assert section is not None
@@ -114,7 +115,8 @@ def test_logging_presets_section_order_after_channels():
 
 def test_logging_presets_op_kinds_only_resource_kinds():
     """The plan restricts the section to ``create_channel`` /
-    ``bind_channel`` ops — anything else is a contract violation."""
+    ``bind_channel`` ops — anything else is a contract violation.
+    """
     section = REGISTRY.get(SLUG)
     assert section is not None
     assert section.op_kinds <= frozenset({"create_channel", "bind_channel"})
@@ -123,7 +125,8 @@ def test_logging_presets_op_kinds_only_resource_kinds():
 def test_logging_presets_runs_in_every_depth():
     """Logging is part of the lean quick path now — preset + channels +
     logging are the steps that actually wire the bot up, so logging
-    presets appear in quick, standard, and advanced."""
+    presets appear in quick, standard, and advanced.
+    """
     section = REGISTRY.get(SLUG)
     assert section is not None
     assert section.depths == frozenset({"quick", "standard", "advanced"})

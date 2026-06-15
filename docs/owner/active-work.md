@@ -27,6 +27,12 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
+  `disbot/{utils/mining/structures,services/mining_workflow,utils/character_render,views/mining,
+  cogs/mining_cog,utils/mining/market}` + plan/numbers · 2026-06-15
+- `claude/brave-sagan-s9th8h` · Hermes context work — #913/#914/#915 MERGED + applied live;
+  follow-up: record the model/provider decision (free Nous default → own-key gpt-5.4-mini) ·
+  `hermes-control-plane` + `hermes-terminal-cheatsheet` + investigation · 2026-06-15
 
 ## Recently cleared
 
@@ -35,7 +41,9 @@ living ledger (`docs/current-state.md`).
   `utils/mining/taxonomy.py` · rarity/body ordering · shields→Weapons + shield damage · stat
   previews · the **3-layer menu doctrine** (hub-ui-standard.md) · 2026-06-15 ·
   **PR #911 (auto-merge on green)**
-
+- `claude/hopeful-allen-sdjqjs` · mining Slices E + F — respec polish + skill/milestone titles ·
+  `skill_service`/`skills_panel` (E) + `utils/mining/titles` + `title_service` + `titles_panel` +
+  `character_panel` + migration 074 (F) · 2026-06-15 · **PR #912 (open, auto-merge on green)**
 - `claude/hopeful-allen-r7qsg8` · Railway log-triage analyzer (Slice 4, Q-0130) — deterministic
   content-free triage tool + skill wiring · `scripts/hermes/log_triage.py` +
   `docs/operations/hermes-skills/log-triage.md` · 2026-06-15 · **PR #906 (merged)**

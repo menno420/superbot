@@ -55,7 +55,7 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         ("views/settings/edit_role.py", "RoleSettingSelectView"),
         ("views/setup/launcher.py", "SetupLauncherView"),
         ("views/xp/rank_view.py", "_RankView"),
-    }
+    },
 )
 
 

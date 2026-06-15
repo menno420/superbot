@@ -38,7 +38,8 @@ async def _noop_builder(
 
 def test_every_cv2_layout_builds_within_library_budgets():
     """discord.py raises ValueError at >40 children / >4000 chars — so a
-    clean construction proves every exhibit fits the CV2 budget."""
+    clean construction proves every exhibit fits the CV2 budget.
+    """
     wing = LayoutWingView(_author(), home_builder=_noop_builder)
     builders = {
         "cv2_text_only": wing._build_text_only,

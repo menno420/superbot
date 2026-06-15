@@ -48,11 +48,13 @@ def test_mining_hub_view_action_buttons_still_present():
 
 
 def test_mining_hub_view_button_count_after_declutter():
-    """Twelve buttons after the Option A declutter (2026-06-15): the Workshop
-    sub-hub absorbed Build/Craft/Recipes (consolidated) + Forge + Market, so the
-    four scattered Build/Recipes/Forge/Market buttons left the main hub. Pinned
-    so the panel can't quietly re-bloat. (Character/Skills/Vault move next.)
+    """After the Option A declutter (2026-06-15) merged with Slice C's Home:
+    the Workshop sub-hub absorbed Build/Craft/Recipes (consolidated) + Forge +
+    Market — four buttons off the main hub — while Home (Slice C) was added.
+    Pinned so the panel can't quietly re-bloat. (Character/Skills/Vault move next.)
     """
     view = MiningHubView()
     buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(buttons) == 12
+    ids = [getattr(c, "custom_id", None) for c in buttons]
+    assert "mining:home" in ids  # Slice C's Home button survived the merge
+    assert len(buttons) == 13

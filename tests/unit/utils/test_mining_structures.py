@@ -111,5 +111,67 @@ def test_forge_level_name() -> None:
 def test_is_structure() -> None:
     assert structures.is_structure("forge") is True
     assert structures.is_structure("  Forge ") is True
-    assert structures.is_structure("home") is False
+    assert structures.is_structure("home") is True  # Slice C added Home
+    assert structures.is_structure("  Home ") is True
+    assert structures.is_structure("castle") is False
     assert structures.is_structure("") is False
+
+
+# --------------------------------------------------------------------------- #
+# Generic per-structure registry (forge helpers delegate to this) — Slice C
+# --------------------------------------------------------------------------- #
+
+
+def test_forge_helpers_match_generic_registry() -> None:
+    """The forge-specific wrappers stay byte-identical to the generic lookups."""
+    assert structures.MAX_FORGE_LEVEL == structures.max_level(structures.FORGE)
+    assert structures.display_name(structures.FORGE) == "Forge"
+    for level in range(-1, structures.MAX_FORGE_LEVEL + 2):
+        assert structures.forge_build_cost(level) == structures.build_cost(
+            structures.FORGE,
+            level,
+        )
+        assert structures.forge_level_name(level) == structures.level_name(
+            structures.FORGE,
+            level,
+        )
+
+
+# --------------------------------------------------------------------------- #
+# Home structure (Slice C) — a cosmetic coin/material sink, never a gate
+# --------------------------------------------------------------------------- #
+
+
+def test_home_registered_and_named() -> None:
+    assert structures.HOME in structures.STRUCTURES
+    assert structures.display_name(structures.HOME) == "Home"
+    assert structures.max_level(structures.HOME) == structures.MAX_HOME_LEVEL == 3
+
+
+def test_home_level_names() -> None:
+    assert structures.level_name(structures.HOME, 0) == "(not built)"
+    assert structures.level_name(structures.HOME, 1) == "Cozy Cabin"
+    assert structures.level_name(structures.HOME, 2) == "Stone Keep"
+    assert structures.level_name(structures.HOME, 3) == "Grand Hall"
+    # Clamped above the ladder.
+    assert structures.level_name(structures.HOME, 99) == "Grand Hall"
+
+
+def test_home_build_cost_ladder_is_a_rising_sink() -> None:
+    costs = [structures.build_cost(structures.HOME, lvl) for lvl in range(3)]
+    assert [c.coins for c in costs] == [2_000, 5_000, 12_000]
+    assert costs[0].materials == {"wood": 30, "stone": 20}
+    assert costs[2].materials == {"gold": 15, "diamond": 3}
+    # Strictly rising coin sink.
+    assert costs[0].coins < costs[1].coins < costs[2].coins
+
+
+def test_home_build_cost_maxed_returns_none() -> None:
+    assert structures.build_cost(structures.HOME, structures.MAX_HOME_LEVEL) is None
+    assert structures.build_cost(structures.HOME, -1) is None
+
+
+def test_home_does_not_gate_crafting() -> None:
+    """Home is cosmetic — it never appears in the gear-craft forge gate."""
+    # forge_level_required only ever consults the gear ladder, never Home.
+    assert structures.forge_level_required("home") == 0

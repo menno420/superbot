@@ -27,22 +27,24 @@ from dataclasses import dataclass, field
 
 from utils import equipment
 
-#: The only structure built so far.  Adding "home" (Slice C) is a one-line
-#: registry add plus its own ladder — the table and ``build_structure`` are generic.
+#: The buildable structures.  Each is a ``(user, guild, structure, level)`` row in
+#: the generic ``mining_structures`` table and shares ``build_structure`` — adding
+#: one is its registry entry below plus (for Home) a render hook.
 FORGE = "forge"
-STRUCTURES: tuple[str, ...] = (FORGE,)
-
-#: Highest forge level (level 2 unlocks the diamond tier — the top of the gear
-#: ladder, so nothing above it needs a higher forge).
-MAX_FORGE_LEVEL = 2
+HOME = "home"
 
 #: Gear at or below this tier index needs **no** forge (bronze=1, iron=2,
 #: silver=3 are free; gold=4 → forge 1; diamond=5 → forge 2).  ``forge_level =
 #: max(0, tier_index - FREE_TIER_CEILING)``.
 FREE_TIER_CEILING = 3
 
-#: The display name shown in the panel / gate message per level.
+#: The forge level shown in the panel / gate message per level.
 _FORGE_LEVEL_NAMES = ("(not built)", "Forge I", "Forge II")
+
+#: Home is purely cosmetic (Slice C): each level unlocks a nicer Character-card
+#: backdrop (the colour palette lives in ``utils.character_render``).  No gameplay
+#: gate — Home is a coin/material *sink* with a visible reward, never a wall.
+_HOME_LEVEL_NAMES = ("(not built)", "Cozy Cabin", "Stone Keep", "Grand Hall")
 
 
 @dataclass(frozen=True)
@@ -63,23 +65,95 @@ _FORGE_BUILD_LADDER: tuple[BuildCost, ...] = (
     BuildCost(coins=8_000, materials={"gold": 20, "iron": 10}),
 )
 
+#: Home build ladder — a rising coin + material sink for the three cosmetic tiers
+#: (pin changes in ``docs/planning/home-numbers-2026-06-15.md`` + the test).
+_HOME_BUILD_LADDER: tuple[BuildCost, ...] = (
+    # → Cozy Cabin (a warm backdrop)
+    BuildCost(coins=2_000, materials={"wood": 30, "stone": 20}),
+    # → Stone Keep (a cool stone backdrop)
+    BuildCost(coins=5_000, materials={"stone": 50, "iron": 15}),
+    # → Grand Hall (a regal backdrop)
+    BuildCost(coins=12_000, materials={"gold": 15, "diamond": 3}),
+)
+
+
+@dataclass(frozen=True)
+class StructureDef:
+    """A buildable structure: its display name, build ladder, and level names."""
+
+    key: str
+    display: str
+    ladder: tuple[BuildCost, ...]
+    level_names: tuple[str, ...]
+
+
+#: The structure registry — the single source of truth for build math + naming.
+#: ``build_structure`` and the panels read this generically, so a new structure
+#: is one entry here (plus any structure-specific reward wiring).
+_DEFS: dict[str, StructureDef] = {
+    FORGE: StructureDef(FORGE, "Forge", _FORGE_BUILD_LADDER, _FORGE_LEVEL_NAMES),
+    HOME: StructureDef(HOME, "Home", _HOME_BUILD_LADDER, _HOME_LEVEL_NAMES),
+}
+
+STRUCTURES: tuple[str, ...] = tuple(_DEFS)
+
+#: Highest forge level (level 2 unlocks the diamond tier — the top of the gear
+#: ladder, so nothing above it needs a higher forge).
+MAX_FORGE_LEVEL = len(_FORGE_BUILD_LADDER)
+
+#: Highest Home level (the top cosmetic backdrop).
+MAX_HOME_LEVEL = len(_HOME_BUILD_LADDER)
+
 
 def is_structure(name: str) -> bool:
     """True if *name* is a buildable structure (case/space-insensitive)."""
-    return name.strip().lower() in STRUCTURES
+    return name.strip().lower() in _DEFS
+
+
+# --------------------------------------------------------------------------- #
+# Generic per-structure build math — the registry-driven source of truth.
+# --------------------------------------------------------------------------- #
+
+
+def display_name(structure: str) -> str:
+    """The human display name of *structure* (e.g. ``"Forge"`` / ``"Home"``)."""
+    return _DEFS[structure].display
+
+
+def max_level(structure: str) -> int:
+    """The highest level *structure* can reach (= its build-ladder length)."""
+    return len(_DEFS[structure].ladder)
+
+
+def level_name(structure: str, level: int) -> str:
+    """A short display name for *structure* at *level* (clamped to its ladder)."""
+    defn = _DEFS[structure]
+    level = max(0, min(level, len(defn.ladder)))
+    return defn.level_names[level]
+
+
+def build_cost(structure: str, level: int) -> BuildCost | None:
+    """Cost to upgrade *structure* **from** *level* to *level* + 1, or ``None`` if maxed."""
+    defn = _DEFS[structure]
+    if level < 0 or level >= len(defn.ladder):
+        return None
+    return defn.ladder[level]
+
+
+# --------------------------------------------------------------------------- #
+# Forge-specific helpers — thin wrappers over the generic math (back-compat with
+# the Slice B forge panel + tests; behaviour byte-identical).
+# --------------------------------------------------------------------------- #
 
 
 def forge_level_name(level: int) -> str:
     """A short display name for a forge at *level* (clamped to the ladder)."""
-    level = max(0, min(level, MAX_FORGE_LEVEL))
-    return _FORGE_LEVEL_NAMES[level]
+    return level_name(FORGE, level)
 
 
 def forge_build_cost(level: int) -> BuildCost | None:
     """Cost to upgrade the forge **from** *level* to *level* + 1, or ``None`` if maxed."""
-    if level < 0 or level >= MAX_FORGE_LEVEL:
-        return None
-    return _FORGE_BUILD_LADDER[level]
+    return build_cost(FORGE, level)
 
 
 def forge_level_required(recipe_name: str) -> int:

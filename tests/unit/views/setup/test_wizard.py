@@ -250,7 +250,8 @@ def test_view_has_navigation_buttons_in_layout():
 def test_view_has_jump_to_section_select():
     """The wizard exposes a row-2 'Jump to section' select listing every
     depth-filtered section — the section-jump that folds in the hub's
-    navigation role."""
+    navigation role.
+    """
     sections = [
         _section("cleanup", builder=_builder_one_op),
         _section("channels", order=70),
@@ -298,7 +299,8 @@ async def test_jump_select_navigates_to_chosen_step():
 def test_view_has_apply_all_recommended_button_when_builder_present():
     """The wizard renders a row-3 'Apply all recommended' button when at
     least one depth-filtered section has a recommended builder — the
-    one-click path that used to live on the hub."""
+    one-click path that used to live on the hub.
+    """
     sections = [
         _section("cleanup", builder=_builder_one_op),
         _section("channels", order=70),
@@ -341,7 +343,8 @@ def test_view_omits_apply_all_when_no_builder_sections():
 async def test_apply_all_recommended_stages_via_helper_and_confirms():
     """Clicking the wizard's Apply all recommended stages through the
     shared helper, gives an ephemeral confirmation, and refreshes the
-    anchor."""
+    anchor.
+    """
     sections = [_section("cleanup", builder=_builder_one_op)]
     view = LinearWizardView(
         _owner_member(),
@@ -838,7 +841,8 @@ async def test_open_workspace_posts_new_anchor_when_id_missing():
 async def test_open_workspace_shows_depth_picker_when_depth_unset():
     """First run (no depth picked yet) shows the depth picker on the
     anchor instead of dropping the operator into every section, and marks
-    the step as 'depth'."""
+    the step as 'depth'.
+    """
     from views.setup.depth_panel import DepthPanelView
 
     guild = MagicMock(spec=discord.Guild)
@@ -1106,7 +1110,8 @@ def test_customize_button_enabled_when_section_has_customize():
 @pytest.mark.asyncio
 async def test_on_customize_calls_section_callback_with_none_hub():
     """_on_customize calls section.customize(interaction, None) and then
-    refreshes the wizard anchor via followup.edit_message."""
+    refreshes the wizard anchor via followup.edit_message.
+    """
     calls = []
 
     async def recording_customize(interaction, hub):
@@ -1292,7 +1297,8 @@ def _section_with_detail(
 
 def test_customize_button_enabled_when_detail_builders_set_without_legacy():
     """A section with detail builders but no legacy customize still has
-    Customize enabled — the wizard-native path is preferred."""
+    Customize enabled — the wizard-native path is preferred.
+    """
     section = _section_with_detail("channels")
     view = LinearWizardView(
         _owner_member(),
@@ -1311,7 +1317,8 @@ def test_customize_button_enabled_when_detail_builders_set_without_legacy():
 @pytest.mark.asyncio
 async def test_on_customize_prefers_wizard_native_when_detail_builders_set():
     """When a section provides both detail builders, the wizard calls
-    render_step_detail and skips the legacy ephemeral customize."""
+    render_step_detail and skips the legacy ephemeral customize.
+    """
     legacy_customize = AsyncMock()
     base = _section_with_detail("channels")
     section = SetupSection(
@@ -1398,7 +1405,8 @@ async def test_on_customize_falls_back_to_legacy_when_detail_unset():
 @pytest.mark.asyncio
 async def test_full_linear_path_never_constructs_hub():
     """Walking Apply Recommended → Continue → ... → Final Review must
-    not touch SetupHubView or build_hub_embed."""
+    not touch SetupHubView or build_hub_embed.
+    """
     from views.setup import hub as hub_module
 
     sections = [

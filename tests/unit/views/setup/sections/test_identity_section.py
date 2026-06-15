@@ -94,7 +94,8 @@ async def test_run_rejects_dm_context():
 @pytest.mark.asyncio
 async def test_run_opens_section_card_in_guild():
     """``run`` shows the section card; the detailed identity picker is
-    reachable via the card's Customize button."""
+    reachable via the card's Customize button.
+    """
     from views.setup.section_card import SectionCardView
 
     interaction = _interaction()

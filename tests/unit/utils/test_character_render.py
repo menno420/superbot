@@ -120,3 +120,46 @@ def test_render_is_cached_per_spec(tmp_path):
     pytest.importorskip("PIL")
     spec = cr.build_character_spec(_FULL, asset_dir=str(tmp_path))
     assert cr.render_character(spec) is cr.render_character(spec)
+
+
+# --------------------------------------------------------------------------- #
+# Home structure backdrop (mining Slice C)
+# --------------------------------------------------------------------------- #
+
+
+def test_home_backdrop_palette():
+    # Level 0 (and unknown levels) → None → the default _BG (the additive case).
+    assert cr.home_backdrop(0) is None
+    assert cr.home_backdrop(99) is None
+    # Built levels map to distinct, dark backdrops.
+    assert cr.home_backdrop(1) == (43, 34, 28)
+    assert cr.home_backdrop(2) == (40, 46, 54)
+    assert cr.home_backdrop(3) == (34, 30, 58)
+    assert set(cr.HOME_BACKDROPS) == {1, 2, 3}
+
+
+def test_spec_backdrop_defaults_to_none():
+    # The default spec carries no backdrop → byte-identical to the pre-Slice-C render.
+    spec = cr.build_character_spec(_FULL)
+    assert spec.backdrop is None
+    # home_level=0 must produce the exact same spec as omitting it.
+    assert cr.build_character_spec(_FULL, backdrop=cr.home_backdrop(0)).backdrop is None
+
+
+def test_unbuilt_home_renders_byte_identical():
+    import pytest
+
+    pytest.importorskip("PIL")
+    # The additive guarantee: home_level 0 == the historical render, byte for byte.
+    assert cr.render_character_for(_FULL) == cr.render_character_for(_FULL, home_level=0)
+
+
+def test_built_home_changes_the_render():
+    import pytest
+
+    pytest.importorskip("PIL")
+    # A built Home actually changes the card (different backdrop → different bytes).
+    base = cr.render_character_for(_FULL, home_level=0)
+    built = cr.render_character_for(_FULL, home_level=2)
+    assert base is not None and built is not None
+    assert base != built

@@ -369,7 +369,8 @@ async def test_stage_does_not_call_apply_operations():
 @pytest.mark.asyncio
 async def test_run_rejects_dm_context():
     """PR 3 routes ``run`` through the section card, which rejects DMs
-    with a 'server'/'guild' phrasing inside its ``show`` helper."""
+    with a 'server'/'guild' phrasing inside its ``show`` helper.
+    """
     interaction = MagicMock()
     interaction.user = SimpleNamespace(id=99)
     interaction.guild = None
@@ -384,7 +385,8 @@ async def test_run_rejects_dm_context():
 @pytest.mark.asyncio
 async def test_run_opens_section_card_in_guild():
     """``run`` now shows the shared section card; the detailed cleanup
-    picker is reachable via the card's Customize button."""
+    picker is reachable via the card's Customize button.
+    """
     from views.setup.section_card import SectionCardView
 
     interaction = _interaction()
@@ -422,7 +424,8 @@ async def test_run_opens_section_card_in_guild():
 @pytest.mark.asyncio
 async def test_profile_select_stages_every_profile_op():
     """Picking a profile stages each of its ops via setup_draft.append
-    with metadata.source = 'cleanup_profile:<slug>'."""
+    with metadata.source = 'cleanup_profile:<slug>'.
+    """
     from views.setup.sections.cleanup import _ProfileSelect
 
     select = _ProfileSelect()
@@ -505,7 +508,8 @@ async def test_profile_select_requires_guild_context():
 
 def test_cleanup_section_view_includes_profile_select():
     """The section view exposes both the scope select AND the new
-    profile-batch select to the operator."""
+    profile-batch select to the operator.
+    """
     from views.setup.sections.cleanup import (
         CleanupSectionView,
         _ProfileSelect,

@@ -53,8 +53,13 @@ WHAT YOU MAY WRITE (Q-0140, Q-0141)
 - Merge a PR you have independently reviewed (the review-merge gate, Q-0117) — once calibrated.
 
 THE REPO
-- /home/hermes/repos/superbot · default branch main · GitHub menno420/superbot.
-- Before any task: git -C /home/hermes/repos/superbot fetch origin main (read-only), then read.
+- /home/hermes/repos/superbot · default branch main · GitHub menno420/superbot. The clone is a
+  read-only MIRROR of main — never commit to it; do your own writing on a `claude/` branch you push.
+- SYNC before any task (a bare `git fetch` leaves the files STALE → you read old code + a stale
+  current-state.md). Use the self-healing form — it always lands on fresh main and, unlike
+  `pull --ff-only`, never aborts if the clone diverged:
+    git -C /home/hermes/repos/superbot fetch origin main && git -C /home/hermes/repos/superbot checkout -B main origin/main
+  THEN read.
 
 WORK IN BOUNDED STEPS — you lose the thread on long sessions, so design around it
 - ONE finite objective per session, with a clear done-condition. If a task balloons past ~15-20

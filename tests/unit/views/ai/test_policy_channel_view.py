@@ -69,7 +69,8 @@ def _admin_modal_interaction(guild_id: int = 999_888) -> MagicMock:
 def _set_inputs(modal: ChannelPolicyModal, *, mode: str, level: str, cooldown: str):
     """Bypass discord.ui.TextInput's runtime restrictions by setting
     its underlying ``_value``. The modal reads ``.value`` which falls
-    back to the input."""
+    back to the input.
+    """
     modal.mode_input._value = mode
     modal.min_level_input._value = level
     modal.cooldown_input._value = cooldown

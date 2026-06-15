@@ -379,8 +379,14 @@ class MiningCog(commands.Cog):
         import io
 
         from utils.character_render import render_character_for
+        from utils.mining import structures
 
-        png = render_character_for(equipped)
+        # Slice C: the player's built Home selects the card backdrop (0 = default).
+        built = await db.get_structures(ctx.author.id, ctx.guild.id)
+        png = render_character_for(
+            equipped,
+            home_level=built.get(structures.HOME, 0),
+        )
         if png is not None:
             embed.set_image(url="attachment://character_doll.png")
             await ctx.send(
@@ -624,6 +630,22 @@ class MiningCog(commands.Cog):
         )
         await ctx.send(f"{ctx.author.mention} {result.message}")
 
+    # ---------------------------------------------------------------- titles
+
+    @commands.command(
+        name="titles",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def titles_cmd(self, ctx):
+        """Open your titles — equip an earned title on your Character card."""
+        # cogs→views is allowed; one builder shared with the skills-panel button.
+        from views.mining.titles_panel import MiningTitlesView, build_titles_embed
+
+        embed = await build_titles_embed(ctx.author.id, ctx.guild.id)
+        view = await MiningTitlesView.create(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
     # ----------------------------------------------------------- forge
 
     @commands.command(
@@ -638,6 +660,22 @@ class MiningCog(commands.Cog):
 
         embed = await build_forge_embed(ctx.author.id, ctx.guild.id)
         view = MiningForgeView(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
+    # ------------------------------------------------------------- home
+
+    @commands.command(
+        name="home",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def home_cmd(self, ctx):
+        """Open the Home — build it to personalize your Character card."""
+        # cogs→views is allowed; one builder shared with the hub button.
+        from views.mining.home_panel import MiningHomeView, build_home_embed
+
+        embed = await build_home_embed(ctx.author.id, ctx.guild.id)
+        view = MiningHomeView(ctx.author, ctx.guild.id)
         await ctx.send(embed=embed, view=view)
 
     # ---------------------------------------------------------- workshop

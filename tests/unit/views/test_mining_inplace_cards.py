@@ -43,6 +43,11 @@ async def test_render_gear_doll_attaches_in_place_when_pillow_available():
             new_callable=AsyncMock,
             return_value={"weapon": "diamond sword"},
         ),
+        patch(
+            "views.mining.gear_panel.db.get_structures",
+            new_callable=AsyncMock,
+            return_value={},
+        ),
         patch("utils.character_render.render_character_for", return_value=b"PNGBYTES"),
     ):
         file = await render_gear_doll(embed, 1, 99)
@@ -58,6 +63,11 @@ async def test_render_gear_doll_is_additive_without_pillow():
     with (
         patch(
             "views.mining.gear_panel.db.get_equipment",
+            new_callable=AsyncMock,
+            return_value={},
+        ),
+        patch(
+            "views.mining.gear_panel.db.get_structures",
             new_callable=AsyncMock,
             return_value={},
         ),
@@ -92,10 +102,10 @@ def test_render_inventory_file_is_additive_without_pillow():
 async def test_edit_in_place_sets_the_image():
     f = MagicMock(spec=discord.File)
     with patch(
-        "views.mining.main_panel.safe_edit", new_callable=AsyncMock
+        "views.mining.main_panel.safe_edit", new_callable=AsyncMock,
     ) as safe_edit:
         await main_panel._edit_in_place(
-            MagicMock(), embed=discord.Embed(), view=MagicMock(), image=f
+            MagicMock(), embed=discord.Embed(), view=MagicMock(), image=f,
         )
     assert safe_edit.await_args.kwargs["attachments"] == [f]
 
@@ -104,10 +114,10 @@ async def test_edit_in_place_sets_the_image():
 async def test_edit_in_place_clears_the_image_by_default():
     # Every non-image action clears, so a prior card never lingers.
     with patch(
-        "views.mining.main_panel.safe_edit", new_callable=AsyncMock
+        "views.mining.main_panel.safe_edit", new_callable=AsyncMock,
     ) as safe_edit:
         await main_panel._edit_in_place(
-            MagicMock(), embed=discord.Embed(), view=MagicMock()
+            MagicMock(), embed=discord.Embed(), view=MagicMock(),
         )
     assert safe_edit.await_args.kwargs["attachments"] == []
 
@@ -140,7 +150,7 @@ async def test_inventory_button_renders_card_in_place_no_ephemeral_followup():
             return_value=MagicMock(spec=discord.File),
         ),
         patch(
-            "views.mining.main_panel.safe_edit", new_callable=AsyncMock
+            "views.mining.main_panel.safe_edit", new_callable=AsyncMock,
         ) as safe_edit,
     ):
         await btn.callback(interaction)
@@ -180,7 +190,7 @@ async def test_gear_button_renders_doll_in_place_no_ephemeral_followup():
             return_value=MagicMock(spec=discord.File),
         ),
         patch(
-            "views.mining.main_panel.safe_edit", new_callable=AsyncMock
+            "views.mining.main_panel.safe_edit", new_callable=AsyncMock,
         ) as safe_edit,
     ):
         await btn.callback(interaction)
