@@ -101,4 +101,9 @@ living ledger (`docs/current-state.md`).
 - `claude/trusting-goldberg-po4p7s` · CI-cost reduction + duplicate-work convention (Q-0126) ·
   concurrency-cancel + pip/mypy caching + claim ledger + push-batching · 2026-06-14 · **#814 (merged)**
 
+- `claude/laughing-curie-f45zyu` · Hermes retune for gpt-5.4-mini + base/memory cleanup
+  (SOUL.md capability re-tune · verified model specs · memory prune recs · investigation-doc
+  archive · `apply_context_fixes.sh` slim) · `docs/operations/hermes-*` + `scripts/hermes/` ·
+  2026-06-15 · **PR (open, born-red per Q-0133)**
+
 _(move claims here with their PR # as they close, then prune older entries)_

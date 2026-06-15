@@ -92,6 +92,16 @@ Hermes config/data paths shown during setup:
   slowly and flap on the way. **If it ever flaps again,** pin the **exact dated snapshot
   `gpt-5.4-mini-2026-03-17`** (re-run `hermes model`, set the custom provider's model to it) — the
   exact id is granted deterministically and skips the alias-propagation wait.
+- **Verified specs (gpt-5.4-mini — fetched 2026-06-15; released 2026-03-17, after the Claude build
+  cutoff, so these are from current OpenAI / aggregator sources, not model memory):** **400K context
+  / 128K max output**, **$0.75 per 1M input · $4.50 per 1M output**, **Aug 2025 knowledge cutoff**, a
+  **reasoning** model with tool calling + structured output + text/image input. The `400K (detected)`
+  Hermes reports is correct. **Tuning lever:** it honours `agent.reasoning_effort` (the param that
+  400'd the non-reasoning gpt-4o-mini) — keep it on a reasoning setting; consider raising it for the
+  *review* role and lowering it (`minimal`/`low`) for cheap high-throughput dispatch triage. **Cost
+  note:** at $4.50/1M output a long accumulating gateway session is the real spend driver (not the
+  window) — so the bounded-session / `/new`-per-task habit is now a **cost** lever, not a capability
+  crutch.
 - **Rationale (independence vs. reliability):** Hermes is deliberately a **non-Claude** mind so its
   review is independent of the Claude that builds (Q-0117). The reliability fix was *capability*, not
   *Claude* — a frontier **non-Claude** model (gpt-5.4-mini, or gpt-5.5) keeps the independence and
