@@ -438,7 +438,9 @@ async def test_send_failure_video_task_writes_video_send_failed(
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _t, **_kw: SimpleNamespace(task=AITask.VIDEO_DESCRIBE, route="video.describe"),
+        lambda _t, **_kw: SimpleNamespace(
+            task=AITask.VIDEO_DESCRIBE, route="video.describe"
+        ),
     )
     monkeypatch.setattr(
         mod,
@@ -511,9 +513,7 @@ async def test_mk_reference_question_floored_before_model(monkeypatch, stub_serv
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _t, **_kw: SimpleNamespace(
-            task=AITask.BTD6_ANSWER, route="btd6.answer"
-        ),
+        lambda _t, **_kw: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
     )
     monkeypatch.setattr(
         mod,
@@ -554,9 +554,7 @@ async def test_non_mk_btd6_question_still_reaches_model(monkeypatch, stub_servic
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _t, **_kw: SimpleNamespace(
-            task=AITask.BTD6_ANSWER, route="btd6.answer"
-        ),
+        lambda _t, **_kw: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
     )
     monkeypatch.setattr(
         mod,
@@ -583,6 +581,50 @@ async def test_non_mk_btd6_question_still_reaches_model(monkeypatch, stub_servic
     await stage.process(_make_ctx(msg))
 
     assert gateway_called is True, "the model floor leaked onto a normal question"
+
+
+@pytest.mark.asyncio
+async def test_geraldo_per_level_question_floored_before_model(
+    monkeypatch, stub_services
+):
+    """A "what does Geraldo unlock per level?" question is answered by the
+    deterministic builder and the model gateway is NEVER called (BUG-0009 slice
+    2 — the model's own per-level grouping is the mislabel that passes the value
+    guard). Confirms the unified dispatcher routes the Geraldo family too."""
+    from core.runtime.ai import natural_language_stage as mod
+    from core.runtime.ai.feature_facts import FeatureFactsResult
+    from services import ai_gateway
+
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _t, **_kw: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_gather_feature_facts",
+        AsyncMock(return_value=FeatureFactsResult(facts=(), render_context=None)),
+    )
+
+    gateway_called = False
+
+    async def fake_execute(_request):
+        nonlocal gateway_called
+        gateway_called = True
+        return _make_response(text="should not be used")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "what items does geraldo unlock at each level"
+    await stage.process(_make_ctx(msg))
+
+    assert gateway_called is False, "model was invoked for a deterministic case"
+    sent = "\n".join(c.args[0] for c in msg.channel.send.call_args_list)
+    assert "Geraldo" in sent
+    assert "Paragon Power Totem" in sent
+    assert stub_services and stub_services[-1]["decision"] == "replied"
 
 
 # ---------------------------------------------------------------------------
@@ -1363,7 +1405,9 @@ async def test_stage_continues_when_btd6_gather_raises(monkeypatch, stub_service
     monkeypatch.setattr(
         mod.ai_task_router,
         "classify",
-        lambda _text, **_kw: SimpleNamespace(task=AITask.BTD6_ANSWER, route="btd6.answer"),
+        lambda _text, **_kw: SimpleNamespace(
+            task=AITask.BTD6_ANSWER, route="btd6.answer"
+        ),
     )
     monkeypatch.setattr(
         bot_knowledge_service,
@@ -1476,9 +1520,7 @@ async def test_btd6_regenerate_once_rescues(monkeypatch, stub_services):
     _route_btd6(monkeypatch)
     _stub_facts(monkeypatch, ("Quincy is a hero available from the start.",))
 
-    texts = iter(
-        ["The Glaive Dominus is the best hero.", "Quincy is a starter hero."]
-    )
+    texts = iter(["The Glaive Dominus is the best hero.", "Quincy is a starter hero."])
 
     async def fake_execute(_request):
         return _make_response(text=next(texts))
@@ -1795,7 +1837,7 @@ async def test_btd6_roster_answer_is_served_when_grounded(monkeypatch, stub_serv
 async def test_btd6_meta_question_serves_answerability_summary(
     monkeypatch, stub_services
 ):
-    """"What kind of things do you know about btd6" (live miss 2026-06-10):
+    """ "What kind of things do you know about btd6" (live miss 2026-06-10):
     the model's capability description carries counts the ledger can't ground,
     so the guard blocks it — the floor must serve the deterministic
     answerability summary, never the version-stamped refusal (which answers

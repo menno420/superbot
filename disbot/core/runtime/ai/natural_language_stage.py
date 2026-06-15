@@ -429,30 +429,32 @@ class AINaturalLanguageStage:
                 ctx.metadata["handled_by"] = STAGE_NAME
                 return StageResult(short_circuit=True)
 
-            # BUG-0009: answer a clear "which Monkey Knowledge relate to
-            # <tower>?" question deterministically, BEFORE the model. The model
-            # grabs the whole MK *category* and mislabels its grouping, and
-            # because every name is individually grounded the post-hoc
-            # faithfulness floor never catches it — so the deterministic layer
-            # must OWN the labelled list. Returns None for single-MK lookups /
-            # strategy questions / anything without a tower, which fall through.
+            # BUG-0009 ("grounded facts, wrong assembly"): answer a clear
+            # deterministic list question — "which Monkey Knowledge relate to
+            # <tower>?", "what does Geraldo unlock per level?" — BEFORE the
+            # model. The model groups/labels these individually-grounded lists
+            # incorrectly, and because every value is grounded the post-hoc
+            # faithfulness floor never catches a mis-*grouping* — so the
+            # deterministic layer must OWN the labelled list. The dispatcher
+            # returns None for single-entity lookups / strategy / anything
+            # outside an exact list shape, which fall through to the model.
             if routed.task is AITask.BTD6_ANSWER:
-                mk_reply: str | None = None
+                list_reply: str | None = None
                 try:
                     from services import btd6_context_service
 
-                    mk_reply = btd6_context_service.deterministic_mk_reference_reply(
+                    list_reply = btd6_context_service.deterministic_btd6_list_reply(
                         raw_text,
                     )
                 except Exception:  # noqa: BLE001 — never break the reply path
                     logger.warning(
-                        "btd6 mk-reference floor build failed",
+                        "btd6 deterministic list floor build failed",
                         exc_info=True,
                     )
-                if mk_reply:
+                if list_reply:
                     try:
                         reference = message.to_reference(fail_if_not_exists=False)
-                        for index, chunk in enumerate(_split_for_discord(mk_reply)):
+                        for index, chunk in enumerate(_split_for_discord(list_reply)):
                             await message.channel.send(
                                 chunk,
                                 allowed_mentions=discord.AllowedMentions.none(),
@@ -460,7 +462,7 @@ class AINaturalLanguageStage:
                             )
                     except discord.HTTPException:
                         logger.warning(
-                            "btd6 mk-reference floor send failed for message=%s",
+                            "btd6 deterministic list floor send failed for message=%s",
                             getattr(message, "id", None),
                             exc_info=True,
                         )

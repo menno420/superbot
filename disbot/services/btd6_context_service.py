@@ -1834,6 +1834,188 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
+# --- "Geraldo items per level" deterministic reply (BUG-0009 slice 2) ---------
+# The model, asked "what does Geraldo unlock at each level", assembles the
+# level→item grouping itself and mislabels which item unlocks when. Every item
+# NAME is grounded, so the value-only faithfulness guard passes the wrong
+# *grouping* (the BUG-0009 class) — so the deterministic layer OWNS the labelled
+# per-level list. Served as a pre-emptive floor before the model. The grouping
+# itself lives in btd6_data_service.geraldo_items_by_unlock_level().
+_GERALDO_CUE_RE = re.compile(r"\bgeraldo'?s?\b", re.I)
+# A per-level / enumeration cue — distinguishes "what does Geraldo unlock per
+# level / list his items" (this answer) from a single-item lookup ("what does
+# the Genie Bottle do", no level/list cue → model). "unlock(s|ed)" alone counts
+# (the common "what does Geraldo unlock" / "when do you unlock X" phrasing).
+_GERALDO_LIST_RELATION_RE = re.compile(
+    r"\blevels?\b|\bunlocks?\b|\bunlocked\b|\beach\b|\bevery\b|\bper\b|"
+    r"\ball\b|\blist\b|\bwhat\s+are\b|\bwhich\b|\bitems?\b|\bshop\b",
+    re.I,
+)
+# A specific level number ("at level 7", "lvl 12", "level-3").
+_GERALDO_LEVEL_NUM_RE = re.compile(r"\b(?:level|lvl|lv)\s*[-#]?\s*(\d{1,2})\b", re.I)
+
+
+def _format_geraldo_item_line(item: Any) -> str:
+    return f"• **{item.canonical}** (${item.cost:,}) — {item.description}"
+
+
+def deterministic_geraldo_per_level_reply(message_text: str) -> str | None:
+    """A code-built "what Geraldo unlocks per level" answer, or ``None``.
+
+    Fires only on a clear Geraldo per-level / list enumeration: a Geraldo cue +
+    a level/list cue, and (for the full list) no single named item. Two shapes:
+
+    * **a specific level** ("what does Geraldo unlock at level 7") → the items
+      that unlock at exactly that level;
+    * **the whole grouping** ("Geraldo items per level", "list Geraldo's items")
+      → every item grouped by unlock level.
+
+    Returns ``None`` for single-item lookups (a named item with no level/list
+    cue), strategy/opinion questions, and anything without a Geraldo cue — those
+    still reach the model. The grouping is the deterministic relation, so the
+    answer is always correctly grouped.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _GERALDO_CUE_RE.search(low):
+        return None
+    if not _GERALDO_LIST_RELATION_RE.search(low):
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    from services import btd6_data_service
+
+    grouped = btd6_data_service.geraldo_items_by_unlock_level()
+    if not grouped:
+        return None
+
+    # A specific level was named → just that level's unlocks. (Even if zero
+    # items unlock there, the deterministic "nothing new unlocks at L<n>" is the
+    # honest answer — the model would otherwise invent one.)
+    level_match = _GERALDO_LEVEL_NUM_RE.search(low)
+    if level_match:
+        level = int(level_match.group(1))
+        items = next((rows for lvl, rows in grouped if lvl == level), ())
+        if not items:
+            return (
+                f"**Geraldo unlocks no new shop item at level {level}.** "
+                "He gains a new item to sell at levels "
+                + ", ".join(str(lvl) for lvl, _ in grouped)
+                + "."
+            )
+        body = "\n".join(_format_geraldo_item_line(i) for i in items)
+        return f"**Geraldo unlocks at level {level} ({len(items)}):**\n{body}"
+
+    # Otherwise: the full per-level grouping.
+    lines = ["**Geraldo's shop items by unlock level:**"]
+    for level, items in grouped:
+        label = "Start (level 0)" if level == 0 else f"Level {level}"
+        names = ", ".join(f"**{i.canonical}**" for i in items)
+        lines.append(f"__{label}__: {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+# --- "list the game modes" deterministic reply (BUG-0009, mode groupings) -----
+# The model, asked "list all the game modes", mislabels which row is a
+# difficulty vs. a mode vs. a modifier (the owner's "mode groupings" miss). Every
+# name is grounded, so the value-only faithfulness guard passes the wrong
+# grouping — so the deterministic layer OWNS the labelled, kind-grouped list. The
+# grouping itself lives in btd6_data_service.modes_by_kind().
+_MODES_CUE_RE = re.compile(r"\b(?:game\s*)?modes?\b|\bdifficult(?:y|ies)\b", re.I)
+# Another primary roster entity in the message means "mode"/"difficulty" is most
+# likely a *qualifier* ("which towers work on impoppable mode", "best hero on
+# hard difficulty"), not the list subject — defer those to the model. (Monkey
+# Knowledge is excluded by the dispatcher order: its builder runs first.)
+_MODES_OTHER_ENTITY_RE = re.compile(
+    r"\b(?:towers?|heroe?s?|paragons?|bloons?|bosse?s?|maps?|rounds?|"
+    r"upgrades?|crosspaths?)\b",
+    re.I,
+)
+# Human-readable heading per kind (game-correct phrasing, not the raw tag).
+_MODE_KIND_LABELS = {
+    "difficulty": "Difficulties",
+    "mode": "Game modes",
+    "modifier": "Modifiers",
+}
+
+
+def deterministic_modes_reply(message_text: str) -> str | None:
+    """A code-built "list the BTD6 game modes" answer, or ``None``.
+
+    Fires only on a clear modes enumeration: a mode/difficulty cue + a strong
+    list-intent cue (the same set the roster floor uses) + no other roster
+    entity (so a "mode" used as a qualifier stays with the model). Returns
+    ``None`` for single-mode lookups ("what is CHIMPS", "what does Deflation
+    do"), strategy/opinion questions, and anything without a modes cue. The list
+    is the deterministic kind-grouping, so a difficulty is never mislabelled a
+    mode.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _MODES_CUE_RE.search(low):
+        return None
+    if _MODES_OTHER_ENTITY_RE.search(low):
+        return None
+    is_list = (
+        any(phrase in low for phrase in _ROSTER_LIST_INTENT)
+        or "all " in low
+        or "every " in low
+    )
+    if not is_list:
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    from services import btd6_data_service
+
+    grouped = btd6_data_service.modes_by_kind()
+    if not grouped:
+        return None
+
+    total = sum(len(rows) for _, rows in grouped)
+    lines = [
+        f"**BTD6 game modes ({total})** — grouped by what they actually are "
+        "(difficulty vs. game mode vs. opt-in modifier):",
+    ]
+    for kind, modes in grouped:
+        label = _MODE_KIND_LABELS.get(kind, kind.capitalize())
+        names = ", ".join(f"**{m.canonical}**" for m in modes)
+        lines.append(f"__{label} ({len(modes)})__: {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+# --- BUG-0009 deterministic list-answer dispatcher ----------------------------
+def deterministic_btd6_list_reply(message_text: str) -> str | None:
+    """The single BUG-0009 floor seam: the first deterministic list-answer
+    builder that matches ``message_text``, or ``None`` if none does.
+
+    BUG-0009 is the "grounded facts, wrong assembly" class — the model groups /
+    labels / orders an individually-grounded list incorrectly, and the
+    value-only faithfulness guard cannot catch a mis-*grouping*. Each builder
+    below OWNS its labelled answer; the natural-language stage serves the result
+    as a pre-emptive floor *before* the model. Builders are narrow (they return
+    ``None`` for anything but their exact list shape), so ordinary BTD6 questions
+    fall through to the model untouched. Add a new list family (e.g.
+    newest-towers ordering) by appending its builder here.
+    """
+    for builder in (
+        deterministic_mk_reference_reply,
+        deterministic_geraldo_per_level_reply,
+        deterministic_modes_reply,
+    ):
+        reply = builder(message_text)
+        if reply:
+            return reply
+    return None
+
+
 # A capability/meta ask about the bot's BTD6 knowledge. Anchored on a
 # btd6/bloons token on purpose: the floor only handles BTD6-routed messages,
 # and requiring the anchor keeps entity questions ("do you know how much the
