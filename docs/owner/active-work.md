@@ -30,9 +30,9 @@ living ledger (`docs/current-state.md`).
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
   `disbot/{utils/mining/structures,services/mining_workflow,utils/character_render,views/mining,
   cogs/mining_cog,utils/mining/market}` + plan/numbers · 2026-06-15
-- `claude/brave-sagan-s9th8h` · Hermes context work — #913/#914 MERGED + applied live on VPS;
-  follow-up in progress: self-healing sync (diverged clone can't `pull --ff-only`) ·
-  `hermes-operating-prompt` + `hermes-terminal-cheatsheet` · 2026-06-15
+- `claude/brave-sagan-s9th8h` · Hermes context work — #913/#914/#915 MERGED + applied live;
+  follow-up: record the model/provider decision (free Nous default → own-key gpt-5.4-mini) ·
+  `hermes-control-plane` + `hermes-terminal-cheatsheet` + investigation · 2026-06-15
 
 ## Recently cleared
 

@@ -66,6 +66,42 @@ Hermes config/data paths shown during setup:
 /home/hermes/.hermes/
 ```
 
+### Model / provider
+
+> Added 2026-06-15 (the Hermes context-management investigation —
+> [`hermes-token-efficiency-investigation-2026-06-15.md`](hermes-token-efficiency-investigation-2026-06-15.md)).
+> The model is the single biggest driver of Hermes' behaviour, so it belongs in this record.
+
+- **Free default (what Hermes ships with):** `stepfun/step-3.7-flash:free`, served by **Nous
+  Research's own free inference endpoint** — `hermes config` shows `provider: nous`,
+  `base_url: https://inference-api.nousresearch.com/v1`. Not OpenRouter. A free, quantized,
+  lightweight tier — fine for chat, but too weak for reliable agentic control-plane work over this
+  repo (it was the root cause of the "misunderstands assignments / errors" the owner reported; no
+  config knob fixes a capability ceiling).
+- **Switched 2026-06-15 →** `openai/gpt-5.4-mini` on the **owner's own OpenAI key**
+  (`OPENAI_API_KEY` in `~/.hermes/.env`). `/model` confirms `Provider: openai-api` (routing left the
+  Nous endpoint). 400K context, ~$0.75/$4.50 per 1M tokens. **Live-reply verification pending** — the
+  config is set and the provider switched, but a fresh `/status` still showed `Agent Running: No`, so
+  confirm Hermes actually answers a task on it.
+- **⚠️ The `/model` Telegram quick-picker is stale** — for `openai-api` it only lists the old
+  `gpt-4o-mini` (a 2024 model). That is NOT what runs; `hermes config set model …` is authoritative.
+  Don't tap `gpt-4o-mini` expecting an upgrade — it's a downgrade from gpt-5.4-mini (keep it only as a
+  known-good fallback if a newer id won't route).
+- **Switch the model / use your own key** (no OpenRouter credits needed — own provider keys work
+  directly):
+  ```bash
+  hermes config set OPENAI_API_KEY sk-...        # or ANTHROPIC_API_KEY sk-ant-...  (set on the VPS; never share)
+  hermes config set model openai/gpt-5.4-mini    # or anthropic/claude-sonnet-4-6 · openai/gpt-5.5 · …
+  sudo systemctl restart hermes-gateway
+  hermes config | grep -i model                  # verify
+  ```
+- **Rationale (independence vs. reliability):** Hermes is deliberately a **non-Claude** mind so its
+  review is independent of the Claude that builds (Q-0117). The reliability fix was *capability*, not
+  *Claude* — a frontier **non-Claude** model (gpt-5.4-mini, or gpt-5.5) keeps the independence and
+  fixes the weakness. A Claude key (`anthropic/claude-sonnet-4-6`) is the most-reliable fallback if
+  independence is dropped. For the **review** role specifically, a stronger model than the cheap mini
+  is worth considering.
+
 ### Terminal backend
 
 Hermes was initially configured with the Docker terminal backend, but Docker was not installed yet. This caused command execution failures.
