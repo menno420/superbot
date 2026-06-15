@@ -180,13 +180,28 @@
   `test_geraldo_per_level_question_floored_before_model`
   (`tests/unit/runtime/ai/test_natural_language_stage.py` — the pre-emptive
   short-circuit through the unified dispatcher).
-- **Status:** PARTIALLY FIXED — the **MK-related family** (PR #924) and the
-  **Geraldo per-level family** (PR #926) are fixed. One list family remains OPEN
-  for a follow-on slice, same proven shape (deterministic builder → pre-emptive
-  floor, appended to `deterministic_btd6_list_reply`): **newest-towers
-  ordering** — *data-gated*: `towers.json` carries no release-order field, so it
-  needs sourced release-order data first (the ADR-006 / `!btd6ops seed-data`
-  provenance lane) before the builder.
+- **Fix — slice 2b: the "game mode groupings" family (PR #926):** the owner's
+  third named mislabel ("mode groupings" — the model calls a *difficulty* a
+  *mode*, etc.). `btd6_data_service.modes_by_kind()` owns the deterministic
+  kind-grouping (difficulty → mode → modifier, BTD6's own `ModeEntry.kind`
+  split); `btd6_context_service.deterministic_modes_reply` fires on a clear
+  modes enumeration (mode/difficulty cue + the roster floor's strong list-intent
+  cue) and is guarded against the qualifier over-route — a message naming
+  another roster entity ("which towers work on impoppable **mode**") defers to
+  the model. Appended to the `deterministic_btd6_list_reply` dispatcher after MK
+  and Geraldo. CHIMPS is now always grouped as a mode, Easy/Medium/Hard as
+  difficulties.
+- **Regression tests:** `tests/unit/services/test_btd6_modes_grouping.py`
+  (grouping order/coverage/kind-assignment · CHIMPS-is-a-mode-not-a-difficulty ·
+  list / how-many / what-are-all replies · single-mode + qualifier + strategy +
+  non-modes fall-through · the dispatcher routing the modes family).
+- **Status:** PARTIALLY FIXED — the **MK-related** (#924), **Geraldo per-level**
+  (#926), and **game-mode grouping** (#926) families are fixed. One list family
+  remains OPEN for a follow-on slice, same proven shape (deterministic builder →
+  pre-emptive floor, appended to `deterministic_btd6_list_reply`):
+  **newest-towers ordering** — *data-gated*: `towers.json` carries no
+  release-order field, so it needs sourced release-order data first (the ADR-006
+  / `!btd6ops seed-data` provenance lane) before the builder.
 
 ## BUG-0008 — "420 farm" income freelanced on the general path (keyword gap)
 

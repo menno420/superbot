@@ -1253,6 +1253,39 @@ def get_mode(mode_id: str) -> ModeEntry | None:
     return None
 
 
+# BTD6's own three-way split (ModeEntry.kind), in the order a grouped answer
+# should present them: the three difficulties, then the game modes, then the
+# opt-in modifiers. A kind outside this list (future-proofing) sorts last.
+_MODE_KIND_ORDER = ("difficulty", "mode", "modifier")
+
+
+def modes_by_kind() -> tuple[tuple[str, tuple[ModeEntry, ...]], ...]:
+    """BTD6 game modes grouped by ``kind`` (difficulty / mode / modifier) — the
+    deterministic relation behind the "list the game modes" answer (BUG-0009).
+
+    Returns ``((kind, (mode, …)), …)`` in :data:`_MODE_KIND_ORDER`; within a
+    kind, modes keep catalog order. Asked to assemble this grouping itself the
+    model mislabels which row is a difficulty vs. a mode vs. a modifier (every
+    name is grounded, so the value-only faithfulness guard passes the wrong
+    grouping) — so the grouping is owned here, in code.
+    """
+    by_kind: dict[str, list[ModeEntry]] = {}
+    for mode in get_dataset().modes:
+        by_kind.setdefault(mode.kind, []).append(mode)
+
+    def _rank(kind: str) -> int:
+        return (
+            _MODE_KIND_ORDER.index(kind)
+            if kind in _MODE_KIND_ORDER
+            else len(_MODE_KIND_ORDER)
+        )
+
+    return tuple(
+        (kind, tuple(by_kind[kind]))
+        for kind in sorted(by_kind, key=lambda k: (_rank(k), k))
+    )
+
+
 def get_power(power_id: str) -> PowerEntry | None:
     """A Power by catalog id or its game-native ``power_id`` (case-insensitive)."""
     needle = power_id.strip().lower()

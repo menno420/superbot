@@ -1919,6 +1919,78 @@ def deterministic_geraldo_per_level_reply(message_text: str) -> str | None:
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
+# --- "list the game modes" deterministic reply (BUG-0009, mode groupings) -----
+# The model, asked "list all the game modes", mislabels which row is a
+# difficulty vs. a mode vs. a modifier (the owner's "mode groupings" miss). Every
+# name is grounded, so the value-only faithfulness guard passes the wrong
+# grouping — so the deterministic layer OWNS the labelled, kind-grouped list. The
+# grouping itself lives in btd6_data_service.modes_by_kind().
+_MODES_CUE_RE = re.compile(r"\b(?:game\s*)?modes?\b|\bdifficult(?:y|ies)\b", re.I)
+# Another primary roster entity in the message means "mode"/"difficulty" is most
+# likely a *qualifier* ("which towers work on impoppable mode", "best hero on
+# hard difficulty"), not the list subject — defer those to the model. (Monkey
+# Knowledge is excluded by the dispatcher order: its builder runs first.)
+_MODES_OTHER_ENTITY_RE = re.compile(
+    r"\b(?:towers?|heroe?s?|paragons?|bloons?|bosse?s?|maps?|rounds?|"
+    r"upgrades?|crosspaths?)\b",
+    re.I,
+)
+# Human-readable heading per kind (game-correct phrasing, not the raw tag).
+_MODE_KIND_LABELS = {
+    "difficulty": "Difficulties",
+    "mode": "Game modes",
+    "modifier": "Modifiers",
+}
+
+
+def deterministic_modes_reply(message_text: str) -> str | None:
+    """A code-built "list the BTD6 game modes" answer, or ``None``.
+
+    Fires only on a clear modes enumeration: a mode/difficulty cue + a strong
+    list-intent cue (the same set the roster floor uses) + no other roster
+    entity (so a "mode" used as a qualifier stays with the model). Returns
+    ``None`` for single-mode lookups ("what is CHIMPS", "what does Deflation
+    do"), strategy/opinion questions, and anything without a modes cue. The list
+    is the deterministic kind-grouping, so a difficulty is never mislabelled a
+    mode.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _MODES_CUE_RE.search(low):
+        return None
+    if _MODES_OTHER_ENTITY_RE.search(low):
+        return None
+    is_list = (
+        any(phrase in low for phrase in _ROSTER_LIST_INTENT)
+        or "all " in low
+        or "every " in low
+    )
+    if not is_list:
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    from services import btd6_data_service
+
+    grouped = btd6_data_service.modes_by_kind()
+    if not grouped:
+        return None
+
+    total = sum(len(rows) for _, rows in grouped)
+    lines = [
+        f"**BTD6 game modes ({total})** — grouped by what they actually are "
+        "(difficulty vs. game mode vs. opt-in modifier):",
+    ]
+    for kind, modes in grouped:
+        label = _MODE_KIND_LABELS.get(kind, kind.capitalize())
+        names = ", ".join(f"**{m.canonical}**" for m in modes)
+        lines.append(f"__{label} ({len(modes)})__: {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 def deterministic_btd6_list_reply(message_text: str) -> str | None:
     """The single BUG-0009 floor seam: the first deterministic list-answer
@@ -1936,6 +2008,7 @@ def deterministic_btd6_list_reply(message_text: str) -> str | None:
     for builder in (
         deterministic_mk_reference_reply,
         deterministic_geraldo_per_level_reply,
+        deterministic_modes_reply,
     ):
         reply = builder(message_text)
         if reply:

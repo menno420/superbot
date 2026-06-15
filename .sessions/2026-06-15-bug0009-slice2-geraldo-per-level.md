@@ -16,13 +16,22 @@ shape as slice 1 (#924, MK-related family). PR **#926**.
 - **`btd6_context_service.deterministic_btd6_list_reply()`** — one dispatcher
   fronting both BUG-0009 builders (MK first, then Geraldo). `natural_language_stage`
   now calls this single seam; slice 3 (newest-towers) appends its builder here.
+- **Slice 2b (same PR) — game mode groupings**, the owner's third named
+  BUG-0009 mislabel. `btd6_data_service.modes_by_kind()` owns the
+  difficulty→mode→modifier grouping (BTD6's own `ModeEntry.kind` split);
+  `btd6_context_service.deterministic_modes_reply()` fires on a clear modes
+  enumeration, guarded against the qualifier over-route (a message naming
+  another roster entity — "which towers work on impoppable mode" — defers to the
+  model). Appended to the dispatcher after MK + Geraldo. CHIMPS is now always a
+  mode, Easy/Medium/Hard difficulties.
 - Tests: `tests/unit/services/test_btd6_geraldo_per_level.py` (13) +
+  `test_btd6_modes_grouping.py` (12) +
   `test_geraldo_per_level_question_floored_before_model` in the stage suite.
-- Bug-book BUG-0009 marked slice 2 fixed; current-state ▶ re-pointed.
+- Bug-book BUG-0009 marked slices 2 + 2b fixed; current-state ▶ re-pointed.
 
-**Verification:** `python3.10 scripts/check_quality.py --full` green (9877→9877
-+17 new tests pass) · `check_architecture --mode strict` 0 errors · ledger +
-docs strict green.
+**Verification:** `python3.10 scripts/check_quality.py --full` green (9889, +29
+new tests pass) · `check_architecture --mode strict` 0 errors · ledger + docs
+strict green.
 
 ## Handoff (next routine reads current-state ▶)
 - **Next ▶ startable = security service tiers 1+2** (band-#900 queue slot 9,
