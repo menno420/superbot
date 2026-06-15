@@ -302,6 +302,12 @@ hermes gateway
 
 ## Suggested next steps
 
+> **▶ Owner-prioritized next (2026-06-15): token efficiency.** Hermes `/status` showed **2.2M
+> cumulative tokens "re-sent each call"** after only a few messages (~8–9× the working window) →
+> context collapse by the 3rd–4th tool call. Root cause + investigation questions + candidate fixes
+> (stateless bounded dispatch · history cap · `soul.md` injection strategy) are captured in
+> [`hermes-token-efficiency-investigation-2026-06-15.md`](hermes-token-efficiency-investigation-2026-06-15.md).
+
 ### 1. Add SSH key login
 
 Current access still relies on password login. Long-term, add SSH key login through Termius or another SSH client.
