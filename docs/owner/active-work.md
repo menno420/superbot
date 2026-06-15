@@ -34,11 +34,12 @@ living ledger (`docs/current-state.md`).
   follow-up: record the model/provider decision (free Nous default → own-key gpt-5.4-mini) ·
   `hermes-control-plane` + `hermes-terminal-cheatsheet` + investigation · 2026-06-15
 
-- `claude/hopeful-allen-sfus5i` · P1-3 machine-checkable contract invariants — review 4 tracks,
-  add invariants for genuine gaps, close the rest · `tests/unit/invariants/` +
-  `docs/planning/production-readiness/` · 2026-06-15
-
 ## Recently cleared
+
+- `claude/hopeful-allen-sfus5i` · P1-3 machine-checkable contract invariants — 2 new CI invariants
+  (settings declared→consumer parity · games wager-boundary completeness) + AI/BTD6 closed via
+  disposition doc · `tests/unit/invariants/` + `docs/planning/production-readiness/` · 2026-06-15 ·
+  **PR #917 (open, auto-merge on green)**
 
 - `claude/hopeful-allen-sdjqjs` · mining Slices E + F — respec polish + skill/milestone titles ·
   `skill_service`/`skills_panel` (E) + `utils/mining/titles` + `title_service` + `titles_panel` +

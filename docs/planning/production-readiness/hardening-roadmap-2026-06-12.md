@@ -143,7 +143,7 @@ is now pinned by a test; smoke `!platform diagnostics` drift was already fixed i
 findings are filterable as `resolved`/`ignored` but **nothing transitions them** (open
 forever); retention is startup-only on a long-lived process.
 
-### P1-3 · Machine-checkable contract invariants (cross-cutting)
+### P1-3 · Machine-checkable contract invariants (cross-cutting)  ·  ✅ **SUBSTANTIALLY COMPLETE (2026-06-15)** — [disposition](p1-3-contract-invariants-disposition-2026-06-15.md)
 **Evidence:** recurs in settings (declared-setting → runtime-consumer parity; no dual
 pointer+binding; backfill-target parity), games (cross-game terminal-state matrix), AI
 (declared-vs-consumed tools), BTD6 (derived-value provenance).
@@ -151,6 +151,16 @@ pointer+binding; backfill-target parity), games (cross-game terminal-state matri
 regression ships silently.
 **Bounded session(s):** add AST/registry parity tests, ideally one per track as it lands
 (not a single mega-session). This is the durable "stays fixed" layer.
+**Outcome (2026-06-15):** reviewed all four tracks; found + closed the **two** genuine
+buildable-now gaps with new CI-runnable AST invariants — **settings** declared→consumer parity
+(`test_settings_declared_vs_consumed_parity.py`, 0 dead settings of 63) and **games** wager
+write-boundary completeness (the hardcoded `_WAGER_FILES` list now also fails on a *new* two-party
+mint path via `test_two_sided_economy_calls_are_accounted_for`). **AI** is substantially-covered by
+the 34/34 catalogue/eval ratchet (closed, no new invariant). **BTD6** source-provenance is
+invariant-covered; uniform per-derived-value attribution is a documented design-for-review residual
+(a docstring/AST-marker guard would be brittle — not a P1-3 invariant). See the
+[disposition doc](p1-3-contract-invariants-disposition-2026-06-15.md) for the full track-by-track
+record.
 
 ### P1-4 · Production live-verification (the #1 cross-cutting blocker, owner-led)
 **Evidence:** **all seven** maps explicitly lack maintainer live-walk + real
