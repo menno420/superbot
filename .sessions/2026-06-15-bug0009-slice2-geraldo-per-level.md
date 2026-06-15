@@ -72,9 +72,30 @@ should land the *extension point*, not just the first instance — the second
 slice shouldn't have to refactor the first.
 
 ## Doc audit (Q-0104)
-- `check_current_state_ledger.py --strict` exit 0; `check_docs.py --strict` exit 0.
+- `check_docs.py --strict` exit 0; `check_quality --full` exit 0; arch 0; session
+  gate green.
 - New code reachable from existing folios (btd6 subsystem); no new doc file needed
   (builders live in already-documented services).
-- Recently-shipped ratchet sits at 22 (soft warning, pre-existing 21 from #924) —
-  deliberately not groomed here to avoid conflicting with the in-flight docs-hygiene
-  PR **#925** (scannable ▶ pointer + stamp-wall archive), which owns that lean-up.
+- **Mid-session, PR #925 merged on main** (the docs-hygiene scannable-pointer +
+  stamp-wall archive). I re-synced origin/main into the branch and resolved the
+  `current-state.md` conflict by hand: **kept #925's scannable `▶ NEXT` lead line
+  but updated it** (slices 2/2b shipped → next = security tiers) and kept my
+  updated `▶ Next action` paragraph. No markers left; full mirror re-run green.
+- **Known ledger drift (NOT this session's):** `check_current_state_ledger.py
+  --strict` exits 1 on **8 PRs from other parallel sessions** (#913/#914/#915/
+  #916/#919/#921/#923/#925) that aren't yet in the ledger/archive. This is the
+  expected reconcile-lag class — they're from sessions I have no context on, so I
+  deliberately did **not** guess entries for them (that risks wrong/fabricated
+  ledger lines + more conflicts). **The band-#930 reconciliation pass (due very
+  soon) should reconcile these.** This check is advisory-only (not in
+  `code-quality.yml`), so it does not gate #926's merge.
+- Recently-shipped ratchet is over its soft cap (pre-existing from #924; #925
+  already did a stamp-wall trim) — left for the reconciliation pass, not groomed
+  here (soft warning, no CI impact).
+
+## ⚠ Parallel-work note for the next agent / reconciliation
+Two BUG-0009 doc PRs ran concurrently this evening: **#925** (docs-only:
+scannable pointer + stamp archive) and **#926** (this — slices 2/2b code). They
+collided on `current-state.md`'s ▶ pointer. Resolved cleanly, but it's a concrete
+instance of the parallel-session conflict the claim ledger / born-red gate exist
+to reduce. The system-improvement angle is in the Q-0102 note above.
