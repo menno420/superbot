@@ -1,4 +1,5 @@
 """Unit tests for response_renderer_registry."""
+
 from __future__ import annotations
 
 import sys

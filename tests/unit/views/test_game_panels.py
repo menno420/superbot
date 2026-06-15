@@ -99,9 +99,7 @@ def test_blackjack_panel_has_no_practice_or_replay_button():
     """
     view = blackjack_panel.BlackjackPanelView(_author())
     labels = [
-        (c.label or "")
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
+        (c.label or "") for c in view.children if isinstance(c, discord.ui.Button)
     ]
     for token in ("Practice", "Replay", "Change Mode"):
         assert not any(token in lbl for lbl in labels), (
@@ -116,9 +114,7 @@ def test_rps_panel_has_no_replay_or_best_of_button():
     """
     view = rps_panel.RPSPanelView(_author())
     labels = [
-        (c.label or "")
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
+        (c.label or "") for c in view.children if isinstance(c, discord.ui.Button)
     ]
     for token in ("Replay", "Best of"):
         assert not any(token in lbl for lbl in labels), (
@@ -143,8 +139,7 @@ def test_blackjack_panel_exposes_rules_button():
 def test_rps_panel_exposes_rules_button():
     view = rps_panel.RPSPanelView(_author())
     assert _find_rules_button(view) is not None, (
-        "RPSPanelView must keep a Rules button as the read-only "
-        "diagnostic surface."
+        "RPSPanelView must keep a Rules button as the read-only " "diagnostic surface."
     )
 
 

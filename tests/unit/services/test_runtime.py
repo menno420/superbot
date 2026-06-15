@@ -26,14 +26,20 @@ def test_boot_id_is_a_uuid_and_stable_across_imports():
     assert isinstance(runtime.BOOT_ID, uuid.UUID)
     # Re-import shouldn't change it (module-level singleton).
     from services import runtime as second
+
     assert second.BOOT_ID == runtime.BOOT_ID
 
 
 def test_boot_id_filter_stamps_boot_id():
     boot = uuid.uuid4()
     record = logging.LogRecord(
-        name="test", level=logging.INFO, pathname=__file__, lineno=1,
-        msg="hello", args=None, exc_info=None,
+        name="test",
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=1,
+        msg="hello",
+        args=None,
+        exc_info=None,
     )
     rf = runtime.BootIdFilter(boot)
     assert rf.filter(record) is True
@@ -199,9 +205,7 @@ async def test_acquire_lock_or_exit_falls_back_to_safe_defaults_on_bad_poll(
                 boot_wait_seconds=0.05,
                 boot_poll_seconds=10.0,  # poll > wait
             )
-    assert any(
-        "BOOT_POLL_SECONDS" in record.message for record in caplog.records
-    )
+    assert any("BOOT_POLL_SECONDS" in record.message for record in caplog.records)
 
 
 @pytest.mark.asyncio
@@ -322,8 +326,11 @@ async def test_heartbeat_metric_increments_error_on_exception():
         stop.set()
         return v
 
-    with patch.object(rl_db, "heartbeat", side_effect=_hb), patch(
-        "services.runtime.os._exit",
+    with (
+        patch.object(rl_db, "heartbeat", side_effect=_hb),
+        patch(
+            "services.runtime.os._exit",
+        ),
     ):
         await runtime.run_heartbeat_loop(stop, interval_seconds=0)
 
@@ -340,9 +347,12 @@ async def test_heartbeat_metric_increments_lost_when_peer_reclaims():
     stop = asyncio.Event()
     before = _heartbeat_counter_value("lost")
 
-    with patch.object(rl_db, "heartbeat", AsyncMock(return_value=False)), patch(
-        "services.runtime.os._exit",
-    ) as exit_mock:
+    with (
+        patch.object(rl_db, "heartbeat", AsyncMock(return_value=False)),
+        patch(
+            "services.runtime.os._exit",
+        ) as exit_mock,
+    ):
         exit_mock.side_effect = lambda code: stop.set()
         await runtime.run_heartbeat_loop(stop, interval_seconds=0)
 
@@ -405,8 +415,11 @@ async def test_heartbeat_seconds_histogram_observes_failed_calls_too():
         stop.set()
         return v
 
-    with patch.object(rl_db, "heartbeat", side_effect=_hb), patch(
-        "services.runtime.os._exit",
+    with (
+        patch.object(rl_db, "heartbeat", side_effect=_hb),
+        patch(
+            "services.runtime.os._exit",
+        ),
     ):
         await runtime.run_heartbeat_loop(stop, interval_seconds=0)
 

@@ -64,8 +64,7 @@ def _projection_keys() -> set[str]:
                     return {
                         key.value
                         for key in node.value.keys
-                        if isinstance(key, ast.Constant)
-                        and isinstance(key.value, str)
+                        if isinstance(key, ast.Constant) and isinstance(key.value, str)
                     }
     raise AssertionError(
         "_LEGACY_TO_POLICY_FIELD dict not found in "
@@ -84,7 +83,8 @@ def _settings_key_values() -> set[str]:
                 if not (isinstance(tgt, ast.Name) and tgt.id.isupper()):
                     continue
                 if isinstance(node.value, ast.Constant) and isinstance(
-                    node.value.value, str,
+                    node.value.value,
+                    str,
                 ):
                     out.add(node.value.value)
     return out
@@ -126,7 +126,8 @@ def _doc_text() -> str:
 def _doc_section(text: str, header: str) -> str:
     """Return the markdown body under ``## header`` until the next ``## ``."""
     pattern = re.compile(
-        rf"##\s+{re.escape(header)}\b.*?(?=\n## |\Z)", re.DOTALL,
+        rf"##\s+{re.escape(header)}\b.*?(?=\n## |\Z)",
+        re.DOTALL,
     )
     match = pattern.search(text)
     return match.group(0) if match else ""
@@ -193,7 +194,7 @@ def test_doc_lists_each_status_class_for_audit_fields() -> None:
     assert section, "Doc is missing the '5. Audit fields' section."
     assert (
         "legacy-NULL rendering rule" in section.lower()
-        or 'render as `—`' in section
+        or "render as `—`" in section
         or "Legacy-NULL" in section
     ), (
         "Doc § 'Audit fields' must describe the I-4 legacy-NULL rendering "

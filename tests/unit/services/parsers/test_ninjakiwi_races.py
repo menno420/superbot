@@ -46,7 +46,9 @@ def test_parse_races_index_emits_one_fact_per_race():
         assert fact["entity_kind"] == "btd6_race"
         body = fact["body_json"]
         assert isinstance(body["start_ms"], int)
-        assert body["leaderboard_url"].startswith("https://data.ninjakiwi.com/btd6/races/")
+        assert body["leaderboard_url"].startswith(
+            "https://data.ninjakiwi.com/btd6/races/"
+        )
 
 
 def test_parse_races_index_includes_total_scores_field():

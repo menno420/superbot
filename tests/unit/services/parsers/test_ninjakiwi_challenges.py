@@ -73,8 +73,8 @@ def test_parse_challenge_list_emits_one_fact_per_entry():
 def test_parse_challenge_list_groups_by_category_prefix():
     facts = parse_challenge_list(_load("btd6_challenges_filter_daily.json"))
     ids = {fact["entity_key"] for fact in facts}
-    assert any(challenge_id.startswith("rot") for challenge_id in ids)   # Standard
-    assert any(challenge_id.startswith("adv") for challenge_id in ids)   # Advanced
+    assert any(challenge_id.startswith("rot") for challenge_id in ids)  # Standard
+    assert any(challenge_id.startswith("adv") for challenge_id in ids)  # Advanced
     assert any(challenge_id.startswith("coop") for challenge_id in ids)  # coop
 
 

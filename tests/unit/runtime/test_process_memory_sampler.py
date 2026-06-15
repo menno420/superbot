@@ -92,6 +92,6 @@ async def test_sampler_swallows_psutil_failure_and_keeps_running():
             pass
 
     # First tick raised — second tick recovered and set the gauge.
-    assert 999_999 in set_calls, (
-        "sampler should recover from a transient psutil failure"
-    )
+    assert (
+        999_999 in set_calls
+    ), "sampler should recover from a transient psutil failure"

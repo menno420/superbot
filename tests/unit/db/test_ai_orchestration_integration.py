@@ -111,17 +111,23 @@ async def test_precedence_round_trip(postgres_pool) -> None:
     assert d.source == "default"
 
     # Guild → guild.
-    await mutation.set_guild_orchestration(gid, profile_key="balanced_helper", actor=_ADMIN)
+    await mutation.set_guild_orchestration(
+        gid, profile_key="balanced_helper", actor=_ADMIN
+    )
     d = await orch.resolve(_ctx(gid, chan, cat))
     assert (d.profile_key, d.source) == ("balanced_helper", "guild")
 
     # Category overrides guild.
-    await mutation.set_category_orchestration(gid, cat, profile_key="btd6_grounded", actor=_ADMIN)
+    await mutation.set_category_orchestration(
+        gid, cat, profile_key="btd6_grounded", actor=_ADMIN
+    )
     d = await orch.resolve(_ctx(gid, chan, cat))
     assert (d.profile_key, d.source) == ("btd6_grounded", "category")
 
     # Channel overrides category.
-    await mutation.set_channel_orchestration(gid, chan, profile_key="no_tools", actor=_ADMIN)
+    await mutation.set_channel_orchestration(
+        gid, chan, profile_key="no_tools", actor=_ADMIN
+    )
     d = await orch.resolve(_ctx(gid, chan, cat))
     assert (d.profile_key, d.source) == ("no_tools", "channel")
     assert d.enabled_toolsets == ()  # the real preset narrowed everything away
@@ -132,11 +138,15 @@ async def test_precedence_round_trip(postgres_pool) -> None:
     assert d.source == "category"
 
 
-async def test_orchestration_only_channel_write_inserts_inherit_mode(postgres_pool) -> None:
+async def test_orchestration_only_channel_write_inserts_inherit_mode(
+    postgres_pool,
+) -> None:
     """A channel with no reply-policy row gets mode='inherit' on the orch write."""
     gid = _GUILD_IDS[1]
     chan = 333
-    await mutation.set_channel_orchestration(gid, chan, profile_key="btd6_grounded", actor=_ADMIN)
+    await mutation.set_channel_orchestration(
+        gid, chan, profile_key="btd6_grounded", actor=_ADMIN
+    )
     row = await pool.fetchone(
         """
         SELECT mode, orchestration_profile FROM ai_channel_policy
@@ -157,10 +167,15 @@ async def test_orch_write_preserves_existing_reply_mode(postgres_pool) -> None:
     chan = 444
     # Establish a reply-policy row with mode='always_reply'.
     await ai_policy_mutation.set_channel_policy(
-        gid, chan, mode="always_reply", actor=_ADMIN,
+        gid,
+        chan,
+        mode="always_reply",
+        actor=_ADMIN,
     )
     # Now set an orchestration profile on the same channel.
-    await mutation.set_channel_orchestration(gid, chan, profile_key="no_tools", actor=_ADMIN)
+    await mutation.set_channel_orchestration(
+        gid, chan, profile_key="no_tools", actor=_ADMIN
+    )
     row = await pool.fetchone(
         """
         SELECT mode, orchestration_profile FROM ai_channel_policy
@@ -175,10 +190,18 @@ async def test_orch_write_preserves_existing_reply_mode(postgres_pool) -> None:
 
 async def test_projection_counts(postgres_pool) -> None:
     gid = _GUILD_IDS[3]
-    await mutation.set_guild_orchestration(gid, profile_key="balanced_helper", actor=_ADMIN)
-    await mutation.set_channel_orchestration(gid, 11, profile_key="btd6_grounded", actor=_ADMIN)
-    await mutation.set_channel_orchestration(gid, 12, profile_key="no_tools", actor=_ADMIN)
-    await mutation.set_category_orchestration(gid, 21, profile_key="btd6_grounded", actor=_ADMIN)
+    await mutation.set_guild_orchestration(
+        gid, profile_key="balanced_helper", actor=_ADMIN
+    )
+    await mutation.set_channel_orchestration(
+        gid, 11, profile_key="btd6_grounded", actor=_ADMIN
+    )
+    await mutation.set_channel_orchestration(
+        gid, 12, profile_key="no_tools", actor=_ADMIN
+    )
+    await mutation.set_category_orchestration(
+        gid, 21, profile_key="btd6_grounded", actor=_ADMIN
+    )
 
     snap = await projection.build_snapshot(gid)
     o = snap.orchestration
@@ -190,10 +213,14 @@ async def test_projection_counts(postgres_pool) -> None:
 
 async def test_generation_bump_invalidates(postgres_pool) -> None:
     gid = _GUILD_IDS[4]
-    r1 = await mutation.set_guild_orchestration(gid, profile_key="balanced_helper", actor=_ADMIN)
+    r1 = await mutation.set_guild_orchestration(
+        gid, profile_key="balanced_helper", actor=_ADMIN
+    )
     d1 = await orch.resolve(_ctx(gid))
     assert d1.profile_key == "balanced_helper"
-    r2 = await mutation.set_guild_orchestration(gid, profile_key="no_tools", actor=_ADMIN)
+    r2 = await mutation.set_guild_orchestration(
+        gid, profile_key="no_tools", actor=_ADMIN
+    )
     # The guild setter bumps generation on every write.
     assert r2.generation is not None and r1.generation is not None
     assert r2.generation > r1.generation

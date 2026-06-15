@@ -181,7 +181,9 @@ def test_round_cash_full_range_caps_detail_but_totals_in_full():
     assert res["truncated"] is True
     assert len(res["per_round"]) == 40  # _ROUND_DETAIL_CAP — bounded detail
     # The total is summed over the whole range, never just the capped detail.
-    assert res["range_cash"] == pytest.approx(round(sum(_cash(n) for n in range(1, 141)), 2))
+    assert res["range_cash"] == pytest.approx(
+        round(sum(_cash(n) for n in range(1, 141)), 2)
+    )
     assert res["range_cash"] == pytest.approx(round(_cumulative(140) - 650.0, 2))
 
 

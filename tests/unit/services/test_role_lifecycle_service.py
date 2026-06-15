@@ -37,7 +37,9 @@ def _role(rid, name="Members", *, position=1, managed=False, fail=None):
     return role
 
 
-def _guild(roles=None, *, manage_roles=True, bot_top_position=100, guild_id=1, created=None):
+def _guild(
+    roles=None, *, manage_roles=True, bot_top_position=100, guild_id=1, created=None
+):
     rolemap = {r.id: r for r in (roles or [])}
     guild = MagicMock()
     guild.id = guild_id
@@ -81,7 +83,9 @@ async def test_create_calls_create_role_and_succeeds(svc):
     guild = _guild(created=_role(999, "Recruit"))
     result = await svc.apply(
         guild,
-        RoleLifecycleRequest(operation="create", name="Recruit", color=discord.Color(0x1)),
+        RoleLifecycleRequest(
+            operation="create", name="Recruit", color=discord.Color(0x1)
+        ),
         _actor(),
     )
     guild.create_role.assert_awaited_once()

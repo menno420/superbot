@@ -215,7 +215,9 @@ async def test_preview_writes_nothing(monkeypatch):
     writer = AsyncMock()
     monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
 
-    await svc.preview_cleanup_change(_guild({111: _channel("g")}), "channel", 111, "Off")
+    await svc.preview_cleanup_change(
+        _guild({111: _channel("g")}), "channel", 111, "Off"
+    )
 
     writer.assert_not_called()
 
@@ -266,7 +268,11 @@ async def test_apply_rejects_thread_scope(monkeypatch):
     monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
     with pytest.raises(ValueError, match="thread"):
         await svc.apply_cleanup_change(
-            _guild({}), MagicMock(spec=discord.Member), "thread", 1, "Off",
+            _guild({}),
+            MagicMock(spec=discord.Member),
+            "thread",
+            1,
+            "Off",
         )
     writer.assert_not_called()
 
@@ -277,6 +283,10 @@ async def test_apply_rejects_unknown_level(monkeypatch):
     monkeypatch.setattr(svc, "set_cleanup_policy_for_scope", writer)
     with pytest.raises(ValueError, match="level"):
         await svc.apply_cleanup_change(
-            _guild({}), MagicMock(spec=discord.Member), "guild", None, "Nuclear",
+            _guild({}),
+            MagicMock(spec=discord.Member),
+            "guild",
+            None,
+            "Nuclear",
         )
     writer.assert_not_called()

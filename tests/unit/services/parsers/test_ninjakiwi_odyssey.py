@@ -50,7 +50,9 @@ def test_parse_odyssey_index_emits_one_fact_per_odyssey():
             "metadata_medium_url",
             "metadata_hard_url",
         ):
-            assert body[url_field].startswith("https://data.ninjakiwi.com/btd6/odyssey/")
+            assert body[url_field].startswith(
+                "https://data.ninjakiwi.com/btd6/odyssey/"
+            )
 
 
 def test_parse_odyssey_index_preserves_description_field():

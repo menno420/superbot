@@ -68,7 +68,9 @@ def test_badge_custom_taxonomy_respected(tmp_path):
 
 def test_adr_is_exempt_from_badge(tmp_path):
     docs = tmp_path / "docs"
-    _write(docs / "decisions" / "001-no-redis.md", "# ADR-001\n\n**Status:** Accepted\n")
+    _write(
+        docs / "decisions" / "001-no-redis.md", "# ADR-001\n\n**Status:** Accepted\n"
+    )
     assert check_badges(docs, _TOKENS) == []
 
 
@@ -129,7 +131,10 @@ def test_reachable_exempt_badges_and_adr_ok(tmp_path):
 def test_reachable_readme_is_a_root(tmp_path):
     docs = tmp_path / "docs"
     # No read-path docs exist, but a README links the doc -> reachable.
-    _write(docs / "sub" / "README.md", "# R\n\n> **Status:** `reference`\n\n[x](child.md)\n")
+    _write(
+        docs / "sub" / "README.md",
+        "# R\n\n> **Status:** `reference`\n\n[x](child.md)\n",
+    )
     _write(docs / "sub" / "child.md", "# C\n\n> **Status:** `reference`\n")
     assert check_reachable(docs, _READPATH) == []
 

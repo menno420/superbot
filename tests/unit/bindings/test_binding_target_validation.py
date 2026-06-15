@@ -21,13 +21,16 @@ from core.runtime.subsystem_schema import BindingKind
 async def test_member_kind_dispatches_to_member_resolver():
     guild = MagicMock()
     sentinel_member = object()
-    with patch(
-        "core.runtime.bindings.guild_resources.resolve_member",
-        return_value=sentinel_member,
-    ) as mock_resolve, patch(
-        "core.runtime.bindings.discovery.validate_resource",
-        AsyncMock(return_value=ResourceStatus.BOUND),
-    ) as mock_validate:
+    with (
+        patch(
+            "core.runtime.bindings.guild_resources.resolve_member",
+            return_value=sentinel_member,
+        ) as mock_resolve,
+        patch(
+            "core.runtime.bindings.discovery.validate_resource",
+            AsyncMock(return_value=ResourceStatus.BOUND),
+        ) as mock_validate,
+    ):
         status = await validate_binding_target(guild, BindingKind.MEMBER, 42)
     assert status is ResourceStatus.BOUND
     mock_resolve.assert_called_once_with(guild, 42)
@@ -58,12 +61,15 @@ async def test_member_kind_missing_returns_missing():
 async def test_resource_kinds_dispatch_to_discovery(kind):
     guild = MagicMock()
     guild.id = 1
-    with patch(
-        "core.runtime.bindings.discovery.validate_resource",
-        AsyncMock(return_value=ResourceStatus.BOUND),
-    ) as mock_validate, patch(
-        "core.runtime.bindings.guild_resources.resolve_member",
-    ) as mock_resolve:
+    with (
+        patch(
+            "core.runtime.bindings.discovery.validate_resource",
+            AsyncMock(return_value=ResourceStatus.BOUND),
+        ) as mock_validate,
+        patch(
+            "core.runtime.bindings.guild_resources.resolve_member",
+        ) as mock_resolve,
+    ):
         status = await validate_binding_target(guild, kind, 42)
     assert status is ResourceStatus.BOUND
     # Ensure persist=False is used — Phase 2b bindings track their own

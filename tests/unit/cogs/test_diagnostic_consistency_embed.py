@@ -40,7 +40,9 @@ def _section(
 def _report(*sections: SectionResult) -> ConsistencyReport:
     return ConsistencyReport(
         sections=sections,
-        generated_at=datetime.datetime(2026, 5, 18, 17, 30, tzinfo=datetime.timezone.utc),
+        generated_at=datetime.datetime(
+            2026, 5, 18, 17, 30, tzinfo=datetime.timezone.utc
+        ),
     )
 
 
@@ -130,9 +132,7 @@ def test_build_embed_truncates_field_with_marker():
     )
     # The field value cap (≤1000) leaves a truncation marker on long
     # fields.
-    overflow_fields = [
-        f for f in embed.fields if f.value and len(f.value) > 1024
-    ]
+    overflow_fields = [f for f in embed.fields if f.value and len(f.value) > 1024]
     assert not overflow_fields
     long_fields = [f for f in embed.fields if f.value and "…" in f.value]
     assert long_fields, "Expected at least one truncated field with the … marker"
@@ -140,8 +140,7 @@ def test_build_embed_truncates_field_with_marker():
 
 def test_build_embed_field_cap_at_24():
     sections = tuple(
-        _section(f"s{i}", SectionStatus.CLEAN, summary="ok")
-        for i in range(50)
+        _section(f"s{i}", SectionStatus.CLEAN, summary="ok") for i in range(50)
     )
     embed = build_consistency_embed(_report(*sections))
     assert len(embed.fields) <= _FIELD_HARD_CAP + 1  # +1 for optional `… truncated`

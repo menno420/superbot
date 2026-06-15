@@ -1,4 +1,5 @@
 """Tests for ``scripts/command_surface_dump.py`` — offline command-surface dump."""
+
 from __future__ import annotations
 
 import importlib.util

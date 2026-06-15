@@ -22,7 +22,9 @@ from cogs.btd6_ops_cog import (
 )
 
 
-def _actor(*, administrator: bool = False, manage_guild: bool = False) -> SimpleNamespace:
+def _actor(
+    *, administrator: bool = False, manage_guild: bool = False
+) -> SimpleNamespace:
     perms = SimpleNamespace(administrator=administrator, manage_guild=manage_guild)
     return SimpleNamespace(id=123, guild_permissions=perms)
 

@@ -185,7 +185,9 @@ def test_get_missing_var_exits_2(mod, monkeypatch, capsys):
 def test_set_calls_upsert_and_audits_without_leaking(mod, monkeypatch, capsys):
     _set_env(monkeypatch)
     records: list = []
-    monkeypatch.setattr(mod, "build_poster", lambda token, **kw: _recording_post(records))
+    monkeypatch.setattr(
+        mod, "build_poster", lambda token, **kw: _recording_post(records)
+    )
     assert mod.main(["set", "API_KEY", "topsecret"]) == 0
     captured = capsys.readouterr()
     assert any("variableUpsert" in q for q, _ in records)
@@ -198,7 +200,9 @@ def test_set_calls_upsert_and_audits_without_leaking(mod, monkeypatch, capsys):
 def test_set_reads_value_from_stdin(mod, monkeypatch):
     _set_env(monkeypatch)
     records: list = []
-    monkeypatch.setattr(mod, "build_poster", lambda token, **kw: _recording_post(records))
+    monkeypatch.setattr(
+        mod, "build_poster", lambda token, **kw: _recording_post(records)
+    )
     monkeypatch.setattr("sys.stdin", io.StringIO("from-stdin\n"))
     assert mod.main(["set", "API_KEY"]) == 0
     assert records[0][1]["input"]["value"] == "from-stdin"
@@ -207,7 +211,9 @@ def test_set_reads_value_from_stdin(mod, monkeypatch):
 def test_unset_calls_delete(mod, monkeypatch, capsys):
     _set_env(monkeypatch)
     records: list = []
-    monkeypatch.setattr(mod, "build_poster", lambda token, **kw: _recording_post(records))
+    monkeypatch.setattr(
+        mod, "build_poster", lambda token, **kw: _recording_post(records)
+    )
     assert mod.main(["unset", "OLD_VAR"]) == 0
     assert any("variableDelete" in q for q, _ in records)
     assert "UNSET OLD_VAR" in capsys.readouterr().err
@@ -216,7 +222,9 @@ def test_unset_calls_delete(mod, monkeypatch, capsys):
 def test_set_default_triggers_deploy(mod, monkeypatch, capsys):
     _set_env(monkeypatch)
     records: list = []
-    monkeypatch.setattr(mod, "build_poster", lambda token, **kw: _recording_post(records))
+    monkeypatch.setattr(
+        mod, "build_poster", lambda token, **kw: _recording_post(records)
+    )
     assert mod.main(["set", "K", "V"]) == 0
     assert "skipDeploys" not in records[0][1]["input"]
     assert "redeploy" in capsys.readouterr().err
@@ -225,7 +233,9 @@ def test_set_default_triggers_deploy(mod, monkeypatch, capsys):
 def test_set_no_deploy_stages_without_redeploy(mod, monkeypatch, capsys):
     _set_env(monkeypatch)
     records: list = []
-    monkeypatch.setattr(mod, "build_poster", lambda token, **kw: _recording_post(records))
+    monkeypatch.setattr(
+        mod, "build_poster", lambda token, **kw: _recording_post(records)
+    )
     assert mod.main(["set", "K", "V", "--no-deploy"]) == 0
     assert records[0][1]["input"]["skipDeploys"] is True
     assert "no redeploy" in capsys.readouterr().err

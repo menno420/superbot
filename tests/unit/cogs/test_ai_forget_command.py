@@ -29,7 +29,9 @@ def _ctx(guild_id: int | None = 1, channel_id: int = 100):
 
 @pytest.mark.asyncio
 async def test_forget_flushes_only_current_channel():
-    ai_conversation_service.append(1, 100, user_id=1, role="user", text="keep-elsewhere")
+    ai_conversation_service.append(
+        1, 100, user_id=1, role="user", text="keep-elsewhere"
+    )
     ai_conversation_service.append(1, 200, user_id=1, role="user", text="drop-me")
 
     cog = AICog(bot=MagicMock())

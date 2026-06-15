@@ -212,7 +212,9 @@ async def test_member_none_returns_user(_no_roles_configured):
 
 @pytest.mark.asyncio
 async def test_role_grants_tier_matches_when_held():
-    assert await _role_grants_tier(GUILD_ID, _reader(MOD_ROLE_ID), {MOD_ROLE_ID}) is True
+    assert (
+        await _role_grants_tier(GUILD_ID, _reader(MOD_ROLE_ID), {MOD_ROLE_ID}) is True
+    )
 
 
 @pytest.mark.asyncio

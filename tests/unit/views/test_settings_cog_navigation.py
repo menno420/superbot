@@ -87,18 +87,22 @@ async def test_open_panel_button_calls_cog_hook_and_attaches_back():
     fake_view = discord.ui.View()
     fake_cog.build_help_menu_view = AsyncMock(return_value=(fake_embed, fake_view))
 
-    with patch(
-        "views.settings.subsystem_view._resolve_cog_for_subsystem",
-        return_value=fake_cog,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "views.settings.subsystem_view._resolve_cog_for_subsystem",
+            return_value=fake_cog,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
 
     fake_cog.build_help_menu_view.assert_awaited_once_with(interaction)
@@ -128,18 +132,22 @@ async def test_open_panel_button_shows_fallback_when_no_cog():
     interaction.user = _author()
     interaction.client = MagicMock()
 
-    with patch(
-        "views.settings.subsystem_view._resolve_cog_for_subsystem",
-        return_value=None,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "views.settings.subsystem_view._resolve_cog_for_subsystem",
+            return_value=None,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
 
     embed = edit.await_args.kwargs["embed"]
@@ -160,18 +168,22 @@ async def test_open_panel_button_shows_fallback_when_cog_has_no_hook():
 
     fake_cog = MagicMock(spec=[])  # no build_help_menu_view attribute
 
-    with patch(
-        "views.settings.subsystem_view._resolve_cog_for_subsystem",
-        return_value=fake_cog,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "views.settings.subsystem_view._resolve_cog_for_subsystem",
+            return_value=fake_cog,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
 
     embed = edit.await_args.kwargs["embed"]
@@ -196,18 +208,22 @@ async def test_open_panel_button_handles_hook_exception():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
 
-    with patch(
-        "views.settings.subsystem_view._resolve_cog_for_subsystem",
-        return_value=fake_cog,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        new_callable=AsyncMock,
-        return_value=True,
-    ), patch(
-        "core.runtime.interaction_helpers.safe_edit",
-        new_callable=AsyncMock,
-        return_value=True,
-    ) as edit:
+    with (
+        patch(
+            "views.settings.subsystem_view._resolve_cog_for_subsystem",
+            return_value=fake_cog,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "core.runtime.interaction_helpers.safe_edit",
+            new_callable=AsyncMock,
+            return_value=True,
+        ) as edit,
+    ):
         await btn.callback(interaction)
 
     embed = edit.await_args.kwargs["embed"]
@@ -226,13 +242,16 @@ async def test_open_panel_button_bails_when_defer_fails():
     interaction = MagicMock()
     interaction.user = _author()
 
-    with patch(
-        "core.runtime.interaction_helpers.safe_defer",
-        new_callable=AsyncMock,
-        return_value=False,
-    ), patch(
-        "views.settings.subsystem_view._resolve_cog_for_subsystem",
-    ) as resolver:
+    with (
+        patch(
+            "core.runtime.interaction_helpers.safe_defer",
+            new_callable=AsyncMock,
+            return_value=False,
+        ),
+        patch(
+            "views.settings.subsystem_view._resolve_cog_for_subsystem",
+        ) as resolver,
+    ):
         await btn.callback(interaction)
     resolver.assert_not_called()
 

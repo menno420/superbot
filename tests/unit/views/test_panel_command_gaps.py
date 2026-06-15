@@ -14,9 +14,7 @@ import pytest
 
 
 def _button_labels(view) -> list[str]:
-    return [
-        c.label or "" for c in view.children if isinstance(c, discord.ui.Button)
-    ]
+    return [c.label or "" for c in view.children if isinstance(c, discord.ui.Button)]
 
 
 # ---------------------------------------------------------------------------
@@ -70,7 +68,9 @@ async def test_clear_limit_modal_clears_existing_limit(monkeypatch):
 
     fake_channel = SimpleNamespace(id=123, mention="#chain")
     monkeypatch.setattr(
-        chain_cog, "_resolve_channel", lambda _interaction, _value: fake_channel,
+        chain_cog,
+        "_resolve_channel",
+        lambda _interaction, _value: fake_channel,
     )
     monkeypatch.setattr(
         chain_service.db,
@@ -80,7 +80,9 @@ async def test_clear_limit_modal_clears_existing_limit(monkeypatch):
     set_limit = AsyncMock()
     monkeypatch.setattr(chain_service.db, "set_chain_limit", set_limit)
     monkeypatch.setattr(
-        chain_service, "emit_audit_action", AsyncMock(return_value=True),
+        chain_service,
+        "emit_audit_action",
+        AsyncMock(return_value=True),
     )
 
     modal = chain_cog._ClearLimitModal(MagicMock())
@@ -98,10 +100,14 @@ async def test_clear_limit_modal_noops_when_no_limit(monkeypatch):
 
     fake_channel = SimpleNamespace(id=123, mention="#chain")
     monkeypatch.setattr(
-        chain_cog, "_resolve_channel", lambda _interaction, _value: fake_channel,
+        chain_cog,
+        "_resolve_channel",
+        lambda _interaction, _value: fake_channel,
     )
     monkeypatch.setattr(
-        chain_service.db, "get_chain_channel", AsyncMock(return_value=None),
+        chain_service.db,
+        "get_chain_channel",
+        AsyncMock(return_value=None),
     )
     set_limit = AsyncMock()
     monkeypatch.setattr(chain_service.db, "set_chain_limit", set_limit)

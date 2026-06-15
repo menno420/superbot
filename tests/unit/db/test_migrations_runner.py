@@ -64,6 +64,6 @@ def test_real_migrations_dir_is_valid():
     versions = [v for v, _ in ordered]
     assert versions == sorted(versions)
     assert len(versions) == len(set(versions))
-    assert versions == list(range(1, len(versions) + 1)), (
-        f"real migrations are not contiguous from 1: {versions}"
-    )
+    assert versions == list(
+        range(1, len(versions) + 1)
+    ), f"real migrations are not contiguous from 1: {versions}"

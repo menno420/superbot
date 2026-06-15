@@ -55,9 +55,10 @@ def test_has_last_updated_stamp(doc_text: str) -> None:
 def test_has_required_sections(doc_text: str) -> None:
     lowered = doc_text.lower()
     missing = [s for s in _REQUIRED_SECTIONS if s not in lowered]
-    assert not missing, (
-        "current-state.md is missing canonical router sections:\n  "
-        + "\n  ".join(missing)
+    assert (
+        not missing
+    ), "current-state.md is missing canonical router sections:\n  " + "\n  ".join(
+        missing
     )
 
 
@@ -65,9 +66,9 @@ def test_states_source_and_pr_precedence(doc_text: str) -> None:
     """The router must never become a false authority: source + merged PRs
     win, and in-flight state is verified against live GitHub."""
     lowered = doc_text.lower()
-    assert "win" in lowered and "source" in lowered and "merged pr" in lowered, (
-        "current-state.md must state that source code and merged PRs win over it."
-    )
+    assert (
+        "win" in lowered and "source" in lowered and "merged pr" in lowered
+    ), "current-state.md must state that source code and merged PRs win over it."
     assert "github" in lowered, (
         "current-state.md must tell readers to verify in-flight PRs against live "
         "GitHub (the snapshot goes stale on every push)."

@@ -67,6 +67,7 @@ def _null_workflow_transaction():
     ):
         yield
 
+
 # ---------------------------------------------------------------------------
 # Reason tags — economy_audit_log filter keys, byte-identical forever.
 # ---------------------------------------------------------------------------
@@ -232,8 +233,7 @@ async def test_repair_success_message_costs_and_reason():
         result = await repair(1, 99, "pickaxe")
     assert result.ok is True
     assert result.message == (
-        "Repaired **pickaxe** to full durability for **7** 🪙. "
-        "Balance: **93** 🪙."
+        "Repaired **pickaxe** to full durability for **7** 🪙. " "Balance: **93** 🪙."
     )
     assert result.coins_delta == -7
     assert result.new_balance == 93
@@ -429,9 +429,7 @@ async def test_sell_messages_and_reason():
     ):
         result = await sell(1, 99, "iron", 5)
     assert result.ok is True
-    assert result.message == (
-        "Sold **5× iron** for **15** 🪙. Balance: **115** 🪙."
-    )
+    assert result.message == ("Sold **5× iron** for **15** 🪙. Balance: **115** 🪙.")
     assert credit.await_args.kwargs["reason"] == "mining:sell_ore"
 
 

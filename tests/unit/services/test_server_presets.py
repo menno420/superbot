@@ -156,8 +156,7 @@ def test_minimal_preset_binds_rules_and_mod_log_only():
     preset = get_preset("minimal")
     assert preset is not None
     binding_targets = {
-        op.payload["binding_name"]
-        for op in preset.operations_of_kind("bind_channel")
+        op.payload["binding_name"] for op in preset.operations_of_kind("bind_channel")
     }
     assert binding_targets == {"rules_channel", "mod_channel"}
 
@@ -166,8 +165,7 @@ def test_community_preset_includes_welcome_and_role_rules():
     preset = get_preset("community")
     assert preset is not None
     add_rule_slugs = {
-        op.payload["template_slug"]
-        for op in preset.operations_of_kind("add_rule")
+        op.payload["template_slug"] for op in preset.operations_of_kind("add_rule")
     }
     assert "welcome-message" in add_rule_slugs
     assert "new-member-role" in add_rule_slugs
@@ -177,8 +175,7 @@ def test_moderation_heavy_includes_audit_and_cleanup_channels():
     preset = get_preset("moderation-heavy")
     assert preset is not None
     binding_targets = {
-        op.payload["binding_name"]
-        for op in preset.operations_of_kind("bind_channel")
+        op.payload["binding_name"] for op in preset.operations_of_kind("bind_channel")
     }
     assert binding_targets >= {"audit_channel", "cleanup_channel", "mod_channel"}
 

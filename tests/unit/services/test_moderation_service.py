@@ -552,7 +552,9 @@ async def test_placeholder_reason_treated_as_missing_when_required(_default_poli
     ):
         with pytest.raises(ReasonRequiredError):
             await moderation_service.warn(
-                member, reason="No reason provided", actor_id=1,
+                member,
+                reason="No reason provided",
+                actor_id=1,
             )
 
 

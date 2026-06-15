@@ -114,17 +114,17 @@ def test_real_registry_validates_under_schema_v2():
     for name, meta in reg.SUBSYSTEMS.items():
         parent = meta.get("parent_hub")
         if parent is not None:
-            assert parent in reg.SUBSYSTEMS, (
-                f"subsystem {name!r} parent_hub={parent!r} is not registered"
-            )
+            assert (
+                parent in reg.SUBSYSTEMS
+            ), f"subsystem {name!r} parent_hub={parent!r} is not registered"
             parent_meta = reg.SUBSYSTEMS[parent]
             assert parent_meta.get("parent_hub") is None, (
                 f"subsystem {name!r} has a two-hop parent_hub chain through "
                 f"{parent!r}"
             )
-            assert parent_meta.get("entry_points"), (
-                f"subsystem {name!r} parent_hub={parent!r} has no entry_points"
-            )
+            assert parent_meta.get(
+                "entry_points"
+            ), f"subsystem {name!r} parent_hub={parent!r} has no entry_points"
 
 
 def test_btd6_has_no_parent_hub_and_no_hub_group():
@@ -136,12 +136,12 @@ def test_btd6_has_no_parent_hub_and_no_hub_group():
     ``tests/unit/utils/test_hub_registry.py::test_btd6_is_top_level_hub``.
     """
     btd6 = reg.SUBSYSTEMS["btd6"]
-    assert btd6.get("parent_hub") is None, (
-        "btd6 must not declare a parent_hub — it is its own top-level hub"
-    )
-    assert btd6.get("hub_group") is None, (
-        "btd6 must not declare a hub_group — it is its own top-level hub"
-    )
+    assert (
+        btd6.get("parent_hub") is None
+    ), "btd6 must not declare a parent_hub — it is its own top-level hub"
+    assert (
+        btd6.get("hub_group") is None
+    ), "btd6 must not declare a hub_group — it is its own top-level hub"
 
 
 def test_ai_subsystem_exposes_settings_capabilities():
@@ -212,12 +212,14 @@ def test_deep_freeze_holds_after_validation_with_new_fields(monkeypatch):
 def _set_parent_hub(value: object) -> Mutator:
     def mutate(r: dict) -> None:
         r["child"]["parent_hub"] = value
+
     return mutate
 
 
 def _set_hub_group(value: object) -> Mutator:
     def mutate(r: dict) -> None:
         r["child"]["hub_group"] = value
+
     return mutate
 
 
@@ -236,7 +238,9 @@ def _set_hub_group(value: object) -> Mutator:
         "parent_hub_unknown_subsystem",
     ],
 )
-def test_parent_hub_invalid_cases(monkeypatch, mutator: Mutator, expected_fragment: str):
+def test_parent_hub_invalid_cases(
+    monkeypatch, mutator: Mutator, expected_fragment: str
+):
     bad = _minimal_registry_with_hub()
     mutator(bad)
     with pytest.raises(RegistryValidationError) as excinfo:

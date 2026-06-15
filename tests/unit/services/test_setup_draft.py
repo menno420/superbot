@@ -30,10 +30,14 @@ async def test_append_routes_scalar_op_through_db():
     )
     with (
         patch.object(
-            setup_draft.db, "insert", new=AsyncMock(return_value=1),
+            setup_draft.db,
+            "insert",
+            new=AsyncMock(return_value=1),
         ) as insert,
         patch.object(
-            setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+            setup_draft.db,
+            "list_rows",
+            new=AsyncMock(return_value=[]),
         ),
     ):
         seq = await setup_draft.append(
@@ -72,10 +76,14 @@ async def test_append_serialises_bool_values_as_true_false():
     )
     with (
         patch.object(
-            setup_draft.db, "insert", new=AsyncMock(return_value=1),
+            setup_draft.db,
+            "insert",
+            new=AsyncMock(return_value=1),
         ) as insert,
         patch.object(
-            setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+            setup_draft.db,
+            "list_rows",
+            new=AsyncMock(return_value=[]),
         ),
     ):
         await setup_draft.append(
@@ -96,10 +104,14 @@ async def test_append_serialises_none_value_as_none():
     )
     with (
         patch.object(
-            setup_draft.db, "insert", new=AsyncMock(return_value=1),
+            setup_draft.db,
+            "insert",
+            new=AsyncMock(return_value=1),
         ) as insert,
         patch.object(
-            setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+            setup_draft.db,
+            "list_rows",
+            new=AsyncMock(return_value=[]),
         ),
     ):
         await setup_draft.append(
@@ -119,7 +131,9 @@ async def test_append_default_risk_per_op_kind():
         patch.object(setup_draft.db, "insert", new=insert_mock),
         patch.object(setup_draft.db, "list_rows", new=AsyncMock(return_value=[])),
     ):
-        op = SetupOperation(kind="create_role", subsystem="roles", resource_name="moderator")
+        op = SetupOperation(
+            kind="create_role", subsystem="roles", resource_name="moderator"
+        )
         await setup_draft.append(op, guild_id=1, actor_id=1, label="create moderator")
         assert insert_mock.await_args.kwargs["metadata"]["risk"] == "high"
 
@@ -128,14 +142,21 @@ async def test_append_default_risk_per_op_kind():
         patch.object(setup_draft.db, "insert", new=insert_mock),
         patch.object(setup_draft.db, "list_rows", new=AsyncMock(return_value=[])),
     ):
-        op = SetupOperation(kind="create_channel", subsystem="logging", resource_name="bot-log")
+        op = SetupOperation(
+            kind="create_channel", subsystem="logging", resource_name="bot-log"
+        )
         await setup_draft.append(op, guild_id=1, actor_id=1, label="create #bot-log")
         assert insert_mock.await_args.kwargs["metadata"]["risk"] == "medium"
 
 
 @pytest.mark.asyncio
 async def test_append_operator_metadata_wins_over_default():
-    op = SetupOperation(kind="set_setting", subsystem="moderation", setting_name="warn_threshold", value=3)
+    op = SetupOperation(
+        kind="set_setting",
+        subsystem="moderation",
+        setting_name="warn_threshold",
+        value=3,
+    )
     insert_mock = AsyncMock(return_value=1)
     with (
         patch.object(setup_draft.db, "insert", new=insert_mock),
@@ -182,7 +203,12 @@ async def test_append_setup_operation_metadata_wins_over_argument():
 
 @pytest.mark.asyncio
 async def test_append_rejects_empty_label():
-    op = SetupOperation(kind="set_setting", subsystem="moderation", setting_name="warn_threshold", value=3)
+    op = SetupOperation(
+        kind="set_setting",
+        subsystem="moderation",
+        setting_name="warn_threshold",
+        value=3,
+    )
     with pytest.raises(ValueError, match="label"):
         await setup_draft.append(op, guild_id=1, actor_id=1, label="")
 
@@ -199,7 +225,9 @@ async def test_append_preserves_session_started_at_across_appends():
         ),
         patch.object(setup_draft.db, "insert", new=insert_mock),
     ):
-        op = SetupOperation(kind="set_setting", subsystem="x", setting_name="y", value=1)
+        op = SetupOperation(
+            kind="set_setting", subsystem="x", setting_name="y", value=1
+        )
         await setup_draft.append(op, guild_id=1, actor_id=1, label="x.y = 1")
         assert insert_mock.await_args.kwargs["session_started_at"] == earlier
 
@@ -209,11 +237,15 @@ async def test_append_uses_now_when_draft_is_empty():
     insert_mock = AsyncMock(return_value=1)
     with (
         patch.object(
-            setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+            setup_draft.db,
+            "list_rows",
+            new=AsyncMock(return_value=[]),
         ),
         patch.object(setup_draft.db, "insert", new=insert_mock),
     ):
-        op = SetupOperation(kind="set_setting", subsystem="x", setting_name="y", value=1)
+        op = SetupOperation(
+            kind="set_setting", subsystem="x", setting_name="y", value=1
+        )
         await setup_draft.append(op, guild_id=1, actor_id=1, label="x.y = 1")
         when = insert_mock.await_args.kwargs["session_started_at"]
         assert isinstance(when, datetime)
@@ -229,31 +261,56 @@ async def test_append_uses_now_when_draft_is_empty():
 async def test_list_ops_hydrates_setup_operations_in_order():
     rows = [
         {
-            "seq": 1, "op_kind": "set_setting", "subsystem": "moderation",
-            "setting_name": "warn_threshold", "binding_name": None,
-            "value_raw": "3", "target_id": None, "target_name": None,
-            "target_kind": None, "resource_mode": None, "resource_name": None,
-            "existing_id": None, "automation_rule_id": None,
-            "automation_rule_name": None, "trigger_kind": None,
-            "action_kind": None, "trigger_config_json": None,
-            "action_config_json": None, "schedule": None, "timezone": None,
+            "seq": 1,
+            "op_kind": "set_setting",
+            "subsystem": "moderation",
+            "setting_name": "warn_threshold",
+            "binding_name": None,
+            "value_raw": "3",
+            "target_id": None,
+            "target_name": None,
+            "target_kind": None,
+            "resource_mode": None,
+            "resource_name": None,
+            "existing_id": None,
+            "automation_rule_id": None,
+            "automation_rule_name": None,
+            "trigger_kind": None,
+            "action_kind": None,
+            "trigger_config_json": None,
+            "action_config_json": None,
+            "schedule": None,
+            "timezone": None,
             "metadata_json": {"source": "manual"},
         },
         {
-            "seq": 2, "op_kind": "bind_channel", "subsystem": "logging",
-            "binding_name": "mod_channel", "setting_name": None,
-            "value_raw": None, "target_id": 999, "target_name": "#log",
-            "target_kind": "channel", "resource_mode": None,
-            "resource_name": None, "existing_id": None,
-            "automation_rule_id": None, "automation_rule_name": None,
-            "trigger_kind": None, "action_kind": None,
-            "trigger_config_json": None, "action_config_json": None,
-            "schedule": None, "timezone": None,
+            "seq": 2,
+            "op_kind": "bind_channel",
+            "subsystem": "logging",
+            "binding_name": "mod_channel",
+            "setting_name": None,
+            "value_raw": None,
+            "target_id": 999,
+            "target_name": "#log",
+            "target_kind": "channel",
+            "resource_mode": None,
+            "resource_name": None,
+            "existing_id": None,
+            "automation_rule_id": None,
+            "automation_rule_name": None,
+            "trigger_kind": None,
+            "action_kind": None,
+            "trigger_config_json": None,
+            "action_config_json": None,
+            "schedule": None,
+            "timezone": None,
             "metadata_json": {"source": "scan", "confidence": "high"},
         },
     ]
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=rows),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=rows),
     ):
         ops = await setup_draft.list_ops(1)
     assert len(ops) == 2
@@ -269,7 +326,9 @@ async def test_list_ops_hydrates_setup_operations_in_order():
 @pytest.mark.asyncio
 async def test_list_ops_returns_empty_when_no_rows():
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=[]),
     ):
         ops = await setup_draft.list_ops(1)
     assert ops == []
@@ -282,20 +341,33 @@ async def test_list_ops_handles_string_jsonb_payloads():
     """
     rows = [
         {
-            "seq": 1, "op_kind": "set_setting", "subsystem": "x",
-            "setting_name": "y", "binding_name": None, "value_raw": "1",
-            "target_id": None, "target_name": None, "target_kind": None,
-            "resource_mode": None, "resource_name": None, "existing_id": None,
-            "automation_rule_id": None, "automation_rule_name": None,
-            "trigger_kind": None, "action_kind": None,
+            "seq": 1,
+            "op_kind": "set_setting",
+            "subsystem": "x",
+            "setting_name": "y",
+            "binding_name": None,
+            "value_raw": "1",
+            "target_id": None,
+            "target_name": None,
+            "target_kind": None,
+            "resource_mode": None,
+            "resource_name": None,
+            "existing_id": None,
+            "automation_rule_id": None,
+            "automation_rule_name": None,
+            "trigger_kind": None,
+            "action_kind": None,
             "trigger_config_json": '{"a": 1}',
             "action_config_json": None,
-            "schedule": None, "timezone": None,
+            "schedule": None,
+            "timezone": None,
             "metadata_json": '{"source": "manual"}',
         },
     ]
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=rows),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=rows),
     ):
         ops = await setup_draft.list_ops(1)
     assert ops[0].trigger_config == {"a": 1}
@@ -341,7 +413,9 @@ def test_default_risk_table_covers_all_operation_kinds():
     """Every known OperationKind literal must have a default risk."""
     from utils.db import setup_draft as draft_db
 
-    missing = sorted(draft_db._KNOWN_OP_KINDS - setup_draft._DEFAULT_RISK_BY_KIND.keys())
+    missing = sorted(
+        draft_db._KNOWN_OP_KINDS - setup_draft._DEFAULT_RISK_BY_KIND.keys()
+    )
     assert not missing, f"missing default risk for op kinds: {missing}"
 
 
@@ -364,7 +438,9 @@ async def test_append_rejects_recommended_staging_kind():
         value=3,
     )
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=[]),
     ):
         with pytest.raises(ValueError, match="recommended"):
             await setup_draft.append(
@@ -380,7 +456,9 @@ async def test_append_rejects_recommended_staging_kind():
 async def test_append_rejects_unknown_staging_kind():
     op = SetupOperation(kind="set_setting", subsystem="x", setting_name="y", value=1)
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=[]),
     ):
         with pytest.raises(ValueError, match="staging_kind"):
             await setup_draft.append(
@@ -427,23 +505,40 @@ async def test_list_rows_returns_typed_wrapper_with_provenance():
     """``list_rows`` exposes provenance via :class:`DraftOperationRow`."""
     rows = [
         {
-            "id": 17, "guild_id": 1, "seq": 3, "op_kind": "set_setting",
-            "subsystem": "moderation", "binding_name": None,
-            "setting_name": "warn_threshold", "value_raw": "3",
-            "target_id": None, "target_name": None, "target_kind": None,
-            "resource_mode": None, "resource_name": None, "existing_id": None,
-            "automation_rule_id": None, "automation_rule_name": None,
-            "trigger_kind": None, "action_kind": None,
-            "trigger_config_json": None, "action_config_json": None,
-            "schedule": None, "timezone": None,
+            "id": 17,
+            "guild_id": 1,
+            "seq": 3,
+            "op_kind": "set_setting",
+            "subsystem": "moderation",
+            "binding_name": None,
+            "setting_name": "warn_threshold",
+            "value_raw": "3",
+            "target_id": None,
+            "target_name": None,
+            "target_kind": None,
+            "resource_mode": None,
+            "resource_name": None,
+            "existing_id": None,
+            "automation_rule_id": None,
+            "automation_rule_name": None,
+            "trigger_kind": None,
+            "action_kind": None,
+            "trigger_config_json": None,
+            "action_config_json": None,
+            "schedule": None,
+            "timezone": None,
             "metadata_json": {"source": "manual"},
-            "section_slug": "moderation", "staging_kind": "custom",
-            "group_id": None, "parent_seq": None,
+            "section_slug": "moderation",
+            "staging_kind": "custom",
+            "group_id": None,
+            "parent_seq": None,
             "label": "warn_threshold = 3",
         },
     ]
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=rows),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=rows),
     ):
         wrapped = await setup_draft.list_rows(1)
     assert len(wrapped) == 1
@@ -466,23 +561,40 @@ async def test_list_rows_treats_null_provenance_as_legacy():
     """
     rows = [
         {
-            "id": 1, "guild_id": 1, "seq": 1, "op_kind": "set_setting",
-            "subsystem": "moderation", "binding_name": None,
-            "setting_name": "warn_threshold", "value_raw": "3",
-            "target_id": None, "target_name": None, "target_kind": None,
-            "resource_mode": None, "resource_name": None, "existing_id": None,
-            "automation_rule_id": None, "automation_rule_name": None,
-            "trigger_kind": None, "action_kind": None,
-            "trigger_config_json": None, "action_config_json": None,
-            "schedule": None, "timezone": None,
+            "id": 1,
+            "guild_id": 1,
+            "seq": 1,
+            "op_kind": "set_setting",
+            "subsystem": "moderation",
+            "binding_name": None,
+            "setting_name": "warn_threshold",
+            "value_raw": "3",
+            "target_id": None,
+            "target_name": None,
+            "target_kind": None,
+            "resource_mode": None,
+            "resource_name": None,
+            "existing_id": None,
+            "automation_rule_id": None,
+            "automation_rule_name": None,
+            "trigger_kind": None,
+            "action_kind": None,
+            "trigger_config_json": None,
+            "action_config_json": None,
+            "schedule": None,
+            "timezone": None,
             "metadata_json": None,
-            "section_slug": None, "staging_kind": None,
-            "group_id": None, "parent_seq": None,
+            "section_slug": None,
+            "staging_kind": None,
+            "group_id": None,
+            "parent_seq": None,
             "label": "warn_threshold = 3",
         },
     ]
     with patch.object(
-        setup_draft.db, "list_rows", new=AsyncMock(return_value=rows),
+        setup_draft.db,
+        "list_rows",
+        new=AsyncMock(return_value=rows),
     ):
         wrapped = await setup_draft.list_rows(1)
     assert wrapped[0].section_slug is None
@@ -492,7 +604,9 @@ async def test_list_rows_treats_null_provenance_as_legacy():
 @pytest.mark.asyncio
 async def test_delete_by_ids_routes_to_db_layer():
     with patch.object(
-        setup_draft.db, "delete_by_ids", new=AsyncMock(return_value=2),
+        setup_draft.db,
+        "delete_by_ids",
+        new=AsyncMock(return_value=2),
     ) as delete_mock:
         n = await setup_draft.delete_by_ids(1, [7, 11])
     assert n == 2
@@ -502,7 +616,9 @@ async def test_delete_by_ids_routes_to_db_layer():
 @pytest.mark.asyncio
 async def test_delete_by_ids_noop_on_empty_list():
     with patch.object(
-        setup_draft.db, "delete_by_ids", new=AsyncMock(return_value=0),
+        setup_draft.db,
+        "delete_by_ids",
+        new=AsyncMock(return_value=0),
     ) as delete_mock:
         n = await setup_draft.delete_by_ids(1, [])
     assert n == 0
@@ -512,7 +628,9 @@ async def test_delete_by_ids_noop_on_empty_list():
 @pytest.mark.asyncio
 async def test_delete_by_seqs_routes_to_db_layer():
     with patch.object(
-        setup_draft.db, "delete_by_seqs", new=AsyncMock(return_value=1),
+        setup_draft.db,
+        "delete_by_seqs",
+        new=AsyncMock(return_value=1),
     ) as delete_mock:
         n = await setup_draft.delete_by_seqs(1, [5])
     assert n == 1
@@ -538,18 +656,33 @@ def _row(
     label: str = "x",
 ) -> dict:
     return {
-        "id": id, "guild_id": 1, "seq": seq, "op_kind": op_kind,
-        "subsystem": subsystem, "binding_name": binding_name,
-        "setting_name": setting_name, "value_raw": None,
-        "target_id": target_id, "target_name": None, "target_kind": None,
-        "resource_mode": None, "resource_name": None, "existing_id": None,
-        "automation_rule_id": None, "automation_rule_name": None,
-        "trigger_kind": None, "action_kind": None,
-        "trigger_config_json": None, "action_config_json": None,
-        "schedule": None, "timezone": None,
+        "id": id,
+        "guild_id": 1,
+        "seq": seq,
+        "op_kind": op_kind,
+        "subsystem": subsystem,
+        "binding_name": binding_name,
+        "setting_name": setting_name,
+        "value_raw": None,
+        "target_id": target_id,
+        "target_name": None,
+        "target_kind": None,
+        "resource_mode": None,
+        "resource_name": None,
+        "existing_id": None,
+        "automation_rule_id": None,
+        "automation_rule_name": None,
+        "trigger_kind": None,
+        "action_kind": None,
+        "trigger_config_json": None,
+        "action_config_json": None,
+        "schedule": None,
+        "timezone": None,
         "metadata_json": None,
-        "section_slug": section_slug, "staging_kind": staging_kind,
-        "group_id": None, "parent_seq": None,
+        "section_slug": section_slug,
+        "staging_kind": staging_kind,
+        "group_id": None,
+        "parent_seq": None,
         "label": label,
         # Required by services.setup_draft._session_started_at, which
         # also reads through db.list_rows.
@@ -570,11 +703,15 @@ async def test_replace_recommended_inserts_into_empty_draft():
     insert_mock = AsyncMock(side_effect=[10])
     with (
         patch.object(
-            setup_draft.db, "list_rows", new=AsyncMock(return_value=[]),
+            setup_draft.db,
+            "list_rows",
+            new=AsyncMock(return_value=[]),
         ),
         patch.object(setup_draft.db, "insert", new=insert_mock),
         patch.object(
-            setup_draft.db, "delete_by_ids", new=AsyncMock(return_value=0),
+            setup_draft.db,
+            "delete_by_ids",
+            new=AsyncMock(return_value=0),
         ),
     ):
         result = await setup_draft.replace_recommended_for_section(
@@ -732,5 +869,8 @@ async def test_replace_recommended_preserves_other_sections_rows():
 async def test_replace_recommended_empty_section_slug_rejected():
     with pytest.raises(ValueError, match="section_slug"):
         await setup_draft.replace_recommended_for_section(
-            1, "", [], actor_id=99,
+            1,
+            "",
+            [],
+            actor_id=99,
         )

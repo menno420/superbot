@@ -25,20 +25,40 @@ from views.ai.policy.list_view import (  # noqa: E402
 
 async def test_collect_entries_aggregates_all_three_scopes(monkeypatch):
     channel_rows = [
-        {"channel_id": 100, "mode": "disabled", "min_level": None,
-         "cooldown_seconds": None},
-        {"channel_id": 101, "mode": "always_reply", "min_level": 3,
-         "cooldown_seconds": 60},
+        {
+            "channel_id": 100,
+            "mode": "disabled",
+            "min_level": None,
+            "cooldown_seconds": None,
+        },
+        {
+            "channel_id": 101,
+            "mode": "always_reply",
+            "min_level": 3,
+            "cooldown_seconds": 60,
+        },
     ]
     category_rows = [
-        {"category_id": 200, "mode": "mention_only", "min_level": None,
-         "cooldown_seconds": None},
+        {
+            "category_id": 200,
+            "mode": "mention_only",
+            "min_level": None,
+            "cooldown_seconds": None,
+        },
     ]
     role_rows = [
-        {"role_id": 300, "decision": "deny", "min_level_override": None,
-         "bypass_cooldown": False},
-        {"role_id": 301, "decision": "allow", "min_level_override": 10,
-         "bypass_cooldown": True},
+        {
+            "role_id": 300,
+            "decision": "deny",
+            "min_level_override": None,
+            "bypass_cooldown": False,
+        },
+        {
+            "role_id": 301,
+            "decision": "allow",
+            "min_level_override": 10,
+            "bypass_cooldown": True,
+        },
     ]
 
     async def _ch(guild_id):

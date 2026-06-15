@@ -20,9 +20,7 @@ import textwrap
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_REGISTRY_PATH = (
-    _REPO_ROOT / "disbot" / "core" / "runtime" / "settings_registry.py"
-)
+_REGISTRY_PATH = _REPO_ROOT / "disbot" / "core" / "runtime" / "settings_registry.py"
 
 # Within core.runtime, we forbid only utils.subsystem_registry at module
 # scope (its evaluator helpers reach back into core.runtime through

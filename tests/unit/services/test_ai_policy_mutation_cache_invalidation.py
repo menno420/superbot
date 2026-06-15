@@ -41,7 +41,9 @@ def _patch_db(monkeypatch):
     monkeypatch.setattr(ai_db, "upsert_role_policy", _noop_async)
     monkeypatch.setattr(ai_db, "bump_generation", _bump)
     monkeypatch.setattr(
-        ai_policy_mutation, "_emit", AsyncMock(return_value=True),
+        ai_policy_mutation,
+        "_emit",
+        AsyncMock(return_value=True),
     )
 
 
@@ -53,14 +55,16 @@ def _capture_invalidate(monkeypatch):
         seen.append(guild_id)
 
     monkeypatch.setattr(
-        "services.ai_natural_language_policy.invalidate", _record,
+        "services.ai_natural_language_policy.invalidate",
+        _record,
     )
     return seen
 
 
 @pytest.mark.asyncio
 async def test_set_guild_policy_invalidates_resolver_cache(
-    monkeypatch, _capture_invalidate,
+    monkeypatch,
+    _capture_invalidate,
 ):
     _patch_db(monkeypatch)
     await ai_policy_mutation.set_guild_policy(
@@ -80,7 +84,8 @@ async def test_set_guild_policy_invalidates_resolver_cache(
 
 @pytest.mark.asyncio
 async def test_set_channel_policy_invalidates_resolver_cache(
-    monkeypatch, _capture_invalidate,
+    monkeypatch,
+    _capture_invalidate,
 ):
     _patch_db(monkeypatch)
     await ai_policy_mutation.set_channel_policy(
@@ -94,7 +99,8 @@ async def test_set_channel_policy_invalidates_resolver_cache(
 
 @pytest.mark.asyncio
 async def test_set_category_policy_invalidates_resolver_cache(
-    monkeypatch, _capture_invalidate,
+    monkeypatch,
+    _capture_invalidate,
 ):
     _patch_db(monkeypatch)
     await ai_policy_mutation.set_category_policy(
@@ -108,7 +114,8 @@ async def test_set_category_policy_invalidates_resolver_cache(
 
 @pytest.mark.asyncio
 async def test_set_role_policy_invalidates_resolver_cache(
-    monkeypatch, _capture_invalidate,
+    monkeypatch,
+    _capture_invalidate,
 ):
     _patch_db(monkeypatch)
     await ai_policy_mutation.set_role_policy(

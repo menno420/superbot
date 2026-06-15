@@ -333,9 +333,7 @@ def test_view_omits_apply_all_when_no_builder_sections():
         sections=sections,
         step_index=0,
     )
-    ids = {
-        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
-    }
+    ids = {c.custom_id for c in view.children if isinstance(c, discord.ui.Button)}
     assert "setup_wizard:apply_all_recommended" not in ids
 
 

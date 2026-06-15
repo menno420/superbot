@@ -453,9 +453,7 @@ async def test_apply_blocks_entire_batch_when_bot_lacks_manage_roles():
     one ERROR traceback per member (the health-flooding shape).
     """
     veteran = _role(100, "Veteran", position=5)
-    members = [
-        _member(mid=i, display=f"u{i}", joined_days_ago=60) for i in (1, 2, 3)
-    ]
+    members = [_member(mid=i, display=f"u{i}", joined_days_ago=60) for i in (1, 2, 3)]
     g = _guild(
         roles=[veteran],
         members=members,

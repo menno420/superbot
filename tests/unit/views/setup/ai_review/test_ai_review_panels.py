@@ -244,9 +244,7 @@ async def test_reject_ai_strips_openai_recommendations_only():
 async def test_rerun_deterministic_replaces_draft():
     snapshot = GuildSnapshot(guild_id=1, guild_name="x", owner_id=99)
     deterministic_draft = SetupPlanDraft(
-        recommendations=(
-            _rec(confidence="medium", source="deterministic"),
-        ),
+        recommendations=(_rec(confidence="medium", source="deterministic"),),
         source="deterministic",
     )
 
@@ -285,10 +283,7 @@ async def test_rerun_deterministic_refuses_without_snapshot():
     await view._rerun_deterministic.callback(interaction)
 
     interaction.response.send_message.assert_awaited_once()
-    assert (
-        "no snapshot"
-        in interaction.response.send_message.await_args.args[0].lower()
-    )
+    assert "no snapshot" in interaction.response.send_message.await_args.args[0].lower()
 
 
 @pytest.mark.asyncio

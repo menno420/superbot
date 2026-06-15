@@ -40,11 +40,7 @@ def _hub_children() -> list[str]:
     every subsystem expected to be hidden from the top-level overview.
     The existing per-test loops naturally extend to the larger set.
     """
-    return [
-        name
-        for name, meta in SUBSYSTEMS.items()
-        if meta.get("parent_hub")
-    ]
+    return [name for name, meta in SUBSYSTEMS.items() if meta.get("parent_hub")]
 
 
 def _all_visible_set() -> set[str]:
@@ -73,9 +69,9 @@ def test_build_page_embed_excludes_parent_hub_children():
     # a hub child's display_name (see overview test above).
     for child in _hub_children():
         display = SUBSYSTEMS[child]["display_name"]
-        assert f"**{display}**" not in rendered, (
-            f"hub child {child!r} leaked into page-embed render"
-        )
+        assert (
+            f"**{display}**" not in rendered
+        ), f"hub child {child!r} leaked into page-embed render"
 
 
 # ---------------------------------------------------------------------------
@@ -124,9 +120,9 @@ async def test_resolve_help_panel_state_returns_category_view(monkeypatch):
         if isinstance(child, _discord.ui.Select):
             option_values.update(opt.value for opt in child.options)
     for child in _hub_children():
-        assert child not in option_values, (
-            f"hub child {child!r} leaked into HelpCategoryView dropdown"
-        )
+        assert (
+            child not in option_values
+        ), f"hub child {child!r} leaked into HelpCategoryView dropdown"
     # The Games hub itself IS in the dropdown.
     assert "games" in option_values
 
@@ -170,9 +166,9 @@ async def test_help_category_view_all_commands_branch_filters_hub_children(
     assert isinstance(new_view, help_cog.HelpPanelView)
     visible_list = new_view._visible  # type: ignore[attr-defined]
     for child in _hub_children():
-        assert child not in visible_list, (
-            f"hub child {child!r} leaked into the All Commands view"
-        )
+        assert (
+            child not in visible_list
+        ), f"hub child {child!r} leaked into the All Commands view"
     assert "games" in visible_list
 
 
@@ -220,9 +216,7 @@ def test_help_panel_view_select_omits_hub_children_when_visible_list_excludes_th
     """
     # Build a visible_list as the helper functions would: filtered.
     visible_list = [
-        name
-        for name, meta in SUBSYSTEMS.items()
-        if not meta.get("parent_hub")
+        name for name, meta in SUBSYSTEMS.items() if not meta.get("parent_hub")
     ]
     view = help_cog.HelpPanelView(visible_list=visible_list, page=0)
 
@@ -233,9 +227,9 @@ def test_help_panel_view_select_omits_hub_children_when_visible_list_excludes_th
         if isinstance(child, _discord.ui.Select):
             select_options.update(opt.value for opt in child.options)
     for child in _hub_children():
-        assert child not in select_options, (
-            f"hub child {child!r} leaked into HelpPanelView select options"
-        )
+        assert (
+            child not in select_options
+        ), f"hub child {child!r} leaked into HelpPanelView select options"
 
 
 # ---------------------------------------------------------------------------
@@ -287,9 +281,9 @@ def test_pr3_metadata_assignments_present():
     }
     for child, parent in expected.items():
         actual = SUBSYSTEMS[child].get("parent_hub")
-        assert actual == parent, (
-            f"SUBSYSTEMS[{child!r}].parent_hub: expected {parent!r}, got {actual!r}"
-        )
+        assert (
+            actual == parent
+        ), f"SUBSYSTEMS[{child!r}].parent_hub: expected {parent!r}, got {actual!r}"
 
 
 @pytest.mark.asyncio

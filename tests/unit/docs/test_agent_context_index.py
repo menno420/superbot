@@ -21,7 +21,13 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _INDEX_PATH = _REPO_ROOT / "docs" / "agent" / "index.yml"
 _GENERATED_DIR = _REPO_ROOT / "docs" / "agent" / "generated"
 _NOT_SOURCE_MARKER = "NOT SOURCE OF TRUTH"
-_REQUIRED_FIELDS = ("folio", "binding_docs", "source_roots", "do_not_create", "verification")
+_REQUIRED_FIELDS = (
+    "folio",
+    "binding_docs",
+    "source_roots",
+    "do_not_create",
+    "verification",
+)
 
 
 def _load_index() -> dict[str, Any]:
@@ -56,9 +62,9 @@ def test_all_subsystems_have_required_field(
     subsystems: dict[str, Any], field: str
 ) -> None:
     missing = [name for name, sub in subsystems.items() if not sub.get(field)]
-    assert not missing, (
-        f"These subsystems are missing or have empty '{field}': {missing}"
-    )
+    assert (
+        not missing
+    ), f"These subsystems are missing or have empty '{field}': {missing}"
 
 
 def test_all_folio_paths_exist(subsystems: dict[str, Any]) -> None:
@@ -94,9 +100,10 @@ def test_all_source_root_paths_exist(subsystems: dict[str, Any]) -> None:
         for root in sub.get("source_roots", []):
             if not (_REPO_ROOT / root).exists():
                 missing.append(f"{name}: {root}")
-    assert not missing, (
-        "source_roots paths not found on disk (file or directory):\n"
-        + "\n".join(missing)
+    assert (
+        not missing
+    ), "source_roots paths not found on disk (file or directory):\n" + "\n".join(
+        missing
     )
 
 

@@ -134,9 +134,7 @@ def test_no_behavior_view_imports_ai_db_directly():
     for path in _BEHAVIOR_DIR.rglob("*.py"):
         src = path.read_text()
         for sym in forbidden:
-            assert sym not in src, (
-                f"{path.name} must not call {sym} directly"
-            )
+            assert sym not in src, f"{path.name} must not call {sym} directly"
         # Also catch ``from utils.db import ai`` followed by a write.
         if "from utils.db" in src or "import utils.db" in src:
             for sym in (
@@ -145,6 +143,6 @@ def test_no_behavior_view_imports_ai_db_directly():
                 "upsert_role_policy",
                 "upsert_instruction_profile",
             ):
-                assert sym not in src, (
-                    f"{path.name} imports utils.db and references {sym}"
-                )
+                assert (
+                    sym not in src
+                ), f"{path.name} imports utils.db and references {sym}"

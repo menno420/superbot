@@ -328,9 +328,19 @@ async def test_create_reads_guild_routing_for_labels(monkeypatch):
         "list_for_guild",
         AsyncMock(
             return_value=[
-                {"scope_type": "guild", "scope_id": None, "cog_name": "xp", "enabled": False},
+                {
+                    "scope_type": "guild",
+                    "scope_id": None,
+                    "cog_name": "xp",
+                    "enabled": False,
+                },
                 # Channel-scope restrictions are not a group-level state.
-                {"scope_type": "channel", "scope_id": 5, "cog_name": "cleanup", "enabled": False},
+                {
+                    "scope_type": "channel",
+                    "scope_id": 5,
+                    "cog_name": "cleanup",
+                    "enabled": False,
+                },
             ],
         ),
     )

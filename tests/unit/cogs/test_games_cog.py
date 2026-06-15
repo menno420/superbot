@@ -83,8 +83,7 @@ def test_cog_owns_no_game_subcommands():
         command_names.add(cmd.name)
         command_names.update(cmd.aliases)
     assert command_names.isdisjoint(reserved), (
-        f"GamesCog registered reserved game commands: "
-        f"{command_names & reserved}"
+        f"GamesCog registered reserved game commands: " f"{command_names & reserved}"
     )
 
 

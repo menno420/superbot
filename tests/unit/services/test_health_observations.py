@@ -45,10 +45,16 @@ def test_normalize_empty_is_empty() -> None:
 
 def test_fingerprint_is_deterministic() -> None:
     a = ho.fingerprint(
-        category="runtime.log_error", subsystem="errors", operation="boom", exc_type="KeyError"
+        category="runtime.log_error",
+        subsystem="errors",
+        operation="boom",
+        exc_type="KeyError",
     )
     b = ho.fingerprint(
-        category="runtime.log_error", subsystem="errors", operation="boom", exc_type="KeyError"
+        category="runtime.log_error",
+        subsystem="errors",
+        operation="boom",
+        exc_type="KeyError",
     )
     assert a == b
     assert a == "runtime_log_error:errors:boom:keyerror"
@@ -66,8 +72,15 @@ def test_fingerprint_excludes_raw_ids_and_secrets() -> None:
 
 
 def test_fingerprint_distinguishes_real_differences() -> None:
-    base = dict(category="runtime.log_error", subsystem="errors", operation="op", exc_type="KeyError")
-    assert ho.fingerprint(**base) != ho.fingerprint(**{**base, "exc_type": "ValueError"})
+    base = dict(
+        category="runtime.log_error",
+        subsystem="errors",
+        operation="op",
+        exc_type="KeyError",
+    )
+    assert ho.fingerprint(**base) != ho.fingerprint(
+        **{**base, "exc_type": "ValueError"}
+    )
     assert ho.fingerprint(**base) != ho.fingerprint(**{**base, "operation": "other"})
     # an optional code segment further distinguishes
     assert ho.fingerprint(**base) != ho.fingerprint(**base, code="503")
@@ -99,10 +112,9 @@ def test_group_collapses_repeats_into_one_counted_finding() -> None:
 
 
 def test_group_keeps_distinct_messages_separate_and_sorts_busiest_first() -> None:
-    entries = (
-        [{"level": "ERROR", "message": "KeyError: cache miss"}] * 3
-        + [{"level": "ERROR", "message": "ValueError: bad input"}] * 1
-    )
+    entries = [{"level": "ERROR", "message": "KeyError: cache miss"}] * 3 + [
+        {"level": "ERROR", "message": "ValueError: bad input"}
+    ] * 1
     findings = ho.group_log_errors(entries)
     assert len(findings) == 2
     assert findings[0].occurrence_count == 3  # busiest first
@@ -120,7 +132,10 @@ def test_group_caps_to_max_findings() -> None:
 
 def test_group_never_leaks_secret_or_id_into_fingerprint_or_message() -> None:
     entries = [
-        {"level": "ERROR", "message": f"AuthError: token={_SECRET} for role {_SNOWFLAKE}"}
+        {
+            "level": "ERROR",
+            "message": f"AuthError: token={_SECRET} for role {_SNOWFLAKE}",
+        }
     ]
     findings = ho.group_log_errors(entries)
     assert len(findings) == 1

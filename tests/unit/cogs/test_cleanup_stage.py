@@ -32,7 +32,9 @@ def _make_cog():
     return cog
 
 
-def _make_message(*, content: str, guild_id: int = 99, channel_id: int = 1, author_id: int = 42):
+def _make_message(
+    *, content: str, guild_id: int = 99, channel_id: int = 1, author_id: int = 42
+):
     msg = MagicMock()
     msg.content = content
     msg.id = 555

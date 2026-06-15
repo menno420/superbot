@@ -218,8 +218,12 @@ def test_ai_error_leak_is_contained(monkeypatch) -> None:
     )
     sub = hss._ai_subsystem()
     raw = hss._finalize([sub], purpose="summary", partial=False)
-    assert _SECRET not in _all_text(hss.project_for_audience(raw, HealthAudience.PLATFORM_OWNER))
-    assert _SECRET not in _all_text(hss.project_for_audience(raw, HealthAudience.GUILD_ADMIN))
+    assert _SECRET not in _all_text(
+        hss.project_for_audience(raw, HealthAudience.PLATFORM_OWNER)
+    )
+    assert _SECRET not in _all_text(
+        hss.project_for_audience(raw, HealthAudience.GUILD_ADMIN)
+    )
 
 
 def test_startup_error_leak_is_contained() -> None:

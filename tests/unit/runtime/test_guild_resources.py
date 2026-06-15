@@ -52,9 +52,7 @@ def _make_guild(
     guild.text_channels = list(text_channels)
     guild.voice_channels = list(voice_channels)
     guild.categories = list(categories)
-    guild.channels = (
-        list(text_channels) + list(voice_channels) + list(categories)
-    )
+    guild.channels = list(text_channels) + list(voice_channels) + list(categories)
     guild.roles = list(roles)
 
     id_to_channel = {ch.id: ch for ch in guild.channels}
@@ -98,17 +96,14 @@ class TestResolveChannel:
 
     def test_by_id_invalid_no_name_returns_none(self):
         guild = _make_guild()
-        assert (
-            guild_resources.resolve_channel(guild, channel_id="not-an-int") is None
-        )
+        assert guild_resources.resolve_channel(guild, channel_id="not-an-int") is None
 
     def test_by_id_missing_falls_through_to_name(self):
         ch = _make_channel(100, "general")
         guild = _make_guild(text_channels=[ch])
         # id 999 not in cache; fall back to name
         assert (
-            guild_resources.resolve_channel(guild, channel_id=999, name="general")
-            is ch
+            guild_resources.resolve_channel(guild, channel_id=999, name="general") is ch
         )
 
     def test_by_name_text_only_default(self):
@@ -138,21 +133,15 @@ class TestResolveChannel:
         cat_b = _make_channel(60, "Other")
         ch_in_a = _make_channel(100, "log", category_id=50)
         ch_in_b = _make_channel(101, "log", category_id=60)
-        guild = _make_guild(
-            text_channels=[ch_in_a, ch_in_b], categories=[cat_a, cat_b]
-        )
-        result = guild_resources.resolve_channel(
-            guild, name="log", category="Bot"
-        )
+        guild = _make_guild(text_channels=[ch_in_a, ch_in_b], categories=[cat_a, cat_b])
+        result = guild_resources.resolve_channel(guild, name="log", category="Bot")
         assert result is ch_in_a
 
     def test_by_name_category_obj_filter(self):
         cat = SimpleNamespace(id=50, name="Bot")
         ch = _make_channel(100, "log", category_id=50)
         guild = _make_guild(text_channels=[ch], categories=[cat])
-        result = guild_resources.resolve_channel(
-            guild, name="log", category=cat
-        )
+        result = guild_resources.resolve_channel(guild, name="log", category=cat)
         assert result is ch
 
     def test_by_name_missing_returns_none(self):
@@ -229,10 +218,7 @@ class TestResolveRole:
     def test_by_id_falls_through_to_name(self):
         role = _make_role(100, "Member")
         guild = _make_guild(roles=[role])
-        assert (
-            guild_resources.resolve_role(guild, role_id=999, name="Member")
-            is role
-        )
+        assert guild_resources.resolve_role(guild, role_id=999, name="Member") is role
 
     def test_no_args_returns_none(self):
         guild = _make_guild()

@@ -151,7 +151,9 @@ def test_unbuilt_home_renders_byte_identical():
 
     pytest.importorskip("PIL")
     # The additive guarantee: home_level 0 == the historical render, byte for byte.
-    assert cr.render_character_for(_FULL) == cr.render_character_for(_FULL, home_level=0)
+    assert cr.render_character_for(_FULL) == cr.render_character_for(
+        _FULL, home_level=0
+    )
 
 
 def test_built_home_changes_the_render():

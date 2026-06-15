@@ -23,9 +23,9 @@ from views.mining.main_panel import MiningHubView
 def test_mining_hub_view_has_no_root_overview_button():
     view = MiningHubView()
     ids = [getattr(c, "custom_id", None) for c in view.children]
-    assert "mining:overview" not in ids, (
-        f"MiningHubView must not ship a no-op root Overview button. Got: {ids}"
-    )
+    assert (
+        "mining:overview" not in ids
+    ), f"MiningHubView must not ship a no-op root Overview button. Got: {ids}"
 
 
 def test_mining_hub_view_action_buttons_still_present():

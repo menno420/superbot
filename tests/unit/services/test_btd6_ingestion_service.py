@@ -68,11 +68,22 @@ def reset_locks():
 
 
 async def test_ok_path(monkeypatch):
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
-    monkeypatch.setattr("services.btd6_fetch_service.fetch", AsyncMock(return_value=_FAKE_FETCH_RESULT))
-    monkeypatch.setattr("services.btd6_source_parser.get", MagicMock(return_value=_FAKE_PARSER))
-    monkeypatch.setattr("services.btd6_fact_store.store_facts", AsyncMock(return_value=[_FAKE_FACT_RESULT]))
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=7))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
+    monkeypatch.setattr(
+        "services.btd6_fetch_service.fetch", AsyncMock(return_value=_FAKE_FETCH_RESULT)
+    )
+    monkeypatch.setattr(
+        "services.btd6_source_parser.get", MagicMock(return_value=_FAKE_PARSER)
+    )
+    monkeypatch.setattr(
+        "services.btd6_fact_store.store_facts",
+        AsyncMock(return_value=[_FAKE_FACT_RESULT]),
+    )
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=7)
+    )
     monkeypatch.setattr("utils.db.btd6_sources.update_ingestion_run", AsyncMock())
     monkeypatch.setattr("utils.db.btd6_sources.insert_source_snapshot", AsyncMock())
 
@@ -90,8 +101,12 @@ async def test_ok_path(monkeypatch):
 
 
 async def test_skipped_when_lock_held(monkeypatch):
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=8))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=8)
+    )
 
     lock = await btd6_ingestion_service._lock_for("nk_btd6_ct", "")
     await lock.acquire()
@@ -109,7 +124,9 @@ async def test_skipped_when_lock_held(monkeypatch):
 
 
 async def test_unknown_source_no_run_row(monkeypatch):
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=None))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=None)
+    )
     insert_mock = AsyncMock()
     monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", insert_mock)
 
@@ -129,12 +146,18 @@ async def test_unknown_source_no_run_row(monkeypatch):
 async def test_fetch_http_error(monkeypatch):
     from services.btd6_fetch_service import BTD6FetchHTTPError
 
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
     monkeypatch.setattr(
         "services.btd6_fetch_service.fetch",
-        AsyncMock(side_effect=BTD6FetchHTTPError("nk_btd6_ct", 503, "service unavailable")),
+        AsyncMock(
+            side_effect=BTD6FetchHTTPError("nk_btd6_ct", 503, "service unavailable")
+        ),
     )
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=9))
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=9)
+    )
     update_mock = AsyncMock()
     monkeypatch.setattr("utils.db.btd6_sources.update_ingestion_run", update_mock)
 
@@ -155,12 +178,16 @@ async def test_fetch_http_error(monkeypatch):
 async def test_fetch_refused_marks_disabled(monkeypatch):
     from services.btd6_fetch_service import BTD6FetchRefusedError
 
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
     monkeypatch.setattr(
         "services.btd6_fetch_service.fetch",
         AsyncMock(side_effect=BTD6FetchRefusedError("nk_btd6_ct", "source_disabled")),
     )
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=10))
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=10)
+    )
     update_mock = AsyncMock()
     monkeypatch.setattr("utils.db.btd6_sources.update_ingestion_run", update_mock)
 
@@ -176,11 +203,21 @@ async def test_fetch_refused_marks_disabled(monkeypatch):
 
 
 async def test_invalid_json_body(monkeypatch):
-    bad_fetch = MagicMock(status_code=200, raw_body="not json at all", raw_body_hash="x")
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
-    monkeypatch.setattr("services.btd6_fetch_service.fetch", AsyncMock(return_value=bad_fetch))
-    monkeypatch.setattr("services.btd6_source_parser.get", MagicMock(return_value=_FAKE_PARSER))
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=11))
+    bad_fetch = MagicMock(
+        status_code=200, raw_body="not json at all", raw_body_hash="x"
+    )
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
+    monkeypatch.setattr(
+        "services.btd6_fetch_service.fetch", AsyncMock(return_value=bad_fetch)
+    )
+    monkeypatch.setattr(
+        "services.btd6_source_parser.get", MagicMock(return_value=_FAKE_PARSER)
+    )
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=11)
+    )
     monkeypatch.setattr("utils.db.btd6_sources.insert_source_snapshot", AsyncMock())
     update_mock = AsyncMock()
     monkeypatch.setattr("utils.db.btd6_sources.update_ingestion_run", update_mock)
@@ -197,10 +234,16 @@ async def test_invalid_json_body(monkeypatch):
 
 
 async def test_no_parser_registered(monkeypatch):
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
-    monkeypatch.setattr("services.btd6_fetch_service.fetch", AsyncMock(return_value=_FAKE_FETCH_RESULT))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
+    monkeypatch.setattr(
+        "services.btd6_fetch_service.fetch", AsyncMock(return_value=_FAKE_FETCH_RESULT)
+    )
     monkeypatch.setattr("services.btd6_source_parser.get", MagicMock(return_value=None))
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=12))
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=12)
+    )
     monkeypatch.setattr("utils.db.btd6_sources.insert_source_snapshot", AsyncMock())
     update_mock = AsyncMock()
     monkeypatch.setattr("utils.db.btd6_sources.update_ingestion_run", update_mock)
@@ -217,11 +260,22 @@ async def test_no_parser_registered(monkeypatch):
 
 
 async def test_snapshot_written_on_ok(monkeypatch):
-    monkeypatch.setattr("services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE))
-    monkeypatch.setattr("services.btd6_fetch_service.fetch", AsyncMock(return_value=_FAKE_FETCH_RESULT))
-    monkeypatch.setattr("services.btd6_source_parser.get", MagicMock(return_value=_FAKE_PARSER))
-    monkeypatch.setattr("services.btd6_fact_store.store_facts", AsyncMock(return_value=[_FAKE_FACT_RESULT]))
-    monkeypatch.setattr("utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=13))
+    monkeypatch.setattr(
+        "services.btd6_source_registry.get_by_key", AsyncMock(return_value=_FAKE_SOURCE)
+    )
+    monkeypatch.setattr(
+        "services.btd6_fetch_service.fetch", AsyncMock(return_value=_FAKE_FETCH_RESULT)
+    )
+    monkeypatch.setattr(
+        "services.btd6_source_parser.get", MagicMock(return_value=_FAKE_PARSER)
+    )
+    monkeypatch.setattr(
+        "services.btd6_fact_store.store_facts",
+        AsyncMock(return_value=[_FAKE_FACT_RESULT]),
+    )
+    monkeypatch.setattr(
+        "utils.db.btd6_sources.insert_ingestion_run", AsyncMock(return_value=13)
+    )
     monkeypatch.setattr("utils.db.btd6_sources.update_ingestion_run", AsyncMock())
     snapshot_mock = AsyncMock()
     monkeypatch.setattr("utils.db.btd6_sources.insert_source_snapshot", snapshot_mock)
@@ -242,7 +296,9 @@ async def test_snapshot_written_on_ok(monkeypatch):
 async def test_refresh_with_dependencies_triggers_child(monkeypatch):
     child_calls: list[tuple[str, dict | None]] = []
 
-    async def _mock_refresh(source_key, *, path_params=None, reason="scheduled", started_by_user_id=None):
+    async def _mock_refresh(
+        source_key, *, path_params=None, reason="scheduled", started_by_user_id=None
+    ):
         child_calls.append((source_key, path_params))
         if source_key == "nk_btd6_ct":
             return btd6_ingestion_service.IngestionResult(

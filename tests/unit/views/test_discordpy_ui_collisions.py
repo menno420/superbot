@@ -99,6 +99,5 @@ def test_no_item_subclass_assigns_parent():
     assert not offenders, (
         "discord.py collision: a discord.ui.Item subclass assigns "
         "`self.parent`/`self._parent` (read-only in discord.py 2.7+ — store the "
-        "panel as `self._panel` / `self._owner_view`):\n  "
-        + "\n  ".join(offenders)
+        "panel as `self._panel` / `self._owner_view`):\n  " + "\n  ".join(offenders)
     )

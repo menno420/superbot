@@ -74,7 +74,9 @@ _MANAGED_KEYS = (
 )
 _MANAGED_PREFIXES = ("AI_TASK_", "AI_ROUTING_")
 
-_DEFAULT_SYSTEM_PROMPT = "You are SuperBot, a concise Discord assistant. Keep replies short."
+_DEFAULT_SYSTEM_PROMPT = (
+    "You are SuperBot, a concise Discord assistant. Keep replies short."
+)
 
 
 # A redaction-test tool spec (offered to the model in tool cases).
@@ -217,7 +219,9 @@ async def run_smoke_case(case: SmokeCase) -> tuple[SmokeResult, GradeResult]:
         collector = DiagnosticsCollector()
         providers = case.providers()
         gateway = AIGateway(providers=providers, collector=collector)
-        handlers = _recording_handlers(case.tool_results, recorder) if case.tools else None
+        handlers = (
+            _recording_handlers(case.tool_results, recorder) if case.tools else None
+        )
         request = AIRequest(
             context=AIRequestContext(
                 task=case.task,
@@ -227,7 +231,11 @@ async def run_smoke_case(case: SmokeCase) -> tuple[SmokeResult, GradeResult]:
                 source="smoke",
             ),
             system_prompt=case.system_prompt,
-            payload=dict(case.payload) if case.payload is not None else {"text": case.user_text},
+            payload=(
+                dict(case.payload)
+                if case.payload is not None
+                else {"text": case.user_text}
+            ),
             mode=case.mode,
             tools=case.tools,
         )
@@ -281,7 +289,9 @@ def reason_startswith(prefix: str) -> Expectation:
     def check(result: SmokeResult) -> GradeResult:
         reason = result.response.fallback_reason or ""
         if not reason.startswith(prefix):
-            return GradeResult(False, f"reason {reason!r} does not start with {prefix!r}")
+            return GradeResult(
+                False, f"reason {reason!r} does not start with {prefix!r}"
+            )
         return _ok()
 
     return check
@@ -354,15 +364,25 @@ def audit(
     def check(result: SmokeResult) -> GradeResult:
         snap = result.diagnostics
         if degraded is not None and snap.degraded != degraded:
-            return GradeResult(False, f"audit.degraded={snap.degraded}, want {degraded}")
+            return GradeResult(
+                False, f"audit.degraded={snap.degraded}, want {degraded}"
+            )
         if min_failures is not None and snap.failures_observed < min_failures:
-            return GradeResult(False, f"audit.failures={snap.failures_observed} < {min_failures}")
+            return GradeResult(
+                False, f"audit.failures={snap.failures_observed} < {min_failures}"
+            )
         if max_failures is not None and snap.failures_observed > max_failures:
-            return GradeResult(False, f"audit.failures={snap.failures_observed} > {max_failures}")
+            return GradeResult(
+                False, f"audit.failures={snap.failures_observed} > {max_failures}"
+            )
         if min_requests is not None and snap.requests_observed < min_requests:
-            return GradeResult(False, f"audit.requests={snap.requests_observed} < {min_requests}")
+            return GradeResult(
+                False, f"audit.requests={snap.requests_observed} < {min_requests}"
+            )
         if error_type is not None and snap.last_error_type != error_type:
-            return GradeResult(False, f"audit.error_type={snap.last_error_type!r}, want {error_type!r}")
+            return GradeResult(
+                False, f"audit.error_type={snap.last_error_type!r}, want {error_type!r}"
+            )
         if provider_active is not None and snap.provider_active != provider_active:
             return GradeResult(
                 False,
@@ -378,7 +398,9 @@ def provider_untouched(name: str) -> Expectation:
         provider = result.providers.get(name)
         received = getattr(provider, "received_request", "<absent>")
         if received is not None:
-            return GradeResult(False, f"provider {name!r} was called (received {received!r})")
+            return GradeResult(
+                False, f"provider {name!r} was called (received {received!r})"
+            )
         return _ok()
 
     return check
@@ -439,7 +461,11 @@ SMOKE_CASES: list[SmokeCase] = [
         category="gate",
         description="AI_TOOLS_ENABLED off → tools are never offered to the model.",
         env={"AI_ENABLED": "1", "AI_DEFAULT_PROVIDER": "deterministic"},
-        providers=_one("deterministic", text="answered without tools", call_tool="get_user_standing"),
+        providers=_one(
+            "deterministic",
+            text="answered without tools",
+            call_tool="get_user_standing",
+        ),
         tools=(_PROBE_TOOL,),
         tool_results={"get_user_standing": {"level": 12}},
         expect=all_(answered_by("deterministic"), no_tool_dispatched()),
@@ -449,7 +475,11 @@ SMOKE_CASES: list[SmokeCase] = [
         id="tool.offered_tool_dispatches",
         category="tool_dispatch",
         description="With the tool gate on, an offered tool dispatches.",
-        env={"AI_ENABLED": "1", "AI_TOOLS_ENABLED": "1", "AI_DEFAULT_PROVIDER": "deterministic"},
+        env={
+            "AI_ENABLED": "1",
+            "AI_TOOLS_ENABLED": "1",
+            "AI_DEFAULT_PROVIDER": "deterministic",
+        },
         providers=_one("deterministic", call_tool="get_user_standing"),
         tools=(_PROBE_TOOL,),
         tool_results={"get_user_standing": {"level": 12}},
@@ -459,7 +489,11 @@ SMOKE_CASES: list[SmokeCase] = [
         id="tool.unoffered_tool_rejected",
         category="tool_dispatch",
         description="A tool the model names but that wasn't offered is rejected.",
-        env={"AI_ENABLED": "1", "AI_TOOLS_ENABLED": "1", "AI_DEFAULT_PROVIDER": "deterministic"},
+        env={
+            "AI_ENABLED": "1",
+            "AI_TOOLS_ENABLED": "1",
+            "AI_DEFAULT_PROVIDER": "deterministic",
+        },
         providers=_one("deterministic", call_tool="not_offered"),
         tools=(_PROBE_TOOL,),
         tool_results={"get_user_standing": {"level": 12}},
@@ -469,7 +503,11 @@ SMOKE_CASES: list[SmokeCase] = [
         id="tool.faulting_handler_contained",
         category="tool_dispatch",
         description="A tool handler that raises is contained — the gateway never raises.",
-        env={"AI_ENABLED": "1", "AI_TOOLS_ENABLED": "1", "AI_DEFAULT_PROVIDER": "deterministic"},
+        env={
+            "AI_ENABLED": "1",
+            "AI_TOOLS_ENABLED": "1",
+            "AI_DEFAULT_PROVIDER": "deterministic",
+        },
         providers=_one("deterministic", call_tool="get_user_standing"),
         tools=(_PROBE_TOOL,),
         tool_results={"get_user_standing": RuntimeError("handler boom")},
@@ -483,9 +521,15 @@ SMOKE_CASES: list[SmokeCase] = [
         id="fallback.primary_fault_recovers",
         category="fallback",
         description="A transport fault on the primary recovers on the fallback provider.",
-        env={"AI_ENABLED": "1", "AI_DEFAULT_PROVIDER": "anthropic", "AI_FALLBACK_PROVIDER": "openai"},
+        env={
+            "AI_ENABLED": "1",
+            "AI_DEFAULT_PROVIDER": "anthropic",
+            "AI_FALLBACK_PROVIDER": "openai",
+        },
         providers=lambda: {
-            "anthropic": ScriptedProvider("anthropic", exc=ProviderUnavailableError("down")),
+            "anthropic": ScriptedProvider(
+                "anthropic", exc=ProviderUnavailableError("down")
+            ),
             "openai": ScriptedProvider("openai", text="recovered on fallback"),
         },
         expect=all_(
@@ -500,13 +544,19 @@ SMOKE_CASES: list[SmokeCase] = [
         description="With no AI_FALLBACK_PROVIDER, the degraded primary response stands.",
         env={"AI_ENABLED": "1", "AI_DEFAULT_PROVIDER": "anthropic"},
         providers=_one("anthropic", exc=ProviderUnavailableError("primary down")),
-        expect=all_(degraded_because("primary down"), audit(degraded=True, min_failures=1)),
+        expect=all_(
+            degraded_because("primary down"), audit(degraded=True, min_failures=1)
+        ),
     ),
     SmokeCase(
         id="fallback.bad_json_not_retried",
         category="fallback",
         description="A bad-JSON degrade is a model-output problem, not an outage → no fallback.",
-        env={"AI_ENABLED": "1", "AI_DEFAULT_PROVIDER": "anthropic", "AI_FALLBACK_PROVIDER": "openai"},
+        env={
+            "AI_ENABLED": "1",
+            "AI_DEFAULT_PROVIDER": "anthropic",
+            "AI_FALLBACK_PROVIDER": "openai",
+        },
         mode=AIResponseMode.JSON,
         providers=lambda: {
             "anthropic": ScriptedProvider("anthropic", text="this is not json"),
@@ -524,7 +574,9 @@ SMOKE_CASES: list[SmokeCase] = [
         description="An explicit provider_override never triggers fallback (the injection seam).",
         env={"AI_ENABLED": "1", "AI_FALLBACK_PROVIDER": "openai"},
         providers=_one("openai", text="should not be used"),
-        provider_override=lambda: ScriptedProvider("forced", exc=RuntimeError("forced fault")),
+        provider_override=lambda: ScriptedProvider(
+            "forced", exc=RuntimeError("forced fault")
+        ),
         expect=all_(degraded_because("forced fault"), provider_untouched("openai")),
     ),
     # --- audit visibility ------------------------------------------------- #
@@ -534,7 +586,12 @@ SMOKE_CASES: list[SmokeCase] = [
         description="A healthy call records a request, zero failures, not degraded.",
         env={"AI_ENABLED": "1", "AI_DEFAULT_PROVIDER": "deterministic"},
         providers=_one("deterministic", text="all good"),
-        expect=audit(degraded=False, min_requests=1, max_failures=0, provider_active="deterministic"),
+        expect=audit(
+            degraded=False,
+            min_requests=1,
+            max_failures=0,
+            provider_active="deterministic",
+        ),
     ),
     SmokeCase(
         id="audit.failure_recorded",
@@ -555,7 +612,9 @@ SMOKE_CASES: list[SmokeCase] = [
         env={"AI_ENABLED": "1", "AI_DEFAULT_PROVIDER": "deterministic"},
         providers=_one("deterministic", text="should not run"),
         payload={},
-        expect=all_(degraded_because("empty payload"), provider_untouched("deterministic")),
+        expect=all_(
+            degraded_because("empty payload"), provider_untouched("deterministic")
+        ),
     ),
     SmokeCase(
         id="safety.oversized_payload_degraded",

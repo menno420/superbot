@@ -32,7 +32,7 @@ def wm():
 # Synthetic source fixtures
 # ---------------------------------------------------------------------------
 
-_EMITTER = '''
+_EMITTER = """
 from core.events import bus
 
 EVT_THING = "domain.thing"
@@ -43,9 +43,9 @@ async def fire():
     await bus.emit("domain.literal", y=2)
     await bus.emit("domain.uncatalogued", z=3)
     await bus.emit(some_dynamic_name, q=4)
-'''
+"""
 
-_SUBSCRIBER = '''
+_SUBSCRIBER = """
 from core.events import bus as _event_bus
 
 EVT_THING = "domain.thing"
@@ -55,9 +55,9 @@ def register():
     _event_bus.on(EVT_THING, _on_thing)
     _event_bus.on("domain.literal", handlers.on_literal)
     _event_bus.on("domain.orphan", _on_orphan)
-'''
+"""
 
-_CATALOGUE = '''
+_CATALOGUE = """
 EVT_THING = "domain.thing"
 KNOWN_EVENTS = frozenset(
     {
@@ -67,7 +67,7 @@ KNOWN_EVENTS = frozenset(
         "domain.orphan",
     }
 )
-'''
+"""
 
 
 def _sources() -> dict[str, str]:
@@ -144,8 +144,7 @@ def test_catalogue_drift_detected(wm):
 def test_unresolved_emit_tracked_not_dropped(wm):
     m = wm.analyze_sources(_sources())
     assert any(
-        c.kind == "emit" and c.raw_event == "some_dynamic_name"
-        for c in m.unresolved
+        c.kind == "emit" and c.raw_event == "some_dynamic_name" for c in m.unresolved
     )
 
 

@@ -251,7 +251,9 @@ async def test_ensure_setup_channel_denies_administrator_roles_explicitly():
     """
     admin_role = _make_role(role_id=100, administrator=True, name="Admin")
     non_admin_role = _make_role(role_id=200, administrator=False, name="Member")
-    guild = _make_guild(roles=[_make_role(role_id=0, administrator=False), admin_role, non_admin_role])
+    guild = _make_guild(
+        roles=[_make_role(role_id=0, administrator=False), admin_role, non_admin_role]
+    )
     # default_role id must match the one we passed
     guild.default_role = guild.roles[0]
     created = _make_text_channel(7000)

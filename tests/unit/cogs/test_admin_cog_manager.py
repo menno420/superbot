@@ -75,8 +75,7 @@ async def test_coglist_button_opens_cog_manager_view():
     btn = next(
         c
         for c in panel.children
-        if isinstance(c, discord.ui.Button)
-        and "Cog List" in (c.label or "")
+        if isinstance(c, discord.ui.Button) and "Cog List" in (c.label or "")
     )
     await btn.callback(interaction)  # type: ignore[union-attr,misc]
 
@@ -135,7 +134,9 @@ async def test_non_owner_load_button_denies_and_does_not_load():
     interaction.response.edit_message = AsyncMock()
 
     load_btn = next(
-        c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Load"
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == "Load"
     )
     await load_btn.callback(interaction)  # type: ignore[union-attr,misc]
 
@@ -213,7 +214,9 @@ async def test_owner_load_button_calls_bot_load_extension():
     interaction.response.edit_message = AsyncMock()
 
     load_btn = next(
-        c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Load"
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == "Load"
     )
     await load_btn.callback(interaction)  # type: ignore[union-attr,misc]
 
@@ -281,7 +284,9 @@ async def test_owner_load_button_with_no_selection_asks_to_pick_first():
     interaction.response.edit_message = AsyncMock()
 
     load_btn = next(
-        c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Load"
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == "Load"
     )
     await load_btn.callback(interaction)  # type: ignore[union-attr,misc]
 

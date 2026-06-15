@@ -157,9 +157,7 @@ def test_first_match_returns_channel_with_tag():
 
 
 def test_first_match_returns_none_when_no_match():
-    classified = (
-        ClassifiedChannel(channel=_ch("random"), tags=()),
-    )
+    classified = (ClassifiedChannel(channel=_ch("random"), tags=()),)
     assert first_match(classified, "likely_log") is None
 
 
@@ -206,14 +204,26 @@ def test_missing_permissions_flags_no_send_in_any_text_channel():
     snap = _snapshot(
         channels=[
             ChannelMeta(
-                id=1, name="general", type="text", topic=None,
-                parent_category=None, position=0,
-                bot_can_view=True, bot_can_send=False, bot_can_embed=False,
+                id=1,
+                name="general",
+                type="text",
+                topic=None,
+                parent_category=None,
+                position=0,
+                bot_can_view=True,
+                bot_can_send=False,
+                bot_can_embed=False,
             ),
             ChannelMeta(
-                id=2, name="off-topic", type="text", topic=None,
-                parent_category=None, position=1,
-                bot_can_view=True, bot_can_send=False, bot_can_embed=False,
+                id=2,
+                name="off-topic",
+                type="text",
+                topic=None,
+                parent_category=None,
+                position=1,
+                bot_can_view=True,
+                bot_can_send=False,
+                bot_can_embed=False,
             ),
         ],
     )
@@ -225,14 +235,26 @@ def test_missing_permissions_skips_send_when_any_text_channel_works():
     snap = _snapshot(
         channels=[
             ChannelMeta(
-                id=1, name="general", type="text", topic=None,
-                parent_category=None, position=0,
-                bot_can_view=True, bot_can_send=False, bot_can_embed=False,
+                id=1,
+                name="general",
+                type="text",
+                topic=None,
+                parent_category=None,
+                position=0,
+                bot_can_view=True,
+                bot_can_send=False,
+                bot_can_embed=False,
             ),
             ChannelMeta(
-                id=2, name="bot-cmd", type="text", topic=None,
-                parent_category=None, position=1,
-                bot_can_view=True, bot_can_send=True, bot_can_embed=True,
+                id=2,
+                name="bot-cmd",
+                type="text",
+                topic=None,
+                parent_category=None,
+                position=1,
+                bot_can_view=True,
+                bot_can_send=True,
+                bot_can_embed=True,
             ),
         ],
     )

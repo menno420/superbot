@@ -36,10 +36,7 @@ def test_doc_file_exists():
 def test_pr_86_marked_merged(doc_lines: list[str]):
     """PR #86 must appear with 'merged' on the same line in the done
     table (clarification #5 — substring assertion, no formatting pin)."""
-    matches = [
-        ln for ln in doc_lines
-        if "#86" in ln and "merged" in ln.lower()
-    ]
+    matches = [ln for ln in doc_lines if "#86" in ln and "merged" in ln.lower()]
     assert matches, (
         "Expected a line mentioning PR #86 alongside 'merged' "
         "to indicate PR #86 has landed on main."
@@ -49,7 +46,8 @@ def test_pr_86_marked_merged(doc_lines: list[str]):
 def test_migration_028_on_main(doc_lines: list[str]):
     """Migration 028 must appear on a line that also mentions 'main'."""
     matches = [
-        ln for ln in doc_lines
+        ln
+        for ln in doc_lines
         if "028_user_participation_audit.sql" in ln and "main" in ln.lower()
     ]
     assert matches, (
@@ -117,12 +115,12 @@ def test_every_blocker_has_resolution_provider_and_doc_anchor():
             missing_anchor.append(spec.id)
         if not callable(spec.status_provider):
             missing_provider.append(spec.id)
-    assert not missing_anchor, (
-        "BlockerSpec(s) missing doc_anchor:\n  " + "\n  ".join(missing_anchor)
+    assert not missing_anchor, "BlockerSpec(s) missing doc_anchor:\n  " + "\n  ".join(
+        missing_anchor
     )
-    assert not missing_provider, (
-        "BlockerSpec(s) missing status_provider:\n  " + "\n  ".join(missing_provider)
-    )
+    assert (
+        not missing_provider
+    ), "BlockerSpec(s) missing status_provider:\n  " + "\n  ".join(missing_provider)
 
 
 def test_blocker_status_provider_returns_valid_literal():
@@ -139,7 +137,8 @@ def test_blocker_status_provider_returns_valid_literal():
         status = setup_blockers.status_for(spec)
         if status not in valid:
             invalid.append(f"{spec.id}: returned {status!r}")
-    assert not invalid, (
-        "BlockerSpec.status_provider returned unknown literal:\n  "
-        + "\n  ".join(invalid)
+    assert (
+        not invalid
+    ), "BlockerSpec.status_provider returned unknown literal:\n  " + "\n  ".join(
+        invalid
     )

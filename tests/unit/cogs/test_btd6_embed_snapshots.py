@@ -285,6 +285,6 @@ def test_maps_embed_stays_within_discord_limits() -> None:
             "fields or paginate the maps catalogue before adding more maps."
         )
         total += len(name) + len(value)
-    assert total <= _EMBED_TOTAL_MAX, (
-        f"maps embed total is {total} chars (Discord cap {_EMBED_TOTAL_MAX})."
-    )
+    assert (
+        total <= _EMBED_TOTAL_MAX
+    ), f"maps embed total is {total} chars (Discord cap {_EMBED_TOTAL_MAX})."

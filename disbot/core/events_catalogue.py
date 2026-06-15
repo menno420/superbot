@@ -79,6 +79,16 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # channel.  Payload: guild_id, renamed (count).  No DB writes; the
         # rename is a channel edit.  Subscriber failure logged + swallowed.
         "counters.updated",
+        # ── Security (services/security_service.py, Q-0111) ───────────────
+        # Advisory. `raid_detected` fires when a join-rate raid is detected (the
+        # staff alert + slowmode are the action); `account_flagged` fires when a
+        # too-young account joins (a kick, if configured, audits via
+        # moderation_service — so these are *not* a second audit path). Payloads:
+        # raid_detected → guild_id, user_id, join_count; account_flagged →
+        # guild_id, user_id, age_days, action. Subscriber failure logged +
+        # swallowed; the detection/action is authoritative either way.
+        "security.raid_detected",
+        "security.account_flagged",
         # ── Bindings (services/binding_mutation.py, Phase 2b) ─────────────
         "bindings.changed",
         # ── Settings (services/settings_mutation.py, S4) ──────────────────

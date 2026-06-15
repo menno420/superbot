@@ -76,7 +76,8 @@ async def test_wing_navigation_advances_and_resets_state(wing_cls):
     next_btn = next(
         item
         for item in wing.children
-        if isinstance(item, discord.ui.Button) and item.emoji is not None
+        if isinstance(item, discord.ui.Button)
+        and item.emoji is not None
         and str(item.emoji) == "▶"
     )
     interaction = _interaction()
@@ -109,7 +110,9 @@ async def test_danger_confirm_never_executes_on_first_click():
     wing._index = wing._exhibit_ids().index("danger_confirm_then_result")
     wing.build()
     danger = next(
-        item for item in wing.children if isinstance(item, discord.ui.Button)
+        item
+        for item in wing.children
+        if isinstance(item, discord.ui.Button)
         and item.style is discord.ButtonStyle.danger
     )
     await danger.callback(_interaction())

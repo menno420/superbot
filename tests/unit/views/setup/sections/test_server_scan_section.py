@@ -118,8 +118,7 @@ async def test_run_rejects_dm_context():
 
     collect_mock.assert_not_awaited()
     assert any(
-        "guild" in (s["content"] or "").lower()
-        for s in interaction.response.sent
+        "guild" in (s["content"] or "").lower() for s in interaction.response.sent
     )
 
 

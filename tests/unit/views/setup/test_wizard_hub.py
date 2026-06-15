@@ -577,10 +577,16 @@ async def test_final_review_apply_isolates_per_rec_failures():
     fake_batch = SetupOperationBatchResult(
         results=[
             SetupOperationResult(
-                status="applied", operation=op, label="a", mutation_id="m1",
+                status="applied",
+                operation=op,
+                label="a",
+                mutation_id="m1",
             ),
             SetupOperationResult(
-                status="failed", operation=op, label="b", error="boom",
+                status="failed",
+                operation=op,
+                label="b",
+                error="boom",
             ),
         ],
     )
@@ -657,11 +663,17 @@ async def test_final_review_apply_partial_success_renders_applied_failed_skipped
     fake_batch = SetupOperationBatchResult(
         results=[
             SetupOperationResult(
-                status="applied", operation=op, label="a", mutation_id="x",
+                status="applied",
+                operation=op,
+                label="a",
+                mutation_id="x",
             ),
             SetupOperationResult(status="failed", operation=op, label="b", error="err"),
             SetupOperationResult(
-                status="not_yet_implemented", operation=op, label="c", error="nyi",
+                status="not_yet_implemented",
+                operation=op,
+                label="c",
+                error="nyi",
             ),
         ],
     )

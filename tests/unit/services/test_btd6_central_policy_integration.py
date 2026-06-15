@@ -47,12 +47,7 @@ from utils.db import ai as ai_db
 
 
 def _btd6_ai_service_source() -> str:
-    path = (
-        Path(__file__).parents[3]
-        / "disbot"
-        / "services"
-        / "btd6_ai_service.py"
-    )
+    path = Path(__file__).parents[3] / "disbot" / "services" / "btd6_ai_service.py"
     return path.read_text()
 
 
@@ -63,8 +58,13 @@ def test_btd6_ai_service_does_not_import_policy_resolver():
     # Match real Python import statements, not docstring mentions of the name.
     forbidden_imports = (
         re.compile(r"^\s*from\s+services\.ai_natural_language_policy\b", re.MULTILINE),
-        re.compile(r"^\s*from\s+services\s+import\s+[^#\n]*\bai_natural_language_policy\b", re.MULTILINE),
-        re.compile(r"^\s*import\s+services\.ai_natural_language_policy\b", re.MULTILINE),
+        re.compile(
+            r"^\s*from\s+services\s+import\s+[^#\n]*\bai_natural_language_policy\b",
+            re.MULTILINE,
+        ),
+        re.compile(
+            r"^\s*import\s+services\.ai_natural_language_policy\b", re.MULTILINE
+        ),
     )
     for pattern in forbidden_imports:
         assert not pattern.search(src), (
@@ -218,7 +218,9 @@ def _stub_services_for_btd6(monkeypatch):
         ),
     )
     monkeypatch.setattr(
-        mod.ai_conversation_service, "append", lambda *a, **kw: None,
+        mod.ai_conversation_service,
+        "append",
+        lambda *a, **kw: None,
     )
 
     # Replace the feature-fact gather so we don't pull real BTD6 data. The
@@ -246,7 +248,10 @@ def _stub_services_for_btd6(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", _execute)
 
     from core.runtime.ai import response_renderer_registry
-    monkeypatch.setattr(response_renderer_registry, "render", AsyncMock(return_value=None))
+
+    monkeypatch.setattr(
+        response_renderer_registry, "render", AsyncMock(return_value=None)
+    )
 
     audit: list[dict] = []
 
@@ -302,13 +307,15 @@ async def test_btd6_passive_reply_allowed_when_channel_override_beats_guild_nl_d
     _patch_resolver_state(
         monkeypatch,
         policy=_enabled_guild_policy(natural_language_enabled=False),
-        channels=[{
-            "channel_id": 100,
-            "mode": "always_reply",
-            "min_level": 0,
-            "cooldown_seconds": 0,
-            "instruction_profile_id": None,
-        }],
+        channels=[
+            {
+                "channel_id": 100,
+                "mode": "always_reply",
+                "min_level": 0,
+                "cooldown_seconds": 0,
+                "instruction_profile_id": None,
+            }
+        ],
     )
 
     stage = AINaturalLanguageStage()

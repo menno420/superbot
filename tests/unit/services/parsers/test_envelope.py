@@ -96,8 +96,14 @@ def test_parser_adapter_satisfies_protocol_and_delegates():
         captured["payload"] = payload
         captured["game_version"] = game_version
         captured["path_params"] = path_params
-        return [{"fact_type": "btd6.test", "entity_kind": "x",
-                 "entity_key": "y", "body_json": {}}]
+        return [
+            {
+                "fact_type": "btd6.test",
+                "entity_kind": "x",
+                "entity_key": "y",
+                "body_json": {},
+            }
+        ]
 
     adapter = ParserAdapter("nk_btd6_maps", _fake_parse)
     result = adapter.parse(

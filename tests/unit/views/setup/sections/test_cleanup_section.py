@@ -257,7 +257,10 @@ async def test_stage_populates_canonical_metadata():
     assert md["risk"] == "low"
     assert "Operator chose" in md["reason"]
     assert "Strict" in md["reason"]
-    assert "rollback" in md["rollback_note"].lower() or "re-stage" in md["rollback_note"].lower()
+    assert (
+        "rollback" in md["rollback_note"].lower()
+        or "re-stage" in md["rollback_note"].lower()
+    )
 
 
 @pytest.mark.asyncio

@@ -155,9 +155,9 @@ def test_render_fact_prefixes_entity_kind_tag():
         "version": 1,
     }
     rendered = btd6_context_service._render_fact(row)
-    assert rendered.startswith("[btd6_boss] "), (
-        f"expected entity_kind prefix, got: {rendered!r}"
-    )
+    assert rendered.startswith(
+        "[btd6_boss] "
+    ), f"expected entity_kind prefix, got: {rendered!r}"
     assert "Diamondback5" in rendered
 
 

@@ -114,13 +114,16 @@ async def test_xp_top_returns_rank_entries():
         {"user_id": 1, "xp": 250, "level": 5},
         {"user_id": 2, "xp": 100, "level": 2},
     ]
-    with patch(
-        "services.rank_providers.db.fetchall",
-        new_callable=AsyncMock,
-        return_value=rows,
-    ), patch(
-        "services.rank_providers.resources.member_display",
-        side_effect=lambda g, uid: f"User{uid}",
+    with (
+        patch(
+            "services.rank_providers.db.fetchall",
+            new_callable=AsyncMock,
+            return_value=rows,
+        ),
+        patch(
+            "services.rank_providers.resources.member_display",
+            side_effect=lambda g, uid: f"User{uid}",
+        ),
     ):
         entries = await provider.top(_guild())
     assert len(entries) == 2
@@ -169,13 +172,16 @@ async def test_xp_member_rank_returns_none_when_off_board():
 @pytest.mark.asyncio
 async def test_coins_top_renders_coins_glyph():
     provider = get_provider("coins")
-    with patch(
-        "services.rank_providers.db.fetchall",
-        new_callable=AsyncMock,
-        return_value=[{"user_id": 1, "coins": 9999}],
-    ), patch(
-        "services.rank_providers.resources.member_display",
-        return_value="Alice",
+    with (
+        patch(
+            "services.rank_providers.db.fetchall",
+            new_callable=AsyncMock,
+            return_value=[{"user_id": 1, "coins": 9999}],
+        ),
+        patch(
+            "services.rank_providers.resources.member_display",
+            return_value="Alice",
+        ),
     ):
         entries = await provider.top(_guild())
     assert "Alice" in entries[0].label
@@ -186,13 +192,16 @@ async def test_coins_top_renders_coins_glyph():
 async def test_mining_top_caps_at_ten_entries():
     provider = get_provider("mining")
     rows = [(uid, uid * 10) for uid in range(1, 20)]
-    with patch(
-        "services.rank_providers.db.get_all_mining_totals",
-        new_callable=AsyncMock,
-        return_value=rows,
-    ), patch(
-        "services.rank_providers.resources.member_display",
-        side_effect=lambda g, uid: f"U{uid}",
+    with (
+        patch(
+            "services.rank_providers.db.get_all_mining_totals",
+            new_callable=AsyncMock,
+            return_value=rows,
+        ),
+        patch(
+            "services.rank_providers.resources.member_display",
+            side_effect=lambda g, uid: f"U{uid}",
+        ),
     ):
         entries = await provider.top(_guild())
     assert len(entries) == 10
@@ -261,13 +270,16 @@ async def test_counting_aggregates_across_channels():
             "200": {"leaderboard": {"1": 10, "3": 15}},
         },
     }
-    with patch(
-        "services.rank_providers.db.get_counting_state",
-        new_callable=AsyncMock,
-        return_value=state,
-    ), patch(
-        "services.rank_providers.resources.member_display",
-        side_effect=lambda g, uid: f"U{uid}",
+    with (
+        patch(
+            "services.rank_providers.db.get_counting_state",
+            new_callable=AsyncMock,
+            return_value=state,
+        ),
+        patch(
+            "services.rank_providers.resources.member_display",
+            side_effect=lambda g, uid: f"U{uid}",
+        ),
     ):
         entries = await provider.top(_guild())
         rank_pos, value = await provider.member_rank(_guild(), 1)
@@ -299,17 +311,17 @@ async def test_build_provider_embed_surfaces_empty_hint():
 async def test_build_provider_embed_applies_medal_prefixes():
     """First three entries get medal glyphs; the rest get ``#N`` prefixes."""
     provider = get_provider("xp")
-    rows = [
-        {"user_id": i, "xp": 1000 - i, "level": 10 - i}
-        for i in range(1, 6)
-    ]
-    with patch(
-        "services.rank_providers.db.fetchall",
-        new_callable=AsyncMock,
-        return_value=rows,
-    ), patch(
-        "services.rank_providers.resources.member_display",
-        side_effect=lambda g, uid: f"U{uid}",
+    rows = [{"user_id": i, "xp": 1000 - i, "level": 10 - i} for i in range(1, 6)]
+    with (
+        patch(
+            "services.rank_providers.db.fetchall",
+            new_callable=AsyncMock,
+            return_value=rows,
+        ),
+        patch(
+            "services.rank_providers.resources.member_display",
+            side_effect=lambda g, uid: f"U{uid}",
+        ),
     ):
         embed = await _build_provider_embed(provider, _guild())
     description = embed.description or ""

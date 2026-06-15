@@ -87,9 +87,7 @@ def test_formerly_prose_sourced_degree_scaling_works():
     # The beam hit: 600 dmg at d1 -> 600*2+10 at d100 (the same value the old
     # prose base carried as "Ice Beam"; the group is the game attack name now).
     dmg100 = next(
-        s
-        for s in d100.stats
-        if s.group == "BeamHitProjectile" and s.label == "Damage"
+        s for s in d100.stats if s.group == "BeamHitProjectile" and s.label == "Damage"
     )
     assert dmg100.value == 600 * 2 + 10
 
@@ -117,7 +115,9 @@ def test_glaive_dominus_degree_table_endpoints():
     # Degree 1 reproduces the base node values.
     cd = next(s for s in d1.stats if s.group == "Attack" and s.label == "Cooldown")
     assert cd.value == 0.04
-    pierce = next(s for s in d1.stats if s.group == "Projectile" and s.label == "Pierce")
+    pierce = next(
+        s for s in d1.stats if s.group == "Projectile" and s.label == "Pierce"
+    )
     assert pierce.value == 60
 
     d100 = stats.degree(100)
@@ -136,9 +136,7 @@ def test_degree_groups_are_stable_across_degrees():
     assert "Attack" in groups
     assert groups[0] == "Attack"
     # Same groups regardless of the degree the row is built at.
-    assert tuple(
-        dict.fromkeys(s.group for s in stats.degree(77).stats)
-    ) == groups
+    assert tuple(dict.fromkeys(s.group for s in stats.degree(77).stats)) == groups
 
 
 # --- AI grounding (btd6_context_service) ------------------------------------

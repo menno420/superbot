@@ -85,8 +85,7 @@ async def test_bot_duel_does_not_call_update_leaderboard():
         attack_btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and (c.label or "").startswith("⚔️")
+            if isinstance(c, discord.ui.Button) and (c.label or "").startswith("⚔️")
         )
         # Cap iterations to prevent infinite loop on a regression.
         for _ in range(200):
@@ -122,8 +121,7 @@ async def test_bot_duel_does_not_call_db_update_deathmatch():
         attack_btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and (c.label or "").startswith("⚔️")
+            if isinstance(c, discord.ui.Button) and (c.label or "").startswith("⚔️")
         )
         for _ in range(200):
             if view.duel.is_over:
@@ -145,9 +143,10 @@ def test_pick_bot_action_returns_valid_choice():
 
     for hp in (100, 75, 50, 25, 10, 1):
         choice = pick_bot_action(hp)
-        assert choice in ("attack", "defend"), (
-            f"pick_bot_action({hp}) returned {choice!r}"
-        )
+        assert choice in (
+            "attack",
+            "defend",
+        ), f"pick_bot_action({hp}) returned {choice!r}"
 
 
 def test_pick_bot_action_biases_defensive_when_low_hp():

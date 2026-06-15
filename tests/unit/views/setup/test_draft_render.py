@@ -130,7 +130,9 @@ def test_render_op_line_operator_label_takes_precedence():
 
 def test_render_op_block_includes_rollback_when_set():
     block = render_op_block(
-        SetupOperation(kind="create_channel", subsystem="logging", resource_name="bot-log"),
+        SetupOperation(
+            kind="create_channel", subsystem="logging", resource_name="bot-log"
+        ),
         {
             "confidence": "high",
             "risk": "medium",
@@ -181,7 +183,9 @@ def test_render_preview_embed_lists_op_lines():
         target_name="#mod-log",
     )
     embed = render_preview_embed([op1, op2])
-    pending_field = next((f for f in embed.fields if f.name.startswith("Pending")), None)
+    pending_field = next(
+        (f for f in embed.fields if f.name.startswith("Pending")), None
+    )
     assert pending_field is not None
     assert "moderation.warn_threshold = 3" in pending_field.value
     assert "logging.mod_channel" in pending_field.value
@@ -189,11 +193,15 @@ def test_render_preview_embed_lists_op_lines():
 
 def test_render_preview_embed_truncates_long_lists():
     ops = [
-        SetupOperation(kind="set_setting", subsystem=f"sub{i}", setting_name=f"name{i}", value=i)
+        SetupOperation(
+            kind="set_setting", subsystem=f"sub{i}", setting_name=f"name{i}", value=i
+        )
         for i in range(15)
     ]
     embed = render_preview_embed(ops)
-    pending_field = next((f for f in embed.fields if f.name.startswith("Pending")), None)
+    pending_field = next(
+        (f for f in embed.fields if f.name.startswith("Pending")), None
+    )
     assert pending_field is not None
     assert "+5 more" in pending_field.value
     # Header still reports the full count.
@@ -203,7 +211,9 @@ def test_render_preview_embed_truncates_long_lists():
 def test_render_preview_embed_uses_explicit_labels():
     op = _set_setting_op()
     embed = render_preview_embed([op], labels={0: "Custom override label"})
-    pending_field = next((f for f in embed.fields if f.name.startswith("Pending")), None)
+    pending_field = next(
+        (f for f in embed.fields if f.name.startswith("Pending")), None
+    )
     assert pending_field is not None
     assert "Custom override label" in pending_field.value
 
@@ -212,9 +222,13 @@ def test_render_preview_embed_uses_metadata_by_index():
     op = _set_setting_op()
     embed = render_preview_embed(
         [op],
-        metadata_by_index={0: {"confidence": "high", "risk": "high", "reason": "scan match"}},
+        metadata_by_index={
+            0: {"confidence": "high", "risk": "high", "reason": "scan match"}
+        },
     )
-    pending_field = next((f for f in embed.fields if f.name.startswith("Pending")), None)
+    pending_field = next(
+        (f for f in embed.fields if f.name.startswith("Pending")), None
+    )
     assert pending_field is not None
     assert "●" in pending_field.value  # high confidence
     assert "⚠" in pending_field.value  # high risk
@@ -303,7 +317,9 @@ def test_render_batch_embed_populates_every_partition_field():
 def test_render_batch_embed_inlines_failure_error_with_label():
     op = _set_setting_op()
     batch = SetupOperationBatchResult(
-        results=[_result(op, status="failed", error="DB exploded", label="warn_threshold")],
+        results=[
+            _result(op, status="failed", error="DB exploded", label="warn_threshold")
+        ],
     )
     embed = render_batch_embed(batch)
     failed_field = next((f for f in embed.fields if f.name.startswith("Failed")), None)
@@ -329,7 +345,9 @@ def test_render_batch_embed_uses_operator_labels_when_provided():
         results=[_result(op, status="applied", label="default-label")],
     )
     embed = render_batch_embed(batch, labels={0: "explicit operator label"})
-    applied_field = next((f for f in embed.fields if f.name.startswith("Applied")), None)
+    applied_field = next(
+        (f for f in embed.fields if f.name.startswith("Applied")), None
+    )
     assert applied_field is not None
     assert "explicit operator label" in applied_field.value
 

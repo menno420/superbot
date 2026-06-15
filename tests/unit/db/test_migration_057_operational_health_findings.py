@@ -84,12 +84,12 @@ def test_tables_are_idempotent_create_if_not_exists():
     second apply and take boot down — pin against that regression.
     """
     sql = _migration_sql()
-    assert re.search(r"CREATE TABLE(?! IF NOT EXISTS)", sql) is None, (
-        "every CREATE TABLE in migration 057 must use IF NOT EXISTS"
-    )
-    assert re.search(r"CREATE INDEX(?! IF NOT EXISTS)", sql) is None, (
-        "the findings index must use CREATE INDEX IF NOT EXISTS"
-    )
+    assert (
+        re.search(r"CREATE TABLE(?! IF NOT EXISTS)", sql) is None
+    ), "every CREATE TABLE in migration 057 must use IF NOT EXISTS"
+    assert (
+        re.search(r"CREATE INDEX(?! IF NOT EXISTS)", sql) is None
+    ), "the findings index must use CREATE INDEX IF NOT EXISTS"
 
 
 def test_fingerprint_is_primary_key_on_both_tables():
@@ -97,17 +97,15 @@ def test_fingerprint_is_primary_key_on_both_tables():
     roll-up key on the aggregates table — both make it the PRIMARY KEY, which
     is what the writer's ``ON CONFLICT (fingerprint)`` upserts depend on."""
     sql = _migration_sql()
-    assert sql.count("fingerprint TEXT PRIMARY KEY") == 2, (
-        "both findings tables must key on `fingerprint TEXT PRIMARY KEY`"
-    )
+    assert (
+        sql.count("fingerprint TEXT PRIMARY KEY") == 2
+    ), "both findings tables must key on `fingerprint TEXT PRIMARY KEY`"
 
 
 def test_status_check_constraint_set():
     """The lifecycle states are exactly open/resolved/ignored — the writer's
     reopen CASE and the retention predicate both assume this closed set."""
-    assert (
-        "CHECK (status IN ('open', 'resolved', 'ignored'))" in _migration_sql()
-    )
+    assert "CHECK (status IN ('open', 'resolved', 'ignored'))" in _migration_sql()
 
 
 def test_severity_check_constraint_set():
@@ -125,8 +123,7 @@ def test_status_last_seen_index_present():
     retention sweep (``WHERE status IN (…) AND last_seen_at < $1``)."""
     assert (
         "CREATE INDEX IF NOT EXISTS ix_health_findings_status_last_seen "
-        "ON operational_health_findings (status, last_seen_at)"
-        in _migration_sql()
+        "ON operational_health_findings (status, last_seen_at)" in _migration_sql()
     )
 
 

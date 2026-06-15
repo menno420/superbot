@@ -119,9 +119,7 @@ def test_messages_enabled_hint_carries_privacy_disclosure():
 def test_event_routing_validator_accepts_modes_rejects_others():
     from cogs.logging.schemas import LOGGING_CONFIG_SCHEMA
 
-    spec = next(
-        s for s in LOGGING_CONFIG_SCHEMA.settings if s.name == "event_routing"
-    )
+    spec = next(s for s in LOGGING_CONFIG_SCHEMA.settings if s.name == "event_routing")
     assert spec.value_type is str
     assert spec.default == "combined"
     assert spec.allowed_values == ("combined", "per_category")

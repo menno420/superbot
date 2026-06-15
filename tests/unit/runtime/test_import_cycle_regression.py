@@ -75,8 +75,7 @@ def _module_level_core_runtime_imports(path: Path) -> list[str]:
             module = node.module or ""
             if module == "core.runtime" or module.startswith("core.runtime."):
                 found.append(
-                    f"from {module} import "
-                    f"{', '.join(a.name for a in node.names)}",
+                    f"from {module} import " f"{', '.join(a.name for a in node.names)}",
                 )
         elif isinstance(node, ast.Import):
             for alias in node.names:

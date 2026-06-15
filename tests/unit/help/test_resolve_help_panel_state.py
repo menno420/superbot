@@ -54,20 +54,25 @@ async def test_resolves_visibility_and_returns_category_view():
     fake_view = HelpCategoryView(member_tier="user")
     fake_embed = discord.Embed(title="Help")
 
-    with patch(
-        "services.governance_service.GovernanceContext.from_interaction",
-        return_value=MagicMock(),
-    ), patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        return_value=vis_result,
-    ), patch(
-        "cogs.help_cog.HelpCategoryView",
-        return_value=fake_view,
-    ) as view_cls, patch(
-        "cogs.help_cog.build_categories_overview_embed",
-        return_value=fake_embed,
-    ) as embed_builder:
+    with (
+        patch(
+            "services.governance_service.GovernanceContext.from_interaction",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            return_value=vis_result,
+        ),
+        patch(
+            "cogs.help_cog.HelpCategoryView",
+            return_value=fake_view,
+        ) as view_cls,
+        patch(
+            "cogs.help_cog.build_categories_overview_embed",
+            return_value=fake_embed,
+        ) as embed_builder,
+    ):
         embed, view = await resolve_help_panel_state(interaction)
 
     # HLP-2: both the view and the embed are built from one projection
@@ -97,22 +102,23 @@ async def test_admin_tier_yields_category_view_with_admin_options():
     vis_result.visible_subsystems = set(SUBSYSTEMS)
     vis_result.member_tier = "administrator"
 
-    with patch(
-        "services.governance_service.GovernanceContext.from_interaction",
-        return_value=MagicMock(),
-    ), patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        return_value=vis_result,
+    with (
+        patch(
+            "services.governance_service.GovernanceContext.from_interaction",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            return_value=vis_result,
+        ),
     ):
         embed, view = await resolve_help_panel_state(interaction)
 
     assert isinstance(view, HelpCategoryView)
     projection = view._projection  # type: ignore[attr-defined]
     assert projection.member_tier == "administrator"
-    select = next(
-        c for c in view.children if isinstance(c, discord.ui.Select)
-    )
+    select = next(c for c in view.children if isinstance(c, discord.ui.Select))
     assert "admin" in {opt.value for opt in select.options}
 
 
@@ -127,13 +133,16 @@ async def test_governance_exception_propagates_to_caller():
     (admin_cog, mine_view) wraps the call in its own try/except to
     render a contextual orange embed."""
     interaction = _interaction()
-    with patch(
-        "services.governance_service.GovernanceContext.from_interaction",
-        return_value=MagicMock(),
-    ), patch(
-        "services.governance_service.resolve_visibility",
-        new_callable=AsyncMock,
-        side_effect=RuntimeError("gov down"),
+    with (
+        patch(
+            "services.governance_service.GovernanceContext.from_interaction",
+            return_value=MagicMock(),
+        ),
+        patch(
+            "services.governance_service.resolve_visibility",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("gov down"),
+        ),
     ):
         with pytest.raises(RuntimeError, match="gov down"):
             await resolve_help_panel_state(interaction)

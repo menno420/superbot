@@ -267,7 +267,9 @@ async def test_dry_run_excludes_deferred_keys(_mock_guild):
 
     classified_keys = {c.legacy_key for c in summary.candidates}
     deferred_keys = {k.legacy_key for k in binding_backfill.DEFERRED_KEYS}
-    assert deferred_keys, "DEFERRED_KEYS should be non-empty while governance is unhomed"
+    assert (
+        deferred_keys
+    ), "DEFERRED_KEYS should be non-empty while governance is unhomed"
     assert classified_keys.isdisjoint(deferred_keys)
     # No governance subsystem candidate is produced.
     assert all(c.subsystem != "governance" for c in summary.candidates)

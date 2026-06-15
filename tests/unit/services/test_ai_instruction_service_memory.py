@@ -292,6 +292,7 @@ async def test_role_assistant_is_authoritative_even_without_bot_user_id(monkeypa
     relying on ``bot_user_id`` alone was unreliable. With the explicit
     role field, the assistant label is correct without bot_user_id.
     """
+
     async def _get(_pid):
         return None
 
@@ -320,6 +321,7 @@ async def test_no_role_and_no_bot_user_id_falls_back_to_pseudonym(monkeypatch):
     a pseudonym. Prevents accidental assistant labelling of a real
     user when the role field is missing (e.g. legacy buffer data).
     """
+
     async def _get(_pid):
         return None
 

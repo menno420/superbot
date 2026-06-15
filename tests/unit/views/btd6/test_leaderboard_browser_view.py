@@ -45,7 +45,8 @@ def _item(event_id: str, kind: str = "race") -> LeaderboardListItem:
 
 
 def _list_vm(
-    items: list[LeaderboardListItem], total: int | None = None,
+    items: list[LeaderboardListItem],
+    total: int | None = None,
 ) -> LeaderboardListViewModel:
     return LeaderboardListViewModel(
         event_kind="race",

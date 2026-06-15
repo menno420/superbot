@@ -261,14 +261,17 @@ async def test_resolve_log_channel_prefers_binding_over_legacy():
     bound_binding = MagicMock()
     bound_binding.target_id = 42
 
-    with patch(
-        "core.runtime.bindings.get_binding",
-        new_callable=AsyncMock,
-        return_value=bound_binding,
-    ), patch(
-        "core.runtime.guild_resources.resolve_settings_channel",
-        new_callable=AsyncMock,
-        return_value=MagicMock(spec=discord.TextChannel),  # legacy also set
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=bound_binding,
+        ),
+        patch(
+            "core.runtime.guild_resources.resolve_settings_channel",
+            new_callable=AsyncMock,
+            return_value=MagicMock(spec=discord.TextChannel),  # legacy also set
+        ),
     ):
         result = await resolve_log_channel(guild, "mod")
     assert result is bound_channel
@@ -286,14 +289,17 @@ async def test_resolve_log_channel_falls_back_to_legacy_when_binding_unset():
     unbound = MagicMock()
     unbound.target_id = None
 
-    with patch(
-        "core.runtime.bindings.get_binding",
-        new_callable=AsyncMock,
-        return_value=unbound,
-    ), patch(
-        "core.runtime.guild_resources.resolve_settings_channel",
-        new_callable=AsyncMock,
-        return_value=legacy_channel,
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=unbound,
+        ),
+        patch(
+            "core.runtime.guild_resources.resolve_settings_channel",
+            new_callable=AsyncMock,
+            return_value=legacy_channel,
+        ),
     ):
         result = await resolve_log_channel(guild, "mod")
     assert result is legacy_channel
@@ -312,14 +318,17 @@ async def test_resolve_log_channel_falls_back_to_legacy_when_binding_target_miss
     bound_to_missing = MagicMock()
     bound_to_missing.target_id = 999
 
-    with patch(
-        "core.runtime.bindings.get_binding",
-        new_callable=AsyncMock,
-        return_value=bound_to_missing,
-    ), patch(
-        "core.runtime.guild_resources.resolve_settings_channel",
-        new_callable=AsyncMock,
-        return_value=legacy_channel,
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            return_value=bound_to_missing,
+        ),
+        patch(
+            "core.runtime.guild_resources.resolve_settings_channel",
+            new_callable=AsyncMock,
+            return_value=legacy_channel,
+        ),
     ):
         result = await resolve_log_channel(guild, "mod")
     assert result is legacy_channel
@@ -345,13 +354,16 @@ async def test_resolve_log_channel_cleanup_falls_back_to_mod_binding():
             out.target_id = 42
         return out
 
-    with patch(
-        "core.runtime.bindings.get_binding",
-        new=AsyncMock(side_effect=fake_get_binding),
-    ), patch(
-        "core.runtime.guild_resources.resolve_settings_channel",
-        new_callable=AsyncMock,
-        return_value=None,
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new=AsyncMock(side_effect=fake_get_binding),
+        ),
+        patch(
+            "core.runtime.guild_resources.resolve_settings_channel",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
     ):
         result = await resolve_log_channel(guild, "cleanup")
     assert result is mod_channel
@@ -366,14 +378,17 @@ async def test_resolve_log_channel_swallows_binding_lookup_exception():
     guild.id = 7
     legacy_channel = MagicMock(spec=discord.TextChannel)
 
-    with patch(
-        "core.runtime.bindings.get_binding",
-        new_callable=AsyncMock,
-        side_effect=RuntimeError("registry busted"),
-    ), patch(
-        "core.runtime.guild_resources.resolve_settings_channel",
-        new_callable=AsyncMock,
-        return_value=legacy_channel,
+    with (
+        patch(
+            "core.runtime.bindings.get_binding",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("registry busted"),
+        ),
+        patch(
+            "core.runtime.guild_resources.resolve_settings_channel",
+            new_callable=AsyncMock,
+            return_value=legacy_channel,
+        ),
     ):
         result = await resolve_log_channel(guild, "mod")
     assert result is legacy_channel

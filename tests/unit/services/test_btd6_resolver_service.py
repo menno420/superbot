@@ -24,9 +24,7 @@ def test_resolves_single_word_alias_plural():
     intent = resolve("how much do 10 041 despos cost on impop")
     assert any(t.id == "desperado" for t in intent.towers)
     # The singular alias still resolves too.
-    assert any(
-        t.id == "desperado" for t in resolve("is the despo any good").towers
-    )
+    assert any(t.id == "desperado" for t in resolve("is the despo any good").towers)
 
 
 def test_resolves_round_number():

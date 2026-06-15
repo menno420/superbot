@@ -39,9 +39,7 @@ import pytest
 
 from core.runtime.subsystem_schema import BindingKind
 
-_COG_PATH = (
-    Path(__file__).resolve().parents[3] / "disbot" / "cogs" / "economy_cog.py"
-)
+_COG_PATH = Path(__file__).resolve().parents[3] / "disbot" / "cogs" / "economy_cog.py"
 
 
 # ---------------------------------------------------------------------------
@@ -167,16 +165,20 @@ async def test_ensure_log_channel_existing_routes_through_binding():
     pipeline = MagicMock()
     pipeline.set_binding = AsyncMock(return_value=MagicMock())
 
-    with patch(
-        "core.runtime.config_arbitration.get_economy_log_channel",
-        new=AsyncMock(return_value=SimpleNamespace(value=None)),
-    ), patch.object(
-        economy_cog.resources,
-        "resolve_channel",
-        return_value=existing,
-    ), patch(
-        "services.binding_mutation.BindingMutationPipeline",
-        return_value=pipeline,
+    with (
+        patch(
+            "core.runtime.config_arbitration.get_economy_log_channel",
+            new=AsyncMock(return_value=SimpleNamespace(value=None)),
+        ),
+        patch.object(
+            economy_cog.resources,
+            "resolve_channel",
+            return_value=existing,
+        ),
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline,
+        ),
     ):
         await cog._ensure_log_channel(guild)
 
@@ -201,15 +203,19 @@ async def test_ensure_log_channel_skips_when_already_bound():
     pipeline = MagicMock()
     pipeline.set_binding = AsyncMock()
 
-    with patch(
-        "core.runtime.config_arbitration.get_economy_log_channel",
-        new=AsyncMock(return_value=SimpleNamespace(value=98765)),
-    ), patch.object(
-        economy_cog.resources,
-        "resolve_channel",
-    ) as resolve_channel, patch(
-        "services.binding_mutation.BindingMutationPipeline",
-        return_value=pipeline,
+    with (
+        patch(
+            "core.runtime.config_arbitration.get_economy_log_channel",
+            new=AsyncMock(return_value=SimpleNamespace(value=98765)),
+        ),
+        patch.object(
+            economy_cog.resources,
+            "resolve_channel",
+        ) as resolve_channel,
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline,
+        ),
     ):
         await cog._ensure_log_channel(guild)
 

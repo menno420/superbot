@@ -40,8 +40,8 @@ _DISBOT = _REPO_ROOT / "disbot"
 
 # Files ALLOWED to call guild_config.{get,get_many} directly.
 _ALLOWED_PATHS = {
-    _DISBOT / "core" / "runtime" / "guild_config.py",      # the primitive itself
-    _DISBOT / "utils" / "guild_config_accessors.py",       # canonical typed wrappers
+    _DISBOT / "core" / "runtime" / "guild_config.py",  # the primitive itself
+    _DISBOT / "utils" / "guild_config_accessors.py",  # canonical typed wrappers
 }
 
 _FORBIDDEN_NAMES = {"get", "get_many"}

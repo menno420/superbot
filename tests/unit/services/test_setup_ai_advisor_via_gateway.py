@@ -23,7 +23,12 @@ from services.setup_ai_advisor import OpenAISetupAdvisor
 
 def test_setup_ai_advisor_does_not_import_openai_sdk():
     """Module 1 moves the OpenAI SDK import into the provider package."""
-    path = Path(__file__).resolve().parents[3] / "disbot" / "services" / "setup_ai_advisor.py"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "disbot"
+        / "services"
+        / "setup_ai_advisor.py"
+    )
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module == "openai":

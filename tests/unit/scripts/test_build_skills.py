@@ -27,9 +27,7 @@ def test_every_skill_doc_builds() -> None:
     rendered = build_skills.build_all()
     # One artifact per skill doc (README excluded).
     docs = [
-        p
-        for p in build_skills.SKILL_DOCS_DIR.glob("*.md")
-        if p.name != "README.md"
+        p for p in build_skills.SKILL_DOCS_DIR.glob("*.md") if p.name != "README.md"
     ]
     assert len(rendered) == len(docs)
     assert rendered, "expected at least one skill doc to build"

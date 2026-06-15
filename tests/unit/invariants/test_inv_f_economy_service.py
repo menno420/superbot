@@ -47,18 +47,13 @@ _FORBIDDEN_NAMES = {
 # Raw SQL that writes the xp.coins column or the economy table.  We
 # accept SELECTs (read-only) and any reference inside utils/db/*.
 _SQL_WRITE_RE = re.compile(
-    r"(UPDATE\s+xp\b|INSERT\s+INTO\s+xp\s*\([^)]*\bcoins\b|"
-    r"UPDATE\s+economy\b)",
+    r"(UPDATE\s+xp\b|INSERT\s+INTO\s+xp\s*\([^)]*\bcoins\b|" r"UPDATE\s+economy\b)",
     re.IGNORECASE,
 )
 
 
 def _iter_production_py_files() -> list[Path]:
-    return [
-        p
-        for p in _DISBOT.rglob("*.py")
-        if "__pycache__" not in p.parts
-    ]
+    return [p for p in _DISBOT.rglob("*.py") if "__pycache__" not in p.parts]
 
 
 def _direct_calls_to(node: ast.AST, names: set[str]) -> list[str]:

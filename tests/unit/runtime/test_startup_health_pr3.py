@@ -221,7 +221,9 @@ async def test_report_startup_health_no_finding_lines_when_healthy(
     monkeypatch, caplog
 ) -> None:
     """A healthy snapshot logs no per-finding detail lines."""
-    monkeypatch.setattr(hss, "collect_snapshot", AsyncMock(return_value=_make_snapshot()))
+    monkeypatch.setattr(
+        hss, "collect_snapshot", AsyncMock(return_value=_make_snapshot())
+    )
     with caplog.at_level("INFO"):
         await bot1._report_startup_health()
     assert not [r for r in caplog.records if "Startup health finding:" in r.message]

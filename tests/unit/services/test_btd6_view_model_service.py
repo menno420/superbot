@@ -181,7 +181,8 @@ async def test_build_hub_view_model_marks_fresh_for_active_event(monkeypatch) ->
 
     monkeypatch.setattr(btd6_db, "search_facts", _search_facts)
     monkeypatch.setattr(
-        btd6_db, "latest_fact_per_entity_kind",
+        btd6_db,
+        "latest_fact_per_entity_kind",
         AsyncMock(return_value={"btd6_race": race_row}),
     )
     _stub_knowledge(monkeypatch)
@@ -223,7 +224,8 @@ async def test_build_hub_view_model_hides_ended_events(monkeypatch) -> None:
 
     monkeypatch.setattr(btd6_db, "search_facts", _search_facts)
     monkeypatch.setattr(
-        btd6_db, "latest_fact_per_entity_kind",
+        btd6_db,
+        "latest_fact_per_entity_kind",
         AsyncMock(return_value={"btd6_race": ended_race}),
     )
     _stub_knowledge(monkeypatch)

@@ -541,7 +541,9 @@ def test_refresh_source_prefix_command_has_staff_check():
 
 def test_refresh_source_slash_has_default_permissions():
     cog = BTD6EventsCog(MagicMock())
-    cmd = next(c for c in cog.btd6events_app_group.commands if c.name == "refresh-source")
+    cmd = next(
+        c for c in cog.btd6events_app_group.commands if c.name == "refresh-source"
+    )
     perms = cmd.default_permissions
     assert perms is not None
     assert perms.manage_guild is True

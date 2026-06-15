@@ -37,9 +37,7 @@ def _author() -> MagicMock:
 
 
 def _has_back_to_games(view: discord.ui.View) -> bool:
-    return any(
-        getattr(c, "custom_id", None) == "games:back" for c in view.children
-    )
+    return any(getattr(c, "custom_id", None) == "games:back" for c in view.children)
 
 
 def test_attach_back_to_games_button_adds_games_back_id():

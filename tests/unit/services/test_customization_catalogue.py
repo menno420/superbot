@@ -94,6 +94,7 @@ class _FakeCog:
     ) -> None:
         self.__class__ = type(class_name, (object,), {})
         if has_help_hook:
+
             async def build_help_menu_view(_self, _interaction):  # noqa: ARG001
                 return None, None
 
@@ -435,9 +436,7 @@ def test_panels_without_settings_finding_populated():
     )
     cat = build_catalogue()
     # admin has no schema → panels_without_settings flagged.
-    assert any(
-        s.startswith("admin.") for s in cat.findings.panels_without_settings
-    )
+    assert any(s.startswith("admin.") for s in cat.findings.panels_without_settings)
 
 
 def test_settings_without_panel_finding_populated():

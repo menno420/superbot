@@ -482,7 +482,9 @@ async def test_routing_conflict_selected_channels_flags_disallowed_channel():
                 ),
             ),
         ),
-        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+        patch(
+            "services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)
+        ),
         patch(
             "core.runtime.guild_resources.resolve_channel",
             return_value=SimpleNamespace(name="games-chat"),
@@ -513,7 +515,9 @@ async def test_routing_conflict_no_finding_when_channel_allowed():
                 ),
             ),
         ),
-        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+        patch(
+            "services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)
+        ),
     ):
         out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
     assert out == []
@@ -540,7 +544,9 @@ async def test_routing_conflict_ignores_guild_scope_and_disabled_rows():
                 ),
             ),
         ),
-        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+        patch(
+            "services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)
+        ),
     ):
         out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
     assert out == []
@@ -561,7 +567,9 @@ async def test_routing_conflict_disabled_except_bootstrap_advisory():
                 return_value=_access_policy(AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value),
             ),
         ),
-        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+        patch(
+            "services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)
+        ),
     ):
         out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
     assert len(out) == 1
@@ -585,7 +593,9 @@ async def test_routing_conflict_disabled_except_bootstrap_no_enabled_rows():
                 return_value=_access_policy(AccessMode.DISABLED_EXCEPT_BOOTSTRAP.value),
             ),
         ),
-        patch("services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)),
+        patch(
+            "services.command_routing.list_for_guild", new=AsyncMock(return_value=rows)
+        ),
     ):
         out = await setup_diagnostics._diagnose_routing_access_conflict(guild)
     assert out == []
@@ -634,6 +644,7 @@ class _FakeLedger:
 def _shown_entry():
     # The real is_hidden_from_help reads .classification — use real values.
     return SimpleNamespace(classification="primary_entrypoint")
+
 
 def _hidden_entry():
     return SimpleNamespace(classification="hidden")
@@ -711,7 +722,9 @@ async def _run_help_locked(guild=None, **env):
     return out, handles
 
 
-_GAMES = FeatureEntry(subsystem="games", command_name="gamesmenu", visibility_tier="user")
+_GAMES = FeatureEntry(
+    subsystem="games", command_name="gamesmenu", visibility_tier="user"
+)
 
 
 @pytest.mark.asyncio

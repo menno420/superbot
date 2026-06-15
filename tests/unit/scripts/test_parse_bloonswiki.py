@@ -45,7 +45,9 @@ _PARAGON = ("Ballistic Obliteration Missile Bunker", 600000, 510000, 648000, 720
 
 @pytest.fixture(scope="module")
 def mod():
-    spec = importlib.util.spec_from_file_location("parse_bloonswiki_under_test", _SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "parse_bloonswiki_under_test", _SCRIPT
+    )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -97,7 +99,9 @@ def test_clean_parse_has_no_warnings(mod):
     assert result.ok, result.warnings
     assert result.intro.startswith("The Test Tower is a Primary tower")
     # Intro links fully stripped, including the nested-paren one.
-    assert "(" not in result.intro.replace("Bloons TD", "") or "BTD6" not in result.intro
+    assert (
+        "(" not in result.intro.replace("Bloons TD", "") or "BTD6" not in result.intro
+    )
 
 
 def test_names_are_clean(mod):
@@ -109,7 +113,9 @@ def test_names_are_clean(mod):
 
 def test_costs_and_structure(mod):
     result = mod.parse_upgrades_page(_build_page())
-    by_path = {p: [u for u in result.upgrades if u.section == p] for p in ("top", "mid", "bot")}
+    by_path = {
+        p: [u for u in result.upgrades if u.section == p] for p in ("top", "mid", "bot")
+    }
     assert [len(by_path[p]) for p in ("top", "mid", "bot")] == [5, 5, 5]
     top1 = by_path["top"][0]
     assert top1.name == "Bigger Bombs"
@@ -136,6 +142,9 @@ def test_short_path_warns(mod):
 
 def test_formula_mismatch_warns(mod):
     # Corrupt one Hard price so it no longer matches medium × 1.08.
-    bad = {**_PATHS, "Path 3": [("Extra Range", 200, 170, 999, 240)] + _PATHS["Path 3"][1:]}
+    bad = {
+        **_PATHS,
+        "Path 3": [("Extra Range", 200, 170, 999, 240)] + _PATHS["Path 3"][1:],
+    }
     result = mod.parse_upgrades_page(_build_page(paths=bad, paragon=None))
     assert any("formula" in w and "Extra Range" in w for w in result.warnings)

@@ -91,10 +91,10 @@ def _pop_size_table() -> dict[str, int]:
 
 def _default_income_bands() -> tuple[list[tuple[int, float]], float]:
     raw = json.loads((_DATA / "income_sets.json").read_text("utf-8"))
-    default = next(
-        s for s in raw["income_sets"] if s["id"] == "default_income_set"
-    )
-    bands = [(int(t["threshold"]), float(t["multiplier"])) for t in default["thresholds"]]
+    default = next(s for s in raw["income_sets"] if s["id"] == "default_income_set")
+    bands = [
+        (int(t["threshold"]), float(t["multiplier"])) for t in default["thresholds"]
+    ]
     return bands, float(default["final_multiplier"])
 
 
@@ -102,7 +102,14 @@ def test_income_sets_default_bands_match_the_standard_cash_table():
     # Drift guard: the committed sourced bands must equal the v55 decay the
     # standard-set recompute (test_btd6_round_cash._cash_per_pop) hardcodes.
     bands, final = _default_income_bands()
-    assert bands == [(50, 1.0), (60, 0.5), (85, 0.2), (100, 0.1), (120, 0.05), (140, 0.04)]
+    assert bands == [
+        (50, 1.0),
+        (60, 0.5),
+        (85, 0.2),
+        (100, 0.1),
+        (120, 0.05),
+        (140, 0.04),
+    ]
     assert final == 0.02
 
 
@@ -118,7 +125,9 @@ def test_stored_abr_cash_matches_recomputed_from_composition():
 
     for r in get_dataset().abr_rounds:
         pop_count = sum(int(g["count"]) * pop[str(g["bloon_id"])] for g in r.groups)
-        expected = round(pop_count * cash_per_pop(r.round_number) + (100 + r.round_number), 2)
+        expected = round(
+            pop_count * cash_per_pop(r.round_number) + (100 + r.round_number), 2
+        )
         assert r.cash == expected, (
             f"ABR round {r.round_number}: stored cash={r.cash} but the "
             f"composition implies {expected}"
@@ -129,9 +138,9 @@ def test_abr_cumulative_is_null_before_entry_then_runs_from_hard_start():
     cumulative = _ABR_STARTING_CASH
     for r in get_dataset().abr_rounds:
         if r.round_number < _ABR_START_ROUND:
-            assert r.cumulative_cash is None, (
-                f"ABR round {r.round_number} is never played — cumulative must be null"
-            )
+            assert (
+                r.cumulative_cash is None
+            ), f"ABR round {r.round_number} is never played — cumulative must be null"
             continue
         assert r.cash is not None
         cumulative = round(cumulative + r.cash, 2)

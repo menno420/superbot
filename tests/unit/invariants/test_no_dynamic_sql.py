@@ -68,11 +68,7 @@ _SQL_KEYWORD_NEAR_PLACEHOLDER = re.compile(
 
 
 def _iter_disbot_py_files() -> list[Path]:
-    return [
-        p
-        for p in _DISBOT.rglob("*.py")
-        if "__pycache__" not in p.parts
-    ]
+    return [p for p in _DISBOT.rglob("*.py") if "__pycache__" not in p.parts]
 
 
 def _is_executor_call(node: ast.Call) -> bool:
@@ -171,6 +167,6 @@ def test_known_bug_shapes_no_longer_present(fragment):
     pattern = re.compile(rf'f"[^"]*\bSET\s+\{{{ident}\}}', re.IGNORECASE)
     for path in _iter_disbot_py_files():
         src = path.read_text()
-        assert not pattern.search(src), (
-            f"Forbidden pattern reappeared at {path}: {fragment}"
-        )
+        assert not pattern.search(
+            src
+        ), f"Forbidden pattern reappeared at {path}: {fragment}"

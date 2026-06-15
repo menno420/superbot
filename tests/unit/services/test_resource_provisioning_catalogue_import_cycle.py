@@ -26,10 +26,7 @@ from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CATALOGUE_PATH = (
-    _REPO_ROOT
-    / "disbot"
-    / "services"
-    / "resource_provisioning_catalogue.py"
+    _REPO_ROOT / "disbot" / "services" / "resource_provisioning_catalogue.py"
 )
 
 # Forbidden top-level imports — any cross-package access must be

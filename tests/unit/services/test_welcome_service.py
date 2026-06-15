@@ -124,7 +124,9 @@ async def test_join_grants_entry_role(monkeypatch):
         welcome_service.welcome_config,
         "load_policy",
         AsyncMock(
-            return_value=WelcomePolicy(enabled=True, join_enabled=False, entry_role_id=777),
+            return_value=WelcomePolicy(
+                enabled=True, join_enabled=False, entry_role_id=777
+            ),
         ),
     )
     apply = AsyncMock()

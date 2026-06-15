@@ -49,8 +49,8 @@ def test_rank_value(rank: str, expected: int):
         # Soft → hard demotion when over 21
         (["A ♠", "9 ♥", "5 ♦"], 15),  # 11+9+5=25 → demote A: 1+9+5=15
         # Multiple aces, multi-step demotion
-        (["A ♠", "A ♥", "9 ♦"], 21),   # 11+1+9 = 21
-        (["A ♠", "A ♥", "K ♦"], 12),   # 11+1+10 → demote first: 1+1+10
+        (["A ♠", "A ♥", "9 ♦"], 21),  # 11+1+9 = 21
+        (["A ♠", "A ♥", "K ♦"], 12),  # 11+1+10 → demote first: 1+1+10
         (["A ♠", "A ♥", "A ♦", "A ♣"], 14),  # 11+1+1+1
         # Hard bust
         (["10 ♠", "K ♥", "5 ♦"], 25),

@@ -57,7 +57,9 @@ def _finding(code, severity, repairability, *, ops=(), repair_label="", note="")
 
 
 def _report(findings):
-    return setup_diagnostics.SetupDiagnosticsReport(guild_id=1, findings=tuple(findings))
+    return setup_diagnostics.SetupDiagnosticsReport(
+        guild_id=1, findings=tuple(findings)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -158,7 +160,9 @@ async def test_stage_repairs_drafts_only_auto_repairable():
             "services.setup_diagnostics.collect_setup_diagnostics",
             new=AsyncMock(return_value=report),
         ),
-        patch("services.setup_draft.append", new=AsyncMock(return_value=1)) as append_mock,
+        patch(
+            "services.setup_draft.append", new=AsyncMock(return_value=1)
+        ) as append_mock,
         patch("services.setup_draft.count", new=AsyncMock(return_value=1)),
         patch("services.setup_session.mark_in_progress", new=AsyncMock()),
     ):

@@ -91,9 +91,7 @@ def test_routing_embed_narrows_to_one_task():
 def test_routing_embed_handles_unknown_task_gracefully():
     embed = build_routing_embed("does.not.exist")
     assert isinstance(embed, discord.Embed)
-    assert any(
-        "No matching task" in (field.name or "") for field in embed.fields
-    )
+    assert any("No matching task" in (field.name or "") for field in embed.fields)
 
 
 def test_ai_panel_embed_renders_without_provider_call():

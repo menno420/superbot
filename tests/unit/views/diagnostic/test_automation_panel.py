@@ -123,7 +123,13 @@ def test_embed_lists_rules_with_state_and_failures():
         snapshot_error=None,
         rules=[
             _rule(rid=10, name="alpha", enabled=True),
-            _rule(rid=11, name="beta", enabled=False, failure_count=3, last_error="db gone"),
+            _rule(
+                rid=11,
+                name="beta",
+                enabled=False,
+                failure_count=3,
+                last_error="db gone",
+            ),
         ],
         rules_error=None,
     )

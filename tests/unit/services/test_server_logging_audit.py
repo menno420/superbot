@@ -197,9 +197,12 @@ _PAYLOAD = {
 async def test_subscriber_skips_when_logging_disabled():
     bot = MagicMock()
     bot.get_guild.return_value = _guild()
-    with patch.object(server_logging, "_BOT", bot), patch(
-        "services.server_logging.is_enabled",
-        AsyncMock(return_value=False),
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=False),
+        ),
     ):
         await _on_audit_action(**_PAYLOAD)
     snap = counters_snapshot()
@@ -246,12 +249,16 @@ async def test_subscriber_routes_through_audit_channel():
         seen_kinds.append(kind)
         return channel
 
-    with patch.object(server_logging, "_BOT", bot), patch(
-        "services.server_logging.is_enabled",
-        AsyncMock(return_value=True),
-    ), patch(
-        "services.server_logging.resolve_log_channel",
-        side_effect=fake_resolve,
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            side_effect=fake_resolve,
+        ),
     ):
         await _on_audit_action(**_PAYLOAD)
 
@@ -265,15 +272,20 @@ async def test_subscriber_routes_through_audit_channel():
 async def test_subscriber_counts_missing_channel():
     bot = MagicMock()
     bot.get_guild.return_value = _guild()
-    with patch.object(server_logging, "_BOT", bot), patch(
-        "services.server_logging.is_enabled",
-        AsyncMock(return_value=True),
-    ), patch(
-        "services.server_logging.resolve_log_channel",
-        AsyncMock(return_value=None),
-    ), patch(
-        "services.server_logging.auto_create_enabled",
-        AsyncMock(return_value=False),
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            AsyncMock(return_value=None),
+        ),
+        patch(
+            "services.server_logging.auto_create_enabled",
+            AsyncMock(return_value=False),
+        ),
     ):
         await _on_audit_action(**_PAYLOAD)
     snap = counters_snapshot()
@@ -390,12 +402,16 @@ async def test_subscriber_counts_permission_error():
     channel = _channel()
     channel.send = AsyncMock(side_effect=discord.Forbidden(MagicMock(), "nope"))
 
-    with patch.object(server_logging, "_BOT", bot), patch(
-        "services.server_logging.is_enabled",
-        AsyncMock(return_value=True),
-    ), patch(
-        "services.server_logging.resolve_log_channel",
-        AsyncMock(return_value=channel),
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            AsyncMock(return_value=channel),
+        ),
     ):
         await _on_audit_action(**_PAYLOAD)
     snap = counters_snapshot()
@@ -432,12 +448,16 @@ async def test_subscriber_accepts_unknown_payload_fields():
         future_field_1="ignored",
         future_field_2=42,
     )
-    with patch.object(server_logging, "_BOT", bot), patch(
-        "services.server_logging.is_enabled",
-        AsyncMock(return_value=True),
-    ), patch(
-        "services.server_logging.resolve_log_channel",
-        AsyncMock(return_value=channel),
+    with (
+        patch.object(server_logging, "_BOT", bot),
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            AsyncMock(return_value=channel),
+        ),
     ):
         await _on_audit_action(**payload_with_extras)
     # No crash, audit was sent normally.
@@ -454,12 +474,15 @@ async def test_subscriber_accepts_unknown_payload_fields():
 async def test_log_audit_event_returns_true_on_success():
     guild = _guild()
     channel = _channel()
-    with patch(
-        "services.server_logging.is_enabled",
-        AsyncMock(return_value=True),
-    ), patch(
-        "services.server_logging.resolve_log_channel",
-        AsyncMock(return_value=channel),
+    with (
+        patch(
+            "services.server_logging.is_enabled",
+            AsyncMock(return_value=True),
+        ),
+        patch(
+            "services.server_logging.resolve_log_channel",
+            AsyncMock(return_value=channel),
+        ),
     ):
         result = await log_audit_event(guild, **_PAYLOAD)
     assert result is True

@@ -205,10 +205,16 @@ def test_summary_status_accepts_explicit_outcomes_argument():
     now = _dt.datetime.now(tz=_dt.timezone.utc)
     synthetic = (
         startup_outcome.StartupOutcome(
-            name="x", success=True, error=None, recorded_at=now,
+            name="x",
+            success=True,
+            error=None,
+            recorded_at=now,
         ),
         startup_outcome.StartupOutcome(
-            name="y", success=False, error="X: y", recorded_at=now,
+            name="y",
+            success=False,
+            error="X: y",
+            recorded_at=now,
         ),
     )
     assert (

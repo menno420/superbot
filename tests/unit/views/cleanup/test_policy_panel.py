@@ -89,10 +89,19 @@ def test_diagnostics_embed_lists_rows_and_flags():
     diag = CleanupDiagnostics(
         guild_id=42,
         rows=(
-            _row(scope_type="guild", scope_id=0, target_label="Guild default",
-                 level_name="Standard", is_ineffective=True),
-            _row(scope_type="channel", scope_id=999, target_label="channel 999 (deleted)",
-                 is_stale=True),
+            _row(
+                scope_type="guild",
+                scope_id=0,
+                target_label="Guild default",
+                level_name="Standard",
+                is_ineffective=True,
+            ),
+            _row(
+                scope_type="channel",
+                scope_id=999,
+                target_label="channel 999 (deleted)",
+                is_stale=True,
+            ),
         ),
         level_counts={"Standard": 1, "Light": 1},
     )
@@ -103,7 +112,9 @@ def test_diagnostics_embed_lists_rows_and_flags():
 
 
 def test_preview_embed_change_shows_warnings():
-    embed = panel.preview_embed_from(_preview(will_change=True, warnings=("watch out",)))
+    embed = panel.preview_embed_from(
+        _preview(will_change=True, warnings=("watch out",))
+    )
     assert any("watch out" in f.value for f in embed.fields)
 
 
@@ -152,7 +163,9 @@ async def test_refresh_button_rerenders_diagnostics():
     it = _interaction()
     fake_embed = discord.Embed(title="diag")
     with patch.object(
-        panel, "build_cleanup_diagnostics_embed", AsyncMock(return_value=fake_embed),
+        panel,
+        "build_cleanup_diagnostics_embed",
+        AsyncMock(return_value=fake_embed),
     ):
         await _btn(view, "cleanup_policy:refresh").callback(it)
     it.response.edit_message.assert_awaited_once()
@@ -181,13 +194,16 @@ async def test_level_select_previews_without_writing():
     sel._values = ["Strict"]
     it = _interaction()
     with (
-        patch.object(panel, "preview_cleanup_change", AsyncMock(return_value=_preview())),
+        patch.object(
+            panel, "preview_cleanup_change", AsyncMock(return_value=_preview())
+        ),
         patch.object(panel, "apply_cleanup_change", AsyncMock()) as applier,
     ):
         await sel.callback(it)
     it.response.send_message.assert_awaited_once()
     assert isinstance(
-        it.response.send_message.call_args.kwargs["view"], panel._ConfirmApplyView,
+        it.response.send_message.call_args.kwargs["view"],
+        panel._ConfirmApplyView,
     )
     applier.assert_not_called()  # dry-run only
 
@@ -199,7 +215,9 @@ async def test_level_select_previews_without_writing():
 
 def _confirm_btn(view, label):
     return next(
-        c for c in view.children if isinstance(c, discord.ui.Button) and c.label == label
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == label
     )
 
 

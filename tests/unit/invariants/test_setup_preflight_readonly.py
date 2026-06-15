@@ -87,9 +87,10 @@ def test_preflight_functions_call_no_mutation_method():
             func = sub.func
             if isinstance(func, ast.Attribute) and func.attr in _FORBIDDEN_ATTR_NAMES:
                 violations.append(f"{name}: calls .{func.attr}(...)")
-    assert not violations, (
-        "Preflight adapter(s) contain forbidden mutation call(s):\n  "
-        + "\n  ".join(violations)
+    assert (
+        not violations
+    ), "Preflight adapter(s) contain forbidden mutation call(s):\n  " + "\n  ".join(
+        violations
     )
 
 

@@ -416,7 +416,9 @@ def test_buff_start_of_round_trigger_renders_each_round_not_seconds():
             "duration_rounds": 3,
         },
     )
-    assert text == "Start-of-round buff: x0.25 attack cooldown at the start of each round"
+    assert (
+        text == "Start-of-round buff: x0.25 attack cooldown at the start of each round"
+    )
     assert "3s" not in text and "3 round" not in text
 
 

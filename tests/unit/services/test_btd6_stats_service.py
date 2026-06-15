@@ -54,7 +54,10 @@ def test_normal_stats_bloon_crush_flips_to_normal_and_stuns():
 
 def test_paragon_abilities_load_named_with_cooldowns():
     mp = svc.get_paragon_stats("magus_perfectus")
-    assert [a.name for a in mp.abilities] == ["Phoenix Explosion", "Arcane Metamorphosis"]
+    assert [a.name for a in mp.abilities] == [
+        "Phoenix Explosion",
+        "Arcane Metamorphosis",
+    ]
     assert mp.abilities[0].kind == "activated"
     assert mp.abilities[0].cooldown == 40
     assert "Phoenix Rebirth" in mp.abilities[0].description  # internal-name note kept

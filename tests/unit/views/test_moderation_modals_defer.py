@@ -158,7 +158,8 @@ async def test_warn_modal_happy_path_defers_before_db_io():
         # + escalation now live in the service, so the modal no longer calls
         # resolve_value here.
         mock_svc.warn = tracker.slow(
-            "svc.warn", return_value=WarnOutcome(count=1, threshold=3),
+            "svc.warn",
+            return_value=WarnOutcome(count=1, threshold=3),
         )
         await modal.on_submit(interaction)
 

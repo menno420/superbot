@@ -34,7 +34,9 @@ def _author(id_: int = 1) -> MagicMock:
     return author
 
 
-def _cog(words: list[str] | None = None, channels: list[int] | None = None) -> MagicMock:
+def _cog(
+    words: list[str] | None = None, channels: list[int] | None = None
+) -> MagicMock:
     cog = MagicMock()
     cog._word_cache = {42: list(words or [])}
     cog._load_guild = AsyncMock()
@@ -317,10 +319,7 @@ async def test_refresh_button_rebuilds_embed_without_mutation():
 
 def _back_button(view: discord.ui.View) -> discord.ui.Button | None:
     for child in view.children:
-        if (
-            isinstance(child, discord.ui.Button)
-            and child.custom_id == "cleanup:back"
-        ):
+        if isinstance(child, discord.ui.Button) and child.custom_id == "cleanup:back":
             return child
     return None
 
@@ -505,9 +504,9 @@ async def test_back_button_returns_to_same_cleanup_panel_instance():
 
     next_interaction.response.edit_message.assert_awaited_once()
     _args, edit_kwargs = next_interaction.response.edit_message.call_args
-    assert edit_kwargs["view"] is view, (
-        "Back button must return the live CleanupPanelView instance"
-    )
+    assert (
+        edit_kwargs["view"] is view
+    ), "Back button must return the live CleanupPanelView instance"
     # The synthetic origin button (e.g. back-to-Help) must still be on
     # the returned view — that's the whole point of preserving identity.
     assert synthetic_origin_btn in view.children

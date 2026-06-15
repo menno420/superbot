@@ -232,7 +232,10 @@ async def test_stage_populates_canonical_metadata():
     assert md["risk"] == "medium"  # disabling cogs is more impactful than bindings
     assert "Operator" in md["reason"]
     assert "games" in md["reason"]
-    assert "rollback" in md["rollback_note"].lower() or "re-stage" in md["rollback_note"].lower()
+    assert (
+        "rollback" in md["rollback_note"].lower()
+        or "re-stage" in md["rollback_note"].lower()
+    )
 
 
 @pytest.mark.asyncio

@@ -46,11 +46,7 @@ def test_blackjack_schema_declares_default_entry_fee():
     from utils.settings_keys import BLACKJACK_DEFAULT_ENTRY_FEE
 
     spec = next(
-        (
-            s
-            for s in BLACKJACK_CONFIG_SCHEMA.settings
-            if s.name == "default_entry_fee"
-        ),
+        (s for s in BLACKJACK_CONFIG_SCHEMA.settings if s.name == "default_entry_fee"),
         None,
     )
     assert spec is not None, "Blackjack schema must declare default_entry_fee"
@@ -64,11 +60,7 @@ def test_deathmatch_schema_declares_turn_timeout():
     from utils.settings_keys import DEATHMATCH_TURN_TIMEOUT
 
     spec = next(
-        (
-            s
-            for s in DEATHMATCH_CONFIG_SCHEMA.settings
-            if s.name == "turn_timeout"
-        ),
+        (s for s in DEATHMATCH_CONFIG_SCHEMA.settings if s.name == "turn_timeout"),
         None,
     )
     assert spec is not None, "Deathmatch schema must declare turn_timeout"
@@ -97,24 +89,30 @@ async def test_rps_register_reads_default_entry_fee_when_omitted():
     ctx.guild.id = 42
     ctx.send = AsyncMock()
     # Stub the tournament-state read so we get past its early return.
-    with patch(
-        "cogs.rps_tournament_cog.tournament_state_service.get_active",
-        new_callable=AsyncMock,
-        return_value=None,
-    ), patch(
-        "cogs.rps_tournament_cog.tournament_state_service.set_active",
-        new_callable=AsyncMock,
-    ), patch(
-        "utils.db.get_setting",
-        new_callable=AsyncMock,
-        return_value="50",
-    ) as mock_get_setting, patch.object(
-        cog,
-        "registration_countdown",
-        new_callable=AsyncMock,
-    ), patch(
-        "cogs.rps_tournament_cog.tasks.spawn",
-        new=lambda _name, _coro: MagicMock(),
+    with (
+        patch(
+            "cogs.rps_tournament_cog.tournament_state_service.get_active",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.rps_tournament_cog.tournament_state_service.set_active",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "utils.db.get_setting",
+            new_callable=AsyncMock,
+            return_value="50",
+        ) as mock_get_setting,
+        patch.object(
+            cog,
+            "registration_countdown",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "cogs.rps_tournament_cog.tasks.spawn",
+            new=lambda _name, _coro: MagicMock(),
+        ),
     ):
         # Short-circuit Discord interactions: ctx.send/add_reaction are
         # AsyncMocks and the registration_countdown is suppressed.
@@ -145,23 +143,29 @@ async def test_bjtournament_reads_default_entry_fee_when_omitted():
     ctx.channel = MagicMock(id=22)
     ctx.bot = MagicMock()
     ctx.send = AsyncMock(return_value=MagicMock(add_reaction=AsyncMock()))
-    with patch(
-        "cogs.blackjack_cog.tournament_state_service.get_active",
-        new_callable=AsyncMock,
-        return_value=None,
-    ), patch(
-        "cogs.blackjack_cog.tournament_state_service.set_active",
-        new_callable=AsyncMock,
-    ), patch(
-        "services.settings_resolution.resolve_value",
-        new_callable=AsyncMock,
-        return_value=25,
-    ) as mock_resolve_value, patch(
-        "cogs.blackjack_cog.tasks.spawn",
-        new=lambda _name, _coro: MagicMock(),
-    ), patch(
-        "cogs.blackjack_cog._tourn_embed",
-        return_value=MagicMock(),
+    with (
+        patch(
+            "cogs.blackjack_cog.tournament_state_service.get_active",
+            new_callable=AsyncMock,
+            return_value=None,
+        ),
+        patch(
+            "cogs.blackjack_cog.tournament_state_service.set_active",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.settings_resolution.resolve_value",
+            new_callable=AsyncMock,
+            return_value=25,
+        ) as mock_resolve_value,
+        patch(
+            "cogs.blackjack_cog.tasks.spawn",
+            new=lambda _name, _coro: MagicMock(),
+        ),
+        patch(
+            "cogs.blackjack_cog._tourn_embed",
+            return_value=MagicMock(),
+        ),
     ):
         # Bypass discord.py Command wrapping (no bot has loaded the cog).
         await BlackjackCog.bjtournament.callback(cog, ctx)
@@ -233,14 +237,17 @@ async def test_setup_readiness_includes_game_subsystems():
     register_bj()
     register_dm()
 
-    with patch(
-        "utils.db.bindings.list_for_guild",
-        new_callable=AsyncMock,
-        return_value=[],
-    ), patch(
-        "utils.db.get_setting",
-        new_callable=AsyncMock,
-        return_value="",
+    with (
+        patch(
+            "utils.db.bindings.list_for_guild",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
+        patch(
+            "utils.db.get_setting",
+            new_callable=AsyncMock,
+            return_value="",
+        ),
     ):
         report = await setup_readiness.collect(guild_id=1234)
 

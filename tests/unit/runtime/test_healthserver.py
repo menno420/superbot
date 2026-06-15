@@ -287,9 +287,7 @@ async def test_ready_returns_503_when_lifecycle_draining(_reset_lifecycle):
     ],
 )
 @pytest.mark.asyncio
-async def test_ready_returns_503_in_every_terminal_phase(
-    _reset_lifecycle, phase: str
-):
+async def test_ready_returns_503_in_every_terminal_phase(_reset_lifecycle, phase: str):
     """All non-admitting phases past DRAINING must also produce 503.
     Belt-and-suspenders parametrization so a future lifecycle-state
     addition does not silently re-enable 200 in a draining phase."""

@@ -83,9 +83,7 @@ def _mk_role(
     role.hoist = False
     role.managed = managed
     role.is_default = MagicMock(return_value=is_default)
-    effective_assignable = (
-        is_assignable if is_assignable is not None else not managed
-    )
+    effective_assignable = is_assignable if is_assignable is not None else not managed
     role.is_assignable = MagicMock(return_value=effective_assignable)
     return role
 

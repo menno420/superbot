@@ -166,7 +166,9 @@ def _setup_readiness_blockers() -> tuple[str, ...]:
     ), "setup_blockers.BLOCKERS must be a tuple/list literal of BlockerSpec(...) calls"
     out: list[str] = []
     for elt in blockers_value.elts:
-        assert isinstance(elt, ast.Call), "BLOCKERS entries must be BlockerSpec(...) calls"
+        assert isinstance(
+            elt, ast.Call
+        ), "BLOCKERS entries must be BlockerSpec(...) calls"
         # id may be passed positionally or as a keyword; canonical form
         # in setup_blockers.py is keyword.
         spec_id: str | None = None

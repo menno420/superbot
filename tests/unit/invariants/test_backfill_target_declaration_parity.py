@@ -140,4 +140,6 @@ def test_no_key_in_both_registries():
     migrated = {mk.legacy_key for mk in MIGRATED_KEYS}
     deferred = {mk.legacy_key for mk in DEFERRED_KEYS}
     overlap = migrated & deferred
-    assert not overlap, f"keys in both MIGRATED_KEYS and DEFERRED_KEYS: {sorted(overlap)}"
+    assert (
+        not overlap
+    ), f"keys in both MIGRATED_KEYS and DEFERRED_KEYS: {sorted(overlap)}"

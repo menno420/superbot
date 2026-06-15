@@ -41,20 +41,26 @@ def _empty_db(monkeypatch):
 def _populated_db(monkeypatch):
     sources: dict[int, dict] = {
         7: {
-            "id": 7, "source_key": "nk_btd6_maps", "trust_tier": 1,
-            "base_url": "https://example.test", "full_url":
-            "https://example.test/btd6/maps",
+            "id": 7,
+            "source_key": "nk_btd6_maps",
+            "trust_tier": 1,
+            "base_url": "https://example.test",
+            "full_url": "https://example.test/btd6/maps",
         },
     }
     facts: dict[tuple[str, str, str], dict] = {
         ("map", "map", "monkey_meadow"): {
-            "id": 1, "source_id": 7, "fact_type": "map", "entity_kind": "map",
+            "id": 1,
+            "source_id": 7,
+            "fact_type": "map",
+            "entity_kind": "map",
             "entity_key": "monkey_meadow",
             "body_json": {"name": "Monkey Meadow", "difficulty": "Beginner"},
-            "game_version": "44.0", "fetched_at":
-            _dt.datetime.now(_dt.timezone.utc),
+            "game_version": "44.0",
+            "fetched_at": _dt.datetime.now(_dt.timezone.utc),
             "validated_at": _dt.datetime.now(_dt.timezone.utc),
-            "confidence": 1.0, "version": 1,
+            "confidence": 1.0,
+            "version": 1,
         },
     }
 

@@ -760,14 +760,12 @@ def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
         "what can we ask you",  # general — get_ai_tool_catalog owns it
         "can I ask a friend to play btd6 with me",  # ask targets a 3rd party
     ):
-        assert btd6_context_service.deterministic_meta_reply(question) is None, (
-            question
-        )
+        assert btd6_context_service.deterministic_meta_reply(question) is None, question
 
 
 @pytest.mark.asyncio
 async def test_boss_per_tier_health_grounds():
-    """"Base HP of Lych per tier" must ground the figures, not the teaser —
+    """ "Base HP of Lych per tier" must ground the figures, not the teaser —
     the old fact said "5 tier(s) on record" with no number, so a healthy
     answer had nothing to ground and the floor refused (live, 2026-06-10).
     The line is variant-labeled "Standard (non-Elite)" since BUG-0002."""
@@ -822,7 +820,7 @@ async def test_pricing_line_quantity_crosspath_production_phrasing():
 
 @pytest.mark.asyncio
 async def test_pricing_line_word_number_quantity():
-    """"five 0-2-4 dart monkeys" (the §7.5 acceptance phrasing) — word
+    """ "five 0-2-4 dart monkeys" (the §7.5 acceptance phrasing) — word
     numbers count as quantities."""
     ctx = await btd6_context_service.build(
         "how much do five 0-2-4 dart monkeys cost on hard",
@@ -844,7 +842,7 @@ async def test_pricing_line_unit_only_without_quantity():
 
 @pytest.mark.asyncio
 async def test_pricing_line_bulk_base_towers_without_crosspath():
-    """"how much do 10 despos cost" — quantity straight before the tower
+    """ "how much do 10 despos cost" — quantity straight before the tower
     name prices N base towers."""
     ctx = await btd6_context_service.build("how much do 10 despos cost on impop")
     pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
@@ -870,9 +868,7 @@ async def test_boss_elite_honesty_note_when_dataset_predates_backfill(monkeypatc
     from services import btd6_data_service
 
     real = btd6_data_service.get_dataset()
-    stripped = tuple(
-        dataclasses.replace(b, elite_tiers=()) for b in real.bosses
-    )
+    stripped = tuple(dataclasses.replace(b, elite_tiers=()) for b in real.bosses)
     monkeypatch.setattr(
         btd6_data_service,
         "get_dataset",

@@ -84,10 +84,15 @@ async def test_unequip_clears_the_choice():
 async def test_equipped_title_hidden_when_no_longer_earned():
     # stored choice is master_smith, but crafting was respecced to 0 → un-earned.
     ps, pd, pl = _patch_state(alloc={})
-    with ps, pd, pl, patch.object(
-        ts.db,
-        "get_equipped_title",
-        AsyncMock(return_value="master_smith"),
+    with (
+        ps,
+        pd,
+        pl,
+        patch.object(
+            ts.db,
+            "get_equipped_title",
+            AsyncMock(return_value="master_smith"),
+        ),
     ):
         assert await ts.equipped_title(7, 42) is None
 
@@ -96,10 +101,15 @@ async def test_equipped_title_hidden_when_no_longer_earned():
 async def test_equipped_title_shown_when_still_earned():
     cap = skills.PER_BRANCH_CAP
     ps, pd, pl = _patch_state(alloc={"crafting": cap})
-    with ps, pd, pl, patch.object(
-        ts.db,
-        "get_equipped_title",
-        AsyncMock(return_value="master_smith"),
+    with (
+        ps,
+        pd,
+        pl,
+        patch.object(
+            ts.db,
+            "get_equipped_title",
+            AsyncMock(return_value="master_smith"),
+        ),
     ):
         title = await ts.equipped_title(7, 42)
     assert title is not None and title.id == "master_smith"

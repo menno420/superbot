@@ -35,8 +35,9 @@ def _stub_db(monkeypatch):
         for k, v in kw.items():
             if k == "bump_version":
                 if v:
-                    state["rows"][sid]["version"] = state["rows"][sid].get(
-                        "version", 1) + 1
+                    state["rows"][sid]["version"] = (
+                        state["rows"][sid].get("version", 1) + 1
+                    )
                 continue
             state["rows"][sid][k] = v
 
@@ -80,8 +81,10 @@ def _staff(id_=99):
 
 async def test_submit_writes_audit_row(_stub_db):
     result = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="ZTOM", summary="Zero tower opener",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="ZTOM",
+        summary="Zero tower opener",
     )
     assert result.action == "submitted"
     assert any(a["action"] == "submitted" for a in _stub_db["audit"])
@@ -89,11 +92,15 @@ async def test_submit_writes_audit_row(_stub_db):
 
 async def test_ai_approve_is_guild_local_only(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     await mut.ai_approve_guild(
-        submit.strategy_id, provider="deterministic", model="",
+        submit.strategy_id,
+        provider="deterministic",
+        model="",
     )
     row = _stub_db["rows"][submit.strategy_id]
     assert row["approval_status"] == "approved"
@@ -103,20 +110,26 @@ async def test_ai_approve_is_guild_local_only(_stub_db):
 
 async def test_ai_approve_refuses_published_row(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     await mut.staff_publish(submit.strategy_id, staff_actor=_staff())
     with pytest.raises(mut.InvalidStrategyValueError):
         await mut.ai_approve_guild(
-            submit.strategy_id, provider="deterministic", model="",
+            submit.strategy_id,
+            provider="deterministic",
+            model="",
         )
 
 
 async def test_staff_publish_requires_staff(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     with pytest.raises(mut.UnauthorizedStrategyMutationError):
         await mut.staff_publish(submit.strategy_id, staff_actor=_user())
@@ -124,11 +137,14 @@ async def test_staff_publish_requires_staff(_stub_db):
 
 async def test_publish_writes_audit_and_marks_published(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     result = await mut.staff_publish(
-        submit.strategy_id, staff_actor=_staff(),
+        submit.strategy_id,
+        staff_actor=_staff(),
     )
     assert result.action == "published"
     row = _stub_db["rows"][submit.strategy_id]
@@ -138,12 +154,16 @@ async def test_publish_writes_audit_and_marks_published(_stub_db):
 
 async def test_unpublish_reverts_visibility_and_audits(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     await mut.staff_publish(submit.strategy_id, staff_actor=_staff())
     result = await mut.unpublish(
-        submit.strategy_id, staff_actor=_staff(), reason="cleanup",
+        submit.strategy_id,
+        staff_actor=_staff(),
+        reason="cleanup",
     )
     assert result.action == "unpublished"
     row = _stub_db["rows"][submit.strategy_id]
@@ -152,27 +172,33 @@ async def test_unpublish_reverts_visibility_and_audits(_stub_db):
 
 async def test_anonymise_submitter_clears_identity_and_audits(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     await mut.anonymise_submitter(
-        submit.strategy_id, actor=_staff(), state="anonymized",
+        submit.strategy_id,
+        actor=_staff(),
+        state="anonymized",
     )
     row = _stub_db["rows"][submit.strategy_id]
     assert row["submitted_by"] is None
     assert row["submitter_display_snapshot"] is None
     assert row["submitter_identity_state"] == "anonymized"
-    assert any(
-        a["action"] == "submitter_anonymized" for a in _stub_db["audit"]
-    )
+    assert any(a["action"] == "submitter_anonymized" for a in _stub_db["audit"])
 
 
 async def test_anonymise_rejects_invalid_state(_stub_db):
     submit = await mut.submit_strategy(
-        origin_guild_id=1, submitter=_user(),
-        title="A", summary="S",
+        origin_guild_id=1,
+        submitter=_user(),
+        title="A",
+        summary="S",
     )
     with pytest.raises(mut.InvalidStrategyValueError):
         await mut.anonymise_submitter(
-            submit.strategy_id, actor=_staff(), state="bogus",
+            submit.strategy_id,
+            actor=_staff(),
+            state="bogus",
         )

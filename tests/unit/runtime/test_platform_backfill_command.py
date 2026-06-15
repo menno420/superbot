@@ -104,7 +104,9 @@ async def test_backfill_default_is_dry_run():
     cog, ctx = _make_cog(), _make_ctx()
     with (
         patch.object(
-            binding_backfill, "dry_run", AsyncMock(return_value=_dryrun()),
+            binding_backfill,
+            "dry_run",
+            AsyncMock(return_value=_dryrun()),
         ) as dr,
         patch.object(binding_backfill, "apply_backfill", AsyncMock()) as ap,
     ):
@@ -122,7 +124,9 @@ async def test_backfill_default_is_dry_run():
 async def test_backfill_apply_writes_with_actor_id():
     cog, ctx = _make_cog(), _make_ctx()
     with patch.object(
-        binding_backfill, "apply_backfill", AsyncMock(return_value=_apply()),
+        binding_backfill,
+        "apply_backfill",
+        AsyncMock(return_value=_apply()),
     ) as ap:
         await cog.platform_backfill.callback(cog, ctx, "apply")
     ap.assert_awaited_once()

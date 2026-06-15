@@ -26,11 +26,16 @@ from utils.db import ai as ai_db  # noqa: E402
 def _stub(monkeypatch):
     state = {
         "policy": {
-            "guild_id": 1, "enabled": True, "natural_language_enabled": True,
-            "default_provider": "deterministic", "default_model": "",
-            "minimum_level_default": 0, "cooldown_seconds": 0,
+            "guild_id": 1,
+            "enabled": True,
+            "natural_language_enabled": True,
+            "default_provider": "deterministic",
+            "default_model": "",
+            "minimum_level_default": 0,
+            "cooldown_seconds": 0,
             "fresh_user_mention_allowance": 0,
-            "guild_instruction_profile_id": None, "generation": 1,
+            "guild_instruction_profile_id": None,
+            "generation": 1,
         },
     }
 
@@ -51,8 +56,13 @@ def _stub(monkeypatch):
 
 def _ctx() -> MessageContext:
     return MessageContext(
-        guild_id=1, channel_id=2, category_id=None, user_id=3,
-        user_level=5, user_role_ids=(), is_mention=False,
+        guild_id=1,
+        channel_id=2,
+        category_id=None,
+        user_id=3,
+        user_level=5,
+        user_role_ids=(),
+        is_mention=False,
         is_fresh_user=False,
     )
 

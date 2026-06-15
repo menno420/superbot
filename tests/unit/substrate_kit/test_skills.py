@@ -80,7 +80,9 @@ def test_skill_bodies_only_reference_known_bank_slots():
 
 def test_skill_permits_declared_only():
     assert skill_permits("session-close", EDIT)
-    assert not skill_permits("quality-gate", EDIT)  # quality-gate declares run, not edit
+    assert not skill_permits(
+        "quality-gate", EDIT
+    )  # quality-gate declares run, not edit
 
 
 def test_skill_capability_overrides_stance():

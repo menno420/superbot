@@ -22,9 +22,7 @@ import textwrap
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_CATALOGUE_PATH = (
-    _REPO_ROOT / "disbot" / "services" / "customization_catalogue.py"
-)
+_CATALOGUE_PATH = _REPO_ROOT / "disbot" / "services" / "customization_catalogue.py"
 
 # Forbidden top-level imports — any cross-package access must be
 # function-local. ``services.diagnostics_service`` and other siblings

@@ -100,7 +100,7 @@ async def test_list_rules_for_guild_decodes_all_rows(_mock_pool):
             "name": "a",
             "enabled": True,
             "trigger_kind": "manual",
-            "trigger_config": '{}',
+            "trigger_config": "{}",
             "action_kind": "notify_owner",
             "action_config": '{"template": "hi"}',
             "schedule": None,

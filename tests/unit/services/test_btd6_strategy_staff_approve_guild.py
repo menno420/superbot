@@ -125,7 +125,9 @@ async def test_staff_approve_guild_rejects_non_staff(monkeypatch):
 
 async def test_staff_approve_guild_refuses_when_already_published(monkeypatch):
     async def _get(sid):
-        return _strategy_row(sid=sid, visibility="published", approval_status="approved")
+        return _strategy_row(
+            sid=sid, visibility="published", approval_status="approved"
+        )
 
     explode = AsyncMock()
     monkeypatch.setattr(db, "get_strategy", _get)

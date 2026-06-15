@@ -73,17 +73,17 @@ def test_settings_roadmap_marks_s6_landed():
     truth for "where are we" questions and must not list S6 as a future
     milestone.
     """
-    roadmap = (_DOCS / "setup-platform" / "settings-customization-roadmap.md").read_text()
+    roadmap = (
+        _DOCS / "setup-platform" / "settings-customization-roadmap.md"
+    ).read_text()
     # Must contain explicit landed marker for S6 in the milestone table.
-    assert "| S6 " in roadmap, (
-        "Roadmap milestone table is missing the S6 row entirely."
-    )
+    assert "| S6 " in roadmap, "Roadmap milestone table is missing the S6 row entirely."
     # Find the S6 row and assert it carries a landed marker (bold "landed").
     s6_row = next(
         (line for line in roadmap.splitlines() if line.strip().startswith("| S6 ")),
         None,
     )
     assert s6_row is not None, "Roadmap S6 row could not be located."
-    assert "landed" in s6_row.lower(), (
-        f"Roadmap S6 row does not mark the milestone as landed: {s6_row!r}"
-    )
+    assert (
+        "landed" in s6_row.lower()
+    ), f"Roadmap S6 row does not mark the milestone as landed: {s6_row!r}"

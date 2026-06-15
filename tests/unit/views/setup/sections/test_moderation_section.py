@@ -106,8 +106,9 @@ def test_embed_renders_detected_when_state_supplied():
 async def test_stage_setting_drafts_set_setting_with_provenance():
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -211,8 +212,9 @@ async def test_dm_select_stages_bool():
     select._values = ["true"]
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -228,8 +230,9 @@ async def test_require_reason_select_stages_bool_false():
     select._values = ["false"]
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -245,8 +248,9 @@ async def test_warn_escalation_select_stages_action():
     select._values = ["kick"]
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -262,8 +266,9 @@ async def test_moderator_role_select_stages_role_id_string():
     select._values = [SimpleNamespace(id=555, name="Mods")]
     interaction = _interaction()
     with (
-        patch("services.setup_draft.append", new_callable=AsyncMock, return_value=1)
-        as append_mock,
+        patch(
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1
+        ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
     ):
@@ -288,9 +293,7 @@ async def test_recommended_ops_enable_dm_and_require_reason():
     assert all(op.subsystem == "moderation" for op in ops)
     assert by_name["dm_on_action"].value is True
     assert by_name["require_reason"].value is True
-    assert all(
-        op.metadata["source"] == "setup_ux:recommended" for op in ops
-    )
+    assert all(op.metadata["source"] == "setup_ux:recommended" for op in ops)
 
 
 # ---------------------------------------------------------------------------

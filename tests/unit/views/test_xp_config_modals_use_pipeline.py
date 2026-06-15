@@ -86,13 +86,16 @@ async def test_helper_calls_pipeline_and_invalidates_legacy_cache():
     pipeline_instance = MagicMock()
     pipeline_instance.set_value = AsyncMock(return_value=MagicMock())
 
-    with patch(
-        "services.settings_mutation.SettingsMutationPipeline",
-        return_value=pipeline_instance,
-    ), patch.object(
-        xp_modals,
-        "invalidate_xp_config",
-    ) as invalidator:
+    with (
+        patch(
+            "services.settings_mutation.SettingsMutationPipeline",
+            return_value=pipeline_instance,
+        ),
+        patch.object(
+            xp_modals,
+            "invalidate_xp_config",
+        ) as invalidator,
+    ):
         ok = await xp_modals._set_xp_setting_via_pipeline(interaction, "xp_min", 17)
 
     assert ok is True
@@ -117,12 +120,15 @@ async def test_helper_returns_false_without_invalidating_on_dm():
     interaction.guild = None
     interaction.response.send_message = AsyncMock()
 
-    with patch(
-        "services.settings_mutation.SettingsMutationPipeline",
-    ) as pipeline_cls, patch.object(
-        xp_modals,
-        "invalidate_xp_config",
-    ) as invalidator:
+    with (
+        patch(
+            "services.settings_mutation.SettingsMutationPipeline",
+        ) as pipeline_cls,
+        patch.object(
+            xp_modals,
+            "invalidate_xp_config",
+        ) as invalidator,
+    ):
         ok = await xp_modals._set_xp_setting_via_pipeline(interaction, "xp_min", 17)
 
     assert ok is False
@@ -147,13 +153,16 @@ async def test_helper_surfaces_validation_error_as_ephemeral():
         side_effect=SettingsValidationError("expected positive int, got -3"),
     )
 
-    with patch(
-        "services.settings_mutation.SettingsMutationPipeline",
-        return_value=pipeline_instance,
-    ), patch.object(
-        xp_modals,
-        "invalidate_xp_config",
-    ) as invalidator:
+    with (
+        patch(
+            "services.settings_mutation.SettingsMutationPipeline",
+            return_value=pipeline_instance,
+        ),
+        patch.object(
+            xp_modals,
+            "invalidate_xp_config",
+        ) as invalidator,
+    ):
         ok = await xp_modals._set_xp_setting_via_pipeline(interaction, "xp_min", -3)
 
     assert ok is False
@@ -192,14 +201,17 @@ async def test_xp_range_modal_writes_min_and_max():
 
     interaction = _modal_interaction()
 
-    with patch.object(
-        xp_modals,
-        "_set_xp_setting_via_pipeline",
-        new=AsyncMock(return_value=True),
-    ) as helper, patch.object(
-        xp_modals,
-        "safe_defer",
-        new=AsyncMock(return_value=True),
+    with (
+        patch.object(
+            xp_modals,
+            "_set_xp_setting_via_pipeline",
+            new=AsyncMock(return_value=True),
+        ) as helper,
+        patch.object(
+            xp_modals,
+            "safe_defer",
+            new=AsyncMock(return_value=True),
+        ),
     ):
         await modal.on_submit(interaction)
 
@@ -251,14 +263,17 @@ async def test_xp_cooldown_modal_writes_cooldown():
 
     interaction = _modal_interaction()
 
-    with patch.object(
-        xp_modals,
-        "_set_xp_setting_via_pipeline",
-        new=AsyncMock(return_value=True),
-    ) as helper, patch.object(
-        xp_modals,
-        "safe_defer",
-        new=AsyncMock(return_value=True),
+    with (
+        patch.object(
+            xp_modals,
+            "_set_xp_setting_via_pipeline",
+            new=AsyncMock(return_value=True),
+        ) as helper,
+        patch.object(
+            xp_modals,
+            "safe_defer",
+            new=AsyncMock(return_value=True),
+        ),
     ):
         await modal.on_submit(interaction)
 
@@ -282,14 +297,17 @@ async def test_xp_channel_modal_drives_binding_helper():
 
     interaction = _modal_interaction()
 
-    with patch.object(
-        xp_modals,
-        "_set_xp_announce_channel_via_binding",
-        new=AsyncMock(return_value=True),
-    ) as helper, patch.object(
-        xp_modals,
-        "safe_defer",
-        new=AsyncMock(return_value=True),
+    with (
+        patch.object(
+            xp_modals,
+            "_set_xp_announce_channel_via_binding",
+            new=AsyncMock(return_value=True),
+        ) as helper,
+        patch.object(
+            xp_modals,
+            "safe_defer",
+            new=AsyncMock(return_value=True),
+        ),
     ):
         await modal.on_submit(interaction)
 
@@ -313,10 +331,13 @@ async def test_announce_helper_sets_binding_for_numeric_input():
     pipeline.set_binding = AsyncMock(return_value=MagicMock())
     pipeline.clear_binding = AsyncMock(return_value=MagicMock())
 
-    with patch(
-        "services.binding_mutation.BindingMutationPipeline",
-        return_value=pipeline,
-    ), patch.object(xp_modals, "invalidate_xp_config") as inv:
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline,
+        ),
+        patch.object(xp_modals, "invalidate_xp_config") as inv,
+    ):
         ok = await xp_modals._set_xp_announce_channel_via_binding(
             interaction,
             " 1234567890 ",
@@ -345,10 +366,13 @@ async def test_announce_helper_clears_binding_on_blank_input():
     pipeline.set_binding = AsyncMock(return_value=MagicMock())
     pipeline.clear_binding = AsyncMock(return_value=MagicMock())
 
-    with patch(
-        "services.binding_mutation.BindingMutationPipeline",
-        return_value=pipeline,
-    ), patch.object(xp_modals, "invalidate_xp_config") as inv:
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline,
+        ),
+        patch.object(xp_modals, "invalidate_xp_config") as inv,
+    ):
         ok = await xp_modals._set_xp_announce_channel_via_binding(interaction, "   ")
 
     assert ok is True
@@ -372,10 +396,13 @@ async def test_announce_helper_rejects_non_numeric_without_writing():
     pipeline.set_binding = AsyncMock()
     pipeline.clear_binding = AsyncMock()
 
-    with patch(
-        "services.binding_mutation.BindingMutationPipeline",
-        return_value=pipeline,
-    ), patch.object(xp_modals, "invalidate_xp_config") as inv:
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+            return_value=pipeline,
+        ),
+        patch.object(xp_modals, "invalidate_xp_config") as inv,
+    ):
         ok = await xp_modals._set_xp_announce_channel_via_binding(
             interaction,
             "not-a-channel",
@@ -397,9 +424,12 @@ async def test_announce_helper_returns_false_on_dm():
     interaction.guild = None
     interaction.response.send_message = AsyncMock()
 
-    with patch(
-        "services.binding_mutation.BindingMutationPipeline",
-    ) as pipeline_cls, patch.object(xp_modals, "invalidate_xp_config") as inv:
+    with (
+        patch(
+            "services.binding_mutation.BindingMutationPipeline",
+        ) as pipeline_cls,
+        patch.object(xp_modals, "invalidate_xp_config") as inv,
+    ):
         ok = await xp_modals._set_xp_announce_channel_via_binding(interaction, "123")
 
     assert ok is False

@@ -60,8 +60,7 @@ async def test_typoed_navarch_question_grounds_income():
     )
     income_lines = [f for f in ctx.facts if "income" in f.lower()]
     assert any(
-        "generates $3,200 at the end of each round" in line
-        for line in income_lines
+        "generates $3,200 at the end of each round" in line for line in income_lines
     ), f"no income grounding line in: {ctx.facts!r}"
 
 
@@ -77,7 +76,7 @@ async def test_navarch_grounding_includes_buff_effect_lines():
 
 @pytest.mark.asyncio
 async def test_paragon_shorthand_grounds_when_paragon_keyword_present():
-    """"boat paragon" reaches the Navarch via the canonical shorthand
+    """ "boat paragon" reaches the Navarch via the canonical shorthand
     resolver; the word "paragon" gates the loosened matching."""
     ctx = await btd6_context_service.build("boat paragon income?")
     assert any("Navarch of the Seas income" in f for f in ctx.facts)

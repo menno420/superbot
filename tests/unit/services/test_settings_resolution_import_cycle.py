@@ -28,9 +28,7 @@ import textwrap
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_MODULE_PATH = (
-    _REPO_ROOT / "disbot" / "services" / "settings_resolution.py"
-)
+_MODULE_PATH = _REPO_ROOT / "disbot" / "services" / "settings_resolution.py"
 
 _FORBIDDEN_TOP_LEVEL_PREFIXES = (
     "cogs",

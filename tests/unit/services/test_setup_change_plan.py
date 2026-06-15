@@ -344,13 +344,13 @@ class TestValuesEquivalent:
         ],
     )
     def test_equivalent_pairs(self, current, proposed):
-        assert values_equivalent(current, proposed) is True, (
-            f"{current!r} should compare equal to {proposed!r}"
-        )
+        assert (
+            values_equivalent(current, proposed) is True
+        ), f"{current!r} should compare equal to {proposed!r}"
         # Must be symmetric.
-        assert values_equivalent(proposed, current) is True, (
-            f"Equality must be symmetric: {proposed!r} vs {current!r}"
-        )
+        assert (
+            values_equivalent(proposed, current) is True
+        ), f"Equality must be symmetric: {proposed!r} vs {current!r}"
 
     # ---- Type-sensitive mismatches (must be False) ----------------------
 
@@ -371,9 +371,9 @@ class TestValuesEquivalent:
         ],
     )
     def test_type_sensitive_mismatches(self, current, proposed):
-        assert values_equivalent(current, proposed) is False, (
-            f"{current!r} must NOT compare equal to {proposed!r}"
-        )
+        assert (
+            values_equivalent(current, proposed) is False
+        ), f"{current!r} must NOT compare equal to {proposed!r}"
 
     # ---- Strict bool/int separation -------------------------------------
     #
@@ -407,9 +407,9 @@ class TestValuesEquivalent:
             "Python's True == 1 would otherwise hide a real "
             "type-mismatch in the preflight render."
         )
-        assert values_equivalent(proposed, current) is False, (
-            "Strict bool/int check must be symmetric."
-        )
+        assert (
+            values_equivalent(proposed, current) is False
+        ), "Strict bool/int check must be symmetric."
 
     def test_bool_vs_string_int_form_is_mismatch(self):
         """Concrete demonstration: a setting stored as numeric ``"1"``

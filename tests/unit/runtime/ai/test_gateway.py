@@ -58,7 +58,9 @@ class _FakeProvider:
 
     name = "fake"
 
-    def __init__(self, *, text: str | None = None, exc: Exception | None = None) -> None:
+    def __init__(
+        self, *, text: str | None = None, exc: Exception | None = None
+    ) -> None:
         self._text = text
         self._exc = exc
         self.received_request: AIRequest | None = None
@@ -108,7 +110,8 @@ async def test_gateway_degrades_on_provider_exception():
     gateway, collector = _gateway_with(provider)
 
     response = await gateway.execute(
-        _make_request(), provider_override=provider,
+        _make_request(),
+        provider_override=provider,
     )
 
     assert response.degraded is True
@@ -176,7 +179,8 @@ async def test_gateway_json_mode_parses_data():
     gateway, _ = _gateway_with(provider)
 
     response = await gateway.execute(
-        _make_request(mode=AIResponseMode.JSON), provider_override=provider,
+        _make_request(mode=AIResponseMode.JSON),
+        provider_override=provider,
     )
 
     assert response.degraded is False
@@ -189,7 +193,8 @@ async def test_gateway_json_mode_marks_degraded_on_bad_json():
     gateway, collector = _gateway_with(provider)
 
     response = await gateway.execute(
-        _make_request(mode=AIResponseMode.JSON), provider_override=provider,
+        _make_request(mode=AIResponseMode.JSON),
+        provider_override=provider,
     )
 
     assert response.degraded is True
@@ -205,7 +210,8 @@ async def test_gateway_text_mode_returns_raw_text():
     gateway, _ = _gateway_with(provider)
 
     response = await gateway.execute(
-        _make_request(mode=AIResponseMode.TEXT), provider_override=provider,
+        _make_request(mode=AIResponseMode.TEXT),
+        provider_override=provider,
     )
 
     assert response.degraded is False
@@ -320,7 +326,8 @@ async def test_provider_override_disables_fallback(monkeypatch):
         collector=DiagnosticsCollector(),
     )
     response = await gateway.execute(
-        _make_request(mode=AIResponseMode.TEXT), provider_override=primary,
+        _make_request(mode=AIResponseMode.TEXT),
+        provider_override=primary,
     )
     assert response.degraded is True
     assert backup.received_request is None

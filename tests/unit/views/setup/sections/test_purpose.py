@@ -178,9 +178,7 @@ def test_embed_indicates_no_pick_when_none():
 def test_view_has_one_button_per_option():
     view = PurposePickerView(_owner_member(), session_purpose=None)
     button_custom_ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
+        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
     }
     expected = {f"setup_purpose:{opt.slug}" for opt in PURPOSE_OPTIONS}
     assert button_custom_ids == expected
@@ -192,8 +190,7 @@ def test_view_highlights_current_pick_button():
     community_btn = next(
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button)
-        and c.custom_id == "setup_purpose:community"
+        if isinstance(c, discord.ui.Button) and c.custom_id == "setup_purpose:community"
     )
     assert community_btn.style is discord.ButtonStyle.success
     other_btn = next(

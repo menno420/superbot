@@ -22,9 +22,7 @@ from services import btd6_fetch_service  # noqa: E402
 from services import btd6_live_query_service as live  # noqa: E402
 
 _GROUP = "cafb78d69fc3a3f21d168f245d718920895d41e8dd"
-_URL = (
-    "https://data.ninjakiwi.com/btd6/ct/mpejg5d0/leaderboard/group/" + _GROUP
-)
+_URL = "https://data.ninjakiwi.com/btd6/ct/mpejg5d0/leaderboard/group/" + _GROUP
 
 
 # ---------------------------------------------------------------------------
@@ -61,9 +59,7 @@ def _patch_active_event(monkeypatch, ct_id: str | None = "mpejg5d0"):
     async def _active(kinds=None):
         if ct_id is None:
             return ()
-        return (
-            live.ActiveEventHeadline("btd6_ct", ct_id, ct_id, None, None, None),
-        )
+        return (live.ActiveEventHeadline("btd6_ct", ct_id, ct_id, None, None, None),)
 
     monkeypatch.setattr(live, "get_active_events", _active)
 
@@ -173,7 +169,12 @@ async def test_tool_returns_ranked_bracket(monkeypatch):
     _patch_active_event(monkeypatch)
     _patch_fetch(
         monkeypatch,
-        {"body": [{"displayName": "Us", "score": 10}, {"displayName": "Them", "score": 5}]},
+        {
+            "body": [
+                {"displayName": "Us", "score": 10},
+                {"displayName": "Them", "score": 5},
+            ]
+        },
     )
     monkeypatch.setattr(svc, "get_team_group_id", _gid)
     out = await ai_tools._make_btd6_ct_team_status(123)({})

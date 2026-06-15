@@ -56,6 +56,7 @@ def _reset_apply_lock():
     yield
     _reset_apply_inflight_for_tests()
 
+
 # ---------------------------------------------------------------------------
 # _sort_ops_for_apply
 # ---------------------------------------------------------------------------
@@ -77,15 +78,17 @@ def test_sort_orders_resources_before_bindings():
 
 
 def test_sort_orders_full_phase_chain():
-    ordered = _sort_ops_for_apply([
-        _op("enable_automation_rule"),
-        _op("set_cog_routing"),
-        _op("set_cleanup_policy"),
-        _op("add_automation_rule"),
-        _op("set_setting"),
-        _op("bind_channel"),
-        _op("create_role"),
-    ])
+    ordered = _sort_ops_for_apply(
+        [
+            _op("enable_automation_rule"),
+            _op("set_cog_routing"),
+            _op("set_cleanup_policy"),
+            _op("add_automation_rule"),
+            _op("set_setting"),
+            _op("bind_channel"),
+            _op("create_role"),
+        ]
+    )
     kinds = [o.kind for o in ordered]
     assert kinds == [
         "create_role",
@@ -99,10 +102,12 @@ def test_sort_orders_full_phase_chain():
 
 
 def test_sort_puts_unknown_kinds_at_the_back():
-    ordered = _sort_ops_for_apply([
-        _op("preset_unknown:weird"),
-        _op("bind_channel"),
-    ])
+    ordered = _sort_ops_for_apply(
+        [
+            _op("preset_unknown:weird"),
+            _op("bind_channel"),
+        ]
+    )
     assert ordered[0].kind == "bind_channel"
     assert ordered[1].kind == "preset_unknown:weird"
 
@@ -233,13 +238,21 @@ def _interaction_with_guild():
 
 def test_view_with_ops_disables_apply_when_ops_list_empty():
     view = FinalReviewView(_owner_member(), ops=[])
-    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup")
+    apply_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup"
+    )
     assert apply_btn.disabled is True
 
 
 def test_view_with_ops_enables_apply_when_ops_non_empty():
     view = FinalReviewView(_owner_member(), ops=[_op("bind_channel")])
-    apply_btn = next(c for c in view.children if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup")
+    apply_btn = next(
+        c
+        for c in view.children
+        if isinstance(c, discord.ui.Button) and c.label == "Apply staged setup"
+    )
     assert apply_btn.disabled is False
 
 
@@ -322,8 +335,10 @@ async def test_view_apply_preserves_draft_on_failed_result():
     edit_kwargs = interaction.followup.edit_message.await_args.kwargs
     assert isinstance(edit_kwargs["view"], PartialApplyRecoveryView)
     embed = edit_kwargs["embed"]
-    assert "partially applied" in (embed.description or "").lower() or \
-        "partial" in (embed.title or "").lower()
+    assert (
+        "partially applied" in (embed.description or "").lower()
+        or "partial" in (embed.title or "").lower()
+    )
 
 
 @pytest.mark.asyncio
@@ -799,7 +814,9 @@ async def test_retry_after_binding_failed_does_not_duplicate_resource():
     # (Retry) succeeds.  If the retry button accidentally called the
     # path more than once, the test's await count would jump.
     ops_path_mock.side_effect = [
-        ApplySummary(failed=["create_channel: resource provisioning outcome='binding_failed'"]),
+        ApplySummary(
+            failed=["create_channel: resource provisioning outcome='binding_failed'"]
+        ),
         ApplySummary(applied=["create_channel"]),
     ]
 
@@ -825,9 +842,7 @@ async def test_retry_after_binding_failed_does_not_duplicate_resource():
         await view._apply.callback(interaction)
         clear_mock.assert_not_called()
         complete_mock.assert_not_called()
-        recovery_view = interaction.followup.edit_message.await_args.kwargs[
-            "view"
-        ]
+        recovery_view = interaction.followup.edit_message.await_args.kwargs["view"]
         assert isinstance(recovery_view, PartialApplyRecoveryView)
 
         # 2. Retry from the recovery view: success → clear + complete.
@@ -963,9 +978,7 @@ def test_setup_complete_view_has_delete_and_keep_buttons():
 
     view = SetupCompleteView(_owner_member(), summary=ApplySummary(applied=["x"]))
     custom_ids = {
-        c.custom_id
-        for c in view.children
-        if isinstance(c, discord.ui.Button)
+        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
     }
     assert custom_ids == {"setup_complete:delete", "setup_complete:keep"}
 
@@ -1140,8 +1153,7 @@ async def test_setup_complete_keep_closes_view_without_deletion():
         keep_btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button)
-            and c.custom_id == "setup_complete:keep"
+            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_complete:keep"
         )
         await keep_btn.callback(interaction)
 

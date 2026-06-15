@@ -210,7 +210,8 @@ async def test_gather_skips_scan_when_cache_already_meets_floor(monkeypatch):
     # Pre-seed the cache so the floor is satisfied.
     for i in range(ai_conversation_service.MIN_FLOOR_TURNS):
         ai_conversation_service.append(
-            1, 2,
+            1,
+            2,
             user_id=42,
             role="user",
             text=f"cached-{i}",

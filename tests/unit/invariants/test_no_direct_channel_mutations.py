@@ -102,9 +102,7 @@ def test_channel_views_route_mutations_through_service():
     offenders: list[str] = []
     for path in sorted(_CHANNEL_VIEWS.rglob("*.py")):
         tree = ast.parse(path.read_text(), filename=str(path))
-        offenders.extend(
-            f"{path.name}: {hit}" for hit in _forbidden_calls(tree)
-        )
+        offenders.extend(f"{path.name}: {hit}" for hit in _forbidden_calls(tree))
     assert not offenders, (
         "Channel-lifecycle violation: a channel view performs a direct channel "
         "mutation instead of routing through ChannelLifecycleService "

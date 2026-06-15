@@ -228,7 +228,9 @@ def test_cleanup_applies_to(setting, action, expected):
 
 def test_effective_cleanup_limit_clamps_into_window():
     assert (
-        ModerationPolicy(post_action_cleanup_limit=50).effective_post_action_cleanup_limit
+        ModerationPolicy(
+            post_action_cleanup_limit=50
+        ).effective_post_action_cleanup_limit
         == 50
     )
     # Above the automatic-sweep ceiling clamps down.
@@ -240,7 +242,9 @@ def test_effective_cleanup_limit_clamps_into_window():
     )
     # Below 1 clamps up.
     assert (
-        ModerationPolicy(post_action_cleanup_limit=0).effective_post_action_cleanup_limit
+        ModerationPolicy(
+            post_action_cleanup_limit=0
+        ).effective_post_action_cleanup_limit
         == 1
     )
 

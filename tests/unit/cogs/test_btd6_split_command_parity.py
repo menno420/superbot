@@ -51,9 +51,7 @@ def _prefix_leaves(cog: commands.Cog) -> set[str]:
 
 def _slash_leaves(cog: commands.Cog) -> set[str]:
     return {
-        c.name
-        for c in cog.walk_app_commands()
-        if isinstance(c, app_commands.Command)
+        c.name for c in cog.walk_app_commands() if isinstance(c, app_commands.Command)
     }
 
 

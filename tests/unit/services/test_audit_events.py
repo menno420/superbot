@@ -63,9 +63,9 @@ async def test_emit_audit_action_payload_has_all_eleven_fields():
     payload = mock_emit.await_args.kwargs
     for field in PAYLOAD_FIELDS:
         assert field in payload, f"missing {field}"
-    assert set(payload.keys()) == set(PAYLOAD_FIELDS), (
-        f"unexpected extra fields: {set(payload.keys()) - set(PAYLOAD_FIELDS)}"
-    )
+    assert set(payload.keys()) == set(
+        PAYLOAD_FIELDS
+    ), f"unexpected extra fields: {set(payload.keys()) - set(PAYLOAD_FIELDS)}"
 
 
 @pytest.mark.asyncio
