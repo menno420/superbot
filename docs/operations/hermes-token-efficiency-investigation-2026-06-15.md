@@ -208,3 +208,12 @@ and re-installs the sync-fixed SOUL.md. Then `sudo systemctl restart hermes-gate
 - Verify the SOUL.md byte size (now guarded in `install-soul.sh`) — at 6478 bytes it is ~81% of the
   likely ~8 KB ceiling, so don't grow the operating prompt without trimming.
 - Adopt a **`/new`-per-task** habit (the SOUL.md already preaches it) — the cheapest fix of all.
+
+### Live outcome (2026-06-15)
+
+The dominant lever turned out to be model **capability**, not window: Hermes ran on a free, quantized
+Flash tier (`stepfun/step-3.7-flash:free` via Nous Research's own endpoint), and the 256K window was
+never the bottleneck. Resolved by switching to the owner's **own OpenAI key** → `openai/gpt-5.4-mini`
+(a non-Claude frontier-family model — keeps the Q-0117 independent-reviewer property *and* fixes
+reliability). Full record + switch commands: [`hermes-control-plane.md`](hermes-control-plane.md)
+§ Model / provider.

@@ -54,6 +54,9 @@ the mirror stays clean and this won't recur.
 hermes config                                  # Show Hermes' current configuration.
 hermes config edit                             # Safely edit config.yaml (e.g. trim joke personalities).
 hermes config check                            # Validate the config after editing.
+hermes model                                   # Interactive model picker. NOTE: the built-in list is stale (offers gpt-4o-mini) — `config set model` is authoritative.
+hermes config set model openai/gpt-5.4-mini    # Set the model (provider/model). Set the matching key first (below). Restart after.
+hermes config set OPENAI_API_KEY sk-...        # Use your own key directly — no OpenRouter needed (also ANTHROPIC_API_KEY for anthropic/* models). Set on the VPS; never share.
 hermes --help                                  # Explore the rest of the Hermes CLI.
 cat ~/.hermes/SOUL.md                          # View Hermes' current base identity / operating prompt.
 ls ~/.hermes/skills/                           # List the skills Hermes has installed.
