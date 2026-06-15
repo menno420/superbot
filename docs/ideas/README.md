@@ -97,6 +97,14 @@ Current broad captures:
   drift this session caught — `create_panel.py` was marked "uses the provisioning lane" while the
   source called `guild.create_text_channel` directly. Lifts the per-PR `test_no_direct_*`
   invariants up to the docs that describe them. Small/safe grooming-lane candidate.
+- [`decade-queue-lead-with-the-active-thread-2026-06-15.md`](./decade-queue-lead-with-the-active-thread-2026-06-15.md) —
+  **workflow / process (2026-06-15, band-#900 reconciliation pass):** lead the decade queue with the
+  thread that filled the *previous* band's "buffer / steered" slot, as a named top-tier slot, instead
+  of deriving the queue from the static P0→P1→safety priority list. Four bands running had their
+  headline work happen in the buffer slot (Railway · Hermes control-plane · mining structures), so the
+  queue's lead keeps mis-predicting where the next band's energy goes. The *promote*-recurring-buffer
+  complement to the slot-carry *detect* + the §6 owner-slot *demote* rules. Docs/process-only;
+  promote into the routine prompt if a fifth band repeats the pattern.
 - [`reconciliation-slot-carry-tracker-2026-06-14.md`](./reconciliation-slot-carry-tracker-2026-06-14.md) —
   **workflow / tooling (2026-06-14, band-#870 reconciliation pass):** a stdlib check that parses the
   chain of `reconciliation-pass-*.md` §4 queue tables and reports, per recurring slot, how many
