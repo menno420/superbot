@@ -1,7 +1,7 @@
-"""Recipe browser — grouped by item type (Swords → variants), craft-on-select.
+"""Recipe browser — Category → Type → Variant drill-down, craft-on-select.
 
-Owner UX ask (2026-06-15): group every tier of an item under one type, opened to
-its variants — replacing the old flat, paginated recipe list.
+Owner UX (2026-06-15): a small category first select (Weapons / Armour / Tools …),
+then types (Swords / Helmets …), then variants — instead of one crowded list.
 """
 
 from __future__ import annotations
@@ -15,7 +15,9 @@ import pytest
 from views.mining.recipe_browser import (
     MiningRecipeBrowserView,
     _base_type,
+    _category_of,
     _grouped,
+    _types_by_category,
 )
 
 _AUTHOR = SimpleNamespace(id=1, display_name="Digger")
@@ -35,42 +37,63 @@ def test_base_type_is_the_last_word():
     assert _base_type("torch") == "torch"
 
 
+def test_category_of_maps_slot_then_kind_to_section():
+    assert _category_of("iron sword") == "Weapons"
+    assert _category_of("iron helmet") == "Armour"
+    assert _category_of("iron shield") == "Armour"
+    assert _category_of("iron pickaxe") == "Tools"
+    assert _category_of("lantern") == "Tools"
+    assert _category_of("stone hut") == "Structures"
+
+
 def test_grouped_collapses_variants_under_one_type():
-    groups = _grouped()
-    # Every sword tier lives under one "sword" group, not as separate entries.
-    assert "sword" in groups
-    swords = [name for name, _ in groups["sword"]]
+    swords = [name for name, _ in _grouped()["sword"]]
     assert len(swords) > 1
     assert all(_base_type(name) == "sword" for name in swords)
 
 
 @pytest.mark.asyncio
-async def test_top_level_shows_a_type_select_not_a_flat_list():
-    with _inventory_patch({"wood": 100}):
+async def test_top_level_shows_a_small_category_select():
+    with _inventory_patch():
         view = await MiningRecipeBrowserView.create(_AUTHOR, 99)
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
-    buttons = {b.label for b in view.children if isinstance(b, discord.ui.Button)}
-    # One type select (no flat recipe list, no Prev/Next pager).
     assert len(selects) == 1
-    assert 1 < len(selects[0].options) <= 25  # one option per base type
-    assert "↩ Workshop" in buttons
+    labels = {o.label for o in selects[0].options}
+    # A small, semantic first select — not the ~14 crowded types.
+    assert {"Weapons", "Armour", "Tools"} <= labels
+    assert len(selects[0].options) <= 8
 
 
 @pytest.mark.asyncio
-async def test_choosing_a_type_opens_only_that_type_variants():
+async def test_category_opens_only_its_types():
     with _inventory_patch():
-        view = await MiningRecipeBrowserView.create(_AUTHOR, 99, base_type="sword")
-    selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
+        view = await MiningRecipeBrowserView.create(_AUTHOR, 99, category="Armour")
+    select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
     buttons = {b.label for b in view.children if isinstance(b, discord.ui.Button)}
-    assert len(selects) == 1  # the variant select
-    assert all(_base_type(o.value) == "sword" for o in selects[0].options)
-    assert "↩ Types" in buttons  # back to the type list (level 2 → level 1)
+    armour_types = set(_types_by_category()["Armour"])
+    assert armour_types  # non-empty
+    assert {o.value for o in select.options} <= armour_types
+    assert "↩ Categories" in buttons
+
+
+@pytest.mark.asyncio
+async def test_type_opens_only_that_type_variants():
+    with _inventory_patch():
+        view = await MiningRecipeBrowserView.create(
+            _AUTHOR, 99, category="Weapons", base_type="sword"
+        )
+    select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
+    buttons = {b.label for b in view.children if isinstance(b, discord.ui.Button)}
+    assert all(_base_type(o.value) == "sword" for o in select.options)
+    assert "↩ Types" in buttons
 
 
 @pytest.mark.asyncio
 async def test_variant_select_crafts_through_the_workflow():
     with _inventory_patch():
-        view = await MiningRecipeBrowserView.create(_AUTHOR, 99, base_type="sword")
+        view = await MiningRecipeBrowserView.create(
+            _AUTHOR, 99, category="Weapons", base_type="sword"
+        )
     variant_select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
     interaction = MagicMock()
 

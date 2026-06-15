@@ -1,13 +1,15 @@
-"""Mining recipe browser — grouped by item type, then variants.
+"""Mining recipe browser — Category → Type → Variant drill-down.
 
-Owner UX ask (2026-06-15): don't list every tier of a sword separately — group
-into **Swords**, **Pickaxes**, **Helmets** … and open a type to its variants
-(wood → diamond). The base type is the last word of the product name
-("iron **sword**" → ``sword``), so the grouping is derived from the recipe set,
-never a hand-kept list. Two levels (type → variant) each fit one 25-option
-select, so the old Prev/Next paging is gone.
+Owner UX (live session 2026-06-15): the flat recipe list, then the full type
+list, were both too crowded. Three small levels instead:
 
-Crafting itself stays the one shared :func:`services.mining_workflow.craft`.
+* **Category** — Weapons / Armour / Tools / Structures / Items (derived from the
+  item's equip slot + kind, never a hand-kept list).
+* **Type** — Swords / Pickaxes / Helmets … (the product's last word).
+* **Variant** — wood → diamond, which crafts on select.
+
+Each level fits one 25-option select, so there is no pagination. Crafting itself
+stays the one shared :func:`services.mining_workflow.craft`.
 """
 
 from __future__ import annotations
@@ -18,14 +20,33 @@ import discord
 
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
-from utils import db
+from utils import db, equipment
 from utils.mining import items, structures, workshop
 from utils.mining.recipes import load_recipes
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
 
-# Per base-type emoji so the type list reads at a glance. Unknown types fall back
-# to the item-kind emoji (tools/structures/…).
+# Semantic categories (a small first select), in display order.
+_CATEGORY_ORDER = ["Weapons", "Armour", "Tools", "Structures", "Items"]
+_CATEGORY_EMOJI = {
+    "Weapons": "⚔️",
+    "Armour": "🛡️",
+    "Tools": "🛠️",
+    "Structures": "🏛️",
+    "Items": "🎒",
+}
+_ARMOUR_SLOTS = frozenset(
+    {
+        equipment.HELMET,
+        equipment.CHESTPLATE,
+        equipment.LEGGINGS,
+        equipment.BOOTS,
+        equipment.SHIELD,
+    }
+)
+_TOOL_SLOTS = frozenset({equipment.TOOL, equipment.LIGHT, equipment.CHARM})
+
+# Per base-type emoji so each type reads at a glance.
 _TYPE_EMOJI: dict[str, str] = {
     "sword": "🗡️",
     "shield": "🛡️",
@@ -52,8 +73,22 @@ _KIND_EMOJI: dict[str, str] = {
 
 
 def _base_type(product: str) -> str:
-    """The grouping key for a product — its last word ("iron sword" → "sword")."""
+    """The type key for a product — its last word ("iron sword" → "sword")."""
     return product.split()[-1].lower()
+
+
+def _category_of(sample_name: str) -> str:
+    """The semantic category for an item, from its equip slot then its kind."""
+    slot = equipment.slot_for(sample_name)
+    if slot == equipment.WEAPON:
+        return "Weapons"
+    if slot in _ARMOUR_SLOTS:
+        return "Armour"
+    if slot in _TOOL_SLOTS:
+        return "Tools"
+    if items.classify(sample_name).value == "structure":
+        return "Structures"
+    return "Items"
 
 
 def _pluralize(base: str) -> str:
@@ -77,6 +112,19 @@ def _grouped() -> dict[str, list[tuple[str, dict[str, int]]]]:
     return groups
 
 
+def _types_by_category() -> dict[str, list[str]]:
+    """Category → its base types (name-ordered)."""
+    by_cat: dict[str, list[str]] = defaultdict(list)
+    for base, variants in _grouped().items():
+        by_cat[_category_of(variants[0][0])].append(base)
+    return {cat: sorted(types) for cat, types in by_cat.items()}
+
+
+def _ordered_categories() -> list[str]:
+    present = set(_types_by_category())
+    return [c for c in _CATEGORY_ORDER if c in present]
+
+
 def _affordable(materials: dict[str, int], inventory: dict[str, int]) -> bool:
     return all(inventory.get(mat, 0) >= qty for mat, qty in materials.items())
 
@@ -85,10 +133,11 @@ async def build_recipe_embed(
     user_id: int,
     guild_id: int,
     *,
+    category: str | None = None,
     base_type: str | None = None,
     note: str = "",
 ) -> discord.Embed:
-    """The type list (``base_type=None``) or one type's variants."""
+    """Categories (top), one category's types, or one type's variants."""
     inventory = await db.get_mining_inventory(str(user_id), guild_id)
     forge_level = (await db.get_structures(user_id, guild_id)).get(structures.FORGE, 0)
     groups = _grouped()
@@ -97,54 +146,99 @@ async def build_recipe_embed(
     if note:
         embed.description = note
 
-    if base_type is None:
-        # Level 1 — the type list, with a craftable-now count per type.
-        embed.set_footer(text="Pick a type below to see its variants.")
-        for base in sorted(groups):
+    if base_type is not None:
+        # Level 2 — variants of the chosen type, with have/need per material.
+        variants = groups.get(base_type, [])
+        emoji = _type_emoji(base_type, variants[0][0] if variants else base_type)
+        embed.title = f"📖 {emoji} {_pluralize(base_type).title()}"
+        embed.set_footer(text="Pick a variant to craft  •  ↩ Types to go back")
+        if not variants:
+            embed.add_field(
+                name="Nothing here", value="No recipes of this type.", inline=False
+            )
+        for name, materials in variants:
+            have_lines = ", ".join(
+                f"{mat} {min(inventory.get(mat, 0), qty)}/{qty}"
+                for mat, qty in sorted(materials.items())
+            )
+            if not structures.meets_forge_requirement(name, forge_level):
+                marker = "🔒"
+                need = structures.forge_level_name(
+                    structures.forge_level_required(name)
+                )
+                have_lines += f"\n🔥 needs **{need}** (`!forge`)"
+            else:
+                marker = "✅" if _affordable(materials, inventory) else "▫️"
+            embed.add_field(
+                name=f"{marker} {name.title()}", value=have_lines, inline=True
+            )
+        return embed
+
+    if category is not None:
+        # Level 1 — the types within a category, with a craftable-now count.
+        embed.title = f"📖 {_CATEGORY_EMOJI.get(category, '')} {category}".strip()
+        embed.set_footer(text="Pick a type  •  ↩ Categories to go back")
+        for base in _types_by_category().get(category, []):
             variants = groups[base]
             craftable = sum(1 for _, m in variants if _affordable(m, inventory))
-            emoji = _type_emoji(base, variants[0][0])
             value = f"{len(variants)} variant{'s' * (len(variants) != 1)}"
             if craftable:
                 value += f"  •  ✅ {craftable} craftable now"
             embed.add_field(
-                name=f"{emoji} {_pluralize(base).title()}",
+                name=f"{_type_emoji(base, variants[0][0])} {_pluralize(base).title()}",
                 value=value,
                 inline=True,
             )
         return embed
 
-    # Level 2 — variants of the chosen type, with have/need per material.
-    variants = groups.get(base_type, [])
-    emoji = _type_emoji(base_type, variants[0][0] if variants else base_type)
-    embed.title = f"📖 {emoji} {_pluralize(base_type).title()}"
-    embed.set_footer(text="Pick a variant to craft it  •  ↩ Types to go back")
-    if not variants:
+    # Level 0 — the categories.
+    embed.set_footer(text="Pick a category to browse.")
+    by_cat = _types_by_category()
+    for cat in _ordered_categories():
+        types = by_cat[cat]
+        total = sum(len(groups[b]) for b in types)
         embed.add_field(
-            name="Nothing here", value="No recipes of this type.", inline=False
+            name=f"{_CATEGORY_EMOJI.get(cat, '')} {cat}".strip(),
+            value=f"{len(types)} type{'s' * (len(types) != 1)} · {total} items",
+            inline=True,
         )
-    for name, materials in variants:
-        have_lines = ", ".join(
-            f"{mat} {min(inventory.get(mat, 0), qty)}/{qty}"
-            for mat, qty in sorted(materials.items())
-        )
-        if not structures.meets_forge_requirement(name, forge_level):
-            marker = "🔒"
-            need = structures.forge_level_name(structures.forge_level_required(name))
-            have_lines += f"\n🔥 needs **{need}** (`!forge`)"
-        else:
-            marker = "✅" if _affordable(materials, inventory) else "▫️"
-        embed.add_field(name=f"{marker} {name.title()}", value=have_lines, inline=True)
     return embed
 
 
-class _TypeSelect(discord.ui.Select):
-    """Level 1 — pick an item type (Swords / Pickaxes / …)."""
+class _CategorySelect(discord.ui.Select):
+    """Level 0 — pick a category (Weapons / Armour / Tools / …)."""
 
-    def __init__(self, inventory: dict[str, int]) -> None:
+    def __init__(self) -> None:
+        by_cat = _types_by_category()
         groups = _grouped()
         options = []
-        for base in sorted(groups):
+        for cat in _ordered_categories():
+            types = by_cat[cat]
+            total = sum(len(groups[b]) for b in types)
+            options.append(
+                discord.SelectOption(
+                    label=cat,
+                    value=cat,
+                    description=f"{len(types)} types · {total} items"[:100],
+                    emoji=_CATEGORY_EMOJI.get(cat),
+                ),
+            )
+        super().__init__(placeholder="Pick a category…", options=options[:25], row=0)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        if not await safe_defer(interaction):
+            return
+        view: MiningRecipeBrowserView = self.view  # type: ignore[assignment]
+        await view.render(interaction, category=self.values[0])
+
+
+class _TypeSelect(discord.ui.Select):
+    """Level 1 — pick a type within a category (Swords / Pickaxes / …)."""
+
+    def __init__(self, category: str, inventory: dict[str, int]) -> None:
+        groups = _grouped()
+        options = []
+        for base in _types_by_category().get(category, []):
             variants = groups[base]
             craftable = sum(1 for _, m in variants if _affordable(m, inventory))
             desc = f"{len(variants)} variant{'s' * (len(variants) != 1)}"
@@ -158,13 +252,13 @@ class _TypeSelect(discord.ui.Select):
                     emoji=_type_emoji(base, variants[0][0]),
                 ),
             )
-        super().__init__(placeholder="Browse a type…", options=options[:25], row=0)
+        super().__init__(placeholder="Pick a type…", options=options[:25], row=0)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
             return
         view: MiningRecipeBrowserView = self.view  # type: ignore[assignment]
-        await view.render(interaction, base_type=self.values[0])
+        await view.render(interaction, category=view.category, base_type=self.values[0])
 
 
 class _VariantSelect(discord.ui.Select):
@@ -197,6 +291,7 @@ class _VariantSelect(discord.ui.Select):
         )
         await view.render(
             interaction,
+            category=view.category,
             base_type=view.base_type,
             note=("✅ " if result.ok else "❌ ") + result.message,
             ok=result.ok,
@@ -204,7 +299,7 @@ class _VariantSelect(discord.ui.Select):
 
 
 class MiningRecipeBrowserView(HubView):
-    """Type select → variant select (crafts); a child of the mining hub."""
+    """Category → type → variant (crafts); a child of the Workshop hub."""
 
     SUBSYSTEM = "mining"
 
@@ -213,10 +308,12 @@ class MiningRecipeBrowserView(HubView):
         author: discord.Member | discord.User,
         guild_id: int,
         *,
+        category: str | None = None,
         base_type: str | None = None,
     ) -> None:
         super().__init__(author)
         self.guild_id = guild_id
+        self.category = category
         self.base_type = base_type
 
     @classmethod
@@ -225,32 +322,38 @@ class MiningRecipeBrowserView(HubView):
         author: discord.Member | discord.User,
         guild_id: int,
         *,
+        category: str | None = None,
         base_type: str | None = None,
     ) -> MiningRecipeBrowserView:
         """Async factory — affordability marks depend on inventory."""
-        view = cls(author, guild_id, base_type=base_type)
+        view = cls(author, guild_id, category=category, base_type=base_type)
         inventory = await db.get_mining_inventory(str(author.id), guild_id)
-        if base_type is None:
-            view.add_item(_TypeSelect(inventory))
-        else:
+        if base_type is not None:
             variants = _grouped().get(base_type, [])
             if variants:
                 view.add_item(_VariantSelect(variants, inventory))
-            view.add_item(_BackToTypesButton())
+            view.add_item(_BackButton("↩ Types", "types"))
+        elif category is not None:
+            view.add_item(_TypeSelect(category, inventory))
+            view.add_item(_BackButton("↩ Categories", "categories"))
+        else:
+            view.add_item(_CategorySelect())
         return view
 
     async def render(
         self,
         interaction: discord.Interaction,
         *,
-        base_type: str | None,
+        category: str | None = None,
+        base_type: str | None = None,
         note: str = "",
         ok: bool | None = None,
     ) -> None:
-        """Rebuild for a new type / craft result."""
+        """Rebuild for a new level / craft result."""
         embed = await build_recipe_embed(
             self._author.id,
             self.guild_id,
+            category=category,
             base_type=base_type,
             note=note,
         )
@@ -259,6 +362,7 @@ class MiningRecipeBrowserView(HubView):
         new_view = await MiningRecipeBrowserView.create(
             self._author,
             self.guild_id,
+            category=category,
             base_type=base_type,
         )
         await safe_edit(interaction, embed=embed, view=new_view)
@@ -279,15 +383,19 @@ class MiningRecipeBrowserView(HubView):
         self.stop()
 
 
-class _BackToTypesButton(discord.ui.Button):
-    """Return from a type's variants to the type list (level 2 → level 1)."""
+class _BackButton(discord.ui.Button):
+    """Step one level up: variants → types (keep category) or types → categories."""
 
-    def __init__(self) -> None:
-        super().__init__(label="↩ Types", style=discord.ButtonStyle.secondary, row=2)
+    def __init__(self, label: str, to: str) -> None:
+        super().__init__(label=label, style=discord.ButtonStyle.secondary, row=2)
+        self._to = to
 
     async def callback(self, interaction: discord.Interaction) -> None:
         view: MiningRecipeBrowserView = self.view  # type: ignore[assignment]
-        await view.render(interaction, base_type=None)
+        if self._to == "types":
+            await view.render(interaction, category=view.category, base_type=None)
+        else:
+            await view.render(interaction, category=None, base_type=None)
 
 
 __all__ = ["MiningRecipeBrowserView", "build_recipe_embed"]
