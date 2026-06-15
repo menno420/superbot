@@ -27,12 +27,12 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
-- `claude/hopeful-allen-r7qsg8` · Railway log-triage analyzer (Slice 4, Q-0130) — deterministic
-  content-free triage tool + skill wiring · `scripts/hermes/log_triage.py` +
-  `docs/operations/hermes-skills/log-triage.md` + `scripts/hermes/skills/log-triage/` · 2026-06-15
 
 ## Recently cleared
 
+- `claude/hopeful-allen-r7qsg8` · Railway log-triage analyzer (Slice 4, Q-0130) — deterministic
+  content-free triage tool + skill wiring · `scripts/hermes/log_triage.py` +
+  `docs/operations/hermes-skills/log-triage.md` · 2026-06-15 · **PR #906 (merged)**
 - `claude/eval-coverage-expansion-2026-06-15` · P1-1 eval-coverage expansion — 6 golden
   tool-selection probes (14→20/34) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-15 ·
   **PR #886 (open, auto-merge on green)**
