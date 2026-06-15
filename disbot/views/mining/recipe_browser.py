@@ -41,7 +41,6 @@ _ARMOUR_SLOTS = frozenset(
         equipment.CHESTPLATE,
         equipment.LEGGINGS,
         equipment.BOOTS,
-        equipment.SHIELD,
     },
 )
 _TOOL_SLOTS = frozenset({equipment.TOOL, equipment.LIGHT, equipment.CHARM})
@@ -80,7 +79,8 @@ def _base_type(product: str) -> str:
 def _category_of(sample_name: str) -> str:
     """The semantic category for an item, from its equip slot then its kind."""
     slot = equipment.slot_for(sample_name)
-    if slot == equipment.WEAPON:
+    # Shields sit with Weapons (combat gear; they now carry a damage bonus too).
+    if slot in (equipment.WEAPON, equipment.SHIELD):
         return "Weapons"
     if slot in _ARMOUR_SLOTS:
         return "Armour"
@@ -105,19 +105,36 @@ def _type_emoji(base: str, sample: str) -> str:
 
 
 def _grouped() -> dict[str, list[tuple[str, dict[str, int]]]]:
-    """All recipes grouped by base type, each group's variants name-ordered."""
+    """All recipes grouped by base type, each group's variants ordered by rarity
+    (starter → bronze → … → diamond), so a type opens weakest-first.
+    """
     groups: dict[str, list[tuple[str, dict[str, int]]]] = defaultdict(list)
-    for name, materials in sorted(load_recipes().items()):
+    for name, materials in load_recipes().items():
         groups[_base_type(name)].append((name, materials))
+    for variants in groups.values():
+        variants.sort(key=lambda nm: (equipment.material_rank(nm[0]), nm[0]))
     return groups
 
 
+def _slot_rank(sample_name: str) -> int:
+    """A type's ordering position — its equip-slot index in ``equipment.SLOTS``
+    (so armour reads head-to-toe helmet→boots and weapons read sword→shield);
+    non-equippable types (structures) sort last, then alphabetically.
+    """
+    slot = equipment.slot_for(sample_name)
+    return equipment.SLOTS.index(slot) if slot in equipment.SLOTS else 99
+
+
 def _types_by_category() -> dict[str, list[str]]:
-    """Category → its base types (name-ordered)."""
-    by_cat: dict[str, list[str]] = defaultdict(list)
+    """Category → its base types, ordered by equip slot (body order)."""
+    by_cat: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for base, variants in _grouped().items():
-        by_cat[_category_of(variants[0][0])].append(base)
-    return {cat: sorted(types) for cat, types in by_cat.items()}
+        sample = variants[0][0]
+        by_cat[_category_of(sample)].append((base, sample))
+    return {
+        cat: [b for b, _ in sorted(pairs, key=lambda bs: (_slot_rank(bs[1]), bs[0]))]
+        for cat, pairs in by_cat.items()
+    }
 
 
 def _ordered_categories() -> list[str]:

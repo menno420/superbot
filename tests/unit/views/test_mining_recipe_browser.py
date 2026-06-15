@@ -39,11 +39,35 @@ def test_base_type_is_the_last_word():
 
 def test_category_of_maps_slot_then_kind_to_section():
     assert _category_of("iron sword") == "Weapons"
+    assert _category_of("iron shield") == "Weapons"  # shields are combat gear
     assert _category_of("iron helmet") == "Armour"
-    assert _category_of("iron shield") == "Armour"
     assert _category_of("iron pickaxe") == "Tools"
     assert _category_of("lantern") == "Tools"
     assert _category_of("stone hut") == "Structures"
+
+
+def test_variants_within_a_type_are_ordered_by_rarity():
+    from utils import equipment
+
+    swords = [name for name, _ in _grouped()["sword"]]
+    ranks = [equipment.material_rank(s) for s in swords]
+    assert ranks == sorted(ranks)  # starter first → diamond last
+    assert swords[0] == "sword" and swords[-1] == "diamond sword"
+
+
+def test_armour_types_are_in_body_order_helmet_to_boots():
+    assert _types_by_category()["Armour"] == [
+        "helmet",
+        "chestplate",
+        "leggings",
+        "boots",
+    ]
+
+
+def test_weapons_category_includes_shields_after_swords():
+    weapons = _types_by_category()["Weapons"]
+    assert "sword" in weapons and "shield" in weapons
+    assert weapons.index("sword") < weapons.index("shield")
 
 
 def test_grouped_collapses_variants_under_one_type():
