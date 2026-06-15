@@ -53,10 +53,16 @@ positives.
 ## Handoff / next
 
 - **BUG-0009 slices 2-3 remain OPEN** (same proven shape: deterministic builder → pre-emptive
-  floor): **per-level item lists** (Geraldo per-level groupings — a different data domain, the
-  Geraldo crafting items) and **newest-towers ordering** (needs a tower release-order signal;
-  check whether `towers.json` carries one before building). Both are good next ▶ startable slices
-  in the band-#900 queue slot 6. Then security service tiers 1+2 (slot 9, plan-first).
+  floor):
+  - **per-level item lists** (Geraldo per-level groupings) — a *different* data domain (the
+    Geraldo crafting items); needs its own data exploration. ▶ startable.
+  - **newest-towers ordering** — ⚠ **data-gated, NOT buildable now**: `towers.json` carries **no**
+    release-order / release-date field (I checked — fields are id/canonical/aliases/category/
+    base_cost/description/upgrade_paths/upgrade_costs/wiki_url). A correct deterministic answer
+    needs a *sourced* release order; hardcoding one would reintroduce the exact mislabel class
+    this bug is about, and the data is provenance-gated (ADR-006 / the `!btd6ops seed-data` blob
+    lane, pinned dump SHA). Do the data-sourcing first (owner/provenance), then the builder.
+  - Then security service tiers 1+2 (slot 9, plan-first).
 - **The pre-emptive-floor wiring will be duplicated** by slices 2-3 — see the session idea below
   for the seam that would collapse it.
 - ⚠ **Pre-existing ledger drift (NOT mine):** `check_current_state_ledger --strict` reports 9
