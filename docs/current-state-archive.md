@@ -13,6 +13,23 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#820 (2026-06-14, hardening P0-4 PR 1 — channel clone + permission-overwrite convergence,
+  Q-0100)** — the first half of the server-mgmt channel-ownership convergence: `.set_permissions()`
+  and `.clone()` are now pinned by the channel-mutation invariant, routed through
+  **`ChannelLifecycleService`**. The service gained `set_overwrite` (REVERSIBLE) + `clone`
+  (COMPENSATABLE) ops — request fields `overwrite_target_id/type/overwrites` + `clone_name`;
+  target resolution via `guild_resources.resolve_role/resolve_member` (the guild-resource
+  invariant, **not** raw `guild.get_*`); a `LookupError`→failed-step path for a vanished
+  overwrite target; audit `_summary` branches. Every direct call site migrated (`set_access`,
+  `lock_channel`, `unlock_channel`, `modify_permissions`, `create_channel_with_role`'s
+  post-create overwrite, and `views/channels/restrict_panel.py`'s batched apply mapped back to
+  its succeeded/forbidden/failed buckets); `visibility_panel.py` was a map false-positive
+  (already routes through `governance_service`). `test_no_direct_channel_mutations._FORBIDDEN`
+  now pins `.set_permissions` + `.clone`. **Layering side-quest:** the convergence pushed
+  `channel_cog.py` over the 800-LOC ceiling, so the `!list` paginator view (~180 LOC) was
+  extracted to `views/channels/list_panel.py` (cog 739→640 LOC). `check_quality --full` green
+  (9446); arch 0 errors.
+
 - **#814 + #815 (2026-06-14, CI efficiency arc — Q-0126 + ~3× test speedup)** — `code-quality.yml`
   dominated June Actions cost (940 runs / 2,396 min/mo). **#814** shipped the safe levers
   (`concurrency: cancel-in-progress` on superseded PR runs · `pip` + `.mypy_cache` caching) +

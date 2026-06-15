@@ -224,6 +224,13 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#892 + #889 (2026-06-15, docs-only loop hygiene)** — **#892:** captured a Hermes
+  token-efficiency root-cause + an investigation plan for the next session
+  (`docs/operations/hermes-control-plane.md` + a research note). **#889:** a `CLASS: feature` mining
+  Phase-2 work order arrived during a FIX phase, so the phase gate correctly **gated the build**
+  (Q-0114) — the work was already turn-key in the structures plan, so the PR is loop cleanup only
+  (the `dispatch-phase-gate-precheck` Q-0089 idea — run the gate at the *dispatcher* — + disposed the
+  redundant slice-opener #888 per Q-0125). Docs only.
 - **#884 (2026-06-14, mining §7.5 Vault — a per-player safe stash)** — the first executed slice of
   the mining structures lane (the owner's bot-side steer for the night routine). A protected store
   separate from the active pack: `vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources` on the
@@ -255,6 +262,11 @@ Source code and merged PRs win over anything written here.
   **#886 (2026-06-15) advanced the ratchet 14 → 20/34** — 6 more golden tool-selection probes
   (`get_ai_tool_catalog` + the `btd6_cumulative_cost`/`paragon_requirements`/`monkey_knowledge`/
   `mode`/`list_roster` lookups), floor raised to 20.
+  **#895 (2026-06-15) advanced the ratchet 20 → 27/34** — 7 probes covering the **whole non-BTD6
+  uncovered surface**: the 5 server-introspection tools (`get_server_overview`/`list_server_channels`/
+  `list_server_roles`/`lookup_member`/`list_all_members`) + `get_ai_policy_explanation` +
+  `diagnostics_health_snapshot`; the acknowledged-uncovered set is now **exactly the 7 specialized
+  BTD6 lookups** (`_ACK_BTD6_TOOLS`), floor raised to 27. One more turn-key tranche reaches 34/34.
   **Still owed (P1-1):** the live-quality battery (needs prod creds) + absence-guard **Layer B**
   (design-for-review). *(This session's docs close-out tidy merged as **#883** — `▶ Next action`
   refresh + #872–876 ledger drift cleared.)*
@@ -432,26 +444,7 @@ Source code and merged PRs win over anything written here.
   readiness-map drift:** the `create_panel` row claimed "uses the resource-provisioning lane" but
   the source called Discord directly until this PR. No migration. `check_quality --full` green
   (9453); arch 0 errors. **P0-4 complete; next P0 = P0-2 media retention (Q-0099).**
-- **#820 (2026-06-14, hardening P0-4 PR 1 — channel clone + permission-overwrite convergence,
-  Q-0100)** — the first half of the server-mgmt channel-ownership convergence: `.set_permissions()`
-  and `.clone()` are now pinned by the channel-mutation invariant, routed through
-  **`ChannelLifecycleService`**. The service gained `set_overwrite` (REVERSIBLE) + `clone`
-  (COMPENSATABLE) ops — request fields `overwrite_target_id/type/overwrites` + `clone_name`;
-  target resolution via `guild_resources.resolve_role/resolve_member` (the guild-resource
-  invariant, **not** raw `guild.get_*`); a `LookupError`→failed-step path for a vanished
-  overwrite target; audit `_summary` branches. Every direct call site migrated (`set_access`,
-  `lock_channel`, `unlock_channel`, `modify_permissions`, `create_channel_with_role`'s
-  post-create overwrite, and `views/channels/restrict_panel.py`'s batched apply mapped back to
-  its succeeded/forbidden/failed buckets); `visibility_panel.py` was a map false-positive
-  (already routes through `governance_service`). `test_no_direct_channel_mutations._FORBIDDEN`
-  now pins `.set_permissions` + `.clone`. **Layering side-quest:** the convergence pushed
-  `channel_cog.py` over the 800-LOC ceiling, so the `!list` paginator view (~180 LOC) was
-  extracted to `views/channels/list_panel.py` (cog 739→640 LOC — a real layering smell removed,
-  not dodged). `check_quality --full` green (9446); arch 0 errors. **P0-4 PR 2 (creation/category
-  under `ResourceProvisioningPipeline`) carried** — resume recipe in the open `continue` issue
-  (ad-hoc operator `!create`/`!evt`/`!bulkcreate` channels have no declared binding; design
-  that fit).
-- **Older merges (#815 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#820 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
