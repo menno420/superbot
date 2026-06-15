@@ -83,6 +83,11 @@ async def test_pagination_engages_past_25_recipes():
     fat = {f"gadget {i:02d}": {"wood": 1} for i in range(60)}
     with (
         _inventory_patch(),
+        patch(
+            "views.mining.recipe_browser.db.get_structures",
+            new_callable=AsyncMock,
+            return_value={},
+        ),
         patch.object(recipe_browser, "load_recipes", return_value=fat),
         patch(
             "views.mining.recipe_browser.items.classify",

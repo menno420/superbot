@@ -14,7 +14,8 @@ standing steer (2026-06-14): *bot-side product work, mining cog + related, is we
 
 - The slices are **independent and additive** — pick any **▶ startable** one, ship it, pick the next.
   Recommended order is **D (skill tree) → A (vault cap) → B (forge) → E (respec) → F (titles) → C
-  (home)**, but they don't hard-depend on each other except where noted.
+  (home)**, but they don't hard-depend on each other except where noted. **Shipped: D (#891) · A
+  (#897) · B (#905). Next ▶ = E (respec polish) · F (titles) · C (home).**
 - **One PR per slice**, born-red per Q-0133 (open the `.sessions/` card `in-progress`, flip to
   `complete` last). Keep runtime PRs small and focused (CLAUDE.md).
 - **Verify every slice** before flipping the card: `python3.10 scripts/check_quality.py --full`
@@ -128,15 +129,27 @@ the hub nudges *"pack full — stash at the 🏦 Vault."* Optionally gate vault 
 hard-block mining) so it's additive, not a nerf — the owner hasn't ok'd a hard cap.
 **Tests:** cap math + the "stash all clears the warning" path. **Gate:** none. **Size:** small.
 
-## Slice B — Forge structure · **▶ startable**
+## Slice B — Forge structure · **✅ SHIPPED (PR #905, 2026-06-15)**
+
+> **Done 2026-06-15.** A **built** structure (coin + material sink) that gates the **top two** gear
+> tiers (bronze/iron/silver gear, tools, and structures stay forge-free — additive). Migration
+> `073_mining_structures.sql` (generic `mining_structures(user,guild,structure,level)` — reused by
+> Slice C Home) + `utils/db/games/mining_structures.py` (`set_structure_level` on the RS02 boundary
+> ratchet); pure `utils/mining/structures.py` (build-cost ladder + the `equipment.gear_tier`-derived
+> requirement map: gold → Forge I, diamond → Forge II); `mining_workflow.build_structure` (coin debit
+> + material consume + level raise in ONE transaction, the `vault_upgrade` precedent) and a
+> `_forge_gate` on `craft`/`quick_craft` that does **zero extra I/O** for forge-free recipes
+> (existing craft paths unchanged); `🔥 Forge` hub panel + `!forge` + the recipe browser shows the
+> lock. Numbers pinned in [`forge-numbers-2026-06-15.md`](forge-numbers-2026-06-15.md). CI green;
+> arch 0. **Follow-up:** Home (Slice C) reuses the `mining_structures` table + `build_structure`.
 
 A **built** structure (coin + material sink) that gates higher-tier gear crafting — ties structures
-into the gear ladder. Recommended: shared `migration 072_mining_structures.sql`
-(`mining_structures(user_id, guild_id, structure TEXT, level INT, PK(user,guild,structure))`) +
-`utils/db/games/mining_structures.py`; `mining_workflow.build_structure` (debits coins/materials
-atomically, raises the level); **Forge tier N unlocks tier-N gear recipes** in the recipe browser /
-`craft` (a forge-level check in `_resolve_recipe`). `🏗️ Build`-area UI or a `🔥 Forge` panel.
-**Tests:** build debits + level-up; recipe gating. **Gate:** none (pick simple gating). **Size:** medium.
+into the gear ladder. Shipped on the generic `mining_structures` table (`migration 073` — 072 was
+taken by the Vault-cap slice) + `utils/db/games/mining_structures.py`; `mining_workflow.build_structure`
+(debits coins/materials atomically, raises the level); **Forge tier N unlocks the top gear tiers**
+(gold at Forge I, diamond at Forge II) via a `_forge_gate` in `craft`/`quick_craft` + the recipe
+browser. `🔥 Forge` panel. **Tests:** build debits + level-up; recipe gating; the
+free-tier-no-extra-I/O additive property. **Gate:** none. **Size:** medium.
 
 ## Slice E — Respec polish · **▶ startable** (after D)
 
