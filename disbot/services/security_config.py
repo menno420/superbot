@@ -169,17 +169,26 @@ async def load_policy(guild_id: int) -> SecurityPolicy:
     enabled = await resolve_value(guild_id, SUBSYSTEM, "enabled", DEFAULT_ENABLED)
 
     raid_enabled = await resolve_value(
-        guild_id, SUBSYSTEM, "raid_enabled", DEFAULT_RAID_ENABLED,
+        guild_id,
+        SUBSYSTEM,
+        "raid_enabled",
+        DEFAULT_RAID_ENABLED,
     )
     raid_join_count = _coerce_int(
         await resolve_value(
-            guild_id, SUBSYSTEM, "raid_join_count", DEFAULT_RAID_JOIN_COUNT,
+            guild_id,
+            SUBSYSTEM,
+            "raid_join_count",
+            DEFAULT_RAID_JOIN_COUNT,
         ),
         DEFAULT_RAID_JOIN_COUNT,
     )
     raid_window_seconds = _coerce_int(
         await resolve_value(
-            guild_id, SUBSYSTEM, "raid_window_seconds", DEFAULT_RAID_WINDOW_SECONDS,
+            guild_id,
+            SUBSYSTEM,
+            "raid_window_seconds",
+            DEFAULT_RAID_WINDOW_SECONDS,
         ),
         DEFAULT_RAID_WINDOW_SECONDS,
     )
@@ -209,14 +218,20 @@ async def load_policy(guild_id: int) -> SecurityPolicy:
     )
 
     age_enabled = await resolve_value(
-        guild_id, SUBSYSTEM, "age_enabled", DEFAULT_AGE_ENABLED,
+        guild_id,
+        SUBSYSTEM,
+        "age_enabled",
+        DEFAULT_AGE_ENABLED,
     )
     age_min_days = _coerce_int(
         await resolve_value(guild_id, SUBSYSTEM, "age_min_days", DEFAULT_AGE_MIN_DAYS),
         DEFAULT_AGE_MIN_DAYS,
     )
     age_action_raw = await resolve_value(
-        guild_id, SUBSYSTEM, "age_action", DEFAULT_AGE_ACTION,
+        guild_id,
+        SUBSYSTEM,
+        "age_action",
+        DEFAULT_AGE_ACTION,
     )
     age_action = (
         str(age_action_raw).strip().lower()
@@ -225,17 +240,24 @@ async def load_policy(guild_id: int) -> SecurityPolicy:
     )
 
     alert_channel_raw = await resolve_value(
-        guild_id, SUBSYSTEM, "alert_channel", DEFAULT_ALERT_CHANNEL,
+        guild_id,
+        SUBSYSTEM,
+        "alert_channel",
+        DEFAULT_ALERT_CHANNEL,
     )
 
     return SecurityPolicy(
         enabled=enabled,
         raid_enabled=raid_enabled,
         raid_join_count=_clamp(
-            raid_join_count, MIN_RAID_JOIN_COUNT, MAX_RAID_JOIN_COUNT,
+            raid_join_count,
+            MIN_RAID_JOIN_COUNT,
+            MAX_RAID_JOIN_COUNT,
         ),
         raid_window_seconds=_clamp(
-            raid_window_seconds, MIN_RAID_WINDOW_SECONDS, MAX_RAID_WINDOW_SECONDS,
+            raid_window_seconds,
+            MIN_RAID_WINDOW_SECONDS,
+            MAX_RAID_WINDOW_SECONDS,
         ),
         raid_slowmode_seconds=_clamp(raid_slowmode_seconds, 0, MAX_SLOWMODE_SECONDS),
         raid_lockdown_seconds=_clamp(raid_lockdown_seconds, 0, MAX_LOCKDOWN_SECONDS),

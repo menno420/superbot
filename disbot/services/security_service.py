@@ -104,7 +104,9 @@ def reset_state() -> None:
 
 
 def account_age_days(
-    member: discord.Member, *, now: datetime | None = None,
+    member: discord.Member,
+    *,
+    now: datetime | None = None,
 ) -> float | None:
     """Days since ``member``'s account was created, or ``None`` if unknown.
 
@@ -168,7 +170,9 @@ async def _post_alert(
     channel = guild_resources.resolve_channel(guild, channel_id=channel_id)
     if channel is None:
         logger.warning(
-            "security: alert channel %s not found in guild %s", channel_id, guild.id,
+            "security: alert channel %s not found in guild %s",
+            channel_id,
+            guild.id,
         )
         return
     try:
@@ -181,7 +185,7 @@ async def _post_alert(
 
 async def _apply_slowmode(channel: discord.abc.GuildChannel, seconds: int) -> None:
     try:
-        await channel.edit(  # type: ignore[union-attr]
+        await channel.edit(  # type: ignore[attr-defined]
             slowmode_delay=seconds,
             reason="Security: raid lockdown",
         )
@@ -196,13 +200,14 @@ async def _lift_lockdown(
 ) -> None:
     """Restore a channel's prior slowmode and clear the guild's lockdown flag."""
     try:
-        await channel.edit(  # type: ignore[union-attr]
+        await channel.edit(  # type: ignore[attr-defined]
             slowmode_delay=prior_slowmode,
             reason="Security: raid lockdown lifted",
         )
     except Exception:  # noqa: BLE001 — best-effort restore
         logger.exception(
-            "security: failed to restore slowmode on channel %s", channel.id,
+            "security: failed to restore slowmode on channel %s",
+            channel.id,
         )
     finally:
         _locked_guilds.discard(guild_id)
@@ -221,7 +226,8 @@ async def _hold_then_lift(
 
 
 def _raid_alert_embed(
-    policy: security_config.SecurityPolicy, count: int,
+    policy: security_config.SecurityPolicy,
+    count: int,
 ) -> discord.Embed:
     desc = (
         f"**{count} accounts** joined within {policy.raid_window_seconds}s "
@@ -235,7 +241,9 @@ def _raid_alert_embed(
     else:
         desc += "\nSuggested action: enable a slow join-gate / raise slowmode."
     return discord.Embed(
-        title="🚨 Raid suspected", description=desc, color=_ALERT_COLOR,
+        title="🚨 Raid suspected",
+        description=desc,
+        color=_ALERT_COLOR,
     )
 
 
@@ -275,7 +283,8 @@ async def _emit(event: str, **payload: object) -> None:
 
 
 async def _handle_raid(
-    member: discord.Member, policy: security_config.SecurityPolicy,
+    member: discord.Member,
+    policy: security_config.SecurityPolicy,
 ) -> tuple[bool, int]:
     """Record the join and, if a raid is detected, lock down + alert.
 
@@ -285,7 +294,8 @@ async def _handle_raid(
     """
     guild = member.guild
     count = _raid_tracker.record_and_count(
-        guild.id, window_seconds=policy.raid_window_seconds,
+        guild.id,
+        window_seconds=policy.raid_window_seconds,
     )
     if count < policy.raid_join_count:
         return False, count
@@ -295,7 +305,8 @@ async def _handle_raid(
     _locked_guilds.add(guild.id)
     if policy.applies_raid_slowmode:
         channel = guild_resources.resolve_channel(
-            guild, channel_id=policy.raid_slowmode_channel_id,
+            guild,
+            channel_id=policy.raid_slowmode_channel_id,
         )
         if channel is not None:
             prior = getattr(channel, "slowmode_delay", 0) or 0
@@ -303,7 +314,10 @@ async def _handle_raid(
             if policy.raid_lockdown_seconds > 0:
                 asyncio.ensure_future(
                     _hold_then_lift(
-                        guild.id, channel, prior, float(policy.raid_lockdown_seconds),
+                        guild.id,
+                        channel,
+                        prior,
+                        float(policy.raid_lockdown_seconds),
                     ),
                 )
             else:  # lockdown 0 = apply-and-hold-until-restart; clear the flag now
@@ -316,13 +330,17 @@ async def _handle_raid(
             )
     await _post_alert(guild, policy.alert_channel_id, _raid_alert_embed(policy, count))
     await _emit(
-        EVT_RAID_DETECTED, guild_id=guild.id, join_count=count, user_id=member.id,
+        EVT_RAID_DETECTED,
+        guild_id=guild.id,
+        join_count=count,
+        user_id=member.id,
     )
     return True, count
 
 
 async def _handle_account_age(
-    member: discord.Member, policy: security_config.SecurityPolicy,
+    member: discord.Member,
+    policy: security_config.SecurityPolicy,
 ) -> tuple[bool, float | None, str | None]:
     """Flag/reject a too-young account. Returns ``(flagged, age_days, action)``."""
     age = account_age_days(member)

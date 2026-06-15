@@ -226,6 +226,7 @@ def test_advanced_top_level_set_today():
         "games",
         "help",
         "moderation",
+        "security",
         "server_management",
         "settings",
         "utility",
