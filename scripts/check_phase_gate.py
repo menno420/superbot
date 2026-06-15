@@ -13,6 +13,15 @@ gate applies to agent-originated *features*; bug/UX/docs/correctness work flows
 freely) — the phase signal is what tells a routine whether feature-origination
 is even in-season.
 
+**Scope (Q-0114 clarification, owner-stated 2026-06-15):** this gate is for
+**agent-SELF-originated** features — ones an agent invents mid-session. A
+**dispatched** work order (fired at a routine via the ``/fire`` endpoint, even
+when tagged ``CLASS: feature``) is **owner-directed** and flows freely like a bug
+fix — do NOT gate it. So a routine resolving a ``feature`` work order splits on
+*origin*: dispatched ⇒ build; self-invented ⇒ guard with ``--require-invent`` and,
+in fix-phase, capture-and-stop. (Background: the router Q-0114 entry +
+``docs/ideas/dispatch-phase-gate-precheck-2026-06-15.md``.)
+
 ## The signal
 
 Two hard conditions must both hold to be in **invent-phase**:
