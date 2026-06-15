@@ -135,10 +135,14 @@ dispatched work, or the next plan slice.
 
 8. HAND OFF + CLOSE THE LOOP (every run — this is a turn of SuperBot's self-improvement loop). When
    you stop (you neared ~700K, or finished a clean sub-step whose remaining work is clearly scoped —
-   never mid-sub-step), SHARPEN current-state ▶ Next action so the next dispatch resumes from live
-   state (the next Hermes fire reads it); if a continuation trigger is wired, also open a `continue`
-   issue with explicit next steps (what's DONE, what REMAINS, where you stopped, the files/tests).
+   never mid-sub-step), SHARPEN current-state ▶ Next action with the explicit handoff (what's DONE,
+   what REMAINS, where you stopped, the files/tests) — that IS the continuation; the next Hermes-cron
+   dispatch reads it from live state. Do NOT open a `continue` issue (no routine consumes them now).
    End with a final handoff stating what you did + why, the next agent's continuation steps, and any
+   remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you
+   couldn't retire). Fold in: ONE genuine new idea (Q-0089, never forced filler); one honest line
+   reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED.
+   Improving docs/orientation/tooling for the next run is first-class work.
    remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you
    couldn't retire). Fold in: ONE genuine new idea (Q-0089, never forced filler); one honest line
    reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED.
