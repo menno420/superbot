@@ -41,6 +41,32 @@ capabilities.
   session, not a rider on anything.** Until then the documented drift is accepted. → This means it
   can safely **drop from Hermes' memory** (point it at Q-0085 / production-deployment.md instead).
 
+## Hermes memory — recommended lean set (owner applies on the VPS)
+
+The owner shared Hermes' 4 live memory entries. Per SOUL.md's own rule — *"direct memory is a tiny
+sticky note; the real memory is the repo"* — 3 of 4 duplicate SOUL.md / the `dispatch` skill /
+current-state.md and should be **deleted** (they burn context and risk drifting from the docs).
+
+**KEEP (rewritten lean — the genuinely non-repo stickies):**
+
+```
+[infra] SuperBot deploys on merge → Railway project reliable-grace / service "superbot".
+        Hermes model = gpt-5.4-mini on the owner's own OpenAI key (custom OpenAI provider,
+        base https://api.openai.com/v1). Dispatch cron job id = 8c02f8431f37.
+[rule]  Bug reports / notes go to docs/health/bug-book.md or docs/current-state.md —
+        NEVER docs/ideas/* (ideas are for genuine new features). Hermes tripped on this (#888).
+[prefs] <owner working style / nicknames only — keep here and nowhere else>
+```
+
+**DELETE (redundant with durable docs that load every session):**
+- *Dispatch bridge* → fully in the `dispatch` skill + `hermes-dispatch-bridge.md`.
+- *SuperBot memory summary* (orientation / read-path / next-action source) → all in SOUL.md.
+  Its Python-drift fact → now Q-0085 / `production-deployment.md` (see Findings above), so drop it.
+- *Overseer model* (role, born-red-PR-per-session) → SOUL.md "WHO YOU ARE" + Q-0133; only the cron
+  id was worth keeping (folded into `[infra]` above).
+- *Dispatch bridge pattern* (the four-section TASK/CONTEXT/ACCEPTANCE/NOTES + `routine_fire.py`
+  format) → verbatim in `dispatch.md` lines 65–79.
+
 ## Status
 
 Checkpoint PR opened born-red (Q-0133); flips to `complete` as the final step after the cleanup
