@@ -164,7 +164,19 @@ table → a `player_titles` store + an equipped-title field surfaced on the Char
 Slice D (mastery triggers) for the skill titles; milestone titles need only existing depth/XP data.
 **Size:** small–medium.
 
-## Slice C — Home structure / profile backdrop · **▶ startable (art-light)**
+## Slice C — Home structure / profile backdrop · **✅ SHIPPED (PR #910, 2026-06-15)**
+
+> **Done 2026-06-15.** A built **Home** structure (coin + material sink) that gives the Character
+> card a backdrop colour by level (Cozy Cabin → Stone Keep → Grand Hall), **art-light v1 — no
+> sprites**, so it is unrelated to the owner-blocked V-16 phase-2 PNG work. Reused #905's generic
+> `mining_structures` table + `build_structure` (generalized off the forge-specific copy: a
+> per-structure registry in `utils/mining/structures.py` — `build_cost`/`level_name`/`max_level`/
+> `display_name`; forge helpers delegate, byte-identical). `utils/character_render.py` gained a
+> `CharacterSpec.backdrop` + `home_backdrop(level)` palette (level 0 → `None` → byte-identical),
+> wired through `render_character_for(..., home_level=)` at both card render sites
+> (`gear_panel` · `mining_cog`). UI: `views/mining/home_panel.py` + a `🏠 Home` hub button + `!home`.
+> Numbers pinned in [`home-numbers-2026-06-15.md`](home-numbers-2026-06-15.md). **Follow-up
+> (owner-gated):** V-16 phase 2 swaps the flat backdrop for owner-art frames once the PNG pack lands.
 
 The §7.5 "Home (hub + profile backdrop)". v1 with **zero custom art**: a built Home structure that
 adds a personalized header/backdrop to the Character card (PIL `character_render` already composites;

@@ -27,6 +27,9 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
+  `disbot/{utils/mining/structures,services/mining_workflow,utils/character_render,views/mining,
+  cogs/mining_cog,utils/mining/market}` + plan/numbers · 2026-06-15
 
 ## Recently cleared
 

@@ -105,11 +105,14 @@ async def send_character_doll(interaction: discord.Interaction) -> None:
     import io
 
     from utils.character_render import render_character_for
+    from utils.mining import structures
 
     if interaction.guild_id is None:
         return
     equipped = await db.get_equipment(str(interaction.user.id), interaction.guild_id)
-    png = render_character_for(equipped)
+    # Slice C: the player's built Home selects the card backdrop (0 = default).
+    built = await db.get_structures(interaction.user.id, interaction.guild_id)
+    png = render_character_for(equipped, home_level=built.get(structures.HOME, 0))
     if png is None:
         return
     try:

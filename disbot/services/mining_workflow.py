@@ -645,35 +645,57 @@ async def vault_upgrade(user_id: int, guild_id: int) -> TradeResult:
     )
 
 
+# Per-structure economy-audit reason for a build (the money-flow tag).
+_STRUCTURE_BUILD_REASON = {
+    structures.FORGE: market.FORGE_BUILD_REASON,
+    structures.HOME: market.HOME_BUILD_REASON,
+}
+
+
+def _build_success_suffix(structure: str, new_level: int) -> str:
+    """The structure-specific reward line appended to a successful build.
+
+    Forge advertises the gear tier it just unlocked; Home advertises the
+    Character-card backdrop it just unlocked.  Generic structures get nothing.
+    """
+    if structure == structures.FORGE:
+        unlocked = structures.tiers_unlocked_at(new_level)
+        return f" Now crafts **{unlocked[-1]}-tier** gear." if unlocked else ""
+    if structure == structures.HOME:
+        return " It now frames your Character card."
+    return ""
+
+
 async def build_structure(
     user_id: int,
     guild_id: int,
     structure: str = structures.FORGE,
 ) -> TradeResult:
-    """Build/upgrade *structure* one level — the §7.5 coin + material sink (Slice B).
+    """Build/upgrade *structure* one level — the §7.5 coin + material sink.
 
     Debits coins, consumes the build materials, and raises the structure level by
     one in ONE transaction (the ``vault_upgrade`` precedent extended with a
-    material leg — every part commits together or not at all).  The forge gates
-    higher-tier gear crafting (``_forge_gate``); building it is never required to
-    play, only to reach gold/diamond gear.
+    material leg — every part commits together or not at all).  Building is never
+    required to play: the Forge (Slice B) gates only gold/diamond gear crafting,
+    and the Home (Slice C) is a purely cosmetic Character-card backdrop.
     """
     structure = structure.strip().lower()
     if not structures.is_structure(structure):
         return TradeResult(
             False,
             f"**{structure or '(blank)'}** isn't a buildable structure — "
-            "try `!forge`.",
+            "try `!forge` or `!home`.",
         )
+    display = structures.display_name(structure)
     suid = str(user_id)
     built = await db.get_structures(user_id, guild_id)
     level = built.get(structure, 0)
-    cost = structures.forge_build_cost(level)
+    cost = structures.build_cost(structure, level)
     if cost is None:
-        name = structures.forge_level_name(level)
+        name = structures.level_name(structure, level)
         return TradeResult(
             False,
-            f"Your Forge is already at its maximum level (**{name}**).",
+            f"Your {display} is already at its maximum level (**{name}**).",
         )
     # Material check first, for a clean message (the craft precedent) — the coin
     # debit inside the txn handles the affordability failure.
@@ -682,10 +704,12 @@ async def build_structure(
     if missing is not None:
         return TradeResult(
             False,
-            f"Building the Forge needs {workshop.describe_materials(cost.materials)} "
+            f"Building the {display} needs "
+            f"{workshop.describe_materials(cost.materials)} "
             f"plus {cost.coins} 🪙 — you're short on materials.",
         )
     deltas = {mat: -qty for mat, qty in cost.materials.items()}
+    reason = _STRUCTURE_BUILD_REASON[structure]
     try:
         async with db.transaction() as conn:
             new_balance = await economy_service.debit_in_txn(
@@ -693,7 +717,7 @@ async def build_structure(
                 guild_id,
                 user_id,
                 cost.coins,
-                reason=market.FORGE_BUILD_REASON,
+                reason=reason,
                 actor_id=user_id,
             )
             await db.apply_inventory_deltas(suid, guild_id, deltas, conn=conn)
@@ -708,23 +732,17 @@ async def build_structure(
         balance = await db.get_coins(user_id, guild_id)
         return TradeResult(
             False,
-            f"Building the Forge costs **{cost.coins}** 🪙 — you only have "
+            f"Building the {display} costs **{cost.coins}** 🪙 — you only have "
             f"**{balance}** 🪙.",
         )
-    await _emit_balance(
-        guild_id,
-        user_id,
-        -cost.coins,
-        new_balance,
-        market.FORGE_BUILD_REASON,
-    )
-    new_name = structures.forge_level_name(level + 1)
-    unlocked = structures.tiers_unlocked_at(level + 1)
-    unlock_line = f" Now crafts **{unlocked[-1]}-tier** gear." if unlocked else ""
+    await _emit_balance(guild_id, user_id, -cost.coins, new_balance, reason)
+    new_name = structures.level_name(structure, level + 1)
+    suffix = _build_success_suffix(structure, level + 1)
     return TradeResult(
         True,
-        f"Forge built to **{new_name}** for {workshop.describe_materials(cost.materials)} "
-        f"+ {cost.coins} 🪙.{unlock_line} Balance: **{new_balance}** 🪙.",
+        f"{display} built to **{new_name}** for "
+        f"{workshop.describe_materials(cost.materials)} "
+        f"+ {cost.coins} 🪙.{suffix} Balance: **{new_balance}** 🪙.",
         -cost.coins,
         new_balance,
     )

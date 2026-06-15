@@ -262,6 +262,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#910 (2026-06-15, mining Slice C — the Home structure: character-card backdrop)** — the next
+  mining-structures slice (the plan's last startable structure), built on a fresh resume now that
+  **#905 (Forge)** shipped the generic `mining_structures` foundation; zero open PRs at start (no
+  collision). A **built** Home (coin + material sink) that personalizes the Character card —
+  **art-light v1**: Home level selects a backdrop colour (Cozy Cabin → Stone Keep → Grand Hall),
+  **no sprites**, so unrelated to the owner-blocked V-16 phase-2 PNG pack. **Fully additive** — Home
+  level 0 renders **byte-identical** (proven by test). Generalized #905's forge-specific
+  `build_structure` off a per-structure registry in `utils/mining/structures.py`
+  (`build_cost`/`level_name`/`max_level`/`display_name`; forge helpers delegate, byte-identical);
+  `utils/character_render.py` gained `CharacterSpec.backdrop` + `home_backdrop(level)` wired through
+  `render_character_for(..., home_level=)` at both card render sites; UI =
+  `views/mining/home_panel.py` + a `🏠 Home` hub button + `!home`. Numbers pinned in
+  `docs/planning/home-numbers-2026-06-15.md`. `check_quality --full` green (9782); arch 0.
 - **#906 (2026-06-15, Railway log-triage analyzer — Slice 4, Q-0130)** — the band-#900 queue's
   reserved autonomous-loop slot, taken because the work order was empty/stale and the mining lane
   it pointed at was **in flight as #905** (Forge, parallel session — not duplicated). The
