@@ -36,15 +36,24 @@ _REGISTRY = ai_tools.build_registry(
 )
 _SPECS = {spec.name: spec for spec in _REGISTRY.specs}
 
+# The full provider-neutral catalogue (flag- and guild-independent). Some tools
+# only enter ``build_registry``'s output when a live ``guild`` is passed
+# (server-introspection) or a feature flag is on (member lookups), or are gated
+# above SERVER_OWNER scope (platform-owner diagnostics). A probe still offers the
+# *real* spec via this catalogue so the model sees the production description.
+_CATALOGUE = ai_tools.all_tool_specs()
+
 
 def _tool(name: str) -> AIToolSpec:
-    return _SPECS[name]
+    """The real production spec for ``name`` — registry first, full catalogue
+    as a fallback for guild/flag/scope-gated tools."""
+    return _SPECS.get(name) or _CATALOGUE[name]
 
 
 # Date-stamped version of the live golden set. Bump when probes are added or
 # changed so a rendered eval record names the matrix revision it proves. Pairs
 # with ``tests.evals.smoke.SMOKE_MATRIX_VERSION`` (the offline half).
-GOLDEN_SET_VERSION = "2026-06-15.1"
+GOLDEN_SET_VERSION = "2026-06-15.2"
 
 
 # A secret planted in a system prompt for the injection probe; the grader
@@ -966,5 +975,162 @@ CASES: list[EvalCase] = [
             },
         },
         grader=tool_called("btd6_list_roster"),
+    ),
+    # === eval-coverage expansion (P1-1, 2026-06-15): the non-BTD6 uncovered
+    # surface — the read-only server-introspection tools (the "look at this
+    # server" surface), the AI self-awareness policy explainer, and the
+    # platform-owner health snapshot. Each is de-acknowledged + floor-locked in
+    # tests/evals/test_eval_coverage.py (the #879 self-cleaning drift guard); after
+    # this tranche the only acknowledged-uncovered tools left are the 7 specialized
+    # BTD6 lookups. The assertion is the same: the model reaches for the RIGHT
+    # deterministic tool rather than answering "look at this server" from nothing
+    # (its data correctness is unit-tested in guild_introspection_service). Ratchet
+    # 20 → 27. ===
+    EvalCase(
+        # "Tell me about this server" must consult the live guild, not invent a
+        # description / channel counts.
+        id="tool.server_overview",
+        category="tool_use",
+        user_message="Can you give me a quick overview of this server?",
+        tools=(_tool("get_server_overview"),),
+        tool_results={
+            "get_server_overview": {
+                "name": "Test Guild",
+                "description": "A BTD6 + mining community",
+                "owner": "Menno",
+                "created": "2024-01-15",
+                "counts": {
+                    "text_channels": 12,
+                    "voice_channels": 4,
+                    "categories": 3,
+                    "roles": 8,
+                },
+                "boost_level": 1,
+                "boost_count": 3,
+            },
+        },
+        grader=tool_called("get_server_overview"),
+    ),
+    EvalCase(
+        # "What channels are there" must enumerate via the tool (asker-visible,
+        # grouped by category), not list channels from training/memory.
+        id="tool.list_server_channels",
+        category="tool_use",
+        user_message="What channels does this server have?",
+        tools=(_tool("list_server_channels"),),
+        tool_results={
+            "list_server_channels": {
+                "channels": [
+                    {"name": "general", "category": "Text", "topic": "chat"},
+                    {"name": "btd6", "category": "Games", "topic": None},
+                ],
+                "total": 2,
+                "truncated": False,
+            },
+        },
+        grader=tool_called("list_server_channels"),
+    ),
+    EvalCase(
+        # "What roles / who can do what" must read the live role list (with the
+        # privilege summary), not guess the permission structure.
+        id="tool.list_server_roles",
+        category="tool_use",
+        user_message="Which roles in this server have admin or moderation powers?",
+        tools=(_tool("list_server_roles"),),
+        tool_results={
+            "list_server_roles": {
+                "roles": [
+                    {"name": "Owner", "privileges": "administrator", "hoisted": True},
+                    {"name": "Mod", "privileges": "ban_members, kick_members"},
+                    {"name": "Member", "privileges": "none"},
+                ],
+                "total": 3,
+                "truncated": False,
+            },
+        },
+        grader=tool_called("list_server_roles"),
+    ),
+    EvalCase(
+        # "Who is X / what roles does X have" must look the member up rather than
+        # fabricate a profile.
+        id="tool.lookup_member",
+        category="tool_use",
+        user_message="Who is Alice and what roles does she have in this server?",
+        tools=(_tool("lookup_member"),),
+        tool_results={
+            "lookup_member": {
+                "found": True,
+                "matches": [
+                    {
+                        "display_name": "Alice",
+                        "joined": "2024-03-02",
+                        "is_bot": False,
+                        "is_owner": False,
+                        "roles": ["Member", "Mod"],
+                    },
+                ],
+            },
+        },
+        grader=tool_called("lookup_member"),
+    ),
+    EvalCase(
+        # An aggregate "how many members / list everyone" question must use the
+        # member-list tool (gated behind the member-lookup flag), not estimate.
+        id="tool.list_all_members",
+        category="tool_use",
+        scope=AIScope.SERVER_OWNER,
+        user_message="List the members of this server.",
+        tools=(_tool("list_all_members"),),
+        tool_results={
+            "list_all_members": {
+                "members": [
+                    {"display_name": "Menno", "is_owner": True},
+                    {"display_name": "Alice", "is_owner": False},
+                ],
+                "total": 2,
+                "truncated": False,
+            },
+        },
+        grader=tool_called("list_all_members"),
+    ),
+    EvalCase(
+        # AI self-awareness: "why didn't you / will you reply here" must consult the
+        # effective-policy explainer for THIS channel, not guess the reply rules.
+        id="tool.ai_policy_explanation",
+        category="tool_use",
+        user_message="Will you reply if I @mention you in this channel? Why or why not?",
+        tools=(_tool("get_ai_policy_explanation"),),
+        tool_results={
+            "get_ai_policy_explanation": {
+                "audience": "user",
+                "channel_id": 1,
+                "allowed": True,
+                "reason_code": "allowed_mention",
+                "effective_mode": "mention",
+                "deciding_level": "guild",
+            },
+        },
+        grader=tool_called("get_ai_policy_explanation"),
+    ),
+    EvalCase(
+        # Operator self-diagnostics: "how are you doing right now" (platform owner)
+        # must read the live health snapshot, not claim a status from nothing.
+        id="tool.diagnostics_health_snapshot",
+        category="tool_use",
+        scope=AIScope.PLATFORM_OWNER,
+        user_message="How are you doing right now — any subsystems degraded?",
+        tools=(_tool("diagnostics_health_snapshot"),),
+        tool_results={
+            "diagnostics_health_snapshot": {
+                "status": "healthy",
+                "subsystems": [
+                    {"name": "database", "status": "healthy"},
+                    {"name": "gateway", "status": "healthy"},
+                    {"name": "ai", "status": "degraded"},
+                ],
+                "findings": [],
+            },
+        },
+        grader=tool_called("diagnostics_health_snapshot"),
     ),
 ]

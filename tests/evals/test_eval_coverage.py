@@ -10,8 +10,9 @@ reason.
 
 The acknowledged sets are a **self-cleaning ratchet, not a permanent exemption**:
 they are the explicit, reviewable *pick-list of today's coverage gap* (8/34
-tools, 2/16 tasks at creation, 2026-06-14). This module fails on three drift
-directions, each with an actionable message:
+tools, 2/16 tasks at creation 2026-06-14; down to the 7 specialized BTD6 lookups
+as of 2026-06-15). This module fails on three drift directions, each with an
+actionable message:
 
 1. a **new** tool/task that is neither referenced nor acknowledged
    → add an eval case, or acknowledge it here with a reason;
@@ -40,11 +41,15 @@ from services import ai_tools
 # also covered (so the list can only shrink) or no longer exists.
 # --------------------------------------------------------------------------- #
 
-# BTD6 data + answerability lookups. Their *retrieval* is deterministically
-# unit-pinned (tests/unit/services/ — btd6 context/grounding/tooling); a live
-# golden probe (model selects + uses the tool) is the incremental add. The 6
-# highest-value hotspot tools were lifted out into golden probes (cases.py);
-# this set is the remaining pick-list — shrink it as you add more.
+# BTD6 data + answerability lookups — the remaining gap. Their *retrieval* is
+# deterministically unit-pinned (tests/unit/services/ — btd6 context/grounding/
+# tooling); a live golden probe (model selects + uses the tool) is the
+# incremental add. The 6 highest-value hotspot tools (2026-06-14) plus 5 more
+# (2026-06-15) were lifted out into golden probes (cases.py); this set is the
+# remaining pick-list — shrink it as you add more. The read-only
+# server-introspection / AI-policy / diagnostics tools were all covered
+# 2026-06-15 (cases.py "non-BTD6 uncovered surface" tranche), so these 7
+# specialized BTD6 lookups are now the entire acknowledged-uncovered set.
 _ACK_BTD6_TOOLS = frozenset(
     {
         "btd6_bloon_filter",
@@ -57,33 +62,7 @@ _ACK_BTD6_TOOLS = frozenset(
     }
 )
 
-# Read-only guild-introspection tools (the model's "look at this server" surface).
-_ACK_SERVER_TOOLS = frozenset(
-    {
-        "get_server_overview",
-        "list_all_members",
-        "list_server_channels",
-        "list_server_roles",
-        "lookup_member",
-    }
-)
-
-# AI self-awareness tools (audience-tiered, read-only).
-_ACK_AI_INTROSPECTION_TOOLS = frozenset(
-    {
-        "get_ai_policy_explanation",
-    }
-)
-
-# Operator diagnostics (platform-owner scope).
-_ACK_DIAGNOSTICS_TOOLS = frozenset({"diagnostics_health_snapshot"})
-
-_ACK_UNCOVERED_TOOLS = (
-    _ACK_BTD6_TOOLS
-    | _ACK_SERVER_TOOLS
-    | _ACK_AI_INTROSPECTION_TOOLS
-    | _ACK_DIAGNOSTICS_TOOLS
-)
+_ACK_UNCOVERED_TOOLS = _ACK_BTD6_TOOLS
 
 # --------------------------------------------------------------------------- #
 # Acknowledged-uncovered TASKS. Most are exercised by their own service/cog
@@ -112,8 +91,10 @@ _ACK_UNCOVERED_TASKS = frozenset(
 # Coverage floors — the ratchet's teeth. Coverage can only go up: raise these as
 # you add cases (and shrink the acknowledged sets), never lower them to quiet a
 # deleted case. (8 → 14: the 6 BTD6 hotspot tool-selection probes, 2026-06-14.
-# 14 → 20: get_ai_tool_catalog + 5 more BTD6 lookups, 2026-06-15.)
-_TOOL_COVERAGE_FLOOR = 20
+# 14 → 20: get_ai_tool_catalog + 5 more BTD6 lookups, 2026-06-15.
+# 20 → 27: the 5 server-introspection tools + get_ai_policy_explanation +
+# diagnostics_health_snapshot — the whole non-BTD6 uncovered surface, 2026-06-15.)
+_TOOL_COVERAGE_FLOOR = 27
 _TASK_COVERAGE_FLOOR = 2
 
 
