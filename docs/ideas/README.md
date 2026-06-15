@@ -28,9 +28,11 @@ Current broad captures:
   fact has one home and can't contradict itself; optional `check_docs` lint that the pointer stays a
   pointer. → relates `docs/operations/autonomous-routines.md` · Q-0135.
 - [`honcho-memory-evaluation-2026-06-16.md`](./honcho-memory-evaluation-2026-06-16.md) —
-  **evaluated (2026-06-16):** Honcho external agent-memory — **not** for the Hermes control plane
-  (its memory is deliberately a sticky note; the repo is the real memory), but a possible **Someday**
-  option for the bot's per-user AI personalization (V-04), gated on the AI spend ceiling (Q-0082).
+  **bot / AI-lane idea (2026-06-16, owner wants to look into soon):** give SuperBot's AI **per-user
+  memory** — remember a Discord user across conversations (V-04) — via Honcho-style
+  conclusion-extraction memory (better + cheaper than dumping raw history; matters under the Q-0082
+  spend ceiling). Evaluated for Hermes first and rejected there (now a footnote) — it's a **bot**
+  idea, not a Hermes one. Next: promote to a `docs/planning/` plan when the AI lane has capacity.
 - [`executor-chain-trigger-via-workflow-2026-06-15.md`](./executor-chain-trigger-via-workflow-2026-06-15.md) —
   **session idea (2026-06-15, Q-0089, from the eval-coverage 34/34 run; owner live concern):** the
   executor's STEP 3 self-chaining is unreliable because a `continue` issue opened by a routine *session*
