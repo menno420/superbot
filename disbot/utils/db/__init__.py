@@ -109,11 +109,13 @@ from utils.db.games.mining_gear_wear import (
 )
 from utils.db.games.mining_player_state import (
     get_depth,
+    get_equipped_title,
     get_last_broken,
     get_max_depth,
     get_vault_level,
     record_depth,
     set_depth,
+    set_equipped_title,
     set_last_broken,
     set_vault_level,
 )
@@ -323,6 +325,8 @@ __all__ = [
     "set_last_broken",
     "get_vault_level",
     "set_vault_level",
+    "get_equipped_title",
+    "set_equipped_title",
     "get_vault",
     "update_vault_item",
     "get_skills",

@@ -33,6 +33,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/hopeful-allen-sdjqjs` · mining Slices E + F — respec polish + skill/milestone titles ·
+  `skill_service`/`skills_panel` (E) + `utils/mining/titles` + `title_service` + `titles_panel` +
+  `character_panel` + migration 074 (F) · 2026-06-15 · **PR #912 (open, auto-merge on green)**
 - `claude/hopeful-allen-r7qsg8` · Railway log-triage analyzer (Slice 4, Q-0130) — deterministic
   content-free triage tool + skill wiring · `scripts/hermes/log_triage.py` +
   `docs/operations/hermes-skills/log-triage.md` · 2026-06-15 · **PR #906 (merged)**

@@ -38,6 +38,8 @@ _FORBIDDEN_ANY_RECEIVER = {
     "add_game_xp",
     "set_skill_points",
     "set_structure_level",
+    # title selection (Slice F) — written only through services/title_service.py.
+    "set_equipped_title",
 }
 
 # Names that collide with other subsystems (``setup_session.set_depth`` is the
