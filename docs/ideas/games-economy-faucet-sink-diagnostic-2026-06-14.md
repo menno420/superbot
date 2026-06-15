@@ -1,7 +1,11 @@
 # Idea — games economy faucet/sink diagnostic (observe the loop's balance)
 
-> **Status:** `ideas` — not approved; capture only. Routing: **S1 Bot / games**. Raised 2026-06-14
-> from the mining Vault session (#884) + the structures/skill-tree plan.
+> **Status:** `historical` — ✅ **PROMOTED to a plan (2026-06-15, band-#930 reconciliation pass):**
+> the gate below ("promote once a sink-heavy slice lands") was cleared by respec (#912) + the
+> structures sinks (#905/#910), so this capture became the executable
+> [`planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md`](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md).
+> Routing: **S1 Bot / games + observability**. Raised 2026-06-14 from the mining Vault session
+> (#884) + the structures/skill-tree plan. Kept here for provenance.
 
 ## The gap
 

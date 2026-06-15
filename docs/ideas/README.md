@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`control-plane-single-source-pointer-2026-06-15.md`](./control-plane-single-source-pointer-2026-06-15.md) —
+  **session idea (2026-06-15, Q-0089, from the band-#930 reconciliation pass):** the autonomous-loop
+  control-plane truth lives in two prose homes (the canonical table in `autonomous-routines.md` **and**
+  a restating bullet in `current-state.md` Gates) — the second drifted again this pass. Collapse the
+  `current-state.md` bullet to a **pure pointer** at the canonical table (zero verdict prose), so one
+  fact has one home and can't contradict itself; optional `check_docs` lint that the pointer stays a
+  pointer. → relates `docs/operations/autonomous-routines.md` · Q-0135.
 - [`honcho-memory-evaluation-2026-06-16.md`](./honcho-memory-evaluation-2026-06-16.md) —
   **evaluated (2026-06-16):** Honcho external agent-memory — **not** for the Hermes control plane
   (its memory is deliberately a sticky note; the repo is the real memory), but a possible **Someday**
@@ -38,11 +45,12 @@ Current broad captures:
   instead of burning a fire on capture-and-stop (and risking a stuck "slice opener" PR like
   #888). Executor-side gate stays the backstop. → relates Q-0137 Thread 1.
 - [`games-economy-faucet-sink-diagnostic-2026-06-14.md`](./games-economy-faucet-sink-diagnostic-2026-06-14.md) —
-  **S1 games / observability (2026-06-14, the mining Vault session #884):** a read-only
-  `diagnostics_service` provider that sums the economy audit reasons already emitted
-  (`mining:sell_ore` faucet vs. `buy`/`repair`/future `respec`/`build` sinks) into a per-guild net
-  coin-flow view — *observe* the self-balancing loop live, the complement to the static balance sims.
-  Gate: promote once a sink-heavy slice (skill-tree respec / structures) lands.
+  ✅ **PROMOTED to a plan (2026-06-15, band-#930 pass → `historical`):** a read-only operator read
+  model that sums the economy audit ledger (`mining:sell_ore` faucet vs. `buy`/`repair`/`respec`/
+  `build`/`vault_upgrade` sinks) into a per-guild net-coin-flow view — *observe* the self-balancing
+  loop live. The gate (a sink-heavy slice landing) was cleared by respec #912 + structures #905/#910;
+  now [`planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md`](../planning/games-economy-faucet-sink-diagnostic-plan-2026-06-15.md)
+  (turn-key, read-only).
 - [`routine-dispatch-and-staged-reconciliation-2026-06-14.md`](./routine-dispatch-and-staged-reconciliation-2026-06-14.md) —
   **owner design conversation (2026-06-14, → Q-0137 DISCUSS):** three linked threads — (1) dispatch every
   routine via Hermes *except* reconciliation (the watchdog); (2) evolve reconciliation into a staged,
