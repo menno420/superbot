@@ -5467,14 +5467,43 @@ and the bounded-continuation handoff. The routine fleet is now **2 prompts**: **
 execution) + **docs reconciliation**. The night-executor section in `autonomous-routines.md` is
 replaced with a pointer; the fleet/label tables and prose are de-staled (executor/caretaker → dispatch).
 
-**Trigger consequence (owner-managed, NOT changed in this PR).** Dispatch is fired via the API
-(`/fire`) — **Hermes' VPS cron → `scripts/hermes/routine_fire.py`** is now the reliable nightly
-cadence, replacing the GitHub `schedule:` cron (proven to deliver only ~1 run/night, hours late — run
-history 2026-06-13/14/15). The legacy `.github/workflows/executor-nightly.yml` opened `continue` issues
-to fire the now-retired night-executor; **it should be disabled or repointed to fire dispatch.** Left
-for the owner, who manages the VPS/console trigger wiring (this PR is docs-only).
+**Trigger consequence (superseded same day by Q-0146).** This PR assumed the cadence would be driven
+by **Hermes' VPS cron → `routine_fire.py`**, replacing the GitHub `schedule:` cron (proven to deliver
+only ~1 run/night, hours late — run history 2026-06-13/14/15). Hermes then proved unreliable for the
+cadence too, and the owner found a reliable way to set the **console Schedule** trigger — so the final
+trigger is the console Schedule (Q-0146), not Hermes. See Q-0146.
 
 **Home:** `docs/operations/hermes-dispatch-bridge.md` (the one execution prompt) ·
 `docs/operations/autonomous-routines.md` (fleet table → 2 routines; night-executor section → pointer).
 Owner re-pastes the merged dispatch prompt into the routine console; deletes the separate
 night-executor routine.
+
+---
+
+### Q-0146 — Dispatch cadence = the console Schedule trigger, every 2h (2026-06-15)
+
+> **DECISION 2026-06-15 (owner-directed in-session, applied directly).** Owner: *"hermes is proving
+> unreliable for this, and the reason we did the actions in the first place was because I couldn't
+> correctly set the schedule time, but now I found a way to make that work."* The original move to
+> Hermes-dispatch (Q-0136/Q-0145) existed only to work around the owner not being able to set the
+> Claude Code console **Schedule** trigger; once that was solved, the simpler path won.
+
+**Decision.** The **dispatch** routine's cadence is the Claude Code console **Schedule** trigger,
+firing every **2 hours** — cron **`0 */2 * * *`** (UTC), owner-enabled 2026-06-15 for the first
+autonomous day. A scheduled fire carries **no work order**, so the routine advances the next plan
+slice from `current-state.md` ▶ Next action (the dispatch prompt's "empty work order → take the next
+real plan slice" path handles this with no prompt change needed). The API (`/fire`) trigger stays for
+**on-demand** work-order fires (a `/bugreport`, a phone request). This **supersedes** the
+Hermes-VPS-cron / GitHub-`schedule:` cadence plan (both proved unreliable: GitHub `schedule:` delivered
+~1 run/night hours late; Hermes proved unreliable for cadence). The legacy
+`.github/workflows/executor-nightly.yml` is superseded and should be disabled.
+
+**Prompt review (owner asked, "I don't think it needs changes").** Correct — functionally none: the
+scheduled (no-work-order) fire routes through the existing empty-input path → advance the plan. Only
+two self-description references were stale ("Hermes cron" → console Schedule); de-staled in this Q's
+PR. Owner fixed the console-pasted prompts directly; this PR brings the in-repo mirrors + docs to match.
+
+**Home:** `docs/operations/hermes-dispatch-bridge.md` (prompt intro + step 8 + Maintainer setup) ·
+`docs/operations/autonomous-routines.md` (fleet table · Stage-1 note · trigger note · timing caveat) ·
+`docs/current-state.md` stamp-line. **Owner action:** disable `executor-nightly.yml` (the last legacy
+trigger).

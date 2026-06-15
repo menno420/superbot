@@ -25,7 +25,7 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot dispatch** — the single execution routine | API (`/fire`) — Hermes VPS cron · `/bugreport` · continuations | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. Work order is a *hint*; the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → phase gate (Q-0114) |
+| **superbot dispatch** — the single execution routine | **console Schedule** (every 2h, `0 */2 * * *`, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice; a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → phase gate (Q-0114) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
@@ -65,7 +65,7 @@ routine fixes it. Neither routine invents features (the phase gate holds those u
 invent-phase, and these prompts never originate them).
 
 **Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
-issue-triggered; dispatch is fired by Hermes' VPS cron) — real Stage-1 autonomy, earned by the
+issue-triggered; dispatch is fired by the console Schedule every 2h) — real Stage-1 autonomy, earned by the
 Stage-0 calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
 Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
 issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.
@@ -169,13 +169,15 @@ is simply the more steerable one (it takes a work order); the fixed-prompt night
 it couldn't do. So there are now **2 routine prompts total**: **dispatch** (all execution work) +
 **docs reconciliation**.
 
-**Trigger note (owner-managed VPS/console wiring).** Dispatch is fired via the API (`/fire`); the
-reliable nightly cadence is driven by **Hermes' VPS cron** → `scripts/hermes/routine_fire.py`, which
-replaces the GitHub `schedule:` cron. (Proven: the GitHub `schedule:` trigger delivers only ~1
-run/night, hours late — see the timing caveat under Control-plane state.) The legacy
-`.github/workflows/executor-nightly.yml` opened `continue` issues to fire the now-retired
-night-executor; **it should be disabled or repointed to fire dispatch** — left for the owner, who
-manages the trigger wiring. A `continue`-labelled issue is still a valid human-filed handoff signal.
+**Trigger note (Q-0146).** Dispatch's cadence is the Claude Code console **Schedule** trigger —
+every **2 hours**, cron **`0 */2 * * *`** (UTC), owner-enabled 2026-06-15. A scheduled fire has no
+work order, so the routine advances the next plan slice from `current-state.md` ▶ Next action. The
+API (`/fire`) trigger stays for on-demand work-order fires. This replaced the earlier plan to drive
+the cadence from **Hermes' VPS cron** / the GitHub `schedule:` cron — both proved unreliable (the
+GitHub `schedule:` trigger delivered only ~1 run/night, hours late; see the timing caveat under
+Control-plane state). The legacy `.github/workflows/executor-nightly.yml` (it opened `continue`
+issues for the now-retired night-executor) is superseded and should be disabled. A `continue`-labelled
+issue is still a valid human-filed handoff signal a dispatch run reads on its next fire.
 
 ---
 
@@ -184,7 +186,7 @@ manages the trigger wiring. A `continue`-labelled issue is still a valid human-f
 | Label | Opened by | Fires | Effect |
 |---|---|---|---|
 | `reconcile` | the cadence Action (every 30-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
-| `continue` | the **dispatch** routine when it hands off a partly-done plan step (or a maintainer) | a human-filed handoff signal; dispatch (fired by Hermes' cron) resumes from live state + the issue body | resume the explicit handoff; chain again if still unfinished |
+| `continue` | a maintainer filing a handoff (the dispatch routine itself no longer opens them — it hands off via ▶ Next action) | dispatch (fired by the console Schedule) reads it on its next fire | resume the explicit handoff; chain again if still unfinished |
 | `needs-hermes-review` | the **dispatch** routine on a substantial plan-step PR | (a PR label, not an issue) — **Hermes** `superbot-review-merge` | Hermes reviews the diff and **merges if sound**, else requests changes (Q-0117) |
 
 This is the self-driving loop in three signals: reconcile keeps the docs honest, continue
@@ -215,8 +217,8 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
   automatic cadence, disable `.github/workflows/reconciliation-trigger.yml`.
 - **Watch runs:** each fire is a session in your list; a green run-status means it *started and
   exited cleanly*, not that the task succeeded — open the run to confirm.
-- **Cost:** routines draw subscription usage + a daily run cap. The issue-trigger (cadence
-  gated in the Action) + the Hermes-cron dispatch cadence keep volume low. The cap is also a runaway stop.
+- **Cost:** routines draw subscription usage + a daily run cap. The reconciliation issue-trigger
+  (cadence gated in the Action) + the every-2h dispatch Schedule keep volume bounded; the cap is also a runaway stop.
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
 
@@ -250,9 +252,10 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 > (`0 2 * * *` = 02:00 UTC) opened its failure issue at **06:15 UTC (06-13)** and **06:39 UTC
 > (06-14)** — both ~4 h late. The `:17`-minute offset reduces top-of-hour congestion but does **not**
 > eliminate the multi-hour variance. The timezone is correct (crons are always UTC, documented in
-> `executor-nightly.yml`); the lag is GitHub's scheduler. If on-time firing ever matters, drive the
-> cadence from an external scheduler that calls `workflow_dispatch` (or accept the loop is
-> "sometime overnight", not "at 03:17").
+> `executor-nightly.yml`); the lag is GitHub's scheduler. **Resolved 2026-06-15 (Q-0146):** the
+> dispatch cadence moved off GitHub cron entirely onto the Claude Code console **Schedule** trigger
+> (`0 */2 * * *`, every 2h), which fires reliably — this caveat now applies only to the remaining
+> GitHub-`schedule:` workflows (e.g. `backup-db.yml`) and the superseded `executor-nightly.yml`.
 
 ## See also
 
