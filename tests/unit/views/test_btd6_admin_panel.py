@@ -179,7 +179,6 @@ def _make_result(source_key: str, *, ok: bool = True):
 @pytest.mark.asyncio
 async def test_fetch_all_button_runs_each_parent_source(monkeypatch):
     from services import btd6_ingestion_service, btd6_source_registry
-    from views.btd6 import admin_panel
 
     async def _list_enabled(*, limit=100):
         return [{"source_key": "nk_btd6_events"}]

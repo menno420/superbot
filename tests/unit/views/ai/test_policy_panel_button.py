@@ -38,7 +38,8 @@ def test_panel_advertises_policy_button():
 def test_policy_button_is_on_the_second_row_next_to_settings():
     """``Settings`` and ``Policy`` are both success-style entry points
     that open separate ephemeral surfaces; keep them on the same row
-    so the panel layout stays predictable."""
+    so the panel layout stays predictable.
+    """
     view = panel.AIPanelView()
     by_id = {
         item.custom_id: item
@@ -54,7 +55,8 @@ def test_policy_button_is_on_the_second_row_next_to_settings():
 async def test_router_handler_dispatches_policy_action_as_ephemeral():
     """When the View's callback path is bypassed (e.g. after a process
     restart, where the in-memory view is gone), the router handler
-    must still serve the policy action and send an ephemeral chooser."""
+    must still serve the policy action and send an ephemeral chooser.
+    """
     interaction = _admin_panel_interaction()
     await panel.handle_ai_interaction(
         interaction,
@@ -94,7 +96,8 @@ async def test_router_handler_rejects_non_admin_for_policy():
 
 async def test_router_short_circuits_when_view_already_responded():
     """If the View's @discord.ui.button callback already sent the
-    chooser, the router must bail without sending a second response."""
+    chooser, the router must bail without sending a second response.
+    """
     interaction = _admin_panel_interaction()
     interaction.response.is_done.return_value = True
     await panel.handle_ai_interaction(

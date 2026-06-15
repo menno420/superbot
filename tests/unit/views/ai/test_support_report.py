@@ -109,7 +109,8 @@ async def test_embed_labels_itself_as_draft(monkeypatch):
 
 def test_module_makes_no_network_calls():
     """The view module must not import aiohttp / requests / urllib /
-    httpx as HTTP clients."""
+    httpx as HTTP clients.
+    """
     src = inspect.getsource(
         __import__("views.ai.support_report", fromlist=["support_report"]),
     )

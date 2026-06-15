@@ -484,6 +484,11 @@ accepted, not a target).
   (recommended marquee = the **capped skill tree** — its `game_xp` substrate +
   `EffectiveStats` merge point are in place; plus the Vault inventory-cap sink, Forge,
   Home). **⛔ V-16 phase 2** paper-doll sprites stay owner-blocked on the PNG pack.
+- **Now (owner-directed UX, 2026-06-15)** — **mining hub redesign**: the 16-button hub splits
+  into dedicated sub-hubs (Option A — main = Mine·Harvest·Explore·Character·Gear·Workshop), the
+  inventory/gear image cards render in place (PR #911), and Mine becomes a 3D grid navigator;
+  Explore becomes an open-world hub. Plan + IA:
+  [`planning/mining-hub-redesign-2026-06-15.md`](planning/mining-hub-redesign-2026-06-15.md).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded

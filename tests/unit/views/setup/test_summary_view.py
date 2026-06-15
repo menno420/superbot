@@ -146,7 +146,8 @@ async def test_summary_view_close_button_disables_and_edits():
 async def test_summary_view_open_settings_swaps_to_settings_hub():
     """The new handoff button replaces the summary embed/view with the
     Settings Manager hub in place — operators stay anchored to one
-    message across the cog transition."""
+    message across the cog transition.
+    """
     from views.settings.hub import SettingsHubView
 
     view = SummaryView(_author(), snapshot=SummarySnapshot())
@@ -161,7 +162,8 @@ async def test_summary_view_open_settings_swaps_to_settings_hub():
 @pytest.mark.asyncio
 async def test_summary_view_open_settings_falls_back_when_hub_unavailable():
     """If SettingsHubView construction blows up the user sees an
-    ephemeral fallback pointing at ``!settings`` instead of a crash."""
+    ephemeral fallback pointing at ``!settings`` instead of a crash.
+    """
     view = SummaryView(_author(), snapshot=SummarySnapshot())
     interaction = _interaction()
     interaction.response.send_message = AsyncMock()
@@ -290,7 +292,8 @@ def test_summary_view_includes_delete_button_when_session_has_channel():
 @pytest.mark.asyncio
 async def test_delete_button_opens_confirmation_view():
     """Clicking 'Delete setup channel' surfaces a Confirm/Cancel view
-    ephemerally — the deletion only fires after the operator confirms."""
+    ephemerally — the deletion only fires after the operator confirms.
+    """
     from views.setup.summary import _DeleteSetupChannelConfirmView
 
     view = SummaryView(
@@ -313,7 +316,8 @@ async def test_delete_button_opens_confirmation_view():
 @pytest.mark.asyncio
 async def test_confirm_calls_delete_setup_channel():
     """Confirming the delete dispatches the service helper and edits
-    the prompt to a success message."""
+    the prompt to a success message.
+    """
     from views.setup.summary import _DeleteSetupChannelConfirmView
 
     confirm_view = _DeleteSetupChannelConfirmView(_author())

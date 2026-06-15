@@ -36,11 +36,15 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/amazing-volta-auxt2d` · mining hub UX overhaul — in-place image cards · Workshop sub-hub
+  + Craft consolidation · 3-layer Category→Type→Variant browsers (craft + market) + shared
+  `utils/mining/taxonomy.py` · rarity/body ordering · shields→Weapons + shield damage · stat
+  previews · the **3-layer menu doctrine** (hub-ui-standard.md) · 2026-06-15 ·
+  **PR #911 (auto-merge on green)**
 - `claude/hopeful-allen-sfus5i` · P1-3 machine-checkable contract invariants — 2 new CI invariants
   (settings declared→consumer parity · games wager-boundary completeness) + AI/BTD6 closed via
   disposition doc · `tests/unit/invariants/` + `docs/planning/production-readiness/` · 2026-06-15 ·
   **PR #917 (open, auto-merge on green)**
-
 - `claude/hopeful-allen-sdjqjs` · mining Slices E + F — respec polish + skill/milestone titles ·
   `skill_service`/`skills_panel` (E) + `utils/mining/titles` + `title_service` + `titles_panel` +
   `character_panel` + migration 074 (F) · 2026-06-15 · **PR #912 (open, auto-merge on green)**

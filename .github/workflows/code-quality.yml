@@ -111,7 +111,12 @@ jobs:
 
       - name: Run isort (check only)
         if: steps.changes.outputs.code == 'true'
-        run: isort --check-only . --skip-glob '*/(\.github|tests|venv|env|build|dist)/*'
+        # NOTE: isort's --skip-glob takes a GLOB, not a regex — the old
+        # '*/(\.github|tests|...)/*' was regex alternation in a glob, so it
+        # matched nothing and isort silently scanned tests/ (contradicting the
+        # intended exclusion). --skip takes directory names and recurses (verified
+        # 2026-06-15). Mirrors the black --exclude / ruff --exclude scope above.
+        run: isort --check-only . --skip .github --skip tests --skip venv --skip env --skip build --skip dist
 
       - name: Run Ruff
         if: steps.changes.outputs.code == 'true'

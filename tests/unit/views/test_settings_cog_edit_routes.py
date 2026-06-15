@@ -174,7 +174,7 @@ async def test_int_dispatches_to_number_modal(monkeypatch):
         ),
     )
     select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings]
+        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
     )
     select._values = ["warn_threshold"]
     interaction = _FakeInteraction(guild=_FakeGuild())
@@ -201,7 +201,7 @@ async def test_float_dispatches_to_number_modal():
         ),
     )
     select = _EditSettingSelect(
-        "rate", [spec for spec in schema_mod.get_schema("rate").settings]
+        "rate", [spec for spec in schema_mod.get_schema("rate").settings],
     )
     select._values = ["multiplier"]
     interaction = _FakeInteraction(guild=_FakeGuild())
@@ -227,7 +227,7 @@ async def test_str_without_allowed_values_dispatches_to_text_modal():
         ),
     )
     select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings]
+        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
     )
     select._values = ["dm_template"]
     interaction = _FakeInteraction(guild=_FakeGuild())
@@ -254,7 +254,7 @@ async def test_str_with_allowed_values_dispatches_to_enum_view():
         ),
     )
     select = _EditSettingSelect(
-        "cleanup", [spec for spec in schema_mod.get_schema("cleanup").settings]
+        "cleanup", [spec for spec in schema_mod.get_schema("cleanup").settings],
     )
     select._values = ["strictness"]
     interaction = _FakeInteraction(guild=_FakeGuild())
@@ -272,7 +272,8 @@ async def test_str_with_allowed_values_dispatches_to_enum_view():
 @pytest.mark.asyncio
 async def test_bool_dispatches_to_toggle_directly(monkeypatch, _isolated_state):
     """Bool select pick toggles the value via the pipeline directly
-    instead of opening a modal."""
+    instead of opening a modal.
+    """
     schema_mod.register(
         SubsystemSchema(
             subsystem="moderation",
@@ -304,7 +305,7 @@ async def test_bool_dispatches_to_toggle_directly(monkeypatch, _isolated_state):
     monkeypatch.setattr(edit_boolean, "toggle_setting", _spy_toggle)
 
     select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings]
+        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
     )
     select._values = ["dm_on_action"]
     interaction = _FakeInteraction(guild=_FakeGuild())
@@ -330,7 +331,7 @@ async def test_unknown_setting_in_select_rejected():
         ),
     )
     select = _EditSettingSelect(
-        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings]
+        "moderation", [spec for spec in schema_mod.get_schema("moderation").settings],
     )
     # Pick a value that wouldn't appear in options — defensive against
     # client-side tampering.

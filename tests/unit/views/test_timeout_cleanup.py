@@ -43,7 +43,8 @@ def _member(id_: int = 1) -> MagicMock:
 @pytest.mark.asyncio
 async def test_rank_view_timeout_disables_select_in_place():
     """`on_timeout` must keep the dropdown visible but disabled —
-    not strip it via ``view=None`` (which forces a re-run of /rank)."""
+    not strip it via ``view=None`` (which forces a re-run of /rank).
+    """
     from views.xp.rank_view import _RankView
 
     member = _member()
@@ -163,7 +164,8 @@ async def test_blackjack_challenge_timeout_stops_even_when_message_unset():
 @pytest.mark.asyncio
 async def test_rps_solo_view_timeout_noops_when_message_unset():
     """Mirrors the explicit guard already present on
-    ``_RpsSoloResultView.on_timeout``."""
+    ``_RpsSoloResultView.on_timeout``.
+    """
     from views.rps.solo_play import _RpsView
 
     view = _RpsView(_member(1), guild_id=99, bet=0)

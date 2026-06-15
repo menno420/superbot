@@ -159,7 +159,8 @@ def test_typed_only_platform_commands_are_intentionally_excluded():
     the ``finding`` lifecycle mutation must never appear there, and the verbose
     ``startup``/``findings`` reports stay power-user text paths. If a future
     session deliberately groups one of these, update both this test and the
-    module docstring together."""
+    module docstring together.
+    """
     view = _PlatformHubView(_author())
     grouped = {
         opt.value
@@ -318,7 +319,8 @@ async def test_dispatch_sessions_success_returns_embed():
 @pytest.mark.asyncio
 async def test_dispatch_sessions_failure_returns_red_embed():
     """DB failure must surface as a red embed (typed command's plain-text
-    fallback would break in-place panel editing)."""
+    fallback would break in-place panel editing).
+    """
     interaction = _fake_interaction()
     with patch(
         "views.diagnostic.platform_panel.build_sessions_embed",
@@ -348,7 +350,8 @@ async def test_dispatch_flags_passes_guild_through():
 async def test_dispatch_identity_runs_without_fix_mode():
     """The panel never triggers self-healing; identity always runs in
     read-only mode there (typed `!platform identity --fix` is the only
-    way to trigger healing)."""
+    way to trigger healing).
+    """
     interaction = _fake_interaction(bot=MagicMock(spec=commands.Bot))
     with patch(
         "views.diagnostic.platform_panel.build_identity_embed",
@@ -387,7 +390,8 @@ async def test_dispatch_consistency_uses_collect_report():
 @pytest.mark.asyncio
 async def test_dispatch_unknown_returns_error_embed():
     """Defensive: unknown values surface as a visible red embed rather
-    than raising and breaking the panel."""
+    than raising and breaking the panel.
+    """
     interaction = _fake_interaction()
     embed = await _dispatch("not_a_real_surface", interaction)
     assert embed.color == discord.Color.red()

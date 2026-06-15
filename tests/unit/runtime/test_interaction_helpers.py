@@ -173,6 +173,34 @@ class TestSafeEdit:
         sent = i.response.edit_message.await_args.kwargs["embed"]
         assert len(sent.fields[0].value) == 1024
 
+    @pytest.mark.asyncio
+    async def test_sets_attachments_in_place_when_provided(self):
+        # In-place image management: a panel can carry a PIL card on its own
+        # anchor message instead of a separate ephemeral that stacks.
+        i = _make_interaction(responded=False)
+        f = MagicMock(spec=discord.File)
+        ok = await ih.safe_edit(i, content="x", attachments=[f])
+        assert ok is True
+        assert i.response.edit_message.await_args.kwargs["attachments"] == [f]
+
+    @pytest.mark.asyncio
+    async def test_clears_attachments_with_empty_list(self):
+        # An empty list explicitly clears a prior card so it never lingers on
+        # the next screen (the navigate-away edit passes attachments=[]).
+        i = _make_interaction(responded=True)
+        ok = await ih.safe_edit(i, content="x", attachments=[])
+        assert ok is True
+        assert i.followup.edit_message.await_args.kwargs["attachments"] == []
+
+    @pytest.mark.asyncio
+    async def test_omits_attachments_when_none(self):
+        # Default: do not touch attachments → Discord preserves the message's
+        # existing files (the historical behaviour for text-only panel edits).
+        i = _make_interaction(responded=False)
+        ok = await ih.safe_edit(i, content="x")
+        assert ok is True
+        assert "attachments" not in i.response.edit_message.await_args.kwargs
+
 
 class TestClampEmbed:
     """Regression tests for clamp_embed (embed size-limit hardening)."""

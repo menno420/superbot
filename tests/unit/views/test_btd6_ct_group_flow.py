@@ -41,7 +41,7 @@ def _interaction(*, manage_guild: bool = True, guild_id: int = 99):
     return interaction
 
 
-@pytest.fixture()
+@pytest.fixture
 def _service(monkeypatch):
     """Patch the typed CT service the flow composes."""
     svc = MagicMock()

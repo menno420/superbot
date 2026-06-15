@@ -80,7 +80,8 @@ def _interaction_with_guild(user, *, guild_id: int = 1):
 
 def test_card_embed_includes_step_and_status():
     """Section registered in REGISTRY (production sections always are) gets
-    a 'Step N of M' header derived from registry order."""
+    a 'Step N of M' header derived from registry order.
+    """
     # The production cleanup section is registered; use its real registered
     # SetupSection so the step index resolves.
     section = REGISTRY.get("cleanup")
@@ -474,7 +475,8 @@ async def test_show_posts_ephemeral_card_and_marks_step():
 
 def test_cleanup_section_registers_description_if_skipped():
     """The cleanup registration must carry a non-empty skip-impact string
-    so PR 3's section card can surface it without code changes."""
+    so PR 3's section card can surface it without code changes.
+    """
     section = REGISTRY.get("cleanup")
     assert section is not None
     assert "cleanup" in section.description_if_skipped.lower()
@@ -517,7 +519,8 @@ async def test_adapter_calls_one_arg_legacy_builder_unchanged():
 @pytest.mark.asyncio
 async def test_adapter_passes_declared_kwargs_to_extended_builder():
     """A builder that declares ``session`` / ``depth`` etc. receives
-    only those it declared."""
+    only those it declared.
+    """
     from views.setup.section_card import call_recommended_ops_builder
 
     received: dict = {}
@@ -623,7 +626,8 @@ async def test_adapter_propagates_builder_exceptions():
 async def test_stage_all_recommended_stages_each_builder_section_and_skips_others():
     """stage_all_recommended calls each builder section, stages its ops via
     replace_recommended_for_section, skips sections without a builder, and
-    returns the per-section counts + conflict total."""
+    returns the per-section counts + conflict total.
+    """
     from services.setup_draft import ReplaceRecommendedResult
     from views.setup.section_card import stage_all_recommended
 

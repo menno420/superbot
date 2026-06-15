@@ -1,4 +1,8 @@
-"""Recipe browser — categories, craft-on-select, >25-recipe pagination."""
+"""Recipe browser — Category → Type → Variant drill-down, craft-on-select.
+
+Owner UX (2026-06-15): a small category first select (Weapons / Armour / Tools …),
+then types (Swords / Helmets …), then variants — instead of one crowded list.
+"""
 
 from __future__ import annotations
 
@@ -8,8 +12,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import discord
 import pytest
 
-from views.mining import recipe_browser
-from views.mining.recipe_browser import MiningRecipeBrowserView, build_recipe_embed
+from views.mining.recipe_browser import (
+    MiningRecipeBrowserView,
+    _base_type,
+    _category_of,
+    _grouped,
+    _types_by_category,
+)
 
 _AUTHOR = SimpleNamespace(id=1, display_name="Digger")
 
@@ -22,99 +31,118 @@ def _inventory_patch(inventory=None):
     )
 
 
+def test_base_type_is_the_last_word():
+    assert _base_type("iron sword") == "sword"
+    assert _base_type("diamond pickaxe") == "pickaxe"
+    assert _base_type("torch") == "torch"
+
+
+def test_category_of_maps_slot_then_kind_to_section():
+    assert _category_of("iron sword") == "Weapons"
+    assert _category_of("iron shield") == "Weapons"  # shields are combat gear
+    assert _category_of("iron helmet") == "Armour"
+    assert _category_of("iron pickaxe") == "Tools"
+    assert _category_of("lantern") == "Tools"
+    assert _category_of("stone hut") == "Structures"
+
+
+def test_variants_within_a_type_are_ordered_by_rarity():
+    from utils import equipment
+
+    swords = [name for name, _ in _grouped()["sword"]]
+    ranks = [equipment.material_rank(s) for s in swords]
+    assert ranks == sorted(ranks)  # starter first → diamond last
+    assert swords[0] == "sword" and swords[-1] == "diamond sword"
+
+
+def test_armour_types_are_in_body_order_helmet_to_boots():
+    assert _types_by_category()["Armour"] == [
+        "helmet",
+        "chestplate",
+        "leggings",
+        "boots",
+    ]
+
+
+def test_weapons_category_includes_shields_after_swords():
+    weapons = _types_by_category()["Weapons"]
+    assert "sword" in weapons and "shield" in weapons
+    assert weapons.index("sword") < weapons.index("shield")
+
+
 @pytest.mark.asyncio
-async def test_factory_builds_category_recipe_and_pager_controls():
-    with _inventory_patch({"wood": 100, "stone": 100}):
+async def test_variant_picker_shows_the_stat_preview():
+    with _inventory_patch():
+        view = await MiningRecipeBrowserView.create(
+            _AUTHOR, 99, category="Weapons", base_type="sword",
+        )
+    select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
+    iron = next(o for o in select.options if o.value == "iron sword")
+    assert "⚔️+6" in (iron.description or "")
+
+
+def test_grouped_collapses_variants_under_one_type():
+    swords = [name for name, _ in _grouped()["sword"]]
+    assert len(swords) > 1
+    assert all(_base_type(name) == "sword" for name in swords)
+
+
+@pytest.mark.asyncio
+async def test_top_level_shows_a_small_category_select():
+    with _inventory_patch():
         view = await MiningRecipeBrowserView.create(_AUTHOR, 99)
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
-    buttons = [c for c in view.children if isinstance(c, discord.ui.Button)]
-    assert len(selects) == 2  # category + recipes
-    labels = {b.label for b in buttons}
-    assert {"◀ Prev", "Next ▶", "↩ Mining Hub"} <= labels
-    # The 44-recipe catalogue (V-16 gear sets) spans two pages: page 0 has
-    # Prev disabled and Next enabled — the pagination is live, not vestigial.
-    prev = next(b for b in buttons if b.label == "◀ Prev")
-    nxt = next(b for b in buttons if b.label == "Next ▶")
-    assert prev.disabled
-    assert not nxt.disabled
-    recipe_select = selects[1]
-    assert len(recipe_select.options) <= 25  # the Discord cap holds per page
+    assert len(selects) == 1
+    labels = {o.label for o in selects[0].options}
+    # A small, semantic first select — not the ~14 crowded types.
+    assert {"Weapons", "Armour", "Tools"} <= labels
+    assert len(selects[0].options) <= 8
 
 
 @pytest.mark.asyncio
-async def test_category_filter_limits_the_recipe_select():
+async def test_category_opens_only_its_types():
     with _inventory_patch():
-        view = await MiningRecipeBrowserView.create(_AUTHOR, 99, category="structure")
-    recipe_select = [c for c in view.children if isinstance(c, discord.ui.Select)][1]
-    from utils.mining import items
-
-    for option in recipe_select.options:
-        assert items.classify(option.value) is items.ItemKind.STRUCTURE
+        view = await MiningRecipeBrowserView.create(_AUTHOR, 99, category="Armour")
+    select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
+    buttons = {b.label for b in view.children if isinstance(b, discord.ui.Button)}
+    armour_types = set(_types_by_category()["Armour"])
+    assert armour_types  # non-empty
+    assert {o.value for o in select.options} <= armour_types
+    assert "↩ Categories" in buttons
 
 
 @pytest.mark.asyncio
-async def test_recipe_select_crafts_through_the_workflow():
-    with _inventory_patch({"wood": 5}):
-        view = await MiningRecipeBrowserView.create(_AUTHOR, 99)
-    recipe_select = [c for c in view.children if isinstance(c, discord.ui.Select)][1]
+async def test_type_opens_only_that_type_variants():
+    with _inventory_patch():
+        view = await MiningRecipeBrowserView.create(
+            _AUTHOR, 99, category="Weapons", base_type="sword",
+        )
+    select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
+    buttons = {b.label for b in view.children if isinstance(b, discord.ui.Button)}
+    assert all(_base_type(o.value) == "sword" for o in select.options)
+    assert "↩ Types" in buttons
+
+
+@pytest.mark.asyncio
+async def test_variant_select_crafts_through_the_workflow():
+    with _inventory_patch():
+        view = await MiningRecipeBrowserView.create(
+            _AUTHOR, 99, category="Weapons", base_type="sword",
+        )
+    variant_select = [c for c in view.children if isinstance(c, discord.ui.Select)][0]
     interaction = MagicMock()
 
     from utils.mining.market import TradeResult
 
     with (
-        patch(
-            "views.mining.recipe_browser.safe_defer",
-            AsyncMock(return_value=True),
-        ),
+        patch("views.mining.recipe_browser.safe_defer", AsyncMock(return_value=True)),
         patch(
             "views.mining.recipe_browser.mining_workflow.craft",
-            AsyncMock(return_value=TradeResult(True, "Crafted **torch**!")),
+            AsyncMock(return_value=TradeResult(True, "Crafted!")),
         ) as craft,
         patch.object(MiningRecipeBrowserView, "render", AsyncMock()),
     ):
-        recipe_select._values = ["torch"]
-        await recipe_select.callback(interaction)
-    craft.assert_awaited_once_with(1, 99, "torch")
-
-
-@pytest.mark.asyncio
-async def test_pagination_engages_past_25_recipes():
-    """Synthetic fat catalog: the pager must slice pages and enable Next."""
-    fat = {f"gadget {i:02d}": {"wood": 1} for i in range(60)}
-    with (
-        _inventory_patch(),
-        patch(
-            "views.mining.recipe_browser.db.get_structures",
-            new_callable=AsyncMock,
-            return_value={},
-        ),
-        patch.object(recipe_browser, "load_recipes", return_value=fat),
-        patch(
-            "views.mining.recipe_browser.items.classify",
-            return_value=__import__(
-                "utils.mining.items",
-                fromlist=["ItemKind"],
-            ).ItemKind.STRUCTURE,
-        ),
-    ):
-        page0 = await MiningRecipeBrowserView.create(_AUTHOR, 99)
-        page1 = await MiningRecipeBrowserView.create(_AUTHOR, 99, page=1)
-        page_last = await MiningRecipeBrowserView.create(_AUTHOR, 99, page=99)
-        embed = await build_recipe_embed(1, 99, page=1)
-
-    def _options(view):
-        return [c for c in view.children if isinstance(c, discord.ui.Select)][1].options
-
-    assert len(_options(page0)) == 25
-    assert _options(page1)[0].value == "gadget 25"
-    # Out-of-range page clamps to the last page (60 → 3 pages → index 2).
-    assert page_last.page == 2
-    assert len(_options(page_last)) == 10
-    assert "Page 2/3" in (embed.footer.text or "")
-    pagers = {
-        b.label: b
-        for b in page0.children
-        if isinstance(b, discord.ui.Button) and b.label in ("◀ Prev", "Next ▶")
-    }
-    assert pagers["◀ Prev"].disabled is True
-    assert pagers["Next ▶"].disabled is False
+        target = variant_select.options[0].value
+        variant_select._values = [target]
+        await variant_select.callback(interaction)
+    craft.assert_awaited_once_with(1, 99, target)

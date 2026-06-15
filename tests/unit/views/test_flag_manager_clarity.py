@@ -20,11 +20,11 @@ from views.diagnostic import flag_manager
 
 def test_no_consumer_set_contents():
     assert isinstance(flag_manager._NO_CONSUMER_FLAGS, frozenset)
-    assert flag_manager._NO_CONSUMER_FLAGS == {
+    assert {
         "resources.unified",
         "settings.mutation.primary",
         "resource_provisioning.primary",
-    }
+    } == flag_manager._NO_CONSUMER_FLAGS
 
 
 def test_sorted_flag_names_operator_first_then_internal():
@@ -148,7 +148,8 @@ def test_embed_has_no_notes_when_clean():
 
 def test_embed_env_only_takes_priority_over_primary_off():
     """An env-only flag shows the env-only note, not the primary-off note
-    (env-only is the more specific, actionable reason)."""
+    (env-only is the more specific, actionable reason).
+    """
     embed = flag_manager.build_flag_detail_embed(
         _details(name="feature_flag.primary", db_editable=False, primary_on=False),
     )

@@ -80,7 +80,8 @@ def _select(view: SettingsHubView) -> discord.ui.Select:
 def test_groups_exclude_subsystems_with_no_actionable_surface():
     """A subsystem with no schema (router-only / empty) is not a group —
     the old hub listed all 28 non-internal subsystems and rendered empty
-    pages; the inclusion rule kills that class."""
+    pages; the inclusion rule kills that class.
+    """
     names = {g.subsystem for g in actionable_settings_groups()}
     # Real manifest entries with no configurable surface (audit §4).
     assert "games_hub" not in names
@@ -101,7 +102,8 @@ def test_groups_include_editable_scalar_bearing_subsystem():
 
 def test_groups_exclude_schema_whose_settings_are_not_editable():
     """A declared setting without a ``settings_key`` cannot be edited by the
-    scalar pipeline — a schema carrying only those is not actionable."""
+    scalar pipeline — a schema carrying only those is not actionable.
+    """
     schema_mod.register(
         SubsystemSchema(
             subsystem="xp",
@@ -137,7 +139,8 @@ def test_groups_include_declared_domain_config_subsystem():
     its schema's ``domain_panels`` declaration (Settings Phase 2; audit §4:
     domain group linked to its canonical panel, never an empty scalar page).
     Registers the REAL cleanup schema so the test pins the shipped
-    declaration, not a synthetic one."""
+    declaration, not a synthetic one.
+    """
     from cogs.cleanup.schemas import CLEANUP_CONFIG_SCHEMA
 
     assert CLEANUP_CONFIG_SCHEMA.domain_panels  # the real declaration exists
@@ -180,7 +183,8 @@ def test_groups_are_deterministic_and_read_only():
 
 def test_hub_view_contains_dropdown_and_diagnostic_buttons():
     """Subsystem dropdown + four S5 diagnostic buttons + the command-access
-    button; no page nav while the group count fits one select page."""
+    button; no page nav while the group count fits one select page.
+    """
     view = SettingsHubView(_author())
     assert len(view.children) == 6
     selects = [c for c in view.children if isinstance(c, discord.ui.Select)]
@@ -226,7 +230,8 @@ def _register_many(monkeypatch, count: int) -> list[str]:
 
 def test_every_group_is_reachable_past_the_25_option_cap(monkeypatch):
     """30 actionable groups → two pages whose option values union to all 30;
-    the old behaviour silently dropped everything past the first 25."""
+    the old behaviour silently dropped everything past the first 25.
+    """
     names = _register_many(monkeypatch, 30)
 
     page0 = SettingsHubView(_author(), page=0)
@@ -276,7 +281,8 @@ def test_page_index_is_clamped(monkeypatch):
 
 def test_no_empty_pages_by_construction(monkeypatch):
     """25 groups → exactly one full page and no nav buttons (an empty page 2
-    can't exist)."""
+    can't exist).
+    """
     _register_many(monkeypatch, 25)
     view = SettingsHubView(_author())
     assert len(_select(view).options) == 25

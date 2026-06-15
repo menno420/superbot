@@ -202,7 +202,8 @@ async def test_embed_lists_existing_command_panels():
 @pytest.mark.asyncio
 async def test_embed_dm_invocation_shows_no_guild_context():
     """guild_id=None (DM) renders schema-declaration shape without
-    attempting to resolve per-guild values."""
+    attempting to resolve per-guild values.
+    """
     schema_mod.register(
         SubsystemSchema(
             subsystem="moderation",
@@ -217,7 +218,8 @@ async def test_embed_dm_invocation_shows_no_guild_context():
 @pytest.mark.asyncio
 async def test_embed_for_subsystem_with_no_schema_is_sparse():
     """A subsystem that exists in SUBSYSTEMS but has no schema renders
-    an empty-state embed with the title and no scalar-settings rows."""
+    an empty-state embed with the title and no scalar-settings rows.
+    """
     embed = await build_subsystem_embed(_FakeInteraction(), "blackjack")
     title = embed.title or ""
     assert "Blackjack" in title
@@ -255,7 +257,8 @@ def test_subsystem_view_carries_subsystem_key():
 def test_subsystem_view_does_not_import_mutation_pipelines():
     """The view module must not import any mutation surface.  Pinned
     here as a fast sanity check; the broader AST invariant lives in
-    tests/unit/invariants/test_settings_cog_read_only.py."""
+    tests/unit/invariants/test_settings_cog_read_only.py.
+    """
     import ast
     from pathlib import Path
 
@@ -294,7 +297,8 @@ async def test_embed_renders_declared_domain_panels(_isolated_state):
     """A subsystem whose Settings group exists *because of* a DomainPanelSpec
     (cleanup, help) must say where that configuration lives — before this
     block the page showed bare "*none declared*" scalars and the operator had
-    to guess the destination. (Salvaged from the parallel PR A build, #678.)"""
+    to guess the destination. (Salvaged from the parallel PR A build, #678.)
+    """
     from core.runtime.subsystem_schema import DomainPanelSpec
 
     schema_mod.register(

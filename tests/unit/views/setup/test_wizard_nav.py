@@ -154,7 +154,8 @@ async def test_render_wizard_step_edits_anchor_inline():
 @pytest.mark.asyncio
 async def test_render_step_detail_swaps_anchor_to_detail_embed_and_view():
     """render_step_detail edits the anchor with the section's detail
-    embed + view, with an injected Back-to-step button on row 4."""
+    embed + view, with an injected Back-to-step button on row 4.
+    """
     section = _section("zz_detail_test", with_detail=True)
     guild = MagicMock(spec=discord.Guild)
     guild.id = 1
@@ -241,7 +242,8 @@ async def test_render_step_detail_returns_false_when_builders_missing():
 @pytest.mark.asyncio
 async def test_back_to_step_button_callback_restores_wizard():
     """The injected Back-to-step button calls render_wizard_step with the
-    originating step_index."""
+    originating step_index.
+    """
     section = _section("zz_back_test", with_detail=True)
     guild = MagicMock(spec=discord.Guild)
     guild.id = 1

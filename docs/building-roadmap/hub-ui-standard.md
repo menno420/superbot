@@ -44,6 +44,59 @@ The doc is also the place to record the **Phase 8 audit finding**: Role, Economy
 8. **Typed commands stay first-class.** Every hub has a typed entry point (`!games`, `!cleanup`, `!platform flag`). Panels are the discoverable app surface; typed commands are the fast path. Removing a typed shortcut to force users through a panel is forbidden.
 9. **No mega-cogs.** Hub cogs own navigation and rendering. Game logic, economy hooks, persistence — those stay in the child cogs they already live in. The Games hub is the canonical example: zero game-engine imports.
 10. **`SUBSYSTEMS` is the source of truth.** Hub composition, child discovery, and Help filtering all derive from registry metadata. No parallel router or help system.
+11. **Divide deep menus into ≤3 layers — never a long flat list, never pagination.** When choices outgrow one scannable screen, group them into **Category → Type → Variant** levels. This is the **3-layer menu doctrine** below (owner directive, 2026-06-15) — the standard for *any* menu in the bot.
+
+---
+
+## The 3-layer menu doctrine (navigation depth)
+
+> **Standard (owner directive, 2026-06-15):** when a menu would surface more
+> choices than fit comfortably on one screen, **divide it into up to three
+> levels of grouping — never a long flat list and never pagination.** Each level
+> is one small select (or button row), so every screen is scannable at a glance.
+
+**The three layers, broadest → most specific:**
+
+1. **Category** — a handful of broad buckets (≈3–6). *Recipe browser:* Weapons ·
+   Armour · Tools · Structures · Items. *Hub tree:* the mining main hub's
+   sub-hubs (Workshop · Character).
+2. **Type** — the specific kind within a category. *Recipe browser:* Swords ·
+   Pickaxes · Helmets. *Hub tree:* the panels inside a sub-hub (Craft · Repair ·
+   Forge · Market).
+3. **Variant / item / action** — the concrete leaf that acts. *Recipe browser:*
+   wood → diamond sword (crafts on select). *Hub tree:* the panel's own controls.
+
+Three is the target **ceiling, not a quota**: a small surface stays **flat**
+(don't nest six items into three menus), and a level with a single child may
+collapse into its parent. But once a single screen would crowd (past the
+[component thresholds](#component-thresholds)), reach for the next layer
+**before** reaching for a dropdown-with-pagination.
+
+**Why three.** It matches the bot's real fan-out — e.g. the 44 mining recipes
+factor cleanly as ~5 categories × ~3 types × ~5 variants, each well under
+Discord's 25-option cap — so **pagination is never needed** and no screen is a
+wall of options. Deeper than three starts to feel like a maze; shallower crowds.
+
+**It is fractal.** The same division applies at two scales, and a feature often
+uses both:
+
+- **Navigation scale** — the **hub tree**: mother hub → sub-hub → panel.
+  (Mining: `!minemenu` → 🔨 Workshop → Craft.)
+- **Content scale** — a **list browser**: category → type → variant.
+  (Mining: the recipe browser.)
+
+**Mechanics (reuse, don't reinvent).** Each layer is a `HubView` page edited
+**in place** with `safe_edit` (`core.runtime.interaction_helpers`) — one anchor
+message swapped per level, never a fresh ephemeral per step. Every non-root level
+carries a **back button to its parent level** (`↩ Categories`, `↩ Types`) plus a
+back to the wrapping hub (`navigation.py` helpers). **Derive the grouping keys
+from the data** (a small classifier function), never a hand-kept list, so the menu
+stays correct as content grows.
+
+**Canonical implementation:** `disbot/views/mining/recipe_browser.py`
+(Category → Type → Variant) and the mining hub redesign
+([`../planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md)),
+which applied both scales. Cross-reference these when building a new menu.
 
 ---
 
@@ -107,7 +160,7 @@ These thresholds map "how many children to surface" to "what component type to u
 | 0–8 | Buttons preferred. All children visible at a glance. |
 | 9–12 | Grouped buttons if there is a clear subgrouping (e.g. Competitive / Activities, Read / Write). Otherwise dropdown. |
 | 13–25 | Dropdown preferred. Mixed buttons-and-dropdown is fine when the buttons are nav (Back / Overview) and the dropdown is the children. |
-| 25+ | Subgroup pages or pagination. A flat 25-option dropdown is the ceiling Discord enforces; beyond that, group or paginate. |
+| 25+ | **Apply the [3-layer menu doctrine](#the-3-layer-menu-doctrine-navigation-depth)** — divide into Category → Type → Variant levels, each a small select. Preferred over pagination (which the doctrine retires). A flat 25-option dropdown is Discord's hard ceiling. |
 
 Operator/Platform panels may run denser than these thresholds suggest **if** the grouping is clear and every group has a recognisable heading. Density is a power-user trade; it is never the right call for normal user hubs.
 
@@ -202,7 +255,7 @@ The illustrative button labels in the roadmap (Self Roles, Default Role, Skip Ro
 Before opening a new hub PR, answer these:
 
 - [ ] Which preset does this hub match? (If "none", split or pick the closest.)
-- [ ] How many children does it surface today? In a year?
+- [ ] How many children does it surface today? In a year? **Would any single level ever crowd?** If so, apply the [3-layer menu doctrine](#the-3-layer-menu-doctrine-navigation-depth) (Category → Type → Variant) — not a long dropdown or pagination.
 - [ ] Does it need to discover children dynamically (via `parent_hub`) or is the child list static?
 - [ ] What is the typed entry point? (Mandatory — never `panel-only`.)
 - [ ] Is there a back-nav path back to the wrapping hub or Help? (If not via the existing helpers, why?)
