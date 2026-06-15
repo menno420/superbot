@@ -29,10 +29,17 @@ capabilities.
 
 ## Findings surfaced
 
-- **Python pin drift (verified, real):** `.python-version` = **3.13.13** (Railway/prod) vs CI
-  `code-quality.yml` = **3.10**. Prod and CI run different interpreters — a genuine parity gap.
-  Hermes' memory flagged it correctly. Investigation + recommendation: see below (no change this
-  session — touches CI/prod parity).
+- **Python pin drift — investigated, ALREADY TRACKED (no action needed this session).**
+  `.python-version` = **3.13.13** (Railway/prod) vs CI `code-quality.yml` = **3.10**. Hermes'
+  memory flagged it correctly, but it is **not a hidden bug** — it is documented in
+  `operations/production-deployment.md` § "Python version" and tracked as **router Q-0085**
+  (Open, awaiting owner). History: prod has *always* run 3.13 (unpinned railpack default); the
+  `3.13.13` pin (PR #863, 2026-06-14) was a *fix* for a railpack build-race outage, not the cause
+  of the drift. CI/tooling stayed on 3.10 (pyproject `target-version = py310`, mypy
+  `python_version = 3.10`, the repo-wide `python3.10 -m` rule). **Recommendation (already on
+  record in Q-0085): option 1 — align CI/local UP to 3.13 as its own dedicated toolchain-migration
+  session, not a rider on anything.** Until then the documented drift is accepted. → This means it
+  can safely **drop from Hermes' memory** (point it at Q-0085 / production-deployment.md instead).
 
 ## Status
 

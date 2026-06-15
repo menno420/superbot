@@ -375,11 +375,12 @@ hermes gateway
 
 ## Suggested next steps
 
-> **▶ Owner-prioritized next (2026-06-15): token efficiency.** Hermes `/status` showed **2.2M
-> cumulative tokens "re-sent each call"** after only a few messages (~8–9× the working window) →
-> context collapse by the 3rd–4th tool call. Root cause + investigation questions + candidate fixes
-> (stateless bounded dispatch · history cap · `soul.md` injection strategy) are captured in
-> [`hermes-token-efficiency-investigation-2026-06-15.md`](hermes-token-efficiency-investigation-2026-06-15.md).
+> **✅ RESOLVED (2026-06-15): token efficiency / "forgetting."** Root-caused to the **weak free model**,
+> not the window — Hermes ran on `stepfun/step-3.7-flash:free` (quantized, ~256K). Fixed by the model
+> swap to the capable 400K `gpt-5.4-mini` on the owner's own key (§ Model/provider; arc #913→#921). The
+> diagnosis (compaction at 50%, not unbounded growth) is kept in
+> [`hermes-token-efficiency-investigation-2026-06-15.md`](hermes-token-efficiency-investigation-2026-06-15.md)
+> (now `historical`); the `compression.*` knobs remain optional secondary levers.
 
 ### 1. Add SSH key login
 

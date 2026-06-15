@@ -1,10 +1,13 @@
 # Hermes token-efficiency — investigation + fix plan (tomorrow's focus)
 
-> **Status:** `plan` — owner-prioritized (2026-06-15, captured fresh from the live failure).
-> **Investigation half is now DONE** — see "## Findings (verified against Hermes source/docs)" at the
-> bottom; the four "investigate first" questions are answered and the root cause is corrected
-> (it is **compaction**, not unbounded growth). The *fix* is still not approved to build.
-> Home: the Hermes control plane ([`hermes-control-plane.md`](hermes-control-plane.md)).
+> **Status:** `historical` — RESOLVED 2026-06-15. The investigation is complete (findings at the
+> bottom: the root cause is **compaction**, not unbounded growth), and the *fix* turned out to be the
+> **model swap** — moving Hermes off the weak free `stepfun/step-3.7-flash:free` tier to the capable
+> 400K `gpt-5.4-mini` on the owner's own key (arc #913→#921). On a 400K window, 50% compaction leaves
+> ~200K of headroom, so the "doc-read-gets-pruned" failure is largely gone; the `compression.*` knobs
+> (and `apply_context_fixes.sh`) remain **optional secondary levers**, no longer the primary fix. Kept
+> as the record of the diagnosis. Home: the Hermes control plane
+> ([`hermes-control-plane.md`](hermes-control-plane.md) § Model/provider).
 
 ## The smoking gun (observed live 2026-06-14/15)
 
