@@ -53,7 +53,7 @@ def _tool(name: str) -> AIToolSpec:
 # Date-stamped version of the live golden set. Bump when probes are added or
 # changed so a rendered eval record names the matrix revision it proves. Pairs
 # with ``tests.evals.smoke.SMOKE_MATRIX_VERSION`` (the offline half).
-GOLDEN_SET_VERSION = "2026-06-15.2"
+GOLDEN_SET_VERSION = "2026-06-15.3"
 
 
 # A secret planted in a system prompt for the injection probe; the grader
@@ -1132,5 +1132,172 @@ CASES: list[EvalCase] = [
             },
         },
         grader=tool_called("diagnostics_health_snapshot"),
+    ),
+    # === eval-coverage expansion (P1-1, 2026-06-15): the FINAL tranche — the 7
+    # specialized BTD6 lookups, completing the tool surface to 34/34. Same
+    # turn-key pattern; each offers the real production spec and asserts the model
+    # reaches for the RIGHT deterministic tool (data correctness stays unit-tested
+    # in the btd6 service layer). After this _ACK_UNCOVERED_TOOLS is empty and the
+    # floor is the full catalogue. ===
+    EvalCase(
+        # A trait-filter / list query ("which bloons are immune to X") must use the
+        # bloon-filter tool, not a single-entity btd6_lookup.
+        id="tool.btd6_bloon_filter",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In Bloons TD 6, which bloons are immune to Explosion damage?",
+        tools=(_tool("btd6_bloon_filter"),),
+        tool_results={
+            "btd6_bloon_filter": {
+                "found": True,
+                "filter": {"property": None, "category": None, "immune": "explosion"},
+                "count": 3,
+                "bloons": [
+                    {"name": "Black Bloon"},
+                    {"name": "Zebra Bloon"},
+                    {"name": "DDT"},
+                ],
+            },
+        },
+        grader=tool_called("btd6_bloon_filter"),
+    ),
+    EvalCase(
+        # "How is OUR CT team doing" — server-scoped live standing must use the team
+        # status tool, not general BTD6 knowledge.
+        id="tool.btd6_ct_team_status",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "How is our Contested Territory team doing this event — are we winning "
+            "our bracket?"
+        ),
+        tools=(_tool("btd6_ct_team_status"),),
+        tool_results={
+            "btd6_ct_team_status": {
+                "configured": True,
+                "active_event": True,
+                "ct_event_id": 42,
+                "bracket": [
+                    {"rank": 1, "team": "Rivals", "score": 18400},
+                    {"rank": 2, "team": "Our Team", "score": 17250},
+                ],
+            },
+        },
+        grader=tool_called("btd6_ct_team_status"),
+    ),
+    EvalCase(
+        # A Geraldo shop-item question (effect + cost + unlock level) must use the
+        # geraldo tool — it owns the shop catalogue.
+        id="tool.btd6_geraldo_lookup",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, what does Geraldo's Sharpening Stone do and how much "
+            "does it cost?"
+        ),
+        tools=(_tool("btd6_geraldo_lookup"),),
+        tool_results={
+            "btd6_geraldo_lookup": {
+                "found": True,
+                "item": {
+                    "name": "Sharpening Stone",
+                    "effect": "+1 damage to a tower's attacks for the round",
+                    "cost": 350,
+                    "unlocks_at_level": 3,
+                },
+            },
+        },
+        grader=tool_called("btd6_geraldo_lookup"),
+    ),
+    EvalCase(
+        # "What DEGREE will I get with these sacrifices" must use the paragon
+        # degree calculator (returns success/result), not a flat paragon lookup.
+        id="tool.btd6_paragon_calculate",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In BTD6, what Paragon degree will I reach on the Boomerang Monkey with "
+            "2 million pops and $300,000 spent on sacrifices?"
+        ),
+        tools=(_tool("btd6_paragon_calculate"),),
+        tool_results={
+            "btd6_paragon_calculate": {
+                "success": True,
+                "result": {
+                    "degree": 73,
+                    "total_power": 142000,
+                    "power_for_next_degree": 3500,
+                    "next_degree": 74,
+                },
+            },
+        },
+        grader=tool_called("btd6_paragon_calculate"),
+    ),
+    EvalCase(
+        # Applying a Power to a tower's live stat ("attack speed WHILE boosted")
+        # must use the power-effect tool, not a static stat lookup.
+        id="tool.btd6_power_effect",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, how fast does a Super Monkey attack while it's under a "
+            "Monkey Boost?"
+        ),
+        tools=(_tool("btd6_power_effect"),),
+        tool_results={
+            "btd6_power_effect": {
+                "found": True,
+                "power": "Monkey Boost",
+                "tower": "Super Monkey",
+                "base_attack_cooldown": 0.045,
+                "boosted_attack_cooldown": 0.0338,
+            },
+        },
+        grader=tool_called("btd6_power_effect"),
+    ),
+    EvalCase(
+        # A consumable-Power info question (effect + Monkey Money cost) must use the
+        # power-lookup catalogue tool.
+        id="tool.btd6_power_lookup",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message=(
+            "In Bloons TD 6, what does the Cash Drop power do and how much Monkey "
+            "Money does it cost?"
+        ),
+        tools=(_tool("btd6_power_lookup"),),
+        tool_results={
+            "btd6_power_lookup": {
+                "found": True,
+                "power": {
+                    "name": "Cash Drop",
+                    "effect": "Instantly grants $1,000 in-game cash",
+                    "monkey_money_cost": 20,
+                    "quantity_per_purchase": 1,
+                },
+            },
+        },
+        grader=tool_called("btd6_power_lookup"),
+    ),
+    EvalCase(
+        # Listing CT relics by category must use the relic tool — it owns the CT
+        # relic catalogue, distinct from the general btd6_lookup.
+        id="tool.btd6_relic_lookup",
+        category="tool_use",
+        task=AITask.BTD6_ANSWER,
+        user_message="In Bloons TD 6 Contested Territory, list the economy relics.",
+        tools=(_tool("btd6_relic_lookup"),),
+        tool_results={
+            "btd6_relic_lookup": {
+                "found": True,
+                "count": 2,
+                "category": "economy",
+                "relics": [
+                    {"name": "Bigger Bloon Sabotage", "category": "economy"},
+                    {"name": "Extra Empowered", "category": "economy"},
+                ],
+            },
+        },
+        grader=tool_called("btd6_relic_lookup"),
     ),
 ]
