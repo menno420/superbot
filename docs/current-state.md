@@ -20,7 +20,21 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-06-14, **sector tooling — the partition is now self-maintaining (PR #882)** —
+> **Last updated:** 2026-06-15, **routine-prompt canon — foolproof, completion-biased, idea→plan
+> (PR #899, Q-0144)** — owner-directed in-session: rewrote the dispatch + night-executor routine
+> prompts onto the owner's 12-step lifecycle and made them foolproof against bad dispatch input (the
+> "write a story about chickens" test). Now explicit in every routine prompt: **never-stop /
+> completion bias** (a routine always ships *something real* — the dispatched work or the next plan
+> slice), **sync-first** (stale clone was a named Hermes failure), **work-order-is-a-hint** (a
+> dispatched order = owner asking = build it; off-plan nonsense → do the plan instead; never invent),
+> the **scope-brake vs safety-brake** split (the phase gate is a scope brake for self-invented features
+> only — it does **not** apply to dispatched work; irreversible safety brakes never bend), **2–3 slices
+> bounded by ~700K tokens** (§10 updated), born-red mock PR, judgment-over-plan, bugs-first, and the
+> standing enders. The **reconciliation** routine gained the owner's **idea→plan promotion**: when
+> plans run low on executable work, promote the best `docs/ideas/` entry into a complete executable
+> plan. The in-repo prompts are the canonical mirror — **owner re-pastes them into each routine's
+> console config to take effect.** Docs only. ·
+> 2026-06-14, **sector tooling — the partition is now self-maintaining (PR #882)** —
 > closed the loose ends from the dispatch work: `scripts/check_sector_map.py` (validator — folio homing
 > + executor + startability convention, was prose-asserted) and `scripts/dispatch_menu.py` (resolver —
 > the machine version of the dispatch test: per sector, the first ▶ startable item + executor, flags a
