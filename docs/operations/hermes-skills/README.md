@@ -4,9 +4,9 @@
 > skills. Each skill is a ready-to-configure prompt for the Hermes agent running on the
 > control-plane VPS. Setup context: `docs/operations/hermes-control-plane.md`.
 
-This pack contains eleven skills covering the windows Hermes fills that Claude Code
-cannot: **pre-session orientation**, **between-session monitoring**,
-**production diagnosis from your phone**, the **autonomous-loop seams**
+This pack contains twelve skills covering the windows Hermes fills that Claude Code
+cannot: **the front-door intake router**, **pre-session orientation**, **between-session
+monitoring**, **production diagnosis from your phone**, the **autonomous-loop seams**
 (independent review + dispatch), and **self-extension** (Hermes authoring its own skills).
 
 For the standing read-only operating instructions every Hermes session should start
@@ -19,6 +19,7 @@ equivalent of `.claude/CLAUDE.md`.
 
 | Skill | Window | Purpose |
 |---|---|---|
+| [`intake`](./intake.md) | The front door — any inbound message | Classify a bug / idea / feature request / question / complaint and route it to the right home (bug-book · ideas · question router · dispatch · a cited answer) with the right action |
 | [`session-brief`](./session-brief.md) | Pre-session | Compressed orientation brief to paste into Claude Code |
 | [`repo-health`](./repo-health.md) | Between sessions | Traffic-light snapshot — is anything broken? (self-schedules a daily digest) |
 | [`ideas-triage`](./ideas-triage.md) | Downtime | Ideas backlog review with a suggested next move |
