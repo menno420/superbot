@@ -1,16 +1,18 @@
-"""Mining recipe browser — categorized, paginated crafting UI.
+"""Mining recipe browser — grouped by item type, then variants.
 
-The old crafting cog's category browser (Weapons/Armour/Tools/Items pages),
-modernized onto selects: a category dropdown (derived live from the item
-taxonomy of each recipe's product — never a hand-kept list), a recipe
-dropdown that **crafts on selection** (✅ marks affordable recipes), and
-Prev/Next paging for catalog growth past Discord's 25-option cap (the
-settings-hub pagination idiom).  Replaces scrolling the flat ``!buildlist``
-dump; crafting itself stays the one shared
-:func:`services.mining_workflow.craft` implementation.
+Owner UX ask (2026-06-15): don't list every tier of a sword separately — group
+into **Swords**, **Pickaxes**, **Helmets** … and open a type to its variants
+(wood → diamond). The base type is the last word of the product name
+("iron **sword**" → ``sword``), so the grouping is derived from the recipe set,
+never a hand-kept list. Two levels (type → variant) each fit one 25-option
+select, so the old Prev/Next paging is gone.
+
+Crafting itself stays the one shared :func:`services.mining_workflow.craft`.
 """
 
 from __future__ import annotations
+
+from collections import defaultdict
 
 import discord
 
@@ -22,124 +24,155 @@ from utils.mining.recipes import load_recipes
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.base import HubView
 
-_PAGE_SIZE = 25  # Discord's per-select option cap
-
-_ALL = "all"
-_KIND_LABELS: dict[str, str] = {
-    "tool": "🛠️ Tools & Gear",
-    "structure": "🏛️ Structures",
-    "consumable": "🧨 Consumables",
-    "resource": "⛏️ Resources",
-    "treasure": "💎 Treasure",
+# Per base-type emoji so the type list reads at a glance. Unknown types fall back
+# to the item-kind emoji (tools/structures/…).
+_TYPE_EMOJI: dict[str, str] = {
+    "sword": "🗡️",
+    "shield": "🛡️",
+    "pickaxe": "⛏️",
+    "helmet": "⛑️",
+    "chestplate": "🦺",
+    "leggings": "👖",
+    "boots": "🥾",
+    "lantern": "💡",
+    "torch": "🔦",
+    "throne": "👑",
+    "fortress": "🏰",
+    "statue": "🗿",
+    "hut": "🛖",
+    "house": "🏠",
+}
+_KIND_EMOJI: dict[str, str] = {
+    "tool": "🛠️",
+    "structure": "🏛️",
+    "consumable": "🧨",
+    "resource": "⛏️",
+    "treasure": "💎",
 }
 
 
-def _category_of(product: str) -> str:
-    return items.classify(product).value
+def _base_type(product: str) -> str:
+    """The grouping key for a product — its last word ("iron sword" → "sword")."""
+    return product.split()[-1].lower()
 
 
-def _recipes_for(category: str) -> list[tuple[str, dict[str, int]]]:
-    """The (product, materials) rows for *category*, name-ordered."""
-    rows = sorted(load_recipes().items())
-    if category == _ALL:
-        return rows
-    return [(name, mats) for name, mats in rows if _category_of(name) == category]
+def _pluralize(base: str) -> str:
+    """Label form of a base type — already-plural words (boots, leggings) stay."""
+    if base.endswith("s"):
+        return base
+    if base.endswith(("x", "z", "ch", "sh")):
+        return base + "es"
+    return base + "s"
 
 
-def _page_count(total: int) -> int:
-    return max(1, (total + _PAGE_SIZE - 1) // _PAGE_SIZE)
+def _type_emoji(base: str, sample: str) -> str:
+    return _TYPE_EMOJI.get(base) or _KIND_EMOJI.get(items.classify(sample).value, "📦")
+
+
+def _grouped() -> dict[str, list[tuple[str, dict[str, int]]]]:
+    """All recipes grouped by base type, each group's variants name-ordered."""
+    groups: dict[str, list[tuple[str, dict[str, int]]]] = defaultdict(list)
+    for name, materials in sorted(load_recipes().items()):
+        groups[_base_type(name)].append((name, materials))
+    return groups
+
+
+def _affordable(materials: dict[str, int], inventory: dict[str, int]) -> bool:
+    return all(inventory.get(mat, 0) >= qty for mat, qty in materials.items())
 
 
 async def build_recipe_embed(
     user_id: int,
     guild_id: int,
     *,
-    category: str = _ALL,
-    page: int = 0,
+    base_type: str | None = None,
     note: str = "",
 ) -> discord.Embed:
-    """One page of recipes with per-material have/need lines."""
+    """The type list (``base_type=None``) or one type's variants."""
     inventory = await db.get_mining_inventory(str(user_id), guild_id)
     forge_level = (await db.get_structures(user_id, guild_id)).get(structures.FORGE, 0)
-    rows = _recipes_for(category)
-    pages = _page_count(len(rows))
-    page = max(0, min(page, pages - 1))
-    window = rows[page * _PAGE_SIZE : (page + 1) * _PAGE_SIZE]
+    groups = _grouped()
 
-    title = "📖 Recipes"
-    if category != _ALL:
-        title += f" — {_KIND_LABELS.get(category, category.title())}"
-    embed = discord.Embed(title=title, color=MINING_COLOR)
+    embed = discord.Embed(title="📖 Recipes", color=MINING_COLOR)
     if note:
         embed.description = note
-    if not window:
+
+    if base_type is None:
+        # Level 1 — the type list, with a craftable-now count per type.
+        embed.set_footer(text="Pick a type below to see its variants.")
+        for base in sorted(groups):
+            variants = groups[base]
+            craftable = sum(1 for _, m in variants if _affordable(m, inventory))
+            emoji = _type_emoji(base, variants[0][0])
+            value = f"{len(variants)} variant{'s' * (len(variants) != 1)}"
+            if craftable:
+                value += f"  •  ✅ {craftable} craftable now"
+            embed.add_field(
+                name=f"{emoji} {_pluralize(base).title()}",
+                value=value,
+                inline=True,
+            )
+        return embed
+
+    # Level 2 — variants of the chosen type, with have/need per material.
+    variants = groups.get(base_type, [])
+    emoji = _type_emoji(base_type, variants[0][0] if variants else base_type)
+    embed.title = f"📖 {emoji} {_pluralize(base_type).title()}"
+    embed.set_footer(text="Pick a variant to craft it  •  ↩ Types to go back")
+    if not variants:
         embed.add_field(
-            name="Nothing here",
-            value="No recipes in this category yet.",
-            inline=False,
+            name="Nothing here", value="No recipes of this type.", inline=False
         )
-    for name, materials in window:
+    for name, materials in variants:
         have_lines = ", ".join(
             f"{mat} {min(inventory.get(mat, 0), qty)}/{qty}"
             for mat, qty in sorted(materials.items())
         )
-        has_materials = all(
-            inventory.get(mat, 0) >= qty for mat, qty in materials.items()
-        )
-        forge_locked = not structures.meets_forge_requirement(name, forge_level)
-        if forge_locked:
+        if not structures.meets_forge_requirement(name, forge_level):
             marker = "🔒"
             need = structures.forge_level_name(structures.forge_level_required(name))
             have_lines += f"\n🔥 needs **{need}** (`!forge`)"
         else:
-            marker = "✅" if has_materials else "▫️"
-        embed.add_field(
-            name=f"{marker} {name.title()}",
-            value=have_lines,
-            inline=True,
-        )
-    embed.set_footer(
-        text=(
-            f"Page {page + 1}/{pages}  •  pick a recipe below to craft it  •  "
-            "!craft <item>"
-        ),
-    )
+            marker = "✅" if _affordable(materials, inventory) else "▫️"
+        embed.add_field(name=f"{marker} {name.title()}", value=have_lines, inline=True)
     return embed
 
 
-class _CategorySelect(discord.ui.Select):
-    def __init__(self, current: str) -> None:
-        present = {_category_of(name) for name in load_recipes()}
-        options = [
-            discord.SelectOption(
-                label="All recipes",
-                value=_ALL,
-                default=current == _ALL,
-            ),
-        ]
-        options += [
-            discord.SelectOption(
-                label=_KIND_LABELS.get(kind, kind.title()),
-                value=kind,
-                default=current == kind,
+class _TypeSelect(discord.ui.Select):
+    """Level 1 — pick an item type (Swords / Pickaxes / …)."""
+
+    def __init__(self, inventory: dict[str, int]) -> None:
+        groups = _grouped()
+        options = []
+        for base in sorted(groups):
+            variants = groups[base]
+            craftable = sum(1 for _, m in variants if _affordable(m, inventory))
+            desc = f"{len(variants)} variant{'s' * (len(variants) != 1)}"
+            if craftable:
+                desc += f" · {craftable} craftable now"
+            options.append(
+                discord.SelectOption(
+                    label=_pluralize(base).title()[:100],
+                    value=base,
+                    description=desc[:100],
+                    emoji=_type_emoji(base, variants[0][0]),
+                ),
             )
-            for kind in sorted(present)
-        ][:24]
-        super().__init__(placeholder="Filter by category…", options=options, row=0)
+        super().__init__(placeholder="Browse a type…", options=options[:25], row=0)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
             return
         view: MiningRecipeBrowserView = self.view  # type: ignore[assignment]
-        await view.render(interaction, category=self.values[0], page=0)
+        await view.render(interaction, base_type=self.values[0])
 
 
-class _RecipeSelect(discord.ui.Select):
-    """Selecting a recipe crafts it (the workshop-panel craft idiom)."""
+class _VariantSelect(discord.ui.Select):
+    """Level 2 — pick a variant to craft (the workshop-panel craft idiom)."""
 
     def __init__(
         self,
-        rows: list[tuple[str, dict[str, int]]],
+        variants: list[tuple[str, dict[str, int]]],
         inventory: dict[str, int],
     ) -> None:
         options = [
@@ -147,17 +180,11 @@ class _RecipeSelect(discord.ui.Select):
                 label=name.title()[:100],
                 value=name,
                 description=workshop.describe_materials(materials)[:100],
-                emoji=(
-                    "✅"
-                    if all(
-                        inventory.get(mat, 0) >= qty for mat, qty in materials.items()
-                    )
-                    else None
-                ),
+                emoji="✅" if _affordable(materials, inventory) else None,
             )
-            for name, materials in rows[:_PAGE_SIZE]
+            for name, materials in variants[:25]
         ]
-        super().__init__(placeholder="Craft a recipe…", options=options, row=1)
+        super().__init__(placeholder="Craft a variant…", options=options, row=1)
 
     async def callback(self, interaction: discord.Interaction) -> None:
         if not await safe_defer(interaction):
@@ -170,36 +197,14 @@ class _RecipeSelect(discord.ui.Select):
         )
         await view.render(
             interaction,
-            category=view.category,
-            page=view.page,
+            base_type=view.base_type,
             note=("✅ " if result.ok else "❌ ") + result.message,
             ok=result.ok,
         )
 
 
-class _PageButton(discord.ui.Button):
-    def __init__(self, *, delta: int, disabled: bool) -> None:
-        super().__init__(
-            label="◀ Prev" if delta < 0 else "Next ▶",
-            style=discord.ButtonStyle.secondary,
-            disabled=disabled,
-            row=2,
-        )
-        self._delta = delta
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        if not await safe_defer(interaction):
-            return
-        view: MiningRecipeBrowserView = self.view  # type: ignore[assignment]
-        await view.render(
-            interaction,
-            category=view.category,
-            page=view.page + self._delta,
-        )
-
-
 class MiningRecipeBrowserView(HubView):
-    """Category select → recipe select (crafts) → Prev/Next; a hub child."""
+    """Type select → variant select (crafts); a child of the mining hub."""
 
     SUBSYSTEM = "mining"
 
@@ -208,13 +213,11 @@ class MiningRecipeBrowserView(HubView):
         author: discord.Member | discord.User,
         guild_id: int,
         *,
-        category: str = _ALL,
-        page: int = 0,
+        base_type: str | None = None,
     ) -> None:
         super().__init__(author)
         self.guild_id = guild_id
-        self.category = category
-        self.page = page
+        self.base_type = base_type
 
     @classmethod
     async def create(
@@ -222,38 +225,33 @@ class MiningRecipeBrowserView(HubView):
         author: discord.Member | discord.User,
         guild_id: int,
         *,
-        category: str = _ALL,
-        page: int = 0,
+        base_type: str | None = None,
     ) -> MiningRecipeBrowserView:
-        """Async factory — options depend on inventory + the recipe set."""
-        rows = _recipes_for(category)
-        pages = _page_count(len(rows))
-        page = max(0, min(page, pages - 1))
-        view = cls(author, guild_id, category=category, page=page)
+        """Async factory — affordability marks depend on inventory."""
+        view = cls(author, guild_id, base_type=base_type)
         inventory = await db.get_mining_inventory(str(author.id), guild_id)
-        view.add_item(_CategorySelect(category))
-        window = rows[page * _PAGE_SIZE : (page + 1) * _PAGE_SIZE]
-        if window:
-            view.add_item(_RecipeSelect(window, inventory))
-        view.add_item(_PageButton(delta=-1, disabled=page <= 0))
-        view.add_item(_PageButton(delta=1, disabled=page >= pages - 1))
+        if base_type is None:
+            view.add_item(_TypeSelect(inventory))
+        else:
+            variants = _grouped().get(base_type, [])
+            if variants:
+                view.add_item(_VariantSelect(variants, inventory))
+            view.add_item(_BackToTypesButton())
         return view
 
     async def render(
         self,
         interaction: discord.Interaction,
         *,
-        category: str,
-        page: int,
+        base_type: str | None,
         note: str = "",
         ok: bool | None = None,
     ) -> None:
-        """Rebuild the panel for a new category/page/result."""
+        """Rebuild for a new type / craft result."""
         embed = await build_recipe_embed(
             self._author.id,
             self.guild_id,
-            category=category,
-            page=page,
+            base_type=base_type,
             note=note,
         )
         if ok is not None:
@@ -261,25 +259,35 @@ class MiningRecipeBrowserView(HubView):
         new_view = await MiningRecipeBrowserView.create(
             self._author,
             self.guild_id,
-            category=category,
-            page=page,
+            base_type=base_type,
         )
         await safe_edit(interaction, embed=embed, view=new_view)
         self.stop()
 
-    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=2)
+    @discord.ui.button(label="↩ Workshop", style=discord.ButtonStyle.secondary, row=2)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        # Late import keeps the module-load graph acyclic (the hub imports this).
-        from views.mining.main_panel import MiningHubView, build_overview_embed
-
-        embed = await build_overview_embed(
-            self._author.id,
-            self.guild_id,
-            name=getattr(self._author, "display_name", None),
+        from views.mining.workshop_hub import (
+            MiningWorkshopHubView,
+            build_workshop_hub_embed,
         )
-        view = MiningHubView()
-        await interaction.response.edit_message(embed=embed, view=view)
+
+        await interaction.response.edit_message(
+            embed=build_workshop_hub_embed(),
+            view=MiningWorkshopHubView(self._author, self.guild_id),
+            attachments=[],
+        )
         self.stop()
+
+
+class _BackToTypesButton(discord.ui.Button):
+    """Return from a type's variants to the type list (level 2 → level 1)."""
+
+    def __init__(self) -> None:
+        super().__init__(label="↩ Types", style=discord.ButtonStyle.secondary, row=2)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        view: MiningRecipeBrowserView = self.view  # type: ignore[assignment]
+        await view.render(interaction, base_type=None)
 
 
 __all__ = ["MiningRecipeBrowserView", "build_recipe_embed"]

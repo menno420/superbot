@@ -230,18 +230,19 @@ class MiningWorkshopView(HubView):
         result = await mining_workflow.quick_craft(self._author.id, self.guild_id)
         await _rerender(interaction, self, result)
 
-    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=2)
+    @discord.ui.button(label="↩ Workshop", style=discord.ButtonStyle.secondary, row=2)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
-        # Late import keeps the module-load graph acyclic (the hub imports this).
-        from views.mining.main_panel import MiningHubView, build_overview_embed
-
-        embed = await build_overview_embed(
-            self._author.id,
-            self.guild_id,
-            name=getattr(self._author, "display_name", None),
+        # Back to the Workshop sub-hub that opened this panel (owner ask 2026-06-15).
+        from views.mining.workshop_hub import (
+            MiningWorkshopHubView,
+            build_workshop_hub_embed,
         )
-        view = MiningHubView()
-        await interaction.response.edit_message(embed=embed, view=view)
+
+        await interaction.response.edit_message(
+            embed=build_workshop_hub_embed(),
+            view=MiningWorkshopHubView(self._author, self.guild_id),
+            attachments=[],
+        )
         self.stop()
 
 

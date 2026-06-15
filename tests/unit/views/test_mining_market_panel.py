@@ -35,7 +35,7 @@ def test_market_view_has_buy_selects_sell_and_back():
     assert all(len(s.options) <= 25 for s in selects)
     labels = " | ".join(b.label or "" for b in buttons)
     assert "Sell All" in labels
-    assert "Hub" in labels  # back-to-hub navigation
+    assert "Workshop" in labels  # back navigation (to the Workshop sub-hub)
 
 
 def test_buy_selects_cover_the_whole_gear_shop():
