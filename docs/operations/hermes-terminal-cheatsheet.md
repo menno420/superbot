@@ -61,6 +61,26 @@ cat ~/.hermes/SOUL.md                          # View Hermes' current base ident
 ls ~/.hermes/skills/                           # List the skills Hermes has installed.
 ```
 
+## Lean a config of empty placeholders (the `=.+` filter)
+
+Tools like Hermes write a `.env` listing **every** var they recognise, most left blank. To strip the
+empty placeholders and keep only what's actually set — values intact, secrets never leaving the box,
+never pasted into a chat:
+
+```bash
+cp ~/.hermes/.env ~/.hermes/.env.bak                              # ALWAYS back up first.
+grep -E '^[A-Z_0-9]+=.+' ~/.hermes/.env.bak > ~/.hermes/.env.new  # keep only KEY=VALUE lines that HAVE a value.
+grep -oE '^[A-Z_0-9]+=' ~/.hermes/.env.new                        # review kept KEY NAMES (no values) — confirm nothing essential dropped.
+mv ~/.hermes/.env.new ~/.hermes/.env                              # swap in once verified (cp the .bak back to undo).
+```
+
+`^[A-Z_0-9]+=.+` keeps any line with a non-empty value and drops blank `NAME=` placeholders, so it
+**cannot lose a set value** (e.g. a custom `OPENAI_BASE_URL` the model depends on). Works on any flat
+`KEY=VALUE` env file. Always run the `grep -oE '^…='` review step before `mv` to confirm the model
+key + gateway tokens survived. **Do NOT** hand-trim a CLI-managed `config.yaml` this way — that one is
+a full settings schema; change it with `hermes config set` and leave the rest (its size is defaults,
+not clutter).
+
 ## Hermes memory (built-in — plain-text markdown)
 
 Hermes' persistent memory is two files under `~/.hermes/memories/`, loaded into the system prompt as

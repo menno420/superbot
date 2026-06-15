@@ -438,16 +438,23 @@ hermes gateway
 
 ### Still open (infrastructure to-dos)
 
+- **Read-only Railway access (log triage) — the planned "next capability".** The
+  [`log-triage`](./hermes-skills/log-triage.md) skill + `scripts/hermes/railway_logs.py` can read
+  **production** logs once a **read-only Railway token** (+ the Railway CLI) is provisioned on the VPS.
+  This is the documented graduation from *repo* assistant to *ops* assistant — look-but-don't-touch,
+  no write/deploy power. (Also see "Read-only log triage" below for the full capability note.)
 - **SSH key login** — access still uses password login. Add key-based login (Termius), then disable
   root/password SSH. Do this before the VPS becomes important infrastructure.
 - **Docker terminal backend** — Hermes runs the `local` backend today; Docker would give safer
   command isolation (install Docker → add `hermes` to the docker group → set
-  `terminal.backend: docker` → retest from Telegram). Do it before Hermes runs heavier tooling.
+  `terminal.backend: docker` → retest). Do it before Hermes runs heavier tooling.
 - **Backups** — not urgent, but matters once memory/skills/schedules accumulate. Targets: `~/.hermes`
   (config + `state.db` memory) and the systemd unit; the skill/doc sources are already git-tracked.
   Methods: Hetzner snapshot · periodic `tar`.
-- **Discord integration (later)** — Telegram stays the private control surface; a private admin/dev
-  channel could later receive repo-health / CI / review summaries. Not a priority.
+- **Discord automated reports (optional)** — the Discord **gateway is live** (you chat with Hermes
+  there now); what's still optional is having it auto-*post* repo-health / CI / review summaries to a
+  private admin channel (the `repo-health` / `review-merge` skill blueprints can `deliver` there).
+  Low priority.
 
 ### Done — items that were on this list (kept as a record)
 
