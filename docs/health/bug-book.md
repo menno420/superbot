@@ -10,6 +10,35 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0013 — 1v1 challenge timer keeps running after accept, overwrites the live duel — FIXED
+
+- **Symptom (owner-reported via Hermes, 2026-06-16):** "there is a problem with
+  the deathmatch cog, the 1v1 vs player command accept timer seems to keep
+  running while a match is active, and even when a match is completed it will
+  default to 'player didn't respond in time etc'." The accept/decline challenge
+  prompt's 30-second timer kept firing after the challenge was answered, replacing
+  the live (or already-finished) duel message with "⚔️ Challenge Expired — did
+  not respond in time."
+- **Affected surface:** `_ChallengeView` in `disbot/cogs/deathmatch_cog.py` (the
+  accept/decline pre-match view). `_DuelView` was never the problem — it already
+  guards on `duel.is_over`.
+- **Root cause:** `_ChallengeView` is created with `timeout=30.0`, but
+  `btn_accept()` (which starts the real `_DuelView`) and `btn_decline()` **never
+  called `self.stop()`**, and `on_timeout()` had **no guard** for an
+  already-answered challenge. So the challenge view lived on in the background;
+  when its timeout fired, `on_timeout()` edited its message — the *same* message
+  that now showed the duel — to the expired notice.
+- **Fix (this PR):** `btn_accept`/`btn_decline` set a `_resolved` flag and call
+  `self.stop()` (which cancels the pending timeout); `on_timeout()` returns early
+  when `_resolved` (belt-and-suspenders for the race where the timeout was already
+  firing). **Diagnosis credit:** the Hermes `intake` skill (gpt-5.4-mini)
+  root-caused this correctly from the live report — its first real bug, end to
+  end.
+- **Regression test:** `tests/unit/cogs/test_deathmatch_challenge_timeout.py` —
+  accept and decline stop the view + guard a late `on_timeout`; an un-answered
+  challenge still expires (no regression).
+- **Status:** FIXED.
+
 ## BUG-0012 — counting staff check trusts role *names*, not permissions (privilege bypass) — FIXED
 
 - **Symptom (owner-reported, 2026-06-14):** "you could give yourself a role
