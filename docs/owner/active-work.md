@@ -30,6 +30,10 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/eval-coverage-expansion-2026-06-15` · P1-1 eval-coverage expansion — 6 golden
+  tool-selection probes (14→20/34) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-15 ·
+  **PR #886 (open, auto-merge on green)**
+
 - `claude/exciting-brahmagupta-1duzde` · mining §7.5 **Vault** (safe stash) + turn-key
   **structures/skill-tree plan** for the night session · `disbot/{migrations,utils/db/games,
   services/mining_workflow,views/mining,cogs/mining_cog}` + the plan doc · 2026-06-14 ·
