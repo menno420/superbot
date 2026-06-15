@@ -4355,6 +4355,17 @@ under the Q-0113 merge gate. The ordering ("bugs first … only then features", 
 enforced by `scripts/check_phase_gate.py`: a feature may only be *originated* in **invent-phase**
 (zero OPEN bugs, zero `Not Done` readiness rows) — otherwise it is captured as an idea, not built.
 
+> **Clarification (2026-06-15, owner-stated in-session; recorded here for discoverability).**
+> The gate is scoped to **agent-self-originated** features — ones an agent invents mid-session.
+> A **dispatched** work order (one fired at a routine via the `/fire` endpoint, even when tagged
+> `CLASS: feature`) is **owner-directed** and therefore **flows freely like a bug fix** — the
+> phase gate does *not* gate it. *(Provenance: the owner corrected this exact scenario when a
+> dispatched mining feature hit a FIX phase; the routine then correctly built mining Slice D
+> (#891) and Slice A / Vault v2 (#897). Background + the still-open "gate at the dispatcher"
+> mechanism idea: `docs/ideas/dispatch-phase-gate-precheck-2026-06-15.md`.)* So an agent
+> resolving a `feature` work order splits on **origin**: dispatched ⇒ build (owner-directed);
+> self-invented ⇒ run `check_phase_gate.py --require-invent`, and in fix-phase capture-and-stop.
+
 **Home:** `docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md` (the loop this gates) ·
 `scripts/check_phase_gate.py` (the phase mechanism) · `docs/operations/hermes-dispatch-bridge.md`
 · `docs/owner/ai-project-workflow.md` §12 · this entry is provenance.
