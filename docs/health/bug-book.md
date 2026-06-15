@@ -159,10 +159,34 @@
   + `test_non_mk_btd6_question_still_reaches_model`
   (`tests/unit/runtime/ai/test_natural_language_stage.py` — the pre-emptive
   short-circuit, and that ordinary BTD6 questions still reach the model).
-- **Status:** PARTIALLY FIXED — the **MK-related family** is fixed (PR #924).
-  Two list families remain OPEN for follow-on slices, same proven shape
-  (deterministic builder → pre-emptive floor): **per-level item lists**
-  (Geraldo per-level groupings) and **newest-towers ordering**.
+- **Fix — slice 2: the "Geraldo items per level" family (PR #926):** the model
+  no longer assembles the level→item grouping (it mislabelled which item unlocks
+  at which Geraldo level — every name grounded, so the value-only faithfulness
+  guard passed the wrong *grouping*). `btd6_data_service.geraldo_items_by_unlock_level()`
+  owns the deterministic ascending level→items map;
+  `btd6_context_service.deterministic_geraldo_per_level_reply` detects the
+  per-level / by-level / "level N" shape (Geraldo cue + level/list cue; `None`
+  for single-item lookups like "what does the Genie Bottle do" and strategy
+  questions) and formats either the whole grouping or a single level's unlocks
+  (an empty level answers honestly — "no new item unlocks at level N"). Both
+  BUG-0009 builders now front a single dispatcher
+  `btd6_context_service.deterministic_btd6_list_reply` served as the pre-emptive
+  BTD6 floor in `natural_language_stage` (MK first, then Geraldo) — slice 3
+  (newest-towers ordering) appends its builder there.
+- **Regression tests:** `tests/unit/services/test_btd6_geraldo_per_level.py`
+  (grouping ascending/complete/level-0 starting items · full-list + single-level
+  + empty-level replies · single-item/strategy/non-Geraldo fall-through · the
+  dispatcher routing both families and falling through on an ordinary question) ·
+  `test_geraldo_per_level_question_floored_before_model`
+  (`tests/unit/runtime/ai/test_natural_language_stage.py` — the pre-emptive
+  short-circuit through the unified dispatcher).
+- **Status:** PARTIALLY FIXED — the **MK-related family** (PR #924) and the
+  **Geraldo per-level family** (PR #926) are fixed. One list family remains OPEN
+  for a follow-on slice, same proven shape (deterministic builder → pre-emptive
+  floor, appended to `deterministic_btd6_list_reply`): **newest-towers
+  ordering** — *data-gated*: `towers.json` carries no release-order field, so it
+  needs sourced release-order data first (the ADR-006 / `!btd6ops seed-data`
+  provenance lane) before the builder.
 
 ## BUG-0008 — "420 farm" income freelanced on the general path (keyword gap)
 

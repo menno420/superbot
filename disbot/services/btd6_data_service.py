@@ -1315,6 +1315,25 @@ def find_geraldo_item(name: str) -> GeraldoItemEntry | None:
     return partial[0] if len(partial) == 1 else None
 
 
+def geraldo_items_by_unlock_level() -> (
+    tuple[tuple[int, tuple[GeraldoItemEntry, ...]], ...]
+):
+    """Geraldo's shop items grouped by the hero level they unlock at — the
+    deterministic relation behind the "what does Geraldo unlock per level"
+    answer (BUG-0009 slice 2).
+
+    Returns ``((level, (item, …)), …)`` ascending by ``unlock_level``; within a
+    level, items keep catalog order. Asked to assemble this grouping itself the
+    model mislabels which item unlocks when (every name is grounded, so the
+    value-only faithfulness guard passes the wrong grouping) — so the grouping
+    is owned here, in code.
+    """
+    by_level: dict[int, list[GeraldoItemEntry]] = {}
+    for item in get_dataset().geraldo_items:
+        by_level.setdefault(item.unlock_level, []).append(item)
+    return tuple((level, tuple(by_level[level])) for level in sorted(by_level))
+
+
 def get_boss(boss_id: str) -> BossEntry | None:
     """A Boss Bloon by catalog id (case-insensitive)."""
     needle = boss_id.strip().lower()
