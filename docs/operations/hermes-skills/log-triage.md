@@ -1,10 +1,13 @@
 # Skill: `superbot-log-triage`
 
-> **Status:** `living-ledger` — ready-to-use Hermes skill prompt. **Gated:** the
-> read-only log reader (`scripts/hermes/railway_logs.py`) exists; it just needs a
-> read-only Railway **token** + ids on the VPS (see Setup below) before it can see
-> live bot logs. Until configured it triages only the VPS-local gateway logs.
-> Update when the deploy target or log source changes.
+> **Status:** `living-ledger` — ready-to-use Hermes skill prompt. The error scan +
+> crash-loop grading is **deterministic**: `scripts/hermes/log_triage.py` (stdlib,
+> read-only, content-free) groups + grades any log window, so the triage no longer
+> depends on the model eyeballing raw logs. **Gated only on live data:** the
+> read-only log reader (`scripts/hermes/railway_logs.py`) needs a read-only Railway
+> **token** + ids on the VPS (see Setup below) before it can see live bot logs;
+> until configured the analyzer still grades the VPS-local gateway logs. Update
+> when the deploy target or log source changes.
 
 **Window:** between sessions / after a deploy / when the bot misbehaves
 **Purpose:** Read SuperBot's production logs and turn them into a plain-language
@@ -38,31 +41,33 @@ Do the following in order. Skip any step whose tool is unavailable and say so.
    or another setup error, fall back to the `railway` CLI if present
    (`railway logs --service worker 2>&1 | tail -n 400`). If neither works, say
    "production logs unavailable — read-only Railway token not configured" and
-   continue to step 4 using the local gateway logs instead.
+   continue to step 3 using the local gateway logs instead.
 
-2. ERROR SCAN
-   From the log output, count and group by signature:
-   - Tracebacks (lines containing "Traceback (most recent call last)")
-   - Login / connection failures (e.g. "429", "Cannot connect", "WebSocket",
-     "Privileged ... intents", "Improper token")
-   - Database errors ("asyncpg", "connection", "pool", "timeout")
-   - Unhandled command/interaction errors ("Ignoring exception", "discord.ext")
-   For each group: how many times, the most recent timestamp, one example line.
-
-3. CRASH-LOOP CHECK
-   Look for repeated startup banners or repeated identical fatal lines close
-   together in time — that indicates a restart loop. Note the interval if so.
+2. ERROR SCAN + CRASH-LOOP CHECK (deterministic — let the analyzer do it)
+   Do NOT eyeball the raw logs and group them by hand — pipe them through the
+   deterministic, content-free analyzer, which grades the window for you:
+     python3 scripts/hermes/railway_logs.py -n 400 2>&1 | python3 scripts/hermes/log_triage.py
+   (or, if you saved the logs to a file: `python3 scripts/hermes/log_triage.py FILE`,
+   or add `--json` for a machine-readable report). It groups errors by signature
+   (traceback · login/connection · database · command/interaction · generic),
+   counts each with its last-seen timestamp and a **redacted** example (no ids,
+   tokens, emails, urls, or ips leak — it surfaces signal, not log bodies),
+   detects restart loops (a startup banner repeating 3+ times), and prints a
+   one-line production status (healthy / degraded / crash-looping). Copy its
+   `### Production status`, `### Error signatures`, and `### Crash-loop` blocks
+   straight into your report below — they are already in the output format.
    (The known crash-loop signature is a 429 on login; the bot is built to sleep
    ~60s before exiting to break the loop — if you see that, it is degraded but
-   self-limiting, not hard-down.)
+   self-limiting, not hard-down.) If `log_triage.py` is somehow unavailable,
+   fall back to scanning by hand for those same signatures.
 
-4. LOCAL GATEWAY HEALTH (always available)
+3. LOCAL GATEWAY HEALTH (always available)
    Run: systemctl is-active hermes-gateway 2>/dev/null || echo "not-systemd"
    Run: journalctl -u hermes-gateway -n 50 --no-pager 2>/dev/null | tail -n 50
    Report whether the Hermes gateway itself is healthy (this is you — confirms the
    control plane is up).
 
-5. CORRELATE
+4. CORRELATE
    If you found production errors, check the last 5 commits for a likely culprit:
      git -C /home/hermes/repos/superbot log --oneline -5
    Note any commit whose message plausibly relates to the error signature.
