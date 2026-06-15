@@ -134,6 +134,35 @@ invented scope). Judge against "what good looks like"; if one fails, that's the 
 Record outcomes in a `.sessions/` note or here if a pattern emerges; that's how the role's model
 choice (mini vs. a stronger review model, Q-0117) gets decided on evidence rather than vibes.
 
+**Outcomes — first live calibration (2026-06-16, owner-run via the Discord gateway).** All five probes
+**passed** — gpt-5.4-mini is genuinely trustworthy for the oversight/dispatch role:
+
+- **Grounding** ✅ — reads the real `current-state.md` (the #888 failure class is gone). The *first*
+  run cited a dated reconciliation **stamp-line** ("next ▶ = mining Forge", already shipped #905)
+  instead of the live pointer — but that exposed a **doc** bug (a 600-word pointer + a wall of
+  "next ▶ =" stamps), fixed in #925 (scannable lead + live-vs-stamp signpost). After the fix it named
+  the right slice **and explicitly reasoned** *"I'm using the live line, not the older stamp"* — even
+  with its own prior wrong answer still in context (re-grounds over anchoring).
+- **Multi-step** ✅ — ran all three repo-health checks and synthesized ONE judgment-weighted verdict;
+  its "ledger is stale" finding was accurate, not hallucinated.
+- **Dispatch assembly** ✅ — exact four-section format, real file/branch/PR refs, **no invented
+  numbers**; **caught that the slice was already in flight (#926) and refused to fire a duplicate**;
+  even honored a data-gate nuance from the live pointer unprompted.
+- **Honesty** ✅ (the most important) — asked for a non-existent "v2 launch date", it **searched
+  genuinely (~7 queries) then said it couldn't find one** + offered the closest *real* line. No
+  confabulation.
+- **Lean reads** ✅ by observation — greps/`search_files` + targeted reads, not whole-file dumps.
+
+**Two minor caveats (operational, not capability):**
+- **200K TPM ceiling.** A single token-heavy task (loading 3 skills + ~15 searches/reads) hit the
+  OpenAI per-minute token cap and the turn errored mid-way. Mitigations: **`/new` per task** (smaller
+  turns) and/or request a higher OpenAI usage-tier TPM. Not a model fault — it recovered fully on
+  "continue".
+- **Over-loads skills.** It loaded 3 skills for a one-skill task (seen twice). A *"one skill per task;
+  for an overlap check use `gh pr list` + grep `.sessions/`, don't deep-search"* steer (now in the
+  `dispatch` skill) trims the heaviest part without dumbing it down. Consider
+  `agent.reasoning_effort: low` for the dispatch role if it persists.
+
 #### Model-switch playbook (the ~3-hour maze — so it's 5 minutes next time)
 
 Moving Hermes to a capable own-key model hit these traps, in order:
