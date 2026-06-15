@@ -197,6 +197,42 @@ def _scan_consumption(
     return named_pairs, whole_subsystems, key_values
 
 
+def _scan_literal_reads() -> list[tuple[str, str, str]]:
+    """``(subsystem, name, "file:line")`` for every ``resolve_value`` /
+    ``resolve_setting`` call with a string-literal ``(subsystem, name)`` pair.
+
+    The subsystem may be a literal or a module-level ``SUBSYSTEM`` alias;
+    the name must be a literal (dynamic-name reads carry nothing to check).
+    """
+    reads: list[tuple[str, str, str]] = []
+    for path in sorted(_DISBOT.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        try:
+            tree = ast.parse(path.read_text())
+        except SyntaxError:  # pragma: no cover — defensive
+            continue
+        subsystem_const = _module_subsystem_const(tree)
+        rel = path.relative_to(_REPO_ROOT)
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call) and _call_name(node) in _RESOLVE_NAMED):
+                continue
+            if len(node.args) < 3:
+                continue
+            sub_arg, name_arg = node.args[1], node.args[2]
+            subsystem = _string_const(sub_arg)
+            if (
+                subsystem is None
+                and isinstance(sub_arg, ast.Name)
+                and sub_arg.id in _SUBSYSTEM_VARS
+            ):
+                subsystem = subsystem_const
+            name = _string_const(name_arg)
+            if subsystem and name:
+                reads.append((subsystem, name, f"{rel}:{node.lineno}"))
+    return reads
+
+
 def _module_subsystem_const(tree: ast.Module) -> str | None:
     for node in tree.body:
         if not (
@@ -244,4 +280,37 @@ def test_every_declared_setting_has_a_runtime_consumer():
         "declaration is intentionally ahead of its consumer — add it to "
         "_DECLARED_NO_OP_OK with a tracking reference:\n"
         + "\n".join(f"  {d}" for d in dead)
+    )
+
+
+def test_every_literal_setting_read_targets_a_declared_setting():
+    """The reverse direction — no read of an *undeclared* setting.
+
+    The forward parity above proves every declaration has a reader. The
+    mirror gap is just as silent: a typo'd or stale literal read —
+    ``resolve_value(g, "welcom", "enabld", default)`` — resolves to the
+    *fallback* forever (the misspelled key is never written, so it always
+    misses), an invisible always-default bug no other test catches. This
+    asserts every ``resolve_value``/``resolve_setting`` call with a literal
+    ``(subsystem, name)`` pair targets a setting that actually exists in the
+    schema registry, turning the settings lane's parity into a true
+    bijection (declared ⇔ consumed). Dynamic-name and ``resolve_batch``
+    reads carry no literal name to check and are out of scope.
+    """
+    declared_pairs = set(_declared_settings())
+    literal_reads = _scan_literal_reads()
+
+    stray = sorted(
+        {
+            f"({sub!r}, {name!r}) at {loc}"
+            for sub, name, loc in literal_reads
+            if (sub, name) not in declared_pairs
+        }
+    )
+    assert not stray, (
+        "P1-3 reverse-parity violation: a resolve_value/resolve_setting "
+        "call reads a (subsystem, name) that is NOT a declared SettingSpec "
+        "— it silently resolves to the fallback every time (a typo'd or "
+        "stale key). Fix the literal, or declare the setting:\n"
+        + "\n".join(f"  {s}" for s in stray)
     )
