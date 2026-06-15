@@ -23,6 +23,8 @@ Validation guarantees:
 
 from __future__ import annotations
 
+import re
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -1363,6 +1365,105 @@ def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
         if entry.id == knowledge_id:
             return entry
     return None
+
+
+# --- Monkey-Knowledge ↔ tower relation (BUG-0009) ------------------------------
+# A Monkey Knowledge "references" a tower when its in-game description names the
+# tower, one of its upgrades, or a recognised alias. The dataset carries NO
+# explicit MK→tower field — the relationship lives only in the description text
+# ("Cryo Cannon gets increased blast radius", "Monkey Banks can hold …") — so
+# this derives it deterministically. The point is BUG-0009: the model, asked
+# "which MK relate to the farm", grabbed the whole Support *category* and
+# mislabelled it; this lets the code own the actually-correct list.
+#
+# Two confidence tiers keep it precise:
+#   strong — the description names the tower's canonical name or an upgrade-path
+#            name (multi-word, unique → no false positives).
+#   weak   — the description names only a short alias ("farm", "spike"); kept
+#            ONLY when (a) the MK does not strongly reference a *different* tower
+#            (so "Arcane Spike does …" maps to Wizard, not Spike Factory) and
+#            (b) the MK is not a Powers/Heroes-tab point (those modify a power or
+#            hero, e.g. the Road Spikes power's "Just One More", not the tower).
+_MK_INDEX: dict[str, tuple[MonkeyKnowledgeEntry, ...]] | None = None
+_MK_INDEX_KEY: tuple[str, str, int] | None = None
+_mk_index_lock = threading.Lock()
+
+# Aliases too generic to ever be a reliable weak signal inside free text.
+_MK_ALIAS_STOPWORDS = frozenset({"bf", "eng", "des", "wiz", "sub", "ace", "ice"})
+# Tabs whose points modify a power/hero, not the tower an alias might brush.
+_MK_NON_TOWER_TABS = frozenset({"Powers", "Heroes"})
+
+
+def _mk_term_found(term: str, haystack_lower: str) -> bool:
+    # Plural-tolerant whole-word match ("Monkey Bank" matches "Monkey Banks").
+    return bool(re.search(r"\b" + re.escape(term.lower()) + r"s?\b", haystack_lower))
+
+
+def _build_mk_index(
+    dataset: BTD6DataSet,
+) -> dict[str, tuple[MonkeyKnowledgeEntry, ...]]:
+    strong_terms: dict[str, set[str]] = {}
+    weak_terms: dict[str, set[str]] = {}
+    for tower in dataset.towers:
+        strong: set[str] = {tower.canonical}
+        for names in tower.upgrade_paths.values():
+            strong.update(names)
+        strong_terms[tower.canonical] = strong
+        weak_terms[tower.canonical] = {
+            a for a in tower.aliases if len(a) >= 3 and a not in _MK_ALIAS_STOPWORDS
+        }
+
+    result: dict[str, list[MonkeyKnowledgeEntry]] = {
+        t.canonical: [] for t in dataset.towers
+    }
+    for mk in dataset.monkey_knowledge:
+        low = mk.description.lower()
+        strong_hits = {
+            name
+            for name, terms in strong_terms.items()
+            if any(_mk_term_found(t, low) for t in terms)
+        }
+        weak_hits = {
+            name
+            for name, terms in weak_terms.items()
+            if any(_mk_term_found(t, low) for t in terms)
+        }
+        for name in strong_hits:
+            result[name].append(mk)
+        if mk.category in _MK_NON_TOWER_TABS:
+            continue
+        for name in weak_hits - strong_hits:
+            # Suppress an alias-only hit when the MK strongly references a
+            # *different* tower (the description is really about that one).
+            if strong_hits - {name}:
+                continue
+            result[name].append(mk)
+    return {name: tuple(rows) for name, rows in result.items()}
+
+
+def _mk_index() -> dict[str, tuple[MonkeyKnowledgeEntry, ...]]:
+    """Memoized canonical-tower → referencing-MK map, rebuilt on dataset reload."""
+    global _MK_INDEX, _MK_INDEX_KEY
+    dataset = get_dataset()
+    key = (dataset.data_version, dataset.game_version, id(dataset))
+    if _MK_INDEX is not None and key == _MK_INDEX_KEY:
+        return _MK_INDEX
+    with _mk_index_lock:
+        if _MK_INDEX is not None and key == _MK_INDEX_KEY:
+            return _MK_INDEX
+        _MK_INDEX = _build_mk_index(dataset)
+        _MK_INDEX_KEY = key
+        return _MK_INDEX
+
+
+def monkey_knowledge_referencing(
+    tower: TowerEntry,
+) -> tuple[MonkeyKnowledgeEntry, ...]:
+    """The Monkey Knowledge points whose descriptions reference ``tower`` or its
+    upgrades — the deterministic relation behind the "MK related to X" answer
+    (BUG-0009). Order follows the dataset; empty when none reference the tower.
+    """
+    return _mk_index().get(tower.canonical, ())
 
 
 # Round-set selection. "default" = the standard 1-140 (rounds.json, wiki-

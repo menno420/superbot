@@ -1751,6 +1751,89 @@ def _map_roster_reply(text: str, maps: list) -> str:
     return f"**BTD6 Maps ({len(maps)})** by difficulty:\n{grouped(maps)}"
 
 
+# --- "Monkey Knowledge related to <tower>" deterministic reply (BUG-0009) -----
+# The model, asked "which monkey knowledges relate to the farm", listed the
+# whole Support *category* and labelled it farm-related (Big Traps / One More
+# Spike / Vigilant Sentries are Engineer / Spike Factory). Every NAME was
+# grounded, so the faithfulness guard (values, not claims) passed the wrong
+# *grouping* — this class never reaches the post-hoc roster floor. The fix is
+# the proven shape: the deterministic layer OWNS the labelled answer, served as
+# a pre-emptive floor before the model assembles. The MK↔tower relation itself
+# lives in btd6_data_service.monkey_knowledge_referencing().
+_MK_CUE_RE = re.compile(r"\bmonkey\s+knowledges?\b|\bmk\b", re.I)
+# A relation/enumeration cue — distinguishes "which MK relate to the farm" (this
+# answer) from a single-MK lookup ("what does Farm Subsidy do", no cue → model).
+_MK_LIST_RELATION_RE = re.compile(
+    r"\b(?:related|relate|relating|relevant|associated|affects?|applies|apply|"
+    r"improves?|buffs?|boosts?|helps?|all|every|which|list)\b|\bwhat\s+are\b",
+    re.I,
+)
+
+
+def _scan_tower(text_lower: str, dataset: Any) -> Any | None:
+    """The most specific tower named in ``text_lower`` (longest surface form),
+    or ``None``. Whole-word matched on canonical names + aliases.
+    """
+    best = None
+    best_len = 0
+    for tower in dataset.towers:
+        surfaces = [tower.canonical, *tower.aliases]
+        for surface in surfaces:
+            s = surface.lower()
+            if len(s) < 3:
+                continue
+            if re.search(r"\b" + re.escape(s) + r"s?\b", text_lower):
+                if len(s) > best_len:
+                    best, best_len = tower, len(s)
+    return best
+
+
+def deterministic_mk_reference_reply(message_text: str) -> str | None:
+    """A code-built "Monkey Knowledge related to <tower>" answer, or ``None``.
+
+    Fires only on a clear MK-for-tower enumeration: an MK cue ("monkey
+    knowledge"/"mk") + a relation/list cue + a resolvable tower. Returns
+    ``None`` for single-MK lookups (no list cue), strategy/opinion questions,
+    and anything without a tower — those still reach the model. The list is the
+    deterministic relation, so the answer is always the correct grouping.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _MK_CUE_RE.search(low):
+        return None
+    if not _MK_LIST_RELATION_RE.search(low):
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+    tower = _scan_tower(low, dataset)
+    if tower is None:
+        return None
+
+    rows = btd6_data_service.monkey_knowledge_referencing(tower)
+    if not rows:
+        return (
+            f"**No Monkey Knowledge specifically references the "
+            f"{tower.canonical}.** Monkey Knowledge points name a tower or one "
+            "of its upgrades in their description; none currently name this one."
+        )
+
+    ordered = sorted(rows, key=lambda mk: mk.canonical.lower())
+    lines = [
+        f"**Monkey Knowledge that reference the {tower.canonical} "
+        f"({len(ordered)})** — these name the {tower.canonical} or one of its "
+        "upgrades:",
+    ]
+    lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in ordered)
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
 # A capability/meta ask about the bot's BTD6 knowledge. Anchored on a
 # btd6/bloons token on purpose: the floor only handles BTD6-routed messages,
 # and requiring the anchor keeps entity questions ("do you know how much the
