@@ -111,9 +111,11 @@ from utils.db.games.mining_player_state import (
     get_depth,
     get_last_broken,
     get_max_depth,
+    get_vault_level,
     record_depth,
     set_depth,
     set_last_broken,
+    set_vault_level,
 )
 from utils.db.games.mining_vault import get_vault, update_vault_item
 from utils.db.games.player_skills import get_skills, set_skill_points
@@ -318,6 +320,8 @@ __all__ = [
     "set_depth",
     "get_last_broken",
     "set_last_broken",
+    "get_vault_level",
+    "set_vault_level",
     "get_vault",
     "update_vault_item",
     "get_skills",

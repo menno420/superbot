@@ -30,7 +30,7 @@ from core.runtime.interaction_helpers import safe_defer, safe_edit, safe_followu
 from core.runtime.persistent_views import PersistentView, register
 from services import mining_workflow
 from utils import db, equipment
-from utils.mining import items, workshop, world
+from utils.mining import capacity, items, workshop, world
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
 from views.mining.mine_view import MineView, _build_mine_prompt_embed
 
@@ -112,6 +112,15 @@ async def build_overview_embed(
         value=f"Net worth: **{items.total_value(inventory)}**",
         inline=True,
     )
+    pack = capacity.pack_status(inventory)
+    embed.add_field(
+        name="🎒 Pack",
+        value=f"{pack.used}/{pack.cap} item types",
+        inline=True,
+    )
+    pack_nudge = capacity.pack_warning(pack)
+    if pack_nudge:
+        embed.add_field(name="​", value=pack_nudge, inline=False)
     if last_broken:
         embed.add_field(
             name="💥 Broken gear",
@@ -213,6 +222,8 @@ class MiningHubView(PersistentView):
         )
         if result.xp_note:
             description += "\n" + result.xp_note
+        if result.pack_warning:
+            description += "\n" + result.pack_warning
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=description,
@@ -249,6 +260,8 @@ class MiningHubView(PersistentView):
             description += "\n" + "\n".join(result.wear.notes)
         if result.xp_note:
             description += "\n" + result.xp_note
+        if result.pack_warning:
+            description += "\n" + result.pack_warning
         embed = discord.Embed(
             title="⛏️ Mining Hub",
             description=description,

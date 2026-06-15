@@ -6,10 +6,11 @@ into ``mining_vault``, withdrawing moves them back.  Every move runs through
 :mod:`services.mining_workflow` (one transaction per operation — Q-0071/RS02);
 this view is only the buttons + modal that call it.
 
-v1 is a pure safe store with no inventory cap.  The cap that turns the vault
-into a real coin/space sink (and the build-cost + capacity-upgrade economy) is
-the documented next slice — see
-``docs/planning/mining-structures-skill-tree-plan-2026-06-14.md``.
+v2 (Slice A) gives the vault an **upgradeable capacity** (distinct item-types):
+the ⬆️ Upgrade button / ``!vaultupgrade`` spend coins to add room — a gentle
+coin sink.  Capacity is *soft*: deposits are never blocked (owner: no hard
+cap), the panel only nudges when you are over capacity.  See
+``docs/planning/mining-structures-skill-tree-plan-2026-06-14.md`` Slice A.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ import discord
 from core.runtime.interaction_helpers import safe_defer, safe_edit
 from services import mining_workflow
 from utils import db, equipment
-from utils.mining import items
+from utils.mining import capacity, items
 from utils.mining.market import TradeResult
 from utils.mining.names import resolve_item_name
 from utils.ui_constants import ERROR_COLOR, MINING_COLOR, SUCCESS_COLOR
@@ -48,10 +49,21 @@ async def build_vault_embed(
     note: str = "",
 ) -> discord.Embed:
     """The vault embed: what's stashed (grouped), its value, and how to move items."""
-    vault = await db.get_vault(str(user_id), guild_id)
+    suid = str(user_id)
+    vault = await db.get_vault(suid, guild_id)
+    level = await db.get_vault_level(suid, guild_id)
+    status = capacity.vault_status(vault, level)
     embed = discord.Embed(title="🏦 Mining Vault", color=MINING_COLOR)
     if note:
         embed.description = note
+    embed.add_field(
+        name="📦 Capacity",
+        value=f"{status.used}/{status.cap} item types (tier {level})",
+        inline=False,
+    )
+    over_cap_nudge = capacity.vault_warning(status)
+    if over_cap_nudge:
+        embed.add_field(name="​", value=over_cap_nudge, inline=False)
     if not vault:
         # Empty-state UX rule (mother-hub-map.md): say what the feature does and
         # what the next step is.
@@ -74,7 +86,7 @@ async def build_vault_embed(
     embed.set_footer(
         text=(
             f"Stored value: {items.total_value(vault)}  •  "
-            "📥 Deposit · 📤 Withdraw · 📦 Stash All Ore"
+            "📥 Deposit · 📤 Withdraw · 📦 Stash All Ore · ⬆️ Upgrade"
         ),
     )
     return embed
@@ -188,7 +200,24 @@ class MiningVaultView(HubView):
         embed.color = SUCCESS_COLOR if result.ok else ERROR_COLOR
         await safe_edit(interaction, embed=embed, view=self)
 
-    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="⬆️ Upgrade", style=discord.ButtonStyle.primary, row=1)
+    async def upgrade_btn(
+        self,
+        interaction: discord.Interaction,
+        _: discord.ui.Button,
+    ):
+        if not await safe_defer(interaction):
+            return
+        result = await mining_workflow.vault_upgrade(self._author.id, self.guild_id)
+        embed = await build_vault_embed(
+            self._author.id,
+            self.guild_id,
+            note=("✅ " if result.ok else "❌ ") + result.message,
+        )
+        embed.color = SUCCESS_COLOR if result.ok else ERROR_COLOR
+        await safe_edit(interaction, embed=embed, view=self)
+
+    @discord.ui.button(label="↩ Mining Hub", style=discord.ButtonStyle.secondary, row=2)
     async def back_btn(self, interaction: discord.Interaction, _: discord.ui.Button):
         # Late import keeps the module-load graph acyclic (the hub imports this).
         from views.mining.main_panel import MiningHubView, build_overview_embed

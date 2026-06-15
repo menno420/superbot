@@ -30,6 +30,7 @@ _FORBIDDEN_ANY_RECEIVER = {
     "set_gear_wear",
     "clear_gear_wear",
     "set_last_broken",
+    "set_vault_level",
     # mining-adjacent progression writers (depth records, shared game-XP,
     # skill tree) — names unique to utils/db/games/, same one-owner rule as
     # above (skill writes flow through services/skill_service.py).

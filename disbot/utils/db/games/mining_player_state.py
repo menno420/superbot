@@ -103,6 +103,44 @@ async def get_max_depth(
     return row["max_depth"] if row else 0
 
 
+async def get_vault_level(
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> int:
+    """The player's vault-capacity tier (0 = the v1 base capacity)."""
+    row = await pool.fetchone(
+        "SELECT vault_level FROM mining_player_state WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+        conn=conn,
+    )
+    return row["vault_level"] if row else 0
+
+
+async def set_vault_level(
+    user_id: str,
+    guild_id: int,
+    level: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> None:
+    """Persist the player's *vault_level* for a guild (upsert; clamped >= 0).
+
+    With *conn* given the upsert runs on that connection so the vault-upgrade
+    coin debit and this level raise commit in one transaction (the workflow
+    owns commit — RS02/Q-0071).
+    """
+    await pool.execute(
+        """INSERT INTO mining_player_state (user_id, guild_id, vault_level)
+           VALUES ($1, $2, GREATEST(0, $3))
+           ON CONFLICT (user_id, guild_id)
+           DO UPDATE SET vault_level=GREATEST(0, $3), updated_at=now()""",
+        (user_id, guild_id, level),
+        conn=conn,
+    )
+
+
 async def record_depth(
     user_id: str,
     guild_id: int,

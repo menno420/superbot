@@ -13,6 +13,19 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#825 (2026-06-14, hardening P0-4 PR 2 — channel creation + category lifecycle convergence,
+  Q-0100)** — the **second half** of the channel-ownership convergence; **closed the final P0
+  integrity track.** Ad-hoc operator channel creation (`!create`/`!evt`/`!bulkcreate` + the
+  create panel) has **no declared subsystem binding**, so it never fit the catalogue-driven
+  `ResourceProvisioningPipeline`. It is now owned by a new audited
+  **`ChannelLifecycleService.create_channels`** — the channel-domain sibling of the allowlisted
+  `RoleLifecycleService`: bot-perm check → category resolve/get-or-create → safe-named text/voice
+  create → typed per-name `LifecycleResult` + audit companion + `channel.lifecycle_changed` event.
+  Subsystem-*bound* creation stays with the provisioning pipeline. The three cog commands + the
+  create panel route through it; `test_no_direct_channel_mutations.py` pins
+  `create_text_channel`/`create_voice_channel`/category creation, and `test_no_silent_auto_create.py`
+  lists the service as the one sanctioned manual `guild.create_*` caller. No migration.
+  `check_quality --full` green (9453); arch 0 errors.
 - **#820 (2026-06-14, hardening P0-4 PR 1 — channel clone + permission-overwrite convergence,
   Q-0100)** — the first half of the server-mgmt channel-ownership convergence: `.set_permissions()`
   and `.clone()` are now pinned by the channel-mutation invariant, routed through
