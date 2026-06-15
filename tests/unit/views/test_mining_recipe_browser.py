@@ -70,6 +70,15 @@ def test_weapons_category_includes_shields_after_swords():
     assert weapons.index("sword") < weapons.index("shield")
 
 
+def test_stat_preview_is_compact_damage_defence_first():
+    from views.mining.recipe_browser import _stat_preview
+
+    assert _stat_preview("iron sword") == "⚔️+6"
+    shield = _stat_preview("iron shield")  # damage + defense + health, damage first
+    assert shield.startswith("⚔️+1") and "🛡️+3" in shield and "❤️+14" in shield
+    assert _stat_preview("stone hut") == ""  # non-gear → no preview
+
+
 def test_grouped_collapses_variants_under_one_type():
     swords = [name for name, _ in _grouped()["sword"]]
     assert len(swords) > 1

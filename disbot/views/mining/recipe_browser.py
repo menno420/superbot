@@ -146,6 +146,38 @@ def _affordable(materials: dict[str, int], inventory: dict[str, int]) -> bool:
     return all(inventory.get(mat, 0) >= qty for mat, qty in materials.items())
 
 
+# Compact stat glyphs so an item's bonus reads at a glance, damage/defence first.
+_STAT_GLYPH: dict[str, str] = {
+    "damage": "⚔️",
+    "defense": "🛡️",
+    "max_health": "❤️",
+    "mining_power": "⛏️",
+    "light_radius": "💡",
+    "depth_access": "🔽",
+    "luck": "🍀",
+    "loot_bonus": "💰",
+}
+
+
+def _stat_preview(name: str) -> str:
+    """Compact 'what does this give me' line — ``⚔️+6`` / ``⚔️+1 🛡️+3 ❤️+14`` — so
+    tiers compare at a glance. Empty for non-gear (e.g. structures).
+    """
+    stats = equipment.item_stats(name)
+    return " ".join(
+        f"{_STAT_GLYPH.get(field, field)}+{getattr(stats, field)}"
+        for field in _STAT_GLYPH
+        if getattr(stats, field)
+    )
+
+
+def _variant_desc(name: str, materials: dict[str, int]) -> str:
+    """A variant's select-description: its stat bonus, then its material cost."""
+    preview = _stat_preview(name)
+    mats = workshop.describe_materials(materials)
+    return (f"{preview} · {mats}" if preview else mats)[:100]
+
+
 async def build_recipe_embed(
     user_id: int,
     guild_id: int,
@@ -188,9 +220,11 @@ async def build_recipe_embed(
                 have_lines += f"\n🔥 needs **{need}** (`!forge`)"
             else:
                 marker = "✅" if _affordable(materials, inventory) else "▫️"
+            preview = _stat_preview(name)
+            value = (f"**{preview}**\n" if preview else "") + have_lines
             embed.add_field(
                 name=f"{marker} {name.title()}",
-                value=have_lines,
+                value=value,
                 inline=True,
             )
         return embed
@@ -294,7 +328,7 @@ class _VariantSelect(discord.ui.Select):
             discord.SelectOption(
                 label=name.title()[:100],
                 value=name,
-                description=workshop.describe_materials(materials)[:100],
+                description=_variant_desc(name, materials),
                 emoji="✅" if _affordable(materials, inventory) else None,
             )
             for name, materials in variants[:25]
