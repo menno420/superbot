@@ -1,6 +1,6 @@
 # Session — Hermes retune for gpt-5.4-mini + memory/base cleanup
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Goal
 
@@ -133,5 +133,7 @@ model are re-tuned. (This is the same drift the 💡 idea above would automate.)
 ## Status
 
 All Hermes-base files reviewed (SOUL.md · control-plane · investigation · cheatsheet ·
-`apply_context_fixes.sh` · skills · memories · `hermes_cog.py`). Enders + docs audit done. Card
-flipped to `complete` at close-out → Code Quality goes green → PR #923 auto-merges (Q-0133).
+`apply_context_fixes.sh` · skills · memories · `hermes_cog.py`) + a gpt-5.4-mini calibration probe.
+Enders + docs audit done. Card flipped to `complete` at close-out → Code Quality green → PR #923
+auto-merges (Q-0133). Follow-up (owner, interactive): run the calibration probe + apply the
+recommended `config.yaml`.
