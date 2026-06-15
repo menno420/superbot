@@ -43,6 +43,14 @@ shield note · roadmap link.
   shell, so "still running" can be a false positive. Verify a stop with the comm filter, not bare pgrep.
 - The 3-layer doctrine emerged *from the work* (the owner spotted the recurring pattern), then was
   generalised back into a standard — the system-improving loop working as intended.
+- **Process miss → fix.** I declared "auto-merge on green" without verifying #911 was *mergeable* —
+  parallel mining work (#910 Home, #912 E/F) had landed on `main`, so a real conflict silently parked
+  the PR (native auto-merge can't run, and webhooks don't deliver conflict transitions). Resolved the
+  merge, and — owner-directed in-session — added a **merge-conflict guard to the Stop hook**
+  (`scripts/claude_stop_check.py`: `git merge-tree --write-tree` vs a freshly-fetched `origin/main`,
+  hard-fails on a genuine conflict) so a conflicting branch can't be declared done silently again.
+  The journal's "verify a stop with the comm filter, not bare pgrep" + "check mergeable state" are
+  now partly enforced, not just advisory.
 
 ## 💡 Session idea (Q-0089)
 
