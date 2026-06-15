@@ -13,6 +13,18 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#814 + #815 (2026-06-14, CI efficiency arc — Q-0126 + ~3× test speedup)** — `code-quality.yml`
+  dominated June Actions cost (940 runs / 2,396 min/mo). **#814** shipped the safe levers
+  (`concurrency: cancel-in-progress` on superseded PR runs · `pip` + `.mypy_cache` caching) +
+  recorded **Q-0126** (the `docs/owner/active-work.md` claim ledger + push-batching convention,
+  now in CLAUDE.md). The big lever (parallel pytest) was tried & reverted there — the suite
+  wasn't parallel-safe. **#815** root-fixed that: three process-global singletons
+  (`core.runtime.lifecycle` phase, `feature_flags._REGISTRY` defaults, a leaked `server_logging`
+  bus subscription) leaked across tests, colliding only under parallel scheduling; one autouse
+  `conftest.py` fixture resets lifecycle/startup_outcome/feature_flags (snapshot-restore) per
+  test + `server_logging._reset_for_tests()` now tears down its subscription, then re-enabled
+  `pytest -n auto` (pinned `pytest-xdist==3.6.1`). CI ~109s→~35s, 8 parallel runs all green;
+  auto-merged hands-off (Q-0123).
 - **#872 + #873 + #874 + #875 + #876 (2026-06-14, autonomous-loop / Hermes ops + docs housekeeping)**
   — five small ops/docs PRs from two parallel sessions, cleared straight to the archive (each is
   durably recorded in its own `.sessions/` card; not a reconciliation pass — the #900 cadence routine

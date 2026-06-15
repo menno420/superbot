@@ -27,12 +27,13 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
-- `claude/exciting-brahmagupta-1duzde` · mining §7.5 **Vault** (safe stash — ship) + turn-key
-  **structures/skill-tree plan** for the night session · `disbot/{migrations,utils/db/games,
-  services/mining_workflow,views/mining,cogs/mining_cog}` + `docs/planning/mining-structures-skill-tree-plan-2026-06-14.md` · 2026-06-14
 
 ## Recently cleared
 
+- `claude/exciting-brahmagupta-1duzde` · mining §7.5 **Vault** (safe stash) + turn-key
+  **structures/skill-tree plan** for the night session · `disbot/{migrations,utils/db/games,
+  services/mining_workflow,views/mining,cogs/mining_cog}` + the plan doc · 2026-06-14 ·
+  **PR #884 (open, auto-merge on green)**
 - `claude/wizardly-edison-xw34kb` · P1-1 — close eval-coverage gap on BTD6 hotspot tools (dog-food
   #879; 8→14/34) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-14 ·
   **PR #881 (open, auto-merge on green)**

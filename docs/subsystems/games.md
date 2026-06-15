@@ -108,6 +108,15 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   `!sell`/`!sellall`/`!buy`/`!market` and a Market panel on the hub. The recipe
   catalog is reconciled to the item taxonomy (curated economy, owner decision
   2026-06-10) and self-governing via `tests/unit/utils/test_recipes_catalog_alignment.py`.
+- **Vault — safe stash (§7.5 structure, #884)** — a per-player protected store separate
+  from the active pack: deposit moves items out of `mining_inventory` into `mining_vault`
+  (migration 070), withdraw moves them back, both legs atomic via
+  `mining_workflow.vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources`
+  (no coins move → item-state direct-lane, no audit leg; the atomicity is the contract).
+  Surfaced via `!vault`/`!stash`/`!unstash` and a `🏦 Vault` hub panel. **v1 is a pure safe
+  store (no inventory cap yet)** — the cap that makes it a sink + the §7.4 skill tree +
+  Forge/Home are the next slices, planned turn-key in
+  [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](../planning/mining-structures-skill-tree-plan-2026-06-14.md).
 - **Character overview: `views/mining/character_panel.py`** — a read-only profile embed
   (`!character`/`!profile` + a hub Character button) that **aggregates, owns nothing**:
   position + deepest record, game level + XP bar, equipped gear + `EffectiveStats`, coins,
