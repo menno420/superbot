@@ -78,3 +78,12 @@ this **replaces** the old linear Descend/Ascend.
 Rendered comparison images (Option A/B/C + the revised Option A with grid Mine + open-world
 Explore) were shared in the live session; the renderer is throwaway (`/tmp/mockups/`). Re-render
 from the IA above if needed.
+
+## Design standard this produced
+
+The Category → Type → Variant browser and the hub → sub-hub → panel tree are two instances of one
+pattern. It is codified as the **3-layer menu doctrine** (owner directive, 2026-06-15) in
+[`../building-roadmap/hub-ui-standard.md`](../building-roadmap/hub-ui-standard.md)
+§ "The 3-layer menu doctrine (navigation depth)" — the standard for **any** new menu in the bot:
+divide a crowded surface into ≤3 small levels (Category → Type → Variant), each an in-place
+`HubView` page with per-level back nav, never a flat list or pagination.

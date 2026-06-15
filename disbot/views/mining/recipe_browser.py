@@ -42,7 +42,7 @@ _ARMOUR_SLOTS = frozenset(
         equipment.LEGGINGS,
         equipment.BOOTS,
         equipment.SHIELD,
-    }
+    },
 )
 _TOOL_SLOTS = frozenset({equipment.TOOL, equipment.LIGHT, equipment.CHARM})
 
@@ -154,7 +154,9 @@ async def build_recipe_embed(
         embed.set_footer(text="Pick a variant to craft  •  ↩ Types to go back")
         if not variants:
             embed.add_field(
-                name="Nothing here", value="No recipes of this type.", inline=False
+                name="Nothing here",
+                value="No recipes of this type.",
+                inline=False,
             )
         for name, materials in variants:
             have_lines = ", ".join(
@@ -164,13 +166,15 @@ async def build_recipe_embed(
             if not structures.meets_forge_requirement(name, forge_level):
                 marker = "🔒"
                 need = structures.forge_level_name(
-                    structures.forge_level_required(name)
+                    structures.forge_level_required(name),
                 )
                 have_lines += f"\n🔥 needs **{need}** (`!forge`)"
             else:
                 marker = "✅" if _affordable(materials, inventory) else "▫️"
             embed.add_field(
-                name=f"{marker} {name.title()}", value=have_lines, inline=True
+                name=f"{marker} {name.title()}",
+                value=have_lines,
+                inline=True,
             )
         return embed
 
