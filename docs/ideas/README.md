@@ -20,6 +20,12 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`dispatch-phase-gate-precheck-2026-06-15.md`](./dispatch-phase-gate-precheck-2026-06-15.md) —
+  **session idea (2026-06-15, Q-0089, from the mining-Phase-2 feature dispatch):** run
+  `check_phase_gate.py --phase` at the **dispatcher** before firing a `CLASS: feature` work
+  order — if `fix`, re-route to the fix-phase queue or hold the feature until invent-phase,
+  instead of burning a fire on capture-and-stop (and risking a stuck "slice opener" PR like
+  #888). Executor-side gate stays the backstop. → relates Q-0137 Thread 1.
 - [`games-economy-faucet-sink-diagnostic-2026-06-14.md`](./games-economy-faucet-sink-diagnostic-2026-06-14.md) —
   **S1 games / observability (2026-06-14, the mining Vault session #884):** a read-only
   `diagnostics_service` provider that sums the economy audit reasons already emitted
