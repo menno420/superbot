@@ -116,6 +116,7 @@ from utils.db.games.mining_player_state import (
     set_last_broken,
 )
 from utils.db.games.mining_vault import get_vault, update_vault_item
+from utils.db.games.player_skills import get_skills, set_skill_points
 from utils.db.games.rps import rps_ensure_player, rps_get_leaderboard, rps_update_stat
 from utils.db.governance import (
     get_all_cleanup_for_guild,
@@ -319,6 +320,8 @@ __all__ = [
     "set_last_broken",
     "get_vault",
     "update_vault_item",
+    "get_skills",
+    "set_skill_points",
     "apply_inventory_deltas",
     "get_gear_wear",
     "set_gear_wear",

@@ -37,6 +37,10 @@ standing steer (2026-06-14): *bot-side product work, mining cog + related, is we
 - **Shared game-XP (#665, migration 065):** `services/game_xp_service.py` — guild-scoped track, daily
   soft cap, **shared derived level** from `SUM(xp)`; `gamexp`/`crafting` leaderboards. **This is the
   skill-point currency.**
+- **Skill tree (Slice D, #891, migration 071):** `player_skills` + `services/skill_service.py` +
+  `utils/mining/skills.py` / `character.py`; four capped branches, points from the game-XP level,
+  merged into `EffectiveStats` at `mining_workflow.descend`. **The `character_stats` merge point is
+  the seam Slices E/F build on.**
 
 ## The seams you build on (all confirmed in source 2026-06-14)
 
@@ -51,7 +55,18 @@ standing steer (2026-06-14): *bot-side product work, mining cog + related, is we
 
 ---
 
-## Slice D — Capped skill tree (§7.4) · **▶ startable · the marquee · recommended first**
+## Slice D — Capped skill tree (§7.4) · **✅ SHIPPED (PR #891)**
+
+> **Done 2026-06-15.** Built end-to-end as one PR: migration `071_player_skills.sql` +
+> `utils/db/games/player_skills.py` (write primitive on the boundary ratchet), pure
+> `utils/mining/skills.py` (`skill_stats`, four branches, per-branch cap 10, soft total cap 20) +
+> `utils/mining/character.py` (`character_stats` gear+skills merge, byte-identical when empty —
+> invariant-tested), `services/skill_service.py` (`available_points` / `allocate` self-service /
+> `respec` coin sink), merged into `mining_workflow.descend`, `🌳 Skills` hub panel
+> (`views/mining/skills_panel.py`) + `!skills` / `!skill <branch>` commands. CI green; arch 0.
+> Recommended numbers used verbatim (no `*-numbers-*.md` record needed — unchanged from plan).
+> **Follow-ups:** Slice E (respec UX polish) and Slice F (titles from skill mastery) are now
+> unblocked; skill-cost crafting perks (the non-`EffectiveStats` crafting read) stay a later add.
 
 The brainstorm's headline platform feature, and its prerequisites (`game_xp_service` + the
 `EffectiveStats` merge point) are **both in place**. Four branches, **capped so you can't max all** →

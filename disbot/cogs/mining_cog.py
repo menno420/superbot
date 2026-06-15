@@ -22,9 +22,9 @@ import discord
 from discord.ext import commands
 
 from core.runtime import panel_manager
-from services import game_xp_service, mining_workflow
+from services import game_xp_service, mining_workflow, skill_service
 from utils import db, equipment
-from utils.mining import market, workshop, world
+from utils.mining import market, skills, workshop, world
 from utils.mining.items import catalog_names, total_value
 from utils.mining.names import resolve_item_name
 from utils.mining.recipes import load_recipes
@@ -567,6 +567,43 @@ class MiningCog(commands.Cog):
             ctx.author.id,
             ctx.guild.id,
             item,
+            amount,
+        )
+        await ctx.send(f"{ctx.author.mention} {result.message}")
+
+    # ---------------------------------------------------------------- skills
+
+    @commands.command(
+        name="skills",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def skills_cmd(self, ctx):
+        """Open your skill tree — spend points to specialize your character."""
+        # cogs→views is allowed; one builder shared with the hub button.
+        from views.mining.skills_panel import MiningSkillsView, build_skills_embed
+
+        embed = await build_skills_embed(ctx.author.id, ctx.guild.id)
+        view = MiningSkillsView(ctx.author, ctx.guild.id)
+        await ctx.send(embed=embed, view=view)
+
+    @commands.command(
+        name="skill",
+        hidden=True,
+        extras={"classification": "panel_action"},
+    )
+    async def skill_cmd(self, ctx, branch: str = None, amount: int = 1):
+        """Spend a skill point into a branch (e.g. `!skill mining`)."""
+        if not branch:
+            names = ", ".join(skills.BRANCHES)
+            return await ctx.send(
+                f"Pick a branch to train: {names} — e.g. `!skill mining`, "
+                "or `!skills` for the panel.",
+            )
+        result = await skill_service.allocate(
+            ctx.guild.id,
+            ctx.author.id,
+            branch,
             amount,
         )
         await ctx.send(f"{ctx.author.mention} {result.message}")

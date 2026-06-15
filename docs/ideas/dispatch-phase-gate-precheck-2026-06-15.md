@@ -2,9 +2,19 @@
 
 > **Status:** `ideas` — proposal, **not** approval. Written by the Claude Code routine that
 > received a `CLASS: feature` work order ("Implement Mining Phase 2 — Forge/Vault/Home +
-> skill-tree") on 2026-06-15 while the repo was in **fix-phase**. Grounded in what actually
-> happened that run (the gate fired, the feature was refused) + the orphan PR #888 a prior
-> run left behind. Binding contracts + `docs/current-state.md` win.
+> skill-tree") on 2026-06-15 while the repo was in **fix-phase**. Binding contracts +
+> `docs/current-state.md` win.
+>
+> **⚠ Correction (2026-06-15, owner-directed, same session):** the premise below — that the
+> gate "correctly" refused the dispatched feature — is **wrong**, and the owner said so directly.
+> A *dispatched* work order is **owner-directed**, and the phase gate (Q-0114) only gates
+> **agent-self-originated** features; owner-directed correctness/feature work flows freely (the
+> exact distinction `routine-system-improvements-2026-06-14.md` Priority 5 flagged). The routine
+> then **built the feature** (mining Slice D skill tree, #891). So the real, sharper idea is
+> **§ "The deeper fix" below**: teach the routine prompt + phase-gate doc to treat a *dispatched*
+> feature as owner-directed (ungated), and reserve the gate for features the agent invents on its
+> own. The dispatch-side pre-check is still a fine *efficiency* guard for genuinely
+> agent-originated features, but it must NOT block dispatched ones — that was this run's mistake.
 
 ## The concrete event this captures
 
@@ -58,6 +68,29 @@ that can be out of season.
   stuck "slice opener" PR.
 - **Cheap and reuses an existing primitive** — `check_phase_gate.py --phase` already prints
   `fix`/`invent`; the dispatcher just reads one line and branches. No new contract.
+
+## The deeper fix (the one the owner correction points at)
+
+The pre-check above treats the *symptom* (a feature fired in fix-phase). The **root** is a
+classification gap: the routine prompt says "`CLASS: feature` → run `check_phase_gate
+--require-invent`; if fix-phase, capture-and-stop," with no branch for **who originated the
+feature**. But the phase gate (Q-0114, and `check_phase_gate.py`'s own docstring) gates only
+**agent-self-originated** features — *"refuse to originate a new feature until correctness work
+is done."* A **dispatched** work order is the owner asking for it = owner-directed, which flows
+freely like bug/UX/docs/correctness work. This run (and the #888 run before it) collapsed the
+two and wrongly gated owner-directed work.
+
+**Concrete change:** in the routine prompt's `feature` branch, split on origin —
+- **dispatched / owner-directed feature** → build it (no phase gate; it's owner-directed, the
+  same lane as a bug fix), open a PR, and **leave merge to the owner** if the change is large
+  or risky (the existing approve/deny posture), or auto-merge if it's contained + test-covered;
+- **agent-self-originated feature** (the agent invents it mid-session) → *then* run the phase
+  gate; fix-phase ⇒ capture-and-stop.
+
+Mirror the same one sentence into the phase-gate doc and `check_phase_gate.py`'s help text so a
+literal agent can't repeat the mistake. (This is the same "owner-directed vs. agent-originated"
+clarity `routine-system-improvements-2026-06-14.md` Priority 5 asked for — now with a live
+failure proving it's load-bearing, not theoretical.)
 
 ## Routing
 

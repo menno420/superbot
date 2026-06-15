@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from core.events import bus
 from services import economy_service, game_xp_service
 from utils import db, equipment
-from utils.mining import market, rewards, workshop, world
+from utils.mining import character, market, rewards, workshop, world
 from utils.mining.exploration import explore_from_state
 from utils.mining.market import TradeResult
 from utils.mining.recipes import load_recipes
@@ -716,7 +716,11 @@ async def descend(user_id: int, guild_id: int) -> DescentResult:
     """Move one band deeper if the equipped light allows it."""
     suid = str(user_id)
     depth = await db.get_depth(suid, guild_id)
-    stats = equipment.compute_stats(await db.get_equipment(suid, guild_id))
+    # Gear + allocated skill points (§7.4).  An unspent player reads {} ⇒
+    # byte-identical to the old gear-only stats (the additive safety property).
+    equipped = await db.get_equipment(suid, guild_id)
+    alloc = await db.get_skills(user_id, guild_id)
+    stats = character.character_stats(equipped, alloc)
     new_depth = world.descend(depth, stats)
     if new_depth == depth:
         return DescentResult(moved=False, depth=depth, hint=world.descend_hint(stats))

@@ -114,9 +114,18 @@ Start in `disbot/cogs/games_cog.py`, `disbot/views/games/`,
   `mining_workflow.vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources`
   (no coins move → item-state direct-lane, no audit leg; the atomicity is the contract).
   Surfaced via `!vault`/`!stash`/`!unstash` and a `🏦 Vault` hub panel. **v1 is a pure safe
-  store (no inventory cap yet)** — the cap that makes it a sink + the §7.4 skill tree +
-  Forge/Home are the next slices, planned turn-key in
+  store (no inventory cap yet)** — the cap that makes it a sink + Forge/Home are the next
+  slices, planned turn-key in
   [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](../planning/mining-structures-skill-tree-plan-2026-06-14.md).
+- **Skill tree — capped specialization (§7.4, Slice D, #891)** — `player_skills` (migration 071)
+  + `services/skill_service.py` owns every allocation; four branches
+  (mining/combat/fortune/crafting), **per-branch cap 10, soft total cap 20** (< 4×10 ⇒ you can't
+  max all → forced specialization). Points derive from the shared game-XP level
+  (`min(level, 20) − spent`); `allocate` is self-service, `respec` is a coin sink (the repair
+  precedent). Pure `utils/mining/skills.py` (`skill_stats`) merges with gear through
+  `utils/mining/character.py` `character_stats`, adopted at `mining_workflow.descend` —
+  **empty allocations are byte-identical to gear-only stats** (invariant-tested). Surfaced via
+  `!skills`/`!skill <branch>` and a `🌳 Skills` hub panel.
 - **Character overview: `views/mining/character_panel.py`** — a read-only profile embed
   (`!character`/`!profile` + a hub Character button) that **aggregates, owns nothing**:
   position + deepest record, game level + XP bar, equipped gear + `EffectiveStats`, coins,
