@@ -83,16 +83,15 @@ Hermes config/data paths shown during setup:
   `https://api.openai.com/v1`, key in `~/.hermes/.env`). `/new` shows `Provider: openai-api · 400K
   (detected)`. Non-Claude → keeps the independent-reviewer property (Q-0117) while fixing capability;
   output is good when it runs (a coherent repo-health review confirmed the quality).
-- **⬜ NOT YET STABLE — STILL NEEDS CHECKING (open item, 2026-06-15 ~19:40).** Hermes answers some
-  turns but **intermittently** returns `Project proj_OJ… does not have access to model gpt-5.4-mini`,
-  and it flapped for >15 min (so it is *not* just propagation lag). Likely cause: the project allowlist
-  was given the **alias** `gpt-5.4-mini`, which OpenAI resolves unevenly. **Next step to try:** point
-  Hermes at the **exact dated snapshot `gpt-5.4-mini-2026-03-17`** (the project has had that granted
-  from the start, fully) instead of the alias — re-run `hermes model`, set the custom provider's model
-  to `gpt-5.4-mini-2026-03-17` (typed; the menu won't list it), `/new`, run several tasks. **If it
-  still flaps on the exact id:** a secondary path is resolving the alias — inspect `auxiliary.*` and
-  `delegation` in `~/.hermes/config.yaml` (both `provider: auto`) and pin them. Until verified stable
-  across several tasks, treat the gpt-5.4-mini switch as **in-progress, not done.**
+- **✅ CONFIRMED WORKING (2026-06-15 ~17:50 UTC).** `gpt-5.4-mini` (the **alias**) on the owner's own
+  OpenAI key now answers reliably — clean in both Telegram and the OpenAI Playground, no errors. The
+  earlier intermittent `Project proj_OJ… does not have access` was **OpenAI allowlist-propagation lag
+  after all** — but a *slow, uneven* one: after adding the alias to the project allowlist it **flapped
+  (some calls allowed, some denied) for >15 min** before fully converging. **Lesson:** don't conclude
+  "not propagation" just because it's been 15 min — OpenAI allowlist/verification changes propagate
+  slowly and flap on the way. **If it ever flaps again,** pin the **exact dated snapshot
+  `gpt-5.4-mini-2026-03-17`** (re-run `hermes model`, set the custom provider's model to it) — the
+  exact id is granted deterministically and skips the alias-propagation wait.
 - **Rationale (independence vs. reliability):** Hermes is deliberately a **non-Claude** mind so its
   review is independent of the Claude that builds (Q-0117). The reliability fix was *capability*, not
   *Claude* — a frontier **non-Claude** model (gpt-5.4-mini, or gpt-5.5) keeps the independence and
@@ -119,9 +118,12 @@ Moving Hermes to a capable own-key model hit these traps, in order:
    (one-time; unlocks all gated models).
 6. **Exact-match project allowlist.** OpenAI "Allowed models" lists match the **exact id**. The project
    had the dated `gpt-5.4-mini-2026-03-17` but Hermes requested the alias `gpt-5.4-mini` → "no access."
-   Add the alias, or — more reliably (the alias resolves unevenly) — use the **exact dated id**.
+   Add the alias, or — to skip the propagation wait — use the **exact dated id**.
    **Diagnostic shortcut:** reproduce in OpenAI's own Playground (same project + model) — if it fails
    there too, it's 100 % OpenAI-side, not Hermes.
+   **Propagation caveat (verified live):** after you add the alias, access propagates *unevenly* and
+   can **flap (allowed ↔ denied) for >15 min** before converging — that's normal eventual consistency,
+   not a second bug. Wait it out, or pin the exact dated id to make access deterministic.
 
 **To change the model later** (now the custom provider exists): re-run `hermes model` (keeps the
 custom-provider routing) — *not* `hermes config set model …` (reverts to the nous catalog default).
