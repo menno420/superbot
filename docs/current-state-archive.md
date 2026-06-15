@@ -86,6 +86,37 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#862 (2026-06-14, fix: repair the daily Postgres backup — PGDG pg18 client)** — live-verifying
+  the backup (after the owner set `DATABASE_PUBLIC_URL`) drove a real production bug to ground:
+  Railway Postgres is **v18.3** but the workflow used the Ubuntu-default client **v16**, and pg_dump
+  refuses to dump a newer server with an older client. Fixed in two parts — install the **PGDG v18
+  client** (apt default is v16 on Ubuntu 24.04) **and** invoke pg_dump by explicit **highest-version
+  path** (`/usr/lib/postgresql/*/bin`, since pg16 at `/usr/bin/pg_dump` shadows it on PATH); both
+  future-proof. Verified by dispatching the fixed workflow on the branch ref; documented the
+  version-mismatch failure mode in the workflow's failure-issue body.
+- **#859 (2026-06-14, docs: 3-tap sector map + hook-vs-rule policy — Q-0137/Q-0139)** — two
+  owner-directed substrate pieces. **`docs/repo-sector-map.md`** — the 3-tap nav top layer: **5
+  sectors** on a mechanism-vs-content axis — S1 Bot · S2 BTD6 · **S3 AI-Memory system** (the
+  *mechanism*, a shippable engine of its own) · **S4 Documentation system** (the *product* the
+  engine generates) · S5 Operations (owner's load-bearing clarification: *"the docs are not the
+  system, the docs are a product of the system"*). Plus a **hook-vs-rule decision policy** (Q-0139).
+  Docs only.
+- **#855 (2026-06-14, P1-1 Layer A — BTD6 path/line-aware resolution)** — the first concrete,
+  fully-completable slice of P1-1 (the standing #1 priority): the BTD6 absence-claim guard's
+  **Layer A** (the design's Recommendation #1, "ship Layer A first"). Path/line phrasing like
+  *"bomb shooter middle path"* resolved to no single upgrade (`resolve_upgrade(...)` → `none`,
+  re-verified live this session), so the path grounded **nothing** and the model could
+  confabulate a false negative ("that path has no MOAB bonus") — the canonical absence-claim
+  trigger, a *retrieval* gap (the +15/+30/+99 vs MOAB-Class data is committed and reachable,
+  just unqueried). Now `btd6_upgrade_service.resolve_path_reference` detects a `<tower>
+  <top|middle|bottom> path` reference (direction synonyms; conservative — needs a tower **and**
+  the literal `path` token, so "top tier"/"bottom line" never fire) and
+  `btd6_upgrade_detail_service.path_grounding_for_query` grounds a header naming **every tier on
+  the path** + each tier's detail (named tiers skipped — Pass 3c grounds those), wired into
+  `btd6_context_service.build` as **Pass 3f**. Retrieval only — no guard. **Layer B** (the
+  negative-existential gate, §4.3 crux) stays design-for-review + needs prod creds. +22 tests;
+  `check_quality --full` green (9579); arch 0. **Next P1-1 = the versioned eval/smoke matrix
+  (live half needs prod-like creds) + Layer B.**
 - **#849 (2026-06-14, born-red session merge-gate — Q-0133)** — closed the auto-merge race
   that landed **#843** without its ledger entry (native auto-merge, Q-0123, fires the instant
   Code Quality is green, so a session pushing code first and close-out docs second merges a
