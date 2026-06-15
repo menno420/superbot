@@ -27,6 +27,9 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/mining-skill-tree-2026-06-15` · mining §7.4 **capped skill tree** (Slice D — the real
+  Phase-2 build) · `disbot/{migrations/071,utils/db/games/player_skills,utils/mining/skills,
+  services/skill_service,...}` + `mining_cog` · 2026-06-15
 
 ## Recently cleared
 
