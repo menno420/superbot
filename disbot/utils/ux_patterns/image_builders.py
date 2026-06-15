@@ -1,10 +1,11 @@
 """PIL prototype builders for the UX Lab image wing.
 
-Three *candidate* card renderers that don't exist as features yet — the
-welcome card (the Q-0110 phase-2 preview), a leaderboard image, and an
-event poster — rendered entirely from sample data with **no network**: the
-avatar is a generated initials disc (the fallback-silhouette path every
-real implementation needs anyway, per the platform-limits doc §4).
+Two *candidate* card renderers that don't exist as features yet — a
+leaderboard image and an event poster — rendered entirely from sample data
+with **no network**.  The welcome card is **no longer a prototype**: it
+shipped as welcome phase 2 (Q-0110) and now lives in
+:mod:`utils.welcome_render`; the gallery re-exports it from there so the
+preview and the live feature share one renderer (one source of truth).
 
 Same contract as ``utils/mining_render.py``: lazy PIL import, ``bytes |
 None`` return (``None`` = Pillow unavailable → callers keep an embed
@@ -14,6 +15,10 @@ fallback), pure inputs in / bytes out.
 from __future__ import annotations
 
 import io
+
+# The welcome card graduated to a real feature; re-export the production
+# renderer so the UX-lab gallery previews the exact card members receive.
+from utils.welcome_render import render_welcome_card
 
 # Shared sample palette (dark-theme friendly).
 _BG = (24, 25, 31)
@@ -43,61 +48,6 @@ def _fonts(size_big: int, size_small: int):  # noqa: ANN202 — PIL lazy types
         big = ImageFont.load_default()
         small = ImageFont.load_default()
     return big, small
-
-
-def _initials_disc(
-    draw,
-    *,
-    cx: int,
-    cy: int,
-    r: int,
-    initials: str,
-    font,
-) -> None:  # noqa: ANN001
-    """The no-network avatar: accent ring + initials disc."""
-    draw.ellipse(
-        (cx - r - 6, cy - r - 6, cx + r + 6, cy + r + 6),
-        outline=_ACCENT,
-        width=6,
-    )
-    draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=_PANEL)
-    box = draw.textbbox((0, 0), initials, font=font)
-    tw, th = box[2] - box[0], box[3] - box[1]
-    draw.text((cx - tw / 2, cy - th / 2 - box[1]), initials, font=font, fill=_TEXT)
-
-
-def render_welcome_card(
-    member_name: str = "AstroFox",
-    server_name: str = "Demo Server",
-    member_number: int = 1235,
-) -> bytes | None:
-    """The Q-0110 phase-2 candidate: avatar disc + greeting + member count."""
-    try:
-        from PIL import Image, ImageDraw  # lazy: degrade gracefully
-    except Exception:  # noqa: BLE001
-        return None
-    img = Image.new("RGB", (960, 360), _BG)
-    draw = ImageDraw.Draw(img)
-    big, small = _fonts(56, 30)
-    _initials_disc(
-        draw,
-        cx=180,
-        cy=180,
-        r=96,
-        initials=member_name[:2].upper(),
-        font=big,
-    )
-    draw.text((340, 110), f"Welcome, {member_name}!", font=big, fill=_TEXT)
-    draw.text(
-        (342, 196),
-        f"You are member #{member_number} of {server_name}",
-        font=small,
-        fill=_SUBTLE,
-    )
-    draw.line((340, 260, 900, 260), fill=_ACCENT, width=3)
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=85)
-    return buf.getvalue()
 
 
 def render_leaderboard_image(
@@ -161,3 +111,10 @@ def render_event_poster(
     buf = io.BytesIO()
     img.save(buf, format="JPEG", quality=85)
     return buf.getvalue()
+
+
+__all__ = [
+    "render_event_poster",
+    "render_leaderboard_image",
+    "render_welcome_card",  # re-exported from utils.welcome_render (feature home)
+]

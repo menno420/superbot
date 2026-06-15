@@ -13,6 +13,19 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#849 (2026-06-14, born-red session merge-gate — Q-0133)** — closed the auto-merge race
+  that landed **#843** without its ledger entry (native auto-merge, Q-0123, fires the instant
+  Code Quality is green, so a session pushing code first and close-out docs second merges a
+  *partial* PR). The owner's fix, as refined live: one per-session file that is **both** the
+  start-declaration (*what's about to happen*, visible to parallel/next sessions on the open PR)
+  **and** the end-record (*what happened*) — the existing `.sessions/<date>-<slug>.md` log —
+  whose `> **Status:**` badge gates the merge. Created in the **first** commit as `in-progress`
+  (PR **born red**, race-free), flipped to `complete` as the deliberate **final** step → green →
+  merge. `scripts/check_session_gate.py` (folded into the required `code-quality` check — no
+  branch-protection change) fails when a PR *adds* a session card that isn't ready;
+  **engage-when-present** (a PR adding no card isn't gated, so routines / workflow-authored PRs
+  never deadlock); only newly-*added* cards inspected. +11 tests; the gate was **dogfooded on its
+  own PR** (born red, then flipped). Follow-up: tighten to airtight once routine adoption is proven.
 - **#843 (2026-06-14, hardening P1-2 — health findings lifecycle + operational retention,
   Q-0097)** — closed the two **code** gaps in the health/diagnostics readiness map (the
   remaining gap to production-ready is now the owner-led live walk only). Before: in normal

@@ -213,6 +213,113 @@ async def test_join_send_forbidden_is_swallowed(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
+# Welcome phase 2 — the greeting card
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_join_attaches_card_when_enabled(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                card_enabled=True,
+            ),
+        ),
+    )
+    sentinel_file = MagicMock(spec=discord.File)
+    monkeypatch.setattr(
+        welcome_service,
+        "render_join_card",
+        MagicMock(return_value=sentinel_file),
+    )
+    import core.events
+
+    monkeypatch.setattr(core.events.bus, "emit", AsyncMock())
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_awaited_once()
+    kwargs = channel.send.await_args.kwargs
+    assert kwargs["file"] is sentinel_file
+    # The embed points its in-place image at the attachment.
+    assert kwargs["embed"].image.url == "attachment://welcome.jpg"
+
+
+@pytest.mark.asyncio
+async def test_join_card_disabled_sends_embed_only(monkeypatch):
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                card_enabled=False,
+            ),
+        ),
+    )
+    render = MagicMock()
+    monkeypatch.setattr(welcome_service, "render_join_card", render)
+    import core.events
+
+    monkeypatch.setattr(core.events.bus, "emit", AsyncMock())
+
+    await welcome_service.handle_member_join(member)
+
+    render.assert_not_called()  # not rendered when the toggle is off
+    assert "file" not in channel.send.await_args.kwargs
+
+
+@pytest.mark.asyncio
+async def test_join_card_unavailable_falls_back_to_embed(monkeypatch):
+    """Pillow absent (renderer → None) ⇒ embed-only greeting, still posted."""
+    channel = _text_channel()
+    member = _member()
+    member.guild.get_channel.return_value = channel
+    monkeypatch.setattr(
+        welcome_service.welcome_config,
+        "load_policy",
+        AsyncMock(
+            return_value=WelcomePolicy(
+                enabled=True,
+                join_enabled=True,
+                channel_id=100,
+                card_enabled=True,
+            ),
+        ),
+    )
+    monkeypatch.setattr(
+        welcome_service,
+        "render_join_card",
+        MagicMock(return_value=None),
+    )
+    import core.events
+
+    emit = AsyncMock()
+    monkeypatch.setattr(core.events.bus, "emit", emit)
+
+    await welcome_service.handle_member_join(member)
+
+    channel.send.assert_awaited_once()
+    assert "file" not in channel.send.await_args.kwargs
+    # No image set on the embed when the card could not render.
+    assert not channel.send.await_args.kwargs["embed"].image.url
+    emit.assert_awaited_once()  # greeting still posted
+
+
+# ---------------------------------------------------------------------------
 # handle_member_leave
 # ---------------------------------------------------------------------------
 

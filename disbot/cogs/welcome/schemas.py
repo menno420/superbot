@@ -24,6 +24,7 @@ from core.runtime.subsystem_schema import (
     SubsystemSchema,
 )
 from services.welcome_config import (
+    DEFAULT_CARD_ENABLED,
     DEFAULT_CHANNEL,
     DEFAULT_ENABLED,
     DEFAULT_ENTRY_ROLE,
@@ -34,6 +35,7 @@ from services.welcome_config import (
     MAX_MESSAGE_LENGTH,
 )
 from utils.settings_keys import (
+    WELCOME_CARD_ENABLED,
     WELCOME_CHANNEL,
     WELCOME_ENABLED,
     WELCOME_ENTRY_ROLE,
@@ -167,6 +169,19 @@ WELCOME_SETTINGS: tuple[SettingSpec, ...] = (
         ),
         validator=_validate_id,
         input_hint="role",
+    ),
+    SettingSpec(
+        name="card_enabled",
+        value_type=bool,
+        default=DEFAULT_CARD_ENABLED,
+        settings_key=WELCOME_CARD_ENABLED,
+        capability_required=_WELCOME_CAPABILITY,
+        hint=(
+            "Attach a rendered welcome card image to the join greeting "
+            "(phase 2).  Off by default; falls back to the embed-only "
+            "greeting when image rendering is unavailable."
+        ),
+        validator=_validate_bool,
     ),
 )
 
