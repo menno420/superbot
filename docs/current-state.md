@@ -43,7 +43,7 @@
 > + label tables de-staled. **2 routine prompts now: dispatch (all execution) + docs reconciliation.**
 > Trigger (Q-0146, 2026-06-15): dispatch's cadence is the Claude Code console **Schedule** trigger —
 > every **2h**, cron `0 */2 * * *`, owner-enabled — superseding the Hermes-VPS-cron / GitHub-`schedule:`
-> plan (both unreliable for cadence); the legacy `executor-nightly.yml` is superseded. Docs only. ·
+> plan (both unreliable for cadence); the legacy `executor-nightly.yml` was removed 2026-06-15. ·
 > 2026-06-15, **routine-prompt canon — foolproof, completion-biased, idea→plan
 > (PR #899, Q-0144)** — owner-directed in-session: rewrote the dispatch + night-executor routine
 > prompts onto the owner's 12-step lifecycle and made them foolproof against bad dispatch input (the

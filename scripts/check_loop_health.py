@@ -42,7 +42,11 @@ import sys
 
 REPO = "menno420/superbot"
 
-# Title prefixes the trigger workflows use (executor-nightly.yml / reconciliation-trigger.yml).
+# Title prefix the reconcile trigger workflow uses (reconciliation-trigger.yml). The
+# executor-nightly.yml workflow was removed 2026-06-15 (Q-0146 — dispatch is now the console
+# Schedule, which opens no issue); its old "Scheduled executor run" issues may still exist in
+# history, so the prefix is kept as a legacy match. The reconcile issue is now the live
+# ROUTINE_PAT canary.
 _EXECUTOR_PREFIX = "Scheduled executor run"
 _RECONCILE_TITLE = "Docs reconciliation due"
 _BACKUP_PREFIX = "Postgres backup failed"
