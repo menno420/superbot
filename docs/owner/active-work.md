@@ -27,6 +27,8 @@ living ledger (`docs/current-state.md`).
 
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
+- `claude/eval-coverage-expansion-2026-06-15` · P1-1 eval-coverage expansion — 6 golden
+  tool-selection probes (14→20/34) · `tests/evals/cases.py` + `test_eval_coverage.py` · 2026-06-15
 
 ## Recently cleared
 
