@@ -118,7 +118,7 @@
   `knowledge.btd6_abr_range_cash_bug_0010`.
 - **Status:** FIXED — follow-up session 2026-06-11 (the PR after #707).
 
-## BUG-0009 — grounded facts, wrong assembly: lists mislabeled / badly grouped (the claim-assembly class) — OPEN
+## BUG-0009 — grounded facts, wrong assembly: lists mislabeled / badly grouped (the claim-assembly class) — PARTIALLY FIXED (MK-related family)
 
 - **Reported:** 2026-06-11 ~14:07–14:18 (owner, first Q-0086 live session):
   "what are all the monkey knowledges related to the farm" listed the whole
@@ -137,8 +137,32 @@
   by entity mention), per-level item lists, newest-towers — served as
   grounding blocks or floor replies. Route: AI orchestration plan §7
   families.
-- **Status:** OPEN — captured for the AI-lane queue (this session: routing/
-  guard layer fixed first, BUG-0005…0008 below).
+- **Fix — slice 1: the "MK related to <tower>" family (PR #924):** the model
+  no longer assembles this list. `btd6_data_service.monkey_knowledge_referencing(tower)`
+  derives the relation deterministically — an MK *references* a tower when its
+  in-game description names the tower's canonical name or an upgrade-path name
+  (strong) or a recognised alias (weak, suppressed when the MK strongly
+  references a *different* tower, or is a Powers/Heroes-tab point that modifies
+  a power/hero rather than the tower). `btd6_context_service.deterministic_mk_reference_reply`
+  detects the "which MK relate to <tower>" shape (MK cue + relation/list cue +
+  resolvable tower; `None` for single-MK lookups / strategy / no-tower) and
+  formats the honest labelled answer ("…that reference the Banana Farm (7) —
+  these name the Banana Farm or one of its upgrades"). It is served as a
+  **pre-emptive floor on the BTD6 path** (`natural_language_stage`), *before*
+  the model — this class **passes** the value-only faithfulness guard, so the
+  existing post-hoc roster floor never caught it. The owner's exact case is
+  fixed: "all monkey knowledges related to the farm" now lists the 7 genuinely
+  farm-referencing MK, never the whole 22-entry Support category.
+- **Regression tests:** `tests/unit/services/test_btd6_mk_reference.py`
+  (relation + reply, incl. farm-not-whole-category, road-spike-Powers
+  excluded, conservatism) · `test_mk_reference_question_floored_before_model`
+  + `test_non_mk_btd6_question_still_reaches_model`
+  (`tests/unit/runtime/ai/test_natural_language_stage.py` — the pre-emptive
+  short-circuit, and that ordinary BTD6 questions still reach the model).
+- **Status:** PARTIALLY FIXED — the **MK-related family** is fixed (PR #924).
+  Two list families remain OPEN for follow-on slices, same proven shape
+  (deterministic builder → pre-emptive floor): **per-level item lists**
+  (Geraldo per-level groupings) and **newest-towers ordering**.
 
 ## BUG-0008 — "420 farm" income freelanced on the general path (keyword gap)
 

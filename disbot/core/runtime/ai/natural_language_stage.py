@@ -429,6 +429,56 @@ class AINaturalLanguageStage:
                 ctx.metadata["handled_by"] = STAGE_NAME
                 return StageResult(short_circuit=True)
 
+            # BUG-0009: answer a clear "which Monkey Knowledge relate to
+            # <tower>?" question deterministically, BEFORE the model. The model
+            # grabs the whole MK *category* and mislabels its grouping, and
+            # because every name is individually grounded the post-hoc
+            # faithfulness floor never catches it — so the deterministic layer
+            # must OWN the labelled list. Returns None for single-MK lookups /
+            # strategy questions / anything without a tower, which fall through.
+            if routed.task is AITask.BTD6_ANSWER:
+                mk_reply: str | None = None
+                try:
+                    from services import btd6_context_service
+
+                    mk_reply = btd6_context_service.deterministic_mk_reference_reply(
+                        raw_text,
+                    )
+                except Exception:  # noqa: BLE001 — never break the reply path
+                    logger.warning(
+                        "btd6 mk-reference floor build failed",
+                        exc_info=True,
+                    )
+                if mk_reply:
+                    try:
+                        reference = message.to_reference(fail_if_not_exists=False)
+                        for index, chunk in enumerate(_split_for_discord(mk_reply)):
+                            await message.channel.send(
+                                chunk,
+                                allowed_mentions=discord.AllowedMentions.none(),
+                                reference=reference if index == 0 else None,
+                            )
+                    except discord.HTTPException:
+                        logger.warning(
+                            "btd6 mk-reference floor send failed for message=%s",
+                            getattr(message, "id", None),
+                            exc_info=True,
+                        )
+                    await ai_decision_audit_service.record(
+                        guild_id=guild_id,
+                        channel_id=channel_id,
+                        category_id=category_id,
+                        user_id=user_id,
+                        message_id=message.id,
+                        task=routed.task.value,
+                        route=routed.route,
+                        decision="replied",
+                        reason_code=PolicyDenialReason.NONE,
+                        policy_snapshot_hash=decision.policy_snapshot_hash,
+                    )
+                    ctx.metadata["handled_by"] = STAGE_NAME
+                    return StageResult(short_circuit=True)
+
             # Chat memory: gather recent channel turns (with optional
             # Discord history fallback). Best-effort — failure returns
             # an empty list and the stack assembles without recent

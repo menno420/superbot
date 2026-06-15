@@ -495,6 +495,97 @@ async def test_send_failure_non_video_task_writes_response_send_failed(
 
 
 # ---------------------------------------------------------------------------
+# BUG-0009 — "Monkey Knowledge related to <tower>" pre-emptive deterministic floor
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_mk_reference_question_floored_before_model(monkeypatch, stub_services):
+    """A clear "which MK relate to the farm?" question is answered by the
+    deterministic builder and the model gateway is NEVER called — the model's
+    own grouping is the BUG-0009 mislabel, and it passes the value guard."""
+    from core.runtime.ai import natural_language_stage as mod
+    from core.runtime.ai.feature_facts import FeatureFactsResult
+    from services import ai_gateway
+
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _t, **_kw: SimpleNamespace(
+            task=AITask.BTD6_ANSWER, route="btd6.answer"
+        ),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_gather_feature_facts",
+        AsyncMock(return_value=FeatureFactsResult(facts=(), render_context=None)),
+    )
+
+    gateway_called = False
+
+    async def fake_execute(_request):
+        nonlocal gateway_called
+        gateway_called = True
+        return _make_response(text="should not be used")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "what are all the monkey knowledges related to the farm"
+    await stage.process(_make_ctx(msg))
+
+    assert gateway_called is False, "model was invoked for a deterministic case"
+    sent = "\n".join(c.args[0] for c in msg.channel.send.call_args_list)
+    assert "Banana Farm" in sent
+    assert "Farm Subsidy" in sent
+    assert "Big Traps" not in sent  # the model's wrong grouping
+    assert stub_services and stub_services[-1]["decision"] == "replied"
+
+
+@pytest.mark.asyncio
+async def test_non_mk_btd6_question_still_reaches_model(monkeypatch, stub_services):
+    """The floor is narrow: an ordinary BTD6 question is untouched (the model
+    still runs), so only the mislabel-prone list class is intercepted."""
+    from core.runtime.ai import natural_language_stage as mod
+    from core.runtime.ai.feature_facts import FeatureFactsResult
+    from services import ai_gateway
+
+    monkeypatch.setattr(
+        mod.ai_task_router,
+        "classify",
+        lambda _t, **_kw: SimpleNamespace(
+            task=AITask.BTD6_ANSWER, route="btd6.answer"
+        ),
+    )
+    monkeypatch.setattr(
+        mod,
+        "_gather_feature_facts",
+        AsyncMock(
+            return_value=FeatureFactsResult(
+                facts=("Dart Monkey base cost: $200",), render_context=None
+            )
+        ),
+    )
+
+    gateway_called = False
+
+    async def fake_execute(_request):
+        nonlocal gateway_called
+        gateway_called = True
+        return _make_response(text="A Dart Monkey costs $200.")
+
+    monkeypatch.setattr(ai_gateway, "execute", fake_execute)
+
+    stage = AINaturalLanguageStage()
+    msg = _make_message()
+    msg.content = "how much does a dart monkey cost"
+    await stage.process(_make_ctx(msg))
+
+    assert gateway_called is True, "the model floor leaked onto a normal question"
+
+
+# ---------------------------------------------------------------------------
 # PR 1 — AI mention-reply bug fixes:
 #   * task contract framing (T1, T2)
 #   * outbound snowflake redaction (T4b, T4c)
