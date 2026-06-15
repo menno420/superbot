@@ -30,12 +30,13 @@ living ledger (`docs/current-state.md`).
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
   `disbot/{utils/mining/structures,services/mining_workflow,utils/character_render,views/mining,
   cogs/mining_cog,utils/mining/market}` + plan/numbers · 2026-06-15
-- `claude/brave-sagan-s9th8h` · Hermes model saga close-out — gpt-5.4-mini CONFIRMED WORKING on
-  own OpenAI key; capture the 6-trap provider-switch playbook + correct the docs ·
-  `hermes-control-plane` + `hermes-terminal-cheatsheet` · 2026-06-15
 
 ## Recently cleared
 
+- `claude/brave-sagan-s9th8h` · Hermes investigation + model swap — context-compaction fix, SOUL
+  git-pull sync fix, `apply_context_fixes.sh` + size guard, self-healing repo sync, model/provider
+  playbook; **gpt-5.4-mini now live on the owner's own OpenAI key** · 2026-06-15 ·
+  **PRs #913–#919 (merged) + close-out**
 - `claude/amazing-volta-auxt2d` · mining hub UX overhaul — in-place image cards · Workshop sub-hub
   + Craft consolidation · 3-layer Category→Type→Variant browsers (craft + market) + shared
   `utils/mining/taxonomy.py` · rarity/body ordering · shields→Weapons + shield damage · stat
