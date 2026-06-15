@@ -25,14 +25,16 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/amazing-volta-auxt2d` · UX: ephemeral-panel cleanup PR 1 — mining in-place image
-  cards (inventory card + character doll stop stacking as separate ephemerals; render into the
-  panel message) · `core/runtime/interaction_helpers.py` + `views/mining/{main_panel,gear_panel}.py`
-  + tests · 2026-06-15
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 
 ## Recently cleared
+
+- `claude/amazing-volta-auxt2d` · mining hub UX overhaul — in-place image cards · Workshop sub-hub
+  + Craft consolidation · 3-layer Category→Type→Variant browsers (craft + market) + shared
+  `utils/mining/taxonomy.py` · rarity/body ordering · shields→Weapons + shield damage · stat
+  previews · the **3-layer menu doctrine** (hub-ui-standard.md) · 2026-06-15 ·
+  **PR #911 (auto-merge on green)**
 
 - `claude/hopeful-allen-r7qsg8` · Railway log-triage analyzer (Slice 4, Q-0130) — deterministic
   content-free triage tool + skill wiring · `scripts/hermes/log_triage.py` +
