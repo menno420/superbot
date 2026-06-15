@@ -36,6 +36,11 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/hopeful-allen-sfus5i` · P1-3 machine-checkable contract invariants — 2 new CI invariants
+  (settings declared→consumer parity · games wager-boundary completeness) + AI/BTD6 closed via
+  disposition doc · `tests/unit/invariants/` + `docs/planning/production-readiness/` · 2026-06-15 ·
+  **PR #917 (open, auto-merge on green)**
+
 - `claude/hopeful-allen-sdjqjs` · mining Slices E + F — respec polish + skill/milestone titles ·
   `skill_service`/`skills_panel` (E) + `utils/mining/titles` + `title_service` + `titles_panel` +
   `character_panel` + migration 074 (F) · 2026-06-15 · **PR #912 (open, auto-merge on green)**
