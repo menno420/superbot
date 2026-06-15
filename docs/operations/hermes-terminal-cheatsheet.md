@@ -61,6 +61,31 @@ cat ~/.hermes/SOUL.md                          # View Hermes' current base ident
 ls ~/.hermes/skills/                           # List the skills Hermes has installed.
 ```
 
+## Hermes memory (built-in — plain-text markdown)
+
+Hermes' persistent memory is two files under `~/.hermes/memories/`, loaded into the system prompt as
+a **frozen snapshot at session start** — so an edit takes effect on the next `/new`, never mid-session:
+
+- `MEMORY.md` — the agent's own notes (~2,200 char / ~800 token cap).
+- `USER.md` — owner profile / preferences (~1,375 char / ~500 token cap).
+
+```bash
+cat ~/.hermes/memories/MEMORY.md            # View what Hermes remembers (its own notes).
+cat ~/.hermes/memories/USER.md              # View the owner-profile memory.
+cp ~/.hermes/memories/MEMORY.md ~/.hermes/memories/MEMORY.md.bak   # Back up before any hand-edit.
+nano ~/.hermes/memories/MEMORY.md           # Hand-edit (allowed, but not the intended path; mind the char cap).
+```
+
+**Intended way — let Hermes edit its own memory.** It has a `memory` tool (add / replace / remove by
+substring), so in Telegram just instruct it plainly (e.g. *"Remove your memory entry 'Dispatch bridge
+pattern'; keep only …"*), then `/new` so it reloads. Keep memory to **stickies only** (owner prefs,
+infra ids) — procedures belong in SOUL.md + the skills, which reload every session anyway.
+
+- `/memory pending` · `/memory approve <id>` · `/memory reject <id>` — staged-write approval, **only**
+  relevant if `write_approval: true` in `config.yaml` (off by default). `memory_enabled` toggles
+  memory entirely. There is **no** `hermes` CLI subcommand that deletes a memory by content — use the
+  conversational `memory` tool or a hand-edit.
+
 ## Repo state & health (read-only)
 
 ```bash
