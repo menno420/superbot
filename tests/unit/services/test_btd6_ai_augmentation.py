@@ -30,10 +30,7 @@ from services import ai_gateway, btd6_ai_service
 
 
 def _ai_response(
-    *,
-    data: dict | None = None,
-    degraded: bool = False,
-    reason: str | None = None,
+    *, data: dict | None = None, degraded: bool = False, reason: str | None = None,
 ) -> AIResponse:
     return AIResponse(
         task=AITask.HELP_ANSWER,
@@ -60,8 +57,7 @@ async def test_augmentation_with_task_disabled_skips_gateway(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", spy)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
 
     spy.assert_not_awaited()
@@ -77,8 +73,7 @@ async def test_ai_platform_disabled_skips_gateway(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", spy)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
 
     spy.assert_not_awaited()
@@ -99,8 +94,7 @@ async def test_augmentation_passes_deterministic_payload_to_gateway(monkeypatch)
     monkeypatch.setattr(ai_gateway, "execute", _capture)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
 
     assert len(called_request) == 1
@@ -124,8 +118,7 @@ async def test_gateway_degraded_returns_deterministic(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", _degraded)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
     # Deterministic follow_up untouched.
     assert "Ask about a specific upgrade tier" in (response.follow_up or "")
@@ -142,8 +135,7 @@ async def test_gateway_exception_returns_deterministic(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", _raise)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
     assert "Dart Monkey" in response.title
 
@@ -160,8 +152,7 @@ async def test_gateway_invalid_payload_returns_deterministic(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", _bad)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
     assert "Ask about a specific upgrade tier" in (response.follow_up or "")
 
@@ -177,8 +168,7 @@ async def test_empty_explanation_does_not_overwrite_follow_up(monkeypatch):
     monkeypatch.setattr(ai_gateway, "execute", _empty)
 
     response = await btd6_ai_service.answer_question(
-        "Dart Monkey",
-        augment_with_ai=True,
+        "Dart Monkey", augment_with_ai=True,
     )
     assert "Ask about a specific upgrade tier" in (response.follow_up or "")
 

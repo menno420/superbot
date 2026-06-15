@@ -130,7 +130,6 @@ async def test_extra_path_param_keys_are_ignored_when_url_is_resolved(monkeypatc
     """Unknown path_param keys are not an error as long as the URL
     ends up fully resolved (the existing ``_resolve_url`` ignores
     unknown keys by design)."""
-
     async def _ok(url, *, timeout):
         return "{}", 200
 

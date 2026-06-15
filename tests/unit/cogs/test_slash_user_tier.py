@@ -152,22 +152,18 @@ async def test_economy_slash_defers_then_followups_ephemerally():
     fake_embed = discord.Embed(title="Economy")
     fake_view = discord.ui.View()
 
-    with (
-        patch.object(
-            cog,
-            "build_help_menu_view",
-            AsyncMock(return_value=(fake_embed, fake_view)),
-        ),
-        patch(
-            "cogs.economy_cog.safe_defer",
-            new_callable=AsyncMock,
-            return_value=True,
-        ) as mock_defer,
-        patch(
-            "cogs.economy_cog.safe_followup",
-            new_callable=AsyncMock,
-        ) as mock_followup,
-    ):
+    with patch.object(
+        cog,
+        "build_help_menu_view",
+        AsyncMock(return_value=(fake_embed, fake_view)),
+    ), patch(
+        "cogs.economy_cog.safe_defer",
+        new_callable=AsyncMock,
+        return_value=True,
+    ) as mock_defer, patch(
+        "cogs.economy_cog.safe_followup",
+        new_callable=AsyncMock,
+    ) as mock_followup:
         await cog.economy_slash.callback(cog, interaction)
 
     mock_defer.assert_awaited_once_with(interaction, ephemeral=True)
@@ -187,22 +183,18 @@ async def test_economy_slash_bails_when_defer_fails():
     cog = EconomyCog(MagicMock(spec=commands.Bot))
     interaction = _interaction()
 
-    with (
-        patch.object(
-            cog,
-            "build_help_menu_view",
-            new_callable=AsyncMock,
-        ) as mock_hook,
-        patch(
-            "cogs.economy_cog.safe_defer",
-            new_callable=AsyncMock,
-            return_value=False,
-        ),
-        patch(
-            "cogs.economy_cog.safe_followup",
-            new_callable=AsyncMock,
-        ) as mock_followup,
-    ):
+    with patch.object(
+        cog,
+        "build_help_menu_view",
+        new_callable=AsyncMock,
+    ) as mock_hook, patch(
+        "cogs.economy_cog.safe_defer",
+        new_callable=AsyncMock,
+        return_value=False,
+    ), patch(
+        "cogs.economy_cog.safe_followup",
+        new_callable=AsyncMock,
+    ) as mock_followup:
         await cog.economy_slash.callback(cog, interaction)
 
     mock_hook.assert_not_awaited()

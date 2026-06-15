@@ -147,18 +147,15 @@ async def test_all_bound_all_configured_scores_full():
             "status": "active",
         },
     ]
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=binding_rows,
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            # Non-default value — stored "10" differs from default 3.
-            return_value="10",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=binding_rows,
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        # Non-default value — stored "10" differs from default 3.
+        return_value="10",
     ):
         report = await setup_readiness.collect(guild_id=42)
 
@@ -178,23 +175,20 @@ async def test_partial_fill_scores_half():
         settings=[("interval", "half_ready.interval", 5)],
     )
     # Binding is bound but the setting is unset (stored "" — default).
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                {
-                    "subsystem": "half_ready",
-                    "binding_name": "log_channel",
-                    "status": "active",
-                },
-            ],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            return_value="",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            {
+                "subsystem": "half_ready",
+                "binding_name": "log_channel",
+                "status": "active",
+            },
+        ],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        return_value="",
     ):
         report = await setup_readiness.collect(guild_id=42)
     entry = report.per_subsystem[0]
@@ -212,18 +206,15 @@ async def test_setting_equal_to_default_does_not_count_as_configured():
         "default_setting",
         settings=[("ttl", "default_setting.ttl", 60)],
     )
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            # Stored value matches the default repr.
-            return_value="60",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        # Stored value matches the default repr.
+        return_value="60",
     ):
         report = await setup_readiness.collect(guild_id=42)
     assert report.per_subsystem[0].settings_configured == 0
@@ -239,17 +230,14 @@ async def test_setting_with_empty_key_never_counts_as_configured():
         "unmigrated",
         settings=[("legacy_thing", "", "default")],
     )
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            return_value="something",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        return_value="something",
     ):
         report = await setup_readiness.collect(guild_id=42)
     assert report.per_subsystem[0].settings_configured == 0
@@ -264,23 +252,20 @@ async def test_cleared_binding_status_does_not_count_as_bound():
         "with_cleared_binding",
         bindings=[("ch", BindingKind.CHANNEL)],
     )
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                {
-                    "subsystem": "with_cleared_binding",
-                    "binding_name": "ch",
-                    "status": "cleared",
-                },
-            ],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            return_value="",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            {
+                "subsystem": "with_cleared_binding",
+                "binding_name": "ch",
+                "status": "cleared",
+            },
+        ],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        return_value="",
     ):
         report = await setup_readiness.collect(guild_id=42)
     assert report.per_subsystem[0].bindings_bound == 0
@@ -297,19 +282,16 @@ async def test_aggregate_score_excludes_subsystems_without_config():
         bindings=[("ch", BindingKind.CHANNEL)],
         settings=[("x", "scored_sub.x", 1)],
     )
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                {"subsystem": "scored_sub", "binding_name": "ch", "status": "active"},
-            ],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            return_value="42",  # non-default
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            {"subsystem": "scored_sub", "binding_name": "ch", "status": "active"},
+        ],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        return_value="42",  # non-default
     ):
         report = await setup_readiness.collect(guild_id=42)
     # scored_sub: 1.0 (1/1 + 1/1). empty_sub: None.
@@ -332,19 +314,16 @@ async def test_report_totals_aggregate_across_subsystems():
             ("s3", "b.s3", 30),
         ],
     )
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                {"subsystem": "a", "binding_name": "ch1", "status": "active"},
-            ],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            return_value="",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            {"subsystem": "a", "binding_name": "ch1", "status": "active"},
+        ],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        return_value="",
     ):
         report = await setup_readiness.collect(guild_id=42)
     assert report.bindings_declared == 2
@@ -366,19 +345,16 @@ async def test_build_setup_readiness_embed_includes_percentage_in_title():
         "scored",
         bindings=[("ch", BindingKind.CHANNEL)],
     )
-    with (
-        patch(
-            "services.setup_readiness.db_bindings.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                {"subsystem": "scored", "binding_name": "ch", "status": "active"},
-            ],
-        ),
-        patch(
-            "services.setup_readiness.db.get_setting",
-            new_callable=AsyncMock,
-            return_value="",
-        ),
+    with patch(
+        "services.setup_readiness.db_bindings.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            {"subsystem": "scored", "binding_name": "ch", "status": "active"},
+        ],
+    ), patch(
+        "services.setup_readiness.db.get_setting",
+        new_callable=AsyncMock,
+        return_value="",
     ):
         embed = await build_setup_readiness_embed(guild_id=42)
     assert "100%" in (embed.title or "")

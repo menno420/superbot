@@ -17,7 +17,9 @@ import textwrap
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_SERVICE_PATH = _REPO_ROOT / "disbot" / "services" / "platform_consistency.py"
+_SERVICE_PATH = (
+    _REPO_ROOT / "disbot" / "services" / "platform_consistency.py"
+)
 
 # Modules whose top-level import would re-enter a partially-loaded
 # parent package during startup.

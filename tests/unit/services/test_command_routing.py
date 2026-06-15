@@ -39,7 +39,6 @@ async def test_is_cog_enabled_returns_true_when_no_policy_rows():
 @pytest.mark.asyncio
 async def test_is_cog_enabled_returns_channel_override_when_present():
     """Channel scope wins over category and guild."""
-
     async def fake_get(guild_id, scope, scope_id, cog):
         if scope == "channel" and scope_id == 999:
             return {"enabled": False}

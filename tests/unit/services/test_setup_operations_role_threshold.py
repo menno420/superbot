@@ -255,20 +255,12 @@ async def test_rejects_unresolvable_role_name():
 @pytest.mark.asyncio
 async def test_setter_failure_isolated_per_op():
     failing = SetupOperation(
-        kind="set_role_threshold",
-        subsystem="roles",
-        setting_name="time",
-        target_id=1,
-        target_name="A",
-        value=7,
+        kind="set_role_threshold", subsystem="roles",
+        setting_name="time", target_id=1, target_name="A", value=7,
     )
     ok = SetupOperation(
-        kind="set_role_threshold",
-        subsystem="roles",
-        setting_name="xp",
-        target_id=2,
-        target_name="B",
-        value=5,
+        kind="set_role_threshold", subsystem="roles",
+        setting_name="xp", target_id=2, target_name="B", value=5,
     )
     with (
         patch(
@@ -283,9 +275,7 @@ async def test_setter_failure_isolated_per_op():
         ),
     ):
         batch = await apply_operations(
-            [failing, ok],
-            guild=_guild(),
-            actor=_actor(),
+            [failing, ok], guild=_guild(), actor=_actor(),
         )
     assert len(batch.failed) == 1
     assert "DB down" in batch.failed[0].error

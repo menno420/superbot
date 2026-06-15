@@ -72,9 +72,8 @@ def _set_inputs(modal, *, decision: str, level: str, bypass: str):
 async def test_submit_writes_through_set_role_policy(monkeypatch):
     captured: dict = {}
 
-    async def _capture(
-        guild_id, role_id, *, decision, min_level_override, bypass_cooldown, actor
-    ):
+    async def _capture(guild_id, role_id, *, decision, min_level_override,
+                       bypass_cooldown, actor):
         captured.update(
             guild_id=guild_id,
             role_id=role_id,
@@ -129,9 +128,8 @@ async def test_submit_normalises_decision_case(monkeypatch):
 async def test_submit_blank_inputs_clear_to_defaults(monkeypatch):
     captured: dict = {}
 
-    async def _capture(
-        guild_id, role_id, *, decision, min_level_override, bypass_cooldown, actor
-    ):
+    async def _capture(guild_id, role_id, *, decision, min_level_override,
+                       bypass_cooldown, actor):
         captured.update(
             min_level_override=min_level_override,
             bypass_cooldown=bypass_cooldown,

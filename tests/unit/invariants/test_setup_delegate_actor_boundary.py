@@ -88,7 +88,7 @@ def test_setup_delegate_minted_only_by_apply_operations():
         for lineno in _actor_type_setup_delegate_kwargs(path):
             violations.append(f"{path.relative_to(_REPO_ROOT)}:{lineno}")
     assert not violations, (
-        'Q-0098 violation: actor_type="setup_delegate" minted outside '
+        "Q-0098 violation: actor_type=\"setup_delegate\" minted outside "
         "services.setup_operations.apply_operations — that seam is the only "
         "minter, and it re-verifies the live delegation first:\n"
         + "\n".join(f"  {v}" for v in violations)
@@ -104,7 +104,7 @@ def test_setup_delegate_token_confined_to_contract_files():
     }
     stray = found - _CONTRACT_FILES
     assert not stray, (
-        'Q-0098 violation: the "setup_delegate" token appears outside the '
+        "Q-0098 violation: the \"setup_delegate\" token appears outside the "
         "authority contract (minter + capability recognizer + the three "
         "pipeline allow-sets). Route delegated applies through "
         "services.setup_operations.apply_operations instead of referencing the "

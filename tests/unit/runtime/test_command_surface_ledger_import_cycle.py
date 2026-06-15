@@ -18,7 +18,9 @@ import textwrap
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-_LEDGER_PATH = _REPO_ROOT / "disbot" / "core" / "runtime" / "command_surface_ledger.py"
+_LEDGER_PATH = (
+    _REPO_ROOT / "disbot" / "core" / "runtime" / "command_surface_ledger.py"
+)
 
 # Within core.runtime, we forbid only utils.subsystem_registry at module
 # scope (its evaluator helpers reach back into core.runtime through

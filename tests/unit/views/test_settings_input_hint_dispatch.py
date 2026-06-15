@@ -237,7 +237,8 @@ def test_presets_view_highlights_current_preset_in_primary_style():
     primary = [
         c
         for c in view.children
-        if isinstance(c, discord.ui.Button) and c.style is discord.ButtonStyle.primary
+        if isinstance(c, discord.ui.Button)
+        and c.style is discord.ButtonStyle.primary
     ]
     # Exactly one button should be highlighted — the one matching current.
     assert len(primary) == 1

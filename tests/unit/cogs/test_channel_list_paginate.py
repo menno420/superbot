@@ -108,9 +108,9 @@ def test_no_page_exceeds_field_cap():
     guild = _make_guild(categories=cats, uncategorized=uncat)
     pages = _build_channel_list_pages(guild)
     for page in pages:
-        assert (
-            len(page.fields) <= 25
-        ), f"Embed exceeded Discord's 25-field cap: {len(page.fields)}"
+        assert len(page.fields) <= 25, (
+            f"Embed exceeded Discord's 25-field cap: {len(page.fields)}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +227,11 @@ async def test_list_multi_page_attaches_paginator_view():
     view = kwargs.get("view")
     assert isinstance(view, _ChannelListPaginatorView)
     # The paginator ships with three controls: prev, next, close.
-    labels = {c.label for c in view.children if isinstance(c, discord.ui.Button)}
+    labels = {
+        c.label
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
+    }
     assert labels == {"◀ Prev", "Next ▶", "↩ Close"}
 
 
@@ -241,9 +245,7 @@ async def test_paginator_prev_disabled_on_first_page():
     pages = [discord.Embed(title="A"), discord.Embed(title="B")]
     view = _ChannelListPaginatorView(MagicMock(id=1), pages)
     prev_btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button) and "Prev" in (c.label or "")
+        c for c in view.children if isinstance(c, discord.ui.Button) and "Prev" in (c.label or "")
     )
     assert prev_btn.disabled is True
 
@@ -257,20 +259,14 @@ async def test_paginator_next_disabled_on_last_page():
     view._idx = 1
     view._rebuild()
     next_btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button) and "Next" in (c.label or "")
+        c for c in view.children if isinstance(c, discord.ui.Button) and "Next" in (c.label or "")
     )
     assert next_btn.disabled is True
 
 
 @pytest.mark.asyncio
 async def test_paginator_next_advances_page():
-    pages = [
-        discord.Embed(title="A"),
-        discord.Embed(title="B"),
-        discord.Embed(title="C"),
-    ]
+    pages = [discord.Embed(title="A"), discord.Embed(title="B"), discord.Embed(title="C")]
     author = MagicMock(spec=discord.Member)
     author.id = 1
     view = _ChannelListPaginatorView(author, pages)
@@ -281,9 +277,7 @@ async def test_paginator_next_advances_page():
     interaction.response.edit_message = AsyncMock()
 
     next_btn = next(
-        c
-        for c in view.children
-        if isinstance(c, discord.ui.Button) and "Next" in (c.label or "")
+        c for c in view.children if isinstance(c, discord.ui.Button) and "Next" in (c.label or "")
     )
     await next_btn.callback(interaction)  # type: ignore[union-attr,misc]
 

@@ -48,7 +48,11 @@ _PROVIDER_SDKS = ("openai", "anthropic")
 
 
 def _iter_production_py_files() -> list[Path]:
-    return [p for p in _DISBOT.rglob("*.py") if "__pycache__" not in p.parts]
+    return [
+        p
+        for p in _DISBOT.rglob("*.py")
+        if "__pycache__" not in p.parts
+    ]
 
 
 def _files_under(*roots: Path) -> list[Path]:
@@ -322,9 +326,7 @@ def _declares_on_message_listener(tree: ast.AST) -> list[str]:
                     for arg in node.args
                 )
             ):
-                findings.append(
-                    f"add_listener('on_message', ...) at line {node.lineno}"
-                )
+                findings.append(f"add_listener('on_message', ...) at line {node.lineno}")
     return findings
 
 

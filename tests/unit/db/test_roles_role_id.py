@@ -57,9 +57,7 @@ def fetch_calls(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_set_role_threshold_persists_role_id_and_display_name(exec_calls):
-    await roles.set_role_threshold(
-        7, "Veteran", 30, role_id=123, display_name="Veteran"
-    )
+    await roles.set_role_threshold(7, "Veteran", 30, role_id=123, display_name="Veteran")
     sql, params = exec_calls[0]
     assert "role_id" in sql and "display_name" in sql
     # captured id is preserved on conflict, never wiped by a later update.

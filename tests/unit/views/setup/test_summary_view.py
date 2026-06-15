@@ -99,8 +99,7 @@ def test_summary_embed_applied_and_clean_renders_applied_section():
     )
     embed = build_summary_embed(snap)
     applied_field = next(
-        (f for f in embed.fields if f.name == "Applied"),
-        None,
+        (f for f in embed.fields if f.name == "Applied"), None,
     )
     assert applied_field is not None
     rendered = applied_field.value or ""

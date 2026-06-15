@@ -38,10 +38,7 @@ async def test_platform_anchors_renders_stats_and_db_counts():
     ctx.send = AsyncMock()
 
     message_anchor_manager._LAST_RESTORE_STATS.update(
-        anchors_seen=7,
-        restored=5,
-        view_missing=1,
-        stale=1,
+        anchors_seen=7, restored=5, view_missing=1, stale=1,
     )
     rows = [
         {"subsystem": "role", "n": 3},
@@ -141,16 +138,11 @@ async def test_platform_finding_resolve_reports_transition():
         return_value=TransitionResult(outcome="applied", previous_status="open"),
     ) as set_status:
         await cog.platform_finding.callback(
-            cog,
-            ctx,
-            "resolve",
-            fingerprint="diagnostics.provider_failed:ai",
+            cog, ctx, "resolve", fingerprint="diagnostics.provider_failed:ai",
         )
 
     set_status.assert_awaited_once_with(
-        "diagnostics.provider_failed:ai",
-        "resolved",
-        actor_id=7,
+        "diagnostics.provider_failed:ai", "resolved", actor_id=7,
     )
     msg = ctx.send.call_args.args[0]
     assert "✅" in msg and "resolved" in msg

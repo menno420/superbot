@@ -113,9 +113,7 @@ async def test_stage_creations_appends_one_op_per_new_role():
     interaction = _interaction()
     with (
         patch(
-            "services.setup_draft.append",
-            new_callable=AsyncMock,
-            return_value=1,
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1,
         ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=4),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),

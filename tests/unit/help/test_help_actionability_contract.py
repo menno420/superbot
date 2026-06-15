@@ -193,7 +193,9 @@ def _embed_is_instruction_only(embed: discord.Embed | None) -> bool:
     return True
 
 
-async def _classify_button(button: discord.ui.Button, panel: discord.ui.View) -> str:
+async def _classify_button(
+    button: discord.ui.Button, panel: discord.ui.View
+) -> str:
     """Classify a single button by running its callback against a stub
     interaction and inspecting the recorded calls.
     """
@@ -256,7 +258,9 @@ def _punchlist(
     view: discord.ui.View,
     cls: dict[str, str],
 ) -> str:
-    button_count = sum(1 for c in view.children if isinstance(c, discord.ui.Button))
+    button_count = sum(
+        1 for c in view.children if isinstance(c, discord.ui.Button)
+    )
     return (
         f"Subsystem {subsystem!r} panel is not actionable.\n"
         f"  view type:       {type(view).__name__}\n"
@@ -358,7 +362,9 @@ async def _build_panel_for(
 )
 async def test_games_subsystem_panel_is_actionable(subsystem: str) -> None:
     embed, view = await _build_panel_for(subsystem)
-    button_count = sum(1 for c in view.children if isinstance(c, discord.ui.Button))
+    button_count = sum(
+        1 for c in view.children if isinstance(c, discord.ui.Button)
+    )
     assert button_count > 0, (
         f"Subsystem {subsystem!r} returned a panel with zero Button "
         f"children — Help → Games → {subsystem} cannot reach any "
@@ -426,7 +432,9 @@ async def test_rps_panel_quick_play_spawns_new_view() -> None:
     """
     from views.games import rps_panel
 
-    panel = rps_panel.RPSPanelView(SimpleNamespace(id=111, display_name="tester"))
+    panel = rps_panel.RPSPanelView(
+        SimpleNamespace(id=111, display_name="tester")
+    )
     btn = next(
         c
         for c in panel.children
@@ -447,7 +455,9 @@ async def test_rps_panel_challenge_button_opens_new_view() -> None:
     """
     from views.games import rps_panel
 
-    panel = rps_panel.RPSPanelView(SimpleNamespace(id=111, display_name="tester"))
+    panel = rps_panel.RPSPanelView(
+        SimpleNamespace(id=111, display_name="tester")
+    )
     btn = next(
         c
         for c in panel.children

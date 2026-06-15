@@ -237,7 +237,9 @@ def test_embed_skipped_state():
 
 def test_embed_always_notes_zero_staging():
     embed = build_ai_setup_embed(acknowledged=False, skipped=False)
-    staging_field = next(f for f in embed.fields if "stages" in (f.name or "").lower())
+    staging_field = next(
+        f for f in embed.fields if "stages" in (f.name or "").lower()
+    )
     assert "nothing" in (staging_field.value or "").lower()
 
 
@@ -252,7 +254,9 @@ def test_view_has_open_and_skip_buttons_no_coming_soon_placeholder():
     """
     view = AISetupView(_owner_member(), acknowledged=False, skipped=False)
     custom_ids = {
-        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
+        c.custom_id
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
     }
     assert "setup_ai:open" in custom_ids
     assert "setup_ai:skip" in custom_ids
@@ -303,7 +307,8 @@ async def test_open_button_writes_ack_and_surfaces_link():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_ai:open"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_ai:open"
         )
         await btn.callback(interaction)
 
@@ -348,7 +353,8 @@ async def test_open_button_stages_no_draft_ops():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_ai:open"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_ai:open"
         )
         await btn.callback(interaction)
 
@@ -379,7 +385,8 @@ async def test_open_button_rejects_non_delegated_admin():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_ai:open"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_ai:open"
         )
         await btn.callback(interaction)
 
@@ -408,7 +415,8 @@ async def test_skip_button_writes_mark_section_skipped():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_ai:skip"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_ai:skip"
         )
         await btn.callback(interaction)
 
@@ -435,7 +443,8 @@ async def test_skip_button_surfaces_db_failure():
         btn = next(
             c
             for c in view.children
-            if isinstance(c, discord.ui.Button) and c.custom_id == "setup_ai:skip"
+            if isinstance(c, discord.ui.Button)
+            and c.custom_id == "setup_ai:skip"
         )
         await btn.callback(interaction)
 

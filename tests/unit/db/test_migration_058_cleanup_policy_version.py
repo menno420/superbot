@@ -56,9 +56,9 @@ def test_add_column_is_idempotent():
     """``IF NOT EXISTS`` keeps the forward-only migration re-runnable; a bare
     ``ADD COLUMN`` would abort the second apply and take boot down."""
     sql = _migration_sql()
-    assert (
-        re.search(r"ADD COLUMN(?! IF NOT EXISTS)", sql) is None
-    ), "the policy_version ADD COLUMN must use IF NOT EXISTS"
+    assert re.search(r"ADD COLUMN(?! IF NOT EXISTS)", sql) is None, (
+        "the policy_version ADD COLUMN must use IF NOT EXISTS"
+    )
 
 
 def test_migration_is_additive_only_preserving_rc5_and_pk():

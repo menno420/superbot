@@ -16,9 +16,7 @@ def test_classify_some_ok_is_partial():
 
 
 def test_classify_none_ok_is_discord_failed():
-    assert (
-        lc.classify_outcome((lc.StepResult(1, "a", False, "x"),)) == lc.DISCORD_FAILED
-    )
+    assert lc.classify_outcome((lc.StepResult(1, "a", False, "x"),)) == lc.DISCORD_FAILED
 
 
 def test_classify_empty_is_discord_failed():

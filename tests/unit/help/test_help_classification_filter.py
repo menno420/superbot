@@ -130,8 +130,7 @@ class TestGetVisibleCommands:
         would silently break the documented contract."""
         visible = _make_cmd("daily")
         deprecated = _make_cmd(
-            "old",
-            extras={"classification": "deprecated"},
+            "old", extras={"classification": "deprecated"},
         )
         cog = _make_cog(visible, deprecated)
         names = [c.name for c in _get_visible_commands(cog)]

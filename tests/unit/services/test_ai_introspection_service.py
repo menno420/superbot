@@ -44,9 +44,7 @@ def test_tool_catalog_user_sees_only_user_tools():
     assert all(t.read_only for t in snap.tools)
     # Names above scope are counted, never enumerated.
     assert snap.hidden_above_scope >= len(_ADMIN_TOOLS) + len(_PLATFORM_TOOLS)
-    assert snap.total_visible + snap.hidden_above_scope == len(
-        ai_tools.all_tool_specs()
-    )
+    assert snap.total_visible + snap.hidden_above_scope == len(ai_tools.all_tool_specs())
 
 
 def test_tool_catalog_admin_gains_admin_tools_not_platform():
@@ -204,9 +202,7 @@ def _config_snapshot(**overrides) -> proj.AIConfigSnapshot:
 
 
 async def test_settings_view_user_sees_only_enabled_flags(monkeypatch):
-    monkeypatch.setattr(
-        proj, "build_snapshot", AsyncMock(return_value=_config_snapshot())
-    )
+    monkeypatch.setattr(proj, "build_snapshot", AsyncMock(return_value=_config_snapshot()))
     view = await svc.build_ai_settings_view(7, scope=AIScope.USER)
 
     assert view.ai_enabled is True
@@ -220,9 +216,7 @@ async def test_settings_view_user_sees_only_enabled_flags(monkeypatch):
 
 
 async def test_settings_view_admin_sees_effective_config_not_diagnostics(monkeypatch):
-    monkeypatch.setattr(
-        proj, "build_snapshot", AsyncMock(return_value=_config_snapshot())
-    )
+    monkeypatch.setattr(proj, "build_snapshot", AsyncMock(return_value=_config_snapshot()))
     view = await svc.build_ai_settings_view(7, scope=AIScope.ADMIN)
 
     assert view.provider == "openai"
@@ -240,9 +234,7 @@ async def test_settings_view_admin_sees_effective_config_not_diagnostics(monkeyp
 
 
 async def test_settings_view_platform_owner_sees_provider_diagnostics(monkeypatch):
-    monkeypatch.setattr(
-        proj, "build_snapshot", AsyncMock(return_value=_config_snapshot())
-    )
+    monkeypatch.setattr(proj, "build_snapshot", AsyncMock(return_value=_config_snapshot()))
     view = await svc.build_ai_settings_view(7, scope=AIScope.PLATFORM_OWNER)
 
     assert view.provider == "openai"  # still sees admin tier
@@ -283,10 +275,7 @@ def _decision(**overrides) -> nlp.PolicyDecision:
         "reason": PolicyDenialReason.NONE,
         "mode": "always_reply",
         "source": "channel",
-        "trace": (
-            "guild_ai_gate: AI enabled=true",
-            "channel_policy: mode=always_reply",
-        ),
+        "trace": ("guild_ai_gate: AI enabled=true", "channel_policy: mode=always_reply"),
         **overrides,
     }
     return nlp.PolicyDecision(
@@ -347,15 +336,7 @@ async def test_policy_explanation_admin_includes_trace_and_recent(monkeypatch):
 
 
 async def test_policy_explanation_audit_failure_degrades(monkeypatch):
-    monkeypatch.setattr(
-        nlp,
-        "resolve",
-        AsyncMock(
-            return_value=_decision(
-                allowed=False, reason=PolicyDenialReason.COOLDOWN_ACTIVE
-            )
-        ),
-    )
+    monkeypatch.setattr(nlp, "resolve", AsyncMock(return_value=_decision(allowed=False, reason=PolicyDenialReason.COOLDOWN_ACTIVE)))
     monkeypatch.setattr(
         ai_decision_audit_service,
         "query",

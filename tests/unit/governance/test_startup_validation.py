@@ -108,14 +108,12 @@ Mutator = Callable[[dict], None]
 def _set_field(name: str, value: object) -> Mutator:
     def mutate(r: dict) -> None:
         r["alpha"][name] = value
-
     return mutate
 
 
 def _delete_field(name: str) -> Mutator:
     def mutate(r: dict) -> None:
         del r["alpha"][name]
-
     return mutate
 
 

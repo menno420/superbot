@@ -51,24 +51,19 @@ def _service(monkeypatch):
     svc.set_team_group_id = AsyncMock(return_value="abc123")
     svc.clear_team_group_id = AsyncMock()
     monkeypatch.setattr(
-        "services.btd6_ct_team_service.parse_group_id",
-        svc.parse_group_id,
+        "services.btd6_ct_team_service.parse_group_id", svc.parse_group_id,
     )
     monkeypatch.setattr(
-        "services.btd6_ct_team_service.get_team_group_id",
-        svc.get_team_group_id,
+        "services.btd6_ct_team_service.get_team_group_id", svc.get_team_group_id,
     )
     monkeypatch.setattr(
-        "services.btd6_ct_team_service.get_ct_bracket",
-        svc.get_ct_bracket,
+        "services.btd6_ct_team_service.get_ct_bracket", svc.get_ct_bracket,
     )
     monkeypatch.setattr(
-        "services.btd6_ct_team_service.set_team_group_id",
-        svc.set_team_group_id,
+        "services.btd6_ct_team_service.set_team_group_id", svc.set_team_group_id,
     )
     monkeypatch.setattr(
-        "services.btd6_ct_team_service.clear_team_group_id",
-        svc.clear_team_group_id,
+        "services.btd6_ct_team_service.clear_team_group_id", svc.clear_team_group_id,
     )
     return svc
 
@@ -162,7 +157,10 @@ async def test_cancel_discards_without_writing(_service):
     await type(view).cancel(view, interaction, MagicMock())
 
     _service.set_team_group_id.assert_not_awaited()
-    assert "unchanged" in interaction.response.edit_message.await_args.kwargs["content"]
+    assert (
+        "unchanged"
+        in interaction.response.edit_message.await_args.kwargs["content"]
+    )
 
 
 # ---------------------------------------------------------------------------

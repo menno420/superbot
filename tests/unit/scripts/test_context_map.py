@@ -115,9 +115,7 @@ def test_related_docs_longest_prefix_wins(cm):
         ],
         "layer_docs": {"services": ["layer"]},
     }
-    folio, docs = cm.related_docs(
-        "services/moderation_service.py", "services", overrides
-    )
+    folio, docs = cm.related_docs("services/moderation_service.py", "services", overrides)
     assert folio == "F2"
     assert docs == ["d2"]
 
@@ -162,9 +160,7 @@ def test_risk_flags_clean_file(cm):
 
 def test_render_contains_all_sections(cm):
     path = _REPO_ROOT / "disbot" / "services" / "moderation_service.py"
-    rev = cm._Reverse(
-        "ast", {"services.moderation_service": {"cogs.moderation_cog"}}, object()
-    )
+    rev = cm._Reverse("ast", {"services.moderation_service": {"cogs.moderation_cog"}}, object())
     out = cm.render(path, rev, cm.load_overrides(), max_importers=25)
     for header in (
         "# Context map for",

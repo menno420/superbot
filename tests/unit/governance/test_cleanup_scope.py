@@ -25,9 +25,10 @@ def test_cleanup_scope_set_excludes_thread_but_visibility_includes_it():
     """The two scope sets differ by exactly the thread scope."""
     assert "thread" in writes._VALID_VISIBILITY_SCOPE_TYPES
     assert "thread" not in writes._VALID_CLEANUP_SCOPE_TYPES
-    assert writes._VALID_CLEANUP_SCOPE_TYPES == writes._VALID_VISIBILITY_SCOPE_TYPES - {
-        "thread"
-    }
+    assert (
+        writes._VALID_CLEANUP_SCOPE_TYPES
+        == writes._VALID_VISIBILITY_SCOPE_TYPES - {"thread"}
+    )
 
 
 def _db_that_must_not_be_touched() -> MagicMock:

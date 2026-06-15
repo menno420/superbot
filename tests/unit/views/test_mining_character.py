@@ -17,47 +17,38 @@ def test_hub_has_character_button():
 
 @pytest.mark.asyncio
 async def test_build_character_embed_aggregates_every_owner():
-    with (
-        patch(
-            "views.mining.character_panel.db.get_mining_inventory",
-            new_callable=AsyncMock,
-            return_value={"diamond": 2},
-        ),
-        patch(
-            "views.mining.character_panel.db.get_equipment",
-            new_callable=AsyncMock,
-            return_value={"tool": "iron pickaxe", "weapon": "iron sword"},
-        ),
-        patch(
-            "views.mining.character_panel.db.get_gear_wear",
-            new_callable=AsyncMock,
-            return_value={"iron pickaxe": 42},
-        ),
-        patch(
-            "views.mining.character_panel.db.get_depth",
-            new_callable=AsyncMock,
-            return_value=2,
-        ),
-        patch(
-            "views.mining.character_panel.db.get_max_depth",
-            new_callable=AsyncMock,
-            return_value=2,
-        ),
-        patch(
-            "views.mining.character_panel.db.get_coins",
-            new_callable=AsyncMock,
-            return_value=150,
-        ),
-        patch(
-            "views.mining.character_panel.game_xp_service.level_info",
-            new_callable=AsyncMock,
-            return_value=(3, 40, 145),
-        ),
-        patch(
-            "views.mining.character_panel.title_service.equipped_title",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
+    with patch(
+        "views.mining.character_panel.db.get_mining_inventory",
+        new_callable=AsyncMock,
+        return_value={"diamond": 2},
+    ), patch(
+        "views.mining.character_panel.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={"tool": "iron pickaxe", "weapon": "iron sword"},
+    ), patch(
+        "views.mining.character_panel.db.get_gear_wear",
+        new_callable=AsyncMock,
+        return_value={"iron pickaxe": 42},
+    ), patch(
+        "views.mining.character_panel.db.get_depth",
+        new_callable=AsyncMock,
+        return_value=2,
+    ), patch(
+        "views.mining.character_panel.db.get_max_depth",
+        new_callable=AsyncMock,
+        return_value=2,
+    ), patch(
+        "views.mining.character_panel.db.get_coins",
+        new_callable=AsyncMock,
+        return_value=150,
+    ), patch(
+        "views.mining.character_panel.game_xp_service.level_info",
+        new_callable=AsyncMock,
+        return_value=(3, 40, 145),
+    ), patch(
+        "views.mining.character_panel.title_service.equipped_title",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         embed = await build_character_embed(123, 7, name="Digger")
 
@@ -81,47 +72,38 @@ async def test_character_embed_shows_equipped_title_when_set():
     from utils.mining import titles
 
     title = titles.get_title("the_deep")
-    with (
-        patch(
-            "views.mining.character_panel.db.get_mining_inventory",
-            new_callable=AsyncMock,
-            return_value={},
-        ),
-        patch(
-            "views.mining.character_panel.db.get_equipment",
-            new_callable=AsyncMock,
-            return_value={},
-        ),
-        patch(
-            "views.mining.character_panel.db.get_gear_wear",
-            new_callable=AsyncMock,
-            return_value={},
-        ),
-        patch(
-            "views.mining.character_panel.db.get_depth",
-            new_callable=AsyncMock,
-            return_value=0,
-        ),
-        patch(
-            "views.mining.character_panel.db.get_max_depth",
-            new_callable=AsyncMock,
-            return_value=0,
-        ),
-        patch(
-            "views.mining.character_panel.db.get_coins",
-            new_callable=AsyncMock,
-            return_value=0,
-        ),
-        patch(
-            "views.mining.character_panel.game_xp_service.level_info",
-            new_callable=AsyncMock,
-            return_value=(1, 0, 100),
-        ),
-        patch(
-            "views.mining.character_panel.title_service.equipped_title",
-            new_callable=AsyncMock,
-            return_value=title,
-        ),
+    with patch(
+        "views.mining.character_panel.db.get_mining_inventory",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "views.mining.character_panel.db.get_equipment",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "views.mining.character_panel.db.get_gear_wear",
+        new_callable=AsyncMock,
+        return_value={},
+    ), patch(
+        "views.mining.character_panel.db.get_depth",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
+        "views.mining.character_panel.db.get_max_depth",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
+        "views.mining.character_panel.db.get_coins",
+        new_callable=AsyncMock,
+        return_value=0,
+    ), patch(
+        "views.mining.character_panel.game_xp_service.level_info",
+        new_callable=AsyncMock,
+        return_value=(1, 0, 100),
+    ), patch(
+        "views.mining.character_panel.title_service.equipped_title",
+        new_callable=AsyncMock,
+        return_value=title,
     ):
         embed = await build_character_embed(123, 7, name="Digger")
 

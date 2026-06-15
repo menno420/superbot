@@ -106,13 +106,9 @@ def _patch_detectors(report: SetupDiagnosticsReport | None, percentage: int | No
 @pytest.mark.asyncio
 async def test_collect_returns_five_manager_badges():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles",
-            return_value=([MagicMock(), MagicMock()], []),
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles",
+        return_value=([MagicMock(), MagicMock()], []),
     ):
         status = await collect_hub_status(_guild())
     assert {b.key for b in status.badges} == {
@@ -133,12 +129,8 @@ async def test_collect_returns_five_manager_badges():
 @pytest.mark.asyncio
 async def test_moderation_badge_healthy_when_fully_capable():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert _badge(status, hub.MOD).glyph == GLYPH_HEALTHY
@@ -147,12 +139,8 @@ async def test_moderation_badge_healthy_when_fully_capable():
 @pytest.mark.asyncio
 async def test_moderation_badge_attention_when_missing_permission():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild(ban=False))
     badge = _badge(status, hub.MOD)
@@ -163,12 +151,8 @@ async def test_moderation_badge_attention_when_missing_permission():
 @pytest.mark.asyncio
 async def test_channels_badge_blocked_without_manage_channels():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild(manage_channels=False))
     assert _badge(status, hub.CHANNELS).glyph == GLYPH_BLOCKED
@@ -185,13 +169,9 @@ async def test_roles_badge_blocked_without_manage_roles():
 @pytest.mark.asyncio
 async def test_roles_badge_healthy_reports_manageable_count():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles",
-            return_value=([MagicMock(), MagicMock(), MagicMock()], [MagicMock()]),
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles",
+        return_value=([MagicMock(), MagicMock(), MagicMock()], [MagicMock()]),
     ):
         status = await collect_hub_status(_guild())
     badge = _badge(status, hub.ROLES)
@@ -208,12 +188,8 @@ async def test_roles_badge_healthy_reports_manageable_count():
 async def test_cleanup_badge_attention_on_cleanup_finding():
     report = _report(_finding("warning", subsystem="cleanup"))
     diag_p, ready_p = _patch_detectors(report, 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert _badge(status, hub.CLEANUP).glyph == GLYPH_ATTENTION
@@ -223,12 +199,8 @@ async def test_cleanup_badge_attention_on_cleanup_finding():
 async def test_cleanup_badge_healthy_when_no_cleanup_findings():
     report = _report(_finding("warning", subsystem="moderation"))
     diag_p, ready_p = _patch_detectors(report, 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert _badge(status, hub.CLEANUP).glyph == GLYPH_HEALTHY
@@ -238,12 +210,8 @@ async def test_cleanup_badge_healthy_when_no_cleanup_findings():
 async def test_setup_badge_blocked_when_report_has_blocker():
     report = _report(_finding("blocker", subsystem="moderation"))
     diag_p, ready_p = _patch_detectors(report, 95)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert _badge(status, hub.SETUP).glyph == GLYPH_BLOCKED
@@ -252,12 +220,8 @@ async def test_setup_badge_blocked_when_report_has_blocker():
 @pytest.mark.asyncio
 async def test_setup_badge_healthy_at_high_percentage():
     diag_p, ready_p = _patch_detectors(_report(), 88)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     badge = _badge(status, hub.SETUP)
@@ -268,12 +232,8 @@ async def test_setup_badge_healthy_at_high_percentage():
 @pytest.mark.asyncio
 async def test_setup_badge_attention_when_unconfigured():
     diag_p, ready_p = _patch_detectors(_report(), 0)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert _badge(status, hub.SETUP).glyph == GLYPH_ATTENTION
@@ -287,12 +247,8 @@ async def test_setup_badge_attention_when_unconfigured():
 @pytest.mark.asyncio
 async def test_overall_healthy_when_report_clean():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert status.overall_glyph == GLYPH_HEALTHY
@@ -306,12 +262,8 @@ async def test_overall_counts_warnings_and_advisories():
         _finding("advisory", "roles"),
     )
     diag_p, ready_p = _patch_detectors(report, 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert status.overall_glyph == GLYPH_ATTENTION
@@ -323,12 +275,8 @@ async def test_overall_counts_warnings_and_advisories():
 async def test_overall_blocked_when_blocker_present():
     report = _report(_finding("blocker", "moderation"))
     diag_p, ready_p = _patch_detectors(report, 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     assert status.overall_glyph == GLYPH_BLOCKED
@@ -342,12 +290,8 @@ async def test_overall_blocked_when_blocker_present():
 @pytest.mark.asyncio
 async def test_collect_never_raises_when_diagnostics_down():
     diag_p, ready_p = _patch_detectors(None, None)  # both detectors raise
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles", return_value=([MagicMock()], [])
     ):
         status = await collect_hub_status(_guild())
     # The composer still returns a full set of badges.
@@ -366,13 +310,9 @@ async def test_collect_never_raises_when_diagnostics_down():
 @pytest.mark.asyncio
 async def test_roles_badge_unknown_when_feasibility_raises():
     diag_p, ready_p = _patch_detectors(_report(), 100)
-    with (
-        diag_p,
-        ready_p,
-        patch(
-            "utils.role_feasibility.manageable_roles",
-            side_effect=RuntimeError("boom"),
-        ),
+    with diag_p, ready_p, patch(
+        "utils.role_feasibility.manageable_roles",
+        side_effect=RuntimeError("boom"),
     ):
         status = await collect_hub_status(_guild())
     assert _badge(status, hub.ROLES).glyph == GLYPH_UNKNOWN

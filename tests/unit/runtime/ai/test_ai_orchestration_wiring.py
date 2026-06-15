@@ -225,9 +225,7 @@ async def test_workflow_ledger_entry_not_duplicated_on_retry(monkeypatch) -> Non
 
     assert len(ledger) == 1
     # The retry still carries the workflow block + the constraint.
-    assert (
-        "Deterministic round-cash workflow result" in captured["request"].system_prompt
-    )
+    assert "Deterministic round-cash workflow result" in captured["request"].system_prompt
     assert captured["request"].system_prompt.endswith("no")
 
 

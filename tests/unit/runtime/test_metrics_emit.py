@@ -225,12 +225,6 @@ async def test_panel_refresh_metric(scenario: str, expected_result: str):
         "core.runtime.live_update_scheduler._metrics.panel_refresh_total",
     ) as m:
         await live_update_scheduler._refresh_panel(
-            bot,
-            refresh_fn,
-            1,
-            2,
-            3,
-            100,
-            "economy",
+            bot, refresh_fn, 1, 2, 3, 100, "economy",
         )
         m.labels.assert_called_with(subsystem="economy", result=expected_result)

@@ -56,26 +56,16 @@ async def test_record_writes_a_row(_stub_db):
 async def test_success_row_forces_sentinel_reason(_stub_db):
     """A 'replied' or 'allowed' decision must always carry 'none'."""
     await svc.record(
-        guild_id=1,
-        channel_id=2,
-        category_id=None,
-        user_id=3,
-        message_id=4,
-        task=None,
-        route=None,
+        guild_id=1, channel_id=2, category_id=None, user_id=3,
+        message_id=4, task=None, route=None,
         decision="replied",
         reason_code=PolicyDenialReason.BELOW_MIN_LEVEL,  # would be a bug
     )
     assert _stub_db[0]["reason_code"] == "none"
 
     await svc.record(
-        guild_id=1,
-        channel_id=2,
-        category_id=None,
-        user_id=3,
-        message_id=4,
-        task=None,
-        route=None,
+        guild_id=1, channel_id=2, category_id=None, user_id=3,
+        message_id=4, task=None, route=None,
         decision="allowed",
         reason_code="something_invalid",
     )
@@ -85,13 +75,8 @@ async def test_success_row_forces_sentinel_reason(_stub_db):
 async def test_unknown_decision_raises(_stub_db):
     with pytest.raises(ValueError):
         await svc.record(
-            guild_id=1,
-            channel_id=2,
-            category_id=None,
-            user_id=3,
-            message_id=4,
-            task=None,
-            route=None,
+            guild_id=1, channel_id=2, category_id=None, user_id=3,
+            message_id=4, task=None, route=None,
             decision="bogus",
             reason_code=PolicyDenialReason.NONE,
         )
@@ -99,26 +84,14 @@ async def test_unknown_decision_raises(_stub_db):
 
 async def test_query_filters_by_guild(_stub_db):
     await svc.record(
-        guild_id=1,
-        channel_id=2,
-        category_id=None,
-        user_id=3,
-        message_id=4,
-        task=None,
-        route=None,
-        decision="denied",
-        reason_code=PolicyDenialReason.COOLDOWN_ACTIVE,
+        guild_id=1, channel_id=2, category_id=None, user_id=3,
+        message_id=4, task=None, route=None,
+        decision="denied", reason_code=PolicyDenialReason.COOLDOWN_ACTIVE,
     )
     await svc.record(
-        guild_id=999,
-        channel_id=2,
-        category_id=None,
-        user_id=3,
-        message_id=5,
-        task=None,
-        route=None,
-        decision="denied",
-        reason_code=PolicyDenialReason.COOLDOWN_ACTIVE,
+        guild_id=999, channel_id=2, category_id=None, user_id=3,
+        message_id=5, task=None, route=None,
+        decision="denied", reason_code=PolicyDenialReason.COOLDOWN_ACTIVE,
     )
     rows = await svc.query(1)
     assert len(rows) == 1

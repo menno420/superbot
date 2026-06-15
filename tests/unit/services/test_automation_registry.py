@@ -135,7 +135,9 @@ def test_known_trigger_kinds_match_migration_check():
     assert match is not None, "could not find trigger_kind CHECK in migration"
     raw = match.group(1)
     in_sql = frozenset(
-        token.strip().strip("'\"") for token in raw.split(",") if token.strip()
+        token.strip().strip("'\"")
+        for token in raw.split(",")
+        if token.strip()
     )
     assert in_sql == KNOWN_TRIGGER_KINDS
 
@@ -150,6 +152,8 @@ def test_known_action_kinds_match_migration_check():
     assert match is not None, "could not find action_kind CHECK in migration"
     raw = match.group(1)
     in_sql = frozenset(
-        token.strip().strip("'\"") for token in raw.split(",") if token.strip()
+        token.strip().strip("'\"")
+        for token in raw.split(",")
+        if token.strip()
     )
     assert in_sql == KNOWN_ACTION_KINDS

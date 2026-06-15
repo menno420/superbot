@@ -83,14 +83,7 @@ def test_powers_and_monkey_knowledge_load_and_resolve():
     # Monkey knowledge carries its in-game category + costs.
     mk = get_monkey_knowledge("aviation_grade_glue")
     assert mk is not None
-    assert mk.category in {
-        "Primary",
-        "Military",
-        "Magic",
-        "Support",
-        "Heroes",
-        "Powers",
-    }
+    assert mk.category in {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"}
     assert mk.monkey_money_cost >= 0 and mk.investment_required >= 0
     # The dump-native structured effect is loaded: More Cash = +$200 starting cash.
     more_cash = get_monkey_knowledge("more_cash")
@@ -132,9 +125,7 @@ def test_geraldo_items_load_and_resolve():
         "attack_speed_scale": 0.75,
         "rounds": 5,
     }
-    assert (
-        get_geraldo_item("blade_trap").effect == {}
-    )  # projectile — no fabricated effect
+    assert get_geraldo_item("blade_trap").effect == {}  # projectile — no fabricated effect
     # Unknown / ambiguous lookups fail closed rather than guessing.
     assert get_geraldo_item("nope") is None
     assert find_geraldo_item("") is None
@@ -147,14 +138,7 @@ def test_bosses_load_resolve_and_carry_tiers():
     # All seven Boss Bloons are ingested.
     assert len(dataset.bosses) == 7
     ids = {b.id for b in dataset.bosses}
-    assert {
-        "bloonarius",
-        "lych",
-        "vortex",
-        "dreadbloon",
-        "blastapopoulos",
-        "phayze",
-    } <= ids
+    assert {"bloonarius", "lych", "vortex", "dreadbloon", "blastapopoulos", "phayze"} <= ids
     # Resolves by id and (fuzzily) by canonical name / partial.
     bloonarius = get_boss("bloonarius")
     assert bloonarius is not None and bloonarius.canonical == "Bloonarius"
@@ -178,18 +162,8 @@ def test_bosses_load_resolve_and_carry_tiers():
             assert elite["tier"] == std["tier"]
             assert elite["health"] > std["health"], boss.id
     # Derived type-immunities: Dreadbloon = Lead, Blastapopoulos = Purple.
-    assert set(get_boss("dreadbloon").immune_to) == {
-        "Cold",
-        "Energy",
-        "Sharp",
-        "Shatter",
-    }
-    assert set(get_boss("blastapopoulos").immune_to) == {
-        "Energy",
-        "Fire",
-        "Frigid",
-        "Plasma",
-    }
+    assert set(get_boss("dreadbloon").immune_to) == {"Cold", "Energy", "Sharp", "Shatter"}
+    assert set(get_boss("blastapopoulos").immune_to) == {"Energy", "Fire", "Frigid", "Plasma"}
     # Every boss carries a game-authored mechanic description.
     for boss in dataset.bosses:
         assert boss.canonical and boss.description and boss.tiers

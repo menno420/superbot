@@ -26,9 +26,9 @@ def test_044_file_present():
 
 def test_043_adds_is_preset_column_idempotently():
     src = _M043.read_text()
-    assert (
-        "ADD COLUMN IF NOT EXISTS is_preset" in src
-    ), "043 must add is_preset with IF NOT EXISTS for idempotency"
+    assert "ADD COLUMN IF NOT EXISTS is_preset" in src, (
+        "043 must add is_preset with IF NOT EXISTS for idempotency"
+    )
     assert "BOOLEAN NOT NULL DEFAULT FALSE" in src
     # Partial index for cheap WHERE is_preset = TRUE reads.
     assert "CREATE INDEX IF NOT EXISTS" in src
@@ -55,9 +55,9 @@ def test_044_seeds_exactly_the_expected_presets():
 
 def test_044_uses_on_conflict_for_idempotency():
     src = _M044.read_text()
-    assert (
-        "ON CONFLICT (guild_id, scope, name) DO UPDATE" in src
-    ), "044 must be idempotent via ON CONFLICT … DO UPDATE"
+    assert "ON CONFLICT (guild_id, scope, name) DO UPDATE" in src, (
+        "044 must be idempotent via ON CONFLICT … DO UPDATE"
+    )
     # Never let an idempotent replay flip is_preset back to FALSE.
     assert "is_preset  = TRUE" in src or "is_preset = TRUE" in src
 

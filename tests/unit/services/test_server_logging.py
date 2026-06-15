@@ -110,15 +110,7 @@ def test_channel_kind_for_action_routes_auto_delete_to_cleanup():
 def test_channel_kind_for_action_routes_mod_actions_to_mod():
     # "clearwarnings" (one word) is the canonical token moderation_service emits;
     # "clear_warnings" stays in the loop as a back-compat alias.
-    for action in (
-        "warn",
-        "timeout",
-        "kick",
-        "ban",
-        "unban",
-        "clearwarnings",
-        "clear_warnings",
-    ):
+    for action in ("warn", "timeout", "kick", "ban", "unban", "clearwarnings", "clear_warnings"):
         assert _channel_kind_for_action(action) == "mod"
 
 
@@ -286,17 +278,14 @@ def _unbound_binding() -> MagicMock:
 async def test_resolve_log_channel_mod_returns_text_channel():
     guild = _make_guild()
     channel = _make_text_channel(name="mod-log")
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            new_callable=AsyncMock,
-            return_value=_unbound_binding(),
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         result = await resolve_log_channel(guild, "mod")
     assert result is channel
@@ -316,16 +305,13 @@ async def test_resolve_log_channel_cleanup_falls_back_to_mod():
             return mod_channel
         return None
 
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            new_callable=AsyncMock,
-            return_value=_unbound_binding(),
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            side_effect=fake_resolve,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        side_effect=fake_resolve,
     ):
         result = await resolve_log_channel(guild, "cleanup")
     assert result is mod_channel
@@ -337,17 +323,14 @@ async def test_resolve_log_channel_cleanup_falls_back_to_mod():
 @pytest.mark.asyncio
 async def test_resolve_log_channel_returns_none_when_setting_unset():
     guild = _make_guild()
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            new_callable=AsyncMock,
-            return_value=_unbound_binding(),
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         assert await resolve_log_channel(guild, "mod") is None
 
@@ -356,17 +339,14 @@ async def test_resolve_log_channel_returns_none_when_setting_unset():
 async def test_resolve_log_channel_skips_non_text_channel():
     guild = _make_guild()
     voice = MagicMock(spec=discord.VoiceChannel)
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            new_callable=AsyncMock,
-            return_value=_unbound_binding(),
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=voice,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=voice,
     ):
         assert await resolve_log_channel(guild, "mod") is None
 
@@ -411,16 +391,13 @@ async def test_resolve_log_channel_severity_route_returns_own_binding(
             return _bound_binding(channel_id=own_channel.id)
         return _unbound_binding()
 
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            side_effect=fake_get_binding,
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        side_effect=fake_get_binding,
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         result = await resolve_log_channel(guild, kind)
 
@@ -448,16 +425,13 @@ async def test_resolve_log_channel_severity_route_falls_back_to_mod(kind: str):
             return _bound_binding(channel_id=mod_channel.id)
         return _unbound_binding()
 
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            side_effect=fake_get_binding,
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        side_effect=fake_get_binding,
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         result = await resolve_log_channel(guild, kind)
 
@@ -478,17 +452,14 @@ async def test_resolve_log_channel_severity_route_returns_none_when_all_unset(
 ):
     """No own binding, no mod binding, no legacy → None."""
     guild = _make_guild()
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            new_callable=AsyncMock,
-            return_value=_unbound_binding(),
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         assert await resolve_log_channel(guild, kind) is None
 
@@ -497,17 +468,14 @@ async def test_resolve_log_channel_severity_route_returns_none_when_all_unset(
 async def test_resolve_log_channel_unknown_kind_returns_none():
     """Unknown route tokens don't raise — they log a warning and return None."""
     guild = _make_guild()
-    with (
-        patch(
-            "core.runtime.bindings.get_binding",
-            new_callable=AsyncMock,
-            return_value=_unbound_binding(),
-        ),
-        patch(
-            "core.runtime.guild_resources.resolve_settings_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
+    with patch(
+        "core.runtime.bindings.get_binding",
+        new_callable=AsyncMock,
+        return_value=_unbound_binding(),
+    ), patch(
+        "core.runtime.guild_resources.resolve_settings_channel",
+        new_callable=AsyncMock,
+        return_value=None,
     ):
         assert await resolve_log_channel(guild, "not_a_real_kind") is None
 
@@ -567,17 +535,14 @@ def test_phase_9a_route_table_is_complete_and_acyclic():
 async def test_ensure_log_channel_returns_existing_when_resolved():
     guild = _make_guild()
     channel = _make_text_channel()
-    with (
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
-        patch(
-            "core.runtime.guild_resources.ensure_channel",
-            new_callable=AsyncMock,
-        ) as ensure,
-    ):
+    with patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
+    ), patch(
+        "core.runtime.guild_resources.ensure_channel",
+        new_callable=AsyncMock,
+    ) as ensure:
         result = await ensure_log_channel(guild, "mod")
     assert result is channel
     ensure.assert_not_awaited()
@@ -587,17 +552,14 @@ async def test_ensure_log_channel_returns_existing_when_resolved():
 async def test_ensure_log_channel_creates_when_resolve_fails():
     guild = _make_guild()
     created = _make_text_channel(name="bot-mod-log")
-    with (
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "core.runtime.guild_resources.ensure_channel",
-            new_callable=AsyncMock,
-            return_value=created,
-        ),
+    with patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ), patch(
+        "core.runtime.guild_resources.ensure_channel",
+        new_callable=AsyncMock,
+        return_value=created,
     ):
         result = await ensure_log_channel(guild, "mod")
     assert result is created
@@ -607,17 +569,14 @@ async def test_ensure_log_channel_creates_when_resolve_fails():
 @pytest.mark.asyncio
 async def test_ensure_log_channel_counts_permission_error_on_forbidden():
     guild = _make_guild()
-    with (
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "core.runtime.guild_resources.ensure_channel",
-            new_callable=AsyncMock,
-            side_effect=discord.Forbidden(MagicMock(status=403), "no perms"),
-        ),
+    with patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ), patch(
+        "core.runtime.guild_resources.ensure_channel",
+        new_callable=AsyncMock,
+        side_effect=discord.Forbidden(MagicMock(status=403), "no perms"),
     ):
         result = await ensure_log_channel(guild, "mod")
     assert result is None
@@ -627,17 +586,14 @@ async def test_ensure_log_channel_counts_permission_error_on_forbidden():
 @pytest.mark.asyncio
 async def test_ensure_log_channel_counts_auto_create_error_on_http():
     guild = _make_guild()
-    with (
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "core.runtime.guild_resources.ensure_channel",
-            new_callable=AsyncMock,
-            side_effect=discord.HTTPException(MagicMock(status=500), "bad"),
-        ),
+    with patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ), patch(
+        "core.runtime.guild_resources.ensure_channel",
+        new_callable=AsyncMock,
+        side_effect=discord.HTTPException(MagicMock(status=500), "bad"),
     ):
         result = await ensure_log_channel(guild, "mod")
     assert result is None
@@ -672,17 +628,14 @@ async def test_log_event_skipped_when_disabled():
 async def test_log_event_sends_embed_when_configured():
     guild = _make_guild()
     channel = _make_text_channel()
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await log_event(
             guild,
@@ -701,27 +654,22 @@ async def test_log_event_sends_embed_when_configured():
 @pytest.mark.asyncio
 async def test_log_event_missing_channel_when_auto_create_off():
     guild = _make_guild()
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "services.server_logging.auto_create_enabled",
-            new_callable=AsyncMock,
-            return_value=False,
-        ),
-        patch(
-            "services.server_logging.ensure_log_channel",
-            new_callable=AsyncMock,
-        ) as ensure_lc,
-    ):
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ), patch(
+        "services.server_logging.auto_create_enabled",
+        new_callable=AsyncMock,
+        return_value=False,
+    ), patch(
+        "services.server_logging.ensure_log_channel",
+        new_callable=AsyncMock,
+    ) as ensure_lc:
         sent = await log_event(
             guild,
             action="warn",
@@ -738,28 +686,23 @@ async def test_log_event_missing_channel_when_auto_create_off():
 async def test_log_event_missing_channel_calls_ensure_when_auto_create_on():
     guild = _make_guild()
     created = _make_text_channel(name="bot-mod-log")
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "services.server_logging.auto_create_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.ensure_log_channel",
-            new_callable=AsyncMock,
-            return_value=created,
-        ) as ensure_lc,
-    ):
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ), patch(
+        "services.server_logging.auto_create_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.ensure_log_channel",
+        new_callable=AsyncMock,
+        return_value=created,
+    ) as ensure_lc:
         sent = await log_event(
             guild,
             action="warn",
@@ -779,17 +722,14 @@ async def test_log_event_swallows_permission_error_on_send():
     channel.send = AsyncMock(
         side_effect=discord.Forbidden(MagicMock(status=403), "no perms"),
     )
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await log_event(
             guild,
@@ -809,17 +749,14 @@ async def test_log_event_swallows_http_error_on_send():
     channel.send = AsyncMock(
         side_effect=discord.HTTPException(MagicMock(status=500), "boom"),
     )
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await log_event(
             guild,
@@ -837,17 +774,14 @@ async def test_log_event_swallows_unexpected_exception_on_send():
     guild = _make_guild()
     channel = _make_text_channel()
     channel.send = AsyncMock(side_effect=RuntimeError("anything"))
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await log_event(
             guild,
@@ -864,17 +798,14 @@ async def test_log_event_swallows_unexpected_exception_on_send():
 async def test_log_event_renders_unknown_action_safely():
     guild = _make_guild()
     channel = _make_text_channel()
-    with (
-        patch(
-            "services.server_logging.is_enabled",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging.is_enabled",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await log_event(
             guild,
@@ -1201,17 +1132,8 @@ async def test_public_subscriber_skips_non_disciplinary_without_config_read():
         "services.moderation_config.load_policy",
         new_callable=AsyncMock,
     ) as load_policy:
-        for action in (
-            "unban",
-            "clearwarnings",
-            "post_action_cleanup",
-            "auto_delete:x",
-        ):
+        for action in ("unban", "clearwarnings", "post_action_cleanup", "auto_delete:x"):
             await _on_moderation_action_public(
-                guild_id=1,
-                target_id=2,
-                action=action,
-                reason="x",
-                actor_id=3,
+                guild_id=1, target_id=2, action=action, reason="x", actor_id=3,
             )
     load_policy.assert_not_awaited()

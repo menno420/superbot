@@ -100,13 +100,7 @@ def test_ambiguous_query_returns_candidates():
 
 @pytest.mark.parametrize(
     "query",
-    [
-        "Ultra-Juggernaut",
-        "ultra juggernaut",
-        "the ultra juggernaut",
-        "ultra jug",
-        "ujug",
-    ],
+    ["Ultra-Juggernaut", "ultra juggernaut", "the ultra juggernaut", "ultra jug", "ujug"],
 )
 def test_full_name_wins_over_embedded_substring(query):
     # Regression: "Ultra-Juggernaut" matched both its own name AND the embedded

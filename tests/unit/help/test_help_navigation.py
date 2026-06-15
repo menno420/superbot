@@ -148,21 +148,17 @@ async def test_help_on_select_handles_missing_cog():
     vis_result.visible_subsystems = set(SUBSYSTEMS)
     vis_result.member_tier = "user"
 
-    with (
-        patch(
-            "cogs.help_cog._cog_for_subsystem",
-            return_value=None,
-        ),
-        patch.object(
-            help_cog_module.governance_service,
-            "resolve_visibility",
-            new=AsyncMock(return_value=vis_result),
-        ),
-        patch.object(
-            help_cog_module.GovernanceContext,
-            "from_interaction",
-            lambda i: MagicMock(),
-        ),
+    with patch(
+        "cogs.help_cog._cog_for_subsystem",
+        return_value=None,
+    ), patch.object(
+        help_cog_module.governance_service,
+        "resolve_visibility",
+        new=AsyncMock(return_value=vis_result),
+    ), patch.object(
+        help_cog_module.GovernanceContext,
+        "from_interaction",
+        lambda i: MagicMock(),
     ):
         await view._on_select(interaction)
 

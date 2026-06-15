@@ -23,9 +23,7 @@ _SCRIPT = _REPO_ROOT / "scripts" / "btd6_decode_inventory_report.py"
 
 @pytest.fixture(scope="module")
 def mod():
-    spec = importlib.util.spec_from_file_location(
-        "btd6_decode_inventory_report_ut", _SCRIPT
-    )
+    spec = importlib.util.spec_from_file_location("btd6_decode_inventory_report_ut", _SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -85,9 +83,7 @@ def towers_dump(tmp_path: Path) -> Path:
 
 def test_decodable_distinguishes_effect_from_geometry(mod):
     assert mod._decodable({"multiplier"}).startswith("yes")
-    assert mod._decodable({"pierce", "range"}).startswith(
-        "yes"
-    )  # effect wins over geometry
+    assert mod._decodable({"pierce", "range"}).startswith("yes")  # effect wins over geometry
     assert mod._decodable({"range", "lifespan"}) == "geometry-only"
     assert mod._decodable({"someFlag"}) == "no (name/flag only)"
     assert mod._decodable(set()) == "no (name/flag only)"
@@ -155,9 +151,9 @@ def test_header_preamble_matches_committed_doc(mod):
     # demands on every docs/ file. The badge was once hand-added to the
     # artifact only, so regenerating stripped it and would have reddened the
     # doc-hygiene gate on the refresh PR; this pins script <-> artifact.
-    committed = (
-        _REPO_ROOT / "docs" / "btd6" / "btd6-decode-inventory-v55.md"
-    ).read_text(encoding="utf-8")
+    committed = (_REPO_ROOT / "docs" / "btd6" / "btd6-decode-inventory-v55.md").read_text(
+        encoding="utf-8"
+    )
     assert committed.startswith("\n".join(mod._HEADER_LINES))
 
 
@@ -188,9 +184,4 @@ def test_decode_class_registry_is_classification_only(mod):
     assert c["ProjectileRadiusSupportModel"] == "SAFE_WRITE"
     assert c["BananaCashIncreaseSupportModel"] == "SAFE_WRITE"
     assert c["BrickellFreezeMinesAbilityBuffModel"] == "DEFER"
-    assert set(c.values()) <= {
-        "SAFE_WRITE",
-        "SCHEMA_FIRST",
-        "DEFER",
-        "DESCRIPTION_ONLY",
-    }
+    assert set(c.values()) <= {"SAFE_WRITE", "SCHEMA_FIRST", "DEFER", "DESCRIPTION_ONLY"}

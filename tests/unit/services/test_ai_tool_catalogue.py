@@ -159,22 +159,13 @@ def test_enabled_toolset_narrows_but_never_grants_above_scope():
 
 
 def test_enabled_toolset_keeps_only_matching_scope_allowed_tools():
-    candidates = [
-        _spec("btd6_round_cash"),
-        _spec("btd6_paragon_calculate"),
-        _spec("btd6_lookup"),
-    ]
+    candidates = [_spec("btd6_round_cash"), _spec("btd6_paragon_calculate"), _spec("btd6_lookup")]
     decisions = {
         d.name: d
-        for d in select_tools(
-            candidates, scope=AIScope.USER, enabled_toolsets={TOOLSET_BTD6_ROUNDS}
-        )
+        for d in select_tools(candidates, scope=AIScope.USER, enabled_toolsets={TOOLSET_BTD6_ROUNDS})
     }
     assert decisions["btd6_round_cash"].included is True  # btd6_rounds member
-    assert (
-        decisions["btd6_paragon_calculate"].reason
-        == ToolExclusionReason.TOOLSET_DISABLED
-    )
+    assert decisions["btd6_paragon_calculate"].reason == ToolExclusionReason.TOOLSET_DISABLED
     assert decisions["btd6_lookup"].reason == ToolExclusionReason.TOOLSET_DISABLED
 
 
@@ -190,16 +181,12 @@ def test_explicit_disable_wins_over_enabled_toolset():
         )
     }
     assert decisions["btd6_round_cash"].included is False
-    assert (
-        decisions["btd6_round_cash"].reason == ToolExclusionReason.EXPLICITLY_DISABLED
-    )
+    assert decisions["btd6_round_cash"].reason == ToolExclusionReason.EXPLICITLY_DISABLED
 
 
 def test_build_registry_default_behaviour_unchanged():
     # Compatibility: no policy → exactly the historical USER toolset.
-    names = {
-        s.name for s in build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).specs
-    }
+    names = {s.name for s in build_registry(scope=AIScope.USER, guild_id=1, actor_id=2).specs}
     assert "btd6_round_cash" in names
     assert "get_guild_ai_config" not in names  # admin-only, correctly absent at USER
 

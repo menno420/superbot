@@ -40,30 +40,24 @@ def _fact_row(
         "entity_kind": entity_kind,
         "entity_key": entity_key,
         # fact_type must match what get_active_events looks for per kind.
-        "fact_type": (
-            f"btd6.{entity_kind.removeprefix('btd6_')}s_index"
-            if entity_kind not in ("btd6_ct", "btd6_odyssey", "btd6_event")
-            else {
-                "btd6_ct": "btd6.ct_index",
-                "btd6_odyssey": "btd6.odyssey_index",
-                "btd6_event": "btd6.events_index",
-            }[entity_kind]
-        ),
+        "fact_type": f"btd6.{entity_kind.removeprefix('btd6_')}s_index"
+        if entity_kind not in ("btd6_ct", "btd6_odyssey", "btd6_event")
+        else {
+            "btd6_ct": "btd6.ct_index",
+            "btd6_odyssey": "btd6.odyssey_index",
+            "btd6_event": "btd6.events_index",
+        }[entity_kind],
         "body_json": body,
         "fetched_at": datetime.now(tz=timezone.utc),
     }
 
 
-def _patch_db(
-    monkeypatch, *, latest_rows: dict, search_rows_by_kind: dict | None = None
-):
+def _patch_db(monkeypatch, *, latest_rows: dict, search_rows_by_kind: dict | None = None):
     """Mock both DB paths the hub VM now uses."""
     from utils.db import btd6_sources as btd6_db
 
     monkeypatch.setattr(
-        btd6_db,
-        "latest_fact_per_entity_kind",
-        AsyncMock(return_value=latest_rows),
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value=latest_rows),
     )
     sources = search_rows_by_kind or {}
 

@@ -98,16 +98,12 @@ def test_preview_operations_reports_applied_for_both_kinds():
     """
     ops = [
         SetupOperation(
-            kind="set_cleanup_policy",
-            subsystem="cleanup",
-            target_kind="guild",
-            value="Standard",
+            kind="set_cleanup_policy", subsystem="cleanup",
+            target_kind="guild", value="Standard",
         ),
         SetupOperation(
-            kind="set_cog_routing",
-            subsystem="cog_routing",
-            target_kind="guild",
-            value="games",
+            kind="set_cog_routing", subsystem="cog_routing",
+            target_kind="guild", value="games",
         ),
     ]
     results = preview_operations(ops)
@@ -263,17 +259,12 @@ async def test_set_cleanup_policy_surfaces_writer_failure_per_op():
     other ops in the same batch keep running.
     """
     failing = SetupOperation(
-        kind="set_cleanup_policy",
-        subsystem="cleanup",
-        target_kind="guild",
-        value="Standard",
+        kind="set_cleanup_policy", subsystem="cleanup",
+        target_kind="guild", value="Standard",
     )
     succeeding = SetupOperation(
-        kind="set_cleanup_policy",
-        subsystem="cleanup",
-        target_kind="channel",
-        target_id=999,
-        value="Off",
+        kind="set_cleanup_policy", subsystem="cleanup",
+        target_kind="channel", target_id=999, value="Off",
     )
     calls = {"n": 0}
 
@@ -285,9 +276,7 @@ async def test_set_cleanup_policy_surfaces_writer_failure_per_op():
 
     with patch("governance.writes.set_cleanup_policy_for_scope", new=writer):
         batch = await apply_operations(
-            [failing, succeeding],
-            guild=_guild(),
-            actor=_actor(),
+            [failing, succeeding], guild=_guild(), actor=_actor(),
         )
     assert len(batch.failed) == 1
     assert "simulated DB down" in batch.failed[0].error
@@ -343,10 +332,8 @@ async def test_set_cog_routing_default_enabled_true_when_metadata_missing():
     enabled — never silently disable a cog.
     """
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
-        target_kind="guild",
-        value="games",
+        kind="set_cog_routing", subsystem="cog_routing",
+        target_kind="guild", value="games",
     )
     with (
         patch(
@@ -366,10 +353,8 @@ async def test_set_cog_routing_default_enabled_true_when_metadata_missing():
 async def test_set_cog_routing_handles_bool_enabled_metadata():
     """Accept ``metadata.enabled`` as a real bool too, not just "true"/"false"."""
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
-        target_kind="guild",
-        value="games",
+        kind="set_cog_routing", subsystem="cog_routing",
+        target_kind="guild", value="games",
         metadata={"enabled": False},
     )
     with (
@@ -389,22 +374,16 @@ async def test_set_cog_routing_handles_bool_enabled_metadata():
 @pytest.mark.asyncio
 async def test_set_cog_routing_passes_scope_id_for_non_guild_scopes():
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
-        target_kind="channel",
-        target_id=555,
-        target_name="general",
-        value="economy",
-        metadata={"enabled": "true"},
+        kind="set_cog_routing", subsystem="cog_routing",
+        target_kind="channel", target_id=555, target_name="general",
+        value="economy", metadata={"enabled": "true"},
     )
     with (
         patch(
             "services.command_routing.set_policy",
             AsyncMock(
                 return_value=_routing_result(
-                    scope_type="channel",
-                    scope_id=555,
-                    cog_name="economy",
+                    scope_type="channel", scope_id=555, cog_name="economy",
                 ),
             ),
         ) as set_policy,
@@ -432,11 +411,8 @@ async def test_set_cog_routing_audit_is_owned_by_the_routing_service():
     ``tests/unit/services/test_command_routing.py``.
     """
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
-        target_kind="channel",
-        target_id=999,
-        value="games",
+        kind="set_cog_routing", subsystem="cog_routing",
+        target_kind="channel", target_id=999, value="games",
         metadata={"enabled": "false"},
     )
     with (
@@ -444,9 +420,7 @@ async def test_set_cog_routing_audit_is_owned_by_the_routing_service():
             "services.command_routing.set_policy",
             AsyncMock(
                 return_value=_routing_result(
-                    scope_type="channel",
-                    scope_id=999,
-                    mutation_id="rm-svc-7",
+                    scope_type="channel", scope_id=999, mutation_id="rm-svc-7",
                 ),
             ),
         ),
@@ -463,11 +437,9 @@ async def test_set_cog_routing_audit_is_owned_by_the_routing_service():
 @pytest.mark.asyncio
 async def test_set_cog_routing_rejects_unknown_scope_type():
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
+        kind="set_cog_routing", subsystem="cog_routing",
         target_kind="thread",  # routing supports guild/category/channel only
-        target_id=1,
-        value="games",
+        target_id=1, value="games",
     )
     with patch(
         "services.command_routing.set_policy",
@@ -482,10 +454,8 @@ async def test_set_cog_routing_rejects_unknown_scope_type():
 @pytest.mark.asyncio
 async def test_set_cog_routing_rejects_empty_cog_name():
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
-        target_kind="guild",
-        value="",
+        kind="set_cog_routing", subsystem="cog_routing",
+        target_kind="guild", value="",
     )
     with patch(
         "services.command_routing.set_policy",
@@ -500,11 +470,8 @@ async def test_set_cog_routing_rejects_empty_cog_name():
 @pytest.mark.asyncio
 async def test_set_cog_routing_rejects_non_guild_scope_without_target_id():
     op = SetupOperation(
-        kind="set_cog_routing",
-        subsystem="cog_routing",
-        target_kind="category",
-        target_id=None,
-        value="games",
+        kind="set_cog_routing", subsystem="cog_routing",
+        target_kind="category", target_id=None, value="games",
     )
     with patch(
         "services.command_routing.set_policy",
@@ -529,16 +496,12 @@ async def test_neither_kind_returns_not_yet_implemented_after_wiring():
     """
     ops = [
         SetupOperation(
-            kind="set_cleanup_policy",
-            subsystem="cleanup",
-            target_kind="guild",
-            value="Off",
+            kind="set_cleanup_policy", subsystem="cleanup",
+            target_kind="guild", value="Off",
         ),
         SetupOperation(
-            kind="set_cog_routing",
-            subsystem="cog_routing",
-            target_kind="guild",
-            value="games",
+            kind="set_cog_routing", subsystem="cog_routing",
+            target_kind="guild", value="games",
             metadata={"enabled": "true"},
         ),
     ]
@@ -596,17 +559,13 @@ async def test_final_review_apply_ops_in_order_applies_both_kinds():
 
     ops = [
         SetupOperation(
-            kind="set_cog_routing",
-            subsystem="cog_routing",
-            target_kind="guild",
-            value="games",
+            kind="set_cog_routing", subsystem="cog_routing",
+            target_kind="guild", value="games",
             metadata={"enabled": "true"},
         ),
         SetupOperation(
-            kind="set_cleanup_policy",
-            subsystem="cleanup",
-            target_kind="guild",
-            value="Standard",
+            kind="set_cleanup_policy", subsystem="cleanup",
+            target_kind="guild", value="Standard",
         ),
     ]
     with (
@@ -624,9 +583,7 @@ async def test_final_review_apply_ops_in_order_applies_both_kinds():
         ),
     ):
         summary = await _apply_ops_in_order(
-            ops,
-            guild=_guild(),
-            actor=_actor(),
+            ops, guild=_guild(), actor=_actor(),
         )
 
     cleanup_writer.assert_awaited_once()

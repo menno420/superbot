@@ -304,7 +304,9 @@ async def test_recommendation_dropped_when_binding_kind_mismatches():
         snap = _snapshot(channels=[_channel(id=100, name="mod-log")])
         draft = await advisor.suggest(snap)
     assert draft.recommendations == ()
-    assert any("kind" in r and "advisor proposed channel" in r for r in draft.dropped)
+    assert any(
+        "kind" in r and "advisor proposed channel" in r for r in draft.dropped
+    )
 
 
 @pytest.mark.asyncio

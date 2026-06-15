@@ -66,10 +66,7 @@ def test_access_explainer_handles_empty_sets():
             denied_subsystems=set(),
             dependency_blocks={},
             cleanup_policy=CleanupPolicy(
-                False,
-                0,
-                False,
-                PolicySource.REGISTRY_DEFAULT,
+                False, 0, False, PolicySource.REGISTRY_DEFAULT,
             ),
             member_tier="member",
             scope_provenance={},
@@ -142,25 +139,13 @@ class _FakeCounter:
 
 
 _FAKE_SAMPLES = [
-    _Sample(
-        "task_outcome_total_total", {"name": "counting:save:1", "outcome": "error"}, 2
-    ),
-    _Sample(
-        "task_outcome_total_total", {"name": "counting:save:1", "outcome": "ok"}, 5
-    ),
-    _Sample(
-        "task_outcome_total_total", {"name": "counting:save:2", "outcome": "error"}, 1
-    ),
+    _Sample("task_outcome_total_total", {"name": "counting:save:1", "outcome": "error"}, 2),
+    _Sample("task_outcome_total_total", {"name": "counting:save:1", "outcome": "ok"}, 5),
+    _Sample("task_outcome_total_total", {"name": "counting:save:2", "outcome": "error"}, 1),
     # _created samples carry a float timestamp and MUST be ignored:
-    _Sample(
-        "task_outcome_total_created",
-        {"name": "counting:save:1", "outcome": "error"},
-        1.7e9,
-    ),
+    _Sample("task_outcome_total_created", {"name": "counting:save:1", "outcome": "error"}, 1.7e9),
     # a non-counting task MUST be ignored:
-    _Sample(
-        "task_outcome_total_total", {"name": "session_gc:loop", "outcome": "error"}, 9
-    ),
+    _Sample("task_outcome_total_total", {"name": "session_gc:loop", "outcome": "error"}, 9),
 ]
 
 

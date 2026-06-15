@@ -123,7 +123,9 @@ def test_help_resolution_is_case_insensitive():
     for variant in ("RPS", "Rps", "Rock Paper Scissors", "ROCK PAPER SCISSORS"):
         route = resolve_route(variant, bot=bot)
         assert route.kind == "subsystem", f"variant {variant!r}: {route!r}"
-        assert route.target == "rps_tournament", f"variant {variant!r}: {route!r}"
+        assert route.target == "rps_tournament", (
+            f"variant {variant!r}: {route!r}"
+        )
 
 
 def test_all_three_rps_aliases_resolve_to_same_target():
@@ -172,7 +174,8 @@ def test_cog_name_attribute_uses_rock_paper_scissors_display():
     # discord.py uses internally.
     name_attr = getattr(RockPaperScissorsCog, "__cog_name__", None)
     assert name_attr == "Rock Paper Scissors", (
-        f"Cog name attribute is {name_attr!r}; expected 'Rock Paper " "Scissors'."
+        f"Cog name attribute is {name_attr!r}; expected 'Rock Paper "
+        "Scissors'."
     )
 
 

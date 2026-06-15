@@ -92,7 +92,8 @@ async def test_recover_rps_tournament_refunds_each_row():
     ):
         await cog._recover_rps_tournament()
     refunds = {
-        (c.kwargs["user_id"], c.kwargs["amount"]) for c in mock_refund.await_args_list
+        (c.kwargs["user_id"], c.kwargs["amount"])
+        for c in mock_refund.await_args_list
     }
     assert refunds == {(222, 50), (333, 100)}
     for c in mock_refund.await_args_list:

@@ -50,16 +50,8 @@ def _set_inputs(modal: CategoryPolicyModal, *, mode: str, level: str, cooldown: 
 async def test_submit_writes_through_set_category_policy(monkeypatch):
     captured: dict = {}
 
-    async def _capture(
-        guild_id,
-        category_id,
-        *,
-        mode,
-        min_level,
-        cooldown_seconds,
-        instruction_profile_id,
-        actor,
-    ):
+    async def _capture(guild_id, category_id, *, mode, min_level,
+                       cooldown_seconds, instruction_profile_id, actor):
         captured.update(
             guild_id=guild_id,
             category_id=category_id,
@@ -101,16 +93,8 @@ async def test_submit_writes_through_set_category_policy(monkeypatch):
 async def test_submit_passes_none_for_blank_optional_fields(monkeypatch):
     captured: dict = {}
 
-    async def _capture(
-        guild_id,
-        category_id,
-        *,
-        mode,
-        min_level,
-        cooldown_seconds,
-        instruction_profile_id,
-        actor,
-    ):
+    async def _capture(guild_id, category_id, *, mode, min_level,
+                       cooldown_seconds, instruction_profile_id, actor):
         captured.update(min_level=min_level, cooldown_seconds=cooldown_seconds)
         result = MagicMock()
         result.generation = 1

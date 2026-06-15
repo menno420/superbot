@@ -83,10 +83,7 @@ def test_walk_types_counts_nested(mod):
     counter: mod.Counter = mod.Counter()
     node = {
         "$type": _t("Towers.TowerModel"),
-        "kids": [
-            {"$type": _t("Behaviors.AttackModel")},
-            {"$type": _t("X.AttackModel")},
-        ],
+        "kids": [{"$type": _t("Behaviors.AttackModel")}, {"$type": _t("X.AttackModel")}],
     }
     mod._walk_types(node, counter)
     assert counter["TowerModel"] == 1

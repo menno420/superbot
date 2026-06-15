@@ -35,13 +35,22 @@ def _stub_ai_db(monkeypatch):
         return state["policy"]
 
     async def _list_channel_policies(guild_id: int):
-        return [dict(row, channel_id=cid) for cid, row in state["channel"].items()]
+        return [
+            dict(row, channel_id=cid)
+            for cid, row in state["channel"].items()
+        ]
 
     async def _list_category_policies(guild_id: int):
-        return [dict(row, category_id=cid) for cid, row in state["category"].items()]
+        return [
+            dict(row, category_id=cid)
+            for cid, row in state["category"].items()
+        ]
 
     async def _list_role_policies(guild_id: int):
-        return [dict(row, role_id=rid) for rid, row in state["role"].items()]
+        return [
+            dict(row, role_id=rid)
+            for rid, row in state["role"].items()
+        ]
 
     monkeypatch.setattr(ai_db, "get_guild_policy", _get_guild_policy)
     monkeypatch.setattr(ai_db, "list_channel_policies", _list_channel_policies)
@@ -122,15 +131,12 @@ async def test_channel_disabled_overrides_role_allow(_stub_ai_db):
     """Channel mode='disabled' wins even when an allowed role lowers the level."""
     _stub_ai_db["policy"] = _enabled_policy()
     _stub_ai_db["channel"] = {
-        10: {
-            "mode": "disabled",
-            "min_level": None,
-            "cooldown_seconds": None,
-            "instruction_profile_id": None,
-        },
+        10: {"mode": "disabled", "min_level": None,
+             "cooldown_seconds": None, "instruction_profile_id": None},
     }
     _stub_ai_db["role"] = {
-        77: {"decision": "allow", "min_level_override": 0, "bypass_cooldown": False},
+        77: {"decision": "allow", "min_level_override": 0,
+             "bypass_cooldown": False},
     }
     decision = await policy.resolve(_msg(user_role_ids=(77,)))
     assert decision.reason_code is PolicyDenialReason.CHANNEL_DISABLED
@@ -139,12 +145,8 @@ async def test_channel_disabled_overrides_role_allow(_stub_ai_db):
 async def test_category_disabled_overrides_role_allow(_stub_ai_db):
     _stub_ai_db["policy"] = _enabled_policy()
     _stub_ai_db["category"] = {
-        100: {
-            "mode": "disabled",
-            "min_level": None,
-            "cooldown_seconds": None,
-            "instruction_profile_id": None,
-        },
+        100: {"mode": "disabled", "min_level": None,
+              "cooldown_seconds": None, "instruction_profile_id": None},
     }
     decision = await policy.resolve(_msg())
     assert decision.reason_code is PolicyDenialReason.CATEGORY_DISABLED
@@ -155,7 +157,7 @@ async def test_role_deny_beats_allow(_stub_ai_db):
     _stub_ai_db["policy"] = _enabled_policy()
     _stub_ai_db["role"] = {
         77: {"decision": "allow", "min_level_override": 0, "bypass_cooldown": False},
-        88: {"decision": "deny", "min_level_override": None, "bypass_cooldown": False},
+        88: {"decision": "deny",  "min_level_override": None, "bypass_cooldown": False},
     }
     decision = await policy.resolve(_msg(user_role_ids=(77, 88)))
     assert decision.reason_code is PolicyDenialReason.ROLE_DENIED
@@ -178,12 +180,8 @@ async def test_allowed_role_min_level_lowering_takes_most_permissive(_stub_ai_db
 async def test_mention_only_channel_requires_mention(_stub_ai_db):
     _stub_ai_db["policy"] = _enabled_policy()
     _stub_ai_db["channel"] = {
-        10: {
-            "mode": "mention_only",
-            "min_level": None,
-            "cooldown_seconds": None,
-            "instruction_profile_id": None,
-        },
+        10: {"mode": "mention_only", "min_level": None,
+             "cooldown_seconds": None, "instruction_profile_id": None},
     }
     decision_no_mention = await policy.resolve(_msg(is_mention=False))
     decision_mention = await policy.resolve(_msg(is_mention=True))
@@ -413,8 +411,7 @@ async def test_effective_fields_empty_on_early_returns(_stub_ai_db):
 async def test_channel_inherit_carries_param_overrides(_stub_ai_db):
     """Value inheritance: a row with mode=inherit can still set min_level/cooldown."""
     _stub_ai_db["policy"] = _enabled_policy(
-        minimum_level_default=10,
-        cooldown_seconds=60,
+        minimum_level_default=10, cooldown_seconds=60,
     )
     _stub_ai_db["channel"] = {
         10: _chan("inherit", min_level=2, cooldown_seconds=5),

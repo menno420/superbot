@@ -55,9 +55,7 @@ async def test_flag_off_returns_empty_with_error_reason(monkeypatch):
         "is_enabled",
         AsyncMock(return_value=False),
     )
-    result = await youtube_context_service.build(
-        _req("https://youtube.com/watch?v=dQw4w9WgXcQ")
-    )
+    result = await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
     assert result.facts == ()
     assert result.error_reason == "video_feature_disabled"
 
@@ -68,13 +66,9 @@ async def test_flag_off_returns_empty_with_error_reason(monkeypatch):
 
 
 async def test_missing_api_key_returns_error_reason(monkeypatch):
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
     monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", None)
-    result = await youtube_context_service.build(
-        _req("https://youtube.com/watch?v=dQw4w9WgXcQ")
-    )
+    result = await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
     assert result.facts == ()
     assert result.error_reason == "youtube_api_key_missing"
 
@@ -94,20 +88,14 @@ async def test_cache_hit_returns_facts(monkeypatch):
         fetched_at=datetime.now(timezone.utc),
         expires_at=datetime.now(timezone.utc),
     )
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
-    monkeypatch.setattr(
-        youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key"
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
     monkeypatch.setattr(
         "services.video_reference_cache_service.get_cached",
         AsyncMock(return_value=cached_entry),
     )
 
-    result = await youtube_context_service.build(
-        _req("https://youtube.com/watch?v=dQw4w9WgXcQ")
-    )
+    result = await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
 
     assert len(result.facts) > 0
     assert any("Test Video" in f for f in result.facts)
@@ -120,12 +108,8 @@ async def test_cache_hit_returns_facts(monkeypatch):
 
 
 async def test_cache_miss_fetch_ok(monkeypatch):
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
-    monkeypatch.setattr(
-        youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key"
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
     monkeypatch.setattr(
         "services.video_reference_cache_service.get_cached",
         AsyncMock(return_value=None),
@@ -143,9 +127,7 @@ async def test_cache_miss_fetch_ok(monkeypatch):
         AsyncMock(),
     )
 
-    result = await youtube_context_service.build(
-        _req("https://youtube.com/watch?v=dQw4w9WgXcQ")
-    )
+    result = await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
 
     assert len(result.facts) > 0
     assert result.error_reason is None
@@ -160,12 +142,8 @@ async def test_cache_miss_fetch_ok(monkeypatch):
 async def test_private_video_returns_error(monkeypatch):
     from services.youtube_fetch_service import YouTubeFetchError
 
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
-    monkeypatch.setattr(
-        youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key"
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
     monkeypatch.setattr(
         "services.video_reference_cache_service.get_cached",
         AsyncMock(return_value=None),
@@ -177,9 +155,7 @@ async def test_private_video_returns_error(monkeypatch):
     put_mock = AsyncMock()
     monkeypatch.setattr("services.video_reference_cache_service.put_cached", put_mock)
 
-    result = await youtube_context_service.build(
-        _req("https://youtube.com/watch?v=dQw4w9WgXcQ")
-    )
+    result = await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
 
     assert result.facts == ()
     assert result.error_reason == "video_private_or_deleted"
@@ -193,12 +169,8 @@ async def test_private_video_returns_error(monkeypatch):
 
 
 async def test_no_transcript_gives_metadata_only_facts(monkeypatch):
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
-    monkeypatch.setattr(
-        youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key"
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
     monkeypatch.setattr(
         "services.video_reference_cache_service.get_cached",
         AsyncMock(return_value=None),
@@ -211,13 +183,9 @@ async def test_no_transcript_gives_metadata_only_facts(monkeypatch):
         "services.youtube_fetch_service.fetch_transcript",
         AsyncMock(return_value=[]),
     )
-    monkeypatch.setattr(
-        "services.video_reference_cache_service.put_cached", AsyncMock()
-    )
+    monkeypatch.setattr("services.video_reference_cache_service.put_cached", AsyncMock())
 
-    result = await youtube_context_service.build(
-        _req("https://youtube.com/watch?v=dQw4w9WgXcQ")
-    )
+    result = await youtube_context_service.build(_req("https://youtube.com/watch?v=dQw4w9WgXcQ"))
 
     assert len(result.facts) > 0
     assert result.error_reason is None
@@ -239,18 +207,12 @@ async def test_same_url_twice_uses_cache(monkeypatch):
         fetched_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
         expires_at=datetime(2099, 1, 1, tzinfo=timezone.utc),
     )
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
-    monkeypatch.setattr(
-        youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key"
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
     get_mock = AsyncMock(return_value=cached_entry)
     monkeypatch.setattr("services.video_reference_cache_service.get_cached", get_mock)
     fetch_mock = AsyncMock()
-    monkeypatch.setattr(
-        "services.youtube_fetch_service.fetch_video_metadata", fetch_mock
-    )
+    monkeypatch.setattr("services.youtube_fetch_service.fetch_video_metadata", fetch_mock)
 
     text = "https://youtube.com/watch?v=dQw4w9WgXcQ"
     await youtube_context_service.build(_req(text))
@@ -325,21 +287,14 @@ def test_project_metadata_empty_is_empty():
 def test_description_excerpt_is_capped():
     raw = {"snippet": {"description": "x" * 5000}}
     projected = youtube_context_service._project_metadata(raw)
-    assert (
-        len(projected["description_excerpt"])
-        <= youtube_context_service._MAX_DESCRIPTION_CHARS
-    )
+    assert len(projected["description_excerpt"]) <= youtube_context_service._MAX_DESCRIPTION_CHARS
 
 
 async def test_cache_miss_stores_only_bounded_projection(monkeypatch):
     """The fresh-fetch path must persist the bounded projection, not the raw
     provider payload (the headline Q-0099 privacy guarantee)."""
-    monkeypatch.setattr(
-        youtube_context_service, "is_enabled", AsyncMock(return_value=True)
-    )
-    monkeypatch.setattr(
-        youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key"
-    )
+    monkeypatch.setattr(youtube_context_service, "is_enabled", AsyncMock(return_value=True))
+    monkeypatch.setattr(youtube_context_service.youtube_fetch_service, "_API_KEY", "fake-key")
     monkeypatch.setattr(
         "services.video_reference_cache_service.get_cached",
         AsyncMock(return_value=None),
@@ -376,24 +331,14 @@ def test_safe_thumbnail_url_accepts_youtube_hosts():
         == "https://i.ytimg.com/vi/abc/hqdefault.jpg"
     )
     assert (
-        youtube_context_service._safe_thumbnail_url(
-            "https://img.youtube.com/vi/abc/0.jpg"
-        )
+        youtube_context_service._safe_thumbnail_url("https://img.youtube.com/vi/abc/0.jpg")
         == "https://img.youtube.com/vi/abc/0.jpg"
     )
 
 
 def test_safe_thumbnail_url_rejects_foreign_and_insecure():
-    assert (
-        youtube_context_service._safe_thumbnail_url("https://example.com/thumb.jpg")
-        is None
-    )
-    assert (
-        youtube_context_service._safe_thumbnail_url("http://i.ytimg.com/x.jpg") is None
-    )
-    assert (
-        youtube_context_service._safe_thumbnail_url("https://evil-ytimg.com/x.jpg")
-        is None
-    )
+    assert youtube_context_service._safe_thumbnail_url("https://example.com/thumb.jpg") is None
+    assert youtube_context_service._safe_thumbnail_url("http://i.ytimg.com/x.jpg") is None
+    assert youtube_context_service._safe_thumbnail_url("https://evil-ytimg.com/x.jpg") is None
     assert youtube_context_service._safe_thumbnail_url(None) is None
     assert youtube_context_service._safe_thumbnail_url("not a url") is None

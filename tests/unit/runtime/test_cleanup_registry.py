@@ -269,15 +269,11 @@ def test_session_gc_does_not_import_economy_or_game_state_at_module_level():
             mod = node.module or ""
             names = {a.name for a in node.names}
             if mod == "services" and (forbidden & names):
-                offenders.append(
-                    f"from services import {', '.join(sorted(forbidden & names))}"
-                )
+                offenders.append(f"from services import {', '.join(sorted(forbidden & names))}")
             if any(mod.startswith(f"services.{f}") for f in forbidden):
                 offenders.append(f"from {mod} import ...")
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 if any(alias.name.startswith(f"services.{f}") for f in forbidden):
                     offenders.append(f"import {alias.name}")
-    assert (
-        not offenders
-    ), f"session_gc must not import {forbidden} at module level: {offenders}"
+    assert not offenders, f"session_gc must not import {forbidden} at module level: {offenders}"

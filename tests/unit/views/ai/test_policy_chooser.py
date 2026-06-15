@@ -106,7 +106,9 @@ def test_chooser_view_has_one_button_per_scope():
     """
     view = PolicyChooserView()
     labels = sorted(
-        item.label for item in view.children if hasattr(item, "label") and item.label
+        item.label
+        for item in view.children
+        if hasattr(item, "label") and item.label
     )
     assert labels == [
         "Category",

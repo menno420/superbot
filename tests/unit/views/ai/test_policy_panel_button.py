@@ -28,7 +28,9 @@ def _admin_panel_interaction() -> MagicMock:
 def test_panel_advertises_policy_button():
     view = panel.AIPanelView()
     custom_ids = [
-        item.custom_id for item in view.children if isinstance(item, discord.ui.Button)
+        item.custom_id
+        for item in view.children
+        if isinstance(item, discord.ui.Button)
     ]
     assert "ai:policy" in custom_ids
 

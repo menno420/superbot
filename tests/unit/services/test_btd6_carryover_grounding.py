@@ -138,7 +138,7 @@ async def test_carryover_summary_is_dataset_honest():
 
 @pytest.mark.asyncio
 async def test_ranking_questions_ground_the_rosters():
-    """ "best paragon" / "strongest tower" grounded ZERO facts — the model
+    """"best paragon" / "strongest tower" grounded ZERO facts — the model
     ranked from memory. The verified rosters pin the candidate names."""
     para = await btd6_context_service.build("best paragon")
     assert any(f.startswith("[btd6_paragon_roster]") for f in para.facts)
@@ -154,7 +154,7 @@ async def test_distinctive_bare_shorthand_grounds_without_keyword():
 
 @pytest.mark.asyncio
 async def test_generic_alias_words_stay_behind_the_keyword_gate():
-    """ "boat" alone must not trigger the paragon shorthand pass (the word
+    """"boat" alone must not trigger the paragon shorthand pass (the word
     "paragon" is its gate; resolver tower aliasing is a separate, pre-existing
     path)."""
     out = btd6_context_service._paragon_name_facts("row your boat", set())

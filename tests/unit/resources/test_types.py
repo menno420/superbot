@@ -31,7 +31,8 @@ def test_resource_kind_alignment_with_p1c():
     # for kinds the schema doesn't yet declare, e.g. discovered
     # orphans.)
     assert snap_values <= decl_values, (
-        f"snapshot kinds {snap_values - decl_values} missing from " f"declaration enum"
+        f"snapshot kinds {snap_values - decl_values} missing from "
+        f"declaration enum"
     )
 
 

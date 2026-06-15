@@ -73,18 +73,10 @@ async def test_empty_queries_short_circuits_without_db():
 
 async def test_returns_rows_preserving_db_order(monkeypatch):
     rows = [
-        _make_row(
-            fact_type="btd6.map_metadata",
-            entity_kind="btd6_map",
-            entity_key="EndOfTheRoad",
-            trust_tier=1,
-        ),
-        _make_row(
-            fact_type="btd6.map_metadata",
-            entity_kind="btd6_map",
-            entity_key="Logs",
-            trust_tier=1,
-        ),
+        _make_row(fact_type="btd6.map_metadata", entity_kind="btd6_map",
+                  entity_key="EndOfTheRoad", trust_tier=1),
+        _make_row(fact_type="btd6.map_metadata", entity_kind="btd6_map",
+                  entity_key="Logs", trust_tier=1),
     ]
 
     async def _stub(_queries, *, overall_limit):
@@ -135,7 +127,8 @@ async def test_per_fact_type_cap_prevents_one_endpoint_from_dominating(monkeypat
 
 async def test_overall_limit_caps_total_rows(monkeypatch):
     rows = [
-        _make_row(fact_type=f"btd6.kind_{i}", entity_kind="btd6_x", entity_key=f"e{i}")
+        _make_row(fact_type=f"btd6.kind_{i}", entity_kind="btd6_x",
+                  entity_key=f"e{i}")
         for i in range(30)
     ]
 
@@ -169,7 +162,8 @@ async def test_returned_rows_carry_source_registry_metadata(monkeypatch):
 
     monkeypatch.setattr(btd6_db, "fetch_facts_for_intent", _stub)
     result = await btd6_fact_store.fetch_for_intent(
-        [btd6_fact_store.BTD6FactQuery(None, "btd6_race", "Reversed_Loop_mpbd7tcu")],
+        [btd6_fact_store.BTD6FactQuery(None, "btd6_race",
+                                        "Reversed_Loop_mpbd7tcu")],
     )
     row = result[0]
     assert row["source_name"] == "data.ninjakiwi.com"

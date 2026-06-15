@@ -59,8 +59,6 @@ def test_resolve_relic_by_alias_abbrev_canonical():
 def test_every_fixture_relic_is_in_catalog():
     """No tile relic should be orphaned from the catalog."""
     missing = {
-        name
-        for name in _fixture_relic_api_names()
-        if d.get_ct_relic_by_api_name(name) is None
+        name for name in _fixture_relic_api_names() if d.get_ct_relic_by_api_name(name) is None
     }
     assert not missing, f"relics on tiles but absent from catalog: {sorted(missing)}"

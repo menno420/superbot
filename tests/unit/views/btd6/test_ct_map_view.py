@@ -19,11 +19,7 @@ _NOW = datetime.now(tz=timezone.utc)
 
 
 def _placement(
-    tile_id,
-    tile_type,
-    relic_name=None,
-    relic_id=None,
-    relic_canonical=None,
+    tile_id, tile_type, relic_name=None, relic_id=None, relic_canonical=None,
 ):
     from services import btd6_live_query_service as live
 
@@ -42,11 +38,7 @@ def _placement(
 
 def test_tile_classification_and_label():
     relic = _placement(
-        "DEC",
-        "Relic",
-        "SuperMonkeyStorm",
-        "super_monkey_storm",
-        "Super Monkey Storm",
+        "DEC", "Relic", "SuperMonkeyStorm", "super_monkey_storm", "Super Monkey Storm",
     )
     tile = ct_map_view._placement_to_tile(relic)
     assert tile is not None
@@ -81,12 +73,7 @@ async def test_build_ct_map_file_renders_when_data_present(monkeypatch):
     async def _active(kinds=None):
         return (
             live.ActiveEventHeadline(
-                "btd6_ct",
-                "mpejg5d0",
-                "mpejg5d0",
-                None,
-                None,
-                _NOW,
+                "btd6_ct", "mpejg5d0", "mpejg5d0", None, None, _NOW,
             ),
         )
 

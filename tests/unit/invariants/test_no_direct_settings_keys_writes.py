@@ -80,7 +80,7 @@ _ALLOWED_PATHS = {
     # pipeline and remove the entry.
     # ``cogs/economy_cog.py`` migrated to SettingsMutationPipeline in PR #6
     # — removed from the allowlist (the AST scan now enforces it).
-    _DISBOT / "governance" / "writes.py",  # internal governance writes
+    _DISBOT / "governance" / "writes.py",         # internal governance writes
     # ``views/xp/modals.py`` migrated to SettingsMutationPipeline in PR #5
     # — removed from the allowlist (the AST scan now enforces it).
     # Documentation reference (string literal in a module docstring,
@@ -172,11 +172,12 @@ def test_allowlist_entries_exist():
 
     A renamed file would silently relax the invariant.
     """
-    missing = [str(p.relative_to(_REPO_ROOT)) for p in _ALLOWED_PATHS if not p.exists()]
-    assert (
-        not missing
-    ), "S4 allowlist references files that no longer exist:\n" + "\n".join(
-        f"  {p}" for p in missing
+    missing = [
+        str(p.relative_to(_REPO_ROOT)) for p in _ALLOWED_PATHS if not p.exists()
+    ]
+    assert not missing, (
+        "S4 allowlist references files that no longer exist:\n"
+        + "\n".join(f"  {p}" for p in missing)
     )
 
 

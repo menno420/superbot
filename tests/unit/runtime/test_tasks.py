@@ -153,7 +153,6 @@ class TestCancelAll:
         cancelled so the caller can ``asyncio.wait`` on the snapshot
         rather than re-snapshotting via ``active()`` (which would race
         against done-callbacks)."""
-
         async def waiter():
             await asyncio.sleep(60)
 
@@ -182,7 +181,6 @@ class TestCancelAll:
     async def test_idempotent_second_call_returns_empty(self):
         """A second cancel_all after the loop has yielded should
         return empty — every previously cancelled task is now done."""
-
         async def waiter():
             await asyncio.sleep(60)
 

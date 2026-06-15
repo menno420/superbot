@@ -169,8 +169,12 @@ def test_can_apply_setup_by_id_accepts_owner():
 
 
 def test_can_apply_setup_by_id_accepts_delegated():
-    assert setup_access.can_apply_setup_by_id(42, 99, delegated_admins=(42,)) is True
+    assert (
+        setup_access.can_apply_setup_by_id(42, 99, delegated_admins=(42,)) is True
+    )
 
 
 def test_can_apply_setup_by_id_denies_random():
-    assert setup_access.can_apply_setup_by_id(42, 99, delegated_admins=()) is False
+    assert (
+        setup_access.can_apply_setup_by_id(42, 99, delegated_admins=()) is False
+    )

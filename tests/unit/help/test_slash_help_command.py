@@ -90,13 +90,10 @@ async def test_slash_help_no_args_opens_help_home_ephemerally():
     fake_embed = discord.Embed(title="Help Menu")
     fake_view = MagicMock(spec=discord.ui.View)
 
-    with (
-        _patch_governance(),
-        patch.object(
-            help_cog,
-            "resolve_help_panel_state",
-            new=AsyncMock(return_value=(fake_embed, fake_view)),
-        ),
+    with _patch_governance(), patch.object(
+        help_cog,
+        "resolve_help_panel_state",
+        new=AsyncMock(return_value=(fake_embed, fake_view)),
     ):
         await cog.help_slash.callback(cog, interaction)
 
@@ -124,23 +121,18 @@ async def test_slash_help_named_route_resolves_via_shared_resolver():
     fake_embed = discord.Embed(title="Games Hub")
     fake_view = discord.ui.View()
 
-    with (
-        _patch_governance(),
-        patch.object(
-            help_cog,
-            "_resolve_route",
-            return_value=fake_route,
-        ) as resolve_mock,
-        patch.object(
-            help_cog,
-            "_open_route",
-            new=AsyncMock(return_value=(fake_embed, fake_view)),
-        ) as open_mock,
-        patch.object(
-            help_cog,
-            "_attach_back_to_help_button",
-        ) as back_mock,
-    ):
+    with _patch_governance(), patch.object(
+        help_cog,
+        "_resolve_route",
+        return_value=fake_route,
+    ) as resolve_mock, patch.object(
+        help_cog,
+        "_open_route",
+        new=AsyncMock(return_value=(fake_embed, fake_view)),
+    ) as open_mock, patch.object(
+        help_cog,
+        "_attach_back_to_help_button",
+    ) as back_mock:
         await cog.help_slash.callback(cog, interaction, name="games")
 
     # Resolver receives the user-supplied name + the bot client.
@@ -169,19 +161,15 @@ async def test_slash_help_unknown_name_returns_ephemeral_not_found():
     interaction = _mock_interaction()
     unknown_route = help_cog.HelpRoute(key="bogus", kind="unknown", target=None)
 
-    with (
-        _patch_governance(),
-        patch.object(
-            help_cog,
-            "_resolve_route",
-            return_value=unknown_route,
-        ),
-        patch.object(
-            help_cog,
-            "_open_route",
-            new=AsyncMock(),
-        ) as open_mock,
-    ):
+    with _patch_governance(), patch.object(
+        help_cog,
+        "_resolve_route",
+        return_value=unknown_route,
+    ), patch.object(
+        help_cog,
+        "_open_route",
+        new=AsyncMock(),
+    ) as open_mock:
         await cog.help_slash.callback(cog, interaction, name="bogus")
 
     open_mock.assert_not_called()
@@ -210,23 +198,18 @@ async def test_slash_help_embed_only_route_skips_back_attachment():
     cmd_route = help_cog.HelpRoute(key="bal", kind="command", target="bal")
     fake_embed = discord.Embed(title="!bal")
 
-    with (
-        _patch_governance(),
-        patch.object(
-            help_cog,
-            "_resolve_route",
-            return_value=cmd_route,
-        ),
-        patch.object(
-            help_cog,
-            "_open_route",
-            new=AsyncMock(return_value=(fake_embed, None)),
-        ),
-        patch.object(
-            help_cog,
-            "_attach_back_to_help_button",
-        ) as back_mock,
-    ):
+    with _patch_governance(), patch.object(
+        help_cog,
+        "_resolve_route",
+        return_value=cmd_route,
+    ), patch.object(
+        help_cog,
+        "_open_route",
+        new=AsyncMock(return_value=(fake_embed, None)),
+    ), patch.object(
+        help_cog,
+        "_attach_back_to_help_button",
+    ) as back_mock:
         await cog.help_slash.callback(cog, interaction, name="bal")
 
     back_mock.assert_not_called()
@@ -253,22 +236,17 @@ async def test_slash_and_prefix_call_resolve_route_with_same_args():
     # Slash side.
     slash_interaction = _mock_interaction()
     fake_route = help_cog.HelpRoute(key="games", kind="hub", target="games")
-    with (
-        _patch_governance(),
-        patch.object(
-            help_cog,
-            "_resolve_route",
-            return_value=fake_route,
-        ) as slash_resolve,
-        patch.object(
-            help_cog,
-            "_open_route",
-            new=AsyncMock(return_value=(discord.Embed(), discord.ui.View())),
-        ),
-        patch.object(
-            help_cog,
-            "_attach_back_to_help_button",
-        ),
+    with _patch_governance(), patch.object(
+        help_cog,
+        "_resolve_route",
+        return_value=fake_route,
+    ) as slash_resolve, patch.object(
+        help_cog,
+        "_open_route",
+        new=AsyncMock(return_value=(discord.Embed(), discord.ui.View())),
+    ), patch.object(
+        help_cog,
+        "_attach_back_to_help_button",
     ):
         await cog.help_slash.callback(cog, slash_interaction, name="games")
 
@@ -285,22 +263,17 @@ async def test_slash_and_prefix_call_resolve_route_with_same_args():
     prefix_ctx.send = AsyncMock()
     prefix_ctx.prefix = "!"
 
-    with (
-        _patch_governance(),
-        patch.object(
-            help_cog,
-            "_resolve_route",
-            return_value=fake_route,
-        ) as prefix_resolve,
-        patch.object(
-            help_cog,
-            "_open_route",
-            new=AsyncMock(return_value=(discord.Embed(), discord.ui.View())),
-        ),
-        patch.object(
-            help_cog,
-            "_attach_back_to_help_button",
-        ),
+    with _patch_governance(), patch.object(
+        help_cog,
+        "_resolve_route",
+        return_value=fake_route,
+    ) as prefix_resolve, patch.object(
+        help_cog,
+        "_open_route",
+        new=AsyncMock(return_value=(discord.Embed(), discord.ui.View())),
+    ), patch.object(
+        help_cog,
+        "_attach_back_to_help_button",
     ):
         await cog.help_command.callback(cog, prefix_ctx, category="games")
 

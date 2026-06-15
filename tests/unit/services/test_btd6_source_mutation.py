@@ -72,22 +72,16 @@ async def test_upsert_creates_row_plus_audit(_stub_db):
 async def test_upsert_update_records_updated_action(_stub_db):
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url=None,
-        path_template="/btd6/test",
+        source_name="Test", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url=None, path_template="/btd6/test",
         actor=_admin_actor(),
     )
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test v2",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url=None,
-        path_template="/btd6/test",
+        source_name="Test v2", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url=None, path_template="/btd6/test",
         actor=_admin_actor(),
     )
     assert _stub_db["audit"][-1]["action"] == "updated"
@@ -96,25 +90,17 @@ async def test_upsert_update_records_updated_action(_stub_db):
 async def test_upsert_enable_change_records_enabled_action(_stub_db):
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url="https://x",
-        path_template="/btd6/test",
-        enabled=False,
-        actor=_admin_actor(),
+        source_name="Test", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url="https://x", path_template="/btd6/test",
+        enabled=False, actor=_admin_actor(),
     )
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url="https://x",
-        path_template="/btd6/test",
-        enabled=True,
-        actor=_admin_actor(),
+        source_name="Test", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url="https://x", path_template="/btd6/test",
+        enabled=True, actor=_admin_actor(),
     )
     assert _stub_db["audit"][-1]["action"] == "enabled"
 
@@ -122,22 +108,16 @@ async def test_upsert_enable_change_records_enabled_action(_stub_db):
 async def test_tier_change_records_tier_changed_action(_stub_db):
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url=None,
-        path_template="/btd6/test",
+        source_name="Test", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url=None, path_template="/btd6/test",
         actor=_admin_actor(),
     )
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Community",
-        source_kind="webpage",
-        trust_tier=2,
-        base_url=None,
-        path_template="/btd6/test",
+        source_name="Test", source_owner="Community",
+        source_kind="webpage", trust_tier=2,
+        base_url=None, path_template="/btd6/test",
         actor=_admin_actor(),
     )
     assert _stub_db["audit"][-1]["action"] == "tier_changed"
@@ -146,12 +126,9 @@ async def test_tier_change_records_tier_changed_action(_stub_db):
 async def test_set_enabled_requires_base_url(_stub_db):
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url=None,
-        path_template="/btd6/test",
+        source_name="Test", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url=None, path_template="/btd6/test",
         actor=_admin_actor(),
     )
     with pytest.raises(svc.InvalidSourceValueError):
@@ -161,14 +138,10 @@ async def test_set_enabled_requires_base_url(_stub_db):
 async def test_set_enabled_writes_audit_on_disable(_stub_db):
     await svc.upsert_source(
         source_key="nk_btd6_test",
-        source_name="Test",
-        source_owner="Ninja Kiwi",
-        source_kind="official_api",
-        trust_tier=1,
-        base_url="https://x",
-        path_template="/btd6/test",
-        enabled=True,
-        actor=_admin_actor(),
+        source_name="Test", source_owner="Ninja Kiwi",
+        source_kind="official_api", trust_tier=1,
+        base_url="https://x", path_template="/btd6/test",
+        enabled=True, actor=_admin_actor(),
     )
     audit_before = len(_stub_db["audit"])
     await svc.set_enabled("nk_btd6_test", enabled=False, actor=_admin_actor())
@@ -180,12 +153,9 @@ async def test_non_admin_actor_rejected(_stub_db):
     with pytest.raises(svc.UnauthorizedSourceMutationError):
         await svc.upsert_source(
             source_key="nk_btd6_test",
-            source_name="Test",
-            source_owner="Ninja Kiwi",
-            source_kind="official_api",
-            trust_tier=1,
-            base_url=None,
-            path_template="/btd6/test",
+            source_name="Test", source_owner="Ninja Kiwi",
+            source_kind="official_api", trust_tier=1,
+            base_url=None, path_template="/btd6/test",
             actor=_non_admin_actor(),
         )
 
@@ -194,12 +164,10 @@ async def test_invalid_kind_rejected(_stub_db):
     with pytest.raises(svc.InvalidSourceValueError):
         await svc.upsert_source(
             source_key="nk_btd6_test",
-            source_name="Test",
-            source_owner="Ninja Kiwi",
+            source_name="Test", source_owner="Ninja Kiwi",
             source_kind="rss",  # not in allowed set
             trust_tier=1,
-            base_url=None,
-            path_template="/btd6/test",
+            base_url=None, path_template="/btd6/test",
             actor=_admin_actor(),
         )
 
@@ -208,11 +176,8 @@ async def test_invalid_tier_rejected(_stub_db):
     with pytest.raises(svc.InvalidSourceValueError):
         await svc.upsert_source(
             source_key="nk_btd6_test",
-            source_name="Test",
-            source_owner="Ninja Kiwi",
-            source_kind="official_api",
-            trust_tier=3,
-            base_url=None,
-            path_template="/btd6/test",
+            source_name="Test", source_owner="Ninja Kiwi",
+            source_kind="official_api", trust_tier=3,
+            base_url=None, path_template="/btd6/test",
             actor=_admin_actor(),
         )

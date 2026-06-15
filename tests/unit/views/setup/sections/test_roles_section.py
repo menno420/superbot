@@ -113,9 +113,7 @@ async def test_stage_threshold_drafts_set_role_threshold():
     interaction = _interaction()
     with (
         patch(
-            "services.setup_draft.append",
-            new_callable=AsyncMock,
-            return_value=1,
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1,
         ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
@@ -155,9 +153,7 @@ async def test_stage_threshold_uses_per_role_slot_discriminator():
     interaction = _interaction()
     with (
         patch(
-            "services.setup_draft.append",
-            new_callable=AsyncMock,
-            return_value=1,
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1,
         ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=2),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
@@ -306,9 +302,7 @@ async def test_time_modal_stages_on_valid_input():
     interaction = _interaction()
     with (
         patch(
-            "services.setup_draft.append",
-            new_callable=AsyncMock,
-            return_value=1,
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1,
         ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),
@@ -336,9 +330,7 @@ async def test_xp_modal_stages_on_valid_input():
     interaction = _interaction()
     with (
         patch(
-            "services.setup_draft.append",
-            new_callable=AsyncMock,
-            return_value=1,
+            "services.setup_draft.append", new_callable=AsyncMock, return_value=1,
         ) as append_mock,
         patch("services.setup_draft.count", new_callable=AsyncMock, return_value=1),
         patch("services.setup_session.mark_in_progress", new_callable=AsyncMock),

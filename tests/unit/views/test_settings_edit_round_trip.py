@@ -275,10 +275,7 @@ def _validator_accepts(spec: Any, value: Any) -> bool:
 @pytest.mark.parametrize(("subsystem", "name", "spec"), _PARAMS, ids=_IDS)
 @pytest.mark.asyncio
 async def test_edit_round_trip_every_writable_spec(
-    _isolated_state,
-    subsystem: str,
-    name: str,
-    spec: Any,
+    _isolated_state, subsystem: str, name: str, spec: Any,
 ):
     """Write a non-default value through the pipeline; resolve it back."""
     guild = _FakeGuild(guild_id=1)
@@ -391,7 +388,9 @@ def test_coverage_spans_allowed_values_str_specs():
         spec
         for _, schema in schema_mod.all_schemas().items()
         for spec in schema.settings
-        if spec.value_type is str and spec.allowed_values and spec.settings_key
+        if spec.value_type is str
+        and spec.allowed_values
+        and spec.settings_key
     ]
     if declared_enum_specs:
         assert enum_specs, "Enum-shaped str specs declared but absent from matrix"

@@ -111,9 +111,7 @@ async def test_projection_writes_all_seven_scalars(monkeypatch):
         )
 
     monkeypatch.setattr(
-        ai_policy_mutation,
-        "set_guild_policy",
-        _set_guild_policy_proxy,
+        ai_policy_mutation, "set_guild_policy", _set_guild_policy_proxy,
     )
 
     result = await ai_policy_mutation.project_from_legacy_settings(
@@ -175,15 +173,11 @@ async def test_projection_uses_default_when_no_prior_typed_row(monkeypatch):
         )
 
     monkeypatch.setattr(
-        ai_policy_mutation,
-        "set_guild_policy",
-        _set_guild_policy_proxy,
+        ai_policy_mutation, "set_guild_policy", _set_guild_policy_proxy,
     )
 
     result = await ai_policy_mutation.project_from_legacy_settings(
-        guild_id=42,
-        actor=_admin_actor(),
-        mutation_id="m",
+        guild_id=42, actor=_admin_actor(), mutation_id="m",
     )
 
     assert result is not None
@@ -237,13 +231,13 @@ async def test_projection_failure_logs_structured_warning(
 
     with caplog.at_level(logging.WARNING, logger="bot.services.ai_policy_mutation"):
         result = await ai_policy_mutation.project_from_legacy_settings(
-            guild_id=123,
-            actor=_admin_actor(),
-            mutation_id="mut-warn",
+            guild_id=123, actor=_admin_actor(), mutation_id="mut-warn",
         )
 
     assert result is None
-    matching = [r for r in caplog.records if "projection failed" in r.getMessage()]
+    matching = [
+        r for r in caplog.records if "projection failed" in r.getMessage()
+    ]
     assert matching, "expected a 'projection failed' WARNING log"
     rec = matching[-1]
     # Structured fields are required diagnostic context.
@@ -289,9 +283,7 @@ async def test_projection_failure_emits_bus_event(monkeypatch):
     monkeypatch.setattr(events.bus, "emit", _capture_emit)
 
     await ai_policy_mutation.project_from_legacy_settings(
-        guild_id=42,
-        actor=_admin_actor(),
-        mutation_id="m-bus",
+        guild_id=42, actor=_admin_actor(), mutation_id="m-bus",
     )
 
     failed = [

@@ -37,9 +37,7 @@ async def test_put_cached_error_row_marks_transcript_unavailable(monkeypatch):
     upsert = AsyncMock()
     monkeypatch.setattr(svc._db, "upsert_video_cache", upsert)
 
-    await svc.put_cached(
-        "vid", {}, None, fetch_status="private_or_deleted", last_error_code="x"
-    )
+    await svc.put_cached("vid", {}, None, fetch_status="private_or_deleted", last_error_code="x")
 
     assert upsert.call_args.kwargs["transcript_status"] == "unavailable"
     assert upsert.call_args.kwargs["last_error_code"] == "x"
@@ -106,3 +104,4 @@ def test_cache_health_dataclass_has_no_content_fields():
     fields = set(svc.MediaCacheHealth.__dataclass_fields__)
     for forbidden in ("metadata_json", "transcript_text", "video_id", "title"):
         assert forbidden not in fields
+

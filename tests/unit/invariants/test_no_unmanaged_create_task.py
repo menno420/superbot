@@ -97,9 +97,9 @@ def test_no_unmanaged_create_task_outside_allowlist():
                 f"_ALLOWED_CREATE_TASK_SITES with rationale or migrate "
                 f"to core.runtime.tasks.spawn.",
             )
-    assert (
-        not violations
-    ), "Unmanaged asyncio.create_task callsite(s):\n  " + "\n  ".join(violations)
+    assert not violations, (
+        "Unmanaged asyncio.create_task callsite(s):\n  " + "\n  ".join(violations)
+    )
 
 
 def test_allowlist_entries_still_exist():

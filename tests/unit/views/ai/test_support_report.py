@@ -127,7 +127,9 @@ def test_module_makes_no_network_calls():
         r"\bfrom\s+urllib\b",
     )
     for pattern in forbidden_patterns:
-        assert not re.search(pattern, src), f"support report must not import: {pattern}"
+        assert not re.search(pattern, src), (
+            f"support report must not import: {pattern}"
+        )
 
 
 def test_no_outbound_call_strings_in_file():

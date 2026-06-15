@@ -76,7 +76,9 @@ async def test_try_acquire_refuses_when_row_is_fresh(_mock_pool):
     assert result.reason == "row_fresh"
     # advisory_lock + advisory_unlock; no INSERT.
     inserts = [
-        call for call in conn.execute.await_args_list if "INSERT" in call.args[0]
+        call
+        for call in conn.execute.await_args_list
+        if "INSERT" in call.args[0]
     ]
     assert inserts == []
 
@@ -96,7 +98,9 @@ async def test_try_acquire_reclaims_stale_row(_mock_pool):
     assert result.holder_boot_id == new_boot
     # Expected: advisory_lock, INSERT/UPSERT, advisory_unlock.
     inserts = [
-        call for call in conn.execute.await_args_list if "INSERT" in call.args[0]
+        call
+        for call in conn.execute.await_args_list
+        if "INSERT" in call.args[0]
     ]
     assert len(inserts) == 1
 

@@ -33,9 +33,7 @@ def _reset_dataset_cache():
 def _names(tower_surface: str) -> set[str]:
     tower = btd6_data_service.find_tower(tower_surface)
     assert tower is not None
-    return {
-        mk.canonical for mk in btd6_data_service.monkey_knowledge_referencing(tower)
-    }
+    return {mk.canonical for mk in btd6_data_service.monkey_knowledge_referencing(tower)}
 
 
 def test_farm_relation_is_the_genuinely_related_mk_not_the_whole_category():
@@ -70,7 +68,7 @@ def test_spike_factory_excludes_road_spikes_power_mk():
 
 
 def test_strong_match_wins_over_a_different_towers_alias():
-    """ "Arcane Spike does extra damage" (Arcane Impale) is a Wizard upgrade —
+    """"Arcane Spike does extra damage" (Arcane Impale) is a Wizard upgrade —
     the weak "spike" alias must not pull it into the Spike Factory list."""
     assert "Arcane Impale" not in _names("spike factory")
 

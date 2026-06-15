@@ -203,7 +203,9 @@ async def test_set_delegates_to_open_select_with_chosen_kind():
         for c in view.children
         if isinstance(c, discord.ui.Button) and c.custom_id == "logging_routes.set"
     )
-    with patch("cogs.logging.panel._open_select", new_callable=AsyncMock) as fake_open:
+    with patch(
+        "cogs.logging.panel._open_select", new_callable=AsyncMock
+    ) as fake_open:
         await btn.callback(interaction)  # type: ignore[union-attr,misc]
     fake_open.assert_awaited_once()
     _args, kwargs = fake_open.call_args

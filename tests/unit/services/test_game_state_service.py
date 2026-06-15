@@ -18,9 +18,7 @@ async def test_save_upserts_jsonb_payload():
         new_callable=AsyncMock,
     ) as execute:
         await game_state_service.save(
-            guild_id=1,
-            user_id=2,
-            channel_id=3,
+            guild_id=1, user_id=2, channel_id=3,
             subsystem="blackjack",
             state=state,
         )
@@ -45,9 +43,7 @@ async def test_save_writes_explicit_version():
         new_callable=AsyncMock,
     ) as execute:
         await game_state_service.save(
-            guild_id=1,
-            user_id=2,
-            channel_id=3,
+            guild_id=1, user_id=2, channel_id=3,
             subsystem="blackjack",
             state={"hand": []},
             version=3,
@@ -65,9 +61,7 @@ async def test_load_returns_decoded_dict():
         return_value={"state": '{"hand": [1, 2]}'},
     ):
         result = await game_state_service.load(
-            guild_id=1,
-            user_id=2,
-            channel_id=3,
+            guild_id=1, user_id=2, channel_id=3,
             subsystem="blackjack",
         )
     assert result == {"hand": [1, 2]}
@@ -82,9 +76,7 @@ async def test_load_accepts_pre_decoded_jsonb():
         return_value={"state": {"hand": [1, 2]}},
     ):
         result = await game_state_service.load(
-            guild_id=1,
-            user_id=2,
-            channel_id=3,
+            guild_id=1, user_id=2, channel_id=3,
             subsystem="blackjack",
         )
     assert result == {"hand": [1, 2]}
@@ -98,9 +90,7 @@ async def test_load_returns_none_when_missing():
         return_value=None,
     ):
         result = await game_state_service.load(
-            guild_id=1,
-            user_id=2,
-            channel_id=3,
+            guild_id=1, user_id=2, channel_id=3,
             subsystem="blackjack",
         )
     assert result is None
@@ -113,9 +103,7 @@ async def test_clear_deletes_by_key():
         new_callable=AsyncMock,
     ) as execute:
         await game_state_service.clear(
-            guild_id=1,
-            user_id=2,
-            channel_id=3,
+            guild_id=1, user_id=2, channel_id=3,
             subsystem="blackjack",
         )
     execute.assert_awaited_once()

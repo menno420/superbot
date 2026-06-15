@@ -80,13 +80,15 @@ def test_no_heavy_top_level_imports() -> None:
 def test_import_does_not_pull_heavy_modules() -> None:
     """A fresh interpreter importing the service must not eagerly load the
     AI/DB/consistency graph."""
-    script = textwrap.dedent("""
+    script = textwrap.dedent(
+        """
         import sys
         sys.path.insert(0, "disbot")
         import services.health_snapshot_service  # noqa: F401
         heavy = [m for m in {heavy!r} if m in sys.modules]
         print("HEAVY:" + ",".join(heavy))
-        """).format(heavy=list(_HEAVY_MODULES))
+        """
+    ).format(heavy=list(_HEAVY_MODULES))
     result = subprocess.run(  # noqa: S603 — script literal under our control
         [sys.executable, "-c", script],
         cwd=_REPO_ROOT,
@@ -95,9 +97,9 @@ def test_import_does_not_pull_heavy_modules() -> None:
         timeout=30,
         check=False,
     )
-    assert (
-        result.returncode == 0
-    ), f"import failed:\nstdout: {result.stdout!r}\nstderr: {result.stderr!r}"
+    assert result.returncode == 0, (
+        f"import failed:\nstdout: {result.stdout!r}\nstderr: {result.stderr!r}"
+    )
     line = next(
         (ln for ln in result.stdout.splitlines() if ln.startswith("HEAVY:")), ""
     )

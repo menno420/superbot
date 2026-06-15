@@ -64,14 +64,8 @@ async def test_tower_stats_read_from_provider():
 @pytest.mark.asyncio
 async def test_list_paragon_ids_read_from_provider():
     rows = [
-        (
-            "stats/paragons/wizard_lord_phoenix.json",
-            {"paragon_id": "wizard_lord_phoenix"},
-        ),
-        (
-            "stats/paragons/apex_plasma_master.json",
-            {"paragon_id": "apex_plasma_master"},
-        ),
+        ("stats/paragons/wizard_lord_phoenix.json", {"paragon_id": "wizard_lord_phoenix"}),
+        ("stats/paragons/apex_plasma_master.json", {"paragon_id": "apex_plasma_master"}),
         ("stats/dart_monkey.json", {"tower_id": "dart_monkey"}),
         ("towers.json", {"towers": []}),
     ]

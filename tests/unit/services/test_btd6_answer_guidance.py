@@ -23,9 +23,7 @@ def test_crosspath_detector(text, expected):
 
 @pytest.mark.asyncio
 async def test_guidance_block_emitted_for_crosspath_question():
-    blocks = await kb.gather_btd6_bot_knowledge_blocks(
-        user_text="stats of 4-0-0 glue gunner"
-    )
+    blocks = await kb.gather_btd6_bot_knowledge_blocks(user_text="stats of 4-0-0 glue gunner")
     kinds = [b.kind for b in blocks]
     assert "bot_btd6_answer_guidance" in kinds
     guidance = next(b for b in blocks if b.kind == "bot_btd6_answer_guidance")
@@ -34,7 +32,5 @@ async def test_guidance_block_emitted_for_crosspath_question():
 
 @pytest.mark.asyncio
 async def test_no_guidance_block_without_crosspath():
-    blocks = await kb.gather_btd6_bot_knowledge_blocks(
-        user_text="what is the dart monkey"
-    )
+    blocks = await kb.gather_btd6_bot_knowledge_blocks(user_text="what is the dart monkey")
     assert "bot_btd6_answer_guidance" not in [b.kind for b in blocks]

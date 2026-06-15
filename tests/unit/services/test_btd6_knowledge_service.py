@@ -42,10 +42,7 @@ def test_map_fact_includes_difficulty():
 def test_mode_fact_chimps_includes_restrictions():
     chimps = mode_fact("chimps")
     assert chimps is not None
-    assert any(
-        "no income" in r.lower() or "no powers" in r.lower()
-        for r in chimps.restrictions
-    )
+    assert any("no income" in r.lower() or "no powers" in r.lower() for r in chimps.restrictions)
 
 
 def test_round_fact_includes_threats():

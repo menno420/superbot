@@ -45,21 +45,24 @@ def test_at_least_one_migration_present():
 @pytest.mark.parametrize("path", _sql_files(), ids=lambda p: p.name)
 def test_filename_matches_pattern(path: Path):
     """Filename must be NNN_<snake_name>.sql so the runner's sort is stable."""
-    assert _FILENAME_PATTERN.match(
-        path.name
-    ), f"{path.name} doesn't match NNN_<snake_name>.sql"
+    assert _FILENAME_PATTERN.match(path.name), (
+        f"{path.name} doesn't match NNN_<snake_name>.sql"
+    )
 
 
 def test_version_numbers_are_sequential_and_unique():
-    versions = [int(_FILENAME_PATTERN.match(p.name).group(1)) for p in _sql_files()]
+    versions = [
+        int(_FILENAME_PATTERN.match(p.name).group(1))
+        for p in _sql_files()
+    ]
     assert versions == sorted(versions), "filenames don't sort by version"
-    assert len(versions) == len(
-        set(versions)
-    ), f"duplicate version numbers in migrations: {versions}"
+    assert len(versions) == len(set(versions)), (
+        f"duplicate version numbers in migrations: {versions}"
+    )
     expected = list(range(1, len(versions) + 1))
-    assert (
-        versions == expected
-    ), f"non-contiguous version numbers: {versions} vs expected {expected}"
+    assert versions == expected, (
+        f"non-contiguous version numbers: {versions} vs expected {expected}"
+    )
 
 
 @pytest.mark.parametrize("path", _sql_files(), ids=lambda p: p.name)

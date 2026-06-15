@@ -89,9 +89,9 @@ def test_every_wearing_gear_is_reacquirable():
 
     recipes = load_recipes()
     for name in equipment.MAX_DURABILITY:
-        assert (
-            name in recipes or name in GEAR_SHOP
-        ), f"{name!r} wears out but is neither craftable nor in the gear shop"
+        assert name in recipes or name in GEAR_SHOP, (
+            f"{name!r} wears out but is neither craftable nor in the gear shop"
+        )
 
 
 def test_default_recipes_are_a_subset_of_the_curated_set():

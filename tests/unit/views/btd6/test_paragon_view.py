@@ -49,7 +49,9 @@ def test_calculator_view_has_four_selects_and_five_buttons():
 
 def test_calculator_view_has_web_calculator_link_button():
     view = ParagonCalculatorView(_AUTHOR)
-    link_buttons = [b for b in _buttons(view) if b.style is discord.ButtonStyle.link]
+    link_buttons = [
+        b for b in _buttons(view) if b.style is discord.ButtonStyle.link
+    ]
     assert len(link_buttons) == 1
     assert link_buttons[0].url == "https://paragon-calc.vercel.app/"
 
@@ -68,18 +70,14 @@ def _tier5_select(view: ParagonCalculatorView) -> discord.ui.Select:
 
 def test_tier5_select_disabled_for_solo_non_dart():
     view = ParagonCalculatorView(
-        _AUTHOR,
-        paragon_id="nautic_siege_core",
-        player_count=1,
+        _AUTHOR, paragon_id="nautic_siege_core", player_count=1,
     )
     assert _tier5_select(view).disabled is True
 
 
 def test_tier5_select_offers_zero_to_nine_in_coop():
     view = ParagonCalculatorView(
-        _AUTHOR,
-        paragon_id="nautic_siege_core",
-        player_count=4,
+        _AUTHOR, paragon_id="nautic_siege_core", player_count=4,
     )
     select = _tier5_select(view)
     assert select.disabled is False
@@ -89,20 +87,14 @@ def test_tier5_select_offers_zero_to_nine_in_coop():
 def test_tier5_count_clamped_to_mode_limit_on_build():
     # Solo Dart allows only 1 extra T5; an out-of-range default is clamped.
     view = ParagonCalculatorView(
-        _AUTHOR,
-        paragon_id="apex_plasma_master",
-        player_count=1,
-        tier5_count=5,
+        _AUTHOR, paragon_id="apex_plasma_master", player_count=1, tier5_count=5,
     )
     assert view.tier5_count == 1
 
 
 def test_requirements_view_has_strategy_select_and_three_buttons():
     view = ParagonRequirementsView(
-        _AUTHOR,
-        paragon_id="apex_plasma_master",
-        player_count=1,
-        difficulty="medium",
+        _AUTHOR, paragon_id="apex_plasma_master", player_count=1, difficulty="medium",
     )
     selects = _selects(view)
     assert len(selects) == 1
@@ -125,10 +117,7 @@ def test_forward_modal_has_exactly_five_text_inputs():
 
 def test_target_modal_has_one_text_input():
     view = ParagonRequirementsView(
-        _AUTHOR,
-        paragon_id="apex_plasma_master",
-        player_count=1,
-        difficulty="medium",
+        _AUTHOR, paragon_id="apex_plasma_master", player_count=1, difficulty="medium",
     )
     modal = ParagonTargetModal(view)
     text_inputs = [c for c in modal.children if isinstance(c, discord.ui.TextInput)]
@@ -141,9 +130,7 @@ def test_target_modal_has_one_text_input():
 def _make_result(*, estimated: bool = False) -> ParagonResult:
     breakdown = pm.compute_breakdown(
         pm.ParagonInputs(
-            tower="apex_plasma_master",
-            pops=8_000_000,
-            cash_spent=150_000,
+            tower="apex_plasma_master", pops=8_000_000, cash_spent=150_000,
         ),
         150_000,
     )
@@ -178,10 +165,7 @@ def test_result_embed_flags_local_estimate():
 def test_requirement_embed_lists_recommended_build():
     paragon = pm.resolve_paragon("apex_plasma_master")
     solution = pm.solve_requirements(
-        paragon,
-        90,
-        pm.SolveStrategy.LEAST_CASH,
-        player_count=1,
+        paragon, 90, pm.SolveStrategy.LEAST_CASH, player_count=1,
     )
     req = ParagonRequirementResult(
         solution=solution,
@@ -200,9 +184,7 @@ def test_requirement_embed_lists_recommended_build():
 
 def test_calculator_embed_reflects_state():
     view = ParagonCalculatorView(
-        _AUTHOR,
-        paragon_id="root_of_all_nature",
-        player_count=4,
+        _AUTHOR, paragon_id="root_of_all_nature", player_count=4,
     )
     embed = build_calculator_embed(view)
     assert "Root of all Nature" in (embed.description or "")

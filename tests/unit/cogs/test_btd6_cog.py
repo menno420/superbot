@@ -139,9 +139,7 @@ async def test_panel_embed_includes_reference_and_active_blocks(monkeypatch):
     from utils.db import btd6_sources as btd6_db
 
     monkeypatch.setattr(
-        btd6_db,
-        "latest_fact_per_entity_kind",
-        AsyncMock(return_value={}),
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value={}),
     )
     # Hub VM now also calls get_active_events → search_facts.
     monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))

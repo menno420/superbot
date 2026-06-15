@@ -169,8 +169,7 @@ def test_metadata_risk_low_for_bindings_medium_for_create_channel():
         payload={"name": "x", "subsystem": "logging"},
     )
     ops = preset_operations_to_setup_operations(
-        [bind_op, create_ch_op],
-        preset_slug="x",
+        [bind_op, create_ch_op], preset_slug="x",
     )
     assert ops[0].metadata["risk"] == "low"
     assert ops[1].metadata["risk"] == "medium"

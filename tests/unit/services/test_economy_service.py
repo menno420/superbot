@@ -46,10 +46,7 @@ class TestCredit:
             ) as emit,
         ):
             new_bal = await economy_service.credit(
-                guild_id=1,
-                user_id=42,
-                amount=50,
-                reason="daily",
+                guild_id=1, user_id=42, amount=50, reason="daily",
             )
             assert new_bal == 150
             audit.assert_awaited_once()
@@ -67,20 +64,14 @@ class TestCredit:
     async def test_negative_amount_rejected(self):
         with pytest.raises(ValueError, match="positive"):
             await economy_service.credit(
-                guild_id=1,
-                user_id=2,
-                amount=-5,
-                reason="x",
+                guild_id=1, user_id=2, amount=-5, reason="x",
             )
 
     @pytest.mark.asyncio
     async def test_zero_amount_rejected(self):
         with pytest.raises(ValueError, match="positive"):
             await economy_service.credit(
-                guild_id=1,
-                user_id=2,
-                amount=0,
-                reason="x",
+                guild_id=1, user_id=2, amount=0, reason="x",
             )
 
 
@@ -94,10 +85,7 @@ class TestDebit:
         ):
             with pytest.raises(InsufficientFundsError):
                 await economy_service.debit(
-                    guild_id=1,
-                    user_id=2,
-                    amount=50,
-                    reason="purchase",
+                    guild_id=1, user_id=2, amount=50, reason="purchase",
                 )
 
     @pytest.mark.asyncio
@@ -154,10 +142,7 @@ class TestDebit:
             ) as emit,
         ):
             new_bal = await economy_service.debit(
-                guild_id=1,
-                user_id=2,
-                amount=20,
-                reason="shop:potion",
+                guild_id=1, user_id=2, amount=20, reason="shop:potion",
             )
             assert new_bal == 80
             # negative delta in audit row
@@ -199,11 +184,7 @@ class TestTransfer:
     async def test_same_user_rejected(self):
         with pytest.raises(ValueError, match="differ"):
             await economy_service.transfer(
-                guild_id=1,
-                from_user=2,
-                to_user=2,
-                amount=10,
-                reason="x",
+                guild_id=1, from_user=2, to_user=2, amount=10, reason="x",
             )
 
 

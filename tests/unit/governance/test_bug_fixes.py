@@ -221,11 +221,7 @@ class TestCacheInvalidatedEmitted:
             patch("governance.writes.SUBSYSTEMS", {"economy": {}}),
         ):
             await GovernanceMutationPipeline().set_visibility(
-                ctx,
-                "guild",
-                777,
-                "economy",
-                False,
+                ctx, "guild", 777, "economy", False,
             )
 
         assert emitted[:2] == [EVT_VISIBILITY_CHANGED, EVT_CACHE_INVALIDATED]
@@ -278,19 +274,15 @@ class TestCacheInvalidatedEmitted:
         ):
             # Must complete without AttributeError.
             await GovernanceMutationPipeline().set_visibility(
-                ctx,
-                "guild",
-                778,
-                "economy",
-                True,
+                ctx, "guild", 778, "economy", True,
             )
 
         assert (
             pool_stub.transaction.call_count == 0
         ), "Pipeline must not call .transaction() on the pool (asyncpg.Pool has no such method)."
-        assert (
-            conn.transaction.call_count >= 1
-        ), "Pipeline must open the transaction on the acquired connection."
+        assert conn.transaction.call_count >= 1, (
+            "Pipeline must open the transaction on the acquired connection."
+        )
 
     @pytest.mark.asyncio
     async def test_set_cleanup_policy_uses_connection_transaction(self):
@@ -323,9 +315,7 @@ class TestCacheInvalidatedEmitted:
             patch("governance.writes._emit_governance_event", side_effect=_noop),
         ):
             await GovernanceMutationPipeline().set_cleanup_policy(
-                ctx,
-                "guild",
-                779,
+                ctx, "guild", 779,
                 delete_invalid_commands=True,
                 delete_failed_commands=True,
                 delete_after_seconds=5,

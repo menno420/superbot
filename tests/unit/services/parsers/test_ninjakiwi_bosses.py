@@ -75,13 +75,9 @@ def test_parse_boss_metadata_requires_both_path_params():
     fixture = _load("btd6_bosses_Diamondback5_mpfz8mi4_metadata_standard.json")
     assert parse_boss_metadata(fixture) == []
     assert parse_boss_metadata(fixture, path_params={"bossID": _BOSS_ID}) == []
-    assert (
-        parse_boss_metadata(
-            fixture,
-            path_params={"difficulty": "standard"},
-        )
-        == []
-    )
+    assert parse_boss_metadata(
+        fixture, path_params={"difficulty": "standard"},
+    ) == []
 
 
 def test_parse_boss_metadata_emits_single_fact_with_composite_key():
@@ -126,13 +122,10 @@ def test_parse_boss_leaderboard_requires_path_params():
         "btd6_bosses_Diamondback5_mpfz8mi4_leaderboard_standard_1.json",
     )
     assert parse_boss_leaderboard(fixture) == []
-    assert (
-        parse_boss_leaderboard(
-            fixture,
-            path_params={"bossID": _BOSS_ID, "type": "standard"},
-        )
-        == []
-    )  # missing teamSize
+    assert parse_boss_leaderboard(
+        fixture,
+        path_params={"bossID": _BOSS_ID, "type": "standard"},
+    ) == []  # missing teamSize
 
 
 def test_parse_boss_leaderboard_emits_fact_per_row_with_composite_rank_key():
@@ -153,9 +146,13 @@ def test_parse_boss_leaderboard_emits_fact_per_row_with_composite_rank_key():
     parts = body["score_parts"]
     assert {part["type"] for part in parts} == {"number", "time"}
     assert any(
-        part["type"] == "number" and part["name"] == "Boss Tier" for part in parts
+        part["type"] == "number" and part["name"] == "Boss Tier"
+        for part in parts
     )
-    assert any(part["type"] == "time" and part["name"] == "Game Time" for part in parts)
+    assert any(
+        part["type"] == "time" and part["name"] == "Game Time"
+        for part in parts
+    )
 
 
 # ---------------------------------------------------------------------------

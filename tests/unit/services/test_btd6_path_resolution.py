@@ -79,7 +79,7 @@ def test_all_three_paths_resolve_for_one_tower():
 
 
 def test_tier_text_does_not_narrow_the_path():
-    """ "<tower> <path> path tier 4" still grounds the whole path (we want the
+    """"<tower> <path> path tier 4" still grounds the whole path (we want the
     model to see every tier, not just the one named)."""
     ref = resolve_path_reference("wizard bottom path tier 4")
     assert ref is not None

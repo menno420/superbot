@@ -249,7 +249,9 @@ def test_options_sorted_by_subsystem_alphabetically():
     _register(
         "xp",
         bindings=(_binding("announce_channel"),),
-        resources=(_requirement(intent="announce", binding_name="announce_channel"),),
+        resources=(
+            _requirement(intent="announce", binding_name="announce_channel"),
+        ),
     )
     _register(
         "economy",

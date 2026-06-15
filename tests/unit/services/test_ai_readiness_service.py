@@ -62,9 +62,7 @@ def _seed_no_overrides(monkeypatch):
 
 def _seed_empty_audit(monkeypatch):
     monkeypatch.setattr(
-        ai_decision_audit_service,
-        "query",
-        AsyncMock(return_value=[]),
+        ai_decision_audit_service, "query", AsyncMock(return_value=[]),
     )
 
 
@@ -291,9 +289,7 @@ async def test_nl_off_with_scoped_is_ok(monkeypatch):
 @pytest.mark.asyncio
 async def test_resolver_skipped_when_no_channel(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     _seed_empty_audit(monkeypatch)
@@ -310,9 +306,7 @@ async def test_resolver_skipped_when_no_channel(monkeypatch):
 @pytest.mark.asyncio
 async def test_resolver_dry_run_is_invoked_with_dry_run_true(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     _seed_empty_audit(monkeypatch)
@@ -350,9 +344,7 @@ async def test_resolver_deny_is_warn(monkeypatch):
         )
 
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     _seed_empty_audit(monkeypatch)
@@ -363,9 +355,7 @@ async def test_resolver_deny_is_warn(monkeypatch):
 
     channel = _fake_channel()
     monkeypatch.setattr(
-        ai_readiness_service.discord,
-        "TextChannel",
-        type(channel),
+        ai_readiness_service.discord, "TextChannel", type(channel),
     )
     report = await ai_readiness_service.scan(1, bot=object(), channel=channel)
     finding = next(f for f in report.findings if f.name == "resolver_decision")
@@ -376,9 +366,7 @@ async def test_resolver_deny_is_warn(monkeypatch):
 @pytest.mark.asyncio
 async def test_permissions_skipped_when_no_channel(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     _seed_empty_audit(monkeypatch)
@@ -395,9 +383,7 @@ async def test_permissions_skipped_when_no_channel(monkeypatch):
 @pytest.mark.asyncio
 async def test_permissions_missing_send_is_error(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     _seed_empty_audit(monkeypatch)
@@ -408,9 +394,7 @@ async def test_permissions_missing_send_is_error(monkeypatch):
 
     channel = _fake_channel(send=False)
     monkeypatch.setattr(
-        ai_readiness_service.discord,
-        "TextChannel",
-        type(channel),
+        ai_readiness_service.discord, "TextChannel", type(channel),
     )
     report = await ai_readiness_service.scan(1, bot=object(), channel=channel)
     finding = next(f for f in report.findings if f.name == "bot_permissions")
@@ -421,9 +405,7 @@ async def test_permissions_missing_send_is_error(monkeypatch):
 @pytest.mark.asyncio
 async def test_permissions_scan_enabled_requires_read_history(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     _seed_empty_audit(monkeypatch)
@@ -434,9 +416,7 @@ async def test_permissions_scan_enabled_requires_read_history(monkeypatch):
 
     channel = _fake_channel(read_history=False)
     monkeypatch.setattr(
-        ai_readiness_service.discord,
-        "TextChannel",
-        type(channel),
+        ai_readiness_service.discord, "TextChannel", type(channel),
     )
     report = await ai_readiness_service.scan(1, bot=object(), channel=channel)
     finding = next(f for f in report.findings if f.name == "bot_permissions")
@@ -463,9 +443,7 @@ async def test_memory_status_is_info(monkeypatch):
 @pytest.mark.asyncio
 async def test_recent_denials_pure_replies_is_ok(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     monkeypatch.setattr(
@@ -486,9 +464,7 @@ async def test_recent_denials_pure_replies_is_ok(monkeypatch):
 @pytest.mark.asyncio
 async def test_recent_denials_with_failures_is_warn(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     monkeypatch.setattr(
@@ -535,9 +511,7 @@ async def test_summary_not_ready_on_any_error(monkeypatch):
 @pytest.mark.asyncio
 async def test_summary_ready_when_all_ok_or_info(monkeypatch):
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=_enabled_policy_row()),
+        ai_db, "get_guild_policy", AsyncMock(return_value=_enabled_policy_row()),
     )
     _seed_no_overrides(monkeypatch)
     monkeypatch.setattr(

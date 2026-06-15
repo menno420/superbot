@@ -132,7 +132,9 @@ def test_setup_views_do_not_import_mutation_pipelines_at_top_level():
         imports = _top_level_import_names(path)
         bad = _FORBIDDEN_PIPELINE_MODULES & imports
         if bad:
-            violations.append(f"{path.relative_to(_REPO_ROOT)}: imports {sorted(bad)}")
+            violations.append(
+                f"{path.relative_to(_REPO_ROOT)}: imports {sorted(bad)}"
+            )
     assert not violations, (
         "Setup view files must not import concrete mutation pipelines at the top "
         "level — route mutations through services.setup_operations instead.\n"
@@ -160,15 +162,16 @@ def test_setup_operations_does_not_import_db_utils_at_top_level():
     """services/setup_operations.py must not import utils.db.* helpers at
     module level.  All DB writes route through the canonical pipeline APIs.
     """
-    assert (
-        _SETUP_OPS_PATH.exists()
-    ), f"services/setup_operations.py not found at {_SETUP_OPS_PATH}"
+    assert _SETUP_OPS_PATH.exists(), (
+        f"services/setup_operations.py not found at {_SETUP_OPS_PATH}"
+    )
     imports = _top_level_import_names(_SETUP_OPS_PATH)
     bad = {m for m in imports if any(m.startswith(p) for p in _FORBIDDEN_DB_PREFIXES)}
     assert not bad, (
         "services/setup_operations.py must not import utils.db.* at the top level — "
         "all DB writes must flow through the canonical pipeline APIs (e.g. "
-        "BindingMutationPipeline).  Offending imports:\n  " + "\n  ".join(sorted(bad))
+        "BindingMutationPipeline).  Offending imports:\n  "
+        + "\n  ".join(sorted(bad))
     )
 
 

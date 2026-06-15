@@ -32,8 +32,7 @@ def _patch_db(monkeypatch):
     monkeypatch.setattr(ai_db, "bump_generation", AsyncMock(return_value=1))
     monkeypatch.setattr(ai_policy_mutation, "_emit", AsyncMock(return_value=True))
     monkeypatch.setattr(
-        "services.ai_natural_language_policy.invalidate",
-        lambda _gid: None,
+        "services.ai_natural_language_policy.invalidate", lambda _gid: None,
     )
 
 

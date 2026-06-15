@@ -59,11 +59,7 @@ def test_depth_panel_has_three_buttons():
     custom_ids = {
         c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
     }
-    assert custom_ids == {
-        "setup_depth:quick",
-        "setup_depth:standard",
-        "setup_depth:advanced",
-    }
+    assert custom_ids == {"setup_depth:quick", "setup_depth:standard", "setup_depth:advanced"}
 
 
 def test_depth_panel_highlights_current_choice():
@@ -71,7 +67,9 @@ def test_depth_panel_highlights_current_choice():
     success colour to surface the existing pick.
     """
     view = DepthPanelView(_owner_member(), session=_session(depth="standard"))
-    by_id = {c.custom_id: c for c in view.children if isinstance(c, discord.ui.Button)}
+    by_id = {
+        c.custom_id: c for c in view.children if isinstance(c, discord.ui.Button)
+    }
     assert by_id["setup_depth:standard"].style is discord.ButtonStyle.success
     assert by_id["setup_depth:quick"].style is discord.ButtonStyle.secondary
     assert by_id["setup_depth:advanced"].style is discord.ButtonStyle.secondary

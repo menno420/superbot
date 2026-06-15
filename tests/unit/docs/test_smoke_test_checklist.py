@@ -98,9 +98,10 @@ def test_doc_mentions_canonical_startup_phases(doc_text: str):
     from core.runtime.startup_outcome import KNOWN_PHASES
 
     missing = [p for p in KNOWN_PHASES if p not in doc_text]
-    assert (
-        not missing
-    ), "Smoke checklist missing startup phase bullets:\n  " + "\n  ".join(missing)
+    assert not missing, (
+        "Smoke checklist missing startup phase bullets:\n  "
+        + "\n  ".join(missing)
+    )
 
 
 def test_doc_mentions_every_setup_slash_command(doc_text: str):
@@ -129,9 +130,9 @@ def test_doc_mentions_setup_preflight_diff(doc_text: str):
       (bool True vs string "true") as a diff.
     """
     lowered = doc_text  # already lowered by the fixture
-    assert (
-        "preflight" in lowered
-    ), "Smoke checklist must mention the setup preflight diff."
+    assert "preflight" in lowered, (
+        "Smoke checklist must mention the setup preflight diff."
+    )
     assert "values_equivalent" in lowered or "type-equivalent" in lowered, (
         "Smoke checklist must call out the normalized comparison so "
         "operators check for type-mismatch false positives."
@@ -152,14 +153,14 @@ def test_doc_mentions_setup_blocker_output(doc_text: str):
 def test_doc_mentions_setup_readiness_command(doc_text: str):
     """``!platform setup-readiness`` is the operator-facing surface
     for the per-guild readiness inventory.  Smoke must include it."""
-    assert (
-        "setup-readiness" in doc_text
-    ), "Smoke checklist must mention !platform setup-readiness."
+    assert "setup-readiness" in doc_text, (
+        "Smoke checklist must mention !platform setup-readiness."
+    )
 
 
 def test_doc_pins_shutdown_drain_budget(doc_text: str):
     """PR-02b preserved the 5 s shutdown drain budget.  The checklist
     must mention it so a regression is caught at smoke time."""
-    assert (
-        "5 s" in doc_text or "5s" in doc_text or "5 seconds" in doc_text
-    ), "Smoke checklist must reference the 5 s shutdown drain budget."
+    assert "5 s" in doc_text or "5s" in doc_text or "5 seconds" in doc_text, (
+        "Smoke checklist must reference the 5 s shutdown drain budget."
+    )

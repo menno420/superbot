@@ -49,9 +49,7 @@ def test_routine_pat_pass_when_trigger_is_user_authored(lh):
 def test_routine_pat_fail_when_trigger_is_bot_authored(lh):
     issues = [
         _issue(
-            768,
-            "Scheduled executor run (2026-06-13 01:20 UTC)",
-            "github-actions[bot]",
+            768, "Scheduled executor run (2026-06-13 01:20 UTC)", "github-actions[bot]",
         ),
     ]
     assert _status(lh.classify(issues), "ROUTINE_PAT") == "FAIL"
@@ -79,10 +77,7 @@ def test_routine_pat_reads_newest_trigger_first(lh):
 def test_backup_fail_when_open_backup_issue_present(lh):
     issues = [
         _issue(
-            823,
-            "Postgres backup failed (2026-06-14)",
-            "github-actions",
-            state="OPEN",
+            823, "Postgres backup failed (2026-06-14)", "github-actions", state="OPEN",
         ),
     ]
     assert _status(lh.classify(issues), "DATABASE_PUBLIC_URL") == "FAIL"
@@ -91,10 +86,7 @@ def test_backup_fail_when_open_backup_issue_present(lh):
 def test_backup_pass_when_backup_issue_closed(lh):
     issues = [
         _issue(
-            773,
-            "Postgres backup failed (2026-06-13)",
-            "github-actions",
-            state="CLOSED",
+            773, "Postgres backup failed (2026-06-13)", "github-actions", state="CLOSED",
         ),
     ]
     assert _status(lh.classify(issues), "DATABASE_PUBLIC_URL") == "PASS"

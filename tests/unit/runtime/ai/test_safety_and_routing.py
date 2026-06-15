@@ -23,9 +23,7 @@ from core.runtime.ai.safety import MAX_PAYLOAD_BYTES, precheck
 def _req(payload: dict, *, system: str = "system") -> AIRequest:
     return AIRequest(
         context=AIRequestContext(
-            task=AITask.SETUP_SUGGEST,
-            scope=AIScope.ADMIN,
-            source="test",
+            task=AITask.SETUP_SUGGEST, scope=AIScope.ADMIN, source="test",
         ),
         system_prompt=system,
         payload=payload,

@@ -78,10 +78,12 @@ def _all_visible():
 def test_discover_returns_only_parent_hub_games():
     names = [name for name, _ in discover_game_children()]
     for name in names:
-        assert (
-            SUBSYSTEMS[name].get("parent_hub") == "games"
-        ), f"discover_game_children returned {name!r} which is not a games child"
-    expected = {n for n, m in SUBSYSTEMS.items() if m.get("parent_hub") == "games"}
+        assert SUBSYSTEMS[name].get("parent_hub") == "games", (
+            f"discover_game_children returned {name!r} which is not a games child"
+        )
+    expected = {
+        n for n, m in SUBSYSTEMS.items() if m.get("parent_hub") == "games"
+    }
     assert set(names) == expected
 
 
@@ -91,9 +93,9 @@ def test_discover_groups_competitive_before_activities():
     competitive_indices = [i for i, g in enumerate(groups) if g == "competitive"]
     activities_indices = [i for i, g in enumerate(groups) if g == "activities"]
     if competitive_indices and activities_indices:
-        assert max(competitive_indices) < min(
-            activities_indices
-        ), f"groups out of order: {groups}"
+        assert max(competitive_indices) < min(activities_indices), (
+            f"groups out of order: {groups}"
+        )
 
 
 def test_discover_is_deterministic():
@@ -107,7 +109,9 @@ def test_discover_is_deterministic():
         )
         for name, meta in children
     ]
-    assert keys == sorted(keys), f"discover_game_children is not deterministic: {keys}"
+    assert keys == sorted(keys), (
+        f"discover_game_children is not deterministic: {keys}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -134,7 +138,9 @@ def test_embed_mentions_typed_shortcuts_in_description():
     embed = build_games_hub_embed()
     description = embed.description or ""
     assert (
-        "!blackjack" in description or "!mine" in description or "Typed" in description
+        "!blackjack" in description
+        or "!mine" in description
+        or "Typed" in description
     ), description
 
 
@@ -207,9 +213,9 @@ def test_view_has_no_built_in_back_to_help_button():
         for c in view.children
         if isinstance(c, discord.ui.Button) and "Back" in (c.label or "")
     ]
-    assert (
-        back_labels == []
-    ), f"Games hub should not include a built-in Back button: {back_labels}"
+    assert back_labels == [], (
+        f"Games hub should not include a built-in Back button: {back_labels}"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -224,9 +230,9 @@ def test_competitive_buttons_on_row_0_with_primary_style():
             continue
         meta = SUBSYSTEMS[btn._subsystem]  # type: ignore[attr-defined]
         if meta.get("hub_group") == "competitive":
-            assert (
-                btn.row == 0
-            ), f"competitive button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
+            assert btn.row == 0, (
+                f"competitive button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
+            )
             assert btn.style is discord.ButtonStyle.primary
 
 
@@ -237,9 +243,9 @@ def test_activities_buttons_on_row_1_with_success_style():
             continue
         meta = SUBSYSTEMS[btn._subsystem]  # type: ignore[attr-defined]
         if meta.get("hub_group") == "activities":
-            assert (
-                btn.row == 1
-            ), f"activities button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
+            assert btn.row == 1, (
+                f"activities button {btn._subsystem!r} on row {btn.row}"  # type: ignore[attr-defined]
+            )
             assert btn.style is discord.ButtonStyle.success
 
 
@@ -260,7 +266,11 @@ def test_button_labels_come_from_registry_metadata():
 def test_button_custom_ids_are_stable_and_namespaced():
     view = GamesHubView(_author())
     expected = {f"games:open:{name}" for name, _ in discover_game_children()}
-    actual = {c.custom_id for c in view.children if isinstance(c, _GameHubButton)}
+    actual = {
+        c.custom_id
+        for c in view.children
+        if isinstance(c, _GameHubButton)
+    }
     assert actual == expected
 
 
@@ -407,12 +417,8 @@ async def test_handle_select_hook_failure_renders_fallback():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(side_effect=RuntimeError("boom"))
 
-    with (
-        _all_visible(),
-        patch(
-            "cogs.help_cog._cog_for_subsystem",
-            return_value=fake_cog,
-        ),
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog,
     ):
         await view.handle_select(interaction, "blackjack")
 
@@ -433,12 +439,8 @@ async def test_handle_select_success_attaches_back_button():
     fake_cog = MagicMock()
     fake_cog.build_help_menu_view = AsyncMock(return_value=(child_embed, child_view))
 
-    with (
-        _all_visible(),
-        patch(
-            "cogs.help_cog._cog_for_subsystem",
-            return_value=fake_cog,
-        ),
+    with _all_visible(), patch(
+        "cogs.help_cog._cog_for_subsystem", return_value=fake_cog,
     ):
         await view.handle_select(interaction, "blackjack")
 
@@ -662,14 +664,11 @@ async def test_handle_select_fails_closed_when_subsystem_invisible():
         traces={},
     )
     cog_lookup = MagicMock()
-    with (
-        patch(
-            "services.governance_service.resolve_visibility",
-            new_callable=AsyncMock,
-            return_value=vis_result,
-        ),
-        patch("cogs.help_cog._cog_for_subsystem", cog_lookup),
-    ):
+    with patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ), patch("cogs.help_cog._cog_for_subsystem", cog_lookup):
         await view.handle_select(interaction, "blackjack")
 
     interaction.response.send_message.assert_awaited_once()

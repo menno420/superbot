@@ -215,31 +215,26 @@ async def test_set_binding_success_writes_row_and_emits_event(_xp_schema):
     actor = _admin_actor()
     guild = _guild()
 
-    with (
-        patch(
-            "services.binding_mutation.validate_binding_target",
-            AsyncMock(return_value=ResourceStatus.BOUND),
-        ),
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="announce_channel",
-                    kind=BindingKind.CHANNEL,
-                ),
+    with patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="announce_channel",
+                kind=BindingKind.CHANNEL,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(),
-        ) as mock_upsert,
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ) as mock_emit,
-    ):
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(),
+    ) as mock_upsert, patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ) as mock_emit:
         result = await pipeline.set_binding(
             guild,
             "xp",
@@ -257,8 +252,7 @@ async def test_set_binding_success_writes_row_and_emits_event(_xp_schema):
     # ``audit.action_recorded`` event. Filter by topic so this test
     # stays focused on EVT_BINDING_CHANGED.
     binding_emits = [
-        c
-        for c in mock_emit.await_args_list
+        c for c in mock_emit.await_args_list
         if c.args and c.args[0] == EVT_BINDING_CHANGED
     ]
     assert len(binding_emits) == 1
@@ -266,8 +260,7 @@ async def test_set_binding_success_writes_row_and_emits_event(_xp_schema):
     assert result.mutation_id == binding_emits[0].kwargs["mutation_id"]
     # And the companion audit event fires with matching mutation_id.
     audit_emits = [
-        c
-        for c in mock_emit.await_args_list
+        c for c in mock_emit.await_args_list
         if c.args and c.args[0] == "audit.action_recorded"
     ]
     assert len(audit_emits) == 1
@@ -281,30 +274,25 @@ async def test_set_binding_missing_target_writes_row_no_exception(_xp_schema):
     validation result reflects the gap."""
     pipeline = BindingMutationPipeline()
     actor = _admin_actor()
-    with (
-        patch(
-            "services.binding_mutation.validate_binding_target",
-            AsyncMock(return_value=ResourceStatus.MISSING),
-        ),
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="announce_channel",
-                    kind=BindingKind.CHANNEL,
-                ),
+    with patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.MISSING),
+    ), patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="announce_channel",
+                kind=BindingKind.CHANNEL,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(),
-        ) as mock_upsert,
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ),
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(),
+    ) as mock_upsert, patch(
+        "core.events.bus.emit",
+        AsyncMock(),
     ):
         result = await pipeline.set_binding(
             _guild(),
@@ -328,30 +316,25 @@ async def test_set_binding_event_emit_failure_does_not_undo_commit(_xp_schema):
     state is preserved and the failure is logged but not re-raised."""
     pipeline = BindingMutationPipeline()
     actor = _admin_actor()
-    with (
-        patch(
-            "services.binding_mutation.validate_binding_target",
-            AsyncMock(return_value=ResourceStatus.BOUND),
-        ),
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="announce_channel",
-                    kind=BindingKind.CHANNEL,
-                ),
+    with patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="announce_channel",
+                kind=BindingKind.CHANNEL,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(),
-        ) as mock_upsert,
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(side_effect=RuntimeError("bus down")),
-        ),
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(),
+    ) as mock_upsert, patch(
+        "core.events.bus.emit",
+        AsyncMock(side_effect=RuntimeError("bus down")),
     ):
         result = await pipeline.set_binding(
             _guild(),
@@ -373,31 +356,26 @@ async def test_set_binding_db_failure_skips_event_emission(_xp_schema):
     not emitted — the DB is the source of truth for emission."""
     pipeline = BindingMutationPipeline()
     actor = _admin_actor()
-    with (
-        patch(
-            "services.binding_mutation.validate_binding_target",
-            AsyncMock(return_value=ResourceStatus.BOUND),
-        ),
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="announce_channel",
-                    kind=BindingKind.CHANNEL,
-                ),
+    with patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="announce_channel",
+                kind=BindingKind.CHANNEL,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(side_effect=RuntimeError("db down")),
-        ),
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ) as mock_emit,
-    ):
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(side_effect=RuntimeError("db down")),
+    ), patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ) as mock_emit:
         with pytest.raises(RuntimeError, match="db down"):
             await pipeline.set_binding(
                 _guild(),
@@ -421,34 +399,28 @@ async def test_set_binding_member_kind_uses_member_resolver(_xp_schema):
     pipeline = BindingMutationPipeline()
     actor = _admin_actor()
     sentinel_member = object()
-    with (
-        patch(
-            "core.runtime.bindings.guild_resources.resolve_member",
-            return_value=sentinel_member,
-        ) as mock_resolve,
-        patch(
-            "core.runtime.bindings.discovery.validate_resource",
-            AsyncMock(),
-        ) as mock_validate_resource,
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="moderator_target",
-                    kind=BindingKind.MEMBER,
-                ),
+    with patch(
+        "core.runtime.bindings.guild_resources.resolve_member",
+        return_value=sentinel_member,
+    ) as mock_resolve, patch(
+        "core.runtime.bindings.discovery.validate_resource",
+        AsyncMock(),
+    ) as mock_validate_resource, patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="moderator_target",
+                kind=BindingKind.MEMBER,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(),
-        ),
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ),
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(),
+    ), patch(
+        "core.events.bus.emit",
+        AsyncMock(),
     ):
         result = await pipeline.set_binding(
             _guild(),
@@ -473,27 +445,23 @@ async def test_set_binding_member_kind_uses_member_resolver(_xp_schema):
 async def test_clear_binding_idempotent_when_no_row_exists(_xp_schema):
     pipeline = BindingMutationPipeline()
     actor = _admin_actor()
-    with (
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="announce_channel",
-                    kind=BindingKind.CHANNEL,
-                ),
+    with patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="announce_channel",
+                kind=BindingKind.CHANNEL,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.clear_with_audit",
-            AsyncMock(),
-        ) as mock_clear,
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ) as mock_emit,
-    ):
+    ), patch(
+        "services.binding_mutation.bindings_db.clear_with_audit",
+        AsyncMock(),
+    ) as mock_clear, patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ) as mock_emit:
         result = await pipeline.clear_binding(
             _guild(),
             "xp",
@@ -514,31 +482,27 @@ async def test_clear_binding_writes_and_emits_when_bound(_xp_schema):
 
     pipeline = BindingMutationPipeline()
     actor = _admin_actor()
-    with (
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=1,
-                    subsystem="xp",
-                    binding_name="announce_channel",
-                    kind=BindingKind.CHANNEL,
-                    target_id=42,
-                    status=ResourceStatus.BOUND,
-                    last_updated_at=datetime.now(timezone.utc),
-                    version=3,
-                ),
+    with patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=1,
+                subsystem="xp",
+                binding_name="announce_channel",
+                kind=BindingKind.CHANNEL,
+                target_id=42,
+                status=ResourceStatus.BOUND,
+                last_updated_at=datetime.now(timezone.utc),
+                version=3,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.clear_with_audit",
-            AsyncMock(),
-        ) as mock_clear,
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ) as mock_emit,
-    ):
+    ), patch(
+        "services.binding_mutation.bindings_db.clear_with_audit",
+        AsyncMock(),
+    ) as mock_clear, patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ) as mock_emit:
         result = await pipeline.clear_binding(
             _guild(),
             "xp",
@@ -553,13 +517,11 @@ async def test_clear_binding_writes_and_emits_when_bound(_xp_schema):
     mock_clear.assert_awaited_once()
     # Phase 9c.2: clear_binding now also emits ``audit.action_recorded``.
     binding_emits = [
-        c
-        for c in mock_emit.await_args_list
+        c for c in mock_emit.await_args_list
         if c.args and c.args[0] == EVT_BINDING_CHANGED
     ]
     audit_emits = [
-        c
-        for c in mock_emit.await_args_list
+        c for c in mock_emit.await_args_list
         if c.args and c.args[0] == "audit.action_recorded"
     ]
     assert len(binding_emits) == 1
@@ -620,31 +582,26 @@ async def test_set_ai_audit_log_channel_binding_writes_through_pipeline(_ai_sche
     actor = _admin_actor(guild_id=999)
     guild = _guild(guild_id=999)
 
-    with (
-        patch(
-            "services.binding_mutation.validate_binding_target",
-            AsyncMock(return_value=ResourceStatus.BOUND),
-        ),
-        patch(
-            "services.binding_mutation.get_binding",
-            AsyncMock(
-                return_value=BindingValue(
-                    guild_id=999,
-                    subsystem="ai",
-                    binding_name="audit_log_channel",
-                    kind=BindingKind.CHANNEL,
-                ),
+    with patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "services.binding_mutation.get_binding",
+        AsyncMock(
+            return_value=BindingValue(
+                guild_id=999,
+                subsystem="ai",
+                binding_name="audit_log_channel",
+                kind=BindingKind.CHANNEL,
             ),
         ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(),
-        ) as mock_upsert,
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ) as mock_emit,
-    ):
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(),
+    ) as mock_upsert, patch(
+        "core.events.bus.emit",
+        AsyncMock(),
+    ) as mock_emit:
         result = await pipeline.set_binding(
             guild,
             "ai",
@@ -660,8 +617,7 @@ async def test_set_ai_audit_log_channel_binding_writes_through_pipeline(_ai_sche
     mock_upsert.assert_awaited_once()
 
     binding_emits = [
-        c
-        for c in mock_emit.await_args_list
+        c for c in mock_emit.await_args_list
         if c.args and c.args[0] == EVT_BINDING_CHANGED
     ]
     assert len(binding_emits) == 1
@@ -741,27 +697,21 @@ async def test_set_and_clear_visible_to_reads_without_invalidation(_xp_schema):
     actor = _admin_actor()
     guild = _guild()
 
-    with (
-        patch(
-            "core.runtime.bindings.bindings_db.get_one",
-            AsyncMock(side_effect=fake_get_one),
-        ),
-        patch(
-            "services.binding_mutation.bindings_db.upsert_with_audit",
-            AsyncMock(side_effect=fake_upsert),
-        ),
-        patch(
-            "services.binding_mutation.bindings_db.clear_with_audit",
-            AsyncMock(side_effect=fake_clear),
-        ),
-        patch(
-            "services.binding_mutation.validate_binding_target",
-            AsyncMock(return_value=ResourceStatus.BOUND),
-        ),
-        patch(
-            "core.events.bus.emit",
-            AsyncMock(),
-        ),
+    with patch(
+        "core.runtime.bindings.bindings_db.get_one",
+        AsyncMock(side_effect=fake_get_one),
+    ), patch(
+        "services.binding_mutation.bindings_db.upsert_with_audit",
+        AsyncMock(side_effect=fake_upsert),
+    ), patch(
+        "services.binding_mutation.bindings_db.clear_with_audit",
+        AsyncMock(side_effect=fake_clear),
+    ), patch(
+        "services.binding_mutation.validate_binding_target",
+        AsyncMock(return_value=ResourceStatus.BOUND),
+    ), patch(
+        "core.events.bus.emit",
+        AsyncMock(),
     ):
         # Never bound: a reader sees the unresolved default.
         before = await read_binding(1, "xp", "announce_channel")
@@ -770,12 +720,7 @@ async def test_set_and_clear_visible_to_reads_without_invalidation(_xp_schema):
 
         # set → the very next uncached read sees the committed target.
         await pipeline.set_binding(
-            guild,
-            "xp",
-            "announce_channel",
-            BindingKind.CHANNEL,
-            42,
-            actor,
+            guild, "xp", "announce_channel", BindingKind.CHANNEL, 42, actor,
         )
         after_set = await read_binding(1, "xp", "announce_channel")
         assert after_set.target_id == 42
@@ -784,11 +729,7 @@ async def test_set_and_clear_visible_to_reads_without_invalidation(_xp_schema):
         # clear → the very next uncached read sees the cleared slot
         # (last_updated_at survives, distinguishing cleared from never-bound).
         await pipeline.clear_binding(
-            guild,
-            "xp",
-            "announce_channel",
-            BindingKind.CHANNEL,
-            actor,
+            guild, "xp", "announce_channel", BindingKind.CHANNEL, actor,
         )
         after_clear = await read_binding(1, "xp", "announce_channel")
         assert after_clear.target_id is None

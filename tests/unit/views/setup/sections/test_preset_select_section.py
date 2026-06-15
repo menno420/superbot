@@ -64,7 +64,7 @@ def test_entry_embed_lists_every_bundled_preset():
 def test_preview_embed_shows_operation_count():
     minimal = next(p for p in SERVER_PRESETS if p.slug == "minimal")
     embed = preset_select.build_preview_embed("minimal")
-    description = embed.description or ""
+    description = (embed.description or "")
     assert str(len(minimal.operations)) in description
 
 

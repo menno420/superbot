@@ -77,7 +77,7 @@ def test_cog_size_under_fail_threshold(cog_path: Path):
             f"threshold set by S4.6.  Decompose the cog before adding to "
             f"it: move view code to ``views/<sub>/``, persistence helpers "
             f"to ``cogs/<sub>/_persistence.py``, etc.  See docs/architecture.md "
-            f'§"Subsystem decomposition" and the Phase A PRs for the '
+            f"§\"Subsystem decomposition\" and the Phase A PRs for the "
             f"established pattern.",
         )
 

@@ -169,9 +169,9 @@ def test_view_has_no_individual_hub_child_options():
         "counting",
         "chain",
     ):
-        assert (
-            hub_child not in values
-        ), f"hub child {hub_child!r} leaked into HelpCategoryView top-level"
+        assert hub_child not in values, (
+            f"hub child {hub_child!r} leaked into HelpCategoryView top-level"
+        )
 
 
 def test_view_default_member_tier_is_user_when_unspecified():

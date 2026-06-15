@@ -46,9 +46,7 @@ def test_parse_map_filters_emits_one_fact_per_filter_entry():
         assert fact["entity_kind"] == "btd6_map_filter"
         body = fact["body_json"]
         assert body["filter_type"] == fact["entity_key"]
-        assert body["maps_url"].startswith(
-            "https://data.ninjakiwi.com/btd6/maps/filter/"
-        )
+        assert body["maps_url"].startswith("https://data.ninjakiwi.com/btd6/maps/filter/")
 
 
 def test_parse_map_filters_carries_game_version_parameter():
@@ -75,9 +73,7 @@ def test_parse_map_list_emits_one_fact_per_map():
         assert fact["entity_key"].startswith("ZFUE")  # newest sample IDs
         body = fact["body_json"]
         assert isinstance(body["created_at_ms"], int)
-        assert body["metadata_url"].startswith(
-            "https://data.ninjakiwi.com/btd6/maps/map/"
-        )
+        assert body["metadata_url"].startswith("https://data.ninjakiwi.com/btd6/maps/map/")
 
 
 def test_parse_map_list_preserves_creator_url_unexpanded():
@@ -95,9 +91,9 @@ def test_parse_map_list_skips_entries_missing_id():
         "error": None,
         "body": [
             {"name": "ok", "id": "ABC123"},
-            {"name": "no-id"},  # missing id
-            {"name": "blank-id", "id": ""},  # empty id
-            "not-a-dict",  # malformed entry
+            {"name": "no-id"},                # missing id
+            {"name": "blank-id", "id": ""},   # empty id
+            "not-a-dict",                     # malformed entry
         ],
     }
     facts = parse_map_list(payload)

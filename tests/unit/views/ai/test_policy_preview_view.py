@@ -281,7 +281,6 @@ async def test_build_preview_embed_renders_baseline_disabled_marker(monkeypatch)
     can override per channel/category, so it renders as baseline-denied
     rather than hard-disabled.
     """
-
     async def _resolve(ctx, *, dry_run=False):
         return nlp.PolicyDecision(
             allowed=False,
@@ -339,15 +338,13 @@ async def test_preview_and_live_agree_for_bug_case(monkeypatch):
         }
 
     async def _list_channel(_gid):
-        return [
-            {
-                "channel_id": 555,
-                "mode": "always_reply",
-                "min_level": 0,
-                "cooldown_seconds": 10,
-                "instruction_profile_id": None,
-            }
-        ]
+        return [{
+            "channel_id": 555,
+            "mode": "always_reply",
+            "min_level": 0,
+            "cooldown_seconds": 10,
+            "instruction_profile_id": None,
+        }]
 
     async def _empty(_gid):
         return []

@@ -46,7 +46,9 @@ def test_max_accessible_depth_tracks_depth_access_stat():
     assert world.max_accessible_depth(EffectiveStats(depth_access=1)) == 1  # torch
     assert world.max_accessible_depth(EffectiveStats(depth_access=2)) == 2  # lantern
     # Beyond the deepest band clamps.
-    assert world.max_accessible_depth(EffectiveStats(depth_access=9)) == world.MAX_DEPTH
+    assert (
+        world.max_accessible_depth(EffectiveStats(depth_access=9)) == world.MAX_DEPTH
+    )
 
 
 def test_torch_unlocks_cavern_lantern_unlocks_deep():

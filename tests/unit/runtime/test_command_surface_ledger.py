@@ -939,7 +939,9 @@ class TestDeliberatenessFindings:
         assert ledger.entries[0].classification == "primary_entrypoint"
 
     def test_below_threshold_aliases_need_no_disposition(self):
-        aliases = tuple(f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD - 1))
+        aliases = tuple(
+            f"a{i}" for i in range(ALIAS_DELIBERATION_THRESHOLD - 1)
+        )
         cmd = _make_cmd("balance", cog_name="EconomyCog", aliases=aliases)
         cmd.extras = None
         ledger = build_ledger(_make_bot(cmd))
@@ -1228,7 +1230,9 @@ class TestSurfaceClassificationCompleteness:
         assert force.kind == "prefix"
         # ai_cog declares BOTH a prefix group `!ai` and a slash group
         # `/ai` — disambiguate by kind (by_key keeps only one).
-        assert any(r.key == "ai_cog.py:ai" and r.kind == "slash-group" for r in routes)
+        assert any(
+            r.key == "ai_cog.py:ai" and r.kind == "slash-group" for r in routes
+        )
         # Generous sanity floor — NOT an inventory pin (the real
         # surface is ~3× this); guards against a walk that silently
         # enumerates one directory level.
@@ -1269,7 +1273,8 @@ class TestSurfaceClassificationCompleteness:
             "\nDeclare WHY each is hidden, e.g. "
             'extras={"classification": "panel_action"} '
             f"(valid: {sorted(HIDDEN_ROUTE_CLASSIFICATIONS)}), or add a "
-            "reviewed entry to HIDDEN_ROUTE_EXCEPTIONS:\n  " + "\n  ".join(offenders)
+            "reviewed entry to HIDDEN_ROUTE_EXCEPTIONS:\n  "
+            + "\n  ".join(offenders)
         )
 
     def test_every_alias_pile_declares_a_disposition(self, routes):
@@ -1287,7 +1292,8 @@ class TestSurfaceClassificationCompleteness:
             "Alias pile(s) without a declared disposition.\nDeclare e.g. "
             'extras={"alias_classification": "legacy_duplicate"} (compat '
             'routes) or "power_user_shortcut" (advertised fluency), or add '
-            "a reviewed entry to ALIAS_PILE_EXCEPTIONS:\n  " + "\n  ".join(offenders)
+            "a reviewed entry to ALIAS_PILE_EXCEPTIONS:\n  "
+            + "\n  ".join(offenders)
         )
 
     def test_top_level_slash_surface_is_pinned(self, routes):

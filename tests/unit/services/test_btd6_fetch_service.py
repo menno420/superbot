@@ -20,22 +20,16 @@ from utils.db import btd6_sources as btd6_db  # noqa: E402
 def _stub_registry(monkeypatch):
     rows = {
         "nk_btd6_maps": {
-            "source_key": "nk_btd6_maps",
-            "enabled": False,
-            "base_url": None,
-            "trust_tier": 1,
+            "source_key": "nk_btd6_maps", "enabled": False,
+            "base_url": None, "trust_tier": 1,
         },
         "nk_btd6_events": {
-            "source_key": "nk_btd6_events",
-            "enabled": True,
-            "base_url": "https://example.test",
-            "trust_tier": 1,
+            "source_key": "nk_btd6_events", "enabled": True,
+            "base_url": "https://example.test", "trust_tier": 1,
         },
         "nk_btd6_disabled_with_url": {
-            "source_key": "nk_btd6_disabled_with_url",
-            "enabled": False,
-            "base_url": "https://example.test",
-            "trust_tier": 1,
+            "source_key": "nk_btd6_disabled_with_url", "enabled": False,
+            "base_url": "https://example.test", "trust_tier": 1,
         },
     }
 
@@ -110,11 +104,9 @@ async def test_resolves_path_params(monkeypatch):
 
     # nk_btd6_events has path_template '/btd6/events' so path_params
     # don't change the URL; test the substitution helper directly.
-    row = {
-        "base_url": "https://example.test",
-        "path_template": "/btd6/races/:raceID/leaderboard",
-        "full_url": "https://example.test/btd6/races/:raceID/leaderboard",
-    }
+    row = {"base_url": "https://example.test",
+           "path_template": "/btd6/races/:raceID/leaderboard",
+           "full_url": "https://example.test/btd6/races/:raceID/leaderboard"}
     assert (
         fetch._resolve_url(row, {"raceID": "abc"})
         == "https://example.test/btd6/races/abc/leaderboard"

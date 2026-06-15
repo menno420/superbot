@@ -60,7 +60,9 @@ def _opener() -> help_cog.HelpOpener:
 
 
 def _has_back_to_help(view: discord.ui.View) -> bool:
-    return any(getattr(c, "custom_id", None) == "help:back" for c in view.children)
+    return any(
+        getattr(c, "custom_id", None) == "help:back" for c in view.children
+    )
 
 
 @pytest.mark.asyncio

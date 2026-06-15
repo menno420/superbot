@@ -141,17 +141,17 @@ def test_rps_update_stat_signature_requires_guild_id():
 def test_rps_get_leaderboard_signature_requires_guild_id():
     sig = inspect.signature(rps.rps_get_leaderboard)
     guild = sig.parameters["guild_id"]
-    assert (
-        guild.default is inspect.Parameter.empty
-    ), "rps_get_leaderboard.guild_id must be required (no default)."
+    assert guild.default is inspect.Parameter.empty, (
+        "rps_get_leaderboard.guild_id must be required (no default)."
+    )
 
 
 def test_rps_ensure_player_signature_requires_guild_id():
     sig = inspect.signature(rps.rps_ensure_player)
     guild = sig.parameters["guild_id"]
-    assert (
-        guild.default is inspect.Parameter.empty
-    ), "rps_ensure_player.guild_id must be required (no default)."
+    assert guild.default is inspect.Parameter.empty, (
+        "rps_ensure_player.guild_id must be required (no default)."
+    )
 
 
 def test_rps_source_has_no_fstring_sql_identifier():

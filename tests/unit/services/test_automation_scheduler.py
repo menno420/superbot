@@ -201,9 +201,7 @@ def test_compute_next_run_at_for_manual_returns_none():
 async def test_tick_dispatches_due_rule_success(_mock_db):
     scheduler = AutomationScheduler()
     rule = _rule()
-    with patch.object(
-        scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])
-    ):
+    with patch.object(scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])):
         _mock_db["claim_run"].return_value = 42
         _mock_db["execute_rule"].return_value = _success_result()
         await scheduler.tick()
@@ -223,9 +221,7 @@ async def test_tick_dispatches_due_rule_success(_mock_db):
 async def test_tick_records_failure_and_increments_counter(_mock_db):
     scheduler = AutomationScheduler()
     rule = _rule()
-    with patch.object(
-        scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])
-    ):
+    with patch.object(scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])):
         _mock_db["claim_run"].return_value = 42
         _mock_db["execute_rule"].return_value = _failure_result()
         _mock_db["record_failure"].return_value = 1
@@ -240,9 +236,7 @@ async def test_tick_records_failure_and_increments_counter(_mock_db):
 async def test_tick_auto_disables_after_threshold(_mock_db):
     scheduler = AutomationScheduler(failure_threshold=3)
     rule = _rule(failure_count=2)
-    with patch.object(
-        scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])
-    ):
+    with patch.object(scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])):
         _mock_db["claim_run"].return_value = 42
         _mock_db["execute_rule"].return_value = _failure_result()
         _mock_db["record_failure"].return_value = 3  # crosses threshold
@@ -275,9 +269,7 @@ async def test_tick_skips_quiet_hours_without_running_executor(_mock_db):
 async def test_tick_skips_idempotency_collision_without_executing(_mock_db):
     scheduler = AutomationScheduler()
     rule = _rule()
-    with patch.object(
-        scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])
-    ):
+    with patch.object(scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])):
         _mock_db["claim_run"].return_value = None  # another scheduler beat us
         await scheduler.tick()
 
@@ -290,9 +282,7 @@ async def test_tick_skips_idempotency_collision_without_executing(_mock_db):
 async def test_tick_manual_rule_does_not_rearm_next_run_at(_mock_db):
     scheduler = AutomationScheduler()
     rule = _rule(trigger_kind="manual", trigger_config={})
-    with patch.object(
-        scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])
-    ):
+    with patch.object(scheduler, "_fetch_due_rules", new=AsyncMock(return_value=[rule])):
         _mock_db["claim_run"].return_value = 42
         _mock_db["execute_rule"].return_value = _success_result()
         await scheduler.tick()

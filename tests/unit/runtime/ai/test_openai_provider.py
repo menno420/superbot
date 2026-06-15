@@ -47,9 +47,7 @@ def _make_request(
 ) -> AIRequest:
     return AIRequest(
         context=AIRequestContext(
-            task=AITask.SETUP_SUGGEST,
-            scope=AIScope.ADMIN,
-            source="test",
+            task=AITask.SETUP_SUGGEST, scope=AIScope.ADMIN, source="test",
         ),
         system_prompt="system",
         payload={"hello": "world"},
@@ -108,8 +106,7 @@ async def test_provider_text_mode_omits_response_format():
     provider = OpenAIProvider(client=client)
 
     out = await provider.execute(
-        _make_request(mode=AIResponseMode.TEXT),
-        model="gpt-4o-mini",
+        _make_request(mode=AIResponseMode.TEXT), model="gpt-4o-mini",
     )
     assert out == "plain text"
     call_kwargs = client.chat.completions.create.await_args.kwargs

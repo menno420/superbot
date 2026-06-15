@@ -110,8 +110,6 @@ def test_main_pretooluse_skips_non_push(monkeypatch, capsys) -> None:
     called = {"n": 0}
     monkeypatch.setattr(cbf, "_freshness_warning", lambda: called.__setitem__("n", 1))
     monkeypatch.setattr(sys.stdin, "isatty", lambda: False)
-    monkeypatch.setattr(
-        sys.stdin, "read", lambda: '{"tool_name":"Bash","tool_input":{"command":"ls"}}'
-    )
+    monkeypatch.setattr(sys.stdin, "read", lambda: '{"tool_name":"Bash","tool_input":{"command":"ls"}}')
     assert cbf.main(["--event", "pretooluse"]) == 0
     assert called["n"] == 0

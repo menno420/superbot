@@ -130,8 +130,7 @@ async def test_job_select_replaces_subview_with_fresh_result_view():
     kwargs = interaction.followup.edit_message.await_args.kwargs
     rendered_view = kwargs["view"]
     assert isinstance(
-        rendered_view,
-        _WorkResultView,
+        rendered_view, _WorkResultView,
     ), f"Expected _WorkResultView after job completion, got {type(rendered_view).__name__}"
     assert kwargs["message_id"] == 1234
 
@@ -235,10 +234,7 @@ async def test_work_subview_back_re_attaches_grandparent_chain():
         custom_id="help:back",
     )
     sub = _WorkSubView(
-        MagicMock(id=1),
-        guild_id=2,
-        available=["janitor"],
-        back_target=grandparent,
+        MagicMock(id=1), guild_id=2, available=["janitor"], back_target=grandparent,
     )
     # stored for further-down propagation (e.g. the result view)
     assert sub._back_target is grandparent

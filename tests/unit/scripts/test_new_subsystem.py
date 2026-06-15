@@ -64,10 +64,7 @@ def test_unregistered_key_reports_missing_with_snippets(ns):
 def test_key_identity_mismatch_is_flagged(ns):
     checks = _by_name(
         ns.build_checks(
-            "communityspotlight",
-            "CommunitySpotlightCog",
-            "spotlight",
-            None,
+            "communityspotlight", "CommunitySpotlightCog", "spotlight", None,
         ),
     )
     assert not checks["key-identity"].ok
@@ -137,9 +134,7 @@ def test_no_panel_skips_panel_command_check(ns):
     checks = ns.build_checks("welcome", "WelcomeCog", "welcome", None, has_panel=False)
     assert "panel-command" not in _by_name(checks)
     failed = [c for c in checks if not c.ok]
-    assert (
-        not failed
-    ), f"config-only welcome should pass: {[(c.name, c.detail) for c in failed]}"
+    assert not failed, f"config-only welcome should pass: {[(c.name, c.detail) for c in failed]}"
 
 
 def test_cli_no_panel_exits_zero_for_config_only_subsystem(ns, capsys):

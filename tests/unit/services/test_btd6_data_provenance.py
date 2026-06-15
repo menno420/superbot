@@ -71,17 +71,15 @@ def _row(
 
 def test_extract_provenance_populates_all_fields():
     ts = _ts(12)  # 12 h ago → aging (fresh < 6 h, aging < 48 h)
-    p = extract_provenance(
-        _row(
-            source_id=7,
-            source_key="nk_btd6_races",
-            source_name="data.ninjakiwi.com",
-            source_kind="official_api",
-            trust_tier=1,
-            fetched_at=ts,
-            game_version="43.0",
-        )
-    )
+    p = extract_provenance(_row(
+        source_id=7,
+        source_key="nk_btd6_races",
+        source_name="data.ninjakiwi.com",
+        source_kind="official_api",
+        trust_tier=1,
+        fetched_at=ts,
+        game_version="43.0",
+    ))
     assert p.source_id == 7
     assert p.source_key == "nk_btd6_races"
     assert p.source_name == "data.ninjakiwi.com"
@@ -120,9 +118,9 @@ def test_is_official_false_for_tier2():
 
 
 def test_label_format():
-    p = extract_provenance(
-        _row(source_name="bloonswiki.com", trust_tier=2, fetched_at=_ts(0.5))
-    )
+    p = extract_provenance(_row(
+        source_name="bloonswiki.com", trust_tier=2, fetched_at=_ts(0.5)
+    ))
     assert "bloonswiki.com" in p.label
     assert "tier 2" in p.label
     assert "fresh" in p.label
@@ -159,17 +157,15 @@ def test_extract_provenance_missing_optional_fields_defaults_safely():
 
 def test_fact_row_from_row_populates_all_fields():
     ts = _ts(1)
-    fr = FactRow.from_row(
-        _row(
-            fact_type="btd6.race_metadata",
-            entity_kind="btd6_race",
-            entity_key="the_race",
-            body_json={"name": "Test Race"},
-            fetched_at=ts,
-            confidence=0.9,
-            version=2,
-        )
-    )
+    fr = FactRow.from_row(_row(
+        fact_type="btd6.race_metadata",
+        entity_kind="btd6_race",
+        entity_key="the_race",
+        body_json={"name": "Test Race"},
+        fetched_at=ts,
+        confidence=0.9,
+        version=2,
+    ))
     assert fr.fact_id == 42
     assert fr.fact_type == "btd6.race_metadata"
     assert fr.entity_kind == "btd6_race"

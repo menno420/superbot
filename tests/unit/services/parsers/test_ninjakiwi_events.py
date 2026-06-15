@@ -44,7 +44,9 @@ def test_parse_events_index_preserves_null_urls():
     facts = parse_events_index(_load("btd6_events.json"))
     # bossRush / ct / collectableEvent / socialseason events have url=null
     null_url_types = {"bossRush", "ct", "collectableEvent", "socialseason"}
-    null_url_facts = [fact for fact in facts if fact["body_json"]["url"] is None]
+    null_url_facts = [
+        fact for fact in facts if fact["body_json"]["url"] is None
+    ]
     assert null_url_facts, "fixture should contain events with url=null"
     for fact in null_url_facts:
         assert fact["body_json"]["type"] in null_url_types

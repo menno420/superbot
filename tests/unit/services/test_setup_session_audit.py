@@ -79,7 +79,9 @@ async def test_mark_complete_emits_audit():
     with (
         patch("utils.db.setup_session.set_status", new_callable=AsyncMock),
         patch("utils.db.setup_session.set_step", new_callable=AsyncMock),
-        patch("utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock),
+        patch(
+            "utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock
+        ),
         patch(
             "utils.db.setup_session.clear_acknowledged_sections",
             new_callable=AsyncMock,
@@ -112,7 +114,9 @@ async def test_dismiss_emits_audit():
     with (
         patch("utils.db.setup_session.set_status", new_callable=AsyncMock),
         patch("utils.db.setup_session.set_step", new_callable=AsyncMock),
-        patch("utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock),
+        patch(
+            "utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock
+        ),
         patch(
             "utils.db.setup_session.clear_acknowledged_sections",
             new_callable=AsyncMock,
@@ -169,7 +173,9 @@ async def test_mark_complete_audit_failure_does_not_raise():
     with (
         patch("utils.db.setup_session.set_status", new_callable=AsyncMock),
         patch("utils.db.setup_session.set_step", new_callable=AsyncMock),
-        patch("utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock),
+        patch(
+            "utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock
+        ),
         patch(
             "utils.db.setup_session.clear_acknowledged_sections",
             new_callable=AsyncMock,
@@ -191,7 +197,9 @@ async def test_dismiss_audit_failure_does_not_raise():
     with (
         patch("utils.db.setup_session.set_status", new_callable=AsyncMock),
         patch("utils.db.setup_session.set_step", new_callable=AsyncMock),
-        patch("utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock),
+        patch(
+            "utils.db.setup_session.clear_skipped_sections", new_callable=AsyncMock
+        ),
         patch(
             "utils.db.setup_session.clear_acknowledged_sections",
             new_callable=AsyncMock,

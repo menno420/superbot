@@ -372,9 +372,7 @@ async def test_btd6_power_effect_applies_monkey_boost_to_attack_speed():
     # rate_scale 0.5 halves cooldown -> doubles attacks/sec (independent rounding
     # of each value leaves a sub-0.01 gap, so compare with tolerance).
     assert (
-        abs(
-            result["boosted_attacks_per_second"] - 2 * result["base_attacks_per_second"]
-        )
+        abs(result["boosted_attacks_per_second"] - 2 * result["base_attacks_per_second"])
         < 0.01
     )
 
@@ -788,9 +786,7 @@ async def test_btd6_round_tools_thread_the_abr_roundset():
     comp = await h["btd6_round_composition"]({"round_start": 40, "roundset": "abr"})
     assert comp["found"] is True and comp["roundset"] == "alternate"
     assert comp["rounds"][0]["groups"] == [{"bloon": "moab", "count": 1}]
-    cash = await h["btd6_round_cash"](
-        {"round_start": 3, "round_end": 80, "roundset": "abr"}
-    )
+    cash = await h["btd6_round_cash"]({"round_start": 3, "round_end": 80, "roundset": "abr"})
     assert cash["found"] is True and cash["roundset"] == "alternate"
     assert "round 3" in cash["assumptions"]
     default = await h["btd6_round_cash"]({"round_start": 50, "round_end": 60})
@@ -876,9 +872,7 @@ async def test_btd6_power_lookup_single_and_roster():
     assert boost["power"]["monkey_money_cost"] == 100
     roster = await h["btd6_power_lookup"]({})
     assert roster["found"] is True and roster["count"] == len(roster["powers"]) >= 20
-    assert (await h["btd6_power_lookup"]({"power": "nope-not-a-power"}))[
-        "found"
-    ] is False
+    assert (await h["btd6_power_lookup"]({"power": "nope-not-a-power"}))["found"] is False
 
 
 async def test_btd6_monkey_knowledge_lookup_single_category_and_roster():
@@ -930,9 +924,7 @@ async def test_btd6_boss_lookup_single_and_roster():
     t3 = next(t for t in boss["tiers"] if t["tier"] == 3)
     assert t3["health"] == 350_000
     # Derived immunity surfaces; partial-name match resolves a single boss.
-    assert set(
-        (await h["btd6_boss_lookup"]({"boss": "dread"}))["boss"]["immune_to"]
-    ) == {
+    assert set((await h["btd6_boss_lookup"]({"boss": "dread"}))["boss"]["immune_to"]) == {
         "Cold",
         "Energy",
         "Sharp",

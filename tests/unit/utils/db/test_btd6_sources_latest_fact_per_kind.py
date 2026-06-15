@@ -132,9 +132,7 @@ async def test_get_latest_fact_with_fact_type_keeps_clause(monkeypatch):
     monkeypatch.setattr(btd6_db.pool, "get", lambda: fake_pool)
 
     await btd6_db.get_latest_fact(
-        "btd6.race_metadata",
-        "btd6_race",
-        "Reversed_Loop",
+        "btd6.race_metadata", "btd6_race", "Reversed_Loop",
     )
 
     assert "f.fact_type = $1" in captured["sql"]

@@ -118,7 +118,8 @@ def test_build_advisor_openai_without_api_key_falls_back(_no_openai_env, caplog)
         advisor = build_advisor(provider="openai")
     assert isinstance(advisor, DeterministicAdvisor)
     assert any(
-        "OPENAI_API_KEY not set" in record.getMessage() for record in caplog.records
+        "OPENAI_API_KEY not set" in record.getMessage()
+        for record in caplog.records
     )
 
 

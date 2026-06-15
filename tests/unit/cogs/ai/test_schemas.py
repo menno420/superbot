@@ -199,9 +199,9 @@ def test_every_ai_setting_requires_the_configure_capability():
     from cogs.ai.schemas import AI_CONFIG_SCHEMA
 
     for spec in AI_CONFIG_SCHEMA.settings:
-        assert (
-            spec.capability_required == "ai.settings.configure"
-        ), f"AI setting {spec.name!r} must require ai.settings.configure"
+        assert spec.capability_required == "ai.settings.configure", (
+            f"AI setting {spec.name!r} must require ai.settings.configure"
+        )
 
 
 def test_settings_keys_re_export_all_ai_keys():

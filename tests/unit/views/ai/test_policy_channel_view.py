@@ -79,16 +79,8 @@ def _set_inputs(modal: ChannelPolicyModal, *, mode: str, level: str, cooldown: s
 async def test_submit_writes_through_set_channel_policy(monkeypatch):
     captured: dict = {}
 
-    async def _capture(
-        guild_id,
-        channel_id,
-        *,
-        mode,
-        min_level,
-        cooldown_seconds,
-        instruction_profile_id,
-        actor,
-    ):
+    async def _capture(guild_id, channel_id, *, mode, min_level,
+                       cooldown_seconds, instruction_profile_id, actor):
         captured.update(
             guild_id=guild_id,
             channel_id=channel_id,
@@ -132,16 +124,8 @@ async def test_submit_writes_through_set_channel_policy(monkeypatch):
 async def test_submit_passes_none_for_blank_optional_fields(monkeypatch):
     captured: dict = {}
 
-    async def _capture(
-        guild_id,
-        channel_id,
-        *,
-        mode,
-        min_level,
-        cooldown_seconds,
-        instruction_profile_id,
-        actor,
-    ):
+    async def _capture(guild_id, channel_id, *, mode, min_level,
+                       cooldown_seconds, instruction_profile_id, actor):
         captured.update(
             min_level=min_level,
             cooldown_seconds=cooldown_seconds,

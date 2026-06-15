@@ -54,21 +54,24 @@ _UNCAPTURED_SOURCE_KEYS = (
 
 
 def _strip_comments(sql: str) -> str:
-    return "\n".join(line.split("--", 1)[0] for line in sql.splitlines())
+    return "\n".join(
+        line.split("--", 1)[0]
+        for line in sql.splitlines()
+    )
 
 
 def test_migration_042_exists():
-    assert (
-        _MIGRATION.exists()
-    ), "migration 042 must land alongside the captured fixtures"
+    assert _MIGRATION.exists(), (
+        "migration 042 must land alongside the captured fixtures"
+    )
 
 
 def test_migration_042_enables_every_captured_endpoint():
     text = _MIGRATION.read_text(encoding="utf-8")
     for source_key in _CAPTURED_SOURCE_KEYS:
-        assert (
-            f"'{source_key}'" in text
-        ), f"migration 042 missing captured source_key {source_key!r}"
+        assert f"'{source_key}'" in text, (
+            f"migration 042 missing captured source_key {source_key!r}"
+        )
 
 
 def test_migration_042_does_not_enable_uncaptured_endpoints():
@@ -91,9 +94,9 @@ def test_migration_042_does_not_use_static_asset_host_as_base_url():
     SQL comments before checking so the documentary comment that names
     the host is not a false positive."""
     code = _strip_comments(_MIGRATION.read_text(encoding="utf-8"))
-    assert (
-        "static-api.nkstatic.com" not in code
-    ), "static asset host must not become a registry base_url"
+    assert "static-api.nkstatic.com" not in code, (
+        "static asset host must not become a registry base_url"
+    )
 
 
 def test_migration_042_flips_enabled_true():
@@ -112,6 +115,6 @@ def test_migration_042_omits_updated_by_string_assignment():
 
 def test_migration_042_records_provenance_in_notes():
     text = _MIGRATION.read_text(encoding="utf-8")
-    assert (
-        "[042]" in text
-    ), "migration 042 should tag the notes column so re-runs are idempotent"
+    assert "[042]" in text, (
+        "migration 042 should tag the notes column so re-runs are idempotent"
+    )

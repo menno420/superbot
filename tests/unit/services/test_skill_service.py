@@ -105,20 +105,15 @@ async def _fake_txn():
 async def test_respec_debits_and_clears_every_branch():
     alloc = {"mining": 4, "combat": 3}
     with _patch_level(6), _patch_skills(alloc):
-        with (
-            patch.object(ss.db, "transaction", _fake_txn),
-            patch.object(
-                ss.economy_service,
-                "debit_in_txn",
-                AsyncMock(return_value=500),
-            ) as debit,
-            patch.object(
-                ss.db,
-                "set_skill_points",
-                AsyncMock(),
-            ) as setp,
-            patch.object(ss.bus, "emit", AsyncMock()) as emit,
-        ):
+        with patch.object(ss.db, "transaction", _fake_txn), patch.object(
+            ss.economy_service,
+            "debit_in_txn",
+            AsyncMock(return_value=500),
+        ) as debit, patch.object(
+            ss.db,
+            "set_skill_points",
+            AsyncMock(),
+        ) as setp, patch.object(ss.bus, "emit", AsyncMock()) as emit:
             result = await ss.respec(1, 2)
     assert result.ok
     assert result.new_balance == 500
@@ -136,22 +131,15 @@ async def test_respec_debits_and_clears_every_branch():
 async def test_respec_insufficient_funds_does_not_clear():
     alloc = {"mining": 4}
     with _patch_level(6), _patch_skills(alloc):
-        with (
-            patch.object(ss.db, "transaction", _fake_txn),
-            patch.object(
-                ss.economy_service,
-                "debit_in_txn",
-                AsyncMock(
-                    side_effect=ss.economy_service.InsufficientFundsError("broke")
-                ),
-            ),
-            patch.object(
-                ss.db,
-                "get_coins",
-                AsyncMock(return_value=10),
-            ),
-            patch.object(ss.db, "set_skill_points", AsyncMock()) as setp,
-        ):
+        with patch.object(ss.db, "transaction", _fake_txn), patch.object(
+            ss.economy_service,
+            "debit_in_txn",
+            AsyncMock(side_effect=ss.economy_service.InsufficientFundsError("broke")),
+        ), patch.object(
+            ss.db,
+            "get_coins",
+            AsyncMock(return_value=10),
+        ), patch.object(ss.db, "set_skill_points", AsyncMock()) as setp:
             result = await ss.respec(1, 2)
     assert not result.ok
     setp.assert_not_called()
@@ -193,20 +181,15 @@ async def test_respec_branch_with_no_points_in_branch_is_a_noop():
 async def test_respec_branch_debits_and_clears_only_that_branch():
     alloc = {"mining": 4, "combat": 3}
     with _patch_level(6), _patch_skills(alloc):
-        with (
-            patch.object(ss.db, "transaction", _fake_txn),
-            patch.object(
-                ss.economy_service,
-                "debit_in_txn",
-                AsyncMock(return_value=420),
-            ) as debit,
-            patch.object(
-                ss.db,
-                "set_skill_points",
-                AsyncMock(),
-            ) as setp,
-            patch.object(ss.bus, "emit", AsyncMock()) as emit,
-        ):
+        with patch.object(ss.db, "transaction", _fake_txn), patch.object(
+            ss.economy_service,
+            "debit_in_txn",
+            AsyncMock(return_value=420),
+        ) as debit, patch.object(
+            ss.db,
+            "set_skill_points",
+            AsyncMock(),
+        ) as setp, patch.object(ss.bus, "emit", AsyncMock()) as emit:
             result = await ss.respec_branch(1, 2, "mining")
     assert result.ok
     assert result.new_balance == 420
@@ -220,22 +203,15 @@ async def test_respec_branch_debits_and_clears_only_that_branch():
 @pytest.mark.asyncio
 async def test_respec_branch_insufficient_funds_does_not_clear():
     with _patch_level(6), _patch_skills({"mining": 4}):
-        with (
-            patch.object(ss.db, "transaction", _fake_txn),
-            patch.object(
-                ss.economy_service,
-                "debit_in_txn",
-                AsyncMock(
-                    side_effect=ss.economy_service.InsufficientFundsError("broke")
-                ),
-            ),
-            patch.object(
-                ss.db,
-                "get_coins",
-                AsyncMock(return_value=10),
-            ),
-            patch.object(ss.db, "set_skill_points", AsyncMock()) as setp,
-        ):
+        with patch.object(ss.db, "transaction", _fake_txn), patch.object(
+            ss.economy_service,
+            "debit_in_txn",
+            AsyncMock(side_effect=ss.economy_service.InsufficientFundsError("broke")),
+        ), patch.object(
+            ss.db,
+            "get_coins",
+            AsyncMock(return_value=10),
+        ), patch.object(ss.db, "set_skill_points", AsyncMock()) as setp:
             result = await ss.respec_branch(1, 2, "mining")
     assert not result.ok
     setp.assert_not_called()

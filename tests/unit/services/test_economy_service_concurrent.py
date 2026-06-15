@@ -52,10 +52,7 @@ async def test_credit_under_concurrency_emits_per_call():
         await asyncio.gather(
             *(
                 economy_service.credit(
-                    guild_id=1,
-                    user_id=2,
-                    amount=10,
-                    reason=f"test:{i}",
+                    guild_id=1, user_id=2, amount=10, reason=f"test:{i}",
                 )
                 for i in range(_N)
             ),
@@ -82,9 +79,7 @@ async def test_debit_under_concurrency_emits_per_call():
             new_callable=AsyncMock,
             return_value=0,
         ),
-        patch(
-            "services.economy_service.db.insert_economy_audit", new_callable=AsyncMock
-        ),
+        patch("services.economy_service.db.insert_economy_audit", new_callable=AsyncMock),
         patch(
             "services.economy_service.bus.emit",
             new_callable=AsyncMock,
@@ -93,10 +88,7 @@ async def test_debit_under_concurrency_emits_per_call():
         await asyncio.gather(
             *(
                 economy_service.debit(
-                    guild_id=1,
-                    user_id=2,
-                    amount=5,
-                    reason=f"test:{i}",
+                    guild_id=1, user_id=2, amount=5, reason=f"test:{i}",
                 )
                 for i in range(_N)
             ),
@@ -121,9 +113,7 @@ async def test_debit_insufficient_funds_raises_before_emit():
             "services.economy_service.db.add_coins",
             new_callable=AsyncMock,
         ) as add_coins,
-        patch(
-            "services.economy_service.db.insert_economy_audit", new_callable=AsyncMock
-        ),
+        patch("services.economy_service.db.insert_economy_audit", new_callable=AsyncMock),
         patch(
             "services.economy_service.bus.emit",
             new_callable=AsyncMock,
@@ -131,10 +121,7 @@ async def test_debit_insufficient_funds_raises_before_emit():
     ):
         with pytest.raises(economy_service.InsufficientFundsError):
             await economy_service.debit(
-                guild_id=1,
-                user_id=2,
-                amount=100,
-                reason="test",
+                guild_id=1, user_id=2, amount=100, reason="test",
             )
 
     add_coins.assert_not_awaited()

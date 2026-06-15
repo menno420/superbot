@@ -77,18 +77,15 @@ def test_build_health_embed_basic() -> None:
 
 
 def test_build_health_embed_status_colors() -> None:
-    assert (
-        build_health_embed(_snapshot(status=SnapshotStatus.HEALTHY, n_findings=0)).color
-        == discord.Color.green()
-    )
-    assert (
-        build_health_embed(_snapshot(status=SnapshotStatus.CRITICAL)).color
-        == discord.Color.red()
-    )
-    assert (
-        build_health_embed(_snapshot(status=SnapshotStatus.UNKNOWN, n_findings=0)).color
-        == discord.Color.light_grey()
-    )
+    assert build_health_embed(
+        _snapshot(status=SnapshotStatus.HEALTHY, n_findings=0)
+    ).color == discord.Color.green()
+    assert build_health_embed(
+        _snapshot(status=SnapshotStatus.CRITICAL)
+    ).color == discord.Color.red()
+    assert build_health_embed(
+        _snapshot(status=SnapshotStatus.UNKNOWN, n_findings=0)
+    ).color == discord.Color.light_grey()
 
 
 def test_build_health_embed_partial_note() -> None:
@@ -188,16 +185,13 @@ def test_build_health_embed_shows_occurrence_count() -> None:
             ),
         ),
     )
-    field = next(
-        f for f in build_health_embed(snap).fields if f.name.startswith("Findings")
-    )
+    field = next(f for f in build_health_embed(snap).fields if f.name.startswith("Findings"))
     assert "(×7)" in field.value
 
 
 def test_build_health_embed_omits_count_for_single_occurrence() -> None:
     field = next(
-        f
-        for f in build_health_embed(_snapshot(n_findings=1)).fields
+        f for f in build_health_embed(_snapshot(n_findings=1)).fields
         if f.name.startswith("Findings")
     )
     assert "(×" not in field.value

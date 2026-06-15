@@ -58,12 +58,15 @@ def test_admin_cog_restart_command_calls_lifecycle_request_restart() -> None:
     tree = ast.parse(src)
     restart_fn: ast.AsyncFunctionDef | None = None
     for node in ast.walk(tree):
-        if isinstance(node, ast.AsyncFunctionDef) and node.name == "reload_main_script":
+        if (
+            isinstance(node, ast.AsyncFunctionDef)
+            and node.name == "reload_main_script"
+        ):
             restart_fn = node
             break
-    assert (
-        restart_fn is not None
-    ), "admin_cog must define an async reload_main_script handler"
+    assert restart_fn is not None, (
+        "admin_cog must define an async reload_main_script handler"
+    )
     body_src = ast.unparse(restart_fn)
     assert re.search(
         r"lifecycle\.request_restart\(",

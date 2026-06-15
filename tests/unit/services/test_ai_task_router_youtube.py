@@ -32,14 +32,18 @@ def test_one_url_with_question_routes_to_qa():
 
 
 def test_one_url_without_question_routes_to_describe():
-    result = ai_task_router.classify("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    result = ai_task_router.classify(
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    )
     assert result.task is AITask.VIDEO_DESCRIBE
     assert result.route == "video.describe"
     assert result.confidence == 0.85
 
 
 def test_shorts_url_routes_to_describe():
-    result = ai_task_router.classify("https://www.youtube.com/shorts/dQw4w9WgXcQ")
+    result = ai_task_router.classify(
+        "https://www.youtube.com/shorts/dQw4w9WgXcQ"
+    )
     assert result.task is AITask.VIDEO_DESCRIBE
 
 

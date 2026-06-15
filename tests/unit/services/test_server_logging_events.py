@@ -307,17 +307,14 @@ async def test_handler_skips_when_disabled():
 async def test_handler_sends_when_enabled():
     channel = _channel()
     member = _member()
-    with (
-        patch(
-            "services.server_logging_config.load_policy",
-            new_callable=AsyncMock,
-            return_value=EventLoggingPolicy(enabled=True, members_enabled=True),
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(enabled=True, members_enabled=True),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await server_logging.log_member_join(member)
     assert sent is True
@@ -327,22 +324,18 @@ async def test_handler_sends_when_enabled():
 
 @pytest.mark.asyncio
 async def test_handler_counts_missing_channel():
-    with (
-        patch(
-            "services.server_logging_config.load_policy",
-            new_callable=AsyncMock,
-            return_value=EventLoggingPolicy(enabled=True, members_enabled=True),
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=None,
-        ),
-        patch(
-            "services.server_logging.auto_create_enabled",
-            new_callable=AsyncMock,
-            return_value=False,
-        ),
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(enabled=True, members_enabled=True),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=None,
+    ), patch(
+        "services.server_logging.auto_create_enabled",
+        new_callable=AsyncMock,
+        return_value=False,
     ):
         sent = await server_logging.log_member_join(_member())
     assert sent is False
@@ -360,17 +353,14 @@ async def test_role_change_handler_no_diff_short_circuits():
 async def test_handler_is_fail_safe_on_send_error():
     channel = _channel()
     channel.send = AsyncMock(side_effect=discord.HTTPException(MagicMock(), "boom"))
-    with (
-        patch(
-            "services.server_logging_config.load_policy",
-            new_callable=AsyncMock,
-            return_value=EventLoggingPolicy(enabled=True, members_enabled=True),
-        ),
-        patch(
-            "services.server_logging.resolve_log_channel",
-            new_callable=AsyncMock,
-            return_value=channel,
-        ),
+    with patch(
+        "services.server_logging_config.load_policy",
+        new_callable=AsyncMock,
+        return_value=EventLoggingPolicy(enabled=True, members_enabled=True),
+    ), patch(
+        "services.server_logging.resolve_log_channel",
+        new_callable=AsyncMock,
+        return_value=channel,
     ):
         sent = await server_logging.log_member_join(_member())
     assert sent is False

@@ -147,6 +147,4 @@ def test_cli_stance_round_trips_via_parser(tmp_path):
     _init(tmp_path)
     rc = cli.main(["stance", "plan", "--target", str(tmp_path)])
     assert rc == 0
-    assert (
-        JsonStateBackend(tmp_path / ".substrate" / "state.json").get("stance") == "plan"
-    )
+    assert JsonStateBackend(tmp_path / ".substrate" / "state.json").get("stance") == "plan"

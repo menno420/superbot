@@ -127,9 +127,7 @@ def test_by_subsystem_returns_only_entries_for_that_subsystem():
         SettingSpec(name="xp_min", value_type=int, default=1),
         SettingSpec(name="xp_max", value_type=int, default=10),
     )
-    _register(
-        "moderation", SettingSpec(name="warn_threshold", value_type=int, default=3)
-    )
+    _register("moderation", SettingSpec(name="warn_threshold", value_type=int, default=3))
     snap = build_registry()
     xp_entries = snap.by_subsystem("xp")
     assert {e.name for e in xp_entries} == {"xp_min", "xp_max"}

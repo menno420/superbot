@@ -61,10 +61,7 @@ def test_route_leg_reports_workflow_match_and_profiles(capsys):
     module = _load_module()
     assert (
         module.main(
-            [
-                "--route",
-                "if I have 20K by round 50, how much would I have by round 60?",
-            ],
+            ["--route", "if I have 20K by round 50, how much would I have by round 60?"],
         )
         == 0
     )

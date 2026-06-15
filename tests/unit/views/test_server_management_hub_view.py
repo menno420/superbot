@@ -241,9 +241,7 @@ async def test_manager_buttons_delegate_to_open_manager():
         view = ServerManagementHubView()
         interaction = _interaction()
         with patch.object(
-            ServerManagementHubView,
-            "_open_manager",
-            new=AsyncMock(),
+            ServerManagementHubView, "_open_manager", new=AsyncMock(),
         ) as mock_open:
             await _button(view, custom_id).callback(interaction)
         mock_open.assert_awaited_once_with(interaction, key)
@@ -272,9 +270,7 @@ async def test_refresh_recomposes_in_place():
     interaction = _interaction()
     with (
         patch.object(
-            hub_mod,
-            "collect_hub_status",
-            new=AsyncMock(return_value=_status()),
+            hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status()),
         ),
         patch.object(hub_mod, "safe_defer", new=AsyncMock(return_value=True)),
         patch.object(hub_mod, "safe_edit", new=AsyncMock()) as mock_edit,
@@ -301,9 +297,7 @@ async def test_refresh_outside_guild_sends_ephemeral():
 @pytest.mark.asyncio
 async def test_build_server_management_hub_returns_embed_and_view():
     with patch.object(
-        hub_mod,
-        "collect_hub_status",
-        new=AsyncMock(return_value=_status()),
+        hub_mod, "collect_hub_status", new=AsyncMock(return_value=_status()),
     ):
         embed, view = await build_server_management_hub(MagicMock())
     assert isinstance(embed, discord.Embed)

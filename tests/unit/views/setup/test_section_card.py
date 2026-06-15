@@ -571,12 +571,7 @@ async def test_adapter_passes_all_kwargs_to_var_kw_builder():
         section_slug="purpose",
     )
     assert received["guild"] is guild
-    assert set(received["kwargs"].keys()) == {
-        "session",
-        "purpose",
-        "depth",
-        "section_slug",
-    }
+    assert set(received["kwargs"].keys()) == {"session", "purpose", "depth", "section_slug"}
     assert received["kwargs"]["purpose"] == "community"
 
 

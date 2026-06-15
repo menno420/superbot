@@ -272,10 +272,7 @@ def _expected_resolved(spec: Any, value: Any) -> Any:
 @pytest.mark.parametrize(("subsystem", "name", "spec"), _PARAMS, ids=_IDS)
 @pytest.mark.asyncio
 async def test_reset_round_trip_every_writable_spec(
-    _isolated_state,
-    subsystem: str,
-    name: str,
-    spec: Any,
+    _isolated_state, subsystem: str, name: str, spec: Any,
 ):
     """Write a non-default → reset via the reset widget → resolver
     returns the spec default.
@@ -288,11 +285,7 @@ async def test_reset_round_trip_every_writable_spec(
     # Step 1: write a non-default value through the pipeline.
     non_default = _non_default_value_for(spec)
     await SettingsMutationPipeline().set_value(
-        guild,
-        subsystem,
-        name,
-        non_default,
-        actor,
+        guild, subsystem, name, non_default, actor,
     )
 
     # Sanity-check: the resolver now reflects the non-default.
@@ -353,11 +346,7 @@ async def test_reset_uses_set_value_mutation_type(_isolated_state):
     actor = _FakeMember(guild=guild)
     non_default = _non_default_value_for(spec)
     await SettingsMutationPipeline().set_value(
-        guild,
-        sub,
-        name,
-        non_default,
-        actor,
+        guild, sub, name, non_default, actor,
     )
 
     interaction = _FakeInteraction(guild=guild)

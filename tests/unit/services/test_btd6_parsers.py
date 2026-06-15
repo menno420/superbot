@@ -73,16 +73,15 @@ _NON_NK_PARSERS = frozenset({"steam_btd6_news"})
 def _import_parsers():
     # Importing the package fires every domain module's register() call.
     import services.parsers  # noqa: F401
-
     yield
 
 
 @pytest.mark.parametrize("source_key", _REGISTERED)
 def test_captured_endpoint_has_a_registered_parser(source_key):
     parser = btd6_source_parser.get(source_key)
-    assert (
-        parser is not None
-    ), f"M3B must register a parser for the captured endpoint {source_key}"
+    assert parser is not None, (
+        f"M3B must register a parser for the captured endpoint {source_key}"
+    )
     assert parser.source_key == source_key
 
 
@@ -142,7 +141,9 @@ def test_registered_index_parser_returns_facts_for_fixture(source_key, fixture_n
     modules."""
     import json
 
-    fixtures_dir = Path(__file__).parents[2] / "fixtures" / "ninjakiwi"
+    fixtures_dir = (
+        Path(__file__).parents[2] / "fixtures" / "ninjakiwi"
+    )
     payload = json.loads((fixtures_dir / fixture_name).read_text(encoding="utf-8"))
     parser = btd6_source_parser.get(source_key)
     assert parser is not None

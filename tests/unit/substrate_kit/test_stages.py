@@ -37,9 +37,7 @@ def test_graduation_blocked_by_open_blocking_question():
 
 
 def test_graduation_blocked_by_short_quiet_streak():
-    ready, reasons = graduation_ready(
-        _state(slots={"a": "filled"}, quiet_sessions=0), ["a"]
-    )
+    ready, reasons = graduation_ready(_state(slots={"a": "filled"}, quiet_sessions=0), ["a"])
     assert not ready
     assert any("quiet streak" in r for r in reasons)
 

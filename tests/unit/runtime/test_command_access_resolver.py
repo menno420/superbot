@@ -376,11 +376,11 @@ def _build_prefix_ctx(
     is_bot_owner: bool = False,
 ):
     guild = (
-        SimpleNamespace(id=guild_id, owner_id=owner_id)
-        if guild_id is not None
-        else None
+        SimpleNamespace(id=guild_id, owner_id=owner_id) if guild_id is not None else None
     )
-    channel = SimpleNamespace(id=channel_id) if channel_id is not None else None
+    channel = (
+        SimpleNamespace(id=channel_id) if channel_id is not None else None
+    )
     author = SimpleNamespace(
         id=author_id,
         guild_permissions=SimpleNamespace(
@@ -461,9 +461,7 @@ def _build_interaction(
     is_bot_owner: bool = False,
 ):
     guild = (
-        SimpleNamespace(id=guild_id, owner_id=owner_id)
-        if guild_id is not None
-        else None
+        SimpleNamespace(id=guild_id, owner_id=owner_id) if guild_id is not None else None
     )
     channel = SimpleNamespace(id=channel_id) if channel_id is not None else None
     user = SimpleNamespace(

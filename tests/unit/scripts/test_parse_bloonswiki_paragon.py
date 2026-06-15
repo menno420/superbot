@@ -20,9 +20,7 @@ _SCRIPT = _REPO_ROOT / "scripts" / "parse_bloonswiki.py"
 
 @pytest.fixture(scope="module")
 def mod():
-    spec = importlib.util.spec_from_file_location(
-        "parse_bloonswiki_paragon_ut", _SCRIPT
-    )
+    spec = importlib.util.spec_from_file_location("parse_bloonswiki_paragon_ut", _SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -77,9 +75,7 @@ def test_parse_paragon_flattens_to_clean_base(mod):
 
 
 def test_parse_paragon_warns_on_non_combat_node(mod):
-    result = mod.parse_paragon_stats_json(
-        json.dumps({"_last_updated": "53.0", "range": 5})
-    )
+    result = mod.parse_paragon_stats_json(json.dumps({"_last_updated": "53.0", "range": 5}))
     assert not result.ok
     assert any("no attacks or abilities" in w for w in result.warnings)
 

@@ -281,9 +281,7 @@ class TestSubsystemToggleViewErrorHandling:
         ctx.author.id = 1
 
         view = _SubsystemToggleView(
-            ctx,
-            channels=[(777, "#test-chan")],
-            manager_message=None,
+            ctx, channels=[(777, "#test-chan")], manager_message=None,
         )
         view._channel_rows = [{"general": None}]
 
@@ -329,9 +327,7 @@ class TestSubsystemToggleViewErrorHandling:
         ctx.author.id = 1
 
         view = _SubsystemToggleView(
-            ctx,
-            channels=[(777, "#test-chan")],
-            manager_message=None,
+            ctx, channels=[(777, "#test-chan")], manager_message=None,
         )
         view._channel_rows = [{"general": None}]
 

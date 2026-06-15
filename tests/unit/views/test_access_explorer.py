@@ -79,7 +79,9 @@ def test_subsystem_options_carries_emoji_and_description():
     only = options[0]
     meta = SUBSYSTEMS["settings"]
     if meta.get("emoji"):
-        actual_emoji = only.emoji.name if only.emoji is not None else None
+        actual_emoji = (
+            only.emoji.name if only.emoji is not None else None
+        )
         assert actual_emoji == meta["emoji"]
     if meta.get("description"):
         assert only.description == meta["description"][:100]

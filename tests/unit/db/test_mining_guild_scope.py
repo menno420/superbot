@@ -105,9 +105,9 @@ async def test_set_mining_inventory_scopes_delete_to_guild():
     # executemany payload must carry guild_id in every row.
     conn.executemany.assert_awaited_once()
     _insert_sql, payload = conn.executemany.await_args.args
-    assert all(
-        row[1] == 999 for row in payload
-    ), f"set_mining_inventory must include guild_id in every row; got {payload!r}"
+    assert all(row[1] == 999 for row in payload), (
+        f"set_mining_inventory must include guild_id in every row; got {payload!r}"
+    )
 
 
 @pytest.mark.asyncio
@@ -148,9 +148,9 @@ async def test_get_all_mining_totals_filters_by_guild_id():
 def test_get_mining_inventory_signature_requires_guild_id():
     sig = inspect.signature(mining.get_mining_inventory)
     param = sig.parameters["guild_id"]
-    assert (
-        param.default is inspect.Parameter.empty
-    ), "get_mining_inventory.guild_id must be required (no default)."
+    assert param.default is inspect.Parameter.empty, (
+        "get_mining_inventory.guild_id must be required (no default)."
+    )
 
 
 def test_update_mining_item_signature_requires_guild_id():

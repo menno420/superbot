@@ -189,13 +189,10 @@ def _isolate_schemas():
 
 @pytest.mark.asyncio
 async def test_inspect_empty_registry_returns_empty_tuple(_isolate_schemas):
-    with (
-        _isolate_schemas({}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
+    with _isolate_schemas({}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
     ):
         result = await inspect(_FakeGuild())
     assert result == ()
@@ -212,13 +209,10 @@ async def test_missing_required_binding(_isolate_schemas):
         subsystem="xp",
         bindings=(_spec("announce", BindingKind.CHANNEL, required=True),),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
     ):
         findings = await inspect(_FakeGuild())
     assert len(findings) == 1
@@ -232,13 +226,10 @@ async def test_not_configured_optional_binding(_isolate_schemas):
         subsystem="xp",
         bindings=(_spec("announce", BindingKind.CHANNEL, required=False),),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
     ):
         findings = await inspect(_FakeGuild())
     assert findings[0].status == NOT_CONFIGURED
@@ -251,13 +242,10 @@ async def test_unbound_row_with_null_target(_isolate_schemas):
         subsystem="xp",
         bindings=(_spec("announce", BindingKind.CHANNEL),),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "announce", target_id=None)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "announce", target_id=None)],
     ):
         findings = await inspect(_FakeGuild())
     assert findings[0].status == UNBOUND
@@ -271,13 +259,10 @@ async def test_unbound_row_with_unresolved_status(_isolate_schemas):
         subsystem="xp",
         bindings=(_spec("announce", BindingKind.CHANNEL),),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "announce", target_id=42, status="unresolved")],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "announce", target_id=42, status="unresolved")],
     ):
         findings = await inspect(_FakeGuild())
     assert findings[0].status == UNBOUND
@@ -290,13 +275,10 @@ async def test_stale_channel_binding(_isolate_schemas):
         bindings=(_spec("announce", BindingKind.CHANNEL),),
     )
     # Row says channel 999 is bound; the guild does not contain channel 999.
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "announce", target_id=999)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "announce", target_id=999)],
     ):
         findings = await inspect(_FakeGuild())
     assert findings[0].status == STALE_BINDING
@@ -312,13 +294,10 @@ async def test_wrong_type_channel_kind_resolves_to_category(_isolate_schemas):
     )
     cat = _FakeCategory(channel_id=100, name="Mod", perms=_FakePerms())
     guild = _FakeGuild(channels={100: cat})
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "announce", target_id=100)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "announce", target_id=100)],
     ):
         findings = await inspect(guild)
     assert findings[0].status == WRONG_TYPE
@@ -343,13 +322,10 @@ async def test_channel_permission_blocked_when_send_missing(_isolate_schemas):
             guild_permissions=_FakePerms(),
         ),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "announce", target_id=100)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "announce", target_id=100)],
     ):
         findings = await inspect(guild)
     assert findings[0].status == PERMISSION_BLOCKED
@@ -371,13 +347,10 @@ async def test_channel_ok(_isolate_schemas):
             guild_permissions=_FakePerms(),
         ),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "announce", target_id=100)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "announce", target_id=100)],
     ):
         findings = await inspect(guild)
     assert findings[0].status == OK
@@ -398,13 +371,10 @@ async def test_role_hierarchy_blocked(_isolate_schemas):
             guild_permissions=_FakePerms(),
         ),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "vip", target_id=200, kind=BindingKind.ROLE)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "vip", target_id=200, kind=BindingKind.ROLE)],
     ):
         findings = await inspect(guild)
     assert findings[0].status == HIERARCHY_BLOCKED
@@ -425,13 +395,10 @@ async def test_role_permission_blocked_when_manage_roles_missing(_isolate_schema
             guild_permissions=_FakePerms(manage_roles=False),
         ),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "vip", target_id=200, kind=BindingKind.ROLE)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "vip", target_id=200, kind=BindingKind.ROLE)],
     ):
         findings = await inspect(guild)
     assert findings[0].status == PERMISSION_BLOCKED
@@ -452,13 +419,10 @@ async def test_role_ok(_isolate_schemas):
             guild_permissions=_FakePerms(),
         ),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[_row("xp", "vip", target_id=200, kind=BindingKind.ROLE)],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[_row("xp", "vip", target_id=200, kind=BindingKind.ROLE)],
     ):
         findings = await inspect(guild)
     assert findings[0].status == OK
@@ -478,17 +442,12 @@ async def test_category_ok(_isolate_schemas):
             guild_permissions=_FakePerms(),
         ),
     )
-    with (
-        _isolate_schemas({"moderation": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                _row(
-                    "moderation", "category", target_id=300, kind=BindingKind.CATEGORY
-                ),
-            ],
-        ),
+    with _isolate_schemas({"moderation": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            _row("moderation", "category", target_id=300, kind=BindingKind.CATEGORY),
+        ],
     ):
         findings = await inspect(guild)
     assert findings[0].status == OK
@@ -501,15 +460,12 @@ async def test_thread_stale(_isolate_schemas):
         bindings=(_spec("announce_thread", BindingKind.THREAD),),
     )
     guild = _FakeGuild()  # no threads in cache
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                _row("xp", "announce_thread", target_id=400, kind=BindingKind.THREAD),
-            ],
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            _row("xp", "announce_thread", target_id=400, kind=BindingKind.THREAD),
+        ],
     ):
         findings = await inspect(guild)
     assert findings[0].status == STALE_BINDING
@@ -524,15 +480,12 @@ async def test_member_ok(_isolate_schemas):
     member = SimpleNamespace(id=500)
     member.__str__ = lambda self=member: "ContactUser#0001"  # type: ignore[assignment]
     guild = _FakeGuild(members={500: member})
-    with (
-        _isolate_schemas({"moderation": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[
-                _row("moderation", "contact", target_id=500, kind=BindingKind.MEMBER),
-            ],
-        ),
+    with _isolate_schemas({"moderation": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[
+            _row("moderation", "contact", target_id=500, kind=BindingKind.MEMBER),
+        ],
     ):
         findings = await inspect(guild)
     assert findings[0].status == OK
@@ -558,13 +511,10 @@ async def test_inspect_returns_findings_sorted_by_subsystem_then_name(_isolate_s
             bindings=(_spec("category", BindingKind.CATEGORY),),
         ),
     }
-    with (
-        _isolate_schemas(schemas),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            return_value=[],
-        ),
+    with _isolate_schemas(schemas), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        return_value=[],
     ):
         findings = await inspect(_FakeGuild())
     # Subsystem order is alphabetised; binding order is declared (within a
@@ -585,13 +535,10 @@ async def test_db_failure_yields_findings_using_no_rows(_isolate_schemas):
         subsystem="xp",
         bindings=(_spec("announce", BindingKind.CHANNEL),),
     )
-    with (
-        _isolate_schemas({"xp": schema}),
-        patch(
-            "services.resource_health.bindings_db.list_for_guild",
-            new_callable=AsyncMock,
-            side_effect=RuntimeError("db down"),
-        ),
+    with _isolate_schemas({"xp": schema}), patch(
+        "services.resource_health.bindings_db.list_for_guild",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("db down"),
     ):
         findings = await inspect(_FakeGuild())
     assert len(findings) == 1

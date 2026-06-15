@@ -38,10 +38,7 @@ async def test_award_under_concurrency_emits_per_call():
         results = await asyncio.gather(
             *(
                 xp_service.award(
-                    guild_id=1,
-                    user_id=i,
-                    amount=10,
-                    source=f"test:{i}",
+                    guild_id=1, user_id=i, amount=10, source=f"test:{i}",
                 )
                 for i in range(_N)
             ),
@@ -72,10 +69,7 @@ async def test_award_with_level_up_emits_two_events_per_call():
         await asyncio.gather(
             *(
                 xp_service.award(
-                    guild_id=1,
-                    user_id=i,
-                    amount=100,
-                    source=f"test:{i}",
+                    guild_id=1, user_id=i, amount=100, source=f"test:{i}",
                 )
                 for i in range(_N)
             ),

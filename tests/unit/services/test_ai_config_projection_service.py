@@ -182,9 +182,7 @@ async def test_projection_drift_when_legacy_disagrees_with_typed(monkeypatch):
         "generation": 4,
     }
     monkeypatch.setattr(
-        ai_db,
-        "get_guild_policy",
-        AsyncMock(return_value=typed_row),
+        ai_db, "get_guild_policy", AsyncMock(return_value=typed_row),
     )
     monkeypatch.setattr(ai_db, "list_channel_policies", AsyncMock(return_value=[]))
     monkeypatch.setattr(ai_db, "list_category_policies", AsyncMock(return_value=[]))
@@ -195,9 +193,7 @@ async def test_projection_drift_when_legacy_disagrees_with_typed(monkeypatch):
         AsyncMock(return_value=(15, True)),
     )
     monkeypatch.setattr(
-        ai_decision_audit_service,
-        "query",
-        AsyncMock(return_value=[]),
+        ai_decision_audit_service, "query", AsyncMock(return_value=[]),
     )
     from services import settings_resolution
 
@@ -249,9 +245,7 @@ async def test_missing_typed_row_is_not_drift(monkeypatch):
         AsyncMock(return_value=(0, False)),
     )
     monkeypatch.setattr(
-        ai_decision_audit_service,
-        "query",
-        AsyncMock(return_value=[]),
+        ai_decision_audit_service, "query", AsyncMock(return_value=[]),
     )
     from services import settings_resolution
 
@@ -286,9 +280,7 @@ async def test_deferred_scalars_only_in_raw_scalars(monkeypatch):
         AsyncMock(return_value=(60, True)),
     )
     monkeypatch.setattr(
-        ai_decision_audit_service,
-        "query",
-        AsyncMock(return_value=[]),
+        ai_decision_audit_service, "query", AsyncMock(return_value=[]),
     )
     from services import settings_resolution
 
@@ -339,9 +331,7 @@ async def test_audit_snapshot_aggregates_decisions(monkeypatch):
         AsyncMock(return_value=(0, False)),
     )
     monkeypatch.setattr(
-        ai_decision_audit_service,
-        "query",
-        AsyncMock(return_value=rows),
+        ai_decision_audit_service, "query", AsyncMock(return_value=rows),
     )
     from services import settings_resolution
 
@@ -375,9 +365,7 @@ async def test_readiness_summary_passthrough(monkeypatch):
         AsyncMock(return_value=(0, False)),
     )
     monkeypatch.setattr(
-        ai_decision_audit_service,
-        "query",
-        AsyncMock(return_value=[]),
+        ai_decision_audit_service, "query", AsyncMock(return_value=[]),
     )
     from services import settings_resolution
 

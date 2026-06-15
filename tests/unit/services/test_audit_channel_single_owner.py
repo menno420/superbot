@@ -20,11 +20,8 @@ if str(_DISBOT) not in sys.path:
     sys.path.insert(0, str(_DISBOT))
 
 
-_MIGRATION = (
-    Path(__file__).resolve().parents[3]
-    / "disbot"
-    / "migrations"
-    / ("039_ai_policy.sql")
+_MIGRATION = Path(__file__).resolve().parents[3] / "disbot" / "migrations" / (
+    "039_ai_policy.sql"
 )
 
 

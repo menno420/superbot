@@ -101,19 +101,14 @@ async def test_handle_mine_swaps_to_results_view_not_none():
     from services.mining_workflow import MineResult
     from utils.mining.workshop import WearReport
 
-    with (
-        patch(
-            "views.mining.mine_view.safe_defer",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "views.mining.mine_view.mining_workflow.mine",
-            new_callable=AsyncMock,
-            return_value=MineResult(
-                found="stone", amount=5, depth=0, wear=WearReport()
-            ),
-        ),
+    with patch(
+        "views.mining.mine_view.safe_defer",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "views.mining.mine_view.mining_workflow.mine",
+        new_callable=AsyncMock,
+        return_value=MineResult(found="stone", amount=5, depth=0, wear=WearReport()),
     ):
         await view._handle_mine(interaction, "left")
 
@@ -209,35 +204,28 @@ async def test_help_button_opens_help_category_view():
     fake_view = discord.ui.View()
     fake_embed = discord.Embed(title="Help")
 
-    with (
-        patch(
-            "views.mining.mine_view.safe_defer",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.governance_service.resolve_visibility",
-            new_callable=AsyncMock,
-            return_value=vis_result,
-        ),
-        patch(
-            "services.governance_service.GovernanceContext.from_interaction",
-            return_value=MagicMock(),
-        ),
-        patch(
-            "cogs.help_cog.HelpCategoryView",
-            return_value=fake_view,
-        ) as view_cls,
-        patch(
-            "cogs.help_cog.build_categories_overview_embed",
-            return_value=fake_embed,
-        ),
-        patch(
-            "views.mining.mine_view.safe_edit",
-            new_callable=AsyncMock,
-            return_value=True,
-        ) as edit,
-    ):
+    with patch(
+        "views.mining.mine_view.safe_defer",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        return_value=vis_result,
+    ), patch(
+        "services.governance_service.GovernanceContext.from_interaction",
+        return_value=MagicMock(),
+    ), patch(
+        "cogs.help_cog.HelpCategoryView",
+        return_value=fake_view,
+    ) as view_cls, patch(
+        "cogs.help_cog.build_categories_overview_embed",
+        return_value=fake_embed,
+    ), patch(
+        "views.mining.mine_view.safe_edit",
+        new_callable=AsyncMock,
+        return_value=True,
+    ) as edit:
         await btn.callback(interaction)
 
     # HLP-2: the view receives the audience projection built from the
@@ -256,27 +244,22 @@ async def test_help_button_falls_back_on_governance_failure():
     interaction = MagicMock()
     interaction.user.id = 1
 
-    with (
-        patch(
-            "views.mining.mine_view.safe_defer",
-            new_callable=AsyncMock,
-            return_value=True,
-        ),
-        patch(
-            "services.governance_service.resolve_visibility",
-            new_callable=AsyncMock,
-            side_effect=RuntimeError("gov down"),
-        ),
-        patch(
-            "services.governance_service.GovernanceContext.from_interaction",
-            return_value=MagicMock(),
-        ),
-        patch(
-            "views.mining.mine_view.safe_edit",
-            new_callable=AsyncMock,
-            return_value=True,
-        ) as edit,
-    ):
+    with patch(
+        "views.mining.mine_view.safe_defer",
+        new_callable=AsyncMock,
+        return_value=True,
+    ), patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+        side_effect=RuntimeError("gov down"),
+    ), patch(
+        "services.governance_service.GovernanceContext.from_interaction",
+        return_value=MagicMock(),
+    ), patch(
+        "views.mining.mine_view.safe_edit",
+        new_callable=AsyncMock,
+        return_value=True,
+    ) as edit:
         await btn.callback(interaction)
 
     edit.assert_awaited_once()
@@ -292,16 +275,13 @@ async def test_help_button_bails_when_defer_fails():
     btn = _find_button(results, "Help")
     interaction = MagicMock()
     interaction.user.id = 1
-    with (
-        patch(
-            "views.mining.mine_view.safe_defer",
-            new_callable=AsyncMock,
-            return_value=False,
-        ),
-        patch(
-            "services.governance_service.resolve_visibility",
-            new_callable=AsyncMock,
-        ) as resolver,
-    ):
+    with patch(
+        "views.mining.mine_view.safe_defer",
+        new_callable=AsyncMock,
+        return_value=False,
+    ), patch(
+        "services.governance_service.resolve_visibility",
+        new_callable=AsyncMock,
+    ) as resolver:
         await btn.callback(interaction)
     resolver.assert_not_called()

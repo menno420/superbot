@@ -162,7 +162,9 @@ def test_balanced_preset_splits_by_intent():
     # The mod_logs binding routes to mod-logs; everything else to
     # bot-logs.
     mod_ops = [op for op in ops if op.resource_name == "mod-logs"]
-    assert len(mod_ops) == sum(1 for b in _LOGGING_BINDINGS if b.intent == "mod_logs")
+    assert len(mod_ops) == sum(
+        1 for b in _LOGGING_BINDINGS if b.intent == "mod_logs"
+    )
 
 
 def test_detailed_preset_has_one_channel_per_binding():
@@ -291,7 +293,10 @@ def test_infer_current_preset_recognises_balanced():
 
 
 def test_infer_current_preset_recognises_detailed():
-    rows = [_row(resource_name=f"{n}-logs") for n in ("audit", "debug", "mod", "info")]
+    rows = [
+        _row(resource_name=f"{n}-logs")
+        for n in ("audit", "debug", "mod", "info")
+    ]
     assert infer_current_preset(rows) == "detailed"
 
 
@@ -319,7 +324,9 @@ def test_view_has_preset_buttons_plus_custom_and_cancel():
         current_preset=None,
     )
     custom_ids = {
-        c.custom_id for c in view.children if isinstance(c, discord.ui.Button)
+        c.custom_id
+        for c in view.children
+        if isinstance(c, discord.ui.Button)
     }
     assert "setup_logging_preset:single" in custom_ids
     assert "setup_logging_preset:balanced" in custom_ids
