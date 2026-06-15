@@ -178,11 +178,33 @@ work orders* (wrong scope → bad dispatch). So the fix targets the gateway sess
 - **#9763** — cron's `skip_memory=True` also blocks external memory providers in cron context. Only
   relevant if SuperBot ever wires a memory provider into a cron path.
 
+### Owner data point (2026-06-15): even ~5-message sessions fail → it's per-turn doc VOLUME
+
+The owner confirmed the failures happen in sessions of **~5 messages at most, with clear directed
+orders that name the skill**. That *sharpens* the diagnosis rather than contradicting it: the
+400-message valve is irrelevant at that length, so the culprit is **how much a single turn reads**.
+SuperBot's docs are large; one whole-file read (CLAUDE.md ≈30 KB, current-state, a plan, a folio,
+the binding contracts) can cross the **50% compaction line in ONE or TWO tool calls** — and the
+compaction then prunes the very doc Hermes just read. So "it can't handle our docs" (owner's words)
+is exactly right: the read that should have grounded the turn is the read that gets pruned. The
+levers below target that, not message count.
+
 ### Recommended config to try on the VPS (maintainer, reversible)
 
-In `~/.hermes/config.yaml` (re-confirm key names against the installed version first):
+**Easiest: run `scripts/hermes/apply_context_fixes.sh`** on the VPS (`--dry-run` to preview) — it
+applies the items below via the validated `hermes config set` CLI, backs up `config.yaml` first,
+and re-installs the sync-fixed SOUL.md. Then `sudo systemctl restart hermes-gateway`. Manually, in
+`~/.hermes/config.yaml` (re-confirm key names against the installed version first):
+- **`compression.threshold` ↑ (0.50 → ~0.75)** — the highest-impact knob for the owner's pattern:
+  compaction fires LATER, so a big doc read survives the turns that use it.
 - `compression.protect_last_n` ↑ (e.g. 20 → 30) so more recent turns survive a compaction.
 - `prompt_caching.cache_ttl: "1h"` for long control-plane sessions.
-- Verify the SOUL.md byte size — if the operating prompt is being truncated, trim it (it is
-  truncation-sensitive; don't bloat it).
+- **Use a larger-context-window model** — 50% of a 1M window is far more room than 50% of 256K, so
+  the doc read falls out much later (`hermes config set model <provider/model>`; cost is the owner's
+  call — weigh against the €30/mo Q-0082 cap).
+- **Read doc SECTIONS, not whole files** — grep / targeted reads keep a single turn small; a skill
+  that says "read all of current-state.md" is more likely to trip compaction than one that greps the
+  ▶ Next action. (Prompt/skill discipline, not a config knob.)
+- Verify the SOUL.md byte size (now guarded in `install-soul.sh`) — at 6478 bytes it is ~81% of the
+  likely ~8 KB ceiling, so don't grow the operating prompt without trimming.
 - Adopt a **`/new`-per-task** habit (the SOUL.md already preaches it) — the cheapest fix of all.
