@@ -171,3 +171,49 @@ async def test_transaction_yields_the_acquired_connection_inside_txn():
             assert got is conn
             assert txn_state == ["enter"]
     assert txn_state == ["enter", "exit"]
+
+
+# ---------------------------------------------------------------------------
+# economy_flow_by_reason — pure read aggregation (faucet/sink diagnostic)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_economy_flow_by_reason_all_time_groups_and_omits_since():
+    with patch(
+        "utils.db.economy.pool.fetchall",
+        new_callable=AsyncMock,
+        return_value=[
+            {"reason": "mining:sell_ore", "net": 5000, "n": 120},
+            {"reason": "mining:buy_gear", "net": -1800, "n": 30},
+        ],
+    ) as mock_fetch:
+        result = await economy.economy_flow_by_reason(99)
+
+    flat = " ".join(mock_fetch.await_args.args[0].split())
+    assert "FROM economy_audit_log" in flat
+    assert "SUM(delta)" in flat
+    assert "GROUP BY" in flat
+    assert "occurred_at" not in flat  # all-time path has no time filter
+    assert mock_fetch.await_args.args[1] == (99,)
+    assert result == [
+        ("mining:sell_ore", 5000, 120),
+        ("mining:buy_gear", -1800, 30),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_economy_flow_by_reason_windowed_filters_by_occurred_at():
+    from datetime import datetime, timezone
+
+    since = datetime(2026, 6, 1, tzinfo=timezone.utc)
+    with patch(
+        "utils.db.economy.pool.fetchall",
+        new_callable=AsyncMock,
+        return_value=[],
+    ) as mock_fetch:
+        await economy.economy_flow_by_reason(99, since=since)
+
+    flat = " ".join(mock_fetch.await_args.args[0].split())
+    assert "occurred_at >= $2" in flat
+    assert mock_fetch.await_args.args[1] == (99, since)

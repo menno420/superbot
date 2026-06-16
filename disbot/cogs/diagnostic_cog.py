@@ -491,6 +491,17 @@ class DiagnosticCog(commands.Cog):
 
         await ctx.send(embed=await build_media_embed())
 
+    @platform_grp.command(name="economy", aliases=["coinflow"])  # type: ignore[arg-type]
+    @commands.has_permissions(administrator=True)
+    async def platform_economy(self, ctx, days: int | None = None):
+        """Faucet/sink coin-economy view (`!platform economy [days]`): minted
+        vs. drained, net, ratio + verdict, per reason. Window N days or omit
+        for all-time. Read-only, content-free (counts/totals, no per-user data).
+        """
+        from cogs.diagnostic._platform_embeds import build_economy_flow_embed
+
+        await ctx.send(embed=await build_economy_flow_embed(ctx.guild.id, days=days))
+
     @platform_grp.command(name="locks")  # type: ignore[arg-type]
     @commands.has_permissions(administrator=True)
     async def platform_locks(self, ctx, prefix: str = ""):

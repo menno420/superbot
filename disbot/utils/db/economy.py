@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 from utils.db import pool
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     import asyncpg
 
 # ---------------------------------------------------------------------------
@@ -101,6 +103,48 @@ async def insert_economy_audit(
         (guild_id, user_id, actor_id, delta, new_balance, reason),
         conn=conn,
     )
+
+
+async def economy_flow_by_reason(
+    guild_id: int,
+    *,
+    since: datetime | None = None,
+    conn: asyncpg.Connection | None = None,
+) -> list[tuple[str, int, int]]:
+    """Per-reason ``(reason, net_delta, movement_count)`` over the audit log.
+
+    Pure read — aggregates ``economy_audit_log`` for one guild into one row
+    per ``reason`` (the summed signed delta and the number of movements).
+    A positive net is a faucet (net mint), a negative net a sink (net drain);
+    the caller classifies by sign. ``since`` filters by the row timestamp
+    (``occurred_at``); omit it for the all-time view. Rows with a NULL reason
+    are folded under the literal ``"(unspecified)"`` so they are never dropped.
+    """
+    if since is None:
+        rows = await pool.fetchall(
+            """SELECT COALESCE(reason, '(unspecified)') AS reason,
+                      SUM(delta)::bigint AS net,
+                      COUNT(*)::bigint   AS n
+               FROM economy_audit_log
+               WHERE guild_id=$1
+               GROUP BY COALESCE(reason, '(unspecified)')
+               ORDER BY net DESC""",
+            (guild_id,),
+            conn=conn,
+        )
+    else:
+        rows = await pool.fetchall(
+            """SELECT COALESCE(reason, '(unspecified)') AS reason,
+                      SUM(delta)::bigint AS net,
+                      COUNT(*)::bigint   AS n
+               FROM economy_audit_log
+               WHERE guild_id=$1 AND occurred_at >= $2
+               GROUP BY COALESCE(reason, '(unspecified)')
+               ORDER BY net DESC""",
+            (guild_id, since),
+            conn=conn,
+        )
+    return [(r["reason"], int(r["net"]), int(r["n"])) for r in rows]
 
 
 async def add_coins(user_id: int, guild_id: int, amount: int) -> int:
