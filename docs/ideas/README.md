@@ -20,6 +20,32 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
+  **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
+  deployed as a second Railway service — checklist, update tracker, bot-function catalogue,
+  ideas/bug board, **public** bug reporting (+ GitHub-issue mirror), a multi-AI **control board**
+  over the current flow, and a **secrets** zone (manage via Railway + a static "where is each env var
+  used" map). Core principle: *surface the repo's existing structured data, don't duplicate it.*
+  **Phase 1 (read-only MVP) ✅ shipped PR #967**; the **Phase 3 env-usage map ✅ shipped PR #969**
+  (`/env` page + `scripts/scan_env_usage.py` + generated `docs/operations/env-vars.md`); Phases 2/4
+  + Phase 3 value-management active. Authoritative plan:
+  [`developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md). → relates `dashboard/` ·
+  `scripts/export_dashboard_data.py`.
+
+- [`env-map-deploy-readiness-cross-check-2026-06-16.md`](./env-map-deploy-readiness-cross-check-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the env-usage map #969):** the scanner now knows which env
+  vars are *required*; cross-reference that set against the names present in the target Railway service
+  (names only, never values) so the dashboard `/env` page shows a **deploy-ready / N required unset**
+  banner — turning the passive inventory into an active config check. Gated on the Phase 3 Railway-API
+  integration. → relates `scripts/scan_env_usage.py` · `dashboard/`.
+
+- [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
+  **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
+  repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one
+  stdlib `scripts/_docs_ledger.py` so the dashboard exporter and the `check_*` scripts share one
+  source of truth (the `_STATUS_RE` "Mirrors check_session_gate.py" copy is the drift smell). Build it
+  in a session that does **not** depend on `check_session_gate` for its own merge. → relates
+  `scripts/check_session_gate.py` · `scripts/export_dashboard_data.py`.
 - [`idea-spotlight-verdict-loop-2026-06-16.md`](./idea-spotlight-verdict-loop-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the idea-spotlight skill PR #959):** the new daily
   `superbot-idea-spotlight` surfaces an idea + asks for a verdict, but the selector has no memory of
@@ -39,6 +65,13 @@ Current broad captures:
   + a root-README question → **Q-0151** (answered); count-cite guard → fold into
   `readiness-maps-cite-regen-command`. → relates `scripts/{context_map,wiring_map,review_scope}.py` ·
   `utils/subsystem_registry.py` · `architecture_rules/layers.yaml`.
+- [`sessionstart-surface-soft-check-signals-2026-06-16.md`](./sessionstart-surface-soft-check-signals-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the atlas thread #960/#964):** the repo keeps adding *soft*
+  signals that only help if run by hand (the `check_docs` ratchets + new inventory-count guard, the
+  uncommitted atlas body, the `--check` tools). Add **one SessionStart banner line** (`Docs: soft — …`)
+  backed by a `check_docs --soft-summary` mode so the soft ratchets are proactively visible, not
+  discovered by luck. Touches the SessionStart hook → owner-wires per Q-0106. → relates
+  `scripts/claude_session_start.sh` · `scripts/check_docs.py`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
   round-range cash comparison requires a round token before *each* range's first anchor (to keep

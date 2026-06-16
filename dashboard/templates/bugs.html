@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Bugs — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Bugs</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  {{ data.meta.counts.get("bugs", 0) }} tracked bugs — read-only mirror of the bug
+  book (<code>docs/health/bug-book.md</code>).
+</p>
+
+<ul class="space-y-3">
+  {% for b in data.bugs %}
+    <li class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+      <div class="flex items-center gap-2 flex-wrap">
+        <code class="text-xs text-slate-500">{{ b.id }}</code>
+        <span class="font-semibold">{{ b.title }}</span>
+        <span class="ml-auto text-[10px] uppercase rounded px-2 py-0.5 shrink-0 {{ 'bg-emerald-900 text-emerald-300' if b.status|upper == 'FIXED' else ('bg-rose-900 text-rose-300' if b.status|upper == 'OPEN' else 'bg-slate-800 text-slate-400') }}">{{ b.status }}</span>
+      </div>
+      {% if b.summary %}
+        <p class="mt-2 text-sm text-slate-400">{{ b.summary }}</p>
+      {% endif %}
+    </li>
+  {% else %}
+    <li class="text-slate-500">No bugs recorded.</li>
+  {% endfor %}
+</ul>
+
+<section id="report" class="mt-10 rounded-xl border border-dashed border-slate-700 p-6 text-center">
+  <h2 class="font-semibold">Found a bug?</h2>
+  <p class="text-sm text-slate-400 mt-1 max-w-md mx-auto">
+    Public bug reporting — a form that stores the report and mirrors it to a GitHub
+    issue — arrives in Phase 2. For now, open an issue directly on GitHub.
+  </p>
+  <a
+    href="https://github.com/menno420/superbot/issues/new"
+    class="inline-block mt-3 rounded bg-sky-600 hover:bg-sky-500 px-4 py-2 text-sm font-medium"
+  >Open a GitHub issue</a>
+</section>
+{% endblock %}

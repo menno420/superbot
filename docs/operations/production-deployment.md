@@ -15,7 +15,10 @@
   - **`worker`** — the bot, built from this GitHub repo.
   - **`Postgres`** — Railway-native Postgres with a `postgres-volume` for data.
 - **Runtime secrets** (Discord token, `DATABASE_URL`, AI provider keys, …) live in
-  Railway **service variables**, not in the repo.
+  Railway **service variables**, not in the repo. For the complete inventory of every
+  environment variable the bot reads — where each is read, and whether it is required or
+  optional (names + locations only, no values) — see the generated
+  [`env-vars.md`](env-vars.md) reference (`scripts/scan_env_usage.py`).
 
 ## How code reaches production
 

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Ideas — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Ideas</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  {{ data.meta.counts.get("ideas", 0) }} captured ideas — the project's brainstorm
+  backlog (read-only mirror of <code>docs/ideas/</code>).
+</p>
+
+<ul class="space-y-3">
+  {% for i in data.ideas %}
+    <li class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold">{{ i.title }}</span>
+        <span class="ml-auto text-xs text-slate-500 shrink-0">{{ i.date }}</span>
+        <span class="text-[10px] uppercase rounded px-2 py-0.5 shrink-0 {{ 'bg-emerald-900 text-emerald-300' if i.status == 'historical' else 'bg-slate-800 text-slate-400' }}">{{ i.status }}</span>
+      </div>
+      {% if i.summary %}
+        <p class="mt-2 text-sm text-slate-400">{{ i.summary }}</p>
+      {% endif %}
+    </li>
+  {% else %}
+    <li class="text-slate-500">No ideas captured yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -278,3 +278,76 @@ def test_repo_top_level_docs_within_ratchet(cd):
         f"top-level docs/*.md = {top_level} > ratchet {cd._TOP_LEVEL_DOCS_BUDGET}; "
         "move plans/audits/historical into a subdir or lower the ratchet."
     )
+
+
+# ---------------------------------------------------------------------------
+# Inventory-count drift guard (soft) — Q-0151
+# ---------------------------------------------------------------------------
+
+
+def test_inventory_count_uncited_binding_flagged(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "architecture.md",
+        "# A\n\n> **Status:** `binding`\n\nThe DB has 74 migrations today.\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    flags = cd.inventory_count_flags()
+    assert len(flags) == 1
+    assert flags[0][1] == "inventory-count" and "74 migrations" in flags[0][2]
+
+
+def test_inventory_count_citations_exempt(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "a.md",
+        "# A\n\n> **Status:** `binding`\n\n"
+        "74 migrations (see `scripts/x.py`).\n"
+        "6 workflows <!-- count-ok -->.\n"
+        "43 extensions are generated below.\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    assert cd.inventory_count_flags() == []
+
+
+def test_inventory_count_adjacent_citation_exempt(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "a.md",
+        "# A\n\n> **Status:** `binding`\n\n"
+        "Regenerate with `scripts/atlas.py`:\n"
+        "we load 43 extensions.\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    assert cd.inventory_count_flags() == []
+
+
+def test_inventory_count_non_binding_ignored(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(docs / "ref.md", "# R\n\n> **Status:** `reference`\n\n74 migrations here.\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    assert cd.inventory_count_flags() == []
+
+
+def test_inventory_count_pinned_doc_exempt(cd, tmp_path, monkeypatch):
+    docs = tmp_path / "docs"
+    _write(
+        docs / "help-command-surface-map.md",
+        "# H\n\n> **Status:** `binding`\n\n11 extensions lack the hook.\n",
+    )
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    assert cd.inventory_count_flags() == []
+
+
+def test_print_inventory_count_report_silent_when_clean(cd, tmp_path, monkeypatch, capsys):
+    docs = tmp_path / "docs"
+    _write(docs / "a.md", "# A\n\n> **Status:** `binding`\n\nno counts here.\n")
+    monkeypatch.setattr(cd, "DOCS_ROOT", docs)
+    monkeypatch.setattr(cd, "REPO_ROOT", tmp_path)
+    cd.print_inventory_count_report()
+    assert capsys.readouterr().out == ""
