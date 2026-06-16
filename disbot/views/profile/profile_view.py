@@ -169,7 +169,7 @@ async def build_profile_embed(
             inline=False,
         )
 
-    embed.set_footer(text="Read-only view. Self-service toggles are coming soon.")
+    embed.set_footer(text="Tap ⚙️ Manage settings to opt in/out and set preferences.")
     return embed
 
 
@@ -202,4 +202,24 @@ class ProfileHomeView(BaseView):
         await interaction.response.edit_message(
             embed=await self.render_embed(),
             view=self,
+        )
+
+    @discord.ui.button(label="⚙️ Manage settings", style=discord.ButtonStyle.primary)
+    async def manage(
+        self,
+        interaction: discord.Interaction,
+        _button: discord.ui.Button,
+    ) -> None:
+        """Open the self-service editor (PR B).
+
+        Pure navigation — this card stays read-only (no mutation import); the
+        editor module owns every write through the audited pipeline. The lazy
+        import keeps the card builder's import surface mutation-free.
+        """
+        from views.profile.editor import ProfileEditorHomeView
+
+        editor = ProfileEditorHomeView(self._author, self._guild_id)
+        await interaction.response.edit_message(
+            embed=editor.build_embed(),
+            view=editor,
         )

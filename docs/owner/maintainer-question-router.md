@@ -5508,3 +5508,36 @@ PR. Owner fixed the console-pasted prompts directly; this PR brings the in-repo 
 `docs/operations/autonomous-routines.md` (fleet table · Stage-1 note · trigger note · timing caveat) ·
 `docs/current-state.md` stamp-line. **Owner action — DONE:** `executor-nightly.yml` removed
 2026-06-15 (the last legacy trigger).
+
+### Q-0147 — myprofile PR C: may a public bot DM strangers at join-time? (onboarding gate) (2026-06-16)
+
+> **DISCUSS lane — agent-surfaced, NOT applied.** Proposing the question, not the answer.
+> Raised at myprofile PR B close (PR #940): PR A (read-only card, #938) and PR B (self-service
+> editor, #940) are shipped, so the `/myprofile` lane is buildable-complete. The only remaining
+> slice — **PR C, `on_member_join` onboarding** — is gated in the plan on this owner decision and
+> must not be built until it is answered.
+
+**The question (plan §4.3).** When a member joins a guild, should the bot proactively surface the
+profile hub, and if so **how**:
+
+1. **Channel:** a **DM** to the joiner, or an **in-guild** welcome (e.g. a line in the existing
+   welcome embed / a system-channel nudge), or **nothing** (discoverable via Help only — the
+   current state)?
+2. **Abuse posture (Q-0080 stranger-grade):** this is a **public** bot. May it **DM strangers**
+   at all on join? DMing unsolicited users is a Discord-flaggable pattern and a spam/abuse vector;
+   the safe default is **in-guild only, opt-in**, never an unsolicited DM. Owner confirms the line.
+3. **Copy + frequency:** one-time on first join? Re-show on rejoin? What does it say?
+
+**Why it's a real gate (not a technical prerequisite the agent may just take).** Unlike a missing
+build step, this is a **product + safety/abuse** decision with an irreversible-ish external footprint
+(messaging users who didn't ask). It sits squarely in the Q-0080 stranger-grade envelope and the
+"external publish / outward-facing" ask-first class — exactly what stays owner-decided.
+
+**Recommendation (agent, for the owner to accept/override).** Default to **in-guild, opt-in,
+no unsolicited DMs**: add a single discoverable line to the existing welcome surface pointing at
+`/myprofile` ("set your preferences with `/myprofile`"), and never DM. This keeps the public-bot
+abuse posture conservative while still closing the discoverability gap. If the owner wants a DM
+path, gate it behind an explicit per-guild setting (default off) and a first-join-only guard.
+
+**Home when answered:** `docs/planning/myprofile-foundation-plan-2026-06-10.md` §4.3 (un-gate PR C
+with the decided shape) + this Q-block records the provenance.
