@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/magical-rubin-u3arq6` · AI §7.5 paragon base-cost comparison floor (the last unbuilt
+  comparison member) · `services/btd6_data_service.py` · `services/btd6_context_service.py` ·
+  `tests/unit/.../btd6` · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
