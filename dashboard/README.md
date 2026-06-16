@@ -62,12 +62,25 @@ installs only the bot's `requirements.txt`).
 
 ## Deploy on Railway (second service)
 
-1. New service in the existing Railway project, from this repo.
-2. **Root directory:** repo root (so the start command can import `dashboard.app`).
-3. **Start command:** `uvicorn dashboard.app:app --host 0.0.0.0 --port $PORT`
-4. **Install:** `pip install -r dashboard/requirements.txt`
-5. **Watch paths:** `dashboard/**` (so bot-only changes don't rebuild this service).
+Deploy as a **second service** in the existing Railway project — the bot's `worker`
+service is untouched (it keeps using the root `Procfile` + `requirements.txt`).
 
-The bot's `worker` service is untouched — it keeps using the root `requirements.txt` and
-`Procfile`. Later phases attach this service to the existing Railway Postgres and the
-Railway API (for the secrets zone).
+1. Railway → your project → **New → GitHub Repo** → `menno420/superbot`.
+2. Open the new service → **Settings → Source**: set **Root Directory** to `dashboard`.
+   This is essential — it makes Railway build *this* folder (installing
+   `dashboard/requirements.txt`, **not** the bot's deps) and run `dashboard/Procfile`.
+   With the repo root as the directory, Railway installs the bot's requirements
+   (no FastAPI) and the service fails to start.
+3. **Start command:** taken from `dashboard/Procfile`
+   (`uvicorn app:app --host 0.0.0.0 --port $PORT`) — no need to set it by hand.
+4. **Healthcheck path** (optional): `/healthz`.
+5. **Environment variables:** none required — the read-only MVP serves the committed
+   `dashboard/data/dashboard.json` (no DB, no secrets, no API keys). Later phases add them.
+6. **Networking → Generate Domain** for a public URL.
+
+Redeploys automatically on push to `main`. To refresh the displayed data, regenerate
+`dashboard/data/dashboard.json` and commit it.
+
+> **Note:** the dashboard intentionally has **no `static/` directory** — the repo's root
+> `.gitignore` ignores `static/`, so a file there would never be committed or deployed.
+> Styling is the Tailwind CDN plus a small inline `<style>` block in `base.html`.
