@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
+  read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
+  repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
+  `docs/current-state.md` · 2026-06-16
 - `claude/control-panel-web` · **control panel — Discord OAuth login + editors** (write side step 2,
   owner directive) — stdlib signed-cookie session + control-API client + `/admin` guild picker +
   per-guild settings/help/routing editors over the control API; dormant until secrets set ·
