@@ -136,6 +136,53 @@ def test_records_carry_no_values_only_names_and_locations(mod, tmp_path):
     assert "shh" not in json.dumps(records)
 
 
+def test_render_doc_is_a_badged_table_without_values(mod):
+    records = [
+        {
+            "name": "APP_TOKEN",
+            "required": True,
+            "usage_count": 1,
+            "layers": ["config"],
+            "usages": [
+                {"file": "disbot/config.py", "line": 9, "layer": "config",
+                 "has_default": False},
+            ],
+        },
+        {
+            "name": "OPTIONAL_FLAG",
+            "required": False,
+            "usage_count": 1,
+            "layers": ["services"],
+            "usages": [
+                {"file": "disbot/services/x.py", "line": 3, "layer": "services",
+                 "has_default": True},
+            ],
+        },
+    ]
+    doc = mod.render_doc(records)
+    # Badged so check_docs accepts it; generated-file marker present.
+    assert "> **Status:** `living-ledger`" in doc.splitlines()[2]
+    assert "GENERATED FILE" in doc
+    # Required and optional both tabled; counts surfaced.
+    assert "**2 variables** — 1 required · 1 optional." in doc
+    assert "## Required" in doc and "## Optional" in doc
+    assert "`APP_TOKEN`" in doc and "`disbot/config.py:9`" in doc
+    assert "*(default)*" in doc  # the optional usage is marked
+
+
+def test_committed_env_vars_doc_is_in_sync_with_the_scanner(mod):
+    """The committed doc must match a fresh render (it is a generated artifact)."""
+    doc_path = _REPO_ROOT / "docs" / "operations" / "env-vars.md"
+    if not doc_path.exists():
+        pytest.skip("env-vars.md not generated in this tree")
+    expected = mod.render_doc(mod.scan_env_usage())
+    actual = doc_path.read_text(encoding="utf-8")
+    assert actual == expected, (
+        "docs/operations/env-vars.md is stale — refresh with "
+        "`python3.10 scripts/scan_env_usage.py --write-doc`"
+    )
+
+
 def test_scan_against_real_disbot_is_well_formed(mod):
     records = mod.scan_env_usage()
     assert len(records) >= 20  # the plan estimates ~36 vars

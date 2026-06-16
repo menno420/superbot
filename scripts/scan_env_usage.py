@@ -229,8 +229,60 @@ def _format_summary(records: list[dict]) -> str:
     return "\n".join(lines)
 
 
+DOC_PATH = REPO_ROOT / "docs" / "operations" / "env-vars.md"
+
+
+def render_doc(records: list[dict]) -> str:
+    """Render the env-var inventory as a committed operations reference doc.
+
+    A ``living-ledger``-badged Markdown table — the in-repo, human-readable
+    complement to the dashboard ``/env`` page (which needs the dashboard service
+    deployed). Generated from :func:`scan_env_usage`, so the two never drift from
+    one parser. Shows **names and code locations only** — never a value.
+    """
+    required = [r for r in records if r["required"]]
+    optional = [r for r in records if not r["required"]]
+    out: list[str] = [
+        "# Environment variables — usage reference",
+        "",
+        "> **Status:** `living-ledger` — generated inventory of every environment",
+        "> variable read by the bot source. **Source + the scanner win over this file.**",
+        "",
+        "<!-- GENERATED FILE — do not edit by hand. Refresh with:",
+        "       python3.10 scripts/scan_env_usage.py --write-doc -->",
+        "",
+        "This is the in-repo, human-readable form of the dashboard `/env` usage map",
+        "(`scripts/scan_env_usage.py`). It lists every variable the bot **reads**, where",
+        "it reads it, and whether it is **required** (read without a default anywhere) or",
+        "**optional** (a default is always supplied). It shows **names and code locations",
+        "only — never a value**; the values live in Railway service variables",
+        "(see [`production-deployment.md`](production-deployment.md)).",
+        "",
+        f"**{len(records)} variables** — {len(required)} required · {len(optional)} optional.",
+        "",
+    ]
+
+    def _table(title: str, rows: list[dict]) -> list[str]:
+        block = [f"## {title}", "", "| Variable | Layers | Usages |", "|---|---|---|"]
+        for record in rows:
+            layers = ", ".join(record["layers"])
+            usages = "<br>".join(
+                f"`{u['file']}:{u['line']}`" + (" *(default)*" if u["has_default"] else "")
+                for u in record["usages"]
+            )
+            block.append(f"| `{record['name']}` | {layers} | {usages} |")
+        block.append("")
+        return block
+
+    if required:
+        out += _table("Required (read without a default — the deploy must set these)", required)
+    if optional:
+        out += _table("Optional (a default is always supplied)", optional)
+    return "\n".join(out).rstrip() + "\n"
+
+
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry point: print the usage map (summary or raw JSON)."""
+    """CLI entry point: print the usage map (summary / JSON) or write the doc."""
     parser = argparse.ArgumentParser(
         description="Scan the bot source for env-var usage (names + locations only).",
     )
@@ -239,10 +291,19 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="print the raw JSON payload instead of the human summary",
     )
+    parser.add_argument(
+        "--write-doc",
+        action="store_true",
+        help=f"(re)generate {DOC_PATH.relative_to(REPO_ROOT)} from the scan",
+    )
     args = parser.parse_args(argv)
 
     records = scan_env_usage()
-    if args.json:
+    if args.write_doc:
+        DOC_PATH.parent.mkdir(parents=True, exist_ok=True)
+        DOC_PATH.write_text(render_doc(records), encoding="utf-8")
+        print(f"wrote {DOC_PATH.relative_to(REPO_ROOT)} — {len(records)} variables")
+    elif args.json:
         print(json.dumps(records, indent=2, ensure_ascii=False))
     else:
         print(_format_summary(records))
