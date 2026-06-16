@@ -230,6 +230,25 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
 
+## PR mergeability keepers (auto-update + conflict-guard) — Q-0154
+
+Two small workflows keep open PRs from rotting silently — the gap the #959 stall exposed: a
+`behind`/conflicted PR sits **green-but-unmergeable** (a merge conflict is a git property, not a
+test result, so GitHub never reddens a check for it, and native auto-merge won't auto-update a
+behind branch without a merge queue). They split the two cases:
+
+| Workflow | Trigger | Does | Net effect |
+|---|---|---|---|
+| **`pr-auto-update.yml`** | `push: main` | brings open non-draft `claude/*` PRs that are **BEHIND** up to date (`update-branch`); carve-outs (`needs-hermes-review`/`do-not-automerge`) left alone; a real conflict fails the update and falls through to the guard | **behind = handled silently** → re-tests against current main → auto-merge fires |
+| **`pr-conflict-guard.yml`** | `push: main` + `pull_request` + schedule | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap) | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
+
+`push: main` is the load-bearing trigger for both: a conflict/behind state arises when *main moves*
+(another PR merges), which is not an event on the stale PR. `conflict-guard` is a **non-required**
+status (a signal, not an extra gate — a DIRTY PR already can't merge), so no branch-protection
+change is needed. Both use `ROUTINE_PAT` (already scoped Pull requests + Contents write for
+`auto-merge-enabler.yml`). Kill switch (Q-0105): delete either workflow; both are disposable
+convenience guards, and "Update branch" / the conflict banner remain available by hand.
+
 ## Control-plane state (maintainer-verified) — the bits no in-repo checker can see
 
 > **Why this exists:** the autonomous loop spans the repo **and** a Railway/console/VPS control
