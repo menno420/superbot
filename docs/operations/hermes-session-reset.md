@@ -23,9 +23,18 @@ systemd timer (every 6h)  →  scripts/hermes/session_reset.sh  →  $HERMES_RES
 `review-merge` already run as **fresh, stateless** sessions on their own cron (a scheduled skill
 never accumulates into your chat). This runbook is only about the **interactive** thread you type in.
 
-## ⚠️ Root cause clarification (2026-06-16 live incident) — it's TPM, and compaction is the primary lever
+## ⚠️ Root cause clarification (2026-06-16 live incident) — it's TPM (resolved by the per-model cap)
 
 A real incident clarified what actually goes wrong and the cleanest fix — read this before wiring a timer:
+
+> **✅ RESOLVED (2026-06-16): the fix was the per-model TPM cap, not compaction.** The owner's OpenAI
+> account caps `gpt-5.4-mini` at **200K TPM** but `gpt-5-mini` at **500K TPM** (2.5×, confirmed on the
+> project Rate-limits page) — so the chosen fix is **switching Hermes to `gpt-5-mini`**, which clears
+> the wall with headroom to spare. **Compaction was deliberately left at default — the owner declined
+> lowering it because it interrupts tasks mid-flow** (it prunes context the turn still needs). The
+> compaction guidance below is retained as *general background* for an account with no higher-cap model
+> to switch to; it is **not** the path taken here. Full detail + the decision:
+> [`hermes-control-plane.md`](./hermes-control-plane.md) § Model/provider ("gpt-5-mini vs gpt-5.4-mini").
 
 - **The failure is a per-minute rate limit, not a context-window overflow.** The gateway logged
   `Rate limit reached for gpt-5.4-mini … on tokens per min (TPM): Limit 200000, Used …, Requested ~100k`
@@ -38,8 +47,9 @@ A real incident clarified what actually goes wrong and the cleanest fix — read
   **restart does NOT clear context**) and `hermes sessions --help` (store mgmt: `list/delete/prune/
   stats/…` — and the bloated session is the *newest*, so `prune` (old) won't touch it). **The only
   clean live reset is `/new` in Telegram.**
-- **So compaction — not a 6h hard-reset — is the primary durable fix.** Lower the compaction
-  threshold so the gateway keeps each call small *continuously*, well under the TPM budget:
+- **Compaction is the durable fix *only when you can't switch to a higher-cap model* (not the path
+  taken here — see the RESOLVED note above).** Lower the compaction threshold so the gateway keeps each
+  call small *continuously*, well under the TPM budget:
   ```bash
   hermes config                                  # confirm current compression.threshold (≈ 0.50)
   hermes config set compression.threshold 0.25   # compact at ~100K of the 400K window, not ~200K
@@ -52,9 +62,11 @@ A real incident clarified what actually goes wrong and the cleanest fix — read
   *concurrently*, doubling per-minute pressure.
 - **Immediate unstick:** `/new` in Telegram (drops the bloated session), then restart for any new skills.
 
-The auto-reset below is still useful as a coarse "fresh start every 6h," but it is **secondary** to
-compaction and, given the CLI reality, a true hard reset means `hermes sessions delete <current-id>`
-**+** `gateway restart`, or simply relying on `/new`. Prefer compaction.
+The auto-reset below is still useful as a coarse "fresh start every 6h," but it is **secondary** and,
+given the CLI reality, a true hard reset means `hermes sessions delete <current-id>` **+** `gateway
+restart`, or simply relying on `/new`. Order of preference for TPM: **raise the per-model cap (model
+swap to 5-mini = 500K)** → then `/new`/auto-reset for hygiene → compaction only if no higher-cap model
+is available (and the owner declined it here, as it interrupts tasks).
 
 ## The one knob to confirm (UNVERIFIED — like `apply_context_fixes.sh`)
 

@@ -122,21 +122,30 @@ Hermes config/data paths shown during setup:
   | Input · output /1M | **$0.25 · $2.00** | $0.75 · $4.50 *(2.25–3× more)* |
   | Knowledge cutoff | May 2024 | **Aug 2025** |
   | Capability / speed | baseline | **"significantly improves … coding, reasoning, tool use", ~2× faster** (OpenAI) |
-  | Rate limits (all tiers) | — | **identical to 5-mini** |
+  | Rate limits — **this account** (2026-06-16) | **500K TPM** | **200K TPM** *(published tiers identical; the account's per-model override differs — see below)* |
 
-  Net: 5-mini saves ~2–3× cost but re-introduces the weaker/slower model class the role left in
-  #913→#921 — and does **not** fix TPM. Switch only if the dashboard proves 5-mini's *actual* cap is
-  higher. **To switch, re-run `hermes model`** (keeps the custom OpenAI-provider routing) + allowlist
-  the exact id — **not** `hermes config set model` / `apply_context_fixes.sh --set-model`, which revert
-  routing to the Nous catalog (model-switch playbook below).
-  - **The decisive test (owner-confirmed 2026-06-16): the dashboard caps gpt-5.4-mini at 200K — below
-    its published 500K Tier 1.** That asymmetry means one of two things, and the dashboard's per-model
-    number for **gpt-5-mini** settles it *without switching the live bot* (limits are listed per model
-    regardless of which is active): **(a)** 5-mini also shows ~200K → it's an **org-wide tier throttle**,
-    the model is irrelevant, **raise the usage tier** (Tier 1→2 = 2M); **(b)** 5-mini shows higher
-    (≈500K) → the 200K is a **rollout/verification throttle on the *newer* 5.4-mini**, so switching to
-    5-mini (or requesting a 5.4-mini limit increase) genuinely lifts the cap. **Check that number first;
-    only switch if it's case (b).**
+  Net: 5-mini is ~2–3× cheaper but weaker/slower/staler — the model class the role left in #913→#921.
+  On OpenAI's *published* per-tier tables it does **not** change TPM (identical limits); the deciding
+  factor is the **account's actual per-model cap** (the project/org Limits page), which can differ from
+  the tables. **To switch, re-run `hermes model`** (keeps the custom OpenAI-provider routing) +
+  allowlist the exact id — **not** `hermes config set model` / `apply_context_fixes.sh --set-model`,
+  which revert routing to the Nous catalog (model-switch playbook below).
+  - **✅ CONFIRMED for this account (2026-06-16, owner's Project → Rate limits page): switching to
+    5-mini DOES lift the cap.** The page (limits inherited from the org unless overridden) showed
+    **`gpt-5-mini` 500,000 TPM** vs **`gpt-5.4-mini` 200,000 TPM** (the dated `gpt-5.4-mini-2026-03-17`
+    snapshot also 200K; `gpt-4o-mini` 200K; org **Default `*`** 250K / 3K RPM; all at 500 RPM). So the
+    200K is a **per-model throttle on the newer 5.4-mini, not an org-wide ceiling** — 5-mini gives
+    **2.5×** the per-minute budget on the same key. **Lesson (Q-0120 instinct): never reason TPM from
+    published per-tier tables — they're uniform within a model class; the project/org Limits page is the
+    only source of an account's real per-model cap.**
+  - **Decision (owner directive, 2026-06-16): switch Hermes to `gpt-5-mini` and leave compaction at its
+    default.** The 500K cap clears the wall on its own, so lowering `compression.threshold` is **not**
+    needed — and the owner explicitly declined it because aggressive compaction interrupts a task
+    mid-flow (it summarizes/prunes context the turn still needs, so the bot "can just do its tasks
+    normally without interruption"). Accept the small capability/speed drop and re-run the calibration
+    probes (above) to confirm the dispatch/review role still holds on 5-mini. To instead keep the
+    more-capable 5.4-mini, OpenAI must raise its **org** limit above 200K — the project page can't
+    override above the org-inherited cap.
 - **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
   Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
   which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
