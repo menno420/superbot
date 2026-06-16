@@ -129,6 +129,14 @@ Hermes config/data paths shown during setup:
   higher. **To switch, re-run `hermes model`** (keeps the custom OpenAI-provider routing) + allowlist
   the exact id — **not** `hermes config set model` / `apply_context_fixes.sh --set-model`, which revert
   routing to the Nous catalog (model-switch playbook below).
+  - **The decisive test (owner-confirmed 2026-06-16): the dashboard caps gpt-5.4-mini at 200K — below
+    its published 500K Tier 1.** That asymmetry means one of two things, and the dashboard's per-model
+    number for **gpt-5-mini** settles it *without switching the live bot* (limits are listed per model
+    regardless of which is active): **(a)** 5-mini also shows ~200K → it's an **org-wide tier throttle**,
+    the model is irrelevant, **raise the usage tier** (Tier 1→2 = 2M); **(b)** 5-mini shows higher
+    (≈500K) → the 200K is a **rollout/verification throttle on the *newer* 5.4-mini**, so switching to
+    5-mini (or requesting a 5.4-mini limit increase) genuinely lifts the cap. **Check that number first;
+    only switch if it's case (b).**
 - **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
   Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
   which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
