@@ -21,7 +21,7 @@ import logging
 import re
 import unicodedata
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
@@ -2036,6 +2036,144 @@ _COST_DIFFICULTY_RE = re.compile(
     re.I,
 )
 
+# --- §7.5 round-range cash comparison -----------------------------------------
+# An income/earning noun (distinct from the cost cue above) — required so a
+# round-range comparison fires only on a money question, not a stats one.
+_EARN_NOUN_RE = re.compile(r"\b(?:cash|money|income|earn(?:ed|ings?|s)?)\b", re.I)
+# A comparison signal: "more"/"less"/"most"/"better", "vs"/"or"/"than",
+# or an explicit compare verb. Combined with the earn noun + two ranges, this
+# keeps the floor off single-range questions (the round-cash workflow's job).
+_EARN_COMPARE_RE = re.compile(
+    r"\b(?:more|less|most|least|higher|lower|highest|lowest|better|worse)\b|"
+    r"\bvs\.?\b|\bversus\b|\bor\b|\bthan\b|\bcompare[ds]?\b|\bcomparison\b|"
+    r"\bdifference\b",
+    re.I,
+)
+# A clearly-strategic intent that wants a recommendation, not a number — defer.
+_EARN_STRATEGY_EXCLUDE = ("should i", "recommend", "worth it", "best for")
+# An inclusive round range: "rounds 20-40", "round 20 to 40", "r20-40",
+# "20 through 40" (a round token on the first anchor, optional on the second).
+# The trailing digit boundary keeps "r2d2"-style tokens out.
+_ROUND_RANGE_RE = re.compile(
+    r"\b(?:rounds?|r)\s*(\d{1,3})\s*(?:to|through|thru|until|till|[-–])\s*"
+    r"(?:(?:rounds?|r)\s*)?(\d{1,3})\b",
+    re.I,
+)
+# "between rounds X and Y" — the connector form _ROUND_RANGE_RE does not cover.
+_ROUND_RANGE_BETWEEN_RE = re.compile(
+    r"\bbetween\s+(?:rounds?|r)?\s*(\d{1,3})\s+and\s+(?:(?:rounds?|r)\s*)?(\d{1,3})\b",
+    re.I,
+)
+
+
+def _extract_round_ranges(text_lower: str) -> list[tuple[int, int]]:
+    """The inclusive round ranges a comparison names, in order of appearance.
+
+    Both the ``X-Y`` / ``X to Y`` form and the ``between X and Y`` form are
+    scanned; each ``(lo, hi)`` is returned with endpoints normalised (lo ≤ hi).
+    Order is preserved and deduped on the normalised pair so "rounds 20-40 or
+    20-40" yields one range (the data primitive also dedups, but doing it here
+    keeps the ≥2-ranges gate honest).
+    """
+    found: list[tuple[int, tuple[int, int]]] = []
+    seen: set[tuple[int, int]] = set()
+    for match in (
+        *_ROUND_RANGE_RE.finditer(text_lower),
+        *_ROUND_RANGE_BETWEEN_RE.finditer(text_lower),
+    ):
+        a, b = int(match.group(1)), int(match.group(2))
+        pair = (min(a, b), max(a, b))
+        if pair in seen:
+            continue
+        seen.add(pair)
+        found.append((match.start(), pair))
+    found.sort(key=lambda f: f[0])
+    return [pair for _start, pair in found]
+
+
+def _fmt_money(value: float) -> str:
+    """Money string: no decimals for a whole-dollar amount, else two places."""
+    return f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
+
+
+def _format_round_range_comparison(result: dict[str, Any]) -> str:
+    set_label = result["set_label"]
+
+    def _label(entry: dict[str, Any]) -> str:
+        if entry["single_round"]:
+            return f"Round {entry['round_start']}"
+        return f"Rounds {entry['round_start']}–{entry['round_end']}"
+
+    lines = [f"**Cash comparison — {set_label} round set, Medium:**"]
+    for entry in result["entries"]:
+        suffix = "" if entry["single_round"] else f" ({entry['rounds_counted']} rounds)"
+        lines.append(
+            f"• **{_label(entry)}** — **${_fmt_money(entry['earned'])}**{suffix}",
+        )
+    highest = result["highest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They earn the **same** (**${_fmt_money(highest['earned'])}**) each.",
+        )
+    elif len(result["entries"]) == 2:
+        lowest = result["lowest"]
+        lines.append(
+            f"→ **{_label(highest)} earn more** by **${_fmt_money(result['spread'])}** "
+            f"(vs {_label(lowest)}).",
+        )
+    else:
+        lowest = result["lowest"]
+        lines.append(
+            f"→ Most: **{_label(highest)}** (${_fmt_money(highest['earned'])}). Least: "
+            f"**{_label(lowest)}** (${_fmt_money(lowest['earned'])}). "
+            f"Spread: **${_fmt_money(result['spread'])}**.",
+        )
+    lines.append(
+        "_(Standard/Medium per-round cash, no income towers; each range is the "
+        "inclusive sum of its rounds. Cash modifiers are not applied.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_round_range_comparison_reply(message_text: str) -> str | None:
+    """A code-built "which earns more cash, rounds X-Y or A-B" answer, or ``None``.
+
+    The AI §7.5 *round-range* member of the multi-entity comparison floor — the
+    income sibling of the cost builders. Ranks the total cash of **two or more**
+    round ranges so the model can never mis-state which range earns more / by how
+    much (the BUG-0009 "grounded values, wrong assembly" class). Fires only on an
+    earning noun (``cash``/``money``/``income``/``earn``) **and** a comparison
+    signal (``more``/``vs``/``or``/``compare`` …) **and** two-or-more parsed round
+    ranges; an ABR cue routes the alternate round set. Returns ``None`` otherwise —
+    a **single** range is the round-cash workflow's job (they stay non-overlapping
+    on range count, and this floor short-circuits before the workflow runs), and
+    strategy/recommendation questions reach the model untouched.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _EARN_NOUN_RE.search(low):
+        return None
+    if not _EARN_COMPARE_RE.search(low):
+        return None
+    if any(word in low for word in _EARN_STRATEGY_EXCLUDE):
+        return None
+
+    ranges = _extract_round_ranges(low)
+    if len(ranges) < 2:
+        return None
+
+    from services import btd6_data_service
+    from utils.btd6.keywords import ABR_CUE_RE
+
+    roundset = "alternate" if ABR_CUE_RE.search(low) else "default"
+    result = btd6_data_service.compare_round_ranges(ranges, roundset=roundset)
+    if not result.get("found"):
+        return None
+    return _format_round_range_comparison(result)
+
 
 def _scan_towers_with_positions(text_lower: str, dataset: Any) -> list[tuple[int, Any]]:
     """Every tower mentioned in ``text_lower``, as ``(start_index, tower)`` pairs
@@ -2268,30 +2406,41 @@ def deterministic_difficulty_cost_comparison_reply(message_text: str) -> str | N
 
 
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
+# The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
+# answer and is narrow (returns ``None`` for anything but its exact list shape),
+# so their match sets are mutually exclusive on a real question; order resolves
+# only a genuine overlap (e.g. a two-tower cost question reaches the multi-tower
+# builder before the single-tower difficulty builder). Exposed at module level so
+# the exclusivity invariant (`test_btd6_floor_builder_exclusivity.py`) iterates the
+# *live* tuple — a builder added here is automatically held to the one-fires
+# contract, no test edit needed. Append a new list family here.
+_BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
+    deterministic_mk_reference_reply,
+    deterministic_geraldo_per_level_reply,
+    deterministic_modes_reply,
+    deterministic_cost_comparison_reply,
+    deterministic_difficulty_cost_comparison_reply,
+    deterministic_round_range_comparison_reply,
+)
+
+
 def deterministic_btd6_list_reply(message_text: str) -> str | None:
     """The single BUG-0009 floor seam: the first deterministic list-answer
     builder that matches ``message_text``, or ``None`` if none does.
 
     BUG-0009 is the "grounded facts, wrong assembly" class — the model groups /
     labels / orders an individually-grounded list incorrectly, and the
-    value-only faithfulness guard cannot catch a mis-*grouping*. Each builder
-    below OWNS its labelled answer; the natural-language stage serves the result
-    as a pre-emptive floor *before* the model. Builders are narrow (they return
-    ``None`` for anything but their exact list shape), so ordinary BTD6 questions
-    fall through to the model untouched. Add a new list family (e.g.
-    newest-towers ordering) by appending its builder here.
+    value-only faithfulness guard cannot catch a mis-*grouping*. Each builder in
+    :data:`_BTD6_LIST_BUILDERS` OWNS its labelled answer; the natural-language
+    stage serves the result as a pre-emptive floor *before* the model. Builders
+    are narrow (they return ``None`` for anything but their exact list shape), so
+    ordinary BTD6 questions fall through to the model untouched.
 
-    The AI §7.5 cost-comparison builders ride the same seam: a "which costs more"
-    question (across towers, or across difficulties) is the comparison member of
-    the same wrong-assembly class.
+    The AI §7.5 comparison builders ride the same seam: a "which costs more" /
+    "which earns more" question (across towers, difficulties, or round ranges) is
+    the comparison member of the same wrong-assembly class.
     """
-    for builder in (
-        deterministic_mk_reference_reply,
-        deterministic_geraldo_per_level_reply,
-        deterministic_modes_reply,
-        deterministic_cost_comparison_reply,
-        deterministic_difficulty_cost_comparison_reply,
-    ):
+    for builder in _BTD6_LIST_BUILDERS:
         reply = builder(message_text)
         if reply:
             return reply

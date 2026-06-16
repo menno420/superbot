@@ -20,6 +20,14 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
+  round-range cash comparison requires a round token before *each* range's first anchor (to keep
+  crosspath codes like `5-0-0` out), so the natural comma-list phrasing "rounds 1-30, 30-60 or 60-80"
+  (token only on the first) silently defers to the model — the BUG-0009 mis-assembly class the floor
+  exists to own. Accept round-anchored bare `N-M` ranges (once ≥1 explicit round-token range is
+  present) that are not crosspath-adjacent. Decided-lane; small. → relates
+  `services/btd6_context_service.py::_extract_round_ranges`.
 - [`button-command-surface-parity-2026-06-16.md`](./button-command-surface-parity-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the `!coglist` command request PR #951):** the admin panel
   had a 📋 Cog List button but no text command — users expect a button's action to also be reachable

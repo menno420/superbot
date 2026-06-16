@@ -2261,6 +2261,95 @@ def compare_difficulty_costs(
     }
 
 
+def compare_round_ranges(
+    ranges: Sequence[tuple[int, int]],
+    *,
+    roundset: str = "default",
+) -> dict[str, Any]:
+    """Deterministic cash ranking of two-or-more inclusive round ranges.
+
+    The §7.5 *round-range* member of the multi-entity comparison primitive (the
+    sibling of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs`,
+    which compare *cost*). Answers "which earns more cash, rounds 20-40 or
+    40-60?" — price each inclusive range once via :func:`round_cash` (the same
+    owner the round-cash workflow uses, so the per-round figures can never drift),
+    then rank/diff the earned totals **in code** so the model never assembles the
+    comparison itself (the BUG-0009 "wrong assembly" class — a mis-stated "earns
+    more" / wrong difference, which the value-only faithfulness guard cannot
+    catch). A single round (``lo == hi``) contributes its own ``round_cash``.
+
+    Ranges are normalised (reversed endpoints are flipped by ``round_cash``) and
+    **deduped** on the resolved ``(start, end)`` so "20-40 vs 20-40" collapses to
+    one entry and falls through. Ranked **descending** (most cash first — the
+    question asks which earns *more*) with a stable tie-break on the start then end
+    round. All ranges are priced in the **same** ``roundset`` (a cross-roundset
+    comparison is not a real question shape).
+
+    Returns ``{"found": False, ...}`` when fewer than two distinct ranges price
+    successfully (an out-of-range / partial-overlap range is skipped, never
+    summed partially), so a caller can fall through to the model rather than
+    answer a degenerate comparison.
+    """
+    entries: list[dict[str, Any]] = []
+    seen: set[tuple[int, int]] = set()
+    resolved_set: str | None = None
+    for lo, hi in ranges:
+        priced = round_cash(lo, hi, roundset=roundset)
+        if not priced.get("found"):
+            continue
+        start, end = priced["round_start"], priced["round_end"]
+        if (start, end) in seen:
+            continue
+        if priced.get("single_round"):
+            earned = priced.get("round_cash")
+            counted = 1
+        else:
+            earned = priced.get("range_cash")
+            counted = priced.get("rounds_counted")
+        if earned is None:
+            continue
+        seen.add((start, end))
+        resolved_set = priced.get("roundset", resolved_set)
+        entries.append(
+            {
+                "round_start": start,
+                "round_end": end,
+                "single_round": start == end,
+                "earned": round(float(earned), 2),
+                "rounds_counted": counted,
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct priceable round ranges",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(
+        entries,
+        key=lambda e: (-e["earned"], e["round_start"], e["round_end"]),
+    )
+    highest = ranked[0]
+    lowest = ranked[-1]
+    set_label = "alternate (ABR)" if resolved_set == "alternate" else "standard"
+    return {
+        "found": True,
+        "roundset": resolved_set or "default",
+        "set_label": set_label,
+        "entries": ranked,
+        "highest": highest,
+        "lowest": lowest,
+        "spread": round(highest["earned"] - lowest["earned"], 2),
+        "all_equal": highest["earned"] == lowest["earned"],
+        "note": (
+            f"{set_label} round set, Medium difficulty, no income towers; each "
+            "range is the inclusive per-round cash sum; ranked descending."
+        ),
+    }
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics

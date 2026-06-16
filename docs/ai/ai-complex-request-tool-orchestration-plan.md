@@ -600,9 +600,11 @@ This pattern is valuable for:
   two-or-more difficulties — the sibling of the above; the two are mutually exclusive on
   candidate count, so both ride the `deterministic_btd6_list_reply` floor seam);
 - paragon degree/resource scenarios — *not yet built*;
-- round-range comparisons — *not yet built* (a comparison of two round ranges, distinct from
-  the single-range projection the round-cash workflow already owns; keep them non-overlapping by
-  requiring two ranges if/when built);
+- round-range comparisons — **SHIPPED #955** (`compare_round_ranges` +
+  `deterministic_round_range_comparison_reply`: ranks the total cash of two-or-more inclusive
+  round ranges via the existing `round_cash` primitive, ABR-aware; distinct from the single-range
+  projection the round-cash workflow owns — they stay non-overlapping on **range count** (this
+  floor requires ≥2 ranges) and the floor short-circuits before the workflow ever runs);
 - future game/stat/economy functions.
 
 ## 8. Provider-neutral request changes
