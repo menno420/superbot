@@ -205,6 +205,25 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#955 (2026-06-16, AI §7.5 — deterministic BTD6 round-range cash comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **round-range** member of the §7.5 multi-entity comparison floor (the income sibling of
+  the #946 tower-vs-tower and #950 by-difficulty *cost* members): "which earns more cash, rounds
+  20-40 or 40-60?" ranks the total cash of **two or more** inclusive round ranges — the model would
+  otherwise assemble that ranking itself and can mis-state which range earns more / by how much (the
+  BUG-0009 "grounded values, wrong assembly" class the value-only faithfulness guard can't catch).
+  `btd6_data_service.compare_round_ranges(ranges, *, roundset="default")` prices each range once via
+  the existing `round_cash` primitive (the same owner the round-cash workflow uses, so per-round
+  figures never drift), dedups normalized ranges, ranks descending, fails closed (<2 distinct
+  priceable ranges), and is ABR-aware; `btd6_context_service.deterministic_round_range_comparison_reply`
+  fires on an earning noun (`cash`/`money`/`income`/`earn`) + a comparison signal (`more`/`vs`/`or`/
+  `compare`…) + **≥2** parsed round ranges (a round token required before each range's first anchor,
+  so crosspath codes like `5-0-0` are never mis-read as ranges), appended to the
+  `deterministic_btd6_list_reply` dispatcher. Stays non-overlapping with the single-range round-cash
+  workflow on **range count**, and the floor short-circuits before that workflow ever runs.
+  `check_quality --full` green (10008, +18); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_round_range_comparison.py`. **§7.5 comparison family now covers cost
+  (tower + difficulty) + round-range cash; the one remaining member is paragon degree/resource.**
 - **#950 (2026-06-16, AI §7.5 — deterministic BTD6 difficulty cost-comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
   Adds the **difficulty member** of the §7.5 multi-entity comparison floor (the sibling of the #946
@@ -427,24 +446,6 @@ Source code and merged PRs win over anything written here.
   pastes verbatim. Skill doc rewired (steps 2–3 → pipe the analyzer) + the `log-triage/SKILL.md`
   artifact regenerated. 18 tests; `check_quality --full` green (9737); arch 0. **Slot 4 done; the
   read-only Railway *token* is still the only thing gating live-data triage (owner-provisioned).**
-- **#905 (2026-06-15, mining Slice B — the Forge structure: gear-tier crafting gate)** — a
-  **dispatched (owner-directed)** mining work order. *(Dispatch note: the order asked for Slice D /
-  §7.4 capped skill tree, but that **already shipped as #891**, and the "retire the duplicate
-  `docs/plans/…` doc" precondition was moot — no such file/dir exists; per the dispatch routine's
-  already-shipped rule the run built the genuine **next** plan slice instead. Recurring Q-0142
-  dispatch-by-prediction misfire — flagged for the owner.)* A **built** structure (coin + material
-  sink) on the **generic `mining_structures` table** (migration 073 — reused by Slice C Home) +
-  `utils/db/games/mining_structures.py` (`set_structure_level` on the RS02 boundary ratchet); pure
-  `utils/mining/structures.py` (forge build-cost ladder + the `equipment.gear_tier`-derived
-  requirement map). **Gates only the top two gear tiers** — gold → Forge I, diamond → Forge II;
-  bronze/iron/silver gear, tools, and structures stay forge-free, so most progression is unchanged
-  (a deliberate, documented, reversible behavior change for end-game gear). `mining_workflow.build_structure`
-  (coin debit + material consume + level raise in ONE transaction, the `vault_upgrade` precedent);
-  a `_forge_gate` on `craft`/`quick_craft` that does **zero extra I/O** for forge-free recipes
-  (existing craft paths unchanged — characterization net stays byte-identical). UI: `🔥 Forge` hub
-  panel + `!forge` + the recipe browser shows the lock. Numbers pinned in
-  [`planning/forge-numbers-2026-06-15.md`](planning/forge-numbers-2026-06-15.md). `check_quality
-  --full` green (9754); arch 0.
 - **Older merges (#898 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #950 AI §7.5 difficulty-comparison session (2026-06-16) added its entry and archived the oldest live one — #897 mining Vault v2 — to hold the ratchet at 20. The #943 diagnostic-mixin session (2026-06-16) added the #942 ledger-reconciliation entry — a reconciliation PR doesn't add its own entry — and archived the oldest live one, the #898+#892+#889 docs-hygiene group, to hold the ratchet at 20. The #932–#939 ledger reconciliation (2026-06-16) added six live entries — #939, #936, #935, #934, #933, #932 — and archived the eight oldest to hold the ratchet at 20: #884, the #878+#879+#881 P1-1 eval/smoke arc, the #870+#869+#868 Hermes operating-layer arc, #867, #866, #865, #864, #863. The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.

@@ -29,8 +29,21 @@ pass would surface the rest (e.g. other `_*PanelView` action buttons).
 - discord.py gotchas this class hits: method names can't start with `cog_`/`bot_`; a command with
   ≥3 aliases must declare `extras={"alias_classification": ...}` (the surface-ledger invariant).
 
+## Sibling failure mode (added 2026-06-16, BTD6 live-events session)
+
+There is a related-but-distinct "button does nothing" class this idea should **not** try to
+own: a button that *does* have a callback but the callback **silently crashes** after deferring
+(here, the BTD6 Live Events drill-down raised `TypeError` from a bad `search_facts(entity_key=…)`
+call; the deferred ephemeral never updated and the view's `on_error` swallowed it). That's not a
+missing-surface gap — it's a tested-but-broken callback — and the right guard is test-time
+signature fidelity, routed to
+[`autospec-mock-fidelity-guard-2026-06-16.md`](./autospec-mock-fidelity-guard-2026-06-16.md),
+not a surface-parity audit. Keeping the two scopes separate stops this idea from over-reaching.
+
 ## Disposition
 
-Review-lane idea (UX/discoverability). Candidate to fold into `docs/ux/` review guidance or the
-production eval checklist rather than ship as a brittle CI guard. Relates: `cogs/admin_cog.py`
-(panel buttons), `core/runtime/command_surface_ledger.py`, `utils/synonyms.py`.
+Review-lane idea (UX/discoverability), scoped to **missing command front doors for action
+buttons** (not silently-failing callbacks — see sibling note above). Candidate to fold into
+`docs/ux/` review guidance or the production eval checklist rather than ship as a brittle CI
+guard. Relates: `cogs/admin_cog.py` (panel buttons),
+`core/runtime/command_surface_ledger.py`, `utils/synonyms.py`.

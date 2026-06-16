@@ -86,6 +86,24 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#905 (2026-06-15, mining Slice B — the Forge structure: gear-tier crafting gate)** — a
+  **dispatched (owner-directed)** mining work order. *(Dispatch note: the order asked for Slice D /
+  §7.4 capped skill tree, but that **already shipped as #891**, and the "retire the duplicate
+  `docs/plans/…` doc" precondition was moot — no such file/dir exists; per the dispatch routine's
+  already-shipped rule the run built the genuine **next** plan slice instead. Recurring Q-0142
+  dispatch-by-prediction misfire — flagged for the owner.)* A **built** structure (coin + material
+  sink) on the **generic `mining_structures` table** (migration 073 — reused by Slice C Home) +
+  `utils/db/games/mining_structures.py` (`set_structure_level` on the RS02 boundary ratchet); pure
+  `utils/mining/structures.py` (forge build-cost ladder + the `equipment.gear_tier`-derived
+  requirement map). **Gates only the top two gear tiers** — gold → Forge I, diamond → Forge II;
+  bronze/iron/silver gear, tools, and structures stay forge-free, so most progression is unchanged
+  (a deliberate, documented, reversible behavior change for end-game gear). `mining_workflow.build_structure`
+  (coin debit + material consume + level raise in ONE transaction, the `vault_upgrade` precedent);
+  a `_forge_gate` on `craft`/`quick_craft` that does **zero extra I/O** for forge-free recipes
+  (existing craft paths unchanged — characterization net stays byte-identical). UI: `🔥 Forge` hub
+  panel + `!forge` + the recipe browser shows the lock. Numbers pinned in
+  [`planning/forge-numbers-2026-06-15.md`](planning/forge-numbers-2026-06-15.md). `check_quality
+  --full` green (9754); arch 0.
 - **#897 (2026-06-15, mining Slice A — Vault v2: inventory soft-cap + vault-cap upgrade path)** —
   the next mining-structures slice, a **dispatched (owner-directed)** `CLASS: feature` work order.
   The phase gate read FIX, but Q-0114 gates only *agent-self-originated* features — the owner

@@ -27,7 +27,11 @@ living ledger (`docs/current-state.md`).
 
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
-  misinformation fix · Q-0147 DM gate · ledger tidy · `.sessions/` + `scripts/` + `docs/` · 2026-06-16
+  misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
+- `claude/epic-noether-qgis28` · BTD6 Live Events — fix the dead event drill-down
+  (`build_event_detail_view_model` `TypeError`) + current-event-first overview redesign (show only
+  the live event + all its info; history behind 📜 Past events) · `services/btd6_view_model_service.py`
+  · `views/btd6/live_events_view.py` · `cogs/btd6/_event_helpers.py` · 2026-06-16
 
 ## Recently cleared
 

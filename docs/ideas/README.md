@@ -20,6 +20,21 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
+  round-range cash comparison requires a round token before *each* range's first anchor (to keep
+  crosspath codes like `5-0-0` out), so the natural comma-list phrasing "rounds 1-30, 30-60 or 60-80"
+  (token only on the first) silently defers to the model — the BUG-0009 mis-assembly class the floor
+  exists to own. Accept round-anchored bare `N-M` ranges (once ≥1 explicit round-token range is
+  present) that are not crosspath-adjacent. Decided-lane; small. → relates
+  `services/btd6_context_service.py::_extract_round_ranges`.
+- [`btd6-ct-event-detail-relics-map-2026-06-16.md`](./btd6-ct-event-detail-relics-map-2026-06-16.md) —
+  **BTD6 UX follow-up to #953 (2026-06-16, Q-0089):** the new Live Events overview drills into a rich
+  detail for race/boss/odyssey, but CT has no `_towers` metadata so a live CT event shows only
+  name+window — while the rich relic/hex-map data already exists in the panel's 🗺️ CT view. Bridge
+  them by surfacing relics + `build_ct_map_file(ct_id)` on the CT event detail (a button, reusing the
+  proven renderer; CT-gated; degrade to text when Pillow is absent). → relates
+  `views/btd6/live_events_view.py` · `views/btd6/ct_map_view.py` · `services/btd6_live_query_service.py`.
 - [`button-command-surface-parity-2026-06-16.md`](./button-command-surface-parity-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the `!coglist` command request PR #951):** the admin panel
   had a 📋 Cog List button but no text command — users expect a button's action to also be reachable
@@ -195,6 +210,12 @@ Current broad captures:
   **✅ Shipped 2026-06-16 (Q-0151):** implemented as a `reconcil`-in-merge-subject exemption in
   `find_missing` (the diff-confinement bound was deferred as merge-strategy-fragile; subject-match is
   tight + disposable per Q-0105). Tests in `test_check_current_state_ledger.py`.
+- [`autospec-mock-fidelity-guard-2026-06-16.md`](./autospec-mock-fidelity-guard-2026-06-16.md) —
+  **tooling/testing (2026-06-16):** make project mocks signature-faithful (`create_autospec` /
+  `AsyncMock(spec=…)`) via a lint/AST guard or a tiny `autospec_setattr` helper, so a call-site
+  kwarg typo that the real function would reject also fails the test. Born from the BTD6 drill-down
+  crash that shipped green because a bare `AsyncMock` masked a `search_facts(entity_key=…)` signature
+  mismatch. Small/safe tooling-lane candidate.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in
