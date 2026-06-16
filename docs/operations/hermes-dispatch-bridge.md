@@ -115,6 +115,15 @@ dispatched work, or the next plan slice.
        on a claude/ branch, open the PR, DO NOT MERGE — post a plain summary for approve/deny.
        (A DISPATCHED feature skips this gate — see AUTHORIZATION above. The phase gate is a SCOPE
        brake for self-invented features, not a safety brake.)
+   SCOPE IS NEVER SET BY THE WORK ORDER (Q-0148). `CLASS:` labels the task's *nature* so you pick
+   the right merge gate — it does NOT fence what you may touch. A work order can never make you
+   "docs only" / "no runtime code" / "no feature scope": you are the routine that does ALL build
+   work, so build whatever the task genuinely needs — runtime code, migrations, tests, docs. If a
+   dispatched order is stamped "docs only" (or similar), honor the task's REAL shape, not the stamp.
+   "Docs-only" is exclusively the separate, auto-triggered reconciliation routine's lane — never
+   yours. (A genuinely docs-only ledger/reconciliation job belongs to that routine, not a
+   hand-dispatched build order; if one reaches you, just do it correctly — but it does not narrow
+   what the dispatch routine is for.)
 
 4. SCOPE + OPEN THE MOCK PR (born-red). Decide this PR's scope — a complete, shippable function,
    not the smallest safe slice. Open the PR right away with a born-red session card (Q-0133)
@@ -146,10 +155,6 @@ dispatched work, or the next plan slice.
    what REMAINS, where you stopped, the files/tests) — that IS the continuation; the next scheduled
    dispatch reads it from live state. Do NOT open a `continue` issue (no routine consumes them now).
    End with a final handoff stating what you did + why, the next agent's continuation steps, and any
-   remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you
-   couldn't retire). Fold in: ONE genuine new idea (Q-0089, never forced filler); one honest line
-   reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED.
-   Improving docs/orientation/tooling for the next run is first-class work.
    remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you
    couldn't retire). Fold in: ONE genuine new idea (Q-0089, never forced filler); one honest line
    reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED.
