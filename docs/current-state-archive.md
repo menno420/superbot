@@ -86,6 +86,22 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#897 (2026-06-15, mining Slice A — Vault v2: inventory soft-cap + vault-cap upgrade path)** —
+  the next mining-structures slice, a **dispatched (owner-directed)** `CLASS: feature` work order.
+  The phase gate read FIX, but Q-0114 gates only *agent-self-originated* features — the owner
+  directly corrected this exact scenario in-session (the `dispatch-phase-gate-precheck` idea's ⚠
+  Correction; the prior run built Slice D / #891 on it), so a dispatched feature builds like a bug
+  fix. **Pure cap math** in `utils/mining/capacity.py` (distinct item-*types*, not quantity:
+  `PACK_SOFT_CAP=40`; vault capacity `30 + level×15` to tier 6; rising coin upgrade-cost ladder;
+  `CapStatus`). **Pack soft-cap is warning-only** — the hub overview + every mine/harvest/explore
+  swing nudge "stash at the 🏦 Vault" and **mining is never blocked**. **Vault gets an upgradeable
+  capacity** — `mining_workflow.vault_upgrade` (coin debit + `vault_level` raise in one transaction,
+  the `buy`/`skill_service.respec` precedent; migration 072 adds `vault_level` to
+  `mining_player_state`), surfaced as `!vaultupgrade` + the vault panel's ⬆️ Upgrade button. Fully
+  **additive** (level 0 = the v1 base; deposits/withdrawals never blocked) — owner directive honored
+  (warn at cap, no hard cap approved). New write primitive `set_vault_level` registered in the RS02
+  ratchet. Tests: `tests/unit/utils/test_mining_capacity.py` + vault-upgrade/pack-warning pins in
+  `tests/unit/cogs/test_mining_vault.py`. `check_quality --full` green (9719); arch 0.
 - **#898 + #892 + #889 (2026-06-15, docs-only loop/phase-gate hygiene)** — **#898 (Q-0114):**
   documented the owner's in-session clarification in its canonical homes (router Q-0114 +
   `check_phase_gate.py` docstring) so a literal agent doesn't re-derive it — a **dispatched** work

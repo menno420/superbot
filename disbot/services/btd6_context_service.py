@@ -2176,6 +2176,97 @@ def deterministic_cost_comparison_reply(message_text: str) -> str | None:
     return _format_cost_comparison(result)
 
 
+def _format_difficulty_cost_comparison(result: dict[str, Any]) -> str:
+    tower = result["tower"]
+    code = result["code"]
+    label = result["label"]
+    lines = [f"**Cost comparison — {tower} {code} ({label}) by difficulty:**"]
+    for entry in result["entries"]:
+        lines.append(
+            f"• **{entry['difficulty'].capitalize()}** — **${entry['unit_cost']:,}**",
+        )
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ It costs the **same** (**${cheapest['unit_cost']:,}**) at every "
+            "named difficulty.",
+        )
+    elif len(result["entries"]) == 2:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheaper on **{cheapest['difficulty'].capitalize()}** by "
+            f"**${result['spread']:,}** (vs **{dearest['difficulty'].capitalize()}**).",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['difficulty'].capitalize()}** "
+            f"(${cheapest['unit_cost']:,}). Most expensive: "
+            f"**{dearest['difficulty'].capitalize()}** (${dearest['unit_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append(
+        "_(Same upgrade state priced at each difficulty: base + every tier, each "
+        "purchase rounded to $5 at that difficulty, then summed.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_difficulty_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is it cheaper on easy or impoppable" answer, or ``None``.
+
+    The AI §7.5 *difficulty* member of the multi-entity cost-comparison floor —
+    the sibling of :func:`deterministic_cost_comparison_reply`, which ranks
+    *different towers* at one difficulty. This ranks **one** upgrade state across
+    two-or-more named difficulties, so the model can never mis-state which
+    difficulty is cheaper / by how much. Fires only on a high-precision
+    cost-compare cue, **exactly one** resolvable ``(tower, crosspath)`` candidate
+    (two-or-more is the multi-tower builder's job — the two are mutually exclusive
+    on candidate count), and **two-or-more** distinct named difficulties. Returns
+    ``None`` otherwise (single-difficulty cost lookups, strategy questions, and
+    anything outside a clear by-difficulty comparison reach the model untouched).
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+    candidates = _extract_cost_comparison_candidates(low, dataset)
+    if len(candidates) != 1:
+        return None
+
+    difficulties: list[str] = []
+    seen: set[str] = set()
+    for match in _COST_DIFFICULTY_RE.finditer(low):
+        token = match.group(1).lower()
+        if token == "impop":
+            token = "impoppable"
+        # CHIMPS prices as Hard — fold it so a phantom "hard vs chimps" dedups to
+        # one entry and falls through to the model instead of a no-difference reply.
+        elif token == "chimps":
+            token = "hard"
+        if token in seen:
+            continue
+        seen.add(token)
+        difficulties.append(token)
+    if len(difficulties) < 2:
+        return None
+
+    tower, code = candidates[0]
+    result = btd6_data_service.compare_difficulty_costs(tower, code, difficulties)
+    if not result.get("found"):
+        return None
+    return _format_difficulty_cost_comparison(result)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 def deterministic_btd6_list_reply(message_text: str) -> str | None:
     """The single BUG-0009 floor seam: the first deterministic list-answer
@@ -2190,14 +2281,16 @@ def deterministic_btd6_list_reply(message_text: str) -> str | None:
     fall through to the model untouched. Add a new list family (e.g.
     newest-towers ordering) by appending its builder here.
 
-    The AI §7.5 cost-comparison builder rides the same seam: a "which costs more"
-    question is the comparison member of the same wrong-assembly class.
+    The AI §7.5 cost-comparison builders ride the same seam: a "which costs more"
+    question (across towers, or across difficulties) is the comparison member of
+    the same wrong-assembly class.
     """
     for builder in (
         deterministic_mk_reference_reply,
         deterministic_geraldo_per_level_reply,
         deterministic_modes_reply,
         deterministic_cost_comparison_reply,
+        deterministic_difficulty_cost_comparison_reply,
     ):
         reply = builder(message_text)
         if reply:
