@@ -185,6 +185,12 @@ Current broad captures:
   number, so it always omits itself and `check_current_state_ledger.py --strict` flags it next
   session (the #942 drift this run fixed). Teach the guard to **skip a docs-only ledger-bookkeeping
   PR** (title + diff-confined-to-`current-state*.md`), closing the recurrence at the guard level.
+- [`autospec-mock-fidelity-guard-2026-06-16.md`](./autospec-mock-fidelity-guard-2026-06-16.md) —
+  **tooling/testing (2026-06-16):** make project mocks signature-faithful (`create_autospec` /
+  `AsyncMock(spec=…)`) via a lint/AST guard or a tiny `autospec_setattr` helper, so a call-site
+  kwarg typo that the real function would reject also fails the test. Born from the BTD6 drill-down
+  crash that shipped green because a bare `AsyncMock` masked a `search_facts(entity_key=…)` signature
+  mismatch. Small/safe tooling-lane candidate.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in
