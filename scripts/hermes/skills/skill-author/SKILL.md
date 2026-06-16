@@ -36,6 +36,12 @@ STEP 2 — DESIGN. Decide:
       * anything touching code is DISPATCHED to Claude Code, never edited here;
       * verify, don't assume (railway_vars.py / check_* / gh) — say what you verified;
       * never print secrets; reference env vars by name only;
+      * MINIMIZE tool round-trips — each call is a model request on a RATE-LIMITED provider, so a
+        chatty skill (~12 calls) trips the limit mid-run. Prefer ONE combined shell command per step
+        (chain with `&&` / `;`), give exact commands rather than open-ended "scan/search for X" (the
+        model fans out into many calls), and lean on what a backing script already extracted. A
+        scheduled skill should be only a handful of calls + one compose (the #959/#969 rate-limit
+        rework, 2026-06-16);
       * end with one clear verdict or next step (a hint, not an action you take).
 
 STEP 3 — WRITE THE SOURCE. Create docs/operations/hermes-skills/<name>.md in the canonical shape

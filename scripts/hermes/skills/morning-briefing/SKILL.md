@@ -19,38 +19,30 @@ metadata:
 <!-- GENERATED — DO NOT EDIT. Source of truth: docs/operations/hermes-skills/morning-briefing.md. Regenerate with scripts/hermes/build_skills.py. -->
 
 You are Hermes, working with the SuperBot repository at /home/hermes/repos/superbot.
-Read-only. Produce ONE morning briefing, under 450 words. Use ✅/⚠️/❌ for the health line.
+Read-only. Produce ONE morning briefing, under 400 words. Use ✅/⚠️/❌ on the health line.
 
-1. SYNC: git -C /home/hermes/repos/superbot fetch origin main && \
-         git -C /home/hermes/repos/superbot checkout -B main origin/main
+IMPORTANT — the model provider rate-limits, so keep this to FOUR commands. Run each block below as
+a SINGLE shell command exactly as written; do NOT fan out into extra searches or file reads. Then
+compose from their output — no further commands.
 
-2. HEALTH (the fast subset of superbot-repo-health — don't re-run all six):
-   cd /home/hermes/repos/superbot
-   python3 scripts/check_docs.py --strict            # docs reachable/fresh?
-   python3 scripts/check_architecture.py --mode strict   # arch errors (warnings are fine)
-   → one ✅/⚠️/❌ line. (For the full traffic-light, point at superbot-repo-health.)
+A) SYNC + DATE:
+   cd /home/hermes/repos/superbot && git fetch -q origin main && git checkout -q -B main origin/main && date '+%Y-%m-%d'
 
-3. PULL REQUESTS + CI:
-   gh pr list --repo menno420/superbot --state open --json number,title,labels,isDraft,headRefName,updatedAt
-   gh run list --repo menno420/superbot --limit 6 --json status,conclusion,headBranch,displayTitle
-   → flag: any `needs-hermes-review` PR (your review-merge queue), any PR older than ~2 days, any
-     recent CI failure (name the branch).
+B) HEALTH (pass/fail only — known arch warnings are fine):
+   (python3 scripts/check_docs.py --strict >/dev/null 2>&1 && echo "docs: ok" || echo "docs: FAIL"); (python3 scripts/check_architecture.py --mode strict >/dev/null 2>&1 && echo "arch: ok" || echo "arch: errors")
 
-4. OVERNIGHT ROUTINE ACTIVITY (the self-improvement loop — did it run?):
-   gh pr list --repo menno420/superbot --state merged --limit 8 --json number,title,mergedAt
-   → list the claude/* PRs merged since the last briefing (~24h). If none merged and none are open,
-     say so plainly ("loop quiet overnight") — that itself is signal (cron lag or nothing to do).
+C) PRS + CI + OVERNIGHT (one block):
+   echo "== open PRs =="; gh pr list --repo menno420/superbot --state open --json number,headRefName,labels --jq '.[]|"#\(.number) \(.headRefName) [\(.labels|map(.name)|join(","))]"'; echo "== recent CI =="; gh run list --repo menno420/superbot --limit 6 --json conclusion,headBranch --jq '.[]|"\(.conclusion // "running") \(.headBranch)"'; echo "== merged ~24h =="; gh pr list --repo menno420/superbot --state merged --limit 8 --json number,title --jq '.[]|"#\(.number) \(.title)"'
 
-5. DECISIONS WAITING ON THE OWNER (reuse the superbot-open-questions logic):
-   Scan docs/owner/maintainer-question-router.md for OPEN / DISCUSS Q-blocks awaiting a verdict,
-   and docs/current-state.md ▶ Next action for any "owner-gated" / "👤" item. List the few that
-   actually need HIM (not agent work) — these are the loop's real bottleneck.
+D) DECISIONS WAITING ON THE OWNER (one grep — do not scan further):
+   grep -niE "awaiting (maintainer|owner)|status:\s*open|owner-gated|needs (owner|maintainer)" docs/owner/maintainer-question-router.md | head -15
 
-6. DELIVER in this shape:
+DELIVER in this shape — flag any needs-hermes-review PR, any CI failure (by branch), list the merged
+claude/* PRs (or "loop quiet overnight"), and the few decisions that truly need HIM:
 
 ---
 ## ☀️ SuperBot morning briefing — [date]
-- **Health:** ✅/⚠️/❌ [one line]
+- **Health:** ✅/⚠️/❌ [docs + arch, a few words]
 - **Open PRs:** [count] — [needs-hermes-review / stale flags, or "none"]
 - **CI:** [recent pass/fail summary]
 - **Overnight:** [merged claude/* PRs, or "loop quiet"]
@@ -61,7 +53,6 @@ Read-only. Produce ONE morning briefing, under 450 words. Use ✅/⚠️/❌ for
 ---
 
 RULES:
-- Verify, don't assume — every line is from a check above; say "gh unavailable" and mark ⚠️ if it is.
-- Keep it to signal. This is the owner's at-a-glance inbox, not a full report.
-- You take no action here (no merges, no dispatch) — the briefing is a hint; the owner or a
-  dedicated skill (review-merge / dispatch) acts.
+- Four commands, then compose — minimize round-trips (the provider rate-limits).
+- Verify, don't assume — every line comes from the output above; say "gh unavailable" + ⚠️ if so.
+- No actions (no merges, no dispatch) — the briefing is a hint; a dedicated skill acts.
