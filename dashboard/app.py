@@ -139,6 +139,28 @@ def access(request: Request):
     )
 
 
+@app.get("/games", response_class=HTMLResponse)
+def games(request: Request):
+    """Player-facing showcase — games, economy, and progression subsystems."""
+    data = load_data()
+    wanted = ("games", "economy", "progression")
+    by_cat: dict[str, list[dict]] = {}
+    for entry in data.get("catalogue", []):
+        if entry.get("category") in wanted:
+            by_cat.setdefault(entry["category"], []).append(entry)
+    groups = [(cat, by_cat[cat]) for cat in wanted if cat in by_cat]
+    tunables = [
+        domain
+        for domain in data.get("settings", [])
+        if domain["domain"] in ("games", "economy", "xp")
+    ]
+    return templates.TemplateResponse(
+        request,
+        "games.html",
+        {"data": data, "page": "games", "groups": groups, "tunables": tunables},
+    )
+
+
 @app.get("/aliases", response_class=HTMLResponse)
 def aliases(request: Request):
     """Suggest a command alias — pick a command, propose an alias, get a live

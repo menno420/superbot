@@ -5918,3 +5918,30 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
 (architecture + phased build L0–L3) · `services/help_overlay_mutation.py` (the seam it fronts) ·
 `views/help/editor.py` (the in-Discord editor it mirrors) · this Q-block.
+
+### Q-0157 — Edit settings from the website: global (owner) + per-server scopes (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session).** Owner: *"would it be possible to edit the
+> settings from the website? It's fine if that has to trigger a redeploy. As bot owner give me the
+> option to change things globally instead of only for the server, as well as a per-server option if
+> available."* Recorded for provenance; the bot-side half touches the hot settings path, so it's
+> designed first and built as a focused runtime PR.
+
+**Decisions / findings:**
+
+- **Both scopes wanted:** a **global** (bot-owner, all-servers) default **and** a **per-server**
+  override. Per-server already exists (`guild_settings` KV); the **global layer is new**.
+- **Design (mirrors `feature_flags` per-guild → global → default):** add a global row space
+  (`guild_id = 0` or a `global_settings` table); change `get_setting` resolution to
+  per-guild → global → caller default (one function, hot path → focused runtime PR); an audited
+  `settings_mutation` seam; the website (owner auth) edits via the control API with a scope picker
+  (global = owner-gated, per-server = admin-gated, re-checked bot-side).
+- **"Redeploy is fine"** → with the DB global layer, **neither scope needs a redeploy** (it applies
+  live); the redeploy path is only relevant to the code-default fallback, which is messier.
+- **Prerequisite:** a **settings-metadata registry** (key → type/default/label/scope) — needed to
+  render an editor and to enrich the read-only `/settings` page. Safe, additive; build first.
+- Shares the **same auth + control-API foundation** as the help/alias editors (Q-0156).
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Settings editor — global + per-server" · `utils/db/settings.py` · `core/runtime/feature_flags.py`
+(the resolution pattern) · this Q-block.
