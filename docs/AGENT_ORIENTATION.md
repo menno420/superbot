@@ -323,6 +323,10 @@ has already been done.
   when the two disagree.
 - `docs/context-map-tooling.md` — how to use `scripts/context_map.py` (file-impact context
   before editing a `disbot/` file: importers, blast radius, related docs/tests, risk).
+- [`docs/architecture/repo-atlas.md`](architecture/repo-atlas.md) — how to use `scripts/atlas.py`,
+  the repo-wide companion to this file: a generated, provenance-stamped index composing
+  `context_map` / `_review_units` / `extension_crosswalk` (layer · review-unit · role · tests across
+  the whole repo). Generated on demand, body not committed (Q-0151a).
 - `docs/repo-review-map.md` — the review/refactor partition of the repo: the coarse
   top-level domains (Axis A) and, inside the bot, the unit of independent review
   (Axis B = the vertical subsystem slice vs. the shared platform layers). Read when

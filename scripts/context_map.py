@@ -185,6 +185,33 @@ def ownership_facts(mod: str) -> list[str]:
     return facts
 
 
+def extension_role_facts(rel: str) -> list[str]:
+    """Role / backing-subsystem for a ``disbot/cogs/...`` file, from the extension crosswalk.
+
+    Degrades to ``[]`` for non-cog files or if the overlay/crosswalk is unavailable —
+    this is disposable convenience tooling and must never break the map. (PR #958 data.)
+    """
+    parts = Path(rel).parts
+    if len(parts) < 3 or parts[1] != "cogs":
+        return []
+    short = parts[2]
+    if short.endswith(".py"):
+        short = short[:-3]
+    short = short.removesuffix("_cog")
+    try:
+        import extension_crosswalk as _xwalk
+
+        rows, _ = _xwalk.build_rows()
+    except Exception:  # noqa: BLE001 — never let optional tooling break context_map
+        return []
+    for row in rows:
+        if row.extension == short:
+            backs = f" → backs `{row.backs}`" if row.backs else ""
+            reg = " (registered subsystem)" if row.registered else ""
+            return [f"Extension role: `{row.role}`{backs}{reg} — `{short}` surface."]
+    return []
+
+
 def load_overrides() -> dict:
     if not OVERRIDES_PATH.exists():
         return {}
@@ -348,8 +375,13 @@ def render(path: Path, reverse: _Reverse, overrides: dict, max_importers: int) -
             "## File role / authority",
             "",
             _bullet_list(
-                owner_facts
-                or [f"`{layer or 'n/a'}`-layer module (no canonical mutation domain)."],
+                (
+                    owner_facts
+                    or [
+                        f"`{layer or 'n/a'}`-layer module (no canonical mutation domain).",
+                    ]
+                )
+                + extension_role_facts(rel),
             ),
             f"- Layer may import: {may_import}",
             "",
