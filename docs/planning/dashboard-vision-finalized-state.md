@@ -7,6 +7,11 @@
 > [`dashboard-live-editor-plan.md`](dashboard-live-editor-plan.md) (the L0–L3 control-API + editor
 > sequence). Where this doc and those plans differ on *what to build next*, **they win**; this doc only
 > sets the long-horizon shape. Source code and merged PRs win over all three.
+>
+> **⚡ 2026-06-17 update:** the **write side shipped + activated** right after this doc was written — the
+> live help / settings / cog-routing editors are running in production (owner logged in; bot logs show
+> `control_api: enabled`). Several "Status today" cells below now understate reality; see
+> **§ Reviewer note & post-activation status** for the corrected status and a full review.
 
 ## Why this document exists
 
@@ -24,6 +29,58 @@ source of truth (both reviews — the repo does not yet have this); the full **4
 architecture + navigation model** (top-nav + workspace sidebar + command palette + canonical detail
 routes); the **3-tier freshness contract**; and the **3-ring authority** framing. Everything else in the
 reviews was already in the two execution plans or in the shipped code.
+
+## Reviewer note & post-activation status (2026-06-17)
+
+*Reviewed by the session that **built and activated** the control panel — #993 (mutation endpoints),
+#996 (OAuth login + editors), #1001 (IPv6 bind) — in the hours just before this doc merged. Net:
+**a strong, correctly-structured north-star — adopt it.** One material status correction + four
+refinements.*
+
+**Verdict.** This is the right document. It correctly diagnoses the "three competing plans" drift and
+resolves it by sitting *above* the two execution plans instead of beside them; the four-zone IA, the
+3-ring authority model, the freshness/lineage contract, and especially the **manifest spine** are sound
+and forward-looking. Nothing here contradicts what shipped.
+
+**Material correction — the write side went live *today*, after this doc was written.** The phase table
+and several "Status today" cells understate reality:
+
+- **Phase C (OAuth + workspace) — partly shipped.** Discord OAuth login, a signed-cookie session, the
+  `/admin` server picker, and per-guild editor pages are live (#996). *Still open:* the richer *read*
+  workspace (`/me`, a server **overview** with setup-health, the authority preview) — those were skipped.
+- **Phase F (first live writes) — shipped + activated.** The help / settings / cog-routing editors write
+  live through the audited seams (#993 endpoints + #996 editors); `CONTROL_API_TOKEN` + the OAuth secret
+  are set on Railway and it is confirmed working end-to-end.
+- So the build **jumped C-auth → F-writes and skipped Phase E** (the control-API *read* endpoints for
+  current values). That skip is the single most important consequence — see refinement 1.
+
+**Refinements:**
+
+1. **Elevate Phase E (current-value reads) to the immediate next priority.** The live editors currently
+   write **blind** — they POST a new value but never show the server's *current* one, because the
+   `/control/settings/current` + `/control/help/overlay` GET endpoints don't exist yet. This is the
+   highest-value, lowest-risk next slice (much smaller than the manifest) and turns "edit blind" into
+   "see-then-change." The doc lists it as Phase E but frames it as just-another-gated-phase; post-activation
+   it is the *now* gap.
+2. **Sharpen the manifest-spine gate.** The doc defaults the manifest (D) as a prerequisite "before live
+   management of commands/panels." True for **commands/panels** — the AST `button_backed` flag is the real
+   heuristic weakness. But settings/help/routing live management *already shipped* on their **already-typed**
+   seams (`SettingSpec`, `help_overlay`, `command_routing` rows), which never needed the manifest. Reframe
+   D's gate precisely: **the manifest gates command-management trustworthiness + the panel editor (H), not
+   the settings/help/routing editors** — so the doc doesn't imply the shipped editors rest on shaky metadata.
+3. **Flag the live hardening gap (security).** The panel is now **public + live**, but two of the doc's own
+   mutation requirements aren't implemented yet: **rate-limiting** (none on the control API or the public
+   login) and an **explicit CSRF token** (today only `SameSite=Lax` on the session cookie — real, but weaker
+   than the stated CSRF-token requirement). Neither is a write-authorization hole (the bot still gates every
+   write via the live member + seam), but since the surface is live, add a near-term hardening item:
+   rate-limit the control API + login and add the CSRF token to the editor forms.
+4. **Add the concrete Railway-IPv6 fact to § Security (service↔service).** "Railway private networking
+   (Wireguard)" is right, but the operative gotcha (it cost a real fix this session, #1001) is that it is
+   **IPv6-only**: the bot's health server had to bind `::` (dual-stack via `HEALTH_HOST`), not `0.0.0.0`, or
+   `worker.railway.internal` is unreachable. Phase-E implementers need this.
+
+*Minor:* the shipped session is a **stdlib HMAC-signed cookie** (no `itsdangerous`/middleware), satisfying
+the doc's "signed session cookie" — and deliberately fewer deps to version-match. Recorded for accuracy.
 
 ## North star (one paragraph)
 
