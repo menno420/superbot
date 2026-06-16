@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/practical-turing-pnppjf` · dashboard `/commands` management surface (READ side) — Manage
+  button on every command + cog, per-item panel (aliases + cog routing state + per-command alias
+  suggest box) · `dashboard/templates/commands.html` · `dashboard/app.py` ·
+  `scripts/export_dashboard_data.py` · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
