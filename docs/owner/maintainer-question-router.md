@@ -5815,3 +5815,41 @@ reset per the runbook (confirm the `HERMES_RESET_CMD` for your Hermes build — 
 **Home:** `docs/operations/hermes-skills/{idea-spotlight,morning-briefing,dispatch-resolve}.md` ·
 `docs/operations/hermes-session-reset.md` · `scripts/hermes/{idea_spotlight.py,session_reset.sh}` ·
 `scripts/dispatch_menu.py` · `scripts/hermes/build_skills.py` (EXTRAS) · this Q-block.
+
+### Q-0154 — Behind/conflicted PRs must not sit silently: auto-update behind + red-on-conflict (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly — ⚠ executable config, Q-0106
+> exception).** Surfaced live: PR #959 stalled because 12 PRs merged during the work, leaving the
+> branch `behind` main — and the owner pointed out this defeats the original intent, which was that a
+> problematic branch should go **red so an agent sees and acts**, not sit green-and-unmergeable. I
+> verified the actual behavior: a merge conflict/behind state is a *git property, not a test result*,
+> so GitHub does **not** redden a check for it, native auto-merge does **not** auto-update a behind
+> branch (no merge queue), and nothing in the repo turned conflicts red (born-red Q-0133 only covers
+> *incomplete* session cards; the Q-0125 reconciliation sweep is only every ~30 PRs). The owner chose
+> **build both** halves (via `AskUserQuestion`). Touches `.github/workflows/` (executable config), so
+> recorded under the Q-0106 in-session exception (owner is the live reviewer).
+
+**What shipped (PR #961):**
+
+- **`.github/workflows/pr-auto-update.yml`** — on `push: main`, brings open non-draft `claude/*` PRs
+  that are `BEHIND` up to date (`update-branch`) so they re-test against current main and auto-merge
+  fires. Carve-outs (`needs-hermes-review` / `do-not-automerge`) are left alone. A branch that can't
+  be cleanly updated (a real conflict) fails update-branch and is left for the guard. *Behind =
+  handled silently.* (Would have prevented the #959 stall.)
+- **`.github/workflows/pr-conflict-guard.yml`** — on `push: main` + `pull_request` + a schedule
+  backstop, posts a **red `conflict-guard` commit status** on any `DIRTY` PR and clears it to green
+  when resolved (skips `UNKNOWN` to avoid flapping). *Conflict = loud red.* It is a **non-required**
+  status (visibility, not an extra merge gate — a DIRTY PR already can't merge), so **no
+  branch-protection change is needed** for it to work.
+
+**Why `push: main` is the key trigger:** a conflict/behind state appears when *main moves* (another
+PR merges) — which is not an event on the stale PR — so both workflows hinge on `push: main`, which
+fires reliably on every merge. (GitHub `schedule:` cron is a laggy backstop only.)
+
+**Owner manual steps:** none beyond what already exists — `ROUTINE_PAT` already needs Pull requests +
+Contents write for `auto-merge-enabler.yml`, which is exactly what `pr-auto-update` uses; the guard
+posts statuses with the same token. Optionally make `conflict-guard` a *required* check if you want a
+conflict to hard-block (not necessary — it already can't merge).
+
+**Home:** `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` ·
+`docs/operations/autonomous-routines.md` § "PR mergeability keepers" · this Q-block.
