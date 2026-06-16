@@ -6031,3 +6031,41 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
 § "Command management surface" · `services/command_routing.py` · `dashboard/templates/commands.html` ·
 this Q-block.
+
+### Q-0161 — Finalized dashboard vision: the manifest spine + owner-zone future scope (2026-06-16)
+
+> **OPEN — awaiting owner.** Raised while synthesizing the owner's uploaded deep-research report + Codex
+> PR #998 into one north-star vision plan
+> ([`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)).
+> The vision doc captures **all** open questions with safe defaults and is actionable without answers;
+> only these **two architectural/early-IA forks** are routed here because guessing wrong on them is
+> expensive or hard to reverse. The rest (homepage emphasis, authority-UX posture, first-write breadth,
+> mobile depth) carry defaults in the doc and don't block. Neither fork blocks any current build — both
+> are *destination* decisions for when the dashboard reaches that phase.
+
+**Fork 1 — the manifest spine (go/no-go + priority).** Both external reviews recommend the bot build a
+**typed runtime manifest** (command / panel / settings) at startup as the long-term source of truth for
+dashboard metadata, demoting the AST scanner (`scan_commands.py`) to a *drift-detection* role. Today the
+website's command/button metadata is AST-derived and "probably right" — fine for read-only docs, fragile
+for *management* (the UI could offer a control the runtime can't honor). The manifest spine is the cure but
+it's a real bot-side investment (a startup builder + a panel registry + reconciliation tests).
+
+- *Plain-language why it matters:* it's the difference between a dashboard that *guesses* what's manageable
+  and one that *knows*. It's also the hard prerequisite for any reliable command/panel **editor**.
+- *Agent recommendation / safe default:* **yes, build it — but sequence it after OAuth + read-only
+  workspaces and before live management of commands/panels**, so reliable manageability metadata exists
+  exactly when the editors that depend on it arrive (vision-doc Phase D, before F/H).
+
+**Fork 2 — owner-zone future scope.** Should the owner/developer zone stay **owner-only forever**, or be
+designed now for later **delegated scopes** (e.g. observability-only · issue-triage · content-editing ·
+runtime-control) for trusted operators/moderators? The report's point: this is "better decided early in the
+IA than repaired late in permissions."
+
+- *Plain-language why it matters:* if others will ever get limited platform access, the zone's routes and
+  authority checks should be *scope-shaped* from the start; retrofitting roles onto an owner-only zone is a
+  painful permissions rewrite.
+- *Agent recommendation / safe default:* **build owner-only now, but keep the owner zone scope-shaped** so
+  delegation is an additive grant later, not a rewrite. (No delegated roles built until the owner asks.)
+
+**Home (once answered):** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
+§ "The manifest spine" + § "The four zones" / "Roadmap" · this Q-block.

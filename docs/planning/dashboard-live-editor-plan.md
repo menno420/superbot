@@ -7,6 +7,10 @@
 > remains is the **write side** — control-API mutation endpoints + Discord OAuth login + editors —
 > the owner's explicit **"don't rush"** zone, gated on owner Railway setup. Source code and merged
 > PRs win over this document.
+>
+> **North-star vision:** [`dashboard-vision-finalized-state.md`](dashboard-vision-finalized-state.md) —
+> this plan is the L0–L3 *execution sequence*; that doc is the finalized destination (four zones, the
+> full config-capability map, the manifest spine, the 3-ring authority model) it converges toward.
 
 ## ⭐ Next session — start here (handoff 2026-06-16)
 
