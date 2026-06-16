@@ -1040,6 +1040,7 @@ EXPECTED_SLASH_SURFACE: dict[str, str | None] = {
     "games": None,
     "help": None,
     "moderation": None,
+    "myprofile": None,
     "platform": None,
     "server-management": None,
     "settings": None,
