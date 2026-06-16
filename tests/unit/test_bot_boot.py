@@ -230,10 +230,16 @@ def test_bot1_close_driver_gates_on_pending_and_draining() -> None:
 
 
 def test_bot1_close_driver_does_not_own_cleanup() -> None:
-    """Architectural boundary: cleanup belongs to ``main()``'s finally
-    block, not the close-driver.  The driver function body must not
-    call runtime-lock release, db.close, reporter.close, os.execv, or
-    sys.exit.  ``os._exit`` is permitted (close-timeout fail-safe).
+    """Architectural boundary: local teardown belongs to ``main()``'s
+    finally block, not the close-driver.  The driver function body must
+    not call db.close, reporter.close, os.execv, or sys.exit.
+    ``os._exit`` is permitted (close-timeout fail-safe).
+
+    The runtime-lock release is the deliberate exception: the driver
+    drops it *early* (before bot.close()) for a fast deploy handoff,
+    because a leaked lock costs ~90s of downtime on the next deploy — it
+    is the next-replica handoff signal, not local cleanup.  main()'s
+    finally re-runs it idempotently.
 
     AST-scoped to the driver function so that legitimate uses of those
     same calls elsewhere in bot1.py (the actual finalizer) are not
@@ -253,7 +259,6 @@ def test_bot1_close_driver_does_not_own_cleanup() -> None:
     ), "bot1.py must define async def _drive_close_on_lifecycle_request."
 
     forbidden_attr_calls = {
-        "release_lock_best_effort",
         "execv",
     }
     forbidden_attr_chains = {

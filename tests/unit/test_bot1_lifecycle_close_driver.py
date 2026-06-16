@@ -32,6 +32,21 @@ def _reset_lifecycle_state() -> None:
     lifecycle.reset_for_tests()
 
 
+@pytest.fixture(autouse=True)
+def _isolate_early_lock_release(monkeypatch: pytest.MonkeyPatch):
+    """The close-driver now releases the runtime lock + signals the
+    heartbeat to stop early (LP-4 fast deploy handoff). These tests run
+    without a DB pool, so stub the release to a no-op AsyncMock and reset
+    the module-level heartbeat-stop event between cases. The dedicated
+    ordering test installs its own spy over this stub."""
+    from unittest.mock import AsyncMock
+
+    monkeypatch.setattr(bot1._runtime, "release_lock_best_effort", AsyncMock())
+    bot1._heartbeat_stop.clear()
+    yield
+    bot1._heartbeat_stop.clear()
+
+
 class _FakeBot:
     """Minimal stand-in for ``commands.Bot`` exposing only ``close``."""
 
@@ -160,6 +175,41 @@ async def test_webhook_fires_before_bot_close(
     await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
 
     assert order == ["webhook", "close"]
+
+
+@pytest.mark.asyncio
+async def test_close_driver_releases_lock_and_stops_heartbeat_before_close(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """LP-4 fast deploy handoff (the ~85s-downtime fix): the driver must
+    drop the runtime lock and signal the heartbeat to stop BEFORE the slow
+    bot.close(), so a platform SIGKILL mid-drain cannot leave the singleton
+    lock wedged for its ~90s stale TTL."""
+    order: list[str] = []
+
+    class OrderedBot:
+        async def close(self) -> None:
+            order.append("close")
+
+    async def _spy_release(*_a: Any, **_kw: Any) -> None:
+        order.append("release")
+
+    monkeypatch.setattr(bot1, "bot", OrderedBot())
+    monkeypatch.setattr(bot1, "reporter", None)
+    monkeypatch.setattr(bot1._runtime, "release_lock_best_effort", _spy_release)
+    _install_fast_poll(monkeypatch)
+
+    assert not bot1._heartbeat_stop.is_set()
+    lifecycle.set_phase(lifecycle.Phase.RUNNING)
+    lifecycle.request_shutdown(reason="sigterm")
+
+    await asyncio.wait_for(bot1._drive_close_on_lifecycle_request(), timeout=2.0)
+
+    assert order == ["release", "close"], order
+    assert bot1._heartbeat_stop.is_set(), (
+        "driver must set the heartbeat stop-event so the heartbeat loop "
+        "treats the released lock as an intentional shutdown, not a reclaim"
+    )
 
 
 @pytest.mark.asyncio
