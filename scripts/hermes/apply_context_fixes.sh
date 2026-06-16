@@ -7,6 +7,15 @@
 # primary fix — keep them only as a marginal tuning lever, not a required step. See
 # docs/operations/hermes-control-plane.md § Model/provider.
 #
+# ⚠️ DO NOT RUN THIS FOR A "tokens per min (TPM)" RATE-LIMIT (2026-06-16 incident). This script
+# RAISES compression.threshold (0.50 -> 0.75) = compact LATER = sessions grow BIGGER. That is the
+# right direction for the doc-pruning problem this script was built for, but the WRONG direction for
+# a per-minute rate limit (`Rate limit reached … on tokens per min (TPM): Limit 200000 …`). A bigger
+# session re-sends MORE tokens per reply, so it hits the TPM ceiling sooner. For a TPM error, do the
+# opposite — LOWER the threshold (e.g. `hermes config set compression.threshold 0.25`) so each call
+# stays small, and/or raise the OpenAI TPM tier. Full incident + fix: docs/operations/hermes-session-reset.md
+# § "Root cause clarification (2026-06-16)".
+#
 # WHY (original diagnosis): Hermes "forgets / misunderstands / loses the thread" because its gateway
 # COMPACTS context at 50% of the model window — it summarizes the middle of the
 # conversation and DELETES tool outputs larger than ~200 chars. SuperBot's docs are

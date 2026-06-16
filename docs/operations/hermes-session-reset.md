@@ -23,6 +23,39 @@ systemd timer (every 6h)  →  scripts/hermes/session_reset.sh  →  $HERMES_RES
 `review-merge` already run as **fresh, stateless** sessions on their own cron (a scheduled skill
 never accumulates into your chat). This runbook is only about the **interactive** thread you type in.
 
+## ⚠️ Root cause clarification (2026-06-16 live incident) — it's TPM, and compaction is the primary lever
+
+A real incident clarified what actually goes wrong and the cleanest fix — read this before wiring a timer:
+
+- **The failure is a per-minute rate limit, not a context-window overflow.** The gateway logged
+  `Rate limit reached for gpt-5.4-mini … on tokens per min (TPM): Limit 200000, Used …, Requested ~100k`
+  with `Context: 79 msgs, ~110,571 tokens`. The model's window is **400K**, so a 110K session fits
+  fine — but the OpenAI org's limit is **200,000 tokens *per minute***. Every reply re-sends the whole
+  conversation (~100K), so **2 replies/min saturate the budget** and the bot can't answer (it looks
+  "down" but is `active (running)`). The 3 automatic retries (each re-sending ~100K) guarantee it.
+- **There is no first-class CLI command to reset the live gateway conversation.** Verified against
+  `hermes gateway --help` (only `run/start/stop/restart/status/install/…` — service lifecycle, and
+  **restart does NOT clear context**) and `hermes sessions --help` (store mgmt: `list/delete/prune/
+  stats/…` — and the bloated session is the *newest*, so `prune` (old) won't touch it). **The only
+  clean live reset is `/new` in Telegram.**
+- **So compaction — not a 6h hard-reset — is the primary durable fix.** Lower the compaction
+  threshold so the gateway keeps each call small *continuously*, well under the TPM budget:
+  ```bash
+  hermes config                                  # confirm current compression.threshold (≈ 0.50)
+  hermes config set compression.threshold 0.25   # compact at ~100K of the 400K window, not ~200K
+  sudo systemctl restart hermes-gateway
+  ```
+  Tune **down** (0.20…) if it still throttles. This is the **opposite** of `apply_context_fixes.sh`
+  (which *raises* the threshold for a different, doc-pruning problem — do **not** run it for a TPM
+  rate-limit). The real ceiling fix is raising the OpenAI **TPM tier** (200K/min is low for a
+  400K-window model); also note a `bg-review` background thread fires its own ~100K calls
+  *concurrently*, doubling per-minute pressure.
+- **Immediate unstick:** `/new` in Telegram (drops the bloated session), then restart for any new skills.
+
+The auto-reset below is still useful as a coarse "fresh start every 6h," but it is **secondary** to
+compaction and, given the CLI reality, a true hard reset means `hermes sessions delete <current-id>`
+**+** `gateway restart`, or simply relying on `/new`. Prefer compaction.
+
 ## The one knob to confirm (UNVERIFIED — like `apply_context_fixes.sh`)
 
 The exact way to clear the session depends on your Hermes build, and it can't be exercised from the
@@ -30,14 +63,15 @@ repo (no Hermes in CI). `/new` is the **manual** equivalent you already use in T
 just needs the command-line form of it. Discover the candidates on the VPS:
 
 ```bash
-hermes --help ; hermes session --help ; hermes chat --help   # look for a "new"/"reset"/"clear"
+hermes gateway --help ; hermes sessions --help   # verified 2026-06-16: NO clean live-reset (see above)
 ```
 
-Common shapes (use whichever your version exposes):
+The reset shapes that actually exist on a `hermes_cli` build (none as clean as `/new`):
 
 ```bash
-HERMES_RESET_CMD="hermes session new"      # if the CLI has it
-# HERMES_RESET_CMD="hermes chat reset"     # alternative naming
+# Hard reset (fragile — needs the live session id): delete it, then restart so the gateway starts fresh.
+HERMES_RESET_CMD='id=$(hermes sessions list --json 2>/dev/null | <pick newest>); hermes sessions delete "$id" && sudo systemctl restart hermes-gateway'
+# PREFERRED instead of a hard reset: set compression.threshold low (above) so sessions stay small.
 ```
 
 > ⚠️ **Restarting the gateway is NOT a reset.** `systemctl restart hermes-gateway` reloads skills /
