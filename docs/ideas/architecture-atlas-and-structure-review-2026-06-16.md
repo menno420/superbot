@@ -100,8 +100,18 @@ re-implementing them), (b) stamps **provenance** (commit SHA, generator version,
 owner-policy questions (atlas as the primary entry vs a companion; commit the generated artifacts vs
 CI-only). → **DISCUSS**, not auto-build.
 
-### 3. Count-citation guard (generalizes an existing backlog idea)
-The three drift instances fixed in this PR share one root cause: a **bare integer count hand-typed
+### 3. Count-citation guard (generalizes an existing backlog idea) — ✅ SHIPPED (PR #964)
+Built as a **soft** `check_docs` rule (`inventory_count_flags` / `print_inventory_count_report`): a
+bare `N migrations/workflows/extensions/cogs/subsystems` in a **binding** doc warns unless it cites a
+regen command (`scripts/*.py`), is marked generated, or carries `<!-- count-ok -->`. Pinned-to-code
+docs are exempt (their doc-test already guards their counts). Baseline is clean (the #957 fixes + the
+exemption). It also effectively **resolves** the existing backlog idea
+[`readiness-maps-cite-regen-command-2026-06-13.md`](./readiness-maps-cite-regen-command-2026-06-13.md):
+its readiness-map widening was investigated and **dropped as not-worth-it** — the
+`production-readiness/*` maps are `audit`-badged (frozen by design), and the one live settings map
+already self-cites its regen command.
+
+The three drift instances fixed in #957 share one root cause: a **bare integer count hand-typed
 into a binding doc**. The durable fix is the existing backlog idea
 [`readiness-maps-cite-regen-command-2026-06-13.md`](./readiness-maps-cite-regen-command-2026-06-13.md),
 generalized: a soft `check_docs` rule that flags a bare `N migrations` / `N workflows` / `N extensions`
@@ -117,7 +127,7 @@ idea rather than opening a new one.
 | Fix the 3 confirmed drift counts in binding docs | tiny / reversible | **Executed in this PR** (bugs-first; source wins). De-numbered to point at source so they can't re-rot. |
 | **Extension-type taxonomy crosswalk + CI guard** (#1) | medium — touches `subsystem_registry` (a `REGISTRY_SCHEMA_VERSION` bump + validation) and adds a generated artifact + guard | **Structure into a plan** — needs its own `docs/planning/` plan (ownership: registry; reuse: existing metadata seam; mechanics: schema-version bump, validation, generated crosswalk, guard). Not a drive-by. |
 | **Thin unified atlas** `scripts/atlas.py` (#2) | medium — composes existing tools; new generated artifact | ✅ **SHIPPED (PR #960)** — Q-0151a answered (companion, body not committed); composer + `context_map` role line + companion doc + tests. |
-| **Count-citation guard** (#3) | small — `check_docs` rule | **Fold into** `readiness-maps-cite-regen-command-2026-06-13.md` (generalize it). Quick-win lane when capacity allows; needs a low-false-positive design (don't flag legit numbers). |
+| **Count-citation guard** (#3) | small — `check_docs` rule | ✅ **SHIPPED (PR #964)** — soft `inventory_count_flags` in `check_docs` over binding docs (cite/`generated`/`<!-- count-ok -->` exempt; pinned docs exempt). Resolves `readiness-maps-cite-regen-command` (the readiness-map widening was investigated + dropped — audit docs frozen-by-design; live map self-cites). |
 | Selective boundary-debt burndown (Option B) — start with `arch-fix-13` `views→cogs` (≈18 entries) | medium, scoped, test-covered | **Roadmap candidate** (S1 / shared-platform). Already ticketed; this is execution, not discovery. Each cluster (blackjack, economy, xp, diagnostic) is its own small PR moving `_helpers`/`_state` to `utils/` or a shared module. |
 | Root README pointer | tiny but overrides a stated decision | **DISCUSS → Q-0151** (owner-only — contradicts `repo-navigation-map.md:51`). |
 | Reject `src/` layout / Option C / Option D / microservices | n/a | **Endorse the rejection** — consistent with repo posture; no action. |
