@@ -142,14 +142,60 @@ file just to PR-and-redeploy. (If you'd rather avoid any hot-path change for now
 committed `settings_defaults` file the website edits → PR → redeploy — but the DB layer is the better
 long-term answer and reuses the feature-flags pattern.)
 
-**Editor metadata gap:** a good settings editor needs each key's **type, default, label, and allowed
-range** (a checkbox vs a number vs a channel id). Those aren't centralised yet — a
-**settings-metadata registry** (key → {type, default, label, scope}) is the prerequisite that also
-enriches the read-only `/settings` page. Build it first (it's safe, additive data).
+**The editor + metadata already exist (do NOT rebuild).** The bot has a typed, audited settings
+system: each editable setting is a `core.runtime.subsystem_schema.SettingSpec`
+(`value_type` / `default` / `hint` / `allowed_values`) declared in `cogs/<subsystem>/schemas.py`,
+**`services.settings_mutation.SettingsMutationPipeline.set_value(guild, subsystem, name, value,
+actor)`** is the audited write seam (coerce → validate → capability-gate → DB+audit txn → cache
+invalidate → emit), and `views/settings/edit_*` is a full in-Discord typed editor. **The metadata
+registry I planned to build already is `SettingSpec`** — surfaced read-only on `/settings` as of this
+session (`scripts/scan_setting_specs.py`: 64 typed specs with type/default/hint/choices). So the web
+settings editor is a **front-end over the existing pipeline**, exactly like help over
+`help_overlay_mutation` — *not* a from-scratch build.
 
-**Phase placement:** this is another consumer of the **same** auth + control-API foundation (L0–L2)
-the help/alias editors need. Sequence: settings-metadata registry (safe) → global-layer resolution +
-mutation seam (focused runtime PR) → website settings editor over the control API.
+**What's genuinely new = the global scope.** `set_value` and `resolve_setting` are **per-guild
+only** today. The owner's "change things globally" needs the global tier (steps 1–2 above:
+`guild_id = 0` rows + `resolve_setting` → per-guild → global → spec default), then `set_value` gaining
+a global-scope path (owner-gated). That is the one focused runtime PR; per-server editing is *just*
+the existing pipeline behind the control API.
+
+**Phase placement (revised):** ① surface `SettingSpec` on `/settings` ✅ (shipped — read-model done) →
+② global-scope tier in `resolve_setting` + `SettingsMutationPipeline` (focused runtime PR) →
+③ website settings editor over the control API (the **same** auth + control-API foundation L0–L2 the
+help/alias editors need; per-server reuses the existing pipeline as-is).
+
+## Strategic framing — the bot's main website (owner, 2026-06-16)
+
+The owner set the scope: **this is the bot's main website.** A separate, broader
+**project-management** site (review repo sectors — the AI memory system, etc.) comes later. Two
+standing principles for everything here:
+
+1. **The bot stays the source of truth and the top priority.** Everything must remain fully
+   manageable *in the bot itself*; the website is a **faster-oversight shortcut**, never the only way
+   to do something.
+2. **Front-end the bot's seams — never build a parallel system.** Every write the website performs
+   goes through an **existing audited bot seam** over the control API: settings →
+   `SettingsMutationPipeline`, help → `help_overlay_mutation`, **cog enable/disable →
+   `services.command_routing.set_policy`**, aliases → the synonym layer. The website renders current
+   state and drives those seams; it never owns a second copy of the truth.
+
+## Command management surface (`/commands` → manage, owner ask 2026-06-16)
+
+The owner wants `/commands` to become a **management surface**: the existing search **plus a Manage
+button on every command and cog**, each opening an editor.
+
+- **Per-cog enable/disable — front-ends `command_routing` (exists).** `services/command_routing.py`
+  (migration 036) already does per-guild, scope-aware (channel→category→guild) cog enable/disable with
+  an audited mutation owner (`set_policy` → `RoutingMutationResult`). The website's per-cog toggle
+  calls it via the control API — no new model. **Per-individual-command** disable is *finer* than the
+  bot does today (it routes at cog granularity); offering it would be a new per-command routing layer,
+  so start at cog level (what the bot supports) and treat command-level as a later extension.
+- **Per-command alias box (owner correction).** The global `/aliases` form stays as the broad
+  *search / quick-add*; additionally **each command gets its own alias box** inline in `/commands`.
+  Backing: the synonym layer (suggest→PR today; live once the synonym overlay + control API land).
+- **Read side builds now (safe):** surface each command's current aliases + cog-routing state + a
+  Manage button on every command and cog — pure dashboard, no bot change. **Write side** (toggle,
+  edit alias) lands with the control-API + auth foundation (L0–L2).
 
 ## Alternatives considered (and why not)
 
