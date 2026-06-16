@@ -109,11 +109,20 @@ def test_cog_to_subsystem_is_acronym_aware(mod):
     # Plain CamelCase splits on word boundaries.
     assert f("EconomyCog") == "economy"
     assert f("CommunitySpotlightCog") == "community_spotlight"
-    assert f("RockPaperScissorsCog") == "rock_paper_scissors"
     # Acronym (+digit) runs stay whole -> they match the registry's keys.
     assert f("AICog") == "ai"
     assert f("BTD6Cog") == "btd6"
     assert f("XPCog") == "xp"
+
+
+def test_cog_to_subsystem_applies_parent_overrides(mod):
+    f = mod._cog_to_subsystem
+    # Sub-cogs map to their parent subsystem's registry key (override wins).
+    assert f("BTD6EventsCog") == "btd6"
+    assert f("BTD6StrategyCog") == "btd6"
+    assert f("RockPaperScissorsCog") == "rps_tournament"
+    # A class not in the override map still derives normally.
+    assert f("EconomyCog") == "economy"
 
 
 def test_mixin_is_not_a_cog_but_keeps_its_commands(mod, tmp_path):

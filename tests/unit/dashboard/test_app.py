@@ -21,6 +21,21 @@ from fastapi.testclient import TestClient  # noqa: E402
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _APP = _REPO_ROOT / "dashboard" / "app.py"
 
+# Put the dashboard dir on sys.path so we can mint a valid signed session cookie
+# (the same websession module the app uses → the signature verifies).
+if str(_APP.parent) not in sys.path:
+    sys.path.insert(0, str(_APP.parent))
+import websession  # noqa: E402
+
+
+def _login_cookie(user_id="42", guild_id="111", guild_name="My Server"):
+    """A signed session cookie for a user who administers one guild."""
+    session = {
+        "user": {"id": user_id, "username": "owner", "global_name": "Owner"},
+        "guilds": [{"id": guild_id, "name": guild_name, "owner": True}],
+    }
+    return {websession.COOKIE_NAME: websession.encode(session)}
+
 
 @pytest.fixture(scope="module")
 def client():
@@ -126,3 +141,103 @@ def test_healthz_ok(client):
     resp = client.get("/healthz")
     assert resp.status_code == 200
     assert resp.json() == {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# Control panel — dormant-by-default (no OAuth / control env in the test)
+# ---------------------------------------------------------------------------
+
+
+def test_admin_dormant_shows_setup_instructions(client):
+    resp = client.get("/admin")
+    assert resp.status_code == 200
+    # With OAuth unconfigured, /admin explains how to switch the panel on.
+    assert "Login isn't set up yet" in resp.text
+    assert "DISCORD_OAUTH_CLIENT_ID" in resp.text
+    assert "CONTROL_API_TOKEN" in resp.text
+
+
+def test_nav_has_no_signin_button_when_dormant(client):
+    # login_enabled is False → the nav offers "Control panel", never "Sign in".
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert "Sign in with Discord" not in resp.text
+    assert "Control panel" in resp.text
+
+
+def test_auth_login_redirects_to_admin_when_dormant(client):
+    resp = client.get("/auth/login", follow_redirects=False)
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+def test_auth_logout_clears_and_redirects_home(client):
+    resp = client.get("/auth/logout", follow_redirects=False)
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/"
+
+
+def test_admin_guild_requires_login(client):
+    # Not signed in → the per-guild editor bounces back to /admin.
+    resp = client.get("/admin/123456789", follow_redirects=False)
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+def test_admin_guild_post_requires_login(client):
+    # A write attempt without a session is rejected (redirect, no control call).
+    resp = client.post(
+        "/admin/123456789/settings",
+        data={"subsystem": "moderation", "name": "warn_threshold", "value": "3"},
+        follow_redirects=False,
+    )
+    assert resp.status_code in (302, 303, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+# ---------------------------------------------------------------------------
+# Control panel — logged-in (signed session cookie) — verifies the editor page
+# ---------------------------------------------------------------------------
+
+
+def test_admin_home_shows_guilds_when_logged_in(client):
+    resp = client.get("/admin", cookies=_login_cookie())
+    assert resp.status_code == 200
+    assert "Servers you administer" in resp.text
+    assert "My Server" in resp.text
+
+
+def test_admin_guild_editor_renders_all_sections(client):
+    # The big template: all three editors must render without a Jinja error.
+    resp = client.get("/admin/111", cookies=_login_cookie())
+    assert resp.status_code == 200
+    assert "My Server" in resp.text
+    assert "⚙️ Settings" in resp.text
+    assert "📖 Help appearance" in resp.text
+    assert "Cogs (enable / disable)" in resp.text
+    # Forms target the per-guild POST endpoints.
+    assert 'action="/admin/111/settings"' in resp.text
+    assert 'action="/admin/111/help/overlay"' in resp.text
+    assert 'action="/admin/111/routing"' in resp.text
+    # Dormant control API → the "not connected" banner is shown, not an error.
+    assert "CONTROL_API_TOKEN" in resp.text
+
+
+def test_admin_guild_unknown_guild_redirects(client):
+    # Logged in, but the guild isn't in the user's admin set → back to /admin.
+    resp = client.get("/admin/999", cookies=_login_cookie(), follow_redirects=False)
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+def test_admin_setting_post_when_logged_in_dormant_control(client):
+    # Logged in + valid guild → the POST is accepted, calls the (dormant) control
+    # API, and PRG-redirects back to the editor with a flash.
+    resp = client.post(
+        "/admin/111/settings",
+        data={"subsystem": "moderation", "name": "warn_threshold", "value": "3"},
+        cookies=_login_cookie(),
+        follow_redirects=False,
+    )
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/admin/111"
