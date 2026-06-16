@@ -1325,6 +1325,84 @@ async def build_media_embed() -> discord.Embed:
     return embed
 
 
+async def build_economy_flow_embed(
+    guild_id: int,
+    *,
+    days: int | None = None,
+) -> discord.Embed:
+    """Build the embed for ``!platform economy [days]`` — faucet/sink view.
+
+    Aggregates the ``economy_audit_log`` already written on every coin
+    movement into a per-guild faucet (mint) vs. sink (drain) summary over a
+    time window: coins minted, coins drained, net flow, the minted:drained
+    ratio with an inflating/draining/balanced verdict, and the per-reason
+    breakdown.  Content-free — counts and coin totals only, no user IDs and
+    no per-user rows (the read model aggregates ``user_id`` away).
+    """
+    from services import economy_flow_service
+
+    report = await economy_flow_service.build_flow_report(guild_id, days=days)
+
+    verdict_colors = {
+        "inflating ⚠": discord.Color.orange(),
+        "draining": discord.Color.blue(),
+        "balanced": discord.Color.green(),
+        "no activity": discord.Color.light_grey(),
+    }
+    embed = discord.Embed(
+        title="💰 Economy faucet / sink",
+        description=(
+            f"Net coin flow over **{report.window_label}** "
+            "(aggregated from the economy audit ledger — counts and totals "
+            "only, no per-user data)."
+        ),
+        color=verdict_colors.get(report.verdict, discord.Color.blurple()),
+    )
+
+    ratio_text = f"{report.ratio:.2f}×" if report.ratio is not None else "—"
+    net_sign = "+" if report.net >= 0 else "−"
+    embed.add_field(
+        name="Summary",
+        value=(
+            f"minted **{report.total_minted:,}** · "
+            f"drained **{report.total_drained:,}**\n"
+            f"net **{net_sign}{abs(report.net):,}** · "
+            f"mint:drain **{ratio_text}** · "
+            f"verdict **{report.verdict}**"
+        ),
+        inline=False,
+    )
+
+    embed.add_field(
+        name=f"🟢 Faucets (mint) — {len(report.faucets)}",
+        value=_format_flow_rows(report.faucets) or "*(none this window)*",
+        inline=False,
+    )
+    embed.add_field(
+        name=f"🔴 Sinks (drain) — {len(report.sinks)}",
+        value=_format_flow_rows(report.sinks) or "*(none this window)*",
+        inline=False,
+    )
+    embed.set_footer(
+        text="Classified by the sign of each reason's net delta — "
+        "new reasons are sorted automatically.",
+    )
+    return embed
+
+
+def _format_flow_rows(rows, limit: int = 12) -> str:
+    """Render up to *limit* ``ReasonFlow`` rows as ``reason — ±net (n moves)``."""
+    lines = []
+    for row in rows[:limit]:
+        sign = "+" if row.net >= 0 else "−"
+        lines.append(
+            f"`{row.reason}` — {sign}{abs(row.net):,} ({row.movements:,} moves)",
+        )
+    if len(rows) > limit:
+        lines.append(f"… and {len(rows) - limit} more")
+    return "\n".join(lines)
+
+
 def build_locks_embed(prefix: str = "") -> discord.Embed:
     """Build the embed for ``!platform locks [prefix]``."""
     from services import diagnostics_service
@@ -2177,6 +2255,7 @@ __all__ = [
     "build_command_access_diagnostic_embed",
     "build_consistency_embed",
     "build_customization_embed",
+    "build_economy_flow_embed",
     "build_flags_embed",
     "build_health_embed",
     "build_identity_embed",
