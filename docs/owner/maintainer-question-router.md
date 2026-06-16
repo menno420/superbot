@@ -6004,3 +6004,30 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
 § "Free multi-user control panel" · `services/participation_mutation.py` ·
 `governance/capability.py` · this Q-block.
+
+### Q-0160 — Command enable/disable granularity: cog-level now, per-command later (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly via `AskUserQuestion`).** While
+> building the `/commands` management surface (Q-0158), the open fork the handoff flagged was put to
+> the owner: Q-0158 literally asked to *"enable/disable each command from the website,"* but the bot
+> today routes only at **cog (subsystem)** level (`services.command_routing`, migration 036).
+> Per-individual-command disable would be a **new, finer routing layer in the bot** (a new DB table +
+> an enforcement hook in the dispatch path). Asked which direction the enable/disable affordance
+> should take.
+
+**Decision:**
+
+- **Cog-level now, per-command later.** The website's enable/disable **front-ends the existing
+  audited `command_routing`** (per-cog, scope-aware channel → category → guild → default-on, via
+  `set_policy`) — no new bot runtime. **Per-command** enable/disable stays a **documented future bot
+  layer**, not built now.
+- **Read-side impact (this session):** the `/commands` Manage panels show **cog-level** routing state
+  and front the synonym layer for the per-command **alias** suggest box; they do **not** imply a
+  per-command on/off toggle. The live write side (toggling, live aliases) still lands with the
+  control API + Discord OAuth (Phase 2), which the owner has not yet set up.
+- Confirms the interpretation already recorded in Q-0158; this Q-block is its explicit owner sign-off
+  so a later session doesn't reopen the fork.
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Command management surface" · `services/command_routing.py` · `dashboard/templates/commands.html` ·
+this Q-block.

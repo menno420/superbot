@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T20:18:37Z",
+    "generated_at": "2026-06-16T20:40:29Z",
     "build": {
-      "commit": "ad042439",
-      "subject": "feat(dashboard): /status — live build & health surface (Q-0156)",
-      "committed_at": "2026-06-16T20:16:37Z",
-      "branch": "claude/magical-rubin-ci82qw"
+      "commit": "eb2141b",
+      "subject": "chore(session): open /commands management surface (READ side) — born-red card",
+      "committed_at": "2026-06-16T20:36:06Z",
+      "branch": "claude/practical-turing-pnppjf"
     },
     "counts": {
       "functions": 33,
@@ -29,6 +29,7 @@
       "description": "Read-only AI gateway diagnostics: provider state, feature flags, task routing, and request/failure counters. Does not own AI provider logic — that lives in core/runtime/ai/.",
       "emoji": "🤖",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "ai",
@@ -59,6 +60,7 @@
       "description": "Cog management, server stats, diagnostics",
       "emoji": "⚙️",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "admin",
@@ -85,6 +87,7 @@
       "description": "Bot health, latency, and system diagnostics",
       "emoji": "🩺",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "diagnostics",
@@ -111,6 +114,7 @@
       "description": "Per-guild moderation/cleanup event logging — channel selection, auto-create, and audit (S7)",
       "emoji": "📝",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "logging",
@@ -138,6 +142,7 @@
       "description": "Unified hub for moderation, channels, roles, cleanup, setup",
       "emoji": "🧭",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "admin",
@@ -160,6 +165,7 @@
       "description": "Read-only browsing of platform settings, bindings, and audit history (S5)",
       "emoji": "⚙️",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "settings",
@@ -184,6 +190,7 @@
       "description": "Interface gallery — browse UI patterns, all fake & safe",
       "emoji": "🧪",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "admin",
       "tags": [
         "admin",
@@ -203,6 +210,7 @@
       "description": "Progression, roles, and community activities",
       "emoji": "🌱",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "community",
       "tags": [
         "community",
@@ -229,6 +237,7 @@
       "description": "Live server activity dashboard — leaders, level-ups, game stats",
       "emoji": "🌟",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "community",
       "tags": [
         "spotlight",
@@ -254,6 +263,7 @@
       "description": "Live member-count channels (total · humans · bots)",
       "emoji": "📊",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "community",
       "tags": [
         "counters",
@@ -278,6 +288,7 @@
       "description": "Member greetings, farewells, and an optional entry role",
       "emoji": "👋",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "community",
       "tags": [
         "welcome",
@@ -302,6 +313,7 @@
       "description": "Daily coins, work, shop, balance",
       "emoji": "💰",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "economy",
       "tags": [
         "economy",
@@ -333,6 +345,7 @@
       "description": "Item management and crafting",
       "emoji": "🎒",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "economy",
       "tags": [
         "inventory",
@@ -358,6 +371,7 @@
       "description": "Mining minigame and resource collection",
       "emoji": "⛏️",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "economy",
       "tags": [
         "mining",
@@ -383,6 +397,7 @@
       "description": "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map lookups, round threat summaries, and CHIMPS-mode guidance. Built on validated fixtures; consumes the AI gateway only when explicitly enabled (Module 5).",
       "emoji": "🐵",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -410,6 +425,7 @@
       "description": "Blackjack card game",
       "emoji": "🃏",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -435,6 +451,7 @@
       "description": "Collaborative counting game",
       "emoji": "🔢",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -456,6 +473,7 @@
       "description": "1v1 duel battles",
       "emoji": "⚔️",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -482,6 +500,7 @@
       "description": "Competitive games and channel activities",
       "emoji": "🎮",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -509,6 +528,7 @@
       "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
       "emoji": "✂️",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -530,6 +550,7 @@
       "description": "Word-chaining game",
       "emoji": "🔗",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "games",
       "tags": [
         "games",
@@ -552,6 +573,7 @@
       "description": "Channel and category creation, deletion, and restrictions",
       "emoji": "📐",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "management",
       "tags": [
         "channels",
@@ -576,6 +598,7 @@
       "description": "Time-based and XP-based automatic role assignment",
       "emoji": "🎭",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "management",
       "tags": [
         "roles",
@@ -601,6 +624,7 @@
       "description": "Spam, invite links, excessive caps, and mass-mention filtering",
       "emoji": "🛡️",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "moderation",
       "tags": [
         "automod",
@@ -626,6 +650,7 @@
       "description": "Prohibited words, command deletion, channel hygiene",
       "emoji": "🧹",
       "visibility_tier": "administrator",
+      "visibility_mode": "normal",
       "category": "moderation",
       "tags": [
         "cleanup",
@@ -654,6 +679,7 @@
       "description": "Warnings, timeouts, bans, mod logs",
       "emoji": "🔨",
       "visibility_tier": "moderator",
+      "visibility_mode": "normal",
       "category": "moderation",
       "tags": [
         "moderation",
@@ -689,6 +715,7 @@
       "description": "Proof submission and exclusive access sessions",
       "emoji": "📋",
       "visibility_tier": "staff",
+      "visibility_mode": "normal",
       "category": "moderation",
       "tags": [
         "proof",
@@ -716,6 +743,7 @@
       "description": "Server leaderboards for XP, coins, and games",
       "emoji": "🏆",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "progression",
       "tags": [
         "leaderboard",
@@ -741,6 +769,7 @@
       "description": "Experience points, levels, and leaderboards",
       "emoji": "⭐",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "progression",
       "tags": [
         "xp",
@@ -768,6 +797,7 @@
       "description": "A leafy little easter-egg panel — wisdom and number trivia",
       "emoji": "🍃",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "utility",
       "tags": [
         "fun",
@@ -791,6 +821,7 @@
       "description": "General bot commands and information",
       "emoji": "💬",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "utility",
       "tags": [
         "general",
@@ -814,6 +845,7 @@
       "description": "Interactive help menu and command discovery",
       "emoji": "📚",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "utility",
       "tags": [
         "help",
@@ -835,6 +867,7 @@
       "description": "General utility commands",
       "emoji": "🔧",
       "visibility_tier": "user",
+      "visibility_mode": "normal",
       "category": "utility",
       "tags": [
         "utility",
@@ -1716,6 +1749,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-commands-management-surface.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — `/commands` management surface (READ side)",
+      "status": "in-progress"
+    },
+    {
       "file": "2026-06-16-command-count-reconcile.md",
       "date": "2026-06-16",
       "title": "Session — Reconcile command counts (website breakdown + bot status embed)",
@@ -1815,12 +1854,6 @@
       "file": "2026-06-15-reconcile.md",
       "date": "2026-06-15",
       "title": "Session — 2026-06-15 · band-#900 docs reconciliation (eighth Q-0107 pass)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-reconcile-band930.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · band-#930 docs reconciliation (ninth Q-0107 pass)",
       "status": "complete"
     }
   ],
@@ -2469,7 +2502,7 @@
     {
       "cog": "AICog",
       "file": "disbot/cogs/ai_cog.py",
-      "subsystem": "a_i",
+      "subsystem": "ai",
       "is_cog": true,
       "commands": [
         {
@@ -2776,7 +2809,7 @@
     {
       "cog": "BTD6Cog",
       "file": "disbot/cogs/btd6_cog.py",
-      "subsystem": "b_t_d6",
+      "subsystem": "btd6",
       "is_cog": true,
       "commands": [
         {
@@ -2872,7 +2905,7 @@
     {
       "cog": "BTD6EventsCog",
       "file": "disbot/cogs/btd6_events_cog.py",
-      "subsystem": "b_t_d6_events",
+      "subsystem": "btd6_events",
       "is_cog": true,
       "commands": [
         {
@@ -2979,7 +3012,7 @@
     {
       "cog": "BTD6OpsCog",
       "file": "disbot/cogs/btd6_ops_cog.py",
-      "subsystem": "b_t_d6_ops",
+      "subsystem": "btd6_ops",
       "is_cog": true,
       "commands": [
         {
@@ -3064,7 +3097,7 @@
     {
       "cog": "BTD6ReferenceCog",
       "file": "disbot/cogs/btd6_reference_cog.py",
-      "subsystem": "b_t_d6_reference",
+      "subsystem": "btd6_reference",
       "is_cog": true,
       "commands": [
         {
@@ -3138,7 +3171,7 @@
     {
       "cog": "BTD6StrategyCog",
       "file": "disbot/cogs/btd6_strategy_cog.py",
-      "subsystem": "b_t_d6_strategy",
+      "subsystem": "btd6_strategy",
       "is_cog": true,
       "commands": [
         {

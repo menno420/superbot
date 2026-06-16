@@ -39,6 +39,14 @@ Current broad captures:
   banner — turning the passive inventory into an active config check. Gated on the Phase 3 Railway-API
   integration. → relates `scripts/scan_env_usage.py` · `dashboard/`.
 
+- [`dashboard-registry-coverage-check-2026-06-16.md`](./dashboard-registry-coverage-check-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the `/commands` management surface):** a stdlib coverage
+  self-check that flags scanned cogs whose `subsystem` key doesn't resolve to a registered subsystem
+  (split *expected* allow-list vs *unexpected* drift), as a `--check` mode on the exporter or a unit
+  test — so a cog rename / new acronym cog / registry-key change that breaks the dashboard's cog→
+  registry join **fails a check** instead of silently degrading that cog's card + routing state.
+  Decided-lane, small; execute when the dashboard lane next has capacity. → relates
+  `scripts/scan_commands.py` · `scripts/export_dashboard_data.py` · `dashboard/`.
 - [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
   **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
   repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one

@@ -49,6 +49,46 @@ def load_data() -> dict[str, Any]:
         return dict(_EMPTY)
 
 
+def _command_names(data: dict[str, Any]) -> list[str]:
+    """Sorted, de-duplicated set of every command name across all cogs."""
+    return sorted({c["name"] for cog in data.get("cogs", []) for c in cog["commands"]})
+
+
+def _build_taken_map(data: dict[str, Any]) -> dict[str, str]:
+    """Map every token already in use -> a human label of what owns it.
+
+    Synonyms first, then aliases, then command names last so the strongest owner
+    (a real command) wins a tie. Shared by ``/aliases`` and the per-command alias
+    box on ``/commands`` so both apply identical collision logic.
+    """
+    taken: dict[str, str] = {}
+    for syn in data.get("synonyms", []):
+        for token in syn["synonyms"]:
+            taken[token.lower()] = f"synonym of !{syn['canonical']}"
+    for cog in data.get("cogs", []):
+        for cmd in cog["commands"]:
+            for token in cmd.get("aliases") or []:
+                taken[token.lower()] = f"alias of !{cmd['name']}"
+    for name in _command_names(data):
+        taken[name.lower()] = "a command"
+    return taken
+
+
+def _routable_subsystems(data: dict[str, Any]) -> list[str]:
+    """Operator-routable subsystem keys — registered and not internal.
+
+    Mirrors ``views/setup/sections/cog_routing.py``: ``command_routing`` keys on
+    the subsystem key and only non-internal subsystems appear in the operator
+    routing picker, so this is the set a cog's per-server enable/disable state
+    applies to.
+    """
+    return sorted(
+        entry["key"]
+        for entry in data.get("catalogue", [])
+        if entry.get("visibility_mode", "normal") != "internal"
+    )
+
+
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
     """Liveness probe (used by Railway)."""
@@ -168,30 +208,14 @@ def aliases(request: Request):
     prefilled GitHub issue and a ready-to-paste ``synonyms.py`` snippet.
     """
     data = load_data()
-    commands_list = sorted(
-        {c["name"] for cog in data.get("cogs", []) for c in cog["commands"]},
-    )
-    # Map every token already in use -> what owns it, so the suggestion form can
-    # say *why* a proposed alias collides. Synonyms first, then aliases, then
-    # command names last so the strongest owner (a real command) wins a tie.
-    taken: dict[str, str] = {}
-    for syn in data.get("synonyms", []):
-        for token in syn["synonyms"]:
-            taken[token.lower()] = f"synonym of !{syn['canonical']}"
-    for cog in data.get("cogs", []):
-        for cmd in cog["commands"]:
-            for token in cmd.get("aliases") or []:
-                taken[token.lower()] = f"alias of !{cmd['name']}"
-    for name in commands_list:
-        taken[name.lower()] = "a command"
     return templates.TemplateResponse(
         request,
         "aliases.html",
         {
             "data": data,
             "page": "aliases",
-            "commands": commands_list,
-            "taken": taken,
+            "commands": _command_names(data),
+            "taken": _build_taken_map(data),
         },
     )
 
@@ -243,7 +267,14 @@ def status(request: Request):
 
 @app.get("/commands", response_class=HTMLResponse)
 def commands(request: Request):
-    """Cog & command explorer — invocation type (prefix/slash) + button backing."""
+    """Cog & command management surface — explorer + a per-item Manage panel.
+
+    The read side of the Q-0158 ask: every command and cog gets a Manage button
+    opening a panel with its current aliases, its cog's (cog-level) routing
+    state, and a per-command alias suggest box. Front-ends the bot's seams
+    (``command_routing`` + the synonym layer); the live write side lands with the
+    control API (Phase 2). Owner direction Q-0160: routing is cog-level.
+    """
     data = load_data()
     cmds = [c for cog in data.get("cogs", []) for c in cog["commands"]]
     stats = {
@@ -260,5 +291,15 @@ def commands(request: Request):
     return templates.TemplateResponse(
         request,
         "commands.html",
-        {"data": data, "page": "commands", "stats": stats, "sysmap": sysmap},
+        {
+            "data": data,
+            "page": "commands",
+            "stats": stats,
+            "sysmap": sysmap,
+            "routable": _routable_subsystems(data),
+            "taken": _build_taken_map(data),
+            "synonyms_by_canonical": {
+                s["canonical"]: s["synonyms"] for s in data.get("synonyms", [])
+            },
+        },
     )
