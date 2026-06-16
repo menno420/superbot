@@ -2317,11 +2317,11 @@
     },
     {
       "round": 63,
-      "summary": "Long Ceramic-Lead wave with Camo Lead mixed in. Pierce-heavy ceramic answers AND camo detection both required.",
+      "summary": "Long lead stream backed by dense ceramic bursts (75 Lead, 122 Ceramic). Needs lead-popping plus pierce-heavy ceramic answers — no camo this round.",
       "danger": "high",
       "common_threats": [
-        "Ceramic",
-        "Camo Lead"
+        "Lead",
+        "Ceramic"
       ],
       "rbe": 14413,
       "cash": 2826,

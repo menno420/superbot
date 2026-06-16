@@ -328,6 +328,25 @@ async def _build_panel_for(
         from cogs.counting_cog import CountingCog
 
         cog = CountingCog(MagicMock())
+        # Pre-seed a channel so the panel shows the active-channel
+        # action buttons (Toggle, Reset, Disable) rather than only
+        # the channel-select + refresh buttons.
+        cog.count_data = {
+            str(interaction.guild.id): {
+                "channels": {
+                    str(interaction.channel.id): {
+                        "mode": "normal",
+                        "current_count": 0,
+                        "last_user": None,
+                        "taking_turns": False,
+                        "leaderboard": {},
+                        "reset_on_wrong_count": False,
+                        "step": 1,
+                        "sequence_index": 0,
+                    }
+                }
+            }
+        }
     elif subsystem == "chain":
         from cogs.chain_cog import ChainCog
 
