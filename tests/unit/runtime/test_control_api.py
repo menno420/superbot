@@ -9,7 +9,8 @@ bot/guild/member (mirrors ``test_healthserver.py``).
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiohttp import web
@@ -17,6 +18,9 @@ from aiohttp import web
 import control_api
 
 TOKEN = "s3cret-control-token"
+
+# Sentinel: a request whose .json() raises (no/invalid body).
+_NO_BODY = object()
 
 
 # ---------------------------------------------------------------------------
@@ -56,12 +60,34 @@ def _bot(*, guilds=None):
     return b
 
 
-def _request(*, headers=None, query=None, bot=None):
+def _request(*, headers=None, query=None, bot=None, body=_NO_BODY):
     req = MagicMock()
     req.headers = headers or {}
     req.query = query or {}
     req.app = {"bot": bot}
+
+    async def _json():
+        if body is _NO_BODY:
+            raise ValueError("no JSON body")
+        return body
+
+    req.json = _json
     return req
+
+
+def _auth(extra=None):
+    """Authorization header carrying the test token (+ optional extra headers)."""
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    if extra:
+        headers.update(extra)
+    return headers
+
+
+def _bot_with_member(*, guild_id=111, user_id=222, owner_id=999, administrator=True):
+    """A bot whose single guild contains one resolvable member."""
+    member = _member(user_id, administrator=administrator)
+    guild = _guild(guild_id, owner_id=owner_id, members={user_id: member})
+    return _bot(guilds={guild_id: guild}), guild, member
 
 
 # ---------------------------------------------------------------------------
@@ -113,6 +139,12 @@ def test_routes_registered_with_token(monkeypatch):
     paths = _registered_paths(app)
     assert "/control/ping" in paths
     assert "/control/authority" in paths
+    # Mutation endpoints register alongside the reads (still token-gated).
+    assert "/control/settings" in paths
+    assert "/control/help/overlay" in paths
+    assert "/control/help/home" in paths
+    assert "/control/help/reset" in paths
+    assert "/control/routing" in paths
 
 
 # ---------------------------------------------------------------------------
@@ -215,6 +247,415 @@ async def test_authority_handler_rejects_bad_auth_and_bad_params(monkeypatch):
             headers={"Authorization": f"Bearer {TOKEN}"},
             query={"guild_id": "111"},
             bot=_bot(),
+        ),
+    )
+    assert resp.status == 400
+
+
+# ---------------------------------------------------------------------------
+# Mutation: shared write-context (auth / parse / resolution)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_mutation_requires_auth(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    # No Authorization header → 401, before any body parsing.
+    resp = await control_api._settings_set_handler(
+        _request(body={"guild_id": 111, "user_id": 222}, bot=bot),
+    )
+    assert resp.status == 401
+
+
+@pytest.mark.asyncio
+async def test_mutation_rejects_non_json_body(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    resp = await control_api._settings_set_handler(
+        _request(headers=_auth(), bot=bot),  # _NO_BODY → .json() raises
+    )
+    assert resp.status == 400
+
+
+@pytest.mark.asyncio
+async def test_mutation_requires_guild_and_user_ids(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    resp = await control_api._settings_set_handler(
+        _request(headers=_auth(), body={"subsystem": "x", "name": "y"}, bot=bot),
+    )
+    assert resp.status == 400
+
+
+@pytest.mark.asyncio
+async def test_mutation_guild_not_found_is_404(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    resp = await control_api._settings_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "subsystem": "x",
+                "name": "y",
+                "value": 1,
+            },
+            bot=_bot(),  # bot is in no guilds
+        ),
+    )
+    assert resp.status == 404
+
+
+@pytest.mark.asyncio
+async def test_mutation_member_not_found_is_403(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    guild = _guild(111, owner_id=999, members={})  # user 222 is not a member
+    bot = _bot(guilds={111: guild})
+    resp = await control_api._settings_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "subsystem": "x",
+                "name": "y",
+                "value": 1,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 403
+
+
+# ---------------------------------------------------------------------------
+# Mutation: settings → SettingsMutationPipeline.set_value
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_settings_set_happy_path(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, guild, member = _bot_with_member()
+    result = SimpleNamespace(
+        mutation_id="m1",
+        subsystem="moderation",
+        name="warn_threshold",
+        settings_key="WARN_THRESHOLD",
+        old_value=3,
+        new_value=5,
+    )
+    set_value = AsyncMock(return_value=result)
+    pipeline = MagicMock()
+    pipeline.set_value = set_value
+    monkeypatch.setattr(
+        "services.settings_mutation.SettingsMutationPipeline",
+        lambda: pipeline,
+    )
+
+    resp = await control_api._settings_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "subsystem": "moderation",
+                "name": "warn_threshold",
+                "value": 5,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 200
+    payload = json.loads(resp.text)
+    assert payload["ok"] is True
+    assert payload["new_value"] == 5
+    # The live guild + resolved member are passed to the seam (not raw ids).
+    set_value.assert_awaited_once_with(guild, "moderation", "warn_threshold", 5, member)
+
+
+@pytest.mark.asyncio
+async def test_settings_missing_value_is_400(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    resp = await control_api._settings_set_handler(
+        _request(
+            headers=_auth(),
+            body={"guild_id": 111, "user_id": 222, "subsystem": "m", "name": "n"},
+            bot=bot,
+        ),
+    )
+    assert resp.status == 400
+
+
+@pytest.mark.asyncio
+async def test_settings_maps_unauthorized_to_403(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    from services.settings_mutation import UnauthorizedSettingsMutationError
+
+    bot, _g, _m = _bot_with_member(administrator=False)
+    pipeline = MagicMock()
+    pipeline.set_value = AsyncMock(
+        side_effect=UnauthorizedSettingsMutationError("missing capability"),
+    )
+    monkeypatch.setattr(
+        "services.settings_mutation.SettingsMutationPipeline",
+        lambda: pipeline,
+    )
+    resp = await control_api._settings_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "subsystem": "m",
+                "name": "n",
+                "value": 1,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 403
+    assert json.loads(resp.text)["kind"] == "UnauthorizedSettingsMutationError"
+
+
+@pytest.mark.asyncio
+async def test_settings_maps_validation_to_400(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    from services.settings_mutation import SettingsValidationError
+
+    bot, _g, _m = _bot_with_member()
+    pipeline = MagicMock()
+    pipeline.set_value = AsyncMock(side_effect=SettingsValidationError("out of range"))
+    monkeypatch.setattr(
+        "services.settings_mutation.SettingsMutationPipeline",
+        lambda: pipeline,
+    )
+    resp = await control_api._settings_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "subsystem": "m",
+                "name": "n",
+                "value": 999,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 400
+
+
+# ---------------------------------------------------------------------------
+# Mutation: help overlay / home / reset → help_overlay_mutation
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_help_overlay_forwards_only_present_fields(monkeypatch):
+    """Omitted override fields must NOT be passed (so the seam leaves them UNSET)."""
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, member = _bot_with_member()
+    result = SimpleNamespace(
+        mutation_id="h1",
+        entity_kind="hub",
+        entity_key="games",
+        new={"display_hidden": True, "display_name": None, "description": None},
+    )
+    fake = AsyncMock(return_value=result)
+    monkeypatch.setattr("services.help_overlay_mutation.set_overlay_fields", fake)
+
+    resp = await control_api._help_overlay_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "entity_kind": "hub",
+                "entity_key": "games",
+                "display_hidden": True,  # only this one sent
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 200
+    _args, kwargs = fake.await_args
+    assert kwargs["actor"] is member
+    assert kwargs["display_hidden"] is True
+    # display_name / description omitted → not forwarded → seam keeps them UNSET.
+    assert "display_name" not in kwargs
+    assert "description" not in kwargs
+
+
+@pytest.mark.asyncio
+async def test_help_overlay_requires_entity(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    resp = await control_api._help_overlay_handler(
+        _request(
+            headers=_auth(),
+            body={"guild_id": 111, "user_id": 222, "display_hidden": True},
+            bot=bot,
+        ),
+    )
+    assert resp.status == 400
+
+
+@pytest.mark.asyncio
+async def test_help_overlay_maps_unauthorized_to_403(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    from services.help_overlay_mutation import UnauthorizedHelpOverlayMutationError
+
+    bot, _g, _m = _bot_with_member(administrator=False)
+    monkeypatch.setattr(
+        "services.help_overlay_mutation.set_overlay_fields",
+        AsyncMock(side_effect=UnauthorizedHelpOverlayMutationError("not admin")),
+    )
+    resp = await control_api._help_overlay_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "entity_kind": "hub",
+                "entity_key": "games",
+                "display_hidden": True,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 403
+
+
+@pytest.mark.asyncio
+async def test_help_home_and_reset_happy_paths(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+
+    home_result = SimpleNamespace(mutation_id="hm1", new={"title": "Welcome"})
+    monkeypatch.setattr(
+        "services.help_overlay_mutation.set_home_message",
+        AsyncMock(return_value=home_result),
+    )
+    resp = await control_api._help_home_handler(
+        _request(
+            headers=_auth(),
+            body={"guild_id": 111, "user_id": 222, "title": "Welcome"},
+            bot=bot,
+        ),
+    )
+    assert resp.status == 200
+    assert json.loads(resp.text)["new"] == {"title": "Welcome"}
+
+    reset_result = SimpleNamespace(mutation_id="r1", prev={"rows_removed": 4})
+    monkeypatch.setattr(
+        "services.help_overlay_mutation.reset_guild_overlay",
+        AsyncMock(return_value=reset_result),
+    )
+    resp = await control_api._help_reset_handler(
+        _request(
+            headers=_auth(),
+            body={"guild_id": 111, "user_id": 222},
+            bot=bot,
+        ),
+    )
+    assert resp.status == 200
+    assert json.loads(resp.text)["prev"] == {"rows_removed": 4}
+
+
+# ---------------------------------------------------------------------------
+# Mutation: cog routing → command_routing.set_policy (admin-gated here)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_routing_requires_administrator(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=False)
+    resp = await control_api._routing_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "cog_name": "MiningCog",
+                "enabled": False,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 403
+
+
+@pytest.mark.asyncio
+async def test_routing_happy_path_guild_scope(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, member = _bot_with_member(administrator=True)
+    result = SimpleNamespace(
+        mutation_id="rt1",
+        cog_name="MiningCog",
+        scope_type="guild",
+        scope_id=None,
+        old_enabled=True,
+        new_enabled=False,
+    )
+    fake = AsyncMock(return_value=result)
+    monkeypatch.setattr("services.command_routing.set_policy", fake)
+
+    resp = await control_api._routing_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "cog_name": "MiningCog",
+                "enabled": False,
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 200
+    assert json.loads(resp.text)["new_enabled"] is False
+    _args, kwargs = fake.await_args
+    assert kwargs["scope_type"] == "guild"
+    assert kwargs["scope_id"] is None  # guild scope forces scope_id None
+    assert kwargs["actor_id"] == member.id
+
+
+@pytest.mark.asyncio
+async def test_routing_rejects_bad_scope(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=True)
+
+    # Unknown scope_type → 400.
+    resp = await control_api._routing_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "cog_name": "MiningCog",
+                "enabled": True,
+                "scope_type": "server",
+            },
+            bot=bot,
+        ),
+    )
+    assert resp.status == 400
+
+    # channel scope without scope_id → 400.
+    resp = await control_api._routing_set_handler(
+        _request(
+            headers=_auth(),
+            body={
+                "guild_id": 111,
+                "user_id": 222,
+                "cog_name": "MiningCog",
+                "enabled": True,
+                "scope_type": "channel",
+            },
+            bot=bot,
         ),
     )
     assert resp.status == 400
