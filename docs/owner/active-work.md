@@ -25,14 +25,17 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/inspiring-wozniak-i92q58` · **dashboard finalized-state vision** (owner directive) — synthesize
+  the uploaded deep-research report + Codex PR #998 into one north-star vision plan
+  (`docs/planning/dashboard-vision-finalized-state.md`); route open forks → router Q-0161; close PR #998.
+  Docs only · `docs/planning/` · `docs/owner/maintainer-question-router.md` · 2026-06-16
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
   `docs/current-state.md` · 2026-06-16
-- `claude/control-panel-web` · **control panel — Discord OAuth login + editors** (write side step 2,
-  owner directive) — stdlib signed-cookie session + control-API client + `/admin` guild picker +
-  per-guild settings/help/routing editors over the control API; dormant until secrets set ·
-  `dashboard/` · `tests/unit/dashboard/` · 2026-06-16
+- `claude/health-server-ipv6-bind` · health server **IPv6 dual-stack bind** (`HEALTH_HOST=::`) so the
+  dashboard control panel can reach the bot's control API over Railway's IPv6 private network ·
+  `disbot/healthserver.py` · 2026-06-16
 - `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
   guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
   fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
@@ -49,6 +52,8 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/control-panel-web` · control panel — Discord OAuth login + editors (write side step 2) · 2026-06-16 · **PR #996 (merged)**
+- `claude/control-api-write-side` · control API mutation endpoints (write side step 1) · 2026-06-16 · **PR #993 (merged)**
 - `claude/practical-turing-pnppjf` · dashboard `/commands` management surface (READ side) — Manage
   button on every command + cog, per-item panels + per-command alias box · 2026-06-16 · **PR #988 (merged)**
 - `claude/kind-carson-736rnk` · dashboard `/settings` + `/access` read-only pages + live help-editor

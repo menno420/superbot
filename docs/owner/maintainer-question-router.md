@@ -6031,3 +6031,84 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
 § "Command management surface" · `services/command_routing.py` · `dashboard/templates/commands.html` ·
 this Q-block.
+
+### Q-0161 — Narrow the `rm` permission brake to recursive deletes so a routine's scratch-file cleanup never stalls (2026-06-16)
+
+> **APPLIED — owner-directed in-session (the Q-0106 exception).** Mid-routine the maintainer saw the
+> docs-reconciliation routine stall **twice** on permission prompts and directed: "resync to main and
+> start over, also find out how to prevent this from happening again, add them to the settings always
+> allow list." Applied directly to executable config; this block is the provenance. A direct refinement
+> of Q-0149 (same problem, sharper root cause).
+
+**Trigger.** The band-#960 docs-reconciliation routine stalled twice, each on a **compound** Bash
+command that performed ledger surgery via a temp Python script and then cleaned it up — e.g.
+`python3.10 _recon_ledger.py && rm _recon_ledger.py && python3.10 scripts/check_…` and
+`git reset --hard origin/main; rm -f _recon_ledger.py; …`. The `git reset`, `python3.10 scripts/*`,
+and root-level `python3.10 *.py` parts were all allowed; **only the `rm` of the scratch file** matched
+the `permissions.ask` brake `Bash(rm *)` (Q-0149), and `ask` outranks `allow`, so the whole compound
+command prompted — and an unattended routine has no one to click "Allow", silently wasting the run.
+
+**Root cause (sharpening Q-0149 caveat #2).** Q-0149 deliberately kept **all** `rm` on the `ask` brake
+as a safety measure. But the dangerous case is a **recursive** delete (`rm -rf <dir>`), not removing a
+file or two — and routines legitimately create + clean up scratch files every run, so a blanket `rm`
+brake guarantees a stall on the most ordinary cleanup. The brake was too wide.
+
+**Decision (applied).** Narrowed the `rm` brake in `permissions.ask` to **recursive deletes only** —
+`Bash(rm -r*)`, `Bash(rm -R*)`, `Bash(rm -fr*)`, `Bash(rm -fR*)` (plus `rmdir`) — and added explicit
+`permissions.allow` entries for the safe, frequently-used cleanup surface: `Bash(rm -f*)`,
+`Bash(rm /tmp/*)`, `Bash(rm _*)`, `Bash(python3.10 *)`, `Bash(python3 /tmp/*)`. Net effect: a
+non-recursive `rm file` / `rm -f file` (and tracked files are git-recoverable anyway) no longer
+prompts; an `rm -rf <dir>` **still** prompts (the genuine data-loss brake is intact). The other
+safety brakes (force-push, `git clean -f`, `railway`/`sudo`/`psql`/`pg_dump`/`curl`/`docker`) are
+unchanged.
+
+**Behavioral complement (recorded for the next agent).** The deeper fix is to **not shell out for
+file surgery at all** — prefer the Edit/Write tools (always allowed, no Bash brake) over a temp
+`python3.10 _scratch.py && rm _scratch.py` dance; if a scratch script is unavoidable, write it under
+`/tmp/` (now allow-listed) rather than the repo root. Captured in `.session-journal.md` recurring
+problems.
+
+**Caveats.** Same as Q-0149: takes effect next session (settings load at start); `allow` is
+prefix-matched, so a truly novel compound shape can still prompt; the fully-decisive lever remains the
+console environment's permission mode (owner-side, outside the repo).
+
+**Home:** `.claude/settings.json` (`permissions.ask` / `permissions.allow`) + this Q-block;
+`.session-journal.md` (recurring problems).
+
+### Q-0162 — Finalized dashboard vision: the manifest spine + owner-zone future scope (2026-06-16)
+
+> **OPEN — awaiting owner.** Raised while synthesizing the owner's uploaded deep-research report + Codex
+> PR #998 into one north-star vision plan
+> ([`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)).
+> The vision doc captures **all** open questions with safe defaults and is actionable without answers;
+> only these **two architectural/early-IA forks** are routed here because guessing wrong on them is
+> expensive or hard to reverse. The rest (homepage emphasis, authority-UX posture, first-write breadth,
+> mobile depth) carry defaults in the doc and don't block. Neither fork blocks any current build — both
+> are *destination* decisions for when the dashboard reaches that phase.
+
+**Fork 1 — the manifest spine (go/no-go + priority).** Both external reviews recommend the bot build a
+**typed runtime manifest** (command / panel / settings) at startup as the long-term source of truth for
+dashboard metadata, demoting the AST scanner (`scan_commands.py`) to a *drift-detection* role. Today the
+website's command/button metadata is AST-derived and "probably right" — fine for read-only docs, fragile
+for *management* (the UI could offer a control the runtime can't honor). The manifest spine is the cure but
+it's a real bot-side investment (a startup builder + a panel registry + reconciliation tests).
+
+- *Plain-language why it matters:* it's the difference between a dashboard that *guesses* what's manageable
+  and one that *knows*. It's also the hard prerequisite for any reliable command/panel **editor**.
+- *Agent recommendation / safe default:* **yes, build it — but sequence it after OAuth + read-only
+  workspaces and before live management of commands/panels**, so reliable manageability metadata exists
+  exactly when the editors that depend on it arrive (vision-doc Phase D, before F/H).
+
+**Fork 2 — owner-zone future scope.** Should the owner/developer zone stay **owner-only forever**, or be
+designed now for later **delegated scopes** (e.g. observability-only · issue-triage · content-editing ·
+runtime-control) for trusted operators/moderators? The report's point: this is "better decided early in the
+IA than repaired late in permissions."
+
+- *Plain-language why it matters:* if others will ever get limited platform access, the zone's routes and
+  authority checks should be *scope-shaped* from the start; retrofitting roles onto an owner-only zone is a
+  painful permissions rewrite.
+- *Agent recommendation / safe default:* **build owner-only now, but keep the owner zone scope-shaped** so
+  delegation is an additive grant later, not a rewrite. (No delegated roles built until the owner asks.)
+
+**Home (once answered):** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
+§ "The manifest spine" + § "The four zones" / "Roadmap" · this Q-block.

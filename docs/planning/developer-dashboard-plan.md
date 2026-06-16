@@ -3,6 +3,11 @@
 > **Status:** `plan` — owner-approved (2026-06-16, router Q-0155) and **LIVE in production**.
 > The read-only MVP, the env-usage map, and the cog/command explorer are shipped and deployed;
 > Phases 2 + 3b + 4 remain. Source code and merged PRs win over this document.
+>
+> **North-star vision:** [`dashboard-vision-finalized-state.md`](dashboard-vision-finalized-state.md) —
+> the finalized-state picture (zones · navigation · the bot's full config-capability map · data/freshness
+> architecture · the manifest spine · the security-ring model) this plan executes *toward*. This doc is
+> near-term execution; that doc is the destination.
 
 ## ⭐ Next session — start here
 

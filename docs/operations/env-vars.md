@@ -13,7 +13,7 @@ it reads it, and whether it is **required** (read without a default anywhere) or
 only — never a value**; the values live in Railway service variables
 (see [`production-deployment.md`](production-deployment.md)).
 
-**35 variables** — 3 required · 32 optional.
+**36 variables** — 3 required · 33 optional.
 
 ## Required (read without a default — the deploy must set these)
 
@@ -50,7 +50,8 @@ only — never a value**; the values live in Railway service variables
 | `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:65` *(default)* |
 | `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:102` *(default)* |
 | `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
-| `HEALTH_PORT` | healthserver | `disbot/healthserver.py:63` *(default)* |
+| `HEALTH_HOST` | healthserver | `disbot/healthserver.py:70` *(default)* |
+| `HEALTH_PORT` | healthserver | `disbot/healthserver.py:64` *(default)* |
 | `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:175` *(default)* |
 | `LOG_LEVEL` | config | `disbot/config.py:103` *(default)* |
 | `OPENAI_API_KEY` | config, core, services | `disbot/config.py:159` *(default)*<br>`disbot/core/runtime/ai/providers/openai_provider.py:74` *(default)*<br>`disbot/services/setup_ai_advisor.py:175` *(default)*<br>`disbot/services/setup_ai_advisor.py:406` *(default)* |
