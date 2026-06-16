@@ -338,7 +338,13 @@ reliable panel-layout editor — and is the first half of the L3 "move buttons" 
 - **Service↔service = Railway private networking** (`*.railway.internal`, Wireguard) — the bot control API
   is **private only, never a public domain** — plus a shared `CONTROL_API_TOKEN` (bearer/HMAC) **and** the
   per-request admin re-check (defense in depth). Secrets live **only** in Railway variables, never in
-  website state or client code.
+  website state or client code. **Operative gotcha (cost the #1001 fix):** Railway private networking is
+  **IPv6-only** — the bot's health/control server must bind `::` (dual-stack via `HEALTH_HOST`), *not*
+  `0.0.0.0`, or `worker.railway.internal` is unreachable. Phase-E implementers need this.
+- **Live-surface hardening (reviewer note R3, not yet done):** the panel is public + live but still lacks
+  **rate-limiting** (control API + the public login) and an **explicit CSRF token** (today only
+  `SameSite=Lax` on the session cookie). Neither is a write-authorization hole — the bot still gates every
+  write via the live member + seam — but both are near-term hardening items now that the surface is live.
 - **Every mutation carries** actor id · guild id · idempotency/mutation id · CSRF token, is **rate-limited**
   (per IP/user/guild/action, and on public forms), and lands in the **bot's audit system** via the seam's
   `audit.action_recorded` emit. Structured logging (request id, actor, guild, action, result, latency) —
@@ -368,17 +374,19 @@ spine). This roadmap is the *connective tissue*, not a re-plan — each phase po
 |---|---|---|---|
 | **A — public IA + product homepage** | Product-grade homepage; use-case taxonomy; better `/commands` & `/functions`; freshness badges everywhere | `developer-dashboard-plan.md` | none (no OAuth/runtime) |
 | **B — freshness & provenance** | Lineage badges + per-widget states; automate export regen; ETag/conditional GETs | `developer-dashboard-plan.md` | none |
-| **C — OAuth + personal/server workspaces (read-only)** | Login, sessions, `/me`, `/me/servers`, server overview, authority preview — the workspace shell *before* writes | `dashboard-live-editor-plan.md` L0 | ✅ **owner setup done** — Discord OAuth + session secret live (2026-06-16) |
-| **D — manifest spine** | Typed command/panel/settings manifest export + panel registry + reconciliation tests; AST demoted to drift detection | **NEW track** (this doc) | ✅ **approved (Q-0162):** build *after* C, *before* F/H |
-| **E — control API read endpoints** | Private, secret-protected reads: server context, current settings, help overlay, capabilities, diagnostics, manifest | `dashboard-live-editor-plan.md` L1 | ✅ **`CONTROL_API_TOKEN` set** on the Railway services (2026-06-16) |
-| **F — first live writes (audited seams)** | Help overlay/Home first; then global-settings tier + settings editor; then aliases/routing | `dashboard-live-editor-plan.md` L2 + Q-0157 | ✅ **unblocked** — setup done; order help → settings → aliases/routing (Q-0163) |
+| **C — OAuth + personal/server workspaces** | Login, sessions, `/admin` server picker, per-guild editor pages | `dashboard-live-editor-plan.md` L0 | 🟡 **partly shipped + live** (#996): OAuth login + server picker + editor pages run; **still open** — the richer *read* workspace (`/me`, a server **overview** with setup-health, the authority preview) |
+| **D — manifest spine** | Typed command/panel/settings manifest export + panel registry + reconciliation tests; AST demoted to drift detection | **NEW track** (this doc) | ✅ **approved (Q-0162).** Gates **command-management trustworthiness + the panel editor (H)** — *not* the already-shipped settings/help/routing editors (they ride already-typed seams). Build after the Phase-E reads, before H. |
+| **E — control API read endpoints** | Private, secret-protected reads: **current settings values**, help overlay, server context, capabilities, diagnostics, manifest | `dashboard-live-editor-plan.md` L1 | ⚠️ **SKIPPED — now the top next priority.** The token is set, but the current-value **GET** endpoints (`/control/settings/current`, `/control/help/overlay`) were never built, so the live editors **write blind** (see reviewer note R1). Highest-value, lowest-risk next slice. |
+| **F — first live writes (audited seams)** | Help / settings / cog-routing editors over the audited seams | `dashboard-live-editor-plan.md` L2 + Q-0157 | ✅ **SHIPPED + LIVE** (#993 endpoints + #996 editors) — confirmed end-to-end. Order help → settings → aliases/routing (Q-0163); **aliases live-overlay + global-settings tier still to come.** |
 | **G — owner zone: env values + control board** | Masked Railway value mgmt; idea/bug triage; multi-AI control board over the `/fire` routines | `developer-dashboard-plan.md` Phases 3b/4 | owner: Railway API creds; **owner-only, scope-shaped** (Q-0162) |
 | **H — panel-layout engine + editor** | DB-backed `panel_layout` overlay + render-time reader + audited seam, **then** the drag-and-drop editor | `dashboard-live-editor-plan.md` L3 | manifest spine (D) + panel registry; **scheduled last** (Q-0163) |
 
-> **Setup gate cleared (owner, 2026-06-16):** Discord OAuth + the shared control token are **set on Railway
-> and confirmed working**, so phases C/E/F are **no longer owner-setup-gated** — the live-editing path is
-> open, not a "don't rush" wait. The remaining sequencing is engineering order (help-first), not a setup
-> dependency.
+> **Status reconciled (2026-06-17, with the reviewer note above):** the write side **shipped and went
+> live** right after this plan was written — the build jumped **C-auth → F-writes and skipped Phase E**
+> (the current-value read endpoints). So the setup gate is cleared *and then some*: live editing works,
+> but **the live editors write blind until Phase E lands** — which is why E is now the **top next
+> priority**, not a future phase. Near-term hardening the live surface still needs: **rate-limiting** +
+> an **explicit CSRF token** (reviewer note R3).
 
 ## Decisions (owner question-panel, 2026-06-16 — all forks resolved)
 
@@ -387,7 +395,7 @@ provenance is router **Q-0162** (the two architectural forks) and **Q-0163** (th
 
 | Fork | Decision | Note |
 |---|---|---|
-| **Manifest spine — go/no-go + priority** | **Build it, sequenced after C (OAuth/read-only workspaces) and before F/H (live editing)** | Reliable manageability metadata exists exactly when the editors that depend on it arrive. (Q-0162) |
+| **Manifest spine — go/no-go + priority** | **Build it — gating *command-management trustworthiness + the panel editor (H)*, after the Phase-E reads** | Sharpened post-activation (reviewer note R2): the shipped settings/help/routing editors ride **already-typed** seams and never needed the manifest; the manifest's real job is the AST `button_backed` weakness — i.e. commands/panels. (Q-0162) |
 | **Owner-zone future scope** | **Owner-only now, but scope-shaped** for later delegated roles | Structure routes/authority so adding limited scopes (observability-only · issue-triage · content-editing · runtime-control) later is an add-on, not a rewrite. No delegated roles built until asked. (Q-0162) |
 | **Homepage emphasis** | **Hybrid router landing** | Newcomers → product tour; logged-in → straight to workspace. (Q-0163) |
 | **Authority UX posture** | **Cautious edits, open info** | Show edit controls only when near-certain allowed; show read-only info + the authority preview freely. (Q-0163) |
