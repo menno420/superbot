@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/jolly-cannon-gn9ddg` · developer dashboard (personal website) — design doc + read-only MVP ·
+  `docs/ideas/` + `docs/planning/` · new decoupled `dashboard/` FastAPI app · `scripts/export_dashboard_data.py`
+  · tests · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
