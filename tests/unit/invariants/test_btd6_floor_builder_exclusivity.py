@@ -64,6 +64,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "is the glaive dominus or ascended shadow paragon cheaper",
         "deterministic_paragon_cost_comparison_reply",
     ),
+    (
+        "which towers can pop lead without upgrades",
+        "deterministic_capability_roster_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
@@ -75,6 +79,8 @@ _SHOULD_DEFER: tuple[str, ...] = (
     "how much cash do i earn from rounds 20-40",
     "should i play a dart monkey on easy or hard",
     "what is the navarch of the seas paragon",
+    "does the dartling gunner detect camo",
+    "which tower is best at popping lead",
 )
 
 
