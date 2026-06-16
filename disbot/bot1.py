@@ -503,7 +503,21 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         resolution = command_resolution.classify(raw, token_map, auto_set)
         prefix = ctx.prefix or config.PREFIX
 
-        if resolution.outcome is command_resolution.Outcome.AUTO and resolution.command:
+        # Loop-breaker (BUG-0014): an AUTO correction is only safe to
+        # re-dispatch when it points at a *registered* command that *differs*
+        # from what the user typed. Re-dispatching a correction that is
+        # unregistered (e.g. a stale synonym whose canonical has no command)
+        # or identical to the raw token just re-enters CommandNotFound →
+        # re-resolves to the same phantom → an infinite "assumed from" spam
+        # loop that only stops on restart. An unsafe AUTO correction falls
+        # through to the generic not-found reply instead of re-dispatching.
+        auto_safe = (
+            resolution.outcome is command_resolution.Outcome.AUTO
+            and resolution.command is not None
+            and resolution.command.lower() != raw.lower()
+            and bot.get_command(resolution.command) is not None
+        )
+        if auto_safe:
             # Rewrite the mistyped token and re-dispatch through the full
             # command pipeline (process_commands), so permission checks and
             # cooldowns still run — never ctx.invoke, which would bypass them.

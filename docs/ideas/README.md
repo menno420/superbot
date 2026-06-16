@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`reference-integrity-invariants-2026-06-16.md`](./reference-integrity-invariants-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the BUG-0014 `!coglist`-loop fix PR #949):** BUG-0014 was a
+  dangling reference (a synonym → a command that didn't exist) that failed *silently*. Extract the
+  AST command-surface discovery from the new synonym guard into a shared test helper, and close the
+  known sibling gap — `SUBSYSTEMS.entry_points` → real command, which `test_entrypoints.py` documents
+  as unchecked. One "what commands exist" source for every "this declaration must resolve" invariant.
+  → relates `tests/unit/registry/test_entrypoints.py` · `utils/subsystem_registry.py` · `utils/synonyms.py`.
 - [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
   `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an

@@ -37,6 +37,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/fix-coglist-resolution-loop` · BUG-0014 — `!coglist` infinite "assumed from" resolution
+  loop (owner video) · `disbot/bot1.py` loop-breaker + `disbot/utils/synonyms.py` + synonym-orphan
+  invariant + bug book · 2026-06-16 · **PR #949 (open, auto-merge on green)**
 - `claude/keen-heisenberg-xqro71` · runtime lock — release early on shutdown (fix ~85s deploy
   downtime; prod log triage) · `disbot/{bot1.py,services/runtime.py,services/metrics.py}` +
   lifecycle invariant tests · 2026-06-16 · **PR #948 (open, auto-merge on green)**
