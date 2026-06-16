@@ -47,7 +47,7 @@ only — never a value**; the values live in Railway service variables
 | `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:49` *(default)* |
 | `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
 | `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
-| `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:48` *(default)* |
+| `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:65` *(default)* |
 | `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:103` *(default)* |
 | `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
 | `HEALTH_PORT` | healthserver | `disbot/healthserver.py:63` *(default)* |

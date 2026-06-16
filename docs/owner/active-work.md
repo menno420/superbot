@@ -25,10 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/kind-carson-736rnk` · dashboard live-editor **foundation-complete reconciliation** — fix the
-  stale plan handoff (#988/#989 shipped, Q-0160 decided), fold dashboard PRs into the ledger, clear
-  stale claims · `docs/planning/dashboard-live-editor-plan.md` · `docs/current-state.md` ·
-  `docs/owner/active-work.md` · 2026-06-16
+- `claude/control-api-write-side` · control API **mutation endpoints** (write side, owner directive) —
+  POST over the existing audited seams (`settings_mutation` · `help_overlay_mutation` ·
+  `command_routing`); dormant-by-default + per-request live-member authority · `disbot/control_api.py` ·
+  `tests/unit/runtime/test_control_api.py` · 2026-06-16
 - `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
   guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
   fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
