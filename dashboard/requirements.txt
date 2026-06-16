@@ -4,5 +4,10 @@
 fastapi>=0.110,<1.0
 uvicorn[standard]>=0.27,<1.0
 jinja2>=3.1,<4.0
-# httpx is only needed to run the test suite's TestClient (and, in later phases,
-# to call the GitHub/Railway APIs); not required to serve the read-only MVP.
+# httpx: the Discord OAuth token/identity calls + the bot control-API client, and
+# the test suite's Starlette TestClient transport.
+httpx>=0.27,<1.0
+# NOTE: the OAuth login session is a small stdlib HMAC-signed cookie
+# (dashboard/websession.py) and the editor forms are parsed with urllib
+# (dashboard/app.py::_form) — deliberately NO itsdangerous / python-multipart, so
+# the whole app stays verifiable with just fastapi + jinja2 + httpx installed.
