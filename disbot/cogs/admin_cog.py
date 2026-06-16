@@ -168,6 +168,28 @@ class AdminCog(commands.Cog):
             parts.append("❌ Failed:\n" + "\n".join(failed))
         await ctx.send("\n".join(parts) or "✅ Nothing to unload.")
 
+    @commands.cooldown(rate=2, per=10, type=commands.BucketType.user)
+    @commands.command(
+        name="coglist",
+        aliases=["cogs", "listcogs", "cogslist"],
+        # Fluency spellings users actually type (the BUG-0014 report showed
+        # both !cogs and !coglist) — visible by contract, not compat shims.
+        extras={"alias_classification": "power_user_shortcut"},
+    )
+    @commands.has_permissions(administrator=True)
+    async def coglist_command(self, ctx):
+        """Open the interactive cog manager — the panel's 📋 Cog List button.
+
+        Mirrors ``_AdminPanelView`` → "📋 Cog List": posts the same
+        ``_CogManagerView`` (loaded / unloaded / syntax status for every
+        cog) so the text command and the button share one surface. Admins
+        can view the list; mutations stay owner-gated by the view itself
+        (non-owners' Load/Unload/Reload buttons deny). The prefix ``!cog``
+        command remains the unprotected escape hatch for mutations.
+        """
+        view = _CogManagerView(self, ctx.author)
+        await send_panel(ctx, embed=view.build_embed(), view=view)
+
     # ------------------------------------------------------------------
     # Slash-command tree sync + diagnostics (PR E')
     # ------------------------------------------------------------------

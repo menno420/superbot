@@ -25,8 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/coglist-command` · `!coglist` real command → opens the admin "📋 Cog List" `_CogManagerView`
-  (owner request) · `disbot/cogs/admin_cog.py` + test · 2026-06-16
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
@@ -39,6 +37,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/coglist-command` · `!coglist` real command → opens the admin "📋 Cog List" `_CogManagerView`
+  (owner request; aliases cogs/listcogs/cogslist) · `disbot/cogs/admin_cog.py` + test · 2026-06-16 ·
+  **PR #951 (open, auto-merge on green)**
 - `claude/fix-coglist-resolution-loop` · BUG-0014 — `!coglist` infinite "assumed from" resolution
   loop (owner video) · `disbot/bot1.py` loop-breaker + `disbot/utils/synonyms.py` + synonym-orphan
   invariant + bug book · 2026-06-16 · **PR #949 (open, auto-merge on green)**

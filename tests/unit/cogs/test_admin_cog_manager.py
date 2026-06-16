@@ -86,6 +86,32 @@ async def test_coglist_button_opens_cog_manager_view():
 
 
 # ---------------------------------------------------------------------------
+# !coglist prefix command opens the SAME manager as the button (owner request)
+# ---------------------------------------------------------------------------
+
+
+def test_coglist_command_registered_with_name_and_aliases():
+    cog = _admin_cog()
+    cmd = cog.coglist_command
+    assert cmd.name == "coglist"
+    assert set(cmd.aliases) == {"cogs", "listcogs", "cogslist"}
+    # Admin-gated like !adminmenu (has_permissions attaches a check).
+    assert cmd.checks, "!coglist must carry a permission check (admin-gated)"
+
+
+@pytest.mark.asyncio
+async def test_coglist_command_opens_cog_manager_view():
+    cog = _admin_cog()
+    ctx = MagicMock()
+    ctx.author = _author()
+    with patch("cogs.admin_cog.send_panel", new=AsyncMock()) as send_panel:
+        await cog.coglist_command.callback(cog, ctx)
+    send_panel.assert_awaited_once()
+    _args, kwargs = send_panel.call_args
+    assert isinstance(kwargs["view"], _CogManagerView)
+
+
+# ---------------------------------------------------------------------------
 # View shape — Select + 4 action buttons
 # ---------------------------------------------------------------------------
 
