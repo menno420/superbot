@@ -25,7 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/jolly-cannon-gn9ddg` · reconcile command counts — website prefix/sub/slash breakdown + `is_cog` + bot1.py scan; bot status embed full count (`webhook_reporter`) · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
@@ -36,6 +35,11 @@ living ledger (`docs/current-state.md`).
 
 - `claude/peaceful-tesla-vvayya` · PR mergeability keepers — auto-update behind + red-on-conflict
   guard (Q-0154) · `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` · 2026-06-16
+
+- `claude/kind-carson-736rnk` · dashboard `/settings` + `/access` read-only pages
+  (`scripts/scan_settings.py` · `scripts/scan_access.py`) + live help-editor design doc (Q-0156) ·
+  `dashboard/` · `scripts/export_dashboard_data.py` · `docs/planning/dashboard-live-editor-plan.md` ·
+  2026-06-16
 
 ## Recently cleared
 

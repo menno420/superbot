@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T17:47:38Z",
+    "generated_at": "2026-06-16T18:32:42Z",
     "counts": {
       "functions": 33,
       "ideas": 72,
@@ -8,7 +8,10 @@
       "updates": 60,
       "env_vars": 34,
       "cogs": 40,
-      "commands": 301
+      "commands": 301,
+      "setting_keys": 83,
+      "setting_domains": 13,
+      "visible_subsystems": 33
     }
   },
   "catalogue": [
@@ -1524,6 +1527,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-hermes-tpm-rate-limit-docs.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — capture the Hermes TPM rate-limit finding (docs/script corrections)",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-hermes-ops-docs-honcho.md",
       "date": "2026-06-16",
       "title": "Session — Hermes ops docs: lean-filter how-to · Honcho eval · open-steps findability",
@@ -1596,6 +1605,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-docs-handoff.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard documentation + next-session handoff",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-dashboard-deploy-fix.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard deploy fix (StaticFiles crash) + Railway deploy config",
@@ -1623,6 +1638,12 @@
       "file": "2026-06-16-conflict-guard-noise-refine.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — refine pr-conflict-guard to cut per-PR noise",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-command-count-reconcile.md",
+      "date": "2026-06-16",
+      "title": "Session — Reconcile command counts (website breakdown + bot status embed)",
       "status": "complete"
     },
     {
@@ -1785,24 +1806,6 @@
       "file": "2026-06-15-manual-test-bugfixes.md",
       "date": "2026-06-15",
       "title": "Session — manual-test bug fixes (counting channel UX · BTD6 overview clutter · round-63 data)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-hermes-sync-hardening.md",
-      "date": "2026-06-15",
-      "title": "Session — Hermes sync hardening (self-healing mirror sync + divergence recovery)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-hermes-soul-guard.md",
-      "date": "2026-06-15",
-      "title": "Session — Hermes follow-up: VPS context-fix script + SOUL size guard",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-hermes-research-deepening.md",
-      "date": "2026-06-15",
-      "title": "Session — Hermes research deepening (context-management root cause, verified vs. source)",
       "status": "complete"
     }
   ],
@@ -6198,5 +6201,655 @@
         }
       ]
     }
-  ]
+  ],
+  "settings": [
+    {
+      "domain": "ai",
+      "purpose": "Settings keys owned by the AI Platform subsystem (cogs.ai_cog).",
+      "keys": [
+        {
+          "constant": "AI_ENABLED",
+          "key": "ai_enabled"
+        },
+        {
+          "constant": "AI_NATURAL_LANGUAGE_ENABLED",
+          "key": "ai_natural_language_enabled"
+        },
+        {
+          "constant": "AI_DEFAULT_PROVIDER",
+          "key": "ai_default_provider"
+        },
+        {
+          "constant": "AI_DEFAULT_MODEL",
+          "key": "ai_default_model"
+        },
+        {
+          "constant": "AI_MINIMUM_LEVEL_DEFAULT",
+          "key": "ai_minimum_level_default"
+        },
+        {
+          "constant": "AI_COOLDOWN_SECONDS",
+          "key": "ai_cooldown_seconds"
+        },
+        {
+          "constant": "AI_FRESH_USER_MENTION_ALLOWANCE",
+          "key": "ai_fresh_user_mention_allowance"
+        },
+        {
+          "constant": "AI_GUILD_INSTRUCTION_PROFILE",
+          "key": "ai_guild_instruction_profile"
+        },
+        {
+          "constant": "AI_MEMORY_WINDOW_MINUTES",
+          "key": "ai_memory_window_minutes"
+        },
+        {
+          "constant": "AI_MEMORY_CHANNEL_SCAN_ENABLED",
+          "key": "ai_memory_channel_scan_enabled"
+        }
+      ]
+    },
+    {
+      "domain": "automod",
+      "purpose": "Settings keys owned by the Automod subsystem (cogs.automod_cog).",
+      "keys": [
+        {
+          "constant": "AUTOMOD_ENABLED",
+          "key": "automod_enabled"
+        },
+        {
+          "constant": "AUTOMOD_SPAM_ENABLED",
+          "key": "automod_spam_enabled"
+        },
+        {
+          "constant": "AUTOMOD_INVITES_ENABLED",
+          "key": "automod_invites_enabled"
+        },
+        {
+          "constant": "AUTOMOD_CAPS_ENABLED",
+          "key": "automod_caps_enabled"
+        },
+        {
+          "constant": "AUTOMOD_MENTIONS_ENABLED",
+          "key": "automod_mentions_enabled"
+        },
+        {
+          "constant": "AUTOMOD_SPAM_COUNT",
+          "key": "automod_spam_count"
+        },
+        {
+          "constant": "AUTOMOD_SPAM_WINDOW_SECONDS",
+          "key": "automod_spam_window_seconds"
+        },
+        {
+          "constant": "AUTOMOD_CAPS_PERCENT",
+          "key": "automod_caps_percent"
+        },
+        {
+          "constant": "AUTOMOD_MENTIONS_COUNT",
+          "key": "automod_mentions_count"
+        },
+        {
+          "constant": "AUTOMOD_EXEMPT_ROLES",
+          "key": "automod_exempt_roles"
+        },
+        {
+          "constant": "AUTOMOD_EXEMPT_CHANNELS",
+          "key": "automod_exempt_channels"
+        }
+      ]
+    },
+    {
+      "domain": "btd6",
+      "purpose": "BTD6 subsystem settings keys.",
+      "keys": [
+        {
+          "constant": "BTD6_STRATEGY_SUBMISSION_CHANNEL",
+          "key": "btd6_strategy_submission_channel"
+        },
+        {
+          "constant": "BTD6_CT_GROUP_ID",
+          "key": "btd6_ct_group_id"
+        },
+        {
+          "constant": "BTD6_VERSION_ANNOUNCEMENT_CHANNEL",
+          "key": "btd6_version_announcement_channel"
+        }
+      ]
+    },
+    {
+      "domain": "btd6_cache",
+      "purpose": "BTD6 source-cache settings keys — **reserved, not yet wired** (M3B).",
+      "keys": [
+        {
+          "constant": "BTD6_CACHE_DEFAULT_INTERVAL_SECONDS",
+          "key": "btd6_cache_default_interval_seconds"
+        },
+        {
+          "constant": "BTD6_CACHE_CIRCUIT_BREAKER_THRESHOLD",
+          "key": "btd6_cache_circuit_breaker_threshold"
+        },
+        {
+          "constant": "BTD6_CACHE_FRESHNESS_WARNING_HOURS",
+          "key": "btd6_cache_freshness_warning_hours"
+        }
+      ]
+    },
+    {
+      "domain": "counters",
+      "purpose": "Settings keys owned by the Counters subsystem (cogs.counters_cog).",
+      "keys": [
+        {
+          "constant": "COUNTERS_ENABLED",
+          "key": "counters_enabled"
+        },
+        {
+          "constant": "COUNTERS_TOTAL_CHANNEL",
+          "key": "counters_total_channel"
+        },
+        {
+          "constant": "COUNTERS_HUMANS_CHANNEL",
+          "key": "counters_humans_channel"
+        },
+        {
+          "constant": "COUNTERS_BOTS_CHANNEL",
+          "key": "counters_bots_channel"
+        },
+        {
+          "constant": "COUNTERS_TOTAL_TEMPLATE",
+          "key": "counters_total_template"
+        },
+        {
+          "constant": "COUNTERS_HUMANS_TEMPLATE",
+          "key": "counters_humans_template"
+        },
+        {
+          "constant": "COUNTERS_BOTS_TEMPLATE",
+          "key": "counters_bots_template"
+        }
+      ]
+    },
+    {
+      "domain": "economy",
+      "purpose": "Settings keys owned by the Economy subsystem (cogs.economy_cog).",
+      "keys": [
+        {
+          "constant": "ECONOMY_LOG_CHANNEL",
+          "key": "economy_log_channel"
+        }
+      ]
+    },
+    {
+      "domain": "games",
+      "purpose": "Settings keys shared by game subsystems.",
+      "keys": [
+        {
+          "constant": "ACTIVE_TOURNAMENT",
+          "key": "active_tournament"
+        },
+        {
+          "constant": "RPS_DEFAULT_ENTRY_FEE",
+          "key": "rps_default_entry_fee"
+        },
+        {
+          "constant": "BLACKJACK_DEFAULT_ENTRY_FEE",
+          "key": "blackjack_default_entry_fee"
+        },
+        {
+          "constant": "DEATHMATCH_TURN_TIMEOUT",
+          "key": "deathmatch_turn_timeout"
+        }
+      ]
+    },
+    {
+      "domain": "governance",
+      "purpose": "Settings keys owned by the governance runtime (``governance/``).",
+      "keys": [
+        {
+          "constant": "GOVERNANCE_VERSION",
+          "key": "governance_version"
+        },
+        {
+          "constant": "TRUSTED_TIER_ROLE_ID",
+          "key": "trusted_tier_role_id"
+        },
+        {
+          "constant": "MODERATOR_TIER_ROLE_ID",
+          "key": "moderator_tier_role_id"
+        }
+      ]
+    },
+    {
+      "domain": "logging",
+      "purpose": "Settings keys owned by the server-logging service (services.server_logging).",
+      "keys": [
+        {
+          "constant": "LOGGING_ENABLED",
+          "key": "logging_enabled"
+        },
+        {
+          "constant": "LOGGING_MOD_CHANNEL",
+          "key": "logging_mod_channel"
+        },
+        {
+          "constant": "LOGGING_CLEANUP_CHANNEL",
+          "key": "logging_cleanup_channel"
+        },
+        {
+          "constant": "LOGGING_AUTO_CREATE_CHANNELS",
+          "key": "logging_auto_create_channels"
+        },
+        {
+          "constant": "DEFAULT_MOD_CHANNEL_NAME",
+          "key": "bot-mod-log"
+        },
+        {
+          "constant": "DEFAULT_CLEANUP_CHANNEL_NAME",
+          "key": "bot-cleanup-log"
+        },
+        {
+          "constant": "LOGGING_MESSAGES_ENABLED",
+          "key": "logging_messages_enabled"
+        },
+        {
+          "constant": "LOGGING_MEMBERS_ENABLED",
+          "key": "logging_members_enabled"
+        },
+        {
+          "constant": "LOGGING_ROLES_ENABLED",
+          "key": "logging_roles_enabled"
+        },
+        {
+          "constant": "LOGGING_EVENT_ROUTING",
+          "key": "logging_event_routing"
+        },
+        {
+          "constant": "DEFAULT_EVENTS_CHANNEL_NAME",
+          "key": "bot-event-log"
+        },
+        {
+          "constant": "DEFAULT_MESSAGE_LOG_CHANNEL_NAME",
+          "key": "bot-message-log"
+        },
+        {
+          "constant": "DEFAULT_MEMBER_LOG_CHANNEL_NAME",
+          "key": "bot-member-log"
+        },
+        {
+          "constant": "DEFAULT_ROLE_LOG_CHANNEL_NAME",
+          "key": "bot-role-log"
+        }
+      ]
+    },
+    {
+      "domain": "moderation",
+      "purpose": "Settings keys owned by the Moderation subsystem (cogs.moderation_cog).",
+      "keys": [
+        {
+          "constant": "WARN_THRESHOLD",
+          "key": "warn_threshold"
+        },
+        {
+          "constant": "WARN_TIMEOUT_MINS",
+          "key": "warn_timeout_minutes"
+        },
+        {
+          "constant": "MOD_DM_ON_ACTION",
+          "key": "moderation_dm_on_action"
+        },
+        {
+          "constant": "MOD_DM_TEMPLATE",
+          "key": "moderation_dm_template"
+        },
+        {
+          "constant": "MOD_REQUIRE_REASON",
+          "key": "moderation_require_reason"
+        },
+        {
+          "constant": "MOD_BAN_DELETE_MESSAGE_DAYS",
+          "key": "moderation_ban_delete_message_days"
+        },
+        {
+          "constant": "MOD_MAX_TIMEOUT_MINUTES",
+          "key": "moderation_max_timeout_minutes"
+        },
+        {
+          "constant": "MOD_WARN_ESCALATION_ACTION",
+          "key": "moderation_warn_escalation_action"
+        },
+        {
+          "constant": "MOD_POST_ACTION_CLEANUP",
+          "key": "moderation_post_action_cleanup"
+        },
+        {
+          "constant": "MOD_POST_ACTION_CLEANUP_LIMIT",
+          "key": "moderation_post_action_cleanup_limit"
+        },
+        {
+          "constant": "MOD_PUBLIC_LOG_CHANNEL",
+          "key": "moderation_public_log_channel"
+        },
+        {
+          "constant": "MOD_PUBLIC_LOG_ACTIONS",
+          "key": "moderation_public_log_actions"
+        }
+      ]
+    },
+    {
+      "domain": "role",
+      "purpose": "Settings keys owned by the Role subsystem (cogs.role_cog).",
+      "keys": [
+        {
+          "constant": "SKIP_ROLES",
+          "key": "skip_roles"
+        },
+        {
+          "constant": "TIME_ROLES_STACK",
+          "key": "time_roles_stack"
+        },
+        {
+          "constant": "XP_ROLES_STACK",
+          "key": "xp_roles_stack"
+        }
+      ]
+    },
+    {
+      "domain": "welcome",
+      "purpose": "Settings keys owned by the Welcome subsystem (cogs.welcome_cog).",
+      "keys": [
+        {
+          "constant": "WELCOME_ENABLED",
+          "key": "welcome_enabled"
+        },
+        {
+          "constant": "WELCOME_JOIN_ENABLED",
+          "key": "welcome_join_enabled"
+        },
+        {
+          "constant": "WELCOME_LEAVE_ENABLED",
+          "key": "welcome_leave_enabled"
+        },
+        {
+          "constant": "WELCOME_CHANNEL",
+          "key": "welcome_channel"
+        },
+        {
+          "constant": "WELCOME_JOIN_MESSAGE",
+          "key": "welcome_join_message"
+        },
+        {
+          "constant": "WELCOME_LEAVE_MESSAGE",
+          "key": "welcome_leave_message"
+        },
+        {
+          "constant": "WELCOME_ENTRY_ROLE",
+          "key": "welcome_entry_role"
+        },
+        {
+          "constant": "WELCOME_CARD_ENABLED",
+          "key": "welcome_card_enabled"
+        }
+      ]
+    },
+    {
+      "domain": "xp",
+      "purpose": "Settings keys owned by the XP subsystem (cogs.xp_cog).",
+      "keys": [
+        {
+          "constant": "XP_MIN",
+          "key": "xp_min"
+        },
+        {
+          "constant": "XP_MAX",
+          "key": "xp_max"
+        },
+        {
+          "constant": "XP_COOLDOWN",
+          "key": "xp_cooldown"
+        },
+        {
+          "constant": "XP_ANNOUNCE_CHANNEL",
+          "key": "xp_announce_channel"
+        }
+      ]
+    }
+  ],
+  "access": {
+    "tiers": [
+      {
+        "tier": "user",
+        "discord_permission": null,
+        "subsystems": [
+          {
+            "key": "community",
+            "display_name": "Community",
+            "category": "community",
+            "emoji": "🌱"
+          },
+          {
+            "key": "community_spotlight",
+            "display_name": "Community Spotlight",
+            "category": "community",
+            "emoji": "🌟"
+          },
+          {
+            "key": "economy",
+            "display_name": "Economy",
+            "category": "economy",
+            "emoji": "💰"
+          },
+          {
+            "key": "inventory",
+            "display_name": "Inventory",
+            "category": "economy",
+            "emoji": "🎒"
+          },
+          {
+            "key": "mining",
+            "display_name": "Mining",
+            "category": "economy",
+            "emoji": "⛏️"
+          },
+          {
+            "key": "btd6",
+            "display_name": "BTD6 Assistant",
+            "category": "games",
+            "emoji": "🐵"
+          },
+          {
+            "key": "blackjack",
+            "display_name": "Blackjack",
+            "category": "games",
+            "emoji": "🃏"
+          },
+          {
+            "key": "counting",
+            "display_name": "Counting",
+            "category": "games",
+            "emoji": "🔢"
+          },
+          {
+            "key": "deathmatch",
+            "display_name": "Deathmatch",
+            "category": "games",
+            "emoji": "⚔️"
+          },
+          {
+            "key": "games",
+            "display_name": "Games",
+            "category": "games",
+            "emoji": "🎮"
+          },
+          {
+            "key": "rps_tournament",
+            "display_name": "Rock Paper Scissors",
+            "category": "games",
+            "emoji": "✂️"
+          },
+          {
+            "key": "chain",
+            "display_name": "Word Chain",
+            "category": "games",
+            "emoji": "🔗"
+          },
+          {
+            "key": "leaderboard",
+            "display_name": "Leaderboard",
+            "category": "progression",
+            "emoji": "🏆"
+          },
+          {
+            "key": "xp",
+            "display_name": "XP & Levels",
+            "category": "progression",
+            "emoji": "⭐"
+          },
+          {
+            "key": "four_twenty",
+            "display_name": "420",
+            "category": "utility",
+            "emoji": "🍃"
+          },
+          {
+            "key": "general",
+            "display_name": "General",
+            "category": "utility",
+            "emoji": "💬"
+          },
+          {
+            "key": "help",
+            "display_name": "Help",
+            "category": "utility",
+            "emoji": "📚"
+          },
+          {
+            "key": "utility",
+            "display_name": "Utility",
+            "category": "utility",
+            "emoji": "🔧"
+          }
+        ]
+      },
+      {
+        "tier": "trusted",
+        "discord_permission": null,
+        "subsystems": []
+      },
+      {
+        "tier": "staff",
+        "discord_permission": "manage_guild",
+        "subsystems": [
+          {
+            "key": "proof_channel",
+            "display_name": "Proof Channel",
+            "category": "moderation",
+            "emoji": "📋"
+          }
+        ]
+      },
+      {
+        "tier": "moderator",
+        "discord_permission": "moderate_members",
+        "subsystems": [
+          {
+            "key": "moderation",
+            "display_name": "Moderation",
+            "category": "moderation",
+            "emoji": "🔨"
+          }
+        ]
+      },
+      {
+        "tier": "administrator",
+        "discord_permission": "administrator",
+        "subsystems": [
+          {
+            "key": "ai",
+            "display_name": "AI Platform",
+            "category": "admin",
+            "emoji": "🤖"
+          },
+          {
+            "key": "admin",
+            "display_name": "Administration",
+            "category": "admin",
+            "emoji": "⚙️"
+          },
+          {
+            "key": "diagnostic",
+            "display_name": "Diagnostics",
+            "category": "admin",
+            "emoji": "🩺"
+          },
+          {
+            "key": "logging",
+            "display_name": "Server Logging",
+            "category": "admin",
+            "emoji": "📝"
+          },
+          {
+            "key": "server_management",
+            "display_name": "Server Management",
+            "category": "admin",
+            "emoji": "🧭"
+          },
+          {
+            "key": "settings",
+            "display_name": "Settings Manager",
+            "category": "admin",
+            "emoji": "⚙️"
+          },
+          {
+            "key": "ux_lab",
+            "display_name": "UX Lab",
+            "category": "admin",
+            "emoji": "🧪"
+          },
+          {
+            "key": "counters",
+            "display_name": "Server Counters",
+            "category": "community",
+            "emoji": "📊"
+          },
+          {
+            "key": "welcome",
+            "display_name": "Welcome",
+            "category": "community",
+            "emoji": "👋"
+          },
+          {
+            "key": "channel",
+            "display_name": "Channels",
+            "category": "management",
+            "emoji": "📐"
+          },
+          {
+            "key": "role",
+            "display_name": "Roles",
+            "category": "management",
+            "emoji": "🎭"
+          },
+          {
+            "key": "automod",
+            "display_name": "Automod",
+            "category": "moderation",
+            "emoji": "🛡️"
+          },
+          {
+            "key": "cleanup",
+            "display_name": "Cleanup",
+            "category": "moderation",
+            "emoji": "🧹"
+          }
+        ]
+      },
+      {
+        "tier": "owner",
+        "discord_permission": null,
+        "subsystems": []
+      }
+    ],
+    "total_visible": 33,
+    "internal_count": 0
+  }
 }

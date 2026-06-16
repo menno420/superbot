@@ -33,12 +33,39 @@ def client():
 
 
 @pytest.mark.parametrize(
-    "path", ["/", "/functions", "/commands", "/ideas", "/bugs", "/updates", "/env"]
+    "path",
+    [
+        "/",
+        "/functions",
+        "/commands",
+        "/settings",
+        "/access",
+        "/ideas",
+        "/bugs",
+        "/updates",
+        "/env",
+    ],
 )
 def test_pages_render(client, path):
     resp = client.get(path)
     assert resp.status_code == 200
     assert "SuperBot" in resp.text
+
+
+def test_settings_page_lists_a_known_key(client):
+    resp = client.get("/settings")
+    assert resp.status_code == 200
+    # A known setting constant + the read-only "key names only" framing.
+    assert "WARN_THRESHOLD" in resp.text
+    assert "key names" in resp.text
+
+
+def test_access_page_shows_tier_ladder_and_visibility_caveat(client):
+    resp = client.get("/access")
+    assert resp.status_code == 200
+    # The ladder + the visibility-is-not-execution caveat.
+    assert "administrator" in resp.text
+    assert "not</strong> permission to execute" in resp.text
 
 
 def test_env_page_shows_usage_map_without_values(client):

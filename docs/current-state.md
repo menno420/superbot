@@ -205,6 +205,20 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **Developer dashboard — LIVE (2026-06-16, owner-requested, Q-0155)** — a personal website /
+  developer dashboard deployed as a **second Railway service**
+  (https://superbot-dashboard.up.railway.app), auto-redeploying on merge to `main`. Shipped across
+  **#967** (read-only MVP: functions · ideas · bugs · updates · showcase), **#969** (`/env` env-usage
+  map), **#970** (deploy fix), **#972** (`/commands` cog & command explorer), **#973** (command-count
+  reconcile + bot status-embed full count), **#977** (`/settings` catalogue via `scripts/scan_settings.py`
+  + `/access` permissions map via `scripts/scan_access.py` — a verified mirror of
+  `utils.visibility_rules`; + the live help-editor design doc). Decoupled FastAPI app under `dashboard/`
+  fed by stdlib scanners; **never imports `disbot/`**. Phases 2 (auth + checklist + public bug form) /
+  3b (Railway secret management) / 4 (multi-AI control board) remain, plus the owner-approved **live
+  help/panel editor** (Q-0156): edit help live from the website via a private bot control API over the
+  existing audited `help_overlay_mutation` seam + Discord OAuth — designed in
+  [`planning/dashboard-live-editor-plan.md`](planning/dashboard-live-editor-plan.md) (L0–L3), built next.
+  Authoritative record + handoff: [`planning/developer-dashboard-plan.md`](planning/developer-dashboard-plan.md).
 - **#975 (2026-06-16, AI §7.6 — deterministic BTD6 property/capability roster floors)** — scheduled
   dispatch (empty work order → the live ▶ NEXT lane, "a *new* AI §7 workflow family beyond §7.5"). The
   §7.5 *comparison* family is COMPLETE (#946/#950/#955/#962); this opens the next family — the
