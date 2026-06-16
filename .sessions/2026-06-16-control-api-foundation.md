@@ -1,6 +1,6 @@
 # Session — control-API foundation (bot side): auth + identity→authority bridge
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
