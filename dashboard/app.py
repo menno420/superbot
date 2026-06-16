@@ -15,15 +15,29 @@ Deploy: a second Railway service — see ``dashboard/README.md``.
 from __future__ import annotations
 
 import json
+import secrets
+import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "data" / "dashboard.json"
+
+# The dashboard runs both as a package (`dashboard.app`, local) and as a top-level
+# module (`app:app`, Railway Root Directory = dashboard) — and the test loads
+# app.py by file path. Putting this directory on sys.path lets the sibling helper
+# modules import identically in all three contexts.
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+import auth  # noqa: E402  - after the sys.path shim above
+import control_client  # noqa: E402  - after the sys.path shim above
+import websession  # noqa: E402  - after the sys.path shim above
 
 _EMPTY: dict[str, Any] = {
     "meta": {"generated_at": "", "counts": {}},
@@ -38,7 +52,27 @@ _EMPTY: dict[str, Any] = {
 }
 
 app = FastAPI(title="SuperBot Dashboard", docs_url=None, redoc_url=None)
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+
+def session_context(request: Request) -> dict[str, Any]:
+    """Login state merged into every template (the nav login button / avatar)."""
+    return {
+        "current_user": websession.read(request).get("user"),
+        "login_enabled": auth.is_configured(),
+    }
+
+
+templates = Jinja2Templates(
+    directory=str(BASE_DIR / "templates"),
+    context_processors=[session_context],
+)
+
+
+async def _form(request: Request) -> dict[str, str]:
+    """Parse an ``application/x-www-form-urlencoded`` body (stdlib, no multipart)."""
+    raw = (await request.body()).decode("utf-8", "replace")
+    parsed = parse_qs(raw, keep_blank_values=True)
+    return {key: values[0] for key, values in parsed.items()}
 
 
 def load_data() -> dict[str, Any]:
@@ -303,3 +337,239 @@ def commands(request: Request):
             },
         },
     )
+
+
+# ===========================================================================
+# Control panel — Discord OAuth login + the per-guild editors
+#
+# Dormant until the owner configures the Discord OAuth app + the bot control
+# API token on Railway. With nothing configured, /admin renders a "set this up"
+# page and the nav shows no login button — the read-only site is unchanged.
+# Every edit POSTs to the bot's control API, which resolves the live member and
+# writes through the EXISTING audited seam — the website never writes the DB.
+# ===========================================================================
+
+
+def _find_admin_guild(
+    session: dict[str, Any],
+    guild_id: str,
+) -> dict[str, Any] | None:
+    """The session's admin-guild entry matching ``guild_id``, or ``None``."""
+    for guild in session.get("guilds", []):
+        if str(guild.get("id")) == str(guild_id):
+            return guild
+    return None
+
+
+async def _control_flash(path: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """Call the control API; return a one-shot flash dict describing the outcome."""
+    status, body = await control_client.post(path, payload)
+    ok = status == 200 and bool(body.get("ok"))
+    return {
+        "ok": ok,
+        "status": status,
+        "message": (
+            "Saved — the bot applied it live."
+            if ok
+            else str(body.get("error") or f"Failed (HTTP {status}).")
+        ),
+    }
+
+
+@app.get("/auth/login")
+def auth_login(request: Request):
+    """Begin Discord OAuth — redirect to consent, or fall back to /admin if off."""
+    if not auth.is_configured():
+        return RedirectResponse("/admin", status_code=302)
+    session = websession.read(request)
+    state = secrets.token_urlsafe(16)
+    session["oauth_state"] = state
+    resp = RedirectResponse(auth.authorize_url(state), status_code=302)
+    websession.write(resp, session)
+    return resp
+
+
+@app.get("/auth/callback")
+async def auth_callback(request: Request):
+    """OAuth redirect target — verify state, exchange the code, store identity."""
+    session = websession.read(request)
+    code = request.query_params.get("code")
+    state = request.query_params.get("state")
+    expected = session.pop("oauth_state", None)
+    if not code or not state or state != expected:
+        return RedirectResponse("/admin", status_code=302)
+    try:
+        token = await auth.exchange_code(code)
+        identity = await auth.fetch_identity(token)
+    except Exception:  # noqa: BLE001 - any OAuth failure → back to /admin with a flash
+        session["flash"] = {
+            "ok": False,
+            "status": 502,
+            "message": "Discord sign-in failed — please try again.",
+        }
+        resp = RedirectResponse("/admin", status_code=302)
+        websession.write(resp, session)
+        return resp
+    user = identity.get("user", {})
+    session["user"] = {
+        "id": user.get("id"),
+        "username": user.get("username"),
+        "global_name": user.get("global_name"),
+        "avatar": user.get("avatar"),
+    }
+    session["guilds"] = auth.admin_guilds(identity.get("guilds", []))
+    resp = RedirectResponse("/admin", status_code=302)
+    websession.write(resp, session)
+    return resp
+
+
+@app.get("/auth/logout")
+def auth_logout(request: Request):
+    """Clear the session and return home."""
+    resp = RedirectResponse("/", status_code=302)
+    websession.clear(resp)
+    return resp
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def admin_home(request: Request):
+    """The control-panel home — sign-in prompt or the user's admin-guild picker."""
+    session = websession.read(request)
+    user = session.get("user")
+    guilds = session.get("guilds", []) if user else []
+    flash = session.pop("flash", None)
+    resp = templates.TemplateResponse(
+        request,
+        "admin.html",
+        {
+            "data": load_data(),
+            "page": "admin",
+            "guilds": guilds,
+            "control_configured": control_client.is_configured(),
+            "flash": flash,
+        },
+    )
+    if flash is not None:
+        websession.write(resp, session)  # persist the flash pop
+    return resp
+
+
+@app.get("/admin/{guild_id}", response_class=HTMLResponse)
+async def admin_guild(request: Request, guild_id: str):
+    """The per-guild editor — settings, help appearance, and cog routing."""
+    session = websession.read(request)
+    user = session.get("user")
+    if user is None:
+        return RedirectResponse("/admin", status_code=302)
+    guild = _find_admin_guild(session, guild_id)
+    if guild is None:
+        return RedirectResponse("/admin", status_code=302)
+    authority = None
+    if control_client.is_configured():
+        authority = await control_client.get_authority(int(guild_id), int(user["id"]))
+    data = load_data()
+    flash = session.pop("flash", None)
+    resp = templates.TemplateResponse(
+        request,
+        "admin_guild.html",
+        {
+            "data": data,
+            "page": "admin",
+            "guild": guild,
+            "authority": authority,
+            "control_configured": control_client.is_configured(),
+            "settings": data.get("settings", []),
+            "cogs": [c for c in data.get("cogs", []) if c.get("is_cog")],
+            "catalogue": data.get("catalogue", []),
+            "flash": flash,
+        },
+    )
+    if flash is not None:
+        websession.write(resp, session)
+    return resp
+
+
+async def _edit(
+    request: Request,
+    guild_id: str,
+    path: str,
+    payload: dict[str, Any],
+) -> RedirectResponse:
+    """Shared editor POST: gate on session admin → control API → flash → redirect."""
+    session = websession.read(request)
+    if session.get("user") is None or _find_admin_guild(session, guild_id) is None:
+        return RedirectResponse("/admin", status_code=303)
+    session["flash"] = await _control_flash(path, payload)
+    resp = RedirectResponse(f"/admin/{guild_id}", status_code=303)
+    websession.write(resp, session)
+    return resp
+
+
+def _actor_id(request: Request) -> int | None:
+    user = websession.read(request).get("user")
+    try:
+        return int(user["id"]) if user else None
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+@app.post("/admin/{guild_id}/settings")
+async def post_setting(request: Request, guild_id: str):
+    """Edit one setting → POST /control/settings (the bot capability-gates it)."""
+    form = await _form(request)
+    payload = {
+        "guild_id": int(guild_id),
+        "user_id": _actor_id(request),
+        "subsystem": form.get("subsystem", "").strip(),
+        "name": form.get("name", "").strip(),
+        "value": form.get("value", "").strip(),
+    }
+    return await _edit(request, guild_id, "/control/settings", payload)
+
+
+@app.post("/admin/{guild_id}/help/overlay")
+async def post_help_overlay(request: Request, guild_id: str):
+    """Hide / rename / re-describe a Help entity → POST /control/help/overlay."""
+    form = await _form(request)
+    payload: dict[str, Any] = {
+        "guild_id": int(guild_id),
+        "user_id": _actor_id(request),
+        "entity_kind": form.get("entity_kind", "").strip(),
+        "entity_key": form.get("entity_key", "").strip(),
+        "display_hidden": form.get("display_hidden") == "on",
+    }
+    # Only forward text overrides the user actually filled in (blank = untouched).
+    if form.get("display_name", "").strip():
+        payload["display_name"] = form["display_name"].strip()
+    if form.get("description", "").strip():
+        payload["description"] = form["description"].strip()
+    return await _edit(request, guild_id, "/control/help/overlay", payload)
+
+
+@app.post("/admin/{guild_id}/help/home")
+async def post_help_home(request: Request, guild_id: str):
+    """Edit the Help Home message → POST /control/help/home."""
+    form = await _form(request)
+    payload: dict[str, Any] = {
+        "guild_id": int(guild_id),
+        "user_id": _actor_id(request),
+    }
+    if form.get("title", "").strip():
+        payload["title"] = form["title"].strip()
+    if form.get("body", "").strip():
+        payload["body"] = form["body"].strip()
+    return await _edit(request, guild_id, "/control/help/home", payload)
+
+
+@app.post("/admin/{guild_id}/routing")
+async def post_routing(request: Request, guild_id: str):
+    """Enable / disable a cog for the guild → POST /control/routing."""
+    form = await _form(request)
+    payload = {
+        "guild_id": int(guild_id),
+        "user_id": _actor_id(request),
+        "cog_name": form.get("cog_name", "").strip(),
+        "enabled": form.get("enabled") == "enabled",
+        "scope_type": "guild",
+    }
+    return await _edit(request, guild_id, "/control/routing", payload)
