@@ -1,6 +1,6 @@
 # Session — Dashboard cog & command explorer (`/commands`)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
