@@ -2187,6 +2187,80 @@ def compare_crosspath_costs(
     }
 
 
+def compare_difficulty_costs(
+    tower: str,
+    code: str,
+    difficulties: Sequence[str],
+) -> dict[str, Any]:
+    """Deterministic cost ranking of one ``(tower, upgrade-code)`` across difficulties.
+
+    The §7.5 *difficulty* member of the multi-entity comparison primitive (the
+    sibling of :func:`compare_crosspath_costs`, which ranks *different towers* at
+    one difficulty). Price the single upgrade state once via
+    :func:`crosspath_cost` — it already returns the unit cost at every
+    difficulty — then rank/diff the named difficulties **in code** so the model
+    never assembles the comparison itself (the BUG-0009 "wrong assembly" class —
+    a mis-stated "cheaper on X", which the value-only faithfulness guard cannot
+    catch). Ranked ascending (cheapest first) with a stable tie-break on the
+    canonical difficulty order (so equal-cost difficulties order deterministically).
+
+    Returns ``{"found": False, ...}`` when the tower/code does not price or fewer
+    than two *distinct valid* difficulties are named (an unknown difficulty is
+    skipped, never guessed), so a caller can fall through to the model rather than
+    answer a degenerate comparison.
+    """
+    from utils.btd6 import difficulty_costs
+
+    priced = crosspath_cost(tower, code)
+    if not priced.get("found"):
+        return {"found": False, "note": priced.get("note", "unpriceable tower/code")}
+
+    unit_by_diff = priced["unit_costs_by_difficulty"]
+    canonical_order = {d: i for i, d in enumerate(difficulty_costs.DIFFICULTIES)}
+    seen: set[str] = set()
+    entries: list[dict[str, Any]] = []
+    for raw in difficulties:
+        try:
+            diff = difficulty_costs.normalize_difficulty(raw)
+        except ValueError:
+            continue
+        if diff in seen:
+            continue
+        seen.add(diff)
+        entries.append({"difficulty": diff, "unit_cost": unit_by_diff[diff]})
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct valid difficulties",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(
+        entries,
+        key=lambda e: (e["unit_cost"], canonical_order[e["difficulty"]]),
+    )
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    label = " + ".join(priced.get("upgrade_names") or ()) or "base"
+    return {
+        "found": True,
+        "tower": priced["tower"],
+        "code": priced["code"],
+        "label": label,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["unit_cost"] - cheapest["unit_cost"],
+        "all_equal": cheapest["unit_cost"] == most_expensive["unit_cost"],
+        "note": (
+            "unit cost of the same upgrade state at each named difficulty (base "
+            "+ every tier, each purchase rounded to $5 at that difficulty, then "
+            "summed); ranked ascending."
+        ),
+    }
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics

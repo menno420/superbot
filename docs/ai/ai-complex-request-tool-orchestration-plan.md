@@ -592,10 +592,17 @@ resolve candidates -> validate shared assumptions -> fan out bounded calculation
 
 This pattern is valuable for:
 
-- tower/upgrade cost comparisons;
-- difficulty cost comparisons;
-- paragon degree/resource scenarios;
-- round-range comparisons;
+- tower/upgrade cost comparisons — **SHIPPED #946** (`compare_crosspath_costs` +
+  `deterministic_cost_comparison_reply`: ranks two-or-more `(tower, crosspath)` at one
+  difficulty);
+- difficulty cost comparisons — **SHIPPED #950** (`compare_difficulty_costs` +
+  `deterministic_difficulty_cost_comparison_reply`: ranks one `(tower, crosspath)` across
+  two-or-more difficulties — the sibling of the above; the two are mutually exclusive on
+  candidate count, so both ride the `deterministic_btd6_list_reply` floor seam);
+- paragon degree/resource scenarios — *not yet built*;
+- round-range comparisons — *not yet built* (a comparison of two round ranges, distinct from
+  the single-range projection the round-cash workflow already owns; keep them non-overlapping by
+  requiring two ranges if/when built);
 - future game/stat/economy functions.
 
 ## 8. Provider-neutral request changes
