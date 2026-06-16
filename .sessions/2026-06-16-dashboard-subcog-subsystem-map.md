@@ -48,7 +48,8 @@ no routing key. Mapped the unambiguous ones to their parent's registry identity:
 
 ## 💡 Session idea (Q-0089)
 
-**Cogs declare their subsystem** — `docs/ideas/cog-declares-its-subsystem-2026-06-16.md` (+ README).
+**Cogs declare their subsystem.** *(Captured here only — the standalone idea file + README index entry
+were **deferred** from this PR to escape the ledger-conflict livelock below; file it next session.)*
 The dashboard guesses a cog's subsystem from its *class name*, propped up by **three** hand-maintained
 lists (acronym table · the override map I just added · the guard's allow-list) that drift
 independently — and even after #995, 3 cogs can't be resolved from the name alone. Replace it with an
@@ -56,12 +57,26 @@ authoritative declaration the scanner reads (a `SUBSYSTEM = "btd6"` cog class at
 command-surface-ledger join), deleting the override map and self-describing every cog. Genuine — I felt
 the maintenance smell directly while curating the override map this session.
 
+## ⚠️ Merge-conflict livelock (process note — the real lesson of this PR)
+
+This PR hit a **3× consecutive merge-conflict loop**: every dashboard/night-work session prepends a
+claim to `docs/owner/active-work.md` and an entry to `docs/ideas/README.md`, so each time I merged
+`main` and pushed, the next parallel merge (#994 → #996 → #997, minutes apart) re-conflicted on those
+**append-only ledger files** before my CI could go green. My merge→regenerate→test→push cycle was
+slower than `main`'s merge cadence → livelock. **Fix that broke it:** shed my footprint on the
+contended files — reverted `active-work.md`, `README.md`, and the subcog idea-file edits to `main` and
+dropped the new idea file, so my branch diverges from `main` **only** on low-contention files
+(`scan_commands.py` · `check_dashboard_data.py` · `dashboard.json` · the scanner test · this card).
+The feature + its tests are intact; the docs hygiene (idea-file "shipped" badge, README index entry,
+new idea file) is **deferred to a calmer moment / next session**, recorded here so it isn't lost.
+
 ## ♻️ Backlog grooming (Q-0015)
 
-Moved the **dashboard-subcog-parent-subsystem** idea (filed last session, #990) down its lifecycle to
-**mostly-shipped** — the 5 unambiguous cogs mapped, the 3 ambiguous deferred with a clear owner-intent
-gate. Updated its file Disposition + README entry. (This session's main task *was* executing that idea;
-that execution is the grooming move.)
+This session's main task **executed** the dashboard-subcog-parent-subsystem idea (filed #990) — the 5
+unambiguous cogs mapped, the 3 ambiguous deferred to owner intent — which *is* the grooming move (idea
+→ implemented). NB: the idea-file "shipped" disposition + README index update were **reverted out of
+this PR** to escape the ledger-conflict livelock (above); re-apply them next session so the backlog
+reflects the shipped status.
 
 ## ⟲ Previous-session review (Q-0102)
 
@@ -80,8 +95,10 @@ CLAUDE.md is propose-only.)
 
 ## Documentation audit (Q-0104)
 
-- Idea files updated/filed + README-indexed (subcog → mostly-shipped; cog-declares-subsystem → new);
-  `check_docs --strict` green. Provenance in the scanner's own comments + this card.
+- Idea-backlog updates (subcog → shipped; cog-declares-subsystem → new) were **deferred** out of this
+  PR to escape the ledger-conflict livelock — recorded in this card for next-session re-application.
+  The feature's provenance lives in the scanner's own comments + this card; `check_docs --strict` green
+  on the trimmed footprint.
 - **No owner decision** this session (a non-conflicting execution of an already-filed, decided-lane
   idea), so no router Q-block. The 3 deferred cogs are flagged for owner intent in the idea file.
 - **Ledger untouched (Q-0124):** the merged-PR backlog is the reconciliation routine's job; my PR
