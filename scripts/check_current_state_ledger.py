@@ -70,7 +70,7 @@ _LEDGER_RANGE_RE = re.compile(r"#(\d+)\s*[–-]\s*#?(\d+)")
 # observed at #942→#943). Detect it from its merge subject and exempt it. ``reconcil``
 # is reconciliation-specific in this repo (branch ``claude/*reconcile*`` or title
 # ``docs reconciliation`` / ``reconcile ledger``) — it does NOT match a plain "ledger"
-# feature PR (e.g. command-surface-ledger). Q-0151 / idea
+# feature PR (e.g. command-surface-ledger). Q-0152 / idea
 # ``ledger-guard-exempt-reconciliation-prs-2026-06-16``. **Disposable (Q-0105):** delete
 # this exemption if it ever masks a real omission.
 _RECONCILE_SUBJECT_RE = re.compile(r"reconcil", re.IGNORECASE)
@@ -172,7 +172,7 @@ def find_missing(window: int = DEFAULT_WINDOW) -> list[int]:
     A self-referential ledger-reconciliation PR is **exempt**: its diff is the ledger and
     it cannot list its own (not-yet-assigned) number, so its own absence is expected, not
     drift (``_is_reconciliation_subject``). This closes the guaranteed recurring busywork
-    where each reconcile PR is flagged the following session (Q-0151).
+    where each reconcile PR is flagged the following session (Q-0152).
     """
     merged = _git_merged_pr_map(window)
     recent = list(merged)[:window]

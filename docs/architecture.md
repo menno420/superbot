@@ -38,7 +38,7 @@ platform concerns the cog simply *uses*.
          ┌──────────────────────────────┴────────────────────────────┐
          │                                                           │
    ┌─────▼─────────────┐    ┌──────────────────────┐    ┌────────────▼────────┐
-   │   cogs/  (×28)    │    │  core/runtime/       │    │   governance/      │
+   │   cogs/           │    │  core/runtime/       │    │   governance/      │
    │  thin dispatchers │◀──▶│  platform primitives │◀──▶│   policy engine    │
    └─────┬─────────────┘    └──────────┬───────────┘    └──────────┬─────────┘
          │                             │                            │
@@ -57,7 +57,7 @@ platform concerns the cog simply *uses*.
                                                     ▼
                                           ┌────────────────────┐
                                           │ PostgreSQL         │
-                                          │ (51 migrations)    │
+                                          │ (migrations)       │
                                           └────────────────────┘
 ```
 

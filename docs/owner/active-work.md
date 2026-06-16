@@ -35,8 +35,10 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
-> Trimmed 2026-06-16 (Q-0151): stale claims whose PRs merged are dropped — the durable record is the
+> Trimmed 2026-06-16 (Q-0152): stale claims whose PRs merged are dropped — the durable record is the
 > PR + the `current-state.md` ledger. Keep this to the most recent handful, newest-first.
+
+- `claude/hopeful-meitner-772pv8` · architecture-atlas / structure-review idea intake (owner-uploaded review) · router Q-0151 · 2026-06-16 · **PR #957 (merged)**
 
 - `claude/coglist-command` · `!coglist` real command → admin "📋 Cog List" view · 2026-06-16 · **PR #951 (merged)**
 - `claude/fix-coglist-resolution-loop` · BUG-0014 — `!coglist` infinite "assumed from" loop · 2026-06-16 · **PR #949 (merged)**

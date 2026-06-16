@@ -5692,14 +5692,56 @@ updated to "durable fix applied (Q-0150)".
 
 ---
 
-### Q-0151 — Act on the autonomous-run review: run-report footer · ledger guard-exemption + drift line · bug-fix-guard · auto-deploy correction (2026-06-16)
+### Q-0151 — Architecture-atlas review: unified atlas? root README? taxonomy enforcement? (2026-06-16)
+
+> **DISCUSS lane — agent-surfaced, NOT applied.** Raised by the owner-uploaded repo-architecture
+> review (captured + cross-checked in
+> [`docs/ideas/architecture-atlas-and-structure-review-2026-06-16.md`](../ideas/architecture-atlas-and-structure-review-2026-06-16.md),
+> PR #957). The review's direction is sound and its bugs-first drift fixes were taken directly; these
+> three are the genuine **owner-policy** calls left over.
+
+**Q-0151a — A thin unified atlas?** The review's flagship "per-file maintainer dashboard" is ~80%
+already shipped (`context_map.py` + `wiring_map.py` + `review_scope.py` + the agent context packs).
+The surviving delta is a **repo-wide, provenance-stamped index** with a single `--check` drift mode,
+built by *composing* the existing scripts (never re-implementing them). If we build it:
+**(i)** is the atlas the **primary** architecture entry point, or a **companion** to
+`AGENT_ORIENTATION.md` (which stays the human/agent reading-order router)? **(ii)** do we **commit**
+the generated Markdown/JSON to git, or keep it **CI-artifact-only**?
+*Agent recommendation:* build it thin, as a **companion** (not a replacement — orientation is curated
+intent, the atlas is generated facts), **CI-`--check` + on-demand generate**, do **not** commit the
+generated body (commit only the generator + a provenance header), to avoid a new drift surface. It
+overlaps the context-pack system, so confirm before building.
+
+**Q-0151b — Revisit the "no root README" decision?** The review recommends a minimal root README
+pointer. The repo made an **explicit decision against one** (`repo-navigation-map.md:51` — *"There is
+intentionally no top-level README — docs/ is the documentation surface"*). Now that the repo is
+public-era, a tiny GitHub-landing pointer (→ `AGENT_ORIENTATION.md` + `current-state.md`) may be worth
+it. *Agent recommendation:* add a **5-line pointer-only** README (no content duplication) **iff** the
+owner wants a public landing page; otherwise keep the deliberate no-README posture. Owner's call —
+it overrides a stated decision.
+
+**Q-0151c — How far to enforce extension classification?** The strongest finding: no taxonomy maps the
+43 extensions ↔ 32 subsystems (the ~11 non-1:1 are unclassified). Should classification cover **only
+the ~11 non-subsystem extensions**, or **all 43**? And should the `role` be **advisory metadata** or a
+**CI-enforced** guard (a new `INITIAL_EXTENSIONS` entry must declare a role or be a registered
+subsystem)? *Agent recommendation:* classify **all 43** (cheap, and partial taxonomies rot), role as a
+registry field, **CI-enforced** so the gap can't silently re-grow — but this is a
+`REGISTRY_SCHEMA_VERSION` bump, so it ships via its **own plan**, not a drive-by.
+
+**Home when answered:** a `docs/planning/` plan for the taxonomy (Q-0151c) + atlas (Q-0151a) if
+approved; the README decision (Q-0151b) records here + `repo-navigation-map.md`. The capture doc holds
+the full evidence and routing table.
+
+---
+
+### Q-0152 — Act on the autonomous-run review: run-report footer · ledger guard-exemption + drift line · bug-fix-guard · auto-deploy correction (2026-06-16)
 
 > **DECISION 2026-06-16 (owner-directed in-session, applied directly).** After reviewing the first
 > overnight autonomous run, the owner directed implementing the loop-closing changes its self-audit
 > kept flagging, and corrected two propagating errors. Recorded here per CLAUDE.md Q-0106 because one
 > piece touches **executable config** (the SessionStart banner) — applied under the in-session
 > exception (the owner is the live reviewer). The rest are docs/tooling (free rein), batched here for
-> provenance.
+> provenance. (Renumbered from Q-0151 → Q-0152 to yield Q-0151 to the concurrent #957 atlas block.)
 
 **What shipped (PR #956):**
 

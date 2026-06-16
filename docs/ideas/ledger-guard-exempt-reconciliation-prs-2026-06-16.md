@@ -1,6 +1,6 @@
 # Idea — the ledger guard should exempt self-referential reconciliation PRs
 
-> **Status:** `ideas` — ✅ **SHIPPED 2026-06-16 (Q-0151)**: implemented in `find_missing` as a
+> **Status:** `ideas` — ✅ **SHIPPED 2026-06-16 (Q-0152)**: implemented in `find_missing` as a
 > `reconcil`-in-merge-subject exemption (`_is_reconciliation_subject`). The diff-confinement bound
 > below was deferred as merge-strategy-fragile; subject-match is tight enough + disposable (Q-0105).
 > Kept for provenance. Routing: **S5 Operations / docs system**. Raised 2026-06-16 (Q-0089) by the

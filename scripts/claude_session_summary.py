@@ -91,7 +91,7 @@ def main() -> int:
         recon_short = recon_line.replace("check_reconciliation_due: ", "")
         print(f"Recon  : {recon_short}")
 
-    # Living-ledger drift advisory (Q-0151) — printed at START so a session sees drift
+    # Living-ledger drift advisory (Q-0152) — printed at START so a session sees drift
     # *growing* rather than discovering the whole pile at /session-close. Fail-silent: a
     # drift advisory must never break session start. (Self-referential reconciliation PRs
     # are already exempt inside the checker.)

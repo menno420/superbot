@@ -18,7 +18,7 @@ docs+tooling PR (#956) — no `disbot/` runtime code.
 - **Ledger guard-exemption** — `check_current_state_ledger.find_missing` skips a self-referential
   reconciliation PR (`reconcil` in its merge subject). +2 tests; 15/15 green. Kills recurring busywork.
 - **SessionStart ledger-drift line** — `claude_session_summary.py` prints `Ledger : ⚠ N …` at start
-  (fail-silent; Q-0151 executable-config touch). Live now: shows 9 PRs of real drift (#940s — the
+  (fail-silent; Q-0152 executable-config touch). Live now: shows 9 PRs of real drift (#940s — the
   reconciliation routine's lane at #960, not this manual session's, per Q-0124).
 - **Bug-fix-ships-its-guard** — bug-book convention now requires the stays-fixed guard in the *same*
   fix PR (the deathmatch #933 deferral three sessions flagged).
@@ -80,7 +80,7 @@ so the next run's owner items are one grep, and the phantom deploy-step can't re
 
 ## 📋 Doc audit (Q-0104)
 
-`check_docs --strict` green (new idea files indexed + reachable; Q-0147 decision + Q-0151 router blocks
+`check_docs --strict` green (new idea files indexed + reachable; Q-0147 decision + Q-0152 router blocks
 added). Ledger drift (9 PRs, #940s) is **not** reconciled here — that is the reconciliation routine's
 lane (Q-0124; next pass #960), now surfaced by the new SessionStart drift line. No merged-PR ledger
 entry owed by this session until #956 itself merges.
