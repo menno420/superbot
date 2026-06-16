@@ -23,6 +23,15 @@ Hard rules (CI gate — see ``--strict``):
      MERGED work + the single ``▶ Next action`` pointer; in-flight status comes from
      live GitHub. This gate forbids reintroducing the rotting markers.
 
+Soft checks (printed as warnings — never change the exit code, like the census
+ratchets):
+
+  - **inventory-count** — a bare hand-maintained count (``N migrations`` /
+    ``workflows`` / ``extensions`` / ``cogs`` / ``subsystems``) in a ``binding``
+    doc, unless it cites a regen command, is marked generated, or carries
+    ``<!-- count-ok -->``. The drift class the 2026-06-16 architecture review
+    found; a nudge to cite/de-number, not a CI failure.
+
 Pure stdlib (no third-party imports) so CI can run it on every PR — including
 docs-only PRs — without installing anything.
 
@@ -77,6 +86,37 @@ _STALE_PENDING_RE = re.compile(
     r"\(\s*pending pr\s*\)|\(\s*this pr,?\s*pending\s*\)|\bthis pr \(pending\)",
     re.IGNORECASE,
 )
+
+# --- Inventory-count drift guard (soft) ------------------------------------
+# A bare integer followed by one of these nouns in a BINDING doc is almost always
+# a hand-maintained inventory count that rots the moment the repo grows — the
+# exact drift class the 2026-06-16 architecture review found ("51 migrations" when
+# live was 74; "×28 cogs" when live was 43). This is a **soft** forcing function
+# (warn, never fail CI): binding contracts should cite the source of a count or
+# drop the number, not pin a value that silently goes stale. (Q-0151 / folds in
+# the readiness-maps-cite-regen-command idea.)
+_COUNT_NOUNS = ("migrations", "workflows", "extensions", "cogs", "subsystems")
+_INVENTORY_COUNT_RE = re.compile(
+    r"\b\d+\s+(?:" + "|".join(_COUNT_NOUNS) + r")\b",
+    re.IGNORECASE,
+)
+# A count is acceptable when, on its line or an adjacent one, it cites a regen
+# command (a scripts/*.py), is marked generated, or carries the explicit
+# `<!-- count-ok -->` escape hatch (declare an intentionally-maintained count).
+_COUNT_CITED_RE = re.compile(
+    r"scripts/[\w./-]+\.py|\bgenerated\b|<!--\s*count-ok\s*-->",
+    re.IGNORECASE,
+)
+# Pinned-to-code docs already have a dedicated doc-test verifying their counts
+# against live source, so a stronger guard than this heuristic covers them.
+_COUNT_GUARD_EXEMPT_DOCS = frozenset(
+    {
+        "smoke-test-checklist.md",
+        "help-command-surface-map.md",
+        "ai-config-ownership.md",
+    },
+)
+
 
 # A backtick-wrapped docs path, e.g. `docs/foo.md` — used to walk the doc graph
 # (backtick refs are how most SuperBot docs cross-link, alongside markdown links).
@@ -289,6 +329,57 @@ def check_freshness() -> list[tuple[Path, str, str]]:
     return violations
 
 
+def inventory_count_flags() -> list[tuple[Path, str, str]]:
+    """Soft: bare hand-maintained inventory counts in BINDING docs (drift-prone).
+
+    Flags ``N migrations`` / ``N workflows`` / ``N extensions`` / ``N cogs`` /
+    ``N subsystems`` in a ``binding``-badged doc unless the count cites a regen
+    command, is marked generated, or carries ``<!-- count-ok -->``. **Soft** — the
+    caller prints these as a warning and never changes the exit code (a binding
+    doc may legitimately state a number; this is a nudge to cite or de-number it,
+    not a CI failure). Pinned-to-code docs are exempt (their doc-test guards them).
+    """
+    flags: list[tuple[Path, str, str]] = []
+    for f in _docs_files():
+        if _is_adr(f) or f.name in _COUNT_GUARD_EXEMPT_DOCS:
+            continue
+        if _doc_badge(f) != "binding":
+            continue
+        rel = f.relative_to(REPO_ROOT)
+        lines = f.read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
+            for m in _INVENTORY_COUNT_RE.finditer(line):
+                window = "\n".join(lines[max(0, i - 1) : i + 2])
+                if _COUNT_CITED_RE.search(window):
+                    continue
+                flags.append(
+                    (
+                        rel,
+                        "inventory-count",
+                        f"L{i + 1}: hand-maintained count `{m.group(0)}` in a binding "
+                        "doc rots when the repo grows — cite its regen command "
+                        "(e.g. `scripts/extension_crosswalk.py`), drop the number, or "
+                        "mark it `<!-- count-ok -->`.",
+                    ),
+                )
+    return flags
+
+
+def print_inventory_count_report() -> None:
+    """Soft report of drift-prone inventory counts in binding docs (never fails CI)."""
+    flags = inventory_count_flags()
+    if not flags:
+        return
+    print(
+        f"  ⚠ {len(flags)} hand-maintained inventory count(s) in binding docs — "
+        "cite a regen command, drop the number, or mark `<!-- count-ok -->`. "
+        "(soft — not a CI failure)",
+    )
+    for rel, _kind, msg in sorted(flags, key=lambda x: str(x[0])):
+        print(f"      {rel}: {msg}")
+    print()
+
+
 def census() -> tuple[int, int, dict[str, int]]:
     """Return ``(total_docs, top_level_count, counts_by_badge)``.
 
@@ -370,6 +461,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     print_census()
+    print_inventory_count_report()
 
     violations = (
         check_badges()
