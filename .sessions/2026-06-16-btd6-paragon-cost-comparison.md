@@ -104,3 +104,18 @@ recorded above; if the owner wants the degree axis it routes through the session
 `⚠ N PRs not in current-state` drift is the **reconciliation routine's lane** (next pass at #960,
 Q-0124) — not this dispatch session's to reconcile.
 
+## 📤 Run report
+
+- **Did:** shipped the §7.5 paragon base-cost comparison floor — the last unbuilt multi-entity
+  comparison member, completing the family · **Outcome:** shipped
+- **Shipped:** #962 — `compare_paragon_costs` + `deterministic_paragon_cost_comparison_reply`
+  (deterministic paragon base-price ranking; BUG-0009 wrong-assembly floor; Q-0048 read-only, no
+  prod-check). CI mirror green (10058); arch 0; auto-merge armed on green.
+- **⚑ Owner decisions needed:** `none` (the base-price comparison axis is an in-lane engineering
+  call; the optional paragon *degree-target* axis is captured as a session idea, not a decision).
+- **⚑ Owner manual steps:** `none` (merge auto-deploys; no seed-data / env / Discord step).
+- **↪ Next:** the §7.5 comparison family is COMPLETE — next AI §7 work is a *new* workflow family
+  beyond §7.5 (plan-first / prod-check-gated for model-loop families); the buildable deterministic
+  floor members are exhausted. Other plan-first lanes: image moderation (Q-0108), Hermes bug-triage
+  `gh issue create` write (Q-0121). See current-state ▶ NEXT.
+
