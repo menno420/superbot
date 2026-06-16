@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Suggest an alias — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Suggest a command alias</h1>
+<p class="text-slate-400 mb-4 text-sm">
+  Pick a command and propose an alias (a "synonym" that resolves to it). The form checks your
+  suggestion against every existing command, alias, and synonym
+  ({{ data.synonyms | length }} commands already have synonyms), then gives you a one-click GitHub
+  issue and a paste-ready snippet.
+</p>
+<p class="text-slate-500 mb-6 text-xs rounded border border-slate-800 bg-slate-900/50 px-3 py-2">
+  💡 Today this <strong>suggests</strong> — the snippet edits
+  <code>disbot/utils/synonyms.py</code> (<code>COMMAND_SYNONYMS</code>), which reaches the live bot on
+  the next deploy. <strong>Editing aliases into the bot instantly</strong> (no deploy) is the next
+  step — it reuses the live-editor control API, and the synonym map is its cleanest target
+  (<code>docs/planning/dashboard-live-editor-plan.md</code>).
+</p>
+
+<div class="rounded-xl border border-slate-800 bg-slate-900/50 p-4 sm:p-5">
+  <div class="grid gap-4 sm:grid-cols-2">
+    <label class="block">
+      <span class="text-xs text-slate-400">Command</span>
+      <input id="cmd" list="cmd-list" autocomplete="off" placeholder="e.g. leaderboard"
+        class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+      <datalist id="cmd-list">
+        {% for c in commands %}<option value="{{ c }}"></option>{% endfor %}
+      </datalist>
+    </label>
+    <label class="block">
+      <span class="text-xs text-slate-400">Proposed alias</span>
+      <input id="alias" autocomplete="off" placeholder="e.g. lb"
+        class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+    </label>
+  </div>
+  <div id="alias-out" class="mt-4">
+    <p class="text-slate-500 text-sm">Pick a command and type a proposed alias.</p>
+  </div>
+</div>
+
+<script id="taken-data" type="application/json">{{ taken | tojson }}</script>
+<script id="syn-data" type="application/json">{{ data.synonyms | tojson }}</script>
+<script>
+  (function () {
+    const taken = JSON.parse(document.getElementById("taken-data").textContent);
+    const synMap = {};
+    JSON.parse(document.getElementById("syn-data").textContent).forEach((s) => {
+      synMap[s.canonical] = s.synonyms;
+    });
+    const REPO = "menno420/superbot";
+    const cmdInput = document.getElementById("cmd");
+    const aliasInput = document.getElementById("alias");
+    const out = document.getElementById("alias-out");
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
+      );
+    }
+    function note(kind, text) {
+      const cls =
+        kind === "error"
+          ? "border-rose-900/60 bg-rose-950/40 text-rose-300"
+          : "border-emerald-900/60 bg-emerald-950/40 text-emerald-300";
+      return '<p class="rounded border ' + cls + ' px-3 py-2 text-sm">' + esc(text) + "</p>";
+    }
+    function render() {
+      const cmd = (cmdInput.value || "").trim().replace(/^[!\/]/, "");
+      const alias = (aliasInput.value || "").trim().toLowerCase();
+      if (!cmd || !alias) {
+        out.innerHTML = '<p class="text-slate-500 text-sm">Pick a command and type a proposed alias.</p>';
+        return;
+      }
+      if (/\s/.test(alias)) {
+        out.innerHTML = note("error", "Aliases can't contain spaces.");
+        return;
+      }
+      const owner = taken[alias];
+      if (owner) {
+        out.innerHTML = note("error", "“" + alias + "” is already " + owner + ".");
+        return;
+      }
+      const existing = synMap[cmd] || [];
+      const updated = existing.concat([alias]);
+      const snippet = '"' + cmd + '": [' + updated.map((s) => '"' + s + '"').join(", ") + "],";
+      const title = "Alias suggestion: !" + cmd + " → " + alias;
+      const body = [
+        "**Command:** `!" + cmd + "`",
+        "**Proposed alias:** `" + alias + "`",
+        "",
+        "Add to `disbot/utils/synonyms.py` (`COMMAND_SYNONYMS`):",
+        "```python",
+        snippet,
+        "```",
+        "",
+        "_Suggested via the dashboard /aliases page._",
+      ].join("\n");
+      const url =
+        "https://github.com/" + REPO + "/issues/new?labels=alias-suggestion&title=" +
+        encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+      const current = existing.length
+        ? '<p class="mt-2 text-xs text-slate-500">Current synonyms for !' + esc(cmd) + ": " +
+          existing.map(esc).join(", ") + "</p>"
+        : "";
+      out.innerHTML =
+        note("ok", "“" + alias + "” is free — no command, alias, or synonym uses it.") +
+        current +
+        '<div class="mt-3"><a target="_blank" rel="noopener" class="inline-block rounded bg-sky-600 hover:bg-sky-500 px-3 py-1.5 text-sm font-medium" href="' +
+        url + '">Open a prefilled GitHub issue →</a></div>' +
+        '<p class="mt-3 text-xs text-slate-400">Or paste this into <code>disbot/utils/synonyms.py</code>:</p>' +
+        '<pre class="mt-1 overflow-x-auto rounded bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><code>' +
+        esc(snippet) + "</code></pre>";
+    }
+    cmdInput.addEventListener("input", render);
+    aliasInput.addEventListener("input", render);
+  })();
+</script>
+{% endblock %}

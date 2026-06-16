@@ -38,6 +38,7 @@ def client():
         "/",
         "/functions",
         "/commands",
+        "/aliases",
         "/settings",
         "/access",
         "/ideas",
@@ -50,6 +51,15 @@ def test_pages_render(client, path):
     resp = client.get(path)
     assert resp.status_code == 200
     assert "SuperBot" in resp.text
+
+
+def test_aliases_page_renders_suggestion_form(client):
+    resp = client.get("/aliases")
+    assert resp.status_code == 200
+    # The form + the embedded collision data the JS needs.
+    assert "Suggest a command alias" in resp.text
+    assert 'id="taken-data"' in resp.text
+    assert 'id="cmd-list"' in resp.text
 
 
 def test_settings_page_lists_a_known_key(client):

@@ -323,6 +323,12 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         if registry_path.exists()
         else {"tiers": [], "total_visible": 0, "internal_count": 0}
     )
+    synonyms_path = repo_root / "disbot" / "utils" / "synonyms.py"
+    synonyms = (
+        _load_sibling("scan_synonyms.py", "scan_synonyms")(path=synonyms_path)
+        if synonyms_path.exists()
+        else []
+    )
 
     return {
         "meta": {
@@ -340,6 +346,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "setting_keys": sum(len(d["keys"]) for d in settings),
                 "setting_domains": len(settings),
                 "visible_subsystems": access.get("total_visible", 0),
+                "synonyms": sum(len(s["synonyms"]) for s in synonyms),
             },
         },
         "catalogue": catalogue,
@@ -350,6 +357,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "cogs": cogs,
         "settings": settings,
         "access": access,
+        "synonyms": synonyms,
     }
 
 
