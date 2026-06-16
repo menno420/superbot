@@ -17,6 +17,58 @@
 > Owner-reported inconsistencies he hasn't formalized yet (see current-state
 > 2026-06-10 standing invite) land here as they surface.
 
+## BUG-0015 — "d67 dart paragon" misread as upgrade path "0-6-7" (paragon degree ignored) — FIXED
+
+- **Symptom (owner-reported via screenshot, 2026-06-16):** asked *"whats the damage
+  of a **d67 dart**"* and *"a **d67 dart praragon**"*, SuperBot replied *"A 0-6-7
+  Dart Paragon doesn't exist — upgrade tiers cap at 5, so the maximum is 0-5-5."*
+  It read the shorthand **"d67" = degree 67** as an upgrade-path code "0-6-7".
+  Paragons have **degrees 1-100** (the Apex Plasma Master is the Dart Monkey
+  paragon); "d67" is the degree, not a crosspath.
+- **Affected surface:** the AI natural-language path — `services.ai_task_router`
+  (routing), `services.btd6_context_service` (grounding),
+  `services.ai_instruction_service` (the model contract), and the shared cue in
+  `utils.btd6.keywords`.
+- **Root cause (two stacked gaps — the BUG-0003/0004 "freelance on the unguarded
+  general path" class):** (1) **Routing** — `classify("a d67 dart praragon")`
+  returned `GENERAL_NL_ANSWER`: no keyword matched (`paragon` is deliberately
+  excluded as ordinary English), no entity matched (the single-word tower "dart"
+  is deliberately dropped by the entity matcher), and no round/money/follow-up
+  cue fired. The general path has **no grounding and no number guard**, so the
+  model answered from memory and misread the shorthand. (2) **Grounding** — even
+  on the BTD6 path, `_render_paragon_stats` only anchors **Degree 1 and Degree
+  100**, so there was no degree-67 figure and nothing told the model "d67" is a
+  degree. The exact-degree machinery already existed
+  (`utils.btd6.paragon_degrees`, `_paragon_main_bits`,
+  `btd6_stats_service.paragon_stats_at_degree`) — only the parse → route → ground
+  legs were missing.
+- **Fix (this PR — three coordinated layers):** (1) `utils.btd6.keywords` gains
+  `DEGREE_CUE_RE` + `degree_in_text()` — one shared cue (the `ABR_CUE_RE`
+  pattern) recognising "d67" / "degree 67" / "deg 67", digit-boundary guarded so
+  a round ("r67") / version ("v55") / dice ("5d6") / temperature ("67 degrees")
+  never matches, range-checked to 1-100. (2) `ai_task_router._looks_like_paragon_degree`
+  routes a degree token **+** a paragon reference (the word "paragon", or a
+  tower/paragon that resolves) to `btd6.answer`; a bare "degree 5" with no
+  paragon stays general. (3) `btd6_context_service._paragon_degree_facts` (new
+  Pass 3b3) grounds the in-scope paragon's exact, **non-linear** headline at the
+  requested intermediate degree, explicitly labelled "Degree N", plus a note that
+  a degree is NOT an upgrade-path code. (4) `ai_instruction_service` task contract
+  gains one clause teaching the model the "d67"/"degree 67" shorthand (defense in
+  depth for the production tool path). D1/D100 stay the `_render_paragon_stats`
+  anchors (no duplication).
+- **Regression tests:** `tests/unit/utils/test_btd6_keywords_degree.py` (the
+  parser: recognises the forms, rejects round/version/dice/temperature/out-of-range) ·
+  `test_paragon_degree_questions_route_to_btd6_answer` +
+  `test_degree_without_paragon_or_paragon_without_degree_stays_general`
+  (`tests/unit/services/test_ai_task_router_btd6_natural.py` — routes the
+  screenshot phrasings, conservatism negatives) ·
+  `test_paragon_degree_facts_*` (`tests/unit/services/test_btd6_paragon_stats.py`
+  — grounds the exact non-linear degree, skips the D1/D100 anchors, stays silent
+  without both signals, names a directly-named paragon too).
+- **Status:** FIXED — live on the next auto-deploy (a merge to `main` auto-deploys
+  to Railway). The fix is deterministic (parse/route/ground) — no `!btd6ops
+  seed-data` step needed (no data file changed).
+
 ## BUG-0014 — `!coglist` infinite "assumed from" command-resolution loop — FIXED
 
 - **Symptom (owner-reported via screen recording, 2026-06-16):** typing `!coglist`
