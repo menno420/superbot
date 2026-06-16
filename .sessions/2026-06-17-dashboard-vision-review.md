@@ -1,6 +1,6 @@
 # Session — review the dashboard vision plan + control-panel session close
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
