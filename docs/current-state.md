@@ -212,10 +212,17 @@ Source code and merged PRs win over anything written here.
   map), **#970** (deploy fix), **#972** (`/commands` cog & command explorer), **#973** (command-count
   reconcile + bot status-embed full count), **#977** (`/settings` catalogue via `scripts/scan_settings.py`
   + `/access` permissions map via `scripts/scan_access.py` — a verified mirror of
-  `utils.visibility_rules`; + the live help-editor design doc), **#982** (`/aliases` suggestion form with
+  `utils.visibility_rules`; + the live help-editor design doc), **#979** (`/settings` 500 fix — Jinja
+  `domain.keys` resolved to the dict method), **#984** (`/settings` enriched with typed `SettingSpec`
+  type/default/hint/choices via `scripts/scan_setting_specs.py`), **#982** (`/aliases` suggestion form with
   live collision check + prefilled GitHub issue), **#983** (`/games` showcase + the settings-editor design
   Q-0157), and **#985** (`/status` build & health surface — git-derived `meta.build` deployed-version
-  banner + inventory counts + open-bug & access-tier health; the last Q-0156 read-only surface). Decoupled
+  banner + inventory counts + open-bug & access-tier health; the last Q-0156 *passive* read-only surface).
+  **#986** + **#987** documented the free multi-user control-panel identity/authority design + the
+  next-session handoff, and **#988** turned `/commands` into a **management surface** — a Manage panel on
+  every command and cog (current aliases · cog-routing state · per-command alias box), front-ending
+  `command_routing` + the synonym layer read-only (**Q-0160:** cog-level enable/disable now, per-command
+  later). Decoupled
   FastAPI app under `dashboard/` fed by stdlib scanners; **never imports `disbot/`**. The Q-0156 read-only
   surfaces are now all shipped. **Bot-side live-editor foundation started: #989** (`disbot/control_api.py`)
   — a **dormant-by-default** private control API on the existing health server: shared-secret bearer auth
