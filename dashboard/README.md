@@ -1,11 +1,12 @@
 # SuperBot developer dashboard
 
 A personal website + developer dashboard for SuperBot, deployed as a **second Railway
-service** alongside the bot. **Phase 1 (this directory) is the read-only MVP.** Full
-design, phases, and the secrets model live in
+service** alongside the bot. **Phase 1 (this directory) is the read-only MVP**; the
+**Phase 3 env-var usage map** (`/env`, read-only) has also shipped. Full design, phases,
+and the secrets model live in
 [`docs/planning/developer-dashboard-plan.md`](../docs/planning/developer-dashboard-plan.md).
 
-## What it shows (Phase 1)
+## What it shows
 
 | Page | Source |
 |---|---|
@@ -14,13 +15,22 @@ design, phases, and the secrets model live in
 | `/ideas` | Idea backlog (from `docs/ideas/`) |
 | `/bugs` | Bug board (from `docs/health/bug-book.md`) + a "report a bug" CTA |
 | `/updates` | Updates feed (from `.sessions/` logs) |
+| `/env` | Env-var **usage map** — each variable → every file/line that reads it, required/optional, by layer. **Names + locations only, never values** (`scripts/scan_env_usage.py`). |
 | `/healthz` | Liveness probe (JSON) for Railway |
 
 ## Decoupling
 
 This app **never imports `disbot/`.** It reads only `dashboard/data/dashboard.json`,
-produced by `scripts/export_dashboard_data.py` (pure stdlib). The bot and its Railway
-service are completely independent of this one.
+produced by `scripts/export_dashboard_data.py` (pure stdlib — which calls the equally
+pure-stdlib `scripts/scan_env_usage.py` for the env map). The bot and its Railway service
+are completely independent of this one.
+
+## Secrets safety (the `/env` map)
+
+The env-var map is **static analysis** of the bot source: it surfaces variable *names*
+and the *code locations* that read them — it never reads, stores, or renders a secret
+**value**, and it never opens an `.env` file. Railway stays the single source of truth for
+the values; managed value editing (behind owner login, masked) is a later Phase 3 slice.
 
 ## Run locally
 

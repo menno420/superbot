@@ -1,11 +1,12 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T15:24:17Z",
+    "generated_at": "2026-06-16T16:17:21Z",
     "counts": {
       "functions": 33,
       "ideas": 70,
       "bugs": 15,
-      "updates": 60
+      "updates": 60,
+      "env_vars": 34
     }
   },
   "catalogue": [
@@ -1567,6 +1568,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-env-usage-map.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard Phase 3 (read-only env-var usage map)",
+      "status": "in-progress"
+    },
+    {
       "file": "2026-06-16-count-citation-guard.md",
       "date": "2026-06-16",
       "title": "Session — count-citation guard (soft check_docs rule)",
@@ -1576,6 +1583,12 @@
       "file": "2026-06-16-conflict-guard-token-hotfix.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — hotfix: pr-conflict-guard token + bash-errexit safety",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-conflict-guard-noise-refine.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — refine pr-conflict-guard to cut per-PR noise",
       "status": "complete"
     },
     {
@@ -1775,18 +1788,628 @@
       "date": "2026-06-15",
       "title": "Session — Hermes model-switch playbook + saga close-out",
       "status": "complete"
+    }
+  ],
+  "env_usage": [
+    {
+      "name": "DATABASE_URL",
+      "required": true,
+      "usage_count": 1,
+      "layers": [
+        "utils"
+      ],
+      "usages": [
+        {
+          "file": "disbot/utils/db/pool.py",
+          "line": 41,
+          "layer": "utils",
+          "has_default": false
+        }
+      ]
     },
     {
-      "file": "2026-06-15-hermes-gpt54mini-retune.md",
-      "date": "2026-06-15",
-      "title": "Session — Hermes retune for gpt-5.4-mini + memory/base cleanup",
-      "status": "complete"
+      "name": "DISCORD_BOT_TOKEN_PRODUCTION",
+      "required": true,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 19,
+          "layer": "config",
+          "has_default": false
+        }
+      ]
     },
     {
-      "file": "2026-06-15-handoff-sharpen-p1-3-finding.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · handoff sharpen + P1-3 coverage finding (follow-up to #906)",
-      "status": "complete"
+      "name": "YOUTUBE_API_KEY",
+      "required": true,
+      "usage_count": 2,
+      "layers": [
+        "cogs",
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/diagnostic/_platform_embeds.py",
+          "line": 1265,
+          "layer": "cogs",
+          "has_default": false
+        },
+        {
+          "file": "disbot/services/youtube_fetch_service.py",
+          "line": 22,
+          "layer": "services",
+          "has_default": false
+        }
+      ]
+    },
+    {
+      "name": "AI_DEFAULT_PROVIDER",
+      "required": false,
+      "usage_count": 2,
+      "layers": [
+        "config",
+        "core"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 177,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/core/runtime/ai/feature_flags.py",
+          "line": 66,
+          "layer": "core",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "AI_ENABLED",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 176,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "AI_FALLBACK_PROVIDER",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "core"
+      ],
+      "usages": [
+        {
+          "file": "disbot/core/runtime/ai/routing.py",
+          "line": 128,
+          "layer": "core",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "required": false,
+      "usage_count": 2,
+      "layers": [
+        "config",
+        "core"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 160,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/core/runtime/ai/providers/anthropic_provider.py",
+          "line": 93,
+          "layer": "core",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "AUTOMATION_SCHEDULER_ENABLED",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/services/automation_scheduler.py",
+          "line": 397,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BOT_OWNER_USER_ID",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 40,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BOT_PREFIX",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 28,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_CONFIDENCE_THRESHOLD",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/btd6/stage.py",
+          "line": 94,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_COOLDOWN_SECONDS",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/btd6/stage.py",
+          "line": 102,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_DATA_BACKEND",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 203,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_DATA_BASE_URL",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 206,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_DATA_CACHE_DIR",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 209,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_INGESTION_DEFAULT_INTERVAL_S",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/services/btd6_ingestion_supervisor.py",
+          "line": 35,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_INGESTION_ENABLED",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/services/btd6_ingestion_supervisor.py",
+          "line": 32,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_INGESTION_STARTUP_DELAY_S",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/services/btd6_ingestion_supervisor.py",
+          "line": 34,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "BTD6_PASSIVE_CHANNELS",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/btd6/stage.py",
+          "line": 80,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "CLAUDE_ROUTINE_BETA",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/hermes_cog.py",
+          "line": 51,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "CLAUDE_ROUTINE_FIRE_URL",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/hermes_cog.py",
+          "line": 49,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "CLAUDE_ROUTINE_TOKEN",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/hermes_cog.py",
+          "line": 50,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "CLAUDE_ROUTINE_VERSION",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "cogs"
+      ],
+      "usages": [
+        {
+          "file": "disbot/cogs/hermes_cog.py",
+          "line": 52,
+          "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "DISCORD_WEBHOOK_URL",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 102,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "HEALTH_GROUPED_FINDINGS",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/services/health_snapshot_service.py",
+          "line": 267,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "HEALTH_PORT",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "healthserver"
+      ],
+      "usages": [
+        {
+          "file": "disbot/healthserver.py",
+          "line": 63,
+          "layer": "healthserver",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "IDENTITY_CONTRACT_STRICT",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "bot1"
+      ],
+      "usages": [
+        {
+          "file": "disbot/bot1.py",
+          "line": 175,
+          "layer": "bot1",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "LOG_LEVEL",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 103,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "required": false,
+      "usage_count": 4,
+      "layers": [
+        "config",
+        "core",
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 159,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/core/runtime/ai/providers/openai_provider.py",
+          "line": 74,
+          "layer": "core",
+          "has_default": true
+        },
+        {
+          "file": "disbot/services/setup_ai_advisor.py",
+          "line": 175,
+          "layer": "services",
+          "has_default": true
+        },
+        {
+          "file": "disbot/services/setup_ai_advisor.py",
+          "line": 406,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "PARAGON_API_BASE_URL",
+      "required": false,
+      "usage_count": 2,
+      "layers": [
+        "config",
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 186,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/services/paragon_service.py",
+          "line": 49,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "PARAGON_API_KEY",
+      "required": false,
+      "usage_count": 2,
+      "layers": [
+        "config",
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 190,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/services/paragon_service.py",
+          "line": 50,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "SETUP_ADVISOR_OPENAI_MODEL",
+      "required": false,
+      "usage_count": 2,
+      "layers": [
+        "config",
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 158,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/services/setup_ai_advisor.py",
+          "line": 173,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "SETUP_ADVISOR_PROVIDER",
+      "required": false,
+      "usage_count": 3,
+      "layers": [
+        "config",
+        "core",
+        "services"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 157,
+          "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/core/runtime/ai/feature_flags.py",
+          "line": 129,
+          "layer": "core",
+          "has_default": true
+        },
+        {
+          "file": "disbot/services/setup_ai_advisor.py",
+          "line": 393,
+          "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "STRICT_DISABLED",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "bot1"
+      ],
+      "usages": [
+        {
+          "file": "disbot/bot1.py",
+          "line": 172,
+          "layer": "bot1",
+          "has_default": true
+        }
+      ]
     }
   ]
 }

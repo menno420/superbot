@@ -32,11 +32,21 @@ def client():
     return TestClient(module.app)
 
 
-@pytest.mark.parametrize("path", ["/", "/functions", "/ideas", "/bugs", "/updates"])
+@pytest.mark.parametrize(
+    "path", ["/", "/functions", "/ideas", "/bugs", "/updates", "/env"]
+)
 def test_pages_render(client, path):
     resp = client.get(path)
     assert resp.status_code == 200
     assert "SuperBot" in resp.text
+
+
+def test_env_page_shows_usage_map_without_values(client):
+    resp = client.get("/env")
+    assert resp.status_code == 200
+    # Surfaces a known required var name and the read-only disclaimer.
+    assert "DATABASE_URL" in resp.text
+    assert "never a value" in resp.text
 
 
 def test_healthz_ok(client):

@@ -13,6 +13,8 @@ Sources (all read-only, never imported):
 * Ideas                   <- ``docs/ideas/*.md`` (title + Status badge + date)
 * Bugs                    <- ``docs/health/bug-book.md`` (``## BUG-NNNN ...``)
 * Updates feed            <- ``.sessions/*.md`` (date + title + Status badge)
+* Env-var usage map       <- ``disbot/**/*.py`` via ``scripts/scan_env_usage.py``
+                             (names + code locations only — never a value)
 
 Pure stdlib so it runs in CI with no extra dependencies and the dashboard's web
 dependencies (fastapi, uvicorn, ...) never enter the bot's ``requirements.txt``.
@@ -30,12 +32,26 @@ from __future__ import annotations
 import argparse
 import ast
 import datetime as dt
+import importlib.util
 import json
 import re
+from collections.abc import Callable
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
+
+
+def _load_scan_env_usage() -> Callable[..., list[dict]]:
+    """Load ``scan_env_usage`` from its sibling script (scripts/ isn't a package)."""
+    script = Path(__file__).resolve().parent / "scan_env_usage.py"
+    spec = importlib.util.spec_from_file_location("_scan_env_usage_seam", script)
+    if spec is None or spec.loader is None:  # pragma: no cover - import wiring
+        raise ImportError("cannot load scan_env_usage.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.scan_env_usage
+
 
 # Catalogue fields surfaced from the registry (all str/list literals — the
 # non-literal ``color`` field is intentionally skipped).
@@ -261,6 +277,13 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
     bugs = parse_bugs(bug_book.read_text(encoding="utf-8")) if bug_book.exists() else []
     updates = parse_updates(sessions_dir) if sessions_dir.is_dir() else []
 
+    scan_root = repo_root / "disbot"
+    env_usage = (
+        _load_scan_env_usage()(scan_root=scan_root, repo_root=repo_root)
+        if scan_root.is_dir()
+        else []
+    )
+
     return {
         "meta": {
             "generated_at": dt.datetime.now(dt.timezone.utc).strftime(
@@ -271,12 +294,14 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "ideas": len(ideas),
                 "bugs": len(bugs),
                 "updates": len(updates),
+                "env_vars": len(env_usage),
             },
         },
         "catalogue": catalogue,
         "ideas": ideas,
         "bugs": bugs,
         "updates": updates,
+        "env_usage": env_usage,
     }
 
 
