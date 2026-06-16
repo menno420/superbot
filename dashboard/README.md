@@ -19,6 +19,7 @@ and the secrets model live in
 | `/ideas` | Idea backlog (from `docs/ideas/`) |
 | `/bugs` | Bug board (from `docs/health/bug-book.md`) + a "report a bug" CTA |
 | `/updates` | Updates feed (from `.sessions/` logs) |
+| `/status` | Dashboard inventory/status page — generated build metadata, artifact counts, open bug summary, and access-tier health from `dashboard.json`. |
 | `/env` | Env-var **usage map** — each variable → every file/line that reads it, required/optional, by layer. **Names + locations only, never values** (`scripts/scan_env_usage.py`). |
 | `/healthz` | Liveness probe (JSON) for Railway |
 

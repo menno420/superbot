@@ -1,18 +1,18 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T20:40:29Z",
+    "generated_at": "2026-06-16T21:17:56Z",
     "build": {
-      "commit": "eb2141b",
-      "subject": "chore(session): open /commands management surface (READ side) — born-red card",
-      "committed_at": "2026-06-16T20:36:06Z",
-      "branch": "claude/practical-turing-pnppjf"
+      "commit": "38e4a62",
+      "subject": "docs(dashboard): foundation-complete reconciliation — fix stale handoff + fold ledger (#992)",
+      "committed_at": "2026-06-16T21:13:23Z",
+      "branch": "work"
     },
     "counts": {
       "functions": 33,
-      "ideas": 73,
+      "ideas": 76,
       "bugs": 15,
       "updates": 60,
-      "env_vars": 34,
+      "env_vars": 35,
       "cogs": 40,
       "commands": 301,
       "setting_keys": 83,
@@ -913,6 +913,13 @@
       "summary": "PR #953 made BTD6 **Live Events** current-event-first: the overview drills into a rich per-event"
     },
     {
+      "file": "btd6-shorthand-corpus-eval-2026-06-16.md",
+      "title": "BTD6 community-shorthand corpus eval (router-class regression guard)",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "Five live-reported BTD6 bugs share **one root cause**: a community-shorthand question is **not"
+    },
+    {
       "file": "button-command-surface-parity-2026-06-16.md",
       "title": "Idea — button ↔ text-command surface parity audit",
       "status": "ideas",
@@ -925,6 +932,20 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment"
+    },
+    {
+      "file": "dashboard-registry-coverage-check-2026-06-16.md",
+      "title": "Dashboard cog↔registry coverage check",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The dashboard joins each scanned cog to the SUBSYSTEMS registry by its `subsystem` key"
+    },
+    {
+      "file": "dashboard-subcog-parent-subsystem-2026-06-16.md",
+      "title": "Dashboard: map sub-cogs to their parent subsystem",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "`scripts/check_dashboard_data.py` (#990) allow-lists the real cogs whose `subsystem` doesn't resolve"
     },
     {
       "file": "deterministic-floor-catalogue-2026-06-16.md",
@@ -1695,9 +1716,21 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-ideas-dynamic-data.md",
+      "date": "2026-06-16",
+      "title": "Dashboard ideas + dynamic data planning session",
+      "status": "plan"
+    },
+    {
       "file": "2026-06-16-dashboard-games-settings-design.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard: `/games` showcase + settings-editor design (global + per-server)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-foundation-reconcile.md",
+      "date": "2026-06-16",
+      "title": "Session — dashboard live-editor: foundation-complete reconciliation + orientation fix",
       "status": "complete"
     },
     {
@@ -1719,6 +1752,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-data-integrity-guard.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — dashboard.json integrity guard",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-dashboard-commands-explorer.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard cog & command explorer (`/commands`)",
@@ -1737,6 +1776,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-control-api-foundation.md",
+      "date": "2026-06-16",
+      "title": "Session — control-API foundation (bot side): auth + identity→authority bridge",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-conflict-guard-token-hotfix.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — hotfix: pr-conflict-guard token + bash-errexit safety",
@@ -1752,7 +1797,7 @@
       "file": "2026-06-16-commands-management-surface.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — `/commands` management surface (READ side)",
-      "status": "in-progress"
+      "status": "complete"
     },
     {
       "file": "2026-06-16-command-count-reconcile.md",
@@ -1764,6 +1809,12 @@
       "file": "2026-06-16-coglist-command.md",
       "date": "2026-06-16",
       "title": "Session — `!coglist` text command → the \"📋 Cog List\" button (owner request)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-shorthand-corpus-idea.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — capture: BTD6 shorthand-corpus eval idea (post-BUG-0015 grooming)",
       "status": "complete"
     },
     {
@@ -1824,36 +1875,6 @@
       "file": "2026-06-16-act-on-autonomous-run-review.md",
       "date": "2026-06-16",
       "title": "Session — act on the autonomous-run review + owner's answers",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-welcome-card-phase2.md",
-      "date": "2026-06-15",
-      "title": "Session — Welcome phase 2: PIL greeting card on join (safety lane, decade-queue slot 7)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-settings-reverse-parity.md",
-      "date": "2026-06-15",
-      "title": "Session — settings reverse-parity invariant (complete the declared ⇔ consumed bijection)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-routine-workflow-canon.md",
-      "date": "2026-06-15",
-      "title": "Session: Routine workflow canon — foolproof prompts + idea→plan promotion",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-remove-executor-nightly-workflow.md",
-      "date": "2026-06-15",
-      "title": "Session: Remove the legacy executor-nightly.yml workflow",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-reconcile.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · band-#900 docs reconciliation (eighth Q-0107 pass)",
       "status": "complete"
     }
   ],
@@ -2243,6 +2264,22 @@
           "file": "disbot/cogs/hermes_cog.py",
           "line": 52,
           "layer": "cogs",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "CONTROL_API_TOKEN",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "control_api"
+      ],
+      "usages": [
+        {
+          "file": "disbot/control_api.py",
+          "line": 48,
+          "layer": "control_api",
           "has_default": true
         }
       ]
