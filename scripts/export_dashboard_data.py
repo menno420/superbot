@@ -35,6 +35,7 @@ import datetime as dt
 import importlib.util
 import json
 import re
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
@@ -283,6 +284,42 @@ def parse_updates(sessions_dir: Path, limit: int = 60) -> list[dict]:
     return updates[:limit]
 
 
+def _git_meta(repo_root: Path) -> dict[str, str]:
+    """Return the build commit context the data was generated from, or ``{}``.
+
+    Powers the ``/status`` "deployed build" banner: the dashboard auto-redeploys
+    on every merge to ``main`` and serves the committed ``dashboard.json``, so the
+    commit recorded here (HEAD when the data was last regenerated) is the deployed
+    snapshot's version. Guarded — git may be absent in a build image, and a
+    missing build block must degrade to "unavailable", never crash the export.
+    """
+
+    def _git(*args: str) -> str:
+        return subprocess.run(  # noqa: S603 - fixed argv, no shell
+            ["git", *args],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        ).stdout.strip()
+
+    try:
+        return {
+            "commit": _git("rev-parse", "--short", "HEAD"),
+            "subject": _git("log", "-1", "--format=%s"),
+            "committed_at": _git(
+                "log",
+                "-1",
+                "--format=%cd",
+                "--date=format:%Y-%m-%dT%H:%M:%SZ",
+            ),
+            "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
+        }
+    except (OSError, subprocess.SubprocessError):
+        return {}
+
+
 def build_data(repo_root: Path = REPO_ROOT) -> dict:
     """Read every source and assemble the dashboard data payload."""
     registry = repo_root / "disbot" / "utils" / "subsystem_registry.py"
@@ -335,6 +372,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
             "generated_at": dt.datetime.now(dt.timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ",
             ),
+            "build": _git_meta(repo_root),
             "counts": {
                 "functions": len(catalogue),
                 "ideas": len(ideas),

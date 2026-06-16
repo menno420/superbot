@@ -36,6 +36,7 @@ def client():
     "path",
     [
         "/",
+        "/status",
         "/functions",
         "/games",
         "/commands",
@@ -91,6 +92,15 @@ def test_env_page_shows_usage_map_without_values(client):
     # Surfaces a known required var name and the read-only disclaimer.
     assert "DATABASE_URL" in resp.text
     assert "never a value" in resp.text
+
+
+def test_status_page_shows_build_and_health(client):
+    resp = client.get("/status")
+    assert resp.status_code == 200
+    # The headline sections of the status surface.
+    assert "Deployed build" in resp.text
+    assert "Bug health" in resp.text
+    assert "Inventory" in resp.text
 
 
 def test_healthz_ok(client):

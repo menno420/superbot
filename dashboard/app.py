@@ -196,6 +196,51 @@ def aliases(request: Request):
     )
 
 
+@app.get("/status", response_class=HTMLResponse)
+def status(request: Request):
+    """Live status & health — deployed build, inventory counts, bug & access health."""
+    data = load_data()
+    bugs = data.get("bugs", [])
+    open_bugs = [b for b in bugs if (b.get("status") or "").upper() == "OPEN"]
+    health = {
+        "bugs_total": len(bugs),
+        "bugs_open": len(open_bugs),
+        "open_bugs": open_bugs,
+    }
+    # Count map for the inventory grid -> (label, detail page) per known count key.
+    count_links = {
+        "functions": ("Subsystems", "/functions"),
+        "cogs": ("Cogs", "/commands"),
+        "commands": ("Commands", "/commands"),
+        "setting_keys": ("Settings", "/settings"),
+        "setting_domains": ("Setting domains", "/settings"),
+        "synonyms": ("Synonyms", "/aliases"),
+        "env_vars": ("Env vars", "/env"),
+        "ideas": ("Ideas", "/ideas"),
+        "bugs": ("Bugs", "/bugs"),
+        "updates": ("Updates", "/updates"),
+        "visible_subsystems": ("Visible subsystems", "/access"),
+    }
+    counts = data.get("meta", {}).get("counts", {})
+    cards = [
+        {"key": k, "label": label, "href": href, "value": counts.get(k, 0)}
+        for k, (label, href) in count_links.items()
+    ]
+    tiers = [t for t in data.get("access", {}).get("tiers", []) if t.get("subsystems")]
+    return templates.TemplateResponse(
+        request,
+        "status.html",
+        {
+            "data": data,
+            "page": "status",
+            "build": data.get("meta", {}).get("build", {}),
+            "health": health,
+            "cards": cards,
+            "tiers": tiers,
+        },
+    )
+
+
 @app.get("/commands", response_class=HTMLResponse)
 def commands(request: Request):
     """Cog & command explorer — invocation type (prefix/slash) + button backing."""

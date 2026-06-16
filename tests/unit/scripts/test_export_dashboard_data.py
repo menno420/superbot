@@ -111,6 +111,19 @@ def test_build_data_against_real_repo_is_well_formed(mod):
         assert isinstance(entry["key"], str)
 
 
+def test_build_data_includes_build_meta(mod):
+    # The /status "deployed build" banner reads meta.build; in the real git repo
+    # it resolves, and a non-repo path degrades to {} rather than raising.
+    data = mod.build_data()
+    build = data["meta"]["build"]
+    assert isinstance(build, dict)
+    if build:  # present when run inside the git checkout (always, in CI)
+        assert set(build) == {"commit", "subject", "committed_at", "branch"}
+        assert all(isinstance(v, str) and v for v in build.values())
+    # A path with no git history must not crash the export.
+    assert mod._git_meta(mod.Path("/nonexistent-not-a-repo")) == {}
+
+
 def test_build_data_includes_env_usage_section(mod):
     data = mod.build_data()
     env_usage = data["env_usage"]

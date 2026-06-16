@@ -1,9 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T19:00:19Z",
+    "generated_at": "2026-06-16T20:16:24Z",
+    "build": {
+      "commit": "62c2b348",
+      "subject": "session: open born-red card — dashboard /status page",
+      "committed_at": "2026-06-16T20:09:04Z",
+      "branch": "claude/magical-rubin-ci82qw"
+    },
     "counts": {
       "functions": 33,
-      "ideas": 72,
+      "ideas": 73,
       "bugs": 15,
       "updates": 60,
       "env_vars": 34,
@@ -887,6 +893,13 @@
       "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment"
     },
     {
+      "file": "deterministic-floor-catalogue-2026-06-16.md",
+      "title": "Idea — a generated \"deterministic floor catalogue\" index",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "`btd6_context_service._BTD6_LIST_BUILDERS` now grows roughly **one member per dispatch run**"
+    },
+    {
       "file": "developer-dashboard-2026-06-16.md",
       "title": "Developer dashboard (personal website) for SuperBot",
       "status": "ideas",
@@ -1504,6 +1517,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-model-tpm-confirmed-result.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — TPM result confirmed (5-mini 500K) + reconcile the compaction guidance",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-model-comparison-gpt5mini.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — gpt-5-mini vs gpt-5.4-mini comparison + apply_context_fixes --set-model fix",
@@ -1519,6 +1538,12 @@
       "file": "2026-06-16-journal-session-lessons.md",
       "date": "2026-06-16",
       "title": "Session — journal: durable lessons from the security-tiers session",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-install-skills-staleness-guard.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — install-skills.sh staleness guard (stale-skill root cause)",
       "status": "complete"
     },
     {
@@ -1606,6 +1631,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-status-page.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — dashboard `/status` page (live status & health surface)",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-dashboard-settings-fix.md",
       "date": "2026-06-16",
       "title": "Session — hotfix: /settings 500 (Jinja `domain.keys` → dict-method collision)",
@@ -1615,6 +1646,12 @@
       "file": "2026-06-16-dashboard-settings-access.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard: settings + access pages, and the live help-editor plan",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-games-settings-design.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard: `/games` showcase + settings-editor design (global + per-server)",
       "status": "complete"
     },
     {
@@ -1639,6 +1676,12 @@
       "file": "2026-06-16-dashboard-commands-explorer.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard cog & command explorer (`/commands`)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-aliases.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard: `/aliases` command-alias suggestion page",
       "status": "complete"
     },
     {
@@ -1708,6 +1751,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-btd6-capability-roster-floor.md",
+      "date": "2026-06-16",
+      "title": "Session — BTD6 property/capability roster floors (AI §7.6 new family)",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-architecture-review-thread-close.md",
       "date": "2026-06-16",
       "title": "Session close — architecture-review thread (notes & remarks)",
@@ -1771,42 +1820,6 @@
       "file": "2026-06-15-p1-3-invariants.md",
       "date": "2026-06-15",
       "title": "Session — P1-3 machine-checkable contract invariants (the cross-cutting \"stays fixed\" layer)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-vault-v2-cap.md",
-      "date": "2026-06-15",
-      "title": "Session — Mining Vault v2: inventory soft-cap + vault-cap upgrade path",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-skill-tree-slice-d.md",
-      "date": "2026-06-15",
-      "title": "2026-06-15 — mining Slice D: capped skill tree (§7.4)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-respec-titles-ef.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · mining Slices E + F — respec polish + skill/milestone titles",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-phase2-feature-gated.md",
-      "date": "2026-06-15",
-      "title": "2026-06-15 — mining Phase-2 feature dispatch: gated (fix-phase) + loop cleanup",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-inplace-image-cards.md",
-      "date": "2026-06-15",
-      "title": "Session: Mining hub UX overhaul (in-place cards · sub-hubs · 3-layer menu doctrine)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-home-slice-c.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · mining Slice C — the Home structure (character-card backdrop)",
       "status": "complete"
     }
   ],
