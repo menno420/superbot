@@ -40,13 +40,18 @@ Current broad captures:
   integration. → relates `scripts/scan_env_usage.py` · `dashboard/`.
 
 - [`dashboard-registry-coverage-check-2026-06-16.md`](./dashboard-registry-coverage-check-2026-06-16.md) —
-  **session idea (2026-06-16, Q-0089, from the `/commands` management surface):** a stdlib coverage
-  self-check that flags scanned cogs whose `subsystem` key doesn't resolve to a registered subsystem
-  (split *expected* allow-list vs *unexpected* drift), as a `--check` mode on the exporter or a unit
-  test — so a cog rename / new acronym cog / registry-key change that breaks the dashboard's cog→
-  registry join **fails a check** instead of silently degrading that cog's card + routing state.
-  Decided-lane, small; execute when the dashboard lane next has capacity. → relates
-  `scripts/scan_commands.py` · `scripts/export_dashboard_data.py` · `dashboard/`.
+  **SHIPPED 2026-06-16 (PR #990)**, broader than sketched: `scripts/check_dashboard_data.py` validates
+  the exported `dashboard.json` — cog→subsystem resolution (with a curated allow-list) + count
+  integrity + required fields — and a unit test validates the freshly-built export, so a new
+  unregistered cog / broken join / count drift **fails CI** instead of silently degrading a page.
+  → `scripts/check_dashboard_data.py` · `tests/unit/scripts/test_check_dashboard_data.py`.
+- [`dashboard-subcog-parent-subsystem-2026-06-16.md`](./dashboard-subcog-parent-subsystem-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the integrity guard #990):** the guard *allow-lists* the
+  cogs that don't resolve to a registry key (BTD6 sub-cogs · Paragon · RPS · Setup), but several of
+  them genuinely *belong* to a parent subsystem (`BTD6EventsCog`…→`btd6`) — so on the dashboard they
+  render with a generic 🧩 + no routing key. A small cog→parent-subsystem map in `scan_commands` would
+  let sub-cogs inherit their parent's registry identity (emoji/name/routing), shrinking the allow-list
+  to the truly-unregistered few. → relates `scripts/scan_commands.py` · `dashboard/`.
 - [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
   **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
   repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one

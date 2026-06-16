@@ -39,6 +39,9 @@ check** instead of silently giving that cog a degraded dashboard card.
 
 ## Disposition
 
-Decided-lane / small → **execute when the dashboard lane next has capacity** (a few-line `--check`
-mode + one test). Not urgent; capture so the next dashboard session can knock it out. → relates
-`scripts/scan_commands.py` · `scripts/export_dashboard_data.py` · `dashboard/`.
+**SHIPPED 2026-06-16 — PR #990**, broader than the original sketch: `scripts/check_dashboard_data.py`
+validates the whole exported `dashboard.json` — **cog→subsystem resolution** (this idea, with the
+curated allow-list of legitimately-unregistered cogs) **plus** count integrity (`meta.counts.*` vs
+actual) and required-field presence. A unit test validates the freshly-built export so a new
+unregistered cog / broken join / count drift **fails CI**. → `scripts/check_dashboard_data.py` ·
+`tests/unit/scripts/test_check_dashboard_data.py`.
