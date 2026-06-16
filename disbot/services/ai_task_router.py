@@ -17,7 +17,7 @@ import threading
 from dataclasses import dataclass
 
 from core.runtime.ai.contracts import AITask
-from utils.btd6.keywords import BTD6_CONTEXT_KEYWORDS
+from utils.btd6.keywords import BTD6_CONTEXT_KEYWORDS, degree_in_text
 
 _YOUTUBE_URL_RE = re.compile(
     r"(?:https?://)?(?:www\.)?(?:youtube\.com/(?:watch\?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
@@ -231,6 +231,30 @@ def _looks_like_conversation_followup(lowered: str) -> bool:
     )
 
 
+def _looks_like_paragon_degree(lowered: str) -> bool:
+    """A paragon-at-a-degree question ("d67 dart", "dart paragon at degree 67").
+
+    Only paragons have degrees (1-100). On the unguarded general path the model
+    misreads the "d67" shorthand as an upgrade path "0-6-7" and refuses it
+    exists (BUG-0015, live miss 2026-06-16) — so route these to BTD6 grounding,
+    where the per-degree stats are surfaced and the number guard applies.
+    Conservative: a degree token AND a paragon reference — the word "paragon",
+    or a tower / paragon that actually resolves from the text. A bare "degree 5"
+    (or "d67") with no paragon stays general, so academic/temperature "degree"
+    and dice "d6" chatter never over-route.
+    """
+    if degree_in_text(lowered) is None:
+        return False
+    if "paragon" in lowered:
+        return True
+    try:
+        from services import btd6_stats_service
+
+        return btd6_stats_service.resolve_paragon(lowered) is not None
+    except Exception:  # noqa: BLE001 — defensive: cue only, never break routing
+        return False
+
+
 @dataclass(frozen=True)
 class RoutedTask:
     task: AITask
@@ -277,6 +301,8 @@ def classify(
         looks_btd6 = _looks_like_round_shorthand(lowered)
     if not looks_btd6:
         looks_btd6 = _looks_like_short_alias_money(lowered)
+    if not looks_btd6:
+        looks_btd6 = _looks_like_paragon_degree(lowered)
     if not looks_btd6 and conversation_btd6_context:
         looks_btd6 = via_cue = _looks_like_conversation_followup(lowered)
     if channel_is_strategy_intake and looks_btd6:
