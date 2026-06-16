@@ -37,6 +37,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/coglist-command` · `!coglist` real command → opens the admin "📋 Cog List" `_CogManagerView`
+  (owner request; aliases cogs/listcogs/cogslist) · `disbot/cogs/admin_cog.py` + test · 2026-06-16 ·
+  **PR #951 (open, auto-merge on green)**
 - `claude/fix-coglist-resolution-loop` · BUG-0014 — `!coglist` infinite "assumed from" resolution
   loop (owner video) · `disbot/bot1.py` loop-breaker + `disbot/utils/synonyms.py` + synonym-orphan
   invariant + bug book · 2026-06-16 · **PR #949 (open, auto-merge on green)**

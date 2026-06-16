@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`button-command-surface-parity-2026-06-16.md`](./button-command-surface-parity-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the `!coglist` command request PR #951):** the admin panel
+  had a 📋 Cog List button but no text command — users expect a button's action to also be reachable
+  by a command. A review-lane audit (not a brittle CI guard — many buttons are navigation, not
+  actions) pairing distinct action-buttons with command front doors would surface the rest; a lighter
+  automatable slice is mining "command not found" misses for high-frequency expected names (BUG-0014
+  was one). → relates `cogs/admin_cog.py` · `core/runtime/command_surface_ledger.py`.
 - [`reference-integrity-invariants-2026-06-16.md`](./reference-integrity-invariants-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the BUG-0014 `!coglist`-loop fix PR #949):** BUG-0014 was a
   dangling reference (a synonym → a command that didn't exist) that failed *silently*. Extract the
