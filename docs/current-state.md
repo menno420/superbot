@@ -205,6 +205,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **Developer dashboard — LIVE (2026-06-16, owner-requested, Q-0155)** — a personal website /
+  developer dashboard deployed as a **second Railway service**
+  (https://superbot-dashboard.up.railway.app), auto-redeploying on merge to `main`. Shipped across
+  **#967** (read-only MVP: functions · ideas · bugs · updates · showcase), **#969** (`/env` env-usage
+  map), **#970** (deploy fix), **#972** (`/commands` cog & command explorer), **#973** (command-count
+  reconcile + bot status-embed full count). Decoupled FastAPI app under `dashboard/` fed by stdlib
+  scanners; **never imports `disbot/`**. Phases 2 (auth + checklist + public bug form) / 3b (Railway
+  secret management) / 4 (multi-AI control board) remain — **owner is continuing it next session.**
+  Authoritative record + handoff: [`planning/developer-dashboard-plan.md`](planning/developer-dashboard-plan.md).
+
 - **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
   Adds the **paragon** member — the last unbuilt §7.5 multi-entity comparison member (the
