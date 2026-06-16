@@ -114,7 +114,13 @@ async def build_event_payload(kind: str, entity_key: str) -> discord.Embed:
         else:
             md_entity_key = entity_key
             if norm == "btd6_boss":
-                md_entity_key = f"{entity_key}_normal"  # difficulty hardcoded
+                # Difficulty is hardcoded to "standard" by the ingestion
+                # supervisor's boss fan-out (btd6_ingestion_service.
+                # _DEPENDENCY_CHAINS) — the metadata entity_key is
+                # "{bossID}_standard", NOT "_normal". Using "_normal" here
+                # silently found no metadata, so boss event detail never
+                # rendered its rules / restrictions.
+                md_entity_key = f"{entity_key}_standard"
             metadata_row = await btd6_db.get_latest_fact(
                 metadata_fact_type,
                 "btd6_boss_difficulty" if norm == "btd6_boss" else norm,
