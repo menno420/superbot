@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Games &amp; economy — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Games &amp; economy</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  The player-facing side of the bot — games, the coin economy, and XP progression, generated from the
+  live subsystem registry.
+</p>
+
+{% for category, entries in groups %}
+  <section class="mb-8">
+    <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">{{ category }}</h2>
+    <div class="grid sm:grid-cols-2 gap-3">
+      {% for e in entries %}
+        <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">{{ e.emoji or "🎮" }}</span>
+            <span class="font-semibold">{{ e.display_name or e.key }}</span>
+            {% if e.visibility_tier %}
+              <span class="ml-auto text-[10px] uppercase rounded bg-slate-800 px-2 py-0.5 text-slate-400">{{ e.visibility_tier }}</span>
+            {% endif %}
+          </div>
+          {% if e.description %}<p class="mt-2 text-sm text-slate-400">{{ e.description }}</p>{% endif %}
+          {% if e.entry_points %}
+            <p class="mt-2 text-xs text-slate-500">
+              play:
+              {% for c in e.entry_points %}<code class="text-sky-300">!{{ c }}</code>{% if not loop.last %} · {% endif %}{% endfor %}
+            </p>
+          {% endif %}
+          {% if e.capabilities %}
+            <div class="mt-2 flex flex-wrap gap-1">
+              {% for cap in e.capabilities %}
+                <span class="text-[10px] rounded bg-slate-800 text-slate-400 px-1.5 py-0.5">{{ cap }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% else %}
+  <p class="text-slate-500">No games or economy subsystems found.</p>
+{% endfor %}
+
+{% if tunables %}
+  <section class="mt-10">
+    <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">Tunable settings</h2>
+    <p class="text-slate-500 text-xs mb-3">
+      Per-server knobs for these subsystems (key names only — see <a class="underline hover:text-slate-300" href="/settings">Settings</a>).
+    </p>
+    <div class="grid gap-2 sm:grid-cols-3">
+      {% for domain in tunables %}
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3">
+          <div class="text-sm font-semibold text-sky-300">{{ domain.domain }}</div>
+          <ul class="mt-1 space-y-0.5">
+            {% for k in domain['keys'] %}
+              <li class="text-[11px] text-slate-400 font-mono">{{ k.key }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

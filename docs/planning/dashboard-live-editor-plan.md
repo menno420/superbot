@@ -108,6 +108,49 @@ usage-map page lists them by name once they exist.
   views consult, an audited mutation seam mirroring `help_overlay_mutation`, **then** a drag-and-drop
   website editor. Largest slice; planned separately once L0–L2 land.
 
+## Settings editor — global + per-server (owner ask, 2026-06-16)
+
+Owner: *"edit the settings from the website — it's fine if that triggers a redeploy — and as bot owner
+let me change things globally, as well as per-server if available."*
+
+**What the bot does today** (`utils/db/settings.py`): settings are a per-guild key/value store
+(`guild_settings(guild_id, key, value)`); `get_setting(guild_id, key, default)` returns the guild's
+row or a **default passed by the caller** — defaults are scattered at call sites, and there is **no
+global layer**. But `core/runtime/feature_flags.py` already resolves **per-guild → global → default**,
+so that resolution shape is a proven in-repo pattern to mirror.
+
+**Design (both scopes, mirrors feature_flags):**
+
+1. **Global layer.** Add a global settings row space — `guild_settings` at `guild_id = 0` (the repo
+   already uses `guild_id = 0` as the global/no-guild sentinel in several stores) *or* a sibling
+   `global_settings` table. A global value = the owner's default for every server.
+2. **Resolution change (one function, hot path — small but careful).** `get_setting` becomes
+   **per-guild row → global row → caller default**. This is a single, well-contained change to one
+   function, but it is read on every settings access, so it ships as its own focused, well-tested
+   `disbot/` PR (the risky-runtime rule).
+3. **Audited mutation seam** `services/settings_mutation.py` (mirrors `help_overlay_mutation`):
+   `set_setting(scope, key, value, actor)` where `scope` is `global` (owner-only) or a `guild_id`
+   (server admin) — value-validated per key, audited, cache-invalidated.
+4. **Website (owner auth) → control API → seam.** The editor shows each setting with a **scope
+   picker: "Global (all servers)" vs a specific server**; global is gated to the **bot owner**,
+   per-server to that server's admin (re-checked bot-side, like the help editor).
+
+**On "redeploy is fine":** with the global layer in the DB, **neither scope needs a redeploy** — both
+apply live (better than asked). The redeploy path is only needed if we instead edit *code* defaults;
+since defaults are scattered, the DB global layer is cleaner than centralising them into a committed
+file just to PR-and-redeploy. (If you'd rather avoid any hot-path change for now, the fallback is a
+committed `settings_defaults` file the website edits → PR → redeploy — but the DB layer is the better
+long-term answer and reuses the feature-flags pattern.)
+
+**Editor metadata gap:** a good settings editor needs each key's **type, default, label, and allowed
+range** (a checkbox vs a number vs a channel id). Those aren't centralised yet — a
+**settings-metadata registry** (key → {type, default, label, scope}) is the prerequisite that also
+enriches the read-only `/settings` page. Build it first (it's safe, additive data).
+
+**Phase placement:** this is another consumer of the **same** auth + control-API foundation (L0–L2)
+the help/alias editors need. Sequence: settings-metadata registry (safe) → global-layer resolution +
+mutation seam (focused runtime PR) → website settings editor over the control API.
+
 ## Alternatives considered (and why not)
 
 - **Website writes `help_overlay` rows directly (shared Postgres).** Rejected: bypasses the audited

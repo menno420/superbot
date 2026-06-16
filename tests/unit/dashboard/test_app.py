@@ -37,6 +37,7 @@ def client():
     [
         "/",
         "/functions",
+        "/games",
         "/commands",
         "/aliases",
         "/settings",
@@ -51,6 +52,12 @@ def test_pages_render(client, path):
     resp = client.get(path)
     assert resp.status_code == 200
     assert "SuperBot" in resp.text
+
+
+def test_games_page_shows_player_subsystems(client):
+    resp = client.get("/games")
+    assert resp.status_code == 200
+    assert "Games &amp; economy" in resp.text or "Games & economy" in resp.text
 
 
 def test_aliases_page_renders_suggestion_form(client):
