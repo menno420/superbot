@@ -2426,6 +2426,81 @@ def compare_paragon_costs(
     }
 
 
+def compare_hero_costs(
+    names: Sequence[str],
+    *,
+    difficulty: str = "medium",
+) -> dict[str, Any]:
+    """Deterministic base-cost ranking of two-or-more heroes.
+
+    The §7.5 *hero* member of the multi-entity comparison primitive (the sibling
+    of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs` /
+    :func:`compare_round_ranges` / :func:`compare_paragon_costs`). Answers "is
+    Quincy or Benjamin cheaper?" — difficulty-scale each named hero's stored
+    Medium ``base_cost`` once via the shared :mod:`utils.btd6.difficulty_costs`
+    multipliers, then rank/diff **in code** so the model never assembles the
+    comparison itself (the BUG-0009 "wrong assembly" class — a mis-stated
+    "cheaper" / wrong difference the value-only faithfulness guard cannot catch).
+    Ranked **ascending** (cheapest first) with a stable tie-break on the hero
+    name (several heroes share a placement cost, so an equal-cost tie is a real
+    outcome).
+
+    Each name is resolved with the shared surface resolver (canonical, id, or
+    alias) and **deduped** on the resolved hero id. Returns ``{"found": False,
+    ...}`` when fewer than two distinct heroes resolve (an unknown name is
+    skipped, never guessed), so a caller can fall through to the model rather
+    than answer a degenerate comparison.
+    """
+    from utils.btd6 import difficulty_costs
+
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+
+    heroes = get_dataset().heroes
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for name in names:
+        hero = _find_by_surface(heroes, name)
+        if hero is None:
+            continue
+        if hero.id in seen:
+            continue
+        seen.add(hero.id)
+        entries.append(
+            {
+                "hero_id": hero.id,
+                "name": hero.canonical,
+                "base_cost": difficulty_costs.cost_for_difficulty(
+                    hero.base_cost,
+                    diff,
+                ),
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct resolvable heroes",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["base_cost"], e["name"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "difficulty": diff,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["base_cost"] - cheapest["base_cost"],
+        "all_equal": cheapest["base_cost"] == most_expensive["base_cost"],
+        "note": (f"hero base placement cost at {diff} pricing; ranked ascending."),
+    }
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics
