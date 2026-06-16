@@ -8,11 +8,6 @@ platforms: [linux, macos]
 metadata:
   hermes:
     tags: [Monitoring, SuperBot, Health]
-    blueprint:
-      schedule: "0 8 * * *"
-      deliver: origin
-      prompt: "Run a SuperBot repo health check and deliver the traffic-light report."
-      no_agent: false
 ---
 
 <!-- GENERATED — DO NOT EDIT. Source of truth: docs/operations/hermes-skills/repo-health.md. Regenerate with scripts/hermes/build_skills.py. -->

@@ -5778,3 +5778,40 @@ the full evidence and routing table.
 session — see its block.
 
 **Home:** the files above + this Q-block.
+
+### Q-0153 — Hermes efficiency: new skills (idea-spotlight · morning-briefing · dispatch-resolve) + a 6h interactive session auto-reset (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** The owner asked to make the
+> Hermes control-plane agent more efficient with specialised skills and an automatic chat-session
+> reset, and (via `AskUserQuestion`) chose the specific set below. Recorded for provenance per the
+> CLAUDE.md working agreement (owner decisions get a home). All pieces are docs / Hermes-skill /
+> stdlib-tooling — **free rein**, no executable-config (`.claude/settings.json` / hooks) touched, so
+> no Q-0106 exception is needed; this block is the durable record, not an approval gate.
+
+**What shipped (PR #959):**
+
+- **`superbot-idea-spotlight`** (NEW scheduled skill, the headline ask) — picks **one** active
+  `docs/ideas/` capture per day (deterministic, rotating, via `scripts/hermes/idea_spotlight.py`)
+  and posts a card with **pros · cons/risks · options & expansions**, so the owner can mull it and
+  **report a verdict at end of day**; the EOD reply routes through `superbot-intake`.
+- **`superbot-morning-briefing`** (NEW scheduled skill) — one consolidated morning digest (health ·
+  open PRs · CI · overnight routine activity · decisions waiting on the owner). Absorbs
+  `repo-health`'s former daily schedule — the owner's explicit "**one message instead of several
+  pings**"; `repo-health` stays a full on-demand traffic-light.
+- **`superbot-dispatch-resolve`** (NEW skill) + **`scripts/dispatch_menu.py --json`** — resolves a
+  vague "work on sector SX" into a concrete work order routed by the resolved executor. This is the
+  **Hermes-wiring half** of `dispatch-resolution-json-hermes` (the **Q-0137 Thread 1 read-side**),
+  greenlit here; the broader Thread-1 cron-backstop decision stays owner-undecided.
+- **Interactive session auto-reset every 6h** — `scripts/hermes/session_reset.sh` + the runbook
+  [`hermes-session-reset.md`](../operations/hermes-session-reset.md) (systemd timer, `OnCalendar`
+  every 6h). Owner's rationale: "**never a long session, and the repo updates fast so old context
+  isn't always valuable.**" Scheduled *skills* already run stateless, so this targets only the
+  interactive chat thread.
+
+**Owner manual steps (VPS, off-repo):** re-install the skills + SOUL.md and restart the gateway
+(`install-skills.sh` → `install-soul.sh` → `systemctl restart hermes-gateway`); then wire the 6h
+reset per the runbook (confirm the `HERMES_RESET_CMD` for your Hermes build — the one UNVERIFIED knob).
+
+**Home:** `docs/operations/hermes-skills/{idea-spotlight,morning-briefing,dispatch-resolve}.md` ·
+`docs/operations/hermes-session-reset.md` · `scripts/hermes/{idea_spotlight.py,session_reset.sh}` ·
+`scripts/dispatch_menu.py` · `scripts/hermes/build_skills.py` (EXTRAS) · this Q-block.
