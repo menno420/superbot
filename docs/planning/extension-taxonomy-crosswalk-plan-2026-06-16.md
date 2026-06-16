@@ -44,7 +44,15 @@ My original Q-0151c phrasing suggested a `role` field on the subsystem registry 
 The CI **enforcement** the owner asked for is delivered by the test running `--check` (every extension
 must be classified), so "CI-enforced" is satisfied without touching runtime.
 
-## PR 2 — thin unified atlas · SEQUENCED (next session)
+## PR 2 — thin unified atlas · SHIPPED (PR #960)
+
+Built as planned: **`scripts/atlas.py`** (composer) + the down-payment **role line in
+`scripts/context_map.py`** + the curated companion **[`docs/architecture/repo-atlas.md`](../architecture/repo-atlas.md)**
++ **`tests/unit/scripts/test_atlas.py`** (the coherence-guard enforcement seam). Body not committed
+(Q-0151a); `--check` delegates classification to `extension_crosswalk.check()` and adds the
+extension-file-exists + orphan smoke checks. Not CI-wired (ask-first, like `dispatch_menu`).
+
+### Original PR 2 design (for reference)
 
 The review's surviving second idea, as a **companion** to `AGENT_ORIENTATION.md` (owner's Q-0151a
 choice — not a replacement; orientation stays the curated reading-order router). A thin
