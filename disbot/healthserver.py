@@ -184,6 +184,16 @@ async def start_health_server(
     app.router.add_get("/lifecycle", _lifecycle_handler)
     app.router.add_get("/metrics", _metrics_handler)
 
+    # Private control API (Q-0156/Q-0159) — dormant unless CONTROL_API_TOKEN is
+    # set. Wrapped so a control-API issue can never break the health server (and
+    # thus bot startup): the orchestration probes must always come up.
+    try:
+        from control_api import register_control_routes
+
+        register_control_routes(app, bot)
+    except Exception:  # noqa: BLE001 - control API must never break health
+        logger.exception("control_api: route registration failed; continuing")
+
     runner = web.AppRunner(app, access_log=None)
     try:
         await runner.setup()

@@ -48,9 +48,15 @@ def test_index_is_substantial_and_classified(index):
     """Sanity: the roster covers the repo and every record carries a review unit."""
     assert len(index) > 400
     assert all(r.review_unit for r in index)
-    # The four known top-level modules are the only layer-less files.
+    # The known top-level modules are the only layer-less files.
     layerless = {r.module for r in index if r.layer is None}
-    assert layerless <= {"bot1", "config", "guild_lifecycle", "healthserver"}
+    assert layerless <= {
+        "bot1",
+        "config",
+        "control_api",
+        "guild_lifecycle",
+        "healthserver",
+    }
 
 
 def test_role_enrichment_from_crosswalk(index):
@@ -81,4 +87,6 @@ def test_full_render_carries_provenance(mod, index):
 
 def test_is_a_composer_not_a_reimplementation(mod):
     """Do-not-duplicate: the atlas must source its facts from the sibling tools."""
-    assert hasattr(mod, "cmap") and hasattr(mod, "xwalk") and hasattr(mod, "_review_units")
+    assert (
+        hasattr(mod, "cmap") and hasattr(mod, "xwalk") and hasattr(mod, "_review_units")
+    )

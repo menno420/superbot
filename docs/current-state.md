@@ -217,7 +217,11 @@ Source code and merged PRs win over anything written here.
   Q-0157), and **#985** (`/status` build & health surface — git-derived `meta.build` deployed-version
   banner + inventory counts + open-bug & access-tier health; the last Q-0156 read-only surface). Decoupled
   FastAPI app under `dashboard/` fed by stdlib scanners; **never imports `disbot/`**. The Q-0156 read-only
-  surfaces are now all shipped. Phases 2 (auth + checklist + public bug form) /
+  surfaces are now all shipped. **Bot-side live-editor foundation started: #989** (`disbot/control_api.py`)
+  — a **dormant-by-default** private control API on the existing health server: shared-secret bearer auth
+  + the **identity→authority bridge** (`/control/authority` resolves a member's visibility tier; the bot
+  decides, never the browser). Read-only; **activates only when `CONTROL_API_TOKEN` is set** on the Railway
+  services (zero prod change otherwise). Mutation endpoints over the audited seams come next. Phases 2 (auth + checklist + public bug form) /
   3b (Railway secret management) / 4 (multi-AI control board) remain, plus the owner-approved **live
   help/panel editor** (Q-0156): edit help live from the website via a private bot control API over the
   existing audited `help_overlay_mutation` seam + Discord OAuth — designed in
