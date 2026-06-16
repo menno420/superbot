@@ -5624,3 +5624,45 @@ brakes (never touch prod / DB / external-publish / force-history directly from a
    environment's permission mode in the console.
 
 **Home:** `.claude/settings.json` (`permissions.allow` / `permissions.ask`) + this Q-block.
+
+### Q-0150 — Make the `.claude/settings.json` hooks cwd-robust (kill the cwd-deadlock trap) (2026-06-16)
+
+> **APPLIED — owner-directed in-session (the Q-0106 exception).** The maintainer asked for the hook
+> explanation, then directed "yes go ahead" to apply the fix. Applied directly to executable config;
+> this block is the provenance. Implements the durable fix the `.session-journal.md` cwd-deadlock
+> entry had been pointing at ("make the hooks use `$CLAUDE_PROJECT_DIR/scripts/…` — router Q-block,
+> since hooks aren't self-edited per Q-0106").
+
+**The trap.** Every hook command in `.claude/settings.json` invoked its script by a **relative path**
+(`python3.10 scripts/<hook>.py`). The Bash tool's cwd **persists across calls**, so a single compound
+`cd <subdir> && …` leaves cwd in that subdir; from there the PreToolUse hooks (which fire on **Bash,
+Edit, AND Write**) resolve `<subdir>/scripts/<hook>.py`, which doesn't exist → `FileNotFound` → the
+hook exits non-zero → the harness **blocks the tool call**. Because all three mutating tools share the
+relative-path hooks, the session **deadlocks**: the very tools needed to `cd` back or patch anything
+are themselves blocked, and an ordinary subagent inherits the same stuck cwd. (Hit live this session
+*and* previously — it is the journal's documented "cwd-deadlock trap".)
+
+**Fix (applied).** Prefix **every** hook command with a cwd guard that resolves the repo root
+regardless of the stuck cwd, with no dependency on an env var that may be unset:
+```
+cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}" && <original command>
+```
+- Prefers `$CLAUDE_PROJECT_DIR` (the documented Claude Code hook var) but **falls back to
+  `git rev-parse --show-toplevel`** when it is empty/unset — and it *was* observed empty in the
+  shell here, so the fallback is load-bearing, not decorative. `git rev-parse --show-toplevel` returns
+  the repo root even when run from a stuck subdir (git searches upward).
+- The `cd` runs in the **hook's own subshell**, so it never affects the tool's persistent cwd; it also
+  fixes any *internal* relative paths the scripts use. All 7 hook commands updated (PreToolUse
+  Bash + Edit|Write, PostToolUse Edit|Write + create_pull_request, Stop ×2, SessionStart).
+
+**Proof.** Each wrapped command was pipe-tested **from a deliberately-stuck `disbot/` cwd** and exited
+0 (`check_branch_freshness`, `claude_pre_edit`, `claude_post_edit`, `claude_pr_subscribe_reminder`,
+`claude_stop_check`), confirming the exact failure scenario is now handled. JSON validated.
+
+**Caveat.** Like all hook changes, it **takes effect next session** (hooks load at session start), so
+the avoidance note in `.session-journal.md` stays useful until this ships and one fresh session
+confirms it live; the journal entry is updated to mark the durable fix applied. The "never `cd` into
+a subdir" habit remains good hygiene regardless.
+
+**Home:** `.claude/settings.json` (`hooks`) + this Q-block; `.session-journal.md` cwd-deadlock entry
+updated to "durable fix applied (Q-0150)".
