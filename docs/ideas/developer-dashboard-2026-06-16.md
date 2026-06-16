@@ -1,6 +1,6 @@
 # Developer dashboard (personal website) for SuperBot
 
-> **Status:** `ideas` — owner-requested **and approved** 2026-06-16 (router Q-0154).
+> **Status:** `ideas` — owner-requested **and approved** 2026-06-16 (router Q-0155).
 > Phase 1 (read-only MVP) shipped in **PR #967**; the fuller vision (Phases 2–4) stays
 > active. **Authoritative plan:**
 > [`docs/planning/developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md).

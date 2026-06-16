@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T15:16:45Z",
+    "generated_at": "2026-06-16T15:24:17Z",
     "counts": {
       "functions": 33,
-      "ideas": 69,
-      "bugs": 14,
+      "ideas": 70,
+      "bugs": 15,
       "updates": 60
     }
   },
@@ -936,6 +936,13 @@
       "summary": "Deciding the `/myprofile` onboarding gate (Q-0147), the owner set a **standing rule** for *all*"
     },
     {
+      "file": "sessionstart-surface-soft-check-signals-2026-06-16.md",
+      "title": "Surface `check_docs` soft signals in the SessionStart banner",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "This repo keeps adding **read-only / soft signals that only help if someone runs them by hand**:"
+    },
+    {
       "file": "control-plane-single-source-pointer-2026-06-15.md",
       "title": "Idea — collapse the current-state control-plane bullet to a pure pointer (one source of truth)",
       "status": "historical",
@@ -1330,6 +1337,12 @@
   ],
   "bugs": [
     {
+      "id": "BUG-0015",
+      "title": "\"d67 dart paragon\" misread as upgrade path \"0-6-7\" (paragon degree ignored)",
+      "status": "FIXED",
+      "summary": "asked *\"whats the damage of a d67 dart\"* and *\"a d67 dart praragon\"*, SuperBot replied *\"A 0-6-7 Dart Paragon doesn't exist — upgrade tiers cap at 5, so the maximum is 0-5-5.\"* It read the shorthand \"d67\" = degree 67 as an upgrade-path code \"0-6-7\". Paragons have degrees 1-100 (…"
+    },
+    {
       "id": "BUG-0014",
       "title": "!coglist infinite \"assumed from\" command-resolution loop",
       "status": "FIXED",
@@ -1446,6 +1459,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-pr-mergeability-keepers.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — PR mergeability keepers: auto-update behind + red-on-conflict",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-myprofile-pr-b-writes.md",
       "date": "2026-06-16",
       "title": "Session — myprofile PR B: self-service writes (first UI consumer of ParticipationMutationPipeline)",
@@ -1545,7 +1564,19 @@
       "file": "2026-06-16-developer-dashboard-mvp.md",
       "date": "2026-06-16",
       "title": "Session — Developer dashboard (personal website) — design + read-only MVP",
-      "status": "in-progress"
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-count-citation-guard.md",
+      "date": "2026-06-16",
+      "title": "Session — count-citation guard (soft check_docs rule)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-conflict-guard-token-hotfix.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — hotfix: pr-conflict-guard token + bash-errexit safety",
+      "status": "complete"
     },
     {
       "file": "2026-06-16-coglist-command.md",
@@ -1557,6 +1588,12 @@
       "file": "2026-06-16-btd6-round-range-comparison.md",
       "date": "2026-06-16",
       "title": "Session — BTD6 round-range cash comparison floor (AI §7.5)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-paragon-degree-parse.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — BTD6 \"d67 dart paragon\" degree-parse bug fix (BUG-0015)",
       "status": "complete"
     },
     {
@@ -1581,6 +1618,12 @@
       "file": "2026-06-16-btd6-cost-comparison-floor.md",
       "date": "2026-06-16",
       "title": "Session — AI §7.5 deterministic BTD6 cost-comparison floor",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-architecture-review-thread-close.md",
+      "date": "2026-06-16",
+      "title": "Session close — architecture-review thread (notes & remarks)",
       "status": "complete"
     },
     {
@@ -1743,36 +1786,6 @@
       "file": "2026-06-15-handoff-sharpen-p1-3-finding.md",
       "date": "2026-06-15",
       "title": "Session — 2026-06-15 · handoff sharpen + P1-3 coverage finding (follow-up to #906)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-executor-eval-coverage-nonbtd6.md",
-      "date": "2026-06-15",
-      "title": "Session: P1-1 eval-coverage expansion — non-BTD6 uncovered tools (20 → 27/34)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-executor-eval-coverage-34of34.md",
-      "date": "2026-06-15",
-      "title": "Session: P1-1 eval-coverage expansion — FULL tool-surface coverage (27 → 34/34)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-eval-coverage-expansion.md",
-      "date": "2026-06-15",
-      "title": "Session: P1-1 eval-coverage expansion — golden tool-selection probes (14 → 20/34)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-docs-console-schedule-trigger.md",
-      "date": "2026-06-15",
-      "title": "Session: De-stale the docs/prompts to the console-Schedule trigger",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-dispatch-prompt-continue-trim.md",
-      "date": "2026-06-15",
-      "title": "Session: Trim the no-op `continue`-issue clause from the dispatch prompt",
       "status": "complete"
     }
   ]

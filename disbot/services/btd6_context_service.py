@@ -34,6 +34,7 @@ from utils.btd6.grounding_format import is_infinite as _is_infinite
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
 from utils.btd6.keywords import ABR_CUE_RE as _ABR_CUE_RE
+from utils.btd6.keywords import degree_in_text as _degree_in_text
 
 logger = logging.getLogger("bot.services.btd6_context")
 
@@ -636,6 +637,55 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
         for effect in effects
     )
     return lines
+
+
+def _paragon_degree_facts(message_text: str) -> list[str]:
+    """Ground a paragon's stats at a SPECIFIC degree named in the text (BUG-0015).
+
+    Players write "d67" (or "degree 67") to ask for a paragon at a given degree —
+    only paragons have degrees (1-100). The standard paragon grounding
+    (:func:`_render_paragon_stats`) only anchors Degree 1 and Degree 100, so
+    without this leg the model has no degree-67 figure and, on the "d67"
+    shorthand, misreads it as an upgrade path "0-6-7" and refuses it exists
+    (live miss 2026-06-16). This surfaces the exact, NON-linear headline at the
+    requested degree, explicitly labelled "Degree N" — which disambiguates the
+    shorthand and hands the model the right numbers. Degree-INDEPENDENT facts
+    (income, abilities, effects) already ground via :func:`_render_paragon`.
+    """
+    degree = _degree_in_text(message_text)
+    # Degrees 1 and 100 are exactly the anchors _render_paragon_stats already
+    # emits — only an INTERMEDIATE degree adds anything new here.
+    if degree is None or degree in (1, 100):
+        return []
+
+    from services import btd6_stats_service
+    from utils.btd6 import paragon_degrees
+
+    paragon_id = btd6_stats_service.resolve_paragon(message_text)
+    if paragon_id is None:
+        return []
+    pstats = btd6_stats_service.get_paragon_stats(paragon_id)
+    if pstats is None or not pstats.has_combat_stats:
+        return []
+    bits = _paragon_main_bits(pstats.base, degree)
+    if not bits:
+        return []
+
+    src = "bloonswiki article prose" if pstats.is_prose_sourced else "BTD6 game data"
+    boss = paragon_degrees.boss_multiplier(degree)
+    power = paragon_degrees.power_for_degree(degree)
+    return [
+        _cap(
+            f"[btd6_paragon_stats degree {degree}] {pstats.canonical} at Degree "
+            f"{degree}: {_sanitise(', '.join(bits))}; boss-damage ×{boss}; "
+            f"{power:,} power (source: {src})",
+        ),
+        _cap(
+            f"[btd6_paragon_stats degree {degree}] Note: 'd{degree}' / "
+            f"'degree {degree}' is the paragon's DEGREE (1-100), NOT an "
+            "upgrade-path code — paragons are tier 6, beyond the 0-5-5 cap.",
+        ),
+    ]
 
 
 def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
@@ -3583,6 +3633,21 @@ async def build(
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
         facts.extend(_paragon_roster_facts(message_text))
         facts.extend(_entity_roster_facts(message_text))
+
+        # Pass 3b3: a paragon DEGREE named in the text ("d67 dart", "degree 67")
+        # — only paragons have degrees (1-100). The name/tower passes above
+        # ground the paragon's Degree 1/100 anchors; this adds the exact
+        # NON-linear headline at the requested intermediate degree, explicitly
+        # labelled, so the model neither interpolates nor misreads the "d67"
+        # shorthand as an upgrade path "0-6-7" (BUG-0015). Isolated like the
+        # other passes.
+        try:
+            facts.extend(_paragon_degree_facts(message_text))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: paragon-degree grounding unavailable (%s)",
+                exc,
+            )
 
         # Pass 3b2: a minion/sub-tower named directly ("Mini Sun Avatar",
         # "Crushing Sentry", "UAV") — its stats live under the owning tier /

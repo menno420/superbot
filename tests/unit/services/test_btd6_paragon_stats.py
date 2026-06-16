@@ -209,3 +209,68 @@ def test_render_paragon_labels_game_data_origin():
     assert "Root of all Nature" in joined
     assert "BTD6 game data" in joined  # provenance label
     assert "article prose" not in joined
+
+
+# --- paragon DEGREE grounding (BUG-0015) ------------------------------------
+
+
+def test_paragon_degree_facts_grounds_the_requested_degree():
+    # The verbatim screenshot phrasing: "d67 dart" / "a d67 dart praragon" must
+    # ground the dart paragon (Apex Plasma Master) AT degree 67 — not get
+    # misread as the upgrade path "0-6-7".
+    from services import btd6_context_service as ctx
+
+    lines = ctx._paragon_degree_facts("a d67 dart praragon")
+    joined = "\n".join(lines)
+    assert "[btd6_paragon_stats degree 67]" in joined
+    assert "Apex Plasma Master at Degree 67" in joined
+    # The exact NON-linear figure (D67 damage = 48, distinct from D1/D100), so
+    # the model neither interpolates nor freelances.
+    assert "48 dmg" in joined
+    assert "boss-damage ×1.75" in joined  # degree-67 boss step
+    # The disambiguation note tells the model "d67" is a degree, not a crosspath.
+    assert "NOT an upgrade-path code" in joined
+    # Every grounding line stays within the fact-text cap.
+    assert all(len(line) <= ctx._FACT_TEXT_CAP for line in lines)
+
+
+def test_paragon_degree_facts_is_non_linear_not_an_anchor():
+    # Degree 67 must be the scaled value, distinct from both the Degree 1 (25)
+    # and Degree 100 (60) damage anchors _render_paragon_stats already emits.
+    from services import btd6_context_service as ctx
+
+    joined = "\n".join(ctx._paragon_degree_facts("dart paragon at degree 67"))
+    assert "48 dmg" in joined
+    assert "25 dmg" not in joined  # not the Degree 1 base
+    assert "60 dmg" not in joined  # not the Degree 100 max
+
+
+@pytest.mark.parametrize("text", ["dart paragon at degree 1", "apex at d100"])
+def test_paragon_degree_facts_skips_the_anchor_degrees(text):
+    # Degrees 1 and 100 are exactly the anchors _render_paragon_stats emits, so
+    # this leg adds nothing for them (no duplicate line).
+    from services import btd6_context_service as ctx
+
+    assert ctx._paragon_degree_facts(text) == []
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "d67",  # a degree but no resolvable paragon/tower
+        "what is a dart paragon",  # a paragon but no degree number
+        "i have a degree in computer science",  # neither
+    ],
+)
+def test_paragon_degree_facts_stays_silent_without_both_signals(text):
+    from services import btd6_context_service as ctx
+
+    assert ctx._paragon_degree_facts(text) == []
+
+
+def test_paragon_degree_facts_grounds_a_named_paragon_too():
+    # Naming the paragon directly (not via its tower) + a degree also grounds.
+    from services import btd6_context_service as ctx
+
+    joined = "\n".join(ctx._paragon_degree_facts("glaive dominus at degree 50"))
+    assert "Glaive Dominus at Degree 50" in joined

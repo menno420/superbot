@@ -1,6 +1,6 @@
 # Developer dashboard (personal website) — plan
 
-> **Status:** `plan` — owner-approved direction (2026-06-16, router Q-0154). Phase 1
+> **Status:** `plan` — owner-approved direction (2026-06-16, router Q-0155). Phase 1
 > (read-only MVP) ships in **PR #967**; Phases 2–4 are planned, not yet built. Source
 > code and merged PRs win over this document.
 
@@ -13,7 +13,7 @@ bot-function catalogue, an ideas/bug board, a **public** bug-reporting surface, 
 link multiple AIs together, a developer dashboard that integrates with the project, and
 **a place to safely store env values and track where each is used.**
 
-## Owner decisions (2026-06-16, router Q-0154)
+## Owner decisions (2026-06-16, router Q-0155)
 
 | Decision | Choice |
 |---|---|

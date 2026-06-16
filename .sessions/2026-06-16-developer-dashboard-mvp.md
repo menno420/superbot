@@ -51,7 +51,7 @@ that never imports `disbot/`:
 - Docs: [`docs/planning/developer-dashboard-plan.md`](../docs/planning/developer-dashboard-plan.md)
   (architecture, two zones, stack, Railway deploy, secrets-safety, 4 phases),
   [`docs/ideas/developer-dashboard-2026-06-16.md`](../docs/ideas/developer-dashboard-2026-06-16.md)
-  (indexed), `dashboard/README.md`, and router **Q-0154** (the four owner decisions).
+  (indexed), `dashboard/README.md`, and router **Q-0155** (the four owner decisions).
 
 ## Verification
 
@@ -96,9 +96,9 @@ dispatch-resolve + a 6h interactive session auto-reset.
 
 - `check_docs.py --strict` → green (idea file + plan reachable and indexed). `check_architecture
   --mode strict` → exit 0.
-- Owner decisions recorded in the question router (**Q-0154**). Not a bug → no bug-book entry.
+- Owner decisions recorded in the question router (**Q-0155**). Not a bug → no bug-book entry.
 - `current-state.md` In-flight deliberately names no open PRs (convention) and Recently-shipped is
   merged-only, so #967 is left for the merge-time reconciliation — the expected lag (Q-0124: a manual
   session does not run the recon pass; the pre-existing 11-PR ledger drift stays the routine's job).
 - No chat-only durable info outstanding — the design + decisions live in the plan, the idea file,
-  router Q-0154, and this log.
+  router Q-0155, and this log.
