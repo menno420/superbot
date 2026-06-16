@@ -301,7 +301,7 @@ spine). This roadmap is the *connective tissue*, not a re-plan — each phase po
 | **A — public IA + product homepage** | Product-grade homepage; use-case taxonomy; better `/commands` & `/functions`; freshness badges everywhere | `developer-dashboard-plan.md` | none (no OAuth/runtime) |
 | **B — freshness & provenance** | Lineage badges + per-widget states; automate export regen; ETag/conditional GETs | `developer-dashboard-plan.md` | none |
 | **C — OAuth + personal/server workspaces (read-only)** | Login, sessions, `/me`, `/me/servers`, server overview, authority preview — the workspace shell *before* writes | `dashboard-live-editor-plan.md` L0 | owner: Discord OAuth secret + session secret |
-| **D — manifest spine** | Typed command/panel/settings manifest export + panel registry + reconciliation tests; AST demoted to drift detection | **NEW track** (this doc) | architectural go/no-go → **Q-0161** |
+| **D — manifest spine** | Typed command/panel/settings manifest export + panel registry + reconciliation tests; AST demoted to drift detection | **NEW track** (this doc) | architectural go/no-go → **Q-0162** |
 | **E — control API read endpoints** | Private, secret-protected reads: server context, current settings, help overlay, capabilities, diagnostics, manifest | `dashboard-live-editor-plan.md` L1 | owner: `CONTROL_API_TOKEN` on both Railway services |
 | **F — first live writes (audited seams)** | Help overlay/Home first; then global-settings tier + settings editor; then aliases/routing | `dashboard-live-editor-plan.md` L2 + Q-0157 | owner: prod pacing ("don't rush") |
 | **G — owner zone: env values + control board** | Masked Railway value mgmt; idea/bug triage; multi-AI control board over the `/fire` routines | `developer-dashboard-plan.md` Phases 3b/4 | owner: Railway API creds; auth+DB decisions |
@@ -310,16 +310,16 @@ spine). This roadmap is the *connective tissue*, not a re-plan — each phase po
 ## Open questions (safe defaults in italics — the doc is actionable without answers)
 
 These are captured here in full and the two architectural forks are routed to the question router as
-**Q-0161** (the rest carry sensible defaults and don't block):
+**Q-0162** (the rest carry sensible defaults and don't block):
 
 1. **Manifest spine — go/no-go + priority.** Should the bot invest in a typed runtime manifest as the
    long-term metadata source of truth (Phase D), demoting AST scanners to drift detection?
    *Default: yes, but sequence it after OAuth/read-only workspaces (C) and before live management of
-   commands/panels, since reliable manageability metadata is the prerequisite for those editors.* → **Q-0161**
+   commands/panels, since reliable manageability metadata is the prerequisite for those editors.* → **Q-0162**
 2. **Owner-zone future scope.** Owner-only forever, or designed now for later **delegated operator/mod
    scopes** (observability-only · issue-triage · content-editing · runtime-control)?
    *Default: build owner-only now but keep the owner zone's routes/authority scope-shaped so delegation is
-   an additive grant later, not a permissions rewrite.* → **Q-0161**
+   an additive grant later, not a permissions rewrite.* → **Q-0162**
 3. **Homepage emphasis.** Primarily a public **product** site, or primarily a **dashboard** with a website
    shell? *Default: product homepage with a live-credibility trust band; operator telemetry moves to
    `/status` + the owner zone (per Q-0158 "main website").*
@@ -337,7 +337,7 @@ These are captured here in full and the two architectural forks are routed to th
   [`developer-dashboard-plan.md`](developer-dashboard-plan.md) ·
   [`dashboard-live-editor-plan.md`](dashboard-live-editor-plan.md)
 - Owner decisions: router **Q-0155–Q-0160** (`docs/owner/maintainer-question-router.md`) and the new
-  **Q-0161** (the two open forks above).
+  **Q-0162** (the two open forks above).
 - Seams this fronts: `services.settings_mutation` · `services.help_overlay_mutation` ·
   `services.command_routing` · `services.participation_mutation` · `core/runtime/command_surface_ledger.py`
   · `disbot/control_api.py` (the dormant foundation, #989).

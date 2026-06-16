@@ -20,7 +20,7 @@ genuine open questions to the doc / the question router.
   existing plans become execution tracks under (no parallel source of truth — heavy cross-links, defer
   execution detail to them). Link it from both plans (guarantees `check_docs --strict` reachability).
   Route the genuinely-open architectural forks (manifest-spine go/no-go; owner-zone future scope) to the
-  router as **Q-0161**, with safe defaults captured in the doc for every open question.
+  router as **Q-0162**, with safe defaults captured in the doc for every open question.
 - **Then:** close Codex PR #998 with a courteous reason (superseded; its useful material — the
   route-trust inventory, the manifest JSON schema, the readiness table — folded into the new doc).
 
@@ -39,7 +39,7 @@ Docs-only; no `disbot/` runtime, no auth, no mutations.
   umbrella the two existing plans execute *toward* (no parallel source of truth).
 - Linked from both **`developer-dashboard-plan.md`** and **`dashboard-live-editor-plan.md`** (a North-star
   pointer in each status block → guarantees `check_docs --strict` reachability + discoverability).
-- **Q-0161** appended to the router — the two genuinely-open forks (manifest-spine go/no-go + priority;
+- **Q-0162** appended to the router — the two genuinely-open forks (manifest-spine go/no-go + priority;
   owner-zone future delegated scope), each with a plain-language "why it matters" + safe default. The
   other open questions carry defaults in the doc and don't block.
 - **Closed Codex PR #998** — its useful material (route-trust inventory, data-trust matrix, manifest JSON
@@ -71,7 +71,11 @@ already-shipped/decided. Did **not** copy the report's internal citation tokens 
 ### needed-not-pointed
 - PR #998's full diff (the Codex plan body) — fetched via `pull_request_read get_diff`; the *comparison
   baseline* that mattered most was the two in-repo plans (current-state pointed at them well).
-- The router tail — for the next free Q-number (Q-0160 → **Q-0161**) and the live Q-block format.
+- The router tail — for the next free Q-number and the live Q-block format. **Q-number collision:** I
+  grabbed Q-0162, but a parallel session's #999 (rm-permission-brake) **merged Q-0162 to `main` first**,
+  so on the post-push merge-conflict resync I **renumbered mine to Q-0162**. The append-only
+  "next free Q-00NN" convention can still collide when two sessions append concurrently — the resolver is
+  "whoever merges first keeps the number; the later one bumps."
 
 ### pointed-not-needed
 - The deep CodeGraph / architecture-binding orientation route — irrelevant to a docs-only vision synthesis
@@ -109,7 +113,7 @@ plan, check whether an existing plan owns this lane and consolidate." It reinfor
 
 ## 📋 Documentation audit (Q-0104)
 
-Nothing from this session lives only in chat: the vision is a doc, the open forks are Q-0161, the inputs'
+Nothing from this session lives only in chat: the vision is a doc, the open forks are Q-0162, the inputs'
 disposition + the #998 closure reason are in the PR/router/this log, the claim is in active-work.
 `check_docs --strict` green. The only deliberate non-write is `current-state.md` (recon-routine territory,
 Q-0124 — recorded above with reason). Grooming (Q-0015) is satisfied by the main task itself: it moved a
