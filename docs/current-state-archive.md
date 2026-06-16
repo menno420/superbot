@@ -86,6 +86,16 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#932 (2026-06-15, docs reconciliation — band-#930, ninth Q-0107 pass)** — ninth Q-0107 docs-only
+  reconciliation + planning pass (fired by `reconcile` issue #931). Reconciled the ledger (added the
+  #915…#928 Hermes model-swap / ops-docs band as one grouped entry; archived #862/#859/#855 to hold
+  the ratchet at 20); **FIXED a control-plane drift** (the Gates bullet still claimed the autonomous
+  loop had never self-fired — stale, since trigger issue #931 was authored by the PAT owner, which
+  only happens when `ROUTINE_PAT` is set and the loop self-fires); scored the band-#900 queue +
+  planned the next band ([`reconciliation-pass-2026-06-15-band930.md`](planning/reconciliation-pass-2026-06-15-band930.md));
+  promoted the now-ungated games-economy faucet/sink diagnostic idea to a turn-key plan; reset the
+  cadence marker #900→#930 (next at #960). Open-PR disposition (Q-0125): only #929 open
+  (`needs-hermes-review` carve-out). Docs only.
 - **#926 (2026-06-15, BUG-0009 slice 2 — deterministic "Geraldo items per level")** — the next ▶
   startable plan slice (the live ▶ pointer's named next step), same proven shape as slice 1 (#924).
   "what items does Geraldo unlock at each level" had the model assemble the level→item grouping
