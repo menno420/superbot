@@ -24,14 +24,14 @@
 <div class="space-y-5">
   {% for domain in data.settings %}
     <section class="setting-domain rounded-xl border border-slate-800 bg-slate-900/50 p-4"
-             data-haystack="{{ domain.domain }} {{ domain.purpose }} {% for k in domain.keys %}{{ k.constant }} {{ k.key }} {% endfor %}">
+             data-haystack="{{ domain.domain }} {{ domain.purpose }} {% for k in domain['keys'] %}{{ k.constant }} {{ k.key }} {% endfor %}">
       <div class="flex items-baseline gap-2 flex-wrap">
         <h2 class="text-lg font-semibold text-sky-300">{{ domain.domain }}</h2>
-        <span class="text-xs text-slate-500">{{ domain.keys | length }} key{{ '' if domain.keys|length == 1 else 's' }}</span>
+        <span class="text-xs text-slate-500">{{ domain['keys'] | length }} key{{ '' if domain['keys']|length == 1 else 's' }}</span>
       </div>
       {% if domain.purpose %}<p class="text-xs text-slate-400 mb-3">{{ domain.purpose }}</p>{% endif %}
       <div class="grid gap-1 sm:grid-cols-2">
-        {% for k in domain.keys %}
+        {% for k in domain['keys'] %}
           <div class="setting-row flex items-center justify-between gap-2 rounded bg-slate-950/60 px-2.5 py-1.5"
                data-haystack="{{ k.constant }} {{ k.key }}">
             <code class="text-xs text-slate-200">{{ k.constant }}</code>
