@@ -13,7 +13,7 @@ it reads it, and whether it is **required** (read without a default anywhere) or
 only — never a value**; the values live in Railway service variables
 (see [`production-deployment.md`](production-deployment.md)).
 
-**34 variables** — 3 required · 31 optional.
+**35 variables** — 3 required · 32 optional.
 
 ## Required (read without a default — the deploy must set these)
 
@@ -47,6 +47,7 @@ only — never a value**; the values live in Railway service variables
 | `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:49` *(default)* |
 | `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
 | `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
+| `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:48` *(default)* |
 | `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:102` *(default)* |
 | `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
 | `HEALTH_PORT` | healthserver | `disbot/healthserver.py:63` *(default)* |
