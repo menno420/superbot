@@ -20,6 +20,16 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`architecture-atlas-and-structure-review-2026-06-16.md`](./architecture-atlas-and-structure-review-2026-06-16.md) —
+  **owner-uploaded external review + agent judgment (2026-06-16):** an outside-in repo-architecture
+  review ("repository-architectuuratlas") recommending a generated **architecture atlas** over any
+  filesystem reorg. Cross-checked against live source: the *direction is right* but the drift diagnosis
+  is **overstated** (only 3 real stale counts remained — fixed in PR #957) and the flagship "per-file
+  dashboard" is **~80% already shipped** as `context_map.py`. Genuinely-new signal: an **extension-type
+  taxonomy crosswalk** (43 ext ↔ 32 subsystems; the strongest, missing) → structure into a plan; a
+  *thin* unified atlas + a root-README question → **Q-0151** (discuss); count-cite guard → fold into
+  `readiness-maps-cite-regen-command`. → relates `scripts/{context_map,wiring_map,review_scope}.py` ·
+  `utils/subsystem_registry.py` · `architecture_rules/layers.yaml`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
   round-range cash comparison requires a round token before *each* range's first anchor (to keep

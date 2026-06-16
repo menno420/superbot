@@ -41,6 +41,10 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/hopeful-meitner-772pv8` · architecture-atlas / structure-review idea intake (owner-uploaded
+  review) — capture + judgment + route + fix confirmed count-drift in binding docs · `docs/ideas/` +
+  `docs/architecture.md` + `docs/repo-navigation-map.md` + router Q-0151 · 2026-06-16 ·
+  **PR #957 (open, auto-merge on green)**
 - `claude/coglist-command` · `!coglist` real command → opens the admin "📋 Cog List" `_CogManagerView`
   (owner request; aliases cogs/listcogs/cogslist) · `disbot/cogs/admin_cog.py` + test · 2026-06-16 ·
   **PR #951 (open, auto-merge on green)**
