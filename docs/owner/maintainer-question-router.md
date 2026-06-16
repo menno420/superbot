@@ -5694,11 +5694,22 @@ updated to "durable fix applied (Q-0150)".
 
 ### Q-0151 — Architecture-atlas review: unified atlas? root README? taxonomy enforcement? (2026-06-16)
 
-> **DISCUSS lane — agent-surfaced, NOT applied.** Raised by the owner-uploaded repo-architecture
-> review (captured + cross-checked in
+> **ANSWERED 2026-06-16 — owner accepted the agent recommendations.** Owner: *"yes I agree with your
+> recommendations, and the readme is not required but not off limits."* Raised by the owner-uploaded
+> repo-architecture review (captured + cross-checked in
 > [`docs/ideas/architecture-atlas-and-structure-review-2026-06-16.md`](../ideas/architecture-atlas-and-structure-review-2026-06-16.md),
-> PR #957). The review's direction is sound and its bugs-first drift fixes were taken directly; these
-> three are the genuine **owner-policy** calls left over.
+> PR #957). Resolution:
+> - **a (atlas):** build it thin, as a **companion** to `AGENT_ORIENTATION.md`, **CI-`--check` +
+>   on-demand generate, body not committed**. Sequenced as PR 2 of
+>   [`../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md`](../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md).
+> - **b (root README):** *not required but not off limits* — optional 5-line pointer-only README if a
+>   public landing page is later wanted; the deliberate no-README posture otherwise stands. Not built now.
+> - **c (taxonomy):** classify **all 43**, **CI-enforced** — but via a **curated overlay
+>   (`architecture_rules/extension_roles.yaml`) + a `--check` guard**, *not* a registry schema bump
+>   (lower risk; roles are editorial, not runtime; and the 10 most-interesting extensions have no
+>   registry entry to put a field on). **SHIPPED in PR #958.** (Rationale in the plan §"Design decision".)
+>
+> The original DISCUSS framing + per-question agent recommendations are preserved below for provenance.
 
 **Q-0151a — A thin unified atlas?** The review's flagship "per-file maintainer dashboard" is ~80%
 already shipped (`context_map.py` + `wiring_map.py` + `review_scope.py` + the agent context packs).
@@ -5721,8 +5732,8 @@ owner wants a public landing page; otherwise keep the deliberate no-README postu
 it overrides a stated decision.
 
 **Q-0151c — How far to enforce extension classification?** The strongest finding: no taxonomy maps the
-43 extensions ↔ 32 subsystems (the ~11 non-1:1 are unclassified). Should classification cover **only
-the ~11 non-subsystem extensions**, or **all 43**? And should the `role` be **advisory metadata** or a
+43 extensions ↔ 33 subsystems (the 10 non-1:1 are unclassified). Should classification cover **only
+the 10 non-subsystem extensions**, or **all 43**? And should the `role` be **advisory metadata** or a
 **CI-enforced** guard (a new `INITIAL_EXTENSIONS` entry must declare a role or be a registered
 subsystem)? *Agent recommendation:* classify **all 43** (cheap, and partial taxonomies rot), role as a
 registry field, **CI-enforced** so the gap can't silently re-grow — but this is a

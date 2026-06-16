@@ -590,9 +590,16 @@ condition — every sector non-empty).*
   fix the ledger, refactor the roadmap) each time merged PRs cross a **multiple of 30** (Q-0134; the
   trigger/checker **machinery is S3**, the docs it writes are S4) · the session enders (Q-0089 idea ·
   Q-0102 prev-session review · Q-0104 closing audit).
-- **Next** — idea-backlog **grooming** (Q-0015 — every idea ends implemented or discussed) ·
-  orientation-route upkeep mined from `.sessions/` **context-deltas** · doc-reachability maintenance
-  (`check_docs --strict`).
+- **Next** — the **thin architecture atlas** (PR 2 of
+  [`extension-taxonomy-crosswalk-plan-2026-06-16.md`](planning/extension-taxonomy-crosswalk-plan-2026-06-16.md);
+  Q-0151a — a companion to orientation, composing `context_map`/`wiring_map`/`review_scope` + the role
+  data into one repo-wide CI-`--check` index) · idea-backlog **grooming** (Q-0015 — every idea ends
+  implemented or discussed) · orientation-route upkeep mined from `.sessions/` **context-deltas** ·
+  doc-reachability maintenance (`check_docs --strict`).
+- **Shipped** — the **extension-type taxonomy crosswalk** (Q-0151c, PR #958): the curated role overlay
+  `architecture_rules/extension_roles.yaml` + `scripts/extension_crosswalk.py` →
+  [`extension-taxonomy-crosswalk.md`](architecture/extension-taxonomy-crosswalk.md), CI-enforced — the 43↔33
+  extension/subsystem map, 10 non-1:1 classified.
 
 ### 🛠️ Operations / control-plane · **S5** — standing lane
 
