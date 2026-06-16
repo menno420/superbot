@@ -10,6 +10,36 @@
 > he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
 > here as they surface.
 
+## BUG-0014 — `!coglist` infinite "assumed from" command-resolution loop — FIXED
+
+- **Symptom (owner-reported via screen recording, 2026-06-16):** typing `!coglist`
+  (or `!cogs`) made SuperBot spam "↩️ Ran `!coglist` — assumed from `!coglist`."
+  **endlessly — it did not stop until the bot was restarted.** A runaway message
+  loop (channel spam + rate-limit risk).
+- **Affected surface:** `bot1.on_command_error` (the `CommandNotFound` typo-resolver
+  re-dispatch) + the data in `disbot/utils/synonyms.py`.
+- **Root cause:** `COMMAND_SYNONYMS` declared `"coglist": ["listcogs", "cogslist"]`,
+  but **no `coglist` command is registered** (audited: the only orphaned canonical of
+  32). So `command_resolution.classify` fuzzy-matched the typed token to the phantom
+  canonical `coglist` and returned `Outcome.AUTO`; `on_command_error` rewrote the
+  message to `!coglist` (the *same* token) and re-dispatched via `process_commands`;
+  `!coglist` still wasn't a real command → `CommandNotFound` → re-resolved to the same
+  phantom → **infinite loop.** The amplifier was structural: the handler re-dispatched
+  an AUTO correction without checking the target actually exists or differs from input.
+- **Fix (this PR):** (1) **loop-breaker** — `on_command_error` only re-dispatches an
+  AUTO correction when it is a *registered* command (`bot.get_command`) *different* from
+  the raw token; an unsafe/identity/phantom correction falls through to the normal
+  not-found reply (makes the loop class impossible regardless of synonym data). (2)
+  removed the orphaned `coglist` synonym. (3) **CI invariant** —
+  `tests/unit/invariants/test_command_synonyms_resolve_to_real_commands.py` AST-asserts
+  every `COMMAND_SYNONYMS` canonical is a registered command name/alias, so an orphan
+  can't ship again.
+- **Regression test:** `tests/unit/test_bot1_command_resolution_loop.py` — phantom and
+  identity AUTO corrections do NOT re-dispatch (single terminal not-found reply); a
+  valid correction (registered + different) still auto-runs exactly once. Plus the
+  synonym-orphan invariant above (verified to flag the re-added `coglist`).
+- **Status:** FIXED. **Merge ≠ deploy** — needs a Railway prod deploy to clear it live.
+
 ## BUG-0013 — 1v1 challenge timer keeps running after accept, overwrites the live duel — FIXED
 
 - **Symptom (owner-reported via Hermes, 2026-06-16):** "there is a problem with
