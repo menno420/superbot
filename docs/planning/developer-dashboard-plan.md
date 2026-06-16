@@ -66,7 +66,7 @@ APIs. The bot runtime is never in the dashboard's process.
 
 A **second service** in the existing Railway project:
 
-* Root directory: repo root · Start: `uvicorn dashboard.app:app --host 0.0.0.0 --port $PORT`
+* Root directory: `dashboard` · Start: `uvicorn app:app --host 0.0.0.0 --port $PORT` (from `dashboard/Procfile`). **Not** repo root — that installs the bot's deps (no FastAPI).
 * Dependencies: `dashboard/requirements.txt` (kept separate from the bot's root
   `requirements.txt`, so the bot's build and CI install are unaffected)
 * Watch paths: `dashboard/**` (bot-only changes don't rebuild the dashboard, and
