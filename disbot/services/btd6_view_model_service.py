@@ -420,6 +420,32 @@ _EVENT_KIND_TO_SOURCE_KEY: dict[str, str] = {
     "btd6_event": "nk_btd6_events",
 }
 
+# Index ("primary") fact-type per kind — carries name + window + scores. Mirrors
+# ``btd6_live_query_service._INDEX_FACT_TYPE`` (kept local to avoid reaching into
+# another service's private global; a drift here only degrades to a None lookup,
+# never a crash).
+_EVENT_INDEX_FACT_TYPE: dict[str, str] = {
+    "btd6_race": "btd6.races_index",
+    "btd6_boss": "btd6.bosses_index",
+    "btd6_ct": "btd6.ct_index",
+    "btd6_odyssey": "btd6.odyssey_index",
+    "btd6_event": "btd6.events_index",
+}
+
+# Metadata fact lookup per kind — carries rules + ``_towers`` restrictions.
+# ``(fact_type, metadata_entity_kind, entity_key_suffix)``. Race keeps its
+# metadata under the same entity_kind/key; boss + odyssey store it under a
+# separate *difficulty* entity_kind with a difficulty-suffixed key. The
+# suffixes MUST match the ingestion supervisor's hardcoded fan-out
+# (``btd6_ingestion_service._DEPENDENCY_CHAINS``: boss ``standard``,
+# odyssey ``easy``) or the lookup finds nothing. CT / event carry no
+# restriction metadata, so they are absent here (metadata stays ``None``).
+_EVENT_METADATA_LOOKUP: dict[str, tuple[str, str, str]] = {
+    "btd6_race": ("btd6.race_metadata", "btd6_race", ""),
+    "btd6_boss": ("btd6.boss_metadata", "btd6_boss_difficulty", "_standard"),
+    "btd6_odyssey": ("btd6.odyssey_metadata", "btd6_odyssey_difficulty", "_easy"),
+}
+
 
 @dataclass(frozen=True)
 class EventListItem:
@@ -527,6 +553,13 @@ async def build_event_detail_view_model(
 ) -> EventDetailViewModel | None:
     """Compose an event-detail view-model.
 
+    Fetches the index fact (name + window + scores) and the matching
+    metadata fact (rules + ``_towers`` restrictions) for one event so the
+    detail embed can render *all* the data available about it. Boss /
+    odyssey metadata lives under a separate difficulty entity_kind with a
+    difficulty-suffixed key (see :data:`_EVENT_METADATA_LOOKUP`); race keeps
+    it under the same key; CT / event carry no restriction metadata.
+
     Returns ``None`` when no fact exists for the requested key.
     """
     from utils.btd6.body_coerce import coerce_body
@@ -536,19 +569,25 @@ async def build_event_detail_view_model(
     context_type = _EVENT_KIND_TO_CONTEXT_TYPE.get(entity_kind, "event")
     source_key = _EVENT_KIND_TO_SOURCE_KEY.get(entity_kind, "")
 
-    rows = await btd6_db.search_facts(
-        entity_kind=entity_kind,
-        entity_key=entity_key,
-        limit=2,
+    # Index ("primary") fact — name / window / scores. Filter by the index
+    # fact_type so an entity that also has a same-key ``*_metadata`` fact
+    # (race) doesn't return the metadata as the primary row.
+    primary_row = await btd6_db.get_latest_fact(
+        _EVENT_INDEX_FACT_TYPE.get(entity_kind),
+        entity_kind,
+        entity_key,
     )
-    primary_row = next(
-        (r for r in rows if not str(r.get("fact_type", "")).endswith("_metadata")),
-        rows[0] if rows else None,
-    )
-    metadata_row = next(
-        (r for r in rows if str(r.get("fact_type", "")).endswith("_metadata")),
-        None,
-    )
+
+    # Metadata fact — rules + restrictions, keyed per kind.
+    metadata_row: dict[str, Any] | None = None
+    md_lookup = _EVENT_METADATA_LOOKUP.get(entity_kind)
+    if md_lookup is not None:
+        md_fact_type, md_entity_kind, key_suffix = md_lookup
+        metadata_row = await btd6_db.get_latest_fact(
+            md_fact_type,
+            md_entity_kind,
+            f"{entity_key}{key_suffix}",
+        )
 
     if primary_row is None and metadata_row is None:
         return None
@@ -577,6 +616,174 @@ async def build_event_detail_view_model(
         fetched_at=fetched_at,
         freshness=freshness,
         context=make_context_handle(context_type, entity_key),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Live overview view-model (current events across all kinds)
+# ---------------------------------------------------------------------------
+
+
+# (entity_kind, short_kind, emoji, label) — useful-first order, mirrors the
+# hub panel's "Currently active" block.
+_OVERVIEW_KINDS: tuple[tuple[str, str, str, str], ...] = (
+    ("btd6_race", "race", "🏁", "Race"),
+    ("btd6_boss", "boss", "👑", "Boss"),
+    ("btd6_ct", "ct", "🗺️", "CT"),
+    ("btd6_odyssey", "odyssey", "🌊", "Odyssey"),
+    ("btd6_event", "event", "🎪", "Event"),
+)
+
+
+@dataclass(frozen=True)
+class LiveOverviewItem:
+    """One currently-live event in the overview's drill-down select."""
+
+    entity_kind: str
+    short_kind: str
+    emoji: str
+    label: str  # human kind label, e.g. "Race"
+    entity_key: str
+    name: str
+    end_ms: int | None
+    window: WindowStatus
+    context: ContextHandle
+
+
+@dataclass(frozen=True)
+class LiveOverviewKind:
+    """One kind's live status in the overview embed (live events or none)."""
+
+    entity_kind: str
+    short_kind: str
+    emoji: str
+    label: str
+    live: tuple[LiveOverviewItem, ...]
+    freshness: DataFreshness
+
+
+@dataclass(frozen=True)
+class LiveOverviewViewModel:
+    """Landing view-model: what BTD6 events are live *right now*."""
+
+    kinds: tuple[LiveOverviewKind, ...]
+    context: ContextHandle
+
+    @property
+    def all_live(self) -> tuple[LiveOverviewItem, ...]:
+        """Every currently-live event, flattened in useful-first order."""
+        return tuple(item for kind in self.kinds for item in kind.live)
+
+    @property
+    def total_live(self) -> int:
+        return sum(len(kind.live) for kind in self.kinds)
+
+    @property
+    def worst_freshness(self) -> FreshnessBucket:
+        """Worst per-kind freshness bucket — drives the embed's stale warning."""
+        order: tuple[FreshnessBucket, ...] = (
+            "fresh",
+            "aging",
+            "stale",
+            "never",
+        )
+        worst = "fresh"
+        worst_idx = 0
+        for kind in self.kinds:
+            try:
+                idx = order.index(kind.freshness.state)
+            except ValueError:
+                idx = 0
+            if idx > worst_idx:
+                worst_idx, worst = idx, kind.freshness.state
+        return worst  # type: ignore[return-value]
+
+
+async def build_live_overview_view_model() -> LiveOverviewViewModel:
+    """Compose the live-events landing view-model.
+
+    Uses :func:`services.btd6_live_query_service.get_active_events` (the
+    canonical "what's live" query) and applies the same **strict** active
+    filter as the hub panel — only events whose ``end_ms`` is explicitly in
+    the future surface as live. This makes the overview agree with the
+    panel's "Currently active" block and keeps ended/ambiguous events out of
+    the user-facing "what's running now" claim (the wall-of-``ended`` UX
+    problem the old browser had). Per-kind freshness comes from the latest
+    stored fact for that kind, so a kind with nothing live still shows
+    whether ingestion ran recently.
+    """
+    from datetime import datetime, timezone
+
+    from services import btd6_live_query_service
+    from utils.db import btd6_sources as btd6_db
+
+    entity_kinds = tuple(ek for ek, _, _, _ in _OVERVIEW_KINDS)
+    headlines = await btd6_live_query_service.get_active_events(entity_kinds)
+    rows = await btd6_db.latest_fact_per_entity_kind(list(entity_kinds))
+    now_ms = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
+
+    label_by_kind = {
+        ek: (short, emoji, label) for ek, short, emoji, label in _OVERVIEW_KINDS
+    }
+    live_by_kind: dict[str, list[LiveOverviewItem]] = {}
+    for headline in headlines:
+        # Strict filter: only an explicit future end_ms counts as live.
+        if headline.end_ms is None or headline.end_ms <= now_ms:
+            continue
+        meta = label_by_kind.get(headline.entity_kind)
+        if meta is None:
+            continue
+        short, emoji, label = meta
+        if not headline.entity_key:
+            continue
+        try:
+            ctx = make_context_handle(short, headline.entity_key)  # type: ignore[arg-type]
+        except ValueError:
+            continue
+        live_by_kind.setdefault(headline.entity_kind, []).append(
+            LiveOverviewItem(
+                entity_kind=headline.entity_kind,
+                short_kind=short,
+                emoji=emoji,
+                label=label,
+                entity_key=headline.entity_key,
+                name=headline.name or headline.entity_key,
+                end_ms=headline.end_ms,
+                window=format_window(headline.start_ms, headline.end_ms),
+                context=ctx,
+            ),
+        )
+
+    kinds: list[LiveOverviewKind] = []
+    for entity_kind, short, emoji, label in _OVERVIEW_KINDS:
+        source_key = _EVENT_KIND_TO_SOURCE_KEY.get(entity_kind, "")
+        row = rows.get(entity_kind)
+        if row is None:
+            freshness = DataFreshness(
+                state="never",
+                last_success_at=None,
+                last_attempt_at=None,
+                source_key=source_key,
+            )
+        else:
+            freshness = _freshness_from_fetched_at(
+                row.get("fetched_at"),
+                source_key=source_key,
+            )
+        kinds.append(
+            LiveOverviewKind(
+                entity_kind=entity_kind,
+                short_kind=short,
+                emoji=emoji,
+                label=label,
+                live=tuple(live_by_kind.get(entity_kind, ())),
+                freshness=freshness,
+            ),
+        )
+
+    return LiveOverviewViewModel(
+        kinds=tuple(kinds),
+        context=make_context_handle("hub", "live"),
     )
 
 
