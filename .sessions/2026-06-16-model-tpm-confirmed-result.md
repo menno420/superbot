@@ -1,6 +1,6 @@
 # 2026-06-16 — TPM result confirmed (5-mini 500K) + reconcile the compaction guidance
 
-> **Status:** `in-progress` — follow-up to the merged #978 (same session). Docs-only; one push.
+> **Status:** `complete` — follow-up to the merged #978 (same session), shipped as #980. Docs-only.
 > Session enders (Q-0089 idea, Q-0102 review, Q-0104 audit) were satisfied in this session's first
 > card (`2026-06-16-model-comparison-gpt5mini.md`, merged in #978) — not repeated here.
 
