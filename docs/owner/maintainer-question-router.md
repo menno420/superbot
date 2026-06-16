@@ -3451,7 +3451,11 @@ template residue per CLAUDE.md — the repo rules win.
 **Area:** Toolchain / CI parity / production deployment
 **Type:** Technical posture with owner-visible cost — needs an owner pick
 **Priority:** Medium (latent risk, not blocking; now documented and visible)
-**Status:** **Open** — awaiting owner
+**Status:** **DECIDED 2026-06-16 (owner, in-session) — option 1: align CI/local UP to 3.13.** One
+planned toolchain-migration session moves the workflow pins, `requirements-dev` wheels, the
+`python3.10 -m` rule (CLAUDE.md/hooks/scripts/docs), and the sandbox env to 3.13 so the suite runs on
+the interpreter that serves users. **Not yet built** — it needs its own focused session + verification
+pass (every check command changes); tracked as the next toolchain task. Context below.
 
 **Context (discovered during the 2026-06-10 Railway build outage, PR #685):**
 CI and every local check run **Python 3.10** (workflow pin + the repo-wide
@@ -4543,10 +4547,13 @@ execute in a future P0-3 arc PR (family 3).
 
 ### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
 
-> **OPEN — proposal for owner review (DISCUSS lane).** Raised 2026-06-13 by the workflow
-> reconciliation pass. Per **Q-0106** an agent **proposes** CLAUDE.md rule changes via a router
-> Q-block and never self-edits — this is that proposal. Nothing changes in CLAUDE.md until the owner
-> marks up which (if any) to promote; the rules remain strong-default journal candidates meanwhile.
+> **DECIDED 2026-06-16 (owner, in-session): promote all three.** Applied directly under the Q-0106
+> in-session exception. Mapping: **(a)** open-PR / merged-since check was already in CLAUDE.md
+> § Session & plan workflow (the "claim work before starting" bullet) — no change needed; **(b)**
+> generalized the "session prompts are guidance" bullet to **all cross-agent output** (Codex/Gemini/
+> ChatGPT reviews = input to verify against source, not orders); **(c)** added as CI-parity **rule 6**
+> ("a green check that contradicts visible evidence is a bug in the *check*"). Struck from the journal
+> candidate list. Original proposal + context below.
 
 **Area:** Agent workflow / binding rules (`.claude/CLAUDE.md`)
 **Type:** Owner decision (rule promotion — the journal's ★ "earned across multiple sessions" set)
@@ -4581,9 +4588,13 @@ wording in a follow-up, recording this Q as provenance) and are struck from the 
 
 ### Q-0121 — Give Hermes a second sanctioned write (`gh issue create`) for the bug-triage flow?
 
-> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 by the workflow reconciliation
-> pass while routing [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md). This is
-> the gate that idea's build waits on (the Q-0117 pattern, applied at intake). No code until decided.
+> **DECIDED 2026-06-16 (owner, in-session): YES.** Hermes may call `gh issue create` **scoped to
+> `bug`/`reconcile`/`continue` labels only** (its second sanctioned write, after `gh pr merge`,
+> Q-0117). This un-gates the [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md)
+> build: route `/bugreport` through Hermes (triage → curated `bug` issue) instead of firing an
+> unscreened fix-and-self-merge to prod. **Build in a control-plane session** per the idea's build
+> order; same Q-0105 calibration discipline as Q-0117 (trust the curation after it proves out).
+> Original question + context below.
 
 **Area:** Agent control plane (Hermes) · the read-only-model write boundary
 **Type:** Owner decision (expands Hermes' sanctioned writes by one)
@@ -4799,8 +4810,11 @@ test suite → re-enable xdist) captured in
 
 ### Q-0127 — Native auto-merge never arms for MCP-created PRs (the `auto-merge-enabler` doesn't fire)
 
-> **DISCUSS lane — agent-surfaced finding 2026-06-14 (PR #817 session). Proposing, not applying
-> (executable-config change, Q-0106 boundary).**
+> **DECIDED + APPLIED 2026-06-16 (owner, in-session): option (a) — the session arms it.** Under the
+> Q-0106 in-session exception, CLAUDE.md § Session & plan workflow now states: after opening a PR via
+> the GitHub MCP, call `enable_pr_auto_merge` yourself (the enabler workflow can't fire for
+> app-token-created PRs); the enabler stays the backstop for branch-pushed PRs. First exercised on
+> **PR #956** this session. The original finding + options are preserved below.
 
 **Area:** merge mechanics · the Q-0123 native-auto-merge workflow
 **Type:** automation gap — needs an owner call on the durable fix

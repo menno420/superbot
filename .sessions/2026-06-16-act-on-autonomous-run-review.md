@@ -30,7 +30,22 @@ docs+tooling PR (#956) — no `disbot/` runtime code.
 - **Q-0147 resolved** — myprofile PR C un-gated as **in-guild only, no join DM**; the owner's broader
   DM policy captured as `server-owner-configurable-moderation-dms-2026-06-16`.
 
-**Housekeeping:** trimmed `active-work.md` (stale claims + bloated cleared list).
+**Housekeeping:** trimmed `active-work.md` (stale claims + bloated cleared list); synced `origin/main`
+(union-resolved the #953/#955 ledger conflicts).
+
+## Owner answers applied (same session)
+
+The owner answered the four queued router questions; recorded + applied:
+- **Q-0120** — promote 3 earned rules → CLAUDE.md: **(a)** open-PR/merged-since check was already
+  present (no change); **(b)** generalized the "session prompts are guidance" bullet to *all*
+  cross-agent output (Codex/Gemini/ChatGPT reviews = verify, not orders); **(c)** new CI-parity
+  rule 6 ("a green check that contradicts the evidence is a bug in the *check*").
+- **Q-0127** — session arms auto-merge after an MCP-opened PR → CLAUDE.md § Session & plan workflow
+  (first exercised on this PR; the enabler workflow can't fire for app-token-created PRs).
+- **Q-0085** — align CI/local up to Python 3.13: recorded **decided**; a focused migration session
+  builds it (touches every check command).
+- **Q-0121** — Hermes may file scoped `bug`/`reconcile`/`continue` issues: recorded **decided**; a
+  control-plane session builds the triage flow.
 
 ## Verified the owner's "already done" corrections
 - **Railway key:** `RAILWAY_API_KEY` is now **36 chars** (was 29) — re-paste confirmed (length-only check).
@@ -74,9 +89,9 @@ entry owed by this session until #956 itself merges.
 
 - **Did:** acted on the overnight-run review + owner's answers — 4 loop-closers + 2 corrections + Q-0147 · **Outcome:** shipped
 - **Shipped:** #956 — run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy correction · Q-0147 resolution · ledger tidy
-- **⚑ Owner decisions needed:** 4 queued router questions surfaced for answer — **Q-0085** (CI/local 3.10 vs prod 3.13), **Q-0120** (promote 3 earned rules into CLAUDE.md), **Q-0121** (let Hermes file curated bug issues), **Q-0127** (adopt session-arms-auto-merge as the durable fix)
-- **⚑ Owner manual steps:** none — the key re-paste, prompt re-sync, and "deploys" the review flagged were all already done (verified) or automatic (auto-deploy on merge)
-- **↪ Next:** myprofile PR C is now buildable (in-guild hint, no DM); the moderation-DM idea awaits lane capacity
+- **⚑ Owner decisions needed:** none open — the 4 queued questions (Q-0085/0120/0121/0127) were all answered + recorded this session (Q-0120/0127 applied to CLAUDE.md; Q-0085/0121 decided, build pending)
+- **⚑ Owner manual steps:** **toggle GitHub branch protection → "Require branches to be up to date before merging" on `main`** — the complete fix for the recurring conflict-rot the owner flagged (agents can't change repo settings). Else none — key/prompt/deploys already done or automatic.
+- **↪ Next:** myprofile PR C buildable (in-guild hint, no DM); Q-0085 3.13-migration + Q-0121 Hermes-triage are decided/buildable in focused sessions; moderation-DM idea awaits lane capacity
 
 ## 📊 Telemetry
 
