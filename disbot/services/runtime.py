@@ -256,8 +256,13 @@ async def run_heartbeat_loop(
       to keep running with a stale lock that another replica may have
       already reclaimed.
     * On a successful ``UPDATE 0`` (the row no longer matches our
-      ``boot_id``): treat as fatal; another replica won. Exit
-      immediately so we don't double-respond.
+      ``boot_id``) **while ``stop_event`` is set**: the shutdown path
+      (``bot1._drive_close_on_lifecycle_request``) released the lock on
+      purpose for a fast deploy handoff. Exit the loop cleanly
+      (``outcome="released"``) — this is expected, not a takeover.
+    * On a successful ``UPDATE 0`` with ``stop_event`` unset: treat as
+      fatal; another replica won. Exit immediately so we don't
+      double-respond.
     """
     from services import metrics as _metrics
 
@@ -293,6 +298,23 @@ async def run_heartbeat_loop(
                 time.monotonic() - heartbeat_started_at,
             )
             if not owned:
+                if stop_event.is_set():
+                    # Shutdown in progress: the close path released the
+                    # lock on purpose for a fast deploy handoff (see
+                    # bot1._drive_close_on_lifecycle_request, which sets
+                    # this event *before* deleting the row). A missing row
+                    # here is expected, not a hostile peer-reclaim — exit
+                    # the loop cleanly rather than os._exit(1).
+                    _metrics.runtime_lock_heartbeat_total.labels(
+                        outcome="released",
+                    ).inc()
+                    logger.info(
+                        "Runtime lock released for shutdown; heartbeat "
+                        "loop exiting (lock_name=%s boot_id=%s).",
+                        lock_name,
+                        boot_id,
+                    )
+                    return
                 _metrics.runtime_lock_heartbeat_total.labels(outcome="lost").inc()
                 logger.critical(
                     "Runtime lock no longer owned by this boot "

@@ -25,9 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/keen-heisenberg-xqro71` · runtime lock — release early on shutdown (fix ~85s deploy
-  downtime; prod log triage) · `disbot/{bot1.py,services/runtime.py,services/metrics.py}` +
-  lifecycle invariant tests · 2026-06-16
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
@@ -40,6 +37,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/keen-heisenberg-xqro71` · runtime lock — release early on shutdown (fix ~85s deploy
+  downtime; prod log triage) · `disbot/{bot1.py,services/runtime.py,services/metrics.py}` +
+  lifecycle invariant tests · 2026-06-16 · **PR #948 (open, auto-merge on green)**
 - `claude/hopeful-allen-qt5ax3` · games-economy faucet/sink diagnostic (`!platform economy`) ·
   `utils/db/economy` + `services/economy_flow_service` + `cogs/diagnostic` · 2026-06-16 ·
   **PR #937 (merged)**

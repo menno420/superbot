@@ -14,8 +14,11 @@ future contributor cannot quietly:
   depends on (beginning / completed / timeout / startup summary),
 * remove a Prometheus metric the dashboards rely on
   (``lifecycle_*``, ``runtime_lock_*``, ``webhook_*``),
-* move cleanup ownership out of ``main()``'s finalizer into the
-  close-driver (which would couple shutdown vs restart cleanup).
+* move local-teardown ownership (DB close, reporter close, process
+  exit) out of ``main()``'s finalizer into the close-driver (which
+  would couple shutdown vs restart cleanup) — the runtime-lock release
+  is the deliberate exception, dropped *early* by the driver for a fast
+  deploy handoff (see ``test_close_driver_releases_runtime_lock_before_bot_close``).
 
 The contract is enforced via AST + attribute inspection so it runs in
 under a second and surfaces a meaningful failure message at CI time.
@@ -216,7 +219,6 @@ def test_close_driver_calls_close_timeout_webhook_before_os_exit() -> None:
 _DRIVER_FORBIDDEN_CALLS: tuple[str, ...] = (
     "db.close",
     "reporter.close",
-    "release_lock_best_effort",
     "sys.exit",
     "os.execv",
 )
@@ -224,7 +226,6 @@ _DRIVER_FORBIDDEN_CALLS: tuple[str, ...] = (
 
 def test_close_driver_does_not_own_finalizer_cleanup() -> None:
     """``main()``'s ``finally`` block is the canonical owner of:
-      - the runtime-lock release (``release_lock_best_effort``),
       - the DB pool close (``db.close``),
       - the reporter HTTP teardown (``reporter.close``),
       - any process-exit primitive other than the timeout-branch
@@ -233,6 +234,14 @@ def test_close_driver_does_not_own_finalizer_cleanup() -> None:
     A driver that owns any of these forks shutdown vs restart cleanup,
     which is what the close-path PRs generalised away.  This invariant
     catches any reversal.
+
+    **Exception — the runtime-lock release.** The lock release is *not*
+    local teardown; it is the next-replica handoff signal, and leaking
+    it costs ~90s of user-visible downtime on the next deploy. So the
+    driver deliberately drops it early (pinned by
+    ``test_close_driver_releases_runtime_lock_before_bot_close``);
+    main()'s finally re-runs it idempotently. It is intentionally NOT in
+    ``_DRIVER_FORBIDDEN_CALLS``.
     """
     fn = _close_driver_ast()
     offenders: list[str] = []
@@ -246,6 +255,32 @@ def test_close_driver_does_not_own_finalizer_cleanup() -> None:
         "contract reserves these for main()'s finally block: "
         f"{sorted(set(offenders))!r}"
     )
+
+
+def test_close_driver_releases_runtime_lock_before_bot_close() -> None:
+    """Fast deploy handoff (the ~85s-downtime fix): the close-driver must
+    drop the runtime lock EARLY — before the slow ``bot.close()`` — so a
+    platform SIGKILL mid-drain cannot leave the singleton lock wedged for
+    its ~90s stale TTL. The lock release is the one teardown step the
+    driver owns (it is the next-replica handoff signal, not local cleanup
+    like db/reporter close); ``main()``'s finally re-runs it idempotently.
+    """
+    fn = _close_driver_ast()
+    release_calls = [
+        c
+        for c in _calls_in(fn)
+        if _call_dotted_name(c).endswith("release_lock_best_effort")
+    ]
+    assert release_calls, (
+        "Close-driver must call release_lock_best_effort() early so the "
+        "runtime lock is freed before bot.close() — otherwise a SIGKILL "
+        "mid-close leaks the lock for ~90s (deploy downtime)."
+    )
+    close_calls = [c for c in _calls_in(fn) if _call_dotted_name(c) == "bot.close"]
+    assert close_calls, "Close-driver must still call bot.close()."
+    assert min(c.lineno for c in release_calls) < min(
+        c.lineno for c in close_calls
+    ), "release_lock_best_effort() must run BEFORE bot.close() in the driver."
 
 
 # ---------------------------------------------------------------------------

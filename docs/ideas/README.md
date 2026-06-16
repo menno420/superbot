@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
+  `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an
+  operator can set it **below** the platform's real SIGTERM→SIGKILL grace (~10s observed on Railway vs
+  the hardcoded 20s) — defense-in-depth so the close-driver's force-exit fallback actually fires before
+  the platform kills the process. Small/decided-lane follow-up. → relates `disbot/bot1.py` ·
+  `disbot/services/runtime.py`.
 - [`control-plane-single-source-pointer-2026-06-15.md`](./control-plane-single-source-pointer-2026-06-15.md) —
   **session idea (2026-06-15, Q-0089) — ✅ EXECUTED (PR #943):** the autonomous-loop
   control-plane truth lives in two prose homes (the canonical table in `autonomous-routines.md` **and**
