@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}SuperBot Dashboard{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/style.css" />
+    <style>
+      html { scroll-behavior: smooth; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
   </head>
   <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
     <header class="border-b border-slate-800 bg-slate-900/70 backdrop-blur sticky top-0 z-10">
       <nav class="mx-auto max-w-5xl px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2">
         <a href="/" class="font-bold text-lg mr-2">🤖 SuperBot</a>
-        {% set nav_items = [('functions', 'Functions'), ('ideas', 'Ideas'), ('bugs', 'Bugs'), ('updates', 'Updates'), ('env', 'Env map')] %}
+        {% set nav_items = [('status', 'Status'), ('functions', 'Functions'), ('games', 'Games'), ('commands', 'Commands'), ('aliases', 'Aliases'), ('settings', 'Settings'), ('access', 'Access'), ('ideas', 'Ideas'), ('bugs', 'Bugs'), ('updates', 'Updates'), ('env', 'Env map')] %}
         {% for key, label in nav_items %}
           <a
             href="/{{ key }}"

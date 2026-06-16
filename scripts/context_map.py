@@ -46,7 +46,16 @@ TESTS_ROOT = REPO_ROOT / "tests"
 LAYER_PACKAGES = ("cogs", "core", "governance", "services", "utils", "views")
 
 # Standalone top-level modules that are not inside a layer package.
-TOP_LEVEL_MODULES = {"bot1", "config", "guild_lifecycle", "healthserver"}
+# ``control_api`` extends the ``healthserver`` HTTP surface and (later) wires the
+# audited service seams to the dashboard, so it is composition-root infra like
+# ``healthserver`` — it cannot live in a layer (it will import ``services``).
+TOP_LEVEL_MODULES = {
+    "bot1",
+    "config",
+    "control_api",
+    "guild_lifecycle",
+    "healthserver",
+}
 
 HIGH_FAN_IN = 15
 

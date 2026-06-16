@@ -5891,3 +5891,143 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md) ·
 [`docs/ideas/developer-dashboard-2026-06-16.md`](../ideas/developer-dashboard-2026-06-16.md) ·
 `dashboard/` · `scripts/export_dashboard_data.py` · this Q-block.
+
+### Q-0156 — Dashboard live editor: edit help & command panels from the website (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly via `AskUserQuestion`).** Owner:
+> *"I'd also like to be able to edit the help message and command panels directly from the website, so
+> you can move buttons to wherever you want."* Recorded for provenance. The editor's bot-side half
+> touches `disbot/` runtime, so it is **designed first** (this block + the plan doc) and built as its
+> own focused PR(s) — not bundled into the read-only showcase work.
+
+**Decisions:**
+
+- **Edits change the live bot** (not a website-only mockup). Because the bot's audited-seam rule
+  forbids bypassing `services.help_overlay_mutation`, the website edits the live bot **through the
+  bot**, via a private-network control API the bot exposes over the existing seam — never by writing
+  `help_overlay` rows directly (that would skip audit + leave the bot's overlay cache stale).
+- **Help text & visibility first.** The per-guild Help overlay (hide / rename / re-describe + Home
+  message) is already data-driven and audited, so the website editor is a second front-end over it.
+  **Moving panel buttons is greenfield** (panels are hardcoded `@discord.ui.button`) and needs a new
+  DB-backed panel-layout engine in the bot first — deferred to a later phase (L3).
+- **Login = Discord OAuth** (ties identity to the servers the owner admins → per-server editing is
+  naturally scoped; the bot re-checks `administrator` on every write).
+- **Read-only showcase expansion → all four areas** (settings/config catalogue, permissions/access
+  map, live bot status/health, games & economy). Settings catalogue + access map shipped first.
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+(architecture + phased build L0–L3) · `services/help_overlay_mutation.py` (the seam it fronts) ·
+`views/help/editor.py` (the in-Discord editor it mirrors) · this Q-block.
+
+### Q-0157 — Edit settings from the website: global (owner) + per-server scopes (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session).** Owner: *"would it be possible to edit the
+> settings from the website? It's fine if that has to trigger a redeploy. As bot owner give me the
+> option to change things globally instead of only for the server, as well as a per-server option if
+> available."* Recorded for provenance; the bot-side half touches the hot settings path, so it's
+> designed first and built as a focused runtime PR.
+
+**Decisions / findings:**
+
+- **Both scopes wanted:** a **global** (bot-owner, all-servers) default **and** a **per-server**
+  override. Per-server already exists (`guild_settings` KV); the **global layer is new**.
+- **Design (mirrors `feature_flags` per-guild → global → default):** add a global row space
+  (`guild_id = 0` or a `global_settings` table); change `get_setting` resolution to
+  per-guild → global → caller default (one function, hot path → focused runtime PR); an audited
+  `settings_mutation` seam; the website (owner auth) edits via the control API with a scope picker
+  (global = owner-gated, per-server = admin-gated, re-checked bot-side).
+- **"Redeploy is fine"** → with the DB global layer, **neither scope needs a redeploy** (it applies
+  live); the redeploy path is only relevant to the code-default fallback, which is messier.
+- **Prerequisite:** a **settings-metadata registry** (key → type/default/label/scope) — needed to
+  render an editor and to enrich the read-only `/settings` page. Safe, additive; build first.
+- Shares the **same auth + control-API foundation** as the help/alias editors (Q-0156).
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Settings editor — global + per-server" · `utils/db/settings.py` · `core/runtime/feature_flags.py`
+(the resolution pattern) · this Q-block.
+
+### Q-0158 — The dashboard is the bot's main website; `/commands` becomes a management surface (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session).** Owner set the scope and added asks:
+> *"this will be the main website for the bot — later a broader project-management site (review repo
+> sectors like the AI memory system). It should integrate well with the bot, but the bot itself stays
+> the top focus: everything must remain correctly manageable in the bot. The website is a shortcut to
+> manage everything faster with more oversight. Each command should get its own alias box; it should be
+> possible to enable/disable each command from the website; plus a search and a Manage button on every
+> command and cog."*
+
+**Decisions / findings:**
+
+- **Scope:** this `dashboard/` site is the **main bot website**; a separate broader project site comes
+  later. Standing principles: (1) the **bot stays the source of truth + top priority** (everything
+  manageable in the bot itself); (2) the website **front-ends existing audited bot seams** — never a
+  parallel system.
+- **Enable/disable commands** → front-end **`services.command_routing`** (migration 036): per-guild,
+  scope-aware **per-cog** enable/disable, already audited (`set_policy`). Per-*individual-command* is
+  finer than the bot does today → a later extension; start at cog level.
+- **Per-command alias box** (correction): the global `/aliases` form stays as broad search/quick-add;
+  *additionally* each command gets its own alias box in `/commands`. Backing = the synonym layer.
+- **`/commands` → management surface:** existing search + a **Manage button on every command and cog**.
+  Read side (current aliases + routing state + buttons) builds now; write side lands with the
+  control-API + auth foundation (Q-0156 L0–L2).
+- This session shipped the **settings read-model**: `/settings` now surfaces each setting's typed
+  `SettingSpec` (type/default/hint/choices) via `scripts/scan_setting_specs.py` — confirming the
+  settings editor + metadata already exist in the bot (front-end them, don't rebuild).
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Command management surface" + "Strategic framing" · `services/command_routing.py` ·
+`services/settings_mutation.py` · this Q-block.
+
+### Q-0159 — Free multi-user control panel: Discord-login identity, per-user config, bot-ready-first (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session).** Owner: *"we are building a **free-to-use**
+> control panel of this bot, so we need verification set up — Discord-account login — then the website
+> can see what your permissions are and for which guild/user the changes are. Everyone should be able
+> to change it personally how they like, so we need not only per-guild memory of the configuration but
+> also **per-user**. This was already the plan, but we should **not rush it — first the bot needs to be
+> ready for this**."*
+
+**Decisions / findings:**
+
+- **Free multi-user:** the site is a public control panel (anyone with Discord login), not just the
+  owner. Discord OAuth → identity + guild list; **the bot decides authority** per request.
+- **Per-user config already exists** (don't rebuild): `user_participation` (migrations 027/028) +
+  `services.participation_mutation` + `core/runtime/user_config.py` + the in-Discord profile editor
+  (`views/profile/`). Per-guild exists too. The site front-ends both.
+- **The real "bot-ready" gap is the control API + an identity→authority bridge** — the control API
+  resolves `(user_id, guild_id)` to a member and runs the **existing** capability checks
+  (`governance.capability.actor_holds_capability`), so the site shows only allowed controls and every
+  write is bot-verified. The site stores only a session; no second source of truth.
+- **Sequencing (owner: don't rush):** bot-ready first (control API → identity/authority bridge) →
+  *then* the website Discord login + editors.
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Free multi-user control panel" · `services/participation_mutation.py` ·
+`governance/capability.py` · this Q-block.
+
+### Q-0160 — Command enable/disable granularity: cog-level now, per-command later (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly via `AskUserQuestion`).** While
+> building the `/commands` management surface (Q-0158), the open fork the handoff flagged was put to
+> the owner: Q-0158 literally asked to *"enable/disable each command from the website,"* but the bot
+> today routes only at **cog (subsystem)** level (`services.command_routing`, migration 036).
+> Per-individual-command disable would be a **new, finer routing layer in the bot** (a new DB table +
+> an enforcement hook in the dispatch path). Asked which direction the enable/disable affordance
+> should take.
+
+**Decision:**
+
+- **Cog-level now, per-command later.** The website's enable/disable **front-ends the existing
+  audited `command_routing`** (per-cog, scope-aware channel → category → guild → default-on, via
+  `set_policy`) — no new bot runtime. **Per-command** enable/disable stays a **documented future bot
+  layer**, not built now.
+- **Read-side impact (this session):** the `/commands` Manage panels show **cog-level** routing state
+  and front the synonym layer for the per-command **alias** suggest box; they do **not** imply a
+  per-command on/off toggle. The live write side (toggling, live aliases) still lands with the
+  control API + Discord OAuth (Phase 2), which the owner has not yet set up.
+- Confirms the interpretation already recorded in Q-0158; this Q-block is its explicit owner sign-off
+  so a later session doesn't reopen the fork.
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Command management surface" · `services/command_routing.py` · `dashboard/templates/commands.html` ·
+this Q-block.

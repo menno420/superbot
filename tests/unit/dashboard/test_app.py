@@ -33,12 +33,76 @@ def client():
 
 
 @pytest.mark.parametrize(
-    "path", ["/", "/functions", "/ideas", "/bugs", "/updates", "/env"]
+    "path",
+    [
+        "/",
+        "/status",
+        "/functions",
+        "/games",
+        "/commands",
+        "/aliases",
+        "/settings",
+        "/access",
+        "/ideas",
+        "/bugs",
+        "/updates",
+        "/env",
+    ],
 )
 def test_pages_render(client, path):
     resp = client.get(path)
     assert resp.status_code == 200
     assert "SuperBot" in resp.text
+
+
+def test_games_page_shows_player_subsystems(client):
+    resp = client.get("/games")
+    assert resp.status_code == 200
+    assert "Games &amp; economy" in resp.text or "Games & economy" in resp.text
+
+
+def test_aliases_page_renders_suggestion_form(client):
+    resp = client.get("/aliases")
+    assert resp.status_code == 200
+    # The form + the embedded collision data the JS needs.
+    assert "Suggest a command alias" in resp.text
+    assert 'id="taken-data"' in resp.text
+    assert 'id="cmd-list"' in resp.text
+
+
+def test_commands_page_has_manage_surface(client):
+    resp = client.get("/commands")
+    assert resp.status_code == 200
+    # A Manage button (on every command and cog) + the slide-over panel.
+    assert "manage-btn" in resp.text
+    assert "Manage" in resp.text
+    assert 'id="drawer"' in resp.text
+    # The embedded data the drawer's JS needs: collision map, synonyms, routable.
+    assert 'id="taken-data"' in resp.text
+    assert 'id="syn-data"' in resp.text
+    assert 'id="routable-data"' in resp.text
+    # Cog-level routing framing (Q-0160) front-ending the audited seam.
+    assert "command_routing.set_policy" in resp.text
+    # Manage buttons carry per-command data attributes for the drawer.
+    assert 'data-kind="command"' in resp.text
+    # Acronym-aware cog->subsystem join: BTD6Cog now resolves to ``btd6``.
+    assert 'data-subsystem="btd6"' in resp.text
+
+
+def test_settings_page_lists_a_known_key(client):
+    resp = client.get("/settings")
+    assert resp.status_code == 200
+    # A known setting constant + the read-only "key names only" framing.
+    assert "WARN_THRESHOLD" in resp.text
+    assert "key names" in resp.text
+
+
+def test_access_page_shows_tier_ladder_and_visibility_caveat(client):
+    resp = client.get("/access")
+    assert resp.status_code == 200
+    # The ladder + the visibility-is-not-execution caveat.
+    assert "administrator" in resp.text
+    assert "not</strong> permission to execute" in resp.text
 
 
 def test_env_page_shows_usage_map_without_values(client):
@@ -47,6 +111,15 @@ def test_env_page_shows_usage_map_without_values(client):
     # Surfaces a known required var name and the read-only disclaimer.
     assert "DATABASE_URL" in resp.text
     assert "never a value" in resp.text
+
+
+def test_status_page_shows_build_and_health(client):
+    resp = client.get("/status")
+    assert resp.status_code == 200
+    # The headline sections of the status surface.
+    assert "Deployed build" in resp.text
+    assert "Bug health" in resp.text
+    assert "Inventory" in resp.text
 
 
 def test_healthz_ok(client):

@@ -35,6 +35,7 @@ import datetime as dt
 import importlib.util
 import json
 import re
+import subprocess
 from collections.abc import Callable
 from pathlib import Path
 
@@ -53,6 +54,28 @@ def _load_scan_env_usage() -> Callable[..., list[dict]]:
     return module.scan_env_usage
 
 
+def _load_scan_commands() -> Callable[..., list[dict]]:
+    """Load ``scan_commands`` from its sibling script (scripts/ isn't a package)."""
+    script = Path(__file__).resolve().parent / "scan_commands.py"
+    spec = importlib.util.spec_from_file_location("_scan_commands_seam", script)
+    if spec is None or spec.loader is None:  # pragma: no cover - import wiring
+        raise ImportError("cannot load scan_commands.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.scan_commands
+
+
+def _load_sibling(script_name: str, attr: str) -> Callable[..., object]:
+    """Load one callable from a sibling ``scripts/`` module (not a package)."""
+    script = Path(__file__).resolve().parent / script_name
+    spec = importlib.util.spec_from_file_location(f"_{attr}_seam", script)
+    if spec is None or spec.loader is None:  # pragma: no cover - import wiring
+        raise ImportError(f"cannot load {script_name}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return getattr(module, attr)
+
+
 # Catalogue fields surfaced from the registry (all str/list literals — the
 # non-literal ``color`` field is intentionally skipped).
 _CATALOGUE_FIELDS = (
@@ -61,6 +84,11 @@ _CATALOGUE_FIELDS = (
     "emoji",
     "category",
     "visibility_tier",
+    # ``visibility_mode`` ("normal" / "internal") drives cog-routing operator
+    # visibility: only non-internal subsystems are operator-routable (see
+    # views/setup/sections/cog_routing.py), so the dashboard reads it to mark a
+    # cog's routing state accurately.
+    "visibility_mode",
     "tags",
     "entry_points",
     "capabilities",
@@ -261,6 +289,42 @@ def parse_updates(sessions_dir: Path, limit: int = 60) -> list[dict]:
     return updates[:limit]
 
 
+def _git_meta(repo_root: Path) -> dict[str, str]:
+    """Return the build commit context the data was generated from, or ``{}``.
+
+    Powers the ``/status`` "deployed build" banner: the dashboard auto-redeploys
+    on every merge to ``main`` and serves the committed ``dashboard.json``, so the
+    commit recorded here (HEAD when the data was last regenerated) is the deployed
+    snapshot's version. Guarded — git may be absent in a build image, and a
+    missing build block must degrade to "unavailable", never crash the export.
+    """
+
+    def _git(*args: str) -> str:
+        return subprocess.run(  # noqa: S603 - fixed argv, no shell
+            ["git", *args],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=True,
+        ).stdout.strip()
+
+    try:
+        return {
+            "commit": _git("rev-parse", "--short", "HEAD"),
+            "subject": _git("log", "-1", "--format=%s"),
+            "committed_at": _git(
+                "log",
+                "-1",
+                "--format=%cd",
+                "--date=format:%Y-%m-%dT%H:%M:%SZ",
+            ),
+            "branch": _git("rev-parse", "--abbrev-ref", "HEAD"),
+        }
+    except (OSError, subprocess.SubprocessError):
+        return {}
+
+
 def build_data(repo_root: Path = REPO_ROOT) -> dict:
     """Read every source and assemble the dashboard data payload."""
     registry = repo_root / "disbot" / "utils" / "subsystem_registry.py"
@@ -283,18 +347,71 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         if scan_root.is_dir()
         else []
     )
+    cogs = (
+        _load_scan_commands()(repo_root=repo_root)
+        if (repo_root / "disbot" / "cogs").is_dir()
+        else []
+    )
+
+    keys_dir = repo_root / "disbot" / "utils" / "settings_keys"
+    settings = (
+        _load_sibling("scan_settings.py", "scan_settings")(keys_dir=keys_dir)
+        if keys_dir.is_dir()
+        else []
+    )
+    cogs_dir = repo_root / "disbot" / "cogs"
+    specs = (
+        _load_sibling("scan_setting_specs.py", "scan_setting_specs")(
+            cogs_dir=cogs_dir,
+            keys_dir=keys_dir,
+        )
+        if cogs_dir.is_dir()
+        else []
+    )
+    # Enrich each settings key with its typed SettingSpec metadata (type,
+    # default, hint, enum choices) where the bot declares one.
+    spec_by_key = {s["settings_key"]: s for s in specs if s["settings_key"]}
+    for domain in settings:
+        for entry in domain["keys"]:
+            spec = spec_by_key.get(entry["key"])
+            if spec is not None:
+                entry["type"] = spec["value_type"]
+                entry["hint"] = spec["hint"]
+                entry["allowed_values"] = spec["allowed_values"]
+                if spec["default_known"]:
+                    entry["default"] = spec["default"]
+    registry_path = repo_root / "disbot" / "utils" / "subsystem_registry.py"
+    access = (
+        _load_sibling("scan_access.py", "scan_access")(registry=registry_path)
+        if registry_path.exists()
+        else {"tiers": [], "total_visible": 0, "internal_count": 0}
+    )
+    synonyms_path = repo_root / "disbot" / "utils" / "synonyms.py"
+    synonyms = (
+        _load_sibling("scan_synonyms.py", "scan_synonyms")(path=synonyms_path)
+        if synonyms_path.exists()
+        else []
+    )
 
     return {
         "meta": {
             "generated_at": dt.datetime.now(dt.timezone.utc).strftime(
                 "%Y-%m-%dT%H:%M:%SZ",
             ),
+            "build": _git_meta(repo_root),
             "counts": {
                 "functions": len(catalogue),
                 "ideas": len(ideas),
                 "bugs": len(bugs),
                 "updates": len(updates),
                 "env_vars": len(env_usage),
+                "cogs": sum(1 for c in cogs if c.get("is_cog")),
+                "commands": sum(len(c["commands"]) for c in cogs),
+                "setting_keys": sum(len(d["keys"]) for d in settings),
+                "setting_domains": len(settings),
+                "typed_settings": len(specs),
+                "visible_subsystems": access.get("total_visible", 0),
+                "synonyms": sum(len(s["synonyms"]) for s in synonyms),
             },
         },
         "catalogue": catalogue,
@@ -302,6 +419,10 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "bugs": bugs,
         "updates": updates,
         "env_usage": env_usage,
+        "cogs": cogs,
+        "settings": settings,
+        "access": access,
+        "synonyms": synonyms,
     }
 
 

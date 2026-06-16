@@ -20,6 +20,16 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`btd6-shorthand-corpus-eval-2026-06-16.md`](./btd6-shorthand-corpus-eval-2026-06-16.md) —
+  **late discovery from the BUG-0015 session (2026-06-16, PR #963):** a single **corpus regression
+  test** holding the canonical community-shorthand vocabulary (`despo`/`impop`/`r53`/`420 farm`/
+  `d67`/…) and asserting each routes to `AITask.BTD6_ANSWER` — the **class guard** for the recurring
+  "shorthand falls to the unguarded general path → model freelances" bug (BUG-0001/0003/0004/0008/
+  0015), which today has only scattered per-bug tests. Small/safe/decided-lane → a strong
+  grooming-pass execute-now candidate. Also records a verified *minor* hero-per-level-stats sibling
+  finding (heroes route fine + descriptions already ground; only non-headline-level exact stats are
+  the gap, low priority). → relates `services/ai_task_router.py` · `utils/btd6/keywords.py`.
+
 - [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
   **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
   deployed as a second Railway service — checklist, update tracker, bot-function catalogue,
@@ -39,6 +49,19 @@ Current broad captures:
   banner — turning the passive inventory into an active config check. Gated on the Phase 3 Railway-API
   integration. → relates `scripts/scan_env_usage.py` · `dashboard/`.
 
+- [`dashboard-registry-coverage-check-2026-06-16.md`](./dashboard-registry-coverage-check-2026-06-16.md) —
+  **SHIPPED 2026-06-16 (PR #990)**, broader than sketched: `scripts/check_dashboard_data.py` validates
+  the exported `dashboard.json` — cog→subsystem resolution (with a curated allow-list) + count
+  integrity + required fields — and a unit test validates the freshly-built export, so a new
+  unregistered cog / broken join / count drift **fails CI** instead of silently degrading a page.
+  → `scripts/check_dashboard_data.py` · `tests/unit/scripts/test_check_dashboard_data.py`.
+- [`dashboard-subcog-parent-subsystem-2026-06-16.md`](./dashboard-subcog-parent-subsystem-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the integrity guard #990):** the guard *allow-lists* the
+  cogs that don't resolve to a registry key (BTD6 sub-cogs · Paragon · RPS · Setup), but several of
+  them genuinely *belong* to a parent subsystem (`BTD6EventsCog`…→`btd6`) — so on the dashboard they
+  render with a generic 🧩 + no routing key. A small cog→parent-subsystem map in `scan_commands` would
+  let sub-cogs inherit their parent's registry identity (emoji/name/routing), shrinking the allow-list
+  to the truly-unregistered few. → relates `scripts/scan_commands.py` · `dashboard/`.
 - [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
   **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
   repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one
@@ -72,6 +95,14 @@ Current broad captures:
   backed by a `check_docs --soft-summary` mode so the soft ratchets are proactively visible, not
   discovered by luck. Touches the SessionStart hook → owner-wires per Q-0106. → relates
   `scripts/claude_session_start.sh` · `scripts/check_docs.py`.
+- [`deterministic-floor-catalogue-2026-06-16.md`](./deterministic-floor-catalogue-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the §7.6 capability/bloon roster-floor PR #975):** the
+  `_BTD6_LIST_BUILDERS` family grows ~one floor per dispatch, but "what's already fronted / which data
+  surface has no floor yet?" is recoverable only by grepping the dispatcher + reading each builder. A
+  tiny stdlib script that introspects the live tuple → maps each builder to its trigger phrase + the
+  service it fronts, and **flags roster-shaped surfaces with no floor** (hero capabilities, CT relics),
+  makes the next member obvious + the family's coverage legible. Decided-lane; small. → relates
+  `services/btd6_context_service.py::_BTD6_LIST_BUILDERS` · `services/btd6_capability_service.py`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
   round-range cash comparison requires a round token before *each* range's first anchor (to keep

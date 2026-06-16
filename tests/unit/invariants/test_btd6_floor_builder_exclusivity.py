@@ -64,6 +64,14 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "is the glaive dominus or ascended shadow paragon cheaper",
         "deterministic_paragon_cost_comparison_reply",
     ),
+    (
+        "which towers can pop lead without upgrades",
+        "deterministic_capability_roster_reply",
+    ),
+    (
+        "what are all the moab class bloons",
+        "deterministic_bloon_roster_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
@@ -75,6 +83,10 @@ _SHOULD_DEFER: tuple[str, ...] = (
     "how much cash do i earn from rounds 20-40",
     "should i play a dart monkey on easy or hard",
     "what is the navarch of the seas paragon",
+    "does the dartling gunner detect camo",
+    "which tower is best at popping lead",
+    "what is a moab",
+    "is the lead bloon immune to sharp",
 )
 
 
@@ -97,9 +109,9 @@ def _firing_builders(phrase: str) -> list[str]:
 @pytest.mark.parametrize(("phrase", "expected"), _SHOULD_FIRE)
 def test_exactly_one_builder_owns_each_should_fire_phrase(phrase: str, expected: str):
     firing = _firing_builders(phrase)
-    assert firing == [expected], (
-        f"{phrase!r}: expected only {expected} to fire, got {firing}"
-    )
+    assert firing == [
+        expected
+    ], f"{phrase!r}: expected only {expected} to fire, got {firing}"
     # The dispatcher serves that same builder's answer (order never masks it).
     assert btd6_context_service.deterministic_btd6_list_reply(phrase) is not None
 

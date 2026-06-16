@@ -20,7 +20,6 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -33,10 +32,12 @@ _EMPTY: dict[str, Any] = {
     "bugs": [],
     "updates": [],
     "env_usage": [],
+    "settings": [],
+    "access": {"tiers": [], "total_visible": 0, "internal_count": 0},
+    "synonyms": [],
 }
 
 app = FastAPI(title="SuperBot Dashboard", docs_url=None, redoc_url=None)
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
@@ -46,6 +47,46 @@ def load_data() -> dict[str, Any]:
         return json.loads(DATA_FILE.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return dict(_EMPTY)
+
+
+def _command_names(data: dict[str, Any]) -> list[str]:
+    """Sorted, de-duplicated set of every command name across all cogs."""
+    return sorted({c["name"] for cog in data.get("cogs", []) for c in cog["commands"]})
+
+
+def _build_taken_map(data: dict[str, Any]) -> dict[str, str]:
+    """Map every token already in use -> a human label of what owns it.
+
+    Synonyms first, then aliases, then command names last so the strongest owner
+    (a real command) wins a tie. Shared by ``/aliases`` and the per-command alias
+    box on ``/commands`` so both apply identical collision logic.
+    """
+    taken: dict[str, str] = {}
+    for syn in data.get("synonyms", []):
+        for token in syn["synonyms"]:
+            taken[token.lower()] = f"synonym of !{syn['canonical']}"
+    for cog in data.get("cogs", []):
+        for cmd in cog["commands"]:
+            for token in cmd.get("aliases") or []:
+                taken[token.lower()] = f"alias of !{cmd['name']}"
+    for name in _command_names(data):
+        taken[name.lower()] = "a command"
+    return taken
+
+
+def _routable_subsystems(data: dict[str, Any]) -> list[str]:
+    """Operator-routable subsystem keys — registered and not internal.
+
+    Mirrors ``views/setup/sections/cog_routing.py``: ``command_routing`` keys on
+    the subsystem key and only non-internal subsystems appear in the operator
+    routing picker, so this is the set a cog's per-server enable/disable state
+    applies to.
+    """
+    return sorted(
+        entry["key"]
+        for entry in data.get("catalogue", [])
+        if entry.get("visibility_mode", "normal") != "internal"
+    )
 
 
 @app.get("/healthz")
@@ -115,4 +156,150 @@ def env(request: Request):
         request,
         "env.html",
         {"data": load_data(), "page": "env"},
+    )
+
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings(request: Request):
+    """Settings catalogue — every per-guild setting key, grouped by subsystem."""
+    return templates.TemplateResponse(
+        request,
+        "settings.html",
+        {"data": load_data(), "page": "settings"},
+    )
+
+
+@app.get("/access", response_class=HTMLResponse)
+def access(request: Request):
+    """Permissions & access map — visibility tier ladder (mirrors visibility_rules)."""
+    return templates.TemplateResponse(
+        request,
+        "access.html",
+        {"data": load_data(), "page": "access"},
+    )
+
+
+@app.get("/games", response_class=HTMLResponse)
+def games(request: Request):
+    """Player-facing showcase — games, economy, and progression subsystems."""
+    data = load_data()
+    wanted = ("games", "economy", "progression")
+    by_cat: dict[str, list[dict]] = {}
+    for entry in data.get("catalogue", []):
+        if entry.get("category") in wanted:
+            by_cat.setdefault(entry["category"], []).append(entry)
+    groups = [(cat, by_cat[cat]) for cat in wanted if cat in by_cat]
+    tunables = [
+        domain
+        for domain in data.get("settings", [])
+        if domain["domain"] in ("games", "economy", "xp")
+    ]
+    return templates.TemplateResponse(
+        request,
+        "games.html",
+        {"data": data, "page": "games", "groups": groups, "tunables": tunables},
+    )
+
+
+@app.get("/aliases", response_class=HTMLResponse)
+def aliases(request: Request):
+    """Suggest a command alias — pick a command, propose an alias, get a live
+    collision check (against every command name, alias, and synonym) plus a
+    prefilled GitHub issue and a ready-to-paste ``synonyms.py`` snippet.
+    """
+    data = load_data()
+    return templates.TemplateResponse(
+        request,
+        "aliases.html",
+        {
+            "data": data,
+            "page": "aliases",
+            "commands": _command_names(data),
+            "taken": _build_taken_map(data),
+        },
+    )
+
+
+@app.get("/status", response_class=HTMLResponse)
+def status(request: Request):
+    """Live status & health — deployed build, inventory counts, bug & access health."""
+    data = load_data()
+    bugs = data.get("bugs", [])
+    open_bugs = [b for b in bugs if (b.get("status") or "").upper() == "OPEN"]
+    health = {
+        "bugs_total": len(bugs),
+        "bugs_open": len(open_bugs),
+        "open_bugs": open_bugs,
+    }
+    # Count map for the inventory grid -> (label, detail page) per known count key.
+    count_links = {
+        "functions": ("Subsystems", "/functions"),
+        "cogs": ("Cogs", "/commands"),
+        "commands": ("Commands", "/commands"),
+        "setting_keys": ("Settings", "/settings"),
+        "setting_domains": ("Setting domains", "/settings"),
+        "synonyms": ("Synonyms", "/aliases"),
+        "env_vars": ("Env vars", "/env"),
+        "ideas": ("Ideas", "/ideas"),
+        "bugs": ("Bugs", "/bugs"),
+        "updates": ("Updates", "/updates"),
+        "visible_subsystems": ("Visible subsystems", "/access"),
+    }
+    counts = data.get("meta", {}).get("counts", {})
+    cards = [
+        {"key": k, "label": label, "href": href, "value": counts.get(k, 0)}
+        for k, (label, href) in count_links.items()
+    ]
+    tiers = [t for t in data.get("access", {}).get("tiers", []) if t.get("subsystems")]
+    return templates.TemplateResponse(
+        request,
+        "status.html",
+        {
+            "data": data,
+            "page": "status",
+            "build": data.get("meta", {}).get("build", {}),
+            "health": health,
+            "cards": cards,
+            "tiers": tiers,
+        },
+    )
+
+
+@app.get("/commands", response_class=HTMLResponse)
+def commands(request: Request):
+    """Cog & command management surface — explorer + a per-item Manage panel.
+
+    The read side of the Q-0158 ask: every command and cog gets a Manage button
+    opening a panel with its current aliases, its cog's (cog-level) routing
+    state, and a per-command alias suggest box. Front-ends the bot's seams
+    (``command_routing`` + the synonym layer); the live write side lands with the
+    control API (Phase 2). Owner direction Q-0160: routing is cog-level.
+    """
+    data = load_data()
+    cmds = [c for cog in data.get("cogs", []) for c in cog["commands"]]
+    stats = {
+        "total": len(cmds),
+        "top_prefix": sum(
+            1 for c in cmds if c["type"] in ("prefix", "both") and not c["parent"]
+        ),
+        "subcommands": sum(1 for c in cmds if c["parent"]),
+        "slash": sum(1 for c in cmds if c["type"] == "slash" and not c["parent"]),
+        "button": sum(1 for c in cmds if c["button_backed"]),
+        "cogs": sum(1 for cog in data.get("cogs", []) if cog.get("is_cog")),
+    }
+    sysmap = {c["key"]: c for c in data.get("catalogue", [])}
+    return templates.TemplateResponse(
+        request,
+        "commands.html",
+        {
+            "data": data,
+            "page": "commands",
+            "stats": stats,
+            "sysmap": sysmap,
+            "routable": _routable_subsystems(data),
+            "taken": _build_taken_map(data),
+            "synonyms_by_canonical": {
+                s["canonical"]: s["synonyms"] for s in data.get("synonyms", [])
+            },
+        },
     )

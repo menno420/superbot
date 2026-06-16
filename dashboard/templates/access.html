@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Access map — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Permissions &amp; access map</h1>
+<p class="text-slate-400 mb-2 text-sm">
+  Who can <strong>see</strong> what. {{ data.access.total_visible }} user-facing subsystems across
+  {{ data.access.tiers | length }} visibility tiers — each subsystem first appears at the tier shown,
+  and higher tiers see everything below them.
+</p>
+<p class="text-amber-300/90 mb-6 text-xs rounded border border-amber-900/60 bg-amber-950/40 px-3 py-2">
+  👁 This is <strong>visibility</strong> (UI / Help discoverability), mirrored from
+  <code>disbot/utils/visibility_rules.py</code> — <strong>not</strong> permission to execute. A feature can
+  be advertised yet still gated at run time by governance.
+  {% if data.access.internal_count %}{{ data.access.internal_count }} internal/hidden subsystems are excluded.{% endif %}
+</p>
+
+{% set ns = namespace(running=0) %}
+<div class="space-y-4">
+  {% for tier in data.access.tiers %}
+    {% set ns.running = ns.running + (tier.subsystems | length) %}
+    <section class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+      <div class="flex items-center gap-2 flex-wrap mb-3">
+        <span class="text-base font-semibold capitalize text-sky-300">{{ tier.tier }}</span>
+        {% if tier.discord_permission %}
+          <span class="text-[10px] uppercase rounded bg-indigo-900/70 text-indigo-300 px-2 py-0.5">needs: {{ tier.discord_permission }}</span>
+        {% else %}
+          <span class="text-[10px] uppercase rounded bg-slate-800 text-slate-400 px-2 py-0.5">everyone</span>
+        {% endif %}
+        <span class="ml-auto text-xs text-slate-500">
+          +{{ tier.subsystems | length }} new · {{ ns.running }} visible here
+        </span>
+      </div>
+      {% if tier.subsystems %}
+        <div class="flex flex-wrap gap-1.5">
+          {% for sub in tier.subsystems %}
+            <span class="text-xs rounded-full border border-slate-700 bg-slate-950/60 px-2.5 py-1"
+                  title="{{ sub.key }} · {{ sub.category }}">
+              {{ sub.emoji }} {{ sub.display_name }}
+            </span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-xs text-slate-600 italic">No new subsystems unlock at this tier.</p>
+      {% endif %}
+    </section>
+  {% else %}
+    <p class="text-slate-500">No access data found.</p>
+  {% endfor %}
+</div>
+{% endblock %}

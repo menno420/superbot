@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Status &amp; health — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Status &amp; health</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  The deployed snapshot at a glance — what build is live, the inventory size, and whether anything
+  is flagged open. The dashboard auto-redeploys on every merge to <code>main</code> and serves the
+  committed data, so the build below is the version this page is rendering.
+</p>
+
+<section class="mb-8">
+  <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">Deployed build</h2>
+  {% if build and build.commit %}
+    <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <code class="rounded bg-slate-800 px-2 py-1 text-sky-300">{{ build.commit }}</code>
+        {% if build.branch %}<span class="text-xs text-slate-500">on <code>{{ build.branch }}</code></span>{% endif %}
+        {% if build.committed_at %}<span class="ml-auto text-xs text-slate-500">{{ build.committed_at }}</span>{% endif %}
+      </div>
+      {% if build.subject %}<p class="mt-2 text-sm text-slate-300">{{ build.subject }}</p>{% endif %}
+      <p class="mt-2 text-xs text-slate-500">Data generated {{ data.meta.generated_at or "n/a" }}.</p>
+    </div>
+  {% else %}
+    <p class="text-slate-500 text-sm">Build info unavailable for this snapshot (data generated {{ data.meta.generated_at or "n/a" }}).</p>
+  {% endif %}
+</section>
+
+<section class="mb-8">
+  <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">Bug health</h2>
+  {% if health.bugs_open %}
+    <div class="rounded-xl border border-amber-700/60 bg-amber-950/30 p-4">
+      <p class="text-sm font-semibold text-amber-300">
+        {{ health.bugs_open }} open of {{ health.bugs_total }} tracked bug{{ "s" if health.bugs_total != 1 }}
+      </p>
+      <ul class="mt-2 space-y-1">
+        {% for b in health.open_bugs %}
+          <li class="text-xs text-slate-300">
+            <code class="text-amber-300">{{ b.id }}</code> — {{ b.title }}
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="mt-2 text-xs text-slate-500">Full detail on the <a class="underline hover:text-slate-300" href="/bugs">Bugs</a> board.</p>
+    </div>
+  {% else %}
+    <div class="rounded-xl border border-emerald-800/60 bg-emerald-950/30 p-4">
+      <p class="text-sm font-semibold text-emerald-300">No open bugs — all {{ health.bugs_total }} tracked are resolved.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="mb-8">
+  <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">Inventory</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    {% for c in cards %}
+      <a href="{{ c.href }}" class="rounded-xl border border-slate-800 bg-slate-900/50 p-4 hover:border-sky-700 transition-colors">
+        <div class="text-2xl font-bold text-sky-300">{{ c.value }}</div>
+        <div class="text-xs text-slate-400 mt-1">{{ c.label }}</div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+{% if tiers %}
+  <section class="mb-4">
+    <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">Access distribution</h2>
+    <p class="text-slate-500 text-xs mb-3">
+      Visible subsystems per permission tier (visibility, <strong>not</strong> execution — see
+      <a class="underline hover:text-slate-300" href="/access">Access</a>).
+    </p>
+    <div class="grid gap-2 sm:grid-cols-3">
+      {% for t in tiers %}
+        <div class="rounded-lg border border-slate-800 bg-slate-900/50 p-3 flex items-center gap-3">
+          <span class="text-xl font-bold text-sky-300">{{ t.subsystems | length }}</span>
+          <span class="text-sm text-slate-300">{{ t.tier }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

@@ -14,12 +14,15 @@
 # logs the result. It is the SAFE WRAPPER (scheduling + logging + a no-op when
 # unconfigured) — you supply the one reset command for your Hermes version.
 #
-# THE ONE UNVERIFIED KNOB (confirm on the VPS, like apply_context_fixes.sh):
-# the exact way to clear the session depends on your Hermes build. Set it in
-# ~/.hermes/reset.env (chmod 600), e.g.:
-#     HERMES_RESET_CMD="hermes session new"      # if the CLI exposes it
-#     # or whatever your `hermes --help` / gateway docs show as the /new equivalent
-# Discover candidates with:  hermes --help ; hermes session --help ; hermes chat --help
+# THE RESET COMMAND (2026-06-16 incident finding — read first):
+# A `hermes_cli` gateway has NO clean CLI to reset the live conversation — verified via
+# `hermes gateway --help` (service lifecycle only; restart KEEPS state) and `hermes sessions --help`
+# (store mgmt: list/delete/prune). The only clean live reset is `/new` in Telegram. So PREFER the
+# continuous fix instead of this timer: lower compaction so sessions never get big
+# (`hermes config set compression.threshold 0.25`; see docs/operations/hermes-session-reset.md
+# § "Root cause clarification (2026-06-16)"). If you still want a hard periodic reset, set in
+# ~/.hermes/reset.env (chmod 600) a delete-current-session-then-restart command, e.g.:
+#     HERMES_RESET_CMD='id=$(hermes sessions list ... newest); hermes sessions delete "$id" && sudo systemctl restart hermes-gateway'
 # If HERMES_RESET_CMD is unset, this script is a logged no-op (never an error), so
 # the timer won't spam failures before you've configured it.
 #
