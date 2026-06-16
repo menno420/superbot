@@ -3451,7 +3451,11 @@ template residue per CLAUDE.md — the repo rules win.
 **Area:** Toolchain / CI parity / production deployment
 **Type:** Technical posture with owner-visible cost — needs an owner pick
 **Priority:** Medium (latent risk, not blocking; now documented and visible)
-**Status:** **Open** — awaiting owner
+**Status:** **DECIDED 2026-06-16 (owner, in-session) — option 1: align CI/local UP to 3.13.** One
+planned toolchain-migration session moves the workflow pins, `requirements-dev` wheels, the
+`python3.10 -m` rule (CLAUDE.md/hooks/scripts/docs), and the sandbox env to 3.13 so the suite runs on
+the interpreter that serves users. **Not yet built** — it needs its own focused session + verification
+pass (every check command changes); tracked as the next toolchain task. Context below.
 
 **Context (discovered during the 2026-06-10 Railway build outage, PR #685):**
 CI and every local check run **Python 3.10** (workflow pin + the repo-wide
@@ -4543,10 +4547,13 @@ execute in a future P0-3 arc PR (family 3).
 
 ### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
 
-> **OPEN — proposal for owner review (DISCUSS lane).** Raised 2026-06-13 by the workflow
-> reconciliation pass. Per **Q-0106** an agent **proposes** CLAUDE.md rule changes via a router
-> Q-block and never self-edits — this is that proposal. Nothing changes in CLAUDE.md until the owner
-> marks up which (if any) to promote; the rules remain strong-default journal candidates meanwhile.
+> **DECIDED 2026-06-16 (owner, in-session): promote all three.** Applied directly under the Q-0106
+> in-session exception. Mapping: **(a)** open-PR / merged-since check was already in CLAUDE.md
+> § Session & plan workflow (the "claim work before starting" bullet) — no change needed; **(b)**
+> generalized the "session prompts are guidance" bullet to **all cross-agent output** (Codex/Gemini/
+> ChatGPT reviews = input to verify against source, not orders); **(c)** added as CI-parity **rule 6**
+> ("a green check that contradicts visible evidence is a bug in the *check*"). Struck from the journal
+> candidate list. Original proposal + context below.
 
 **Area:** Agent workflow / binding rules (`.claude/CLAUDE.md`)
 **Type:** Owner decision (rule promotion — the journal's ★ "earned across multiple sessions" set)
@@ -4581,9 +4588,13 @@ wording in a follow-up, recording this Q as provenance) and are struck from the 
 
 ### Q-0121 — Give Hermes a second sanctioned write (`gh issue create`) for the bug-triage flow?
 
-> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 by the workflow reconciliation
-> pass while routing [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md). This is
-> the gate that idea's build waits on (the Q-0117 pattern, applied at intake). No code until decided.
+> **DECIDED 2026-06-16 (owner, in-session): YES.** Hermes may call `gh issue create` **scoped to
+> `bug`/`reconcile`/`continue` labels only** (its second sanctioned write, after `gh pr merge`,
+> Q-0117). This un-gates the [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md)
+> build: route `/bugreport` through Hermes (triage → curated `bug` issue) instead of firing an
+> unscreened fix-and-self-merge to prod. **Build in a control-plane session** per the idea's build
+> order; same Q-0105 calibration discipline as Q-0117 (trust the curation after it proves out).
+> Original question + context below.
 
 **Area:** Agent control plane (Hermes) · the read-only-model write boundary
 **Type:** Owner decision (expands Hermes' sanctioned writes by one)
@@ -4799,8 +4810,11 @@ test suite → re-enable xdist) captured in
 
 ### Q-0127 — Native auto-merge never arms for MCP-created PRs (the `auto-merge-enabler` doesn't fire)
 
-> **DISCUSS lane — agent-surfaced finding 2026-06-14 (PR #817 session). Proposing, not applying
-> (executable-config change, Q-0106 boundary).**
+> **DECIDED + APPLIED 2026-06-16 (owner, in-session): option (a) — the session arms it.** Under the
+> Q-0106 in-session exception, CLAUDE.md § Session & plan workflow now states: after opening a PR via
+> the GitHub MCP, call `enable_pr_auto_merge` yourself (the enabler workflow can't fire for
+> app-token-created PRs); the enabler stays the backstop for branch-pushed PRs. First exercised on
+> **PR #956** this session. The original finding + options are preserved below.
 
 **Area:** merge mechanics · the Q-0123 native-auto-merge workflow
 **Type:** automation gap — needs an owner call on the durable fix
@@ -5511,11 +5525,20 @@ PR. Owner fixed the console-pasted prompts directly; this PR brings the in-repo 
 
 ### Q-0147 — myprofile PR C: may a public bot DM strangers at join-time? (onboarding gate) (2026-06-16)
 
-> **DISCUSS lane — agent-surfaced, NOT applied.** Proposing the question, not the answer.
-> Raised at myprofile PR B close (PR #940): PR A (read-only card, #938) and PR B (self-service
-> editor, #940) are shipped, so the `/myprofile` lane is buildable-complete. The only remaining
-> slice — **PR C, `on_member_join` onboarding** — is gated in the plan on this owner decision and
-> must not be built until it is answered.
+> **DECIDED 2026-06-16 (owner, in-session).** **No join-time DM — onboarding is in-guild only.**
+> Standing DM policy the owner set here: **all profile/onboarding DMs are opt-in and never fire on
+> join.** The *only* DMs that may be sent without the recipient opting in are **moderation/warning
+> DMs**, and only when the **server owner enables them** with a **clear way to configure which
+> actions trigger a DM** — a separate feature, captured as
+> [`server-owner-configurable-moderation-dms-2026-06-16`](../ideas/server-owner-configurable-moderation-dms-2026-06-16.md).
+> PR C is un-gated with this shape in
+> [`myprofile-foundation-plan`](../planning/myprofile-foundation-plan-2026-06-10.md) §4.3
+> (in-guild `profile_welcome_hint`, off by default, **no DM path**).
+>
+> *Question, for the record (raised at PR B close, #940):* whether/how to surface the profile hub
+> on join — DM vs in-guild vs nothing — and whether a public bot may DM strangers at all (Q-0080
+> abuse posture). The agent recommended in-guild opt-in / no unsolicited DMs; the owner confirmed
+> and broadened it into the standing policy above.
 
 **The question (plan §4.3).** When a member joins a guild, should the bot proactively surface the
 profile hub, and if so **how**:
@@ -5708,3 +5731,39 @@ registry field, **CI-enforced** so the gap can't silently re-grow — but this i
 **Home when answered:** a `docs/planning/` plan for the taxonomy (Q-0151c) + atlas (Q-0151a) if
 approved; the README decision (Q-0151b) records here + `repo-navigation-map.md`. The capture doc holds
 the full evidence and routing table.
+
+---
+
+### Q-0152 — Act on the autonomous-run review: run-report footer · ledger guard-exemption + drift line · bug-fix-guard · auto-deploy correction (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** After reviewing the first
+> overnight autonomous run, the owner directed implementing the loop-closing changes its self-audit
+> kept flagging, and corrected two propagating errors. Recorded here per CLAUDE.md Q-0106 because one
+> piece touches **executable config** (the SessionStart banner) — applied under the in-session
+> exception (the owner is the live reviewer). The rest are docs/tooling (free rein), batched here for
+> provenance. (Renumbered from Q-0151 → Q-0152 to yield Q-0151 to the concurrent #957 atlas block.)
+
+**What shipped (PR #956):**
+
+- **Run-report footer** (docs) — a required owner-facing `📤 Run report` block (`.sessions/README.md`
+  + both routine prompts), with `⚑ Owner decisions needed` / `⚑ Owner manual steps` lines (`none`
+  when empty) so Hermes rolls up what needs the owner instead of it evaporating into prose.
+- **Ledger guard-exemption** (tooling) — `check_current_state_ledger.py` skips a self-referential
+  reconciliation PR (`reconcil` in its merge subject); it can't list its own number, so its absence
+  isn't drift. Kills recurring busywork (idea: `ledger-guard-exempt-reconciliation-prs-2026-06-16`).
+- **SessionStart ledger-drift line** (⚠ **executable config** — Q-0106 exception) —
+  `claude_session_summary.py` prints `Ledger : ⚠ N merged PR(s) not yet in current-state` at session
+  start, fail-silent, so drift is seen *growing* rather than discovered only at close.
+- **Bug-fix-ships-its-guard** (docs) — the bug-book convention now requires a fixed bug's stays-fixed
+  guard to ship in the *same* PR (never deferred — the deathmatch #933 deferral three sessions flagged).
+- **Auto-deploy misinformation fix** (docs) — corrected the false "needs a Railway prod deploy to
+  clear it live" lines in `bug-book.md` + `current-state.md` (the bot **auto-deploys on merge**); the
+  bug-book convention + run-report footer now forbid re-adding a phantom manual-deploy step. The
+  legitimate authority-sense "Merge ≠ deploy" usages (prod-checks/restarts stay the owner's) are left.
+
+**Provenance note:** the run-report footer was specified in
+[`routine-system-improvements-2026-06-14`](../ideas/routine-system-improvements-2026-06-14.md)
+§ "Priority 1" (filed, never adopted) — this adopts it. Q-0147 (the DM gate) was decided in the same
+session — see its block.
+
+**Home:** the files above + this Q-block.

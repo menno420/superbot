@@ -157,8 +157,11 @@ dispatched work, or the next plan slice.
    End with a final handoff stating what you did + why, the next agent's continuation steps, and any
    remarks worth a later review ("CodeGraph was down", "Grimp unavailable", an arch warning you
    couldn't retire). Fold in: ONE genuine new idea (Q-0089, never forced filler); one honest line
-   reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED.
-   Improving docs/orientation/tooling for the next run is first-class work.
+   reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED;
+   and the **📤 Run report footer** (`.sessions/README.md`) — required, with its ⚑ Owner-decisions
+   and ⚑ Owner-manual-steps lines (`none` when empty) so Hermes can roll up what needs the owner.
+   Owner-manual-steps is NOT "deploy the fix" — a merge auto-deploys; reserve it for genuine
+   off-repo owner actions only. Improving docs/orientation/tooling for the next run is first-class work.
 
 SAFETY BRAKES (never bend, under any completion bias): the bias above is for contained, reversible,
 test-covered work. The genuinely irreversible stays ASK-FIRST: data loss, external publish,

@@ -155,7 +155,8 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
   - Add one honest line reviewing the PREVIOUS reconciliation/session (Q-0102): what it did well
     or missed.
   - Write a short .sessions/<date>-reconcile.md log (what changed · what's next · the Q-0089
-    idea · the Q-0102 review).
+    idea · the Q-0102 review), ending with the **📤 Run report footer** (`.sessions/README.md`) —
+    the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty).
 
 STEP 5 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger, and
   check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve

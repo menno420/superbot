@@ -6,9 +6,16 @@
 > verbatim symptom, expected behavior, root cause (filled at fix time), fix PR,
 > status. Newest first. A bug here jumps the queue per the CLAUDE.md
 > "bugs first, durably" rule: root cause over symptom-patch, one source of
-> truth, a regression test named in the entry. Owner-reported inconsistencies
-> he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
-> here as they surface.
+> truth, and a **stays-fixed guard named in the entry** — a regression test (or
+> CI invariant) that *fails against the pre-fix behavior*, shipped in the **same**
+> fix PR, never deferred to "later". **A fix goes live automatically:** a merge to
+> `main` auto-deploys to Railway (≈ CI build time; a failing build never deploys,
+> and the old container stays up until the new one connects), so mark a fixed entry
+> simply `FIXED` — do **not** add a "needs a manual Railway deploy" step (a phantom
+> owner to-do that recurred across sessions; see
+> [`operations/production-deployment.md`](../operations/production-deployment.md)).
+> Owner-reported inconsistencies he hasn't formalized yet (see current-state
+> 2026-06-10 standing invite) land here as they surface.
 
 ## BUG-0014 — `!coglist` infinite "assumed from" command-resolution loop — FIXED
 
@@ -38,7 +45,7 @@
   identity AUTO corrections do NOT re-dispatch (single terminal not-found reply); a
   valid correction (registered + different) still auto-runs exactly once. Plus the
   synonym-orphan invariant above (verified to flag the re-added `coglist`).
-- **Status:** FIXED. **Merge ≠ deploy** — needs a Railway prod deploy to clear it live.
+- **Status:** FIXED — live on the next auto-deploy (a merge to `main` auto-deploys to Railway).
 
 ## BUG-0013 — 1v1 challenge timer keeps running after accept, overwrites the live duel — FIXED
 
