@@ -33,9 +33,10 @@ living ledger (`docs/current-state.md`).
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
   `docs/current-state.md` · 2026-06-16
-- `claude/health-server-ipv6-bind` · health server **IPv6 dual-stack bind** (`HEALTH_HOST=::`) so the
-  dashboard control panel can reach the bot's control API over Railway's IPv6 private network ·
-  `disbot/healthserver.py` · 2026-06-16
+- `claude/dashboard-vision-review` · **review the finalized-state vision plan** (owner directive) +
+  session close — reviewer note (status correction + 4 refinements) on
+  `dashboard-vision-finalized-state.md`; fold the write-side PRs into the ledger; mark the control panel
+  LIVE · `docs/planning/` · `docs/current-state.md` · 2026-06-16
 - `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
   guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
   fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
@@ -52,6 +53,8 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/health-server-ipv6-bind` · health server IPv6 dual-stack bind (Railway private networking) · 2026-06-16 · **PR #1001 (merged)**
+- `claude/inspiring-wozniak-i92q58` · dashboard finalized-state vision plan · 2026-06-16 · **PR #1002 (merged)**
 - `claude/control-panel-web` · control panel — Discord OAuth login + editors (write side step 2) · 2026-06-16 · **PR #996 (merged)**
 - `claude/control-api-write-side` · control API mutation endpoints (write side step 1) · 2026-06-16 · **PR #993 (merged)**
 - `claude/practical-turing-pnppjf` · dashboard `/commands` management surface (READ side) — Manage
