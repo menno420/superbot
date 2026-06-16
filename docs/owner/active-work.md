@@ -25,10 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/btd6-shorthand-corpus-guard` · **BTD6 shorthand corpus regression guard** (grooming-pass
-  execute-now, Q-0015) — single class-guard test asserting the canonical community-shorthand vocabulary
-  routes to `BTD6_ANSWER` + conservatism negatives · `tests/unit/services/test_btd6_shorthand_corpus.py`
-  · 2026-06-16
 - `claude/inspiring-wozniak-i92q58` · **dashboard finalized-vision — solidify with owner panel decisions**
   (owner directive) — apply the 8 question-panel answers to the vision doc + record provenance (Q-0162
   DECIDED + new Q-0163). Docs only · `docs/planning/dashboard-vision-finalized-state.md` ·

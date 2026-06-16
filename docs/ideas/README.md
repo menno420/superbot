@@ -29,14 +29,14 @@ Current broad captures:
   change can't silently re-introduce an unattended stall. Cheap, read-only, disposable (Q-0105). →
   relates `.claude/settings.json` · Q-0149/Q-0161.
 - [`btd6-shorthand-corpus-eval-2026-06-16.md`](./btd6-shorthand-corpus-eval-2026-06-16.md) —
-  **late discovery from the BUG-0015 session (2026-06-16, PR #963):** a single **corpus regression
-  test** holding the canonical community-shorthand vocabulary (`despo`/`impop`/`r53`/`420 farm`/
-  `d67`/…) and asserting each routes to `AITask.BTD6_ANSWER` — the **class guard** for the recurring
-  "shorthand falls to the unguarded general path → model freelances" bug (BUG-0001/0003/0004/0008/
-  0015), which today has only scattered per-bug tests. Small/safe/decided-lane → a strong
-  grooming-pass execute-now candidate. Also records a verified *minor* hero-per-level-stats sibling
-  finding (heroes route fine + descriptions already ground; only non-headline-level exact stats are
-  the gap, low priority). → relates `services/ai_task_router.py` · `utils/btd6/keywords.py`.
+  **SHIPPED 2026-06-16 (PR #1007)** via a Q-0015 grooming pass: the **corpus class-guard test**
+  (`tests/unit/services/test_btd6_shorthand_corpus.py`) holds the canonical community-shorthand
+  vocabulary (`despo`/`impop`/`r53`/`420 farm`/`d67`/…) and asserts each routes to
+  `AITask.BTD6_ANSWER` (+ conservatism negatives), guarding the recurring "shorthand falls to the
+  unguarded general path → model freelances" bug class (BUG-0001/0003/0004/0008/0015) against a
+  silent router regression — previously covered only by scattered per-bug tests. The *minor*
+  hero-per-level-stats sibling finding (only non-headline-level exact stats are a gap) stays
+  `captured` at low priority. → relates `services/ai_task_router.py` · `utils/btd6/keywords.py`.
 
 - [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
   **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
