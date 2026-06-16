@@ -34,6 +34,7 @@ _EMPTY: dict[str, Any] = {
     "env_usage": [],
     "settings": [],
     "access": {"tiers": [], "total_visible": 0, "internal_count": 0},
+    "synonyms": [],
 }
 
 app = FastAPI(title="SuperBot Dashboard", docs_url=None, redoc_url=None)
@@ -135,6 +136,41 @@ def access(request: Request):
         request,
         "access.html",
         {"data": load_data(), "page": "access"},
+    )
+
+
+@app.get("/aliases", response_class=HTMLResponse)
+def aliases(request: Request):
+    """Suggest a command alias — pick a command, propose an alias, get a live
+    collision check (against every command name, alias, and synonym) plus a
+    prefilled GitHub issue and a ready-to-paste ``synonyms.py`` snippet.
+    """
+    data = load_data()
+    commands_list = sorted(
+        {c["name"] for cog in data.get("cogs", []) for c in cog["commands"]},
+    )
+    # Map every token already in use -> what owns it, so the suggestion form can
+    # say *why* a proposed alias collides. Synonyms first, then aliases, then
+    # command names last so the strongest owner (a real command) wins a tie.
+    taken: dict[str, str] = {}
+    for syn in data.get("synonyms", []):
+        for token in syn["synonyms"]:
+            taken[token.lower()] = f"synonym of !{syn['canonical']}"
+    for cog in data.get("cogs", []):
+        for cmd in cog["commands"]:
+            for token in cmd.get("aliases") or []:
+                taken[token.lower()] = f"alias of !{cmd['name']}"
+    for name in commands_list:
+        taken[name.lower()] = "a command"
+    return templates.TemplateResponse(
+        request,
+        "aliases.html",
+        {
+            "data": data,
+            "page": "aliases",
+            "commands": commands_list,
+            "taken": taken,
+        },
     )
 
 

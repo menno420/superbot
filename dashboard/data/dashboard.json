@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T18:32:42Z",
+    "generated_at": "2026-06-16T19:00:19Z",
     "counts": {
       "functions": 33,
       "ideas": 72,
@@ -11,7 +11,8 @@
       "commands": 301,
       "setting_keys": 83,
       "setting_domains": 13,
-      "visible_subsystems": 33
+      "visible_subsystems": 33,
+      "synonyms": 87
     }
   },
   "catalogue": [
@@ -1503,6 +1504,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-model-comparison-gpt5mini.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — gpt-5-mini vs gpt-5.4-mini comparison + apply_context_fixes --set-model fix",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-ledger-reconcile-932-939.md",
       "date": "2026-06-16",
       "title": "Session — ledger reconcile (#932–#936, #939 into current-state)",
@@ -1596,6 +1603,18 @@
       "file": "2026-06-16-developer-dashboard-mvp.md",
       "date": "2026-06-16",
       "title": "Session — Developer dashboard (personal website) — design + read-only MVP",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-settings-fix.md",
+      "date": "2026-06-16",
+      "title": "Session — hotfix: /settings 500 (Jinja `domain.keys` → dict-method collision)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-settings-access.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard: settings + access pages, and the live help-editor plan",
       "status": "complete"
     },
     {
@@ -1788,24 +1807,6 @@
       "file": "2026-06-15-mining-home-slice-c.md",
       "date": "2026-06-15",
       "title": "Session — 2026-06-15 · mining Slice C — the Home structure (character-card backdrop)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-forge-slice-b.md",
-      "date": "2026-06-15",
-      "title": "Session: Mining Slice B — the Forge structure (gear-tier crafting gate)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-merge-routine-prompts.md",
-      "date": "2026-06-15",
-      "title": "Session: Merge dispatch + night-executor into one routine prompt (2 total)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-manual-test-bugfixes.md",
-      "date": "2026-06-15",
-      "title": "Session — manual-test bug fixes (counting channel UX · BTD6 overview clutter · round-63 data)",
       "status": "complete"
     }
   ],
@@ -6851,5 +6852,244 @@
     ],
     "total_visible": 33,
     "internal_count": 0
-  }
+  },
+  "synonyms": [
+    {
+      "canonical": "assignroles",
+      "synonyms": [
+        "updateroles",
+        "roleupdate"
+      ]
+    },
+    {
+      "canonical": "avatar",
+      "synonyms": [
+        "pfp",
+        "bild"
+      ]
+    },
+    {
+      "canonical": "ban",
+      "synonyms": [
+        "bannieren",
+        "banish",
+        "sperren"
+      ]
+    },
+    {
+      "canonical": "blackjack",
+      "synonyms": [
+        "bj",
+        "21",
+        "cards",
+        "cardgame"
+      ]
+    },
+    {
+      "canonical": "cleanuphistory",
+      "synonyms": [
+        "cleanhistory",
+        "bereinigen"
+      ]
+    },
+    {
+      "canonical": "clear",
+      "synonyms": [
+        "purge",
+        "clean",
+        "delete",
+        "löschen"
+      ]
+    },
+    {
+      "canonical": "createrole",
+      "synonyms": [
+        "newrole",
+        "addrole",
+        "makerole"
+      ]
+    },
+    {
+      "canonical": "deleterole",
+      "synonyms": [
+        "removerole",
+        "rmrole"
+      ]
+    },
+    {
+      "canonical": "givexp",
+      "synonyms": [
+        "addxp",
+        "grantxp"
+      ]
+    },
+    {
+      "canonical": "help",
+      "synonyms": [
+        "hilfe",
+        "commands",
+        "cmds",
+        "cmd",
+        "befehle"
+      ]
+    },
+    {
+      "canonical": "invite",
+      "synonyms": [
+        "einladen"
+      ]
+    },
+    {
+      "canonical": "kick",
+      "synonyms": [
+        "rauswerfen",
+        "boot",
+        "entfernen"
+      ]
+    },
+    {
+      "canonical": "leaderboard",
+      "synonyms": [
+        "top",
+        "rankings",
+        "scores",
+        "highscore",
+        "highscores",
+        "scoreboard"
+      ]
+    },
+    {
+      "canonical": "loglevel",
+      "synonyms": [
+        "loglvl",
+        "setloglevel"
+      ]
+    },
+    {
+      "canonical": "poll",
+      "synonyms": [
+        "vote",
+        "abstimmung",
+        "umfrage"
+      ]
+    },
+    {
+      "canonical": "rank",
+      "synonyms": [
+        "level",
+        "lvl",
+        "xp",
+        "stats",
+        "score",
+        "myscore",
+        "mrank",
+        "myrank",
+        "progres",
+        "progress"
+      ]
+    },
+    {
+      "canonical": "remind",
+      "synonyms": [
+        "reminder",
+        "remindme",
+        "erinnerung"
+      ]
+    },
+    {
+      "canonical": "resetxp",
+      "synonyms": [
+        "clearxp"
+      ]
+    },
+    {
+      "canonical": "restart",
+      "synonyms": [
+        "reboot",
+        "restar"
+      ]
+    },
+    {
+      "canonical": "roles",
+      "synonyms": [
+        "rolelist",
+        "listroles"
+      ]
+    },
+    {
+      "canonical": "rolesettings",
+      "synonyms": [
+        "roleconfig",
+        "rolethresholds"
+      ]
+    },
+    {
+      "canonical": "rps",
+      "synonyms": [
+        "rockpaperscissors",
+        "rock",
+        "schere",
+        "stein",
+        "papier"
+      ]
+    },
+    {
+      "canonical": "serverinfo",
+      "synonyms": [
+        "sinfo"
+      ]
+    },
+    {
+      "canonical": "serverstats",
+      "synonyms": [
+        "serverstat",
+        "serv"
+      ]
+    },
+    {
+      "canonical": "timeout",
+      "synonyms": [
+        "mute",
+        "stumm",
+        "stumschalten"
+      ]
+    },
+    {
+      "canonical": "unban",
+      "synonyms": [
+        "entbannen"
+      ]
+    },
+    {
+      "canonical": "userinfo",
+      "synonyms": [
+        "uinfo",
+        "whois",
+        "user"
+      ]
+    },
+    {
+      "canonical": "warn",
+      "synonyms": [
+        "warning",
+        "verwarnen"
+      ]
+    },
+    {
+      "canonical": "word",
+      "synonyms": [
+        "addword",
+        "removeword",
+        "prohibit",
+        "blockword",
+        "wordlist"
+      ]
+    },
+    {
+      "canonical": "xpconfig",
+      "synonyms": [
+        "xpsettings"
+      ]
+    }
+  ]
 }
