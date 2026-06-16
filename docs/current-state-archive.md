@@ -86,6 +86,26 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#912 (2026-06-15, mining Slices E + F — respec polish + skill/milestone titles)** — the last two
+  ▶ startable slices of the structures/skill-tree plan, closing the lane (D/A/B/C already shipped).
+  Built **away from** the one open PR (#911, owner's live mining-hub UX restructure on
+  `main_panel.py`/`gear_panel.py`) to avoid collision: Slice E lives in `skill_service`/`skills_panel`,
+  Slice F's title display goes on the `character_panel.py` aggregator + a `🏆 Titles` button on the
+  Skills panel (not the main hub). **Slice E (respec polish):** the Respec button now opens a confirm
+  card (cost + point preview, nothing charged until you choose) and offers a cheaper **single-branch**
+  respec (`skill_service.respec_branch`, same audited economy lane / one-transaction atomicity).
+  **Slice F (titles):** a pure `utils/mining/titles.py` catalogue whose **earned** set is *derived*
+  from existing progression (skill branch at cap · deepest biome · game level) — nothing granted on a
+  mutation path; only the equipped *choice* persists (`mining_player_state.equipped_title`, migration
+  074) via `services/title_service.py` (the `set_equipped_title` write primitive on the RS02 boundary
+  ratchet), displayed only while **still earned** (a respec silently un-displays a mastery title).
+  Surfaced via `!titles` + a `🏆 Titles` Skills-panel button + the Character embed; **additive** — no
+  title equipped → byte-identical. Depth-milestone titles are biome-*named* so they extend when the
+  **P6 grid** (owner-flagged) deepens the world. Numbers pinned in
+  [`respec-numbers-2026-06-15.md`](planning/respec-numbers-2026-06-15.md) /
+  [`titles-numbers-2026-06-15.md`](planning/titles-numbers-2026-06-15.md). `check_quality --full`
+  green (9808); arch 0.
+
 - **#910 (2026-06-15, mining Slice C — the Home structure: character-card backdrop)** — the next
   mining-structures slice (the plan's last startable structure), built on a fresh resume now that
   **#905 (Forge)** shipped the generic `mining_structures` foundation; zero open PRs at start (no

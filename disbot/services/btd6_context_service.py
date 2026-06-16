@@ -2504,6 +2504,121 @@ def _extract_paragon_names(text_lower: str) -> list[str]:
     return names
 
 
+def _extract_hero_names(text_lower: str) -> list[str]:
+    """The hero ids a comparison names, in order of appearance, deduped.
+
+    Scans every hero surface (canonical + alias) and keeps the longest surface
+    at each span (so "striker jones" wins over a bare "striker"), then dedups on
+    the resolved hero id. Surfaces shorter than 3 chars are skipped so a stray
+    one/two-letter alias ("q", "si") never trips the floor — the cost-compare cue
+    + the ≥2-heroes gate already constrain this builder hard. Returns ids (the
+    surface resolver accepts them), so the data primitive re-resolves cleanly.
+    """
+    from services import btd6_data_service
+
+    heroes = btd6_data_service.get_dataset().heroes
+    spans: list[tuple[int, int, int, str]] = []  # (start, end, surface_len, id)
+    for hero in heroes:
+        surfaces = {hero.canonical.lower(), *(a.lower() for a in hero.aliases)}
+        for surface in surfaces:
+            if len(surface) < 3:
+                continue
+            for match in re.finditer(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+                spans.append((match.start(), match.end(), len(surface), hero.id))
+
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, str]] = []
+    for start, end, _slen, hid in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _h in accepted):
+            continue
+        accepted.append((start, end, hid))
+    accepted.sort(key=lambda a: a[0])
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for _start, _end, hid in accepted:
+        if hid in seen:
+            continue
+        seen.add(hid)
+        names.append(hid)
+    return names
+
+
+def _format_hero_cost_comparison(result: dict[str, Any]) -> str:
+    diff = str(result["difficulty"]).capitalize()
+    lines = [f"**Hero cost comparison — {diff} placement cost:**"]
+    for entry in result["entries"]:
+        lines.append(f"• **{entry['name']}** — **${entry['base_cost']:,}**")
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** to place (**${cheapest['base_cost']:,}** each).",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['name']}** is cheaper by **${result['spread']:,}**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['name']}** (${cheapest['base_cost']:,}). Most "
+            f"expensive: **{dearest['name']}** (${dearest['base_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append("_(Base placement cost at that difficulty — abilities are free.)_")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_hero_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is Quincy or Benjamin cheaper" answer, or ``None``.
+
+    The AI §7.5 *hero* member of the multi-entity cost-comparison floor — the
+    hero-entity sibling of :func:`deterministic_cost_comparison_reply` (towers),
+    :func:`deterministic_difficulty_cost_comparison_reply` (one tower by
+    difficulty), and :func:`deterministic_paragon_cost_comparison_reply`
+    (paragons). Ranks the **base placement cost** of two-or-more heroes so the
+    model can never mis-state which is cheaper / by how much (the BUG-0009
+    "grounded values, wrong assembly" class). Fires on a high-precision
+    cost-compare cue **and** two-or-more resolved heroes; defers on a ``paragon``
+    cue (the paragon builder's job), strategy/recommendation questions, and
+    single-hero lookups, which all reach the model untouched. Mutually exclusive
+    with the tower/difficulty builders by construction — those need a resolvable
+    ``(tower, crosspath)`` candidate, which a hero name never produces.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+    # A paragon cost comparison is the paragon builder's job.
+    if _PARAGON_CUE_RE.search(low):
+        return None
+
+    names = _extract_hero_names(low)
+    if len(names) < 2:
+        return None
+
+    difficulty = "medium"
+    diff_match = _COST_DIFFICULTY_RE.search(low)
+    if diff_match:
+        token = diff_match.group(1).lower()
+        # CHIMPS is a mode, not a pricing difficulty — its prices are Hard's.
+        difficulty = "hard" if token == "chimps" else token
+        if difficulty == "impop":
+            difficulty = "impoppable"
+
+    from services import btd6_data_service
+
+    result = btd6_data_service.compare_hero_costs(names, difficulty=difficulty)
+    if not result.get("found"):
+        return None
+    return _format_hero_cost_comparison(result)
+
+
 def _format_paragon_cost_comparison(result: dict[str, Any]) -> str:
     diff = str(result["difficulty"]).capitalize()
     lines = [f"**Paragon cost comparison — {diff} base price:**"]
@@ -2860,6 +2975,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_capability_roster_reply,
     deterministic_bloon_roster_reply,
     deterministic_paragon_cost_comparison_reply,
+    deterministic_hero_cost_comparison_reply,
     deterministic_cost_comparison_reply,
     deterministic_difficulty_cost_comparison_reply,
     deterministic_round_range_comparison_reply,

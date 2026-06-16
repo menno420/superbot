@@ -65,6 +65,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_paragon_cost_comparison_reply",
     ),
     (
+        "is quincy or benjamin cheaper to place",
+        "deterministic_hero_cost_comparison_reply",
+    ),
+    (
         "which towers can pop lead without upgrades",
         "deterministic_capability_roster_reply",
     ),
