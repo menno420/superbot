@@ -1,6 +1,6 @@
 # 2026-06-16 — capture: BTD6 shorthand-corpus eval idea (post-BUG-0015 grooming)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **Branch:** `claude/gifted-noether-37tiwr` · **Date:** 2026-06-16 · continuation after BUG-0015
 (#963 merged) — the standing secondary task (Q-0015 grooming / Q-0088 capture-to-queue).
