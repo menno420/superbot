@@ -1,6 +1,6 @@
 # Session — Dashboard: settings + access pages, and the live help-editor plan
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
