@@ -102,6 +102,41 @@ Hermes config/data paths shown during setup:
   note:** at $4.50/1M output a long accumulating gateway session is the real spend driver (not the
   window) — so the bounded-session / `/new`-per-task habit is now a **cost** lever, not a capability
   crutch.
+- **gpt-5-mini vs gpt-5.4-mini — does a model swap raise the TPM ceiling? No (verified 2026-06-16
+  from OpenAI's own model pages; Q-0105 — re-confirm against the dashboard before trusting).** The
+  owner asked whether dropping to `gpt-5-mini` would lift the 200K TPM wall. It would **not**: OpenAI's
+  **published per-tier rate-limit tables are identical** for both models — Tier 1 500 RPM / **500K
+  TPM**, Tier 2 5K / **2M**, Tier 3 5K / 4M, Tier 4 10K / 10M, Tier 5 30K / 180M. The 200K we hit is
+  *below* Tier 1's 500K → the limiter is the **org usage tier (or a gpt-5-family verification/rollout
+  throttle), not the model name**. Real ceiling levers, in order: **(1)** raise the usage tier — Tier
+  1→2 is 500K→**2M TPM (4×)** and dwarfs any model swap; **(2)** confirm the org isn't stuck below
+  Tier 1's 500K on the dashboard (`platform.openai.com/settings/organization/limits` — the only source
+  of the *actual* per-model cap); **(3)** lower `compression.threshold` so each call stays small (free,
+  continuous). The **one** case a swap to 5-mini helps is if OpenAI is rollout-throttling the *newer*
+  5.4-mini below its tier and 5-mini gives the full 500K — unverifiable except on that dashboard, and
+  you'd pay for it in capability:
+
+  | | **gpt-5-mini** | **gpt-5.4-mini** (current) |
+  |---|---|---|
+  | Context / max output | 400K / 128K | 400K / 128K — *same* |
+  | Input · output /1M | **$0.25 · $2.00** | $0.75 · $4.50 *(2.25–3× more)* |
+  | Knowledge cutoff | May 2024 | **Aug 2025** |
+  | Capability / speed | baseline | **"significantly improves … coding, reasoning, tool use", ~2× faster** (OpenAI) |
+  | Rate limits (all tiers) | — | **identical to 5-mini** |
+
+  Net: 5-mini saves ~2–3× cost but re-introduces the weaker/slower model class the role left in
+  #913→#921 — and does **not** fix TPM. Switch only if the dashboard proves 5-mini's *actual* cap is
+  higher. **To switch, re-run `hermes model`** (keeps the custom OpenAI-provider routing) + allowlist
+  the exact id — **not** `hermes config set model` / `apply_context_fixes.sh --set-model`, which revert
+  routing to the Nous catalog (model-switch playbook below).
+  - **The decisive test (owner-confirmed 2026-06-16): the dashboard caps gpt-5.4-mini at 200K — below
+    its published 500K Tier 1.** That asymmetry means one of two things, and the dashboard's per-model
+    number for **gpt-5-mini** settles it *without switching the live bot* (limits are listed per model
+    regardless of which is active): **(a)** 5-mini also shows ~200K → it's an **org-wide tier throttle**,
+    the model is irrelevant, **raise the usage tier** (Tier 1→2 = 2M); **(b)** 5-mini shows higher
+    (≈500K) → the 200K is a **rollout/verification throttle on the *newer* 5.4-mini**, so switching to
+    5-mini (or requesting a 5.4-mini limit increase) genuinely lifts the cap. **Check that number first;
+    only switch if it's case (b).**
 - **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
   Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
   which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
@@ -156,8 +191,9 @@ choice (mini vs. a stronger review model, Q-0117) gets decided on evidence rathe
 **Two minor caveats (operational, not capability):**
 - **200K TPM ceiling.** A single token-heavy task (loading 3 skills + ~15 searches/reads) hit the
   OpenAI per-minute token cap and the turn errored mid-way. Mitigations: **`/new` per task** (smaller
-  turns) and/or request a higher OpenAI usage-tier TPM. Not a model fault — it recovered fully on
-  "continue".
+  turns) and/or **raise the OpenAI usage tier** (Tier 1→2 is 500K→2M TPM). Switching to `gpt-5-mini`
+  does **not** help — identical TPM tiers (see § Model/provider, "gpt-5-mini vs gpt-5.4-mini"). Not a
+  model fault — it recovered fully on "continue".
 - **Over-loads skills.** It loaded 3 skills for a one-skill task (seen twice). A *"one skill per task;
   for an overlap check use `gh pr list` + grep `.sessions/`, don't deep-search"* steer (now in the
   `dispatch` skill) trims the heaviest part without dumbing it down. Consider
