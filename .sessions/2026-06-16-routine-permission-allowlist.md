@@ -8,7 +8,7 @@ Dispatch run. Mid-session the **maintainer interrupted from the mobile app** aft
 routine run hit a Claude Code permission prompt and stalled (`grep … || echo … >> .git/info/exclude
 && git status …` — nothing in the allow-list matched the compound/redirect command). He directed,
 in-session, "make this get auto-accepted." Applying directly under the Q-0106 in-session exception;
-provenance recorded as **Q-0148**.
+provenance recorded as **Q-0149**.
 
 ## Plan
 
@@ -16,7 +16,7 @@ provenance recorded as **Q-0148**.
   (read-only shell, safe file ops, more git read/local verbs, `python3.10 -c/scripts/tools`, npx
   codegraph) and add a `permissions.ask` list that keeps the safety-brake commands prompting
   (`rm`, force-push, `railway`, `sudo`, `psql`/`pg_*`, `curl`/`wget`, `docker`, `git clean -f`).
-- Record provenance in the question router (Q-0148) with the root cause (web env doesn't honor
+- Record provenance in the question router (Q-0149) with the root cause (web env doesn't honor
   `bypassPermissions`), the caveats (effective next run, not bulletproof for novel compound shell),
   and the decisive environment-console lever.
 
@@ -33,7 +33,7 @@ provenance recorded as **Q-0148**.
 
 - `.claude/settings.json` — `permissions.allow` expanded to the safe routine command surface;
   new `permissions.ask` keeps the safety-brake commands prompting. Valid JSON (113 allow, 13 ask).
-- `docs/owner/maintainer-question-router.md` — **Q-0148** records the provenance + caveats.
+- `docs/owner/maintainer-question-router.md` — **Q-0149** records the provenance + caveats.
 - PR **#945** (this card opened it born-red; flipped `complete` as the final step).
 - `check_docs --strict` green. No `disbot/` runtime code, so the full CI mirror isn't gating here;
   `code-quality` re-runs green once the card flips.
@@ -81,7 +81,7 @@ building immediately instead of re-researching.
 
 ## 📋 Doc audit (Q-0104)
 
-`check_docs --strict` green (no new unreachable docs; router Q-0148 reachable). No merged-PR ledger
+`check_docs --strict` green (no new unreachable docs; router Q-0149 reachable). No merged-PR ledger
 drift introduced by this run (config + router only; the Recently-shipped ratchet is untouched at 20).
-New owner decision (Q-0148) recorded in the router. Journal cwd-deadlock recovery lesson flagged in
+New owner decision (Q-0149) recorded in the router. Journal cwd-deadlock recovery lesson flagged in
 the session idea above for promotion next run.
