@@ -1,6 +1,6 @@
 # 2026-06-16 — install-skills.sh staleness guard (stale-skill root cause)
 
-> **Status:** `in-progress` — third small PR this session. Bash-only; one push.
+> **Status:** `complete` — third small PR this session (#981). Bash-only.
 > Session enders (Q-0089 idea, Q-0102 review, Q-0104 audit) were satisfied in this session's first
 > card (`2026-06-16-model-comparison-gpt5mini.md`, merged in #978) — not repeated here.
 
