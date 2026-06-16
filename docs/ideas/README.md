@@ -20,6 +20,14 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`routine-permission-surface-lint-2026-06-16.md`](./routine-permission-surface-lint-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the band-#990 reconciliation pass):** the routine stalled
+  twice on a `permissions.ask` `rm` prompt (fixed reactively as Q-0161). A stdlib
+  `scripts/check_routine_permission_surface.py` would evaluate the commands the routines run against
+  the current `.claude/settings.json` `ask`/`allow` rules and **fail on any that resolve to `ask`** —
+  turning "every routine command must be `allow`, never `ask`" into a pre-flight CI guard so a settings
+  change can't silently re-introduce an unattended stall. Cheap, read-only, disposable (Q-0105). →
+  relates `.claude/settings.json` · Q-0149/Q-0161.
 - [`btd6-shorthand-corpus-eval-2026-06-16.md`](./btd6-shorthand-corpus-eval-2026-06-16.md) —
   **late discovery from the BUG-0015 session (2026-06-16, PR #963):** a single **corpus regression
   test** holding the canonical community-shorthand vocabulary (`despo`/`impop`/`r53`/`420 farm`/
