@@ -1,6 +1,6 @@
 # Session — Dashboard documentation + next-session handoff
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
