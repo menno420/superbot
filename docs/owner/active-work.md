@@ -25,6 +25,8 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/coglist-command` · `!coglist` real command → opens the admin "📋 Cog List" `_CogManagerView`
+  (owner request) · `disbot/cogs/admin_cog.py` + test · 2026-06-16
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
