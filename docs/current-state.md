@@ -299,8 +299,8 @@ Source code and merged PRs win over anything written here.
   `self.stop()` in `btn_accept`/`btn_decline`, and an early return in `on_timeout` when resolved.
   Contained to `_ChallengeView` (no signature changes); behaviour-preserving for the genuine
   no-answer case. `tests/unit/cogs/test_deathmatch_challenge_timeout.py` (3 tests, fail-against-old);
-  BUG-0013 recorded FIXED; `check_quality --full` green (9893); arch 0. **Merge ≠ deploy** — needs a
-  Railway prod deploy before the live duel is fixed.
+  BUG-0013 recorded FIXED; `check_quality --full` green (9893); arch 0. Live on the next auto-deploy
+  (a merge to `main` auto-deploys to Railway — no manual deploy step).
 - **#932 (2026-06-15, docs reconciliation — band-#930, ninth Q-0107 pass)** — ninth Q-0107 docs-only
   reconciliation + planning pass (fired by `reconcile` issue #931). Reconciled the ledger (added the
   #915…#928 Hermes model-swap / ops-docs band as one grouped entry; archived #862/#859/#855 to hold

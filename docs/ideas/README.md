@@ -34,6 +34,13 @@ Current broad captures:
   known sibling gap — `SUBSYSTEMS.entry_points` → real command, which `test_entrypoints.py` documents
   as unchecked. One "what commands exist" source for every "this declaration must resolve" invariant.
   → relates `tests/unit/registry/test_entrypoints.py` · `utils/subsystem_registry.py` · `utils/synonyms.py`.
+- [`server-owner-configurable-moderation-dms-2026-06-16.md`](./server-owner-configurable-moderation-dms-2026-06-16.md) —
+  **owner policy → feature (2026-06-16, from the Q-0147 decision):** the owner's standing DM rule is
+  *profile/onboarding DMs are opt-in and never on join; the only non-opt-in DMs are moderation/warning
+  DMs, and only when the server owner enables them with per-action config.* The opt-in half is
+  myprofile PR C; this captures the second half — a `moderation_dm_enabled` master + per-action map
+  (warn/timeout/kick/…) on the `!settings` → Moderation surface, riding the audited `moderation_service`
+  seam (off by default, fail-open). → relates `services/moderation_service.py` · the settings surface.
 - [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
   `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an
@@ -185,6 +192,9 @@ Current broad captures:
   number, so it always omits itself and `check_current_state_ledger.py --strict` flags it next
   session (the #942 drift this run fixed). Teach the guard to **skip a docs-only ledger-bookkeeping
   PR** (title + diff-confined-to-`current-state*.md`), closing the recurrence at the guard level.
+  **✅ Shipped 2026-06-16 (Q-0151):** implemented as a `reconcil`-in-merge-subject exemption in
+  `find_missing` (the diff-confinement bound was deferred as merge-strategy-fragile; subject-match is
+  tight + disposable per Q-0105). Tests in `test_check_current_state_ledger.py`.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in

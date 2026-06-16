@@ -1,10 +1,10 @@
 # `/myprofile` foundation — implementation plan (wizard plan PR4)
 
-> **Status:** `plan` — **PR A shipped (#938), PR B shipped (#940)**; only the
-> owner-gated **PR C** (join-time onboarding) remains. The two buildable slices
-> are done — the profile hub is now fully interactive (read-only card + the
-> self-service editor, the first UI consumer of `ParticipationMutationPipeline`).
-> PR C stays gated on an owner decision (routed to the question router — see §4.3).
+> **Status:** `plan` — **PR A shipped (#938), PR B shipped (#940)**; **PR C now
+> decided & buildable** (Q-0147, 2026-06-16: in-guild welcome-hint to `/myprofile`,
+> no join-time DM). The two earlier slices are done — the profile hub is fully
+> interactive (read-only card + the self-service editor, the first UI consumer of
+> `ParticipationMutationPipeline`). PR C's decided shape is in §4.3.
 > Produced by the 2026-06-10 PR4 planning session that
 > Batch 10 / DT09 selected ([wizard plan](../setup-platform/setup_wizard_finalization_plan.md)
 > §6 + §10 PR4; source re-verified this session — §6's backend inventory is
@@ -103,14 +103,19 @@ tables (ledger hard rule); command/help filtering by participation.
   impossible by construction but pinned anyway (the pipeline's
   `UnauthorizedParticipationMutationError` path); live round-trip recipe.
 
-### 4.3 PR C — `on_member_join` onboarding (GATED — do not build yet)
+### 4.3 PR C — `on_member_join` onboarding (DECIDED 2026-06-16 — buildable)
 
-Needs an owner decision first — **now routed as router Q-0147** (raised when PR B
-landed): DM vs in-guild welcome, copy, and whether a public bot may DM strangers
-at all (Q-0080 abuse posture). The agent recommendation in that Q-block is
-**in-guild, opt-in, no unsolicited DMs**. Until the owner answers, the profile hub
-is discoverable via Help (the command registers normally) — no join-time trigger.
-Un-gate this section with the decided shape when Q-0147 is answered.
+**Owner decision (Q-0147): in-guild only, no join-time DM.** A joining member is pointed at the
+profile hub **in-guild** — one discoverable line on the existing welcome surface ("set your
+preferences with `/myprofile`") — **never** via an unsolicited DM. This honors the owner's standing
+DM policy: **profile/onboarding DMs are opt-in and never fire on join.** The *only* non-opt-in DMs
+allowed anywhere are **moderation/warning DMs**, and only when a server owner enables them with
+clear per-action config — a **separate** feature, not this plan (see
+[`server-owner-configurable-moderation-dms-2026-06-16`](../ideas/server-owner-configurable-moderation-dms-2026-06-16.md)).
+
+**Build shape:** an opt-in, off-by-default `profile_welcome_hint` setting; when on, the welcome
+embed / system-channel nudge carries the one-line `/myprofile` pointer (one-time on first join, not
+rejoin). **No `on_member_join` DM path.** The hub stays discoverable via Help regardless.
 
 ## 5. PR slicing
 
@@ -118,7 +123,7 @@ Un-gate this section with the decided shape when Q-0147 is answered.
 |---|---|---|---|---|
 | **A** | `views/profile/` read-only card + `/myprofile` + `!myprofile` + ledger classification + tests | Low — zero writes | none | ✅ **#938** |
 | **B** | write controls through `ParticipationMutationPipeline` (first UI consumer), per-spec editors, tests | Medium — first UI writes on a shipped-but-unexercised pipeline | none | ✅ **#940** — `views/profile/editor.py`: `ProfileEditorHomeView` (subsystem picker) → `ProfileSubsystemEditorView` (participation opt-in/out · subscription toggles · visibility toggle · preference editors bool/enum/modal); each action one audited pipeline call; `tests/unit/views/test_profile_editor.py` |
-| **C** | join-time onboarding | **gated** (owner decision — routed to the router, §4.3) | none | ⛔ owner-gated |
+| **C** | join-time onboarding — in-guild welcome-hint to `/myprofile`, **no DM** (`profile_welcome_hint`, off by default) | Low — opt-in, no DM | none | 🟢 **decided** (Q-0147) — buildable |
 
 ## 6. Tests & invariants to keep green
 

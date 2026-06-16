@@ -49,6 +49,29 @@ anchor, so any two concurrently-open PRs collided there (it bit #529→#530 and
 - **Find** past work by grepping this directory — don't read it top-to-bottom.
 - Pre-migration history lives in `.session-journal-archive.md`.
 
+## 📤 Run report footer (owner-facing — required, 2026-06-16)
+
+End every session log with a `📤 Run report` block — the **owner's at-a-glance inbox** for the run.
+Its job is to stop owner-facing notes (a decision only the owner can make; a step only the owner can
+take) from evaporating into prose, where they get reconstructed ad-hoc or lost. Hermes rolls these
+blocks up across the day, so the two ⚑ lines are **required** — write `none` when empty.
+
+```markdown
+## 📤 Run report
+
+- **Did:** <one line — what this run shipped> · **Outcome:** shipped / blocked / partial
+- **Shipped:** #PR — one line each (or "no PR — <why>")
+- **⚑ Owner decisions needed:** <Q-#### + one line, or `none`>
+- **⚑ Owner manual steps:** <a thing only the owner can do, or `none`>
+- **↪ Next:** <the sharpened current-state ▶ Next action>
+```
+
+The `⚑ Owner manual steps` line is **not** for "deploy the fix" — **a merge to `main` auto-deploys
+to Railway** (~CI build time; a failing build never deploys; the old container stays up until the
+new one connects — see [`operations/production-deployment.md`](../docs/operations/production-deployment.md)).
+A real manual step is an *off-repo owner action*: re-paste a routine prompt to the console, set a
+Railway env var, run a Discord `!command` in a guild, or make a product/abuse decision.
+
 ## 📊 Telemetry footer (gap-analysis §4, light version — 2026-06-12)
 
 End every session log with a `📊 Telemetry` table so the system's learning trend is

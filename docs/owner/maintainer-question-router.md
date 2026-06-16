@@ -5511,11 +5511,20 @@ PR. Owner fixed the console-pasted prompts directly; this PR brings the in-repo 
 
 ### Q-0147 — myprofile PR C: may a public bot DM strangers at join-time? (onboarding gate) (2026-06-16)
 
-> **DISCUSS lane — agent-surfaced, NOT applied.** Proposing the question, not the answer.
-> Raised at myprofile PR B close (PR #940): PR A (read-only card, #938) and PR B (self-service
-> editor, #940) are shipped, so the `/myprofile` lane is buildable-complete. The only remaining
-> slice — **PR C, `on_member_join` onboarding** — is gated in the plan on this owner decision and
-> must not be built until it is answered.
+> **DECIDED 2026-06-16 (owner, in-session).** **No join-time DM — onboarding is in-guild only.**
+> Standing DM policy the owner set here: **all profile/onboarding DMs are opt-in and never fire on
+> join.** The *only* DMs that may be sent without the recipient opting in are **moderation/warning
+> DMs**, and only when the **server owner enables them** with a **clear way to configure which
+> actions trigger a DM** — a separate feature, captured as
+> [`server-owner-configurable-moderation-dms-2026-06-16`](../ideas/server-owner-configurable-moderation-dms-2026-06-16.md).
+> PR C is un-gated with this shape in
+> [`myprofile-foundation-plan`](../planning/myprofile-foundation-plan-2026-06-10.md) §4.3
+> (in-guild `profile_welcome_hint`, off by default, **no DM path**).
+>
+> *Question, for the record (raised at PR B close, #940):* whether/how to surface the profile hub
+> on join — DM vs in-guild vs nothing — and whether a public bot may DM strangers at all (Q-0080
+> abuse posture). The agent recommended in-guild opt-in / no unsolicited DMs; the owner confirmed
+> and broadened it into the standing policy above.
 
 **The question (plan §4.3).** When a member joins a guild, should the bot proactively surface the
 profile hub, and if so **how**:
@@ -5666,3 +5675,39 @@ a subdir" habit remains good hygiene regardless.
 
 **Home:** `.claude/settings.json` (`hooks`) + this Q-block; `.session-journal.md` cwd-deadlock entry
 updated to "durable fix applied (Q-0150)".
+
+---
+
+### Q-0151 — Act on the autonomous-run review: run-report footer · ledger guard-exemption + drift line · bug-fix-guard · auto-deploy correction (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** After reviewing the first
+> overnight autonomous run, the owner directed implementing the loop-closing changes its self-audit
+> kept flagging, and corrected two propagating errors. Recorded here per CLAUDE.md Q-0106 because one
+> piece touches **executable config** (the SessionStart banner) — applied under the in-session
+> exception (the owner is the live reviewer). The rest are docs/tooling (free rein), batched here for
+> provenance.
+
+**What shipped (PR #956):**
+
+- **Run-report footer** (docs) — a required owner-facing `📤 Run report` block (`.sessions/README.md`
+  + both routine prompts), with `⚑ Owner decisions needed` / `⚑ Owner manual steps` lines (`none`
+  when empty) so Hermes rolls up what needs the owner instead of it evaporating into prose.
+- **Ledger guard-exemption** (tooling) — `check_current_state_ledger.py` skips a self-referential
+  reconciliation PR (`reconcil` in its merge subject); it can't list its own number, so its absence
+  isn't drift. Kills recurring busywork (idea: `ledger-guard-exempt-reconciliation-prs-2026-06-16`).
+- **SessionStart ledger-drift line** (⚠ **executable config** — Q-0106 exception) —
+  `claude_session_summary.py` prints `Ledger : ⚠ N merged PR(s) not yet in current-state` at session
+  start, fail-silent, so drift is seen *growing* rather than discovered only at close.
+- **Bug-fix-ships-its-guard** (docs) — the bug-book convention now requires a fixed bug's stays-fixed
+  guard to ship in the *same* PR (never deferred — the deathmatch #933 deferral three sessions flagged).
+- **Auto-deploy misinformation fix** (docs) — corrected the false "needs a Railway prod deploy to
+  clear it live" lines in `bug-book.md` + `current-state.md` (the bot **auto-deploys on merge**); the
+  bug-book convention + run-report footer now forbid re-adding a phantom manual-deploy step. The
+  legitimate authority-sense "Merge ≠ deploy" usages (prod-checks/restarts stay the owner's) are left.
+
+**Provenance note:** the run-report footer was specified in
+[`routine-system-improvements-2026-06-14`](../ideas/routine-system-improvements-2026-06-14.md)
+§ "Priority 1" (filed, never adopted) — this adopts it. Q-0147 (the DM gate) was decided in the same
+session — see its block.
+
+**Home:** the files above + this Q-block.

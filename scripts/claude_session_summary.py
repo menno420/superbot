@@ -7,6 +7,7 @@ work from an unknown baseline. Kept fast — no test runs, no full lint.
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -89,6 +90,26 @@ def main() -> int:
         print()
         recon_short = recon_line.replace("check_reconciliation_due: ", "")
         print(f"Recon  : {recon_short}")
+
+    # Living-ledger drift advisory (Q-0151) — printed at START so a session sees drift
+    # *growing* rather than discovering the whole pile at /session-close. Fail-silent: a
+    # drift advisory must never break session start. (Self-referential reconciliation PRs
+    # are already exempt inside the checker.)
+    ledger = subprocess.run(
+        [sys.executable, str(SCRIPTS / "check_current_state_ledger.py"), "--strict"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        timeout=15,
+    )
+    if ledger.returncode == 0:
+        print("Ledger : in sync ✓")
+    elif "not in" in ledger.stdout:
+        match = re.search(r":\s*(\d+)\s+recent", ledger.stdout)
+        count = match.group(1) if match else "some"
+        print(
+            f"Ledger : ⚠ {count} merged PR(s) not yet in current-state — reconcile before close",
+        )
 
     # Quick commands
     print()
