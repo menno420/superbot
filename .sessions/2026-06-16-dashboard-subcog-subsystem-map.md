@@ -1,38 +1,100 @@
 # 2026-06-16 — dashboard: map sub-cogs to their parent subsystem
 
-> **Status:** `in-progress` — born-red per Q-0133; flipped to `complete` as the deliberate
-> final step. Scanner + data + tests only (no `disbot/` runtime, no dashboard templates/app).
+> **Status:** `complete` — scanner + data + tests only (no `disbot/` runtime, no dashboard
+> templates/app). One PR (#995).
 
-## What I'm about to do
+## Arc
 
-Continue the bot's main website (`dashboard/`), non-conflicting with the owner's active sessions
-(website OAuth + editors; the control-API write side already merged #993). Execute my own filed idea
-(`docs/ideas/dashboard-subcog-parent-subsystem-2026-06-16.md`, Q-0089 from #990):
+"Continue from where you left off." Synced `main` first (the standing lesson) — found the owner's
+parallel sessions had landed **#993 (control-API mutation endpoints / write side)** and **#992**
+(foundation-complete docs reconcile), so the bot-side control API is now complete (read #989 + write
+#993) and the owner's remaining active work is the **website OAuth + editors**. Picked a slice clear
+of both that lane and the control-API file: executed my own filed idea
+(`dashboard-subcog-parent-subsystem`, Q-0089 from #990).
 
-The integrity guard (#990) *allow-lists* the real cogs whose `subsystem` doesn't resolve to a
-registry key, but several genuinely **belong** to a parent subsystem — so on `/commands` they render
-with a generic 🧩 + no routing key. Add an explicit cog-class→subsystem override map in
-`scan_commands.py` so they inherit the parent's registry identity (emoji / name / routing key), and
-**shrink the guard's allow-list** to the truly-unregistered few.
+## Shipped (PR #995)
 
-**Verified correct against the registry:** `btd6` (display "BTD6 Assistant") and `rps_tournament`
-(display "Rock Paper Scissors") exist. Map the unambiguous ones:
+The integrity guard (#990) *allow-listed* the real cogs whose `subsystem` didn't resolve to a registry
+key — but several genuinely **belong** to a parent, so on `/commands` they rendered with a generic 🧩 +
+no routing key. Mapped the unambiguous ones to their parent's registry identity:
 
-- `BTD6EventsCog` / `BTD6OpsCog` / `BTD6ReferenceCog` / `BTD6StrategyCog` → `btd6`
-- `RockPaperScissorsCog` (in `rps_tournament_cog.py`) → `rps_tournament`
-
-Leave `ParagonCog` / `SetupCog` / `HermesCog` allow-listed (parent intent is genuinely ambiguous —
-Paragon *could* be btd6, Setup is the hub-less wizard, Hermes is ops; defer to owner intent).
-
-Touches only `scripts/scan_commands.py` · `scripts/check_dashboard_data.py` (allow-list) ·
-`dashboard/data/dashboard.json` (regenerate) · `tests/` — guaranteed non-conflicting with the
-control-API + OAuth/editor sessions. No template change needed (the existing `sysmap` join resolves
-the header once the subsystem string is correct).
+- **`scripts/scan_commands.py`** — `_COG_SUBSYSTEM_OVERRIDES` (applied first in `_cog_to_subsystem`),
+  verified against the registry (`btd6` = "BTD6 Assistant", `rps_tournament` = "Rock Paper Scissors"):
+  `BTD6EventsCog`/`BTD6OpsCog`/`BTD6ReferenceCog`/`BTD6StrategyCog` → `btd6`, `RockPaperScissorsCog`
+  (in `rps_tournament_cog.py`) → `rps_tournament`. So they now inherit the parent's emoji / display
+  name / routing key on the dashboard — **no template change** (the existing `sysmap` join resolves it).
+- **`scripts/check_dashboard_data.py`** — the guard's allow-list shrank **8 → 3** (`ParagonCog`,
+  `SetupCog`, `HermesCog` stay; their parent is genuinely ambiguous → deferred to owner intent).
+- Regenerated `dashboard/data/dashboard.json`; the 5 mapped cogs resolve, so they no longer need an
+  allow-list exception, and a *new* unresolved cog still fails the guard.
 
 ## Status checklist
 
-- [ ] `_COG_SUBSYSTEM_OVERRIDES` in `scan_commands.py` + test
-- [ ] shrink `_UNREGISTERED_COG_ALLOWLIST` to {Paragon, Setup, Hermes} + guard still green
-- [ ] regenerate `dashboard.json`; verify 5 cogs now resolve + `/commands` renders
-- [ ] dashboard smoke test + `check_quality --check-only`
-- [ ] idea file update (5 done, 3 deferred) + session enders + flip card `complete`
+- [x] `_COG_SUBSYSTEM_OVERRIDES` in `scan_commands.py` + test
+- [x] shrink `_UNREGISTERED_COG_ALLOWLIST` to {Paragon, Setup, Hermes}; guard still green
+- [x] regenerate `dashboard.json`; 5 cogs now resolve
+- [x] dashboard smoke test (20) + `check_quality --check-only` green
+- [x] idea file update (5 done, 3 deferred) + session enders + flip card `complete`
+
+## Verification
+
+- `python3.10 -m pytest tests/unit/scripts/test_scan_commands.py tests/unit/scripts/test_check_dashboard_data.py`
+  → **14 passed** (incl. new `test_cog_to_subsystem_applies_parent_overrides`).
+- `python3.10 scripts/check_dashboard_data.py --fresh` → OK, 0 errors (42 cogs).
+- `python3.10 -m pytest tests/unit/dashboard/` → **20 passed** (with web deps).
+- `python3.10 scripts/check_quality.py --check-only` + `check_docs --strict` → green.
+- Resolution confirmed: BTD6 sub-cogs → `btd6` (resolves), RPS → `rps_tournament` (resolves);
+  Hermes/Paragon/Setup remain unresolved (allow-listed, by intent).
+
+## 💡 Session idea (Q-0089)
+
+**Cogs declare their subsystem** — `docs/ideas/cog-declares-its-subsystem-2026-06-16.md` (+ README).
+The dashboard guesses a cog's subsystem from its *class name*, propped up by **three** hand-maintained
+lists (acronym table · the override map I just added · the guard's allow-list) that drift
+independently — and even after #995, 3 cogs can't be resolved from the name alone. Replace it with an
+authoritative declaration the scanner reads (a `SUBSYSTEM = "btd6"` cog class attribute, or a
+command-surface-ledger join), deleting the override map and self-describing every cog. Genuine — I felt
+the maintenance smell directly while curating the override map this session.
+
+## ♻️ Backlog grooming (Q-0015)
+
+Moved the **dashboard-subcog-parent-subsystem** idea (filed last session, #990) down its lifecycle to
+**mostly-shipped** — the 5 unambiguous cogs mapped, the 3 ambiguous deferred with a clear owner-intent
+gate. Updated its file Disposition + README entry. (This session's main task *was* executing that idea;
+that execution is the grooming move.)
+
+## ⟲ Previous-session review (Q-0102)
+
+Reviewed **`2026-06-16-dashboard-data-integrity-guard.md`** (#990 — my own previous session). **Did
+well:** caught a real, invisible drift class (the acronym cogs) and shipped a guard that fails CI on a
+*new* unregistered cog — non-conflicting infra that protects all the parallel dashboard work. **What it
+could have done better — and I fixed this session:** it **allow-listed all 8** unresolved cogs rather
+than checking which were genuinely unfixable. 5 of the 8 were trivially *resolvable* (they have a real
+parent subsystem) — allow-listing them **suppressed a fixable defect** instead of fixing it, and the
+generic-🧩 rendering persisted one extra session. The cheap-but-wrong move (suppress) was taken over the
+root fix (map). **System improvement it surfaces:** when adding any allow-list / suppression, triage
+each entry as *genuinely-unfixable* vs. *just-unhandled* before freezing it — and annotate which, so a
+later session knows what to revisit. (I added that distinction to the allow-list comment + the deferred
+3 now carry an explicit "ambiguous parent → owner intent" reason. Captured as the workflow note;
+CLAUDE.md is propose-only.)
+
+## Documentation audit (Q-0104)
+
+- Idea files updated/filed + README-indexed (subcog → mostly-shipped; cog-declares-subsystem → new);
+  `check_docs --strict` green. Provenance in the scanner's own comments + this card.
+- **No owner decision** this session (a non-conflicting execution of an already-filed, decided-lane
+  idea), so no router Q-block. The 3 deferred cogs are flagged for owner intent in the idea file.
+- **Ledger untouched (Q-0124):** the merged-PR backlog is the reconciliation routine's job; my PR
+  (#995) isn't merged yet. Nothing from this session lacks a durable home.
+
+## Context delta
+
+- The dashboard cog→subsystem join now resolves the BTD6 sub-cogs + RPS via
+  `scan_commands._COG_SUBSYSTEM_OVERRIDES`; only `ParagonCog`/`SetupCog`/`HermesCog` remain unresolved
+  (allow-listed, parent intent deferred to the owner).
+- **Three** hand-maintained lists now govern this join (acronym table · override map · guard
+  allow-list) — captured the strategic replacement (cogs self-declaring their subsystem) as the
+  session idea, since the maintenance smell is now real.
+- Control API is **complete** bot-side (read #989 + write #993, dormant until `CONTROL_API_TOKEN` is
+  set on both Railway services); the owner's active lane is the website OAuth + editors (OAuth app
+  created, redirect `…/auth/callback`). Stay out of `control_api.py` + the dashboard templates/app/auth.

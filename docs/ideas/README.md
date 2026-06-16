@@ -56,12 +56,19 @@ Current broad captures:
   unregistered cog / broken join / count drift **fails CI** instead of silently degrading a page.
   → `scripts/check_dashboard_data.py` · `tests/unit/scripts/test_check_dashboard_data.py`.
 - [`dashboard-subcog-parent-subsystem-2026-06-16.md`](./dashboard-subcog-parent-subsystem-2026-06-16.md) —
-  **session idea (2026-06-16, Q-0089, from the integrity guard #990):** the guard *allow-lists* the
-  cogs that don't resolve to a registry key (BTD6 sub-cogs · Paragon · RPS · Setup), but several of
-  them genuinely *belong* to a parent subsystem (`BTD6EventsCog`…→`btd6`) — so on the dashboard they
-  render with a generic 🧩 + no routing key. A small cog→parent-subsystem map in `scan_commands` would
-  let sub-cogs inherit their parent's registry identity (emoji/name/routing), shrinking the allow-list
-  to the truly-unregistered few. → relates `scripts/scan_commands.py` · `dashboard/`.
+  **mostly SHIPPED 2026-06-16 (PR #995):** `scan_commands._COG_SUBSYSTEM_OVERRIDES` maps the BTD6
+  sub-cogs → `btd6` and RPS → `rps_tournament`, so they inherit the parent's registry identity on
+  `/commands` (no more generic 🧩); the integrity guard's allow-list shrank 8 → 3. **Deferred (owner
+  intent):** `ParagonCog` / `SetupCog` / `HermesCog` stay allow-listed until a parent is confirmed.
+  → relates `scripts/scan_commands.py` · `scripts/check_dashboard_data.py`.
+- [`cog-declares-its-subsystem-2026-06-16.md`](./cog-declares-its-subsystem-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the sub-cog mapping #995):** the dashboard guesses each
+  cog's subsystem from its **class name**, propped up by three hand-maintained lists (acronym table ·
+  override map · the guard's allow-list) that drift independently — and #995 still couldn't resolve 3
+  cogs from the name alone. Replace it with an **authoritative declaration** the scanner reads (a cog
+  `SUBSYSTEM = "btd6"` class attribute, or a command-surface-ledger join), deleting the override map
+  and self-describing every cog including sub-cogs. → relates `scripts/scan_commands.py` ·
+  `core/runtime/command_surface_ledger.py` · `utils/subsystem_registry.py`.
 - [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
   **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
   repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one

@@ -44,20 +44,18 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
 
-# Real (``is_cog``) cogs that legitimately have NO own SUBSYSTEMS registry entry:
-# the BTD6 sub-cogs belong to the ``btd6`` subsystem; Hermes/Paragon/Setup are
-# ops/internal cogs; RPS's class name differs from its ``rps_tournament`` key.
+# Real (``is_cog``) cogs that legitimately have NO own SUBSYSTEMS registry entry
+# AND no parent to map to: ``HermesCog`` (ops bridge), ``SetupCog`` (the hub-less
+# wizard), ``ParagonCog`` (BTD6-adjacent but its parent is ambiguous — deferred to
+# owner intent). The BTD6 sub-cogs and RPS used to be here too, but they DO belong
+# to a parent subsystem, so ``scan_commands._COG_SUBSYSTEM_OVERRIDES`` now resolves
+# them (``btd6`` / ``rps_tournament``) and they no longer need an exception.
 # Adding a cog here is a deliberate "this cog has no registry subsystem" call — the
 # point of the guard is that a *new* unresolved cog must be triaged, not silent.
 _UNREGISTERED_COG_ALLOWLIST = frozenset(
     {
-        "BTD6EventsCog",
-        "BTD6OpsCog",
-        "BTD6ReferenceCog",
-        "BTD6StrategyCog",
         "HermesCog",
         "ParagonCog",
-        "RockPaperScissorsCog",
         "SetupCog",
     },
 )

@@ -62,6 +62,22 @@ _PANEL_TOKENS = ("panel_manager", "send_panel", "View(", "view=")
 _ACRONYM_BOUNDARY_RE = re.compile(r"([A-Z]+)([A-Z][a-z])")
 _WORD_BOUNDARY_RE = re.compile(r"([a-z0-9])([A-Z])")
 
+# Cog classes whose derived snake_case name is NOT their registry subsystem key.
+# These cogs belong to a parent subsystem (the split into sub-cogs is an
+# implementation detail), so the dashboard joins them to the parent's registry
+# entry (emoji / display name / routing key) instead of rendering them generic.
+# Verified against utils/subsystem_registry.py: ``btd6`` ("BTD6 Assistant") and
+# ``rps_tournament`` ("Rock Paper Scissors") are real subsystem keys. Cogs whose
+# parent is genuinely ambiguous (ParagonCog / SetupCog / HermesCog) are NOT mapped
+# here — they stay in check_dashboard_data's unresolved allow-list, by intent.
+_COG_SUBSYSTEM_OVERRIDES: dict[str, str] = {
+    "BTD6EventsCog": "btd6",
+    "BTD6OpsCog": "btd6",
+    "BTD6ReferenceCog": "btd6",
+    "BTD6StrategyCog": "btd6",
+    "RockPaperScissorsCog": "rps_tournament",
+}
+
 
 def _truncate(text: str, limit: int) -> str:
     text = " ".join(text.split())
@@ -71,12 +87,16 @@ def _truncate(text: str, limit: int) -> str:
 def _cog_to_subsystem(class_name: str) -> str:
     """Normalise a cog class name to its snake_case subsystem key.
 
-    Acronym-aware so a run of capitals stays together: ``AICog`` -> ``ai``,
-    ``BTD6Cog`` -> ``btd6``, ``XPCog`` -> ``xp`` — the snake_case keys the
-    SUBSYSTEMS registry actually uses, not ``a_i`` / ``b_t_d6`` / ``x_p``. This
-    makes the dashboard's cog->subsystem join (header emoji/name + the routing
-    key) resolve for acronym-named cogs instead of silently falling back.
+    An explicit override wins first (a sub-cog whose registry subsystem is its
+    parent's, e.g. ``BTD6EventsCog`` -> ``btd6``). Otherwise acronym-aware so a
+    run of capitals stays together: ``AICog`` -> ``ai``, ``BTD6Cog`` -> ``btd6``,
+    ``XPCog`` -> ``xp`` — the snake_case keys the SUBSYSTEMS registry actually
+    uses, not ``a_i`` / ``b_t_d6`` / ``x_p``. This makes the dashboard's
+    cog->subsystem join (header emoji/name + the routing key) resolve instead of
+    silently falling back to a generic card.
     """
+    if class_name in _COG_SUBSYSTEM_OVERRIDES:
+        return _COG_SUBSYSTEM_OVERRIDES[class_name]
     base = class_name[:-3] if class_name.endswith("Cog") else class_name
     step1 = _ACRONYM_BOUNDARY_RE.sub(r"\1_\2", base)
     return _WORD_BOUNDARY_RE.sub(r"\1_\2", step1).lower()

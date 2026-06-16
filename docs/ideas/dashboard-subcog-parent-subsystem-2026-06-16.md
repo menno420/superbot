@@ -46,7 +46,9 @@ curated map, reviewed) and beats trying to infer the parent from the file name.
 
 ## Disposition
 
-Decided-lane, small → **execute when the dashboard lane next has capacity**; pairs naturally with the
-next `/commands` rendering pass. Confirm the `ParagonCog`/`SetupCog` parent intent with the owner (or
-leave them allow-listed). → relates `scripts/scan_commands.py` · `scripts/check_dashboard_data.py` ·
-`dashboard/templates/commands.html`.
+**SHIPPED (the unambiguous 5) 2026-06-16 — PR #995:** `scan_commands._COG_SUBSYSTEM_OVERRIDES` maps
+`BTD6EventsCog`/`BTD6OpsCog`/`BTD6ReferenceCog`/`BTD6StrategyCog` → `btd6` and `RockPaperScissorsCog` →
+`rps_tournament`, so they inherit the parent's registry identity on `/commands`; the integrity guard's
+allow-list shrank 8 → 3. **Deferred (owner intent):** `ParagonCog` (BTD6-adjacent? own subsystem?),
+`SetupCog` (hub-less wizard), `HermesCog` (ops) stay allow-listed — map them only if the owner confirms
+a parent. → relates `scripts/scan_commands.py` · `scripts/check_dashboard_data.py`.
