@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T21:49:32Z",
+    "generated_at": "2026-06-16T21:53:32Z",
     "build": {
-      "commit": "aab823a",
-      "subject": "feat(dashboard): map BTD6/RPS sub-cogs to their parent subsystem",
-      "committed_at": "2026-06-16T21:47:58Z",
+      "commit": "2631b14",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/dashboard-subcog-subsystem-map",
+      "committed_at": "2026-06-16T21:50:04Z",
       "branch": "claude/dashboard-subcog-subsystem-map"
     },
     "counts": {
@@ -1790,6 +1790,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-control-panel-oauth-editors.md",
+      "date": "2026-06-16",
+      "title": "Session — control panel: Discord OAuth login + web editors (write side, step 2)",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-control-api-mutation-endpoints.md",
       "date": "2026-06-16",
       "title": "Session — control API mutation endpoints (write side, step 1)",
@@ -1883,12 +1889,6 @@
       "file": "2026-06-16-btd6-capability-roster-floor.md",
       "date": "2026-06-16",
       "title": "Session — BTD6 property/capability roster floors (AI §7.6 new family)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-architecture-review-thread-close.md",
-      "date": "2026-06-16",
-      "title": "Session close — architecture-review thread (notes & remarks)",
       "status": "complete"
     }
   ],

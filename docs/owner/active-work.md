@@ -28,6 +28,10 @@ living ledger (`docs/current-state.md`).
 - `claude/dashboard-subcog-subsystem-map` · dashboard cog→subsystem override map — BTD6 sub-cogs →
   `btd6`, RPS → `rps_tournament`; shrink the integrity-guard allow-list · `scripts/scan_commands.py` ·
   `scripts/check_dashboard_data.py` · `dashboard/data/dashboard.json` · 2026-06-16
+- `claude/control-panel-web` · **control panel — Discord OAuth login + editors** (write side step 2,
+  owner directive) — stdlib signed-cookie session + control-API client + `/admin` guild picker +
+  per-guild settings/help/routing editors over the control API; dormant until secrets set ·
+  `dashboard/` · `tests/unit/dashboard/` · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
