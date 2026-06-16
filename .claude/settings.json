@@ -142,7 +142,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3.10 scripts/claude_pre_edit.py",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && python3.10 scripts/claude_pre_edit.py",
             "timeout": 20
           }
         ]
@@ -152,7 +152,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3.10 scripts/check_branch_freshness.py --event pretooluse",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && python3.10 scripts/check_branch_freshness.py --event pretooluse",
             "timeout": 20
           }
         ]
@@ -164,7 +164,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3.10 scripts/claude_post_edit.py",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && python3.10 scripts/claude_post_edit.py",
             "timeout": 30
           }
         ]
@@ -174,7 +174,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3.10 scripts/claude_pr_subscribe_reminder.py",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && python3.10 scripts/claude_pr_subscribe_reminder.py",
             "timeout": 10
           }
         ]
@@ -185,12 +185,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3.10 scripts/claude_stop_check.py",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && python3.10 scripts/claude_stop_check.py",
             "timeout": 60
           },
           {
             "type": "command",
-            "command": "python3.10 scripts/check_branch_freshness.py --event stop",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && python3.10 scripts/check_branch_freshness.py --event stop",
             "timeout": 20
           }
         ]
@@ -201,7 +201,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/claude_session_start.sh",
+            "command": "cd \"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}\" && bash scripts/claude_session_start.sh",
             "timeout": 180
           }
         ]
