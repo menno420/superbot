@@ -1,7 +1,11 @@
 # `/myprofile` foundation — implementation plan (wizard plan PR4)
 
-> **Status:** `plan` — ready to execute (no open gates for PR A/PR B; PR C is
-> explicitly gated). Produced by the 2026-06-10 PR4 planning session that
+> **Status:** `plan` — **PR A shipped (#938), PR B shipped (#940)**; only the
+> owner-gated **PR C** (join-time onboarding) remains. The two buildable slices
+> are done — the profile hub is now fully interactive (read-only card + the
+> self-service editor, the first UI consumer of `ParticipationMutationPipeline`).
+> PR C stays gated on an owner decision (routed to the question router — see §4.3).
+> Produced by the 2026-06-10 PR4 planning session that
 > Batch 10 / DT09 selected ([wizard plan](../setup-platform/setup_wizard_finalization_plan.md)
 > §6 + §10 PR4; source re-verified this session — §6's backend inventory is
 > still exact). Two PRs now, one gated follow-up; PR A has **zero writes** and
@@ -101,18 +105,20 @@ tables (ledger hard rule); command/help filtering by participation.
 
 ### 4.3 PR C — `on_member_join` onboarding (GATED — do not build yet)
 
-Needs an owner decision first (route when PR B lands): DM vs in-guild
-welcome, copy, and whether a public bot may DM strangers at all (Q-0080
-abuse posture). Until decided, the profile hub is discoverable via Help
-(the command registers normally) — no join-time trigger.
+Needs an owner decision first — **now routed as router Q-0147** (raised when PR B
+landed): DM vs in-guild welcome, copy, and whether a public bot may DM strangers
+at all (Q-0080 abuse posture). The agent recommendation in that Q-block is
+**in-guild, opt-in, no unsolicited DMs**. Until the owner answers, the profile hub
+is discoverable via Help (the command registers normally) — no join-time trigger.
+Un-gate this section with the decided shape when Q-0147 is answered.
 
 ## 5. PR slicing
 
-| PR | Content | Risk | Migration |
-|---|---|---|---|
-| **A** | `views/profile/` read-only card + `/myprofile` + `!myprofile` + ledger classification + tests | Low — zero writes | none |
-| **B** | write controls through `ParticipationMutationPipeline` (first UI consumer), per-spec editors, tests + live round-trip | Medium — first UI writes on a shipped-but-unexercised pipeline | none |
-| **C** | join-time onboarding | **gated** (owner decision) | none |
+| PR | Content | Risk | Migration | State |
+|---|---|---|---|---|
+| **A** | `views/profile/` read-only card + `/myprofile` + `!myprofile` + ledger classification + tests | Low — zero writes | none | ✅ **#938** |
+| **B** | write controls through `ParticipationMutationPipeline` (first UI consumer), per-spec editors, tests | Medium — first UI writes on a shipped-but-unexercised pipeline | none | ✅ **#940** — `views/profile/editor.py`: `ProfileEditorHomeView` (subsystem picker) → `ProfileSubsystemEditorView` (participation opt-in/out · subscription toggles · visibility toggle · preference editors bool/enum/modal); each action one audited pipeline call; `tests/unit/views/test_profile_editor.py` |
+| **C** | join-time onboarding | **gated** (owner decision — routed to the router, §4.3) | none | ⛔ owner-gated |
 
 ## 6. Tests & invariants to keep green
 
