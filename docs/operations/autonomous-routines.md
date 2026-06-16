@@ -245,9 +245,12 @@ behind branch without a merge queue). They split the two cases:
 `push: main` is the load-bearing trigger for both: a conflict/behind state arises when *main moves*
 (another PR merges), which is not an event on the stale PR. `conflict-guard` is a **non-required**
 status (a signal, not an extra gate — a DIRTY PR already can't merge), so no branch-protection
-change is needed. Both use `ROUTINE_PAT` (already scoped Pull requests + Contents write for
-`auto-merge-enabler.yml`). Kill switch (Q-0105): delete either workflow; both are disposable
-convenience guards, and "Update branch" / the conflict banner remain available by hand.
+change is needed. **Token split (learned by dogfooding):** `auto-update` uses `ROUTINE_PAT` (it needs
+Pull requests + Contents write for `update-branch`, and PAT attribution keeps the cadence firing);
+`conflict-guard` uses the default **`GITHUB_TOKEN`** because posting a commit status needs
+`statuses: write`, which `ROUTINE_PAT` is not scoped for (that 403 failed the guard's first run).
+Kill switch (Q-0105): delete either workflow; both are disposable convenience guards, and "Update
+branch" / the conflict banner remain available by hand.
 
 ## Control-plane state (maintainer-verified) — the bits no in-repo checker can see
 
