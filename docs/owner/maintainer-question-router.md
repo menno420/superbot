@@ -5582,3 +5582,45 @@ framing was the wrong shape for a dispatch order regardless, which is what this 
 (the source of work orders). **Owner action:** re-paste the corrected dispatch prompt into the
 routine console and the `superbot-dispatch` skill into Hermes' config (the in-repo copies are the
 source of truth; the live copies must be synced to match).
+
+---
+
+### Q-0149 — Expand `.claude/settings.json` permission allow-list so routines don't stall on prompts (2026-06-16)
+
+> **APPLIED — owner-directed in-session (the Q-0106 exception).** Not a DISCUSS proposal: the
+> maintainer directed this change live (mid-routine, after a permission prompt interrupted a
+> scheduled run), so per CLAUDE.md "the one exception is a change the maintainer directs in-session"
+> it was applied directly. This Q-block records the provenance.
+
+**Trigger.** A scheduled DISPATCH routine run hit a Claude Code permission prompt
+(`grep … || echo … >> .git/info/exclude && git status …`) and **stalled** — an unattended routine
+has no human to click "Allow", so a prompt silently wastes the whole run. The maintainer asked, from
+the mobile app, to "make this get auto-accepted."
+
+**Root cause.** `.claude/settings.json` already set `permissions.defaultMode: "bypassPermissions"`,
+but the **Claude Code web / remote-execution environment does not honor `bypassPermissions`** (it
+downgrades to a gated mode for safety). The effective lever is therefore the `permissions.allow`
+list. The existing allow-list covered git + `python3.10` dev commands but **not** the common
+read-only shell tools (`grep`/`cat`/`head`/`find`/`sed`/`awk`/`jq`/…), compound-command parts, or
+`>>` redirect targets — so anything outside the narrow allow-list prompted.
+
+**Decision (applied).** Expanded `permissions.allow` with the safe, frequently-used command surface
+a routine relies on (read-only shell inspection, safe file ops `mkdir`/`touch`/`cp`/`mv`/`ln -s`,
+more git read/local-history verbs, `python3.10 -c`/`scripts/*`/`tools/*`, `npx … @optave/codegraph`),
+and added a `permissions.ask` list that keeps the **safety-brake** commands prompting (so a routine
+stalls rather than runs them unattended): `rm`, `git push --force`/`-f`, `git clean -f`, `railway*`,
+`sudo*`, `psql`/`pg_dump`/`pg_restore`, `curl`/`wget`, `docker*`. This matches the CLAUDE.md safety
+brakes (never touch prod / DB / external-publish / force-history directly from a routine).
+
+**Caveats / residual (recorded for the owner).**
+1. **Takes effect next scheduled run, not this one** — settings load at session start.
+2. **Not bulletproof for novel compound commands** — `allow` is prefix-matched per command; an
+   unusual `A && B || C >> file` shape can still prompt if a part isn't covered. The allow-list
+   reduces prompts to rare; it does not eliminate them for arbitrary shell.
+3. **The fully-decisive lever is environment-level**, not this file: the Claude Code **web console
+   → the routine's environment** can run the routine in an autonomous permission mode. That is the
+   owner's console setting (outside the repo); this Q only widens the in-repo allow-list, which is
+   the part an agent can change. If prompts still interrupt routines after this, set the
+   environment's permission mode in the console.
+
+**Home:** `.claude/settings.json` (`permissions.allow` / `permissions.ask`) + this Q-block.
