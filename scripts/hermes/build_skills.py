@@ -163,7 +163,15 @@ def _extract_purpose(lines: list[str]) -> str:
 
 
 def _extract_prompt(lines: list[str]) -> str:
-    """Return the first fenced block following the ``## Prompt`` heading."""
+    """Return the first fenced block following the ``## Prompt`` heading.
+
+    The outer fence opens and closes at a **column-0** ```` ``` ````. A skill body
+    may itself contain *indented* nested fences (e.g. ``skill-author`` shows an
+    example skill complete with its own ``## Prompt`` fence) — those are body
+    content, not the boundary. Matching only column-0 fences keeps the whole prompt
+    instead of truncating at the first nested ```` ``` ```` (the bug that silently
+    dropped skill-author's STEP 4/STEP 5 from its generated artifact).
+    """
     in_prompt_section = False
     in_fence = False
     body: list[str] = []
@@ -173,12 +181,11 @@ def _extract_prompt(lines: list[str]) -> str:
             continue
         if not in_prompt_section:
             continue
-        stripped = line.strip()
         if not in_fence:
-            if stripped.startswith("```"):
+            if line.startswith("```"):  # column-0 opener
                 in_fence = True
             continue
-        if stripped == "```":
+        if line.startswith("```"):  # column-0 closer; indented nested fences pass through
             break
         body.append(line)
     return "\n".join(body).strip()
