@@ -159,6 +159,13 @@ Current broad captures:
   surface can grow past the 800-LOC cog ceiling — the cog hit **799/800** when the faucet/sink
   `!platform economy` landed (#937), and the next subcommand has no room. Small/safe/decided-lane,
   pure refactor; worth executing before it's urgent.
+- [`meter-external-moderation-calls-2026-06-16.md`](./meter-external-moderation-calls-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the image-moderation build #941):** image moderation
+  calls OpenAI's moderation endpoint once per uploaded image (when enabled) with **no cost
+  accounting** — the same un-metered-external-call gap the NL event scheduler (Q-0112) was told to
+  close. Route the `openai_moderation` call through the Q-0082 spend-meter and fail open when the
+  ceiling is hit. Small, reuses existing machinery; natural next-band slice once the meter seam is
+  confirmed. Small/safe grooming-lane candidate.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in

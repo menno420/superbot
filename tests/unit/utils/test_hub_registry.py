@@ -113,6 +113,7 @@ def test_moderation_hub_uses_existing_panel():
     assert moderation.minimum_tier == "moderator"
     assert moderation.primary_children == (
         "automod",
+        "image_moderation",
         "cleanup",
         "logging",
         "proof_channel",

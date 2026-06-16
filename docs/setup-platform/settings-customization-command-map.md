@@ -289,6 +289,64 @@ through `moderation_service` (no parallel audit path).
     not a settings mutation — they route through `moderation_service`.
 21. **target_help_or_menu_route**: Help direct-nav (policy summary), Settings
     → Automod group.
+
+### image_moderation
+
+image moderation v1 (owner decision Q-0108) — the automated **image**-filter
+layer beneath manual moderation; the image twin of `automod` (auto-mod pipeline
+tier, parented to the moderation hub). Pure detection lives in
+`services/image_moderation_service.py`; the OpenAI `omni-moderation-latest` call
+lives in `core/runtime/ai/providers/openai_moderation.py` (the invariant SDK
+chokepoint); actions route through `moderation_service` (no parallel audit path).
+
+1. **cog_module**: `disbot/cogs/image_moderation_cog.py` (+
+   `disbot/cogs/image_moderation/` subpackage with `schemas.py` + `listener.py`).
+2. **subsystem**: `image_moderation`
+3. **current_commands**: `!imagemod` (read-only policy summary).
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: none (config via `!settings` → Image moderation).
+6. **help_menu_discoverable**: Yes — `SUBSYSTEMS["image_moderation"]` lists `imagemod`.
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
+9. **existing_SettingSpec_declarations**: `enabled`, `sexual_enabled`,
+   `violence_enabled`, `harassment_enabled`, `hate_enabled`, `threshold_percent`,
+   `exempt_roles`, `exempt_channels` (`disbot/cogs/image_moderation/schemas.py`).
+   All flags default OFF; defaults + bounds are the single source of truth in
+   `disbot/services/image_moderation_config.py`.
+10. **existing_settings_keys**: `IMAGE_MODERATION_ENABLED`,
+    `IMAGE_MODERATION_SEXUAL_ENABLED`, `IMAGE_MODERATION_VIOLENCE_ENABLED`,
+    `IMAGE_MODERATION_HARASSMENT_ENABLED`, `IMAGE_MODERATION_HATE_ENABLED`,
+    `IMAGE_MODERATION_THRESHOLD_PERCENT`, `IMAGE_MODERATION_EXEMPT_ROLES`,
+    `IMAGE_MODERATION_EXEMPT_CHANNELS`
+    (`disbot/utils/settings_keys/image_moderation.py`). Stored as scalar guild
+    settings — **no migration**.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=administrator`;
+    capability `image_moderation.settings.configure`; spec edits gated on
+    `moderation.settings.configure` (image moderation *is* moderation's automated
+    image layer).
+14. **hardcoded_or_env_only_behavior**: the OpenAI key is read from
+    `OPENAI_API_KEY` (shared with the AI cog); when absent the stage fails open
+    (no image is acted on). Every category + threshold + exempt list is operator
+    config; a fresh guild is unaffected (all flags default OFF).
+15. **current_resource_dependencies**: none (no channels/roles required); the
+    external OpenAI moderation endpoint is the only runtime dependency.
+16. **target_settings_fields**: the four category toggles + the threshold + the
+    two exempt lists (reuses the automod panel shape — `mock_automod_rules`).
+17. **target_bindings**: none in v1.
+18. **target_access_controls**: administrator floor for config; runtime actions
+    are system-actor via `moderation_service` (warn → escalation).
+19. **acceptance_or_validation_rules**: threshold bounded by the
+    `MIN_/MAX_THRESHOLD_PERCENT` constants in `image_moderation_config`; exempt
+    lists must be numeric ids (CSV).
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars). Actions are
+    not a settings mutation — they route through `moderation_service`.
+21. **target_help_or_menu_route**: Help direct-nav (policy summary), Settings
+    → Image moderation group.
+22. **privacy_disclosure**: when on, the image **URL** (only) is sent to OpenAI's
+    free moderation endpoint — disclosed in the master-switch setting hint;
+    operators should surface external image analysis in their server rules.
 22. **provisionable_resources**: none.
 23. **priority**: `P1` — first slice of the safety/community lane (band slot 4).
 24. **recommended_PR_phase**: safety-lane PR1 (this PR).

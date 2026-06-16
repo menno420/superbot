@@ -44,9 +44,11 @@ test_registered_stage_orders_are_distinct``).
 ==========  =====  =========================================  ============
 order       tier   stage (constant)                           short-circuits?
 ==========  =====  =========================================  ============
+5           auto-mod   automod    (``AUTOMOD_STAGE_ORDER``)    on delete
 10          auto-mod   cleanup    (``CLEANUP_STAGE_ORDER``)    on delete
 15          auto-mod   counting   (``COUNTING_STAGE_ORDER``)   on delete
 20          auto-mod   chain      (``CHAIN_STAGE_ORDER``)      on delete
+25          auto-mod   image_mod  (``IMAGE_MOD_STAGE_ORDER``)  on delete
 30          rewards    xp         (``XP_STAGE_ORDER``)         no
 40          rewards    rps        (``RPS_STAGE_ORDER``)        no
 50          passive    four_twenty(``FOUR_TWENTY_STAGE_ORDER``) no
