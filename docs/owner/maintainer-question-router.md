@@ -6077,14 +6077,12 @@ console environment's permission mode (owner-side, outside the repo).
 
 ### Q-0162 — Finalized dashboard vision: the manifest spine + owner-zone future scope (2026-06-16)
 
-> **OPEN — awaiting owner.** Raised while synthesizing the owner's uploaded deep-research report + Codex
-> PR #998 into one north-star vision plan
+> **DECIDED 2026-06-16 (owner question-panel — both forks chose the agent recommendation).** Raised while
+> synthesizing the owner's uploaded deep-research report + Codex PR #998 into one north-star vision plan
 > ([`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)).
-> The vision doc captures **all** open questions with safe defaults and is actionable without answers;
-> only these **two architectural/early-IA forks** are routed here because guessing wrong on them is
-> expensive or hard to reverse. The rest (homepage emphasis, authority-UX posture, first-write breadth,
-> mobile depth) carry defaults in the doc and don't block. Neither fork blocks any current build — both
-> are *destination* decisions for when the dashboard reaches that phase.
+> These **two architectural/early-IA forks** were routed here because guessing wrong on them is expensive
+> or hard to reverse; the other panel decisions (homepage, authority UX, first-write order, mobile depth,
+> panel-editor timing, setup readiness) are **Q-0163**.
 
 **Fork 1 — the manifest spine (go/no-go + priority).** Both external reviews recommend the bot build a
 **typed runtime manifest** (command / panel / settings) at startup as the long-term source of truth for
@@ -6110,5 +6108,34 @@ IA than repaired late in permissions."
 - *Agent recommendation / safe default:* **build owner-only now, but keep the owner zone scope-shaped** so
   delegation is an additive grant later, not a rewrite. (No delegated roles built until the owner asks.)
 
-**Home (once answered):** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
+**Decision (owner, 2026-06-16):** **both forks → the agent recommendation.** Fork 1: **build the manifest
+spine, sequenced after OAuth/read-only workspaces (Phase C) and before live command/panel editing
+(F/H).** Fork 2: **owner-only now, scope-shaped** for later delegated roles (no delegated roles until
+asked). Applied to the vision-doc roadmap (Phase D) + § "The four zones".
+
+**Home:** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
 § "The manifest spine" + § "The four zones" / "Roadmap" · this Q-block.
+
+### Q-0163 — Finalized dashboard vision: homepage, authority UX, edit order, mobile, panel timing, setup (2026-06-16)
+
+> **DECIDED 2026-06-16 (owner question-panel).** The remaining six dashboard-vision forks (the two
+> architectural ones are Q-0162), answered in one panel pass so the
+> [vision plan](../planning/dashboard-vision-finalized-state.md) is fully solidified. Preserved as
+> asked + chosen.
+
+| Fork | Owner choice | Applied |
+|---|---|---|
+| **Homepage** | **Hybrid router landing** — newcomers → product tour, logged-in → straight to workspace (not a pure product-marketing page). | vision § "Homepage (finalized)" |
+| **Authority UX** | **Cautious edits, open info** — show edit controls only when near-certain allowed; show read-only info + the authority preview freely. | vision § "Security & authority model" |
+| **First live-write order** | **Help → settings → aliases/routing → panels** (lowest architectural resistance first; global-settings runtime tier in parallel). | vision § config-capability map + roadmap F |
+| **Mobile** | **Full management on mobile** — not just oversight; a first-class per-screen constraint on every editor. | vision § "Mobile (finalized)" |
+| **Panel-layout editor** | **Last**, after the simpler editors (greenfield panel-layout model is the prerequisite). | vision roadmap H |
+| **Setup readiness** | **Already complete & confirmed working** — Discord OAuth + the shared control token are set on Railway; phases C/E/F are **no longer owner-setup-gated**. | vision roadmap "Setup gate cleared" note |
+
+**Notable shifts from the agent defaults:** homepage went **hybrid router** (not pure product-site), and
+mobile went **full management** (not oversight-only) — both raise the design bar and are recorded as
+binding intent for the vision. The setup-done answer **unblocks the whole live-editing path** (the write
+side — control-API mutation endpoints #993 + OAuth/editors #996 — had already merged in parallel lanes).
+
+**Home:** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
+§ "Decisions (owner question-panel, 2026-06-16)" · this Q-block.
