@@ -1,6 +1,6 @@
 # Session — Reconcile command counts (website breakdown + bot status embed)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
