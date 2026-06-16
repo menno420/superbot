@@ -1,7 +1,12 @@
 # Dashboard live editor — plan (help appearance & command panels)
 
-> **Status:** `plan` — owner-approved direction (2026-06-16, router Q-0156–Q-0159). Design only;
-> no bot-runtime code has shipped yet. Source code and merged PRs win over this document.
+> **Status:** `plan` — owner-approved direction (2026-06-16, router Q-0156–Q-0160); **foundation
+> shipped, write side remains.** The read-only surfaces **and** the bot-side foundation have
+> **shipped**: the `/commands` management
+> surface (#988) + the dormant-by-default control API and identity→authority bridge (#989). What
+> remains is the **write side** — control-API mutation endpoints + Discord OAuth login + editors —
+> the owner's explicit **"don't rush"** zone, gated on owner Railway setup. Source code and merged
+> PRs win over this document.
 
 ## ⭐ Next session — start here (handoff 2026-06-16)
 
@@ -33,11 +38,20 @@ edit capability** — front-end these seams, do not rebuild:
    command). Decoupled, read-only, no bot change. **Open decision RESOLVED → Q-0160: cog-level now,
    per-command later** (per-command would be a new bot routing layer). Drive-by: acronym-aware
    `_cog_to_subsystem` so `BTD6Cog`/`AICog`/`XPCog` join the registry (`btd6`/`ai`/`xp`).
-2. **Bot-ready foundation (runtime — do NOT rush; owner setup required, see § "Free multi-user control
-   panel").** ① a private **control API** on the bot exposing the seams above; ② the **identity →
-   authority bridge** (resolve `(user_id, guild_id)` → member → run `governance.capability` checks).
+2. ✅ **Bot-ready foundation (runtime) — FOUNDATION SHIPPED #989; mutation endpoints remain (do NOT
+   rush; owner setup required, see § "Free multi-user control panel").** Shipped read-only in #989
+   (`disbot/control_api.py`, **dormant** until `CONTROL_API_TOKEN` is set): ① the private **control
+   API** on the existing health server (shared-secret bearer auth, private-network only) + ② the
+   **identity → authority bridge** (`GET /control/authority` resolves `(user_id, guild_id)` → live
+   member → the same visibility tier every in-Discord surface uses; the bot decides, never the
+   browser). **Remaining = the mutation endpoints:** a `POST` over *each* audited seam below
+   (settings_mutation · help_overlay_mutation · command_routing · synonyms), re-checking authority
+   per request via the bridge. That write side is the owner's "don't rush" zone and needs the
+   Railway token set on both services — confirm pacing/setup with the owner before building it.
 3. **Website auth + editors:** Discord OAuth login → per-user + per-guild editors over the control API
-   (settings global+per-server per Q-0157; help; aliases live; cog routing).
+   (settings global+per-server per Q-0157; help; aliases live; cog routing). The owner has created the
+   Discord OAuth app (redirect `https://superbot-dashboard.up.railway.app/auth/callback`); the client
+   secret + `CONTROL_API_TOKEN` go into Railway when this phase begins (never into the repo or chat).
 
 **Ready read-only slices (no auth, no bot change — grow these while phase 2/3 are gated):**
 

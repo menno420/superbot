@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/kind-carson-736rnk` · dashboard live-editor **foundation-complete reconciliation** — fix the
+  stale plan handoff (#988/#989 shipped, Q-0160 decided), fold dashboard PRs into the ledger, clear
+  stale claims · `docs/planning/dashboard-live-editor-plan.md` · `docs/current-state.md` ·
+  `docs/owner/active-work.md` · 2026-06-16
 - `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
   guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
   fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
@@ -39,13 +43,12 @@ living ledger (`docs/current-state.md`).
 - `claude/peaceful-tesla-vvayya` · PR mergeability keepers — auto-update behind + red-on-conflict
   guard (Q-0154) · `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` · 2026-06-16
 
-- `claude/kind-carson-736rnk` · dashboard `/settings` + `/access` read-only pages
-  (`scripts/scan_settings.py` · `scripts/scan_access.py`) + live help-editor design doc (Q-0156) ·
-  `dashboard/` · `scripts/export_dashboard_data.py` · `docs/planning/dashboard-live-editor-plan.md` ·
-  2026-06-16
-
 ## Recently cleared
 
+- `claude/practical-turing-pnppjf` · dashboard `/commands` management surface (READ side) — Manage
+  button on every command + cog, per-item panels + per-command alias box · 2026-06-16 · **PR #988 (merged)**
+- `claude/kind-carson-736rnk` · dashboard `/settings` + `/access` read-only pages + live help-editor
+  design doc (Q-0156) · 2026-06-16 · **PR #977 (merged)**
 - `claude/jolly-cannon-gn9ddg` · developer dashboard (personal website) — design + read-only MVP (Phase 1) · 2026-06-16 · **PR #967 (auto-merge on green)**
 - `claude/hopeful-meitner-772pv8` · count-citation guard + session-close notes (Q-0151, atlas thread #3)
   — soft `check_docs` inventory-count rule · 2026-06-16 · **PR #964 (auto-merge on green)**
