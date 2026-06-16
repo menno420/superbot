@@ -31,6 +31,7 @@ not re-implement them:
 | Feature | How it's built | Existing data source |
 |---|---|---|
 | Bot-function catalogue | catalogue page | `disbot/utils/subsystem_registry.py` (AST-parsed; never imported) |
+| Cog & command explorer | `/commands` page ✅ | `disbot/cogs/**` (AST via `scripts/scan_commands.py`) — prefix/slash + button-backed |
 | Update tracking / changelog | updates feed | `.sessions/*.md` logs (+ later GitHub PRs, `current-state.md`) |
 | Ideas board | ideas page | `docs/ideas/*.md` |
 | Bug board | bugs page | `docs/health/bug-book.md` |

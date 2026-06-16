@@ -114,3 +114,22 @@ def env(request: Request):
         "env.html",
         {"data": load_data(), "page": "env"},
     )
+
+
+@app.get("/commands", response_class=HTMLResponse)
+def commands(request: Request):
+    """Cog & command explorer — invocation type (prefix/slash) + button backing."""
+    data = load_data()
+    cmds = [c for cog in data.get("cogs", []) for c in cog["commands"]]
+    stats = {
+        "prefix": sum(1 for c in cmds if c["type"] == "prefix"),
+        "slash": sum(1 for c in cmds if c["type"] == "slash"),
+        "both": sum(1 for c in cmds if c["type"] == "both"),
+        "button": sum(1 for c in cmds if c["button_backed"]),
+    }
+    sysmap = {c["key"]: c for c in data.get("catalogue", [])}
+    return templates.TemplateResponse(
+        request,
+        "commands.html",
+        {"data": data, "page": "commands", "stats": stats, "sysmap": sysmap},
+    )

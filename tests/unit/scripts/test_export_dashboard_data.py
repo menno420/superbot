@@ -121,3 +121,16 @@ def test_build_data_includes_env_usage_section(mod):
     # The section is the scanner's shape (names + locations only, no values).
     for record in env_usage:
         assert set(record) == {"name", "required", "usage_count", "layers", "usages"}
+
+
+def test_build_data_includes_cogs_section(mod):
+    data = mod.build_data()
+    cogs = data["cogs"]
+    assert data["meta"]["counts"]["cogs"] == len(cogs)
+    assert data["meta"]["counts"]["commands"] == sum(len(c["commands"]) for c in cogs)
+    assert len(cogs) >= 20
+    assert "EconomyCog" in {c["cog"] for c in cogs}
+    for cog in cogs:
+        for cmd in cog["commands"]:
+            assert set(cmd) >= {"name", "type", "button_backed", "aliases"}
+            assert cmd["type"] in {"prefix", "slash", "both"}
