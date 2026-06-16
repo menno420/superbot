@@ -3,7 +3,7 @@
 > **Status:** `ideas` — captured 2026-06-13 (Q-0089 session idea, from the P0-3 settings
 > pointer-lane foundation session). Not a plan; not approved. Source + merged PRs win.
 >
-> **⚙ Mechanism PARTIALLY SHIPPED (2026-06-16, PR #961, Q-0151).** The architecture-review
+> **⚙ Mechanism PARTIALLY SHIPPED (2026-06-16, PR #964, Q-0151).** The architecture-review
 > count-citation guard built exactly this mechanism in `check_docs.py`
 > (`inventory_count_flags` / `print_inventory_count_report`): a **soft** warning when a bare
 > inventory count (`N migrations/workflows/extensions/cogs/subsystems`) lacks a regen citation
