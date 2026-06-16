@@ -48,6 +48,11 @@ _COMMAND_DECORATORS: dict[str, tuple[str, bool]] = {
     "commands.hybrid_group": ("both", True),
     "hybrid_group": ("both", True),
     "app_commands.group": ("slash", True),
+    # module-level registrations (e.g. bot1.py's @bot.command / @bot.tree.command)
+    "bot.command": ("prefix", False),
+    "bot.group": ("prefix", True),
+    "bot.tree.command": ("slash", False),
+    "tree.command": ("slash", False),
 }
 _SUBCOMMAND_LEAVES = {"command", "group", "subcommand"}
 _PANEL_TOKENS = ("panel_manager", "send_panel", "View(", "view=")
@@ -63,6 +68,24 @@ def _cog_to_subsystem(class_name: str) -> str:
     """Normalise a cog class name to its snake_case subsystem key."""
     base = class_name[:-3] if class_name.endswith("Cog") else class_name
     return _CAMEL_RE.sub("_", base).lower()
+
+
+def _is_cog(class_node: ast.ClassDef) -> bool:
+    """True if the class subclasses ``commands.Cog`` (a real, loadable cog).
+
+    A command-bearing *mixin* (e.g. ``PlatformCommandsMixin``) returns False — its
+    commands are real (inherited by a cog) but it is not itself a loaded cog, so it
+    must not inflate the cog count.
+    """
+    for base in class_node.bases:
+        node: ast.expr = base
+        while isinstance(node, ast.Attribute):
+            if node.attr.endswith("Cog"):
+                return True
+            node = node.value
+        if isinstance(node, ast.Name) and node.id.endswith("Cog"):
+            return True
+    return False
 
 
 def _decorator_path(dec: ast.expr) -> str:
@@ -190,15 +213,39 @@ def _scan_class(class_node: ast.ClassDef, source: str, rel_path: str) -> dict | 
         "cog": class_node.name,
         "file": rel_path,
         "subsystem": _cog_to_subsystem(class_node.name),
+        "is_cog": _is_cog(class_node),
+        "commands": commands,
+    }
+
+
+def _scan_module(tree: ast.Module, source: str, rel_path: str) -> dict | None:
+    """Scan module-level functions (e.g. ``bot1.py``'s ``@bot.command``)."""
+    commands: list[dict] = []
+    for item in tree.body:
+        cmd = _scan_method(item, source, {})
+        if cmd is not None:
+            commands.append(cmd)
+    if not commands:
+        return None
+    commands.sort(key=lambda c: (c["parent"] or "", c["name"]))
+    return {
+        "cog": f"({Path(rel_path).name})",
+        "file": rel_path,
+        "subsystem": "",
+        "is_cog": False,
         "commands": commands,
     }
 
 
 def scan_commands(repo_root: Path = REPO_ROOT) -> list[dict]:
-    """Return one record per cog (with commands) found under ``disbot/cogs``."""
+    """Return one record per cog/module that declares commands."""
     cogs_dir = repo_root / "disbot" / "cogs"
+    files = sorted(cogs_dir.rglob("*.py"))
+    bot1 = repo_root / "disbot" / "bot1.py"
+    if bot1.exists():
+        files.append(bot1)
     out: list[dict] = []
-    for path in sorted(cogs_dir.rglob("*.py")):
+    for path in files:
         try:
             source = path.read_text(encoding="utf-8")
             tree = ast.parse(source)
@@ -210,6 +257,9 @@ def scan_commands(repo_root: Path = REPO_ROOT) -> list[dict]:
                 cog = _scan_class(node, source, rel)
                 if cog is not None:
                     out.append(cog)
+        module = _scan_module(tree, source, rel)
+        if module is not None:
+            out.append(module)
     out.sort(key=lambda c: c["cog"])
     return out
 
@@ -221,8 +271,14 @@ def summarise(cogs: list[dict]) -> dict:
     for c in cmds:
         by_type[c["type"]] = by_type.get(c["type"], 0) + 1
     return {
-        "cogs": len(cogs),
+        "cogs": sum(1 for cog in cogs if cog.get("is_cog")),
+        "command_classes": len(cogs),
         "commands": len(cmds),
+        "top_level_prefix": sum(
+            1 for c in cmds if c["type"] in ("prefix", "both") and not c["parent"]
+        ),
+        "subcommands": sum(1 for c in cmds if c["parent"]),
+        "slash": sum(1 for c in cmds if c["type"] == "slash" and not c["parent"]),
         "by_type": by_type,
         "button_backed": sum(1 for c in cmds if c["button_backed"]),
     }

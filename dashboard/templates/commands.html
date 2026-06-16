@@ -3,18 +3,23 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-1">Cogs &amp; commands</h1>
 <p class="text-slate-400 mb-5 text-sm">
-  {{ data.meta.counts.get("commands", 0) }} commands across {{ data.meta.counts.get("cogs", 0) }} cogs,
-  scanned straight from the cog source. A <span class="text-sky-300">🔘 button</span> tag means the
-  command is a panel button's action or opens a view; everything else is reachable only by typing it.
+  {{ stats.total }} commands across {{ stats.cogs }} cogs, scanned from the cog source. Of these,
+  <span class="text-slate-200">{{ stats.top_prefix }}</span> are top-level prefix commands — the number
+  the bot's status embed reports (<code>len(bot.commands)</code>); the other {{ stats.subcommands }}
+  subcommands and {{ stats.slash }} slash commands live in <code>bot.tree</code> and aren't in that
+  count. A <span class="text-sky-300">🔘 button</span> tag means the command is a panel button's action
+  or opens a view. (The bot's "Loaded cogs" count is higher — it also counts listener/task cogs that
+  declare no commands.)
 </p>
 
-<section class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
   {% set cards = [
-      ('commands', 'Commands', data.meta.counts.get('commands', 0)),
-      ('prefix', 'Prefix !', stats.prefix),
+      ('total', 'Commands', stats.total),
+      ('top_prefix', 'Prefix (top-level)', stats.top_prefix),
+      ('subcommands', 'Subcommands', stats.subcommands),
       ('slash', 'Slash /', stats.slash),
       ('button', '🔘 Button', stats.button),
-      ('cogs', 'Cogs', data.meta.counts.get('cogs', 0)),
+      ('cogs', 'Cogs', stats.cogs),
   ] %}
   {% for key, label, value in cards %}
     <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
@@ -43,6 +48,7 @@
       <span class="text-xl">{{ sys.emoji if sys and sys.emoji else "🧩" }}</span>
       <span class="font-semibold">{{ sys.display_name if sys and sys.display_name else cog.cog }}</span>
       <span class="text-xs text-slate-500">{{ cog.cog }}</span>
+      {% if not cog.is_cog %}<span class="text-[10px] rounded px-1.5 py-0.5 bg-slate-800 text-slate-500">{{ 'module' if cog.cog.startswith('(') else 'mixin' }}</span>{% endif %}
       <span class="ml-auto text-[11px] text-slate-500">{{ cog.commands|length }} cmd{{ '' if cog.commands|length == 1 else 's' }}</span>
     </div>
     <ul class="divide-y divide-slate-800/70">

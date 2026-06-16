@@ -122,10 +122,14 @@ def commands(request: Request):
     data = load_data()
     cmds = [c for cog in data.get("cogs", []) for c in cog["commands"]]
     stats = {
-        "prefix": sum(1 for c in cmds if c["type"] == "prefix"),
-        "slash": sum(1 for c in cmds if c["type"] == "slash"),
-        "both": sum(1 for c in cmds if c["type"] == "both"),
+        "total": len(cmds),
+        "top_prefix": sum(
+            1 for c in cmds if c["type"] in ("prefix", "both") and not c["parent"]
+        ),
+        "subcommands": sum(1 for c in cmds if c["parent"]),
+        "slash": sum(1 for c in cmds if c["type"] == "slash" and not c["parent"]),
         "button": sum(1 for c in cmds if c["button_backed"]),
+        "cogs": sum(1 for cog in data.get("cogs", []) if cog.get("is_cog")),
     }
     sysmap = {c["key"]: c for c in data.get("catalogue", [])}
     return templates.TemplateResponse(

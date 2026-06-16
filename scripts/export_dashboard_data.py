@@ -311,7 +311,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "bugs": len(bugs),
                 "updates": len(updates),
                 "env_vars": len(env_usage),
-                "cogs": len(cogs),
+                "cogs": sum(1 for c in cogs if c.get("is_cog")),
                 "commands": sum(len(c["commands"]) for c in cogs),
             },
         },

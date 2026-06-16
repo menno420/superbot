@@ -27,6 +27,33 @@ if TYPE_CHECKING:
 logger = logging.getLogger("bot.webhook")
 
 
+def _command_counts(bot: object) -> tuple[int, int]:
+    """Return (prefix incl. subcommands, slash incl. subcommands), best-effort.
+
+    ``len(bot.commands)`` is only *top-level* prefix commands — it omits group
+    subcommands and every slash command (those live in ``bot.tree``). Walking both
+    surfaces makes the status embed report the true total. Never raises: a status
+    embed must not break startup reporting.
+    """
+    walk = getattr(bot, "walk_commands", None)
+    try:
+        prefix = (
+            len(list(walk()))
+            if callable(walk)
+            else len(getattr(bot, "commands", ()) or ())
+        )
+    except Exception:
+        prefix = 0
+    slash = 0
+    tree_walk = getattr(getattr(bot, "tree", None), "walk_commands", None)
+    if callable(tree_walk):
+        try:
+            slash = len(list(tree_walk()))
+        except Exception:
+            slash = 0
+    return prefix, slash
+
+
 def _redact_embed(embed: discord.Embed) -> dict[str, int]:
     """Scrub sensitive substrings from text fields of ``embed`` in place.
 
@@ -116,7 +143,12 @@ class WebhookReporter:
         )
         embed.add_field(name="Prefix", value=f"`{bot.command_prefix}`", inline=True)
         embed.add_field(name="Servers", value=str(len(bot.guilds)), inline=True)
-        embed.add_field(name="Commands", value=str(len(bot.commands)), inline=True)
+        prefix_n, slash_n = _command_counts(bot)
+        embed.add_field(
+            name="Commands",
+            value=f"{prefix_n + slash_n} ({prefix_n} prefix · {slash_n} slash)",
+            inline=True,
+        )
         embed.add_field(name="Loaded cogs", value=str(len(bot.cogs)), inline=True)
         embed.set_footer(text=f"Logged in as {bot.user}")
         await self._send(embed, username="Bot Status")

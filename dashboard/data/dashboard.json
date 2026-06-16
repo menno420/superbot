@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T17:17:14Z",
+    "generated_at": "2026-06-16T17:47:38Z",
     "counts": {
       "functions": 33,
       "ideas": 72,
       "bugs": 15,
       "updates": 60,
       "env_vars": 34,
-      "cogs": 41,
-      "commands": 300
+      "cogs": 40,
+      "commands": 301
     }
   },
   "catalogue": [
@@ -1605,7 +1605,7 @@
       "file": "2026-06-16-dashboard-commands-explorer.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard cog & command explorer (`/commands`)",
-      "status": "in-progress"
+      "status": "complete"
     },
     {
       "file": "2026-06-16-count-citation-guard.md",
@@ -2430,9 +2430,29 @@
   ],
   "cogs": [
     {
+      "cog": "(bot1.py)",
+      "file": "disbot/bot1.py",
+      "subsystem": "",
+      "is_cog": false,
+      "commands": [
+        {
+          "name": "force",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Overrides channel restrictions and runs a command (admins only).",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
       "cog": "AICog",
       "file": "disbot/cogs/ai_cog.py",
       "subsystem": "a_i",
+      "is_cog": true,
       "commands": [
         {
           "name": "ai",
@@ -2583,6 +2603,7 @@
       "cog": "AdminCog",
       "file": "disbot/cogs/admin_cog.py",
       "subsystem": "admin",
+      "is_cog": true,
       "commands": [
         {
           "name": "admin",
@@ -2719,6 +2740,7 @@
       "cog": "Automod",
       "file": "disbot/cogs/automod_cog.py",
       "subsystem": "automod",
+      "is_cog": true,
       "commands": [
         {
           "name": "automod",
@@ -2737,6 +2759,7 @@
       "cog": "BTD6Cog",
       "file": "disbot/cogs/btd6_cog.py",
       "subsystem": "b_t_d6",
+      "is_cog": true,
       "commands": [
         {
           "name": "btd6",
@@ -2832,6 +2855,7 @@
       "cog": "BTD6EventsCog",
       "file": "disbot/cogs/btd6_events_cog.py",
       "subsystem": "b_t_d6_events",
+      "is_cog": true,
       "commands": [
         {
           "name": "btd6events",
@@ -2938,6 +2962,7 @@
       "cog": "BTD6OpsCog",
       "file": "disbot/cogs/btd6_ops_cog.py",
       "subsystem": "b_t_d6_ops",
+      "is_cog": true,
       "commands": [
         {
           "name": "btd6ops",
@@ -3022,6 +3047,7 @@
       "cog": "BTD6ReferenceCog",
       "file": "disbot/cogs/btd6_reference_cog.py",
       "subsystem": "b_t_d6_reference",
+      "is_cog": true,
       "commands": [
         {
           "name": "btd6ref",
@@ -3095,6 +3121,7 @@
       "cog": "BTD6StrategyCog",
       "file": "disbot/cogs/btd6_strategy_cog.py",
       "subsystem": "b_t_d6_strategy",
+      "is_cog": true,
       "commands": [
         {
           "name": "btd6strat",
@@ -3201,6 +3228,7 @@
       "cog": "BlackjackCog",
       "file": "disbot/cogs/blackjack_cog.py",
       "subsystem": "blackjack",
+      "is_cog": true,
       "commands": [
         {
           "name": "bjstart",
@@ -3256,6 +3284,7 @@
       "cog": "ChainCog",
       "file": "disbot/cogs/chain_cog.py",
       "subsystem": "chain",
+      "is_cog": true,
       "commands": [
         {
           "name": "chain",
@@ -3340,6 +3369,7 @@
       "cog": "ChannelCog",
       "file": "disbot/cogs/channel_cog.py",
       "subsystem": "channel",
+      "is_cog": true,
       "commands": [
         {
           "name": "bulkcreate",
@@ -3512,6 +3542,7 @@
       "cog": "Cleanup",
       "file": "disbot/cogs/cleanup_cog.py",
       "subsystem": "cleanup",
+      "is_cog": true,
       "commands": [
         {
           "name": "cleanup",
@@ -3596,6 +3627,7 @@
       "cog": "CommunityCog",
       "file": "disbot/cogs/community_cog.py",
       "subsystem": "community",
+      "is_cog": true,
       "commands": [
         {
           "name": "community",
@@ -3625,6 +3657,7 @@
       "cog": "CommunitySpotlightCog",
       "file": "disbot/cogs/community_spotlight_cog.py",
       "subsystem": "community_spotlight",
+      "is_cog": true,
       "commands": [
         {
           "name": "spotlight",
@@ -3645,6 +3678,7 @@
       "cog": "CountersCog",
       "file": "disbot/cogs/counters_cog.py",
       "subsystem": "counters",
+      "is_cog": true,
       "commands": [
         {
           "name": "counters",
@@ -3663,6 +3697,7 @@
       "cog": "CountingCog",
       "file": "disbot/cogs/counting_cog.py",
       "subsystem": "counting",
+      "is_cog": true,
       "commands": [
         {
           "name": "count_info",
@@ -3787,6 +3822,7 @@
       "cog": "Deathmatch",
       "file": "disbot/cogs/deathmatch_cog.py",
       "subsystem": "deathmatch",
+      "is_cog": true,
       "commands": [
         {
           "name": "dm_challenge",
@@ -3822,6 +3858,7 @@
       "cog": "DiagnosticCog",
       "file": "disbot/cogs/diagnostic_cog.py",
       "subsystem": "diagnostic",
+      "is_cog": true,
       "commands": [
         {
           "name": "check_database",
@@ -3996,6 +4033,7 @@
       "cog": "EconomyCog",
       "file": "disbot/cogs/economy_cog.py",
       "subsystem": "economy",
+      "is_cog": true,
       "commands": [
         {
           "name": "balance",
@@ -4096,6 +4134,7 @@
       "cog": "FourTwentyCog",
       "file": "disbot/cogs/four_twenty_cog.py",
       "subsystem": "four_twenty",
+      "is_cog": true,
       "commands": [
         {
           "name": "420",
@@ -4117,6 +4156,7 @@
       "cog": "GamesCog",
       "file": "disbot/cogs/games_cog.py",
       "subsystem": "games",
+      "is_cog": true,
       "commands": [
         {
           "name": "games",
@@ -4146,6 +4186,7 @@
       "cog": "General",
       "file": "disbot/cogs/general_cog.py",
       "subsystem": "general",
+      "is_cog": true,
       "commands": [
         {
           "name": "eightball",
@@ -4245,6 +4286,7 @@
       "cog": "HelpCog",
       "file": "disbot/cogs/help_cog.py",
       "subsystem": "help",
+      "is_cog": true,
       "commands": [
         {
           "name": "help",
@@ -4276,6 +4318,7 @@
       "cog": "HermesCog",
       "file": "disbot/cogs/hermes_cog.py",
       "subsystem": "hermes",
+      "is_cog": true,
       "commands": [
         {
           "name": "bugreport",
@@ -4305,6 +4348,7 @@
       "cog": "InventoryCog",
       "file": "disbot/cogs/inventory_cog.py",
       "subsystem": "inventory",
+      "is_cog": true,
       "commands": [
         {
           "name": "inventory",
@@ -4325,6 +4369,7 @@
       "cog": "LeaderboardCog",
       "file": "disbot/cogs/leaderboard_cog.py",
       "subsystem": "leaderboard",
+      "is_cog": true,
       "commands": [
         {
           "name": "leaderboard",
@@ -4353,6 +4398,7 @@
       "cog": "LoggingCog",
       "file": "disbot/cogs/logging_cog.py",
       "subsystem": "logging",
+      "is_cog": true,
       "commands": [
         {
           "name": "logging",
@@ -4426,6 +4472,7 @@
       "cog": "MiningCog",
       "file": "disbot/cogs/mining_cog.py",
       "subsystem": "mining",
+      "is_cog": true,
       "commands": [
         {
           "name": "ascend",
@@ -4825,6 +4872,7 @@
       "cog": "ModerationCog",
       "file": "disbot/cogs/moderation_cog.py",
       "subsystem": "moderation",
+      "is_cog": true,
       "commands": [
         {
           "name": "ban",
@@ -4931,6 +4979,7 @@
       "cog": "ParagonCog",
       "file": "disbot/cogs/paragon_cog.py",
       "subsystem": "paragon",
+      "is_cog": true,
       "commands": [
         {
           "name": "paragon",
@@ -4949,6 +4998,7 @@
       "cog": "PlatformCommandsMixin",
       "file": "disbot/cogs/diagnostic/platform_group.py",
       "subsystem": "platform_commands_mixin",
+      "is_cog": false,
       "commands": [
         {
           "name": "platform",
@@ -5388,6 +5438,7 @@
       "cog": "ProofChannelCog",
       "file": "disbot/cogs/proof_channel_cog.py",
       "subsystem": "proof_channel",
+      "is_cog": true,
       "commands": [
         {
           "name": "+prize",
@@ -5450,6 +5501,7 @@
       "cog": "RockPaperScissorsCog",
       "file": "disbot/cogs/rps_tournament_cog.py",
       "subsystem": "rock_paper_scissors",
+      "is_cog": true,
       "commands": [
         {
           "name": "rps",
@@ -5538,6 +5590,7 @@
       "cog": "RoleCog",
       "file": "disbot/cogs/role_cog.py",
       "subsystem": "role",
+      "is_cog": true,
       "commands": [
         {
           "name": "assignroles",
@@ -5701,6 +5754,7 @@
       "cog": "ServerManagementCog",
       "file": "disbot/cogs/server_management_cog.py",
       "subsystem": "server_management",
+      "is_cog": true,
       "commands": [
         {
           "name": "server-management",
@@ -5733,6 +5787,7 @@
       "cog": "SettingsCog",
       "file": "disbot/cogs/settings_cog.py",
       "subsystem": "settings",
+      "is_cog": true,
       "commands": [
         {
           "name": "settings",
@@ -5773,6 +5828,7 @@
       "cog": "SetupCog",
       "file": "disbot/cogs/setup_cog.py",
       "subsystem": "setup",
+      "is_cog": true,
       "commands": [
         {
           "name": "setup",
@@ -5890,6 +5946,7 @@
       "cog": "UtilityCog",
       "file": "disbot/cogs/utility_cog.py",
       "subsystem": "utility",
+      "is_cog": true,
       "commands": [
         {
           "name": "avatar",
@@ -6031,6 +6088,7 @@
       "cog": "UxLabCog",
       "file": "disbot/cogs/ux_lab_cog.py",
       "subsystem": "ux_lab",
+      "is_cog": true,
       "commands": [
         {
           "name": "uxlab",
@@ -6062,6 +6120,7 @@
       "cog": "WelcomeCog",
       "file": "disbot/cogs/welcome_cog.py",
       "subsystem": "welcome",
+      "is_cog": true,
       "commands": [
         {
           "name": "welcome",
@@ -6080,6 +6139,7 @@
       "cog": "XpCog",
       "file": "disbot/cogs/xp_cog.py",
       "subsystem": "xp",
+      "is_cog": true,
       "commands": [
         {
           "name": "givexp",
