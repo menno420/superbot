@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Updates — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Updates</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  Most recent {{ data.updates|length }} session logs (newest first) — the project's
+  running changelog.
+</p>
+
+<ol class="relative border-l border-slate-800 ml-3 space-y-5">
+  {% for u in data.updates %}
+    <li class="ml-5">
+      <span class="absolute -left-[7px] mt-1.5 w-3.5 h-3.5 rounded-full border-2 border-slate-950 bg-sky-600"></span>
+      <div class="flex items-center gap-2">
+        <time class="text-xs text-slate-500">{{ u.date }}</time>
+        {% if u.status %}
+          <span class="text-[10px] uppercase rounded px-2 py-0.5 bg-slate-800 text-slate-400">{{ u.status }}</span>
+        {% endif %}
+      </div>
+      <p class="text-sm mt-0.5">{{ u.title }}</p>
+    </li>
+  {% else %}
+    <li class="ml-5 text-slate-500">No updates yet.</li>
+  {% endfor %}
+</ol>
+{% endblock %}
