@@ -20,17 +20,81 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`idea-spotlight-verdict-loop-2026-06-16.md`](./idea-spotlight-verdict-loop-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the idea-spotlight skill PR #959):** the new daily
+  `superbot-idea-spotlight` surfaces an idea + asks for a verdict, but the selector has no memory of
+  what the owner already decided, so a settled idea can resurface and nothing measures backlog drain.
+  Give it a tiny **verdict ledger** (persist each `intake` route), bias selection toward un-decided
+  ideas, and add a weekly drain-rate line to the briefing — turning the ritual into a self-draining
+  decision queue. Small/decided-lane. → relates `scripts/hermes/idea_spotlight.py`.
+- [`architecture-atlas-and-structure-review-2026-06-16.md`](./architecture-atlas-and-structure-review-2026-06-16.md) —
+  **owner-uploaded external review + agent judgment (2026-06-16):** an outside-in repo-architecture
+  review ("repository-architectuuratlas") recommending a generated **architecture atlas** over any
+  filesystem reorg. Cross-checked against live source: the *direction is right* but the drift diagnosis
+  is **overstated** (only 3 real stale counts remained — fixed in PR #957) and the flagship "per-file
+  dashboard" is **~80% already shipped** as `context_map.py`. Genuinely-new signal: an **extension-type
+  taxonomy crosswalk** (43 ext ↔ 33 subsystems, 10 non-1:1) → **✅ SHIPPED PR #958** (overlay +
+  `scripts/extension_crosswalk.py` → `docs/architecture/extension-taxonomy-crosswalk.md`,
+  [plan](../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md)); a *thin* unified atlas (→ PR 2)
+  + a root-README question → **Q-0151** (answered); count-cite guard → fold into
+  `readiness-maps-cite-regen-command`. → relates `scripts/{context_map,wiring_map,review_scope}.py` ·
+  `utils/subsystem_registry.py` · `architecture_rules/layers.yaml`.
+- [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
+  round-range cash comparison requires a round token before *each* range's first anchor (to keep
+  crosspath codes like `5-0-0` out), so the natural comma-list phrasing "rounds 1-30, 30-60 or 60-80"
+  (token only on the first) silently defers to the model — the BUG-0009 mis-assembly class the floor
+  exists to own. Accept round-anchored bare `N-M` ranges (once ≥1 explicit round-token range is
+  present) that are not crosspath-adjacent. Decided-lane; small. → relates
+  `services/btd6_context_service.py::_extract_round_ranges`.
+- [`btd6-ct-event-detail-relics-map-2026-06-16.md`](./btd6-ct-event-detail-relics-map-2026-06-16.md) —
+  **BTD6 UX follow-up to #953 (2026-06-16, Q-0089):** the new Live Events overview drills into a rich
+  detail for race/boss/odyssey, but CT has no `_towers` metadata so a live CT event shows only
+  name+window — while the rich relic/hex-map data already exists in the panel's 🗺️ CT view. Bridge
+  them by surfacing relics + `build_ct_map_file(ct_id)` on the CT event detail (a button, reusing the
+  proven renderer; CT-gated; degrade to text when Pillow is absent). → relates
+  `views/btd6/live_events_view.py` · `views/btd6/ct_map_view.py` · `services/btd6_live_query_service.py`.
+- [`button-command-surface-parity-2026-06-16.md`](./button-command-surface-parity-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the `!coglist` command request PR #951):** the admin panel
+  had a 📋 Cog List button but no text command — users expect a button's action to also be reachable
+  by a command. A review-lane audit (not a brittle CI guard — many buttons are navigation, not
+  actions) pairing distinct action-buttons with command front doors would surface the rest; a lighter
+  automatable slice is mining "command not found" misses for high-frequency expected names (BUG-0014
+  was one). → relates `cogs/admin_cog.py` · `core/runtime/command_surface_ledger.py`.
+- [`reference-integrity-invariants-2026-06-16.md`](./reference-integrity-invariants-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the BUG-0014 `!coglist`-loop fix PR #949):** BUG-0014 was a
+  dangling reference (a synonym → a command that didn't exist) that failed *silently*. Extract the
+  AST command-surface discovery from the new synonym guard into a shared test helper, and close the
+  known sibling gap — `SUBSYSTEMS.entry_points` → real command, which `test_entrypoints.py` documents
+  as unchecked. One "what commands exist" source for every "this declaration must resolve" invariant.
+  → relates `tests/unit/registry/test_entrypoints.py` · `utils/subsystem_registry.py` · `utils/synonyms.py`.
+- [`server-owner-configurable-moderation-dms-2026-06-16.md`](./server-owner-configurable-moderation-dms-2026-06-16.md) —
+  **owner policy → feature (2026-06-16, from the Q-0147 decision):** the owner's standing DM rule is
+  *profile/onboarding DMs are opt-in and never on join; the only non-opt-in DMs are moderation/warning
+  DMs, and only when the server owner enables them with per-action config.* The opt-in half is
+  myprofile PR C; this captures the second half — a `moderation_dm_enabled` master + per-action map
+  (warn/timeout/kick/…) on the `!settings` → Moderation surface, riding the audited `moderation_service`
+  seam (off by default, fail-open). → relates `services/moderation_service.py` · the settings surface.
+- [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
+  `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an
+  operator can set it **below** the platform's real SIGTERM→SIGKILL grace (~10s observed on Railway vs
+  the hardcoded 20s) — defense-in-depth so the close-driver's force-exit fallback actually fires before
+  the platform kills the process. Small/decided-lane follow-up. → relates `disbot/bot1.py` ·
+  `disbot/services/runtime.py`.
 - [`control-plane-single-source-pointer-2026-06-15.md`](./control-plane-single-source-pointer-2026-06-15.md) —
-  **session idea (2026-06-15, Q-0089, from the band-#930 reconciliation pass):** the autonomous-loop
+  **session idea (2026-06-15, Q-0089) — ✅ EXECUTED (PR #943):** the autonomous-loop
   control-plane truth lives in two prose homes (the canonical table in `autonomous-routines.md` **and**
   a restating bullet in `current-state.md` Gates) — the second drifted again this pass. Collapse the
   `current-state.md` bullet to a **pure pointer** at the canonical table (zero verdict prose), so one
   fact has one home and can't contradict itself; optional `check_docs` lint that the pointer stays a
   pointer. → relates `docs/operations/autonomous-routines.md` · Q-0135.
 - [`honcho-memory-evaluation-2026-06-16.md`](./honcho-memory-evaluation-2026-06-16.md) —
-  **evaluated (2026-06-16):** Honcho external agent-memory — **not** for the Hermes control plane
-  (its memory is deliberately a sticky note; the repo is the real memory), but a possible **Someday**
-  option for the bot's per-user AI personalization (V-04), gated on the AI spend ceiling (Q-0082).
+  **bot / AI-lane idea (2026-06-16, owner wants to look into soon):** give SuperBot's AI **per-user
+  memory** — remember a Discord user across conversations (V-04) — via Honcho-style
+  conclusion-extraction memory (better + cheaper than dumping raw history; matters under the Q-0082
+  spend ceiling). Evaluated for Hermes first and rejected there (now a footnote) — it's a **bot**
+  idea, not a Hermes one. Next: promote to a `docs/planning/` plan when the AI lane has capacity.
 - [`executor-chain-trigger-via-workflow-2026-06-15.md`](./executor-chain-trigger-via-workflow-2026-06-15.md) —
   **session idea (2026-06-15, Q-0089, from the eval-coverage 34/34 run; owner live concern):** the
   executor's STEP 3 self-chaining is unreliable because a `continue` issue opened by a routine *session*
@@ -58,12 +122,12 @@ Current broad captures:
   (bot · BTD6 · agent substrate · **+ a forgotten Operations/control-plane sector**) distinct from the
   `repo-review-map.md` review taxonomy. Captured owner direction + agent opinion; not approved.
 - [`dispatch-resolution-json-hermes-2026-06-14.md`](./dispatch-resolution-json-hermes-2026-06-14.md) —
-  **session idea (2026-06-14, Q-0089, from the sector-tooling session #882; owner-invited):** give
-  `scripts/dispatch_menu.py` a **`--json`** mode and wire it into the Hermes `superbot-dispatch` skill, so
-  *"dispatch S2"* resolves to a concrete work order **and** routes by the resolved **executor**
-  (`Claude-in-repo` → `/fire`; `Hermes-VPS` → Hermes does it; `maintainer` → tell the owner). The
-  read-side of **Q-0137 Thread 1**: turns the Q-0143 contract + the dispatch menu from dispatch-*ready*
-  into dispatch-*resolved*. `--json` half = safe quick-win; Hermes-wiring half gated on Thread 1.
+  ✅ **EXECUTED → `historical` (2026-06-16, PR #959, owner-directed):** `scripts/dispatch_menu.py --json`
+  shipped **and** the Hermes-wiring half landed as the new **`superbot-dispatch-resolve`** skill, so
+  *"dispatch S2"* resolves to a concrete work order and routes by the resolved **executor**
+  (`Claude-in-repo` → `/fire`; `Hermes-VPS` → Hermes does it; `maintainer` → tell the owner). Originally
+  the 2026-06-14 Q-0089 session idea (the read-side of **Q-0137 Thread 1**; the broader cron-backstop
+  part of Thread 1 stays owner-undecided).
 - [`routine-system-improvements-2026-06-14.md`](./routine-system-improvements-2026-06-14.md) —
   **workflow / routine-system (2026-06-14, owner-requested):** first-hand field notes from a live
   routine run on making the unattended Hermes-dispatch loop smoother. Core orientation already
@@ -151,6 +215,26 @@ Current broad captures:
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans
   `views/`). Surfaced when the `!list` paginator was found mislayered in `channel_cog.py`
   only by tripping the cog-size ceiling. Warn → ratchet. Small/safe grooming-lane candidate.
+- [`diagnostic-cog-platform-group-extraction-2026-06-16.md`](./diagnostic-cog-platform-group-extraction-2026-06-16.md) —
+  **refactor / near-term blocker (2026-06-16) — ✅ EXECUTED (PR #943):** moved the `!platform`
+  command group off `DiagnosticCog` onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`);
+  the cog dropped 799 → 260 LOC, clearing the 800-LOC ceiling. Pinned by
+  `tests/unit/cogs/test_diagnostic_platform_group.py`.
+- [`ledger-guard-exempt-reconciliation-prs-2026-06-16.md`](./ledger-guard-exempt-reconciliation-prs-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the diagnostic-mixin dispatch #943):** a
+  `docs(current-state): reconcile ledger` PR structurally can't list its own (not-yet-assigned)
+  number, so it always omits itself and `check_current_state_ledger.py --strict` flags it next
+  session (the #942 drift this run fixed). Teach the guard to **skip a docs-only ledger-bookkeeping
+  PR** (title + diff-confined-to-`current-state*.md`), closing the recurrence at the guard level.
+  **✅ Shipped 2026-06-16 (Q-0152):** implemented as a `reconcil`-in-merge-subject exemption in
+  `find_missing` (the diff-confinement bound was deferred as merge-strategy-fragile; subject-match is
+  tight + disposable per Q-0105). Tests in `test_check_current_state_ledger.py`.
+- [`autospec-mock-fidelity-guard-2026-06-16.md`](./autospec-mock-fidelity-guard-2026-06-16.md) —
+  **tooling/testing (2026-06-16):** make project mocks signature-faithful (`create_autospec` /
+  `AsyncMock(spec=…)`) via a lint/AST guard or a tiny `autospec_setattr` helper, so a call-site
+  kwarg typo that the real function would reject also fails the test. Born from the BTD6 drill-down
+  crash that shipped green because a bare `AsyncMock` masked a `search_facts(entity_key=…)` signature
+  mismatch. Small/safe tooling-lane candidate.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in

@@ -592,10 +592,24 @@ resolve candidates -> validate shared assumptions -> fan out bounded calculation
 
 This pattern is valuable for:
 
-- tower/upgrade cost comparisons;
-- difficulty cost comparisons;
-- paragon degree/resource scenarios;
-- round-range comparisons;
+- tower/upgrade cost comparisons — **SHIPPED #946** (`compare_crosspath_costs` +
+  `deterministic_cost_comparison_reply`: ranks two-or-more `(tower, crosspath)` at one
+  difficulty);
+- difficulty cost comparisons — **SHIPPED #950** (`compare_difficulty_costs` +
+  `deterministic_difficulty_cost_comparison_reply`: ranks one `(tower, crosspath)` across
+  two-or-more difficulties — the sibling of the above; the two are mutually exclusive on
+  candidate count, so both ride the `deterministic_btd6_list_reply` floor seam);
+- paragon degree/resource scenarios — **SHIPPED** (`compare_paragon_costs` +
+  `deterministic_paragon_cost_comparison_reply`: ranks the **base build price** of two-or-more
+  paragons, difficulty-aware, grounded in `utils/btd6/paragon_math`'s committed `BASE_PRICES_MEDIUM`;
+  fires only on an explicit `paragon` token, which also makes it mutually exclusive with the tower
+  cost builders — they defer the moment "paragon" is present so a "dart/ninja paragon" question is
+  never priced as the base tower);
+- round-range comparisons — **SHIPPED #955** (`compare_round_ranges` +
+  `deterministic_round_range_comparison_reply`: ranks the total cash of two-or-more inclusive
+  round ranges via the existing `round_cash` primitive, ABR-aware; distinct from the single-range
+  projection the round-cash workflow owns — they stay non-overlapping on **range count** (this
+  floor requires ≥2 ranges) and the floor short-circuits before the workflow ever runs);
 - future game/stat/economy functions.
 
 ## 8. Provider-neutral request changes

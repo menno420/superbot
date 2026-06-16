@@ -1,0 +1,70 @@
+name: pr-auto-update
+
+# Keep open claude/* PRs up to date with main so a BEHIND branch doesn't sit silently
+# green-but-unmergeable. This repo requires branches to be up to date before merging, and
+# GitHub native auto-merge does NOT auto-update a behind branch (no merge queue) — it just
+# waits. So when main moves, this brings the behind PRs forward; they re-test against current
+# main and auto-merge fires. A branch that CANNOT be cleanly updated (a real merge conflict)
+# fails update-branch and is left DIRTY for `pr-conflict-guard.yml` to flag RED.
+#
+# This is the "behind = handled silently; conflict = loud red" half of the owner's intent
+# (Q-0154, 2026-06-16): a behind/conflicted PR must never rot unnoticed (the #959 stall that
+# surfaced this — 12 PRs merged during the work and the branch sat behind+green).
+#
+# REQUIREMENTS: ROUTINE_PAT with Pull requests: Read/Write AND Contents: Read/Write (the same
+# token auto-merge-enabler.yml already needs). The PAT (not GITHUB_TOKEN) keeps the eventual
+# merge attributed to a real user so reconciliation-trigger.yml (on: push to main) keeps firing.
+#
+# Provenance + reliability (Q-0105): added 2026-06-16, owner-directed. UNVERIFIED — watch the
+# first few main-pushes to confirm it only updates BEHIND claude/* PRs and that a true conflict
+# is left for the conflict-guard. Delete this workflow if it misfires; updating a branch is
+# always doable by hand ("Update branch" button).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: pr-auto-update
+  cancel-in-progress: false
+
+jobs:
+  update-behind:
+    if: github.repository == 'menno420/superbot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update BEHIND claude/* PRs against main
+        env:
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          # Open, non-draft claude/* PRs that are BEHIND main and not carved out
+          # (needs-hermes-review / do-not-automerge are left alone). A real conflict
+          # reports DIRTY (not BEHIND) and is skipped here — pr-conflict-guard flags it.
+          nums=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --base main \
+            --json number,headRefName,mergeStateStatus,isDraft,labels \
+            --jq '.[]
+                  | select(.headRefName | startswith("claude/"))
+                  | select(.isDraft | not)
+                  | select(.mergeStateStatus == "BEHIND")
+                  | select([.labels[].name]
+                           | (contains(["needs-hermes-review"]) or contains(["do-not-automerge"]))
+                           | not)
+                  | .number')
+          if [ -z "$nums" ]; then
+            echo "No behind claude/* PRs to update."
+            exit 0
+          fi
+          for n in $nums; do
+            if gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$n/update-branch" \
+                 -H "Accept: application/vnd.github+json" >/dev/null 2>&1; then
+              echo "Updated #$n against main (it will re-test, then auto-merge on green)."
+            else
+              echo "::warning::Could not update #$n — likely a real conflict; pr-conflict-guard will flag it RED."
+            fi
+          done

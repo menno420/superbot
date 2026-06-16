@@ -4,10 +4,11 @@
 > skills. Each skill is a ready-to-configure prompt for the Hermes agent running on the
 > control-plane VPS. Setup context: `docs/operations/hermes-control-plane.md`.
 
-This pack contains twelve skills covering the windows Hermes fills that Claude Code
+This pack contains fifteen skills covering the windows Hermes fills that Claude Code
 cannot: **the front-door intake router**, **pre-session orientation**, **between-session
-monitoring**, **production diagnosis from your phone**, the **autonomous-loop seams**
-(independent review + dispatch), and **self-extension** (Hermes authoring its own skills).
+monitoring**, a **daily idea ritual + morning digest**, **production diagnosis from your phone**,
+the **autonomous-loop seams** (independent review + dispatch + dispatch resolution), and
+**self-extension** (Hermes authoring its own skills).
 
 For the standing read-only operating instructions every Hermes session should start
 with, see [`hermes-operating-prompt.md`](../hermes-operating-prompt.md) — the Hermes-side
@@ -21,8 +22,10 @@ equivalent of `.claude/CLAUDE.md`.
 |---|---|---|
 | [`intake`](./intake.md) | The front door — any inbound message | Classify a bug / idea / feature request / question / complaint and route it to the right home (bug-book · ideas · question router · dispatch · a cited answer) with the right action |
 | [`session-brief`](./session-brief.md) | Pre-session | Compressed orientation brief to paste into Claude Code |
-| [`repo-health`](./repo-health.md) | Between sessions | Traffic-light snapshot — is anything broken? (self-schedules a daily digest) |
+| [`morning-briefing`](./morning-briefing.md) | Each morning | One consolidated digest — health · open PRs · CI · overnight routine activity · decisions waiting on you (self-schedules; one ping instead of several) |
+| [`repo-health`](./repo-health.md) | Between sessions (on-demand) | Full traffic-light snapshot — is anything broken? (the briefing now carries the daily health line) |
 | [`ideas-triage`](./ideas-triage.md) | Downtime | Ideas backlog review with a suggested next move |
+| [`idea-spotlight`](./idea-spotlight.md) | Daily | Surface **one** active idea with pros · cons · options/expansions to mull over — and route the owner's end-of-day verdict (self-schedules) |
 | [`prompt-builder`](./prompt-builder.md) | Pre-session | Turn a spoken idea into a structured Claude Code prompt |
 | [`open-questions`](./open-questions.md) | Between sessions | Surface unanswered Q- blocks from the router |
 | [`btd6-status`](./btd6-status.md) | After live testing | BTD6 data pipeline coverage and open items |
@@ -30,6 +33,7 @@ equivalent of `.claude/CLAUDE.md`.
 | [`review`](./review.md) | Plan finalization / open PR | Independent (non-Claude) critique of a plan or PR diff + a maintainer summary for the approve/deny gate |
 | [`review-merge`](./review-merge.md) | Executor opened a big-step PR | The independent-reviewer **merge gate** (Q-0117): review `needs-hermes-review` PRs and merge if sound — Hermes' one sanctioned write |
 | [`dispatch`](./dispatch.md) | Idea on your phone | Assemble a work order and fire a Claude Code Routine to build it (the autonomous-loop chaining link) |
+| [`dispatch-resolve`](./dispatch-resolve.md) | "work on sector SX" | Resolve a vague sector/lane directive into a concrete work order routed to the right executor (then delegates to `dispatch`) |
 | [`skill-author`](./skill-author.md) | A workflow you repeat / "make a skill for X" | The **meta-skill**: design a new skill and land its source in the repo via a docs-only PR (so Hermes-authored skills are version-controlled, not VPS-only) |
 
 The last two are the **autonomous-improvement-loop seams** — see
@@ -71,9 +75,14 @@ so no restart is needed for that one.
 Hermes loads any `SKILL.md` under `~/.hermes/skills/` on next run — no registration step.
 Alternatively, each prompt is self-contained and works as a plain Telegram message too.
 
-`repo-health` ships a `blueprint.schedule` (`0 8 * * *`) in its frontmatter, so once
-installed Hermes self-schedules the daily health digest to your home channel — no extra
-cron wiring needed.
+Some skills ship a `blueprint.schedule` in their frontmatter, so once installed Hermes
+self-schedules them to your home channel — **no extra VPS cron needed**, and each scheduled
+run is a fresh, stateless session (it never clogs your interactive chat). Currently scheduled:
+**`morning-briefing`** (`0 6 * * *` — the daily digest), **`idea-spotlight`** (`30 6 * * *` —
+the daily idea ritual), and **`review-merge`** (`30 7 * * *` — the needs-hermes-review queue).
+Change a time in `scripts/hermes/build_skills.py` and rebuild. *(For automatically clearing the
+**interactive** chat session, that's a separate VPS timer — see
+[`../hermes-session-reset.md`](../hermes-session-reset.md).)*
 
 ---
 

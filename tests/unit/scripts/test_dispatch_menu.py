@@ -71,3 +71,67 @@ def test_build_menu_single_sector_filter():
     joined = "\n".join(lines)
     assert "S2" in joined
     assert "S1  Bot product" not in joined
+
+
+def test_sector_record_startable_now_run_by_claude():
+    block = (
+        "### S2 — BTD6 · exec\n"
+        "- **Dispatch:** executor **Claude-in-repo**\n"
+        "- **Now:** **▶ go now** (foo)\n"
+        "- **Next:** y\n"
+    )
+    rec = dm.sector_record("S2", "BTD6", block)
+    assert rec["state"] == "startable"
+    assert rec["startable_item"] == "go now"
+    assert rec["source"] == "Now"
+    assert rec["executor"] == "Claude-in-repo"
+
+
+def test_sector_record_falls_through_to_next():
+    block = (
+        "### S1 — Bot · exec\n"
+        "- **Dispatch:** executor **Claude-in-repo**\n"
+        "- **Now:** **⛔ a** · **👤 b**\n"
+        "- **Next:** the **▶ real thing** (foo)\n"
+    )
+    rec = dm.sector_record("S1", "Bot", block)
+    assert rec["state"] == "now_blocked_fallthrough"
+    assert rec["source"] == "Next"
+    assert "real thing" in rec["startable_item"]
+
+
+def test_sector_record_non_claude_executor_is_routed_away():
+    block = (
+        "### S5 — Operations · exec\n"
+        "- **Dispatch:** executor **Hermes-VPS**\n"
+        "- **Now:** **▶ tail the logs** (foo)\n"
+    )
+    rec = dm.sector_record("S5", "Operations", block)
+    assert rec["state"] == "maintainer_or_hermes"
+    assert rec["executor"] == "Hermes-VPS"
+
+
+def test_sector_record_starving_when_no_startable():
+    block = (
+        "### S3 — AI · exec\n"
+        "- **Dispatch:** executor **Claude-in-repo**\n"
+        "- **Now:** **⛔ a**\n"
+        "- **Next:** also ⛔ blocked\n"
+    )
+    rec = dm.sector_record("S3", "AI", block)
+    assert rec["state"] == "starving"
+    assert rec["startable_item"] is None
+
+
+def test_build_records_covers_live_roadmap_sectors():
+    text = (_REPO / "docs" / "roadmap.md").read_text(encoding="utf-8")
+    records = dm.build_records(text)
+    sectors = {r["sector"] for r in records}
+    assert {"S1", "S2", "S3", "S4", "S5"} <= sectors
+    for r in records:
+        assert r["state"] in {
+            "startable",
+            "now_blocked_fallthrough",
+            "maintainer_or_hermes",
+            "starving",
+        }

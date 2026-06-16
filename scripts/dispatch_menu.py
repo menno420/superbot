@@ -25,6 +25,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -136,6 +137,61 @@ def menu_line(block: str) -> str:
     return "(no ▶ startable item found — check the roadmap)"
 
 
+def sector_record(sid: str, name: str, block: str) -> dict[str, str | None]:
+    """Return the machine-readable resolution for one sector block.
+
+    The JSON sibling of :func:`menu_line` — the read-side of the
+    ``dispatch-resolution-json-hermes`` idea, so the Hermes ``dispatch-resolve``
+    skill can route a vague "work on SX" by the resolved **executor** instead of a
+    human reading a table. ``state`` is one of: ``startable`` (▶ in Now, run by
+    Claude-in-repo) · ``now_blocked_fallthrough`` (Now had no ▶, the item is from
+    Next) · ``maintainer_or_hermes`` (a startable item but the executor isn't
+    Claude-in-repo → don't fire a repo-editing agent) · ``starving`` (no ▶ anywhere).
+    """
+    executor, _ = resolve(block)
+    now_item = first_startable(bullet_text(block, "Now"))
+    next_item = first_startable(bullet_text(block, "Next"))
+    if now_item:
+        item, source = now_item, "Now"
+    elif next_item:
+        item, source = next_item, "Next"
+    else:
+        item, source = None, None
+
+    is_claude = "claude-in-repo" in executor.lower()
+    if item is None:
+        state = "starving"
+    elif not is_claude:
+        state = "maintainer_or_hermes"
+    elif source == "Next":
+        state = "now_blocked_fallthrough"
+    else:
+        state = "startable"
+
+    return {
+        "sector": sid,
+        "name": name,
+        "executor": executor,
+        "state": state,
+        "startable_item": item,
+        "source": source,
+    }
+
+
+def build_records(
+    text: str,
+    only: str | None = None,
+) -> list[dict[str, str | None]]:
+    """Return the structured per-sector resolution (all sectors, or one)."""
+    blocks = sector_blocks(by_sector_section(text))
+    records: list[dict[str, str | None]] = []
+    for sid, name, block in blocks:
+        if only and sid != only:
+            continue
+        records.append(sector_record(sid, name, block))
+    return records
+
+
 def build_menu(text: str, only: str | None = None) -> list[str]:
     """Return the rendered menu lines for all sectors (or one, if ``only`` given)."""
     blocks = sector_blocks(by_sector_section(text))
@@ -161,6 +217,11 @@ def main() -> int:
         nargs="?",
         help="optional single sector id (e.g. S2) to show only that sector",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="emit the per-sector resolution as JSON (for the dispatch-resolve skill)",
+    )
     args = parser.parse_args()
 
     text = _read(ROADMAP)
@@ -169,6 +230,11 @@ def main() -> int:
         return 1
 
     only = args.sector.upper() if args.sector else None
+
+    if args.json:
+        print(json.dumps(build_records(text, only), indent=2))
+        return 0
+
     print("SuperBot — sector dispatch menu  (live, from docs/roadmap.md § By sector)")
     print("=" * 72)
     for line in build_menu(text, only):

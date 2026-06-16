@@ -265,6 +265,12 @@ class _ChallengeView(discord.ui.View):
         self.duel_key = duel_key
         self.ctx = ctx
         self.message: discord.Message | None = None
+        # Set once the challenge is accepted or declined. accept/decline also
+        # call self.stop() (which cancels the timeout), but this flag guards the
+        # race where on_timeout() was already firing — so a stale 30s challenge
+        # timer can never overwrite the live (or finished) duel message with an
+        # "expired" notice.
+        self._resolved = False
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.opponent:
@@ -276,6 +282,10 @@ class _ChallengeView(discord.ui.View):
         return True
 
     async def on_timeout(self) -> None:
+        # The challenge was already accepted/declined — the duel now owns the
+        # message, so the expired-challenge notice must not clobber it.
+        if self._resolved:
+            return
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
@@ -291,6 +301,7 @@ class _ChallengeView(discord.ui.View):
 
     @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.green)
     async def btn_accept(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self._resolved = True
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         # Both fighters bring their equipped combat gear (guild-scoped) into the
@@ -333,9 +344,15 @@ class _ChallengeView(discord.ui.View):
             view=duel_view,
         )
         duel_view.message = await interaction.original_response()
+        # Cancel this challenge view's 30s timeout — the duel owns the message
+        # lifecycle now (and _DuelView has its own turn timeout). Without this
+        # the stale challenge timer fires mid/post-match and overwrites the duel
+        # with "Challenge Expired".
+        self.stop()
 
     @discord.ui.button(label="❌ Decline", style=discord.ButtonStyle.danger)
     async def btn_decline(self, interaction: discord.Interaction, _: discord.ui.Button):
+        self._resolved = True
         for item in self.children:
             item.disabled = True  # type: ignore[attr-defined]
         embed = discord.Embed(
@@ -344,6 +361,9 @@ class _ChallengeView(discord.ui.View):
             color=discord.Color.greyple(),
         )
         await interaction.response.edit_message(embed=embed, view=self)
+        # Challenge resolved — stop the view so its timeout can't later fire and
+        # replace this "Declined" notice with an "Expired" one.
+        self.stop()
 
 
 class Deathmatch(commands.Cog):

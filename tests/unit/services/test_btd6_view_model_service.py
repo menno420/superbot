@@ -340,7 +340,7 @@ async def test_event_detail_returns_none_when_no_fact(monkeypatch) -> None:
     from services.btd6_view_model_service import build_event_detail_view_model
     from utils.db import btd6_sources as btd6_db
 
-    monkeypatch.setattr(btd6_db, "search_facts", AsyncMock(return_value=[]))
+    monkeypatch.setattr(btd6_db, "get_latest_fact", AsyncMock(return_value=None))
 
     vm = await build_event_detail_view_model("race", "missing")
     assert vm is None
@@ -352,25 +352,24 @@ async def test_event_detail_builds_full_vm(monkeypatch) -> None:
     from utils.db import btd6_sources as btd6_db
 
     now = datetime.now(tz=timezone.utc)
-    monkeypatch.setattr(
-        btd6_db,
-        "search_facts",
-        AsyncMock(
-            return_value=[
-                {
-                    "entity_kind": "btd6_race",
-                    "entity_key": "R42",
-                    "fact_type": "btd6.races_index",
-                    "body_json": {
-                        "name": "Reversed Loop",
-                        "start_ms": int(now.timestamp() * 1000) - 3_600_000,
-                        "end_ms": int(now.timestamp() * 1000) + 3_600_000,
-                    },
-                    "fetched_at": now,
-                },
-            ],
-        ),
-    )
+    index_row = {
+        "entity_kind": "btd6_race",
+        "entity_key": "R42",
+        "fact_type": "btd6.races_index",
+        "body_json": {
+            "name": "Reversed Loop",
+            "start_ms": int(now.timestamp() * 1000) - 3_600_000,
+            "end_ms": int(now.timestamp() * 1000) + 3_600_000,
+        },
+        "fetched_at": now,
+    }
+
+    async def _get_latest_fact(fact_type, entity_kind, entity_key):
+        if fact_type == "btd6.races_index":
+            return index_row
+        return None
+
+    monkeypatch.setattr(btd6_db, "get_latest_fact", _get_latest_fact)
 
     vm = await build_event_detail_view_model("race", "R42")
     assert vm is not None
@@ -378,6 +377,148 @@ async def test_event_detail_builds_full_vm(monkeypatch) -> None:
     assert vm.context.context_id == "btd6_race:R42"
     assert vm.window.state == "active"
     assert vm.freshness.state == "fresh"
+
+
+@pytest.mark.asyncio
+async def test_event_detail_does_not_pass_entity_key_to_search_facts(
+    monkeypatch,
+) -> None:
+    """Regression: the drill-down used to call ``search_facts(entity_key=…)``,
+    which raises ``TypeError`` (no such kwarg) on EVERY event detail — the
+    "race event button does nothing" bug. The detail path must use
+    ``get_latest_fact`` (entity-keyed), never ``search_facts`` with an
+    ``entity_key`` kwarg.
+    """
+    import inspect
+
+    from services.btd6_view_model_service import build_event_detail_view_model
+    from utils.db import btd6_sources as btd6_db
+
+    # The real signature must not accept entity_key (proves the old call broke).
+    assert "entity_key" not in inspect.signature(btd6_db.search_facts).parameters
+
+    boom = AsyncMock(side_effect=AssertionError("detail must not call search_facts"))
+    monkeypatch.setattr(btd6_db, "search_facts", boom)
+    monkeypatch.setattr(btd6_db, "get_latest_fact", AsyncMock(return_value=None))
+
+    # Must not raise (old code raised TypeError here) and must not touch search_facts.
+    vm = await build_event_detail_view_model("race", "R42")
+    assert vm is None
+    boom.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_event_detail_fetches_boss_metadata_with_standard_suffix(
+    monkeypatch,
+) -> None:
+    """Boss metadata lives under ``btd6_boss_difficulty`` keyed
+    ``{id}_standard`` (the ingestion fan-out). The detail VM must look it up
+    with that suffix so boss rules/restrictions actually render.
+    """
+    from services.btd6_view_model_service import build_event_detail_view_model
+    from utils.db import btd6_sources as btd6_db
+
+    now = datetime.now(tz=timezone.utc)
+    calls: list[tuple] = []
+
+    async def _get_latest_fact(fact_type, entity_kind, entity_key):
+        calls.append((fact_type, entity_kind, entity_key))
+        if fact_type == "btd6.bosses_index":
+            return {
+                "entity_kind": "btd6_boss",
+                "entity_key": "Dreadbloon35",
+                "body_json": {"name": "Dreadbloon", "end_ms": 0},
+                "fetched_at": now,
+            }
+        if fact_type == "btd6.boss_metadata":
+            return {
+                "entity_kind": "btd6_boss_difficulty",
+                "entity_key": entity_key,
+                "body_json": {"_towers": [{"tower": "Druid", "max": 0}]},
+                "fetched_at": now,
+            }
+        return None
+
+    monkeypatch.setattr(btd6_db, "get_latest_fact", _get_latest_fact)
+
+    vm = await build_event_detail_view_model("boss", "Dreadbloon35")
+    assert vm is not None
+    # The metadata lookup used the _standard suffix, not _normal.
+    assert ("btd6.boss_metadata", "btd6_boss_difficulty", "Dreadbloon35_standard") in calls
+    assert vm.metadata_body.get("_towers")
+
+
+# ---------------------------------------------------------------------------
+# Live overview (current-event-first landing)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_live_overview_groups_only_live_events(monkeypatch) -> None:
+    from services import btd6_live_query_service
+    from services.btd6_live_query_service import ActiveEventHeadline
+    from services.btd6_view_model_service import build_live_overview_view_model
+    from utils.db import btd6_sources as btd6_db
+
+    now_ms = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
+    headlines = (
+        ActiveEventHeadline(
+            "btd6_ct", "ct1", "Contested Territory", now_ms - 1000, now_ms + 36_000_000, None
+        ),
+        ActiveEventHeadline(
+            "btd6_event", "ev1", "Collab Event", None, now_ms + 72_000_000, None
+        ),
+        # ended → excluded by the strict future-end filter
+        ActiveEventHeadline("btd6_race", "r_old", "Old Race", None, now_ms - 1000, None),
+        # missing end_ms → excluded by the strict filter
+        ActiveEventHeadline("btd6_boss", "b1", "Boss", None, None, None),
+    )
+    monkeypatch.setattr(
+        btd6_live_query_service,
+        "get_active_events",
+        AsyncMock(return_value=headlines),
+    )
+    monkeypatch.setattr(
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value={})
+    )
+
+    vm = await build_live_overview_view_model()
+    # All 5 kinds always present, in useful-first order.
+    assert tuple(k.short_kind for k in vm.kinds) == (
+        "race",
+        "boss",
+        "ct",
+        "odyssey",
+        "event",
+    )
+    # Only the two explicit-future events count as live.
+    assert vm.total_live == 2
+    assert {it.entity_key for it in vm.all_live} == {"ct1", "ev1"}
+    by_short = {k.short_kind: k for k in vm.kinds}
+    assert by_short["race"].live == ()  # ended excluded
+    assert by_short["boss"].live == ()  # missing-end excluded
+    assert by_short["ct"].live[0].name == "Contested Territory"
+    assert by_short["ct"].live[0].context.context_id == "btd6_ct:ct1"
+
+
+@pytest.mark.asyncio
+async def test_live_overview_empty_when_nothing_live(monkeypatch) -> None:
+    from services import btd6_live_query_service
+    from services.btd6_view_model_service import build_live_overview_view_model
+    from utils.db import btd6_sources as btd6_db
+
+    monkeypatch.setattr(
+        btd6_live_query_service, "get_active_events", AsyncMock(return_value=())
+    )
+    monkeypatch.setattr(
+        btd6_db, "latest_fact_per_entity_kind", AsyncMock(return_value={})
+    )
+
+    vm = await build_live_overview_view_model()
+    assert vm.total_live == 0
+    assert vm.all_live == ()
+    # No stored facts at all → worst per-kind freshness is "never".
+    assert vm.worst_freshness == "never"
 
 
 # ---------------------------------------------------------------------------

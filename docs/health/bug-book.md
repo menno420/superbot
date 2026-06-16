@@ -6,9 +6,75 @@
 > verbatim symptom, expected behavior, root cause (filled at fix time), fix PR,
 > status. Newest first. A bug here jumps the queue per the CLAUDE.md
 > "bugs first, durably" rule: root cause over symptom-patch, one source of
-> truth, a regression test named in the entry. Owner-reported inconsistencies
-> he hasn't formalized yet (see current-state 2026-06-10 standing invite) land
-> here as they surface.
+> truth, and a **stays-fixed guard named in the entry** — a regression test (or
+> CI invariant) that *fails against the pre-fix behavior*, shipped in the **same**
+> fix PR, never deferred to "later". **A fix goes live automatically:** a merge to
+> `main` auto-deploys to Railway (≈ CI build time; a failing build never deploys,
+> and the old container stays up until the new one connects), so mark a fixed entry
+> simply `FIXED` — do **not** add a "needs a manual Railway deploy" step (a phantom
+> owner to-do that recurred across sessions; see
+> [`operations/production-deployment.md`](../operations/production-deployment.md)).
+> Owner-reported inconsistencies he hasn't formalized yet (see current-state
+> 2026-06-10 standing invite) land here as they surface.
+
+## BUG-0014 — `!coglist` infinite "assumed from" command-resolution loop — FIXED
+
+- **Symptom (owner-reported via screen recording, 2026-06-16):** typing `!coglist`
+  (or `!cogs`) made SuperBot spam "↩️ Ran `!coglist` — assumed from `!coglist`."
+  **endlessly — it did not stop until the bot was restarted.** A runaway message
+  loop (channel spam + rate-limit risk).
+- **Affected surface:** `bot1.on_command_error` (the `CommandNotFound` typo-resolver
+  re-dispatch) + the data in `disbot/utils/synonyms.py`.
+- **Root cause:** `COMMAND_SYNONYMS` declared `"coglist": ["listcogs", "cogslist"]`,
+  but **no `coglist` command is registered** (audited: the only orphaned canonical of
+  32). So `command_resolution.classify` fuzzy-matched the typed token to the phantom
+  canonical `coglist` and returned `Outcome.AUTO`; `on_command_error` rewrote the
+  message to `!coglist` (the *same* token) and re-dispatched via `process_commands`;
+  `!coglist` still wasn't a real command → `CommandNotFound` → re-resolved to the same
+  phantom → **infinite loop.** The amplifier was structural: the handler re-dispatched
+  an AUTO correction without checking the target actually exists or differs from input.
+- **Fix (this PR):** (1) **loop-breaker** — `on_command_error` only re-dispatches an
+  AUTO correction when it is a *registered* command (`bot.get_command`) *different* from
+  the raw token; an unsafe/identity/phantom correction falls through to the normal
+  not-found reply (makes the loop class impossible regardless of synonym data). (2)
+  removed the orphaned `coglist` synonym. (3) **CI invariant** —
+  `tests/unit/invariants/test_command_synonyms_resolve_to_real_commands.py` AST-asserts
+  every `COMMAND_SYNONYMS` canonical is a registered command name/alias, so an orphan
+  can't ship again.
+- **Regression test:** `tests/unit/test_bot1_command_resolution_loop.py` — phantom and
+  identity AUTO corrections do NOT re-dispatch (single terminal not-found reply); a
+  valid correction (registered + different) still auto-runs exactly once. Plus the
+  synonym-orphan invariant above (verified to flag the re-added `coglist`).
+- **Status:** FIXED — live on the next auto-deploy (a merge to `main` auto-deploys to Railway).
+
+## BUG-0013 — 1v1 challenge timer keeps running after accept, overwrites the live duel — FIXED
+
+- **Symptom (owner-reported via Hermes, 2026-06-16):** "there is a problem with
+  the deathmatch cog, the 1v1 vs player command accept timer seems to keep
+  running while a match is active, and even when a match is completed it will
+  default to 'player didn't respond in time etc'." The accept/decline challenge
+  prompt's 30-second timer kept firing after the challenge was answered, replacing
+  the live (or already-finished) duel message with "⚔️ Challenge Expired — did
+  not respond in time."
+- **Affected surface:** `_ChallengeView` in `disbot/cogs/deathmatch_cog.py` (the
+  accept/decline pre-match view). `_DuelView` was never the problem — it already
+  guards on `duel.is_over`.
+- **Root cause:** `_ChallengeView` is created with `timeout=30.0`, but
+  `btn_accept()` (which starts the real `_DuelView`) and `btn_decline()` **never
+  called `self.stop()`**, and `on_timeout()` had **no guard** for an
+  already-answered challenge. So the challenge view lived on in the background;
+  when its timeout fired, `on_timeout()` edited its message — the *same* message
+  that now showed the duel — to the expired notice.
+- **Fix (this PR):** `btn_accept`/`btn_decline` set a `_resolved` flag and call
+  `self.stop()` (which cancels the pending timeout); `on_timeout()` returns early
+  when `_resolved` (belt-and-suspenders for the race where the timeout was already
+  firing). **Diagnosis credit:** the Hermes `intake` skill (gpt-5.4-mini)
+  root-caused this correctly from the live report — its first real bug, end to
+  end.
+- **Regression test:** `tests/unit/cogs/test_deathmatch_challenge_timeout.py` —
+  accept and decline stop the view + guard a late `on_timeout`; an un-answered
+  challenge still expires (no regression).
+- **Status:** FIXED.
 
 ## BUG-0012 — counting staff check trusts role *names*, not permissions (privilege bypass) — FIXED
 

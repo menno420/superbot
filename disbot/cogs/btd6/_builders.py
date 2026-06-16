@@ -116,8 +116,10 @@ async def build_why_no_response_payload(
 
 
 async def build_hero_embed(name: str) -> discord.Embed:
+    # Live event restrictions live in their own drill-down, not on the
+    # overview — keep it uncluttered (mirrors the tower-browser decision).
     from cogs.btd6._embeds import response_to_embed as _response_to_embed
-    from services import btd6_ai_service, btd6_live_query_service
+    from services import btd6_ai_service
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_hero
     from utils.btd6.context_footer import append_context_footer
@@ -126,10 +128,7 @@ async def build_hero_embed(name: str) -> discord.Embed:
     if not intent.heroes:
         return _response_to_embed(btd6_ai_service.deterministic_answer(intent))
     hero = intent.heroes[0]
-    restrictions = await btd6_live_query_service.get_active_event_restrictions_for_hero(
-        str(hero.id),
-    )
-    embed = _response_to_embed(for_hero(hero, restrictions=restrictions))
+    embed = _response_to_embed(for_hero(hero))
     embed.add_field(
         name="Coverage",
         value=get_coverage(AREA_HERO_STATS).user_label,
@@ -152,9 +151,14 @@ async def build_round_embed(number: int) -> discord.Embed:
 
 
 async def build_tower_embed(name: str) -> discord.Embed:
-    """Render the tower lookup embed with active-event restriction context."""
+    """Render the tower lookup embed.
+
+    Live event restrictions are intentionally *not* shown here — they live in
+    their own ⚠️ Event-status drill-down (mirrors the tower-browser detail),
+    so the overview stays uncluttered.
+    """
     from cogs.btd6._embeds import response_to_embed as _response_to_embed
-    from services import btd6_ai_service, btd6_live_query_service
+    from services import btd6_ai_service
     from services.btd6_knowledge_service import tower_fact
     from services.btd6_resolver_service import resolve
     from services.btd6_response_builder import for_tower
@@ -167,12 +171,7 @@ async def build_tower_embed(name: str) -> discord.Embed:
     fact = tower_fact(tower.id)
     if fact is None:
         return _response_to_embed(btd6_ai_service.deterministic_answer(intent))
-    restrictions = (
-        await btd6_live_query_service.get_active_event_restrictions_for_tower(
-            str(tower.id),
-        )
-    )
-    embed = _response_to_embed(for_tower(fact, restrictions=restrictions))
+    embed = _response_to_embed(for_tower(fact))
     return append_context_footer(embed, f"btd6_tower:{tower.id}")
 
 

@@ -59,7 +59,9 @@ def build_hero_detail_embed(vm: HeroDetailViewModel) -> discord.Embed:
         embed = response_to_embed(btd6_ai_service.deterministic_answer(intent))
     else:
         hero = intent.heroes[0]
-        embed = response_to_embed(for_hero(hero, restrictions=tuple(vm.restrictions)))
+        # Live event restrictions live in their own drill-down, not on the
+        # overview — keep it uncluttered (mirrors the tower-browser detail).
+        embed = response_to_embed(for_hero(hero, restrictions=()))
 
     # Heroes with a bloonswiki module get a glanceable Level-1 stats field
     # (the rest are prose-only — cost + abilities, no combat stats).

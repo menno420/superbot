@@ -64,6 +64,21 @@ _MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
 _LEDGER_REF_RE = re.compile(r"#(\d+)")
 # A ledger range: "#715–#723" / "#715-#723" / "#715–723" (en-dash or hyphen).
 _LEDGER_RANGE_RE = re.compile(r"#(\d+)\s*[–-]\s*#?(\d+)")
+# A pure ledger-bookkeeping (reconciliation) PR — its diff *is* the ledger, and it
+# structurally cannot reference its own not-yet-assigned number, so it always omits
+# itself and the guard flags it on the *next* session (guaranteed recurring busywork,
+# observed at #942→#943). Detect it from its merge subject and exempt it. ``reconcil``
+# is reconciliation-specific in this repo (branch ``claude/*reconcile*`` or title
+# ``docs reconciliation`` / ``reconcile ledger``) — it does NOT match a plain "ledger"
+# feature PR (e.g. command-surface-ledger). Q-0152 / idea
+# ``ledger-guard-exempt-reconciliation-prs-2026-06-16``. **Disposable (Q-0105):** delete
+# this exemption if it ever masks a real omission.
+_RECONCILE_SUBJECT_RE = re.compile(r"reconcil", re.IGNORECASE)
+
+
+def _is_reconciliation_subject(subject: str) -> bool:
+    """True if a merge subject marks a self-referential ledger-reconciliation PR."""
+    return bool(_RECONCILE_SUBJECT_RE.search(subject))
 
 
 def ledger_pr_numbers(text: str, *, expand_ranges: bool = True) -> set[int]:
@@ -152,10 +167,21 @@ def known_ledger_numbers(
 
 
 def find_missing(window: int = DEFAULT_WINDOW) -> list[int]:
-    """Merged PRs in the recent window absent from current-state + archive."""
-    recent = _git_merged_pr_numbers(window)[:window]
+    """Merged PRs in the recent window absent from current-state + archive.
+
+    A self-referential ledger-reconciliation PR is **exempt**: its diff is the ledger and
+    it cannot list its own (not-yet-assigned) number, so its own absence is expected, not
+    drift (``_is_reconciliation_subject``). This closes the guaranteed recurring busywork
+    where each reconcile PR is flagged the following session (Q-0152).
+    """
+    merged = _git_merged_pr_map(window)
+    recent = list(merged)[:window]
     known = known_ledger_numbers()
-    return [pr for pr in recent if pr not in known]
+    return [
+        pr
+        for pr in recent
+        if pr not in known and not _is_reconciliation_subject(merged.get(pr, ""))
+    ]
 
 
 def main(argv: list[str] | None = None) -> int:

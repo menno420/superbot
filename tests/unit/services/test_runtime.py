@@ -350,6 +350,34 @@ async def test_heartbeat_metric_increments_lost_when_peer_reclaims():
     exit_mock.assert_called_with(1)
 
 
+@pytest.mark.asyncio
+async def test_heartbeat_released_when_lock_dropped_during_shutdown():
+    """A ``UPDATE 0`` while ``stop_event`` is set is the shutdown path's
+    intentional early release (LP-4 fast deploy handoff), not a peer
+    reclaim: outcome=released, the loop exits cleanly, and os._exit is
+    NOT called. This is what lets bot1's close-driver drop the lock
+    before bot.close() without the heartbeat racing it into a false
+    split-brain exit."""
+    stop = asyncio.Event()
+    before_released = _heartbeat_counter_value("released")
+    before_lost = _heartbeat_counter_value("lost")
+
+    async def _hb(*_a, **_kw):
+        # Model the close-driver setting the stop-event *before* deleting
+        # the row, so the not-owned result is seen as a shutdown release.
+        stop.set()
+        return False
+
+    with patch.object(rl_db, "heartbeat", side_effect=_hb), patch(
+        "services.runtime.os._exit",
+    ) as exit_mock:
+        await runtime.run_heartbeat_loop(stop, interval_seconds=0)
+
+    assert _heartbeat_counter_value("released") == before_released + 1
+    assert _heartbeat_counter_value("lost") == before_lost
+    exit_mock.assert_not_called()
+
+
 # ---------------------------------------------------------------------------
 # runtime_lock_heartbeat_seconds — duration of each heartbeat UPDATE call,
 # observed on every attempt (success AND exception) so DB latency trends

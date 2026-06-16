@@ -67,14 +67,38 @@ class SkillExtras:
 # Stem -> extras. Add an entry here when a new skill doc is added.
 EXTRAS: dict[str, SkillExtras] = {
     "session-brief": SkillExtras(tags=["Orientation", "SuperBot", "Planning"]),
-    "repo-health": SkillExtras(
-        tags=["Monitoring", "SuperBot", "Health"],
+    # repo-health stays a full on-demand traffic-light; its daily schedule was
+    # removed 2026-06-16 because superbot-morning-briefing now carries the daily
+    # health line (owner's "one message instead of several pings"). Re-add the
+    # schedule here if both are ever wanted.
+    "repo-health": SkillExtras(tags=["Monitoring", "SuperBot", "Health"]),
+    "ideas-triage": SkillExtras(tags=["Planning", "SuperBot", "Ideas"]),
+    "idea-spotlight": SkillExtras(
+        tags=["Planning", "SuperBot", "Ideas"],
+        related=["superbot-ideas-triage", "superbot-intake"],
         schedule=(
-            "0 8 * * *",
-            "Run a SuperBot repo health check and deliver the traffic-light report.",
+            "30 6 * * *",
+            "Post today's SuperBot idea spotlight: pick one active idea and "
+            "deliver it with pros, cons, and options to think over.",
         ),
     ),
-    "ideas-triage": SkillExtras(tags=["Planning", "SuperBot", "Ideas"]),
+    "morning-briefing": SkillExtras(
+        tags=["Monitoring", "SuperBot", "Briefing"],
+        related=[
+            "superbot-repo-health",
+            "superbot-open-questions",
+            "superbot-idea-spotlight",
+        ],
+        schedule=(
+            "0 6 * * *",
+            "Post the SuperBot morning briefing: health, open PRs, CI, overnight "
+            "routine activity, and any decisions waiting on me.",
+        ),
+    ),
+    "dispatch-resolve": SkillExtras(
+        tags=["Automation", "SuperBot", "Dispatch"],
+        related=["superbot-dispatch", "superbot-prompt-builder"],
+    ),
     "intake": SkillExtras(
         tags=["Triage", "SuperBot", "Routing"],
         related=["superbot-dispatch", "superbot-ideas-triage"],
@@ -139,7 +163,15 @@ def _extract_purpose(lines: list[str]) -> str:
 
 
 def _extract_prompt(lines: list[str]) -> str:
-    """Return the first fenced block following the ``## Prompt`` heading."""
+    """Return the first fenced block following the ``## Prompt`` heading.
+
+    The outer fence opens and closes at a **column-0** ```` ``` ````. A skill body
+    may itself contain *indented* nested fences (e.g. ``skill-author`` shows an
+    example skill complete with its own ``## Prompt`` fence) — those are body
+    content, not the boundary. Matching only column-0 fences keeps the whole prompt
+    instead of truncating at the first nested ```` ``` ```` (the bug that silently
+    dropped skill-author's STEP 4/STEP 5 from its generated artifact).
+    """
     in_prompt_section = False
     in_fence = False
     body: list[str] = []
@@ -149,12 +181,11 @@ def _extract_prompt(lines: list[str]) -> str:
             continue
         if not in_prompt_section:
             continue
-        stripped = line.strip()
         if not in_fence:
-            if stripped.startswith("```"):
+            if line.startswith("```"):  # column-0 opener
                 in_fence = True
             continue
-        if stripped == "```":
+        if line.startswith("```"):  # column-0 closer; indented nested fences pass through
             break
         body.append(line)
     return "\n".join(body).strip()

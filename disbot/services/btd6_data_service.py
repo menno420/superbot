@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import re
 import threading
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -2115,6 +2116,314 @@ def crosspath_cost(
             diff: cost * quantity for diff, cost in unit.items()
         }
     return result
+
+
+def compare_crosspath_costs(
+    candidates: Sequence[tuple[str, str]],
+    *,
+    difficulty: str = "medium",
+) -> dict[str, Any]:
+    """Deterministic cost ranking of two-or-more ``(tower, upgrade-code)`` candidates.
+
+    The §7.5 multi-entity comparison primitive: price each candidate with
+    :func:`crosspath_cost`, then rank/diff **in code** so the model never
+    assembles the comparison itself (the BUG-0003/0005 + BUG-0009 "wrong
+    assembly" class — a mis-stated "cheaper" or wrong difference, which the
+    value-only faithfulness guard cannot catch). Each entry carries the unit
+    cost at the chosen ``difficulty``; the list is sorted ascending (cheapest
+    first) with a stable tie-break on the tower name so equal-cost candidates
+    order deterministically.
+
+    Returns ``{"found": False, ...}`` when fewer than two candidates price
+    successfully (an unknown tower / illegal code is skipped, never guessed),
+    so a caller can fall through to the model rather than answer a degenerate
+    comparison.
+    """
+    from utils.btd6 import difficulty_costs
+
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+
+    entries: list[dict[str, Any]] = []
+    for tower, code in candidates:
+        priced = crosspath_cost(tower, code)
+        if not priced.get("found"):
+            continue
+        unit = priced["unit_costs_by_difficulty"][diff]
+        label = " + ".join(priced.get("upgrade_names") or ()) or "base"
+        entries.append(
+            {
+                "tower": priced["tower"],
+                "code": priced["code"],
+                "label": label,
+                "unit_cost": unit,
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two priceable (tower, crosspath) candidates",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["unit_cost"], e["tower"], e["code"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "difficulty": diff,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["unit_cost"] - cheapest["unit_cost"],
+        "all_equal": cheapest["unit_cost"] == most_expensive["unit_cost"],
+        "note": (
+            f"unit cost per tower at {diff} pricing (base + every tier on each "
+            "path, each purchase rounded to $5, then summed); ranked ascending."
+        ),
+    }
+
+
+def compare_difficulty_costs(
+    tower: str,
+    code: str,
+    difficulties: Sequence[str],
+) -> dict[str, Any]:
+    """Deterministic cost ranking of one ``(tower, upgrade-code)`` across difficulties.
+
+    The §7.5 *difficulty* member of the multi-entity comparison primitive (the
+    sibling of :func:`compare_crosspath_costs`, which ranks *different towers* at
+    one difficulty). Price the single upgrade state once via
+    :func:`crosspath_cost` — it already returns the unit cost at every
+    difficulty — then rank/diff the named difficulties **in code** so the model
+    never assembles the comparison itself (the BUG-0009 "wrong assembly" class —
+    a mis-stated "cheaper on X", which the value-only faithfulness guard cannot
+    catch). Ranked ascending (cheapest first) with a stable tie-break on the
+    canonical difficulty order (so equal-cost difficulties order deterministically).
+
+    Returns ``{"found": False, ...}`` when the tower/code does not price or fewer
+    than two *distinct valid* difficulties are named (an unknown difficulty is
+    skipped, never guessed), so a caller can fall through to the model rather than
+    answer a degenerate comparison.
+    """
+    from utils.btd6 import difficulty_costs
+
+    priced = crosspath_cost(tower, code)
+    if not priced.get("found"):
+        return {"found": False, "note": priced.get("note", "unpriceable tower/code")}
+
+    unit_by_diff = priced["unit_costs_by_difficulty"]
+    canonical_order = {d: i for i, d in enumerate(difficulty_costs.DIFFICULTIES)}
+    seen: set[str] = set()
+    entries: list[dict[str, Any]] = []
+    for raw in difficulties:
+        try:
+            diff = difficulty_costs.normalize_difficulty(raw)
+        except ValueError:
+            continue
+        if diff in seen:
+            continue
+        seen.add(diff)
+        entries.append({"difficulty": diff, "unit_cost": unit_by_diff[diff]})
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct valid difficulties",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(
+        entries,
+        key=lambda e: (e["unit_cost"], canonical_order[e["difficulty"]]),
+    )
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    label = " + ".join(priced.get("upgrade_names") or ()) or "base"
+    return {
+        "found": True,
+        "tower": priced["tower"],
+        "code": priced["code"],
+        "label": label,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["unit_cost"] - cheapest["unit_cost"],
+        "all_equal": cheapest["unit_cost"] == most_expensive["unit_cost"],
+        "note": (
+            "unit cost of the same upgrade state at each named difficulty (base "
+            "+ every tier, each purchase rounded to $5 at that difficulty, then "
+            "summed); ranked ascending."
+        ),
+    }
+
+
+def compare_round_ranges(
+    ranges: Sequence[tuple[int, int]],
+    *,
+    roundset: str = "default",
+) -> dict[str, Any]:
+    """Deterministic cash ranking of two-or-more inclusive round ranges.
+
+    The §7.5 *round-range* member of the multi-entity comparison primitive (the
+    sibling of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs`,
+    which compare *cost*). Answers "which earns more cash, rounds 20-40 or
+    40-60?" — price each inclusive range once via :func:`round_cash` (the same
+    owner the round-cash workflow uses, so the per-round figures can never drift),
+    then rank/diff the earned totals **in code** so the model never assembles the
+    comparison itself (the BUG-0009 "wrong assembly" class — a mis-stated "earns
+    more" / wrong difference, which the value-only faithfulness guard cannot
+    catch). A single round (``lo == hi``) contributes its own ``round_cash``.
+
+    Ranges are normalised (reversed endpoints are flipped by ``round_cash``) and
+    **deduped** on the resolved ``(start, end)`` so "20-40 vs 20-40" collapses to
+    one entry and falls through. Ranked **descending** (most cash first — the
+    question asks which earns *more*) with a stable tie-break on the start then end
+    round. All ranges are priced in the **same** ``roundset`` (a cross-roundset
+    comparison is not a real question shape).
+
+    Returns ``{"found": False, ...}`` when fewer than two distinct ranges price
+    successfully (an out-of-range / partial-overlap range is skipped, never
+    summed partially), so a caller can fall through to the model rather than
+    answer a degenerate comparison.
+    """
+    entries: list[dict[str, Any]] = []
+    seen: set[tuple[int, int]] = set()
+    resolved_set: str | None = None
+    for lo, hi in ranges:
+        priced = round_cash(lo, hi, roundset=roundset)
+        if not priced.get("found"):
+            continue
+        start, end = priced["round_start"], priced["round_end"]
+        if (start, end) in seen:
+            continue
+        if priced.get("single_round"):
+            earned = priced.get("round_cash")
+            counted = 1
+        else:
+            earned = priced.get("range_cash")
+            counted = priced.get("rounds_counted")
+        if earned is None:
+            continue
+        seen.add((start, end))
+        resolved_set = priced.get("roundset", resolved_set)
+        entries.append(
+            {
+                "round_start": start,
+                "round_end": end,
+                "single_round": start == end,
+                "earned": round(float(earned), 2),
+                "rounds_counted": counted,
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct priceable round ranges",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(
+        entries,
+        key=lambda e: (-e["earned"], e["round_start"], e["round_end"]),
+    )
+    highest = ranked[0]
+    lowest = ranked[-1]
+    set_label = "alternate (ABR)" if resolved_set == "alternate" else "standard"
+    return {
+        "found": True,
+        "roundset": resolved_set or "default",
+        "set_label": set_label,
+        "entries": ranked,
+        "highest": highest,
+        "lowest": lowest,
+        "spread": round(highest["earned"] - lowest["earned"], 2),
+        "all_equal": highest["earned"] == lowest["earned"],
+        "note": (
+            f"{set_label} round set, Medium difficulty, no income towers; each "
+            "range is the inclusive per-round cash sum; ranked descending."
+        ),
+    }
+
+
+def compare_paragon_costs(
+    names: Sequence[str],
+    *,
+    difficulty: str = "medium",
+) -> dict[str, Any]:
+    """Deterministic base-price ranking of two-or-more paragons.
+
+    The §7.5 *paragon* member of the multi-entity comparison primitive (the
+    sibling of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs`
+    / :func:`compare_round_ranges`). Answers "is Glaive Dominus or Ascended
+    Shadow cheaper?" — price each named paragon's **base build price** (the
+    tier-6 cost) once via :func:`paragon_math.base_price` over the committed
+    ``BASE_PRICES_MEDIUM`` table (difficulty-adjusted with the shared BTD6
+    multipliers), then rank/diff **in code** so the model never assembles the
+    comparison itself (the BUG-0009 "wrong assembly" class — a mis-stated
+    "cheaper" / wrong difference, which the value-only faithfulness guard cannot
+    catch). Ranked **ascending** (cheapest first) with a stable tie-break on the
+    paragon name (two paragons share a $500,000 base, so an equal-cost tie is a
+    real outcome).
+
+    Each name is resolved with :func:`paragon_math.resolve_paragon` (tower name,
+    paragon name, id, or colloquial alias) and **deduped** on the resolved
+    paragon id. Returns ``{"found": False, ...}`` when fewer than two distinct
+    paragons resolve (an unknown name is skipped, never guessed), so a caller can
+    fall through to the model rather than answer a degenerate comparison.
+    """
+    from utils.btd6 import difficulty_costs, paragon_math
+
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for name in names:
+        paragon = paragon_math.resolve_paragon(name)
+        if paragon is None:
+            continue
+        if paragon.paragon_id in seen:
+            continue
+        seen.add(paragon.paragon_id)
+        entries.append(
+            {
+                "paragon_id": paragon.paragon_id,
+                "name": paragon.name,
+                "tower": paragon.tower,
+                "base_cost": paragon_math.base_price(paragon, diff),
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct resolvable paragons",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["base_cost"], e["name"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "difficulty": diff,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["base_cost"] - cheapest["base_cost"],
+        "all_equal": cheapest["base_cost"] == most_expensive["base_cost"],
+        "note": (
+            f"paragon base (tier-6) build price at {diff} pricing; ranked "
+            "ascending. Excludes the degree-grind sacrifices."
+        ),
+    }
 
 
 def list_ct_relics() -> tuple[RelicEntry, ...]:

@@ -1,0 +1,78 @@
+name: pr-conflict-guard
+
+# Make a merge conflict LOUD instead of silent. A conflicted (DIRTY) PR otherwise sits with a
+# green CI check (CI tested the branch head; the conflict is a git property, not a test result)
+# and GitHub only shows a small "this branch has conflicts" banner + quietly disables auto-merge
+# — so a conflicted branch rots unnoticed. This posts a RED `conflict-guard` commit status on any
+# DIRTY PR (and clears it to green when resolved), so the PR visibly goes red for an agent / the
+# maintainer to act on — the signal the autonomous loop was supposed to have (Q-0154, 2026-06-16).
+#
+# It is a VISIBILITY signal, NOT a required merge gate: a non-required status. A DIRTY PR already
+# cannot merge, so nothing extra needs blocking — and keeping it non-required means NO branch-
+# protection change is needed for it to work. (Make it a required check only if you want it to
+# hard-block; not necessary.)
+#
+# Conflicts usually appear when MAIN moves (another PR merges), which is not an event on the stale
+# PR — so the timely trigger is `push: main` (fires reliably on every merge). `pull_request`
+# covers the PR's own pushes; `schedule` is a slow backstop (GitHub cron is best-effort/laggy).
+#
+# REQUIREMENTS: a token with statuses: write + pull-requests: read (ROUTINE_PAT or the default
+# GITHUB_TOKEN both work; PAT preferred for consistency).
+#
+# Provenance + reliability (Q-0105): added 2026-06-16, owner-directed. UNVERIFIED — confirm the
+# first DIRTY PR actually shows the red `conflict-guard` status and that it clears on resolution.
+# Delete this workflow if it flaps or misreports; conflicts are also visible in the PR UI banner.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "23 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: pr-conflict-guard-${{ github.event_name }}-${{ github.event.pull_request.number || 'sweep' }}
+  cancel-in-progress: true
+
+jobs:
+  flag-conflicts:
+    if: github.repository == 'menno420/superbot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reflect each open PR's merge state as the conflict-guard status
+        env:
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          # For every open PR: DIRTY -> red status; CLEAN/BEHIND/etc -> green (clears a prior
+          # red); UNKNOWN (GitHub still computing mergeability) -> skip, don't flap.
+          gh pr list --repo "$GITHUB_REPOSITORY" --state open \
+            --json number,mergeStateStatus,headRefOid \
+            --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' \
+          | while read -r num state sha; do
+              [ -z "${sha:-}" ] && continue
+              case "$state" in
+                DIRTY)
+                  gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
+                    -f state=failure -f context=conflict-guard \
+                    -f description="Merge conflict with main — merge main in / rebase to resolve." \
+                    >/dev/null 2>&1 && echo "🔴 #$num DIRTY -> red"
+                  ;;
+                UNKNOWN|"")
+                  echo "#$num mergeability not computed yet -> skip"
+                  ;;
+                *)
+                  gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
+                    -f state=success -f context=conflict-guard \
+                    -f description="No merge conflict with main." \
+                    >/dev/null 2>&1 && echo "🟢 #$num $state -> clear"
+                  ;;
+              esac
+            done

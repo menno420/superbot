@@ -59,9 +59,16 @@ for the labeled issue.
 > it lapses the issues silently revert to bot-authored. (A GitHub App installation token avoids
 > the expiry if this becomes a recurring chore.)
 
-**The docs/runtime split (honors Q-0107):** the reconciliation routine is **docs-only** — if
-it *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN), and the **dispatch**
-routine fixes it. Neither routine invents features (the phase gate holds those until
+**The docs/runtime split (honors Q-0107) — and it cuts ONE way (Q-0148):** the reconciliation
+routine is **docs-only**; the **dispatch routine is NEVER docs-only** — it does *all* build work
+(runtime code, migrations, tests, docs, fixes, dispatched features). "Docs-only" is **exclusively**
+the reconciliation routine's lane. So a work order must **never scope-restrict** the dispatch
+routine to docs ("docs only" / "no runtime code" / "no feature scope") — that is a category error
+(it happened on a 2026-06-16 test fire): a `CLASS:` label picks the merge gate, it does not fence
+what the dispatch routine may touch, and a genuinely docs-only reconciliation job is the
+*auto-triggered* reconciliation routine's work, not a hand-dispatched build order. If the
+reconciliation routine *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN) and
+the dispatch routine fixes it. Neither routine invents features (the phase gate holds those until
 invent-phase, and these prompts never originate them).
 
 **Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
@@ -148,7 +155,8 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
   - Add one honest line reviewing the PREVIOUS reconciliation/session (Q-0102): what it did well
     or missed.
   - Write a short .sessions/<date>-reconcile.md log (what changed · what's next · the Q-0089
-    idea · the Q-0102 review).
+    idea · the Q-0102 review), ending with the **📤 Run report footer** (`.sessions/README.md`) —
+    the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty).
 
 STEP 5 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger, and
   check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
@@ -221,6 +229,25 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
   (cadence gated in the Action) + the every-2h dispatch Schedule keep volume bounded; the cap is also a runaway stop.
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
+
+## PR mergeability keepers (auto-update + conflict-guard) — Q-0154
+
+Two small workflows keep open PRs from rotting silently — the gap the #959 stall exposed: a
+`behind`/conflicted PR sits **green-but-unmergeable** (a merge conflict is a git property, not a
+test result, so GitHub never reddens a check for it, and native auto-merge won't auto-update a
+behind branch without a merge queue). They split the two cases:
+
+| Workflow | Trigger | Does | Net effect |
+|---|---|---|---|
+| **`pr-auto-update.yml`** | `push: main` | brings open non-draft `claude/*` PRs that are **BEHIND** up to date (`update-branch`); carve-outs (`needs-hermes-review`/`do-not-automerge`) left alone; a real conflict fails the update and falls through to the guard | **behind = handled silently** → re-tests against current main → auto-merge fires |
+| **`pr-conflict-guard.yml`** | `push: main` + `pull_request` + schedule | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap) | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
+
+`push: main` is the load-bearing trigger for both: a conflict/behind state arises when *main moves*
+(another PR merges), which is not an event on the stale PR. `conflict-guard` is a **non-required**
+status (a signal, not an extra gate — a DIRTY PR already can't merge), so no branch-protection
+change is needed. Both use `ROUTINE_PAT` (already scoped Pull requests + Contents write for
+`auto-merge-enabler.yml`). Kill switch (Q-0105): delete either workflow; both are disposable
+convenience guards, and "Update branch" / the conflict banner remain available by hand.
 
 ## Control-plane state (maintainer-verified) — the bits no in-repo checker can see
 

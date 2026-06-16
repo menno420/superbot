@@ -704,7 +704,7 @@ SUBSYSTEMS: dict[str, dict] = {
         "visibility_mode": "normal",
         "category": "utility",
         "tags": ["utility", "tools", "general"],
-        "entry_points": ["utilitymenu", "avatar", "serverinfo"],
+        "entry_points": ["utilitymenu", "myprofile", "avatar", "serverinfo"],
         "default_channels": ["bot-commands", "general"],
         "related_subsystems": ["general"],
         "dependencies": [],
