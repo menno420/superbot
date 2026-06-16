@@ -39,6 +39,13 @@ Current broad captures:
   + a root-README question → **Q-0151** (answered); count-cite guard → fold into
   `readiness-maps-cite-regen-command`. → relates `scripts/{context_map,wiring_map,review_scope}.py` ·
   `utils/subsystem_registry.py` · `architecture_rules/layers.yaml`.
+- [`sessionstart-surface-soft-check-signals-2026-06-16.md`](./sessionstart-surface-soft-check-signals-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the atlas thread #960/#964):** the repo keeps adding *soft*
+  signals that only help if run by hand (the `check_docs` ratchets + new inventory-count guard, the
+  uncommitted atlas body, the `--check` tools). Add **one SessionStart banner line** (`Docs: soft — …`)
+  backed by a `check_docs --soft-summary` mode so the soft ratchets are proactively visible, not
+  discovered by luck. Touches the SessionStart hook → owner-wires per Q-0106. → relates
+  `scripts/claude_session_start.sh` · `scripts/check_docs.py`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
   round-range cash comparison requires a round token before *each* range's first anchor (to keep

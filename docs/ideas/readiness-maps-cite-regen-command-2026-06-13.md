@@ -3,15 +3,21 @@
 > **Status:** `ideas` — captured 2026-06-13 (Q-0089 session idea, from the P0-3 settings
 > pointer-lane foundation session). Not a plan; not approved. Source + merged PRs win.
 >
-> **⚙ Mechanism PARTIALLY SHIPPED (2026-06-16, PR #964, Q-0151).** The architecture-review
-> count-citation guard built exactly this mechanism in `check_docs.py`
-> (`inventory_count_flags` / `print_inventory_count_report`): a **soft** warning when a bare
-> inventory count (`N migrations/workflows/extensions/cogs/subsystems`) lacks a regen citation
-> (`scripts/*.py`), a `generated` marker, or `<!-- count-ok -->`. **Scope so far: `binding` docs
-> only.** The remaining half of *this* idea is to **widen the scope filter** to also cover
-> `docs/planning/production-readiness/*` and `docs/audits/*` (and add the `SettingSpec`/`BindingSpec`
-> count nouns) — a small follow-up that reuses the same regex + exemptions, just changing the
-> doc-set filter. Until then, the readiness maps stay unguarded.
+> **⚙ Mechanism SHIPPED for binding docs (2026-06-16, PR #964, Q-0151); the readiness-map widening
+> was investigated and DROPPED as not-worth-it.** The architecture-review count-citation guard built
+> this mechanism in `check_docs.py` (`inventory_count_flags` / `print_inventory_count_report`): a
+> **soft** warning when a bare inventory count lacks a regen citation (`scripts/*.py`), a `generated`
+> marker, or `<!-- count-ok -->`. Scope: **`binding` docs** (clean baseline, 0 flags).
+>
+> **Why widening to `production-readiness/*` was dropped (verified 2026-06-16):** 8 of the 10
+> `production-readiness/*` docs are badged **`audit`** — dated point-in-time snapshots where a frozen
+> count is *correct by design*; flagging them would be pure noise (the same reason ADRs/historical docs
+> are exempt). The one *live* map that matters
+> (`settings-bindings-provisioning-production-readiness-map`) **already self-cites**: its top line is
+> `python3.10 scripts/settings_lane_matrix.py (65 settings / 17 bindings, not the 36/13 below)` — the
+> exact cite-the-regen-command convention this idea asked for, already applied by hand. So there is no
+> valuable widening to do; the convention lives on as good practice for any *new* live readiness map.
+> **This idea is effectively resolved** (mechanism shipped where it adds value; the rest is moot).
 
 ## The gap
 

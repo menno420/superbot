@@ -35,6 +35,8 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/hopeful-meitner-772pv8` · count-citation guard + session-close notes (Q-0151, atlas thread #3)
+  — soft `check_docs` inventory-count rule · 2026-06-16 · **PR #964 (auto-merge on green)**
 - `claude/peaceful-tesla-vvayya` · Hermes efficiency — idea-spotlight · morning-briefing ·
   dispatch-resolve skills + 6h auto session-reset · 2026-06-16 · **PR #959 (auto-merge pending)**
 
