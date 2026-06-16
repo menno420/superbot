@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`idea-spotlight-verdict-loop-2026-06-16.md`](./idea-spotlight-verdict-loop-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the idea-spotlight skill PR #959):** the new daily
+  `superbot-idea-spotlight` surfaces an idea + asks for a verdict, but the selector has no memory of
+  what the owner already decided, so a settled idea can resurface and nothing measures backlog drain.
+  Give it a tiny **verdict ledger** (persist each `intake` route), bias selection toward un-decided
+  ideas, and add a weekly drain-rate line to the briefing — turning the ritual into a self-draining
+  decision queue. Small/decided-lane. → relates `scripts/hermes/idea_spotlight.py`.
 - [`architecture-atlas-and-structure-review-2026-06-16.md`](./architecture-atlas-and-structure-review-2026-06-16.md) —
   **owner-uploaded external review + agent judgment (2026-06-16):** an outside-in repo-architecture
   review ("repository-architectuuratlas") recommending a generated **architecture atlas** over any
@@ -115,12 +122,12 @@ Current broad captures:
   (bot · BTD6 · agent substrate · **+ a forgotten Operations/control-plane sector**) distinct from the
   `repo-review-map.md` review taxonomy. Captured owner direction + agent opinion; not approved.
 - [`dispatch-resolution-json-hermes-2026-06-14.md`](./dispatch-resolution-json-hermes-2026-06-14.md) —
-  **session idea (2026-06-14, Q-0089, from the sector-tooling session #882; owner-invited):** give
-  `scripts/dispatch_menu.py` a **`--json`** mode and wire it into the Hermes `superbot-dispatch` skill, so
-  *"dispatch S2"* resolves to a concrete work order **and** routes by the resolved **executor**
-  (`Claude-in-repo` → `/fire`; `Hermes-VPS` → Hermes does it; `maintainer` → tell the owner). The
-  read-side of **Q-0137 Thread 1**: turns the Q-0143 contract + the dispatch menu from dispatch-*ready*
-  into dispatch-*resolved*. `--json` half = safe quick-win; Hermes-wiring half gated on Thread 1.
+  ✅ **EXECUTED → `historical` (2026-06-16, PR #959, owner-directed):** `scripts/dispatch_menu.py --json`
+  shipped **and** the Hermes-wiring half landed as the new **`superbot-dispatch-resolve`** skill, so
+  *"dispatch S2"* resolves to a concrete work order and routes by the resolved **executor**
+  (`Claude-in-repo` → `/fire`; `Hermes-VPS` → Hermes does it; `maintainer` → tell the owner). Originally
+  the 2026-06-14 Q-0089 session idea (the read-side of **Q-0137 Thread 1**; the broader cron-backstop
+  part of Thread 1 stays owner-undecided).
 - [`routine-system-improvements-2026-06-14.md`](./routine-system-improvements-2026-06-14.md) —
   **workflow / routine-system (2026-06-14, owner-requested):** first-hand field notes from a live
   routine run on making the unattended Hermes-dispatch loop smoother. Core orientation already

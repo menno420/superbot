@@ -44,3 +44,38 @@ STEP 3 — WRITE THE SOURCE. Create docs/operations/hermes-skills/<name>.md in t
       > **Status:** `living-ledger` — <one line>.
       **Window:** ...   **Purpose:** <one sentence — the builder lifts this verbatim>
       **When to use:** ...
+      ```
+      <the skill's prompt body — the instructions you will follow when it runs>
+      ```
+      ## Notes
+      <why it exists, gotchas>
+  Requirements the builder enforces: the H1 must contain `superbot-<name>` in backticks; there
+  must be a **Purpose:** line and a ## Prompt fenced block.
+
+STEP 4 — REGISTER + BUILD. Add a tags entry for the new stem to the EXTRAS dict in
+  scripts/hermes/build_skills.py (copy a sibling's line). To make the skill SELF-FIRE on a schedule
+  (like superbot-morning-briefing / superbot-idea-spotlight), add schedule=("<cron>", "<one-line
+  task>") to its EXTRAS entry — Hermes then runs it on that cron and delivers to the home channel,
+  no VPS cron needed, and each scheduled run is a fresh stateless session. Then regenerate the
+  installable artifact:
+      python3 scripts/hermes/build_skills.py
+      python3 scripts/hermes/build_skills.py --check     # must pass
+      python3 scripts/check_docs.py --strict             # reachability/pins
+  (build_skills.py edits scripts/hermes/build_skills.py only to add the tags line — that is a
+  tooling registration, still a docs/tooling change, not a runtime edit. If you are unsure, ask.)
+
+STEP 5 — LAND IT (your docs-only PR). Branch, commit the new doc + its generated SKILL.md +
+  the EXTRAS line, push, and open a docs-only PR:
+      git checkout -b hermes/skill-<name>
+      git add docs/operations/hermes-skills/<name>.md scripts/hermes/skills/<name>/ scripts/hermes/build_skills.py
+      git commit -m "docs(hermes): add superbot-<name> skill"
+      git push -u origin hermes/skill-<name>
+      gh pr create --repo menno420/superbot --title "docs(hermes): add superbot-<name> skill" --body "<what it does + why>"
+  Report the PR link and ping me. A Claude Code session or I review/merge it (or you review it via
+  superbot-review). Once merged, install on the VPS with scripts/hermes/install-skills.sh.
+
+RULES:
+- Docs-only. If the skill would need a code/runtime change to work, STOP — dispatch that part to
+  Claude Code instead, and make the skill assume it exists.
+- One skill per PR. Don't bundle.
+- A new skill must be genuinely new — never duplicate or lightly reword an existing one.

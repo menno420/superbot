@@ -35,6 +35,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/peaceful-tesla-vvayya` · Hermes efficiency — idea-spotlight · morning-briefing ·
+  dispatch-resolve skills + 6h auto session-reset · 2026-06-16 · **PR #959 (auto-merge pending)**
+
 > Trimmed 2026-06-16 (Q-0152): stale claims whose PRs merged are dropped — the durable record is the
 > PR + the `current-state.md` ledger. Keep this to the most recent handful, newest-first.
 
