@@ -2582,6 +2582,268 @@ def deterministic_paragon_cost_comparison_reply(message_text: str) -> str | None
     return _format_paragon_cost_comparison(result)
 
 
+# --- "which towers pop lead / see camo" capability roster (AI §7) -------------
+# A capability/property roster ("which towers pop lead without upgrades", "what
+# towers detect camo", "which monkeys pop purple") is the BUG-0009 wrong-assembly
+# class: the model assembles the roster itself and can include/exclude the wrong
+# towers, and because every tower NAME is grounded the value-only faithfulness
+# guard never catches a mis-*roster*. The authoritative answer is already derived
+# deterministically by services.btd6_capability_service (from the committed
+# per-tier stats), so the floor OWNS the labelled list.
+#
+# High-precision firing: a capability cue (camo + a detection verb, OR a pop verb
+# + a named bloon type) AND a roster discovery shape ("which/what ... towers"),
+# with strategy/opinion deferred to the model.
+_CAP_CAMO_RE = re.compile(r"\bcamo(?:flage)?\b", re.I)
+_CAP_CAMO_VERB_RE = re.compile(
+    r"\b(?:detect|detects|detecting|detection|see|sees|seeing|reveal|reveals"
+    r"|spot|spots)\b",
+    re.I,
+)
+# A popping verb is required for the bloon-immunity capabilities so a stray colour
+# word ("the white monkey", "purple is the best path") never trips the floor.
+_CAP_POP_VERB_RE = re.compile(r"\bpop(?:s|ped|ping)?\b", re.I)
+# (capability-key prefix, the bloon word that must appear with a pop verb). The
+# key matches services.btd6_capability_service.<KEY>_POPPING.
+_CAP_BLOON_KEYWORDS: tuple[tuple[str, str], ...] = (
+    ("lead", r"\blead\b"),
+    ("black", r"\bblack\b"),
+    ("white", r"\bwhite\b"),
+    ("purple", r"\bpurple\b"),
+)
+# The roster discovery shape: a "which/what/list ... tower(s)/paragon(s)/monkey(s)"
+# question, or "tower(s) ... which/that/can". Keeps single-entity lookups ("does
+# the dartling see camo") and yes/no checks out of the roster floor.
+_CAP_SHAPE_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every)\b.{0,40}"
+    r"\b(?:towers?|paragons?|monkeys?)\b|"
+    r"\b(?:towers?|paragons?|monkeys?)\b.{0,40}\b(?:which|that|can)\b",
+    re.I,
+)
+# An explicit "with upgrades / ever" signal flips the roster from the base (0-0-0)
+# default to the earliest-upgrade roster.
+_CAP_UPGRADED_RE = re.compile(
+    r"\bwith\s+upgrades?\b|\bupgraded\b|\bever\b|\beventually\b|\bany\s+tower\b|"
+    r"\bat\s+any\s+(?:tier|upgrade)\b",
+    re.I,
+)
+# Human labels for the roster header.
+_CAP_LABELS: dict[str, str] = {
+    "camo_detection": "detect Camo",
+    "lead_popping": "pop Lead",
+    "black_popping": "pop Black",
+    "white_popping": "pop White",
+    "purple_popping": "pop Purple",
+}
+
+
+def _match_capability(text_lower: str) -> str | None:
+    """Resolve the single capability key a roster question asks about, or ``None``."""
+    from services import btd6_capability_service as cap_svc
+
+    if _CAP_CAMO_RE.search(text_lower) and _CAP_CAMO_VERB_RE.search(text_lower):
+        return cap_svc.CAMO_DETECTION
+    if _CAP_POP_VERB_RE.search(text_lower):
+        pop_keys = {
+            "lead": cap_svc.LEAD_POPPING,
+            "black": cap_svc.BLACK_POPPING,
+            "white": cap_svc.WHITE_POPPING,
+            "purple": cap_svc.PURPLE_POPPING,
+        }
+        for prefix, pattern in _CAP_BLOON_KEYWORDS:
+            if re.search(pattern, text_lower):
+                return pop_keys[prefix]
+    return None
+
+
+def _format_capability_roster(
+    capability: str,
+    hits: list[Any],
+    *,
+    upgraded: bool,
+) -> str:
+    """Render the labelled tower roster for a resolved capability."""
+    label = _CAP_LABELS.get(capability, capability.replace("_", " "))
+    scope = "(any tier, earliest shown)" if upgraded else "without upgrades (base tier)"
+    if not hits:
+        return f"**BTD6 — no tower can {label} {scope}.**"
+    lines = [f"**BTD6 towers that {label} {scope} ({len(hits)}):**"]
+    lines.extend(f"• **{hit.canonical}** — {hit.detail}" for hit in hits)
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def _format_paragon_capability_roster(hits: list[Any]) -> str | None:
+    """Render the per-paragon Camo-detection roster (yes/no), or ``None`` if empty."""
+    if not hits:
+        return None
+    yes = [h for h in hits if h.has_capability]
+    no = [h for h in hits if not h.has_capability]
+    lines = [f"**BTD6 paragons and Camo detection ({len(hits)}):**"]
+    if yes:
+        names = ", ".join(f"**{h.paragon}**" for h in yes)
+        lines.append(f"__Detect Camo innately ({len(yes)})__: {names}")
+    if no:
+        names = ", ".join(f"**{h.paragon}**" for h in no)
+        lines.append(f"__Need external Camo support ({len(no)})__: {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_capability_roster_reply(message_text: str) -> str | None:
+    """A code-built "which towers have capability X" roster, or ``None``.
+
+    Fires on a clear capability-roster question — "which towers pop lead without
+    upgrades", "what towers detect camo", "which monkeys pop purple" — the
+    BUG-0009 wrong-assembly class: every tower name is grounded, so the model can
+    silently mis-*roster* (include a tower that can't, drop one that can) and the
+    value-only faithfulness guard never catches it. The roster is derived
+    deterministically by :mod:`services.btd6_capability_service` from the committed
+    per-tier stats, so the floor OWNS the labelled list.
+
+    Scope: base (0-0-0) by default — the genuinely-confused "innate" question; an
+    explicit "with upgrades / ever" signal flips it to the earliest-upgrade
+    roster. A ``paragon`` cue answers the per-paragon Camo roster (the only
+    per-paragon capability the service verifies). Returns ``None`` for
+    single-entity lookups, strategy/opinion, and anything outside the roster shape.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _CAP_SHAPE_RE.search(text):
+        return None
+
+    from services import btd6_capability_service as cap_svc
+
+    capability = _match_capability(text)
+    if capability is None:
+        return None
+
+    if _PARAGON_CUE_RE.search(text):
+        # Only Camo is verified per-paragon; defer other capabilities to the model.
+        if capability != cap_svc.CAMO_DETECTION:
+            return None
+        return _format_paragon_capability_roster(
+            cap_svc.paragons_with_capability(capability),
+        )
+
+    upgraded = bool(_CAP_UPGRADED_RE.search(text))
+    hits = cap_svc.towers_with_capability(capability, unupgraded=not upgraded)
+    return _format_capability_roster(capability, hits, upgraded=upgraded)
+
+
+# --- "which bloons are immune to X / list the MOAB-class bloons" (AI §7) -------
+# A bloon roster ("what are all the MOAB-class bloons", "which bloons are immune
+# to sharp") is the same wrong-assembly class as the tower-capability floor above,
+# on the other side of the matchup: the model assembles the bloon list itself and
+# can miscount the blimp tier or mis-state an immunity, and because every bloon
+# NAME is grounded the value-only faithfulness guard never catches a mis-roster.
+# btd6_data_service exposes the committed bloon fields (category · immune_to), so
+# the floor OWNS the labelled list. The sibling roster floor
+# (deterministic_roster_reply) covers heroes/towers/paragons/maps but NOT bloons.
+_BLOON_SUBJECT_RE = re.compile(r"\bbloons?\b|\bblimps?\b|\bmoab", re.I)
+_BLOON_MOAB_CUE_RE = re.compile(r"\bmoab[-\s]?class\b|\bblimps?\b|\bmoab\b", re.I)
+_BLOON_IMMUNE_CUE_RE = re.compile(
+    r"\bimmune\b|\bimmunit|\bresist(?:s|ant|ance)?\b|"
+    r"\bcan'?t\s+be\s+(?:popped|damaged|hurt)\b",
+    re.I,
+)
+# A strict enumeration signal for the MOAB-class list (a bare "what"/"which" is
+# NOT enough — "what is a moab" is a single lookup, not a roster).
+_BLOON_MOAB_LIST_RE = re.compile(
+    r"\blist\b|\bname\b|\ball\b|\bevery\b|\bhow many\b|\bwhich\b|\bwhat are\b|"
+    r"\bthere are\b|\bare there\b",
+    re.I,
+)
+# A looser enumeration signal for the immunity roster (the damage-keyword gate
+# already keeps single-entity "is the lead immune to sharp" out — it has no
+# which/what/list cue — so "what bloons" is safe to accept here).
+_BLOON_IMMUNE_LIST_RE = re.compile(
+    r"\bwhich\b|\bwhat\b|\blist\b|\bname\b|\ball\b|\bevery\b|\bhow many\b",
+    re.I,
+)
+# (regex over the question, the canonical immune_to damage label). Order matters:
+# the specific cold sub-types (Glacier/Frigid) are matched before generic cold/ice.
+_BLOON_DAMAGE_KEYWORDS: tuple[tuple[str, str], ...] = (
+    (r"\bexplos|\bbomb\b", "Explosion"),
+    (r"\bfire\b|\bflame\b|\bburn", "Fire"),
+    (r"\benerg", "Energy"),
+    (r"\bplasma\b", "Plasma"),
+    (r"\bglacier\b", "Glacier"),
+    (r"\bfrigid\b", "Frigid"),
+    (r"\bcold\b|\bice\b|\bfreez", "Cold"),
+    (r"\bshatter", "Shatter"),
+    (r"\bsharp", "Sharp"),
+    (r"\bacid\b", "Acid"),
+)
+
+
+def _match_bloon_damage(text_lower: str) -> str | None:
+    """The canonical immune_to damage label a question names, or ``None``."""
+    for pattern, label in _BLOON_DAMAGE_KEYWORDS:
+        if re.search(pattern, text_lower):
+            return label
+    return None
+
+
+def _format_moab_class_roster(hits: list[Any]) -> str | None:
+    if not hits:
+        return None
+    names = ", ".join(f"**{b.canonical}**" for b in hits)
+    return f"**BTD6 MOAB-class bloons ({len(hits)})** — the blimp tier: {names}."
+
+
+def _format_bloon_immunity_roster(label: str, hits: list[Any]) -> str:
+    if not hits:
+        return f"**BTD6 — no bloon is immune to {label} damage.**"
+    names = ", ".join(f"**{b.canonical}**" for b in hits)
+    return f"**BTD6 bloons immune to {label} damage ({len(hits)}):** {names}."
+
+
+def deterministic_bloon_roster_reply(message_text: str) -> str | None:
+    """A code-built bloon roster — MOAB-class list or immunity roster — or ``None``.
+
+    Fires on a clear bloon enumeration: "what are all the MOAB-class bloons /
+    blimps" (the category list) or "which bloons are immune to <damage>" (the
+    immunity roster). Same wrong-assembly class as the tower-capability floor —
+    every bloon name is grounded, so the model can miscount/mis-state and the
+    value-only guard never catches the mis-roster. Defers (``None``) for
+    single-bloon lookups ("what is a moab", "is the lead immune to sharp"),
+    strategy/opinion, and anything without a bloon subject + enumeration shape.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _BLOON_SUBJECT_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    # "modifier" rows (camo / fortified / regrow) are property markers, not bloons.
+    bloons = [
+        b for b in btd6_data_service.get_dataset().bloons if b.category != "modifier"
+    ]
+
+    if _BLOON_IMMUNE_CUE_RE.search(text):
+        if not _BLOON_IMMUNE_LIST_RE.search(text):
+            return None
+        label = _match_bloon_damage(text)
+        if label is None:
+            return None
+        hits = [b for b in bloons if label in (b.immune_to or ())]
+        return _format_bloon_immunity_roster(label, hits)
+
+    if _BLOON_MOAB_CUE_RE.search(text) and _BLOON_MOAB_LIST_RE.search(text):
+        hits = [b for b in bloons if b.category == "moab_class"]
+        return _format_moab_class_roster(hits)
+
+    return None
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -2595,6 +2857,8 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_mk_reference_reply,
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
+    deterministic_capability_roster_reply,
+    deterministic_bloon_roster_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_cost_comparison_reply,
     deterministic_difficulty_cost_comparison_reply,

@@ -72,6 +72,14 @@ Current broad captures:
   backed by a `check_docs --soft-summary` mode so the soft ratchets are proactively visible, not
   discovered by luck. Touches the SessionStart hook → owner-wires per Q-0106. → relates
   `scripts/claude_session_start.sh` · `scripts/check_docs.py`.
+- [`deterministic-floor-catalogue-2026-06-16.md`](./deterministic-floor-catalogue-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the §7.6 capability/bloon roster-floor PR #975):** the
+  `_BTD6_LIST_BUILDERS` family grows ~one floor per dispatch, but "what's already fronted / which data
+  surface has no floor yet?" is recoverable only by grepping the dispatcher + reading each builder. A
+  tiny stdlib script that introspects the live tuple → maps each builder to its trigger phrase + the
+  service it fronts, and **flags roster-shaped surfaces with no floor** (hero capabilities, CT relics),
+  makes the next member obvious + the family's coverage legible. Decided-lane; small. → relates
+  `services/btd6_context_service.py::_BTD6_LIST_BUILDERS` · `services/btd6_capability_service.py`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
   round-range cash comparison requires a round token before *each* range's first anchor (to keep

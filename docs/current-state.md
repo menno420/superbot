@@ -219,7 +219,24 @@ Source code and merged PRs win over anything written here.
   existing audited `help_overlay_mutation` seam + Discord OAuth — designed in
   [`planning/dashboard-live-editor-plan.md`](planning/dashboard-live-editor-plan.md) (L0–L3), built next.
   Authoritative record + handoff: [`planning/developer-dashboard-plan.md`](planning/developer-dashboard-plan.md).
-
+- **#975 (2026-06-16, AI §7.6 — deterministic BTD6 property/capability roster floors)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT lane, "a *new* AI §7 workflow family beyond §7.5"). The
+  §7.5 *comparison* family is COMPLETE (#946/#950/#955/#962); this opens the next family — the
+  **property/capability roster** (a *list-by-property*, not a rank/diff), the same BUG-0009
+  wrong-assembly class on the roster side. **Two members shipped:** (1) `deterministic_capability_roster_reply`
+  fronts the authoritative `btd6_capability_service` ("which towers can pop lead / detect camo / pop
+  black-white-purple?") — base 0-0-0 scope by default, an explicit "with upgrades" signal flips to the
+  earliest-upgrade roster, a `paragon` cue answers the per-paragon camo roster; (2)
+  `deterministic_bloon_roster_reply` fronts the committed `bloons.json` fields ("what are all the
+  MOAB-class bloons", "which bloons are immune to sharp/cold/explosion?") via `category` + `immune_to`,
+  modifier pseudo-bloons excluded — the bloon side the sibling `deterministic_roster_reply`
+  (heroes/towers/paragons/maps) never covered. Both ride the shared `_BTD6_LIST_BUILDERS` seam (no
+  integration change), are read-only deterministic (Q-0048, no prod-check), and are held to the
+  `test_btd6_floor_builder_exclusivity.py` one-fires invariant (corpus extended for both). `check_quality
+  --full` green (10184, +40 tests); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_capability_roster.py` + `tests/unit/services/test_btd6_bloon_roster.py`.
+  The next AI §7 step is a further §7.6 roster member (e.g. hero/relic property lists) or a *new* family
+  beyond rosters+comparison (plan-first).
 - **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
   Adds the **paragon** member — the last unbuilt §7.5 multi-entity comparison member (the
@@ -454,33 +471,7 @@ Source code and merged PRs win over anything written here.
   [`respec-numbers-2026-06-15.md`](planning/respec-numbers-2026-06-15.md) /
   [`titles-numbers-2026-06-15.md`](planning/titles-numbers-2026-06-15.md). `check_quality --full`
   green (9808); arch 0.
-- **#910 (2026-06-15, mining Slice C — the Home structure: character-card backdrop)** — the next
-  mining-structures slice (the plan's last startable structure), built on a fresh resume now that
-  **#905 (Forge)** shipped the generic `mining_structures` foundation; zero open PRs at start (no
-  collision). A **built** Home (coin + material sink) that personalizes the Character card —
-  **art-light v1**: Home level selects a backdrop colour (Cozy Cabin → Stone Keep → Grand Hall),
-  **no sprites**, so unrelated to the owner-blocked V-16 phase-2 PNG pack. **Fully additive** — Home
-  level 0 renders **byte-identical** (proven by test). Generalized #905's forge-specific
-  `build_structure` off a per-structure registry in `utils/mining/structures.py`
-  (`build_cost`/`level_name`/`max_level`/`display_name`; forge helpers delegate, byte-identical);
-  `utils/character_render.py` gained `CharacterSpec.backdrop` + `home_backdrop(level)` wired through
-  `render_character_for(..., home_level=)` at both card render sites; UI =
-  `views/mining/home_panel.py` + a `🏠 Home` hub button + `!home`. Numbers pinned in
-  `docs/planning/home-numbers-2026-06-15.md`. `check_quality --full` green (9782); arch 0.
-- **#906 (2026-06-15, Railway log-triage analyzer — Slice 4, Q-0130)** — the band-#900 queue's
-  reserved autonomous-loop slot, taken because the work order was empty/stale and the mining lane
-  it pointed at was **in flight as #905** (Forge, parallel session — not duplicated). The
-  `superbot-log-triage` skill's error-scan + crash-loop steps used to ask the model to *eyeball*
-  raw logs and group by hand — the fragile "model assembles the answer" class. New
-  **`scripts/hermes/log_triage.py`** (stdlib, read-only, **content-free**) owns those steps
-  deterministically: parses the `railway_logs.py` text format (or stdin/file), groups errors by
-  signature (traceback · login/connection · database · command/interaction · generic), **redacts**
-  every example (snowflakes/tokens/emails/urls/ips → placeholders — no log bodies/PII leak),
-  detects restart loops, and prints a one-line production status + the report blocks the skill
-  pastes verbatim. Skill doc rewired (steps 2–3 → pipe the analyzer) + the `log-triage/SKILL.md`
-  artifact regenerated. 18 tests; `check_quality --full` green (9737); arch 0. **Slot 4 done; the
-  read-only Railway *token* is still the only thing gating live-data triage (owner-provisioned).**
-- **Older merges (#898 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #950 AI §7.5 difficulty-comparison session (2026-06-16) added its entry and archived the oldest live one — #897 mining Vault v2 — to hold the ratchet at 20. The #943 diagnostic-mixin session (2026-06-16) added the #942 ledger-reconciliation entry — a reconciliation PR doesn't add its own entry — and archived the oldest live one, the #898+#892+#889 docs-hygiene group, to hold the ratchet at 20. The #932–#939 ledger reconciliation (2026-06-16) added six live entries — #939, #936, #935, #934, #933, #932 — and archived the eight oldest to hold the ratchet at 20: #884, the #878+#879+#881 P1-1 eval/smoke arc, the #870+#869+#868 Hermes operating-layer arc, #867, #866, #865, #864, #863. The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#898 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #975 AI §7.6 roster-floor session (2026-06-16) added its entry and archived the two oldest live ones — #910 mining Home + #906 Railway log-triage — to hold the ratchet at 20. The #950 AI §7.5 difficulty-comparison session (2026-06-16) added its entry and archived the oldest live one — #897 mining Vault v2 — to hold the ratchet at 20. The #943 diagnostic-mixin session (2026-06-16) added the #942 ledger-reconciliation entry — a reconciliation PR doesn't add its own entry — and archived the oldest live one, the #898+#892+#889 docs-hygiene group, to hold the ratchet at 20. The #932–#939 ledger reconciliation (2026-06-16) added six live entries — #939, #936, #935, #934, #933, #932 — and archived the eight oldest to hold the ratchet at 20: #884, the #878+#879+#881 P1-1 eval/smoke arc, the #870+#869+#868 Hermes operating-layer arc, #867, #866, #865, #864, #863. The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

@@ -612,6 +612,32 @@ This pattern is valuable for:
   floor requires ≥2 ranges) and the floor short-circuits before the workflow ever runs);
 - future game/stat/economy functions.
 
+### 7.6 Property/capability roster floors (new family beyond §7.5)
+
+The §7.5 *comparison* family (above) is COMPLETE. The next deterministic-floor
+family is the **property/capability roster** — the same BUG-0009 wrong-assembly
+class, but a *list-by-property* rather than a *rank/diff*: "which towers can pop
+lead / detect camo?", "what are all the MOAB-class bloons / which bloons are
+immune to sharp?". Every entity name is grounded, so the model can silently
+mis-*roster* (include/exclude the wrong entity, miscount a tier) and the
+value-only faithfulness guard never catches it. The authoritative answer is
+already derived deterministically from the committed stats/data, so the floor
+OWNS the labelled list and rides the same `_BTD6_LIST_BUILDERS` seam:
+
+- tower capability roster — **SHIPPED #975** (`deterministic_capability_roster_reply`
+  fronts `services.btd6_capability_service.towers_with_capability` /
+  `paragons_with_capability`: camo detection + lead/black/white/purple popping;
+  base 0-0-0 scope by default, an explicit "with upgrades" signal flips to the
+  earliest-upgrade roster, a `paragon` cue answers the per-paragon camo roster);
+- bloon roster — **SHIPPED #975** (`deterministic_bloon_roster_reply` fronts the
+  committed `bloons.json` fields: MOAB-class enumeration via `category` + immunity
+  roster via `immune_to`, modifier pseudo-bloons excluded; the sibling
+  `deterministic_roster_reply` covers heroes/towers/paragons/maps but not bloons);
+- future property rosters (e.g. hero/relic property lists) extend the same seam.
+
+All members are read-only deterministic (Q-0048), pinned by the
+`test_btd6_floor_builder_exclusivity.py` one-fires invariant.
+
 ## 8. Provider-neutral request changes
 
 ### 8.1 Extend `AIRequest`
