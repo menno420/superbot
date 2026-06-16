@@ -26,8 +26,10 @@ Current broad captures:
   filesystem reorg. Cross-checked against live source: the *direction is right* but the drift diagnosis
   is **overstated** (only 3 real stale counts remained — fixed in PR #957) and the flagship "per-file
   dashboard" is **~80% already shipped** as `context_map.py`. Genuinely-new signal: an **extension-type
-  taxonomy crosswalk** (43 ext ↔ 32 subsystems; the strongest, missing) → structure into a plan; a
-  *thin* unified atlas + a root-README question → **Q-0151** (discuss); count-cite guard → fold into
+  taxonomy crosswalk** (43 ext ↔ 33 subsystems, 10 non-1:1) → **✅ SHIPPED PR #958** (overlay +
+  `scripts/extension_crosswalk.py` → `docs/architecture/extension-taxonomy-crosswalk.md`,
+  [plan](../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md)); a *thin* unified atlas (→ PR 2)
+  + a root-README question → **Q-0151** (answered); count-cite guard → fold into
   `readiness-maps-cite-regen-command`. → relates `scripts/{context_map,wiring_map,review_scope}.py` ·
   `utils/subsystem_registry.py` · `architecture_rules/layers.yaml`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —

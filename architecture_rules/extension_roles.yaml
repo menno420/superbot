@@ -1,0 +1,193 @@
+# Extension role overlay — the curated editorial classification of every loaded
+# Discord extension (cog) in disbot/config.py::INITIAL_EXTENSIONS.
+#
+# WHY THIS FILE EXISTS (Q-0151c, owner-approved 2026-06-16; born from the
+# architecture-atlas review — docs/ideas/architecture-atlas-and-structure-review-2026-06-16.md):
+# SuperBot loads 43 extensions but the subsystem registry has 33 identities. The
+# 10 extensions with no 1:1 registry key (bootstrap, maintenance loops, the BTD6
+# sub-surfaces, the Hermes adapter) are NOT a gap — they are a *classification*
+# that lived nowhere. This overlay is that classification, kept as editorial data
+# *outside* the runtime registry on purpose: a role like "bootstrap" / "adapter"
+# is a human review label, not runtime metadata, so it must not bloat the
+# deep-frozen registry. `scripts/extension_crosswalk.py` joins this with the live
+# manifest + registry to emit docs/extension-taxonomy-crosswalk.md and to enforce
+# (via --check / the test) that **every** extension is classified — so the gap can
+# never silently re-grow.
+#
+# RELIABILITY / PROVENANCE (Q-0105): added 2026-06-16. The *source* facts
+# (which extensions exist, which subsystems are registered) are derived live by
+# the generator and are self-correcting; only the `role` + `note` columns here are
+# editorial and may need an owner tweak. This overlay + its generator are
+# disposable convenience tooling — if it proves more nuisance than help across a
+# few sessions, delete the file, the script, and the test together; nothing in the
+# bot runtime depends on it.
+#
+# HOW TO EDIT: change a role/note/backs here, then run
+#   python3.10 scripts/extension_crosswalk.py --write
+# and commit both this file and the regenerated doc. A new extension added to
+# INITIAL_EXTENSIONS with no entry here fails `--check` (and the test) until
+# classified.
+
+# The role vocabulary. Each extension below must use exactly one of these keys.
+roles:
+  product_subsystem:
+    description: A feature vertical with its own owner, views, and tests.
+  hub:
+    description: A routing/composition layer that surfaces other subsystems; owns
+      little or no domain state of its own.
+  shared_platform:
+    description: A broad cross-cutting capability with high blast radius (admin,
+      settings, AI, diagnostics, help, utility).
+  maintenance:
+    description: A background-loop cog (scheduled work) with no subsystem identity;
+      runtime/ops, not a product surface.
+  operational_adapter:
+    description: A bridge to a control plane or external operation (not an in-guild
+      product feature).
+  bootstrap:
+    description: Load-order / lifecycle-critical admission or setup; sensitive to
+      INITIAL_EXTENSIONS ordering.
+  specialized_surface:
+    description: One of several surfaces within a single domain vertical (e.g. the
+      BTD6 sub-cogs) — backs a registered subsystem rather than being its own.
+  lab:
+    description: A development / UX laboratory surface; not a production product
+      surface.
+
+# Every extension in INITIAL_EXTENSIONS, keyed by its short name
+# (module "cogs.<name>_cog" -> "<name>"). `backs` names the registered subsystem
+# this surface belongs to when the extension is NOT itself a 1:1 registry key
+# (omit/empty otherwise). `note` is a one-line human label.
+extensions:
+  bootstrap_access:
+    role: bootstrap
+    note: Installs the prefix+slash command-access guard; MUST load first. Platform
+      admission, not a product subsystem.
+  admin:
+    role: shared_platform
+    note: Cog management, server stats, diagnostics entry; administrator floor.
+  help:
+    role: shared_platform
+    note: Help catalogue/projection surface; every subsystem's Help route composes it.
+  role:
+    role: product_subsystem
+  moderation:
+    role: product_subsystem
+  automod:
+    role: product_subsystem
+    note: Automod rules engine (Q-0108).
+  xp:
+    role: product_subsystem
+  blackjack:
+    role: product_subsystem
+    note: Game.
+  rps_tournament:
+    role: product_subsystem
+    note: Game (tournament orchestration).
+  utility:
+    role: shared_platform
+    note: General utility commands.
+  cleanup:
+    role: product_subsystem
+    note: Message-cleanup policy.
+  channel:
+    role: product_subsystem
+    note: Channel management (server-management area).
+  inventory:
+    role: product_subsystem
+  economy:
+    role: product_subsystem
+  counting:
+    role: product_subsystem
+    note: Counting game.
+  deathmatch:
+    role: product_subsystem
+    note: Game (1v1 duels).
+  proof_channel:
+    role: product_subsystem
+  mining:
+    role: product_subsystem
+    note: Mining character platform (large vertical).
+  diagnostic:
+    role: shared_platform
+    note: "`!platform` diagnostics; broad cross-subsystem read-model surface."
+  health_maintenance:
+    role: maintenance
+    backs: diagnostic
+    note: Scheduled health-findings retention loop; no subsystem identity.
+  ai:
+    role: shared_platform
+    note: AI orchestration / answerability; cross-cutting.
+  media_maintenance:
+    role: maintenance
+    note: Scheduled media/YouTube cache purge loop; no subsystem identity.
+  btd6:
+    role: product_subsystem
+    note: BTD6 core data / answerability vertical.
+  btd6_reference:
+    role: specialized_surface
+    backs: btd6
+    note: BTD6 reference lookups.
+  btd6_events:
+    role: specialized_surface
+    backs: btd6
+    note: BTD6 live-events surface.
+  btd6_strategy:
+    role: specialized_surface
+    backs: btd6
+  paragon:
+    role: specialized_surface
+    backs: btd6
+    note: BTD6 paragon grounding surface.
+  btd6_ops:
+    role: specialized_surface
+    backs: btd6
+    note: BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical.
+  chain:
+    role: product_subsystem
+    note: Command-chain subsystem.
+  general:
+    role: product_subsystem
+    note: General-content commands.
+  four_twenty:
+    role: product_subsystem
+    note: Novelty / community feature.
+  leaderboard:
+    role: product_subsystem
+    note: Cross-subsystem leaderboards (reads XP/games).
+  settings:
+    role: shared_platform
+    note: Settings hub; cross-cutting config surface.
+  logging:
+    role: product_subsystem
+    note: Server-logging subsystem.
+  games:
+    role: hub
+    note: Games hub (routes blackjack/deathmatch/counting/rps).
+  community:
+    role: hub
+    note: Community hub.
+  community_spotlight:
+    role: product_subsystem
+    note: Community Spotlight (community-hub child; registered subsystem).
+  welcome:
+    role: product_subsystem
+    note: Welcome service (join embeds + optional PIL cards).
+  counters:
+    role: product_subsystem
+    note: Dynamic server counters.
+  setup:
+    role: bootstrap
+    backs: server_management
+    note: Guided setup wizard; lifecycle-critical, load-order sensitive.
+  server_management:
+    role: hub
+    note: Routing-only hub (moderation/channels/roles/cleanup/setup); holds no
+      capability of its own.
+  hermes:
+    role: operational_adapter
+    note: Bridge to the Hermes control plane / external operation.
+  ux_lab:
+    role: lab
+    note: Zero-write UX pattern gallery (admin-gated); design vocabulary, not a
+      product surface.
