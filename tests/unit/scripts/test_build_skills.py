@@ -50,13 +50,53 @@ def test_required_frontmatter_present(path: Path, content: str) -> None:
     assert len(body) > 100, f"{path.name}: prompt body looks empty"
 
 
-def test_repo_health_self_schedules() -> None:
+def test_morning_briefing_self_schedules() -> None:
     rendered = build_skills.build_all()
-    health = next(p for p in rendered if p.parent.name == "repo-health")
-    content = rendered[health]
+    briefing = next(p for p in rendered if p.parent.name == "morning-briefing")
+    content = rendered[briefing]
     assert "blueprint:" in content
     assert "schedule:" in content
     assert "deliver: origin" in content
+
+
+def test_idea_spotlight_self_schedules() -> None:
+    rendered = build_skills.build_all()
+    spotlight = next(p for p in rendered if p.parent.name == "idea-spotlight")
+    content = rendered[spotlight]
+    assert "blueprint:" in content and "schedule:" in content
+
+
+def test_nested_fences_do_not_truncate_prompt() -> None:
+    """An indented nested fence in a prompt body must not close the outer fence.
+
+    Guards the skill-author truncation bug: its STEP 3 shows an example skill
+    (with its own ``## Prompt`` ``` fences), which used to cut extraction short.
+    """
+    sample = [
+        "# Skill: `superbot-x`",
+        "**Purpose:** test.",
+        "## Prompt",
+        "```",
+        "do a thing",
+        "      ```",  # indented nested example fence — must NOT close the outer one
+        "      nested example body",
+        "      ```",
+        "do another thing after the nested block",
+        "```",
+        "## Notes",
+    ]
+    body = build_skills._extract_prompt(sample)
+    assert "do a thing" in body
+    assert "nested example body" in body
+    assert "do another thing after the nested block" in body  # survived the nested fence
+
+
+def test_skill_author_keeps_all_steps() -> None:
+    """skill-author's generated prompt must include its later steps (regression)."""
+    rendered = build_skills.build_all()
+    author = next(p for p in rendered if p.parent.name == "skill-author")
+    content = rendered[author]
+    assert "STEP 4" in content and "STEP 5" in content
 
 
 def test_committed_artifacts_are_fresh() -> None:

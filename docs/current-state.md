@@ -205,6 +205,25 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **paragon** member — the last unbuilt §7.5 multi-entity comparison member (the
+  paragon-entity sibling of the #946/#950 tower cost builders): "is Glaive Dominus or Ascended Shadow
+  cheaper?" ranks the **base tier-6 build price** of **two or more** paragons (BUG-0009 wrong-assembly
+  class). `btd6_data_service.compare_paragon_costs(names, *, difficulty="medium")` resolves +
+  difficulty-prices each paragon via `paragon_math.base_price` over the committed `BASE_PRICES_MEDIUM`,
+  dedups on id, ranks ascending, fails closed (<2 distinct); a new public
+  `paragon_math.paragon_surfaces()` exposes the resolver surfaces for sentence scanning.
+  `btd6_context_service.deterministic_paragon_cost_comparison_reply` fires on an explicit `paragon`
+  token + a cost-compare cue + ≥2 resolved paragons, registered in `_BTD6_LIST_BUILDERS` **before**
+  the tower cost builders, which now defer on the paragon cue so a "dart/ninja paragon" question is
+  never priced as the base tower (exactly-one-fires invariant extended). Ships under Q-0048 (read-only
+  deterministic floor, no prod-check). `check_quality --full` green (10051); arch 0; mypy clean.
+  Tests: `tests/unit/services/test_btd6_paragon_cost_comparison.py` + the §7.5 exclusivity corpus
+  entry. **§7.5 multi-entity comparison family is now COMPLETE — all four members shipped (tower-cost
+  #946 · difficulty-cost #950 · round-range cash #955 · paragon base-cost #962).** The next AI §7
+  step is a *new* workflow family beyond §7.5 (plan-first); a paragon *degree-target* resource
+  comparison is captured as a session idea (needs design — the solver's "cash" axis ≠ real spend).
 - **#955 (2026-06-16, AI §7.5 — deterministic BTD6 round-range cash comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
   Adds the **round-range** member of the §7.5 multi-entity comparison floor (the income sibling of

@@ -60,6 +60,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "which earns more cash, rounds 20-40 or rounds 40-60?",
         "deterministic_round_range_comparison_reply",
     ),
+    (
+        "is the glaive dominus or ascended shadow paragon cheaper",
+        "deterministic_paragon_cost_comparison_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
