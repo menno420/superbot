@@ -53,6 +53,17 @@ def _load_scan_env_usage() -> Callable[..., list[dict]]:
     return module.scan_env_usage
 
 
+def _load_scan_commands() -> Callable[..., list[dict]]:
+    """Load ``scan_commands`` from its sibling script (scripts/ isn't a package)."""
+    script = Path(__file__).resolve().parent / "scan_commands.py"
+    spec = importlib.util.spec_from_file_location("_scan_commands_seam", script)
+    if spec is None or spec.loader is None:  # pragma: no cover - import wiring
+        raise ImportError("cannot load scan_commands.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.scan_commands
+
+
 # Catalogue fields surfaced from the registry (all str/list literals — the
 # non-literal ``color`` field is intentionally skipped).
 _CATALOGUE_FIELDS = (
@@ -283,6 +294,11 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         if scan_root.is_dir()
         else []
     )
+    cogs = (
+        _load_scan_commands()(repo_root=repo_root)
+        if (repo_root / "disbot" / "cogs").is_dir()
+        else []
+    )
 
     return {
         "meta": {
@@ -295,6 +311,8 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "bugs": len(bugs),
                 "updates": len(updates),
                 "env_vars": len(env_usage),
+                "cogs": len(cogs),
+                "commands": sum(len(c["commands"]) for c in cogs),
             },
         },
         "catalogue": catalogue,
@@ -302,6 +320,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "bugs": bugs,
         "updates": updates,
         "env_usage": env_usage,
+        "cogs": cogs,
     }
 
 

@@ -12,6 +12,7 @@ and the secrets model live in
 |---|---|
 | `/` | Showcase landing — counts + recent updates |
 | `/functions` | Bot-function catalogue (from the subsystem registry) |
+| `/commands` | **Cog & command explorer** — every cog's commands, each badged prefix/slash and whether it's button-backed (a panel action or opens a view); live search + filters (`scripts/scan_commands.py`). |
 | `/ideas` | Idea backlog (from `docs/ideas/`) |
 | `/bugs` | Bug board (from `docs/health/bug-book.md`) + a "report a bug" CTA |
 | `/updates` | Updates feed (from `.sessions/` logs) |
@@ -22,8 +23,8 @@ and the secrets model live in
 
 This app **never imports `disbot/`.** It reads only `dashboard/data/dashboard.json`,
 produced by `scripts/export_dashboard_data.py` (pure stdlib — which calls the equally
-pure-stdlib `scripts/scan_env_usage.py` for the env map). The bot and its Railway service
-are completely independent of this one.
+pure-stdlib `scripts/scan_env_usage.py` for the env map and `scripts/scan_commands.py` for
+the command explorer). The bot and its Railway service are completely independent of this one.
 
 ## Secrets safety (the `/env` map)
 

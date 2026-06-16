@@ -33,7 +33,7 @@ def client():
 
 
 @pytest.mark.parametrize(
-    "path", ["/", "/functions", "/ideas", "/bugs", "/updates", "/env"]
+    "path", ["/", "/functions", "/commands", "/ideas", "/bugs", "/updates", "/env"]
 )
 def test_pages_render(client, path):
     resp = client.get(path)
