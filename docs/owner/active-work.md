@@ -114,4 +114,9 @@ living ledger (`docs/current-state.md`).
   archive · `apply_context_fixes.sh` slim) · `docs/operations/hermes-*` + `scripts/hermes/` ·
   2026-06-15 · **PR (open, born-red per Q-0133)**
 
+- `claude/hopeful-allen-1darl5` · Image moderation (Q-0108) — the safety-community family's
+  last buildable slice (OpenAI omni-moderation, off by default, fail-open) ·
+  `services/image_moderation_*` + `core/runtime/ai/providers/openai_moderation.py` +
+  `cogs/image_moderation/` · 2026-06-16 · **PR (open, born-red per Q-0133)**
+
 _(move claims here with their PR # as they close, then prune older entries)_
