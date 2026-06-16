@@ -86,10 +86,11 @@ hook can regenerate it; later phases add live GitHub/Railway API reads and DB wr
 
 1. **No second vault.** Secrets already live in Railway (encrypted, read by the deploy).
    The dashboard is a *UI over Railway's env vars* via its API — no second copy to breach.
-2. **Usage map is static analysis.** A `scripts/scan_env_usage.py` maps each env var →
-   every file/line that reads it → its subsystem + required/optional. ~36 vars across
-   ~20 modules, mostly centralised in `disbot/config.py`. This part is read-only and
-   safe, so it ships first within Phase 3.
+2. **Usage map is static analysis. ✅ SHIPPED.** `scripts/scan_env_usage.py` (stdlib, AST)
+   maps each env var → every file/line that reads it → its layer + required/optional (34
+   vars detected, mostly centralised in `disbot/config.py`). Read-only and safe (names +
+   locations only, never a value), so it shipped first within Phase 3: surfaced on the
+   dashboard `/env` page, embedded in `dashboard/data/dashboard.json` by the exporter.
 3. **Owner-auth only, masked by default, never logged or committed.** The public zone
    has zero secret access.
 
@@ -100,8 +101,9 @@ hook can regenerate it; later phases add live GitHub/Railway API reads and DB wr
 * **Phase 2 — interactivity:** owner auth · personal checklist (own DB) · public
   bug-report form → stored in the dashboard **and** mirrored to a GitHub issue
   (spam-protected).
-* **Phase 3 — env/secrets:** the usage map (read-only, safe) first, then Railway-backed
-  value management behind login (masked, audited).
+* **Phase 3 — env/secrets:** the usage map (read-only, safe) ✅ **shipped** (`/env` page +
+  `scripts/scan_env_usage.py`); next, Railway-backed value management behind login (masked,
+  audited).
 * **Phase 4 — multi-AI control board:** pipeline-stage view · routine trigger buttons
   (`/fire`) · agent activity feed (sessions + PRs).
 

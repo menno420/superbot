@@ -32,6 +32,7 @@ _EMPTY: dict[str, Any] = {
     "ideas": [],
     "bugs": [],
     "updates": [],
+    "env_usage": [],
 }
 
 app = FastAPI(title="SuperBot Dashboard", docs_url=None, redoc_url=None)
@@ -104,4 +105,14 @@ def updates(request: Request):
         request,
         "updates.html",
         {"data": load_data(), "page": "updates"},
+    )
+
+
+@app.get("/env", response_class=HTMLResponse)
+def env(request: Request):
+    """Read-only env-var usage map (names + locations only — never values)."""
+    return templates.TemplateResponse(
+        request,
+        "env.html",
+        {"data": load_data(), "page": "env"},
     )

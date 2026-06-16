@@ -102,10 +102,22 @@ def test_parse_ideas_reads_title_status_date(mod, tmp_path):
 
 def test_build_data_against_real_repo_is_well_formed(mod):
     data = mod.build_data()
-    assert set(data) >= {"meta", "catalogue", "ideas", "bugs", "updates"}
+    assert set(data) >= {"meta", "catalogue", "ideas", "bugs", "updates", "env_usage"}
     assert data["meta"]["counts"]["functions"] == len(data["catalogue"])
     assert len(data["catalogue"]) >= 10
     keys = {e["key"] for e in data["catalogue"]}
     assert "admin" in keys
     for entry in data["catalogue"]:
         assert isinstance(entry["key"], str)
+
+
+def test_build_data_includes_env_usage_section(mod):
+    data = mod.build_data()
+    env_usage = data["env_usage"]
+    assert data["meta"]["counts"]["env_vars"] == len(env_usage)
+    assert len(env_usage) >= 20
+    names = {r["name"] for r in env_usage}
+    assert "DATABASE_URL" in names
+    # The section is the scanner's shape (names + locations only, no values).
+    for record in env_usage:
+        assert set(record) == {"name", "required", "usage_count", "layers", "usages"}
