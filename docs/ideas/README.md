@@ -20,6 +20,16 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`btd6-shorthand-corpus-eval-2026-06-16.md`](./btd6-shorthand-corpus-eval-2026-06-16.md) —
+  **late discovery from the BUG-0015 session (2026-06-16, PR #963):** a single **corpus regression
+  test** holding the canonical community-shorthand vocabulary (`despo`/`impop`/`r53`/`420 farm`/
+  `d67`/…) and asserting each routes to `AITask.BTD6_ANSWER` — the **class guard** for the recurring
+  "shorthand falls to the unguarded general path → model freelances" bug (BUG-0001/0003/0004/0008/
+  0015), which today has only scattered per-bug tests. Small/safe/decided-lane → a strong
+  grooming-pass execute-now candidate. Also records a verified *minor* hero-per-level-stats sibling
+  finding (heroes route fine + descriptions already ground; only non-headline-level exact stats are
+  the gap, low priority). → relates `services/ai_task_router.py` · `utils/btd6/keywords.py`.
+
 - [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
   **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
   deployed as a second Railway service — checklist, update tracker, bot-function catalogue,
@@ -40,13 +50,18 @@ Current broad captures:
   integration. → relates `scripts/scan_env_usage.py` · `dashboard/`.
 
 - [`dashboard-registry-coverage-check-2026-06-16.md`](./dashboard-registry-coverage-check-2026-06-16.md) —
-  **session idea (2026-06-16, Q-0089, from the `/commands` management surface):** a stdlib coverage
-  self-check that flags scanned cogs whose `subsystem` key doesn't resolve to a registered subsystem
-  (split *expected* allow-list vs *unexpected* drift), as a `--check` mode on the exporter or a unit
-  test — so a cog rename / new acronym cog / registry-key change that breaks the dashboard's cog→
-  registry join **fails a check** instead of silently degrading that cog's card + routing state.
-  Decided-lane, small; execute when the dashboard lane next has capacity. → relates
-  `scripts/scan_commands.py` · `scripts/export_dashboard_data.py` · `dashboard/`.
+  **SHIPPED 2026-06-16 (PR #990)**, broader than sketched: `scripts/check_dashboard_data.py` validates
+  the exported `dashboard.json` — cog→subsystem resolution (with a curated allow-list) + count
+  integrity + required fields — and a unit test validates the freshly-built export, so a new
+  unregistered cog / broken join / count drift **fails CI** instead of silently degrading a page.
+  → `scripts/check_dashboard_data.py` · `tests/unit/scripts/test_check_dashboard_data.py`.
+- [`dashboard-subcog-parent-subsystem-2026-06-16.md`](./dashboard-subcog-parent-subsystem-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the integrity guard #990):** the guard *allow-lists* the
+  cogs that don't resolve to a registry key (BTD6 sub-cogs · Paragon · RPS · Setup), but several of
+  them genuinely *belong* to a parent subsystem (`BTD6EventsCog`…→`btd6`) — so on the dashboard they
+  render with a generic 🧩 + no routing key. A small cog→parent-subsystem map in `scan_commands` would
+  let sub-cogs inherit their parent's registry identity (emoji/name/routing), shrinking the allow-list
+  to the truly-unregistered few. → relates `scripts/scan_commands.py` · `dashboard/`.
 - [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
   **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
   repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one

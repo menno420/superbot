@@ -29,6 +29,9 @@ living ledger (`docs/current-state.md`).
   stale plan handoff (#988/#989 shipped, Q-0160 decided), fold dashboard PRs into the ledger, clear
   stale claims · `docs/planning/dashboard-live-editor-plan.md` · `docs/current-state.md` ·
   `docs/owner/active-work.md` · 2026-06-16
+- `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
+  guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
+  fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
