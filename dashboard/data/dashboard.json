@@ -1,0 +1,1792 @@
+{
+  "meta": {
+    "generated_at": "2026-06-16T15:24:17Z",
+    "counts": {
+      "functions": 33,
+      "ideas": 70,
+      "bugs": 15,
+      "updates": 60
+    }
+  },
+  "catalogue": [
+    {
+      "key": "ai",
+      "display_name": "AI Platform",
+      "description": "Read-only AI gateway diagnostics: provider state, feature flags, task routing, and request/failure counters. Does not own AI provider logic — that lives in core/runtime/ai/.",
+      "emoji": "🤖",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "ai",
+        "platform",
+        "diagnostics",
+        "providers"
+      ],
+      "entry_points": [
+        "ai",
+        "aimenu"
+      ],
+      "related_subsystems": [
+        "diagnostic",
+        "admin"
+      ],
+      "capabilities": [
+        "ai.platform.view",
+        "ai.diagnostics.view",
+        "ai.provider.view",
+        "ai.routing.view",
+        "ai.settings.configure",
+        "ai.settings.view"
+      ]
+    },
+    {
+      "key": "admin",
+      "display_name": "Administration",
+      "description": "Cog management, server stats, diagnostics",
+      "emoji": "⚙️",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "admin",
+        "cogs",
+        "management",
+        "diagnostics"
+      ],
+      "entry_points": [
+        "adminmenu"
+      ],
+      "related_subsystems": [
+        "diagnostic"
+      ],
+      "capabilities": [
+        "admin.cog.load",
+        "admin.cog.unload",
+        "admin.cog.reload",
+        "admin.server.stats"
+      ]
+    },
+    {
+      "key": "diagnostic",
+      "display_name": "Diagnostics",
+      "description": "Bot health, latency, and system diagnostics",
+      "emoji": "🩺",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "diagnostics",
+        "health",
+        "latency",
+        "debug"
+      ],
+      "entry_points": [
+        "diagnostics",
+        "ping",
+        "platform"
+      ],
+      "related_subsystems": [
+        "admin"
+      ],
+      "capabilities": [
+        "diagnostic.health.view",
+        "diagnostic.latency.check"
+      ]
+    },
+    {
+      "key": "logging",
+      "display_name": "Server Logging",
+      "description": "Per-guild moderation/cleanup event logging — channel selection, auto-create, and audit (S7)",
+      "emoji": "📝",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "logging",
+        "audit",
+        "moderation",
+        "cleanup"
+      ],
+      "entry_points": [
+        "logging"
+      ],
+      "related_subsystems": [
+        "moderation",
+        "cleanup",
+        "admin"
+      ],
+      "capabilities": [
+        "logging.settings.configure",
+        "logging.channel.bind",
+        "logging.channel.create"
+      ]
+    },
+    {
+      "key": "server_management",
+      "display_name": "Server Management",
+      "description": "Unified hub for moderation, channels, roles, cleanup, setup",
+      "emoji": "🧭",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "admin",
+        "hub",
+        "navigation",
+        "operations"
+      ],
+      "entry_points": [
+        "servermanagement"
+      ],
+      "related_subsystems": [
+        "moderation",
+        "cleanup"
+      ],
+      "capabilities": []
+    },
+    {
+      "key": "settings",
+      "display_name": "Settings Manager",
+      "description": "Read-only browsing of platform settings, bindings, and audit history (S5)",
+      "emoji": "⚙️",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "settings",
+        "configuration",
+        "audit",
+        "platform"
+      ],
+      "entry_points": [
+        "settings"
+      ],
+      "related_subsystems": [
+        "admin",
+        "diagnostic"
+      ],
+      "capabilities": [
+        "settings.manager.view"
+      ]
+    },
+    {
+      "key": "ux_lab",
+      "display_name": "UX Lab",
+      "description": "Interface gallery — browse UI patterns, all fake & safe",
+      "emoji": "🧪",
+      "visibility_tier": "administrator",
+      "category": "admin",
+      "tags": [
+        "admin",
+        "design",
+        "gallery",
+        "patterns"
+      ],
+      "entry_points": [
+        "uxlab"
+      ],
+      "related_subsystems": [],
+      "capabilities": []
+    },
+    {
+      "key": "community",
+      "display_name": "Community",
+      "description": "Progression, roles, and community activities",
+      "emoji": "🌱",
+      "visibility_tier": "user",
+      "category": "community",
+      "tags": [
+        "community",
+        "hub",
+        "progression"
+      ],
+      "entry_points": [
+        "community"
+      ],
+      "related_subsystems": [
+        "xp",
+        "role",
+        "counting",
+        "chain",
+        "leaderboard"
+      ],
+      "capabilities": [
+        "community.hub.view"
+      ]
+    },
+    {
+      "key": "community_spotlight",
+      "display_name": "Community Spotlight",
+      "description": "Live server activity dashboard — leaders, level-ups, game stats",
+      "emoji": "🌟",
+      "visibility_tier": "user",
+      "category": "community",
+      "tags": [
+        "spotlight",
+        "activity",
+        "leaderboard",
+        "community"
+      ],
+      "entry_points": [
+        "spotlight"
+      ],
+      "related_subsystems": [
+        "xp",
+        "economy",
+        "leaderboard"
+      ],
+      "capabilities": [
+        "community_spotlight.dashboard.view"
+      ]
+    },
+    {
+      "key": "counters",
+      "display_name": "Server Counters",
+      "description": "Live member-count channels (total · humans · bots)",
+      "emoji": "📊",
+      "visibility_tier": "administrator",
+      "category": "community",
+      "tags": [
+        "counters",
+        "stats",
+        "members",
+        "community"
+      ],
+      "entry_points": [
+        "counters"
+      ],
+      "related_subsystems": [
+        "community_spotlight",
+        "welcome"
+      ],
+      "capabilities": [
+        "counters.settings.configure"
+      ]
+    },
+    {
+      "key": "welcome",
+      "display_name": "Welcome",
+      "description": "Member greetings, farewells, and an optional entry role",
+      "emoji": "👋",
+      "visibility_tier": "administrator",
+      "category": "community",
+      "tags": [
+        "welcome",
+        "greeting",
+        "onboarding",
+        "community"
+      ],
+      "entry_points": [
+        "welcome"
+      ],
+      "related_subsystems": [
+        "role",
+        "logging"
+      ],
+      "capabilities": [
+        "welcome.settings.configure"
+      ]
+    },
+    {
+      "key": "economy",
+      "display_name": "Economy",
+      "description": "Daily coins, work, shop, balance",
+      "emoji": "💰",
+      "visibility_tier": "user",
+      "category": "economy",
+      "tags": [
+        "economy",
+        "currency",
+        "coins",
+        "progression"
+      ],
+      "entry_points": [
+        "economymenu",
+        "daily",
+        "work",
+        "balance"
+      ],
+      "related_subsystems": [
+        "inventory",
+        "mining"
+      ],
+      "capabilities": [
+        "economy.currency.view",
+        "economy.currency.earn",
+        "economy.shop.browse",
+        "economy.shop.buy",
+        "economy.settings.configure"
+      ]
+    },
+    {
+      "key": "inventory",
+      "display_name": "Inventory",
+      "description": "Item management and crafting",
+      "emoji": "🎒",
+      "visibility_tier": "user",
+      "category": "economy",
+      "tags": [
+        "inventory",
+        "items",
+        "crafting"
+      ],
+      "entry_points": [
+        "inventory"
+      ],
+      "related_subsystems": [
+        "economy",
+        "mining"
+      ],
+      "capabilities": [
+        "inventory.item.view",
+        "inventory.item.use",
+        "inventory.craft.recipe"
+      ]
+    },
+    {
+      "key": "mining",
+      "display_name": "Mining",
+      "description": "Mining minigame and resource collection",
+      "emoji": "⛏️",
+      "visibility_tier": "user",
+      "category": "economy",
+      "tags": [
+        "mining",
+        "resources",
+        "minigame"
+      ],
+      "entry_points": [
+        "minemenu",
+        "mine"
+      ],
+      "related_subsystems": [
+        "economy",
+        "inventory"
+      ],
+      "capabilities": [
+        "mining.resource.mine",
+        "mining.resource.view"
+      ]
+    },
+    {
+      "key": "btd6",
+      "display_name": "BTD6 Assistant",
+      "description": "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map lookups, round threat summaries, and CHIMPS-mode guidance. Built on validated fixtures; consumes the AI gateway only when explicitly enabled (Module 5).",
+      "emoji": "🐵",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "btd6",
+        "bloons",
+        "tower defense"
+      ],
+      "entry_points": [
+        "btd6",
+        "btd6menu"
+      ],
+      "related_subsystems": [
+        "ai"
+      ],
+      "capabilities": [
+        "btd6.query.ask",
+        "btd6.strategy.view",
+        "btd6.diagnostics.view",
+        "btd6.settings.configure"
+      ]
+    },
+    {
+      "key": "blackjack",
+      "display_name": "Blackjack",
+      "description": "Blackjack card game",
+      "emoji": "🃏",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "blackjack",
+        "cards"
+      ],
+      "entry_points": [
+        "blackjack",
+        "bj"
+      ],
+      "related_subsystems": [
+        "economy",
+        "deathmatch"
+      ],
+      "capabilities": [
+        "blackjack.game.play",
+        "blackjack.tournament.manage"
+      ]
+    },
+    {
+      "key": "counting",
+      "display_name": "Counting",
+      "description": "Collaborative counting game",
+      "emoji": "🔢",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "counting",
+        "community"
+      ],
+      "entry_points": [
+        "countingmenu"
+      ],
+      "related_subsystems": [],
+      "capabilities": [
+        "counting.game.play",
+        "counting.game.configure"
+      ]
+    },
+    {
+      "key": "deathmatch",
+      "display_name": "Deathmatch",
+      "description": "1v1 duel battles",
+      "emoji": "⚔️",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "duel",
+        "pvp",
+        "deathmatch"
+      ],
+      "entry_points": [
+        "deathmatch",
+        "dm"
+      ],
+      "related_subsystems": [
+        "economy",
+        "blackjack"
+      ],
+      "capabilities": [
+        "deathmatch.game.challenge",
+        "deathmatch.stat.view"
+      ]
+    },
+    {
+      "key": "games",
+      "display_name": "Games",
+      "description": "Competitive games and channel activities",
+      "emoji": "🎮",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "hub",
+        "activities"
+      ],
+      "entry_points": [
+        "games"
+      ],
+      "related_subsystems": [
+        "blackjack",
+        "rps_tournament",
+        "deathmatch",
+        "mining",
+        "counting",
+        "chain"
+      ],
+      "capabilities": [
+        "games.hub.view"
+      ]
+    },
+    {
+      "key": "rps_tournament",
+      "display_name": "Rock Paper Scissors",
+      "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
+      "emoji": "✂️",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "rps",
+        "tournament"
+      ],
+      "entry_points": [
+        "rps"
+      ],
+      "related_subsystems": [],
+      "capabilities": [
+        "rps_tournament.game.join",
+        "rps_tournament.tournament.manage"
+      ]
+    },
+    {
+      "key": "chain",
+      "display_name": "Word Chain",
+      "description": "Word-chaining game",
+      "emoji": "🔗",
+      "visibility_tier": "user",
+      "category": "games",
+      "tags": [
+        "games",
+        "words",
+        "chain"
+      ],
+      "entry_points": [
+        "chainmenu",
+        "chain"
+      ],
+      "related_subsystems": [],
+      "capabilities": [
+        "chain.game.play",
+        "chain.game.configure"
+      ]
+    },
+    {
+      "key": "channel",
+      "display_name": "Channels",
+      "description": "Channel and category creation, deletion, and restrictions",
+      "emoji": "📐",
+      "visibility_tier": "administrator",
+      "category": "management",
+      "tags": [
+        "channels",
+        "management",
+        "permissions"
+      ],
+      "entry_points": [
+        "channelmenu"
+      ],
+      "related_subsystems": [],
+      "capabilities": [
+        "channel.create.text",
+        "channel.create.voice",
+        "channel.delete.any",
+        "channel.restrict.apply",
+        "channel.visibility.configure"
+      ]
+    },
+    {
+      "key": "role",
+      "display_name": "Roles",
+      "description": "Time-based and XP-based automatic role assignment",
+      "emoji": "🎭",
+      "visibility_tier": "administrator",
+      "category": "management",
+      "tags": [
+        "roles",
+        "assignment",
+        "automation"
+      ],
+      "entry_points": [
+        "rolemenu"
+      ],
+      "related_subsystems": [
+        "xp"
+      ],
+      "capabilities": [
+        "role.settings.configure",
+        "role.threshold.configure",
+        "role.assignment.manage",
+        "role.reaction.manage"
+      ]
+    },
+    {
+      "key": "automod",
+      "display_name": "Automod",
+      "description": "Spam, invite links, excessive caps, and mass-mention filtering",
+      "emoji": "🛡️",
+      "visibility_tier": "administrator",
+      "category": "moderation",
+      "tags": [
+        "automod",
+        "moderation",
+        "safety",
+        "spam",
+        "filter"
+      ],
+      "entry_points": [
+        "automod"
+      ],
+      "related_subsystems": [
+        "moderation",
+        "cleanup"
+      ],
+      "capabilities": [
+        "automod.settings.configure"
+      ]
+    },
+    {
+      "key": "cleanup",
+      "display_name": "Cleanup",
+      "description": "Prohibited words, command deletion, channel hygiene",
+      "emoji": "🧹",
+      "visibility_tier": "administrator",
+      "category": "moderation",
+      "tags": [
+        "cleanup",
+        "words",
+        "moderation",
+        "hygiene"
+      ],
+      "entry_points": [
+        "cleanup",
+        "wordmenu",
+        "cleanuphistory"
+      ],
+      "related_subsystems": [
+        "moderation"
+      ],
+      "capabilities": [
+        "cleanup.word.add",
+        "cleanup.word.remove",
+        "cleanup.history.scan",
+        "cleanup.policy.configure"
+      ]
+    },
+    {
+      "key": "moderation",
+      "display_name": "Moderation",
+      "description": "Warnings, timeouts, bans, mod logs",
+      "emoji": "🔨",
+      "visibility_tier": "moderator",
+      "category": "moderation",
+      "tags": [
+        "moderation",
+        "safety",
+        "logs",
+        "warn",
+        "ban"
+      ],
+      "entry_points": [
+        "modmenu",
+        "warn",
+        "timeout",
+        "kick",
+        "ban",
+        "unban"
+      ],
+      "related_subsystems": [
+        "cleanup"
+      ],
+      "capabilities": [
+        "moderation.warn.apply",
+        "moderation.timeout.apply",
+        "moderation.kick.apply",
+        "moderation.ban.apply",
+        "moderation.ban.remove",
+        "moderation.log.view",
+        "moderation.settings.configure"
+      ]
+    },
+    {
+      "key": "proof_channel",
+      "display_name": "Proof Channel",
+      "description": "Proof submission and exclusive access sessions",
+      "emoji": "📋",
+      "visibility_tier": "staff",
+      "category": "moderation",
+      "tags": [
+        "proof",
+        "events",
+        "access"
+      ],
+      "entry_points": [
+        "prizemenu",
+        "prizestatus",
+        "timedprize"
+      ],
+      "related_subsystems": [
+        "moderation"
+      ],
+      "capabilities": [
+        "proof_channel.access.grant",
+        "proof_channel.access.revoke",
+        "proof_channel.access.timed",
+        "proof_channel.settings.configure"
+      ]
+    },
+    {
+      "key": "leaderboard",
+      "display_name": "Leaderboard",
+      "description": "Server leaderboards for XP, coins, and games",
+      "emoji": "🏆",
+      "visibility_tier": "user",
+      "category": "progression",
+      "tags": [
+        "leaderboard",
+        "rankings",
+        "stats"
+      ],
+      "entry_points": [
+        "leaderboard",
+        "lb"
+      ],
+      "related_subsystems": [
+        "xp",
+        "economy"
+      ],
+      "capabilities": [
+        "leaderboard.xp.view",
+        "leaderboard.economy.view"
+      ]
+    },
+    {
+      "key": "xp",
+      "display_name": "XP & Levels",
+      "description": "Experience points, levels, and leaderboards",
+      "emoji": "⭐",
+      "visibility_tier": "user",
+      "category": "progression",
+      "tags": [
+        "xp",
+        "levels",
+        "progression",
+        "leaderboard"
+      ],
+      "entry_points": [
+        "xpmenu",
+        "rank"
+      ],
+      "related_subsystems": [
+        "role",
+        "leaderboard"
+      ],
+      "capabilities": [
+        "xp.rank.view",
+        "xp.leaderboard.view",
+        "xp.settings.configure"
+      ]
+    },
+    {
+      "key": "four_twenty",
+      "display_name": "420",
+      "description": "A leafy little easter-egg panel — wisdom and number trivia",
+      "emoji": "🍃",
+      "visibility_tier": "user",
+      "category": "utility",
+      "tags": [
+        "fun",
+        "easter-egg",
+        "420"
+      ],
+      "entry_points": [
+        "420",
+        "fourtwenty"
+      ],
+      "related_subsystems": [
+        "general"
+      ],
+      "capabilities": [
+        "four_twenty.panel.view"
+      ]
+    },
+    {
+      "key": "general",
+      "display_name": "General",
+      "description": "General bot commands and information",
+      "emoji": "💬",
+      "visibility_tier": "user",
+      "category": "utility",
+      "tags": [
+        "general",
+        "info",
+        "community"
+      ],
+      "entry_points": [
+        "generalmenu"
+      ],
+      "related_subsystems": [
+        "utility"
+      ],
+      "capabilities": [
+        "general.info.view",
+        "general.community.interact"
+      ]
+    },
+    {
+      "key": "help",
+      "display_name": "Help",
+      "description": "Interactive help menu and command discovery",
+      "emoji": "📚",
+      "visibility_tier": "user",
+      "category": "utility",
+      "tags": [
+        "help",
+        "commands",
+        "discovery"
+      ],
+      "entry_points": [
+        "help"
+      ],
+      "related_subsystems": [],
+      "capabilities": [
+        "help.menu.view",
+        "help.settings.configure"
+      ]
+    },
+    {
+      "key": "utility",
+      "display_name": "Utility",
+      "description": "General utility commands",
+      "emoji": "🔧",
+      "visibility_tier": "user",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "tools",
+        "general"
+      ],
+      "entry_points": [
+        "utilitymenu",
+        "myprofile",
+        "avatar",
+        "serverinfo"
+      ],
+      "related_subsystems": [
+        "general"
+      ],
+      "capabilities": [
+        "utility.info.server",
+        "utility.info.user",
+        "utility.tool.ping"
+      ]
+    }
+  ],
+  "ideas": [
+    {
+      "file": "architecture-atlas-and-structure-review-2026-06-16.md",
+      "title": "Architecture atlas & structure review — capture + agent judgment",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The owner uploaded an external repo-architecture review (the *\"SuperBot repository-architectuuratlas"
+    },
+    {
+      "file": "autospec-mock-fidelity-guard-2026-06-16.md",
+      "title": "Idea — signature-faithful mocks / autospec guard for service+DB facades",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The BTD6 event drill-down had been crashing on **every** click in production"
+    },
+    {
+      "file": "btd6-ct-event-detail-relics-map-2026-06-16.md",
+      "title": "Idea — enrich the BTD6 CT event detail with relics + the hex map",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "PR #953 made BTD6 **Live Events** current-event-first: the overview drills into a rich per-event"
+    },
+    {
+      "file": "button-command-surface-parity-2026-06-16.md",
+      "title": "Idea — button ↔ text-command surface parity audit",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The admin panel had a **📋 Cog List** button (opening `_CogManagerView`) but **no text command**"
+    },
+    {
+      "file": "close-timeout-align-with-platform-grace-2026-06-16.md",
+      "title": "Idea — align the lifecycle close-timeout with the platform's kill-grace (defense-in-depth)",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment"
+    },
+    {
+      "file": "developer-dashboard-2026-06-16.md",
+      "title": "Developer dashboard (personal website) for SuperBot",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "Owner (2026-06-16): *\"build me a personal website that's linked to my project\"* — a"
+    },
+    {
+      "file": "diagnostic-cog-platform-group-extraction-2026-06-16.md",
+      "title": "Idea — extract the `!platform` command group into a cog mixin",
+      "status": "historical",
+      "date": "2026-06-16",
+      "summary": "`disbot/cogs/diagnostic_cog.py` is the Discord-facing home of the whole `!platform` admin surface"
+    },
+    {
+      "file": "honcho-memory-evaluation-2026-06-16.md",
+      "title": "Idea: per-user AI memory for the bot (Honcho) — remember Discord users across conversations",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "Today the bot's AI answers each request cold. **Per-user memory** would let it *remember a Discord"
+    },
+    {
+      "file": "idea-spotlight-verdict-loop-2026-06-16.md",
+      "title": "Idea: close the idea-spotlight loop — track the owner's verdicts",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The new `superbot-idea-spotlight` skill surfaces one active idea per day and asks the owner to"
+    },
+    {
+      "file": "ledger-guard-exempt-reconciliation-prs-2026-06-16.md",
+      "title": "Idea — the ledger guard should exempt self-referential reconciliation PRs",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "`scripts/check_current_state_ledger.py --strict` flags every recently-merged PR that is missing"
+    },
+    {
+      "file": "reference-integrity-invariants-2026-06-16.md",
+      "title": "Idea — a shared \"declaration → real target\" reference-integrity invariant",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "BUG-0014 (the `!coglist` infinite loop) was, at its core, a **dangling reference**:"
+    },
+    {
+      "file": "round-range-comparison-bare-range-list-2026-06-16.md",
+      "title": "Idea — round-range comparison: accept round-anchored bare-range lists",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The §7.5 round-range cash comparison floor (`deterministic_round_range_comparison_reply`, #955)"
+    },
+    {
+      "file": "server-owner-configurable-moderation-dms-2026-06-16.md",
+      "title": "Idea — server-owner-configurable moderation/warning DMs",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "Deciding the `/myprofile` onboarding gate (Q-0147), the owner set a **standing rule** for *all*"
+    },
+    {
+      "file": "sessionstart-surface-soft-check-signals-2026-06-16.md",
+      "title": "Surface `check_docs` soft signals in the SessionStart banner",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "This repo keeps adding **read-only / soft signals that only help if someone runs them by hand**:"
+    },
+    {
+      "file": "control-plane-single-source-pointer-2026-06-15.md",
+      "title": "Idea — collapse the current-state control-plane bullet to a pure pointer (one source of truth)",
+      "status": "historical",
+      "date": "2026-06-15",
+      "summary": "The autonomous-loop control-plane truth lives in **two** prose homes:"
+    },
+    {
+      "file": "decade-queue-lead-with-the-active-thread-2026-06-15.md",
+      "title": "Idea — plan the decade queue *lead* from the prior band's dominant thread, not from the static priority list",
+      "status": "ideas",
+      "date": "2026-06-15",
+      "summary": "Bands #820 → #840 → #870 → #900 all ended the same way: the planned top slots (P1-1 full matrix,"
+    },
+    {
+      "file": "dispatch-phase-gate-precheck-2026-06-15.md",
+      "title": "Dispatch-side phase-gate pre-check — don't fire agent-feature work orders in fix-phase",
+      "status": "ideas",
+      "date": "2026-06-15",
+      "summary": "A feature work order arrived via the dispatch fire endpoint. The executor side did the"
+    },
+    {
+      "file": "executor-chain-trigger-via-workflow-2026-06-15.md",
+      "title": "Idea: route executor self-chaining through the cron/PAT workflow, not a session-opened issue",
+      "status": "ideas",
+      "date": "2026-06-15",
+      "summary": "The night-executor's STEP 3 self-chaining contract says: *\"open a `continue` issue with explicit"
+    },
+    {
+      "file": "agent-env-credential-smoke-check-2026-06-14.md",
+      "title": "Idea: agent-env external-credential smoke check (preflight)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "Railway access (PR #840) · **Lane:** small / decided — implementable"
+    },
+    {
+      "file": "ci-cost-and-duplicate-work-prevention-2026-06-14.md",
+      "title": "Code-quality CI cost + duplicate-work prevention (early-claim convention)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "The owner observed (Actions usage metrics, June): `code-quality.yml` dwarfs every other"
+    },
+    {
+      "file": "cogs-layer-view-residence-guard-2026-06-14.md",
+      "title": "Idea — a guard for `discord.ui.View` subclasses mislayered in `cogs/`",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "The baseview-conformance ratchet (`tests/unit/views/test_view_base_class_conformance.py`"
+    },
+    {
+      "file": "dispatch-resolution-json-hermes-2026-06-14.md",
+      "title": "Dispatch resolution — `dispatch_menu.py --json` wired into the Hermes dispatch skill",
+      "status": "historical",
+      "date": "2026-06-14",
+      "summary": "invited the capture). **Owning area:** S3 AI-Memory / S5 Operations (the dispatch mechanism)."
+    },
+    {
+      "file": "effective-check-constraint-test-helper-2026-06-14.md",
+      "title": "Idea — a shared `effective_check_constraint(table, column)` test helper",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "Several invariant tests pin a Python `frozenset` to a SQL `CHECK (col IN (...))` literal so the"
+    },
+    {
+      "file": "external-cron-trigger-for-routines-2026-06-14.md",
+      "title": "Idea: drive the autonomous cron from an external scheduler (not GitHub `schedule:`)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "The autonomous loop's overnight cadence (`executor-nightly.yml`, `backup-db.yml`) relies on"
+    },
+    {
+      "file": "games-economy-faucet-sink-diagnostic-2026-06-14.md",
+      "title": "Idea — games economy faucet/sink diagnostic (observe the loop's balance)",
+      "status": "historical",
+      "date": "2026-06-14",
+      "summary": "The mining brainstorm's §7.5 thesis is a **closed, self-balancing loop**: ore is the *faucet*"
+    },
+    {
+      "file": "grounding-completeness-claim-primitive-2026-06-14.md",
+      "title": "Idea — a reusable \"completeness-claim\" grounding primitive (the BUG-0009 net)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "1) Faster Reload … 5) MOAB Eliminator. These are every tier on that path; do not claim the path"
+    },
+    {
+      "file": "ledger-checker-print-pr-subjects-2026-06-14.md",
+      "title": "Idea — `check_current_state_ledger` should print each missing PR's merge-commit subject",
+      "status": "historical",
+      "date": "2026-06-14",
+      "summary": "`scripts/check_current_state_ledger.py --strict` reports *which* PR numbers are missing from"
+    },
+    {
+      "file": "ledger-guard-benign-lag-vs-drift-2026-06-14.md",
+      "title": "Idea — the ledger guard should distinguish *benign newest-merge lag* from real drift",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "`scripts/check_current_state_ledger.py` treats **any** recent merged PR absent from the"
+    },
+    {
+      "file": "media-quota-health-finding-2026-06-14.md",
+      "title": "Idea — media provider-outcome → persistent health finding (2026-06-14)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "PR #854 added **process-local** provider-outcome counters"
+    },
+    {
+      "file": "readiness-map-claim-vs-source-guard-2026-06-14.md",
+      "title": "Idea — a doc-claim ↔ source guard for readiness maps & ownership rows",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "Production-readiness maps and `ownership.md` rows make **routing claims** about source:"
+    },
+    {
+      "file": "reconciliation-prebrief-at-session-start-2026-06-14.md",
+      "title": "Idea — a reconciliation pre-brief dropped at SessionStart",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "Every reconciliation pass re-derives the same thing **by hand** before it can write its §1"
+    },
+    {
+      "file": "reconciliation-slot-carry-tracker-2026-06-14.md",
+      "title": "Idea — a slot-carry tracker so the carried-plan-slot escalation fires on data",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "The band-#870 pass §6 noticed something only by **manually diffing three consecutive pass"
+    },
+    {
+      "file": "routine-activity-visibility-2026-06-14.md",
+      "title": "Routine-activity visibility — see active/running sessions at a glance",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "normal sessions in the **Recents** tab. To find a running routine the owner must open the"
+    },
+    {
+      "file": "routine-dispatch-and-staged-reconciliation-2026-06-14.md",
+      "title": "Routine dispatch, staged deep-clean reconciliation, and planning sectors",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "ecosystem / workflow substrate (the *real artifact*) + operations. Expect refinement as the"
+    },
+    {
+      "file": "routine-system-improvements-2026-06-14.md",
+      "title": "Routine-system improvements — field notes from a live run (2026-06-14)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "The **repo orientation already works** — a 2-word trigger (\"auth probe\") still"
+    },
+    {
+      "file": "scheduled-maintenance-registry-2026-06-14.md",
+      "title": "Idea: a central scheduled-maintenance registry (retire single-loop cogs)",
+      "status": "ideas",
+      "date": "2026-06-14",
+      "summary": "P0-2 PR 1 (#829) needed a periodic job: physically purge expired"
+    },
+    {
+      "file": "backup-integrity-check-2026-06-13.md",
+      "title": "Idea: backup dump integrity check",
+      "status": "historical",
+      "date": "2026-06-13",
+      "summary": "After `backup-db.yml` produces the `.sql.gz`, add a verification step that confirms the"
+    },
+    {
+      "file": "hermes-bug-triage-flow-2026-06-13.md",
+      "title": "Idea: Hermes-mediated bug-triage flow (curated, batched bug intake)",
+      "status": "ideas",
+      "date": "2026-06-13",
+      "summary": "intake. Companion: `docs/operations/autonomous-routines.md`, `docs/operations/hermes-dispatch-bridge.md`."
+    },
+    {
+      "file": "ledger-checker-range-scope-2026-06-13.md",
+      "title": "Idea — scope the ledger guard's range-expansion to the Recently-shipped section",
+      "status": "historical",
+      "date": "2026-06-13",
+      "summary": "`scripts/check_current_state_ledger.py` should expand `#AAA–#BBB` ranges into \"present\""
+    },
+    {
+      "file": "live-decade-queue-pointer-invariant-2026-06-13.md",
+      "title": "Idea — a \"one live decade queue\" machine-checkable invariant",
+      "status": "ideas",
+      "date": "2026-06-13",
+      "summary": "Add a small invariant (extend `scripts/check_docs.py`, or a new"
+    },
+    {
+      "file": "readiness-maps-cite-regen-command-2026-06-13.md",
+      "title": "Readiness/audit maps should cite a regeneration command, not freeze counts",
+      "status": "ideas",
+      "date": "2026-06-13",
+      "summary": "The `docs/planning/production-readiness/*` maps are dated audit snapshots that embed"
+    },
+    {
+      "file": "safety-community-operator-landing-2026-06-13.md",
+      "title": "Safety & Community — one operator landing",
+      "status": "ideas",
+      "date": "2026-06-13",
+      "summary": "The safety/community lane (Q-0108–Q-0112) is **one platform** in the"
+    },
+    {
+      "file": "autonomous-improvement-loop-vision-2026-06-12.md",
+      "title": "Vision: the fully-autonomous self-improvement loop",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "workflow (the *real artifact*, per `.claude/CLAUDE.md` Working agreement & `docs/collaboration-model.md`)."
+    },
+    {
+      "file": "claude-code-plugins-evaluation-2026-06-12.md",
+      "title": "Claude Code plugins — ecosystem evaluation & adoption shortlist (2026-06-12)",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "A plugin is a git-distributed bundle that can carry **skills, agents, hooks,"
+    },
+    {
+      "file": "community-platform-features-2026-06-12.md",
+      "title": "Community platform features — welcome, feeds, events, counters (2026-06-12)",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "The uploaded research identifies a cluster of \"community server management\" features"
+    },
+    {
+      "file": "executable-verification-over-prose-verified-2026-06-12.md",
+      "title": "Idea: executable invariants replace prose \"verified\" status claims",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "Docs and plans still use prose “verified” checklist items that drift over time. That directly caused a missed touch-point during the 2026-06-09/lane merges: an execution plan list was marked verified but omitted a real registration surface, and only a doc-pin test caught it late…"
+    },
+    {
+      "file": "hermes-claude-dispatch-bridge-2026-06-12.md",
+      "title": "Idea: Hermes → Claude Code (web) dispatch bridge",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "control plane (not the bot runtime)."
+    },
+    {
+      "file": "lane-scoped-session-state-2026-06-12.md",
+      "title": "Idea: lane-scoped session state to cut parallel-session merge tax",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "Parallel sessions keep colliding on shared artifacts: the journal, `current-state.md`, and the Q-router can race, producing duplicate Q-numbers, overwritten ledger bullets, and post-hoc merge resolution. The current resolution (UNION / answered-entry-wins / renumber-to-tail) wor…"
+    },
+    {
+      "file": "portable-agent-memory-package-2026-06-12.md",
+      "title": "Vision: a portable agent-memory + workflow package (open source)",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "the workflow substrate itself (the *real artifact*, per `.claude/CLAUDE.md`)."
+    },
+    {
+      "file": "repo-manageability-2026-06-12.md",
+      "title": "Repo-manageability ideas — 2026-06-12",
+      "status": "historical",
+      "date": "2026-06-12",
+      "summary": "The review-map (#715) + the seven readiness maps (#717–#723) made the repo *navigable* and"
+    },
+    {
+      "file": "review-unit-tagging-2026-06-12.md",
+      "title": "Review-unit tagging — make the repo-review-map a signal, not just a doc (2026-06-12)",
+      "status": "historical",
+      "date": "2026-06-12",
+      "summary": "The new [`repo-review-map.md`](../repo-review-map.md) defines the unit of independent"
+    },
+    {
+      "file": "server-safety-and-automod-2026-06-12.md",
+      "title": "Server safety, automod, logging, and image moderation (2026-06-12)",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "Competitor bots (Carl-bot, Dyno, Arcane, YAGPDB, Koya, Double Counter) give server staff"
+    },
+    {
+      "file": "single-canonical-execution-pointer-2026-06-12.md",
+      "title": "Idea: single-canonical-execution-pointer invariant",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "A session can start while two execution-order artifacts coexist: an older plan and a newer superseding plan. The prompt then becomes ambiguous (“execute the multi-lane plan”), and agents may implement the wrong ordering."
+    },
+    {
+      "file": "ux-lab-interface-gallery-2026-06-12.md",
+      "title": "UX Lab / Interface Gallery — a living Discord-UX sandbox cog",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "The maintainer is the **vision/taste layer** of this project (collaboration model): he"
+    },
+    {
+      "file": "wager-flow-map-2026-06-12.md",
+      "title": "Wager / money-flow map — generated trace of game coin paths",
+      "status": "ideas",
+      "date": "2026-06-12",
+      "summary": "The single biggest cost of the P0-1 session was **hand-tracing where game money moves**."
+    },
+    {
+      "file": "ai-panel-inplace-navigation-2026-06-11.md",
+      "title": "AI panels → in-place navigation + centralized settings (owner-requested, 2026-06-11)",
+      "status": "ideas",
+      "date": "2026-06-11",
+      "summary": "Context: he was walking the AI enablement flow (`!aimenu` → settings → policy →"
+    },
+    {
+      "file": "gap-analysis-2026-06-11.md",
+      "title": "Gap analysis — what's missing and on no list (2026-06-11)",
+      "status": "ideas",
+      "date": "2026-06-11",
+      "summary": "1. **Cross-server character identity — the unasked architectural question of"
+    },
+    {
+      "file": "voice-mode-planning-capture-2026-06-11.md",
+      "title": "Voice-mode planning capture — 2026-06-11",
+      "status": "ideas",
+      "date": "2026-06-11",
+      "summary": "The session produced a broad set of product and UX ideas. The strongest recurring direction was:"
+    },
+    {
+      "file": "bot-self-test-walker-2026-06-10.md",
+      "title": "Bot self-testing: the command walker + AI eval mode",
+      "status": "ideas",
+      "date": "2026-06-10",
+      "summary": "Two adjustments from the agent (accepted in-conversation, see the session log):"
+    },
+    {
+      "file": "competitive-teardown-2026-06-10.md",
+      "title": "Competitive teardown — game/economy bots + open-source ecosystems (V-14 dossier)",
+      "status": "reference",
+      "date": "2026-06-10",
+      "summary": "1. **Ecosystem #2 recommendation: FISHING.** Dank Memer — the largest economy"
+    },
+    {
+      "file": "superbot-vision-2026-06-10.md",
+      "title": "SuperBot product vision — owner statement + agent response (2026-06-10)",
+      "status": "ideas",
+      "date": "2026-06-10",
+      "summary": "bot should *feel smart* — it correctly recognises your server layout and channel"
+    },
+    {
+      "file": "fun-and-ease-brainstorm-2026-06-09.md",
+      "title": "Fun & ease-of-use brainstorm — ideas capture (2026-06-09)",
+      "status": "ideas",
+      "date": "2026-06-09",
+      "summary": "This brainstorm is **additive** to the existing idea space. Checked against:"
+    },
+    {
+      "file": "cog-improvement-audit-2026-06-08.md",
+      "title": "Cog improvement audit (2026-06-08)",
+      "status": "ideas",
+      "date": "2026-06-08",
+      "summary": "cog. It should be extracted into a **standalone service / feature** that"
+    },
+    {
+      "file": "owner-vision-ideas-2026-06-08.md",
+      "title": "Owner vision — ideas capture (2026-06-08)",
+      "status": "ideas",
+      "date": "2026-06-08",
+      "summary": "Full Texas Hold'em table with a lobby, blinds, and hand progression. Currency"
+    },
+    {
+      "file": "future-product-direction-2026-06-07.md",
+      "title": "SuperBot future product direction — source-aware brainstorm",
+      "status": "ideas",
+      "date": "2026-06-07",
+      "summary": "SuperBot's strongest long-term direction is a **coherent, explainable Discord control"
+    },
+    {
+      "file": "ai-extra-tool-capability-ideas.md",
+      "title": "AI Extra Tool Capability Ideas Backlog",
+      "status": "ideas",
+      "date": "",
+      "summary": "This document is intentionally separate from the current implementation plans because the existing docs already have narrow ownership:"
+    },
+    {
+      "file": "mining_exploration_brainstorm.md",
+      "title": "Mining & Exploration — Brainstorm & Roadmap",
+      "status": "ideas",
+      "date": "",
+      "summary": "| Layer | File | Role |"
+    },
+    {
+      "file": "rps-tournament-service-refactor.md",
+      "title": "Idea — refactor RPS tournament orchestration out of the cog",
+      "status": "ideas",
+      "date": "",
+      "summary": "`disbot/cogs/rps_tournament_cog.py` still owns too much runtime state + business flow, even"
+    },
+    {
+      "file": "settings-presets-and-ai-template-advisor.md",
+      "title": "Settings presets everywhere + AI template advisor — idea capture (2026-06-10)",
+      "status": "ideas",
+      "date": "",
+      "summary": "Wherever feasible, every setting editor offers, in this order:"
+    },
+    {
+      "file": "setup-wizard-onboarding-planner-spec.md",
+      "title": "Idea — full setup-wizard server-onboarding planner (target scope)",
+      "status": "ideas",
+      "date": "",
+      "summary": "The complete Setup Wizard should be a **guided server-onboarding planner**, not just a settings"
+    }
+  ],
+  "bugs": [
+    {
+      "id": "BUG-0015",
+      "title": "\"d67 dart paragon\" misread as upgrade path \"0-6-7\" (paragon degree ignored)",
+      "status": "FIXED",
+      "summary": "asked *\"whats the damage of a d67 dart\"* and *\"a d67 dart praragon\"*, SuperBot replied *\"A 0-6-7 Dart Paragon doesn't exist — upgrade tiers cap at 5, so the maximum is 0-5-5.\"* It read the shorthand \"d67\" = degree 67 as an upgrade-path code \"0-6-7\". Paragons have degrees 1-100 (…"
+    },
+    {
+      "id": "BUG-0014",
+      "title": "!coglist infinite \"assumed from\" command-resolution loop",
+      "status": "FIXED",
+      "summary": "typing !coglist (or !cogs) made SuperBot spam \"↩️ Ran !coglist — assumed from !coglist.\" endlessly — it did not stop until the bot was restarted. A runaway message loop (channel spam + rate-limit risk)."
+    },
+    {
+      "id": "BUG-0013",
+      "title": "1v1 challenge timer keeps running after accept, overwrites the live duel",
+      "status": "FIXED",
+      "summary": "\"there is a problem with the deathmatch cog, the 1v1 vs player command accept timer seems to keep running while a match is active, and even when a match is completed it will default to 'player didn't respond in time etc'.\" The accept/decline challenge prompt's 30-second timer ke…"
+    },
+    {
+      "id": "BUG-0012",
+      "title": "counting staff check trusts role *names*, not permissions (privilege bypass)",
+      "status": "FIXED",
+      "summary": "\"you could give yourself a role called 'admin' while the admin role did not have any actual permissions — the fact that it was named 'admin' overruled the bot's permission system and allowed users to execute admin commands.\" A non-privileged member who holds (or can self-assign)…"
+    },
+    {
+      "id": "BUG-0011",
+      "title": "Hermes gateway crash-loops on restart (Telegram 409) + periodic status=1",
+      "status": "OPEN",
+      "summary": "the hermes-gateway systemd service exits Main process exited, code=exited, status=1/FAILURE on (a) every systemctl restart — the new instance starts, prints the \"Messaging platforms + cron scheduler\" banner, then dies within ~1s — and (b) periodically while running (observed unp…"
+    },
+    {
+      "id": "BUG-0010",
+      "title": "the \"in ABR\" qualifier is ignored by auto-grounding and the round-cash workflow",
+      "status": "unknown",
+      "summary": ""
+    },
+    {
+      "id": "BUG-0009",
+      "title": "grounded facts, wrong assembly: lists mislabeled / badly grouped (the claim-assembly class) — PARTIALLY FIXED (MK-related family)",
+      "status": "unknown",
+      "summary": ""
+    },
+    {
+      "id": "BUG-0008",
+      "title": "\"420 farm\" income freelanced on the general path (keyword gap)",
+      "status": "unknown",
+      "summary": "\"how much money does a 420 farm make\" → invented economy ($45 bunches, \"$1,725/round\", invented build costs). No router keyword matched (\"farm\" is dropped from the entity matcher as ≤4 chars; \"banana\" absent; \"420\" can't route — FourTwenty owns it), so the model freelanced on th…"
+    },
+    {
+      "id": "BUG-0007",
+      "title": "conversation-meta question answered with the BTD6 data refusal",
+      "status": "unknown",
+      "summary": "\"what is the last message you can see\" → \"I don't have verified BTD6 data… (55.1)\". The reply legitimately quoted the prior Desperado turns; the guard treated those names as ungrounded and the floor copy is a non-sequitur for a non-BTD6 question."
+    },
+    {
+      "id": "BUG-0006",
+      "title": "conversation carryover unreachable: pronoun follow-ups never route BTD6",
+      "status": "unknown",
+      "summary": "\"does the navarch of seas paragon make coin\" answered correctly, then \"does it make coins at the end of the round?\" refused. Same shape: \"which of those items can damage lead\" after the Geraldo list."
+    },
+    {
+      "id": "BUG-0005",
+      "title": "BUG-0003 recurrence in the model loop: the tool laundered a misread quantity ($120,743,025)",
+      "status": "unknown",
+      "summary": "\"how much do 10 041 despos cost on impop\" → \"$120,743,025\" (= 10,041 × $12,025) despite the grounding line carrying the correct \"×10 towers → Impoppable $120,250\"."
+    },
+    {
+      "id": "BUG-0004",
+      "title": "r-shorthand round projection answered with the wrong total (cumulative-from-round-1 mislabel)",
+      "status": "unknown",
+      "summary": "\"How much do I have on r70 if I had 26932 at the end of r53\" → \"At the end of round 70, you would have a total of $71,315.20\" (plus a correct $29,386.70 rounds-54-70 breakdown). $71,315.20 is the cumulative from round 1 through 70 — not the user's scenario. Truth: 26,932 + 29,38…"
+    },
+    {
+      "id": "BUG-0003",
+      "title": "\"despos\" hallucinated as Plasma Monkey Fan Club (unguarded general path)",
+      "status": "unknown",
+      "summary": "\"@SuperBot how much do 10 041 despos cost on impop\" → \"A single Plasma Monkey Fan Club (Despo) costs $54,000 on Impoppable. For 10,041 Despos: 10,041 × $54,000 = $542,214,000 (542.2 million).\""
+    },
+    {
+      "id": "BUG-0002",
+      "title": "Elite boss HP answered with the Standard table labeled \"Elite\"",
+      "status": "unknown",
+      "summary": "\"@SuperBot what is the hp of elite lych per tier\" → \"Elite Lych health per tier: Tier 1: 14,000 … Tier 5: 2,100,000\" — those are the Standard Lych figures. Elite Lych is 30,000 / 180,000 / 1,100,000 / 4,800,000 / 24,000,000 (2-11× higher)."
+    },
+    {
+      "id": "BUG-0001",
+      "title": "Round-cash question misrouted to the no-data denial",
+      "status": "unknown",
+      "summary": "user asked \"@SuperBot lets say i have 8094$ at round 60, what is the cash that i will get by going to round 68\" → bot replied \"I don't have verified BTD6 data to answer that for the current game version (55.1). I won't state names or numbers I can't ground in my data — try askin…"
+    }
+  ],
+  "updates": [
+    {
+      "file": "2026-06-16-video-frame-extraction-tooling.md",
+      "date": "2026-06-16",
+      "title": "Session — video frame-extraction tooling (so future sessions can see uploads immediately)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-thin-architecture-atlas.md",
+      "date": "2026-06-16",
+      "title": "Session — thin architecture atlas (PR 2) + role in context_map",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-runtime-lock-early-release.md",
+      "date": "2026-06-16",
+      "title": "Session — runtime lock: release early on shutdown (fix ~85s deploy downtime)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-routine-permission-allowlist.md",
+      "date": "2026-06-16",
+      "title": "Session — expand the routine permission allow-list (owner-directed)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-railway-logs-retry.md",
+      "date": "2026-06-16",
+      "title": "Session — railway_logs.py: retry/backoff on transient 5xx",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-pr-mergeability-keepers.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — PR mergeability keepers: auto-update behind + red-on-conflict",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-myprofile-pr-b-writes.md",
+      "date": "2026-06-16",
+      "title": "Session — myprofile PR B: self-service writes (first UI consumer of ParticipationMutationPipeline)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-myprofile-card-pra.md",
+      "date": "2026-06-16",
+      "title": "Session — myprofile PR A: read-only profile card (`/myprofile`)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-ledger-reconcile-932-939.md",
+      "date": "2026-06-16",
+      "title": "Session — ledger reconcile (#932–#936, #939 into current-state)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-journal-session-lessons.md",
+      "date": "2026-06-16",
+      "title": "Session — journal: durable lessons from the security-tiers session",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-idea-platform-group-decompose.md",
+      "date": "2026-06-16",
+      "title": "Session — capture the diagnostic_cog platform-group decomposition idea",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-hook-cwd-robust.md",
+      "date": "2026-06-16",
+      "title": "Session — make the settings.json hooks cwd-robust (Q-0150)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-hermes-ops-docs-honcho.md",
+      "date": "2026-06-16",
+      "title": "Session — Hermes ops docs: lean-filter how-to · Honcho eval · open-steps findability",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-hermes-intake-skill.md",
+      "date": "2026-06-16",
+      "title": "Session — Hermes `intake` skill: route real-world inputs (bug / idea / request / question)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-hermes-gpt54mini-calibration-findings.md",
+      "date": "2026-06-16",
+      "title": "Session — gpt-5.4-mini calibration: record outcomes + tune the dispatch skill",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-hermes-efficiency-skills.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — Hermes efficiency: idea-spotlight + briefing + dispatch-resolve + 6h auto-reset",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-fix-deathmatch-challenge-timer.md",
+      "date": "2026-06-16",
+      "title": "Session — fix BUG-0013: deathmatch 1v1 challenge timer overwrites the live duel",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-fix-coglist-resolution-loop.md",
+      "date": "2026-06-16",
+      "title": "Session — fix BUG-0014: `!coglist` infinite \"assumed from\" command-resolution loop",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-extension-taxonomy-crosswalk.md",
+      "date": "2026-06-16",
+      "title": "Session — extension-taxonomy crosswalk (Q-0151c, owner-approved)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-economy-faucet-sink-diagnostic.md",
+      "date": "2026-06-16",
+      "title": "Session — games-economy faucet/sink diagnostic (`!platform economy`)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dispatch-never-docs-only.md",
+      "date": "2026-06-16",
+      "title": "Session — dispatch is never \"docs only\" (Q-0148)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-diagnostic-platform-group-mixin.md",
+      "date": "2026-06-16",
+      "title": "Session — extract the `!platform` command group onto a cog mixin",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-developer-dashboard-mvp.md",
+      "date": "2026-06-16",
+      "title": "Session — Developer dashboard (personal website) — design + read-only MVP",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-count-citation-guard.md",
+      "date": "2026-06-16",
+      "title": "Session — count-citation guard (soft check_docs rule)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-conflict-guard-token-hotfix.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — hotfix: pr-conflict-guard token + bash-errexit safety",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-coglist-command.md",
+      "date": "2026-06-16",
+      "title": "Session — `!coglist` text command → the \"📋 Cog List\" button (owner request)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-round-range-comparison.md",
+      "date": "2026-06-16",
+      "title": "Session — BTD6 round-range cash comparison floor (AI §7.5)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-paragon-degree-parse.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — BTD6 \"d67 dart paragon\" degree-parse bug fix (BUG-0015)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-paragon-cost-comparison.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — BTD6 paragon base-cost comparison floor (AI §7.5)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-live-events-current-first.md",
+      "date": "2026-06-16",
+      "title": "Session — BTD6 Live Events: fix the dead drill-down + current-event-first redesign",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-difficulty-cost-comparison.md",
+      "date": "2026-06-16",
+      "title": "Session — BTD6 difficulty cost-comparison floor (AI §7.5)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-cost-comparison-floor.md",
+      "date": "2026-06-16",
+      "title": "Session — AI §7.5 deterministic BTD6 cost-comparison floor",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-architecture-review-thread-close.md",
+      "date": "2026-06-16",
+      "title": "Session close — architecture-review thread (notes & remarks)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-architecture-atlas-structure-review.md",
+      "date": "2026-06-16",
+      "title": "Session — architecture-atlas / structure-review idea intake",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-act-on-autonomous-run-review.md",
+      "date": "2026-06-16",
+      "title": "Session — act on the autonomous-run review + owner's answers",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-welcome-card-phase2.md",
+      "date": "2026-06-15",
+      "title": "Session — Welcome phase 2: PIL greeting card on join (safety lane, decade-queue slot 7)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-settings-reverse-parity.md",
+      "date": "2026-06-15",
+      "title": "Session — settings reverse-parity invariant (complete the declared ⇔ consumed bijection)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-routine-workflow-canon.md",
+      "date": "2026-06-15",
+      "title": "Session: Routine workflow canon — foolproof prompts + idea→plan promotion",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-remove-executor-nightly-workflow.md",
+      "date": "2026-06-15",
+      "title": "Session: Remove the legacy executor-nightly.yml workflow",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-reconcile.md",
+      "date": "2026-06-15",
+      "title": "Session — 2026-06-15 · band-#900 docs reconciliation (eighth Q-0107 pass)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-reconcile-band930.md",
+      "date": "2026-06-15",
+      "title": "Session — 2026-06-15 · band-#930 docs reconciliation (ninth Q-0107 pass)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-railway-log-triage-analyzer.md",
+      "date": "2026-06-15",
+      "title": "Session — 2026-06-15 · Railway log-triage analyzer (deterministic, content-free)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-p1-3-invariants.md",
+      "date": "2026-06-15",
+      "title": "Session — P1-3 machine-checkable contract invariants (the cross-cutting \"stays fixed\" layer)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-vault-v2-cap.md",
+      "date": "2026-06-15",
+      "title": "Session — Mining Vault v2: inventory soft-cap + vault-cap upgrade path",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-skill-tree-slice-d.md",
+      "date": "2026-06-15",
+      "title": "2026-06-15 — mining Slice D: capped skill tree (§7.4)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-respec-titles-ef.md",
+      "date": "2026-06-15",
+      "title": "Session — 2026-06-15 · mining Slices E + F — respec polish + skill/milestone titles",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-phase2-feature-gated.md",
+      "date": "2026-06-15",
+      "title": "2026-06-15 — mining Phase-2 feature dispatch: gated (fix-phase) + loop cleanup",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-inplace-image-cards.md",
+      "date": "2026-06-15",
+      "title": "Session: Mining hub UX overhaul (in-place cards · sub-hubs · 3-layer menu doctrine)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-home-slice-c.md",
+      "date": "2026-06-15",
+      "title": "Session — 2026-06-15 · mining Slice C — the Home structure (character-card backdrop)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-mining-forge-slice-b.md",
+      "date": "2026-06-15",
+      "title": "Session: Mining Slice B — the Forge structure (gear-tier crafting gate)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-merge-routine-prompts.md",
+      "date": "2026-06-15",
+      "title": "Session: Merge dispatch + night-executor into one routine prompt (2 total)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-manual-test-bugfixes.md",
+      "date": "2026-06-15",
+      "title": "Session — manual-test bug fixes (counting channel UX · BTD6 overview clutter · round-63 data)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-sync-hardening.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes sync hardening (self-healing mirror sync + divergence recovery)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-soul-guard.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes follow-up: VPS context-fix script + SOUL size guard",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-research-deepening.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes research deepening (context-management root cause, verified vs. source)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-model-resolved.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes model swap RESOLVED (gpt-5.4-mini live; it was propagation lag)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-model-record.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes model/provider record (capture the live findings)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-model-playbook.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes model-switch playbook + saga close-out",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-hermes-gpt54mini-retune.md",
+      "date": "2026-06-15",
+      "title": "Session — Hermes retune for gpt-5.4-mini + memory/base cleanup",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-15-handoff-sharpen-p1-3-finding.md",
+      "date": "2026-06-15",
+      "title": "Session — 2026-06-15 · handoff sharpen + P1-3 coverage finding (follow-up to #906)",
+      "status": "complete"
+    }
+  ]
+}

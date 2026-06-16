@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Functions — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Bot functions</h1>
+<p class="text-slate-400 mb-6 text-sm">
+  {{ data.meta.counts.get("functions", 0) }} subsystems · generated from the live
+  subsystem registry.
+</p>
+
+{% for category, entries in groups %}
+  <section class="mb-8">
+    <h2 class="text-xs uppercase tracking-wide text-sky-400 mb-3">{{ category }}</h2>
+    <div class="grid sm:grid-cols-2 gap-3">
+      {% for e in entries %}
+        <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">{{ e.emoji or "•" }}</span>
+            <span class="font-semibold">{{ e.display_name or e.key }}</span>
+            {% if e.visibility_tier %}
+              <span class="ml-auto text-[10px] uppercase rounded bg-slate-800 px-2 py-0.5 text-slate-400">{{ e.visibility_tier }}</span>
+            {% endif %}
+          </div>
+          {% if e.description %}
+            <p class="mt-2 text-sm text-slate-400">{{ e.description }}</p>
+          {% endif %}
+          {% if e.entry_points %}
+            <p class="mt-2 text-xs text-slate-500">
+              commands:
+              {% for c in e.entry_points %}<code class="text-sky-300">!{{ c }}</code>{% if not loop.last %}, {% endif %}{% endfor %}
+            </p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% else %}
+  <p class="text-slate-500">No functions found.</p>
+{% endfor %}
+{% endblock %}

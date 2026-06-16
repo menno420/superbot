@@ -20,6 +20,15 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
+  **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
+  deployed as a second Railway service — checklist, update tracker, bot-function catalogue,
+  ideas/bug board, **public** bug reporting (+ GitHub-issue mirror), a multi-AI **control board**
+  over the current flow, and a **secrets** zone (manage via Railway + a static "where is each env var
+  used" map). Core principle: *surface the repo's existing structured data, don't duplicate it.*
+  **Phase 1 (read-only MVP) ✅ shipped PR #967**; Phases 2–4 active. Authoritative plan:
+  [`developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md). → relates `dashboard/` ·
+  `scripts/export_dashboard_data.py`.
 - [`idea-spotlight-verdict-loop-2026-06-16.md`](./idea-spotlight-verdict-loop-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the idea-spotlight skill PR #959):** the new daily
   `superbot-idea-spotlight` surfaces an idea + asks for a verdict, but the selector has no memory of

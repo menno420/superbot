@@ -5861,3 +5861,33 @@ broken to main → it red-flagged other sessions' PRs for ~6 min until hotfix #9
 
 **Home:** `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` ·
 `docs/operations/autonomous-routines.md` § "PR mergeability keepers" · this Q-block.
+
+### Q-0155 — Developer dashboard (personal website): the four shaping decisions (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly via `AskUserQuestion`).** The
+> owner asked for a personal website / developer dashboard linked to the project (checklist, update
+> tracker, bot-function catalogue, ideas/bug board, **public** bug reporting, multi-AI linking, project
+> integration, and a secrets store that maps where each env value is used) and chose the four options
+> below. Recorded for provenance per the working agreement (owner decisions get a durable home). The
+> work is a new, **decoupled** `dashboard/` web app + docs + stdlib tooling — no `disbot/` runtime and
+> no executable-config touched, so no Q-0106 exception is needed; this block is the durable record.
+
+**Decisions:**
+
+- **Link multiple AIs → a control board over the current flow** (pipeline stages + trigger the
+  existing Claude routines via the `/fire` API + an agent activity feed). A live multi-provider
+  dispatcher was the explicitly *deferred* alternative.
+- **Secrets → usage map + manage values via Railway.** Railway stays the single source of truth (no
+  second copy of secrets); the dashboard is a UI over its env vars, plus a static "where is each env
+  var used" map.
+- **Bug reports → stored in the dashboard AND mirrored to GitHub issues.**
+- **Start → design doc + a read-only MVP this session.**
+
+**Shipped (PR #967):** Phase 1 read-only MVP — a decoupled FastAPI app under `dashboard/` (function
+catalogue, ideas, bugs, updates feed, public showcase) fed by `scripts/export_dashboard_data.py`,
+deployable as a second Railway service. Phases 2–4 (auth + checklist + public bug form; env/secrets
+usage-map + Railway management; multi-AI control board) remain in the plan.
+
+**Home:** [`docs/planning/developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md) ·
+[`docs/ideas/developer-dashboard-2026-06-16.md`](../ideas/developer-dashboard-2026-06-16.md) ·
+`dashboard/` · `scripts/export_dashboard_data.py` · this Q-block.
