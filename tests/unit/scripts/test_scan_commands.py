@@ -57,43 +57,76 @@ class SampleCog(commands.Cog):
     @grp.command(name="sub")
     async def grp_sub(self, ctx):
         """A subcommand."""
+
+
+class SampleMixin:
+    """A command-bearing mixin — not a real Cog."""
+
+    @commands.command(name="mixincmd")
+    async def mixincmd(self, ctx):
+        """A command defined on a mixin."""
+'''
+
+SAMPLE_BOT1 = '''
+from discord.ext import commands
+
+
+@bot.command(name="rootcmd")
+async def rootcmd(ctx):
+    """A top-level command defined outside any cog."""
 '''
 
 
-def _write_sample(tmp_path: Path) -> Path:
+def _write_repo(tmp_path: Path) -> Path:
     cogs_dir = tmp_path / "disbot" / "cogs"
     cogs_dir.mkdir(parents=True)
     (cogs_dir / "sample_cog.py").write_text(SAMPLE_COG, encoding="utf-8")
+    (tmp_path / "disbot" / "bot1.py").write_text(SAMPLE_BOT1, encoding="utf-8")
     return tmp_path
 
 
 def test_scan_commands_types_aliases_and_buttons(mod, tmp_path):
-    cogs = mod.scan_commands(_write_sample(tmp_path))
-    assert len(cogs) == 1
-    cog = cogs[0]
-    assert cog["cog"] == "SampleCog"
-    assert cog["subsystem"] == "sample"
-    by_name = {c["name"]: c for c in cog["commands"]}
+    cogs = mod.scan_commands(_write_repo(tmp_path))
+    by_cog = {c["cog"]: c for c in cogs}
 
+    assert "SampleCog" in by_cog
+    sample = by_cog["SampleCog"]
+    assert sample["is_cog"] is True
+    assert sample["subsystem"] == "sample"
+    by_name = {c["name"]: c for c in sample["commands"]}
     assert by_name["ping"]["type"] == "prefix"
     assert by_name["ping"]["aliases"] == ["p"]
+    assert by_name["ping"]["button_backed"] is False
     assert by_name["slashping"]["type"] == "slash"
-    # panel_action classification -> button-backed
     assert by_name["panelcmd"]["classification"] == "panel_action"
     assert by_name["panelcmd"]["button_backed"] is True
-    # opening a view is also button-backed (heuristic)
     assert by_name["opensview"]["button_backed"] is True
-    # a plain prefix command is not button-backed
-    assert by_name["ping"]["button_backed"] is False
-    # group subcommand is attributed to its parent
     assert by_name["sub"]["parent"] == "grp"
+
+
+def test_mixin_is_not_a_cog_but_keeps_its_commands(mod, tmp_path):
+    by_cog = {c["cog"]: c for c in mod.scan_commands(_write_repo(tmp_path))}
+    assert "SampleMixin" in by_cog
+    assert by_cog["SampleMixin"]["is_cog"] is False
+    # the command is still counted — it is real (inherited by a cog)
+    assert "mixincmd" in {c["name"] for c in by_cog["SampleMixin"]["commands"]}
+
+
+def test_module_level_command_from_bot1(mod, tmp_path):
+    cogs = mod.scan_commands(_write_repo(tmp_path))
+    module = next((c for c in cogs if c["cog"] == "(bot1.py)"), None)
+    assert module is not None
+    assert module["is_cog"] is False
+    cmd = module["commands"][0]
+    assert cmd["name"] == "rootcmd"
+    assert cmd["type"] == "prefix"
+    assert cmd["parent"] is None
 
 
 def test_scan_commands_real_repo(mod):
     cogs = mod.scan_commands()
     assert len(cogs) >= 20
-    names = {c["cog"] for c in cogs}
-    assert "EconomyCog" in names
+    assert "EconomyCog" in {c["cog"] for c in cogs}
     total = sum(len(c["commands"]) for c in cogs)
     assert total >= 100
     for cog in cogs:
@@ -102,9 +135,14 @@ def test_scan_commands_real_repo(mod):
             assert isinstance(cmd["button_backed"], bool)
 
 
-def test_summarise_shape(mod):
+def test_summarise_breakdown_adds_up(mod):
     summary = mod.summarise(mod.scan_commands())
-    assert summary["cogs"] >= 20
+    assert summary["cogs"] >= 20  # real cogs only (is_cog)
+    assert summary["cogs"] <= summary["command_classes"]
     assert summary["commands"] >= 100
+    # the breakdown must partition the total exactly
+    assert (
+        summary["top_level_prefix"] + summary["subcommands"] + summary["slash"]
+        == summary["commands"]
+    )
     assert set(summary["by_type"]) <= {"prefix", "slash", "both"}
-    assert summary["button_backed"] >= 0

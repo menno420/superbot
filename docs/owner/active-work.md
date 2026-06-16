@@ -25,7 +25,7 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/jolly-cannon-gn9ddg` · dashboard cog & command explorer (`/commands`) — `scripts/scan_commands.py` AST scan: prefix/slash + button-backed · 2026-06-16
+- `claude/jolly-cannon-gn9ddg` · reconcile command counts — website prefix/sub/slash breakdown + `is_cog` + bot1.py scan; bot status embed full count (`webhook_reporter`) · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16

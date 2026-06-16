@@ -126,7 +126,7 @@ def test_build_data_includes_env_usage_section(mod):
 def test_build_data_includes_cogs_section(mod):
     data = mod.build_data()
     cogs = data["cogs"]
-    assert data["meta"]["counts"]["cogs"] == len(cogs)
+    assert data["meta"]["counts"]["cogs"] == sum(1 for c in cogs if c.get("is_cog"))
     assert data["meta"]["counts"]["commands"] == sum(len(c["commands"]) for c in cogs)
     assert len(cogs) >= 20
     assert "EconomyCog" in {c["cog"] for c in cogs}
