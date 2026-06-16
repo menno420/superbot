@@ -1991,6 +1991,191 @@ def deterministic_modes_reply(message_text: str) -> str | None:
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
+# --- "which costs more" deterministic reply (AI §7.5 multi-entity comparison) -
+# A cost comparison ("is a 0-4-1 desperado cheaper than a 2-0-4 sniper", "compare
+# the cost of a 5-0-0 ninja and a 0-5-0 wizard") is the same "grounded values,
+# wrong assembly" class as BUG-0009 — every individual price is grounded, but the
+# model freelances/mis-ranks the comparison itself (which is cheaper, by how much),
+# and the value-only faithfulness guard cannot catch a mis-*ranking*. So the
+# deterministic layer OWNS the labelled comparison: it prices each named candidate
+# via btd6_data_service.compare_crosspath_costs (the §7.5 rank/diff primitive) and
+# serves the ranked answer as a pre-emptive floor before the model.
+#
+# High-precision firing: an explicit cost-compare cue (NOT a bare "cheap"/"better")
+# AND at least two resolvable (tower, crosspath) candidates. "vs"/"versus" stay
+# allowed (normal cost-comparison connectors), unlike the roster strategy fence.
+_COST_COMPARE_CUE_RE = re.compile(
+    r"\bcheaper\b|\bcheapest\b|\bpricier\b|\bmore\s+expensive\b|"
+    r"\bless\s+expensive\b|\bmost\s+expensive\b|\bleast\s+expensive\b|"
+    r"\bcosts?\s+(?:more|less|the\s+same)\b|\bprice\s+difference\b|"
+    r"\bcost\s+difference\b|\bbetter\s+value\b",
+    re.I,
+)
+# "compare the cost of X and Y" / "cost comparison" — a compare verb anchored to a
+# cost/price noun (so "compare the ninja and sniper" without a money word defers to
+# the model, where it may be a stats comparison).
+_COST_COMPARE_VERB_RE = re.compile(
+    r"\bcompare\b.{0,40}\b(?:cost|price|pricing)\b|"
+    r"\b(?:cost|price|pricing)\b.{0,40}\bcompare\b|"
+    r"\b(?:cost|price)\s+comparison\b",
+    re.I,
+)
+# Clearly-strategic intent that wants a recommendation, not a price — a cost answer
+# would be a non-sequitur. Deliberately small (the cost cue already gates hard).
+_COST_COMPARE_STRATEGY_EXCLUDE = (
+    "should i",
+    "recommend",
+    "worth it",
+    "tier list",
+    "good against",
+    "best for",
+)
+# A named difficulty in the question; default medium when absent.
+_COST_DIFFICULTY_RE = re.compile(
+    r"\b(easy|medium|hard|impoppable|impop|chimps)\b",
+    re.I,
+)
+
+
+def _scan_towers_with_positions(text_lower: str, dataset: Any) -> list[tuple[int, Any]]:
+    """Every tower mentioned in ``text_lower``, as ``(start_index, tower)`` pairs
+    in order of appearance, longest-surface-wins on overlap.
+
+    Unlike :func:`_scan_tower` (which returns only the single best match), this
+    finds *all* tower mentions so a multi-entity comparison can pair each with a
+    crosspath. Whole-word matched on canonical names + aliases (≥3 chars), with an
+    optional trailing ``s``. Overlapping matches (e.g. "super monkey" vs "monkey")
+    resolve to the longest surface at that span.
+    """
+    spans: list[tuple[int, int, int, Any]] = []  # (start, end, surface_len, tower)
+    for tower in dataset.towers:
+        for surface in (tower.canonical, *tower.aliases):
+            s = surface.lower()
+            if len(s) < 3:
+                continue
+            for match in re.finditer(r"\b" + re.escape(s) + r"s?\b", text_lower):
+                spans.append((match.start(), match.end(), len(s), tower))
+
+    # Longest-surface-wins: walk by start, then by descending surface length, and
+    # drop any span overlapping one already accepted.
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, Any]] = []
+    for start, end, _slen, tower in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _t in accepted):
+            continue
+        accepted.append((start, end, tower))
+    accepted.sort(key=lambda a: a[0])
+    return [(start, tower) for start, _end, tower in accepted]
+
+
+def _extract_cost_comparison_candidates(
+    text_lower: str,
+    dataset: Any,
+) -> list[tuple[str, str]]:
+    """The ``(tower-canonical, crosspath-code)`` candidates a cost comparison names.
+
+    Each tower mention is paired with the crosspath code immediately before it
+    ("0-4-1 desperado"), within a short window; a tower with no preceding code is
+    treated as the base tower (``000``). Deduped by ``(tower id, code)`` preserving
+    order, so "0-4-1 desperado vs 2-0-4 desperado" yields two candidates while a
+    repeated "the sniper … the sniper" yields one.
+    """
+    candidates: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for start, tower in _scan_towers_with_positions(text_lower, dataset):
+        window = text_lower[max(0, start - 14) : start]
+        code = "000"
+        for cp in _CROSSPATH_RE.finditer(window):
+            candidate_code = "".join(cp.groups())
+            if tier_codes.is_legal(candidate_code):
+                code = candidate_code  # last (closest to the tower) wins
+        key = (tower.id, code)
+        if key in seen:
+            continue
+        seen.add(key)
+        candidates.append((tower.canonical, code))
+    return candidates
+
+
+def _format_cost_comparison(result: dict[str, Any]) -> str:
+    diff = str(result["difficulty"]).capitalize()
+    lines = [f"**Cost comparison — {diff} pricing:**"]
+    for entry in result["entries"]:
+        lines.append(
+            f"• **{entry['tower']} {entry['code']}** ({entry['label']}) — "
+            f"**${entry['unit_cost']:,}**",
+        )
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** at **${cheapest['unit_cost']:,}** each.",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['tower']} {cheapest['code']}** is cheaper by "
+            f"**${result['spread']:,}**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['tower']} {cheapest['code']}** "
+            f"(${cheapest['unit_cost']:,}). Most expensive: "
+            f"**{dearest['tower']} {dearest['code']}** (${dearest['unit_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append(
+        "_(Full per-tower cost: base + every upgrade, each purchase rounded to $5 "
+        "at that difficulty, then summed.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "which costs more / is cheaper" answer, or ``None``.
+
+    The AI §7.5 multi-entity comparison floor. Fires only on a high-precision
+    cost-compare cue (``cheaper``/``more expensive``/``compare … cost`` — never a
+    bare "cheap"/"better") **and** at least two resolvable ``(tower, crosspath)``
+    candidates. Returns ``None`` for single-entity cost lookups (handled by the
+    grounding pricing leg), strategy/recommendation questions, and anything outside
+    a clear two-or-more cost comparison — those reach the model untouched. The
+    ranking is deterministic, so the model can never mis-state which is cheaper.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+    candidates = _extract_cost_comparison_candidates(low, dataset)
+    if len(candidates) < 2:
+        return None
+
+    difficulty = "medium"
+    diff_match = _COST_DIFFICULTY_RE.search(low)
+    if diff_match:
+        token = diff_match.group(1).lower()
+        # CHIMPS is a mode, not a pricing difficulty — its prices are Hard's.
+        difficulty = "hard" if token == "chimps" else token
+        if difficulty == "impop":
+            difficulty = "impoppable"
+
+    result = btd6_data_service.compare_crosspath_costs(
+        candidates,
+        difficulty=difficulty,
+    )
+    if not result.get("found"):
+        return None
+    return _format_cost_comparison(result)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 def deterministic_btd6_list_reply(message_text: str) -> str | None:
     """The single BUG-0009 floor seam: the first deterministic list-answer
@@ -2004,11 +2189,15 @@ def deterministic_btd6_list_reply(message_text: str) -> str | None:
     ``None`` for anything but their exact list shape), so ordinary BTD6 questions
     fall through to the model untouched. Add a new list family (e.g.
     newest-towers ordering) by appending its builder here.
+
+    The AI §7.5 cost-comparison builder rides the same seam: a "which costs more"
+    question is the comparison member of the same wrong-assembly class.
     """
     for builder in (
         deterministic_mk_reference_reply,
         deterministic_geraldo_per_level_reply,
         deterministic_modes_reply,
+        deterministic_cost_comparison_reply,
     ):
         reply = builder(message_text)
         if reply:

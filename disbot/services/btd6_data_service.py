@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import re
 import threading
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -2115,6 +2116,75 @@ def crosspath_cost(
             diff: cost * quantity for diff, cost in unit.items()
         }
     return result
+
+
+def compare_crosspath_costs(
+    candidates: Sequence[tuple[str, str]],
+    *,
+    difficulty: str = "medium",
+) -> dict[str, Any]:
+    """Deterministic cost ranking of two-or-more ``(tower, upgrade-code)`` candidates.
+
+    The §7.5 multi-entity comparison primitive: price each candidate with
+    :func:`crosspath_cost`, then rank/diff **in code** so the model never
+    assembles the comparison itself (the BUG-0003/0005 + BUG-0009 "wrong
+    assembly" class — a mis-stated "cheaper" or wrong difference, which the
+    value-only faithfulness guard cannot catch). Each entry carries the unit
+    cost at the chosen ``difficulty``; the list is sorted ascending (cheapest
+    first) with a stable tie-break on the tower name so equal-cost candidates
+    order deterministically.
+
+    Returns ``{"found": False, ...}`` when fewer than two candidates price
+    successfully (an unknown tower / illegal code is skipped, never guessed),
+    so a caller can fall through to the model rather than answer a degenerate
+    comparison.
+    """
+    from utils.btd6 import difficulty_costs
+
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+
+    entries: list[dict[str, Any]] = []
+    for tower, code in candidates:
+        priced = crosspath_cost(tower, code)
+        if not priced.get("found"):
+            continue
+        unit = priced["unit_costs_by_difficulty"][diff]
+        label = " + ".join(priced.get("upgrade_names") or ()) or "base"
+        entries.append(
+            {
+                "tower": priced["tower"],
+                "code": priced["code"],
+                "label": label,
+                "unit_cost": unit,
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two priceable (tower, crosspath) candidates",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["unit_cost"], e["tower"], e["code"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "difficulty": diff,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["unit_cost"] - cheapest["unit_cost"],
+        "all_equal": cheapest["unit_cost"] == most_expensive["unit_cost"],
+        "note": (
+            f"unit cost per tower at {diff} pricing (base + every tier on each "
+            "path, each purchase rounded to $5, then summed); ranked ascending."
+        ),
+    }
 
 
 def list_ct_relics() -> tuple[RelicEntry, ...]:
