@@ -14,6 +14,7 @@ from discord.ext import commands
 
 import config
 from core.runtime import lifecycle as _lifecycle
+from services import runtime as _runtime
 from services.runtime import BOOT_ID, install_boot_id_logging
 from services.webhook_reporter import WebhookReporter
 from utils import command_resolution, db
@@ -502,7 +503,21 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError) 
         resolution = command_resolution.classify(raw, token_map, auto_set)
         prefix = ctx.prefix or config.PREFIX
 
-        if resolution.outcome is command_resolution.Outcome.AUTO and resolution.command:
+        # Loop-breaker (BUG-0014): an AUTO correction is only safe to
+        # re-dispatch when it points at a *registered* command that *differs*
+        # from what the user typed. Re-dispatching a correction that is
+        # unregistered (e.g. a stale synonym whose canonical has no command)
+        # or identical to the raw token just re-enters CommandNotFound →
+        # re-resolves to the same phantom → an infinite "assumed from" spam
+        # loop that only stops on restart. An unsafe AUTO correction falls
+        # through to the generic not-found reply instead of re-dispatching.
+        auto_safe = (
+            resolution.outcome is command_resolution.Outcome.AUTO
+            and resolution.command is not None
+            and resolution.command.lower() != raw.lower()
+            and bot.get_command(resolution.command) is not None
+        )
+        if auto_safe:
             # Rewrite the mistyped token and re-dispatch through the full
             # command pipeline (process_commands), so permission checks and
             # cooldowns still run — never ctx.invoke, which would bypass them.
@@ -726,6 +741,14 @@ LIFECYCLE_CLOSE_TIMEOUT_SECONDS: float = 20.0
 _LIFECYCLE_CLOSE_POLL_INTERVAL: float = 0.5
 _LIFECYCLE_CLOSE_WEBHOOK_TIMEOUT_SECONDS: float = 2.0
 
+# Signals the runtime-lock heartbeat loop to stop. Module-level (not a
+# main() local) so the close-driver can set it the instant shutdown
+# begins — the heartbeat loop then treats a now-missing lock row as an
+# intentional shutdown release rather than a hostile peer-reclaim.
+# main() passes this same event to run_heartbeat_loop and re-sets it in
+# its finally block (idempotent).
+_heartbeat_stop: asyncio.Event = asyncio.Event()
+
 
 def _should_drive_lifecycle_close() -> bool:
     """Single eligibility predicate for the close-driver.
@@ -784,6 +807,21 @@ async def _drive_close_on_lifecycle_request() -> None:
             reason,
             LIFECYCLE_CLOSE_TIMEOUT_SECONDS,
         )
+        # LP-4 fast deploy handoff: drop the runtime lock NOW — before the
+        # slow bot.close() drain, the close-beginning webhook, and any
+        # force-exit branch below — so the next replica reclaims within its
+        # acquire-poll instead of waiting the ~90s stale TTL when the
+        # platform SIGKILLs us mid-drain (the ~85s production downtime this
+        # fixes). The release is idempotent + boot-scoped
+        # (utils.db.runtime_lock.release), so main()'s finally re-runs it as
+        # the canonical no-op net. Stop the heartbeat FIRST so its next tick
+        # treats the now-missing row as this intentional shutdown release,
+        # not a hostile peer-reclaim → os._exit. The lock is special among
+        # teardown steps — it is the next-replica handoff signal, not local
+        # cleanup like db/reporter close — so it (and only it) is dropped
+        # here; everything else stays owned by main()'s finally.
+        _heartbeat_stop.set()
+        await _runtime.release_lock_best_effort()
         if reporter is not None and pending is not None:
             try:
                 await asyncio.wait_for(
@@ -868,11 +906,10 @@ async def main() -> None:
     # Acquire the runtime instance lock now that migrations (including
     # 034_bot_runtime_lock) have run. If another replica holds the lock
     # this raises ``SystemExit(0)`` — Railway treats that as a graceful
-    # exit and does not crash-loop the loser.
-    from services import runtime as _runtime
-
+    # exit and does not crash-loop the loser. ``_runtime`` and
+    # ``_heartbeat_stop`` are module-level so the close-driver can release
+    # the lock + stop the heartbeat early (LP-4 fast handoff).
     await _runtime.acquire_lock_or_exit()
-    _heartbeat_stop = asyncio.Event()
 
     from core import runtime
     from core.runtime import message_pipeline

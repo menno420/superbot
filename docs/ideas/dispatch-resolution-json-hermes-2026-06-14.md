@@ -1,8 +1,10 @@
 # Dispatch resolution — `dispatch_menu.py --json` wired into the Hermes dispatch skill
 
-> **Status:** `ideas` — **not approved, not a plan.** Capture so it isn't lost. The Hermes-wiring half
-> is gated on **Q-0137 Thread 1** (the owner's open dispatch decision); the `--json` half is a safe
-> read-only quick-win. Source, the binding contracts, and `docs/current-state.md` win over this.
+> **Status:** `historical` — **EXECUTED 2026-06-16 (PR #959, owner-directed).** Both halves shipped:
+> `scripts/dispatch_menu.py --json` (the read-only quick-win) **and** the Hermes-wiring half as the
+> new **`superbot-dispatch-resolve`** skill (`docs/operations/hermes-skills/dispatch-resolve.md`).
+> The owner greenlit the wiring half in-session (the Q-0137 Thread 1 *read-side*; the broader
+> cron-backstop part of Thread 1 stays with the owner). Original capture below.
 
 **Captured:** 2026-06-14 (from the sector-tooling session, PR #882 — the Q-0089 session idea, owner
 invited the capture). **Owning area:** S3 AI-Memory / S5 Operations (the dispatch mechanism).

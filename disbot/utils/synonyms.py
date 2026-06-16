@@ -44,7 +44,6 @@ COMMAND_SYNONYMS: dict[str, list[str]] = {
     "givexp": ["addxp", "grantxp"],
     "resetxp": ["clearxp"],
     "xpconfig": ["xpsettings"],
-    "coglist": ["listcogs", "cogslist"],
     "restart": ["reboot", "restar"],
     "loglevel": ["loglvl", "setloglevel"],
     "remind": ["reminder", "remindme", "erinnerung"],

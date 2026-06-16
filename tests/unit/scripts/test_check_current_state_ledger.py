@@ -100,15 +100,49 @@ def test_main_prints_missing_pr_subjects(monkeypatch, capsys) -> None:
 
 
 def test_find_missing_flags_unlisted(monkeypatch) -> None:
-    monkeypatch.setattr(csl, "_git_merged_pr_numbers", lambda limit: [734, 733, 730])
+    monkeypatch.setattr(
+        csl,
+        "_git_merged_pr_map",
+        lambda limit: {734: "Merge pull request #734 from menno420/feat-x", 733: "", 730: ""},
+    )
     monkeypatch.setattr(csl, "known_ledger_numbers", lambda: {733, 730})
     assert csl.find_missing(window=15) == [734]
 
 
 def test_find_missing_empty_when_all_present(monkeypatch) -> None:
-    monkeypatch.setattr(csl, "_git_merged_pr_numbers", lambda limit: [733, 730])
+    monkeypatch.setattr(csl, "_git_merged_pr_map", lambda limit: {733: "", 730: ""})
     monkeypatch.setattr(csl, "known_ledger_numbers", lambda: {730, 733})
     assert csl.find_missing() == []
+
+
+def test_is_reconciliation_subject() -> None:
+    # Every form the reconciliation routine ships: GitHub-web branch-name merge, the MCP
+    # title styles, and a ledger-reconcile branch.
+    assert csl._is_reconciliation_subject(
+        "Merge pull request #942 from menno420/claude/ledger-reconcile-932-939"
+    )
+    assert csl._is_reconciliation_subject("docs(current-state): reconcile ledger — add #932")
+    assert csl._is_reconciliation_subject("docs reconciliation (band-#930, ninth Q-0107 pass)")
+    # A plain "ledger" feature PR must NOT be exempted (command-surface-ledger, settings parity…).
+    assert not csl._is_reconciliation_subject(
+        "Merge pull request #918 from menno420/claude/command-surface-ledger"
+    )
+    assert not csl._is_reconciliation_subject("feat(ai): deterministic BTD6 cost-comparison floor")
+
+
+def test_find_missing_exempts_self_referential_reconciliation_pr(monkeypatch) -> None:
+    # A reconcile PR cannot list its own number, so its absence is expected, not drift —
+    # only the real feature PR is flagged. (Q-0151)
+    monkeypatch.setattr(
+        csl,
+        "_git_merged_pr_map",
+        lambda limit: {
+            950: "Merge pull request #950 from menno420/claude/btd6-difficulty-cost",
+            942: "Merge pull request #942 from menno420/claude/ledger-reconcile-932-939",
+        },
+    )
+    monkeypatch.setattr(csl, "known_ledger_numbers", lambda: set())
+    assert csl.find_missing(window=15) == [950]  # 942 exempt
 
 
 def test_range_in_recently_shipped_covers_member() -> None:

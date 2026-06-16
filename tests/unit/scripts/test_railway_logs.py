@@ -9,8 +9,10 @@ the missing-token / missing-id guard paths.
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import sys
+import urllib.error
 from pathlib import Path
 
 import pytest
@@ -220,6 +222,104 @@ def test_post_raises_on_graphql_errors(mod, monkeypatch):
     post = mod.build_poster("tok", is_project_token=False)
     with pytest.raises(mod.RailwayError, match="Not Authorized"):
         post(mod.WHOAMI_QUERY, {})
+
+
+# --- transport: retry / backoff on transient failures -----------------------
+
+
+def _http_error(code: int, *, body: bytes = b"upstream connect error", headers=None):
+    return urllib.error.HTTPError(
+        "http://x",
+        code,
+        "transient",
+        headers or {},
+        io.BytesIO(body),
+    )
+
+
+def test_post_retries_on_503_then_succeeds(mod, monkeypatch):
+    calls = {"n": 0}
+    slept: list[float] = []
+
+    def fake_urlopen(req, timeout=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise _http_error(503)
+        return _FakeResp({"data": {"me": {"id": "u1"}}})
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
+    post = mod.build_poster("tok", is_project_token=False, sleep=slept.append)
+    assert post(mod.WHOAMI_QUERY, {}) == {"me": {"id": "u1"}}
+    assert calls["n"] == 2  # one retry
+    assert slept == [0.5]  # backoff_base * 2**0
+
+
+def test_post_raises_after_exhausting_retries(mod, monkeypatch):
+    calls = {"n": 0}
+    slept: list[float] = []
+
+    def fake_urlopen(req, timeout=None):
+        calls["n"] += 1
+        raise _http_error(503)
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
+    post = mod.build_poster(
+        "tok",
+        is_project_token=False,
+        max_retries=2,
+        sleep=slept.append,
+    )
+    with pytest.raises(mod.RailwayError, match="HTTP 503"):
+        post(mod.WHOAMI_QUERY, {})
+    assert calls["n"] == 3  # initial + 2 retries
+    assert slept == [0.5, 1.0]  # 0.5*2**0, 0.5*2**1
+
+
+def test_post_does_not_retry_on_4xx(mod, monkeypatch):
+    calls = {"n": 0}
+    slept: list[float] = []
+
+    def fake_urlopen(req, timeout=None):
+        calls["n"] += 1
+        raise _http_error(401, body=b"bad token")
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
+    post = mod.build_poster("tok", is_project_token=False, sleep=slept.append)
+    with pytest.raises(mod.RailwayError, match="HTTP 401"):
+        post(mod.WHOAMI_QUERY, {})
+    assert calls["n"] == 1  # no retry on auth failure
+    assert slept == []
+
+
+def test_post_retries_on_connection_error_then_succeeds(mod, monkeypatch):
+    calls = {"n": 0}
+    slept: list[float] = []
+
+    def fake_urlopen(req, timeout=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise mod.urllib.error.URLError("connection timeout")
+        return _FakeResp({"data": {"ok": True}})
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
+    post = mod.build_poster("tok", is_project_token=False, sleep=slept.append)
+    assert post(mod.WHOAMI_QUERY, {}) == {"ok": True}
+    assert calls["n"] == 2
+    assert slept == [0.5]
+
+
+def test_retry_delay_is_exponential(mod):
+    assert mod._retry_delay(0, _http_error(503), 0.5) == 0.5
+    assert mod._retry_delay(1, _http_error(503), 0.5) == 1.0
+    assert mod._retry_delay(2, _http_error(503), 0.5) == 2.0
+
+
+def test_retry_delay_honours_retry_after_header(mod):
+    exc = _http_error(429, headers={"Retry-After": "7"})
+    assert mod._retry_delay(0, exc, 0.5) == 7.0
+    # A non-numeric / hostile header falls back to backoff and stays capped.
+    assert mod._retry_delay(3, _http_error(429, headers={"Retry-After": "x"}), 0.5) == 4.0
+    assert mod._retry_delay(0, _http_error(429, headers={"Retry-After": "9999"}), 0.5) == 30.0
 
 
 # --- main() guard paths -----------------------------------------------------

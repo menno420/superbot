@@ -1,8 +1,11 @@
 # Idea — collapse the current-state control-plane bullet to a pure pointer (one source of truth)
 
-> **Status:** `ideas` — not approved; capture only. Routing: **S5 Operations / docs system**.
-> Raised 2026-06-15 (Q-0089) by the band-#930 reconciliation pass, from the control-plane drift it
-> had to fix this pass.
+> **Status:** `historical` — **EXECUTED 2026-06-16 (PR #943).** The `current-state.md` Gates
+> control-plane bullet is now a pure pointer to the canonical table with zero verdict prose of its
+> own, so the copy can no longer drift. The **optional** `check_docs` verdict-phrase lint (the
+> belt-and-suspenders half) was **not** built — the pointer collapse alone removes the copy, so
+> there is nothing left to drift; the lint stays a capture-only follow-up here. Routing: **S5
+> Operations / docs system**. Raised 2026-06-15 (Q-0089) by the band-#930 reconciliation pass.
 
 ## The gap (observed twice now)
 

@@ -42,7 +42,7 @@ superbot/
 ├── .claude/                 # Claude Code config (CLAUDE.md, settings.json)
 │   └── rules/               # path-scoped Claude instruction files
 ├── .codegraph/              # CodeGraph index (built artifact; not in git)
-├── .github/workflows/       # CI (code-quality.yml + ai-evals.yml)
+├── .github/workflows/       # CI workflows (see .github/workflows/)
 ├── pyproject.toml           # black, isort, ruff, mypy, pytest config
 ├── requirements.txt         # runtime deps
 └── Procfile                 # process declaration (deployment)

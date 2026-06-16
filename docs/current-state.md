@@ -6,7 +6,7 @@
 > live GitHub** before trusting it (two same-session reports already
 > contradicted each other across a single merge).
 >
-> **▶ NEXT (live — read THIS line): the buildable `ready` decade-queue is now consumed — next buildable work is PLAN-FIRST.** The `/myprofile` lane is **buildable-complete**: PR A (read-only card, **#938**) + **PR B — self-service writes (shipped #940)** — `views/profile/editor.py`, the first UI consumer of `ParticipationMutationPipeline` (participation opt-in/out · subscription toggles · visibility toggle · preference editors bool/enum/modal; each action exactly one audited pipeline call). The only remaining myprofile slice is **PR C (join-time onboarding), owner-gated → routed as router Q-0147** (may a public bot DM strangers? — agent recommends in-guild / opt-in / no unsolicited DM). The games-economy faucet/sink diagnostic (slot 2) **shipped #937**. **Image moderation (Q-0108) is now IN FLIGHT (PR #941, `needs-hermes-review`) — the safety-community family's last buildable slice (OpenAI omni-moderation behind the `core/runtime/ai/providers/openai_moderation.py` SDK chokepoint; off by default · fail-open · only the image URL leaves the bot); the family is now buildable-complete (automod · server logging · welcome · image-mod ✅; security tiers 🟡 #929).** **So the next ▶ startable = a PLAN-FIRST slice: own a small plan for ONE of** — the NL event scheduler (Q-0112, plan-first, must meter under the Q-0082 ceiling) · the AI §7 next workflow family (post-prod-check) · the Hermes bug-triage `gh issue create` write (Q-0121); **security service tiers 1+2 (#929) and image moderation (#941) are both owner/Hermes-review**, BUG-0009 newest-towers is `data`-gated, absence-guard Layer B is `creds`-gated. **Note:** `diagnostic_cog.py` is at **799/800 LOC** — the next `!platform` subcommand needs the cog's `platform_*` group decomposed first. **Security service tiers 1+2 is still IN FLIGHT** (PR #929, `needs-hermes-review` carve-out — raid detection + account-age filter, Q-0111). **BUG-0009 slices 1/2/2b all shipped** (#924 MK-related · #926 Geraldo per-level + game-mode groupings); the one remaining family — newest-towers ordering — is **data-gated** (`towers.json` has no release-order field). The rest of P1 (absence-guard Layer B · live-quality battery) is creds/review-blocked. *The live next-step is THIS sentence — **not** any other "next ▶ =" lower in this callout or in the dated `Last updated:` stamps further down (those are historical reconciliation snapshots: e.g. a stamp still reads "next ▶ = mining Forge", but Forge shipped #905). Trust this line + the Recently-shipped list, never a stamp.*
+> **▶ NEXT (live — read THIS line): the buildable `ready` decade-queue is now consumed — next buildable work is PLAN-FIRST.** The `/myprofile` lane is **buildable-complete**: PR A (read-only card, **#938**) + **PR B — self-service writes (shipped #940)** — `views/profile/editor.py`, the first UI consumer of `ParticipationMutationPipeline` (participation opt-in/out · subscription toggles · visibility toggle · preference editors bool/enum/modal; each action exactly one audited pipeline call). The only remaining myprofile slice is **PR C (join-time onboarding), owner-gated → routed as router Q-0147** (may a public bot DM strangers? — agent recommends in-guild / opt-in / no unsolicited DM). The games-economy faucet/sink diagnostic (slot 2) **shipped #937**. **Image moderation (Q-0108) is now IN FLIGHT (PR #941, `needs-hermes-review`) — the safety-community family's last buildable slice (OpenAI omni-moderation behind the `core/runtime/ai/providers/openai_moderation.py` SDK chokepoint; off by default · fail-open · only the image URL leaves the bot); the family is now buildable-complete (automod · server logging · welcome · image-mod ✅; security tiers 🟡 #929).** **So the next ▶ startable = a PLAN-FIRST slice: own a small plan for ONE of** — the NL event scheduler (Q-0112, plan-first, must meter under the Q-0082 ceiling) · the AI §7 next workflow family (post-prod-check) · the Hermes bug-triage `gh issue create` write (Q-0121); **security service tiers 1+2 (#929) and image moderation (#941) are both owner/Hermes-review**, BUG-0009 newest-towers is `data`-gated, absence-guard Layer B is `creds`-gated. **Note:** the `diagnostic_cog.py` 800-LOC blocker is **CLEARED (#943)** — the `!platform` group moved onto `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`), cog now 260 LOC, so the next `!platform` subcommand has room. **Security service tiers 1+2 is still IN FLIGHT** (PR #929, `needs-hermes-review` carve-out — raid detection + account-age filter, Q-0111). **BUG-0009 slices 1/2/2b all shipped** (#924 MK-related · #926 Geraldo per-level + game-mode groupings); the one remaining family — newest-towers ordering — is **data-gated** (`towers.json` has no release-order field). The rest of P1 (absence-guard Layer B · live-quality battery) is creds/review-blocked. *The live next-step is THIS sentence — **not** any other "next ▶ =" lower in this callout or in the dated `Last updated:` stamps further down (those are historical reconciliation snapshots: e.g. a stamp still reads "next ▶ = mining Forge", but Forge shipped #905). Trust this line + the Recently-shipped list, never a stamp.*
 >
 > **▶ Next action — one live queue:** the **[band-#930 decade queue](planning/reconciliation-pass-2026-06-15-band930.md)** §4 — the ninth Q-0107 pass (2026-06-15, issue #931; cadence every 30th PR per Q-0134). The band-#900 queue is nearly fully executed (Forge #905 · P1-3 #917/#918 · log-triage #906 · Home/respec/titles #910/#912 · BUG-0009 #924/#926 · welcome #920); security tiers 1+2 is in flight (#929). **The mining structures / skill-tree lane is now COMPLETE** — every ▶ startable slice shipped (D #891 · A #897 · B/Forge #905 · C/Home #910 · E respec-polish + F titles #912); the only remaining items are owner-gated (Vault-cap *hard* enforcement · ⛔ V-16 phase 2 real sprites). **The Railway log-triage skill shipped (#906) and P1-3 invariants are now SUBSTANTIALLY COMPLETE (#917, 2026-06-15).** The 2026-06-15 P1-3 pass reviewed all four tracks, found + closed the **two** genuine buildable-now gaps with CI-runnable AST invariants — **settings** declared→runtime-consumer parity (`test_settings_declared_vs_consumed_parity.py`, 0 dead of 63 declared settings; the explicitly-named missing invariant from the settings map §Required #3) and **games** wager write-boundary completeness (`test_two_sided_economy_calls_are_accounted_for` — the hardcoded `_WAGER_FILES` fence now also fails on a *new* two-party mint path). **AI** is substantially-covered by the 34/34 catalogue/eval ratchet (closed, no new invariant); **BTD6** source-provenance is invariant-covered and uniform per-derived-value attribution is a documented design-for-review residual (brittle as an AST guard). Full record: [the P1-3 disposition](planning/production-readiness/p1-3-contract-invariants-disposition-2026-06-15.md). **The safety quick-win shipped (welcome phase 2 PIL cards, #920, 2026-06-15):** a `welcome_card_enabled` toggle (off by default) attaches a rendered PIL greeting card to the join embed; the `render_welcome_card` prototype graduated to `utils/welcome_render.py` (the UX-lab gallery now re-exports the production renderer — one source of truth); degrades cleanly to embed-only when Pillow is unavailable. **BUG-0009 slice 1 shipped (#924, 2026-06-15): the "MK related to <tower>" family** — the model no longer assembles that list (it grabbed the whole Support *category* and mislabeled it farm-related); `btd6_data_service.monkey_knowledge_referencing` derives the MK↔tower relation deterministically (description names the tower's canonical/upgrade-path name → strong; alias → weak, suppressed when another tower is strongly referenced or the MK is a Powers/Heroes-tab point), served as a **pre-emptive floor** on the BTD6 path (this class *passes* the value-only faithfulness guard, so the post-hoc roster floor never caught it). **BUG-0009 slices 2 + 2b shipped (#926, 2026-06-15): the "Geraldo items per level" + "game mode groupings" families** — the model no longer assembles either grouping. Geraldo: `btd6_data_service.geraldo_items_by_unlock_level` owns the level→items map, `deterministic_geraldo_per_level_reply` formats the full grouping / a single level's unlocks / an honest "nothing unlocks at level N". Modes: `btd6_data_service.modes_by_kind` owns the difficulty→mode→modifier grouping (the owner's "mode groupings" miss — CHIMPS is a mode, not a difficulty), `deterministic_modes_reply` fires on a clear modes enumeration and defers when "mode" is a qualifier on another entity. All three BUG-0009 builders now front one dispatcher `deterministic_btd6_list_reply` served as the pre-emptive BTD6 floor (MK → Geraldo → modes). **Next ▶ startable = security service tiers 1+2** (decade-queue slot 9, plan-first — raid detection + account-age filter, Q-0111; cite `ux/pattern-library.md` `mock_security_*` pattern_ids). *(BUG-0009 slice 3, newest-towers ordering, is **data-gated** — `towers.json` carries no release-order field; needs sourced release-order data first via the ADR-006 / `!btd6ops seed-data` provenance lane, then append its builder to `deterministic_btd6_list_reply`.)* · then security service tiers 1+2 (slot 9, plan-first); the remaining P1 (absence-guard Layer B · live-quality battery) stays **creds/review-blocked**. *(Pointer references the pass by name, never by a PR-number range — a range here silently masks the band from the ledger guard; see [the band-#800 pass §6](planning/reconciliation-pass-2026-06-13-band800.md).)* **The P0 integrity spine, P1-2, AND P1-1's deterministic half are now COMPLETE** — the versioned AI eval/smoke matrix (offline, CI-gated, #878), its self-cleaning drift guard (#879), and the first BTD6 hotspot coverage (#881, ratchet 8→14/34 tools). **Remaining P1 (where the next session starts): P1-3 is now SUBSTANTIALLY COMPLETE (#917)** — see the disposition linked above. **AI tool-surface eval coverage is COMPLETE — 34/34** (the final 7 BTD6 lookups landed; `_ACK_UNCOVERED_TOOLS` is empty and the drift guard now fails closed on any new tool). What remains on P1-1 is **creds-gated** (live-quality battery) or **design-for-review** (absence-guard Layer B), so the next *offline* plan step is **plan-first BUG-0009** (the safety quick-win — welcome phase 2 PIL cards — shipped in #920) · then the **creds/review-blocked** P1-1 remainder (live-eval battery · absence-guard Layer B). **The production-hardening P0 integrity spine is now COMPLETE** (P0-2 ✅, P0-3 ✅, P0-4 ✅ — every gating decision answered): **P0-4** (channel-ownership convergence, Q-0100) — PR 1 (#820) clone + permission-overwrite, PR 2 (#825) ad-hoc channel creation + category lifecycle through `ChannelLifecycleService`; **P0-2 media retention (Q-0099, #829)** — bounded metadata projection at the cache write + the scheduled `MediaMaintenanceCog` purge owner + thumbnail-URL validation; **P0-3** (delegated-Setup apply, #817). **The standing priority is the P1 correctness tier. P1-1's offline/CI half + P1-2 are done (above); next = P1-3 invariants + continued eval-coverage expansion, then the creds/review-blocked P1-1 remainder** (live battery · Layer B, relates BUG-0009). P0-2 follow-ups: **content-free media diagnostics now SHIPPED** (PR #854 — `!platform media` + the `media` diagnostics provider + cache-health/provider-outcome counters, content-free); the remaining two (provider-execution hardening · maintainer live-verification) stay queued behind P1-1. **P0-3 is complete: arc PR 3 shipped the delegated-Setup apply authority (Q-0098) in #817** (arc PR 2 retired the XP-announce + economy-log scalar pointers in #794; arc PR 1 foundation #777). **The owner's active strategic thread is the [portable substrate-kit](planning/portable-substrate-kit-extraction-2026-06-13.md)** (OSS agent-memory/workflow package; PR 1a+1b DONE, resume at the 1b tail → PR 2) — it consumed the #781–#800 band and runs in parallel as owner-steered. The safety/community band (slots 4–6: #772/#774/#775) is **COMPLETE**; its remainder (security tiers 1+2 · image-mod) is plan-first behind the P0 spine (welcome phase 2 shipped #920). Product lanes (mining/BTD6/AI) stay open as owner-steered alternates. The full scorecard + deferred list live in the queue doc; [`roadmap.md`](roadmap.md) stays the index, now organised **by sector** (S1–S5 dispatch queues). **Status is per-lane below — a session edits ONLY its own lane's bullet** (convention: [`owner/ai-project-workflow.md`](owner/ai-project-workflow.md) §9 "Cross-cutting ledger discipline"). **Owner-teed sector mapping DONE (2026-06-14, PR #877):** the roadmaps/plans are now organised under the **S1–S5 planning sectors** as **per-sector dispatch queues** — each sector a Hermes-dispatch target (name a sector + an action, read its live `Now`) — [`roadmap.md`](roadmap.md) § "By sector — the live dispatch queues" + the dispatch contract in [`repo-sector-map.md`](repo-sector-map.md) § "dispatch targets"; the [brief](planning/next-session-sector-roadmap-mapping-2026-06-14.md) is executed. Hermes/routine *wiring* stays Q-0137 Thread 1 (owner-undecided). **#704 live-test screenshots triaged + closed** (2026-06-14): mostly-working bot; one AI capability/grounding-consistency finding feeds P1-1 — [`audits/pr704-live-test-triage-2026-06-14.md`](audits/pr704-live-test-triage-2026-06-14.md).
 >
@@ -205,6 +205,66 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **paragon** member — the last unbuilt §7.5 multi-entity comparison member (the
+  paragon-entity sibling of the #946/#950 tower cost builders): "is Glaive Dominus or Ascended Shadow
+  cheaper?" ranks the **base tier-6 build price** of **two or more** paragons (BUG-0009 wrong-assembly
+  class). `btd6_data_service.compare_paragon_costs(names, *, difficulty="medium")` resolves +
+  difficulty-prices each paragon via `paragon_math.base_price` over the committed `BASE_PRICES_MEDIUM`,
+  dedups on id, ranks ascending, fails closed (<2 distinct); a new public
+  `paragon_math.paragon_surfaces()` exposes the resolver surfaces for sentence scanning.
+  `btd6_context_service.deterministic_paragon_cost_comparison_reply` fires on an explicit `paragon`
+  token + a cost-compare cue + ≥2 resolved paragons, registered in `_BTD6_LIST_BUILDERS` **before**
+  the tower cost builders, which now defer on the paragon cue so a "dart/ninja paragon" question is
+  never priced as the base tower (exactly-one-fires invariant extended). Ships under Q-0048 (read-only
+  deterministic floor, no prod-check). `check_quality --full` green (10051); arch 0; mypy clean.
+  Tests: `tests/unit/services/test_btd6_paragon_cost_comparison.py` + the §7.5 exclusivity corpus
+  entry. **§7.5 multi-entity comparison family is now COMPLETE — all four members shipped (tower-cost
+  #946 · difficulty-cost #950 · round-range cash #955 · paragon base-cost #962).** The next AI §7
+  step is a *new* workflow family beyond §7.5 (plan-first); a paragon *degree-target* resource
+  comparison is captured as a session idea (needs design — the solver's "cash" axis ≠ real spend).
+- **#955 (2026-06-16, AI §7.5 — deterministic BTD6 round-range cash comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **round-range** member of the §7.5 multi-entity comparison floor (the income sibling of
+  the #946 tower-vs-tower and #950 by-difficulty *cost* members): "which earns more cash, rounds
+  20-40 or 40-60?" ranks the total cash of **two or more** inclusive round ranges — the model would
+  otherwise assemble that ranking itself and can mis-state which range earns more / by how much (the
+  BUG-0009 "grounded values, wrong assembly" class the value-only faithfulness guard can't catch).
+  `btd6_data_service.compare_round_ranges(ranges, *, roundset="default")` prices each range once via
+  the existing `round_cash` primitive (the same owner the round-cash workflow uses, so per-round
+  figures never drift), dedups normalized ranges, ranks descending, fails closed (<2 distinct
+  priceable ranges), and is ABR-aware; `btd6_context_service.deterministic_round_range_comparison_reply`
+  fires on an earning noun (`cash`/`money`/`income`/`earn`) + a comparison signal (`more`/`vs`/`or`/
+  `compare`…) + **≥2** parsed round ranges (a round token required before each range's first anchor,
+  so crosspath codes like `5-0-0` are never mis-read as ranges), appended to the
+  `deterministic_btd6_list_reply` dispatcher. Stays non-overlapping with the single-range round-cash
+  workflow on **range count**, and the floor short-circuits before that workflow ever runs.
+  `check_quality --full` green (10008, +18); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_round_range_comparison.py`. **§7.5 comparison family now covers cost
+  (tower + difficulty) + round-range cash; the one remaining member is paragon degree/resource.**
+- **#950 (2026-06-16, AI §7.5 — deterministic BTD6 difficulty cost-comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **difficulty member** of the §7.5 multi-entity comparison floor (the sibling of the #946
+  tower-vs-tower cost comparison): "is a 0-4-1 desperado cheaper on medium or impoppable?" ranks the
+  **same** upgrade state across difficulties — a single tower, so #946's multi-tower builder defers
+  and the question would otherwise reach the model, which can mis-state which difficulty is cheaper
+  (the BUG-0009 "grounded values, wrong assembly" class the value-only faithfulness guard can't
+  catch). `btd6_data_service.compare_difficulty_costs(tower, code, difficulties)` prices the one
+  upgrade state once (`crosspath_cost` already returns every difficulty), ranks ascending, fails
+  closed (<2 distinct valid difficulties); `btd6_context_service.deterministic_difficulty_cost_comparison_reply`
+  fires on a cost-compare cue + **exactly one** resolvable `(tower, crosspath)` (≥2 is the #946
+  builder — mutually exclusive on candidate count) + **≥2** named difficulties, appended to the
+  `deterministic_btd6_list_reply` dispatcher. `check_quality --full` green (9972, +14); arch 0.
+  Tests: `tests/unit/services/test_btd6_difficulty_cost_comparison.py`. **§7.5 cost-comparison family
+  (tower + difficulty) is now complete; the remaining §7.5 members are paragon + round-range, both
+  unbuilt.**
+- **#942 (2026-06-16, docs(current-state): reconcile ledger — add #932–#936, #939)** — a dispatched
+  living-ledger reconciliation: added the six then-missing PRs (#932, #933, #934, #935, #936, #939)
+  to § Recently shipped and archived the eight oldest live entries to hold the ~20 soft-ratchet
+  (titles verified against live GitHub). Docs only; no runtime code. *(Self-recorded by the next
+  dispatch session #943 — a reconciliation PR doesn't add its own entry, the small recurring drift
+  the strict ledger guard exists to catch.)*
 - **#940 (2026-06-16, myprofile PR B — self-service writes: the pipeline's first UI consumer)** — the
   band-#930 decade-queue slot 3 continuation (PR A read-only card shipped #938). Makes `/myprofile`
   interactive: a new `disbot/views/profile/editor.py` owner-locked ephemeral editor stack —
@@ -221,11 +281,74 @@ Source code and merged PRs win over anything written here.
   `tests/unit/views/test_profile_editor.py` (one-call-per-action spy · typed-error copy · unauthorized
   path · int-modal coercion/reject · enum-chooser-opens-no-write · AST pin: editor writes only through
   the pipeline, no `utils.db` import).
+- **#939 (2026-06-16, docs(ideas): capture diagnostic_cog !platform-group extraction)** —
+  backlog-grooming ender (Q-0015). The faucet/sink diagnostic (#937) pushed `diagnostic_cog.py` to
+  799/800 LOC — the hard cog-size ceiling — and the cause + fix lived only in `.sessions/` logs
+  (which sessions don't read top-to-bottom), so the next `!platform` subcommand would hit the wall
+  cold. New idea `docs/ideas/diagnostic-cog-platform-group-extraction-2026-06-16.md`: extract the
+  `!platform` command group onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`) so
+  the surface can grow past the 800-LOC cog ceiling while the command identity stays on
+  `DiagnosticCog` (the same F-3 "surface = cog, weight = `cogs/<sub>/`" convention the embed-builder
+  extraction used). Small/safe/decided-lane pure refactor; README indexed. `check_docs --strict`
+  green; docs only.
 - **#938 (2026-06-15, myprofile PR A — read-only profile card)** — decade-queue slot 3. `views/profile/`
   + `/myprofile` + `!myprofile`: a schema-driven read-only card composing the typed accessors over the
   participation registry (one section per registered subsystem, every value labelled with its default,
   Q-0058 idiom), owner-locked ephemeral, zero writes (AST-pinned). The shell + `preference_key`
   convention PR B (#940) extends.
+- **#936 (2026-06-16, fix: counting channel selector/whitelist UI · BTD6 overview de-clutter ·
+  round-63 camo-lead data)** — three owner-reported bugs from a live manual-testing recording.
+  **(1) Counting cog** — the Counting Manager (`!countingmenu`/`!cm`) only operated on the *current*
+  channel, with no way to *select* a channel or enable counting on an existing one (a tester hit
+  exactly "where to change whitelisted channels"). Added a `ChannelSelect` picker; a mode-picker
+  that *enables counting on a non-counting channel* (the "whitelist" flow, no fresh channel); and a
+  **🛑 Disable Here** button that removes a channel from the active set without deleting it (distinct
+  from `!end_match`). Mutations route through new audited-pattern cog methods
+  (`enable_channel`/`disable_channel`/`toggle_channel_flag`/`reset_channel_count`) holding the
+  per-guild lock, in `cogs/counting/_channel_manager.py` (under the 800-LOC gate). **(2) BTD6
+  overviews** — `!btd6 tower`/`hero` overviews + the hero browser detail dumped a huge "Live data"
+  event-restriction section that the design says belongs only in the ⚠️ Event-status drill-down;
+  the three missed call-sites now match (also drops a per-lookup event-scan DB call). **(3) Round
+  63** wrongly listed "Camo Lead" (it's 75 plain Lead + 122 plain Ceramic — the only such
+  inconsistency across 140 rounds); corrected to `["Lead","Ceramic"]` + a CI guard
+  (`test_btd6_round_threat_consistency.py`) so a curated threat can never again claim a bloon
+  modifier no group carries. `check_quality --full` green (9897); arch 0.
+- **#935 (2026-06-15, ideas: re-file Honcho as a bot / AI-lane idea — per-user AI memory)** —
+  owner-requested re-file of the Honcho capture as a **bot/AI-lane** idea: give SuperBot's AI
+  **per-user memory** (remember a Discord user across conversations — the V-04 vision item) via
+  Honcho's conclusion-extraction memory (cheaper than dumping raw history under the Q-0082 AI-spend
+  ceiling). Demoted the "not for Hermes" verdict to a footnote; added a "what to look into" section
+  (scope/privacy, cost, AI-cog integration seam, alternatives) + a disposition to promote to a
+  `docs/planning/` plan when the AI lane has capacity. `check_docs --strict` green; docs/ideas only.
+- **#934 (2026-06-15, docs(journal): durable lessons from the security-tiers session)** —
+  owner-directed: after the security-tiers session (#929), recorded three lean
+  `.session-journal.md` entries — the **cwd-deadlock trap** (never `cd` in the Bash tool; the
+  persisted cwd breaks the repo-root-relative hooks and dead-locks Bash + Write/Edit for the turn;
+  avoidance = absolute paths / `python3.10 -c` from root, recovery = a worktree-isolated Agent
+  commit; durable hook fix noted as proposed Q-0106), a Quick-reference row pointing at it, and
+  "check the PR file count before declaring done" (never run black/isort over `tests/`; eyeball
+  `git diff --name-only`). `check_docs --strict` green; docs only.
+- **#933 (2026-06-15, fix(deathmatch): stop the 1v1 challenge timer on accept/decline — BUG-0013)**
+  — the first real bug caught end-to-end by the Hermes `intake` pipeline (#928): the owner reported
+  it to Hermes on Discord → `intake` routed + root-caused it → Claude Code verified the diagnosis
+  and fixed it. `_ChallengeView` (`disbot/cogs/deathmatch_cog.py`, `timeout=30.0`) never called
+  `self.stop()` on accept/decline and `on_timeout` had no answered-guard, so its 30s timeout
+  overwrote the live/finished duel message with "⚔️ Challenge Expired". Fix: a `_resolved` flag set +
+  `self.stop()` in `btn_accept`/`btn_decline`, and an early return in `on_timeout` when resolved.
+  Contained to `_ChallengeView` (no signature changes); behaviour-preserving for the genuine
+  no-answer case. `tests/unit/cogs/test_deathmatch_challenge_timeout.py` (3 tests, fail-against-old);
+  BUG-0013 recorded FIXED; `check_quality --full` green (9893); arch 0. Live on the next auto-deploy
+  (a merge to `main` auto-deploys to Railway — no manual deploy step).
+- **#932 (2026-06-15, docs reconciliation — band-#930, ninth Q-0107 pass)** — ninth Q-0107 docs-only
+  reconciliation + planning pass (fired by `reconcile` issue #931). Reconciled the ledger (added the
+  #915…#928 Hermes model-swap / ops-docs band as one grouped entry; archived #862/#859/#855 to hold
+  the ratchet at 20); **FIXED a control-plane drift** (the Gates bullet still claimed the autonomous
+  loop had never self-fired — stale, since trigger issue #931 was authored by the PAT owner, which
+  only happens when `ROUTINE_PAT` is set and the loop self-fires); scored the band-#900 queue +
+  planned the next band ([`reconciliation-pass-2026-06-15-band930.md`](planning/reconciliation-pass-2026-06-15-band930.md));
+  promoted the now-ungated games-economy faucet/sink diagnostic idea to a turn-key plan; reset the
+  cadence marker #900→#930 (next at #960). Open-PR disposition (Q-0125): only #929 open
+  (`needs-hermes-review` carve-out). Docs only.
 - **#928 + #927 + #925 + #923 + #921 + #919 + #916 + #915 (2026-06-15, Hermes gpt-5.4-mini model-swap + ops-docs maturation band)** — the docs/skill-only band between the BUG-0009 code work and this pass; entered as one grouped entry (all docs-only, same Hermes-operating-layer / ledger-hygiene theme). **#915** — self-healing repo sync (recover a diverged mirror clone). **#916** — recorded the model/provider decision in the ops docs. **#919 → #921 → #923** — the gpt-5.4-mini model-swap arc: model-switch playbook + the "flapping" open item → RESOLVED (the swap was slow propagation lag, gpt-5.4-mini live) → retune base + record verified specs. **#927** — recorded gpt-5.4-mini calibration outcomes + a lean dispatch overlap-check. **#928** — the Hermes `intake` skill (route inbound bugs / ideas / requests / questions to their canonical homes). **#925** — `docs(current-state)`: a scannable ▶ pointer + archived the re-accumulated `Last updated:` stamp wall. *(#930 — Hermes ops docs: lean-env filter how-to + Honcho evaluation + open-steps findability — was already entered.)* All docs/skill/ops only; no `disbot/` runtime code.
 - **#926 (2026-06-15, BUG-0009 slice 2 — deterministic "Geraldo items per level")** — the next ▶
   startable plan slice (the live ▶ pointer's named next step), same proven shape as slice 1 (#924).
@@ -342,139 +465,7 @@ Source code and merged PRs win over anything written here.
   pastes verbatim. Skill doc rewired (steps 2–3 → pipe the analyzer) + the `log-triage/SKILL.md`
   artifact regenerated. 18 tests; `check_quality --full` green (9737); arch 0. **Slot 4 done; the
   read-only Railway *token* is still the only thing gating live-data triage (owner-provisioned).**
-- **#905 (2026-06-15, mining Slice B — the Forge structure: gear-tier crafting gate)** — a
-  **dispatched (owner-directed)** mining work order. *(Dispatch note: the order asked for Slice D /
-  §7.4 capped skill tree, but that **already shipped as #891**, and the "retire the duplicate
-  `docs/plans/…` doc" precondition was moot — no such file/dir exists; per the dispatch routine's
-  already-shipped rule the run built the genuine **next** plan slice instead. Recurring Q-0142
-  dispatch-by-prediction misfire — flagged for the owner.)* A **built** structure (coin + material
-  sink) on the **generic `mining_structures` table** (migration 073 — reused by Slice C Home) +
-  `utils/db/games/mining_structures.py` (`set_structure_level` on the RS02 boundary ratchet); pure
-  `utils/mining/structures.py` (forge build-cost ladder + the `equipment.gear_tier`-derived
-  requirement map). **Gates only the top two gear tiers** — gold → Forge I, diamond → Forge II;
-  bronze/iron/silver gear, tools, and structures stay forge-free, so most progression is unchanged
-  (a deliberate, documented, reversible behavior change for end-game gear). `mining_workflow.build_structure`
-  (coin debit + material consume + level raise in ONE transaction, the `vault_upgrade` precedent);
-  a `_forge_gate` on `craft`/`quick_craft` that does **zero extra I/O** for forge-free recipes
-  (existing craft paths unchanged — characterization net stays byte-identical). UI: `🔥 Forge` hub
-  panel + `!forge` + the recipe browser shows the lock. Numbers pinned in
-  [`planning/forge-numbers-2026-06-15.md`](planning/forge-numbers-2026-06-15.md). `check_quality
-  --full` green (9754); arch 0.
-- **#897 (2026-06-15, mining Slice A — Vault v2: inventory soft-cap + vault-cap upgrade path)** —
-  the next mining-structures slice, a **dispatched (owner-directed)** `CLASS: feature` work order.
-  The phase gate read FIX, but Q-0114 gates only *agent-self-originated* features — the owner
-  directly corrected this exact scenario in-session (the `dispatch-phase-gate-precheck` idea's ⚠
-  Correction; the prior run built Slice D / #891 on it), so a dispatched feature builds like a bug
-  fix. **Pure cap math** in `utils/mining/capacity.py` (distinct item-*types*, not quantity:
-  `PACK_SOFT_CAP=40`; vault capacity `30 + level×15` to tier 6; rising coin upgrade-cost ladder;
-  `CapStatus`). **Pack soft-cap is warning-only** — the hub overview + every mine/harvest/explore
-  swing nudge "stash at the 🏦 Vault" and **mining is never blocked**. **Vault gets an upgradeable
-  capacity** — `mining_workflow.vault_upgrade` (coin debit + `vault_level` raise in one transaction,
-  the `buy`/`skill_service.respec` precedent; migration 072 adds `vault_level` to
-  `mining_player_state`), surfaced as `!vaultupgrade` + the vault panel's ⬆️ Upgrade button. Fully
-  **additive** (level 0 = the v1 base; deposits/withdrawals never blocked) — owner directive honored
-  (warn at cap, no hard cap approved). New write primitive `set_vault_level` registered in the RS02
-  ratchet. Tests: `tests/unit/utils/test_mining_capacity.py` + vault-upgrade/pack-warning pins in
-  `tests/unit/cogs/test_mining_vault.py`. `check_quality --full` green (9719); arch 0.
-- **#898 + #892 + #889 (2026-06-15, docs-only loop/phase-gate hygiene)** — **#898 (Q-0114):**
-  documented the owner's in-session clarification in its canonical homes (router Q-0114 +
-  `check_phase_gate.py` docstring) so a literal agent doesn't re-derive it — a **dispatched** work
-  order (the `/fire` endpoint, even `CLASS: feature`) is owner-directed and flows freely; the phase
-  gate is **only** for features an agent invents itself. **#892:** captured a Hermes
-  token-efficiency root-cause + an investigation plan for the next session
-  (`docs/operations/hermes-control-plane.md` + a research note). **#889:** a `CLASS: feature` mining
-  Phase-2 work order arrived during a FIX phase, so the phase gate correctly **gated the build**
-  (Q-0114) — the work was already turn-key in the structures plan, so the PR is loop cleanup only
-  (the `dispatch-phase-gate-precheck` Q-0089 idea — run the gate at the *dispatcher* — + disposed the
-  redundant slice-opener #888 per Q-0125). Docs only.
-- **#884 (2026-06-14, mining §7.5 Vault — a per-player safe stash)** — the first executed slice of
-  the mining structures lane (the owner's bot-side steer for the night routine). A protected store
-  separate from the active pack: `vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources` on the
-  audited `mining_workflow` boundary move items between `mining_inventory` and the new `mining_vault`
-  table (migration 070) **atomically** (no coin/audit leg — item-state direct-lane); `🏦 Vault` hub
-  panel + `!vault`/`!stash`/`!unstash`. **Purely additive** — v1 is a pure safe store, no inventory
-  cap (that sink is the documented follow-up), so existing play is byte-identical. The RS02
-  write-boundary ratchet now also guards `update_vault_item`. Verified on real Postgres
-  (deposit/withdraw/stash-all round-trips · over-move guards · item conservation). `check_quality
-  --full` green (9655); arch 0. **This session also promoted the rest of the lane to a turn-key plan**
-  — [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](planning/mining-structures-skill-tree-plan-2026-06-14.md)
-  (§7.4 capped skill tree + §7.5 Forge/Home + Vault-cap, each a ▶ startable PR-sliced slice) so the
-  night/next session can build mining cold.
-- **#878 + #879 + #881 (2026-06-14, P1-1 — versioned AI eval/smoke matrix, offline half + drift guard + hotspot coverage)**
-  — the standing #1 priority's deterministic, CI-gated half. The live golden set
-  (`tests/evals/cases.py`) is creds-only (`scripts/run_evals.py`), and CI exercised only the harness
-  *machinery* — there was no CI proof of the AI path's **deterministic contract**. **#878:** new
-  **`tests/evals/smoke.py`** drives the **real gateway** with scripted providers (no API) — 16 cases
-  across **gates · fallback · tool-dispatch · audit-visibility · safety · redaction · config** —
-  gated by `tests/evals/test_smoke_matrix.py` on every PR, and rendered as one **versioned scorecard**
-  (`scripts/run_evals.py --smoke`, creds-free); both halves version-stamped (`GOLDEN_SET_VERSION` /
-  `SMOKE_MATRIX_VERSION`); the **#855 Layer-A** MOAB-path probe added to the golden set. **#879:** an
-  **eval-coverage drift guard** (`tests/evals/test_eval_coverage.py`) — a self-cleaning ratchet so a
-  new canonical AI tool/`AITask` can't silently fall outside the matrix (referenced ∪ acknowledged ==
-  surface; coverage floor; meta-tested to actually fire). **#881:** dog-fooded that guard — 6 golden
-  tool-selection probes for the highest-value uncovered **BTD6** tools (the live-defect hotspot:
-  round-cash/boss/map/paragon-degree/round-composition/answerability, each modeled on a real live
-  miss), moving the ratchet **8 → 14/34** covered. `check_quality --full` green (9645); arch 0.
-  **#886 (2026-06-15) advanced the ratchet 14 → 20/34** — 6 more golden tool-selection probes
-  (`get_ai_tool_catalog` + the `btd6_cumulative_cost`/`paragon_requirements`/`monkey_knowledge`/
-  `mode`/`list_roster` lookups), floor raised to 20.
-  **#895 (2026-06-15) advanced the ratchet 20 → 27/34** — 7 probes covering the **whole non-BTD6
-  uncovered surface**: the 5 server-introspection tools (`get_server_overview`/`list_server_channels`/
-  `list_server_roles`/`lookup_member`/`list_all_members`) + `get_ai_policy_explanation` +
-  `diagnostics_health_snapshot`; floor raised to 27.
-  **#896 (2026-06-15) completed the ratchet 27 → 34/34 — FULL AI tool-surface coverage** — the final
-  7 specialized BTD6 lookups (`btd6_bloon_filter`/`btd6_ct_team_status`/`btd6_geraldo_lookup`/
-  `btd6_paragon_calculate`/`btd6_power_effect`/`btd6_power_lookup`/`btd6_relic_lookup`);
-  `_ACK_UNCOVERED_TOOLS` is now **empty** and the floor == the catalogue, so the drift guard fails
-  closed on any newly-added tool. `check_quality --full` green (9698); arch 0.
-  **Still owed (P1-1):** the live-quality battery (needs prod creds) + absence-guard **Layer B**
-  (design-for-review). *(This session's docs close-out tidy merged as **#883** — `▶ Next action`
-  refresh + #872–876 ledger drift cleared.)*
-- **#870 + #869 + #868 (2026-06-14, Hermes operating-layer hardening arc)** — three docs-only PRs
-  maturing the Hermes autonomous-loop control plane. **#868 (Q-0142):** fixed a real misread — a
-  stale reconciliation dispatch fired because a decade-queue slot was read as a reserved PR number;
-  Hermes' dispatch skill + operating prompt now pick the next slice **by description verified
-  against the live ledger**, never a predicted PR number (the band-#870 queue §4 banner restates
-  this). **#869:** Hermes' VPS skills (dispatch / log-triage / repo-health / skill-author +
-  `build_skills.py`) run stdlib-only tooling under the VPS's `python3`, not the repo's CI-pinned
-  `python3.10`. **#870:** recorded the verified deadsnakes **Python 3.10 VPS prerequisite** in the
-  Hermes control-plane doc. Docs only.
-- **#867 (2026-06-14, ledger: ad-hoc band #841–#860 window catch-up)** — an *ad-hoc* ledger-hygiene
-  reconcile **between** cadence passes (not a Q-0107 pass — it did not reset the cadence marker or
-  write a planning doc, correctly): added eight live `Recently shipped` entries
-  (#866/#865/#864/#863/#862/#859 + the #856+#853 and #851/#850/#848/#852 groups) and archived eight
-  old ones into [`current-state-archive.md`](current-state-archive.md). Docs only.
-- **#866 (2026-06-14, #704 live-test triage + close + sector-roadmap handoff)** — triaged all
-  11 PR #704 live-test Discord screenshots (2026-06-11): verdict **predominantly working**
-  (mining/crafting RPG + BTD6 hub functional and polished). One substantive finding — the BTD6
-  capability message ("round cash per-round/range") **over-states** vs. the bot's correct
-  grounding-refusal on round-economy questions, plus a grounding-consistency check (asserted Despo
-  price / Elite Lych HP must be confirmed grounded) → routed to the active **P1-1 eval-smoke** lane.
-  Wrote [`audits/pr704-live-test-triage-2026-06-14.md`](audits/pr704-live-test-triage-2026-06-14.md)
-  and **closed #704** (findings preserved; images stay in git history). A chat sweep confirmed the
-  day's substantive items (Q-0134–Q-0141, sector map, refreshed operating prompt) are captured. Docs only.
-- **#865 (2026-06-14, fix: robust `routine_fire.py` dispatch helper — Q-0141)** — live-testing
-  Hermes' new operating prompt, Hermes diagnosed a **real bug**: the dispatch skill's inline
-  `curl -d "$(python3 -c … "$WORK_ORDER")"` is shell-quoting-fragile for multi-line work orders.
-  The owner then decided **Hermes may write its own code (Q-0141)**, making it a parallel build.
-  `scripts/hermes/routine_fire.py` (stdlib-only) takes the work order on **stdin** (zero shell
-  quoting), loads `CLAUDE_ROUTINE_*` from env / `~/.hermes/routine.env`, POSTs `{"text": …}`,
-  **never prints the token**, and supports `--dry-run`; plus a bounded-work prompt addition.
-- **#864 (2026-06-14, tooling: harden the ledger drift guard — band-#840 slot 9)** — two paired
-  slices on `scripts/check_current_state_ledger.py` (the very checker the autonomous loop relies on
-  to catch `current-state.md` drift between reconciliation passes): (1) it now **prints each missing
-  PR's merge-commit subject** beside its number, collapsing the manual `git log --grep "#N"` loop
-  every Q-0107 pass ran by hand; (2) **scoped range-expansion to the ledger proper** so a
-  forward-looking planning range in the `▶ Next action` pointer can't mask a merged band (the
-  band-#800 false-green class, now structural). Pure stdlib.
-- **#863 (2026-06-14, Hermes skill-author meta-skill + docs-only-PR write scope — Q-0140)** —
-  built the Hermes self-extension layer: the **`superbot-skill-author`** meta-skill
-  (`docs/operations/hermes-skills/skill-author.md` + generated artifact; 11 skills) guides Hermes to
-  design/write a new skill in the canonical format and **commit it as a docs-only PR**, closing the
-  "Hermes-authored skills are VPS-only" round-trip gap. **Q-0140** expands Hermes' sanctioned writes
-  to two — review-merge (Q-0117) **+** docs-only PRs (work summary / bug report / new skill source);
-  code still routes via dispatch. Operating prompt refreshed. Docs only.
-- **Older merges (#862 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#898 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #950 AI §7.5 difficulty-comparison session (2026-06-16) added its entry and archived the oldest live one — #897 mining Vault v2 — to hold the ratchet at 20. The #943 diagnostic-mixin session (2026-06-16) added the #942 ledger-reconciliation entry — a reconciliation PR doesn't add its own entry — and archived the oldest live one, the #898+#892+#889 docs-hygiene group, to hold the ratchet at 20. The #932–#939 ledger reconciliation (2026-06-16) added six live entries — #939, #936, #935, #934, #933, #932 — and archived the eight oldest to hold the ratchet at 20: #884, the #878+#879+#881 P1-1 eval/smoke arc, the #870+#869+#868 Hermes operating-layer arc, #867, #866, #865, #864, #863. The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
@@ -507,15 +498,15 @@ Source code and merged PRs win over anything written here.
 
 ## Gates / blocked work
 
-- **Autonomous loop — LIVE and self-firing (verified 2026-06-15):** `ROUTINE_PAT` **is set**, so the
-  cadence/trigger workflows self-fire — this very reconciliation pass was auto-opened as `reconcile`
-  issue **#931** authored by **`menno420`** (the PAT owner), the live tell that the loop fires (a
-  `github-actions[bot]` author would mean the PAT is unset and the routine would never start). The
-  `check_loop_health.py` probe needs `gh` (unavailable in this sandbox → SKIP), so the live read is
-  the trigger-issue author. Canonical state (rows 1/2/6 ✅ verified) lives in
-  [`operations/autonomous-routines.md`](operations/autonomous-routines.md) § Control-plane state — the
-  source of truth no in-repo checker can see. **Still maintainer-side / not repo-verifiable:** rows
-  3–5 (Railway-deployed `CLAUDE_ROUTINE_*` env · dispatch-prompt version · routine model pins).
+- **Autonomous loop — see the canonical [Control-plane state table](operations/autonomous-routines.md)
+  § "Control-plane state".** That table is the single source of truth for the loop's state (does it
+  self-fire · `ROUTINE_PAT` · Railway env · dispatch-prompt version · model pins); **do not restate
+  its verdict here.** This bullet is a pure pointer on purpose — a control-plane verdict copied into
+  this file drifted from the canonical table twice (the band-#870 and band-#930 passes each had to
+  re-sync it by hand), so the copy is deliberately gone (idea
+  `control-plane-single-source-pointer-2026-06-15`). The live read no in-repo checker can see is the
+  `reconcile` trigger-issue author (`menno420` = PAT set & loop self-fires; `github-actions[bot]` =
+  PAT unset); `check_loop_health.py` (Q-0135) probes live GitHub for the same truth.
 - **Open bugs (bug book):** **BUG-0009** (AI list-answer mislabeling — needs the AI orchestration §7
   deterministic list-builders, plan-level) and **BUG-0011** (Hermes gateway restart crash-loop — needs
   a clean VPS foreground repro) stay OPEN — [`health/bug-book.md`](health/bug-book.md).

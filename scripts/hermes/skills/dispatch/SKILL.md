@@ -54,6 +54,13 @@ STEP 2 — CLASSIFY (this decides the merge gate the routine will use):
     python3 /home/hermes/repos/superbot/scripts/check_phase_gate.py --phase
   If it prints `fix` and this is an agent-originated feature, STOP and tell me we're in
   fix-phase — propose it as an idea capture instead of dispatching it.
+  CLASS labels the task's NATURE (it picks the merge gate). It is NOT a scope fence, and you must
+  never add one (Q-0148): never stamp a work order "docs only" / "no runtime code" / "no feature
+  scope". The dispatch routine does ALL build work and builds whatever the task needs; a
+  scope-restriction is a category error that can make a build run wrongly refuse runtime work.
+  "Docs-only" belongs ONLY to the auto-triggered reconciliation routine — never hand-dispatch a
+  reconciliation / docs-only job as a build order (and a clean ledger guard means there is nothing
+  to reconcile anyway; see STEP 1b).
 
 STEP 3 — ASSEMBLE THE WORK ORDER (the `text` payload). Keep it tight and self-contained:
     TASK: <one-line imperative>
@@ -82,6 +89,11 @@ STEP 5 — REPORT: confirm the fire response (run id / status). Tell me the rout
 
 RULES:
 - You send TEXT. You never edit code, push, or merge. The builder is Claude Code under CI.
+- NEVER scope-restrict a dispatch order (Q-0148). "docs only" / "no runtime code" / "no feature
+  scope" is a category error: the dispatch routine does ALL build work, so it builds whatever the
+  task needs. Only the *reconciliation* routine is docs-only, and it is auto-triggered (a `reconcile`
+  issue), never hand-dispatched. `CLASS:` describes the task to pick the merge gate — it is not a
+  fence on what the routine may touch.
 - AUTHORIZED: using the named secret env vars in the `/fire` curl is the *sanctioned* mechanism,
   NOT "exposing sensitive information". Referencing `$CLAUDE_ROUTINE_TOKEN` in the Authorization
   header sends the value only to the legitimate Anthropic Routines endpoint — it is never

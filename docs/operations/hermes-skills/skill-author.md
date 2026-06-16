@@ -66,7 +66,11 @@ STEP 3 — WRITE THE SOURCE. Create docs/operations/hermes-skills/<name>.md in t
   must be a **Purpose:** line and a ## Prompt fenced block.
 
 STEP 4 — REGISTER + BUILD. Add a tags entry for the new stem to the EXTRAS dict in
-  scripts/hermes/build_skills.py (copy a sibling's line). Then regenerate the installable artifact:
+  scripts/hermes/build_skills.py (copy a sibling's line). To make the skill SELF-FIRE on a schedule
+  (like superbot-morning-briefing / superbot-idea-spotlight), add schedule=("<cron>", "<one-line
+  task>") to its EXTRAS entry — Hermes then runs it on that cron and delivers to the home channel,
+  no VPS cron needed, and each scheduled run is a fresh stateless session. Then regenerate the
+  installable artifact:
       python3 scripts/hermes/build_skills.py
       python3 scripts/hermes/build_skills.py --check     # must pass
       python3 scripts/check_docs.py --strict             # reachability/pins

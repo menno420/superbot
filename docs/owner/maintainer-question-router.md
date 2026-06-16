@@ -3451,7 +3451,11 @@ template residue per CLAUDE.md — the repo rules win.
 **Area:** Toolchain / CI parity / production deployment
 **Type:** Technical posture with owner-visible cost — needs an owner pick
 **Priority:** Medium (latent risk, not blocking; now documented and visible)
-**Status:** **Open** — awaiting owner
+**Status:** **DECIDED 2026-06-16 (owner, in-session) — option 1: align CI/local UP to 3.13.** One
+planned toolchain-migration session moves the workflow pins, `requirements-dev` wheels, the
+`python3.10 -m` rule (CLAUDE.md/hooks/scripts/docs), and the sandbox env to 3.13 so the suite runs on
+the interpreter that serves users. **Not yet built** — it needs its own focused session + verification
+pass (every check command changes); tracked as the next toolchain task. Context below.
 
 **Context (discovered during the 2026-06-10 Railway build outage, PR #685):**
 CI and every local check run **Python 3.10** (workflow pin + the repo-wide
@@ -4543,10 +4547,13 @@ execute in a future P0-3 arc PR (family 3).
 
 ### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
 
-> **OPEN — proposal for owner review (DISCUSS lane).** Raised 2026-06-13 by the workflow
-> reconciliation pass. Per **Q-0106** an agent **proposes** CLAUDE.md rule changes via a router
-> Q-block and never self-edits — this is that proposal. Nothing changes in CLAUDE.md until the owner
-> marks up which (if any) to promote; the rules remain strong-default journal candidates meanwhile.
+> **DECIDED 2026-06-16 (owner, in-session): promote all three.** Applied directly under the Q-0106
+> in-session exception. Mapping: **(a)** open-PR / merged-since check was already in CLAUDE.md
+> § Session & plan workflow (the "claim work before starting" bullet) — no change needed; **(b)**
+> generalized the "session prompts are guidance" bullet to **all cross-agent output** (Codex/Gemini/
+> ChatGPT reviews = input to verify against source, not orders); **(c)** added as CI-parity **rule 6**
+> ("a green check that contradicts visible evidence is a bug in the *check*"). Struck from the journal
+> candidate list. Original proposal + context below.
 
 **Area:** Agent workflow / binding rules (`.claude/CLAUDE.md`)
 **Type:** Owner decision (rule promotion — the journal's ★ "earned across multiple sessions" set)
@@ -4581,9 +4588,13 @@ wording in a follow-up, recording this Q as provenance) and are struck from the 
 
 ### Q-0121 — Give Hermes a second sanctioned write (`gh issue create`) for the bug-triage flow?
 
-> **OPEN — awaiting owner decision (DISCUSS lane).** Raised 2026-06-13 by the workflow reconciliation
-> pass while routing [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md). This is
-> the gate that idea's build waits on (the Q-0117 pattern, applied at intake). No code until decided.
+> **DECIDED 2026-06-16 (owner, in-session): YES.** Hermes may call `gh issue create` **scoped to
+> `bug`/`reconcile`/`continue` labels only** (its second sanctioned write, after `gh pr merge`,
+> Q-0117). This un-gates the [`hermes-bug-triage-flow`](../ideas/hermes-bug-triage-flow-2026-06-13.md)
+> build: route `/bugreport` through Hermes (triage → curated `bug` issue) instead of firing an
+> unscreened fix-and-self-merge to prod. **Build in a control-plane session** per the idea's build
+> order; same Q-0105 calibration discipline as Q-0117 (trust the curation after it proves out).
+> Original question + context below.
 
 **Area:** Agent control plane (Hermes) · the read-only-model write boundary
 **Type:** Owner decision (expands Hermes' sanctioned writes by one)
@@ -4799,8 +4810,11 @@ test suite → re-enable xdist) captured in
 
 ### Q-0127 — Native auto-merge never arms for MCP-created PRs (the `auto-merge-enabler` doesn't fire)
 
-> **DISCUSS lane — agent-surfaced finding 2026-06-14 (PR #817 session). Proposing, not applying
-> (executable-config change, Q-0106 boundary).**
+> **DECIDED + APPLIED 2026-06-16 (owner, in-session): option (a) — the session arms it.** Under the
+> Q-0106 in-session exception, CLAUDE.md § Session & plan workflow now states: after opening a PR via
+> the GitHub MCP, call `enable_pr_auto_merge` yourself (the enabler workflow can't fire for
+> app-token-created PRs); the enabler stays the backstop for branch-pushed PRs. First exercised on
+> **PR #956** this session. The original finding + options are preserved below.
 
 **Area:** merge mechanics · the Q-0123 native-auto-merge workflow
 **Type:** automation gap — needs an owner call on the durable fix
@@ -5511,11 +5525,20 @@ PR. Owner fixed the console-pasted prompts directly; this PR brings the in-repo 
 
 ### Q-0147 — myprofile PR C: may a public bot DM strangers at join-time? (onboarding gate) (2026-06-16)
 
-> **DISCUSS lane — agent-surfaced, NOT applied.** Proposing the question, not the answer.
-> Raised at myprofile PR B close (PR #940): PR A (read-only card, #938) and PR B (self-service
-> editor, #940) are shipped, so the `/myprofile` lane is buildable-complete. The only remaining
-> slice — **PR C, `on_member_join` onboarding** — is gated in the plan on this owner decision and
-> must not be built until it is answered.
+> **DECIDED 2026-06-16 (owner, in-session).** **No join-time DM — onboarding is in-guild only.**
+> Standing DM policy the owner set here: **all profile/onboarding DMs are opt-in and never fire on
+> join.** The *only* DMs that may be sent without the recipient opting in are **moderation/warning
+> DMs**, and only when the **server owner enables them** with a **clear way to configure which
+> actions trigger a DM** — a separate feature, captured as
+> [`server-owner-configurable-moderation-dms-2026-06-16`](../ideas/server-owner-configurable-moderation-dms-2026-06-16.md).
+> PR C is un-gated with this shape in
+> [`myprofile-foundation-plan`](../planning/myprofile-foundation-plan-2026-06-10.md) §4.3
+> (in-guild `profile_welcome_hint`, off by default, **no DM path**).
+>
+> *Question, for the record (raised at PR B close, #940):* whether/how to surface the profile hub
+> on join — DM vs in-guild vs nothing — and whether a public bot may DM strangers at all (Q-0080
+> abuse posture). The agent recommended in-guild opt-in / no unsolicited DMs; the owner confirmed
+> and broadened it into the standing policy above.
 
 **The question (plan §4.3).** When a member joins a guild, should the bot proactively surface the
 profile hub, and if so **how**:
@@ -5541,3 +5564,292 @@ path, gate it behind an explicit per-guild setting (default off) and a first-joi
 
 **Home when answered:** `docs/planning/myprofile-foundation-plan-2026-06-10.md` §4.3 (un-gate PR C
 with the decided shape) + this Q-block records the provenance.
+
+---
+
+### Q-0148 — the dispatch routine is never "docs only"; only reconciliation is (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** Testing whether Hermes
+> could send work orders, Hermes fired a real one but stamped it **"CLASS: docs · this is a
+> living-ledger reconciliation only; no runtime code or feature scope."** The owner: *"it's never
+> docs only, only the reconciliation routine should be docs only, please update the repo in such a
+> way that this is absolutely clear."*
+
+**The error.** The fleet has exactly two routine prompts (Q-0145): the **dispatch** routine, which
+does **ALL build work** (runtime code, migrations, tests, docs, fixes, dispatched features), and the
+**docs reconciliation** routine, which is **docs-only** and is **auto-triggered** by a `reconcile`
+issue. Stamping a *dispatch* work order "docs only / no runtime code / no feature scope" conflates
+the *task's nature* with a *routine-level scope fence* — a category error that could make a build
+run wrongly refuse the runtime work it exists to do.
+
+**Decision / fix (this PR).** Make the one-way split unmistakable on both sides of the dispatch
+bridge, and forbid the bad stamp at the source:
+- The saved **dispatch prompt** (`hermes-dispatch-bridge.md` step 3) now states a work order's
+  `CLASS:` / scope notes label the task's nature to pick the merge gate and **never** fence what the
+  routine may touch; if a dispatch order is stamped "docs only", honor the task's real shape, not the
+  stamp. *(Also fixed a real bug found there: step 8 had an accidental duplicate-paste of four lines
+  that had ridden into the live routine system prompt.)*
+- `autonomous-routines.md` — the docs/runtime-split paragraph + fleet framing now say loudly: the
+  dispatch routine is **never** docs-only; "docs-only" is **exclusively** the reconciliation lane.
+- **Hermes' `superbot-dispatch` skill** (`hermes-skills/dispatch.md`) — a CLASSIFY note + a RULES
+  bullet forbid Hermes from ever scope-restricting a dispatch order, and from hand-dispatching a
+  reconciliation / docs-only job as a build order (a clean ledger guard means there is nothing to
+  reconcile anyway).
+
+**Note on the test fire itself:** the dispatched task *happened* to be a genuine ledger
+reconciliation, so the run (PR #942) built the right thing — but the "docs only / no runtime code"
+framing was the wrong shape for a dispatch order regardless, which is what this Q corrects.
+
+**Home:** `docs/operations/hermes-dispatch-bridge.md` (saved prompt) ·
+`docs/operations/autonomous-routines.md` (split + fleet) · `docs/operations/hermes-skills/dispatch.md`
+(the source of work orders). **Owner action:** re-paste the corrected dispatch prompt into the
+routine console and the `superbot-dispatch` skill into Hermes' config (the in-repo copies are the
+source of truth; the live copies must be synced to match).
+
+---
+
+### Q-0149 — Expand `.claude/settings.json` permission allow-list so routines don't stall on prompts (2026-06-16)
+
+> **APPLIED — owner-directed in-session (the Q-0106 exception).** Not a DISCUSS proposal: the
+> maintainer directed this change live (mid-routine, after a permission prompt interrupted a
+> scheduled run), so per CLAUDE.md "the one exception is a change the maintainer directs in-session"
+> it was applied directly. This Q-block records the provenance.
+
+**Trigger.** A scheduled DISPATCH routine run hit a Claude Code permission prompt
+(`grep … || echo … >> .git/info/exclude && git status …`) and **stalled** — an unattended routine
+has no human to click "Allow", so a prompt silently wastes the whole run. The maintainer asked, from
+the mobile app, to "make this get auto-accepted."
+
+**Root cause.** `.claude/settings.json` already set `permissions.defaultMode: "bypassPermissions"`,
+but the **Claude Code web / remote-execution environment does not honor `bypassPermissions`** (it
+downgrades to a gated mode for safety). The effective lever is therefore the `permissions.allow`
+list. The existing allow-list covered git + `python3.10` dev commands but **not** the common
+read-only shell tools (`grep`/`cat`/`head`/`find`/`sed`/`awk`/`jq`/…), compound-command parts, or
+`>>` redirect targets — so anything outside the narrow allow-list prompted.
+
+**Decision (applied).** Expanded `permissions.allow` with the safe, frequently-used command surface
+a routine relies on (read-only shell inspection, safe file ops `mkdir`/`touch`/`cp`/`mv`/`ln -s`,
+more git read/local-history verbs, `python3.10 -c`/`scripts/*`/`tools/*`, `npx … @optave/codegraph`),
+and added a `permissions.ask` list that keeps the **safety-brake** commands prompting (so a routine
+stalls rather than runs them unattended): `rm`, `git push --force`/`-f`, `git clean -f`, `railway*`,
+`sudo*`, `psql`/`pg_dump`/`pg_restore`, `curl`/`wget`, `docker*`. This matches the CLAUDE.md safety
+brakes (never touch prod / DB / external-publish / force-history directly from a routine).
+
+**Caveats / residual (recorded for the owner).**
+1. **Takes effect next scheduled run, not this one** — settings load at session start.
+2. **Not bulletproof for novel compound commands** — `allow` is prefix-matched per command; an
+   unusual `A && B || C >> file` shape can still prompt if a part isn't covered. The allow-list
+   reduces prompts to rare; it does not eliminate them for arbitrary shell.
+3. **The fully-decisive lever is environment-level**, not this file: the Claude Code **web console
+   → the routine's environment** can run the routine in an autonomous permission mode. That is the
+   owner's console setting (outside the repo); this Q only widens the in-repo allow-list, which is
+   the part an agent can change. If prompts still interrupt routines after this, set the
+   environment's permission mode in the console.
+
+**Home:** `.claude/settings.json` (`permissions.allow` / `permissions.ask`) + this Q-block.
+
+### Q-0150 — Make the `.claude/settings.json` hooks cwd-robust (kill the cwd-deadlock trap) (2026-06-16)
+
+> **APPLIED — owner-directed in-session (the Q-0106 exception).** The maintainer asked for the hook
+> explanation, then directed "yes go ahead" to apply the fix. Applied directly to executable config;
+> this block is the provenance. Implements the durable fix the `.session-journal.md` cwd-deadlock
+> entry had been pointing at ("make the hooks use `$CLAUDE_PROJECT_DIR/scripts/…` — router Q-block,
+> since hooks aren't self-edited per Q-0106").
+
+**The trap.** Every hook command in `.claude/settings.json` invoked its script by a **relative path**
+(`python3.10 scripts/<hook>.py`). The Bash tool's cwd **persists across calls**, so a single compound
+`cd <subdir> && …` leaves cwd in that subdir; from there the PreToolUse hooks (which fire on **Bash,
+Edit, AND Write**) resolve `<subdir>/scripts/<hook>.py`, which doesn't exist → `FileNotFound` → the
+hook exits non-zero → the harness **blocks the tool call**. Because all three mutating tools share the
+relative-path hooks, the session **deadlocks**: the very tools needed to `cd` back or patch anything
+are themselves blocked, and an ordinary subagent inherits the same stuck cwd. (Hit live this session
+*and* previously — it is the journal's documented "cwd-deadlock trap".)
+
+**Fix (applied).** Prefix **every** hook command with a cwd guard that resolves the repo root
+regardless of the stuck cwd, with no dependency on an env var that may be unset:
+```
+cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}" && <original command>
+```
+- Prefers `$CLAUDE_PROJECT_DIR` (the documented Claude Code hook var) but **falls back to
+  `git rev-parse --show-toplevel`** when it is empty/unset — and it *was* observed empty in the
+  shell here, so the fallback is load-bearing, not decorative. `git rev-parse --show-toplevel` returns
+  the repo root even when run from a stuck subdir (git searches upward).
+- The `cd` runs in the **hook's own subshell**, so it never affects the tool's persistent cwd; it also
+  fixes any *internal* relative paths the scripts use. All 7 hook commands updated (PreToolUse
+  Bash + Edit|Write, PostToolUse Edit|Write + create_pull_request, Stop ×2, SessionStart).
+
+**Proof.** Each wrapped command was pipe-tested **from a deliberately-stuck `disbot/` cwd** and exited
+0 (`check_branch_freshness`, `claude_pre_edit`, `claude_post_edit`, `claude_pr_subscribe_reminder`,
+`claude_stop_check`), confirming the exact failure scenario is now handled. JSON validated.
+
+**Caveat.** Like all hook changes, it **takes effect next session** (hooks load at session start), so
+the avoidance note in `.session-journal.md` stays useful until this ships and one fresh session
+confirms it live; the journal entry is updated to mark the durable fix applied. The "never `cd` into
+a subdir" habit remains good hygiene regardless.
+
+**Home:** `.claude/settings.json` (`hooks`) + this Q-block; `.session-journal.md` cwd-deadlock entry
+updated to "durable fix applied (Q-0150)".
+
+---
+
+### Q-0151 — Architecture-atlas review: unified atlas? root README? taxonomy enforcement? (2026-06-16)
+
+> **ANSWERED 2026-06-16 — owner accepted the agent recommendations.** Owner: *"yes I agree with your
+> recommendations, and the readme is not required but not off limits."* Raised by the owner-uploaded
+> repo-architecture review (captured + cross-checked in
+> [`docs/ideas/architecture-atlas-and-structure-review-2026-06-16.md`](../ideas/architecture-atlas-and-structure-review-2026-06-16.md),
+> PR #957). Resolution:
+> - **a (atlas):** build it thin, as a **companion** to `AGENT_ORIENTATION.md`, **CI-`--check` +
+>   on-demand generate, body not committed**. Sequenced as PR 2 of
+>   [`../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md`](../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md).
+> - **b (root README):** *not required but not off limits* — optional 5-line pointer-only README if a
+>   public landing page is later wanted; the deliberate no-README posture otherwise stands. Not built now.
+> - **c (taxonomy):** classify **all 43**, **CI-enforced** — but via a **curated overlay
+>   (`architecture_rules/extension_roles.yaml`) + a `--check` guard**, *not* a registry schema bump
+>   (lower risk; roles are editorial, not runtime; and the 10 most-interesting extensions have no
+>   registry entry to put a field on). **SHIPPED in PR #958.** (Rationale in the plan §"Design decision".)
+>
+> The original DISCUSS framing + per-question agent recommendations are preserved below for provenance.
+
+**Q-0151a — A thin unified atlas?** The review's flagship "per-file maintainer dashboard" is ~80%
+already shipped (`context_map.py` + `wiring_map.py` + `review_scope.py` + the agent context packs).
+The surviving delta is a **repo-wide, provenance-stamped index** with a single `--check` drift mode,
+built by *composing* the existing scripts (never re-implementing them). If we build it:
+**(i)** is the atlas the **primary** architecture entry point, or a **companion** to
+`AGENT_ORIENTATION.md` (which stays the human/agent reading-order router)? **(ii)** do we **commit**
+the generated Markdown/JSON to git, or keep it **CI-artifact-only**?
+*Agent recommendation:* build it thin, as a **companion** (not a replacement — orientation is curated
+intent, the atlas is generated facts), **CI-`--check` + on-demand generate**, do **not** commit the
+generated body (commit only the generator + a provenance header), to avoid a new drift surface. It
+overlaps the context-pack system, so confirm before building.
+
+**Q-0151b — Revisit the "no root README" decision?** The review recommends a minimal root README
+pointer. The repo made an **explicit decision against one** (`repo-navigation-map.md:51` — *"There is
+intentionally no top-level README — docs/ is the documentation surface"*). Now that the repo is
+public-era, a tiny GitHub-landing pointer (→ `AGENT_ORIENTATION.md` + `current-state.md`) may be worth
+it. *Agent recommendation:* add a **5-line pointer-only** README (no content duplication) **iff** the
+owner wants a public landing page; otherwise keep the deliberate no-README posture. Owner's call —
+it overrides a stated decision.
+
+**Q-0151c — How far to enforce extension classification?** The strongest finding: no taxonomy maps the
+43 extensions ↔ 33 subsystems (the 10 non-1:1 are unclassified). Should classification cover **only
+the 10 non-subsystem extensions**, or **all 43**? And should the `role` be **advisory metadata** or a
+**CI-enforced** guard (a new `INITIAL_EXTENSIONS` entry must declare a role or be a registered
+subsystem)? *Agent recommendation:* classify **all 43** (cheap, and partial taxonomies rot), role as a
+registry field, **CI-enforced** so the gap can't silently re-grow — but this is a
+`REGISTRY_SCHEMA_VERSION` bump, so it ships via its **own plan**, not a drive-by.
+
+**Home when answered:** a `docs/planning/` plan for the taxonomy (Q-0151c) + atlas (Q-0151a) if
+approved; the README decision (Q-0151b) records here + `repo-navigation-map.md`. The capture doc holds
+the full evidence and routing table.
+
+---
+
+### Q-0152 — Act on the autonomous-run review: run-report footer · ledger guard-exemption + drift line · bug-fix-guard · auto-deploy correction (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** After reviewing the first
+> overnight autonomous run, the owner directed implementing the loop-closing changes its self-audit
+> kept flagging, and corrected two propagating errors. Recorded here per CLAUDE.md Q-0106 because one
+> piece touches **executable config** (the SessionStart banner) — applied under the in-session
+> exception (the owner is the live reviewer). The rest are docs/tooling (free rein), batched here for
+> provenance. (Renumbered from Q-0151 → Q-0152 to yield Q-0151 to the concurrent #957 atlas block.)
+
+**What shipped (PR #956):**
+
+- **Run-report footer** (docs) — a required owner-facing `📤 Run report` block (`.sessions/README.md`
+  + both routine prompts), with `⚑ Owner decisions needed` / `⚑ Owner manual steps` lines (`none`
+  when empty) so Hermes rolls up what needs the owner instead of it evaporating into prose.
+- **Ledger guard-exemption** (tooling) — `check_current_state_ledger.py` skips a self-referential
+  reconciliation PR (`reconcil` in its merge subject); it can't list its own number, so its absence
+  isn't drift. Kills recurring busywork (idea: `ledger-guard-exempt-reconciliation-prs-2026-06-16`).
+- **SessionStart ledger-drift line** (⚠ **executable config** — Q-0106 exception) —
+  `claude_session_summary.py` prints `Ledger : ⚠ N merged PR(s) not yet in current-state` at session
+  start, fail-silent, so drift is seen *growing* rather than discovered only at close.
+- **Bug-fix-ships-its-guard** (docs) — the bug-book convention now requires a fixed bug's stays-fixed
+  guard to ship in the *same* PR (never deferred — the deathmatch #933 deferral three sessions flagged).
+- **Auto-deploy misinformation fix** (docs) — corrected the false "needs a Railway prod deploy to
+  clear it live" lines in `bug-book.md` + `current-state.md` (the bot **auto-deploys on merge**); the
+  bug-book convention + run-report footer now forbid re-adding a phantom manual-deploy step. The
+  legitimate authority-sense "Merge ≠ deploy" usages (prod-checks/restarts stay the owner's) are left.
+
+**Provenance note:** the run-report footer was specified in
+[`routine-system-improvements-2026-06-14`](../ideas/routine-system-improvements-2026-06-14.md)
+§ "Priority 1" (filed, never adopted) — this adopts it. Q-0147 (the DM gate) was decided in the same
+session — see its block.
+
+**Home:** the files above + this Q-block.
+
+### Q-0153 — Hermes efficiency: new skills (idea-spotlight · morning-briefing · dispatch-resolve) + a 6h interactive session auto-reset (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** The owner asked to make the
+> Hermes control-plane agent more efficient with specialised skills and an automatic chat-session
+> reset, and (via `AskUserQuestion`) chose the specific set below. Recorded for provenance per the
+> CLAUDE.md working agreement (owner decisions get a home). All pieces are docs / Hermes-skill /
+> stdlib-tooling — **free rein**, no executable-config (`.claude/settings.json` / hooks) touched, so
+> no Q-0106 exception is needed; this block is the durable record, not an approval gate.
+
+**What shipped (PR #959):**
+
+- **`superbot-idea-spotlight`** (NEW scheduled skill, the headline ask) — picks **one** active
+  `docs/ideas/` capture per day (deterministic, rotating, via `scripts/hermes/idea_spotlight.py`)
+  and posts a card with **pros · cons/risks · options & expansions**, so the owner can mull it and
+  **report a verdict at end of day**; the EOD reply routes through `superbot-intake`.
+- **`superbot-morning-briefing`** (NEW scheduled skill) — one consolidated morning digest (health ·
+  open PRs · CI · overnight routine activity · decisions waiting on the owner). Absorbs
+  `repo-health`'s former daily schedule — the owner's explicit "**one message instead of several
+  pings**"; `repo-health` stays a full on-demand traffic-light.
+- **`superbot-dispatch-resolve`** (NEW skill) + **`scripts/dispatch_menu.py --json`** — resolves a
+  vague "work on sector SX" into a concrete work order routed by the resolved executor. This is the
+  **Hermes-wiring half** of `dispatch-resolution-json-hermes` (the **Q-0137 Thread 1 read-side**),
+  greenlit here; the broader Thread-1 cron-backstop decision stays owner-undecided.
+- **Interactive session auto-reset every 6h** — `scripts/hermes/session_reset.sh` + the runbook
+  [`hermes-session-reset.md`](../operations/hermes-session-reset.md) (systemd timer, `OnCalendar`
+  every 6h). Owner's rationale: "**never a long session, and the repo updates fast so old context
+  isn't always valuable.**" Scheduled *skills* already run stateless, so this targets only the
+  interactive chat thread.
+
+**Owner manual steps (VPS, off-repo):** re-install the skills + SOUL.md and restart the gateway
+(`install-skills.sh` → `install-soul.sh` → `systemctl restart hermes-gateway`); then wire the 6h
+reset per the runbook (confirm the `HERMES_RESET_CMD` for your Hermes build — the one UNVERIFIED knob).
+
+**Home:** `docs/operations/hermes-skills/{idea-spotlight,morning-briefing,dispatch-resolve}.md` ·
+`docs/operations/hermes-session-reset.md` · `scripts/hermes/{idea_spotlight.py,session_reset.sh}` ·
+`scripts/dispatch_menu.py` · `scripts/hermes/build_skills.py` (EXTRAS) · this Q-block.
+
+### Q-0154 — Behind/conflicted PRs must not sit silently: auto-update behind + red-on-conflict (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly — ⚠ executable config, Q-0106
+> exception).** Surfaced live: PR #959 stalled because 12 PRs merged during the work, leaving the
+> branch `behind` main — and the owner pointed out this defeats the original intent, which was that a
+> problematic branch should go **red so an agent sees and acts**, not sit green-and-unmergeable. I
+> verified the actual behavior: a merge conflict/behind state is a *git property, not a test result*,
+> so GitHub does **not** redden a check for it, native auto-merge does **not** auto-update a behind
+> branch (no merge queue), and nothing in the repo turned conflicts red (born-red Q-0133 only covers
+> *incomplete* session cards; the Q-0125 reconciliation sweep is only every ~30 PRs). The owner chose
+> **build both** halves (via `AskUserQuestion`). Touches `.github/workflows/` (executable config), so
+> recorded under the Q-0106 in-session exception (owner is the live reviewer).
+
+**What shipped (PR #961):**
+
+- **`.github/workflows/pr-auto-update.yml`** — on `push: main`, brings open non-draft `claude/*` PRs
+  that are `BEHIND` up to date (`update-branch`) so they re-test against current main and auto-merge
+  fires. Carve-outs (`needs-hermes-review` / `do-not-automerge`) are left alone. A branch that can't
+  be cleanly updated (a real conflict) fails update-branch and is left for the guard. *Behind =
+  handled silently.* (Would have prevented the #959 stall.)
+- **`.github/workflows/pr-conflict-guard.yml`** — on `push: main` + `pull_request` + a schedule
+  backstop, posts a **red `conflict-guard` commit status** on any `DIRTY` PR and clears it to green
+  when resolved (skips `UNKNOWN` to avoid flapping). *Conflict = loud red.* It is a **non-required**
+  status (visibility, not an extra merge gate — a DIRTY PR already can't merge), so **no
+  branch-protection change is needed** for it to work.
+
+**Why `push: main` is the key trigger:** a conflict/behind state appears when *main moves* (another
+PR merges) — which is not an event on the stale PR — so both workflows hinge on `push: main`, which
+fires reliably on every merge. (GitHub `schedule:` cron is a laggy backstop only.)
+
+**Owner manual steps:** none beyond what already exists — `ROUTINE_PAT` already needs Pull requests +
+Contents write for `auto-merge-enabler.yml`, which is exactly what `pr-auto-update` uses; the guard
+posts statuses with the same token. Optionally make `conflict-guard` a *required* check if you want a
+conflict to hard-block (not necessary — it already can't merge).
+
+**Home:** `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` ·
+`docs/operations/autonomous-routines.md` § "PR mergeability keepers" · this Q-block.

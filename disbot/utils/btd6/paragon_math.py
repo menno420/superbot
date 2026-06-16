@@ -167,6 +167,25 @@ _ALIASES: dict[str, str] = {
 }
 
 
+def paragon_surfaces() -> tuple[tuple[str, str], ...]:
+    """Every ``(surface, paragon_id)`` the resolver matches, for text scanning.
+
+    Paragon names, tower names, ids, and the colloquial aliases — so a
+    multi-paragon comparison can find *all* mentions in a sentence the same way
+    :func:`resolve_paragon` matches a single string. Surfaces are lower-cased;
+    duplicates (a surface that equals its id) are returned as-is — the caller
+    dedups on the resolved id, not the surface.
+    """
+    surfaces: list[tuple[str, str]] = []
+    for paragon in PARAGONS:
+        surfaces.append((paragon.name.lower(), paragon.paragon_id))
+        surfaces.append((paragon.tower.lower(), paragon.paragon_id))
+        surfaces.append((paragon.paragon_id, paragon.paragon_id))
+    for alias, pid in _ALIASES.items():
+        surfaces.append((alias, pid))
+    return tuple(surfaces)
+
+
 def resolve_paragon(text: str) -> Paragon | None:
     """Resolve a tower name, paragon name, paragon id, or shorthand alias.
 
@@ -632,6 +651,7 @@ __all__ = [
     "game_mode_for",
     "max_extra_t5_count",
     "next_degree",
+    "paragon_surfaces",
     "power_for_next_degree",
     "resolve_paragon",
     "solve_requirements",

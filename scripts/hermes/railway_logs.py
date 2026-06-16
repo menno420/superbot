@@ -42,6 +42,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -79,9 +80,34 @@ WHOAMI_QUERY = "query { me { id email } }"
 #: Railway deployment statuses that mean "this is the live one worth reading".
 ACTIVE_STATUSES = {"SUCCESS", "DEPLOYED"}
 
+#: HTTP statuses worth retrying — Railway's Cloudflare/Envoy front intermittently
+#: returns 502/503/504 ("upstream connect error … reset reason: connection
+#: timeout") on heavier resolvers, and 429 is rate-limiting. A plain retry seconds
+#: later succeeds, so a single blip should not fail the whole log-triage skill.
+#: 4xx other than 429 (auth / bad request) are NOT retried — those are real.
+RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
+
 
 class RailwayError(RuntimeError):
     """A config or API error worth printing plainly (no traceback)."""
+
+
+def _retry_delay(attempt: int, exc: BaseException, base: float) -> float:
+    """Seconds to wait before retry ``attempt`` (0-based).
+
+    Exponential backoff (``base * 2**attempt``), but honour a numeric
+    ``Retry-After`` header (seconds) when the server sent one — e.g. on 429 —
+    capped at 30s so a hostile/huge value can't hang the tool.
+    """
+    headers = getattr(exc, "headers", None)
+    if headers is not None:
+        raw = headers.get("Retry-After")
+        if raw:
+            try:
+                return min(max(float(raw), 0.0), 30.0)
+            except (TypeError, ValueError):
+                pass
+    return base * (2**attempt)
 
 
 def build_poster(
@@ -89,36 +115,61 @@ def build_poster(
     *,
     is_project_token: bool,
     timeout: float = 30.0,
+    max_retries: int = 3,
+    backoff_base: float = 0.5,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> PostFn:
-    """Return a ``PostFn`` bound to ``token`` and the right auth header."""
+    """Return a ``PostFn`` bound to ``token`` and the right auth header.
+
+    Transient failures retry with exponential backoff: ``max_retries`` extra
+    attempts (so ``max_retries + 1`` total) on a retryable HTTP status
+    (:data:`RETRYABLE_STATUS`) or a connection-level error (``URLError`` /
+    timeout). A 4xx other than 429, or a GraphQL-error body, raises at once —
+    retrying those would only mask a real auth / bad-request failure. ``sleep``
+    is injected so tests stay fast and hermetic.
+    """
     header_name = "Project-Access-Token" if is_project_token else "Authorization"
     header_value = token if is_project_token else f"Bearer {token}"
 
     def post(query: str, variables: dict[str, Any]) -> dict[str, Any]:
         payload = json.dumps({"query": query, "variables": variables}).encode("utf-8")
-        req = urllib.request.Request(API_URL, data=payload, method="POST")
-        req.add_header("Content-Type", "application/json")
-        # Cloudflare fronts backboard.railway.com and bans urllib's default
-        # ``Python-urllib/X.Y`` User-Agent with error 1010 (TLS/client-signature
-        # block) — every call 403s without this, regardless of token. A plain
-        # client UA passes. (Discovered by an auth-probe routine, 2026-06-14.)
-        req.add_header("User-Agent", USER_AGENT)
-        req.add_header(header_name, header_value)
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                body = json.loads(resp.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "replace")
-            raise RailwayError(f"Railway API HTTP {exc.code}: {detail}") from exc
-        except urllib.error.URLError as exc:
-            raise RailwayError(
-                f"Could not reach Railway API ({API_URL}): {exc.reason}",
-            ) from exc
-        if body.get("errors"):
-            raise RailwayError(
-                "Railway API returned errors:\n" + json.dumps(body["errors"], indent=2),
-            )
-        return body.get("data") or {}
+        for attempt in range(max_retries + 1):
+            # Build a fresh request per attempt (urlopen consumes the body).
+            req = urllib.request.Request(API_URL, data=payload, method="POST")
+            req.add_header("Content-Type", "application/json")
+            # Cloudflare fronts backboard.railway.com and bans urllib's default
+            # ``Python-urllib/X.Y`` User-Agent with error 1010 (TLS/client-
+            # signature block) — every call 403s without this, regardless of
+            # token. A plain client UA passes. (Auth-probe routine, 2026-06-14.)
+            req.add_header("User-Agent", USER_AGENT)
+            req.add_header(header_name, header_value)
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    body = json.loads(resp.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                if exc.code in RETRYABLE_STATUS and attempt < max_retries:
+                    sleep(_retry_delay(attempt, exc, backoff_base))
+                    continue
+                detail = exc.read().decode("utf-8", "replace")
+                raise RailwayError(f"Railway API HTTP {exc.code}: {detail}") from exc
+            except (urllib.error.URLError, TimeoutError) as exc:
+                # URLError wraps connect failures + DNS; TimeoutError is a read
+                # timeout. Both are transient — retry within budget.
+                if attempt < max_retries:
+                    sleep(backoff_base * (2**attempt))
+                    continue
+                reason = getattr(exc, "reason", exc)
+                raise RailwayError(
+                    f"Could not reach Railway API ({API_URL}): {reason}",
+                ) from exc
+            if body.get("errors"):
+                raise RailwayError(
+                    "Railway API returned errors:\n"
+                    + json.dumps(body["errors"], indent=2),
+                )
+            return body.get("data") or {}
+        # The loop always returns or raises; this satisfies the type-checker.
+        raise RailwayError("Railway API: retries exhausted")  # pragma: no cover
 
     return post
 

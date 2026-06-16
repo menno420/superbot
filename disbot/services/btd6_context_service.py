@@ -21,7 +21,7 @@ import logging
 import re
 import unicodedata
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
@@ -1991,25 +1991,584 @@ def deterministic_modes_reply(message_text: str) -> str | None:
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
+# --- "which costs more" deterministic reply (AI §7.5 multi-entity comparison) -
+# A cost comparison ("is a 0-4-1 desperado cheaper than a 2-0-4 sniper", "compare
+# the cost of a 5-0-0 ninja and a 0-5-0 wizard") is the same "grounded values,
+# wrong assembly" class as BUG-0009 — every individual price is grounded, but the
+# model freelances/mis-ranks the comparison itself (which is cheaper, by how much),
+# and the value-only faithfulness guard cannot catch a mis-*ranking*. So the
+# deterministic layer OWNS the labelled comparison: it prices each named candidate
+# via btd6_data_service.compare_crosspath_costs (the §7.5 rank/diff primitive) and
+# serves the ranked answer as a pre-emptive floor before the model.
+#
+# High-precision firing: an explicit cost-compare cue (NOT a bare "cheap"/"better")
+# AND at least two resolvable (tower, crosspath) candidates. "vs"/"versus" stay
+# allowed (normal cost-comparison connectors), unlike the roster strategy fence.
+_COST_COMPARE_CUE_RE = re.compile(
+    r"\bcheaper\b|\bcheapest\b|\bpricier\b|\bmore\s+expensive\b|"
+    r"\bless\s+expensive\b|\bmost\s+expensive\b|\bleast\s+expensive\b|"
+    r"\bcosts?\s+(?:more|less|the\s+same)\b|\bprice\s+difference\b|"
+    r"\bcost\s+difference\b|\bbetter\s+value\b",
+    re.I,
+)
+# "compare the cost of X and Y" / "cost comparison" — a compare verb anchored to a
+# cost/price noun (so "compare the ninja and sniper" without a money word defers to
+# the model, where it may be a stats comparison).
+_COST_COMPARE_VERB_RE = re.compile(
+    r"\bcompare\b.{0,40}\b(?:cost|price|pricing)\b|"
+    r"\b(?:cost|price|pricing)\b.{0,40}\bcompare\b|"
+    r"\b(?:cost|price)\s+comparison\b",
+    re.I,
+)
+# Clearly-strategic intent that wants a recommendation, not a price — a cost answer
+# would be a non-sequitur. Deliberately small (the cost cue already gates hard).
+_COST_COMPARE_STRATEGY_EXCLUDE = (
+    "should i",
+    "recommend",
+    "worth it",
+    "tier list",
+    "good against",
+    "best for",
+)
+# A named difficulty in the question; default medium when absent.
+_COST_DIFFICULTY_RE = re.compile(
+    r"\b(easy|medium|hard|impoppable|impop|chimps)\b",
+    re.I,
+)
+# An explicit paragon token — the disambiguator that routes a cost comparison to
+# the paragon builder (and away from the base-tower cost builders, which match a
+# tower alias like "dart"/"ninja" and would otherwise price the *base* tower).
+_PARAGON_CUE_RE = re.compile(r"\bparagons?\b", re.I)
+
+# --- §7.5 round-range cash comparison -----------------------------------------
+# An income/earning noun (distinct from the cost cue above) — required so a
+# round-range comparison fires only on a money question, not a stats one.
+_EARN_NOUN_RE = re.compile(r"\b(?:cash|money|income|earn(?:ed|ings?|s)?)\b", re.I)
+# A comparison signal: "more"/"less"/"most"/"better", "vs"/"or"/"than",
+# or an explicit compare verb. Combined with the earn noun + two ranges, this
+# keeps the floor off single-range questions (the round-cash workflow's job).
+_EARN_COMPARE_RE = re.compile(
+    r"\b(?:more|less|most|least|higher|lower|highest|lowest|better|worse)\b|"
+    r"\bvs\.?\b|\bversus\b|\bor\b|\bthan\b|\bcompare[ds]?\b|\bcomparison\b|"
+    r"\bdifference\b",
+    re.I,
+)
+# A clearly-strategic intent that wants a recommendation, not a number — defer.
+_EARN_STRATEGY_EXCLUDE = ("should i", "recommend", "worth it", "best for")
+# An inclusive round range: "rounds 20-40", "round 20 to 40", "r20-40",
+# "20 through 40" (a round token on the first anchor, optional on the second).
+# The trailing digit boundary keeps "r2d2"-style tokens out.
+_ROUND_RANGE_RE = re.compile(
+    r"\b(?:rounds?|r)\s*(\d{1,3})\s*(?:to|through|thru|until|till|[-–])\s*"
+    r"(?:(?:rounds?|r)\s*)?(\d{1,3})\b",
+    re.I,
+)
+# "between rounds X and Y" — the connector form _ROUND_RANGE_RE does not cover.
+_ROUND_RANGE_BETWEEN_RE = re.compile(
+    r"\bbetween\s+(?:rounds?|r)?\s*(\d{1,3})\s+and\s+(?:(?:rounds?|r)\s*)?(\d{1,3})\b",
+    re.I,
+)
+
+
+def _extract_round_ranges(text_lower: str) -> list[tuple[int, int]]:
+    """The inclusive round ranges a comparison names, in order of appearance.
+
+    Both the ``X-Y`` / ``X to Y`` form and the ``between X and Y`` form are
+    scanned; each ``(lo, hi)`` is returned with endpoints normalised (lo ≤ hi).
+    Order is preserved and deduped on the normalised pair so "rounds 20-40 or
+    20-40" yields one range (the data primitive also dedups, but doing it here
+    keeps the ≥2-ranges gate honest).
+    """
+    found: list[tuple[int, tuple[int, int]]] = []
+    seen: set[tuple[int, int]] = set()
+    for match in (
+        *_ROUND_RANGE_RE.finditer(text_lower),
+        *_ROUND_RANGE_BETWEEN_RE.finditer(text_lower),
+    ):
+        a, b = int(match.group(1)), int(match.group(2))
+        pair = (min(a, b), max(a, b))
+        if pair in seen:
+            continue
+        seen.add(pair)
+        found.append((match.start(), pair))
+    found.sort(key=lambda f: f[0])
+    return [pair for _start, pair in found]
+
+
+def _fmt_money(value: float) -> str:
+    """Money string: no decimals for a whole-dollar amount, else two places."""
+    return f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}"
+
+
+def _format_round_range_comparison(result: dict[str, Any]) -> str:
+    set_label = result["set_label"]
+
+    def _label(entry: dict[str, Any]) -> str:
+        if entry["single_round"]:
+            return f"Round {entry['round_start']}"
+        return f"Rounds {entry['round_start']}–{entry['round_end']}"
+
+    lines = [f"**Cash comparison — {set_label} round set, Medium:**"]
+    for entry in result["entries"]:
+        suffix = "" if entry["single_round"] else f" ({entry['rounds_counted']} rounds)"
+        lines.append(
+            f"• **{_label(entry)}** — **${_fmt_money(entry['earned'])}**{suffix}",
+        )
+    highest = result["highest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They earn the **same** (**${_fmt_money(highest['earned'])}**) each.",
+        )
+    elif len(result["entries"]) == 2:
+        lowest = result["lowest"]
+        lines.append(
+            f"→ **{_label(highest)} earn more** by **${_fmt_money(result['spread'])}** "
+            f"(vs {_label(lowest)}).",
+        )
+    else:
+        lowest = result["lowest"]
+        lines.append(
+            f"→ Most: **{_label(highest)}** (${_fmt_money(highest['earned'])}). Least: "
+            f"**{_label(lowest)}** (${_fmt_money(lowest['earned'])}). "
+            f"Spread: **${_fmt_money(result['spread'])}**.",
+        )
+    lines.append(
+        "_(Standard/Medium per-round cash, no income towers; each range is the "
+        "inclusive sum of its rounds. Cash modifiers are not applied.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_round_range_comparison_reply(message_text: str) -> str | None:
+    """A code-built "which earns more cash, rounds X-Y or A-B" answer, or ``None``.
+
+    The AI §7.5 *round-range* member of the multi-entity comparison floor — the
+    income sibling of the cost builders. Ranks the total cash of **two or more**
+    round ranges so the model can never mis-state which range earns more / by how
+    much (the BUG-0009 "grounded values, wrong assembly" class). Fires only on an
+    earning noun (``cash``/``money``/``income``/``earn``) **and** a comparison
+    signal (``more``/``vs``/``or``/``compare`` …) **and** two-or-more parsed round
+    ranges; an ABR cue routes the alternate round set. Returns ``None`` otherwise —
+    a **single** range is the round-cash workflow's job (they stay non-overlapping
+    on range count, and this floor short-circuits before the workflow runs), and
+    strategy/recommendation questions reach the model untouched.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _EARN_NOUN_RE.search(low):
+        return None
+    if not _EARN_COMPARE_RE.search(low):
+        return None
+    if any(word in low for word in _EARN_STRATEGY_EXCLUDE):
+        return None
+
+    ranges = _extract_round_ranges(low)
+    if len(ranges) < 2:
+        return None
+
+    from services import btd6_data_service
+    from utils.btd6.keywords import ABR_CUE_RE
+
+    roundset = "alternate" if ABR_CUE_RE.search(low) else "default"
+    result = btd6_data_service.compare_round_ranges(ranges, roundset=roundset)
+    if not result.get("found"):
+        return None
+    return _format_round_range_comparison(result)
+
+
+def _scan_towers_with_positions(text_lower: str, dataset: Any) -> list[tuple[int, Any]]:
+    """Every tower mentioned in ``text_lower``, as ``(start_index, tower)`` pairs
+    in order of appearance, longest-surface-wins on overlap.
+
+    Unlike :func:`_scan_tower` (which returns only the single best match), this
+    finds *all* tower mentions so a multi-entity comparison can pair each with a
+    crosspath. Whole-word matched on canonical names + aliases (≥3 chars), with an
+    optional trailing ``s``. Overlapping matches (e.g. "super monkey" vs "monkey")
+    resolve to the longest surface at that span.
+    """
+    spans: list[tuple[int, int, int, Any]] = []  # (start, end, surface_len, tower)
+    for tower in dataset.towers:
+        for surface in (tower.canonical, *tower.aliases):
+            s = surface.lower()
+            if len(s) < 3:
+                continue
+            for match in re.finditer(r"\b" + re.escape(s) + r"s?\b", text_lower):
+                spans.append((match.start(), match.end(), len(s), tower))
+
+    # Longest-surface-wins: walk by start, then by descending surface length, and
+    # drop any span overlapping one already accepted.
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, Any]] = []
+    for start, end, _slen, tower in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _t in accepted):
+            continue
+        accepted.append((start, end, tower))
+    accepted.sort(key=lambda a: a[0])
+    return [(start, tower) for start, _end, tower in accepted]
+
+
+def _extract_cost_comparison_candidates(
+    text_lower: str,
+    dataset: Any,
+) -> list[tuple[str, str]]:
+    """The ``(tower-canonical, crosspath-code)`` candidates a cost comparison names.
+
+    Each tower mention is paired with the crosspath code immediately before it
+    ("0-4-1 desperado"), within a short window; a tower with no preceding code is
+    treated as the base tower (``000``). Deduped by ``(tower id, code)`` preserving
+    order, so "0-4-1 desperado vs 2-0-4 desperado" yields two candidates while a
+    repeated "the sniper … the sniper" yields one.
+    """
+    candidates: list[tuple[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for start, tower in _scan_towers_with_positions(text_lower, dataset):
+        window = text_lower[max(0, start - 14) : start]
+        code = "000"
+        for cp in _CROSSPATH_RE.finditer(window):
+            candidate_code = "".join(cp.groups())
+            if tier_codes.is_legal(candidate_code):
+                code = candidate_code  # last (closest to the tower) wins
+        key = (tower.id, code)
+        if key in seen:
+            continue
+        seen.add(key)
+        candidates.append((tower.canonical, code))
+    return candidates
+
+
+def _format_cost_comparison(result: dict[str, Any]) -> str:
+    diff = str(result["difficulty"]).capitalize()
+    lines = [f"**Cost comparison — {diff} pricing:**"]
+    for entry in result["entries"]:
+        lines.append(
+            f"• **{entry['tower']} {entry['code']}** ({entry['label']}) — "
+            f"**${entry['unit_cost']:,}**",
+        )
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** at **${cheapest['unit_cost']:,}** each.",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['tower']} {cheapest['code']}** is cheaper by "
+            f"**${result['spread']:,}**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['tower']} {cheapest['code']}** "
+            f"(${cheapest['unit_cost']:,}). Most expensive: "
+            f"**{dearest['tower']} {dearest['code']}** (${dearest['unit_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append(
+        "_(Full per-tower cost: base + every upgrade, each purchase rounded to $5 "
+        "at that difficulty, then summed.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "which costs more / is cheaper" answer, or ``None``.
+
+    The AI §7.5 multi-entity comparison floor. Fires only on a high-precision
+    cost-compare cue (``cheaper``/``more expensive``/``compare … cost`` — never a
+    bare "cheap"/"better") **and** at least two resolvable ``(tower, crosspath)``
+    candidates. Returns ``None`` for single-entity cost lookups (handled by the
+    grounding pricing leg), strategy/recommendation questions, and anything outside
+    a clear two-or-more cost comparison — those reach the model untouched. The
+    ranking is deterministic, so the model can never mis-state which is cheaper.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+    # A paragon cost comparison is the paragon builder's job — base-tower pricing
+    # of a paragon's tower is the wrong answer (keeps the floor exactly-one-fires).
+    if _PARAGON_CUE_RE.search(low):
+        return None
+
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+    candidates = _extract_cost_comparison_candidates(low, dataset)
+    if len(candidates) < 2:
+        return None
+
+    difficulty = "medium"
+    diff_match = _COST_DIFFICULTY_RE.search(low)
+    if diff_match:
+        token = diff_match.group(1).lower()
+        # CHIMPS is a mode, not a pricing difficulty — its prices are Hard's.
+        difficulty = "hard" if token == "chimps" else token
+        if difficulty == "impop":
+            difficulty = "impoppable"
+
+    result = btd6_data_service.compare_crosspath_costs(
+        candidates,
+        difficulty=difficulty,
+    )
+    if not result.get("found"):
+        return None
+    return _format_cost_comparison(result)
+
+
+def _format_difficulty_cost_comparison(result: dict[str, Any]) -> str:
+    tower = result["tower"]
+    code = result["code"]
+    label = result["label"]
+    lines = [f"**Cost comparison — {tower} {code} ({label}) by difficulty:**"]
+    for entry in result["entries"]:
+        lines.append(
+            f"• **{entry['difficulty'].capitalize()}** — **${entry['unit_cost']:,}**",
+        )
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ It costs the **same** (**${cheapest['unit_cost']:,}**) at every "
+            "named difficulty.",
+        )
+    elif len(result["entries"]) == 2:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheaper on **{cheapest['difficulty'].capitalize()}** by "
+            f"**${result['spread']:,}** (vs **{dearest['difficulty'].capitalize()}**).",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['difficulty'].capitalize()}** "
+            f"(${cheapest['unit_cost']:,}). Most expensive: "
+            f"**{dearest['difficulty'].capitalize()}** (${dearest['unit_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append(
+        "_(Same upgrade state priced at each difficulty: base + every tier, each "
+        "purchase rounded to $5 at that difficulty, then summed.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_difficulty_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is it cheaper on easy or impoppable" answer, or ``None``.
+
+    The AI §7.5 *difficulty* member of the multi-entity cost-comparison floor —
+    the sibling of :func:`deterministic_cost_comparison_reply`, which ranks
+    *different towers* at one difficulty. This ranks **one** upgrade state across
+    two-or-more named difficulties, so the model can never mis-state which
+    difficulty is cheaper / by how much. Fires only on a high-precision
+    cost-compare cue, **exactly one** resolvable ``(tower, crosspath)`` candidate
+    (two-or-more is the multi-tower builder's job — the two are mutually exclusive
+    on candidate count), and **two-or-more** distinct named difficulties. Returns
+    ``None`` otherwise (single-difficulty cost lookups, strategy questions, and
+    anything outside a clear by-difficulty comparison reach the model untouched).
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+    # Paragon comparisons defer to the paragon builder (see the multi-tower one).
+    if _PARAGON_CUE_RE.search(low):
+        return None
+
+    from services import btd6_data_service
+
+    dataset = btd6_data_service.get_dataset()
+    candidates = _extract_cost_comparison_candidates(low, dataset)
+    if len(candidates) != 1:
+        return None
+
+    difficulties: list[str] = []
+    seen: set[str] = set()
+    for match in _COST_DIFFICULTY_RE.finditer(low):
+        token = match.group(1).lower()
+        if token == "impop":
+            token = "impoppable"
+        # CHIMPS prices as Hard — fold it so a phantom "hard vs chimps" dedups to
+        # one entry and falls through to the model instead of a no-difference reply.
+        elif token == "chimps":
+            token = "hard"
+        if token in seen:
+            continue
+        seen.add(token)
+        difficulties.append(token)
+    if len(difficulties) < 2:
+        return None
+
+    tower, code = candidates[0]
+    result = btd6_data_service.compare_difficulty_costs(tower, code, difficulties)
+    if not result.get("found"):
+        return None
+    return _format_difficulty_cost_comparison(result)
+
+
+# --- §7.5 paragon base-cost comparison ----------------------------------------
+def _extract_paragon_names(text_lower: str) -> list[str]:
+    """The paragon ids a comparison names, in order of appearance, deduped.
+
+    Scans every resolver surface (paragon names, tower names, ids, aliases) and
+    keeps the longest surface at each span (so "ascended shadow" wins over a bare
+    "ascended"), then dedups on the resolved id. Surfaces shorter than 3 chars are
+    skipped to keep stray two-letter tokens out — the ``paragon`` word + cost cue
+    already gate this builder hard. Returns ids (``resolve_paragon`` accepts them),
+    so the data primitive re-resolves from a canonical key.
+    """
+    from utils.btd6 import paragon_math
+
+    spans: list[tuple[int, int, int, str]] = []  # (start, end, surface_len, id)
+    for surface, pid in paragon_math.paragon_surfaces():
+        if len(surface) < 3:
+            continue
+        for match in re.finditer(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+            spans.append((match.start(), match.end(), len(surface), pid))
+
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, str]] = []
+    for start, end, _slen, pid in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _p in accepted):
+            continue
+        accepted.append((start, end, pid))
+    accepted.sort(key=lambda a: a[0])
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for _start, _end, pid in accepted:
+        if pid in seen:
+            continue
+        seen.add(pid)
+        names.append(pid)
+    return names
+
+
+def _format_paragon_cost_comparison(result: dict[str, Any]) -> str:
+    diff = str(result["difficulty"]).capitalize()
+    lines = [f"**Paragon cost comparison — {diff} base price:**"]
+    for entry in result["entries"]:
+        lines.append(
+            f"• **{entry['name']}** ({entry['tower']}) — **${entry['base_cost']:,}**",
+        )
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** to build (**${cheapest['base_cost']:,}** each).",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['name']}** is cheaper by **${result['spread']:,}**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['name']}** (${cheapest['base_cost']:,}). Most "
+            f"expensive: **{dearest['name']}** (${dearest['base_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append(
+        "_(Base tier-6 build price at that difficulty — the degree-grind "
+        "sacrifices are extra and depend on your build.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_paragon_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is Glaive Dominus or Ascended Shadow cheaper" answer, or ``None``.
+
+    The AI §7.5 *paragon* member of the multi-entity cost-comparison floor — the
+    paragon-entity sibling of :func:`deterministic_cost_comparison_reply` (which
+    ranks tower upgrade states). Ranks the **base build price** of two-or-more
+    paragons so the model can never mis-state which is cheaper / by how much (the
+    BUG-0009 "grounded values, wrong assembly" class). Fires only on an explicit
+    ``paragon`` token **and** a high-precision cost-compare cue **and** two-or-more
+    resolved paragons. The ``paragon`` token is also what makes this mutually
+    exclusive with the tower cost builders — they defer the moment "paragon" is
+    present (a "dart/ninja paragon" question must not be priced as the base tower).
+    Returns ``None`` otherwise (single-paragon lookups, strategy questions, and
+    anything outside a clear two-or-more paragon cost comparison reach the model).
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _PARAGON_CUE_RE.search(low):
+        return None
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+
+    names = _extract_paragon_names(low)
+    if len(names) < 2:
+        return None
+
+    difficulty = "medium"
+    diff_match = _COST_DIFFICULTY_RE.search(low)
+    if diff_match:
+        token = diff_match.group(1).lower()
+        # CHIMPS is a mode, not a pricing difficulty — its prices are Hard's.
+        difficulty = "hard" if token == "chimps" else token
+        if difficulty == "impop":
+            difficulty = "impoppable"
+
+    from services import btd6_data_service
+
+    result = btd6_data_service.compare_paragon_costs(names, difficulty=difficulty)
+    if not result.get("found"):
+        return None
+    return _format_paragon_cost_comparison(result)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
+# The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
+# answer and is narrow (returns ``None`` for anything but its exact list shape),
+# so their match sets are mutually exclusive on a real question; order resolves
+# only a genuine overlap (e.g. a two-tower cost question reaches the multi-tower
+# builder before the single-tower difficulty builder). Exposed at module level so
+# the exclusivity invariant (`test_btd6_floor_builder_exclusivity.py`) iterates the
+# *live* tuple — a builder added here is automatically held to the one-fires
+# contract, no test edit needed. Append a new list family here.
+_BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
+    deterministic_mk_reference_reply,
+    deterministic_geraldo_per_level_reply,
+    deterministic_modes_reply,
+    deterministic_paragon_cost_comparison_reply,
+    deterministic_cost_comparison_reply,
+    deterministic_difficulty_cost_comparison_reply,
+    deterministic_round_range_comparison_reply,
+)
+
+
 def deterministic_btd6_list_reply(message_text: str) -> str | None:
     """The single BUG-0009 floor seam: the first deterministic list-answer
     builder that matches ``message_text``, or ``None`` if none does.
 
     BUG-0009 is the "grounded facts, wrong assembly" class — the model groups /
     labels / orders an individually-grounded list incorrectly, and the
-    value-only faithfulness guard cannot catch a mis-*grouping*. Each builder
-    below OWNS its labelled answer; the natural-language stage serves the result
-    as a pre-emptive floor *before* the model. Builders are narrow (they return
-    ``None`` for anything but their exact list shape), so ordinary BTD6 questions
-    fall through to the model untouched. Add a new list family (e.g.
-    newest-towers ordering) by appending its builder here.
+    value-only faithfulness guard cannot catch a mis-*grouping*. Each builder in
+    :data:`_BTD6_LIST_BUILDERS` OWNS its labelled answer; the natural-language
+    stage serves the result as a pre-emptive floor *before* the model. Builders
+    are narrow (they return ``None`` for anything but their exact list shape), so
+    ordinary BTD6 questions fall through to the model untouched.
+
+    The AI §7.5 comparison builders ride the same seam: a "which costs more" /
+    "which earns more" question (across towers, difficulties, or round ranges) is
+    the comparison member of the same wrong-assembly class.
     """
-    for builder in (
-        deterministic_mk_reference_reply,
-        deterministic_geraldo_per_level_reply,
-        deterministic_modes_reply,
-    ):
+    for builder in _BTD6_LIST_BUILDERS:
         reply = builder(message_text)
         if reply:
             return reply
