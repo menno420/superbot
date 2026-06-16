@@ -5977,3 +5977,30 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
 § "Command management surface" + "Strategic framing" · `services/command_routing.py` ·
 `services/settings_mutation.py` · this Q-block.
+
+### Q-0159 — Free multi-user control panel: Discord-login identity, per-user config, bot-ready-first (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session).** Owner: *"we are building a **free-to-use**
+> control panel of this bot, so we need verification set up — Discord-account login — then the website
+> can see what your permissions are and for which guild/user the changes are. Everyone should be able
+> to change it personally how they like, so we need not only per-guild memory of the configuration but
+> also **per-user**. This was already the plan, but we should **not rush it — first the bot needs to be
+> ready for this**."*
+
+**Decisions / findings:**
+
+- **Free multi-user:** the site is a public control panel (anyone with Discord login), not just the
+  owner. Discord OAuth → identity + guild list; **the bot decides authority** per request.
+- **Per-user config already exists** (don't rebuild): `user_participation` (migrations 027/028) +
+  `services.participation_mutation` + `core/runtime/user_config.py` + the in-Discord profile editor
+  (`views/profile/`). Per-guild exists too. The site front-ends both.
+- **The real "bot-ready" gap is the control API + an identity→authority bridge** — the control API
+  resolves `(user_id, guild_id)` to a member and runs the **existing** capability checks
+  (`governance.capability.actor_holds_capability`), so the site shows only allowed controls and every
+  write is bot-verified. The site stores only a session; no second source of truth.
+- **Sequencing (owner: don't rush):** bot-ready first (control API → identity/authority bridge) →
+  *then* the website Discord login + editors.
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+§ "Free multi-user control panel" · `services/participation_mutation.py` ·
+`governance/capability.py` · this Q-block.

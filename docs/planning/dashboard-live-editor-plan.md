@@ -197,6 +197,40 @@ button on every command and cog**, each opening an editor.
   Manage button on every command and cog — pure dashboard, no bot change. **Write side** (toggle,
   edit alias) lands with the control-API + auth foundation (L0–L2).
 
+## Free multi-user control panel — identity & authority (owner, 2026-06-16)
+
+The owner widened the scope again: the site is becoming a **free-to-use control panel** — *anyone*
+signs in with Discord, not just the owner — and **everyone configures it personally how they like**,
+so the site needs **per-user** config as well as per-guild. Explicit guidance: *"we should not rush
+it — first the bot needs to be ready for this."*
+
+**Good news — both config layers already exist (front-end them):**
+
+| Layer | Bot system (audited) |
+|---|---|
+| **Per-guild** | `guild_settings` + `SettingsMutationPipeline` · `help_overlay` · `command_routing` |
+| **Per-user** | `user_participation` (migrations 027/028) + `services.participation_mutation` + `core/runtime/user_config.py` + the in-Discord profile editor (`views/profile/`) |
+
+So "everyone changes it personally" is **not new bot work** — it is the existing per-user
+participation/preferences seam, surfaced on the web.
+
+**What "bot ready" actually means (the real gap — *not* the config layers):**
+
+1. **The control API** — the bot exposing these seams to the decoupled site (Q-0156).
+2. **An identity → authority bridge.** Discord OAuth tells the site *who* you are and *which guilds*
+   you're in; but **the bot must decide what you may edit**. Every seam already authority-checks with a
+   live `discord.Member` (`governance.capability.actor_holds_capability`, the settings/participation
+   pipelines' capability gate). The control API must, per request, resolve the member for `(user_id,
+   guild_id)` and run that **same** check — so the site renders only the controls you're allowed, and
+   every write is **bot-verified**, never trusted from the browser. Per-user edits gate on "is this
+   your own profile"; per-guild edits gate on your tier in that guild.
+3. **No new source of truth.** The site stores only a session (who you are); all config stays in the
+   bot's per-user / per-guild stores.
+
+**Sequencing (owner: don't rush):** bot-ready first — ① control API, ② the identity→authority bridge
+(reuse the existing capability checks) — *then* the website's Discord login + editors. The per-user +
+per-guild config and their audited seams are already there; the foundation is the API + the bridge.
+
 ## Alternatives considered (and why not)
 
 - **Website writes `help_overlay` rows directly (shared Postgres).** Rejected: bypasses the audited
