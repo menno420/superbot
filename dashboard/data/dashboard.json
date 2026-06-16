@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T21:44:43Z",
+    "generated_at": "2026-06-16T21:49:32Z",
     "build": {
-      "commit": "d6937d8",
-      "subject": "chore(session): open dashboard sub-cog subsystem map — born-red card",
-      "committed_at": "2026-06-16T21:43:15Z",
+      "commit": "aab823a",
+      "subject": "feat(dashboard): map BTD6/RPS sub-cogs to their parent subsystem",
+      "committed_at": "2026-06-16T21:47:58Z",
       "branch": "claude/dashboard-subcog-subsystem-map"
     },
     "counts": {
       "functions": 33,
-      "ideas": 76,
+      "ideas": 78,
       "bugs": 15,
       "updates": 60,
       "env_vars": 35,
@@ -934,6 +934,13 @@
       "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment"
     },
     {
+      "file": "cog-declares-its-subsystem-2026-06-16.md",
+      "title": "Cogs declare their subsystem (kill the dashboard's name-derivation guesswork)",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "The dashboard derives each cog's subsystem key from its **class name**"
+    },
+    {
       "file": "dashboard-registry-coverage-check-2026-06-16.md",
       "title": "Dashboard cog↔registry coverage check",
       "status": "ideas",
@@ -1030,6 +1037,13 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "This repo keeps adding **read-only / soft signals that only help if someone runs them by hand**:"
+    },
+    {
+      "file": "success-metric-alignment-with-verified-success-2026-06-16.md",
+      "title": "Idea: align our session success proxy with the research's \"verified success\"",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "persistent returns to expertise\" research (~400K Claude Code sessions), owner asked"
     },
     {
       "file": "control-plane-single-source-pointer-2026-06-15.md",
@@ -1701,7 +1715,7 @@
       "file": "2026-06-16-dashboard-subcog-subsystem-map.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — dashboard: map sub-cogs to their parent subsystem",
-      "status": "in-progress"
+      "status": "complete"
     },
     {
       "file": "2026-06-16-dashboard-status-page.md",
@@ -1818,6 +1832,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-code-expertise-research-readout.md",
+      "date": "2026-06-16",
+      "title": "Session — Claude Code expertise research: workflow grounding",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-btd6-shorthand-corpus-idea.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — capture: BTD6 shorthand-corpus eval idea (post-BUG-0015 grooming)",
@@ -1869,12 +1889,6 @@
       "file": "2026-06-16-architecture-review-thread-close.md",
       "date": "2026-06-16",
       "title": "Session close — architecture-review thread (notes & remarks)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-architecture-atlas-structure-review.md",
-      "date": "2026-06-16",
-      "title": "Session — architecture-atlas / structure-review idea intake",
       "status": "complete"
     }
   ],
