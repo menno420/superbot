@@ -20,6 +20,16 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`btd6-shorthand-corpus-eval-2026-06-16.md`](./btd6-shorthand-corpus-eval-2026-06-16.md) —
+  **late discovery from the BUG-0015 session (2026-06-16, PR #963):** a single **corpus regression
+  test** holding the canonical community-shorthand vocabulary (`despo`/`impop`/`r53`/`420 farm`/
+  `d67`/…) and asserting each routes to `AITask.BTD6_ANSWER` — the **class guard** for the recurring
+  "shorthand falls to the unguarded general path → model freelances" bug (BUG-0001/0003/0004/0008/
+  0015), which today has only scattered per-bug tests. Small/safe/decided-lane → a strong
+  grooming-pass execute-now candidate. Also records a verified *minor* hero-per-level-stats sibling
+  finding (heroes route fine + descriptions already ground; only non-headline-level exact stats are
+  the gap, low priority). → relates `services/ai_task_router.py` · `utils/btd6/keywords.py`.
+
 - [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
   **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
   deployed as a second Railway service — checklist, update tracker, bot-function catalogue,
