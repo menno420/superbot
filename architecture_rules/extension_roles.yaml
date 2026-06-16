@@ -76,6 +76,9 @@ extensions:
   automod:
     role: product_subsystem
     note: Automod rules engine (Q-0108).
+  image_moderation:
+    role: product_subsystem
+    note: Image moderation — OpenAI omni-moderation filter (Q-0108).
   xp:
     role: product_subsystem
   blackjack:
