@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/gifted-noether-37tiwr` · BUG-0015 — "d67 dart paragon" misread as upgrade path "0-6-7":
+  parse + route + ground a paragon **degree** (1-100) · `utils/btd6/keywords.py` ·
+  `services/ai_task_router.py` · `services/btd6_context_service.py` ·
+  `services/ai_instruction_service.py` · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
