@@ -1,7 +1,48 @@
 # Dashboard live editor — plan (help appearance & command panels)
 
-> **Status:** `plan` — owner-approved direction (2026-06-16, router Q-0156). Design only;
+> **Status:** `plan` — owner-approved direction (2026-06-16, router Q-0156–Q-0159). Design only;
 > no bot-runtime code has shipped yet. Source code and merged PRs win over this document.
+
+## ⭐ Next session — start here (handoff 2026-06-16)
+
+**The site is the bot's main website** (`dashboard/`, live on Railway, auto-redeploys on merge to
+`main`). Two binding principles (Q-0158): the **bot stays the source of truth + top priority**, and the
+website **front-ends the bot's existing audited seams — never a parallel system**.
+
+**Shipped this run (read-only, decoupled, all merged):** `/functions` · `/games` · `/commands`
+(explorer) · `/aliases` (synonym suggest) · `/settings` (now with typed `SettingSpec`
+type/default/hint/choices) · `/access` (tier map). Scanners: `scan_settings` · `scan_setting_specs` ·
+`scan_access` · `scan_synonyms` · `scan_commands` · `scan_env_usage`. **The bot already owns every
+edit capability** — front-end these seams, do not rebuild:
+
+| Capability | Bot seam (audited) |
+|---|---|
+| Settings (per-guild) | `services.settings_mutation.SettingsMutationPipeline` + `SettingSpec` (`cogs/*/schemas.py`) |
+| Per-user config | `services.participation_mutation` + `core/runtime/user_config.py` + `views/profile/` |
+| Help appearance | `services.help_overlay_mutation` + `views/help/editor.py` |
+| Cog enable/disable | `services.command_routing.set_policy` (migration 036) |
+| Aliases (soft) | `utils/synonyms.py` `COMMAND_SYNONYMS` |
+
+**Build next, in order:**
+
+1. **`/commands` management surface — READ side (safe, no bot change, no auth).** A **Manage button on
+   every command and cog**; each opens a panel showing the command's current aliases + its cog's
+   routing state + a **per-command alias box** (suggest→PR mode for now). This is the owner's Q-0158
+   ask and needs nothing from the bot. *(Open decision: cog-level vs per-command enable/disable —
+   cog-level front-ends `command_routing` as-is; per-command is a finer new bot layer.)*
+2. **Bot-ready foundation (runtime — do NOT rush; owner setup required, see § "Free multi-user control
+   panel").** ① a private **control API** on the bot exposing the seams above; ② the **identity →
+   authority bridge** (resolve `(user_id, guild_id)` → member → run `governance.capability` checks).
+3. **Website auth + editors:** Discord OAuth login → per-user + per-guild editors over the control API
+   (settings global+per-server per Q-0157; help; aliases live; cog routing).
+
+**Owner setup needed before phase 2/3 (nothing needed for phase 1):** a Discord OAuth app
+(client id/secret + redirect), a dashboard session secret, and a shared bot↔dashboard token —
+see § "Free multi-user control panel" and the chat handoff.
+
+**Always before pushing a dashboard change:** `pip install -r dashboard/requirements.txt httpx` then
+`python3.10 -m pytest tests/unit/dashboard/` — the smoke test is `importorskip`-guarded and **skips in
+CI**, so a template bug (the #979 `/settings` 500) is only caught locally with deps installed.
 
 ## ⭐ What the owner asked for
 
