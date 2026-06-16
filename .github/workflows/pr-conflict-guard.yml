@@ -47,32 +47,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Reflect each open PR's merge state as the conflict-guard status
+        # GITHUB_TOKEN (not ROUTINE_PAT): posting a commit status needs `statuses: write`, which the
+        # permissions block above grants the GITHUB_TOKEN. ROUTINE_PAT is scoped for Issues/PRs/
+        # Contents (auto-merge-enabler) and may lack commit-status write — which 403'd and failed
+        # this job on its first run. This guard posts no main commits, so it needs no PAT attribution.
         env:
-          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -uo pipefail
-          # For every open PR: DIRTY -> red status; CLEAN/BEHIND/etc -> green (clears a prior
-          # red); UNKNOWN (GitHub still computing mergeability) -> skip, don't flap.
-          gh pr list --repo "$GITHUB_REPOSITORY" --state open \
-            --json number,mergeStateStatus,headRefOid \
-            --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' \
-          | while read -r num state sha; do
-              [ -z "${sha:-}" ] && continue
-              case "$state" in
-                DIRTY)
-                  gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
-                    -f state=failure -f context=conflict-guard \
-                    -f description="Merge conflict with main — merge main in / rebase to resolve." \
-                    >/dev/null 2>&1 && echo "🔴 #$num DIRTY -> red"
-                  ;;
-                UNKNOWN|"")
-                  echo "#$num mergeability not computed yet -> skip"
-                  ;;
-                *)
-                  gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
-                    -f state=success -f context=conflict-guard \
-                    -f description="No merge conflict with main." \
-                    >/dev/null 2>&1 && echo "🟢 #$num $state -> clear"
-                  ;;
-              esac
-            done
+          # This is a NON-REQUIRED visibility status, so the job must never red-flag a PR on its own
+          # hiccup: capture first, guard each post, and exit 0 regardless of per-PR post outcomes.
+          prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
+                  --json number,mergeStateStatus,headRefOid \
+                  --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' || true)
+          if [ -z "${prs:-}" ]; then
+            echo "no open PRs to evaluate"
+            exit 0
+          fi
+          # For every open PR: DIRTY -> red status; CLEAN/BEHIND/etc -> green (clears a prior red);
+          # UNKNOWN (GitHub still computing mergeability) -> skip, don't flap.
+          printf '%s\n' "$prs" | while read -r num state sha; do
+            [ -n "${sha:-}" ] || continue
+            case "$state" in
+              DIRTY)
+                st=failure
+                desc="Merge conflict with main — merge main in / rebase to resolve."
+                ;;
+              UNKNOWN|"")
+                echo "#$num mergeability not computed yet -> skip"
+                continue
+                ;;
+              *)
+                st=success
+                desc="No merge conflict with main."
+                ;;
+            esac
+            if gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
+                 -f state="$st" -f context=conflict-guard -f description="$desc" >/dev/null 2>&1; then
+              echo "#$num $state -> $st"
+            else
+              echo "::warning::could not post conflict-guard status for #$num (needs statuses: write)"
+            fi
+          done
+          exit 0
