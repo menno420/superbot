@@ -5829,27 +5829,35 @@ reset per the runbook (confirm the `HERMES_RESET_CMD` for your Hermes build — 
 > **build both** halves (via `AskUserQuestion`). Touches `.github/workflows/` (executable config), so
 > recorded under the Q-0106 in-session exception (owner is the live reviewer).
 
-**What shipped (PR #961):**
+**What shipped (PR #965; token hotfix #966; noise-reduction refinement as a follow-up):**
 
 - **`.github/workflows/pr-auto-update.yml`** — on `push: main`, brings open non-draft `claude/*` PRs
-  that are `BEHIND` up to date (`update-branch`) so they re-test against current main and auto-merge
-  fires. Carve-outs (`needs-hermes-review` / `do-not-automerge`) are left alone. A branch that can't
-  be cleanly updated (a real conflict) fails update-branch and is left for the guard. *Behind =
-  handled silently.* (Would have prevented the #959 stall.)
-- **`.github/workflows/pr-conflict-guard.yml`** — on `push: main` + `pull_request` + a schedule
-  backstop, posts a **red `conflict-guard` commit status** on any `DIRTY` PR and clears it to green
-  when resolved (skips `UNKNOWN` to avoid flapping). *Conflict = loud red.* It is a **non-required**
-  status (visibility, not an extra merge gate — a DIRTY PR already can't merge), so **no
-  branch-protection change is needed** for it to work.
+  that are `BEHIND` up to date (`update-branch`, with `ROUTINE_PAT`) so they re-test against current
+  main and auto-merge fires. Carve-outs (`needs-hermes-review` / `do-not-automerge`) are left alone.
+  A branch that can't be cleanly updated (a real conflict) fails update-branch and is left for the
+  guard. *Behind = handled silently.* (Would have prevented the #959 stall.)
+- **`.github/workflows/pr-conflict-guard.yml`** — posts a **red `conflict-guard` commit status** on any
+  `DIRTY` PR and clears it to green when resolved (skips `UNKNOWN` to avoid flapping). *Conflict = loud
+  red.* Non-required status (visibility, not an extra merge gate — a DIRTY PR already can't merge), so
+  **no branch-protection change is needed**. Uses the default **`GITHUB_TOKEN`** (it needs
+  `statuses: write`, which `ROUTINE_PAT` is not scoped for — the #966 hotfix). Scope (the refinement):
+  a PR's **own** push evaluates **only that PR**; the all-PR **sweep** runs only on `push: main` +
+  schedule (when a PR can newly conflict) — the earlier sweep-on-every-PR was needless noise that made
+  parallel sessions investigate a red check that wasn't theirs.
 
 **Why `push: main` is the key trigger:** a conflict/behind state appears when *main moves* (another
 PR merges) — which is not an event on the stale PR — so both workflows hinge on `push: main`, which
 fires reliably on every merge. (GitHub `schedule:` cron is a laggy backstop only.)
 
-**Owner manual steps:** none beyond what already exists — `ROUTINE_PAT` already needs Pull requests +
-Contents write for `auto-merge-enabler.yml`, which is exactly what `pr-auto-update` uses; the guard
-posts statuses with the same token. Optionally make `conflict-guard` a *required* check if you want a
+**Owner manual steps:** none beyond what already exists — `ROUTINE_PAT` (auto-update) already has the
+Pull requests + Contents write it needs for `auto-merge-enabler.yml`; `conflict-guard` uses the
+`GITHUB_TOKEN` the workflow grants. Optionally make `conflict-guard` a *required* check if you want a
 conflict to hard-block (not necessary — it already can't merge).
+
+**Dogfooding tail (2026-06-16):** the guard's first run failed on its own PR (`bash -e` + a
+`gh api` 403 because `ROUTINE_PAT` lacks `statuses: write`) and, being non-required, #965 merged it
+broken to main → it red-flagged other sessions' PRs for ~6 min until hotfix #966 (token → GITHUB_TOKEN
++ errexit-safe). Then the owner flagged the sweep-on-every-PR noise → the scope refinement above.
 
 **Home:** `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` ·
 `docs/operations/autonomous-routines.md` § "PR mergeability keepers" · this Q-block.
