@@ -1,6 +1,11 @@
 # Idea — extract the `!platform` command group into a cog mixin
 
-> **Status:** `ideas` — captured 2026-06-16. Surfaced (twice) by the dispatch run that shipped
+> **Status:** `historical` — **EXECUTED 2026-06-16 (PR #943).** The `!platform` group moved onto
+> `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`); `diagnostic_cog.py` dropped
+> 799 → 260 LOC, clearing the 800-LOC ceiling. Pinned by
+> `tests/unit/cogs/test_diagnostic_platform_group.py`. Original capture below.
+>
+> Captured 2026-06-16. Surfaced (twice) by the dispatch run that shipped
 > the faucet/sink diagnostic (#937) and myprofile PR A (#938). Routing: **S4 docs / S1 platform —
 > diagnostic slice**. Near-term, not speculative: `diagnostic_cog.py` is at **799/800 LOC**, so
 > the *next* `!platform` subcommand is blocked until this is done.

@@ -86,6 +86,17 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#898 + #892 + #889 (2026-06-15, docs-only loop/phase-gate hygiene)** — **#898 (Q-0114):**
+  documented the owner's in-session clarification in its canonical homes (router Q-0114 +
+  `check_phase_gate.py` docstring) so a literal agent doesn't re-derive it — a **dispatched** work
+  order (the `/fire` endpoint, even `CLASS: feature`) is owner-directed and flows freely; the phase
+  gate is **only** for features an agent invents itself. **#892:** captured a Hermes
+  token-efficiency root-cause + an investigation plan for the next session
+  (`docs/operations/hermes-control-plane.md` + a research note). **#889:** a `CLASS: feature` mining
+  Phase-2 work order arrived during a FIX phase, so the phase gate correctly **gated the build**
+  (Q-0114) — the work was already turn-key in the structures plan, so the PR is loop cleanup only
+  (the `dispatch-phase-gate-precheck` Q-0089 idea — run the gate at the *dispatcher* — + disposed the
+  redundant slice-opener #888 per Q-0125). Docs only.
 - **#884 (2026-06-14, mining §7.5 Vault — a per-player safe stash)** — the first executed slice of
   the mining structures lane (the owner's bot-side steer for the night routine). A protected store
   separate from the active pack: `vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources` on the
