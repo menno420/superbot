@@ -21,7 +21,7 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 Current broad captures:
 
 - [`control-plane-single-source-pointer-2026-06-15.md`](./control-plane-single-source-pointer-2026-06-15.md) —
-  **session idea (2026-06-15, Q-0089, from the band-#930 reconciliation pass):** the autonomous-loop
+  **session idea (2026-06-15, Q-0089) — ✅ EXECUTED (PR #943):** the autonomous-loop
   control-plane truth lives in two prose homes (the canonical table in `autonomous-routines.md` **and**
   a restating bullet in `current-state.md` Gates) — the second drifted again this pass. Collapse the
   `current-state.md` bullet to a **pure pointer** at the canonical table (zero verdict prose), so one
@@ -154,11 +154,16 @@ Current broad captures:
   `views/`). Surfaced when the `!list` paginator was found mislayered in `channel_cog.py`
   only by tripping the cog-size ceiling. Warn → ratchet. Small/safe grooming-lane candidate.
 - [`diagnostic-cog-platform-group-extraction-2026-06-16.md`](./diagnostic-cog-platform-group-extraction-2026-06-16.md) —
-  **refactor / near-term blocker (2026-06-16):** move the `!platform` command group off
-  `DiagnosticCog` onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`) so the
-  surface can grow past the 800-LOC cog ceiling — the cog hit **799/800** when the faucet/sink
-  `!platform economy` landed (#937), and the next subcommand has no room. Small/safe/decided-lane,
-  pure refactor; worth executing before it's urgent.
+  **refactor / near-term blocker (2026-06-16) — ✅ EXECUTED (PR #943):** moved the `!platform`
+  command group off `DiagnosticCog` onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`);
+  the cog dropped 799 → 260 LOC, clearing the 800-LOC ceiling. Pinned by
+  `tests/unit/cogs/test_diagnostic_platform_group.py`.
+- [`ledger-guard-exempt-reconciliation-prs-2026-06-16.md`](./ledger-guard-exempt-reconciliation-prs-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the diagnostic-mixin dispatch #943):** a
+  `docs(current-state): reconcile ledger` PR structurally can't list its own (not-yet-assigned)
+  number, so it always omits itself and `check_current_state_ledger.py --strict` flags it next
+  session (the #942 drift this run fixed). Teach the guard to **skip a docs-only ledger-bookkeeping
+  PR** (title + diff-confined-to-`current-state*.md`), closing the recurrence at the guard level.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in
