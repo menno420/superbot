@@ -1,6 +1,6 @@
 # Session — control API mutation endpoints (write side, step 1)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
