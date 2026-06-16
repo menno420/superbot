@@ -86,6 +86,93 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#884 (2026-06-14, mining §7.5 Vault — a per-player safe stash)** — the first executed slice of
+  the mining structures lane (the owner's bot-side steer for the night routine). A protected store
+  separate from the active pack: `vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources` on the
+  audited `mining_workflow` boundary move items between `mining_inventory` and the new `mining_vault`
+  table (migration 070) **atomically** (no coin/audit leg — item-state direct-lane); `🏦 Vault` hub
+  panel + `!vault`/`!stash`/`!unstash`. **Purely additive** — v1 is a pure safe store, no inventory
+  cap (that sink is the documented follow-up), so existing play is byte-identical. The RS02
+  write-boundary ratchet now also guards `update_vault_item`. Verified on real Postgres
+  (deposit/withdraw/stash-all round-trips · over-move guards · item conservation). `check_quality
+  --full` green (9655); arch 0. **This session also promoted the rest of the lane to a turn-key plan**
+  — [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](planning/mining-structures-skill-tree-plan-2026-06-14.md)
+  (§7.4 capped skill tree + §7.5 Forge/Home + Vault-cap, each a ▶ startable PR-sliced slice) so the
+  night/next session can build mining cold.
+- **#878 + #879 + #881 (2026-06-14, P1-1 — versioned AI eval/smoke matrix, offline half + drift guard + hotspot coverage)**
+  — the standing #1 priority's deterministic, CI-gated half. The live golden set
+  (`tests/evals/cases.py`) is creds-only (`scripts/run_evals.py`), and CI exercised only the harness
+  *machinery* — there was no CI proof of the AI path's **deterministic contract**. **#878:** new
+  **`tests/evals/smoke.py`** drives the **real gateway** with scripted providers (no API) — 16 cases
+  across **gates · fallback · tool-dispatch · audit-visibility · safety · redaction · config** —
+  gated by `tests/evals/test_smoke_matrix.py` on every PR, and rendered as one **versioned scorecard**
+  (`scripts/run_evals.py --smoke`, creds-free); both halves version-stamped (`GOLDEN_SET_VERSION` /
+  `SMOKE_MATRIX_VERSION`); the **#855 Layer-A** MOAB-path probe added to the golden set. **#879:** an
+  **eval-coverage drift guard** (`tests/evals/test_eval_coverage.py`) — a self-cleaning ratchet so a
+  new canonical AI tool/`AITask` can't silently fall outside the matrix (referenced ∪ acknowledged ==
+  surface; coverage floor; meta-tested to actually fire). **#881:** dog-fooded that guard — 6 golden
+  tool-selection probes for the highest-value uncovered **BTD6** tools (the live-defect hotspot:
+  round-cash/boss/map/paragon-degree/round-composition/answerability, each modeled on a real live
+  miss), moving the ratchet **8 → 14/34** covered. `check_quality --full` green (9645); arch 0.
+  **#886 (2026-06-15) advanced the ratchet 14 → 20/34** — 6 more golden tool-selection probes
+  (`get_ai_tool_catalog` + the `btd6_cumulative_cost`/`paragon_requirements`/`monkey_knowledge`/
+  `mode`/`list_roster` lookups), floor raised to 20.
+  **#895 (2026-06-15) advanced the ratchet 20 → 27/34** — 7 probes covering the **whole non-BTD6
+  uncovered surface**: the 5 server-introspection tools (`get_server_overview`/`list_server_channels`/
+  `list_server_roles`/`lookup_member`/`list_all_members`) + `get_ai_policy_explanation` +
+  `diagnostics_health_snapshot`; floor raised to 27.
+  **#896 (2026-06-15) completed the ratchet 27 → 34/34 — FULL AI tool-surface coverage** — the final
+  7 specialized BTD6 lookups (`btd6_bloon_filter`/`btd6_ct_team_status`/`btd6_geraldo_lookup`/
+  `btd6_paragon_calculate`/`btd6_power_effect`/`btd6_power_lookup`/`btd6_relic_lookup`);
+  `_ACK_UNCOVERED_TOOLS` is now **empty** and the floor == the catalogue, so the drift guard fails
+  closed on any newly-added tool. `check_quality --full` green (9698); arch 0.
+  **Still owed (P1-1):** the live-quality battery (needs prod creds) + absence-guard **Layer B**
+  (design-for-review). *(This session's docs close-out tidy merged as **#883** — `▶ Next action`
+  refresh + #872–876 ledger drift cleared.)*
+- **#870 + #869 + #868 (2026-06-14, Hermes operating-layer hardening arc)** — three docs-only PRs
+  maturing the Hermes autonomous-loop control plane. **#868 (Q-0142):** fixed a real misread — a
+  stale reconciliation dispatch fired because a decade-queue slot was read as a reserved PR number;
+  Hermes' dispatch skill + operating prompt now pick the next slice **by description verified
+  against the live ledger**, never a predicted PR number (the band-#870 queue §4 banner restates
+  this). **#869:** Hermes' VPS skills (dispatch / log-triage / repo-health / skill-author +
+  `build_skills.py`) run stdlib-only tooling under the VPS's `python3`, not the repo's CI-pinned
+  `python3.10`. **#870:** recorded the verified deadsnakes **Python 3.10 VPS prerequisite** in the
+  Hermes control-plane doc. Docs only.
+- **#867 (2026-06-14, ledger: ad-hoc band #841–#860 window catch-up)** — an *ad-hoc* ledger-hygiene
+  reconcile **between** cadence passes (not a Q-0107 pass — it did not reset the cadence marker or
+  write a planning doc, correctly): added eight live `Recently shipped` entries
+  (#866/#865/#864/#863/#862/#859 + the #856+#853 and #851/#850/#848/#852 groups) and archived eight
+  old ones into [`current-state-archive.md`](current-state-archive.md). Docs only.
+- **#866 (2026-06-14, #704 live-test triage + close + sector-roadmap handoff)** — triaged all
+  11 PR #704 live-test Discord screenshots (2026-06-11): verdict **predominantly working**
+  (mining/crafting RPG + BTD6 hub functional and polished). One substantive finding — the BTD6
+  capability message ("round cash per-round/range") **over-states** vs. the bot's correct
+  grounding-refusal on round-economy questions, plus a grounding-consistency check (asserted Despo
+  price / Elite Lych HP must be confirmed grounded) → routed to the active **P1-1 eval-smoke** lane.
+  Wrote [`audits/pr704-live-test-triage-2026-06-14.md`](audits/pr704-live-test-triage-2026-06-14.md)
+  and **closed #704** (findings preserved; images stay in git history). A chat sweep confirmed the
+  day's substantive items (Q-0134–Q-0141, sector map, refreshed operating prompt) are captured. Docs only.
+- **#865 (2026-06-14, fix: robust `routine_fire.py` dispatch helper — Q-0141)** — live-testing
+  Hermes' new operating prompt, Hermes diagnosed a **real bug**: the dispatch skill's inline
+  `curl -d "$(python3 -c … "$WORK_ORDER")"` is shell-quoting-fragile for multi-line work orders.
+  The owner then decided **Hermes may write its own code (Q-0141)**, making it a parallel build.
+  `scripts/hermes/routine_fire.py` (stdlib-only) takes the work order on **stdin** (zero shell
+  quoting), loads `CLAUDE_ROUTINE_*` from env / `~/.hermes/routine.env`, POSTs `{"text": …}`,
+  **never prints the token**, and supports `--dry-run`; plus a bounded-work prompt addition.
+- **#864 (2026-06-14, tooling: harden the ledger drift guard — band-#840 slot 9)** — two paired
+  slices on `scripts/check_current_state_ledger.py` (the very checker the autonomous loop relies on
+  to catch `current-state.md` drift between reconciliation passes): (1) it now **prints each missing
+  PR's merge-commit subject** beside its number, collapsing the manual `git log --grep "#N"` loop
+  every Q-0107 pass ran by hand; (2) **scoped range-expansion to the ledger proper** so a
+  forward-looking planning range in the `▶ Next action` pointer can't mask a merged band (the
+  band-#800 false-green class, now structural). Pure stdlib.
+- **#863 (2026-06-14, Hermes skill-author meta-skill + docs-only-PR write scope — Q-0140)** —
+  built the Hermes self-extension layer: the **`superbot-skill-author`** meta-skill
+  (`docs/operations/hermes-skills/skill-author.md` + generated artifact; 11 skills) guides Hermes to
+  design/write a new skill in the canonical format and **commit it as a docs-only PR**, closing the
+  "Hermes-authored skills are VPS-only" round-trip gap. **Q-0140** expands Hermes' sanctioned writes
+  to two — review-merge (Q-0117) **+** docs-only PRs (work summary / bug report / new skill source);
+  code still routes via dispatch. Operating prompt refreshed. Docs only.
 - **#862 (2026-06-14, fix: repair the daily Postgres backup — PGDG pg18 client)** — live-verifying
   the backup (after the owner set `DATABASE_PUBLIC_URL`) drove a real production bug to ground:
   Railway Postgres is **v18.3** but the workflow used the Ubuntu-default client **v16**, and pg_dump

@@ -221,11 +221,74 @@ Source code and merged PRs win over anything written here.
   `tests/unit/views/test_profile_editor.py` (one-call-per-action spy · typed-error copy · unauthorized
   path · int-modal coercion/reject · enum-chooser-opens-no-write · AST pin: editor writes only through
   the pipeline, no `utils.db` import).
+- **#939 (2026-06-16, docs(ideas): capture diagnostic_cog !platform-group extraction)** —
+  backlog-grooming ender (Q-0015). The faucet/sink diagnostic (#937) pushed `diagnostic_cog.py` to
+  799/800 LOC — the hard cog-size ceiling — and the cause + fix lived only in `.sessions/` logs
+  (which sessions don't read top-to-bottom), so the next `!platform` subcommand would hit the wall
+  cold. New idea `docs/ideas/diagnostic-cog-platform-group-extraction-2026-06-16.md`: extract the
+  `!platform` command group onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`) so
+  the surface can grow past the 800-LOC cog ceiling while the command identity stays on
+  `DiagnosticCog` (the same F-3 "surface = cog, weight = `cogs/<sub>/`" convention the embed-builder
+  extraction used). Small/safe/decided-lane pure refactor; README indexed. `check_docs --strict`
+  green; docs only.
 - **#938 (2026-06-15, myprofile PR A — read-only profile card)** — decade-queue slot 3. `views/profile/`
   + `/myprofile` + `!myprofile`: a schema-driven read-only card composing the typed accessors over the
   participation registry (one section per registered subsystem, every value labelled with its default,
   Q-0058 idiom), owner-locked ephemeral, zero writes (AST-pinned). The shell + `preference_key`
   convention PR B (#940) extends.
+- **#936 (2026-06-16, fix: counting channel selector/whitelist UI · BTD6 overview de-clutter ·
+  round-63 camo-lead data)** — three owner-reported bugs from a live manual-testing recording.
+  **(1) Counting cog** — the Counting Manager (`!countingmenu`/`!cm`) only operated on the *current*
+  channel, with no way to *select* a channel or enable counting on an existing one (a tester hit
+  exactly "where to change whitelisted channels"). Added a `ChannelSelect` picker; a mode-picker
+  that *enables counting on a non-counting channel* (the "whitelist" flow, no fresh channel); and a
+  **🛑 Disable Here** button that removes a channel from the active set without deleting it (distinct
+  from `!end_match`). Mutations route through new audited-pattern cog methods
+  (`enable_channel`/`disable_channel`/`toggle_channel_flag`/`reset_channel_count`) holding the
+  per-guild lock, in `cogs/counting/_channel_manager.py` (under the 800-LOC gate). **(2) BTD6
+  overviews** — `!btd6 tower`/`hero` overviews + the hero browser detail dumped a huge "Live data"
+  event-restriction section that the design says belongs only in the ⚠️ Event-status drill-down;
+  the three missed call-sites now match (also drops a per-lookup event-scan DB call). **(3) Round
+  63** wrongly listed "Camo Lead" (it's 75 plain Lead + 122 plain Ceramic — the only such
+  inconsistency across 140 rounds); corrected to `["Lead","Ceramic"]` + a CI guard
+  (`test_btd6_round_threat_consistency.py`) so a curated threat can never again claim a bloon
+  modifier no group carries. `check_quality --full` green (9897); arch 0.
+- **#935 (2026-06-15, ideas: re-file Honcho as a bot / AI-lane idea — per-user AI memory)** —
+  owner-requested re-file of the Honcho capture as a **bot/AI-lane** idea: give SuperBot's AI
+  **per-user memory** (remember a Discord user across conversations — the V-04 vision item) via
+  Honcho's conclusion-extraction memory (cheaper than dumping raw history under the Q-0082 AI-spend
+  ceiling). Demoted the "not for Hermes" verdict to a footnote; added a "what to look into" section
+  (scope/privacy, cost, AI-cog integration seam, alternatives) + a disposition to promote to a
+  `docs/planning/` plan when the AI lane has capacity. `check_docs --strict` green; docs/ideas only.
+- **#934 (2026-06-15, docs(journal): durable lessons from the security-tiers session)** —
+  owner-directed: after the security-tiers session (#929), recorded three lean
+  `.session-journal.md` entries — the **cwd-deadlock trap** (never `cd` in the Bash tool; the
+  persisted cwd breaks the repo-root-relative hooks and dead-locks Bash + Write/Edit for the turn;
+  avoidance = absolute paths / `python3.10 -c` from root, recovery = a worktree-isolated Agent
+  commit; durable hook fix noted as proposed Q-0106), a Quick-reference row pointing at it, and
+  "check the PR file count before declaring done" (never run black/isort over `tests/`; eyeball
+  `git diff --name-only`). `check_docs --strict` green; docs only.
+- **#933 (2026-06-15, fix(deathmatch): stop the 1v1 challenge timer on accept/decline — BUG-0013)**
+  — the first real bug caught end-to-end by the Hermes `intake` pipeline (#928): the owner reported
+  it to Hermes on Discord → `intake` routed + root-caused it → Claude Code verified the diagnosis
+  and fixed it. `_ChallengeView` (`disbot/cogs/deathmatch_cog.py`, `timeout=30.0`) never called
+  `self.stop()` on accept/decline and `on_timeout` had no answered-guard, so its 30s timeout
+  overwrote the live/finished duel message with "⚔️ Challenge Expired". Fix: a `_resolved` flag set +
+  `self.stop()` in `btn_accept`/`btn_decline`, and an early return in `on_timeout` when resolved.
+  Contained to `_ChallengeView` (no signature changes); behaviour-preserving for the genuine
+  no-answer case. `tests/unit/cogs/test_deathmatch_challenge_timeout.py` (3 tests, fail-against-old);
+  BUG-0013 recorded FIXED; `check_quality --full` green (9893); arch 0. **Merge ≠ deploy** — needs a
+  Railway prod deploy before the live duel is fixed.
+- **#932 (2026-06-15, docs reconciliation — band-#930, ninth Q-0107 pass)** — ninth Q-0107 docs-only
+  reconciliation + planning pass (fired by `reconcile` issue #931). Reconciled the ledger (added the
+  #915…#928 Hermes model-swap / ops-docs band as one grouped entry; archived #862/#859/#855 to hold
+  the ratchet at 20); **FIXED a control-plane drift** (the Gates bullet still claimed the autonomous
+  loop had never self-fired — stale, since trigger issue #931 was authored by the PAT owner, which
+  only happens when `ROUTINE_PAT` is set and the loop self-fires); scored the band-#900 queue +
+  planned the next band ([`reconciliation-pass-2026-06-15-band930.md`](planning/reconciliation-pass-2026-06-15-band930.md));
+  promoted the now-ungated games-economy faucet/sink diagnostic idea to a turn-key plan; reset the
+  cadence marker #900→#930 (next at #960). Open-PR disposition (Q-0125): only #929 open
+  (`needs-hermes-review` carve-out). Docs only.
 - **#928 + #927 + #925 + #923 + #921 + #919 + #916 + #915 (2026-06-15, Hermes gpt-5.4-mini model-swap + ops-docs maturation band)** — the docs/skill-only band between the BUG-0009 code work and this pass; entered as one grouped entry (all docs-only, same Hermes-operating-layer / ledger-hygiene theme). **#915** — self-healing repo sync (recover a diverged mirror clone). **#916** — recorded the model/provider decision in the ops docs. **#919 → #921 → #923** — the gpt-5.4-mini model-swap arc: model-switch playbook + the "flapping" open item → RESOLVED (the swap was slow propagation lag, gpt-5.4-mini live) → retune base + record verified specs. **#927** — recorded gpt-5.4-mini calibration outcomes + a lean dispatch overlap-check. **#928** — the Hermes `intake` skill (route inbound bugs / ideas / requests / questions to their canonical homes). **#925** — `docs(current-state)`: a scannable ▶ pointer + archived the re-accumulated `Last updated:` stamp wall. *(#930 — Hermes ops docs: lean-env filter how-to + Honcho evaluation + open-steps findability — was already entered.)* All docs/skill/ops only; no `disbot/` runtime code.
 - **#926 (2026-06-15, BUG-0009 slice 2 — deterministic "Geraldo items per level")** — the next ▶
   startable plan slice (the live ▶ pointer's named next step), same proven shape as slice 1 (#924).
@@ -387,94 +450,7 @@ Source code and merged PRs win over anything written here.
   (Q-0114) — the work was already turn-key in the structures plan, so the PR is loop cleanup only
   (the `dispatch-phase-gate-precheck` Q-0089 idea — run the gate at the *dispatcher* — + disposed the
   redundant slice-opener #888 per Q-0125). Docs only.
-- **#884 (2026-06-14, mining §7.5 Vault — a per-player safe stash)** — the first executed slice of
-  the mining structures lane (the owner's bot-side steer for the night routine). A protected store
-  separate from the active pack: `vault_deposit`/`vault_withdraw`/`vault_deposit_all_resources` on the
-  audited `mining_workflow` boundary move items between `mining_inventory` and the new `mining_vault`
-  table (migration 070) **atomically** (no coin/audit leg — item-state direct-lane); `🏦 Vault` hub
-  panel + `!vault`/`!stash`/`!unstash`. **Purely additive** — v1 is a pure safe store, no inventory
-  cap (that sink is the documented follow-up), so existing play is byte-identical. The RS02
-  write-boundary ratchet now also guards `update_vault_item`. Verified on real Postgres
-  (deposit/withdraw/stash-all round-trips · over-move guards · item conservation). `check_quality
-  --full` green (9655); arch 0. **This session also promoted the rest of the lane to a turn-key plan**
-  — [`planning/mining-structures-skill-tree-plan-2026-06-14.md`](planning/mining-structures-skill-tree-plan-2026-06-14.md)
-  (§7.4 capped skill tree + §7.5 Forge/Home + Vault-cap, each a ▶ startable PR-sliced slice) so the
-  night/next session can build mining cold.
-- **#878 + #879 + #881 (2026-06-14, P1-1 — versioned AI eval/smoke matrix, offline half + drift guard + hotspot coverage)**
-  — the standing #1 priority's deterministic, CI-gated half. The live golden set
-  (`tests/evals/cases.py`) is creds-only (`scripts/run_evals.py`), and CI exercised only the harness
-  *machinery* — there was no CI proof of the AI path's **deterministic contract**. **#878:** new
-  **`tests/evals/smoke.py`** drives the **real gateway** with scripted providers (no API) — 16 cases
-  across **gates · fallback · tool-dispatch · audit-visibility · safety · redaction · config** —
-  gated by `tests/evals/test_smoke_matrix.py` on every PR, and rendered as one **versioned scorecard**
-  (`scripts/run_evals.py --smoke`, creds-free); both halves version-stamped (`GOLDEN_SET_VERSION` /
-  `SMOKE_MATRIX_VERSION`); the **#855 Layer-A** MOAB-path probe added to the golden set. **#879:** an
-  **eval-coverage drift guard** (`tests/evals/test_eval_coverage.py`) — a self-cleaning ratchet so a
-  new canonical AI tool/`AITask` can't silently fall outside the matrix (referenced ∪ acknowledged ==
-  surface; coverage floor; meta-tested to actually fire). **#881:** dog-fooded that guard — 6 golden
-  tool-selection probes for the highest-value uncovered **BTD6** tools (the live-defect hotspot:
-  round-cash/boss/map/paragon-degree/round-composition/answerability, each modeled on a real live
-  miss), moving the ratchet **8 → 14/34** covered. `check_quality --full` green (9645); arch 0.
-  **#886 (2026-06-15) advanced the ratchet 14 → 20/34** — 6 more golden tool-selection probes
-  (`get_ai_tool_catalog` + the `btd6_cumulative_cost`/`paragon_requirements`/`monkey_knowledge`/
-  `mode`/`list_roster` lookups), floor raised to 20.
-  **#895 (2026-06-15) advanced the ratchet 20 → 27/34** — 7 probes covering the **whole non-BTD6
-  uncovered surface**: the 5 server-introspection tools (`get_server_overview`/`list_server_channels`/
-  `list_server_roles`/`lookup_member`/`list_all_members`) + `get_ai_policy_explanation` +
-  `diagnostics_health_snapshot`; floor raised to 27.
-  **#896 (2026-06-15) completed the ratchet 27 → 34/34 — FULL AI tool-surface coverage** — the final
-  7 specialized BTD6 lookups (`btd6_bloon_filter`/`btd6_ct_team_status`/`btd6_geraldo_lookup`/
-  `btd6_paragon_calculate`/`btd6_power_effect`/`btd6_power_lookup`/`btd6_relic_lookup`);
-  `_ACK_UNCOVERED_TOOLS` is now **empty** and the floor == the catalogue, so the drift guard fails
-  closed on any newly-added tool. `check_quality --full` green (9698); arch 0.
-  **Still owed (P1-1):** the live-quality battery (needs prod creds) + absence-guard **Layer B**
-  (design-for-review). *(This session's docs close-out tidy merged as **#883** — `▶ Next action`
-  refresh + #872–876 ledger drift cleared.)*
-- **#870 + #869 + #868 (2026-06-14, Hermes operating-layer hardening arc)** — three docs-only PRs
-  maturing the Hermes autonomous-loop control plane. **#868 (Q-0142):** fixed a real misread — a
-  stale reconciliation dispatch fired because a decade-queue slot was read as a reserved PR number;
-  Hermes' dispatch skill + operating prompt now pick the next slice **by description verified
-  against the live ledger**, never a predicted PR number (the band-#870 queue §4 banner restates
-  this). **#869:** Hermes' VPS skills (dispatch / log-triage / repo-health / skill-author +
-  `build_skills.py`) run stdlib-only tooling under the VPS's `python3`, not the repo's CI-pinned
-  `python3.10`. **#870:** recorded the verified deadsnakes **Python 3.10 VPS prerequisite** in the
-  Hermes control-plane doc. Docs only.
-- **#867 (2026-06-14, ledger: ad-hoc band #841–#860 window catch-up)** — an *ad-hoc* ledger-hygiene
-  reconcile **between** cadence passes (not a Q-0107 pass — it did not reset the cadence marker or
-  write a planning doc, correctly): added eight live `Recently shipped` entries
-  (#866/#865/#864/#863/#862/#859 + the #856+#853 and #851/#850/#848/#852 groups) and archived eight
-  old ones into [`current-state-archive.md`](current-state-archive.md). Docs only.
-- **#866 (2026-06-14, #704 live-test triage + close + sector-roadmap handoff)** — triaged all
-  11 PR #704 live-test Discord screenshots (2026-06-11): verdict **predominantly working**
-  (mining/crafting RPG + BTD6 hub functional and polished). One substantive finding — the BTD6
-  capability message ("round cash per-round/range") **over-states** vs. the bot's correct
-  grounding-refusal on round-economy questions, plus a grounding-consistency check (asserted Despo
-  price / Elite Lych HP must be confirmed grounded) → routed to the active **P1-1 eval-smoke** lane.
-  Wrote [`audits/pr704-live-test-triage-2026-06-14.md`](audits/pr704-live-test-triage-2026-06-14.md)
-  and **closed #704** (findings preserved; images stay in git history). A chat sweep confirmed the
-  day's substantive items (Q-0134–Q-0141, sector map, refreshed operating prompt) are captured. Docs only.
-- **#865 (2026-06-14, fix: robust `routine_fire.py` dispatch helper — Q-0141)** — live-testing
-  Hermes' new operating prompt, Hermes diagnosed a **real bug**: the dispatch skill's inline
-  `curl -d "$(python3 -c … "$WORK_ORDER")"` is shell-quoting-fragile for multi-line work orders.
-  The owner then decided **Hermes may write its own code (Q-0141)**, making it a parallel build.
-  `scripts/hermes/routine_fire.py` (stdlib-only) takes the work order on **stdin** (zero shell
-  quoting), loads `CLAUDE_ROUTINE_*` from env / `~/.hermes/routine.env`, POSTs `{"text": …}`,
-  **never prints the token**, and supports `--dry-run`; plus a bounded-work prompt addition.
-- **#864 (2026-06-14, tooling: harden the ledger drift guard — band-#840 slot 9)** — two paired
-  slices on `scripts/check_current_state_ledger.py` (the very checker the autonomous loop relies on
-  to catch `current-state.md` drift between reconciliation passes): (1) it now **prints each missing
-  PR's merge-commit subject** beside its number, collapsing the manual `git log --grep "#N"` loop
-  every Q-0107 pass ran by hand; (2) **scoped range-expansion to the ledger proper** so a
-  forward-looking planning range in the `▶ Next action` pointer can't mask a merged band (the
-  band-#800 false-green class, now structural). Pure stdlib.
-- **#863 (2026-06-14, Hermes skill-author meta-skill + docs-only-PR write scope — Q-0140)** —
-  built the Hermes self-extension layer: the **`superbot-skill-author`** meta-skill
-  (`docs/operations/hermes-skills/skill-author.md` + generated artifact; 11 skills) guides Hermes to
-  design/write a new skill in the canonical format and **commit it as a docs-only PR**, closing the
-  "Hermes-authored skills are VPS-only" round-trip gap. **Q-0140** expands Hermes' sanctioned writes
-  to two — review-merge (Q-0117) **+** docs-only PRs (work summary / bug report / new skill source);
-  code still routes via dispatch. Operating prompt refreshed. Docs only.
-- **Older merges (#862 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
+- **Older merges (#862 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are archived (`scripts/check_docs.py` soft-ratchets the count). *(The #932–#939 ledger reconciliation (2026-06-16) added six live entries — #939, #936, #935, #934, #933, #932 — and archived the eight oldest to hold the ratchet at 20: #884, the #878+#879+#881 P1-1 eval/smoke arc, the #870+#869+#868 Hermes operating-layer arc, #867, #866, #865, #864, #863. The #920 welcome-phase-2 session (2026-06-15) added its entry and archived the oldest live one — #849 born-red merge-gate — to hold the ratchet at 20. The #918 settings-reverse-parity session (2026-06-15) added its entry and archived the oldest live one — #843 P1-2 health-findings — to hold the ratchet at 20. The #917 P1-3 contract-invariants session (2026-06-15) added its entry and archived the four oldest live entries — #856+#853, #851+#850+#848+#852, #840, #839+housekeeping — to bring the ledger back to 20. The #912 mining-Slices-E+F session (2026-06-15) added its entry and archived the oldest live one — #829 P0-2 PR 1 — to hold the ratchet. The #897 mining-Vault-v2 session (2026-06-15) added its entry and archived the oldest live one — #825 P0-4 PR 2 — to hold the ratchet at 20. The #895 non-BTD6 eval-coverage session (2026-06-15) added its entry — folded into the #878 eval bullet, plus the #892+#889 docs-hygiene entry — and archived the oldest live one, #820 P0-4 PR 1, to hold the ratchet. The #884 mining-Vault session (2026-06-14) added its entry and archived the oldest live one — the #814+#815 CI-efficiency arc — to hold the ratchet at 20. The #878 P1-1 eval/smoke session (2026-06-14) added its own entry and archived the oldest live one — the #802…#813 portable-substrate-kit group — to hold the ratchet at 20. The band-#870 reconciliation pass (2026-06-14) added two live entries — the #870+#869+#868 Hermes operating-layer arc and #867 ledger window catch-up — and archived the two oldest to hold the ratchet at 20: the #803… reconciliation+workflow-rules group and the #827… Railway agent-access session. Earlier: the band #841–#860 ledger-reconciliation added eight live entries — #866, #865, #864, #863, #862, #859, the #856+#853 group, and the #851/#850/#848/#852 group — and archived the eight oldest: the #788…#798 substrate-kit arc, #817, #794, the #786+#787 group, #778, #777, #775, #774. Earlier still: the #772 automod-v1 entry was archived to offset #855; the #765+#767+#769+#770 backup-posture entry to offset #849; the #764 P2 doc-drift-sweep entry to offset #843; the band-#840 reconciliation pass archived the #763 second-reconciliation-pass record, the #758/#760/#762 UX-Lab BUILD, and the #753/#754/#756/#759/#761 autonomous-loop wiring; the #755 entry to offset #829; the #746–#754 entry to offset #825; the #741/#742/#745/#748 entries by the band-#820 pass.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
