@@ -102,6 +102,41 @@ class CountingCog(commands.Cog):
         await db.set_counting_state(guild_id, self.count_data.get(guild_id_str, {}))
 
     # --------------------------------------------
+    # Channel enable / disable / mutate (panel-driven)
+    # Implementations live in cogs/counting/_channel_manager.py to keep
+    # this file under the S4.6 LOC threshold.
+    # --------------------------------------------
+
+    async def enable_channel(self, guild_id: str, channel_id: str, mode: str) -> bool:
+        """Register an EXISTING channel as an active counting channel."""
+        from cogs.counting._channel_manager import enable_channel as _enable
+
+        return await _enable(self, guild_id, channel_id, mode)
+
+    async def disable_channel(self, guild_id: str, channel_id: str) -> bool:
+        """Remove a channel from the active counting set WITHOUT deleting it."""
+        from cogs.counting._channel_manager import disable_channel as _disable
+
+        return await _disable(self, guild_id, channel_id)
+
+    async def toggle_channel_flag(
+        self,
+        guild_id: str,
+        channel_id: str,
+        flag: str,
+    ) -> bool:
+        """Flip a per-channel boolean flag."""
+        from cogs.counting._channel_manager import toggle_channel_flag as _toggle
+
+        return await _toggle(self, guild_id, channel_id, flag)
+
+    async def reset_channel_count(self, guild_id: str, channel_id: str) -> bool:
+        """Reset a counting channel to its starting state."""
+        from cogs.counting._channel_manager import reset_channel_count as _reset
+
+        return await _reset(self, guild_id, channel_id)
+
+    # --------------------------------------------
     # Permission Helpers
     # --------------------------------------------
 
