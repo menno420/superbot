@@ -50,7 +50,7 @@ classification.
 | "High drift" in **migration counts** | **Real.** `docs/architecture.md:60` says `(51 migrations)`; live = **74**. | **Confirmed** → fixed in this PR. |
 | "Medium drift" in **workflow inventory** | **Real.** `docs/repo-navigation-map.md:45` implies 1–2 workflow files; live = **6**. `architecture.md:41` also says `cogs/ (×28)`; live = **43**. | **Confirmed** → fixed in this PR. |
 | Build a generated **per-file "maintainer dashboard"** (layer · owner · imports · dependents · tests · docs · blast radius) | **~80% already exists** as `scripts/context_map.py` — it emits exactly: module, layer, review-unit, file role/authority (mutation-owner facts), layer-may-import, module-level **and** lazy imports, imported-by, blast radius, related docs, relevant tests, risk flags, recommended read-set, post-edit checks. EventBus wiring is `scripts/wiring_map.py`; review partition is `scripts/review_scope.py`; per-area packs are `tools/agent_context/`. | **Already shipped** (per file, on demand). The *delta* is real but narrow — see below. |
-| **No extension-type taxonomy / crosswalk** exists | **Confirmed.** 43 extensions vs 32 registered subsystems; the registry (`utils/subsystem_registry.py`) has rich metadata (`visibility_tier`, `category`, `parent_hub`, `hub_group`, `tags`) but **no lifecycle-role field** (bootstrap / maintenance / hub / adapter / lab / specialized-surface). Nothing maps the ~11 non-registry extensions. | **Confirmed + genuinely missing** — strongest idea. |
+| **No extension-type taxonomy / crosswalk** exists | **Confirmed.** 43 extensions vs **33** registered subsystems; the registry (`utils/subsystem_registry.py`) has rich metadata (`visibility_tier`, `category`, `parent_hub`, `hub_group`, `tags`) but **no lifecycle-role field** (bootstrap / maintenance / hub / adapter / lab / specialized-surface). Nothing maps the **10** non-registry extensions. | **Confirmed + genuinely missing** — strongest idea (now shipped, PR #958). |
 | **Boundary debt**: `views→cogs`, `core/runtime→services`, `utils→core/services` | **Accurate**, and already **tracked**: `architecture_rules/layers.yaml` `known_violations` — `arch-fix-13` (≈18 `views/<game\|economy\|xp\|diagnostic>/ → cogs.<x>._helpers/_state`), `arch-fix-11` (≈17 `core/runtime → services`), `arch-fix-6/7/8`. | **Confirmed but not new** — these are ticketed; value = *burn down*, not discover. |
 | Add a minimal **root README** as a pointer | The repo made an **explicit, deliberate decision against one**: *"There is intentionally **no top-level README** — `docs/` is the documentation surface"* (`repo-navigation-map.md:51`). The review didn't know this. | **Contradicts a stated decision** — legitimate to revisit (public-era GitHub landing UX), but **owner-only** → Q-0151. |
 | Reject `src/` layout, Option C, Option D, microservices | Matches this repo's own posture (modular monolith, executable import contracts already in place). | **Endorsed.** |
@@ -67,15 +67,20 @@ cross-check mattered.
 
 Stripping out what already exists, three ideas survive — in priority order:
 
-### 1. Extension-type taxonomy crosswalk (strongest; genuinely missing)
-Make the **43 extensions ↔ 32 subsystems** mapping legible so the ~11 non-1:1 extensions
-(`bootstrap_access`, `health_maintenance`, `media_maintenance`, `hermes`, `ux_lab`, the multiple
-`btd6_*` surfaces, …) read as *classified*, not as a gap. Concretely: a `role`/`kind` classification
-(product-subsystem · hub/router · shared-platform · maintenance · operational-adapter · bootstrap ·
-specialized-surface · lab), surfaced as a **generated crosswalk table**, plus a **CI guard** that every
-entry in `config.INITIAL_EXTENSIONS` is either a registered subsystem **or** carries an explicit
-declared role — so a new unclassified extension fails CI instead of silently widening the gap. This is
-the one place the review found a true blind spot.
+### 1. Extension-type taxonomy crosswalk (strongest; genuinely missing) — ✅ APPROVED + SHIPPED (PR #958)
+Make the **43 extensions ↔ 33 subsystems** mapping legible so the **10** non-1:1 extensions
+(`bootstrap_access`, the two `*_maintenance` cogs, the five `btd6_*`/`paragon` surfaces, `setup`,
+`hermes`) read as *classified*, not as a gap. A `role` classification (product-subsystem · hub/router ·
+shared-platform · maintenance · operational-adapter · bootstrap · specialized-surface · lab), surfaced
+as a **generated crosswalk table**, plus a **CI guard** that every entry in `config.INITIAL_EXTENSIONS`
+is classified — so a new unclassified extension fails CI instead of silently widening the gap. This is
+the one place the review found a true blind spot. **Built (Q-0151c, owner-approved) as a curated overlay
+`architecture_rules/extension_roles.yaml` + `scripts/extension_crosswalk.py` →
+[`docs/architecture/extension-taxonomy-crosswalk.md`](../architecture/extension-taxonomy-crosswalk.md), enforced by
+`tests/unit/scripts/test_extension_crosswalk.py`** — see
+[the plan](../planning/extension-taxonomy-crosswalk-plan-2026-06-16.md).
+*(Count-correction: the live registry has **33** identities, not the 32 first written here — fixed
+2026-06-16; the crosswalk is now the self-correcting source.)*
 
 ### 2. A *thin* unified atlas — compose, don't duplicate
 The review's real surviving insight: the facts are all generable but **scattered** across
