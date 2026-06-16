@@ -1,6 +1,6 @@
 # Session — control panel: Discord OAuth login + web editors (write side, step 2)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
