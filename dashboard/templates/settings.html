@@ -6,11 +6,15 @@
   {{ data.meta.counts.get("setting_keys", 0) }} per-server setting keys across
   {{ data.meta.counts.get("setting_domains", 0) }} subsystems — every knob the bot exposes,
   grouped by the subsystem that owns it.
+  {{ data.meta.counts.get("typed_settings", 0) }} carry a typed
+  <strong>SettingSpec</strong> (type · default · hint), the metadata the editable settings use.
 </p>
 <p class="text-slate-500 mb-6 text-xs rounded border border-slate-800 bg-slate-900/50 px-3 py-2">
-  🔧 Read-only static analysis (<code>scripts/scan_settings.py</code>, from
-  <code>disbot/utils/settings_keys/</code>). Shows the stable <strong>key names</strong> only —
-  not the value any server has set (those live in the bot's database). Editing values is a later phase.
+  🔧 Read-only static analysis (<code>scripts/scan_settings.py</code> +
+  <code>scripts/scan_setting_specs.py</code>). Shows the stable <strong>key names</strong>, their
+  type and default — not the value any server has set (those live in the bot's database). The bot
+  already has a typed, audited settings pipeline; the website editor (global + per-server) is a
+  front-end over it — see the live-editor plan.
 </p>
 
 <input
@@ -30,12 +34,20 @@
         <span class="text-xs text-slate-500">{{ domain['keys'] | length }} key{{ '' if domain['keys']|length == 1 else 's' }}</span>
       </div>
       {% if domain.purpose %}<p class="text-xs text-slate-400 mb-3">{{ domain.purpose }}</p>{% endif %}
-      <div class="grid gap-1 sm:grid-cols-2">
+      <div class="grid gap-1.5 sm:grid-cols-2">
         {% for k in domain['keys'] %}
-          <div class="setting-row flex items-center justify-between gap-2 rounded bg-slate-950/60 px-2.5 py-1.5"
-               data-haystack="{{ k.constant }} {{ k.key }}">
-            <code class="text-xs text-slate-200">{{ k.constant }}</code>
-            <code class="text-[11px] text-slate-500 shrink-0">{{ k.key }}</code>
+          <div class="setting-row rounded bg-slate-950/60 px-2.5 py-1.5"
+               data-haystack="{{ k.constant }} {{ k.key }} {{ k.hint or '' }}">
+            <div class="flex items-center gap-2 flex-wrap">
+              <code class="text-xs text-slate-200">{{ k.constant }}</code>
+              {% if k.type %}<span class="text-[9px] uppercase rounded bg-indigo-900/60 text-indigo-300 px-1 py-0.5">{{ k.type }}</span>{% endif %}
+              {% if k.default is defined %}<span class="text-[10px] text-slate-500">= {{ k.default | tojson }}</span>{% endif %}
+              <code class="text-[11px] text-slate-600 ml-auto shrink-0">{{ k.key }}</code>
+            </div>
+            {% if k.hint %}<p class="mt-0.5 text-[10px] text-slate-500 leading-snug">{{ k.hint }}</p>{% endif %}
+            {% if k.allowed_values %}
+              <p class="mt-0.5 text-[10px] text-slate-500">choices: {% for v in k.allowed_values %}<code class="text-slate-400">{{ v }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</p>
+            {% endif %}
           </div>
         {% endfor %}
       </div>

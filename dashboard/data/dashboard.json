@@ -1,9 +1,9 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T19:00:19Z",
+    "generated_at": "2026-06-16T20:03:01Z",
     "counts": {
       "functions": 33,
-      "ideas": 72,
+      "ideas": 73,
       "bugs": 15,
       "updates": 60,
       "env_vars": 34,
@@ -11,6 +11,7 @@
       "commands": 301,
       "setting_keys": 83,
       "setting_domains": 13,
+      "typed_settings": 64,
       "visible_subsystems": 33,
       "synonyms": 87
     }
@@ -887,6 +888,13 @@
       "summary": "PR #948 fixed the ~85s deploy downtime by releasing the runtime lock **early** (the moment"
     },
     {
+      "file": "deterministic-floor-catalogue-2026-06-16.md",
+      "title": "Idea — a generated \"deterministic floor catalogue\" index",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "`btd6_context_service._BTD6_LIST_BUILDERS` now grows roughly **one member per dispatch run**"
+    },
+    {
       "file": "developer-dashboard-2026-06-16.md",
       "title": "Developer dashboard (personal website) for SuperBot",
       "status": "ideas",
@@ -1504,6 +1512,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-model-tpm-confirmed-result.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — TPM result confirmed (5-mini 500K) + reconcile the compaction guidance",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-model-comparison-gpt5mini.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — gpt-5-mini vs gpt-5.4-mini comparison + apply_context_fixes --set-model fix",
@@ -1519,6 +1533,12 @@
       "file": "2026-06-16-journal-session-lessons.md",
       "date": "2026-06-16",
       "title": "Session — journal: durable lessons from the security-tiers session",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-install-skills-staleness-guard.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — install-skills.sh staleness guard (stale-skill root cause)",
       "status": "complete"
     },
     {
@@ -1618,6 +1638,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-games-settings-design.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard: `/games` showcase + settings-editor design (global + per-server)",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-dashboard-env-usage-map.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard Phase 3 (read-only env-var usage map)",
@@ -1639,6 +1665,12 @@
       "file": "2026-06-16-dashboard-commands-explorer.md",
       "date": "2026-06-16",
       "title": "Session — Dashboard cog & command explorer (`/commands`)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-aliases.md",
+      "date": "2026-06-16",
+      "title": "Session — Dashboard: `/aliases` command-alias suggestion page",
       "status": "complete"
     },
     {
@@ -1705,6 +1737,12 @@
       "file": "2026-06-16-btd6-cost-comparison-floor.md",
       "date": "2026-06-16",
       "title": "Session — AI §7.5 deterministic BTD6 cost-comparison floor",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-btd6-capability-roster-floor.md",
+      "date": "2026-06-16",
+      "title": "Session — BTD6 property/capability roster floors (AI §7.6 new family)",
       "status": "complete"
     },
     {
@@ -1777,36 +1815,6 @@
       "file": "2026-06-15-mining-vault-v2-cap.md",
       "date": "2026-06-15",
       "title": "Session — Mining Vault v2: inventory soft-cap + vault-cap upgrade path",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-skill-tree-slice-d.md",
-      "date": "2026-06-15",
-      "title": "2026-06-15 — mining Slice D: capped skill tree (§7.4)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-respec-titles-ef.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · mining Slices E + F — respec polish + skill/milestone titles",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-phase2-feature-gated.md",
-      "date": "2026-06-15",
-      "title": "2026-06-15 — mining Phase-2 feature dispatch: gated (fix-phase) + loop cleanup",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-inplace-image-cards.md",
-      "date": "2026-06-15",
-      "title": "Session: Mining hub UX overhaul (in-place cards · sub-hubs · 3-layer menu doctrine)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-home-slice-c.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · mining Slice C — the Home structure (character-card backdrop)",
       "status": "complete"
     }
   ],
@@ -6210,43 +6218,87 @@
       "keys": [
         {
           "constant": "AI_ENABLED",
-          "key": "ai_enabled"
+          "key": "ai_enabled",
+          "type": "bool",
+          "hint": "Master switch for the AI Platform. When false, no AI feature runs for this guild — including BTD6 AI augmentation and the central natural-language stage.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AI_NATURAL_LANGUAGE_ENABLED",
-          "key": "ai_natural_language_enabled"
+          "key": "ai_natural_language_enabled",
+          "type": "bool",
+          "hint": "Whether the bot may reply to natural-language messages (channel- and role-policy still apply). Independent of ai.enabled so admins can keep AI features available without enabling passive replies.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AI_DEFAULT_PROVIDER",
-          "key": "ai_default_provider"
+          "key": "ai_default_provider",
+          "type": "str",
+          "hint": "Default provider used by AI tasks that don't specify their own. 'deterministic' keeps responses local; 'openai' / 'anthropic' route through the configured OpenAI / Anthropic account. Leave the model empty so each task auto-picks the right model for the provider. This per-guild setting wins over the AI_DEFAULT_PROVIDER environment default for this server (see docs/ai-config-ownership.md § provider precedence).",
+          "allowed_values": [
+            "deterministic",
+            "openai",
+            "anthropic"
+          ],
+          "default": "deterministic"
         },
         {
           "constant": "AI_DEFAULT_MODEL",
-          "key": "ai_default_model"
+          "key": "ai_default_model",
+          "type": "str",
+          "hint": "Default model identifier for the chosen provider. Leave empty to use the provider's own default.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "AI_MINIMUM_LEVEL_DEFAULT",
-          "key": "ai_minimum_level_default"
+          "key": "ai_minimum_level_default",
+          "type": "int",
+          "hint": "Default minimum XP level required to talk to the bot naturally. Channels, categories, and roles may override this in M2.",
+          "allowed_values": [],
+          "default": 2
         },
         {
           "constant": "AI_COOLDOWN_SECONDS",
-          "key": "ai_cooldown_seconds"
+          "key": "ai_cooldown_seconds",
+          "type": "int",
+          "hint": "Seconds between natural-language replies per user. Zero disables the cooldown.",
+          "allowed_values": [],
+          "default": 30
         },
         {
           "constant": "AI_FRESH_USER_MENTION_ALLOWANCE",
-          "key": "ai_fresh_user_mention_allowance"
+          "key": "ai_fresh_user_mention_allowance",
+          "type": "int",
+          "hint": "How many @-mention replies a fresh user (below the minimum level) is allowed before the level gate kicks in.",
+          "allowed_values": [],
+          "default": 1
         },
         {
           "constant": "AI_GUILD_INSTRUCTION_PROFILE",
-          "key": "ai_guild_instruction_profile"
+          "key": "ai_guild_instruction_profile",
+          "type": "str",
+          "hint": "Free-text guild-wide instruction body that prefixes every AI prompt for this guild. Transitional scalar seed: M2 backfills this into a typed ai_instruction_profile row named 'default' and the typed table becomes the runtime source of truth.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "AI_MEMORY_WINDOW_MINUTES",
-          "key": "ai_memory_window_minutes"
+          "key": "ai_memory_window_minutes",
+          "type": "int",
+          "hint": "How many minutes of recent channel messages the bot should keep in its in-process memory and include as context on each AI reply. ``0`` keeps only the last 3 messages per channel (the always-on minimum so basic conversational handles still work). Hard cap 120 minutes; the cache is in-process only and dropped on restart.",
+          "allowed_values": [],
+          "default": 0
         },
         {
           "constant": "AI_MEMORY_CHANNEL_SCAN_ENABLED",
-          "key": "ai_memory_channel_scan_enabled"
+          "key": "ai_memory_channel_scan_enabled",
+          "type": "bool",
+          "hint": "When ON, the bot may scan recent channel history via Discord's API to backfill its memory cache when the in-process buffer holds fewer messages than the configured window requires. OFF means memory is limited to messages the bot observed since process start.",
+          "allowed_values": [],
+          "default": false
         }
       ]
     },
@@ -6256,47 +6308,91 @@
       "keys": [
         {
           "constant": "AUTOMOD_ENABLED",
-          "key": "automod_enabled"
+          "key": "automod_enabled",
+          "type": "bool",
+          "hint": "Master switch for automod.  When off, no rule acts regardless of the per-rule toggles.  Off by default — a fresh server is unaffected.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AUTOMOD_SPAM_ENABLED",
-          "key": "automod_spam_enabled"
+          "key": "automod_spam_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on a burst of messages from one member in a channel.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AUTOMOD_INVITES_ENABLED",
-          "key": "automod_invites_enabled"
+          "key": "automod_invites_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on Discord invite links (discord.gg/…).",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AUTOMOD_CAPS_ENABLED",
-          "key": "automod_caps_enabled"
+          "key": "automod_caps_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on messages that are mostly uppercase (shouting).",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AUTOMOD_MENTIONS_ENABLED",
-          "key": "automod_mentions_enabled"
+          "key": "automod_mentions_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on messages with too many @mentions (mass-ping).",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "AUTOMOD_SPAM_COUNT",
-          "key": "automod_spam_count"
+          "key": "automod_spam_count",
+          "type": "int",
+          "hint": "Messages from one member in one channel within the spam window before the spam rule trips.",
+          "allowed_values": [],
+          "default": 5
         },
         {
           "constant": "AUTOMOD_SPAM_WINDOW_SECONDS",
-          "key": "automod_spam_window_seconds"
+          "key": "automod_spam_window_seconds",
+          "type": "int",
+          "hint": "Sliding-window length (seconds) the spam count is measured over.",
+          "allowed_values": [],
+          "default": 7
         },
         {
           "constant": "AUTOMOD_CAPS_PERCENT",
-          "key": "automod_caps_percent"
+          "key": "automod_caps_percent",
+          "type": "int",
+          "hint": "Percentage of letters that must be uppercase before the caps rule trips (only on messages with enough letters to judge).",
+          "allowed_values": [],
+          "default": 70
         },
         {
           "constant": "AUTOMOD_MENTIONS_COUNT",
-          "key": "automod_mentions_count"
+          "key": "automod_mentions_count",
+          "type": "int",
+          "hint": "Number of @mentions in one message before the mass-mention rule trips.",
+          "allowed_values": [],
+          "default": 4
         },
         {
           "constant": "AUTOMOD_EXEMPT_ROLES",
-          "key": "automod_exempt_roles"
+          "key": "automod_exempt_roles",
+          "type": "str",
+          "hint": "Comma-separated role ids whose members are never acted on (staff, bots-with-a-role, …).  Leave empty for none.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "AUTOMOD_EXEMPT_CHANNELS",
-          "key": "automod_exempt_channels"
+          "key": "automod_exempt_channels",
+          "type": "str",
+          "hint": "Comma-separated channel ids automod never touches (announcements, memes, …).  Leave empty for none.",
+          "allowed_values": [],
+          "default": ""
         }
       ]
     },
@@ -6342,31 +6438,59 @@
       "keys": [
         {
           "constant": "COUNTERS_ENABLED",
-          "key": "counters_enabled"
+          "key": "counters_enabled",
+          "type": "bool",
+          "hint": "Master switch for server counters.  When off, no channel is renamed regardless of the bindings.  Off by default — a fresh server is unaffected.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "COUNTERS_TOTAL_CHANNEL",
-          "key": "counters_total_channel"
+          "key": "counters_total_channel",
+          "type": "str",
+          "hint": "Channel whose name shows the total member count (a locked voice channel works well).  Leave unset to disable this counter.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "COUNTERS_HUMANS_CHANNEL",
-          "key": "counters_humans_channel"
+          "key": "counters_humans_channel",
+          "type": "str",
+          "hint": "Channel whose name shows the non-bot member count.  Unset to disable.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "COUNTERS_BOTS_CHANNEL",
-          "key": "counters_bots_channel"
+          "key": "counters_bots_channel",
+          "type": "str",
+          "hint": "Channel whose name shows the bot count.  Unset to disable.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "COUNTERS_TOTAL_TEMPLATE",
-          "key": "counters_total_template"
+          "key": "counters_total_template",
+          "type": "str",
+          "hint": "Name template for the total counter.  Placeholder: {count}.",
+          "allowed_values": [],
+          "default": "👥 Members: {count}"
         },
         {
           "constant": "COUNTERS_HUMANS_TEMPLATE",
-          "key": "counters_humans_template"
+          "key": "counters_humans_template",
+          "type": "str",
+          "hint": "Name template for the humans counter.  Placeholder: {count}.",
+          "allowed_values": [],
+          "default": "🧑 Humans: {count}"
         },
         {
           "constant": "COUNTERS_BOTS_TEMPLATE",
-          "key": "counters_bots_template"
+          "key": "counters_bots_template",
+          "type": "str",
+          "hint": "Name template for the bots counter.  Placeholder: {count}.",
+          "allowed_values": [],
+          "default": "🤖 Bots: {count}"
         }
       ]
     },
@@ -6390,15 +6514,27 @@
         },
         {
           "constant": "RPS_DEFAULT_ENTRY_FEE",
-          "key": "rps_default_entry_fee"
+          "key": "rps_default_entry_fee",
+          "type": "int",
+          "hint": "Default entry fee (🪙 coins) applied when an admin runs `!rpsregister` without an explicit entry_fee argument.",
+          "allowed_values": [],
+          "default": 0
         },
         {
           "constant": "BLACKJACK_DEFAULT_ENTRY_FEE",
-          "key": "blackjack_default_entry_fee"
+          "key": "blackjack_default_entry_fee",
+          "type": "int",
+          "hint": "Default entry fee (🪙 coins) applied when an admin runs `!bjtournament` without an explicit entry_fee argument.",
+          "allowed_values": [],
+          "default": 0
         },
         {
           "constant": "DEATHMATCH_TURN_TIMEOUT",
-          "key": "deathmatch_turn_timeout"
+          "key": "deathmatch_turn_timeout",
+          "type": "int",
+          "hint": "Seconds each player has to respond on their turn before the duel times out and the opponent wins by default.",
+          "allowed_values": [],
+          "default": 60
         }
       ]
     },
@@ -6412,11 +6548,19 @@
         },
         {
           "constant": "TRUSTED_TIER_ROLE_ID",
-          "key": "trusted_tier_role_id"
+          "key": "trusted_tier_role_id",
+          "type": "str",
+          "hint": "Role whose members are treated as the 'trusted' tier — reserved for trust-gated features and surfaces.  Leave empty to disable.  Like the moderator role, this only ever adds standing.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "MODERATOR_TIER_ROLE_ID",
-          "key": "moderator_tier_role_id"
+          "key": "moderator_tier_role_id",
+          "type": "str",
+          "hint": "Role whose members may use moderation actions (warn, timeout, kick, ban) without holding Discord moderation permissions.  Leave empty to require Discord permissions only.  This only adds access — no one who can moderate today loses it.",
+          "allowed_values": [],
+          "default": ""
         }
       ]
     },
@@ -6488,51 +6632,98 @@
       "keys": [
         {
           "constant": "WARN_THRESHOLD",
-          "key": "warn_threshold"
+          "key": "warn_threshold",
+          "type": "int",
+          "hint": "Number of warnings before the escalation action is applied.  Set high to effectively disable automatic escalation.",
+          "allowed_values": [],
+          "default": 3
         },
         {
           "constant": "WARN_TIMEOUT_MINS",
-          "key": "warn_timeout_minutes"
+          "key": "warn_timeout_minutes",
+          "type": "int",
+          "hint": "Duration in minutes of the automatic timeout triggered when warn_threshold is reached and warn_escalation_action is 'timeout'.",
+          "allowed_values": [],
+          "default": 10
         },
         {
           "constant": "MOD_DM_ON_ACTION",
-          "key": "moderation_dm_on_action"
+          "key": "moderation_dm_on_action",
+          "type": "bool",
+          "hint": "DM the affected member a notice when they are warned, timed out, kicked, or banned.  Best-effort — silently skipped when the member has DMs closed.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "MOD_DM_TEMPLATE",
-          "key": "moderation_dm_template"
+          "key": "moderation_dm_template",
+          "type": "str",
+          "hint": "Custom body for the notify-the-member DM.  Leave empty for the built-in per-action notice.  Tokens: {guild} {action} {reason} {user}.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "MOD_REQUIRE_REASON",
-          "key": "moderation_require_reason"
+          "key": "moderation_require_reason",
+          "type": "bool",
+          "hint": "Require a non-empty reason for warn / kick / ban.  When on, the action is rejected (at the moderation_service seam) if no reason is given.  Timeout is exempt — its reason carries the duration.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "MOD_BAN_DELETE_MESSAGE_DAYS",
-          "key": "moderation_ban_delete_message_days"
+          "key": "moderation_ban_delete_message_days",
+          "type": "int",
+          "hint": "Days of the banned member's recent messages to purge (0–7).  0 keeps all messages — today's default.",
+          "allowed_values": [],
+          "default": 0
         },
         {
           "constant": "MOD_MAX_TIMEOUT_MINUTES",
-          "key": "moderation_max_timeout_minutes"
+          "key": "moderation_max_timeout_minutes",
+          "type": "int",
+          "hint": "Upper bound (minutes) for any single timeout; longer requests are clamped down.  Default 40320 = 28 days, Discord's maximum, so an unconfigured guild is unaffected.",
+          "allowed_values": []
         },
         {
           "constant": "MOD_WARN_ESCALATION_ACTION",
-          "key": "moderation_warn_escalation_action"
+          "key": "moderation_warn_escalation_action",
+          "type": "str",
+          "hint": "What happens when a member reaches warn_threshold warnings: 'timeout' (the default — auto-timeout for warn_timeout_minutes, then reset), 'kick', 'ban', or 'none' to disable auto-escalation.",
+          "allowed_values": [],
+          "default": "timeout"
         },
         {
           "constant": "MOD_POST_ACTION_CLEANUP",
-          "key": "moderation_post_action_cleanup"
+          "key": "moderation_post_action_cleanup",
+          "type": "str",
+          "hint": "After a kick or ban, sweep the member's recent messages in the channel where the action was taken: 'none' (default), 'kick', 'ban', or 'both'.  The bot needs Manage Messages + Read Message History in that channel.",
+          "allowed_values": [],
+          "default": "none"
         },
         {
           "constant": "MOD_POST_ACTION_CLEANUP_LIMIT",
-          "key": "moderation_post_action_cleanup_limit"
+          "key": "moderation_post_action_cleanup_limit",
+          "type": "int",
+          "hint": "How many recent messages to scan for the post-action cleanup sweep (1–500).  Only the moderated member's messages within that scan window are removed.",
+          "allowed_values": [],
+          "default": 100
         },
         {
           "constant": "MOD_PUBLIC_LOG_CHANNEL",
-          "key": "moderation_public_log_channel"
+          "key": "moderation_public_log_channel",
+          "type": "str",
+          "hint": "Channel for the optional public moderation log.  Leave empty to disable.  Public entries show the action, the affected member, and the reason — but never which moderator acted.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "MOD_PUBLIC_LOG_ACTIONS",
-          "key": "moderation_public_log_actions"
+          "key": "moderation_public_log_actions",
+          "type": "str",
+          "hint": "Which actions are announced in the public moderation log: 'none' (default, off), 'bans', 'removals' (kick + ban), or 'all' (warn + timeout + kick + ban).  The acting moderator is never shown publicly.  Requires public_log_channel to be set.",
+          "allowed_values": [],
+          "default": "none"
         }
       ]
     },
@@ -6546,11 +6737,19 @@
         },
         {
           "constant": "TIME_ROLES_STACK",
-          "key": "time_roles_stack"
+          "key": "time_roles_stack",
+          "type": "bool",
+          "hint": "When ON, members keep every tenure (time-based) role they have earned. When OFF (default), reaching a new tenure tier removes the previous one, so a member holds a single tenure role.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "XP_ROLES_STACK",
-          "key": "xp_roles_stack"
+          "key": "xp_roles_stack",
+          "type": "bool",
+          "hint": "When ON (default), members keep every XP/level role they earn — the roles stack. When OFF, reaching a higher level role removes the lower level roles, so a member holds a single level role.",
+          "allowed_values": [],
+          "default": true
         }
       ]
     },
@@ -6560,35 +6759,67 @@
       "keys": [
         {
           "constant": "WELCOME_ENABLED",
-          "key": "welcome_enabled"
+          "key": "welcome_enabled",
+          "type": "bool",
+          "hint": "Master switch for welcome.  When off, no greeting posts and no entry role is granted regardless of the per-event toggles.  Off by default — a fresh server is unaffected.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "WELCOME_JOIN_ENABLED",
-          "key": "welcome_join_enabled"
+          "key": "welcome_join_enabled",
+          "type": "bool",
+          "hint": "Post a greeting embed in the welcome channel when a member joins.",
+          "allowed_values": [],
+          "default": true
         },
         {
           "constant": "WELCOME_LEAVE_ENABLED",
-          "key": "welcome_leave_enabled"
+          "key": "welcome_leave_enabled",
+          "type": "bool",
+          "hint": "Post a farewell embed in the welcome channel when a member leaves.",
+          "allowed_values": [],
+          "default": false
         },
         {
           "constant": "WELCOME_CHANNEL",
-          "key": "welcome_channel"
+          "key": "welcome_channel",
+          "type": "str",
+          "hint": "Channel where greeting/farewell embeds are posted.  Leave unset to disable posting (the entry role still works).",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "WELCOME_JOIN_MESSAGE",
-          "key": "welcome_join_message"
+          "key": "welcome_join_message",
+          "type": "str",
+          "hint": "Greeting template.  Placeholders: {user} (mention), {server} (name), {count} (member number).",
+          "allowed_values": [],
+          "default": "👋 Welcome {user} to **{server}**! You're member #{count}."
         },
         {
           "constant": "WELCOME_LEAVE_MESSAGE",
-          "key": "welcome_leave_message"
+          "key": "welcome_leave_message",
+          "type": "str",
+          "hint": "Farewell template.  Placeholders: {user} (name), {server} (name), {count} (remaining members).",
+          "allowed_values": [],
+          "default": "👋 **{user}** has left {server}. We're now {count} members."
         },
         {
           "constant": "WELCOME_ENTRY_ROLE",
-          "key": "welcome_entry_role"
+          "key": "welcome_entry_role",
+          "type": "str",
+          "hint": "Role granted the moment a member joins (e.g. a base Member role).  Leave unset for none.  Granted through moderation's audited role path.",
+          "allowed_values": [],
+          "default": ""
         },
         {
           "constant": "WELCOME_CARD_ENABLED",
-          "key": "welcome_card_enabled"
+          "key": "welcome_card_enabled",
+          "type": "bool",
+          "hint": "Attach a rendered welcome card image to the join greeting (phase 2).  Off by default; falls back to the embed-only greeting when image rendering is unavailable.",
+          "allowed_values": [],
+          "default": false
         }
       ]
     },
@@ -6598,15 +6829,27 @@
       "keys": [
         {
           "constant": "XP_MIN",
-          "key": "xp_min"
+          "key": "xp_min",
+          "type": "int",
+          "hint": "Minimum XP awarded per qualifying message.",
+          "allowed_values": [],
+          "default": 15
         },
         {
           "constant": "XP_MAX",
-          "key": "xp_max"
+          "key": "xp_max",
+          "type": "int",
+          "hint": "Maximum XP awarded per qualifying message.",
+          "allowed_values": [],
+          "default": 25
         },
         {
           "constant": "XP_COOLDOWN",
-          "key": "xp_cooldown"
+          "key": "xp_cooldown",
+          "type": "int",
+          "hint": "Seconds between XP awards per user.  Zero disables the cooldown (not recommended in active guilds).",
+          "allowed_values": [],
+          "default": 60
         },
         {
           "constant": "XP_ANNOUNCE_CHANNEL",
