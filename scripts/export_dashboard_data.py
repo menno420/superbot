@@ -354,6 +354,27 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         if keys_dir.is_dir()
         else []
     )
+    cogs_dir = repo_root / "disbot" / "cogs"
+    specs = (
+        _load_sibling("scan_setting_specs.py", "scan_setting_specs")(
+            cogs_dir=cogs_dir,
+            keys_dir=keys_dir,
+        )
+        if cogs_dir.is_dir()
+        else []
+    )
+    # Enrich each settings key with its typed SettingSpec metadata (type,
+    # default, hint, enum choices) where the bot declares one.
+    spec_by_key = {s["settings_key"]: s for s in specs if s["settings_key"]}
+    for domain in settings:
+        for entry in domain["keys"]:
+            spec = spec_by_key.get(entry["key"])
+            if spec is not None:
+                entry["type"] = spec["value_type"]
+                entry["hint"] = spec["hint"]
+                entry["allowed_values"] = spec["allowed_values"]
+                if spec["default_known"]:
+                    entry["default"] = spec["default"]
     registry_path = repo_root / "disbot" / "utils" / "subsystem_registry.py"
     access = (
         _load_sibling("scan_access.py", "scan_access")(registry=registry_path)
@@ -383,6 +404,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "commands": sum(len(c["commands"]) for c in cogs),
                 "setting_keys": sum(len(d["keys"]) for d in settings),
                 "setting_domains": len(settings),
+                "typed_settings": len(specs),
                 "visible_subsystems": access.get("total_visible", 0),
                 "synonyms": sum(len(s["synonyms"]) for s in synonyms),
             },

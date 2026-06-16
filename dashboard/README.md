@@ -14,7 +14,7 @@ and the secrets model live in
 | `/functions` | Bot-function catalogue (from the subsystem registry) |
 | `/commands` | **Cog & command explorer** — every cog's commands, each badged prefix/slash and whether it's button-backed (a panel action or opens a view); live search + filters (`scripts/scan_commands.py`). |
 | `/aliases` | **Suggest a command alias** — pick a command, propose an alias, get a live collision check against every command/alias/synonym, a prefilled GitHub issue, and a paste-ready `synonyms.py` snippet (`scripts/scan_synonyms.py`). Client-side; no backend yet. |
-| `/settings` | **Settings catalogue** — every per-guild setting key the bot exposes, grouped by owning subsystem, with live filter. Key names only, never stored values (`scripts/scan_settings.py`). |
+| `/settings` | **Settings catalogue** — every per-guild setting key, grouped by owning subsystem, with live filter. Typed settings also show their **type, default, hint, and enum choices** from the bot's `SettingSpec`s (`scripts/scan_settings.py` + `scripts/scan_setting_specs.py`). Names + metadata only, never a stored value. |
 | `/access` | **Permissions & access map** — the visibility-tier ladder + which subsystems each tier can see. A faithful static mirror of `disbot/utils/visibility_rules.py` (`scripts/scan_access.py`). Visibility, **not** execution. |
 | `/ideas` | Idea backlog (from `docs/ideas/`) |
 | `/bugs` | Bug board (from `docs/health/bug-book.md`) + a "report a bug" CTA |
