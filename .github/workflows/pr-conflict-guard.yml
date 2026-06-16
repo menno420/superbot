@@ -46,41 +46,28 @@ jobs:
     if: github.repository == 'menno420/superbot'
     runs-on: ubuntu-latest
     steps:
-      - name: Reflect each open PR's merge state as the conflict-guard status
-        # GITHUB_TOKEN (not ROUTINE_PAT): posting a commit status needs `statuses: write`, which the
-        # permissions block above grants the GITHUB_TOKEN. ROUTINE_PAT is scoped for Issues/PRs/
-        # Contents (auto-merge-enabler) and may lack commit-status write — which 403'd and failed
-        # this job on its first run. This guard posts no main commits, so it needs no PAT attribution.
+      - name: Reflect merge state as the conflict-guard status
+        # GITHUB_TOKEN (not ROUTINE_PAT): posting a commit status needs `statuses: write`, granted by
+        # the permissions block above. ROUTINE_PAT is scoped Issues/PRs/Contents and lacks commit-
+        # status write (that 403 failed this job's first run, #965 -> hotfix #966). No main commits → no PAT.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           set -uo pipefail
-          # This is a NON-REQUIRED visibility status, so the job must never red-flag a PR on its own
-          # hiccup: capture first, guard each post, and exit 0 regardless of per-PR post outcomes.
-          prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
-                  --json number,mergeStateStatus,headRefOid \
-                  --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' || true)
-          if [ -z "${prs:-}" ]; then
-            echo "no open PRs to evaluate"
-            exit 0
-          fi
-          # For every open PR: DIRTY -> red status; CLEAN/BEHIND/etc -> green (clears a prior red);
-          # UNKNOWN (GitHub still computing mergeability) -> skip, don't flap.
-          printf '%s\n' "$prs" | while read -r num state sha; do
-            [ -n "${sha:-}" ] || continue
+          # NON-REQUIRED visibility status: never red-flag a PR on a single hiccup (guard + exit 0).
+          # On a PR's own push, evaluate ONLY that PR — the all-PR sweep on every pull_request was
+          # needless noise that confused parallel sessions. On push:main / schedule, sweep all open
+          # PRs, because a PR can newly become DIRTY when main moves (not an event on the stale PR).
+
+          post() {  # $1=num  $2=mergeStateStatus  $3=headSha
+            local num="$1" state="$2" sha="$3" st desc
+            [ -n "$sha" ] || return 0
             case "$state" in
-              DIRTY)
-                st=failure
-                desc="Merge conflict with main — merge main in / rebase to resolve."
-                ;;
-              UNKNOWN|"")
-                echo "#$num mergeability not computed yet -> skip"
-                continue
-                ;;
-              *)
-                st=success
-                desc="No merge conflict with main."
-                ;;
+              DIRTY)      st=failure; desc="Merge conflict with main — merge main in / rebase to resolve." ;;
+              UNKNOWN|"") echo "#$num mergeability not computed yet -> skip"; return 0 ;;
+              *)          st=success; desc="No merge conflict with main." ;;
             esac
             if gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$sha" \
                  -f state="$st" -f context=conflict-guard -f description="$desc" >/dev/null 2>&1; then
@@ -88,5 +75,18 @@ jobs:
             else
               echo "::warning::could not post conflict-guard status for #$num (needs statuses: write)"
             fi
-          done
+          }
+
+          if [ "${EVENT:-}" = "pull_request" ]; then
+            line=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+                     --json mergeStateStatus,headRefOid \
+                     --jq '"\(.mergeStateStatus) \(.headRefOid)"' || true)
+            post "$PR_NUMBER" "$(printf '%s' "$line" | awk '{print $1}')" "$(printf '%s' "$line" | awk '{print $2}')"
+          else
+            prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open \
+                    --json number,mergeStateStatus,headRefOid \
+                    --jq '.[] | "\(.number) \(.mergeStateStatus) \(.headRefOid)"' || true)
+            if [ -z "${prs:-}" ]; then echo "no open PRs to evaluate"; exit 0; fi
+            printf '%s\n' "$prs" | while read -r num state sha; do post "$num" "$state" "$sha"; done
+          fi
           exit 0

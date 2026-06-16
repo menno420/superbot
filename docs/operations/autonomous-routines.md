@@ -240,7 +240,7 @@ behind branch without a merge queue). They split the two cases:
 | Workflow | Trigger | Does | Net effect |
 |---|---|---|---|
 | **`pr-auto-update.yml`** | `push: main` | brings open non-draft `claude/*` PRs that are **BEHIND** up to date (`update-branch`); carve-outs (`needs-hermes-review`/`do-not-automerge`) left alone; a real conflict fails the update and falls through to the guard | **behind = handled silently** → re-tests against current main → auto-merge fires |
-| **`pr-conflict-guard.yml`** | `push: main` + `pull_request` + schedule | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap) | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
+| **`pr-conflict-guard.yml`** | `push: main` + schedule (sweep all PRs) · `pull_request` (that PR only) | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap). A PR's own push checks only itself; the all-PR sweep runs on `push: main`/schedule (when a PR can newly conflict) — keeps the noise off every PR | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
 
 `push: main` is the load-bearing trigger for both: a conflict/behind state arises when *main moves*
 (another PR merges), which is not an event on the stale PR. `conflict-guard` is a **non-required**
