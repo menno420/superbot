@@ -82,7 +82,7 @@ the one place the review found a true blind spot. **Built (Q-0151c, owner-approv
 *(Count-correction: the live registry has **33** identities, not the 32 first written here — fixed
 2026-06-16; the crosswalk is now the self-correcting source.)*
 
-### 2. A *thin* unified atlas — compose, don't duplicate — ✅ APPROVED + SHIPPED (PR #959)
+### 2. A *thin* unified atlas — compose, don't duplicate — ✅ APPROVED + SHIPPED (PR #960)
 Built per the owner's Q-0151a choice (companion to `AGENT_ORIENTATION`, body not committed,
 CI-`--check` + on-demand): **`scripts/atlas.py`** composes `context_map` / `_review_units` /
 `extension_crosswalk` into a repo-wide provenance-stamped index; the down-payment surfaces `role` in
@@ -116,7 +116,7 @@ idea rather than opening a new one.
 |---|---|---|
 | Fix the 3 confirmed drift counts in binding docs | tiny / reversible | **Executed in this PR** (bugs-first; source wins). De-numbered to point at source so they can't re-rot. |
 | **Extension-type taxonomy crosswalk + CI guard** (#1) | medium — touches `subsystem_registry` (a `REGISTRY_SCHEMA_VERSION` bump + validation) and adds a generated artifact + guard | **Structure into a plan** — needs its own `docs/planning/` plan (ownership: registry; reuse: existing metadata seam; mechanics: schema-version bump, validation, generated crosswalk, guard). Not a drive-by. |
-| **Thin unified atlas** `scripts/atlas.py` (#2) | medium — composes existing tools; new generated artifact | ✅ **SHIPPED (PR #959)** — Q-0151a answered (companion, body not committed); composer + `context_map` role line + companion doc + tests. |
+| **Thin unified atlas** `scripts/atlas.py` (#2) | medium — composes existing tools; new generated artifact | ✅ **SHIPPED (PR #960)** — Q-0151a answered (companion, body not committed); composer + `context_map` role line + companion doc + tests. |
 | **Count-citation guard** (#3) | small — `check_docs` rule | **Fold into** `readiness-maps-cite-regen-command-2026-06-13.md` (generalize it). Quick-win lane when capacity allows; needs a low-false-positive design (don't flag legit numbers). |
 | Selective boundary-debt burndown (Option B) — start with `arch-fix-13` `views→cogs` (≈18 entries) | medium, scoped, test-covered | **Roadmap candidate** (S1 / shared-platform). Already ticketed; this is execution, not discovery. Each cluster (blackjack, economy, xp, diagnostic) is its own small PR moving `_helpers`/`_state` to `utils/` or a shared module. |
 | Root README pointer | tiny but overrides a stated decision | **DISCUSS → Q-0151** (owner-only — contradicts `repo-navigation-map.md:51`). |

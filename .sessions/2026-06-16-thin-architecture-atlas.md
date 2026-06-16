@@ -1,7 +1,7 @@
 # Session — thin architecture atlas (PR 2) + role in context_map
 
-> **Status:** `in-progress` — born-red per Q-0133; flips to `complete` as the final step.
-> **Date:** 2026-06-16 · **Branch:** `claude/hopeful-meitner-772pv8` · **PR:** #959
+> **Status:** `complete` — work done, PR #960, auto-merge on green.
+> **Date:** 2026-06-16 · **Branch:** `claude/hopeful-meitner-772pv8` · **PR:** #960
 
 ## What I did
 

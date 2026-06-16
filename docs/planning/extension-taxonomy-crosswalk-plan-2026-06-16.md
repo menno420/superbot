@@ -44,7 +44,7 @@ My original Q-0151c phrasing suggested a `role` field on the subsystem registry 
 The CI **enforcement** the owner asked for is delivered by the test running `--check` (every extension
 must be classified), so "CI-enforced" is satisfied without touching runtime.
 
-## PR 2 — thin unified atlas · SHIPPED (PR #959)
+## PR 2 — thin unified atlas · SHIPPED (PR #960)
 
 Built as planned: **`scripts/atlas.py`** (composer) + the down-payment **role line in
 `scripts/context_map.py`** + the curated companion **[`docs/architecture/repo-atlas.md`](../architecture/repo-atlas.md)**
