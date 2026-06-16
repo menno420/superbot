@@ -25,16 +25,28 @@ edit capability** — front-end these seams, do not rebuild:
 
 **Build next, in order:**
 
-1. **`/commands` management surface — READ side (safe, no bot change, no auth).** A **Manage button on
-   every command and cog**; each opens a panel showing the command's current aliases + its cog's
-   routing state + a **per-command alias box** (suggest→PR mode for now). This is the owner's Q-0158
-   ask and needs nothing from the bot. *(Open decision: cog-level vs per-command enable/disable —
-   cog-level front-ends `command_routing` as-is; per-command is a finer new bot layer.)*
+1. ✅ **`/commands` management surface — READ side — SHIPPED 2026-06-16.** A **Manage button on every
+   command and cog** (`dashboard/templates/commands.html`); each opens a slide-over panel showing the
+   command's current aliases (code aliases + soft synonyms) + its cog's **cog-level** routing state
+   (front-ending `command_routing.set_policy`, default-on, scope-aware) + a **per-command alias box**
+   (suggest→PR mode — the `/aliases` collision check + prefilled issue + snippet, scoped to one
+   command). Decoupled, read-only, no bot change. **Open decision RESOLVED → Q-0160: cog-level now,
+   per-command later** (per-command would be a new bot routing layer). Drive-by: acronym-aware
+   `_cog_to_subsystem` so `BTD6Cog`/`AICog`/`XPCog` join the registry (`btd6`/`ai`/`xp`).
 2. **Bot-ready foundation (runtime — do NOT rush; owner setup required, see § "Free multi-user control
    panel").** ① a private **control API** on the bot exposing the seams above; ② the **identity →
    authority bridge** (resolve `(user_id, guild_id)` → member → run `governance.capability` checks).
 3. **Website auth + editors:** Discord OAuth login → per-user + per-guild editors over the control API
    (settings global+per-server per Q-0157; help; aliases live; cog routing).
+
+**Ready read-only slices (no auth, no bot change — grow these while phase 2/3 are gated):**
+
+- **"Your authority" preview (pre-auth).** Per subsystem, explain *which tier / capability* governs
+  each control (derivable from `SettingSpec.capability_required` + the access map) — sets correct
+  expectations for the future control panel ("you'll edit X in servers where you're admin; Y is
+  yours personally"). Pure read-model; a gentle on-ramp to the multi-user model. *(Groomed up from
+  the 2026-06-16 multi-user-design session log, Q-0015 — now a natural extension of the shipped
+  `/commands` + `/access` read surfaces.)*
 
 **Owner setup needed before phase 2/3 (nothing needed for phase 1):** a Discord OAuth app
 (client id/secret + redirect), a dashboard session secret, and a shared bot↔dashboard token —
@@ -234,9 +246,12 @@ button on every command and cog**, each opening an editor.
 - **Per-command alias box (owner correction).** The global `/aliases` form stays as the broad
   *search / quick-add*; additionally **each command gets its own alias box** inline in `/commands`.
   Backing: the synonym layer (suggest→PR today; live once the synonym overlay + control API land).
-- **Read side builds now (safe):** surface each command's current aliases + cog-routing state + a
-  Manage button on every command and cog — pure dashboard, no bot change. **Write side** (toggle,
-  edit alias) lands with the control-API + auth foundation (L0–L2).
+- **Read side — SHIPPED 2026-06-16** (`dashboard/templates/commands.html`): a Manage button on every
+  command and cog opening a slide-over panel — current aliases (code + soft synonyms), cog-level
+  routing state (front-ends `command_routing`), and a per-command alias suggest box (the `/aliases`
+  collision check + prefilled issue + snippet, scoped to one command). The global `/aliases` page
+  stays the broad search. **Write side** (live toggle, live alias) lands with the control-API + auth
+  foundation (L0–L2). **Granularity owner-decided → Q-0160: cog-level now, per-command later.**
 
 ## Free multi-user control panel — identity & authority (owner, 2026-06-16)
 

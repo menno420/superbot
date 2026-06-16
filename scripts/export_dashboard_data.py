@@ -84,6 +84,11 @@ _CATALOGUE_FIELDS = (
     "emoji",
     "category",
     "visibility_tier",
+    # ``visibility_mode`` ("normal" / "internal") drives cog-routing operator
+    # visibility: only non-internal subsystems are operator-routable (see
+    # views/setup/sections/cog_routing.py), so the dashboard reads it to mark a
+    # cog's routing state accurately.
+    "visibility_mode",
     "tags",
     "entry_points",
     "capabilities",

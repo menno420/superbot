@@ -104,6 +104,18 @@ def test_scan_commands_types_aliases_and_buttons(mod, tmp_path):
     assert by_name["sub"]["parent"] == "grp"
 
 
+def test_cog_to_subsystem_is_acronym_aware(mod):
+    f = mod._cog_to_subsystem
+    # Plain CamelCase splits on word boundaries.
+    assert f("EconomyCog") == "economy"
+    assert f("CommunitySpotlightCog") == "community_spotlight"
+    assert f("RockPaperScissorsCog") == "rock_paper_scissors"
+    # Acronym (+digit) runs stay whole -> they match the registry's keys.
+    assert f("AICog") == "ai"
+    assert f("BTD6Cog") == "btd6"
+    assert f("XPCog") == "xp"
+
+
 def test_mixin_is_not_a_cog_but_keeps_its_commands(mod, tmp_path):
     by_cog = {c["cog"]: c for c in mod.scan_commands(_write_repo(tmp_path))}
     assert "SampleMixin" in by_cog

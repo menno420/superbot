@@ -56,7 +56,11 @@ _COMMAND_DECORATORS: dict[str, tuple[str, bool]] = {
 }
 _SUBCOMMAND_LEAVES = {"command", "group", "subcommand"}
 _PANEL_TOKENS = ("panel_manager", "send_panel", "View(", "view=")
-_CAMEL_RE = re.compile(r"(?<!^)(?=[A-Z])")
+# Acronym-aware CamelCase -> snake_case: split before a Capitalised word that
+# follows an acronym run (HTTPServer -> HTTP_Server) and between a lower/digit
+# and a capital (RockPaper -> Rock_Paper); an acronym (+digit) run stays whole.
+_ACRONYM_BOUNDARY_RE = re.compile(r"([A-Z]+)([A-Z][a-z])")
+_WORD_BOUNDARY_RE = re.compile(r"([a-z0-9])([A-Z])")
 
 
 def _truncate(text: str, limit: int) -> str:
@@ -65,9 +69,17 @@ def _truncate(text: str, limit: int) -> str:
 
 
 def _cog_to_subsystem(class_name: str) -> str:
-    """Normalise a cog class name to its snake_case subsystem key."""
+    """Normalise a cog class name to its snake_case subsystem key.
+
+    Acronym-aware so a run of capitals stays together: ``AICog`` -> ``ai``,
+    ``BTD6Cog`` -> ``btd6``, ``XPCog`` -> ``xp`` — the snake_case keys the
+    SUBSYSTEMS registry actually uses, not ``a_i`` / ``b_t_d6`` / ``x_p``. This
+    makes the dashboard's cog->subsystem join (header emoji/name + the routing
+    key) resolve for acronym-named cogs instead of silently falling back.
+    """
     base = class_name[:-3] if class_name.endswith("Cog") else class_name
-    return _CAMEL_RE.sub("_", base).lower()
+    step1 = _ACRONYM_BOUNDARY_RE.sub(r"\1_\2", base)
+    return _WORD_BOUNDARY_RE.sub(r"\1_\2", step1).lower()
 
 
 def _is_cog(class_node: ast.ClassDef) -> bool:

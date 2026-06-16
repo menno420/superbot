@@ -8,8 +8,8 @@
   the bot's status embed reports (<code>len(bot.commands)</code>); the other {{ stats.subcommands }}
   subcommands and {{ stats.slash }} slash commands live in <code>bot.tree</code> and aren't in that
   count. A <span class="text-sky-300">🔘 button</span> tag means the command is a panel button's action
-  or opens a view. (The bot's "Loaded cogs" count is higher — it also counts listener/task cogs that
-  declare no commands.)
+  or opens a view. Click <span class="text-sky-300">Manage</span> on any command or cog to see its
+  aliases, its cog's routing state, and suggest a per-command alias.
 </p>
 
 <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
@@ -43,13 +43,24 @@
 
 {% for cog in data.cogs %}
   {% set sys = sysmap.get(cog.subsystem) %}
+  {% set cog_display = sys.display_name if sys and sys.display_name else cog.cog %}
+  {% set cog_emoji = sys.emoji if sys and sys.emoji else "🧩" %}
   <section class="cog mb-6 rounded-xl border border-slate-800 bg-slate-900/40">
     <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800">
-      <span class="text-xl">{{ sys.emoji if sys and sys.emoji else "🧩" }}</span>
-      <span class="font-semibold">{{ sys.display_name if sys and sys.display_name else cog.cog }}</span>
+      <span class="text-xl">{{ cog_emoji }}</span>
+      <span class="font-semibold">{{ cog_display }}</span>
       <span class="text-xs text-slate-500">{{ cog.cog }}</span>
       {% if not cog.is_cog %}<span class="text-[10px] rounded px-1.5 py-0.5 bg-slate-800 text-slate-500">{{ 'module' if cog.cog.startswith('(') else 'mixin' }}</span>{% endif %}
-      <span class="ml-auto text-[11px] text-slate-500">{{ cog.commands|length }} cmd{{ '' if cog.commands|length == 1 else 's' }}</span>
+      <span class="text-[11px] text-slate-500">{{ cog.commands|length }} cmd{{ '' if cog.commands|length == 1 else 's' }}</span>
+      <button type="button"
+        class="manage-btn ml-auto text-[11px] rounded border border-slate-700 px-2 py-1 hover:border-sky-500 hover:text-sky-300"
+        data-kind="cog"
+        data-cog="{{ cog.cog }}"
+        data-cog-display="{{ cog_display }}"
+        data-cog-emoji="{{ cog_emoji }}"
+        data-subsystem="{{ cog.subsystem }}"
+        data-file="{{ cog.file }}"
+        data-iscog="{{ '1' if cog.is_cog else '0' }}">⚙️ Manage</button>
     </div>
     <ul class="divide-y divide-slate-800/70">
       {% for cmd in cog.commands %}
@@ -73,6 +84,20 @@
             {% if cmd.aliases %}
               <span class="text-[10px] text-slate-500">aka {{ cmd.aliases | join(', ') }}</span>
             {% endif %}
+            <button type="button"
+              class="manage-btn ml-auto text-[11px] rounded border border-slate-700 px-2 py-1 hover:border-sky-500 hover:text-sky-300"
+              data-kind="command"
+              data-name="{{ cmd.name }}"
+              data-invoke="{{ '/' if cmd.type == 'slash' else '!' }}"
+              data-type="{{ cmd.type }}"
+              data-parent="{{ cmd.parent or '' }}"
+              data-cog="{{ cog.cog }}"
+              data-cog-display="{{ cog_display }}"
+              data-cog-emoji="{{ cog_emoji }}"
+              data-subsystem="{{ cog.subsystem }}"
+              data-brief="{{ cmd.brief }}"
+              data-aliases="{{ cmd.aliases | join(',') }}"
+              data-button="{{ '1' if cmd.button_backed else '0' }}">⚙️ Manage</button>
           </div>
           {% if cmd.brief %}<p class="mt-1 text-xs text-slate-400">{{ cmd.brief }}</p>{% endif %}
         </li>
@@ -83,8 +108,24 @@
   <p class="text-slate-500">No commands found.</p>
 {% endfor %}
 
+<!-- Slide-over Manage panel (populated client-side) -->
+<div id="drawer-overlay" class="hidden fixed inset-0 bg-black/60 z-20"></div>
+<aside id="drawer"
+  class="hidden fixed top-0 right-0 z-30 h-full w-full max-w-md overflow-y-auto border-l border-slate-800 bg-slate-900 p-5 shadow-2xl">
+  <div class="mb-4 flex items-start justify-between gap-3">
+    <h2 id="drawer-title" class="text-lg font-bold leading-tight"></h2>
+    <button id="drawer-close" type="button"
+      class="shrink-0 rounded px-2 text-xl text-slate-400 hover:text-white">✕</button>
+  </div>
+  <div id="drawer-body" class="space-y-4 text-sm"></div>
+</aside>
+
+<script id="taken-data" type="application/json">{{ taken | tojson }}</script>
+<script id="syn-data" type="application/json">{{ synonyms_by_canonical | tojson }}</script>
+<script id="routable-data" type="application/json">{{ routable | tojson }}</script>
 <script>
   (function () {
+    // ---- search + filter (unchanged behaviour) -----------------------------
     const search = document.getElementById("cmd-search");
     const chips = document.querySelectorAll(".cmd-chip");
     let typeFilter = "all";
@@ -114,6 +155,205 @@
         apply();
       }),
     );
+
+    // ---- shared data -------------------------------------------------------
+    const taken = JSON.parse(document.getElementById("taken-data").textContent);
+    const synMap = JSON.parse(document.getElementById("syn-data").textContent);
+    const routable = new Set(JSON.parse(document.getElementById("routable-data").textContent));
+    const REPO = "menno420/superbot";
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
+      );
+    }
+    function note(kind, text) {
+      const cls =
+        kind === "error"
+          ? "border-rose-900/60 bg-rose-950/40 text-rose-300"
+          : "border-emerald-900/60 bg-emerald-950/40 text-emerald-300";
+      return '<p class="rounded border ' + cls + ' px-3 py-2 text-sm">' + esc(text) + "</p>";
+    }
+    function section(title) {
+      return '<h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">' + esc(title) + "</h3>";
+    }
+    function chip(text, cls) {
+      return '<span class="inline-block rounded px-1.5 py-0.5 text-[11px] ' + (cls || "bg-slate-800 text-slate-300") + '">' + esc(text) + "</span>";
+    }
+
+    // ---- routing-state block (cog-level — Q-0160) --------------------------
+    function routingBlock(subsystem, cogDisplay) {
+      const isRoutable = routable.has(subsystem);
+      let body;
+      if (isRoutable) {
+        body =
+          '<p class="text-slate-300"><span class="font-medium text-emerald-300">Enabled by default.</span> ' +
+          "An admin can enable / disable the " + chip(subsystem, "bg-slate-800 text-sky-300") +
+          " cog per <strong>server</strong>, <strong>category</strong>, or <strong>channel</strong> " +
+          "via <strong>Cog routing</strong> (<code>!settings</code> → Cog routing, or the Setup wizard). " +
+          "Writes go through the audited <code>command_routing.set_policy</code> seam " +
+          "(channel → category → guild → default-on).</p>";
+      } else {
+        body =
+          '<p class="text-slate-400">This cog isn’t gated by operator <strong>cog routing</strong> ' +
+          "(it isn’t a registered routable subsystem). Its commands follow the bot’s standard " +
+          "command access — tiers &amp; visibility (see <a class='underline hover:text-sky-300' href='/access'>Access</a>).</p>";
+      }
+      return (
+        '<div class="space-y-2">' +
+        section("Cog routing — " + cogDisplay) +
+        body +
+        '<p class="text-xs text-slate-500">Routing is <strong>cog-level</strong> today ' +
+        "(owner direction Q-0160). Live per-server state &amp; toggling from this site arrive with the " +
+        "bot control API (Phase 2); per-command enable/disable is a documented future bot layer.</p>" +
+        "</div>"
+      );
+    }
+
+    // ---- per-command alias suggest box (scoped /aliases) -------------------
+    function aliasBox(cmd) {
+      const existing = synMap[cmd] || [];
+      const id = "alias-in-" + Math.random().toString(36).slice(2);
+      const current = existing.length
+        ? '<p class="text-xs text-slate-500">Current synonyms: ' +
+          existing.map((s) => chip(s, "bg-slate-800 text-slate-300")).join(" ") + "</p>"
+        : '<p class="text-xs text-slate-500">No synonyms yet for <code>!' + esc(cmd) + "</code>.</p>";
+      const html =
+        '<div class="space-y-2">' +
+        section("Add an alias for !" + cmd) +
+        current +
+        '<input id="' + id + '" autocomplete="off" placeholder="propose an alias, e.g. lb" ' +
+        'class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />' +
+        '<div class="alias-out"></div>' +
+        '<p class="text-[11px] text-slate-500">💡 Suggests a synonym (edits ' +
+        "<code>disbot/utils/synonyms.py</code>) → reaches the live bot on the next deploy. " +
+        "Live alias editing (no deploy) lands with the control API.</p>" +
+        "</div>";
+      return { html, id, existing };
+    }
+    function wireAliasBox(cmd, mount) {
+      const box = aliasBox(cmd);
+      mount.innerHTML = box.html;
+      const input = mount.querySelector("#" + box.id);
+      const out = mount.querySelector(".alias-out");
+      function render() {
+        const alias = (input.value || "").trim().toLowerCase();
+        if (!alias) { out.innerHTML = ""; return; }
+        if (/\s/.test(alias)) { out.innerHTML = note("error", "Aliases can’t contain spaces."); return; }
+        const owner = taken[alias];
+        if (owner) { out.innerHTML = note("error", "“" + alias + "” is already " + owner + "."); return; }
+        const updated = box.existing.concat([alias]);
+        const snippet = '"' + cmd + '": [' + updated.map((s) => '"' + s + '"').join(", ") + "],";
+        const title = "Alias suggestion: !" + cmd + " → " + alias;
+        const body = [
+          "**Command:** `!" + cmd + "`",
+          "**Proposed alias:** `" + alias + "`",
+          "",
+          "Add to `disbot/utils/synonyms.py` (`COMMAND_SYNONYMS`):",
+          "```python", snippet, "```",
+          "",
+          "_Suggested via the dashboard /commands Manage panel._",
+        ].join("\n");
+        const url =
+          "https://github.com/" + REPO + "/issues/new?labels=alias-suggestion&title=" +
+          encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+        out.innerHTML =
+          note("ok", "“" + alias + "” is free — no command, alias, or synonym uses it.") +
+          '<div class="mt-2"><a target="_blank" rel="noopener" class="inline-block rounded bg-sky-600 hover:bg-sky-500 px-3 py-1.5 text-sm font-medium" href="' +
+          url + '">Open a prefilled GitHub issue →</a></div>' +
+          '<pre class="mt-2 overflow-x-auto rounded bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><code>' +
+          esc(snippet) + "</code></pre>";
+      }
+      input.addEventListener("input", render);
+    }
+
+    // ---- drawer ------------------------------------------------------------
+    const overlay = document.getElementById("drawer-overlay");
+    const drawer = document.getElementById("drawer");
+    const drawerTitle = document.getElementById("drawer-title");
+    const drawerBody = document.getElementById("drawer-body");
+
+    function openDrawer() {
+      overlay.classList.remove("hidden");
+      drawer.classList.remove("hidden");
+    }
+    function closeDrawer() {
+      overlay.classList.add("hidden");
+      drawer.classList.add("hidden");
+      drawerBody.innerHTML = "";
+    }
+    overlay.addEventListener("click", closeDrawer);
+    document.getElementById("drawer-close").addEventListener("click", closeDrawer);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+    function renderCommand(d) {
+      drawerTitle.innerHTML = esc(d.invoke + d.name) +
+        ' <span class="text-xs font-normal text-slate-500">' + esc(d.type) + "</span>";
+      const codeAliases = (d.aliases || "").split(",").filter(Boolean);
+      const softSyns = synMap[d.name] || [];
+      const meta =
+        '<div class="space-y-1">' + section("Command") +
+        '<p class="text-slate-300">' + esc(d.brief || "No description.") + "</p>" +
+        '<p class="text-xs text-slate-500">Cog: ' + esc(d.cogEmoji + " " + d.cogDisplay) +
+        " <span class='text-slate-600'>(" + esc(d.cog) + ")</span>" +
+        (d.parent ? " · subcommand of <code>" + esc(d.parent) + "</code>" : "") +
+        (d.button === "1" ? " · 🔘 button-backed" : "") + "</p></div>";
+      const aliasState =
+        '<div class="space-y-1">' + section("Current aliases") +
+        (codeAliases.length
+          ? '<p class="text-xs text-slate-500">Code aliases (in the command decorator): ' +
+            codeAliases.map((a) => chip(a, "bg-violet-950 text-violet-200")).join(" ") + "</p>"
+          : '<p class="text-xs text-slate-500">No code aliases.</p>') +
+        (softSyns.length
+          ? '<p class="text-xs text-slate-500">Soft synonyms (editable below): ' +
+            softSyns.map((a) => chip(a, "bg-slate-800 text-slate-300")).join(" ") + "</p>"
+          : '<p class="text-xs text-slate-500">No soft synonyms yet.</p>') +
+        "</div>";
+      const aliasMount = '<div data-alias-mount></div>';
+      drawerBody.innerHTML = meta + aliasState + routingBlock(d.subsystem, d.cogDisplay) + aliasMount;
+      wireAliasBox(d.name, drawerBody.querySelector("[data-alias-mount]"));
+    }
+
+    function renderCog(d, sectionEl) {
+      drawerTitle.innerHTML = esc(d.cogEmoji + " " + d.cogDisplay) +
+        ' <span class="text-xs font-normal text-slate-500">' + esc(d.cog) + "</span>";
+      const names = sectionEl
+        ? Array.from(sectionEl.querySelectorAll("li.cmd code")).map((c) => c.textContent.trim())
+        : [];
+      const meta =
+        '<div class="space-y-1">' + section("Cog") +
+        '<p class="text-xs text-slate-500"><code>' + esc(d.file) + "</code>" +
+        (d.iscog === "1" ? "" : " · not a loaded cog (mixin / module)") + "</p>" +
+        "</div>";
+      const cmdList =
+        '<div class="space-y-1">' + section(names.length + " command" + (names.length === 1 ? "" : "s")) +
+        (names.length
+          ? '<div class="flex flex-wrap gap-1">' +
+            names.map((n) => chip(n, "bg-slate-800 text-sky-300")).join("") + "</div>"
+          : '<p class="text-xs text-slate-500">No commands.</p>') +
+        "</div>";
+      drawerBody.innerHTML = meta + routingBlock(d.subsystem, d.cogDisplay) + cmdList;
+    }
+
+    document.querySelectorAll(".manage-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const d = btn.dataset;
+        if (d.kind === "command") {
+          renderCommand({
+            name: d.name, invoke: d.invoke, type: d.type, parent: d.parent,
+            cog: d.cog, cogDisplay: d.cogDisplay, cogEmoji: d.cogEmoji,
+            subsystem: d.subsystem, brief: d.brief, aliases: d.aliases, button: d.button,
+          });
+        } else {
+          renderCog(
+            { cog: d.cog, cogDisplay: d.cogDisplay, cogEmoji: d.cogEmoji,
+              subsystem: d.subsystem, file: d.file, iscog: d.iscog },
+            btn.closest("section.cog"),
+          );
+        }
+        openDrawer();
+      });
+    });
   })();
 </script>
 {% endblock %}
