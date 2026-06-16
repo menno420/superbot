@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/inspiring-wozniak-i92q58` · **dashboard finalized-state vision** (owner directive) — synthesize
+  the uploaded deep-research report + Codex PR #998 into one north-star vision plan
+  (`docs/planning/dashboard-vision-finalized-state.md`); route open forks → router Q-0161; close PR #998.
+  Docs only · `docs/planning/` · `docs/owner/maintainer-question-router.md` · 2026-06-16
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
