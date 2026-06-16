@@ -2350,6 +2350,82 @@ def compare_round_ranges(
     }
 
 
+def compare_paragon_costs(
+    names: Sequence[str],
+    *,
+    difficulty: str = "medium",
+) -> dict[str, Any]:
+    """Deterministic base-price ranking of two-or-more paragons.
+
+    The §7.5 *paragon* member of the multi-entity comparison primitive (the
+    sibling of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs`
+    / :func:`compare_round_ranges`). Answers "is Glaive Dominus or Ascended
+    Shadow cheaper?" — price each named paragon's **base build price** (the
+    tier-6 cost) once via :func:`paragon_math.base_price` over the committed
+    ``BASE_PRICES_MEDIUM`` table (difficulty-adjusted with the shared BTD6
+    multipliers), then rank/diff **in code** so the model never assembles the
+    comparison itself (the BUG-0009 "wrong assembly" class — a mis-stated
+    "cheaper" / wrong difference, which the value-only faithfulness guard cannot
+    catch). Ranked **ascending** (cheapest first) with a stable tie-break on the
+    paragon name (two paragons share a $500,000 base, so an equal-cost tie is a
+    real outcome).
+
+    Each name is resolved with :func:`paragon_math.resolve_paragon` (tower name,
+    paragon name, id, or colloquial alias) and **deduped** on the resolved
+    paragon id. Returns ``{"found": False, ...}`` when fewer than two distinct
+    paragons resolve (an unknown name is skipped, never guessed), so a caller can
+    fall through to the model rather than answer a degenerate comparison.
+    """
+    from utils.btd6 import difficulty_costs, paragon_math
+
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for name in names:
+        paragon = paragon_math.resolve_paragon(name)
+        if paragon is None:
+            continue
+        if paragon.paragon_id in seen:
+            continue
+        seen.add(paragon.paragon_id)
+        entries.append(
+            {
+                "paragon_id": paragon.paragon_id,
+                "name": paragon.name,
+                "tower": paragon.tower,
+                "base_cost": paragon_math.base_price(paragon, diff),
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct resolvable paragons",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["base_cost"], e["name"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "difficulty": diff,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["base_cost"] - cheapest["base_cost"],
+        "all_equal": cheapest["base_cost"] == most_expensive["base_cost"],
+        "note": (
+            f"paragon base (tier-6) build price at {diff} pricing; ranked "
+            "ascending. Excludes the degree-grind sacrifices."
+        ),
+    }
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics

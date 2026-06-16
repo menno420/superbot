@@ -2035,6 +2035,10 @@ _COST_DIFFICULTY_RE = re.compile(
     r"\b(easy|medium|hard|impoppable|impop|chimps)\b",
     re.I,
 )
+# An explicit paragon token — the disambiguator that routes a cost comparison to
+# the paragon builder (and away from the base-tower cost builders, which match a
+# tower alias like "dart"/"ninja" and would otherwise price the *base* tower).
+_PARAGON_CUE_RE = re.compile(r"\bparagons?\b", re.I)
 
 # --- §7.5 round-range cash comparison -----------------------------------------
 # An income/earning noun (distinct from the cost cue above) — required so a
@@ -2288,6 +2292,10 @@ def deterministic_cost_comparison_reply(message_text: str) -> str | None:
         return None
     if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
         return None
+    # A paragon cost comparison is the paragon builder's job — base-tower pricing
+    # of a paragon's tower is the wrong answer (keeps the floor exactly-one-fires).
+    if _PARAGON_CUE_RE.search(low):
+        return None
 
     from services import btd6_data_service
 
@@ -2373,6 +2381,9 @@ def deterministic_difficulty_cost_comparison_reply(message_text: str) -> str | N
         return None
     if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
         return None
+    # Paragon comparisons defer to the paragon builder (see the multi-tower one).
+    if _PARAGON_CUE_RE.search(low):
+        return None
 
     from services import btd6_data_service
 
@@ -2405,6 +2416,122 @@ def deterministic_difficulty_cost_comparison_reply(message_text: str) -> str | N
     return _format_difficulty_cost_comparison(result)
 
 
+# --- §7.5 paragon base-cost comparison ----------------------------------------
+def _extract_paragon_names(text_lower: str) -> list[str]:
+    """The paragon ids a comparison names, in order of appearance, deduped.
+
+    Scans every resolver surface (paragon names, tower names, ids, aliases) and
+    keeps the longest surface at each span (so "ascended shadow" wins over a bare
+    "ascended"), then dedups on the resolved id. Surfaces shorter than 3 chars are
+    skipped to keep stray two-letter tokens out — the ``paragon`` word + cost cue
+    already gate this builder hard. Returns ids (``resolve_paragon`` accepts them),
+    so the data primitive re-resolves from a canonical key.
+    """
+    from utils.btd6 import paragon_math
+
+    spans: list[tuple[int, int, int, str]] = []  # (start, end, surface_len, id)
+    for surface, pid in paragon_math.paragon_surfaces():
+        if len(surface) < 3:
+            continue
+        for match in re.finditer(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+            spans.append((match.start(), match.end(), len(surface), pid))
+
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, str]] = []
+    for start, end, _slen, pid in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _p in accepted):
+            continue
+        accepted.append((start, end, pid))
+    accepted.sort(key=lambda a: a[0])
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for _start, _end, pid in accepted:
+        if pid in seen:
+            continue
+        seen.add(pid)
+        names.append(pid)
+    return names
+
+
+def _format_paragon_cost_comparison(result: dict[str, Any]) -> str:
+    diff = str(result["difficulty"]).capitalize()
+    lines = [f"**Paragon cost comparison — {diff} base price:**"]
+    for entry in result["entries"]:
+        lines.append(
+            f"• **{entry['name']}** ({entry['tower']}) — **${entry['base_cost']:,}**",
+        )
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** to build (**${cheapest['base_cost']:,}** each).",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['name']}** is cheaper by **${result['spread']:,}**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['name']}** (${cheapest['base_cost']:,}). Most "
+            f"expensive: **{dearest['name']}** (${dearest['base_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append(
+        "_(Base tier-6 build price at that difficulty — the degree-grind "
+        "sacrifices are extra and depend on your build.)_",
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_paragon_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is Glaive Dominus or Ascended Shadow cheaper" answer, or ``None``.
+
+    The AI §7.5 *paragon* member of the multi-entity cost-comparison floor — the
+    paragon-entity sibling of :func:`deterministic_cost_comparison_reply` (which
+    ranks tower upgrade states). Ranks the **base build price** of two-or-more
+    paragons so the model can never mis-state which is cheaper / by how much (the
+    BUG-0009 "grounded values, wrong assembly" class). Fires only on an explicit
+    ``paragon`` token **and** a high-precision cost-compare cue **and** two-or-more
+    resolved paragons. The ``paragon`` token is also what makes this mutually
+    exclusive with the tower cost builders — they defer the moment "paragon" is
+    present (a "dart/ninja paragon" question must not be priced as the base tower).
+    Returns ``None`` otherwise (single-paragon lookups, strategy questions, and
+    anything outside a clear two-or-more paragon cost comparison reach the model).
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _PARAGON_CUE_RE.search(low):
+        return None
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+
+    names = _extract_paragon_names(low)
+    if len(names) < 2:
+        return None
+
+    difficulty = "medium"
+    diff_match = _COST_DIFFICULTY_RE.search(low)
+    if diff_match:
+        token = diff_match.group(1).lower()
+        # CHIMPS is a mode, not a pricing difficulty — its prices are Hard's.
+        difficulty = "hard" if token == "chimps" else token
+        if difficulty == "impop":
+            difficulty = "impoppable"
+
+    from services import btd6_data_service
+
+    result = btd6_data_service.compare_paragon_costs(names, difficulty=difficulty)
+    if not result.get("found"):
+        return None
+    return _format_paragon_cost_comparison(result)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -2418,6 +2545,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_mk_reference_reply,
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
+    deterministic_paragon_cost_comparison_reply,
     deterministic_cost_comparison_reply,
     deterministic_difficulty_cost_comparison_reply,
     deterministic_round_range_comparison_reply,

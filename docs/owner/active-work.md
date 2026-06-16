@@ -25,9 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/magical-rubin-u3arq6` · AI §7.5 paragon base-cost comparison floor (the last unbuilt
-  comparison member) · `services/btd6_data_service.py` · `services/btd6_context_service.py` ·
-  `tests/unit/.../btd6` · 2026-06-16
 - `claude/upbeat-einstein-7rz9z0` · act on the 2026-06-16 autonomous-run review + owner answers —
   run-report footer · ledger guard-exemption + drift line · bug-fix-guard convention · auto-deploy
   misinformation fix · Q-0147 DM gate · Q-0085/0120/0121/0127 records · ledger tidy · 2026-06-16
@@ -41,6 +38,7 @@ living ledger (`docs/current-state.md`).
 > Trimmed 2026-06-16 (Q-0152): stale claims whose PRs merged are dropped — the durable record is the
 > PR + the `current-state.md` ledger. Keep this to the most recent handful, newest-first.
 
+- `claude/magical-rubin-u3arq6` · AI §7.5 paragon base-cost comparison floor (last unbuilt comparison member) · 2026-06-16 · **PR #962 (auto-merge on green)**
 - `claude/hopeful-meitner-772pv8` · extension-taxonomy crosswalk (Q-0151c) — overlay + generator + CI guard + plan · 2026-06-16 · **PR #958 (auto-merge on green)**
 - `claude/hopeful-meitner-772pv8` · architecture-atlas / structure-review idea intake (owner-uploaded review) · router Q-0151 · 2026-06-16 · **PR #957 (merged)**
 
