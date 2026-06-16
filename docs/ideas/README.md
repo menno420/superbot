@@ -153,6 +153,12 @@ Current broad captures:
   subclasses **defined under `cogs/`** — invisible to the baseview ratchet (which only scans
   `views/`). Surfaced when the `!list` paginator was found mislayered in `channel_cog.py`
   only by tripping the cog-size ceiling. Warn → ratchet. Small/safe grooming-lane candidate.
+- [`diagnostic-cog-platform-group-extraction-2026-06-16.md`](./diagnostic-cog-platform-group-extraction-2026-06-16.md) —
+  **refactor / near-term blocker (2026-06-16):** move the `!platform` command group off
+  `DiagnosticCog` onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`) so the
+  surface can grow past the 800-LOC cog ceiling — the cog hit **799/800** when the faucet/sink
+  `!platform economy` landed (#937), and the next subcommand has no room. Small/safe/decided-lane,
+  pure refactor; worth executing before it's urgent.
 - [`effective-check-constraint-test-helper-2026-06-14.md`](./effective-check-constraint-test-helper-2026-06-14.md) —
   **tooling (2026-06-14, PR #817):** a shared `effective_check_constraint(table, column)` test
   helper that derives the *current* SQL `CHECK (col IN …)` set by scanning all migrations in
