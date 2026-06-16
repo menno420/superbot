@@ -31,7 +31,15 @@ living ledger (`docs/current-state.md`).
   `disbot/{utils/mining/structures,services/mining_workflow,utils/character_render,views/mining,
   cogs/mining_cog,utils/mining/market}` + plan/numbers · 2026-06-15
 
+- `claude/myprofile-card-pra` · myprofile PR A — read-only `/myprofile` card (decade-queue slot 3) ·
+  `disbot/views/profile/` + `cogs/utility_cog` + `utils/subsystem_registry` + surface-ledger pin ·
+  2026-06-16
+
 ## Recently cleared
+
+- `claude/hopeful-allen-qt5ax3` · games-economy faucet/sink diagnostic (`!platform economy`) ·
+  `utils/db/economy` + `services/economy_flow_service` + `cogs/diagnostic` · 2026-06-16 ·
+  **PR #937 (merged)**
 
 - `claude/brave-sagan-s9th8h` · Hermes investigation + model swap — context-compaction fix, SOUL
   git-pull sync fix, `apply_context_fixes.sh` + size guard, self-healing repo sync, model/provider

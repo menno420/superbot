@@ -71,6 +71,54 @@ class UtilityCog(commands.Cog):
             ephemeral=True,
         )
 
+    @commands.cooldown(rate=3, per=15, type=commands.BucketType.user)
+    @commands.command(name="myprofile")
+    @commands.guild_only()
+    async def myprofile(self, ctx):
+        """View your per-server profile card.
+
+        Self-scoped (the viewer is the subject) — shows your participation,
+        subscriptions, preferences, and visibility across every subsystem
+        that registered a per-user surface. Read-only (PR A); the panel is
+        owner-locked so only you can interact with it.
+        """
+        from views.profile import ProfileHomeView, build_profile_embed
+
+        view = ProfileHomeView(ctx.author, ctx.guild.id)
+        await send_panel(
+            ctx,
+            embed=await build_profile_embed(ctx.author, ctx.guild.id),
+            view=view,
+        )
+
+    @app_commands.command(
+        name="myprofile",
+        description="View your profile: participation, subscriptions, preferences, visibility.",
+    )
+    @app_commands.guild_only()
+    async def myprofile_slash(self, interaction: discord.Interaction) -> None:
+        """Ephemeral, self-scoped profile card (Q-0080 stranger-grade).
+
+        Ephemeral by construction and scoped to the invoking user (no
+        member parameter) — being yourself is the whole access model.
+        """
+        from views.profile import ProfileHomeView, build_profile_embed
+
+        guild_id = interaction.guild_id
+        if guild_id is None:
+            await interaction.response.send_message(
+                "Use `/myprofile` from inside a server.",
+                ephemeral=True,
+            )
+            return
+
+        view = ProfileHomeView(interaction.user, guild_id)
+        await interaction.response.send_message(
+            embed=await build_profile_embed(interaction.user, guild_id),
+            view=view,
+            ephemeral=True,
+        )
+
     @commands.command(name="clear", aliases=["purge"])
     @commands.has_permissions(manage_messages=True)
     async def clear(self, ctx, amount: int = 5):
