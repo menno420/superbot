@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/hopeful-meitner-772pv8` · architecture-atlas / structure-review idea intake (owner-uploaded
+  review) — capture + judgment + route + fix confirmed count-drift in binding docs ·
+  `docs/ideas/` + `docs/architecture.md` + `docs/repo-navigation-map.md` + router Q-0151 · 2026-06-16
 - `claude/epic-noether-qgis28` · BTD6 Live Events — fix the dead event drill-down
   (`build_event_detail_view_model` `TypeError`) + current-event-first overview redesign (show only
   the live event + all its info; history behind 📜 Past events) · `services/btd6_view_model_service.py`
