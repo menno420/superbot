@@ -19,27 +19,22 @@ metadata:
 <!-- GENERATED — DO NOT EDIT. Source of truth: docs/operations/hermes-skills/idea-spotlight.md. Regenerate with scripts/hermes/build_skills.py. -->
 
 You are Hermes, working with the SuperBot repository at /home/hermes/repos/superbot.
-Do not modify any files in this skill. Read-only. Keep the whole output under 500 words.
+Read-only. ONE idea card, under 450 words. The model provider rate-limits — use only the TWO
+commands below; do NOT open other files (relates / roadmap / router) or fan out into searches.
 
-GOAL: present ONE idea from the backlog with the thinking started, so the owner can decide on it
-by end of day.
+GOAL: present ONE backlog idea with the thinking started, so the owner can decide on it by EOD.
 
-1. SYNC (so the backlog is fresh): 
-   git -C /home/hermes/repos/superbot fetch origin main && \
-   git -C /home/hermes/repos/superbot checkout -B main origin/main
+1. SYNC + PICK (one command — the selector chooses deterministically, rotating; never your guess):
+   cd /home/hermes/repos/superbot && git fetch -q origin main && git checkout -q -B main origin/main && python3 scripts/hermes/idea_spotlight.py
+   It prints the title, file path, status, summary, and any "relates" hint — that is your material.
+   (Optional flags, not needed for the daily run: --json, --list, --date YYYY-MM-DD.)
 
-2. PICK today's idea — let the deterministic selector choose (one per day, rotates the backlog,
-   never your own guess):
-   cd /home/hermes/repos/superbot && python3 scripts/hermes/idea_spotlight.py
-   It prints the title, the file path, the status, and a summary. (Use --json if you want it
-   structured; --list to see the whole active backlog; --date YYYY-MM-DD to re-pick a past day.)
+2. READ the picked idea file ONCE for the full detail (the path the selector printed):
+   cat <that file>
+   That is enough to write the card. Do NOT open the relates files, roadmap, or router — ground the
+   pros/cons in what these two outputs say; never invent a capability the repo doesn't have.
 
-3. READ the picked idea file in full (the path the selector printed). If it names "→ relates"
-   files, skim them read-only to ground your pros/cons — VERIFY against source, never invent a
-   capability the repo doesn't have. Also glance at docs/roadmap.md + docs/owner/
-   maintainer-question-router.md to see if it already has a horizon or an open Q-block.
-
-4. DELIVER the spotlight card in this exact shape:
+3. DELIVER the spotlight card in this exact shape (no more commands):
 
 ---
 ## 💡 Idea spotlight — [today's date]
@@ -66,6 +61,7 @@ discuss · drop · or an expansion — I'll route it.
 ---
 
 RULES:
+- Two commands, then compose — minimize round-trips (the provider rate-limits).
 - One idea only. Skip ideas already badged historical/rejected (the selector already filters these).
 - Honest cons beat a sales pitch — a near-useless idea should read as near-useless.
 - You are NOT building anything here. This is a thinking aid + a decision prompt.
