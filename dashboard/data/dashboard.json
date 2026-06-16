@@ -1,6 +1,12 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T20:03:01Z",
+    "generated_at": "2026-06-16T20:18:37Z",
+    "build": {
+      "commit": "ad042439",
+      "subject": "feat(dashboard): /status — live build & health surface (Q-0156)",
+      "committed_at": "2026-06-16T20:16:37Z",
+      "branch": "claude/magical-rubin-ci82qw"
+    },
     "counts": {
       "functions": 33,
       "ideas": 73,
@@ -1476,6 +1482,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-settings-readmodel-and-vision.md",
+      "date": "2026-06-16",
+      "title": "Session — `/settings` typed read-model (SettingSpec) + main-website vision",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-runtime-lock-early-release.md",
       "date": "2026-06-16",
       "title": "Session — runtime lock: release early on shutdown (fix ~85s deploy downtime)",
@@ -1509,6 +1521,12 @@
       "file": "2026-06-16-myprofile-card-pra.md",
       "date": "2026-06-16",
       "title": "Session — myprofile PR A: read-only profile card (`/myprofile`)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-multiuser-control-panel-design.md",
+      "date": "2026-06-16",
+      "title": "Session — Free multi-user control panel: identity & authority design",
       "status": "complete"
     },
     {
@@ -1623,6 +1641,12 @@
       "file": "2026-06-16-developer-dashboard-mvp.md",
       "date": "2026-06-16",
       "title": "Session — Developer dashboard (personal website) — design + read-only MVP",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-dashboard-status-page.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — dashboard `/status` page (live status & health surface)",
       "status": "complete"
     },
     {
@@ -1797,24 +1821,6 @@
       "file": "2026-06-15-reconcile-band930.md",
       "date": "2026-06-15",
       "title": "Session — 2026-06-15 · band-#930 docs reconciliation (ninth Q-0107 pass)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-railway-log-triage-analyzer.md",
-      "date": "2026-06-15",
-      "title": "Session — 2026-06-15 · Railway log-triage analyzer (deterministic, content-free)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-p1-3-invariants.md",
-      "date": "2026-06-15",
-      "title": "Session — P1-3 machine-checkable contract invariants (the cross-cutting \"stays fixed\" layer)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-15-mining-vault-v2-cap.md",
-      "date": "2026-06-15",
-      "title": "Session — Mining Vault v2: inventory soft-cap + vault-cap upgrade path",
       "status": "complete"
     }
   ],
