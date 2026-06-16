@@ -27,6 +27,40 @@ import re
 # distinctive token; "alternate bloons( rounds)" is the spelled form.
 ABR_CUE_RE = re.compile(r"\babr\b|\balternate\s+bloons?\b", re.IGNORECASE)
 
+# A paragon "degree" named in a query (BUG-0015): "degree 67", "deg 67", or the
+# shorthand "d67" players type. Only paragons have degrees (1-100), so a match
+# is only acted on when a paragon is also in scope — the router routes a degree
+# token + a paragon reference, and the grounding leg surfaces the exact
+# per-degree stats. One cue shared by both so they can never drift (the
+# ABR_CUE_RE pattern). The "d67" shorthand is digit-boundary guarded so a round
+# ("r67"), a version ("v55"), or a mid-token "d" ("5d6", "add 7") never match;
+# the digit run is capped at 3 and range-checked to 1-100 by degree_in_text.
+DEGREE_CUE_RE = re.compile(
+    r"\bdegrees?\s*-?\s*(\d{1,3})\b"  # "degree 67", "degree-67", "degrees 67"
+    r"|\bdeg\.?\s*(\d{1,3})\b"  # "deg 67", "deg.67", "deg67"
+    r"|\bd(\d{1,3})\b",  # the bare "d67" shorthand
+    re.IGNORECASE,
+)
+
+
+def degree_in_text(text: str) -> int | None:
+    """The paragon degree (1-100) named in ``text``, or None.
+
+    Recognises "degree 67", "deg 67", and the "d67" shorthand players use.
+    A degree runs 1-100, so out-of-range values (a stray "d255", "degree 0")
+    return None rather than reading as a degree. Callers gate on a paragon also
+    being in scope — "d67" alone is ambiguous, "d67 dart paragon" is not.
+    """
+    for match in DEGREE_CUE_RE.finditer(text or ""):
+        raw = next((group for group in match.groups() if group is not None), None)
+        if raw is None:
+            continue
+        value = int(raw)
+        if 1 <= value <= 100:  # a paragon degree is 1..100 (paragon_math.MAX_DEGREE)
+            return value
+    return None
+
+
 BTD6_CONTEXT_KEYWORDS: tuple[str, ...] = (
     "btd6",
     "bloons",
@@ -100,4 +134,10 @@ def has_btd6_context(text: str) -> bool:
     return any(keyword in lowered for keyword in BTD6_CONTEXT_KEYWORDS)
 
 
-__all__ = ["ABR_CUE_RE", "BTD6_CONTEXT_KEYWORDS", "has_btd6_context"]
+__all__ = [
+    "ABR_CUE_RE",
+    "BTD6_CONTEXT_KEYWORDS",
+    "DEGREE_CUE_RE",
+    "degree_in_text",
+    "has_btd6_context",
+]
