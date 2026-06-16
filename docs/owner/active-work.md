@@ -33,6 +33,9 @@ living ledger (`docs/current-state.md`).
   the live event + all its info; history behind 📜 Past events) · `services/btd6_view_model_service.py`
   · `views/btd6/live_events_view.py` · `cogs/btd6/_event_helpers.py` · 2026-06-16
 
+- `claude/peaceful-tesla-vvayya` · PR mergeability keepers — auto-update behind + red-on-conflict
+  guard (Q-0154) · `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` · 2026-06-16
+
 ## Recently cleared
 
 - `claude/hopeful-meitner-772pv8` · count-citation guard + session-close notes (Q-0151, atlas thread #3)
