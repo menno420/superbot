@@ -63,7 +63,9 @@ def test_base_scope_is_the_default_and_labelled():
 
 
 def test_with_upgrades_signal_flips_to_the_full_roster():
-    base = btd6_capability_service.towers_with_capability("lead_popping", unupgraded=True)
+    base = btd6_capability_service.towers_with_capability(
+        "lead_popping", unupgraded=True
+    )
     upgraded = btd6_capability_service.towers_with_capability(
         "lead_popping",
         unupgraded=False,

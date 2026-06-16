@@ -2734,6 +2734,116 @@ def deterministic_capability_roster_reply(message_text: str) -> str | None:
     return _format_capability_roster(capability, hits, upgraded=upgraded)
 
 
+# --- "which bloons are immune to X / list the MOAB-class bloons" (AI §7) -------
+# A bloon roster ("what are all the MOAB-class bloons", "which bloons are immune
+# to sharp") is the same wrong-assembly class as the tower-capability floor above,
+# on the other side of the matchup: the model assembles the bloon list itself and
+# can miscount the blimp tier or mis-state an immunity, and because every bloon
+# NAME is grounded the value-only faithfulness guard never catches a mis-roster.
+# btd6_data_service exposes the committed bloon fields (category · immune_to), so
+# the floor OWNS the labelled list. The sibling roster floor
+# (deterministic_roster_reply) covers heroes/towers/paragons/maps but NOT bloons.
+_BLOON_SUBJECT_RE = re.compile(r"\bbloons?\b|\bblimps?\b|\bmoab", re.I)
+_BLOON_MOAB_CUE_RE = re.compile(r"\bmoab[-\s]?class\b|\bblimps?\b|\bmoab\b", re.I)
+_BLOON_IMMUNE_CUE_RE = re.compile(
+    r"\bimmune\b|\bimmunit|\bresist(?:s|ant|ance)?\b|"
+    r"\bcan'?t\s+be\s+(?:popped|damaged|hurt)\b",
+    re.I,
+)
+# A strict enumeration signal for the MOAB-class list (a bare "what"/"which" is
+# NOT enough — "what is a moab" is a single lookup, not a roster).
+_BLOON_MOAB_LIST_RE = re.compile(
+    r"\blist\b|\bname\b|\ball\b|\bevery\b|\bhow many\b|\bwhich\b|\bwhat are\b|"
+    r"\bthere are\b|\bare there\b",
+    re.I,
+)
+# A looser enumeration signal for the immunity roster (the damage-keyword gate
+# already keeps single-entity "is the lead immune to sharp" out — it has no
+# which/what/list cue — so "what bloons" is safe to accept here).
+_BLOON_IMMUNE_LIST_RE = re.compile(
+    r"\bwhich\b|\bwhat\b|\blist\b|\bname\b|\ball\b|\bevery\b|\bhow many\b",
+    re.I,
+)
+# (regex over the question, the canonical immune_to damage label). Order matters:
+# the specific cold sub-types (Glacier/Frigid) are matched before generic cold/ice.
+_BLOON_DAMAGE_KEYWORDS: tuple[tuple[str, str], ...] = (
+    (r"\bexplos|\bbomb\b", "Explosion"),
+    (r"\bfire\b|\bflame\b|\bburn", "Fire"),
+    (r"\benerg", "Energy"),
+    (r"\bplasma\b", "Plasma"),
+    (r"\bglacier\b", "Glacier"),
+    (r"\bfrigid\b", "Frigid"),
+    (r"\bcold\b|\bice\b|\bfreez", "Cold"),
+    (r"\bshatter", "Shatter"),
+    (r"\bsharp", "Sharp"),
+    (r"\bacid\b", "Acid"),
+)
+
+
+def _match_bloon_damage(text_lower: str) -> str | None:
+    """The canonical immune_to damage label a question names, or ``None``."""
+    for pattern, label in _BLOON_DAMAGE_KEYWORDS:
+        if re.search(pattern, text_lower):
+            return label
+    return None
+
+
+def _format_moab_class_roster(hits: list[Any]) -> str | None:
+    if not hits:
+        return None
+    names = ", ".join(f"**{b.canonical}**" for b in hits)
+    return f"**BTD6 MOAB-class bloons ({len(hits)})** — the blimp tier: {names}."
+
+
+def _format_bloon_immunity_roster(label: str, hits: list[Any]) -> str:
+    if not hits:
+        return f"**BTD6 — no bloon is immune to {label} damage.**"
+    names = ", ".join(f"**{b.canonical}**" for b in hits)
+    return f"**BTD6 bloons immune to {label} damage ({len(hits)}):** {names}."
+
+
+def deterministic_bloon_roster_reply(message_text: str) -> str | None:
+    """A code-built bloon roster — MOAB-class list or immunity roster — or ``None``.
+
+    Fires on a clear bloon enumeration: "what are all the MOAB-class bloons /
+    blimps" (the category list) or "which bloons are immune to <damage>" (the
+    immunity roster). Same wrong-assembly class as the tower-capability floor —
+    every bloon name is grounded, so the model can miscount/mis-state and the
+    value-only guard never catches the mis-roster. Defers (``None``) for
+    single-bloon lookups ("what is a moab", "is the lead immune to sharp"),
+    strategy/opinion, and anything without a bloon subject + enumeration shape.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _BLOON_SUBJECT_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    # "modifier" rows (camo / fortified / regrow) are property markers, not bloons.
+    bloons = [
+        b for b in btd6_data_service.get_dataset().bloons if b.category != "modifier"
+    ]
+
+    if _BLOON_IMMUNE_CUE_RE.search(text):
+        if not _BLOON_IMMUNE_LIST_RE.search(text):
+            return None
+        label = _match_bloon_damage(text)
+        if label is None:
+            return None
+        hits = [b for b in bloons if label in (b.immune_to or ())]
+        return _format_bloon_immunity_roster(label, hits)
+
+    if _BLOON_MOAB_CUE_RE.search(text) and _BLOON_MOAB_LIST_RE.search(text):
+        hits = [b for b in bloons if b.category == "moab_class"]
+        return _format_moab_class_roster(hits)
+
+    return None
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -2748,6 +2858,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
     deterministic_capability_roster_reply,
+    deterministic_bloon_roster_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_cost_comparison_reply,
     deterministic_difficulty_cost_comparison_reply,
