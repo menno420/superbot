@@ -25,6 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/epic-noether-qgis28` · BTD6 Live Events — fix the dead event drill-down
+  (`build_event_detail_view_model` `TypeError`) + current-event-first overview redesign (show only
+  the live event + all its info; history behind 📜 Past events) · `services/btd6_view_model_service.py`
+  · `views/btd6/live_events_view.py` · `cogs/btd6/_event_helpers.py` · 2026-06-16
 - `claude/modest-ptolemy-2xipoh` · design capture — routine dispatch / staged deep-clean /
   planning sectors (owner discussion) · `docs/ideas/` + router Q-0137 · 2026-06-14
 - `claude/hopeful-allen-home-slice-c` · mining Slice C — Home structure (character-card backdrop) ·
