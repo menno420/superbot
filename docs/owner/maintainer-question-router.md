@@ -5891,3 +5891,30 @@ usage-map + Railway management; multi-AI control board) remain in the plan.
 **Home:** [`docs/planning/developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md) ·
 [`docs/ideas/developer-dashboard-2026-06-16.md`](../ideas/developer-dashboard-2026-06-16.md) ·
 `dashboard/` · `scripts/export_dashboard_data.py` · this Q-block.
+
+### Q-0156 — Dashboard live editor: edit help & command panels from the website (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly via `AskUserQuestion`).** Owner:
+> *"I'd also like to be able to edit the help message and command panels directly from the website, so
+> you can move buttons to wherever you want."* Recorded for provenance. The editor's bot-side half
+> touches `disbot/` runtime, so it is **designed first** (this block + the plan doc) and built as its
+> own focused PR(s) — not bundled into the read-only showcase work.
+
+**Decisions:**
+
+- **Edits change the live bot** (not a website-only mockup). Because the bot's audited-seam rule
+  forbids bypassing `services.help_overlay_mutation`, the website edits the live bot **through the
+  bot**, via a private-network control API the bot exposes over the existing seam — never by writing
+  `help_overlay` rows directly (that would skip audit + leave the bot's overlay cache stale).
+- **Help text & visibility first.** The per-guild Help overlay (hide / rename / re-describe + Home
+  message) is already data-driven and audited, so the website editor is a second front-end over it.
+  **Moving panel buttons is greenfield** (panels are hardcoded `@discord.ui.button`) and needs a new
+  DB-backed panel-layout engine in the bot first — deferred to a later phase (L3).
+- **Login = Discord OAuth** (ties identity to the servers the owner admins → per-server editing is
+  naturally scoped; the bot re-checks `administrator` on every write).
+- **Read-only showcase expansion → all four areas** (settings/config catalogue, permissions/access
+  map, live bot status/health, games & economy). Settings catalogue + access map shipped first.
+
+**Home:** [`docs/planning/dashboard-live-editor-plan.md`](../planning/dashboard-live-editor-plan.md)
+(architecture + phased build L0–L3) · `services/help_overlay_mutation.py` (the seam it fronts) ·
+`views/help/editor.py` (the in-Discord editor it mirrors) · this Q-block.

@@ -36,6 +36,11 @@ living ledger (`docs/current-state.md`).
 - `claude/peaceful-tesla-vvayya` · PR mergeability keepers — auto-update behind + red-on-conflict
   guard (Q-0154) · `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` · 2026-06-16
 
+- `claude/kind-carson-736rnk` · dashboard `/settings` + `/access` read-only pages
+  (`scripts/scan_settings.py` · `scripts/scan_access.py`) + live help-editor design doc (Q-0156) ·
+  `dashboard/` · `scripts/export_dashboard_data.py` · `docs/planning/dashboard-live-editor-plan.md` ·
+  2026-06-16
+
 ## Recently cleared
 
 - `claude/jolly-cannon-gn9ddg` · developer dashboard (personal website) — design + read-only MVP (Phase 1) · 2026-06-16 · **PR #967 (auto-merge on green)**

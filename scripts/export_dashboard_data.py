@@ -64,6 +64,17 @@ def _load_scan_commands() -> Callable[..., list[dict]]:
     return module.scan_commands
 
 
+def _load_sibling(script_name: str, attr: str) -> Callable[..., object]:
+    """Load one callable from a sibling ``scripts/`` module (not a package)."""
+    script = Path(__file__).resolve().parent / script_name
+    spec = importlib.util.spec_from_file_location(f"_{attr}_seam", script)
+    if spec is None or spec.loader is None:  # pragma: no cover - import wiring
+        raise ImportError(f"cannot load {script_name}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return getattr(module, attr)
+
+
 # Catalogue fields surfaced from the registry (all str/list literals — the
 # non-literal ``color`` field is intentionally skipped).
 _CATALOGUE_FIELDS = (
@@ -300,6 +311,19 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         else []
     )
 
+    keys_dir = repo_root / "disbot" / "utils" / "settings_keys"
+    settings = (
+        _load_sibling("scan_settings.py", "scan_settings")(keys_dir=keys_dir)
+        if keys_dir.is_dir()
+        else []
+    )
+    registry_path = repo_root / "disbot" / "utils" / "subsystem_registry.py"
+    access = (
+        _load_sibling("scan_access.py", "scan_access")(registry=registry_path)
+        if registry_path.exists()
+        else {"tiers": [], "total_visible": 0, "internal_count": 0}
+    )
+
     return {
         "meta": {
             "generated_at": dt.datetime.now(dt.timezone.utc).strftime(
@@ -313,6 +337,9 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
                 "env_vars": len(env_usage),
                 "cogs": sum(1 for c in cogs if c.get("is_cog")),
                 "commands": sum(len(c["commands"]) for c in cogs),
+                "setting_keys": sum(len(d["keys"]) for d in settings),
+                "setting_domains": len(settings),
+                "visible_subsystems": access.get("total_visible", 0),
             },
         },
         "catalogue": catalogue,
@@ -321,6 +348,8 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "updates": updates,
         "env_usage": env_usage,
         "cogs": cogs,
+        "settings": settings,
+        "access": access,
     }
 
 

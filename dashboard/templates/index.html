@@ -10,7 +10,7 @@
 </section>
 
 <section class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-  {% set cards = [('functions', 'Functions', '/functions'), ('commands', 'Commands', '/commands'), ('ideas', 'Ideas', '/ideas'), ('bugs', 'Bugs', '/bugs'), ('updates', 'Updates', '/updates'), ('env_vars', 'Env map', '/env')] %}
+  {% set cards = [('functions', 'Functions', '/functions'), ('commands', 'Commands', '/commands'), ('setting_keys', 'Settings', '/settings'), ('visible_subsystems', 'Visible features', '/access'), ('ideas', 'Ideas', '/ideas'), ('bugs', 'Bugs', '/bugs'), ('updates', 'Updates', '/updates'), ('env_vars', 'Env map', '/env')] %}
   {% for key, label, href in cards %}
     <a href="{{ href }}" class="rounded-xl border border-slate-800 bg-slate-900/50 p-5 hover:border-sky-600 transition-colors">
       <div class="text-3xl font-bold">{{ data.meta.counts.get(key, 0) }}</div>
