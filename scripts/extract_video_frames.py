@@ -96,6 +96,8 @@ def _even_indices(total: int, n: int) -> list[int]:
         return []
     if n >= total:
         return list(range(total))
+    if n == 1:
+        return [0]
     return [round(i * (total - 1) / (n - 1)) for i in range(n)]
 
 

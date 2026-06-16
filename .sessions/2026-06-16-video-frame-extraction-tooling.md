@@ -1,6 +1,6 @@
 # Session — video frame-extraction tooling (so future sessions can see uploads immediately)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## What I'm about to do
 
@@ -31,10 +31,28 @@ Ship it as a reusable, verified script + a journal Quick-reference pointer:
 - `.session-journal.md` — added the "See a video the maintainer sent" Quick-reference row (no
   ffmpeg in-env → bundled `imageio-ffmpeg`; stream, never list; contact-sheet-first; uploads path).
 
+- `tests/unit/scripts/test_extract_video_frames.py` — pure-helper tests for `_even_indices`
+  (endpoints/spacing/edge cases) + that the module imports without imageio/PIL. **The test caught a
+  real bug**: `_even_indices(total, 1)` (i.e. `--sample 1`) hit `ZeroDivisionError` on `n-1`; fixed
+  with an `n == 1 → [0]` guard. `check_quality --full` green (9993 passed, +3); script lint-clean in
+  CI scope (tests/ is excluded from ruff, so the test file's private-access lints don't gate CI).
+
 ## 💡 Session idea
 
-(pending)
+`docs/ideas/btd6-ct-event-detail-relics-map-2026-06-16.md` — a genuine follow-up to #953 found while
+building it: the new Live Events overview drills into a rich detail for race/boss/odyssey, but **CT**
+has no `_towers` metadata so a live CT event shows only name+window, while the rich relic/hex-map data
+already exists in the panel's 🗺️ CT view. Bridge them (a CT-gated "🗺️ Map & relics" button reusing
+`build_ct_map_file(ct_id)`), degrading to text when Pillow is absent. Dedup-checked; README-indexed.
 
 ## ⟲ Previous-session review
 
-(pending)
+The previous session (the #953 BTD6 live-events fix) was strong: it didn't stop at the UX ask — it
+root-caused the *actual* crash (`search_facts(entity_key=…)` → `TypeError` on every drill-down),
+fixed a latent boss-metadata-suffix bug alongside, and put the previously-untested detail path under
+test. What it did *inefficiently* — and this session is the direct fix — it burned ~10 tool-calls
+rediscovering how to even *view* the uploaded video (no ffmpeg/player in-env). **Concrete system
+improvement, now shipped:** `scripts/extract_video_frames.py` + a journal Quick-reference row, so the
+next session sees a maintainer's upload in one command. Clean closed loop: a friction the prior
+session hit became durable tooling the next inherits — exactly the self-improving-workflow intent.
+No filler: this was a real, repeatable cost.

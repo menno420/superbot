@@ -20,6 +20,13 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`btd6-ct-event-detail-relics-map-2026-06-16.md`](./btd6-ct-event-detail-relics-map-2026-06-16.md) —
+  **BTD6 UX follow-up to #953 (2026-06-16, Q-0089):** the new Live Events overview drills into a rich
+  detail for race/boss/odyssey, but CT has no `_towers` metadata so a live CT event shows only
+  name+window — while the rich relic/hex-map data already exists in the panel's 🗺️ CT view. Bridge
+  them by surfacing relics + `build_ct_map_file(ct_id)` on the CT event detail (a button, reusing the
+  proven renderer; CT-gated; degrade to text when Pillow is absent). → relates
+  `views/btd6/live_events_view.py` · `views/btd6/ct_map_view.py` · `services/btd6_live_query_service.py`.
 - [`button-command-surface-parity-2026-06-16.md`](./button-command-surface-parity-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the `!coglist` command request PR #951):** the admin panel
   had a 📋 Cog List button but no text command — users expect a button's action to also be reachable
