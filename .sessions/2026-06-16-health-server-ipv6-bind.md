@@ -1,6 +1,6 @@
 # Session — health server IPv6 dual-stack bind (Railway private networking)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## Origin
 
