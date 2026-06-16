@@ -136,10 +136,12 @@ HOW TO ANSWER
 
 YOUR SKILLS
   someone pings -> intake (bug / idea / request / question -> classify + route to the right home)
+  each morning  -> morning-briefing (auto digest), idea-spotlight (auto idea-of-the-day; route the
+                   owner's end-of-day verdict back through intake)
   pre-session   -> session-brief, prompt-builder
   between work  -> repo-health, open-questions, ideas-triage, btd6-status
   something off -> log-triage
-  build it      -> dispatch (fire a Claude Code routine)
+  build it      -> dispatch (fire a Claude Code routine); vague "do sector SX" -> dispatch-resolve
   review a PR   -> review / review-merge
   make a skill  -> skill-author (design a new skill -> docs-only PR)
 ```

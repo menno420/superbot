@@ -32,11 +32,11 @@ living ledger (`docs/current-state.md`).
   (`build_event_detail_view_model` `TypeError`) + current-event-first overview redesign (show only
   the live event + all its info; history behind 📜 Past events) · `services/btd6_view_model_service.py`
   · `views/btd6/live_events_view.py` · `cogs/btd6/_event_helpers.py` · 2026-06-16
-- `claude/peaceful-tesla-vvayya` · Hermes efficiency — new skills (idea-spotlight · morning-briefing
-  · dispatch-resolve) + 6h auto session-reset · `docs/operations/hermes-skills/*` ·
-  `scripts/hermes/{idea_spotlight,session_reset}.*` · `scripts/dispatch_menu.py --json` · 2026-06-16
 
 ## Recently cleared
+
+- `claude/peaceful-tesla-vvayya` · Hermes efficiency — idea-spotlight · morning-briefing ·
+  dispatch-resolve skills + 6h auto session-reset · 2026-06-16 · **PR #959 (auto-merge pending)**
 
 > Trimmed 2026-06-16 (Q-0152): stale claims whose PRs merged are dropped — the durable record is the
 > PR + the `current-state.md` ledger. Keep this to the most recent handful, newest-first.

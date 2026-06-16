@@ -50,13 +50,20 @@ def test_required_frontmatter_present(path: Path, content: str) -> None:
     assert len(body) > 100, f"{path.name}: prompt body looks empty"
 
 
-def test_repo_health_self_schedules() -> None:
+def test_morning_briefing_self_schedules() -> None:
     rendered = build_skills.build_all()
-    health = next(p for p in rendered if p.parent.name == "repo-health")
-    content = rendered[health]
+    briefing = next(p for p in rendered if p.parent.name == "morning-briefing")
+    content = rendered[briefing]
     assert "blueprint:" in content
     assert "schedule:" in content
     assert "deliver: origin" in content
+
+
+def test_idea_spotlight_self_schedules() -> None:
+    rendered = build_skills.build_all()
+    spotlight = next(p for p in rendered if p.parent.name == "idea-spotlight")
+    content = rendered[spotlight]
+    assert "blueprint:" in content and "schedule:" in content
 
 
 def test_committed_artifacts_are_fresh() -> None:

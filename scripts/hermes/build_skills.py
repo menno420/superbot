@@ -67,14 +67,38 @@ class SkillExtras:
 # Stem -> extras. Add an entry here when a new skill doc is added.
 EXTRAS: dict[str, SkillExtras] = {
     "session-brief": SkillExtras(tags=["Orientation", "SuperBot", "Planning"]),
-    "repo-health": SkillExtras(
-        tags=["Monitoring", "SuperBot", "Health"],
+    # repo-health stays a full on-demand traffic-light; its daily schedule was
+    # removed 2026-06-16 because superbot-morning-briefing now carries the daily
+    # health line (owner's "one message instead of several pings"). Re-add the
+    # schedule here if both are ever wanted.
+    "repo-health": SkillExtras(tags=["Monitoring", "SuperBot", "Health"]),
+    "ideas-triage": SkillExtras(tags=["Planning", "SuperBot", "Ideas"]),
+    "idea-spotlight": SkillExtras(
+        tags=["Planning", "SuperBot", "Ideas"],
+        related=["superbot-ideas-triage", "superbot-intake"],
         schedule=(
-            "0 8 * * *",
-            "Run a SuperBot repo health check and deliver the traffic-light report.",
+            "30 6 * * *",
+            "Post today's SuperBot idea spotlight: pick one active idea and "
+            "deliver it with pros, cons, and options to think over.",
         ),
     ),
-    "ideas-triage": SkillExtras(tags=["Planning", "SuperBot", "Ideas"]),
+    "morning-briefing": SkillExtras(
+        tags=["Monitoring", "SuperBot", "Briefing"],
+        related=[
+            "superbot-repo-health",
+            "superbot-open-questions",
+            "superbot-idea-spotlight",
+        ],
+        schedule=(
+            "0 6 * * *",
+            "Post the SuperBot morning briefing: health, open PRs, CI, overnight "
+            "routine activity, and any decisions waiting on me.",
+        ),
+    ),
+    "dispatch-resolve": SkillExtras(
+        tags=["Automation", "SuperBot", "Dispatch"],
+        related=["superbot-dispatch", "superbot-prompt-builder"],
+    ),
     "intake": SkillExtras(
         tags=["Triage", "SuperBot", "Routing"],
         related=["superbot-dispatch", "superbot-ideas-triage"],
