@@ -32,6 +32,8 @@ _EMPTY: dict[str, Any] = {
     "bugs": [],
     "updates": [],
     "env_usage": [],
+    "settings": [],
+    "access": {"tiers": [], "total_visible": 0, "internal_count": 0},
 }
 
 app = FastAPI(title="SuperBot Dashboard", docs_url=None, redoc_url=None)
@@ -113,6 +115,26 @@ def env(request: Request):
         request,
         "env.html",
         {"data": load_data(), "page": "env"},
+    )
+
+
+@app.get("/settings", response_class=HTMLResponse)
+def settings(request: Request):
+    """Settings catalogue — every per-guild setting key, grouped by subsystem."""
+    return templates.TemplateResponse(
+        request,
+        "settings.html",
+        {"data": load_data(), "page": "settings"},
+    )
+
+
+@app.get("/access", response_class=HTMLResponse)
+def access(request: Request):
+    """Permissions & access map — visibility tier ladder (mirrors visibility_rules)."""
+    return templates.TemplateResponse(
+        request,
+        "access.html",
+        {"data": load_data(), "page": "access"},
     )
 
 
