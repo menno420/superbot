@@ -5541,3 +5541,44 @@ path, gate it behind an explicit per-guild setting (default off) and a first-joi
 
 **Home when answered:** `docs/planning/myprofile-foundation-plan-2026-06-10.md` §4.3 (un-gate PR C
 with the decided shape) + this Q-block records the provenance.
+
+---
+
+### Q-0148 — the dispatch routine is never "docs only"; only reconciliation is (2026-06-16)
+
+> **DECISION 2026-06-16 (owner-directed in-session, applied directly).** Testing whether Hermes
+> could send work orders, Hermes fired a real one but stamped it **"CLASS: docs · this is a
+> living-ledger reconciliation only; no runtime code or feature scope."** The owner: *"it's never
+> docs only, only the reconciliation routine should be docs only, please update the repo in such a
+> way that this is absolutely clear."*
+
+**The error.** The fleet has exactly two routine prompts (Q-0145): the **dispatch** routine, which
+does **ALL build work** (runtime code, migrations, tests, docs, fixes, dispatched features), and the
+**docs reconciliation** routine, which is **docs-only** and is **auto-triggered** by a `reconcile`
+issue. Stamping a *dispatch* work order "docs only / no runtime code / no feature scope" conflates
+the *task's nature* with a *routine-level scope fence* — a category error that could make a build
+run wrongly refuse the runtime work it exists to do.
+
+**Decision / fix (this PR).** Make the one-way split unmistakable on both sides of the dispatch
+bridge, and forbid the bad stamp at the source:
+- The saved **dispatch prompt** (`hermes-dispatch-bridge.md` step 3) now states a work order's
+  `CLASS:` / scope notes label the task's nature to pick the merge gate and **never** fence what the
+  routine may touch; if a dispatch order is stamped "docs only", honor the task's real shape, not the
+  stamp. *(Also fixed a real bug found there: step 8 had an accidental duplicate-paste of four lines
+  that had ridden into the live routine system prompt.)*
+- `autonomous-routines.md` — the docs/runtime-split paragraph + fleet framing now say loudly: the
+  dispatch routine is **never** docs-only; "docs-only" is **exclusively** the reconciliation lane.
+- **Hermes' `superbot-dispatch` skill** (`hermes-skills/dispatch.md`) — a CLASSIFY note + a RULES
+  bullet forbid Hermes from ever scope-restricting a dispatch order, and from hand-dispatching a
+  reconciliation / docs-only job as a build order (a clean ledger guard means there is nothing to
+  reconcile anyway).
+
+**Note on the test fire itself:** the dispatched task *happened* to be a genuine ledger
+reconciliation, so the run (PR #942) built the right thing — but the "docs only / no runtime code"
+framing was the wrong shape for a dispatch order regardless, which is what this Q corrects.
+
+**Home:** `docs/operations/hermes-dispatch-bridge.md` (saved prompt) ·
+`docs/operations/autonomous-routines.md` (split + fleet) · `docs/operations/hermes-skills/dispatch.md`
+(the source of work orders). **Owner action:** re-paste the corrected dispatch prompt into the
+routine console and the `superbot-dispatch` skill into Hermes' config (the in-repo copies are the
+source of truth; the live copies must be synced to match).

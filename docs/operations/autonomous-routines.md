@@ -59,9 +59,16 @@ for the labeled issue.
 > it lapses the issues silently revert to bot-authored. (A GitHub App installation token avoids
 > the expiry if this becomes a recurring chore.)
 
-**The docs/runtime split (honors Q-0107):** the reconciliation routine is **docs-only** — if
-it *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN), and the **dispatch**
-routine fixes it. Neither routine invents features (the phase gate holds those until
+**The docs/runtime split (honors Q-0107) — and it cuts ONE way (Q-0148):** the reconciliation
+routine is **docs-only**; the **dispatch routine is NEVER docs-only** — it does *all* build work
+(runtime code, migrations, tests, docs, fixes, dispatched features). "Docs-only" is **exclusively**
+the reconciliation routine's lane. So a work order must **never scope-restrict** the dispatch
+routine to docs ("docs only" / "no runtime code" / "no feature scope") — that is a category error
+(it happened on a 2026-06-16 test fire): a `CLASS:` label picks the merge gate, it does not fence
+what the dispatch routine may touch, and a genuinely docs-only reconciliation job is the
+*auto-triggered* reconciliation routine's work, not a hand-dispatched build order. If the
+reconciliation routine *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN) and
+the dispatch routine fixes it. Neither routine invents features (the phase gate holds those until
 invent-phase, and these prompts never originate them).
 
 **Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
