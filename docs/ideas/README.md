@@ -62,6 +62,13 @@ Current broad captures:
   render with a generic 🧩 + no routing key. A small cog→parent-subsystem map in `scan_commands` would
   let sub-cogs inherit their parent's registry identity (emoji/name/routing), shrinking the allow-list
   to the truly-unregistered few. → relates `scripts/scan_commands.py` · `dashboard/`.
+- [`success-metric-alignment-with-verified-success-2026-06-16.md`](./success-metric-alignment-with-verified-success-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the Claude Code expertise research readout):** Anthropic's
+  ~400K-session study measures **verified success** by *hard signals* (tests passing, commits,
+  explicit confirmation) — our CI-green + auto-merge + born-red gate is the same philosophy. Mostly
+  confirmatory; the contained value is naming which session *classes* should require explicit owner
+  confirmation before auto-merge vs. CI-only (the `needs-hermes-review`/`do-not-automerge` seam may
+  already cover it). → relates `docs/collaboration-model.md` · CLAUDE.md § Session workflow.
 - [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
   **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
   repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one
