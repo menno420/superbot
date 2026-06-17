@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import datetime
 import logging
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -116,14 +117,27 @@ class CommandManifest:
     bot_build: str
     commands: tuple[CommandManifestEntry, ...]
 
+    def findings(self) -> list[dict[str, Any]]:
+        """Cross-manifest reconciliation findings (drift) for this manifest.
+
+        Computed lazily (no stored state) by the spine's reconciliation seam —
+        e.g. a ``panel_action`` command whose subsystem owns no registered panel.
+        Empty when the manifest is clean. Imported function-locally to keep this
+        module's top-level imports to its sibling ledger only (cycle discipline).
+        """
+        from core.runtime import manifest_reconciliation
+
+        return manifest_reconciliation.reconcile_to_dicts(self)
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "version": self.version,
             "generated_at": self.generated_at,
             "bot_build": self.bot_build,
             "commands": [c.to_dict() for c in self.commands],
-            # Reserved (PR3) — drift findings vs the AST scanner.
-            "findings": [],
+            # Cross-manifest reconciliation drift (manifest spine PR3) — the
+            # live read carries its own trust signal (empty == clean).
+            "findings": self.findings(),
         }
 
 
@@ -218,7 +232,22 @@ def build_and_cache(
     return manifest
 
 
-def build_and_cache_from_bot(bot: object, *, bot_build: str = "") -> CommandManifest:
+def deploy_build_sha() -> str:
+    """The deploy's git SHA (short) for the manifest envelope, or ``""``.
+
+    Read from Railway's ``RAILWAY_GIT_COMMIT_SHA`` (set on every deploy). It
+    freshness-badges / cache-busts the exported manifest so a consumer can tell
+    which build the surface came from. Empty off-Railway (local / CI), which is
+    fine — the field is informational.
+    """
+    return os.environ.get("RAILWAY_GIT_COMMIT_SHA", "").strip()[:12]
+
+
+def build_and_cache_from_bot(
+    bot: object,
+    *,
+    bot_build: str | None = None,
+) -> CommandManifest:
     """Build (or reuse) the command ledger, then project + cache the manifest.
 
     Prefers the already-cached ledger (the startup path builds it just
@@ -226,9 +255,15 @@ def build_and_cache_from_bot(bot: object, *, bot_build: str = "") -> CommandMani
     forces a second surface walk. When the panel manifest has been built
     (startup builds it first), its ``subsystem -> panel_ids`` map is joined
     in so each command carries its subsystem's ``panels``.
+
+    ``bot_build`` defaults to the deploy SHA (:func:`deploy_build_sha`) so the
+    live read carries it without every call site threading it; pass an explicit
+    string (incl. ``""``) to override.
     """
     from core.runtime import command_surface_ledger, panel_manifest
 
+    if bot_build is None:
+        bot_build = deploy_build_sha()
     ledger = command_surface_ledger.get_cached_ledger()
     if ledger is None:
         ledger = command_surface_ledger.build_ledger(bot)
@@ -265,6 +300,7 @@ def _snapshot() -> dict[str, Any]:
     by_kind: dict[str, int] = {}
     for c in manifest.commands:
         by_kind[c.kind] = by_kind.get(c.kind, 0) + 1
+    findings = manifest.findings()
     return {
         "built": True,
         "version": manifest.version,
@@ -272,6 +308,9 @@ def _snapshot() -> dict[str, Any]:
         "bot_build": manifest.bot_build,
         "command_count": len(manifest.commands),
         "by_kind": by_kind,
+        # Cross-manifest reconciliation (PR3): 0 == clean.
+        "finding_count": len(findings),
+        "findings": findings,
     }
 
 
@@ -291,5 +330,6 @@ __all__ = [
     "build_and_cache",
     "build_and_cache_from_bot",
     "build_command_manifest",
+    "deploy_build_sha",
     "get_cached_manifest",
 ]

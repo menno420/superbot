@@ -49,6 +49,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
+  cross-manifest reconciliation (`dangling_panel_action`) + AST-vs-panel-registry drift guard +
+  deploy-SHA badge · 2026-06-17 · **PR #1020 (auto-merge on green)**
 - `claude/magical-rubin-p92toz` · manifest spine **PR2** — panel registry + `PanelManifest`
   (`core/runtime/panel_manifest.py` + `persistent_views` PANEL_ID/enumeration + command-panel join) ·
   2026-06-17 · **PR #1019 (auto-merge on green)**

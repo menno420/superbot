@@ -13,7 +13,7 @@ it reads it, and whether it is **required** (read without a default anywhere) or
 only — never a value**; the values live in Railway service variables
 (see [`production-deployment.md`](production-deployment.md)).
 
-**36 variables** — 3 required · 33 optional.
+**37 variables** — 3 required · 34 optional.
 
 ## Required (read without a default — the deploy must set these)
 
@@ -47,7 +47,7 @@ only — never a value**; the values live in Railway service variables
 | `CLAUDE_ROUTINE_FIRE_URL` | cogs | `disbot/cogs/hermes_cog.py:49` *(default)* |
 | `CLAUDE_ROUTINE_TOKEN` | cogs | `disbot/cogs/hermes_cog.py:50` *(default)* |
 | `CLAUDE_ROUTINE_VERSION` | cogs | `disbot/cogs/hermes_cog.py:52` *(default)* |
-| `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:110` *(default)* |
+| `CONTROL_API_TOKEN` | control_api | `disbot/control_api.py:111` *(default)* |
 | `DISCORD_WEBHOOK_URL` | config | `disbot/config.py:102` *(default)* |
 | `HEALTH_GROUPED_FINDINGS` | services | `disbot/services/health_snapshot_service.py:267` *(default)* |
 | `HEALTH_HOST` | healthserver | `disbot/healthserver.py:70` *(default)* |
@@ -57,6 +57,7 @@ only — never a value**; the values live in Railway service variables
 | `OPENAI_API_KEY` | config, core, services | `disbot/config.py:159` *(default)*<br>`disbot/core/runtime/ai/providers/openai_provider.py:74` *(default)*<br>`disbot/services/setup_ai_advisor.py:175` *(default)*<br>`disbot/services/setup_ai_advisor.py:406` *(default)* |
 | `PARAGON_API_BASE_URL` | config, services | `disbot/config.py:186` *(default)*<br>`disbot/services/paragon_service.py:49` *(default)* |
 | `PARAGON_API_KEY` | config, services | `disbot/config.py:190` *(default)*<br>`disbot/services/paragon_service.py:50` *(default)* |
+| `RAILWAY_GIT_COMMIT_SHA` | core | `disbot/core/runtime/command_manifest.py:243` *(default)* |
 | `SETUP_ADVISOR_OPENAI_MODEL` | config, services | `disbot/config.py:158` *(default)*<br>`disbot/services/setup_ai_advisor.py:173` *(default)* |
 | `SETUP_ADVISOR_PROVIDER` | config, core, services | `disbot/config.py:157` *(default)*<br>`disbot/core/runtime/ai/feature_flags.py:129` *(default)*<br>`disbot/services/setup_ai_advisor.py:393` *(default)* |
 | `STRICT_DISABLED` | bot1 | `disbot/bot1.py:172` *(default)* |

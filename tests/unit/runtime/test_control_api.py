@@ -151,6 +151,8 @@ def test_routes_registered_with_token(monkeypatch):
     # Phase E read endpoints register alongside the writes (still token-gated).
     assert "/control/settings/current" in paths
     assert "/control/help/catalogue" in paths
+    # Manifest spine PR3 — the typed command/panel manifests (token-only).
+    assert "/control/manifest" in paths
     # Mutation endpoints register alongside the reads (still token-gated).
     assert "/control/settings" in paths
     assert "/control/help/overlay" in paths
@@ -221,6 +223,58 @@ async def test_ping_requires_auth(monkeypatch):
     )
     assert resp.status == 200
     assert json.loads(resp.text)["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_manifest_handler_requires_auth(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    resp = await control_api._manifest_handler(_request(headers={}))
+    assert resp.status == 401
+
+
+@pytest.mark.asyncio
+async def test_manifest_handler_serves_command_and_panel_manifests(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    from core.runtime import command_manifest, panel_manifest
+
+    # Stub the cached manifests so the handler serves them without a live bot.
+    fake_cmd = MagicMock()
+    fake_cmd.to_dict.return_value = {"version": 1, "commands": [], "findings": []}
+    fake_panel = MagicMock()
+    fake_panel.to_dict.return_value = {"version": 1, "panels": []}
+    monkeypatch.setattr(command_manifest, "get_cached_manifest", lambda: fake_cmd)
+    monkeypatch.setattr(panel_manifest, "get_cached_manifest", lambda: fake_panel)
+
+    resp = await control_api._manifest_handler(_request(headers=_auth(), bot=_bot()))
+    assert resp.status == 200
+    body = json.loads(resp.text)
+    assert body["ok"] is True
+    assert body["commands"]["version"] == 1
+    assert body["panels"]["version"] == 1
+    assert body["commands"]["findings"] == []
+
+
+@pytest.mark.asyncio
+async def test_manifest_handler_builds_on_demand_when_uncached(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    from core.runtime import command_manifest, panel_manifest
+
+    built_cmd = MagicMock()
+    built_cmd.to_dict.return_value = {"version": 1, "commands": [], "findings": []}
+    built_panel = MagicMock()
+    built_panel.to_dict.return_value = {"version": 1, "panels": []}
+    monkeypatch.setattr(command_manifest, "get_cached_manifest", lambda: None)
+    monkeypatch.setattr(panel_manifest, "get_cached_manifest", lambda: None)
+    monkeypatch.setattr(
+        command_manifest,
+        "build_and_cache_from_bot",
+        lambda bot: built_cmd,
+    )
+    monkeypatch.setattr(panel_manifest, "build_and_cache", lambda: built_panel)
+
+    resp = await control_api._manifest_handler(_request(headers=_auth(), bot=_bot()))
+    assert resp.status == 200
+    assert json.loads(resp.text)["commands"]["version"] == 1
 
 
 @pytest.mark.asyncio

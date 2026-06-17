@@ -67,6 +67,20 @@ async def get_authority(guild_id: int, user_id: int) -> dict[str, Any] | None:
         return None
 
 
+async def get_manifest() -> dict[str, Any] | None:
+    """Fetch the bot's typed command + panel manifests (the live truth).
+
+    Returns the ``/control/manifest`` payload (``commands`` / ``panels`` /
+    reconciliation ``findings``), or ``None`` when the client is dormant or the
+    bot is unreachable — the decoupled site falls back to the committed
+    ``dashboard.json`` AST view. Token-only (global data, no guild/user).
+    """
+    status, body = await get("/control/manifest")
+    if status != 200:
+        return None
+    return body
+
+
 async def get(
     path: str,
     params: dict[str, Any] | None = None,

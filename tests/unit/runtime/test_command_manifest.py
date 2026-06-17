@@ -188,6 +188,66 @@ def test_to_dict_schema_shape():
 
 
 # ---------------------------------------------------------------------------
+# Deploy-SHA freshness badge (manifest spine PR3)
+# ---------------------------------------------------------------------------
+
+
+def test_deploy_build_sha_reads_railway_env(monkeypatch):
+    monkeypatch.delenv("RAILWAY_GIT_COMMIT_SHA", raising=False)
+    assert cm.deploy_build_sha() == ""
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "abcdef0123456789deadbeef")
+    assert cm.deploy_build_sha() == "abcdef012345"  # short, 12 chars
+
+
+def test_build_and_cache_from_bot_defaults_bot_build_to_deploy_sha(monkeypatch):
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "feedface0000")
+    ledger = _ledger((_e("warn", "ModCog", "moderation"),))
+    monkeypatch.setattr(
+        "core.runtime.command_surface_ledger.get_cached_ledger",
+        lambda: ledger,
+    )
+    manifest = cm.build_and_cache_from_bot(object())
+    assert manifest.bot_build == "feedface0000"
+
+
+def test_build_and_cache_from_bot_explicit_bot_build_overrides(monkeypatch):
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "feedface0000")
+    ledger = _ledger((_e("warn", "ModCog", "moderation"),))
+    monkeypatch.setattr(
+        "core.runtime.command_surface_ledger.get_cached_ledger",
+        lambda: ledger,
+    )
+    manifest = cm.build_and_cache_from_bot(object(), bot_build="")
+    assert manifest.bot_build == ""
+
+
+# ---------------------------------------------------------------------------
+# Reconciliation findings in the envelope (manifest spine PR3)
+# ---------------------------------------------------------------------------
+
+
+def test_to_dict_findings_empty_when_clean():
+    # A panel_action command WITH its subsystem's panel joined is clean.
+    ledger = _ledger((_e("warn", "ModCog", "moderation", classification="panel_action"),))
+    manifest = cm.build_command_manifest(
+        ledger,
+        panels_by_subsystem={"moderation": ("moderation",)},
+    )
+    assert manifest.findings() == []
+    assert manifest.to_dict()["findings"] == []
+
+
+def test_to_dict_findings_report_dangling_panel_action():
+    # A panel_action command whose subsystem has no panel is flagged.
+    ledger = _ledger((_e("orphan", "MiscCog", "ghost", classification="panel_action"),))
+    manifest = cm.build_command_manifest(ledger)  # no panel join
+    findings = manifest.to_dict()["findings"]
+    assert len(findings) == 1
+    assert findings[0]["kind"] == "dangling_panel_action"
+    assert findings[0]["command"] == "orphan"
+
+
+# ---------------------------------------------------------------------------
 # Cache round-trip + diagnostics
 # ---------------------------------------------------------------------------
 
@@ -222,3 +282,6 @@ def test_diagnostics_snapshot_built():
     assert snap["command_count"] == 2
     assert snap["by_kind"] == {"prefix": 1, "slash": 1}
     assert snap["version"] == cm.MANIFEST_VERSION
+    # Reconciliation surfaced (PR3): no panel_action commands → clean.
+    assert snap["finding_count"] == 0
+    assert snap["findings"] == []
