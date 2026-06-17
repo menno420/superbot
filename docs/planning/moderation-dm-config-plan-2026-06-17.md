@@ -1,6 +1,15 @@
 # Plan — server-owner-configurable moderation DMs (per-action)
 
-> **Status:** `plan` — executable implementation plan, owner-aligned (anchored on the **Q-0147**
+> **Status:** `historical` — **SHIPPED** in PR #1023 (2026-06-17): per-action DM allow-list (`dm_actions`) gating the
+> existing `dm_on_action` master switch on the `moderation_service` seam. **One deliberate deviation
+> from §1.1 below:** the default is **all four** notify-eligible actions (`warn,timeout,kick,ban`),
+> not `warn,timeout`. Reason: today master-on DMs all four (two service tests pin it), so a
+> `warn,timeout` default would *silently stop* kick/ban DMs for guilds that already enabled the
+> switch — a behaviour change for configured guilds. All-four preserves today's behaviour exactly and
+> lets an owner *narrow* the list. `auto_delete` is excluded from the vocabulary (it never reaches
+> `_notify_target`, so the owner's "auto-delete → DM no" is structural).
+
+> **Status (original):** `plan` — executable implementation plan, owner-aligned (anchored on the **Q-0147**
 > standing DM policy). Promoted from the idea
 > [`ideas/server-owner-configurable-moderation-dms-2026-06-16.md`](../ideas/server-owner-configurable-moderation-dms-2026-06-16.md)
 > by the eleventh Q-0107 reconciliation pass (band-#1020, 2026-06-17) per the Q-0144 idea→plan step:

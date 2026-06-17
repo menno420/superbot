@@ -367,6 +367,56 @@ async def test_no_dm_when_dm_on_action_disabled():
 
 
 @pytest.mark.asyncio
+async def test_no_dm_when_action_excluded_from_dm_actions(_default_policy):
+    """Master on but the action is not in the per-action allow-list ⇒ no DM."""
+    # warn excluded — only timeout/kick/ban would DM under this policy.
+    _default_policy.return_value = ModerationPolicy(
+        dm_on_action=True,
+        dm_actions="timeout,kick,ban",
+        warn_escalation_action="none",
+    )
+    member = _make_member()
+    member.send = AsyncMock()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.send.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_dm_sent_when_action_in_dm_actions(_default_policy):
+    """Master on and the action is in the per-action allow-list ⇒ DM sent."""
+    _default_policy.return_value = ModerationPolicy(
+        dm_on_action=True,
+        dm_actions="warn",
+        warn_escalation_action="none",
+    )
+    member = _make_member()
+    member.guild.name = "G"
+    member.send = AsyncMock()
+    with (
+        patch(
+            "services.moderation_service.db.add_warning",
+            new_callable=AsyncMock,
+            return_value=1,
+        ),
+        patch("services.moderation_service.db.log_mod_action", new_callable=AsyncMock),
+        patch("services.moderation_service.bus.emit", new_callable=AsyncMock),
+    ):
+        await moderation_service.warn(member, reason="spam", actor_id=1)
+
+    member.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_dm_failure_does_not_block_action(_default_policy):
     """A closed-DM member must not stop the warning being recorded."""
     # Escalation off so the single warn is the only recorded action here.
