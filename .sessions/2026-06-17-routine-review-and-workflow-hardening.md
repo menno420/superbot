@@ -1,6 +1,6 @@
 # 2026-06-17 — Routine review + autonomous-workflow hardening
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > Owner-live session. Reviewing the **first full unattended-routine day** (~20h, ~#1017–#1025
 > + the band-#1020 reconciliation pass), then routing the owner's observations to their durable
 > homes and applying the contained workflow fixes he steered in-session (`AskUserQuestion`,
@@ -41,7 +41,7 @@ lane is now fully consumed). "Running out of plans" is real and has a precise, f
 
 ## 📤 Run report
 
-- **Did:** reviewed the first unattended-routine day + routed the owner's observations to durable homes + applied the steered workflow fixes (planning depth · drift-on-sight · routine labels · updates freshness) · **Outcome:** shipped (merge held born-red pending owner review)
+- **Did:** reviewed the first unattended-routine day + routed the owner's observations to durable homes + applied the steered workflow fixes (planning depth · drift-on-sight · routine labels · updates freshness) · **Outcome:** shipped + merging (owner approved the merge + the new Hermes format, 2026-06-17)
 - **Shipped:** #1026 — this PR (4 applied fixes + Q-0164…Q-0171 + 4 idea / 2 plan / 1 proposal docs)
 - **Run type:** manual (owner-live)
 - **⚑ Owner decisions needed:** react to the Hermes house-style sample (Q-0168) · pick the next agent-tooling builds (Q-0170) · review-inbox phasing (Q-0169) is captured · Codex-review (Q-0171) needs research before a decision
@@ -71,15 +71,17 @@ self-auditing loop worked: the predecessor surfaced the symptom; this session fo
 
 ## Doc audit (Q-0104)
 
-`check_docs --strict` green · `check_current_state_ledger --strict` green · `check_session_log`
-green · the four new ideas indexed in `ideas/README.md` · Q-0164…Q-0171 recorded in the router with
-provenance · no new runtime bugs (BUG-0009 slice 3 / BUG-0011 stay OPEN — untouched).
+`check_docs --strict` green · `check_session_log` green · the four new ideas indexed in
+`ideas/README.md` · Q-0164…Q-0171 recorded in the router with provenance · no new runtime bugs
+(BUG-0009 slice 3 / BUG-0011 stay OPEN — untouched). **Ledger:** after merging origin/main, the guard
+flags **#1027** as benign newest-merge lag (the Q-0166 carve-out — the next reconciliation records it;
+not chased into this unrelated PR).
 
 ## 📊 Telemetry
 
 | Metric | Value |
 |---|---|
-| PRs merged this session | 0 (held born-red for owner review) |
+| PRs merged this session | 1 (#1026, on owner approval) |
 | CI-red rounds | 1 (the intended born-red gate; clears on flip-to-complete) |
 | Repo-rule trips | 2 (skill-builder picked up the proposal draft · invalid `proposal` badge — both fixed) |
 | New ideas contributed | 1 (Q-0089, above) + 4 captured from the owner brain-dump |
