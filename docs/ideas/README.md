@@ -161,13 +161,25 @@ Current broad captures:
   known sibling gap — `SUBSYSTEMS.entry_points` → real command, which `test_entrypoints.py` documents
   as unchecked. One "what commands exist" source for every "this declaration must resolve" invariant.
   → relates `tests/unit/registry/test_entrypoints.py` · `utils/subsystem_registry.py` · `utils/synonyms.py`.
+- [`ledger-bookkeeping-tally-soft-lint-2026-06-17.md`](./ledger-bookkeeping-tally-soft-lint-2026-06-17.md) —
+  **workflow / tooling (2026-06-17, band-#1020 Q-0107 pass):** the `current-state.md` "Older merges →
+  archive" pointer had accreted a ~2,000-word per-session running tally that duplicated the archive
+  file's own record — pruned this pass. A disposable soft `check_docs` lint could flag a
+  pointer/bookkeeping line that crosses a word budget ("this is a running tally — point at the
+  authoritative record instead"). The reusable principle: *don't hand-maintain a tally of a fact that
+  already has an authoritative record.* → relates `scripts/check_docs.py` · `docs/current-state.md`.
 - [`server-owner-configurable-moderation-dms-2026-06-16.md`](./server-owner-configurable-moderation-dms-2026-06-16.md) —
   **owner policy → feature (2026-06-16, from the Q-0147 decision):** the owner's standing DM rule is
   *profile/onboarding DMs are opt-in and never on join; the only non-opt-in DMs are moderation/warning
   DMs, and only when the server owner enables them with per-action config.* The opt-in half is
-  myprofile PR C; this captures the second half — a `moderation_dm_enabled` master + per-action map
+  myprofile PR C; this captures the second half — a master toggle + per-action map
   (warn/timeout/kick/…) on the `!settings` → Moderation surface, riding the audited `moderation_service`
   seam (off by default, fail-open). → relates `services/moderation_service.py` · the settings surface.
+  **✅ PROMOTED TO A PLAN (2026-06-17, band-#1020 Q-0107 pass, Q-0144 idea→plan):**
+  [`planning/moderation-dm-config-plan-2026-06-17.md`](../planning/moderation-dm-config-plan-2026-06-17.md)
+  — scouting the seam found the DM machinery already exists (`_notify_target` + `ModerationPolicy.dm_on_action`
+  + `render_dm_message`), so the plan *extends* it (master `dm_on_action` + a `dm_actions` csv mirroring
+  `public_log_actions`), not a new subsystem. Turn-key, one PR, no migration. **This is the next ungated ▶ slice.**
 - [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
   `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an
