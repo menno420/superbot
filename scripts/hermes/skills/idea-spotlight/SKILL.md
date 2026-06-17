@@ -34,30 +34,33 @@ GOAL: present ONE backlog idea with the thinking started, so the owner can decid
    That is enough to write the card. Do NOT open the relates files, roadmap, or router — ground the
    pros/cons in what these two outputs say; never invent a capability the repo doesn't have.
 
-3. DELIVER the spotlight card in this exact shape (no more commands):
+3. DELIVER the spotlight card in the HOUSE STYLE (docs/operations/hermes-skills/_house-style.md —
+   bottom line first, plain words, grouped, one screen; no more commands):
 
 ---
-## 💡 Idea spotlight — [today's date]
-**[idea title]**  ([N] of [M] active · `docs/ideas/<file>`)
+💡 Today's idea — [today's date]
+[idea title]  ([N] of [M] in the backlog)
 
-**In a line:** [what it is, one sentence]
-**Why it matters:** [the problem it solves / value, one or two lines]
+Bottom line: [what it is in one plain sentence — and is it a quick win, a bigger build, or just
+something to mull?].
 
-**Pros**
-- [2–4 concrete upsides — be specific, grounded in the repo]
+Why it's worth it
+   [the problem it solves / the value, one or two plain lines]
 
-**Cons / risks**
-- [2–4 honest downsides: cost, scope, privacy, maintenance, who-owns-it]
+👍 Upsides
+   • [2–4 concrete upsides, grounded in the repo]
 
-**Options & expansions**
-- [2–4 ways to do it / smaller-first slices / bigger versions — "wherever possible"; if there is
-  only one sensible shape, say so rather than padding]
+👎 Downsides / risks
+   • [2–4 honest ones: cost, scope, privacy, upkeep, who owns it]
 
-**Suggested next step:** [the single most useful move — e.g. "ship the small slice", "needs a
-plan", "needs an owner decision (which …?)", "drop it"] · **lane:** [quick-win / plan / discuss / drop]
+🔀 Ways to do it
+   • [2–4 options / smaller-first slices / bigger versions — or say "one sensible shape" if true]
 
-**↩ Report back when you've thought about it:** reply with build it · roadmap (Now/Next/Later) ·
-discuss · drop · or an expansion — I'll route it.
+👉 Suggested next step: [the single most useful move, in plain words — "ship the small version",
+"needs a plan first", "needs your call on [the question]", or "probably drop it"].
+
+↩ When you've mulled it: reply build it · put on the roadmap · let's discuss · drop it · or an
+expansion — I'll file it where it goes.
 ---
 
 RULES:

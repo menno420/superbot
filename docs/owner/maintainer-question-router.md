@@ -6212,9 +6212,9 @@ stays the cadence backstop.
 **Home:** `.github/workflows/dashboard-data-refresh.yml` · `scripts/export_dashboard_data.py` ·
 this Q-block. Generalization: [`generated-artifact-freshness-umbrella-2026-06-17.md`](../ideas/generated-artifact-freshness-umbrella-2026-06-17.md).
 
-### Q-0168 — Hermes output → a shared plain-language house style (proposal-first, then roll out) (2026-06-17)
+### Q-0168 — Hermes output → a shared plain-language house style (approved + rolled out) (2026-06-17)
 
-> **DIRECTED + APPROVED — owner-in-session, 2026-06-17; sample reviewed and approved, rollout pending.** Owner: Hermes
+> **DIRECTED + APPROVED + ROLLED OUT — owner-in-session, 2026-06-17.** Owner: Hermes
 > "doesn't feel like part of the system yet," its output is "hard to read, filled with stuff that is
 > unnecessary or hard to understand," *"the biggest problem right now is the message format"* — wants
 > plain language, better grouping (some jargon fine "as long as I can understand most of it"). He
@@ -6222,15 +6222,16 @@ this Q-block. Generalization: [`generated-artifact-freshness-umbrella-2026-06-17
 
 **Decision/state:** Root cause = **no shared house style** (each skill defines its output shape
 inline, so reports read differently and internal jargon leaks). A **sample** (the morning briefing,
-before→after, + 5 house-style rules) is drafted at
-[`hermes-skills/_house-style-proposal.md`](../operations/hermes-skills/_house-style-proposal.md) for
-the owner to react to. **APPROVED 2026-06-17** — the owner compared the before→after against that
-morning's live briefing and confirmed the new format is "much cleaner and easy to read with clear
-sections," requesting no changes (so the sample sets the style as drafted). **Next: a follow-up PR**
-applies the style to every `hermes-skills/*.md` output block + rebuilds
-(`scripts/hermes/build_skills.py`) + redeploys.
+before→after, + 5 house-style rules) was drafted, **APPROVED 2026-06-17** (the owner compared it
+against that morning's live briefing — "much cleaner and easy to read with clear sections," no
+changes), then **ROLLED OUT same day**: the 5 rules are now the canonical
+[`hermes-skills/_house-style.md`](../operations/hermes-skills/_house-style.md), and the owner-facing
+output skills (morning-briefing · repo-health · open-questions · idea-spotlight · review-merge) were
+rewritten to cite it (bottom-line-first, plain words, grouped, one screen) + rebuilt
+(`scripts/hermes/build_skills.py`). **Owner manual step:** redeploy on the VPS
+(`bash scripts/hermes/install-skills.sh`).
 
-**Home:** [`hermes-skills/_house-style-proposal.md`](../operations/hermes-skills/_house-style-proposal.md) ·
+**Home:** [`hermes-skills/_house-style.md`](../operations/hermes-skills/_house-style.md) ·
 `docs/operations/hermes-skills/*.md` · this Q-block.
 
 ### Q-0169 — Owner review inbox / communication website: capture-only now; dashboard board, issue-backed (2026-06-17)
