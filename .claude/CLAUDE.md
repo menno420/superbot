@@ -71,12 +71,21 @@ The short version that governs how you work:
   already spotted** (owner directive Q-0166, 2026-06-17). The one exception is *benign
   newest-merge lag* (the 1–2 merges newer than the `Last reconciliation pass: #N` marker, which
   the next pass records); drift older than the marker is a bug → fix it now, don't defer it.
-- **A new idea is not a new priority.** Idea order ≠ implementation order: an idea
-  raised mid-stream is *captured and classified* (`docs/ideas/`), not promoted to active
-  work — unless the maintainer says so or it exposes a blocker, safety, or architectural
-  conflict. The maintainer thinks associatively on purpose; classify, route, then build.
-  How work flows across the AI projects (pipeline, handoffs, idea states) is
-  `docs/owner/ai-project-workflow.md`; the maintainer's working style is
+- **A new idea doesn't derail the *current* task — but it can become a plan, and ship,
+  anytime without approval (owner directive Q-0172, 2026-06-17).** Idea order ≠ implementation
+  order: an idea raised mid-stream is still *captured and classified* into `docs/ideas/` first
+  (that discipline is what keeps the backlog reviewable and filterable) and doesn't yank you off
+  the task in hand. **But the old approval gate is gone:** any agent may promote an idea → a
+  `docs/planning/` plan → an implementation **at any time, without waiting for owner approval** —
+  the maintainer's standing instruction is that *ideas exist to be built*, and the work is
+  reversible if it turns out wrong. The single requirement is **accountability — flag every
+  self-initiated promotion on the `⚑ Self-initiated:` line of the session-log run report**
+  (`.sessions/README.md`) so Hermes, another chat, or the owner on the website can see, filter,
+  and review what was built unprompted. **Safety brakes are unchanged** — genuinely irreversible /
+  external / production work still asks first (that is a *safety* brake, not the idea gate; the
+  phase gate `scripts/check_phase_gate.py` is now **advisory-only**, a "bugs-first season"
+  readout, not a block). The maintainer thinks associatively on purpose; classify, route, **then
+  build freely**. Pipeline + idea states: `docs/owner/ai-project-workflow.md`; working style:
   `docs/owner/maintainer-working-profile.md`.
 
 ## Read first — agent orientation
@@ -235,28 +244,16 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   2026-06-12; cadence raised 10 → 20 same day, then 20 → 30 on 2026-06-14 per Q-0134 — at burst
   velocity a 20-band crossed in under a day and fired the docs pass several times daily).** PR
   numbers crossing a **multiple of 30** (#30, #60, #90, …) are reserved for a
-  **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things:
-  **(1) reconcile** — review the living ledger, active lanes, open Q-blocks, idea backlog, and
-  roadmap; **disposition open PRs** (via the GitHub MCP — `list_pull_requests` + each one's
-  CI/mergeable state: close redundant/stale ones, fix or flag a red-CI one) — the gap that left
-  #766 (red CI) and #771 (redundant + conflicted) rotting unnoticed across sessions *and* prior
-  reconciliation passes (owner directive Q-0125, 2026-06-13); prune/archive stale docs; restate
-  the current priorities; and **(2) plan the next *full band* — enough genuine buildable work to
-  reach the NEXT pass (depth ≥ the 30-PR cadence; owner directive Q-0164, 2026-06-17, superseding
-  the earlier "~9 PRs" horizon — a leftover from the every-10-PR cadence that drained the buildable
-  queue ~20 PRs before each refill and is the root cause of the "running out of plans" droughts)**.
-  **Modular but not over-segmented**: each planned PR ships a *reasonable, meaningful change* (a
-  real slice), **not** a trivial fragment. Hit the depth as **larger multi-PR initiatives OR more
-  slices, whichever keeps each a real change** — never pad to 30 with filler. **If the idea backlog
-  genuinely cannot fill the band, that is the signal, not a failure**: promote what you honestly can
-  into plans, then FLAG it — a loud `⚠️ PLAN BACKLOG THIN` line in `current-state.md` ▶ Next action
-  + the run-report ⚑ Owner-decisions line — so the owner drops ideas or a dedicated planning session
-  runs, instead of dispatch inventing low-value work (Q-0164). `scripts/check_reconciliation_due.py`
-  flags when a pass is due (against the
-  `Last reconciliation pass:** PR #N` marker in `current-state.md`; surfaced by `/session-close`).
-  The pass is now **fired automatically** by `.github/workflows/reconciliation-trigger.yml` (opens
-  a `reconcile`-labeled issue at the boundary → the **superbot docs reconciliation** routine runs
-  it — see `docs/operations/autonomous-routines.md`); reset the marker to the latest PR after the pass.
+  **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things — **(1) reconcile** the ledger / docs / open PRs (disposition open PRs, Q-0125) and
+  **(2) plan the next *full band*** (enough buildable work to reach the next pass, depth ≥ the cadence;
+  raise a loud `⚠️ PLAN BACKLOG THIN` flag in `current-state.md` ▶ Next action when the idea backlog
+  can't fill it, Q-0164). **The full step-by-step procedure** (reconcile · disposition open PRs · plan
+  the band · reset the `Last reconciliation pass` marker) **lives in the routine's saved prompt,
+  `docs/operations/autonomous-routines.md`** — *thin-pointer convention (the procedures-to-skills plan):
+  the rule stays here, the runbook lives there.* It is **run automatically by the docs-reconciliation
+  routine** — `scripts/check_reconciliation_due.py` flags when due, and
+  `.github/workflows/reconciliation-trigger.yml` opens the `reconcile` issue at the boundary that fires
+  it.
   **A manually-started session does NOT run the reconciliation pass — the routines always do it
   automatically; only run it in a manual session if the owner explicitly asks (owner directive
   Q-0124, 2026-06-13).** The SessionStart `Recon: DUE` banner is a signal for the routine, not an

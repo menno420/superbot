@@ -1,9 +1,26 @@
 # Codex automated PR review — a second independent reviewer on every PR
 
-> **Status:** `ideas` — capture (owner-mentioned 2026-06-17: *"a function on ChatGPT that lets codex
-> automatically review any PRs … not entirely sure how that works"*). Decision provenance:
-> **Q-0171**. Research-stage — confirm the exact mechanism before any build. Source + binding
-> contracts win.
+> **Status:** `ideas` — **NOW LIVE (owner enabled it 2026-06-17).** Decision provenance: **Q-0171**.
+> The owner turned on the Codex GitHub connector the same day; it is already auto-reacting on PRs
+> (validated on **#1026** — `chatgpt-codex-connector[bot]` left a 👍 on the PR body). The research
+> question is no longer "does this exist" but "how do we make its output *actionable* in the loop"
+> (see the LIVE update below). Source + binding contracts win.
+
+## ✅ LIVE update (2026-06-17)
+
+Codex is **enabled and working** on `menno420/superbot`. What we observed + what it means for us:
+
+- **On #1026 it left a 👍 reaction, no review body.** That is an "LGTM, no objections" signal. A bare
+  *reaction* lives on a separate GitHub API surface — `get_reviews` / `get_comments` return empty for
+  it, so an agent **cannot read the thumbs-up itself**. Nothing to act on when Codex only reacts.
+- **A substantive Codex *review* or *review comment* IS fully readable** by an agent (`get_reviews`,
+  `get_review_comments`, `get_comments`) — and, crucially, the **PR-activity subscription**
+  (`subscribe_pr_activity`) **delivers Codex's review comments into a watching session as events**, so
+  a watching agent can read and act on them automatically. That is the "catch errors" win: when Codex
+  *finds* something, the loop already has a channel to consume and fix it.
+- **To make it maximally useful:** check the Codex connector settings for a mode that **posts a review
+  summary comment every time** (not just a reaction). If it only reacts when it has no objection, its
+  reasoning is invisible; a per-PR review comment makes every verdict readable by the loop.
 
 ## The idea
 

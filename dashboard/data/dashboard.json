@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-17T18:17:36Z",
+    "generated_at": "2026-06-17T22:14:12Z",
     "build": {
-      "commit": "4602c70e",
-      "subject": "chore(dashboard): warn-only structural-drift reporter + regenerate stale dashboard.json",
-      "committed_at": "2026-06-17T18:16:12Z",
-      "branch": "claude/magical-rubin-jnpnuw"
+      "commit": "5a5b5b40",
+      "subject": "refactor(docs): batch 1 — slim reconciliation bullet to a thin pointer",
+      "committed_at": "2026-06-17T21:36:23Z",
+      "branch": "claude/skills-batch1-reconciliation"
     },
     "counts": {
       "functions": 33,
-      "ideas": 82,
+      "ideas": 86,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
@@ -892,9 +892,23 @@
   ],
   "ideas": [
     {
+      "file": "agent-tooling-automation-shortlist-2026-06-17.md",
+      "title": "Agent tooling + automation shortlist — Claude skills, scripts, a repo-native discovery aid",
+      "status": "ideas",
+      "date": "2026-06-17",
+      "summary": "The owner is right that we've under-used Claude Code's automation surface. We *do* have a few project"
+    },
+    {
+      "file": "codex-automated-pr-review-2026-06-17.md",
+      "title": "Codex automated PR review — a second independent reviewer on every PR",
+      "status": "ideas",
+      "date": "2026-06-17",
+      "summary": "Codex is **enabled and working** on `menno420/superbot`. What we observed + what it means for us:"
+    },
+    {
       "file": "generated-artifact-freshness-umbrella-2026-06-17.md",
       "title": "Generated-artifact freshness umbrella — one soft-drift reporter for every committed generated file",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-17",
       "summary": "PR #1025 added a **warn-only structural-drift reporter** for one committed generated artifact"
     },
@@ -904,6 +918,20 @@
       "status": "ideas",
       "date": "2026-06-17",
       "summary": "The `docs/current-state.md` \"Older merges → archive\" pointer line had silently accreted a ~2,000-word"
+    },
+    {
+      "file": "owner-review-inbox-2026-06-17.md",
+      "title": "Owner review inbox — a channel to post ideas/reviews that sessions read and resolve",
+      "status": "ideas",
+      "date": "2026-06-17",
+      "summary": "The owner's intended role is **ideas, bug reports, and function/cog reviews** — *not* planning. But"
+    },
+    {
+      "file": "repo-consistency-linter-2026-06-17.md",
+      "title": "Repo consistency linter — \"CI for inconsistencies\" (UX + pattern drift, not just layers)",
+      "status": "ideas",
+      "date": "2026-06-17",
+      "summary": "The owner wants *\"something like CI but specifically to find inconsistencies\"* — and notes we have"
     },
     {
       "file": "architecture-atlas-and-structure-review-2026-06-16.md",
@@ -1560,364 +1588,484 @@
   ],
   "updates": [
     {
+      "file": "2026-06-17-routine-review-and-workflow-hardening.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Routine review + autonomous-workflow hardening",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-17-reconcile-band1020.md",
       "date": "2026-06-17",
       "title": "Session — 2026-06-17 · band-#1020 Q-0107 docs reconciliation",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-17-procedures-to-skills-plan.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Procedures→skills conversion plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-paragon-ability-roster-floor.md",
       "date": "2026-06-17",
       "title": "Session — 2026-06-17 · paragon-ability + boss tier-HP deterministic floors (BUG-0009 §7.5/§7.6)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-night-queue-relic-roster.md",
       "date": "2026-06-17",
       "title": "Session — night-queue slot 3: relic category/effect roster floor",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-night-queue-power-cost-comparison.md",
       "date": "2026-06-17",
       "title": "Session — night-queue slot 2: power (activated-ability) cost comparison floor",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-night-queue-mk-category-roster.md",
       "date": "2026-06-17",
       "title": "Session — night-queue buffer slices + slot-4 reframe (three §7.6 floor builders)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-night-queue-hero-ability-roster.md",
       "date": "2026-06-17",
       "title": "Session — night-queue slot 5: hero ability roster floor (slot 4 reframed)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-moderation-dm-per-action.md",
       "date": "2026-06-17",
       "title": "Session — per-action moderation DMs (Q-0147 standing DM policy)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-manifest-spine-pr3-control-read-reconcile.md",
       "date": "2026-06-17",
       "title": "Manifest spine PR3 — control-API manifest read + cross-manifest reconciliation",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-manifest-spine-pr2-panel-registry.md",
       "date": "2026-06-17",
       "title": "2026-06-17 — Manifest spine PR2: panel registry + PanelManifest",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-17-idea-gate-open.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Open the idea→plan gate (Q-0172) + skills batch-1 slim",
+      "status": "in-progress",
+      "run_type": "manual",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-global-settings-tier.md",
       "date": "2026-06-17",
       "title": "Session — global settings tier (per-guild → global → default)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-17-generated-artifact-freshness-umbrella.md",
+      "date": "2026-06-17",
+      "title": "Session — generated-artifact freshness umbrella (one drift reporter for every committed generated file)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-dashboard-vision-review.md",
       "date": "2026-06-17",
       "title": "Session — review the dashboard vision plan + control-panel session close",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-dashboard-vision-reconcile.md",
       "date": "2026-06-17",
       "title": "Session — dashboard vision-roadmap reconcile (+ Phase C parallel-collision close-out)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-dashboard-r3-hardening.md",
       "date": "2026-06-17",
       "title": "Session — dashboard R3: live-surface hardening (rate-limiting + CSRF)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-dashboard-phase-e-read-endpoints.md",
       "date": "2026-06-17",
       "title": "Session — dashboard Phase E: control-API read endpoints (stop the editors writing blind)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-dashboard-phase-c-read-workspace.md",
       "date": "2026-06-17",
       "title": "Session — dashboard Phase C: the read workspace (personal overview + server health + authority preview)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-dashboard-json-structural-drift-reporter.md",
       "date": "2026-06-17",
       "title": "dashboard.json structural-drift reporter + freshness catch-up",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-command-manifest-spine-slice1.md",
       "date": "2026-06-17",
       "title": "Session — manifest spine, slice 1 (typed CommandManifest over the ledger)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-17-btd6-roster-floor-bosses-maps.md",
       "date": "2026-06-17",
       "title": "2026-06-17 — BTD6 answerability floor: boss roster + map filter + boss immunity",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-video-frame-extraction-tooling.md",
       "date": "2026-06-16",
       "title": "Session — video frame-extraction tooling (so future sessions can see uploads immediately)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-thin-architecture-atlas.md",
       "date": "2026-06-16",
       "title": "Session — thin architecture atlas (PR 2) + role in context_map",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-skills-rate-limit-rework.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — rate-limit rework: lean morning-briefing + idea-spotlight",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-settings-readmodel-and-vision.md",
       "date": "2026-06-16",
       "title": "Session — `/settings` typed read-model (SettingSpec) + main-website vision",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-runtime-lock-early-release.md",
       "date": "2026-06-16",
       "title": "Session — runtime lock: release early on shutdown (fix ~85s deploy downtime)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-routine-permission-allowlist.md",
       "date": "2026-06-16",
       "title": "Session — expand the routine permission allow-list (owner-directed)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-reconcile-band990.md",
       "date": "2026-06-16",
       "title": "Session — 2026-06-16 · tenth Q-0107 docs reconciliation (band-#990)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-railway-logs-retry.md",
       "date": "2026-06-16",
       "title": "Session — railway_logs.py: retry/backoff on transient 5xx",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-pr-mergeability-keepers.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — PR mergeability keepers: auto-update behind + red-on-conflict",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-night-queue.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — Night work queue for the dispatch routine",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-myprofile-pr-b-writes.md",
       "date": "2026-06-16",
       "title": "Session — myprofile PR B: self-service writes (first UI consumer of ParticipationMutationPipeline)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-myprofile-card-pra.md",
       "date": "2026-06-16",
       "title": "Session — myprofile PR A: read-only profile card (`/myprofile`)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-multiuser-control-panel-design.md",
       "date": "2026-06-16",
       "title": "Session — Free multi-user control panel: identity & authority design",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-model-tpm-confirmed-result.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — TPM result confirmed (5-mini 500K) + reconcile the compaction guidance",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-model-comparison-gpt5mini.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — gpt-5-mini vs gpt-5.4-mini comparison + apply_context_fixes --set-model fix",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-ledger-reconcile-932-939.md",
       "date": "2026-06-16",
       "title": "Session — ledger reconcile (#932–#936, #939 into current-state)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-journal-session-lessons.md",
       "date": "2026-06-16",
       "title": "Session — journal: durable lessons from the security-tiers session",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-install-skills-staleness-guard.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — install-skills.sh staleness guard (stale-skill root cause)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-idea-platform-group-decompose.md",
       "date": "2026-06-16",
       "title": "Session — capture the diagnostic_cog platform-group decomposition idea",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-idea-backlog-hygiene.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — idea-backlog hygiene (tie off the #995 deferrals) + validate the union fix",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-hook-cwd-robust.md",
       "date": "2026-06-16",
       "title": "Session — make the settings.json hooks cwd-robust (Q-0150)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-hermes-tpm-rate-limit-docs.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — capture the Hermes TPM rate-limit finding (docs/script corrections)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-hermes-ops-docs-honcho.md",
       "date": "2026-06-16",
       "title": "Session — Hermes ops docs: lean-filter how-to · Honcho eval · open-steps findability",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-hermes-intake-skill.md",
       "date": "2026-06-16",
       "title": "Session — Hermes `intake` skill: route real-world inputs (bug / idea / request / question)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-hermes-gpt54mini-calibration-findings.md",
       "date": "2026-06-16",
       "title": "Session — gpt-5.4-mini calibration: record outcomes + tune the dispatch skill",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-hermes-efficiency-skills.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — Hermes efficiency: idea-spotlight + briefing + dispatch-resolve + 6h auto-reset",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-health-server-ipv6-bind.md",
       "date": "2026-06-16",
       "title": "Session — health server IPv6 dual-stack bind (Railway private networking)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-gitattributes-union-ledger.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — fix the ledger-file merge-conflict livelock (.gitattributes merge=union)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-fix-deathmatch-challenge-timer.md",
       "date": "2026-06-16",
       "title": "Session — fix BUG-0013: deathmatch 1v1 challenge timer overwrites the live duel",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-fix-coglist-resolution-loop.md",
       "date": "2026-06-16",
       "title": "Session — fix BUG-0014: `!coglist` infinite \"assumed from\" command-resolution loop",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-extension-taxonomy-crosswalk.md",
       "date": "2026-06-16",
       "title": "Session — extension-taxonomy crosswalk (Q-0151c, owner-approved)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-economy-faucet-sink-diagnostic.md",
       "date": "2026-06-16",
       "title": "Session — games-economy faucet/sink diagnostic (`!platform economy`)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-dispatch-never-docs-only.md",
       "date": "2026-06-16",
       "title": "Session — dispatch is never \"docs only\" (Q-0148)",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-diagnostic-platform-group-mixin.md",
       "date": "2026-06-16",
       "title": "Session — extract the `!platform` command group onto a cog mixin",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-developer-dashboard-mvp.md",
       "date": "2026-06-16",
       "title": "Session — Developer dashboard (personal website) — design + read-only MVP",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-dashboard-vision-decisions.md",
       "date": "2026-06-16",
       "title": "Session (cont.) — solidify the dashboard finalized-vision plan with owner panel decisions",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-dashboard-subcog-subsystem-map.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — dashboard: map sub-cogs to their parent subsystem",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-06-16-dashboard-status-page.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — dashboard `/status` page (live status & health surface)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-settings-fix.md",
-      "date": "2026-06-16",
-      "title": "Session — hotfix: /settings 500 (Jinja `domain.keys` → dict-method collision)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-settings-access.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard: settings + access pages, and the live help-editor plan",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-games-settings-design.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard: `/games` showcase + settings-editor design (global + per-server)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-foundation-reconcile.md",
-      "date": "2026-06-16",
-      "title": "Session — dashboard live-editor: foundation-complete reconciliation + orientation fix",
-      "status": "complete"
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     }
   ],
   "env_usage": [

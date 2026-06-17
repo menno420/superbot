@@ -9,8 +9,10 @@
 Companion to [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) (the API/`/fire`
 mechanism + the three gates Q-0113/Q-0114/phase) and `docs/owner/ai-project-workflow.md` §12
 (the loop). Each routine inherits the **same safety model**: `claude/`-branch pushes only, no
-production/Railway/DB access, the phase gate keeps agent-*originated features* out, and the
-kill switch is toggling the routine off in the console.
+production/Railway/DB access, and the kill switch is toggling the routine off in the console.
+(The phase gate no longer "keeps features out" — owner directive **Q-0172** opened
+idea->plan->ship; self-initiated feature work is now *flagged* on the run-report ⚑ Self-initiated
+line for owner review, not gated. The real brakes stay: irreversible/production is still ask-first.)
 
 **These routines ARE the self-improvement loop** (`.claude/CLAUDE.md` Working agreement:
 the real artifact is the *workflow*). So each prompt is written to do more than its narrow
@@ -25,7 +27,7 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot dispatch** — the single execution routine | **console Schedule** (every 2h, `0 */2 * * *`, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice; a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → phase gate (Q-0114) |
+| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
@@ -68,11 +70,13 @@ routine to docs ("docs only" / "no runtime code" / "no feature scope") — that 
 what the dispatch routine may touch, and a genuinely docs-only reconciliation job is the
 *auto-triggered* reconciliation routine's work, not a hand-dispatched build order. If the
 reconciliation routine *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN) and
-the dispatch routine fixes it. Neither routine invents features (the phase gate holds those until
-invent-phase, and these prompts never originate them).
+the dispatch routine fixes it. The reconciliation routine never invents features (docs-only); the
+**dispatch** routine now **may** (Q-0172 opened idea->plan->ship — it captures + plans + builds the
+idea and flags it ⚑ Self-initiated for review). The phase gate no longer holds features until
+invent-phase; it is an advisory priority readout.
 
 **Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
-issue-triggered; dispatch is fired by the console Schedule every 2h) — real Stage-1 autonomy, earned by the
+issue-triggered; dispatch is fired by the console Schedule every ~2–3h) — real Stage-1 autonomy, earned by the
 Stage-0 calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
 Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
 issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.

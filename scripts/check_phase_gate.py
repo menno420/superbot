@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """Emit the autonomous-loop **phase signal**: fix-phase vs. invent-phase.
 
+> **ADVISORY-ONLY as of owner directive Q-0172 (2026-06-17).** The maintainer **opened the
+> idea→plan gate**: any agent may now promote an idea → plan → implementation at any time
+> *without approval*, flagging it on the `⚑ Self-initiated:` run-report line for review (the
+> work is reversible). So this script **no longer blocks** feature origination — it is a
+> *"bugs-first season" readout* that informs **priority** (correctness work still comes first
+> when bugs/Not-Done rows exist), not **permission**. `--require-invent` still reports the same
+> phase/exit code for anyone who wants the signal, but the dispatch routine no longer treats
+> exit 1 as "refuse to build." Bugs-first is still binding via the Working agreement
+> ("Bugs first, durably"); this gate just stopped being a hard fence around self-invented work.
+
 The maintainer's autonomous-improvement loop is explicitly *ordered* (vision:
 ``docs/ideas/autonomous-improvement-loop-vision-2026-06-12.md`` §2): bugs first,
 then UX, then "everything works," and **only then** agent-originated features.
@@ -115,13 +125,16 @@ def evaluate() -> dict[str, object]:
 def _render(result: dict[str, object]) -> str:
     phase = result["phase"]
     banner = (
-        "INVENT-PHASE — correctness is done; agent-originated features may be "
-        "proposed (still subject to the Q-0114 human approve/deny gate)."
+        "INVENT-PHASE — correctness is done; this is a clean season to originate "
+        "features (ADVISORY since Q-0172: feature origination is no longer gated; "
+        "flag self-initiated work on the run-report `⚑ Self-initiated:` line)."
         if phase == "invent"
-        else "FIX-PHASE — bug/UX/docs/correctness work only; agent-originated "
-        "features stay gated until the conditions below clear. (This gate fences "
-        "self-invented *bot features*; read-only Q-0105 dev tooling/checks — "
-        "docs, orientation, drift guards — are free-rein and NOT gated here.)"
+        else "FIX-PHASE (ADVISORY since Q-0172) — bugs/Not-Done rows remain, so "
+        "correctness work still comes FIRST in priority. This is a readout, NOT a "
+        "block: an agent may still originate a feature here (idea→plan→ship is open, "
+        "Q-0172) — just flag it on the run-report `⚑ Self-initiated:` line and don't "
+        "let it crowd out the bugs below. (Read-only Q-0105 dev tooling/checks were "
+        "never gated.)"
     )
     lines = [
         "# Autonomous-loop phase gate",

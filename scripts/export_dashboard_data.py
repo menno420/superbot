@@ -161,6 +161,31 @@ def _run_type(text: str) -> str:
     return ""
 
 
+# Run-report ``⚑ Self-initiated:`` marker (Q-0172): a non-``none`` value means the run
+# promoted an idea to a plan/build with no dispatch or owner ask. Lets the updates feed
+# badge + filter unprompted self-initiated work for owner review.
+_SELF_INITIATED_RE = re.compile(r"Self-initiated:\*\*\s*(.*)")
+
+
+def _self_initiated(text: str) -> bool:
+    """Return True when the run-report ``⚑ Self-initiated:`` line names real work.
+
+    The line lists any idea promoted to a plan/build without a dispatched order or owner
+    request (Q-0172). ``none`` / empty / absent -> False. The ⚑ glyph sits inside the bold
+    marker (``**⚑ Self-initiated:**``), so match on the ``Self-initiated:`` substring.
+    """
+    for line in text.splitlines():
+        if "Self-initiated:" in line:
+            match = _SELF_INITIATED_RE.search(line)
+            if match:
+                rest = match.group(1).strip()
+                # Drop a trailing provenance tag like "(Q-0172)" and markdown emphasis.
+                rest = re.sub(r"\(Q-\d{4}\)", "", rest).strip().strip("`*_ ").lower()
+                if rest and not rest.startswith("none"):
+                    return True
+    return False
+
+
 def _first_paragraph(text: str) -> str:
     """Return the first body paragraph (skips headings, quotes, list markers)."""
     for line in text.splitlines():
@@ -308,6 +333,7 @@ def parse_updates(sessions_dir: Path, limit: int = 60) -> list[dict]:
                 "title": _first_heading(text) or path.stem,
                 "status": _status_badge(text) or "",
                 "run_type": _run_type(text),
+                "self_initiated": _self_initiated(text),
             },
         )
     updates.sort(key=lambda e: (e["date"], e["file"]), reverse=True)
