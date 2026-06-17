@@ -88,6 +88,33 @@ def test_specific_level_question_returns_only_that_levels_unlocks():
     assert "Paragon Power Totem" not in reply
 
 
+def test_starting_kit_question_returns_only_level_zero_items():
+    """The buffer-slice "starting kit" angle: "what does Geraldo start with" maps
+    to his level-0 items (the kit before any level-ups), not the full grouping."""
+    for phrase in (
+        "what does Geraldo start with?",
+        "what are Geraldo's starting items",
+        "what does geraldo come with",
+    ):
+        reply = btd6_context_service.deterministic_geraldo_per_level_reply(phrase)
+        assert reply is not None, phrase
+        assert reply.startswith("**Geraldo starts with")
+        # A level-0 item is present; a later-level one is not.
+        assert "Creepy Idol" in reply
+        assert "Blade Trap" not in reply  # a level-7 unlock
+
+
+def test_starting_with_an_explicit_level_uses_that_level():
+    """A 'start' cue that also names a level defers to the specific-level branch
+    so "what does Geraldo start with at level 5" is the level-5 answer."""
+    reply = btd6_context_service.deterministic_geraldo_per_level_reply(
+        "what does geraldo start with at level 5"
+    )
+    assert reply is not None
+    assert "level 5" in reply.lower()
+    assert "Creepy Idol" not in reply
+
+
 def test_level_with_no_unlock_says_so_honestly():
     """Level 1 unlocks nothing new — the honest deterministic answer, not an
     invented item."""

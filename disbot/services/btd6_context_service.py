@@ -1884,6 +1884,97 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
+# --- "Monkey Knowledge by category/tab" deterministic roster (§7.6) -----------
+# The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor: asked "what
+# Support monkey knowledges are there", the model lists the tab itself and can
+# mis-bucket a point (the owner's verbatim miss was the *inverse* — calling the
+# whole Support tab "related to the farm"). Every MK NAME is grounded, so the
+# value-only faithfulness guard never catches a wrong *grouping*; the
+# deterministic layer OWNS the labelled per-tab list. The grouping lives in
+# btd6_data_service.monkey_knowledge_by_category(). Distinct from
+# deterministic_mk_reference_reply (which owns "MK related to <tower>"): this one
+# fires only on a *category/tab* cue and defers when a tower is named, so the two
+# never both fire.
+# (category key, the cue that names that in-game tab). Order mirrors the
+# btd6_data_service tab order.
+_MK_CATEGORY_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("Primary", re.compile(r"\bprimary\b", re.I)),
+    ("Military", re.compile(r"\bmilitary\b", re.I)),
+    ("Magic", re.compile(r"\bmagic\b", re.I)),
+    ("Support", re.compile(r"\bsupport\b", re.I)),
+    ("Heroes", re.compile(r"\bheroe?s?\b", re.I)),
+    ("Powers", re.compile(r"\bpowers?\b", re.I)),
+)
+# Human label per tab for the roster header.
+_MK_CATEGORY_LABELS: dict[str, str] = {
+    "Primary": "Primary",
+    "Military": "Military",
+    "Magic": "Magic",
+    "Support": "Support",
+    "Heroes": "Heroes",
+    "Powers": "Powers",
+}
+# An enumeration shape ("which/what/list ... monkey knowledge", "how many ...") so
+# a single-MK lookup ("what does More Cash do") stays out of the roster floor.
+_MK_ROSTER_LIST_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every|how\s+many|are\s+there)\b",
+    re.I,
+)
+
+
+def _match_mk_category(text_lower: str) -> str | None:
+    """The single Monkey-Knowledge tab a roster question names, or ``None``."""
+    for category, pattern in _MK_CATEGORY_CUES:
+        if pattern.search(text_lower):
+            return category
+    return None
+
+
+def deterministic_mk_category_roster_reply(message_text: str) -> str | None:
+    """A code-built "Monkey Knowledge in the <tab>" roster, or ``None``.
+
+    The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor (sibling of the
+    relic / capability rosters). Fires on an MK cue + a named tab
+    (Primary/Military/Magic/Support/Heroes/Powers) + an enumeration cue, listing
+    that tab's points so the model can never mis-bucket the grouping. Defers
+    (``None``) for single-MK lookups (no list cue), strategy/opinion questions,
+    anything without a recognised tab, and — crucially — anything naming a
+    *tower* (that is :func:`deterministic_mk_reference_reply`'s "MK related to
+    <tower>" job, which runs first in the dispatcher), so the two MK builders
+    never both fire.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _MK_CUE_RE.search(low):
+        return None
+    if not _MK_ROSTER_LIST_RE.search(low):
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    category = _match_mk_category(low)
+    if category is None:
+        return None
+
+    from services import btd6_data_service
+
+    # A named tower means the tower-relation builder owns this — defer to it.
+    dataset = btd6_data_service.get_dataset()
+    if _scan_tower(low, dataset) is not None:
+        return None
+
+    grouped = btd6_data_service.monkey_knowledge_by_category()
+    rows = grouped.get(category, ())
+    label = _MK_CATEGORY_LABELS.get(category, category)
+    if not rows:
+        return f"**BTD6 — no Monkey Knowledge in the {label} tab.**"
+    names = ", ".join(f"**{mk.canonical}**" for mk in rows)
+    reply = f"**Monkey Knowledge in the {label} tab ({len(rows)}):** {names}"
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
 # --- "Geraldo items per level" deterministic reply (BUG-0009 slice 2) ---------
 # The model, asked "what does Geraldo unlock at each level", assembles the
 # level→item grouping itself and mislabels which item unlocks when. Every item
@@ -1903,6 +1994,15 @@ _GERALDO_LIST_RELATION_RE = re.compile(
 )
 # A specific level number ("at level 7", "lvl 12", "level-3").
 _GERALDO_LEVEL_NUM_RE = re.compile(r"\b(?:level|lvl|lv)\s*[-#]?\s*(\d{1,2})\b", re.I)
+# The "starting kit" angle ("what does Geraldo start with", "Geraldo's starting
+# items") — the buffer-slice gap the level/list cue missed. Maps to the level-0
+# items (the kit Geraldo has before any level-ups).
+_GERALDO_STARTING_RE = re.compile(
+    r"\bstart(?:s|ing|ed)?\s+(?:with|out|kit|gear|loadout|inventory|items?)\b|"
+    r"\bstarting\s+(?:items?|kit|gear|loadout|inventory)\b|"
+    r"\bbegins?\s+with\b|\bcomes?\s+with\b",
+    re.I,
+)
 
 
 def _format_geraldo_item_line(item: Any) -> str:
@@ -1931,7 +2031,8 @@ def deterministic_geraldo_per_level_reply(message_text: str) -> str | None:
     low = text.lower()
     if not _GERALDO_CUE_RE.search(low):
         return None
-    if not _GERALDO_LIST_RELATION_RE.search(low):
+    starting = bool(_GERALDO_STARTING_RE.search(low))
+    if not starting and not _GERALDO_LIST_RELATION_RE.search(low):
         return None
     if any(word in low for word in _ROSTER_STRATEGY_WORDS):
         return None
@@ -1941,6 +2042,15 @@ def deterministic_geraldo_per_level_reply(message_text: str) -> str | None:
     grouped = btd6_data_service.geraldo_items_by_unlock_level()
     if not grouped:
         return None
+
+    # The "starting kit" angle ("what does Geraldo start with") → his level-0
+    # items specifically, unless the question also names a different level.
+    if starting and not _GERALDO_LEVEL_NUM_RE.search(low):
+        items = next((rows for lvl, rows in grouped if lvl == 0), ())
+        if not items:
+            return None
+        body = "\n".join(_format_geraldo_item_line(i) for i in items)
+        return f"**Geraldo starts with ({len(items)}):**\n{body}"
 
     # A specific level was named → just that level's unlocks. (Even if zero
     # items unlock there, the deterministic "nothing new unlocks at L<n>" is the
@@ -3065,6 +3175,110 @@ def deterministic_bloon_roster_reply(message_text: str) -> str | None:
     return None
 
 
+# --- §7.6 bloon-modifier explainer (slot-4 reframe, BUG-0009) -----------------
+# Camo / Fortified / Regrow are universal *modifiers* applied to ANY bloon, not
+# per-type properties — so "which bloons are camo?" has no clean roster (the
+# night-queue slot-4 finding: a roster would wrongly imply only DDT can be camo),
+# and "what does camo do?" on the general path is the BUG-0009 freelance class.
+# The dataset files each modifier as a category=="modifier" marker carrying its
+# description; this floor OWNS the grounded explanation + the "it can apply to any
+# bloon" correction. Distinct from deterministic_bloon_roster_reply (which
+# EXCLUDES modifier rows and fires only on the MOAB/immunity roster shapes) and
+# from the capability roster (towers detecting camo) — it defers whenever a
+# tower, a detection/pop verb, or a tower-subject is present, so none overlap.
+_BLOON_MODIFIER_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("camo", re.compile(r"\bcamo(?:flage)?\b", re.I)),
+    ("fortified", re.compile(r"\bfortif(?:ied|y|ication)\b", re.I)),
+    ("regrow", re.compile(r"\bregrow(?:th|s|ing)?\b", re.I)),
+)
+# The generic "what are the bloon modifiers/properties" ask (no specific one).
+_BLOON_MODIFIER_GENERIC_RE = re.compile(
+    r"\bbloons?\s+(?:modifiers?|propert(?:y|ies))\b|"
+    r"\b(?:modifiers?|propert(?:y|ies))\s+(?:of|on|for)\s+(?:a\s+)?bloons?\b",
+    re.I,
+)
+# A definition/roster-attempt shape — keeps a stray modifier word inside an
+# unrelated sentence out, and is broad enough to catch both "what does camo do"
+# and the (reframed) "which bloons are camo".
+_BLOON_MODIFIER_SHAPE_RE = re.compile(
+    r"\b(?:what|which|whats|explain|describe|tell|list|mean(?:s|ing)?|"
+    r"is|are|does|do|have|property|modifier)\b",
+    re.I,
+)
+# A tower-subject cue → the question is really about a tower's capability, not the
+# modifier itself; defer to the model / capability roster.
+_BLOON_MODIFIER_TOWER_SUBJECT_RE = re.compile(
+    r"\btowers?\b|\bmonkeys?\b|\bparagons?\b|\bheroe?s?\b",
+    re.I,
+)
+
+
+def _format_bloon_modifier(entry: Any) -> str:
+    label = entry.canonical.removesuffix(" property").strip() or entry.canonical
+    return (
+        f"**{label} is a bloon modifier, not a bloon type.** {entry.description} "
+        "It can be applied to many different bloons (set by the round / game mode), "
+        "so there is no fixed list of "
+        f"“{label.lower()} bloons.”"
+    )
+
+
+def deterministic_bloon_modifier_reply(message_text: str) -> str | None:
+    """A code-built explainer for a bloon modifier (Camo/Fortified/Regrow), or ``None``.
+
+    The §7.6 slot-4 *reframe*: "what does camo do?", "which bloons are camo?",
+    "explain the regrow property" — the model either explains the modifier wrong
+    or assembles a misleading "camo bloons" roster (BUG-0009), because camo /
+    fortified / regrow are universal modifiers, not per-type properties. This
+    floor OWNS the grounded explanation from the dataset's modifier marker
+    entries. Defers (``None``) when a **tower**, a detection/pop **verb**, or a
+    tower-subject is present (those are the capability roster's / model's job),
+    on strategy/opinion, and when no modifier is named — so it never overlaps the
+    bloon roster (MOAB/immunity) or the capability roster.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    # A tower's camo-detection / popping question belongs to the capability floor.
+    if _CAP_CAMO_VERB_RE.search(text) or _CAP_POP_VERB_RE.search(text):
+        return None
+    if _BLOON_MODIFIER_TOWER_SUBJECT_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    if _scan_tower(text, btd6_data_service.get_dataset()) is not None:
+        return None
+
+    named = [key for key, pattern in _BLOON_MODIFIER_CUES if pattern.search(text)]
+    generic = bool(_BLOON_MODIFIER_GENERIC_RE.search(text))
+    if not named and not generic:
+        return None
+    if not _BLOON_MODIFIER_SHAPE_RE.search(text):
+        return None
+
+    modifiers = {m.id: m for m in btd6_data_service.bloon_modifiers()}
+    if not modifiers:
+        return None
+
+    # A single named modifier → its explanation.
+    if len(named) == 1 and named[0] in modifiers:
+        return _format_bloon_modifier(modifiers[named[0]])
+
+    # Several named, or a generic "bloon modifiers" ask → all of them.
+    wanted = [modifiers[k] for k in named if k in modifiers] or list(modifiers.values())
+    lines = [
+        "**BTD6 bloon modifiers** — these apply to bloons, they are not bloon types:",
+    ]
+    for entry in wanted:
+        label = entry.canonical.removesuffix(" property").strip() or entry.canonical
+        lines.append(f"• **{label}** — {entry.description}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
 # --- §7.6 relic category/effect roster (AI §7) --------------------------------
 # "what economy relics are there", "list all offensive relics", "which relics are
 # utility" is the BUG-0009 wrong-assembly class: the model buckets the relics by
@@ -3264,10 +3478,12 @@ def deterministic_hero_ability_roster_reply(message_text: str) -> str | None:
 # contract, no test edit needed. Append a new list family here.
 _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_mk_reference_reply,
+    deterministic_mk_category_roster_reply,
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
     deterministic_capability_roster_reply,
     deterministic_bloon_roster_reply,
+    deterministic_bloon_modifier_reply,
     deterministic_relic_roster_reply,
     deterministic_hero_ability_roster_reply,
     deterministic_paragon_cost_comparison_reply,

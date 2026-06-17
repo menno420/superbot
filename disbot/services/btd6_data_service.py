@@ -395,6 +395,16 @@ _REQUIRED_KNOWLEDGE_FIELDS = (
 _MK_CATEGORIES = frozenset(
     {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"},
 )
+# The in-game Monkey Knowledge tab order — used to present the category roster
+# (`monkey_knowledge_by_category`) in the order a player sees the tabs.
+_MK_CATEGORY_ORDER: tuple[str, ...] = (
+    "Primary",
+    "Military",
+    "Magic",
+    "Support",
+    "Heroes",
+    "Powers",
+)
 _REQUIRED_GERALDO_FIELDS = ("id", "canonical", "cost", "unlock_level")
 _REQUIRED_BOSS_FIELDS = ("id", "canonical")
 
@@ -1422,6 +1432,33 @@ def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
     return None
 
 
+def monkey_knowledge_by_category() -> dict[str, tuple[MonkeyKnowledgeEntry, ...]]:
+    """The catalog's Monkey Knowledge grouped by its in-game tab (``category``).
+
+    The §7.6 *Monkey-Knowledge* member of the BUG-0009 roster family — the sibling
+    of the relic / capability rosters: "what Support monkey knowledges are there?",
+    "list all Military monkey knowledge". Returns every tab in the in-game tab
+    order (:data:`_MK_CATEGORY_ORDER`) mapped to its points sorted by canonical
+    name, so the floor reply OWNS the labelled grouping instead of letting the
+    model assemble (and mis-*bucket*) the list — every MK name is individually
+    grounded, so a mis-grouping (the exact owner-reported "related to the farm"
+    miss) slips past the value-only faithfulness guard.
+
+    A tab with no points is still present (an empty tuple) so a caller can answer
+    "no X monkey knowledge" honestly. Category validity is enforced at parse time
+    (``_parse_knowledge``), so an unknown bucket can never appear here.
+    """
+    grouped: dict[str, list[MonkeyKnowledgeEntry]] = {
+        cat: [] for cat in _MK_CATEGORY_ORDER
+    }
+    for mk in get_dataset().monkey_knowledge:
+        grouped.setdefault(mk.category, []).append(mk)
+    return {
+        cat: tuple(sorted(rows, key=lambda m: m.canonical.lower()))
+        for cat, rows in grouped.items()
+    }
+
+
 # --- Monkey-Knowledge ↔ tower relation (BUG-0009) ------------------------------
 # A Monkey Knowledge "references" a tower when its in-game description names the
 # tower, one of its upgrades, or a recognised alias. The dataset carries NO
@@ -1558,6 +1595,21 @@ def get_bloon(bloon_id: str) -> BloonEntry | None:
         if bloon.id == bloon_id:
             return bloon
     return None
+
+
+def bloon_modifiers() -> tuple[BloonEntry, ...]:
+    """The bloon *modifier* marker entries (Camo / Fortified / Regrow property).
+
+    In BTD6 camo / fortified / regrow are **universal modifiers** applied to *any*
+    bloon, not intrinsic per-type properties — so the catalog files them as
+    ``category == "modifier"`` pseudo-entries carrying the modifier's description,
+    distinct from the real bloon types. This reader exposes exactly those entries
+    (in dataset order) for the modifier *explainer* floor: asked "what does camo
+    do?" / "which bloons are camo?" the model would otherwise either explain it
+    wrong or assemble a misleading roster ([DDT] only) — the BUG-0009 class — so
+    the deterministic layer OWNS the grounded explanation.
+    """
+    return tuple(b for b in get_dataset().bloons if b.category == "modifier")
 
 
 def resolve_bloon_id(name: str) -> str | None:

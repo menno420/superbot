@@ -41,6 +41,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_mk_reference_reply",
     ),
     (
+        "what support monkey knowledges are there",
+        "deterministic_mk_category_roster_reply",
+    ),
+    (
         "what does geraldo unlock at each level",
         "deterministic_geraldo_per_level_reply",
     ),
@@ -79,6 +83,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
     (
         "what are all the moab class bloons",
         "deterministic_bloon_roster_reply",
+    ),
+    (
+        "what does the camo property do",
+        "deterministic_bloon_modifier_reply",
     ),
     (
         "what economy relics are there",
