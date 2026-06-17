@@ -43,6 +43,16 @@ SUBSYSTEM = "moderation"
 # ---------------------------------------------------------------------------
 
 DEFAULT_DM_ON_ACTION = False
+# The notify-the-member DM is gated by the master ``dm_on_action`` switch AND a
+# per-action allow-list.  The four actions that actually reach ``_notify_target``
+# (the only place a member is DMed) are warn / timeout / kick / ban — auto-mod
+# deletions and system actions never DM, so they are deliberately *not* part of
+# the vocabulary (listing them would be dead config).  The default lists all
+# four, so flipping the master switch on reproduces today's behaviour exactly;
+# an owner narrows the list to suppress specific actions (e.g. drop ``ban`` to
+# stop DMing banned members).  Stored as a comma-separated subset.
+DM_NOTIFY_ACTIONS: tuple[str, ...] = ("warn", "timeout", "kick", "ban")
+DEFAULT_DM_ACTIONS = ",".join(DM_NOTIFY_ACTIONS)
 DEFAULT_DM_TEMPLATE = ""
 DEFAULT_REQUIRE_REASON = False
 DEFAULT_BAN_DELETE_MESSAGE_DAYS = 0
@@ -124,6 +134,7 @@ class ModerationPolicy:
     """
 
     dm_on_action: bool = DEFAULT_DM_ON_ACTION
+    dm_actions: str = DEFAULT_DM_ACTIONS
     dm_template: str = DEFAULT_DM_TEMPLATE
     require_reason: bool = DEFAULT_REQUIRE_REASON
     ban_delete_message_days: int = DEFAULT_BAN_DELETE_MESSAGE_DAYS
@@ -143,6 +154,18 @@ class ModerationPolicy:
             MIN_POST_ACTION_CLEANUP_LIMIT,
             min(MAX_POST_ACTION_CLEANUP_LIMIT, self.post_action_cleanup_limit),
         )
+
+    @property
+    def dm_action_set(self) -> frozenset[str]:
+        """The parsed per-action DM allow-list (normalized, validated).
+
+        Splits the stored ``dm_actions`` csv, lower-cases / strips each token,
+        and keeps only recognised notify actions (:data:`DM_NOTIFY_ACTIONS`),
+        so a malformed or unknown token can never widen the gate.  An action
+        DMs the affected member iff :attr:`dm_on_action` is on **and** the
+        action is in this set.
+        """
+        return parse_dm_actions(self.dm_actions)
 
     @property
     def public_log_channel_id(self) -> int:
@@ -224,6 +247,23 @@ def cleanup_applies_to(action: str, policy: ModerationPolicy) -> bool:
     return False
 
 
+def parse_dm_actions(raw: str) -> frozenset[str]:
+    """Parse a per-action DM allow-list csv into a normalized, validated set.
+
+    Tokens are split on commas, lower-cased, and stripped; only recognised
+    notify actions (:data:`DM_NOTIFY_ACTIONS`) survive, so an unknown or
+    malformed token is silently dropped rather than widening the gate.  Pure
+    (no I/O) — shared by :attr:`ModerationPolicy.dm_action_set` and the schema
+    validator so "which actions DM" means the same thing everywhere.
+    """
+    known = frozenset(DM_NOTIFY_ACTIONS)
+    return frozenset(
+        token
+        for part in (raw or "").split(",")
+        if (token := part.strip().lower()) in known
+    )
+
+
 def public_log_includes(action: str, policy: ModerationPolicy) -> bool:
     """Whether *action* should be announced on the public log under *policy* (pure).
 
@@ -252,6 +292,12 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
         SUBSYSTEM,
         "dm_on_action",
         DEFAULT_DM_ON_ACTION,
+    )
+    dm_actions = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "dm_actions",
+        DEFAULT_DM_ACTIONS,
     )
     dm_template = await resolve_value(
         guild_id,
@@ -321,6 +367,7 @@ async def load_policy(guild_id: int) -> ModerationPolicy:
     )
     return ModerationPolicy(
         dm_on_action=bool(dm_on_action),
+        dm_actions=str(dm_actions),
         dm_template=str(dm_template),
         require_reason=bool(require_reason),
         ban_delete_message_days=int(ban_delete_message_days),
@@ -391,8 +438,10 @@ def render_dm_message(
 
 __all__ = [
     "DEFAULT_BAN_DELETE_MESSAGE_DAYS",
+    "DEFAULT_DM_ACTIONS",
     "DEFAULT_DM_ON_ACTION",
     "DEFAULT_DM_TEMPLATE",
+    "DM_NOTIFY_ACTIONS",
     "DEFAULT_MAX_TIMEOUT_MINUTES",
     "DEFAULT_POST_ACTION_CLEANUP",
     "DEFAULT_POST_ACTION_CLEANUP_LIMIT",
@@ -418,6 +467,7 @@ __all__ = [
     "evaluate_escalation",
     "has_reason",
     "load_policy",
+    "parse_dm_actions",
     "public_log_includes",
     "render_dm_message",
 ]

@@ -236,7 +236,17 @@ def _non_default_value_for(spec: Any) -> Any:
                 return candidate
         return allowed[0]
     if spec.value_type is str:
-        for candidate in ("round-trip-test", "alt-value", "x", "y"):
+        # The trailing csv-subset candidates cover constrained free-form str
+        # specs (e.g. moderation ``dm_actions``, a comma-separated allow-list)
+        # whose validator rejects the arbitrary first picks.
+        for candidate in (
+            "round-trip-test",
+            "alt-value",
+            "x",
+            "y",
+            "warn,timeout",
+            "warn",
+        ):
             if candidate != spec.default and _validator_accepts(spec, candidate):
                 return candidate
         return "round-trip-test"

@@ -170,7 +170,7 @@ Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
 8. **help_menu_direct_navigation_hook**: `none`.
 9. **existing_SettingSpec_declarations**: `warn_threshold`,
    `warn_timeout_minutes`, `warn_escalation_action`, `dm_on_action`,
-   `dm_template`, `require_reason`, `ban_delete_message_days`,
+   `dm_actions`, `dm_template`, `require_reason`, `ban_delete_message_days`,
    `max_timeout_minutes`, `post_action_cleanup`, `post_action_cleanup_limit`,
    `public_log_actions`, `public_log_channel`, `moderator_role`, `trusted_role`
    (`disbot/cogs/moderation/schemas.py`).  All but `warn_threshold` /
@@ -182,7 +182,8 @@ Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
    tier-grant roles (ADR-008, `input_hint="role"`, admin-floor capability) — all
    applied at / consumed from the `moderation_service` / governance-tier seam.
 10. **existing_settings_keys**: `WARN_THRESHOLD`, `WARN_TIMEOUT_MINS`,
-    `MOD_WARN_ESCALATION_ACTION`, `MOD_DM_ON_ACTION`, `MOD_DM_TEMPLATE`,
+    `MOD_WARN_ESCALATION_ACTION`, `MOD_DM_ON_ACTION`, `MOD_DM_ACTIONS`,
+    `MOD_DM_TEMPLATE`,
     `MOD_REQUIRE_REASON`, `MOD_BAN_DELETE_MESSAGE_DAYS`,
     `MOD_MAX_TIMEOUT_MINUTES`, `MOD_POST_ACTION_CLEANUP`,
     `MOD_POST_ACTION_CLEANUP_LIMIT`, `MOD_PUBLIC_LOG_ACTIONS`,
@@ -206,7 +207,8 @@ Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
     authorize on Discord-permission **OR** capability (behaviour-preserving — the
     permission path is unchanged), and `trusted_role` is wired symmetrically.
     Earlier, PR10 moved DM-on-action
-    (`dm_on_action` / `dm_template`), the ban message-purge window
+    (`dm_on_action` / `dm_template`; `dm_actions` later added the per-action
+    allow-list gating the DM master switch — Q-0147), the ban message-purge window
     (`ban_delete_message_days`), the timeout ceiling (`max_timeout_minutes`),
     `require_reason` (warn/kick/ban must justify; timeout exempt), the **warn
     escalation action** (`warn_escalation_action`: timeout/kick/ban/none at
@@ -226,7 +228,9 @@ Subsystems (30): `admin`, `ai`, `blackjack`, `btd6`, `chain`, `channel`,
     timeout-presets list editor, mod-log channel BindingSelectView.
 18. **setting_class_per_value**: `warn_threshold` scalar, `warn_timeout_minutes`
     scalar, `warn_escalation_action` enum select, `dm_on_action` bool toggle,
-    `dm_template` free-text, `require_reason` bool toggle,
+    `dm_actions` free-text (csv subset of warn/timeout/kick/ban — the per-action
+    DM allow-list gating `dm_on_action`), `dm_template` free-text,
+    `require_reason` bool toggle,
     `ban_delete_message_days` numeric-presets, `max_timeout_minutes`
     numeric-presets, `post_action_cleanup` enum select, `post_action_cleanup_limit`
     numeric-presets, `public_log_actions` enum select, `public_log_channel`

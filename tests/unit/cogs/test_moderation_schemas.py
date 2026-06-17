@@ -37,7 +37,7 @@ def test_register_schemas_adds_moderation_to_registry():
     assert "moderation" in schema_mod.registered_subsystems()
     schema = schema_mod.get_schema("moderation")
     assert schema is not None
-    assert schema.version == 6
+    assert schema.version == 7
 
 
 def test_moderation_settings_cover_legacy_plus_pr10():
@@ -49,6 +49,7 @@ def test_moderation_settings_cover_legacy_plus_pr10():
         "warn_timeout_minutes",
         "warn_escalation_action",
         "dm_on_action",
+        "dm_actions",
         "dm_template",
         "require_reason",
         "ban_delete_message_days",
@@ -83,6 +84,24 @@ def test_dm_on_action_is_bool_toggle():
     spec.validator(False)
     with pytest.raises(ValueError):
         spec.validator(1)  # int is not bool
+
+
+def test_dm_actions_is_validated_csv_subset():
+    spec = _spec("dm_actions")
+    assert spec.value_type is str
+    assert spec.default == moderation_config.DEFAULT_DM_ACTIONS
+    assert spec.settings_key == _mod_keys.MOD_DM_ACTIONS
+    assert spec.capability_required == "moderation.settings.configure"
+    # Free-form modal (a multi-token csv, not a single-choice enum select).
+    assert spec.allowed_values == ()
+    assert spec.input_hint == ""
+    spec.validator("warn,timeout")
+    spec.validator("")  # empty = no action DMs, allowed
+    spec.validator(" Warn , BAN ")  # case/space tolerant
+    with pytest.raises(ValueError):
+        spec.validator("warn,bogus")  # unknown token rejected
+    with pytest.raises(ValueError):
+        spec.validator(123)  # not a str
 
 
 def test_require_reason_is_bool_toggle():
@@ -267,6 +286,7 @@ def test_spec_defaults_match_policy_defaults():
     same canonical constants — a divergence would make an unconfigured guild
     behave differently than the settings panel claims."""
     assert _spec("dm_on_action").default == moderation_config.DEFAULT_DM_ON_ACTION
+    assert _spec("dm_actions").default == moderation_config.DEFAULT_DM_ACTIONS
     assert _spec("dm_template").default == moderation_config.DEFAULT_DM_TEMPLATE
     assert _spec("require_reason").default == moderation_config.DEFAULT_REQUIRE_REASON
     assert (
