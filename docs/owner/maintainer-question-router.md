@@ -6139,3 +6139,149 @@ side — control-API mutation endpoints #993 + OAuth/editors #996 — had alread
 
 **Home:** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
 § "Decisions (owner question-panel, 2026-06-16)" · this Q-block.
+
+### Q-0164 — Planning depth: reconciliation plans the *full band* (depth ≥ cadence) + a low-backlog flag (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session (`AskUserQuestion`, 2026-06-17, the first
+> unattended-routine-day review).** The owner observed routines reporting "running out of plans"
+> while the bot/website clearly have lots left to build. Root cause found this session: the
+> reconciliation pass fires every **30** PRs but planned only the next **~9** ("9 PRs" leftover from
+> the old every-10-PR cadence) — so the buildable queue drained ~20 PRs before each refill. The owner
+> chose **"plan the full band + flag when the backlog can't fill it."**
+
+**Decision:** The reconciliation pass plans **enough genuine buildable work to reach the next pass
+(depth ≥ the 30-PR cadence)** — as **larger multi-PR initiatives OR more slices**, whichever keeps
+each a real change; **never pad to 30 with filler**. **If the idea backlog genuinely can't fill the
+band**, that is the *signal*: promote what's honest, then raise a loud `⚠️ PLAN BACKLOG THIN` flag
+(current-state ▶ Next action + the run-report ⚑ Owner-decisions line) so the owner drops ideas or a
+dedicated planning session runs. This is how the owner stops needing to plan: the loop keeps itself
+fed and tells him *early* when it can't.
+
+**Home:** `.claude/CLAUDE.md` (reconciliation bullet) · `docs/operations/autonomous-routines.md`
+(reconciliation prompt PLAN step) · this Q-block. Verified-signal follow-up: a disposable
+`check_plan_backlog.py` ([agent-tooling shortlist](../ideas/agent-tooling-automation-shortlist-2026-06-17.md) §B).
+
+### Q-0165 — Routines self-label their run type in the session log; the dashboard badges it (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session, 2026-06-17.** Owner: *"make the routines list
+> whether they were a routine or not, just with a simple keyword at the end of their session log."*
+
+**Decision:** Every session log's **📤 Run report** carries a **`Run type:`** line
+(`routine · dispatch` / `routine · reconciliation` / `manual`). Both routine prompts set it; a manual
+session writes `manual`. The **dashboard updates feed badges any log whose Run type contains
+`routine`** (`scripts/export_dashboard_data.py` parses it → `/updates`), so the owner sees routine
+work at a glance — which also serves his "use updates to see the work done through the routines" ask
+(Q-0167).
+
+**Home:** `.sessions/README.md` (footer spec) · `hermes-dispatch-bridge.md` + `autonomous-routines.md`
+(both prompts) · `scripts/export_dashboard_data.py` (`_run_type`) · `dashboard/templates/updates.html` ·
+this Q-block. Related: [`routine-activity-visibility-2026-06-14.md`](../ideas/routine-activity-visibility-2026-06-14.md).
+
+### Q-0166 — Spotted docs/ledger drift is fixed on sight, not deferred to the reconciliation failsafe (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session, 2026-06-17.** Owner: multiple sessions noticed
+> "ledger drift" but declined to fix it because "that is the job of the doc reconciliation" — *"that
+> is not a reason to continue leaving the repo in a bad state."*
+
+**Decision:** **Bugs-first applies to docs.** Any session that **sees** real drift (a wrong ledger
+entry, a clearly-missing older merge, a stale pointer) **fixes it on sight**. The every-30-PR
+reconciliation pass is a **failsafe for the comprehensive sweep + planning + next-band prep — not a
+licence to leave drift already spotted**. The one exception is **benign newest-merge lag** (the 1–2
+merges newer than the `Last reconciliation pass: #N` marker, which the next pass records); drift
+*older* than the marker is a bug → fix now. (Pairs with the
+[lag-vs-drift guard idea](../ideas/ledger-guard-benign-lag-vs-drift-2026-06-14.md), which makes the
+`--strict` red unambiguous.)
+
+**Home:** `.claude/CLAUDE.md` ("Bugs first, durably") · `hermes-dispatch-bridge.md` (step 6) ·
+this Q-block.
+
+### Q-0167 — The website's updates feed must auto-refresh (dashboard.json regenerated on merge) (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session, 2026-06-17.** Owner: the website's bug/idea/update
+> lists are going stale; *"the updates are not actually updating because it's still stuck at one from
+> a few days ago … this should ideally update automatically so I can also use it as a way to see the
+> work done through the routines."*
+
+**Decision (root cause + fix):** the committed `dashboard/data/dashboard.json` only regenerated at
+the every-30-PR reconciliation pass, so the feed lagged ~30 PRs. A new **`dashboard-data-refresh.yml`**
+workflow regenerates it on **every source-touching merge to `main`** (paths-gated + `[skip ci]` so it
+can't loop) and commits it back — the dashboard (a `dashboard/`-only Railway service that can't see
+the source dirs at runtime) then serves a current JSON. Disposable (Q-0105); the reconciliation regen
+stays the cadence backstop.
+
+**Home:** `.github/workflows/dashboard-data-refresh.yml` · `scripts/export_dashboard_data.py` ·
+this Q-block. Generalization: [`generated-artifact-freshness-umbrella-2026-06-17.md`](../ideas/generated-artifact-freshness-umbrella-2026-06-17.md).
+
+### Q-0168 — Hermes output → a shared plain-language house style (proposal-first, then roll out) (2026-06-17)
+
+> **DIRECTED + APPROVED — owner-in-session, 2026-06-17; sample reviewed and approved, rollout pending.** Owner: Hermes
+> "doesn't feel like part of the system yet," its output is "hard to read, filled with stuff that is
+> unnecessary or hard to understand," *"the biggest problem right now is the message format"* — wants
+> plain language, better grouping (some jargon fine "as long as I can understand most of it"). He
+> chose **"draft one sample, then roll out."**
+
+**Decision/state:** Root cause = **no shared house style** (each skill defines its output shape
+inline, so reports read differently and internal jargon leaks). A **sample** (the morning briefing,
+before→after, + 5 house-style rules) is drafted at
+[`hermes-skills/_house-style-proposal.md`](../operations/hermes-skills/_house-style-proposal.md) for
+the owner to react to. **APPROVED 2026-06-17** — the owner compared the before→after against that
+morning's live briefing and confirmed the new format is "much cleaner and easy to read with clear
+sections," requesting no changes (so the sample sets the style as drafted). **Next: a follow-up PR**
+applies the style to every `hermes-skills/*.md` output block + rebuilds
+(`scripts/hermes/build_skills.py`) + redeploys.
+
+**Home:** [`hermes-skills/_house-style-proposal.md`](../operations/hermes-skills/_house-style-proposal.md) ·
+`docs/operations/hermes-skills/*.md` · this Q-block.
+
+### Q-0169 — Owner review inbox / communication website: capture-only now; dashboard board, issue-backed (2026-06-17)
+
+> **DECIDED (capture-only) — owner-in-session (`AskUserQuestion`, 2026-06-17).** Owner wants a channel
+> to **post ideas/cog-command reviews** that sessions read and act on, with a visible "is it fixed?"
+> status — *"probably a very high-leverage thing"* for reviewability + owner↔agent communication.
+> Eventually two sites (product + communication); near-term **integrate into the existing dashboard**.
+> He chose **"capture as idea + plan only"** (don't build this session).
+
+**Decision:** Captured as an idea + an executable plan. **Shape:** a dashboard **"Review board"**
+backed by the existing labeled-issue / committed-markdown rail (a review = an OPEN item sessions read
+like the bug book; resolved = closed/`RESOLVED (#PR)`). Phase 1 is read-only + zero owner setup;
+Phase 2 (post-from-dashboard) shares the owner-paced control-API/OAuth write side; Phase 3 = public
+submissions + the eventual standalone site. Also feeds the plan backlog (Q-0164).
+
+**Home:** [`owner-review-inbox-2026-06-17.md`](../ideas/owner-review-inbox-2026-06-17.md) +
+[`owner-review-inbox-plan-2026-06-17.md`](../planning/owner-review-inbox-plan-2026-06-17.md) ·
+this Q-block. Related: Q-0159 (multi-user control panel) · the developer-dashboard idea.
+
+### Q-0170 — Agent tooling: dedicated Claude skills + a UX-consistency linter + a repo-native discovery aid (2026-06-17)
+
+> **DIRECTED (capture + flagship lane) — owner-in-session, 2026-06-17 (+ two follow-up messages).**
+> Owner: we made Hermes skills but "never actually made skills for claude … a lot more is possible
+> than we currently use … because I've never explicitly asked." Plus two concrete script asks:
+> (a) *"something like CI but specifically to find inconsistencies"* — panels missing a back button,
+> cogs not following the arch rules, cogs sending ephemeral follow-ups instead of editing in place;
+> (b) *"something like codegraph or grimp but specifically built for our needs"* to help agents find
+> files/information.
+
+**Decision:** Captured as a **shortlist** an owner picks from — we *do* have `/pre-pr`,
+`/session-close`, `/architecture-review`; candidate new skills (`/route-idea`, `/cog-review`,
+`/plan-band`, `/fix-drift`) and scripts are listed. **The UX-consistency linter is the flagship
+buildable lane** (its own idea + plan — one rule per PR, real backlog-feeding work for Q-0164). The
+repo-native discovery aid is captured with a do-not-duplicate gate (must complement `context_map.py` /
+`wiring_map.py` / CodeGraph / Grimp, not re-do them) and a prototype-against-real-questions check.
+
+**Home:** [`agent-tooling-automation-shortlist-2026-06-17.md`](../ideas/agent-tooling-automation-shortlist-2026-06-17.md) ·
+[`repo-consistency-linter-2026-06-17.md`](../ideas/repo-consistency-linter-2026-06-17.md) +
+[its plan](../planning/repo-consistency-linter-plan-2026-06-17.md) · this Q-block.
+
+### Q-0171 — Codex automated PR review: research the mechanism, then decide augment-vs-replace + merge authority (2026-06-17)
+
+> **CAPTURED (research-stage) — owner-mentioned in-session, 2026-06-17:** *"a function on ChatGPT that
+> lets codex automatically review any PRs … not entirely sure how that works."*
+
+**Decision/state:** Captured as an idea. It would add a **second, different-model reviewer** (serves
+the anti-monoculture principle behind `needs-hermes-review`, Q-0117). **Next:** research the exact
+mechanism (OpenAI Codex GitHub review / an Action / `@codex` mention) + its cost/auth, then put the
+**augment-vs-replace + who-holds-merge-authority** question to the owner (the Q-0082 spend cap + the
+morning-briefing rate-limit lesson apply). No build until the mechanism + cost envelope are confirmed.
+
+**Home:** [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) ·
+this Q-block. Related: Q-0117 (Hermes review-merge gate).

@@ -16,6 +16,9 @@
         {% if u.status %}
           <span class="text-[10px] uppercase rounded px-2 py-0.5 bg-slate-800 text-slate-400">{{ u.status }}</span>
         {% endif %}
+        {% if u.run_type == "routine" %}
+          <span class="text-[10px] uppercase rounded px-2 py-0.5 bg-indigo-900 text-indigo-300" title="autonomous routine run">routine</span>
+        {% endif %}
       </div>
       <p class="text-sm mt-0.5">{{ u.title }}</p>
     </li>

@@ -136,10 +136,14 @@ dispatched work, or the next plan slice.
    mirror GREEN: python3.10 scripts/check_quality.py --full +
    python3.10 scripts/check_architecture.py --mode strict.
 
-6. BUGS FIRST. Notice a bug / inconsistency at any time: "what is the root cause? are there other
-   instances of it? is there a clean, structured, consistent fix — not a temporary patch?" If yes
-   and it's contained -> fix it now, at the root. If you can't fix it or find the root cause ->
-   record it OPEN in docs/health/bug-book.md for the maintainer + a later session.
+6. BUGS FIRST (incl. docs/ledger drift). Notice a bug / inconsistency at any time: "what is the
+   root cause? are there other instances of it? is there a clean, structured, consistent fix — not
+   a temporary patch?" If yes and it's contained -> fix it now, at the root. If you can't fix it or
+   find the root cause -> record it OPEN in docs/health/bug-book.md for the maintainer + a later
+   session. This applies to **docs/ledger drift you can SEE** too (a wrong entry, a clearly-missing
+   older merge, a stale pointer): fix it on sight — the reconciliation routine is a failsafe, NOT a
+   licence to leave spotted drift (Q-0166). The only exception is benign newest-merge lag (the 1-2
+   merges newer than the `Last reconciliation pass: #N` marker); drift older than the marker = fix now.
 
 7. SHIP + REPEAT (aim for 2-3 slices, not one). De-stale any docs your work touched
    (plans/roadmaps/current-state), then ship: small/contained -> SELF-MERGE on green (Q-0113:
@@ -159,7 +163,9 @@ dispatched work, or the next plan slice.
    couldn't retire). Fold in: ONE genuine new idea (Q-0089, never forced filler); one honest line
    reviewing the PREVIOUS run (Q-0102); the doc audit (Q-0104); mark fixed bug-book entries FIXED;
    and the **📤 Run report footer** (`.sessions/README.md`) — required, with its ⚑ Owner-decisions
-   and ⚑ Owner-manual-steps lines (`none` when empty) so Hermes can roll up what needs the owner.
+   and ⚑ Owner-manual-steps lines (`none` when empty) so Hermes can roll up what needs the owner,
+   and the **Run type:** line set to `routine · dispatch` (Q-0165 — the dashboard updates feed
+   badges routine vs. manual work off this line).
    Owner-manual-steps is NOT "deploy the fix" — a merge auto-deploys; reserve it for genuine
    off-repo owner actions only. Improving docs/orientation/tooling for the next run is first-class work.
 

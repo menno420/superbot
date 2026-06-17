@@ -65,6 +65,12 @@ The short version that governs how you work:
 - **Bugs first, durably.** Root-level bugs/inconveniences jump the queue: fix them
   immediately when you can, root cause over symptom, one source of truth over a
   local patch. Aim for a positive, preferably *noticeable*, result every session.
+  **This includes docs/ledger drift you can SEE** (a wrong ledger entry, a clearly-missing
+  older merge, a stale pointer): fix it on sight. The every-30-PR reconciliation pass is a
+  *failsafe for the comprehensive sweep + planning* — **not a licence to leave drift you have
+  already spotted** (owner directive Q-0166, 2026-06-17). The one exception is *benign
+  newest-merge lag* (the 1–2 merges newer than the `Last reconciliation pass: #N` marker, which
+  the next pass records); drift older than the marker is a bug → fix it now, don't defer it.
 - **A new idea is not a new priority.** Idea order ≠ implementation order: an idea
   raised mid-stream is *captured and classified* (`docs/ideas/`), not promoted to active
   work — unless the maintainer says so or it exposes a blocker, safety, or architectural
@@ -235,11 +241,18 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   CI/mergeable state: close redundant/stale ones, fix or flag a red-CI one) — the gap that left
   #766 (red CI) and #771 (redundant + conflicted) rotting unnoticed across sessions *and* prior
   reconciliation passes (owner directive Q-0125, 2026-06-13); prune/archive stale docs; restate
-  the current priorities; and **(2) plan the next ~9
-  PRs** — what is realistically achievable in the upcoming band of PRs, **modular but not
-  over-segmented**: each planned PR should ship a *reasonable, meaningful change* (a real slice),
-  **not** a trivial fragment — a small PR is fine only when the change genuinely is small or a
-  required one-off. `scripts/check_reconciliation_due.py` flags when a pass is due (against the
+  the current priorities; and **(2) plan the next *full band* — enough genuine buildable work to
+  reach the NEXT pass (depth ≥ the 30-PR cadence; owner directive Q-0164, 2026-06-17, superseding
+  the earlier "~9 PRs" horizon — a leftover from the every-10-PR cadence that drained the buildable
+  queue ~20 PRs before each refill and is the root cause of the "running out of plans" droughts)**.
+  **Modular but not over-segmented**: each planned PR ships a *reasonable, meaningful change* (a
+  real slice), **not** a trivial fragment. Hit the depth as **larger multi-PR initiatives OR more
+  slices, whichever keeps each a real change** — never pad to 30 with filler. **If the idea backlog
+  genuinely cannot fill the band, that is the signal, not a failure**: promote what you honestly can
+  into plans, then FLAG it — a loud `⚠️ PLAN BACKLOG THIN` line in `current-state.md` ▶ Next action
+  + the run-report ⚑ Owner-decisions line — so the owner drops ideas or a dedicated planning session
+  runs, instead of dispatch inventing low-value work (Q-0164). `scripts/check_reconciliation_due.py`
+  flags when a pass is due (against the
   `Last reconciliation pass:** PR #N` marker in `current-state.md`; surfaced by `/session-close`).
   The pass is now **fired automatically** by `.github/workflows/reconciliation-trigger.yml` (opens
   a `reconcile`-labeled issue at the boundary → the **superbot docs reconciliation** routine runs

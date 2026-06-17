@@ -20,6 +20,32 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`repo-consistency-linter-2026-06-17.md`](./repo-consistency-linter-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0170):** *"something like CI but specifically to find
+  inconsistencies"* — panels missing a back button, cogs not following the arch rules, cogs sending
+  ephemeral follow-ups instead of editing in place. A new `scripts/check_consistency.py` (stdlib AST,
+  the `check_architecture.py` house style) with a per-rule allowlist + warn-first graduation. **The
+  flagship buildable lane** (one rule per PR = a real slice, feeds Q-0164). Executable plan:
+  [`repo-consistency-linter-plan-2026-06-17.md`](../planning/repo-consistency-linter-plan-2026-06-17.md).
+  → relates `scripts/check_architecture.py` · `disbot/views/` · `disbot/cogs/`.
+- [`owner-review-inbox-2026-06-17.md`](./owner-review-inbox-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0169, capture-only):** a channel to **post ideas/cog-command
+  reviews** that sessions read and act on, with a visible open→resolved status (the owner forgets
+  cog-review notes mid-session and has no "is it fixed?" view). Near-term = a dashboard "Review board"
+  backed by labeled issues / a committed markdown inbox; eventual = a standalone communication site.
+  Executable plan: [`owner-review-inbox-plan-2026-06-17.md`](../planning/owner-review-inbox-plan-2026-06-17.md).
+  → relates `dashboard/` · the bug book · Q-0159.
+- [`agent-tooling-automation-shortlist-2026-06-17.md`](./agent-tooling-automation-shortlist-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0170):** a shortlist to pick from for **dedicated Claude Code
+  skills** (`/route-idea`, `/cog-review`, `/plan-band`, `/fix-drift`) + **automation scripts**
+  (`check_plan_backlog.py` for the Q-0164 flag) + a **repo-native discovery aid** (CodeGraph/Grimp
+  but domain-semantic — must complement `context_map.py`/`wiring_map.py`, not re-do them). Builds on
+  the plugins-evaluation idea. → relates `scripts/` · the existing `/pre-pr`,`/session-close` skills.
+- [`codex-automated-pr-review-2026-06-17.md`](./codex-automated-pr-review-2026-06-17.md) —
+  **owner-mentioned (2026-06-17, Q-0171, research-stage):** wire Codex (OpenAI) to auto-review PRs —
+  a second, different-model reviewer (the anti-monoculture principle behind `needs-hermes-review`).
+  Research the exact mechanism + cost/auth, then put augment-vs-replace + merge-authority to the
+  owner. No build until the mechanism + spend envelope are confirmed. → relates Q-0117 (Hermes review).
 - [`generated-artifact-freshness-umbrella-2026-06-17.md`](./generated-artifact-freshness-umbrella-2026-06-17.md) —
   **session idea (2026-06-17, Q-0089, from the dashboard.json structural-drift reporter #1025):** the
   warn-only structural-drift reporter just built for `dashboard.json` applies to *every* committed

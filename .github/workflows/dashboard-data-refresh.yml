@@ -1,0 +1,65 @@
+name: dashboard-data-refresh
+
+# Keep the committed dashboard data (dashboard/data/dashboard.json) fresh so the website's
+# Updates / Ideas / Bugs feeds reflect work as it merges, instead of lagging ~30 PRs behind the
+# every-30-PR reconciliation regen — the owner's "the updates are stuck on one from a few days
+# ago" report (Q-0167, 2026-06-17).
+#
+# Why a workflow (not the app): the dashboard is a decoupled Railway service deployed from
+# dashboard/ ONLY — it cannot see docs/, .sessions/, or disbot/ at runtime, so it serves the
+# committed JSON. This regenerates that JSON whenever a source that feeds it changes on main, and
+# commits it back if it changed.
+#
+# Loop-safe: the push trigger is gated to the SOURCE paths (which do NOT include the JSON), so the
+# bot's own JSON-only commit never retriggers this workflow; [skip ci] keeps it from spinning any
+# other workflow. Uses ROUTINE_PAT (Contents: write) for push rights, the same token
+# pr-auto-update.yml uses.
+#
+# Provenance + reliability (Q-0105): added 2026-06-17, owner-directed. UNVERIFIED — watch the first
+# few merges to confirm it commits a fresh JSON only on real source changes and never loops. Kill
+# switch: delete this workflow; the reconciliation routine still regenerates on its cadence, and
+# `python3.10 scripts/export_dashboard_data.py` is always runnable by hand.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/ideas/**'
+      - 'docs/health/bug-book.md'
+      - '.sessions/**'
+      - 'disbot/**'
+      - 'scripts/export_dashboard_data.py'
+      - 'scripts/scan_*.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dashboard-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.repository == 'menno420/superbot'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Regenerate dashboard data and commit if changed
+        run: |
+          set -uo pipefail
+          python3.10 scripts/export_dashboard_data.py
+          if git diff --quiet -- dashboard/data/dashboard.json; then
+            echo "dashboard.json already fresh — nothing to commit."
+            exit 0
+          fi
+          git config user.name "superbot-dashboard-bot"
+          git config user.email "noreply@github.com"
+          git add dashboard/data/dashboard.json
+          git commit -m "chore(dashboard): refresh generated data [skip ci]"
+          git push

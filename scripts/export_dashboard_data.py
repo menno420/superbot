@@ -137,6 +137,30 @@ def _status_badge(text: str) -> str | None:
     return None
 
 
+# Run-report ``**Run type:**`` marker (Q-0165): ``routine · dispatch`` -> "routine",
+# ``manual`` -> "manual". Lets the updates feed distinguish autonomous routine runs from
+# the owner's own sessions.
+_RUN_TYPE_RE = re.compile(r"\*\*Run type:\*\*\s*`?\s*([A-Za-z]+)")
+
+
+def _run_type(text: str) -> str:
+    """Return "routine" / "manual" from the run-report ``**Run type:**`` line, or "".
+
+    Classifies on the first word after the marker; "" when the log has no Run type line
+    (older logs, before Q-0165).
+    """
+    for line in text.splitlines():
+        if "**Run type:**" in line:
+            match = _RUN_TYPE_RE.search(line)
+            if match:
+                token = match.group(1).strip().lower()
+                if "routine" in token:
+                    return "routine"
+                if "manual" in token:
+                    return "manual"
+    return ""
+
+
 def _first_paragraph(text: str) -> str:
     """Return the first body paragraph (skips headings, quotes, list markers)."""
     for line in text.splitlines():
@@ -283,6 +307,7 @@ def parse_updates(sessions_dir: Path, limit: int = 60) -> list[dict]:
                 "date": _date_from_name(path.name),
                 "title": _first_heading(text) or path.stem,
                 "status": _status_badge(text) or "",
+                "run_type": _run_type(text),
             },
         )
     updates.sort(key=lambda e: (e["date"], e["file"]), reverse=True)
