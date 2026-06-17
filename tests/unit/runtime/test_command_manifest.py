@@ -188,6 +188,32 @@ def test_to_dict_schema_shape():
 
 
 # ---------------------------------------------------------------------------
+# Reconciliation findings in the envelope (manifest spine PR3)
+# ---------------------------------------------------------------------------
+
+
+def test_to_dict_findings_empty_when_clean():
+    # A panel_action command WITH its subsystem's panel joined is clean.
+    ledger = _ledger((_e("warn", "ModCog", "moderation", classification="panel_action"),))
+    manifest = cm.build_command_manifest(
+        ledger,
+        panels_by_subsystem={"moderation": ("moderation",)},
+    )
+    assert manifest.findings() == []
+    assert manifest.to_dict()["findings"] == []
+
+
+def test_to_dict_findings_report_dangling_panel_action():
+    # A panel_action command whose subsystem has no panel is flagged.
+    ledger = _ledger((_e("orphan", "MiscCog", "ghost", classification="panel_action"),))
+    manifest = cm.build_command_manifest(ledger)  # no panel join
+    findings = manifest.to_dict()["findings"]
+    assert len(findings) == 1
+    assert findings[0]["kind"] == "dangling_panel_action"
+    assert findings[0]["command"] == "orphan"
+
+
+# ---------------------------------------------------------------------------
 # Cache round-trip + diagnostics
 # ---------------------------------------------------------------------------
 
@@ -222,3 +248,6 @@ def test_diagnostics_snapshot_built():
     assert snap["command_count"] == 2
     assert snap["by_kind"] == {"prefix": 1, "slash": 1}
     assert snap["version"] == cm.MANIFEST_VERSION
+    # Reconciliation surfaced (PR3): no panel_action commands → clean.
+    assert snap["finding_count"] == 0
+    assert snap["findings"] == []

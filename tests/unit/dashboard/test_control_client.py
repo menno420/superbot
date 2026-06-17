@@ -61,3 +61,34 @@ async def test_get_dormant_returns_503(monkeypatch):
     status, body = await control_client.get("/control/settings/current", {"guild_id": 1})
     assert status == 503
     assert "not configured" in body["error"]
+
+
+@pytest.mark.asyncio
+async def test_get_manifest_dormant_returns_none(monkeypatch):
+    monkeypatch.delenv("CONTROL_API_TOKEN", raising=False)
+    assert await control_client.get_manifest() is None
+
+
+@pytest.mark.asyncio
+async def test_get_manifest_returns_body_on_200(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", "shared-secret")
+
+    async def _fake_get(path, params=None):
+        assert path == "/control/manifest"
+        return 200, {"ok": True, "commands": {"version": 1}, "panels": {"version": 1}}
+
+    monkeypatch.setattr(control_client, "get", _fake_get)
+    body = await control_client.get_manifest()
+    assert body is not None
+    assert body["commands"]["version"] == 1
+
+
+@pytest.mark.asyncio
+async def test_get_manifest_returns_none_on_error(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", "shared-secret")
+
+    async def _fake_get(path, params=None):
+        return 502, {"error": "unreachable"}
+
+    monkeypatch.setattr(control_client, "get", _fake_get)
+    assert await control_client.get_manifest() is None

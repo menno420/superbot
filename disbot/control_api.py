@@ -28,6 +28,7 @@ Endpoints:
 
 * ``GET  /control/ping``                 — auth smoke.
 * ``GET  /control/authority``            — the identity→authority bridge (read).
+* ``GET  /control/manifest``             — the typed command + panel manifests (token-only).
 * ``POST /control/settings``             — front ``settings_mutation`` (capability-gated).
 * ``POST /control/help/overlay``         — front ``help_overlay_mutation.set_overlay_fields``.
 * ``POST /control/help/home``            — front ``help_overlay_mutation.set_home_message``.
@@ -740,6 +741,40 @@ async def _help_catalogue_handler(request: web.Request) -> web.Response:
     return _json_response({"ok": True, "hubs": hubs, "subsystems": subsystems})
 
 
+async def _manifest_handler(request: web.Request) -> web.Response:
+    """``GET /control/manifest`` → the typed command + panel manifests.
+
+    Token-only (global data, no guild/user — mirrors ``/control/help/catalogue``):
+    the command/panel surface is the bot's, not a guild's. Serves the cached
+    startup manifests and falls back to building them on demand (so the read works
+    even if a startup build was skipped). The command manifest's ``findings`` carry
+    the cross-manifest reconciliation drift (manifest spine PR3). Read-only.
+    """
+    if not is_authorized(request.headers.get("Authorization"), control_token()):
+        return _unauthorized()
+
+    from core.runtime import command_manifest, panel_manifest
+
+    bot = request.app["bot"]
+    try:
+        commands = command_manifest.get_cached_manifest()
+        if commands is None:
+            commands = command_manifest.build_and_cache_from_bot(bot)
+        panels = panel_manifest.get_cached_manifest()
+        if panels is None:
+            panels = panel_manifest.build_and_cache()
+    except Exception as exc:  # noqa: BLE001 - never 500 a read on a build hiccup
+        return _seam_error_or_500(exc, "manifest")
+
+    return _json_response(
+        {
+            "ok": True,
+            "commands": commands.to_dict(),
+            "panels": panels.to_dict(),
+        },
+    )
+
+
 async def _routing_get_handler(request: web.Request) -> web.Response:
     """``GET /control/routing?guild_id=&user_id=`` → current cog-routing rows.
 
@@ -801,13 +836,15 @@ def register_control_routes(app: web.Application, bot: Any) -> bool:
     app.router.add_get("/control/help/overlay", _help_overlay_get_handler)
     app.router.add_get("/control/help/catalogue", _help_catalogue_handler)
     app.router.add_get("/control/routing", _routing_get_handler)
+    # Manifest spine PR3 — the typed command/panel manifests (global, token-only).
+    app.router.add_get("/control/manifest", _manifest_handler)
     app.router.add_post("/control/settings", _settings_set_handler)
     app.router.add_post("/control/help/overlay", _help_overlay_handler)
     app.router.add_post("/control/help/home", _help_home_handler)
     app.router.add_post("/control/help/reset", _help_reset_handler)
     app.router.add_post("/control/routing", _routing_set_handler)
     logger.info(
-        "control_api: enabled — ping, authority + reads "
+        "control_api: enabled — ping, authority, manifest + reads "
         "(settings/current, help/overlay, help/catalogue, routing) + writes "
         "(settings, help/overlay, help/home, help/reset, routing; "
         "auth + per-request authority)",

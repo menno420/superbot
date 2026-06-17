@@ -116,14 +116,27 @@ class CommandManifest:
     bot_build: str
     commands: tuple[CommandManifestEntry, ...]
 
+    def findings(self) -> list[dict[str, Any]]:
+        """Cross-manifest reconciliation findings (drift) for this manifest.
+
+        Computed lazily (no stored state) by the spine's reconciliation seam —
+        e.g. a ``panel_action`` command whose subsystem owns no registered panel.
+        Empty when the manifest is clean. Imported function-locally to keep this
+        module's top-level imports to its sibling ledger only (cycle discipline).
+        """
+        from core.runtime import manifest_reconciliation
+
+        return manifest_reconciliation.reconcile_to_dicts(self)
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "version": self.version,
             "generated_at": self.generated_at,
             "bot_build": self.bot_build,
             "commands": [c.to_dict() for c in self.commands],
-            # Reserved (PR3) — drift findings vs the AST scanner.
-            "findings": [],
+            # Cross-manifest reconciliation drift (manifest spine PR3) — the
+            # live read carries its own trust signal (empty == clean).
+            "findings": self.findings(),
         }
 
 
@@ -265,6 +278,7 @@ def _snapshot() -> dict[str, Any]:
     by_kind: dict[str, int] = {}
     for c in manifest.commands:
         by_kind[c.kind] = by_kind.get(c.kind, 0) + 1
+    findings = manifest.findings()
     return {
         "built": True,
         "version": manifest.version,
@@ -272,6 +286,9 @@ def _snapshot() -> dict[str, Any]:
         "bot_build": manifest.bot_build,
         "command_count": len(manifest.commands),
         "by_kind": by_kind,
+        # Cross-manifest reconciliation (PR3): 0 == clean.
+        "finding_count": len(findings),
+        "findings": findings,
     }
 
 
