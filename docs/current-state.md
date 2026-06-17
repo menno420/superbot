@@ -207,6 +207,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1018 (2026-06-17, manifest spine slice 1 — typed CommandManifest over the ledger)** — same
+  dispatch fire as #1017 (continuation). Started the **manifest spine** — the dashboard vision doc's
+  "key structural investment," owner-approved (Q-0162), Phase-E predecessor shipped (#1013), schema
+  finalized (#998). `core/runtime/command_manifest.py` projects the cached `CommandSurfaceLedger`
+  into the typed #998 command schema (no second surface walk), built+cached at startup, surfaced as a
+  `command_manifest` diagnostics provider, with the manifest-faithfully-projects-ledger CI invariant
+  (the first reconciliation test that makes the metadata trustworthy). AST stays drift-detection only.
+  Deferred fields (source/panels/actions/related_settings/capability_required) are shape-pinned but
+  empty. **Next: PR2** panel registry + `PanelManifest` (the L3 panel-editor prerequisite) — sequenced
+  in [`manifest-spine-execution-plan-2026-06-17.md`](planning/manifest-spine-execution-plan-2026-06-17.md).
 - **#1017 (2026-06-17, settings global tier — per-guild → global → default)** — scheduled dispatch,
   empty work order → advanced the active dashboard thread's next *ungated runtime* slice (the
   live-editor plan's settings-editor phase ②, the owner's "change things globally" ask).
