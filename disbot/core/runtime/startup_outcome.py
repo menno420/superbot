@@ -49,6 +49,7 @@ from typing import Any
 # orchestrator never reached the recorder.
 KNOWN_PHASES: tuple[str, ...] = (
     "command_surface_ledger",
+    "command_manifest",
     "settings_registry",
     "customization_catalogue",
     "resource_provisioning_catalogue",
