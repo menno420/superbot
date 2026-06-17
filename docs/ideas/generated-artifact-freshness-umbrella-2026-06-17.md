@@ -1,9 +1,18 @@
 # Generated-artifact freshness umbrella — one soft-drift reporter for every committed generated file
 
-> **Status:** `ideas`
+> **Status:** `historical` — **IMPLEMENTED 2026-06-17** in **PR #1027** as
+> `scripts/check_generated_artifacts_fresh.py`.
 > **Origin:** session idea (2026-06-17, Q-0089), from the dashboard.json structural-drift reporter
-> (PR #1025). Captured (not built) because it is a self-invented *new tool* and the phase gate is in
-> fix-phase — the executable single-artifact case shipped; this generalizes it.
+> (PR #1025).
+>
+> **Built (PR #1027):** the registry-driven umbrella below, as **Q-0105 dev tooling** (read-only ·
+> stdlib · warn-only · disposable, with the mandated provenance/reliability header) — *not* a bot
+> feature, so the FIX-phase scope gate (which fences self-invented **bot** features) does not apply;
+> Q-0105 directly authorizes building dev tooling without asking. Registry covers the three committed
+> generated families (dashboard.json → delegates to `check_dashboard_data --drift`; env-vars.md → env
+> name set; context packs → line set, date line dropped). **Promotion-gate decision:** kept a
+> manual/ad-hoc tool, **not** hard-CI-wired (ask-first) — the docs-reconciliation cadence pass is the
+> natural home for "keep the generated artifacts fresh"; `--strict` is provided for that opt-in use.
 
 ## The pattern this generalizes
 
