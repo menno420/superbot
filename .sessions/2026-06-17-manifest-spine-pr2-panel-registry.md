@@ -51,30 +51,33 @@ errors · mypy clean.
   arg-free and expose static custom_ids via `view.children` *before* committing to the
   introspection design — avoided a hand-maintained registry that would rot (the vision
   doc explicitly warns against that).
-- **Found a latent issue:** the two `help` panels share subsystem `"help"`, so the
-  recovery dict (`get_view_class`) only returns the last-registered one
-  (`HelpCategoryView`). Not touched (anchor recovery is load-bearing + out of scope),
-  but the manifest now surfaces both, and a future slice could split the help
-  subsystem key. Flagged below.
+- **Checked a suspected collision — it's intentional:** the two `help` panels share
+  subsystem `"help"`, so the recovery dict (`get_view_class`) returns only the
+  last-registered class. I almost flagged it as a latent bug, then read the source:
+  `panels.py:352` documents it — help anchors are **skipped at restart**
+  (`message_anchor_manager.restore_anchors`), so the registration is unused for recovery
+  and the overwrite is harmless by design. The "verify against source before fixing"
+  discipline paid off; no change needed. The PanelManifest correctly surfaces *both* via
+  the new `PANEL_ID` (the manifest *describes* panels; it's not bound to the recovery
+  key).
 
 ## Flagged for maintainer
 
-- **Latent (non-blocking):** `_REGISTRY` in `persistent_views.py` is keyed by
-  `SUBSYSTEM`, and the two `help` panels both use `"help"` — so `get_view_class("help")`
-  resolves to only one class (`HelpCategoryView`). Restart recovery for the other help
-  panel may rely on it being re-created fresh rather than via the registry. Worth a look
-  if help-panel restart ever misbehaves; the PanelManifest now makes the collision
-  visible. Not fixed this session (recovery seam, out of PR2 scope).
+- None blocking. (The `help` subsystem-key overwrite looked like a bug but is
+  documented-intentional — see above.)
 
 ## 💡 Session idea (Q-0089)
 
-The PanelManifest now knows every panel's `subsystem`; the recovery registry silently
-drops a panel when two share a subsystem (the `help` case above). A tiny invariant —
-`test_no_subsystem_owns_two_persistent_panels_without_distinct_panel_ids` *plus* a
-recovery-registry check that every registered class is reachable — would turn that
-silent collapse into a CI signal, and is the natural sibling of the reconciliation test
-shipped here. Filed under the manifest-spine reconciliation family; worth folding into
-PR3 (which already adds the AST/ledger/export drift guards).
+The vision doc names the manifest's *whole reason for existing* as fixing the AST
+`button_backed` weakness — "which command does this button actually back?". PR2 ships
+both halves (commands + panels) but does not yet **cross-reconcile** them. A genuine
+next-slice invariant: reconcile the command ledger's `panel_action` *classification*
+against the PanelManifest's real button `action_id`s — every command the ledger calls a
+`panel_action` should have a matching button somewhere, and every button's eventual
+`command` binding should point at a real command. That is the test that finally makes
+"this looks like a panel command" → "this button, in this panel, backs this command"
+*verified*. Right-sized for PR3 alongside its AST/ledger/export drift guards; flagged
+there in the execution plan.
 
 ## ⟲ Previous-session review (Q-0102)
 

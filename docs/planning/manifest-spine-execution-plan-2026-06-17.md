@@ -54,6 +54,13 @@ flips to `db_overlay` in PR4.
   make AST a drift-detection layer rather than a source of truth.
 - Join `source` (file/line) from the AST scanner; join `related_settings` / `capability_required` from
   `SettingSpec` / capability bindings.
+- **Cross-manifest reconciliation (the manifest's core purpose):** reconcile the command ledger's
+  `panel_action` classification against the PanelManifest's real button `action_id`s — every
+  `panel_action`-classified command should map to a real button, and (once the button→command binding
+  lands) every button's `command` should point at a real command. This is the test that turns "looks
+  like a panel command" into a *verified* "this button backs this command" — the AST `button_backed`
+  weakness the spine exists to close. Source seam for PR2's panel data: `core.runtime.persistent_views`
+  (the persistent-view registry — the panels with stable static custom_ids).
 
 ### PR4 — the panel-layout editor (H / L3 "move buttons")
 
