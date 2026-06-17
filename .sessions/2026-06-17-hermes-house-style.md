@@ -1,9 +1,9 @@
 # 2026-06-17 — Hermes plain-language house style — rollout (Q-0168)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > Manual, owner-greenlit ("about hermes, that should ideally be done pretty soon, this session is
-> good for that"). Docs + generated-skill artifacts only. Born-red per Q-0133; flip to `complete`
-> when CI is green.
+> good for that"). Docs + generated-skill artifacts only. Born-red per Q-0133; flipped to `complete`
+> after the full `check_quality --full` mirror passed green (the only "red" was the intended gate).
 
 **Branch:** `claude/hermes-house-style`
 
@@ -74,8 +74,8 @@ collaboration model if it recurs.
 
 | Metric | Value |
 |---|---|
-| PRs merged this session | 1 (#1029 earlier; this is the 2nd) |
-| CI-red rounds | TBD (filled at flip-to-complete) |
+| PRs merged this session | 2 (#1029 + this #1030) |
+| CI-red rounds | 0 (the only red was the intended born-red gate; full suite green first try) |
 | Repo-rule trips | 0 |
 | New ideas contributed | 1 (`check_house_style.py`) |
 | Ideas groomed | 0 (this run is execution, not grooming) |
