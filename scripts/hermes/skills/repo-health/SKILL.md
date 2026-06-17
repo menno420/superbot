@@ -55,23 +55,21 @@ Run these checks in order:
    ✅ if HEAD is at origin/main (no local commits ahead)
    ⚠️ if local commits ahead of origin/main (list them — repo clone may be stale)
 
-Format the output as:
+COMPOSE in the HOUSE STYLE (docs/operations/hermes-skills/_house-style.md): bottom line first, plain
+words (translate jargon — "architecture warnings" -> "known structure warnings, expected"; "main
+sync" -> "clone up to date"), grouped, one screen. Keep ✅/⚠️/❌ — the owner knows those. Group the six
+checks into four plain lines:
 
 ---
-## SuperBot Repo Health — [today's date + time]
+🩺 Repo health — [date + time]
 
-| Dimension       | Status | Notes |
-|-----------------|--------|-------|
-| Docs            | ✅/⚠️/❌ | ... |
-| Architecture    | ✅/⚠️/❌ | ... |
-| Open PRs        | ✅/⚠️/❌ | ... |
-| Recent CI       | ✅/⚠️/❌ | ... |
-| Working tree    | ✅/⚠️/❌ | ... |
-| Main sync       | ✅/⚠️/❌ | ... |
+Bottom line: [Everything's healthy and ready to work in / the one thing that needs attention first].
 
-### Details
-[any ⚠️ or ❌ items expanded here, one paragraph each]
+   Docs & structure   ✅/⚠️/❌  [plain words; "known warnings, expected" is fine]
+   Open changes       ✅/⚠️/❌  [N open — all fine / the few that need a look + #number]
+   Recent checks      ✅/⚠️/❌  [all passed / N failed, on which change]
+   Workspace          ✅/⚠️/❌  [clean / leftover files + clone up to date]
 
-### Verdict
-[one sentence — is the repo ready to work in, or does something need attention first?]
+Details (only if something is ⚠️/❌):
+[each problem in one plain paragraph — what it means + what to do]
 ---

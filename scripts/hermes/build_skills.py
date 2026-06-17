@@ -258,8 +258,8 @@ def build_all() -> dict[Path, str]:
     """Return ``{output_path: rendered_content}`` for every skill doc."""
     out: dict[Path, str] = {}
     for doc in sorted(SKILL_DOCS_DIR.glob("*.md")):
-        # README.md is the dir index; ``_``-prefixed files are drafts/proposals
-        # (e.g. _house-style-proposal.md), not skills — skip both.
+        # README.md is the dir index; ``_``-prefixed files are drafts / style
+        # references (e.g. _house-style.md), not skills — skip both.
         if doc.name == "README.md" or doc.name.startswith("_"):
             continue
         skill = parse_skill_doc(doc)

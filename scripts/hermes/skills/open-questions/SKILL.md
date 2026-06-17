@@ -40,32 +40,26 @@ Do the following in order:
 4. For each blocking question, note in one sentence what is blocked and what the
    options are (if the router doc mentions them).
 
-Format the output as:
+COMPOSE in the HOUSE STYLE (docs/operations/hermes-skills/_house-style.md): bottom line first, plain
+words, grouped, one screen. Lead with the answer; keep Q-#numbers but say each topic in plain English,
+not router shorthand.
 
 ---
-## SuperBot Open Questions — [today's date]
+🤔 Open decisions — [today's date]
 
-### Blocking (answer these first)
-| Q# | Topic | Blocks |
-|----|-------|--------|
-[rows]
+Bottom line: [N decisions waiting; the one that would unblock the most is [plain topic] (Q-####)].
 
-### Architectural
-| Q# | Topic | Short description |
-|----|-------|------------------|
-[rows]
+🚧 Blocking work right now
+   • Q-#### — [topic in plain words]: [what it's holding up].
 
-### Product
-| Q# | Topic | Short description |
-|----|-------|------------------|
-[rows]
+🏗️ Bigger / structural (no rush)
+   • Q-#### — [topic in plain words].
 
-### Process
-| Q# | Topic | Short description |
-|----|-------|------------------|
-[rows]
+🎮 Product & feel
+   • Q-#### — [topic in plain words].
 
-### Summary
-[2–3 sentences: how many open total, which areas have the most open questions,
- and which one question would unblock the most work if answered]
+⚙️ How we work (process / tooling)
+   • Q-#### — [topic in plain words].
+
+(Omit any group that's empty. Full detail is in the question router.)
 ---
