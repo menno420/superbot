@@ -3497,6 +3497,78 @@ def deterministic_hero_ability_roster_reply(message_text: str) -> str | None:
     return _format_hero_abilities(canonical, abilities)
 
 
+# --- §7.6 paragon ability roster (AI §7) --------------------------------------
+# "what abilities does the Ascended Shadow paragon have", "list the dart monkey
+# paragon's abilities" is the BUG-0009 wrong-assembly class for paragons: the
+# model lists a paragon's activated/passive abilities itself and can invent one,
+# mislabel activated vs passive, or drop one — and because every ability NAME is
+# grounded the value-only faithfulness guard never catches the wrong assembly. The
+# authoritative per-paragon list is the curated paragon_abilities.json (served via
+# btd6_stats_service), so the floor OWNS the labelled list. The literal "paragon"
+# token is what makes it mutually exclusive with the hero-ability roster (a hero
+# question never carries it) and the paragon-cost comparison (which needs a cost
+# cue this builder defers on).
+
+
+def _format_paragon_abilities(canonical: str, abilities: tuple[Any, ...]) -> str:
+    if not abilities:
+        return (
+            f"**{canonical}** has no special activated or passive ability — its "
+            "power is its base attack alone."
+        )
+    lines = [f"**{canonical} — abilities ({len(abilities)}):**"]
+    for ability in abilities:
+        if ability.kind == "passive":
+            tag = "passive"
+        elif ability.cooldown:
+            tag = f"activated, {ability.cooldown}s cooldown"
+        else:
+            tag = "activated"
+        lines.append(f"• **{ability.name}** ({tag}) — {ability.description}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_paragon_ability_roster_reply(message_text: str) -> str | None:
+    """A code-built "what abilities does <paragon> have" list, or ``None``.
+
+    The §7.6 *paragon-ability* roster member of the BUG-0009 floor — the paragon
+    sibling of :func:`deterministic_hero_ability_roster_reply`. Fires on an ability
+    cue + the literal ``paragon`` token + exactly one resolved paragon, listing
+    that paragon's curated activated/passive abilities (name + kind + cooldown +
+    summary). Defers (``None``) on a **cost** cue (the paragon *cost* comparison
+    builder's job — same entity, different shape), strategy/opinion phrasing, zero
+    paragons, and two-or-more paragons (an ambiguous multi-paragon ask reaches the
+    model). The ``paragon`` token keeps it mutually exclusive with the hero-ability
+    roster (a hero question never carries it). A paragon with no special ability
+    (e.g. Apex Plasma Master) still gets an explicit owned line so the model never
+    invents one.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _ABILITY_CUE_RE.search(text):
+        return None
+    if not _PARAGON_CUE_RE.search(text):
+        return None
+    # A paragon cost comparison is the paragon-cost builder's job, not this roster.
+    if _COST_COMPARE_CUE_RE.search(text) or _COST_COMPARE_VERB_RE.search(text):
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    names = _extract_paragon_names(text)
+    if len(names) != 1:
+        return None
+
+    from services import btd6_stats_service
+
+    pstats = btd6_stats_service.get_paragon_stats(names[0])
+    if pstats is None:
+        return None
+    return _format_paragon_abilities(pstats.canonical, pstats.abilities)
+
+
 # --- boss damage-immunity floor (BUG-0009) ------------------------------------
 # "what is Lych immune to" / "which bosses are immune to fire" — the model can
 # mis-state a boss's immunities (claim an immunity it doesn't have, or omit one),
@@ -3585,6 +3657,135 @@ def deterministic_boss_immunity_reply(message_text: str) -> str | None:
     return None
 
 
+# --- §7.5 boss tier-HP comparison floor (BUG-0009) ----------------------------
+# "which boss has the most health at tier 5", "is Lych or Vortex tougher at tier
+# 3" is the §7.5 comparison member of the wrong-assembly class for bosses: the
+# model ranks the bosses itself off their per-tier health and can mis-state which
+# is tougher / by how much (every HP figure is grounded, so the value-only
+# faithfulness guard never catches a wrong RANKING). The authoritative per-tier
+# health is bosses[].tiers / .elite_tiers, so the floor OWNS the ranking. A tier
+# (1-5) is REQUIRED — without one the comparison is ambiguous (a boss has five
+# different HP values), so the builder fails closed and the question reaches the
+# model. Defers on an immunity cue (the boss-immunity floor's job).
+_BOSS_HP_CUE_RE = re.compile(
+    r"\b(?:hp|health|hit\s?points?|tough\w*|tank\w*|durab\w*|sturd\w*|beef\w*)\b",
+    re.I,
+)
+_BOSS_HP_MOST_RE = re.compile(
+    r"\b(?:most|highest|toughest|strongest|tankiest|beefiest|biggest|hardest)\b",
+    re.I,
+)
+_BOSS_HP_LEAST_RE = re.compile(
+    r"\b(?:least|lowest|weakest|squishiest|smallest|frailest)\b",
+    re.I,
+)
+_BOSS_TIER_RE = re.compile(r"\btier\s*([1-5])\b|\bt([1-5])\b", re.I)
+# A narrow strategy/how-to set — kept separate from _ROSTER_STRATEGY_WORDS because
+# that set excludes "vs"/"better"/"against", which are legitimate HP-comparison
+# phrasings ("Lych vs Vortex tier 5 hp"); only true strategy intent defers here.
+_BOSS_HP_STRATEGY_EXCLUDE = ("counter", "how do i beat", "how to beat", "tier list")
+
+
+def _scan_bosses(text_lower: str, bosses: Any) -> list[Any]:
+    """Every boss named in ``text_lower``, in order of first appearance, deduped.
+
+    Whole-word matched on the canonical (bosses carry no aliases). The plural
+    sibling of :func:`_scan_boss`, used by the HP comparison floor to rank the
+    specific bosses a question names.
+    """
+    hits: list[tuple[int, Any]] = []
+    for boss in bosses:
+        name = boss.canonical.lower()
+        if len(name) < 3:
+            continue
+        match = re.search(r"\b" + re.escape(name) + r"\b", text_lower)
+        if match:
+            hits.append((match.start(), boss))
+    hits.sort(key=lambda h: h[0])
+    return [boss for _start, boss in hits]
+
+
+def _boss_tier_health(boss: Any, tier: int, *, elite: bool) -> int | None:
+    """One boss's health at ``tier`` (1-5), elite or normal, or ``None``."""
+    rows = (boss.elite_tiers if elite else boss.tiers) or ()
+    for row in rows:
+        if row.get("tier") == tier:
+            health = row.get("health")
+            return int(health) if health is not None else None
+    return None
+
+
+def deterministic_boss_hp_comparison_reply(message_text: str) -> str | None:
+    """A code-built boss tier-HP ranking, or ``None``.
+
+    The §7.5 *boss* member of the multi-entity comparison floor. Two shapes off
+    ``bosses[].tiers`` / ``.elite_tiers``: ranking the specific bosses a question
+    names ("is Lych or Vortex tougher at tier 3") and the superlative over all
+    bosses ("which boss has the most health at tier 5"). A tier (1-5) is REQUIRED —
+    without one the answer is ambiguous (five HP values per boss), so the builder
+    returns ``None`` and the model handles it. Defers (``None``) on an immunity cue
+    (the boss-immunity floor's job), a strategy/how-to-beat ask, and a single-boss
+    HP lookup (a value question the faithfulness guard already covers).
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _BOSS_HP_CUE_RE.search(text):
+        return None
+    # An immunity question is the boss-immunity floor's job, not an HP ranking.
+    if _BOSS_IMMUNE_CUE_RE.search(text):
+        return None
+    if any(word in text for word in _BOSS_HP_STRATEGY_EXCLUDE):
+        return None
+
+    tier_match = _BOSS_TIER_RE.search(text)
+    if not tier_match:
+        return None
+    tier = int(tier_match.group(1) or tier_match.group(2))
+    elite = "elite" in text
+
+    from services import btd6_data_service
+
+    bosses = btd6_data_service.get_dataset().bosses
+    if not bosses:
+        return None
+
+    named = _scan_bosses(text, bosses)
+    superlative_most = _BOSS_HP_MOST_RE.search(text)
+    superlative_least = _BOSS_HP_LEAST_RE.search(text)
+
+    if len(named) >= 2:
+        contenders = named
+    elif (superlative_most or superlative_least) and _BOSS_SUBJECT_RE.search(text):
+        contenders = list(bosses)
+    else:
+        return None
+
+    ranked = []
+    for boss in contenders:
+        health = _boss_tier_health(boss, tier, elite=elite)
+        if health is not None:
+            ranked.append((boss, health))
+    if len(ranked) < 2:
+        return None
+
+    ascending = superlative_least is not None and superlative_most is None
+    ranked.sort(key=lambda rb: rb[1], reverse=not ascending)
+
+    label = "elite tier" if elite else "tier"
+    winner, winner_hp = ranked[0]
+    verb = "least" if ascending else "most"
+    lines = [
+        f"**Boss HP at {label} {tier} — ranked ({verb} first):**",
+    ]
+    lines.extend(f"• **{boss.canonical}** — {health:,} HP" for boss, health in ranked)
+    lines.append(
+        f"**{winner.canonical}** has the {verb} health at {label} {tier} "
+        f"({winner_hp:,} HP).",
+    )
+    return "\n".join(lines)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -3603,8 +3804,10 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_bloon_roster_reply,
     deterministic_bloon_modifier_reply,
     deterministic_boss_immunity_reply,
+    deterministic_boss_hp_comparison_reply,
     deterministic_relic_roster_reply,
     deterministic_hero_ability_roster_reply,
+    deterministic_paragon_ability_roster_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_hero_cost_comparison_reply,
     deterministic_power_cost_comparison_reply,
