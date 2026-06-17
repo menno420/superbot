@@ -1,23 +1,23 @@
 {
   "meta": {
-    "generated_at": "2026-06-16T21:53:32Z",
+    "generated_at": "2026-06-17T18:15:56Z",
     "build": {
-      "commit": "2631b14",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/dashboard-subcog-subsystem-map",
-      "committed_at": "2026-06-16T21:50:04Z",
-      "branch": "claude/dashboard-subcog-subsystem-map"
+      "commit": "14e33efb",
+      "subject": "session card (born-red): dashboard.json structural-drift reporter + freshness catch-up",
+      "committed_at": "2026-06-17T18:09:47Z",
+      "branch": "claude/magical-rubin-jnpnuw"
     },
     "counts": {
       "functions": 33,
-      "ideas": 78,
+      "ideas": 81,
       "bugs": 15,
       "updates": 60,
-      "env_vars": 35,
+      "env_vars": 37,
       "cogs": 40,
       "commands": 301,
-      "setting_keys": 83,
+      "setting_keys": 84,
       "setting_domains": 13,
-      "typed_settings": 64,
+      "typed_settings": 65,
       "visible_subsystems": 33,
       "synonyms": 87
     }
@@ -892,6 +892,13 @@
   ],
   "ideas": [
     {
+      "file": "ledger-bookkeeping-tally-soft-lint-2026-06-17.md",
+      "title": "Idea — soft-lint the unbounded \"running tally\" drift class",
+      "status": "ideas",
+      "date": "2026-06-17",
+      "summary": "The `docs/current-state.md` \"Older merges → archive\" pointer line had silently accreted a ~2,000-word"
+    },
+    {
       "file": "architecture-atlas-and-structure-review-2026-06-16.md",
       "title": "Architecture atlas & structure review — capture + agent judgment",
       "status": "ideas",
@@ -1004,6 +1011,13 @@
       "summary": "The new `superbot-idea-spotlight` skill surfaces one active idea per day and asks the owner to"
     },
     {
+      "file": "ledger-dedup-linter-2026-06-16.md",
+      "title": "Ledger dedup linter (companion to the merge=union fix)",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "PR #1003 marked the two append-only coordination ledgers — `docs/owner/active-work.md` (claim ledger)"
+    },
+    {
       "file": "ledger-guard-exempt-reconciliation-prs-2026-06-16.md",
       "title": "Idea — the ledger guard should exempt self-referential reconciliation PRs",
       "status": "ideas",
@@ -1023,6 +1037,13 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "The §7.5 round-range cash comparison floor (`deterministic_round_range_comparison_reply`, #955)"
+    },
+    {
+      "file": "routine-permission-surface-lint-2026-06-16.md",
+      "title": "Idea — a lint that flags routine-common commands that would hit the `ask` permission brake",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "An **unattended** routine (dispatch / reconciliation) that hits a Claude Code permission prompt"
     },
     {
       "file": "server-owner-configurable-moderation-dms-2026-06-16.md",
@@ -1532,6 +1553,114 @@
   ],
   "updates": [
     {
+      "file": "2026-06-17-reconcile-band1020.md",
+      "date": "2026-06-17",
+      "title": "Session — 2026-06-17 · band-#1020 Q-0107 docs reconciliation",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-paragon-ability-roster-floor.md",
+      "date": "2026-06-17",
+      "title": "Session — 2026-06-17 · paragon-ability + boss tier-HP deterministic floors (BUG-0009 §7.5/§7.6)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-night-queue-relic-roster.md",
+      "date": "2026-06-17",
+      "title": "Session — night-queue slot 3: relic category/effect roster floor",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-night-queue-power-cost-comparison.md",
+      "date": "2026-06-17",
+      "title": "Session — night-queue slot 2: power (activated-ability) cost comparison floor",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-night-queue-mk-category-roster.md",
+      "date": "2026-06-17",
+      "title": "Session — night-queue buffer slices + slot-4 reframe (three §7.6 floor builders)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-night-queue-hero-ability-roster.md",
+      "date": "2026-06-17",
+      "title": "Session — night-queue slot 5: hero ability roster floor (slot 4 reframed)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-moderation-dm-per-action.md",
+      "date": "2026-06-17",
+      "title": "Session — per-action moderation DMs (Q-0147 standing DM policy)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-manifest-spine-pr3-control-read-reconcile.md",
+      "date": "2026-06-17",
+      "title": "Manifest spine PR3 — control-API manifest read + cross-manifest reconciliation",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-manifest-spine-pr2-panel-registry.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Manifest spine PR2: panel registry + PanelManifest",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-global-settings-tier.md",
+      "date": "2026-06-17",
+      "title": "Session — global settings tier (per-guild → global → default)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-dashboard-vision-review.md",
+      "date": "2026-06-17",
+      "title": "Session — review the dashboard vision plan + control-panel session close",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-dashboard-vision-reconcile.md",
+      "date": "2026-06-17",
+      "title": "Session — dashboard vision-roadmap reconcile (+ Phase C parallel-collision close-out)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-dashboard-r3-hardening.md",
+      "date": "2026-06-17",
+      "title": "Session — dashboard R3: live-surface hardening (rate-limiting + CSRF)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-dashboard-phase-e-read-endpoints.md",
+      "date": "2026-06-17",
+      "title": "Session — dashboard Phase E: control-API read endpoints (stop the editors writing blind)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-dashboard-phase-c-read-workspace.md",
+      "date": "2026-06-17",
+      "title": "Session — dashboard Phase C: the read workspace (personal overview + server health + authority preview)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-dashboard-json-structural-drift-reporter.md",
+      "date": "2026-06-17",
+      "title": "dashboard.json structural-drift reporter + freshness catch-up",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-command-manifest-spine-slice1.md",
+      "date": "2026-06-17",
+      "title": "Session — manifest spine, slice 1 (typed CommandManifest over the ledger)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-17-btd6-roster-floor-bosses-maps.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — BTD6 answerability floor: boss roster + map filter + boss immunity",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-video-frame-extraction-tooling.md",
       "date": "2026-06-16",
       "title": "Session — video frame-extraction tooling (so future sessions can see uploads immediately)",
@@ -1568,6 +1697,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-reconcile-band990.md",
+      "date": "2026-06-16",
+      "title": "Session — 2026-06-16 · tenth Q-0107 docs reconciliation (band-#990)",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-railway-logs-retry.md",
       "date": "2026-06-16",
       "title": "Session — railway_logs.py: retry/backoff on transient 5xx",
@@ -1577,6 +1712,12 @@
       "file": "2026-06-16-pr-mergeability-keepers.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — PR mergeability keepers: auto-update behind + red-on-conflict",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-night-queue.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — Night work queue for the dispatch routine",
       "status": "complete"
     },
     {
@@ -1634,6 +1775,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-idea-backlog-hygiene.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — idea-backlog hygiene (tie off the #995 deferrals) + validate the union fix",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-hook-cwd-robust.md",
       "date": "2026-06-16",
       "title": "Session — make the settings.json hooks cwd-robust (Q-0150)",
@@ -1667,6 +1814,18 @@
       "file": "2026-06-16-hermes-efficiency-skills.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — Hermes efficiency: idea-spotlight + briefing + dispatch-resolve + 6h auto-reset",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-health-server-ipv6-bind.md",
+      "date": "2026-06-16",
+      "title": "Session — health server IPv6 dual-stack bind (Railway private networking)",
+      "status": "complete"
+    },
+    {
+      "file": "2026-06-16-gitattributes-union-ledger.md",
+      "date": "2026-06-16",
+      "title": "2026-06-16 — fix the ledger-file merge-conflict livelock (.gitattributes merge=union)",
       "status": "complete"
     },
     {
@@ -1712,6 +1871,12 @@
       "status": "complete"
     },
     {
+      "file": "2026-06-16-dashboard-vision-decisions.md",
+      "date": "2026-06-16",
+      "title": "Session (cont.) — solidify the dashboard finalized-vision plan with owner panel decisions",
+      "status": "complete"
+    },
+    {
       "file": "2026-06-16-dashboard-subcog-subsystem-map.md",
       "date": "2026-06-16",
       "title": "2026-06-16 — dashboard: map sub-cogs to their parent subsystem",
@@ -1745,150 +1910,6 @@
       "file": "2026-06-16-dashboard-foundation-reconcile.md",
       "date": "2026-06-16",
       "title": "Session — dashboard live-editor: foundation-complete reconciliation + orientation fix",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-env-usage-map.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard Phase 3 (read-only env-var usage map)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-docs-handoff.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard documentation + next-session handoff",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-deploy-fix.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard deploy fix (StaticFiles crash) + Railway deploy config",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-data-integrity-guard.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — dashboard.json integrity guard",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-commands-explorer.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard cog & command explorer (`/commands`)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-dashboard-aliases.md",
-      "date": "2026-06-16",
-      "title": "Session — Dashboard: `/aliases` command-alias suggestion page",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-count-citation-guard.md",
-      "date": "2026-06-16",
-      "title": "Session — count-citation guard (soft check_docs rule)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-control-panel-oauth-editors.md",
-      "date": "2026-06-16",
-      "title": "Session — control panel: Discord OAuth login + web editors (write side, step 2)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-control-api-mutation-endpoints.md",
-      "date": "2026-06-16",
-      "title": "Session — control API mutation endpoints (write side, step 1)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-control-api-foundation.md",
-      "date": "2026-06-16",
-      "title": "Session — control-API foundation (bot side): auth + identity→authority bridge",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-conflict-guard-token-hotfix.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — hotfix: pr-conflict-guard token + bash-errexit safety",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-conflict-guard-noise-refine.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — refine pr-conflict-guard to cut per-PR noise",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-commands-management-surface.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — `/commands` management surface (READ side)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-command-count-reconcile.md",
-      "date": "2026-06-16",
-      "title": "Session — Reconcile command counts (website breakdown + bot status embed)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-coglist-command.md",
-      "date": "2026-06-16",
-      "title": "Session — `!coglist` text command → the \"📋 Cog List\" button (owner request)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-code-expertise-research-readout.md",
-      "date": "2026-06-16",
-      "title": "Session — Claude Code expertise research: workflow grounding",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-shorthand-corpus-idea.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — capture: BTD6 shorthand-corpus eval idea (post-BUG-0015 grooming)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-round-range-comparison.md",
-      "date": "2026-06-16",
-      "title": "Session — BTD6 round-range cash comparison floor (AI §7.5)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-paragon-degree-parse.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — BTD6 \"d67 dart paragon\" degree-parse bug fix (BUG-0015)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-paragon-cost-comparison.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — BTD6 paragon base-cost comparison floor (AI §7.5)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-live-events-current-first.md",
-      "date": "2026-06-16",
-      "title": "Session — BTD6 Live Events: fix the dead drill-down + current-event-first redesign",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-difficulty-cost-comparison.md",
-      "date": "2026-06-16",
-      "title": "Session — BTD6 difficulty cost-comparison floor (AI §7.5)",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-cost-comparison-floor.md",
-      "date": "2026-06-16",
-      "title": "Session — AI §7.5 deterministic BTD6 cost-comparison floor",
-      "status": "complete"
-    },
-    {
-      "file": "2026-06-16-btd6-capability-roster-floor.md",
-      "date": "2026-06-16",
-      "title": "Session — BTD6 property/capability roster floors (AI §7.6 new family)",
       "status": "complete"
     }
   ],
@@ -2292,7 +2313,7 @@
       "usages": [
         {
           "file": "disbot/control_api.py",
-          "line": 65,
+          "line": 111,
           "layer": "control_api",
           "has_default": true
         }
@@ -2331,6 +2352,22 @@
       ]
     },
     {
+      "name": "HEALTH_HOST",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "healthserver"
+      ],
+      "usages": [
+        {
+          "file": "disbot/healthserver.py",
+          "line": 70,
+          "layer": "healthserver",
+          "has_default": true
+        }
+      ]
+    },
+    {
       "name": "HEALTH_PORT",
       "required": false,
       "usage_count": 1,
@@ -2340,7 +2377,7 @@
       "usages": [
         {
           "file": "disbot/healthserver.py",
-          "line": 63,
+          "line": 64,
           "layer": "healthserver",
           "has_default": true
         }
@@ -2456,6 +2493,22 @@
           "file": "disbot/services/paragon_service.py",
           "line": 50,
           "layer": "services",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "RAILWAY_GIT_COMMIT_SHA",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "core"
+      ],
+      "usages": [
+        {
+          "file": "disbot/core/runtime/command_manifest.py",
+          "line": 243,
+          "layer": "core",
           "has_default": true
         }
       ]
@@ -6740,9 +6793,16 @@
           "constant": "MOD_DM_ON_ACTION",
           "key": "moderation_dm_on_action",
           "type": "bool",
-          "hint": "DM the affected member a notice when they are warned, timed out, kicked, or banned.  Best-effort — silently skipped when the member has DMs closed.",
+          "hint": "Master switch for notifying members by DM.  When on, the actions listed in 'dm_actions' DM the affected member a notice (the action + reason) — when off, no moderation DM is ever sent.  Best-effort: silently skipped when the member has DMs closed.",
           "allowed_values": [],
           "default": false
+        },
+        {
+          "constant": "MOD_DM_ACTIONS",
+          "key": "moderation_dm_actions",
+          "type": "str",
+          "hint": "Which actions DM the affected member when 'dm_on_action' is on: a comma-separated subset of warn, timeout, kick, ban (default all four).  Narrow it to suppress specific DMs — e.g. 'warn,timeout' to notify on warnings but not on a kick or ban.  Has no effect while the 'dm_on_action' master switch is off.",
+          "allowed_values": []
         },
         {
           "constant": "MOD_DM_TEMPLATE",
