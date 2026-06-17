@@ -45,9 +45,10 @@ and forward-looking. Nothing here contradicts what shipped.
 **Material correction — the write side went live *today*, after this doc was written.** The phase table
 and several "Status today" cells understate reality:
 
-- **Phase C (OAuth + workspace) — partly shipped.** Discord OAuth login, a signed-cookie session, the
-  `/admin` server picker, and per-guild editor pages are live (#996). *Still open:* the richer *read*
-  workspace (`/me`, a server **overview** with setup-health, the authority preview) — those were skipped.
+- **Phase C (OAuth + workspace) — shipped.** Discord OAuth login, a signed-cookie session, the
+  `/admin` server picker, and per-guild editor pages are live (#996); the richer *read* workspace —
+  `/me` (personal overview), a per-server **overview** with setup-health, and the authority preview —
+  shipped in **#1015** (read-only, over the Phase E reads).
 - **Phase F (first live writes) — shipped + activated.** The help / settings / cog-routing editors write
   live through the audited seams (#993 endpoints + #996 editors); `CONTROL_API_TOKEN` + the OAuth secret
   are set on Railway and it is confirmed working end-to-end.
@@ -374,7 +375,7 @@ spine). This roadmap is the *connective tissue*, not a re-plan — each phase po
 |---|---|---|---|
 | **A — public IA + product homepage** | Product-grade homepage; use-case taxonomy; better `/commands` & `/functions`; freshness badges everywhere | `developer-dashboard-plan.md` | none (no OAuth/runtime) |
 | **B — freshness & provenance** | Lineage badges + per-widget states; automate export regen; ETag/conditional GETs | `developer-dashboard-plan.md` | none |
-| **C — OAuth + personal/server workspaces** | Login, sessions, `/admin` server picker, per-guild editor pages | `dashboard-live-editor-plan.md` L0 | 🟡 **partly shipped + live** (#996): OAuth login + server picker + editor pages run; **still open** — the richer *read* workspace (`/me`, a server **overview** with setup-health, the authority preview) |
+| **C — OAuth + personal/server workspaces** | Login, sessions, `/admin` server picker, per-guild editor pages, the read workspace | `dashboard-live-editor-plan.md` L0 | ✅ **shipped + live**: OAuth login + server picker + editor pages (#996); the read workspace — `/me`, a per-server **overview** with setup-health, the authority preview — shipped read-only in #1015 |
 | **D — manifest spine** | Typed command/panel/settings manifest export + panel registry + reconciliation tests; AST demoted to drift detection | **NEW track** (this doc) | ✅ **approved (Q-0162).** Gates **command-management trustworthiness + the panel editor (H)** — *not* the already-shipped settings/help/routing editors (they ride already-typed seams). Build after the Phase-E reads, before H. |
 | **E — control API read endpoints** | Private, secret-protected reads: **current settings values**, help overlay, server context, capabilities, diagnostics, manifest | `dashboard-live-editor-plan.md` L1 | ⚠️ **SKIPPED — now the top next priority.** The token is set, but the current-value **GET** endpoints (`/control/settings/current`, `/control/help/overlay`) were never built, so the live editors **write blind** (see reviewer note R1). Highest-value, lowest-risk next slice. |
 | **F — first live writes (audited seams)** | Help / settings / cog-routing editors over the audited seams | `dashboard-live-editor-plan.md` L2 + Q-0157 | ✅ **SHIPPED + LIVE** (#993 endpoints + #996 editors) — confirmed end-to-end. Order help → settings → aliases/routing (Q-0163); **aliases live-overlay + global-settings tier still to come.** |

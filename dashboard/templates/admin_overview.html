@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{{ guild.name }} — Overview — SuperBot{% endblock %}
+{% block content %}
+<div class="mb-5">
+  <a href="/admin" class="text-xs text-slate-400 hover:text-sky-300">← All servers</a>
+  <div class="flex items-center justify-between gap-3 mt-1">
+    <h1 class="text-2xl font-bold">{{ guild.name }} <span class="text-slate-500 text-base font-normal">· overview</span></h1>
+    <a href="/admin/{{ guild.id }}"
+       class="shrink-0 rounded-lg bg-sky-700 hover:bg-sky-600 px-4 py-2 text-sm font-medium">Manage →</a>
+  </div>
+  <p class="text-slate-500 text-xs mt-1">
+    {{ 'Owner' if guild.owner else 'Administrator' }} · guild id {{ guild.id }}
+  </p>
+</div>
+
+{% if not control_configured %}
+  <div class="mb-6 rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+    The dashboard isn't connected to the bot yet (<code>CONTROL_API_TOKEN</code> unset), so live server
+    data isn't available. Set the shared token on both Railway services to see this server's current state.
+  </div>
+{% elif authority is none %}
+  <div class="mb-6 rounded-lg border border-rose-900/60 bg-rose-950/30 px-4 py-3 text-sm text-rose-200">
+    ⚠ The dashboard couldn't reach the bot's control API right now (it may be restarting or the private
+    network is down). Live server state is unavailable — try again shortly.
+  </div>
+{% elif authority and not authority.member_found %}
+  <div class="mb-6 rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+    The bot {{ 'is not in this server' if not authority.guild_found else "can't see your membership here" }},
+    so it can't report this server's state. Invite the bot (and make sure it can see you) to manage it.
+  </div>
+{% endif %}
+
+<!-- ===================== Authority preview ===================== -->
+<section class="mb-6 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+  <h2 class="text-lg font-semibold mb-1">🔑 Your authority here</h2>
+  <p class="text-slate-400 text-xs mb-4">
+    What the bot will let you read and change on this server. This is honest expectation-setting — the
+    <strong>bot</strong> makes the final decision and re-checks it on every edit.
+  </p>
+  <div class="mb-4 text-sm text-slate-300">
+    The bot sees you as
+    <span class="text-slate-100 font-medium">{{ preview.tier or 'member' }}</span>{% if preview.is_owner %} ·
+    <span class="text-amber-300">server owner</span>{% elif preview.is_admin %} ·
+    <span class="text-emerald-300">administrator</span>{% endif %}.
+  </div>
+  {% set rows = [
+       ('Read current configuration', preview.may_read_config),
+       ('Edit settings', preview.may_edit_settings),
+       ('Edit help appearance', preview.may_edit_help),
+       ('Enable / disable cogs', preview.may_edit_routing),
+     ] %}
+  <ul class="grid gap-2 sm:grid-cols-2">
+    {% for label, allowed in rows %}
+      <li class="flex items-center gap-2 text-sm rounded-lg border px-3 py-2
+        {{ 'border-emerald-900/50 bg-emerald-950/20 text-emerald-200' if allowed
+           else 'border-slate-800 bg-slate-950/30 text-slate-500' }}">
+        <span>{{ '✓' if allowed else '—' }}</span>
+        <span>You may {{ 'change' if 'Edit' in label or 'Enable' in label else 'read' }}: {{ label|lower }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  {% if not preview.is_admin %}
+    <p class="mt-3 text-xs text-slate-500">
+      Reading and editing this server requires administrator permission. Server value/platform
+      management lives in the separate owner zone.
+    </p>
+  {% endif %}
+</section>
+
+<!-- ===================== Setup health ===================== -->
+<section class="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+  <h2 class="text-lg font-semibold mb-1">🩺 Setup health</h2>
+  {% if not current.reads_ok %}
+    <p class="text-slate-500 text-sm">
+      {% if not preview.is_admin %}
+        Sign in as an administrator of this server to see its live configuration health.
+      {% else %}
+        Couldn't load this server's live state right now. Try again, or open
+        <a href="/admin/{{ guild.id }}" class="underline hover:text-slate-300">Manage</a>.
+      {% endif %}
+    </p>
+  {% else %}
+    <p class="text-slate-400 text-xs mb-4">
+      A one-glance picture from the bot's live truth. Drill into
+      <a href="/admin/{{ guild.id }}" class="underline hover:text-slate-300">Manage</a> to change anything.
+    </p>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-5">
+      <div class="rounded-lg border border-slate-800 bg-slate-950/40 px-4 py-3">
+        <div class="text-2xl font-bold">{{ health.total_settings }}</div>
+        <div class="text-xs text-slate-500">settings tracked</div>
+      </div>
+      <div class="rounded-lg border border-slate-800 bg-slate-950/40 px-4 py-3">
+        <div class="text-2xl font-bold text-sky-300">{{ health.customised }}</div>
+        <div class="text-xs text-slate-500">customised from default</div>
+      </div>
+      <div class="rounded-lg border px-4 py-3
+        {{ 'border-amber-900/60 bg-amber-950/20' if health.invalid_count else 'border-slate-800 bg-slate-950/40' }}">
+        <div class="text-2xl font-bold {{ 'text-amber-300' if health.invalid_count else 'text-emerald-300' }}">
+          {{ health.invalid_count }}</div>
+        <div class="text-xs text-slate-500">invalid → using default</div>
+      </div>
+      <div class="rounded-lg border border-slate-800 bg-slate-950/40 px-4 py-3">
+        <div class="text-2xl font-bold {{ 'text-rose-300' if health.disabled_count else 'text-slate-200' }}">
+          {{ health.disabled_count }}</div>
+        <div class="text-xs text-slate-500">cog(s) disabled</div>
+      </div>
+    </div>
+
+    {% if health.invalid %}
+      <div class="mb-4 rounded-lg border border-amber-900/50 bg-amber-950/20 px-4 py-3 text-sm">
+        <div class="font-medium text-amber-200 mb-1">Settings falling back to their default (value invalid):</div>
+        <ul class="text-amber-100/90 text-xs space-y-0.5">
+          {% for s in health.invalid %}
+            <li><code>{{ s.subsystem }}.{{ s.name }}</code></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="grid gap-3 sm:grid-cols-2 text-sm">
+      <div class="rounded-lg border border-slate-800 bg-slate-950/30 px-4 py-3">
+        <div class="text-slate-200 font-medium mb-1">📖 Help appearance</div>
+        <div class="text-slate-400 text-xs">
+          {{ health.help_overrides }} override(s)·
+          Home message {{ 'customised' if health.home_customised else 'default' }}.
+        </div>
+      </div>
+      <div class="rounded-lg border border-slate-800 bg-slate-950/30 px-4 py-3">
+        <div class="text-slate-200 font-medium mb-1">🧩 Cog routing</div>
+        <div class="text-slate-400 text-xs">
+          {% if health.disabled_cogs %}
+            Disabled: {{ health.disabled_cogs|join(', ') }}.
+          {% else %}
+            All cogs enabled for this server.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

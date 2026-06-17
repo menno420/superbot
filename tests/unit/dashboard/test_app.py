@@ -38,13 +38,18 @@ def _login_cookie(user_id="42", guild_id="111", guild_name="My Server"):
 
 
 @pytest.fixture(scope="module")
-def client():
+def app_module():
     spec = importlib.util.spec_from_file_location("dashboard_app_ut", _APP)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    return TestClient(module.app)
+    return module
+
+
+@pytest.fixture(scope="module")
+def client(app_module):
+    return TestClient(app_module.app)
 
 
 @pytest.mark.parametrize(
@@ -297,6 +302,174 @@ def test_admin_guild_unknown_guild_redirects(client):
     resp = client.get("/admin/999", cookies=_login_cookie(), follow_redirects=False)
     assert resp.status_code in (302, 307)
     assert resp.headers["location"] == "/admin"
+
+
+# ---------------------------------------------------------------------------
+# Phase C — the read workspace (/me, /admin/{guild}/overview, authority preview)
+# ---------------------------------------------------------------------------
+
+
+def test_me_requires_login(client):
+    # Not signed in → the personal overview bounces back to /admin (sign-in).
+    resp = client.get("/me", follow_redirects=False)
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+def test_me_overview_lists_servers_when_logged_in(client):
+    resp = client.get("/me", cookies=_login_cookie())
+    assert resp.status_code == 200
+    assert "Servers you administer" in resp.text
+    assert "My Server" in resp.text
+    # Each server card links to both the overview and the editor.
+    assert "/admin/111/overview" in resp.text
+    assert 'href="/admin/111"' in resp.text
+
+
+def test_overview_requires_login(client):
+    resp = client.get("/admin/111/overview", follow_redirects=False)
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+def test_overview_unknown_guild_redirects(client):
+    resp = client.get(
+        "/admin/999/overview",
+        cookies=_login_cookie(),
+        follow_redirects=False,
+    )
+    assert resp.status_code in (302, 307)
+    assert resp.headers["location"] == "/admin"
+
+
+def test_overview_renders_authority_preview_when_dormant(client):
+    # Logged in, control API dormant → the page renders with the authority preview
+    # and the "not connected" notice, never an error.
+    resp = client.get("/admin/111/overview", cookies=_login_cookie())
+    assert resp.status_code == 200
+    assert "Your authority here" in resp.text
+    assert "Setup health" in resp.text
+    assert "CONTROL_API_TOKEN" in resp.text
+
+
+def test_overview_shows_health_metrics_with_live_reads(client, monkeypatch):
+    # Configured + admin → the overview renders the live setup-health summary.
+    from unittest.mock import AsyncMock
+
+    import control_client
+
+    monkeypatch.setattr(control_client, "is_configured", lambda: True)
+    monkeypatch.setattr(
+        control_client,
+        "get_authority",
+        AsyncMock(
+            return_value={
+                "guild_found": True,
+                "member_found": True,
+                "is_admin": True,
+                "is_owner": False,
+                "tier": "administrator",
+            },
+        ),
+    )
+
+    async def fake_get(path, params=None):
+        if path == "/control/settings/current":
+            return 200, {
+                "ok": True,
+                "subsystems": {
+                    "moderation": [
+                        {"name": "warn_threshold", "value": 5, "provenance": "guild", "valid": True},
+                        {"name": "mute_role", "value": None, "provenance": "default", "valid": False},
+                    ],
+                },
+            }
+        if path == "/control/help/overlay":
+            return 200, {"ok": True, "rows": [{"entity_kind": "subsystem", "entity_key": "xp"}], "home": None}
+        if path == "/control/help/catalogue":
+            return 200, {"ok": True, "hubs": [], "subsystems": []}
+        if path == "/control/routing":
+            return 200, {
+                "ok": True,
+                "rows": [
+                    {"scope_type": "guild", "scope_id": None, "cog_name": "MiningCog", "enabled": False},
+                ],
+            }
+        return 503, {"error": "unexpected path"}
+
+    monkeypatch.setattr(control_client, "get", fake_get)
+
+    resp = client.get("/admin/111/overview", cookies=_login_cookie())
+    assert resp.status_code == 200
+    # One customised, one invalid, one help override, one disabled cog.
+    assert "customised from default" in resp.text
+    assert "invalid → using default" in resp.text
+    assert "mute_role" in resp.text  # the invalid setting is named
+    assert "MiningCog" in resp.text  # the disabled cog is named
+
+
+def test_overview_shows_unreachable_when_bot_down(client, monkeypatch):
+    # Configured, but the bot control API is unreachable (get_authority → None) →
+    # the overview shows an honest "unavailable" banner, never an error.
+    from unittest.mock import AsyncMock
+
+    import control_client
+
+    monkeypatch.setattr(control_client, "is_configured", lambda: True)
+    monkeypatch.setattr(control_client, "get_authority", AsyncMock(return_value=None))
+
+    resp = client.get("/admin/111/overview", cookies=_login_cookie())
+    assert resp.status_code == 200
+    assert "couldn't reach the bot's control API" in resp.text
+
+
+def test_setup_health_projection(app_module):
+    current = {
+        "settings": {
+            "moderation": [
+                {"name": "a", "provenance": "guild", "valid": True},
+                {"name": "b", "provenance": "default", "valid": True},
+                {"name": "c", "provenance": "default", "valid": False},
+            ],
+        },
+        "help_overlay": {"rows": [{"x": 1}, {"x": 2}], "home": {"title": "t"}},
+        "routing_map": {"AlphaCog": True, "BetaCog": False},
+    }
+    health = app_module._setup_health(current)
+    assert health["total_settings"] == 3
+    assert health["customised"] == 1
+    assert health["invalid_count"] == 1
+    assert health["invalid"] == [{"subsystem": "moderation", "name": "c"}]
+    assert health["help_overrides"] == 2
+    assert health["home_customised"] is True
+    assert health["disabled_cogs"] == ["BetaCog"]
+    assert health["healthy"] is False
+
+
+def test_setup_health_empty_is_healthy(app_module):
+    health = app_module._setup_health(app_module._blank_current())
+    assert health["total_settings"] == 0
+    assert health["invalid_count"] == 0
+    assert health["disabled_cogs"] == []
+    assert health["healthy"] is True
+
+
+def test_authority_preview_admin_vs_member(app_module):
+    admin = app_module._authority_preview(
+        {"member_found": True, "is_admin": True, "is_owner": False, "tier": "administrator"},
+    )
+    assert admin["may_read_config"] and admin["may_edit_settings"]
+    assert admin["may_edit_help"] and admin["may_edit_routing"]
+
+    member = app_module._authority_preview(
+        {"member_found": True, "is_admin": False, "is_owner": False, "tier": "member"},
+    )
+    assert not member["may_read_config"]
+    assert not member["may_edit_settings"]
+
+    none = app_module._authority_preview(None)
+    assert none["member_found"] is False
+    assert none["tier"] is None
 
 
 def test_admin_setting_post_when_logged_in_dormant_control(client):

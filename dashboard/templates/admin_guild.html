@@ -3,6 +3,8 @@
 {% block content %}
 <div class="mb-5">
   <a href="/admin" class="text-xs text-slate-400 hover:text-sky-300">← All servers</a>
+  <span class="text-xs text-slate-600">·</span>
+  <a href="/admin/{{ guild.id }}/overview" class="text-xs text-slate-400 hover:text-sky-300">Overview</a>
   <h1 class="text-2xl font-bold mt-1">{{ guild.name }}</h1>
   <p class="text-slate-500 text-xs">
     {{ 'Owner' if guild.owner else 'Administrator' }} · guild id {{ guild.id }}
