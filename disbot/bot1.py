@@ -1147,6 +1147,22 @@ async def main() -> None:
 
                 startup_outcome.record_failure("command_surface_ledger", exc)
 
+            # Manifest spine slice 1 — project the just-built ledger into the
+            # typed, bot-owned CommandManifest (the reliable read artifact for
+            # command management; AST stays drift-detection only). Reuses the
+            # cached ledger, so no second surface walk. Non-fatal: a failure
+            # only means `!platform` reports the manifest as not-built.
+            try:
+                from core.runtime import command_manifest, startup_outcome
+
+                command_manifest.build_and_cache_from_bot(bot)
+                startup_outcome.record_success("command_manifest")
+            except Exception as exc:
+                logger.warning("Command manifest build skipped: %s", exc)
+                from core.runtime import startup_outcome
+
+                startup_outcome.record_failure("command_manifest", exc)
+
             # Command description catalog — enriches the ledger with
             # description / signature / display_name so the AI cog can
             # answer meta-questions accurately. Per-command exception

@@ -418,7 +418,9 @@ decided at their build phase, per the two execution plans' own open-questions se
 
 - Execution plans (authoritative for *what to build next*):
   [`developer-dashboard-plan.md`](developer-dashboard-plan.md) ·
-  [`dashboard-live-editor-plan.md`](dashboard-live-editor-plan.md)
+  [`dashboard-live-editor-plan.md`](dashboard-live-editor-plan.md) ·
+  [`manifest-spine-execution-plan-2026-06-17.md`](manifest-spine-execution-plan-2026-06-17.md)
+  (the Q-0162 manifest spine, sequenced — PR1 `CommandManifest` shipped #1018)
 - Owner decisions: router **Q-0155–Q-0160** (`docs/owner/maintainer-question-router.md`) and the new
   **Q-0162** + **Q-0163** (the question-panel decisions — see § "Decisions (owner question-panel,
   2026-06-16)").
