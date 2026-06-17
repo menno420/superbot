@@ -223,6 +223,75 @@ def test_admin_guild_editor_renders_all_sections(client):
     assert "CONTROL_API_TOKEN" in resp.text
 
 
+def test_admin_guild_see_then_change_renders_current_values(client, monkeypatch):
+    # When the bot control API answers (configured + admin), the editor renders
+    # live current values instead of the blind forms (Phase E "see-then-change").
+    from unittest.mock import AsyncMock
+
+    import control_client
+
+    monkeypatch.setattr(control_client, "is_configured", lambda: True)
+    monkeypatch.setattr(
+        control_client,
+        "get_authority",
+        AsyncMock(
+            return_value={
+                "guild_found": True,
+                "member_found": True,
+                "is_admin": True,
+                "tier": "administrator",
+            },
+        ),
+    )
+
+    async def fake_get(path, params=None):
+        if path == "/control/settings/current":
+            return 200, {
+                "ok": True,
+                "subsystems": {
+                    "moderation": [
+                        {
+                            "name": "warn_threshold",
+                            "settings_key": "WARN_THRESHOLD",
+                            "value": 3,
+                            "default": 3,
+                            "provenance": "default",
+                            "valid": True,
+                            "value_type": "int",
+                            "hint": "warnings before action",
+                            "allowed_values": [],
+                            "capability_required": "",
+                        },
+                    ],
+                },
+            }
+        if path == "/control/help/overlay":
+            return 200, {"ok": True, "rows": [], "home": None}
+        if path == "/control/help/catalogue":
+            return 200, {"ok": True, "hubs": [], "subsystems": []}
+        if path == "/control/routing":
+            return 200, {
+                "ok": True,
+                "rows": [
+                    {
+                        "scope_type": "guild",
+                        "scope_id": None,
+                        "cog_name": "MiningCog",
+                        "enabled": False,
+                    },
+                ],
+            }
+        return 503, {"error": "unexpected path"}
+
+    monkeypatch.setattr(control_client, "get", fake_get)
+
+    resp = client.get("/admin/111", cookies=_login_cookie())
+    assert resp.status_code == 200
+    assert "showing live current values" in resp.text
+    assert "warn_threshold" in resp.text  # the live setting is rendered
+    assert "warnings before action" in resp.text  # its hint is shown
+
+
 def test_admin_guild_unknown_guild_redirects(client):
     # Logged in, but the guild isn't in the user's admin set → back to /admin.
     resp = client.get("/admin/999", cookies=_login_cookie(), follow_redirects=False)

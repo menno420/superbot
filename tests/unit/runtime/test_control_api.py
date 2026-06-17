@@ -9,6 +9,7 @@ bot/guild/member (mirrors ``test_healthserver.py``).
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
@@ -139,6 +140,9 @@ def test_routes_registered_with_token(monkeypatch):
     paths = _registered_paths(app)
     assert "/control/ping" in paths
     assert "/control/authority" in paths
+    # Phase E read endpoints register alongside the writes (still token-gated).
+    assert "/control/settings/current" in paths
+    assert "/control/help/catalogue" in paths
     # Mutation endpoints register alongside the reads (still token-gated).
     assert "/control/settings" in paths
     assert "/control/help/overlay" in paths
@@ -659,3 +663,266 @@ async def test_routing_rejects_bad_scope(monkeypatch):
         ),
     )
     assert resp.status == 400
+
+
+# ---------------------------------------------------------------------------
+# Phase E reads: shared read-context (auth / params / resolution)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_read_requires_auth(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    resp = await control_api._settings_current_handler(
+        _request(query={"guild_id": "111", "user_id": "222"}, bot=bot),  # no auth
+    )
+    assert resp.status == 401
+
+
+@pytest.mark.asyncio
+async def test_read_requires_int_params(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member()
+    resp = await control_api._settings_current_handler(
+        _request(headers=_auth(), query={"guild_id": "111"}, bot=bot),  # no user_id
+    )
+    assert resp.status == 400
+
+
+@pytest.mark.asyncio
+async def test_read_guild_not_found_is_404(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    resp = await control_api._settings_current_handler(
+        _request(
+            headers=_auth(),
+            query={"guild_id": "111", "user_id": "222"},
+            bot=_bot(),  # in no guilds
+        ),
+    )
+    assert resp.status == 404
+
+
+@pytest.mark.asyncio
+async def test_read_member_not_found_is_403(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    guild = _guild(111, owner_id=999, members={})  # user 222 not a member
+    bot = _bot(guilds={111: guild})
+    resp = await control_api._settings_current_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 403
+
+
+# ---------------------------------------------------------------------------
+# Phase E reads: settings/current
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_settings_current_happy_path(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=True)
+    grouped = {
+        "moderation": [
+            {
+                "name": "warn_threshold",
+                "settings_key": "WARN_THRESHOLD",
+                "value": 3,
+                "default": 3,
+                "provenance": "default",
+                "valid": True,
+                "value_type": "int",
+                "hint": "warnings before action",
+                "allowed_values": [],
+                "capability_required": "",
+            },
+        ],
+    }
+    monkeypatch.setattr(
+        control_api,
+        "_resolve_guild_settings",
+        AsyncMock(return_value=grouped),
+    )
+    resp = await control_api._settings_current_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 200
+    body = json.loads(resp.text)
+    assert body["ok"] is True
+    assert body["guild_id"] == 111
+    assert body["subsystems"]["moderation"][0]["value"] == 3
+
+
+@pytest.mark.asyncio
+async def test_settings_current_requires_admin(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=False)
+    # Resolver must never be consulted when the admin gate rejects.
+    resolver = AsyncMock(return_value={})
+    monkeypatch.setattr(control_api, "_resolve_guild_settings", resolver)
+    resp = await control_api._settings_current_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 403
+    resolver.assert_not_awaited()
+
+
+# ---------------------------------------------------------------------------
+# Phase E reads: help/overlay
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_help_overlay_get_happy_path(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=True)
+    overlay = SimpleNamespace(
+        rows=[
+            SimpleNamespace(
+                entity_kind="hub",
+                entity_key="games",
+                display_hidden=True,
+                display_name=None,
+                description=None,
+            ),
+        ],
+        home=SimpleNamespace(title="Welcome", body="Hi", color=123),
+    )
+    monkeypatch.setattr(
+        "services.help_overlay.get_guild_help_overlay",
+        AsyncMock(return_value=overlay),
+    )
+    resp = await control_api._help_overlay_get_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 200
+    body = json.loads(resp.text)
+    assert body["rows"][0]["entity_key"] == "games"
+    assert body["rows"][0]["display_hidden"] is True
+    assert body["home"] == {"title": "Welcome", "body": "Hi", "color": 123}
+
+
+@pytest.mark.asyncio
+async def test_help_overlay_get_empty_home_is_null(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=True)
+    overlay = SimpleNamespace(rows=[], home=None)
+    monkeypatch.setattr(
+        "services.help_overlay.get_guild_help_overlay",
+        AsyncMock(return_value=overlay),
+    )
+    resp = await control_api._help_overlay_get_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 200
+    body = json.loads(resp.text)
+    assert body["rows"] == []
+    assert body["home"] is None
+
+
+@pytest.mark.asyncio
+async def test_help_overlay_get_requires_admin(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=False)
+    resp = await control_api._help_overlay_get_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 403
+
+
+# ---------------------------------------------------------------------------
+# Phase E reads: help/catalogue (token-only — global defaults)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_help_catalogue_token_only(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    catalogue = SimpleNamespace(
+        hubs=[
+            SimpleNamespace(
+                key="games",
+                entry=SimpleNamespace(
+                    display_name="Games",
+                    purpose="Play games",
+                    minimum_tier="user",
+                ),
+                host_subsystem="games",
+            ),
+        ],
+        subsystems=[
+            SimpleNamespace(
+                key="moderation",
+                display_name="Moderation",
+                description="Keep order",
+                emoji="🛡️",
+                visibility_tier="moderator",
+                parent_hub="moderation",
+                top_level=False,
+            ),
+        ],
+    )
+    monkeypatch.setattr(
+        "services.help_catalogue.build_help_catalogue",
+        lambda: catalogue,
+    )
+    # No guild/user needed — token alone authorizes the global defaults.
+    resp = await control_api._help_catalogue_handler(_request(headers=_auth()))
+    assert resp.status == 200
+    body = json.loads(resp.text)
+    assert body["hubs"][0]["display_name"] == "Games"
+    assert body["subsystems"][0]["key"] == "moderation"
+
+
+@pytest.mark.asyncio
+async def test_help_catalogue_requires_token(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    resp = await control_api._help_catalogue_handler(_request(headers={}))
+    assert resp.status == 401
+
+
+# ---------------------------------------------------------------------------
+# Phase E reads: routing
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_routing_get_happy_path(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=True)
+    updated = datetime(2026, 6, 17, 12, 0, tzinfo=timezone.utc)
+    rows = [
+        {
+            "scope_type": "guild",
+            "scope_id": None,
+            "cog_name": "MiningCog",
+            "enabled": False,
+            "actor_id": 5,
+            "updated_at": updated,
+        },
+    ]
+    monkeypatch.setattr(
+        "services.command_routing.list_for_guild",
+        AsyncMock(return_value=rows),
+    )
+    resp = await control_api._routing_get_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 200
+    body = json.loads(resp.text)
+    row = body["rows"][0]
+    assert row["cog_name"] == "MiningCog"
+    assert row["enabled"] is False
+    # datetime is serialised to an ISO string (JSON-safe).
+    assert row["updated_at"] == updated.isoformat()
+
+
+@pytest.mark.asyncio
+async def test_routing_get_requires_admin(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    bot, _g, _m = _bot_with_member(administrator=False)
+    resp = await control_api._routing_get_handler(
+        _request(headers=_auth(), query={"guild_id": "111", "user_id": "222"}, bot=bot),
+    )
+    assert resp.status == 403

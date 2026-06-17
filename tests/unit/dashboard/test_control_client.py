@@ -53,3 +53,11 @@ async def test_post_dormant_returns_503(monkeypatch):
 async def test_get_authority_dormant_returns_none(monkeypatch):
     monkeypatch.delenv("CONTROL_API_TOKEN", raising=False)
     assert await control_client.get_authority(111, 222) is None
+
+
+@pytest.mark.asyncio
+async def test_get_dormant_returns_503(monkeypatch):
+    monkeypatch.delenv("CONTROL_API_TOKEN", raising=False)
+    status, body = await control_client.get("/control/settings/current", {"guild_id": 1})
+    assert status == 503
+    assert "not configured" in body["error"]

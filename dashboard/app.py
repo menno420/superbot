@@ -376,6 +376,47 @@ async def _control_flash(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+async def _fetch_current_state(guild_id: int, user_id: int) -> dict[str, Any]:
+    """Fetch the guild's live current config from the bot (Phase E reads).
+
+    Turns the editors from "write blind" into "see-then-change". Each read
+    degrades independently: a failure leaves an empty/None slot so that section
+    falls back to its blind form rather than erroring the whole page.
+    ``reads_ok`` is True only when the (gating) settings read succeeded.
+    """
+    state: dict[str, Any] = {
+        "settings": {},
+        "help_overlay": None,
+        "help_catalogue": None,
+        "routing_map": {},
+        "reads_ok": False,
+    }
+    ids = {"guild_id": guild_id, "user_id": user_id}
+
+    s_status, s_body = await control_client.get("/control/settings/current", ids)
+    if s_status == 200 and s_body.get("ok"):
+        state["settings"] = s_body.get("subsystems", {})
+        state["reads_ok"] = True
+
+    h_status, h_body = await control_client.get("/control/help/overlay", ids)
+    if h_status == 200 and h_body.get("ok"):
+        state["help_overlay"] = h_body
+
+    c_status, c_body = await control_client.get("/control/help/catalogue")
+    if c_status == 200 and c_body.get("ok"):
+        state["help_catalogue"] = c_body
+
+    r_status, r_body = await control_client.get("/control/routing", ids)
+    if r_status == 200 and r_body.get("ok"):
+        # Guild-scope rows drive the per-cog current state (default = enabled).
+        state["routing_map"] = {
+            row["cog_name"]: row["enabled"]
+            for row in r_body.get("rows", [])
+            if row.get("scope_type") == "guild" and row.get("cog_name")
+        }
+    return state
+
+
 @app.get("/auth/login")
 def auth_login(request: Request):
     """Begin Discord OAuth — redirect to consent, or fall back to /admin if off."""
@@ -465,8 +506,19 @@ async def admin_guild(request: Request, guild_id: str):
     if guild is None:
         return RedirectResponse("/admin", status_code=302)
     authority = None
+    current: dict[str, Any] = {
+        "settings": {},
+        "help_overlay": None,
+        "help_catalogue": None,
+        "routing_map": {},
+        "reads_ok": False,
+    }
     if control_client.is_configured():
         authority = await control_client.get_authority(int(guild_id), int(user["id"]))
+        # Live current state (see-then-change) — only when the bot says you're an
+        # admin here; otherwise the reads would 403 and the editors stay blind.
+        if authority and authority.get("is_admin"):
+            current = await _fetch_current_state(int(guild_id), int(user["id"]))
     data = load_data()
     flash = session.pop("flash", None)
     resp = templates.TemplateResponse(
@@ -481,6 +533,7 @@ async def admin_guild(request: Request, guild_id: str):
             "settings": data.get("settings", []),
             "cogs": [c for c in data.get("cogs", []) if c.get("is_cog")],
             "catalogue": data.get("catalogue", []),
+            "current": current,
             "flash": flash,
         },
     )
