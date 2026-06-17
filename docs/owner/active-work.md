@@ -86,4 +86,3 @@ living ledger (`docs/current-state.md`).
 - `claude/myprofile-card-pra` · myprofile PR A + B — `/myprofile` card + self-service editor · 2026-06-16 · **PR #938 / #940 (merged)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
-branch claude/magical-rubin-8j3i27 · scope: global settings tier (resolve_setting global layer + owner-gated global write) · files: disbot/services/settings_resolution.py, settings_mutation.py, utils/db/settings.py + tests · 2026-06-17

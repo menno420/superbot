@@ -171,7 +171,7 @@ underlying storage directly.
 
 | Config kind | Storage | Write seam | Read seam |
 |---|---|---|---|
-| Scalar guild settings | `guild_settings` KV + `settings_mutation_audit` | `services.settings_mutation.SettingsMutationPipeline` | `services.settings_resolution.resolve_setting` / `resolve_value` |
+| Scalar guild settings | `guild_settings` KV + `settings_mutation_audit` | `services.settings_mutation.SettingsMutationPipeline` (`scope="guild"` admin-gated · `scope="global"` owner-gated) | `services.settings_resolution.resolve_setting` / `resolve_value` — per-guild row → **global row (`guild_id = utils.db.settings.GLOBAL_GUILD_ID = 0`)** → spec default |
 | Feature / platform flags | `feature_flag_global_overrides`, `feature_flag_guild_overrides`, `environment_tiers`, `feature_flag_audit` | `services.rollout_mutation.RolloutMutationPipeline` | `core.runtime.feature_flags.is_enabled` / `resolve_with_provenance` |
 | AI env flags | environment only (no DB) | n/a (env-driven) | `core.runtime.ai.feature_flags` |
 

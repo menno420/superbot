@@ -224,16 +224,19 @@ session (`scripts/scan_setting_specs.py`: 64 typed specs with type/default/hint/
 settings editor is a **front-end over the existing pipeline**, exactly like help over
 `help_overlay_mutation` — *not* a from-scratch build.
 
-**What's genuinely new = the global scope.** `set_value` and `resolve_setting` are **per-guild
-only** today. The owner's "change things globally" needs the global tier (steps 1–2 above:
-`guild_id = 0` rows + `resolve_setting` → per-guild → global → spec default), then `set_value` gaining
-a global-scope path (owner-gated). That is the one focused runtime PR; per-server editing is *just*
-the existing pipeline behind the control API.
+**What's genuinely new = the global scope.** ✅ **SHIPPED (#1017, 2026-06-17).** `resolve_setting`
+now resolves **per-guild row → global row (`guild_id = 0`) → spec default** (new provenance
+`global_kv`, mirroring `core.runtime.feature_flags`), and `SettingsMutationPipeline.set_value` gained
+a `scope="global"` path, **owner-gated** (`config.BOT_OWNER_USER_ID`), writing/auditing the
+`guild_id = 0` row through the existing audited seam. An owner global write is now inherited by every
+guild without its own row. Per-server editing is *just* the existing pipeline behind the control API.
 
 **Phase placement (revised):** ① surface `SettingSpec` on `/settings` ✅ (shipped — read-model done) →
-② global-scope tier in `resolve_setting` + `SettingsMutationPipeline` (focused runtime PR) →
+② global-scope tier in `resolve_setting` + `SettingsMutationPipeline` ✅ **SHIPPED (#1017)** →
 ③ website settings editor over the control API (the **same** auth + control-API foundation L0–L2 the
-help/alias editors need; per-server reuses the existing pipeline as-is).
+help/alias editors need; per-server reuses the existing pipeline as-is) — **this is now the next
+slice**: a `POST /control/settings/{scope}` endpoint over `set_value` + the OAuth-gated editor UI,
+with the **scope picker** ("Global (all servers)" vs a specific server) the owner asked for.
 
 ## Strategic framing — the bot's main website (owner, 2026-06-16)
 
