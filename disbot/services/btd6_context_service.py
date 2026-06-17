@@ -3497,6 +3497,94 @@ def deterministic_hero_ability_roster_reply(message_text: str) -> str | None:
     return _format_hero_abilities(canonical, abilities)
 
 
+# --- boss damage-immunity floor (BUG-0009) ------------------------------------
+# "what is Lych immune to" / "which bosses are immune to fire" — the model can
+# mis-state a boss's immunities (claim an immunity it doesn't have, or omit one),
+# and every damage-type name is grounded so the value-only faithfulness guard
+# can't catch the wrong *assembly*. The deterministic layer OWNS the answer off
+# bosses[].immune_to. Requires a boss reference (a named boss or the literal
+# "boss(es)" token) AND an immunity cue, so it never overlaps the bloon immunity
+# roster (which keys on a bloon/blimp/moab subject, never on "boss").
+_BOSS_IMMUNE_CUE_RE = re.compile(
+    r"\bimmun(?:e|ity|ities)\b|\bresist(?:s|ant|ance)?\b",
+    re.I,
+)
+_BOSS_SUBJECT_RE = re.compile(r"\bboss(?:es)?\b", re.I)
+
+
+def _scan_boss(text_lower: str, bosses: Any) -> Any | None:
+    """The most specific boss named in ``text_lower`` (longest canonical), or
+    ``None``. Whole-word matched; boss names carry no aliases in the dataset.
+    """
+    best = None
+    best_len = 0
+    for boss in bosses:
+        name = boss.canonical.lower()
+        if len(name) < 3:
+            continue
+        if re.search(r"\b" + re.escape(name) + r"\b", text_lower):
+            if len(name) > best_len:
+                best, best_len = boss, len(name)
+    return best
+
+
+def deterministic_boss_immunity_reply(message_text: str) -> str | None:
+    """A code-built boss damage-immunity answer, or ``None``.
+
+    Handles three shapes off ``bosses[].immune_to``: a single boss's immunities
+    ("what is Lych immune to"), a yes/no for one boss + damage ("is Blastapopoulos
+    immune to fire"), and the cross-boss roster ("which bosses are immune to
+    fire"). Fires only on a boss reference + an immunity cue, so it defers
+    (``None``) for the bloon immunity roster (bloon subject, not boss), boss HP /
+    strategy questions (no immunity cue), and anything else — which reach the model
+    or another floor builder unchanged.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _BOSS_IMMUNE_CUE_RE.search(text):
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    from services import btd6_data_service
+
+    bosses = btd6_data_service.get_dataset().bosses
+    if not bosses:
+        return None
+
+    damage = _match_bloon_damage(text)
+    named = _scan_boss(text, bosses)
+
+    if named is not None:
+        immunities = named.immune_to or ()
+        if damage is not None:
+            verdict = (
+                "**is immune to**" if damage in immunities else "is **not** immune to"
+            )
+            return f"**{named.canonical}** {verdict} {damage} damage."
+        if not immunities:
+            return (
+                f"**{named.canonical}** has no damage-type immunities — every "
+                "damage type hurts it."
+            )
+        listed = ", ".join(immunities)
+        return (
+            f"**{named.canonical} is immune to ({len(immunities)}):** {listed} damage."
+        )
+
+    # No single boss named — the cross-boss roster needs the literal "boss(es)"
+    # token plus a damage type (otherwise it is too vague to floor).
+    if _BOSS_SUBJECT_RE.search(text) and damage is not None:
+        hits = [b for b in bosses if damage in (b.immune_to or ())]
+        if not hits:
+            return f"**No BTD6 boss is immune to {damage} damage.**"
+        names = ", ".join(f"**{b.canonical}**" for b in hits)
+        return f"**BTD6 bosses immune to {damage} damage ({len(hits)}):** {names}."
+
+    return None
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -3514,6 +3602,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_capability_roster_reply,
     deterministic_bloon_roster_reply,
     deterministic_bloon_modifier_reply,
+    deterministic_boss_immunity_reply,
     deterministic_relic_roster_reply,
     deterministic_hero_ability_roster_reply,
     deterministic_paragon_cost_comparison_reply,
