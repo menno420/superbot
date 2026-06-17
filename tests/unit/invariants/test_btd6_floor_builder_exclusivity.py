@@ -80,6 +80,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "what are all the moab class bloons",
         "deterministic_bloon_roster_reply",
     ),
+    (
+        "what economy relics are there",
+        "deterministic_relic_roster_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.

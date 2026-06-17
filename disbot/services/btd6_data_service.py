@@ -382,6 +382,8 @@ _REQUIRED_RELIC_FIELDS = (
     "effect",
 )
 _RELIC_CATEGORIES = frozenset({"offense", "economy", "lives", "powerup", "utility"})
+# Stable display order for the category roster (BUG-0009 §7.6 relic roster floor).
+_RELIC_CATEGORY_ORDER = ("offense", "economy", "lives", "powerup", "utility")
 _REQUIRED_POWER_FIELDS = ("id", "canonical", "power_id", "monkey_money_cost")
 _REQUIRED_KNOWLEDGE_FIELDS = (
     "id",
@@ -2566,6 +2568,30 @@ def compare_power_costs(names: Sequence[str]) -> dict[str, Any]:
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics
+
+
+def relics_by_category() -> dict[str, tuple[RelicEntry, ...]]:
+    """The catalog's relics grouped by ``category``, each group name-sorted.
+
+    The §7.6 *relic* member of the BUG-0009 roster family (the sibling of the
+    capability / bloon rosters): "what economy relics are there?", "list all
+    offensive relics". Returns every known category in a fixed display order
+    (:data:`_RELIC_CATEGORY_ORDER`) mapped to its relics sorted by canonical name,
+    so the floor reply OWNS the labelled grouping instead of letting the model
+    assemble (and possibly mis-bucket) the list — every relic name is individually
+    grounded, so a mis-*grouping* slips past the value-only faithfulness guard.
+
+    A category with no relics is still present (an empty tuple) so a caller can
+    answer "no X relics" honestly. Category validity is already enforced at parse
+    time (``_parse_relic``), so an unknown bucket can never appear here.
+    """
+    grouped: dict[str, list[RelicEntry]] = {cat: [] for cat in _RELIC_CATEGORY_ORDER}
+    for relic in get_dataset().ct_relics:
+        grouped.setdefault(relic.category, []).append(relic)
+    return {
+        cat: tuple(sorted(rels, key=lambda r: r.canonical))
+        for cat, rels in grouped.items()
+    }
 
 
 def get_ct_relic(relic_id: str) -> RelicEntry | None:
