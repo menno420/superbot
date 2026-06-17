@@ -25,10 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/inspiring-wozniak-i92q58` · **dashboard R3 — live-surface hardening** (owner directive,
-  overnight; follows Phase E #1013 merged) — CSRF token on the editor forms + rate-limit the public login
-  & edit POSTs + rate-limit the control-API writes (429). Additive/dormant-safe · `dashboard/` ·
-  `disbot/control_api.py` · 2026-06-17 · *(next: Phase C read workspace)*
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
@@ -53,6 +49,13 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/inspiring-wozniak-i92q58` · dashboard **Phase E** — control-API read endpoints + see-then-change
+  editor · 2026-06-17 · **PR #1013 (merged)**
+- `claude/inspiring-wozniak-i92q58` · dashboard **R3** — live-surface hardening (CSRF + rate-limiting) ·
+  2026-06-17 · **PR #1014 (merged)**
+- `claude/inspiring-wozniak-i92q58` · dashboard **vision-roadmap reconcile** (Phase C read workspace was
+  built in parallel by **#1015** and merged first — authoritative; this run's duplicate was dropped) ·
+  2026-06-17 · **PR #1016**
 - `claude/health-server-ipv6-bind` · health server IPv6 dual-stack bind (Railway private networking) · 2026-06-16 · **PR #1001 (merged)**
 - `claude/inspiring-wozniak-i92q58` · dashboard finalized-state vision plan · 2026-06-16 · **PR #1002 (merged)**
 - `claude/control-panel-web` · control panel — Discord OAuth login + editors (write side step 2) · 2026-06-16 · **PR #996 (merged)**

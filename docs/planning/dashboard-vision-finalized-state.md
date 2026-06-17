@@ -342,10 +342,11 @@ reliable panel-layout editor — and is the first half of the L3 "move buttons" 
   website state or client code. **Operative gotcha (cost the #1001 fix):** Railway private networking is
   **IPv6-only** — the bot's health/control server must bind `::` (dual-stack via `HEALTH_HOST`), *not*
   `0.0.0.0`, or `worker.railway.internal` is unreachable. Phase-E implementers need this.
-- **Live-surface hardening (reviewer note R3, not yet done):** the panel is public + live but still lacks
-  **rate-limiting** (control API + the public login) and an **explicit CSRF token** (today only
-  `SameSite=Lax` on the session cookie). Neither is a write-authorization hole — the bot still gates every
-  write via the live member + seam — but both are near-term hardening items now that the surface is live.
+- **Live-surface hardening (reviewer note R3 — ✅ SHIPPED #1014):** the public+live panel now has an
+  **explicit CSRF token** on every editor form (per-session, constant-time-checked, beyond the cookie's
+  `SameSite=Lax`) and **rate-limiting** — the public login (per IP), the edit POSTs (per user), and the
+  control-API **writes** (per guild+user → HTTP 429). Stdlib sliding-window limiters, defense-in-depth;
+  the bot still gates every write via the live member + seam.
 - **Every mutation carries** actor id · guild id · idempotency/mutation id · CSRF token, is **rate-limited**
   (per IP/user/guild/action, and on public forms), and lands in the **bot's audit system** via the seam's
   `audit.action_recorded` emit. Structured logging (request id, actor, guild, action, result, latency) —
@@ -377,17 +378,21 @@ spine). This roadmap is the *connective tissue*, not a re-plan — each phase po
 | **B — freshness & provenance** | Lineage badges + per-widget states; automate export regen; ETag/conditional GETs | `developer-dashboard-plan.md` | none |
 | **C — OAuth + personal/server workspaces** | Login, sessions, `/admin` server picker, per-guild editor pages, the read workspace | `dashboard-live-editor-plan.md` L0 | ✅ **shipped + live**: OAuth login + server picker + editor pages (#996); the read workspace — `/me`, a per-server **overview** with setup-health, the authority preview — shipped read-only in #1015 |
 | **D — manifest spine** | Typed command/panel/settings manifest export + panel registry + reconciliation tests; AST demoted to drift detection | **NEW track** (this doc) | ✅ **approved (Q-0162).** Gates **command-management trustworthiness + the panel editor (H)** — *not* the already-shipped settings/help/routing editors (they ride already-typed seams). Build after the Phase-E reads, before H. |
-| **E — control API read endpoints** | Private, secret-protected reads: **current settings values**, help overlay, server context, capabilities, diagnostics, manifest | `dashboard-live-editor-plan.md` L1 | ⚠️ **SKIPPED — now the top next priority.** The token is set, but the current-value **GET** endpoints (`/control/settings/current`, `/control/help/overlay`) were never built, so the live editors **write blind** (see reviewer note R1). Highest-value, lowest-risk next slice. |
+| **E — control API read endpoints** | Private, secret-protected reads: **current settings values**, help overlay, server context, capabilities, diagnostics, manifest | `dashboard-live-editor-plan.md` L1 | ✅ **SHIPPED (#1013).** `GET /control/settings/current` · `help/overlay` · `help/catalogue` · `routing` — admin-gated, dormant-by-default; the editors now **see-then-change** instead of writing blind. *(Diagnostics/manifest reads still to come with Phase D.)* |
 | **F — first live writes (audited seams)** | Help / settings / cog-routing editors over the audited seams | `dashboard-live-editor-plan.md` L2 + Q-0157 | ✅ **SHIPPED + LIVE** (#993 endpoints + #996 editors) — confirmed end-to-end. Order help → settings → aliases/routing (Q-0163); **aliases live-overlay + global-settings tier still to come.** |
 | **G — owner zone: env values + control board** | Masked Railway value mgmt; idea/bug triage; multi-AI control board over the `/fire` routines | `developer-dashboard-plan.md` Phases 3b/4 | owner: Railway API creds; **owner-only, scope-shaped** (Q-0162) |
 | **H — panel-layout engine + editor** | DB-backed `panel_layout` overlay + render-time reader + audited seam, **then** the drag-and-drop editor | `dashboard-live-editor-plan.md` L3 | manifest spine (D) + panel registry; **scheduled last** (Q-0163) |
 
-> **Status reconciled (2026-06-17, with the reviewer note above):** the write side **shipped and went
-> live** right after this plan was written — the build jumped **C-auth → F-writes and skipped Phase E**
-> (the current-value read endpoints). So the setup gate is cleared *and then some*: live editing works,
-> but **the live editors write blind until Phase E lands** — which is why E is now the **top next
-> priority**, not a future phase. Near-term hardening the live surface still needs: **rate-limiting** +
-> an **explicit CSRF token** (reviewer note R3).
+> **Status reconciled (2026-06-17 — overnight run #1013/#1014/#1015):** the write-side gap is **closed**.
+> **Phase E shipped** (#1013) — the current-value read endpoints, so the editors **see-then-change** (no
+> longer blind). **R3 hardening shipped** (#1014) — CSRF tokens on every editor form + rate-limiting on the
+> public login, the edit POSTs, and the control-API writes (HTTP 429). **Phase C's read workspace shipped**
+> (#1015) — `/me`, the per-server overview, the authority preview. Reviewer-note R1 (Phase E now) and R3
+> (rate-limit + CSRF) are therefore **done**; R2 (manifest gate framing) and R4 (Railway IPv6) stand.
+> Remaining near-term: the aliases live-overlay + the global-settings tier (F tail) and the manifest spine
+> (D). *(Process note: a parallel session (#1015) and this run both built Phase C's read workspace — #1015
+> merged first and is authoritative; the duplicate inline-card variant from #1016 was dropped. Lesson:
+> re-scan open PRs before each slice of a long multi-PR session, not just at its start.)*
 
 ## Decisions (owner question-panel, 2026-06-16 — all forks resolved)
 
