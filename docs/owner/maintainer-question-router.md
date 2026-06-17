@@ -6331,3 +6331,26 @@ banner) · the dispatch routine prompt + skills (`hermes-dispatch-bridge.md`, `h
 **Home:** this Q-block · `.claude/CLAUDE.md` Working agreement. Related: Q-0114 (the retired phase gate),
 Q-0164 (PLAN BACKLOG THIN flag), Q-0165 (Run type line — the ⚑ Self-initiated line is its sibling),
 Q-0106 (in-session-directive exception).
+
+### Q-0173 — Mining grid world: seed-deterministic (option #1), not literal Minecraft terrain (2026-06-17)
+
+> **DIRECTED — owner-in-session, 2026-06-17:** asked *"is it possible to fetch a seed directly from
+> Minecraft and use that as our actual grid?"* After a feasibility breakdown (no API fetches terrain; a
+> seed is just a number; the spectrum = seed-as-RNG / Cubiomes biome-replication / full-block-gen), the
+> owner picked **#1: "probably the best option."**
+
+**Decision:** The grid Mine (mining-hub-redesign PR3) world model is a **seed-deterministic procedural
+grid we generate ourselves** — any number ("seed") feeds our own generator, so `seed 12345` produces
+the same world for everyone (deterministic · **shareable** · effectively infinite). This resolves the
+plan's open "fixed vs procedural/infinite" question → **procedural, seed-deterministic.** It is *not*
+literal Minecraft terrain: that would need either a reverse-engineered gen library (Cubiomes — biomes
++ structures only, a real C dependency; the *later* upgrade path if true Minecraft-shaped worlds are
+wanted) or running an actual Minecraft generator (Java server + region files — too heavy for Railway,
+rejected). Licensing stays clean — a seed is just a number; we ship no Minecraft code or assets.
+
+**Still open (owner deciding — do NOT resolve unprompted):** one shared grid vs. per-depth-level · do
+moves cost a turn / trigger encounters · how cell yields map to the existing depth bands
+(`utils/mining/world.py`, currently 1-D). These are the remaining grid-Mine design questions.
+
+**Home:** [`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md)
+§ "Mine — 3D grid navigator" · this Q-block. Related: Q-0172 (fishing/open-world is the sibling Explore lane).

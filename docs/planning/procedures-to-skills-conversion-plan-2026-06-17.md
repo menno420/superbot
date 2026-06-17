@@ -110,6 +110,23 @@ auto-trigger workflow, the manual-session carve-out, the marker reset.
 The binding bits (cadence = 30, routine-owns-it, manual-doesn't, every Q-number) stay; the 20 lines of
 *how* move to the routine doc that already executes them.
 
+## Codex review feedback (PR #1028, 2026-06-17 — fold into the batches)
+
+Codex's automated review of this plan raised 4 points (still open on the PR); the first two were
+verified correct and actioned this session:
+
+1. **Batch 1 also de-stales `/session-close`.** Slimming the CLAUDE.md Q-0107 bullet to a pointer left
+   the `/session-close` skill's old "10th-PR / ~9 PRs" cadence contradicting Q-0134/Q-0164. *(Fixed
+   2026-06-17.)*
+2. **This plan needs a roadmap horizon row** (the "Adding a plan" contract), or dispatch/reconciliation
+   agents won't discover it. *(Added to the S4 lane in `roadmap.md`, 2026-06-17.)*
+3. **Batch 2 — keep pre-work rules loadable *before* work starts.** Q-0126 (claim work) + Q-0133/Q-0103
+   (born-red) are needed before a session / right after the first push, not at close; don't bury their
+   HOW only inside `/session-close`. Put them in a startup/pre-work skill (or keep them always-loaded).
+4. **Batch 3 — any CLAUDE.md pointer edit is born-red.** Batch 3 is "add-only / merge on green," but its
+   row also adds CLAUDE.md pointers; state explicitly that *any* CLAUDE.md edit (even a pointer) is
+   born-red for owner review, so it can't auto-merge.
+
 ## Verification (per batch)
 
 - The moved procedure exists **verbatim** in its destination (no detail lost).
