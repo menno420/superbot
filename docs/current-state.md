@@ -253,9 +253,11 @@ Source code and merged PRs win over anything written here.
   `_fetch_current_state`), and an honest **authority preview** ("what you may read / change here")
   from the authority bridge. New pure `_setup_health`/`_authority_preview` projections + two
   templates + nav/overview links. `check_quality --full` green (10408) · arch 0 · +12 dashboard
-  tests. **Dashboard ▶ next:** R3 hardening (#1014, in flight) → then the Phase D manifest spine
-  (Q-0162, gates command/panel management) + the global-settings runtime tier (Q-0157) — both their
-  own focused sessions.
+  tests. **Dashboard ▶ next:** R3 hardening shipped (#1014); the **Phase D manifest spine** (Q-0162,
+  gates command/panel management) is now the live ungated buildable thread — PR1 `CommandManifest`
+  (#1018) + PR2 panel registry/`PanelManifest` (#1019) shipped; **PR3** (control-API `manifest` read +
+  `dashboard.json` export + AST drift guard) is the next slice. The global-settings runtime tier
+  (Q-0157) stays its own owner-paced session.
 - **#1012 (2026-06-17, AI answerability floor — boss roster + per-difficulty map filter + boss
   immunity)** — scheduled dispatch fire, no work order; night queue fully consumed + both open PRs
   (#941/#929) Hermes-gated → took a fresh slice of the proven, ungated BTD6 deterministic-floor lane
