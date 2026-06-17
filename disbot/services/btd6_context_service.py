@@ -1723,6 +1723,23 @@ def deterministic_roster_reply(message_text: str) -> str | None:
             out.extend(f"• **{t.canonical}** — ${t.base_cost}" for t in group)
         return "\n".join(out)
 
+    if "boss" in text:
+        bosses = dataset.bosses
+        if not bosses:
+            return None
+        lines = [
+            (
+                f"• **{boss.canonical}** — {boss.tagline}"
+                if getattr(boss, "tagline", "")
+                else f"• **{boss.canonical}**"
+            )
+            for boss in bosses
+        ]
+        return (
+            f"**BTD6 Bosses ({len(lines)})** — the boss bloons (each scales "
+            "Tier 1–5, with an Elite variant):\n" + "\n".join(lines)
+        )
+
     if "map" in text:
         return _map_roster_reply(text, list(dataset.maps))
 
@@ -1788,6 +1805,19 @@ def _map_roster_reply(text: str, maps: list) -> str:
         )
     if sections:
         return "\n\n".join(sections)
+
+    # A named difficulty ("list all expert maps", "what beginner maps are
+    # there") filters the roster to that tier. Without this the user who asked
+    # for the 13 Expert maps got all 86 grouped by difficulty — a BUG-0009
+    # wrong-assembly miss (right values, wrong list).
+    named_diffs = [d for d in order if d.lower() in text]
+    if named_diffs:
+        subset = [m for m in maps if m.difficulty in named_diffs]
+        label = "/".join(named_diffs)
+        if wants_count:
+            return f"BTD6 has **{len(subset)} {label} maps**."
+        names = ", ".join(sorted(m.canonical for m in subset))
+        return f"**BTD6 {label} Maps ({len(subset)}):** {names}"
 
     # Generic "how many maps" / "list all maps".
     if wants_count:
