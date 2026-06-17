@@ -93,9 +93,12 @@ generalization sat one run longer than it needed to. **System improvement this s
 gate's output should say *what it does and does not fence* (it fences self-invented **bot features**,
 not Q-0105 dev tooling) — right now an agent reads "Phase: FIX" and over-applies it to tooling. A
 one-line clarification in `check_phase_gate.py`'s banner ("this gate fences self-invented bot features
-only; Q-0105 dev tooling/checks are free-rein") would have saved this run the re-derivation. Captured
-as the seed of the `reliability:`-tier idea above; the banner tweak is a clean next-run docs/tooling
-fix.
+only; Q-0105 dev tooling/checks are free-rein") would have saved this run the re-derivation. **Acted
+on it this run** (the system-improvement half of Q-0102): `check_phase_gate.py`'s FIX-PHASE banner now
+spells out that it fences self-invented *bot features* only and that read-only Q-0105 dev
+tooling/checks are free-rein — a pure banner-string clarification, gate behavior unchanged (still exit
+1 in fix-phase; 9 phase-gate tests green). The `reliability:`-tier guard inventory stays the captured
+idea above.
 
 ## Q-0104 doc audit
 
