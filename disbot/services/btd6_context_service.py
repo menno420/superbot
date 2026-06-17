@@ -3065,6 +3065,135 @@ def deterministic_bloon_roster_reply(message_text: str) -> str | None:
     return None
 
 
+# --- §7.6 relic category/effect roster (AI §7) --------------------------------
+# "what economy relics are there", "list all offensive relics", "which relics are
+# utility" is the BUG-0009 wrong-assembly class: the model buckets the relics by
+# category itself and can mis-bucket one (every relic NAME is grounded, so the
+# value-only faithfulness guard never catches a mis-*grouping*). The authoritative
+# grouping is derived deterministically by btd6_data_service.relics_by_category, so
+# the floor OWNS the labelled list.
+_RELIC_SUBJECT_RE = re.compile(r"\brelics?\b", re.I)
+# An enumeration shape ("which/what/list ... relics", or "relics ... which/that/are
+# there"), so single-relic effect lookups ("what does the el dorado relic do") and
+# yes/no checks stay out of the roster floor.
+_RELIC_LIST_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every|how\s+many)\b.{0,40}\brelics?\b|"
+    r"\brelics?\b.{0,40}\b(?:which|that|are\s+there|exist)\b",
+    re.I,
+)
+# (category key, the cue that names it). The key matches a btd6_data_service
+# relic category; the order mirrors _RELIC_CATEGORY_ORDER.
+_RELIC_CATEGORY_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("offense", re.compile(r"\boffens(?:e|ive)\b|\bdamage\b|\battack(?:ing)?\b", re.I)),
+    ("economy", re.compile(r"\beconom(?:y|ic)\b|\bcash\b|\bmoney\b|\bincome\b", re.I)),
+    ("lives", re.compile(r"\blives\b|\bhealth\b|\bhp\b", re.I)),
+    ("powerup", re.compile(r"\bpower[\s-]?ups?\b|\bpowerups?\b", re.I)),
+    ("utility", re.compile(r"\butility\b|\butilit(?:ies|y)\b", re.I)),
+)
+# Human labels for the roster header.
+_RELIC_CATEGORY_LABELS: dict[str, str] = {
+    "offense": "Offense",
+    "economy": "Economy",
+    "lives": "Lives",
+    "powerup": "Power-up",
+    "utility": "Utility",
+}
+
+
+def _match_relic_category(text_lower: str) -> str | None:
+    """The single relic category a roster question names, or ``None`` for all."""
+    for category, pattern in _RELIC_CATEGORY_CUES:
+        if pattern.search(text_lower):
+            return category
+    return None
+
+
+def _mentions_specific_relic(text_lower: str) -> bool:
+    """True when the message names a specific relic (an effect lookup, not a roster).
+
+    Scans every relic surface (canonical + aliases + abbrev) so "what does the el
+    dorado relic do" — which matches the enumeration regex by accident — is
+    recognised as a single-relic lookup and deferred to the model. Surfaces under
+    3 chars are skipped so a stray short token never trips the guard.
+    """
+    from services import btd6_data_service
+
+    for relic in btd6_data_service.get_dataset().ct_relics:
+        surfaces = {
+            relic.canonical.lower(),
+            relic.abbrev.lower(),
+            *(a.lower() for a in relic.aliases),
+        }
+        for surface in surfaces:
+            if len(surface) < 3:
+                continue
+            if re.search(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+                return True
+    return False
+
+
+def _format_relic_category_roster(category: str, relics: list[Any]) -> str:
+    label = _RELIC_CATEGORY_LABELS.get(category, category.capitalize())
+    if not relics:
+        return f"**BTD6 — no {label} relics in the catalog.**"
+    lines = [f"**BTD6 {label} relics ({len(relics)}):**"]
+    lines.extend(f"• **{relic.canonical}** — {relic.effect}" for relic in relics)
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def _format_all_relics_roster(grouped: dict[str, tuple[Any, ...]]) -> str:
+    total = sum(len(rels) for rels in grouped.values())
+    lines = [f"**BTD6 Contested Territory relics by category ({total}):**"]
+    for category, label in _RELIC_CATEGORY_LABELS.items():
+        rels = grouped.get(category, ())
+        if not rels:
+            continue
+        names = ", ".join(relic.canonical for relic in rels)
+        lines.append(f"__{label}__ ({len(rels)}): {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_relic_roster_reply(message_text: str) -> str | None:
+    """A code-built relic-by-category roster, or ``None``.
+
+    The §7.6 *relic* member of the BUG-0009 roster floor — the sibling of
+    :func:`deterministic_capability_roster_reply` (towers) and
+    :func:`deterministic_bloon_roster_reply` (bloons). Fires on a relic
+    enumeration: a named category ("what economy relics are there", "list all
+    offensive relics", "which relics are utility") lists that category's relics +
+    effects; a bare "what relics are there" / "list all relics" lists every relic
+    grouped by category. Defers (``None``) for single-relic effect lookups ("what
+    does the el dorado relic do"), strategy/opinion, and anything without the
+    relic subject + an enumeration shape — those reach the model untouched.
+    Mutually exclusive with the other floor builders by construction: it requires
+    the literal ``relic`` token, which the tower/bloon/power/comparison builders
+    never key on.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _RELIC_SUBJECT_RE.search(text):
+        return None
+    if not _RELIC_LIST_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    category = _match_relic_category(text)
+    grouped = btd6_data_service.relics_by_category()
+    if category is not None:
+        return _format_relic_category_roster(category, list(grouped.get(category, ())))
+    # An ungrouped "all relics" ask — but defer if it actually names one relic
+    # (an effect lookup that matched the enumeration regex by accident).
+    if _mentions_specific_relic(text):
+        return None
+    return _format_all_relics_roster(grouped)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -3080,6 +3209,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_modes_reply,
     deterministic_capability_roster_reply,
     deterministic_bloon_roster_reply,
+    deterministic_relic_roster_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_hero_cost_comparison_reply,
     deterministic_power_cost_comparison_reply,
