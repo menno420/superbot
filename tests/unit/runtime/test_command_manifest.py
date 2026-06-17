@@ -188,6 +188,40 @@ def test_to_dict_schema_shape():
 
 
 # ---------------------------------------------------------------------------
+# Deploy-SHA freshness badge (manifest spine PR3)
+# ---------------------------------------------------------------------------
+
+
+def test_deploy_build_sha_reads_railway_env(monkeypatch):
+    monkeypatch.delenv("RAILWAY_GIT_COMMIT_SHA", raising=False)
+    assert cm.deploy_build_sha() == ""
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "abcdef0123456789deadbeef")
+    assert cm.deploy_build_sha() == "abcdef012345"  # short, 12 chars
+
+
+def test_build_and_cache_from_bot_defaults_bot_build_to_deploy_sha(monkeypatch):
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "feedface0000")
+    ledger = _ledger((_e("warn", "ModCog", "moderation"),))
+    monkeypatch.setattr(
+        "core.runtime.command_surface_ledger.get_cached_ledger",
+        lambda: ledger,
+    )
+    manifest = cm.build_and_cache_from_bot(object())
+    assert manifest.bot_build == "feedface0000"
+
+
+def test_build_and_cache_from_bot_explicit_bot_build_overrides(monkeypatch):
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "feedface0000")
+    ledger = _ledger((_e("warn", "ModCog", "moderation"),))
+    monkeypatch.setattr(
+        "core.runtime.command_surface_ledger.get_cached_ledger",
+        lambda: ledger,
+    )
+    manifest = cm.build_and_cache_from_bot(object(), bot_build="")
+    assert manifest.bot_build == ""
+
+
+# ---------------------------------------------------------------------------
 # Reconciliation findings in the envelope (manifest spine PR3)
 # ---------------------------------------------------------------------------
 

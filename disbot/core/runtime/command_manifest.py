@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import datetime
 import logging
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -231,7 +232,22 @@ def build_and_cache(
     return manifest
 
 
-def build_and_cache_from_bot(bot: object, *, bot_build: str = "") -> CommandManifest:
+def deploy_build_sha() -> str:
+    """The deploy's git SHA (short) for the manifest envelope, or ``""``.
+
+    Read from Railway's ``RAILWAY_GIT_COMMIT_SHA`` (set on every deploy). It
+    freshness-badges / cache-busts the exported manifest so a consumer can tell
+    which build the surface came from. Empty off-Railway (local / CI), which is
+    fine — the field is informational.
+    """
+    return os.environ.get("RAILWAY_GIT_COMMIT_SHA", "").strip()[:12]
+
+
+def build_and_cache_from_bot(
+    bot: object,
+    *,
+    bot_build: str | None = None,
+) -> CommandManifest:
     """Build (or reuse) the command ledger, then project + cache the manifest.
 
     Prefers the already-cached ledger (the startup path builds it just
@@ -239,9 +255,15 @@ def build_and_cache_from_bot(bot: object, *, bot_build: str = "") -> CommandMani
     forces a second surface walk. When the panel manifest has been built
     (startup builds it first), its ``subsystem -> panel_ids`` map is joined
     in so each command carries its subsystem's ``panels``.
+
+    ``bot_build`` defaults to the deploy SHA (:func:`deploy_build_sha`) so the
+    live read carries it without every call site threading it; pass an explicit
+    string (incl. ``""``) to override.
     """
     from core.runtime import command_surface_ledger, panel_manifest
 
+    if bot_build is None:
+        bot_build = deploy_build_sha()
     ledger = command_surface_ledger.get_cached_ledger()
     if ledger is None:
         ledger = command_surface_ledger.build_ledger(bot)
@@ -308,5 +330,6 @@ __all__ = [
     "build_and_cache",
     "build_and_cache_from_bot",
     "build_command_manifest",
+    "deploy_build_sha",
     "get_cached_manifest",
 ]
