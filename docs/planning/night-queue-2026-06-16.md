@@ -68,8 +68,8 @@ the *default* work for an empty scheduled fire, not a lock.
 | 1 | **Hero cost comparison** | §7.5 | ✅ #1000 |
 | 2 | **Power (activated-ability) cost comparison** | §7.5 | ✅ #1008 |
 | 3 | **Relic category/effect roster** | §7.6 | ✅ #1009 |
-| 4 | **Bloon property roster** | §7.6 | `TODO` |
-| 5 | **Hero ability roster** | §7.6 | `TODO` |
+| 4 | **Bloon property roster** | §7.6 | `NEEDS-REFRAME` (see below) |
+| 5 | **Hero ability roster** | §7.6 | ✅ #1010 |
 
 Buffer (if a fire is fast or a slice above turns out already-built): **Geraldo
 items-by-unlock-level roster** · **Monkey-Knowledge category roster** (both §7.6,
@@ -120,7 +120,26 @@ data-complete — detailed at the foot).
 - **Tests:** `tests/unit/services/test_btd6_relic_roster.py` + corpus phrase.
 - **Mirror:** #975's roster builders (`deterministic_capability_roster_reply`).
 
-### Slot 4 — Bloon property roster (§7.6) · `ready`
+### Slot 4 — Bloon property roster (§7.6) · `NEEDS-REFRAME` (not cleanly data-complete)
+
+> **2026-06-17 finding (the #1010 fire, slot-4 pivot):** this slice is **not** as
+> data-clean as assumed — do **not** build it as written. In BTD6, **camo /
+> fortified / regrow are universal *modifiers*** applied to *any* bloon, not
+> intrinsic per-type properties. In `bloons.json` they appear only on the three
+> `category:"modifier"` marker pseudo-entries (`Camo property` / `Fortified
+> property` / `Regrow property`) plus a couple of innate cases (DDT is innately
+> camo+black+lead; the Lead Bloon is lead). A roster "which bloons are camo" served
+> from `properties[]` would return just `[DDT, Camo-property-marker]` — itself a
+> **BUG-0009-class wrong assembly** (it implies only DDT can be camo, when every
+> bloon can). The existing `deterministic_bloon_roster_reply` already *excludes*
+> `category:"modifier"` for exactly this reason. **Reframe options for a future
+> fire:** (a) drop this slice; or (b) reframe to the *intrinsic mechanical*
+> properties that genuinely are per-type (e.g. `knockback-immune`,
+> `stuns-attackers`, `damage-capped` on specific special/MOAB bloons), which IS a
+> clean roster but is rarely asked in those words; or (c) build a *modifier
+> explainer* ("what does camo/fortified/regrow do") off the three marker entries'
+> `description`, which is the genuinely useful answer the property data supports.
+> Until reframed, **skip slot 4** and take the next clean `TODO`.
 
 - **Question shape:** "which bloons are camo?", "list all fortified bloons", "what
   bloons have the regrow property?" — roster bloons by an entry in `properties[]`.

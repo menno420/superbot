@@ -2565,6 +2565,24 @@ def compare_power_costs(names: Sequence[str]) -> dict[str, Any]:
     }
 
 
+def hero_abilities(name: str) -> tuple[HeroAbility, ...] | None:
+    """One hero's abilities, ascending by unlock level, or ``None`` if unknown.
+
+    The §7.6 *hero-ability* roster member of the BUG-0009 family. Each hero in
+    ``heroes.json`` carries ``abilities[{level, name, summary}]``; this returns
+    them level-sorted so the floor OWNS the labelled list rather than letting the
+    model assemble (and possibly mis-order / mislabel) it — every ability name is
+    individually grounded, so a wrong level/ordering slips past the value-only
+    faithfulness guard. The name is resolved with the shared surface resolver
+    (canonical, id, or alias); an unresolvable name returns ``None`` (never
+    guessed), so a caller can fall through to the model.
+    """
+    hero = _find_by_surface(get_dataset().heroes, name)
+    if hero is None:
+        return None
+    return tuple(sorted(hero.abilities, key=lambda ability: ability.level))
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics

@@ -3194,6 +3194,65 @@ def deterministic_relic_roster_reply(message_text: str) -> str | None:
     return _format_all_relics_roster(grouped)
 
 
+# --- §7.6 hero ability roster (AI §7) -----------------------------------------
+# "what abilities does Quincy have", "list Adora's abilities" is the BUG-0009
+# wrong-assembly class: the model lists a hero's abilities itself and can
+# mis-level / mislabel one (every ability NAME is grounded, so the value-only
+# faithfulness guard never catches a wrong level or ordering). The authoritative
+# per-hero list is derived deterministically by btd6_data_service.hero_abilities,
+# so the floor OWNS the labelled list.
+_ABILITY_CUE_RE = re.compile(r"\babilit(?:y|ies)\b", re.I)
+
+
+def _format_hero_abilities(canonical: str, abilities: tuple[Any, ...]) -> str:
+    if not abilities:
+        return f"**{canonical}** has no recorded activated abilities."
+    lines = [f"**{canonical} — abilities ({len(abilities)}):**"]
+    lines.extend(
+        f"• **{ability.name}** (Level {ability.level}) — {ability.summary}"
+        for ability in abilities
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_hero_ability_roster_reply(message_text: str) -> str | None:
+    """A code-built "what abilities does <hero> have" list, or ``None``.
+
+    The §7.6 *hero-ability* roster member of the BUG-0009 floor — the per-hero
+    sibling of the capability / bloon / relic rosters. Fires on an ability cue +
+    exactly one resolved hero, listing that hero's abilities (level + name +
+    summary). Defers (``None``) on a **cost** cue (the hero *cost* comparison
+    builder's job — same entity, different shape), strategy/opinion, zero heroes,
+    and two-or-more heroes (an ambiguous multi-hero ask reaches the model).
+    Mutually exclusive with the other floor builders by construction: it requires
+    the literal ``ability``/``abilities`` token, which none of them key on.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _ABILITY_CUE_RE.search(text):
+        return None
+    # A hero cost comparison is the hero-cost builder's job, not this roster.
+    if _COST_COMPARE_CUE_RE.search(text) or _COST_COMPARE_VERB_RE.search(text):
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    names = _extract_hero_names(text)
+    if len(names) != 1:
+        return None
+
+    from services import btd6_data_service
+
+    abilities = btd6_data_service.hero_abilities(names[0])
+    if not abilities:
+        return None
+    hero = btd6_data_service.get_hero(names[0])
+    canonical = hero.canonical if hero is not None else names[0]
+    return _format_hero_abilities(canonical, abilities)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -3210,6 +3269,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_capability_roster_reply,
     deterministic_bloon_roster_reply,
     deterministic_relic_roster_reply,
+    deterministic_hero_ability_roster_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_hero_cost_comparison_reply,
     deterministic_power_cost_comparison_reply,
