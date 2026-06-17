@@ -235,28 +235,16 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   2026-06-12; cadence raised 10 → 20 same day, then 20 → 30 on 2026-06-14 per Q-0134 — at burst
   velocity a 20-band crossed in under a day and fired the docs pass several times daily).** PR
   numbers crossing a **multiple of 30** (#30, #60, #90, …) are reserved for a
-  **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things:
-  **(1) reconcile** — review the living ledger, active lanes, open Q-blocks, idea backlog, and
-  roadmap; **disposition open PRs** (via the GitHub MCP — `list_pull_requests` + each one's
-  CI/mergeable state: close redundant/stale ones, fix or flag a red-CI one) — the gap that left
-  #766 (red CI) and #771 (redundant + conflicted) rotting unnoticed across sessions *and* prior
-  reconciliation passes (owner directive Q-0125, 2026-06-13); prune/archive stale docs; restate
-  the current priorities; and **(2) plan the next *full band* — enough genuine buildable work to
-  reach the NEXT pass (depth ≥ the 30-PR cadence; owner directive Q-0164, 2026-06-17, superseding
-  the earlier "~9 PRs" horizon — a leftover from the every-10-PR cadence that drained the buildable
-  queue ~20 PRs before each refill and is the root cause of the "running out of plans" droughts)**.
-  **Modular but not over-segmented**: each planned PR ships a *reasonable, meaningful change* (a
-  real slice), **not** a trivial fragment. Hit the depth as **larger multi-PR initiatives OR more
-  slices, whichever keeps each a real change** — never pad to 30 with filler. **If the idea backlog
-  genuinely cannot fill the band, that is the signal, not a failure**: promote what you honestly can
-  into plans, then FLAG it — a loud `⚠️ PLAN BACKLOG THIN` line in `current-state.md` ▶ Next action
-  + the run-report ⚑ Owner-decisions line — so the owner drops ideas or a dedicated planning session
-  runs, instead of dispatch inventing low-value work (Q-0164). `scripts/check_reconciliation_due.py`
-  flags when a pass is due (against the
-  `Last reconciliation pass:** PR #N` marker in `current-state.md`; surfaced by `/session-close`).
-  The pass is now **fired automatically** by `.github/workflows/reconciliation-trigger.yml` (opens
-  a `reconcile`-labeled issue at the boundary → the **superbot docs reconciliation** routine runs
-  it — see `docs/operations/autonomous-routines.md`); reset the marker to the latest PR after the pass.
+  **docs-only review + planning** pass — no runtime / `disbot/` code in it. It does two things — **(1) reconcile** the ledger / docs / open PRs (disposition open PRs, Q-0125) and
+  **(2) plan the next *full band*** (enough buildable work to reach the next pass, depth ≥ the cadence;
+  raise a loud `⚠️ PLAN BACKLOG THIN` flag in `current-state.md` ▶ Next action when the idea backlog
+  can't fill it, Q-0164). **The full step-by-step procedure** (reconcile · disposition open PRs · plan
+  the band · reset the `Last reconciliation pass` marker) **lives in the routine's saved prompt,
+  `docs/operations/autonomous-routines.md`** — *thin-pointer convention (the procedures-to-skills plan):
+  the rule stays here, the runbook lives there.* It is **run automatically by the docs-reconciliation
+  routine** — `scripts/check_reconciliation_due.py` flags when due, and
+  `.github/workflows/reconciliation-trigger.yml` opens the `reconcile` issue at the boundary that fires
+  it.
   **A manually-started session does NOT run the reconciliation pass — the routines always do it
   automatically; only run it in a manual session if the owner explicitly asks (owner directive
   Q-0124, 2026-06-13).** The SessionStart `Recon: DUE` banner is a signal for the routine, not an
