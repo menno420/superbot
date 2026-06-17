@@ -29,7 +29,8 @@ def test_every_skill_doc_builds() -> None:
     docs = [
         p
         for p in build_skills.SKILL_DOCS_DIR.glob("*.md")
-        if p.name != "README.md"
+        # Mirror build_all(): README + ``_``-prefixed drafts are not skills.
+        if p.name != "README.md" and not p.name.startswith("_")
     ]
     assert len(rendered) == len(docs)
     assert rendered, "expected at least one skill doc to build"

@@ -129,17 +129,24 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     self-fired when live GitHub already proved it had). If `gh` is unavailable, do the same read
     via the GitHub MCP (`list_issues`): the *author* of the newest auto-opened trigger issue is
     the live read of ROUTINE_PAT (a real-user login = set; `github-actions[bot]` = unset).
-  - PLAN THE NEXT BAND + KEEP THE PLANS FED (owner directive Q-0144). Review the current state of
-    the executable plans (docs/planning/*, docs/roadmap.md): how much real, startable work is left?
-      · Enough work remains -> plan the next band of PRs (the upcoming ~30) — modular, each a
-        meaningful slice — into the band planning doc, highest-value first.
-      · NOT enough executable work remains -> this is the idea->plan step. Review docs/ideas/
-        (dedup-grep first), pick the best owner-aligned idea, and promote it into a FULLY COMPLETE,
-        executable plan in docs/planning/ — scoped against the repo's house style (existing
-        subsystems / folios / game cogs) so an executor can build it cold. A complete plan is the
-        goal: good enough to implement directly, or a solid structure to revise later. Index it in
-        docs/ideas/README.md + the roadmap so it becomes the executor's next ▶ Next action. This is
-        how an idea becomes a plan becomes reality with no extra owner planning.
+  - PLAN THE NEXT *FULL BAND* + KEEP THE PLANS FED (owner directives Q-0144 + Q-0164). Review the
+    executable plans (docs/planning/*, docs/roadmap.md): how much real, *buildable* work is left?
+    The bar is DEPTH >= the cadence — leave enough genuine buildable work to reach the NEXT pass
+    (~30 PRs of capacity), as larger multi-PR initiatives OR more slices, whichever keeps each a
+    real change. The old "~9 PRs" horizon drained the queue ~20 PRs before each refill (Q-0164).
+      · Enough work remains -> plan the next band into the band planning doc, highest-value first,
+        modular, each a meaningful slice. Do NOT pad to 30 with filler.
+      · NOT enough buildable work remains -> FIRST this is the idea->plan step: review docs/ideas/
+        (dedup-grep first) and promote the best owner-aligned ideas into FULLY COMPLETE, executable
+        plans in docs/planning/ — scoped against the repo's house style (existing subsystems /
+        folios / game cogs) so an executor can build them cold. Index each in docs/ideas/README.md +
+        the roadmap so it becomes a ▶ Next action.
+      · STILL can't fill the band after promoting what you honestly can -> that is the SIGNAL, not a
+        failure (Q-0164): set a loud `⚠️ PLAN BACKLOG THIN` line in current-state.md ▶ Next action
+        AND the run-report ⚑ Owner-decisions line, so the owner drops ideas or schedules a dedicated
+        planning session — never invent low-value filler to look busy. This is how an idea becomes a
+        plan becomes reality with no extra owner planning, and how the owner learns *early* that the
+        backlog needs him.
   - IMPROVE THE SYSTEM: if you see a way to make the orientation / memory / tooling better for
     the next run (a confusing doc, a missing pointer, a guard that would have caught this drift),
     make that improvement too. This is the point of the loop.
@@ -164,7 +171,9 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
     or missed.
   - Write a short .sessions/<date>-reconcile.md log (what changed · what's next · the Q-0089
     idea · the Q-0102 review), ending with the **📤 Run report footer** (`.sessions/README.md`) —
-    the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty).
+    the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty), and the
+    **Run type:** line set to `routine · reconciliation` (Q-0165 — the dashboard updates feed
+    badges routine vs. manual work off this line).
 
 STEP 5 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger, and
   check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve

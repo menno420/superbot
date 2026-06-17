@@ -61,10 +61,16 @@ blocks up across the day, so the two ⚑ lines are **required** — write `none`
 
 - **Did:** <one line — what this run shipped> · **Outcome:** shipped / blocked / partial
 - **Shipped:** #PR — one line each (or "no PR — <why>")
+- **Run type:** `routine · dispatch` / `routine · reconciliation` / `manual` (Q-0165)
 - **⚑ Owner decisions needed:** <Q-#### + one line, or `none`>
 - **⚑ Owner manual steps:** <a thing only the owner can do, or `none`>
 - **↪ Next:** <the sharpened current-state ▶ Next action>
 ```
+
+The **`Run type`** line (Q-0165, 2026-06-17) lets the owner tell routine work from his own at a
+glance — the **dashboard updates feed badges any log whose Run type contains `routine`**
+(`scripts/export_dashboard_data.py` → `/updates`). A routine (dispatch / reconciliation) sets it
+from its prompt; a manual session writes `manual`.
 
 The `⚑ Owner manual steps` line is **not** for "deploy the fix" — **a merge to `main` auto-deploys
 to Railway** (~CI build time; a failing build never deploys; the old container stays up until the

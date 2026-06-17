@@ -41,9 +41,46 @@ lane is now fully consumed). "Running out of plans" is real and has a precise, f
 
 ## 📤 Run report
 
-- **Did:** review the first unattended-routine day + route the owner's observations to durable homes + apply the steered workflow fixes · **Outcome:** _pending close_
-- **Shipped:** _pending — this PR_
+- **Did:** reviewed the first unattended-routine day + routed the owner's observations to durable homes + applied the steered workflow fixes (planning depth · drift-on-sight · routine labels · updates freshness) · **Outcome:** shipped (merge held born-red pending owner review)
+- **Shipped:** #1026 — this PR (4 applied fixes + Q-0164…Q-0171 + 4 idea / 2 plan / 1 proposal docs)
 - **Run type:** manual (owner-live)
-- **⚑ Owner decisions needed:** Q-0164…Q-0170 recorded with provenance; the Hermes sample (Q-0168) + review-inbox shape (Q-0169) await the owner's read
-- **⚑ Owner manual steps:** re-paste the two updated routine prompts into their console configs (CLAUDE.md/prompt edits only take effect once pasted)
-- **↪ Next:** _pending close_
+- **⚑ Owner decisions needed:** react to the Hermes house-style sample (Q-0168) · pick the next agent-tooling builds (Q-0170) · review-inbox phasing (Q-0169) is captured · Codex-review (Q-0171) needs research before a decision
+- **⚑ Owner manual steps:** re-paste the two updated routine prompts (dispatch + reconciliation) into their console configs — CLAUDE.md/prompt edits only take effect once pasted
+- **↪ Next:** the **repo-consistency linter** is the flagged top buildable lane (turn-key plan, one rule per PR — feeds the now-fixed plan backlog); then roll out the approved Hermes style + pick agent-tooling skills
+
+## 💡 Session idea (Q-0089)
+
+**Make the planning horizon and the reconciliation cadence one source of truth, with an assertion.**
+This whole session's root cause was that "30" (the cadence, Q-0134) and "~9 slices" (the band-doc
+planning horizon) lived in *different docs* and silently diverged for many sessions. A tiny check —
+assert the reconciliation planning horizon ≥ the cadence constant, both read from one place — would
+have caught the 9-vs-30 drift mechanically, the way `check_reconciliation_due.py` reads the marker.
+It's the verified-signal cousin of the `check_plan_backlog.py` proposed in the agent-tooling
+shortlist (Q-0170 §B). Disposable per Q-0105.
+
+## ⟲ Previous-session review (Q-0102)
+
+The previous workflow run — the **band-#1020 reconciliation pass** (#1020) — did its hard job well:
+it reconciled five genuinely-missing ledger entries and *killed a self-inflicted ~2,000-word
+bookkeeping tally* (a real durable win). **But it is also the clearest illustration of the gap this
+session fixes:** it explicitly wrote "the buildable-now ungated `ready` queue is genuinely thin" and
+*still planned only ~9 slices* against the 30-PR cadence — treating the drought as normal instead of
+escalating it. It **observed** the running-low signal the owner later raised but had no instruction
+to **flag it loudly to him** — exactly the `⚠️ PLAN BACKLOG THIN` escalation Q-0164 now adds. The
+self-auditing loop worked: the predecessor surfaced the symptom; this session found the root cause.
+
+## Doc audit (Q-0104)
+
+`check_docs --strict` green · `check_current_state_ledger --strict` green · `check_session_log`
+green · the four new ideas indexed in `ideas/README.md` · Q-0164…Q-0171 recorded in the router with
+provenance · no new runtime bugs (BUG-0009 slice 3 / BUG-0011 stay OPEN — untouched).
+
+## 📊 Telemetry
+
+| Metric | Value |
+|---|---|
+| PRs merged this session | 0 (held born-red for owner review) |
+| CI-red rounds | 1 (the intended born-red gate; clears on flip-to-complete) |
+| Repo-rule trips | 2 (skill-builder picked up the proposal draft · invalid `proposal` badge — both fixed) |
+| New ideas contributed | 1 (Q-0089, above) + 4 captured from the owner brain-dump |
+| Ideas groomed | 2 promoted to executable plans (review-inbox · consistency-linter) |
