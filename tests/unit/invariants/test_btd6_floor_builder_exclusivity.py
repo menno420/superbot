@@ -84,6 +84,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "what economy relics are there",
         "deterministic_relic_roster_reply",
     ),
+    (
+        "what abilities does quincy have",
+        "deterministic_hero_ability_roster_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
