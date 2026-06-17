@@ -25,11 +25,10 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/inspiring-wozniak-i92q58` · **dashboard Phase E — control-API read endpoints + see-then-change
-  editor** (owner directive, overnight) — `GET /control/settings/current` · `help/overlay` ·
-  `help/catalogue` · `routing` (dormant, read-only) + dashboard wiring + R3 hardening (rate-limit + CSRF)
-  + Phase C read workspace (server overview + authority preview). Runtime is additive/dormant ·
-  `disbot/control_api.py` · `dashboard/` · 2026-06-17
+- `claude/inspiring-wozniak-i92q58` · **dashboard R3 — live-surface hardening** (owner directive,
+  overnight; follows Phase E #1013 merged) — CSRF token on the editor forms + rate-limit the public login
+  & edit POSTs + rate-limit the control-API writes (429). Additive/dormant-safe · `dashboard/` ·
+  `disbot/control_api.py` · 2026-06-17 · *(next: Phase C read workspace)*
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·

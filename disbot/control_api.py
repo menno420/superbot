@@ -48,11 +48,56 @@ import hmac
 import json
 import logging
 import os
+import time
 from typing import Any
 
 from aiohttp import web
 
 logger = logging.getLogger("bot.control_api")
+
+
+# ---------------------------------------------------------------------------
+# Write rate limiting (defense-in-depth — the dashboard already rate-limits)
+#
+# The control API is private-network + token-gated and the dashboard is its only
+# caller, but the dashboard is a public live surface, so a per-(guild, user) cap
+# on writes bounds an abusive/compromised client. Coarse, in-process, best-effort
+# — never the authority gate (the audited seam stays that). Reads are unlimited.
+# ---------------------------------------------------------------------------
+
+_WRITE_LIMIT_MAX = 60
+_WRITE_LIMIT_WINDOW = 60.0
+
+
+class _SlidingWindow:
+    """Allow at most ``max_events`` per ``window`` seconds for each key."""
+
+    def __init__(self, max_events: int, window: float) -> None:
+        self.max_events = max_events
+        self.window = window
+        self._hits: dict[str, list[float]] = {}
+
+    def allow(self, key: str, *, now: float | None = None) -> bool:
+        moment = time.monotonic() if now is None else now
+        cutoff = moment - self.window
+        hits = [t for t in self._hits.get(key, ()) if t > cutoff]
+        if len(hits) >= self.max_events:
+            self._hits[key] = hits
+            return False
+        hits.append(moment)
+        self._hits[key] = hits
+        return True
+
+    def reset(self) -> None:
+        self._hits.clear()
+
+
+_write_limiter = _SlidingWindow(_WRITE_LIMIT_MAX, _WRITE_LIMIT_WINDOW)
+
+
+def _reset_rate_limiter_for_tests() -> None:
+    """Clear the write-rate-limit state (test isolation)."""
+    _write_limiter.reset()
 
 
 # ---------------------------------------------------------------------------
@@ -226,6 +271,8 @@ async def _authed_write_context(
     member = resolve_member(guild, user_id)
     if member is None:
         raise _ControlError(403, f"user {user_id} is not a member of guild {guild_id}")
+    if not _write_limiter.allow(f"{guild.id}:{member.id}"):
+        raise _ControlError(429, "rate limit exceeded — too many control-API writes")
     return guild, member, body
 
 
