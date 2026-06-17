@@ -207,6 +207,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1015 (2026-06-17, dashboard Phase C — the read workspace)** — scheduled dispatch, empty work
+  order → advanced the active dashboard thread (night/BTD6 queues consumed; R3 hardening already
+  in flight on #1014). Shipped the Phase-C slice skipped when the build jumped C-auth → F-writes,
+  all **read-only** over the shipped Phase E reads (no new bot endpoints, no `disbot/` code): **`/me`**
+  (logged-in personal overview — who you are + the servers you administer, each card linking to its
+  overview/editor; pure session data), **`/admin/{guild}/overview`** (read-only per-server
+  setup-health summary — invalid settings, customisations, help overrides, disabled cogs — from
+  `_fetch_current_state`), and an honest **authority preview** ("what you may read / change here")
+  from the authority bridge. New pure `_setup_health`/`_authority_preview` projections + two
+  templates + nav/overview links. `check_quality --full` green (10408) · arch 0 · +12 dashboard
+  tests. **Dashboard ▶ next:** R3 hardening (#1014, in flight) → then the Phase D manifest spine
+  (Q-0162, gates command/panel management) + the global-settings runtime tier (Q-0157) — both their
+  own focused sessions.
 - **#1012 (2026-06-17, AI answerability floor — boss roster + per-difficulty map filter + boss
   immunity)** — scheduled dispatch fire, no work order; night queue fully consumed + both open PRs
   (#941/#929) Hermes-gated → took a fresh slice of the proven, ungated BTD6 deterministic-floor lane

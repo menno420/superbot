@@ -410,6 +410,82 @@ async def _control_flash(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _blank_current() -> dict[str, Any]:
+    """The empty current-state shape (no reads yet / reads unavailable)."""
+    return {
+        "settings": {},
+        "help_overlay": None,
+        "help_catalogue": None,
+        "routing_map": {},
+        "reads_ok": False,
+    }
+
+
+def _setup_health(current: dict[str, Any]) -> dict[str, Any]:
+    """Summarize the live current-state read into a one-glance server-health card.
+
+    A pure projection of :func:`_fetch_current_state`'s result (no I/O) that drives
+    the read-only server overview: how many settings are invalid (→ falling back to
+    default), how many are customised away from the default, how many Help entities
+    are overridden (and whether the Home message is customised), and which cogs are
+    disabled for the guild.
+    """
+    invalid: list[dict[str, str]] = []
+    customised = 0
+    total_settings = 0
+    for subsystem, items in (current.get("settings") or {}).items():
+        for item in items:
+            total_settings += 1
+            if not item.get("valid", True):
+                invalid.append({"subsystem": subsystem, "name": item.get("name", "")})
+            elif item.get("provenance") and item["provenance"] != "default":
+                customised += 1
+
+    overlay = current.get("help_overlay") or {}
+    help_overrides = len(overlay.get("rows") or [])
+    home_customised = bool(overlay.get("home"))
+
+    routing = current.get("routing_map") or {}
+    disabled_cogs = sorted(name for name, enabled in routing.items() if not enabled)
+
+    return {
+        "total_settings": total_settings,
+        "customised": customised,
+        "invalid": invalid,
+        "invalid_count": len(invalid),
+        "help_overrides": help_overrides,
+        "home_customised": home_customised,
+        "disabled_cogs": disabled_cogs,
+        "disabled_count": len(disabled_cogs),
+        "healthy": not invalid,
+    }
+
+
+def _authority_preview(authority: dict[str, Any] | None) -> dict[str, Any]:
+    """An honest "what you may read / change here" matrix from the authority bridge.
+
+    A pure projection — it sets expectations, it never grants anything: the bot
+    remains the only real authority and re-checks every write live. The current
+    read + write control-API surfaces are all administrator-gated, so an admin (or
+    the guild owner, who holds admin) may read current config and edit settings /
+    help / cog routing; a plain member may do none of it here. Env-value
+    management lives in the separate owner (platform) zone, not per-guild.
+    """
+    found = bool(authority and authority.get("member_found"))
+    is_admin = bool(authority and authority.get("is_admin"))
+    is_owner = bool(authority and authority.get("is_owner"))
+    return {
+        "member_found": found,
+        "tier": (authority or {}).get("tier"),
+        "is_admin": is_admin,
+        "is_owner": is_owner,
+        "may_read_config": is_admin,
+        "may_edit_settings": is_admin,
+        "may_edit_help": is_admin,
+        "may_edit_routing": is_admin,
+    }
+
+
 async def _fetch_current_state(guild_id: int, user_id: int) -> dict[str, Any]:
     """Fetch the guild's live current config from the bot (Phase E reads).
 
@@ -516,6 +592,30 @@ def auth_logout(request: Request):
     return resp
 
 
+@app.get("/me", response_class=HTMLResponse)
+def me_overview(request: Request):
+    """Personal overview — the logged-in hinge between the public site and
+    per-server management. Greets the user and lists the servers they administer,
+    each linking to its read-only overview. Redirects to ``/admin`` (the sign-in
+    surface) when logged out. Pure session data — no per-guild bot calls, so it
+    stays fast for a user who administers many servers.
+    """
+    session = websession.read(request)
+    user = session.get("user")
+    if user is None:
+        return RedirectResponse("/admin", status_code=302)
+    return templates.TemplateResponse(
+        request,
+        "me.html",
+        {
+            "data": load_data(),
+            "page": "me",
+            "guilds": session.get("guilds", []),
+            "control_configured": control_client.is_configured(),
+        },
+    )
+
+
 @app.get("/admin", response_class=HTMLResponse)
 def admin_home(request: Request):
     """The control-panel home — sign-in prompt or the user's admin-guild picker."""
@@ -539,6 +639,43 @@ def admin_home(request: Request):
     return resp
 
 
+@app.get("/admin/{guild_id}/overview", response_class=HTMLResponse)
+async def admin_guild_overview(request: Request, guild_id: str):
+    """Read-only per-server overview — authority + a setup-health summary.
+
+    The non-editing companion to ``/admin/{guild}``: a one-glance picture (invalid
+    settings, customisations, help overrides, disabled cogs) plus an honest
+    authority preview, all from the Phase E read endpoints. Never writes.
+    """
+    session = websession.read(request)
+    user = session.get("user")
+    if user is None:
+        return RedirectResponse("/admin", status_code=302)
+    guild = _find_admin_guild(session, guild_id)
+    if guild is None:
+        return RedirectResponse("/admin", status_code=302)
+    authority = None
+    current = _blank_current()
+    if control_client.is_configured():
+        authority = await control_client.get_authority(int(guild_id), int(user["id"]))
+        if authority and authority.get("is_admin"):
+            current = await _fetch_current_state(int(guild_id), int(user["id"]))
+    return templates.TemplateResponse(
+        request,
+        "admin_overview.html",
+        {
+            "data": load_data(),
+            "page": "admin",
+            "guild": guild,
+            "authority": authority,
+            "preview": _authority_preview(authority),
+            "health": _setup_health(current),
+            "current": current,
+            "control_configured": control_client.is_configured(),
+        },
+    )
+
+
 @app.get("/admin/{guild_id}", response_class=HTMLResponse)
 async def admin_guild(request: Request, guild_id: str):
     """The per-guild editor — settings, help appearance, and cog routing."""
@@ -550,13 +687,7 @@ async def admin_guild(request: Request, guild_id: str):
     if guild is None:
         return RedirectResponse("/admin", status_code=302)
     authority = None
-    current: dict[str, Any] = {
-        "settings": {},
-        "help_overlay": None,
-        "help_catalogue": None,
-        "routing_map": {},
-        "reads_ok": False,
-    }
+    current: dict[str, Any] = _blank_current()
     if control_client.is_configured():
         authority = await control_client.get_authority(int(guild_id), int(user["id"]))
         # Live current state (see-then-change) — only when the bot says you're an
