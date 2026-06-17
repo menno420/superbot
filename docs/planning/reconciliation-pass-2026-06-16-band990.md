@@ -1,6 +1,7 @@
 # Reconciliation pass — 2026-06-16 · the band-#990 Q-0107 cadence pass
 
-> **Status:** `plan` — the docs-only review + planning pass for the band that crossed
+> **Status:** `historical` — superseded by [the band-#1020 pass](reconciliation-pass-2026-06-17-band1020.md),
+> which scored this band (#995–#1020) in its §2. The docs-only review + planning pass for the band that crossed
 > **#960** (cadence = every **30th** merged PR per Q-0134; previous cadence pass
 > [the band-#930 pass](reconciliation-pass-2026-06-15-band930.md), now `historical`).
 > Triggered by the auto-opened `reconcile` issue **#961**

@@ -79,6 +79,7 @@ living ledger (`docs/current-state.md`).
 > Trimmed 2026-06-16 (Q-0152): stale claims whose PRs merged are dropped — the durable record is the
 > PR + the `current-state.md` ledger. Keep this to the most recent handful, newest-first.
 
+- `claude/reconcile-1021-docs` · band-#1020 Q-0107 docs reconciliation (issue #1021) — ledger fix + trim · control-plane tick · moderation-DM idea→plan · next-band plan · 2026-06-17 · **docs-only, self-merge on green**
 - `claude/gifted-noether-37tiwr` · BUG-0015 — "d67 dart paragon" misread as "0-6-7": parse + route + ground a paragon degree (1-100) · 2026-06-16 · **PR #963 (auto-merge on green)**
 - `claude/magical-rubin-u3arq6` · AI §7.5 paragon base-cost comparison floor (last unbuilt comparison member) · 2026-06-16 · **PR #962 (auto-merge on green)**
 - `claude/hopeful-meitner-772pv8` · thin architecture atlas (PR 2, Q-0151a) — `scripts/atlas.py` composer + `role` in `context_map.py` + companion doc + tests · 2026-06-16 · **PR #960 (auto-merge on green)**
