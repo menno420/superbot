@@ -1147,11 +1147,29 @@ async def main() -> None:
 
                 startup_outcome.record_failure("command_surface_ledger", exc)
 
+            # Manifest spine slice 2 — project the registered persistent panels
+            # into the typed PanelManifest (the L3 panel-editor's read artifact;
+            # built from the runtime registry, not an AST guess). Built BEFORE
+            # the command manifest so the latter can join each command to its
+            # subsystem's panels. Non-fatal: a failure only means `!platform`
+            # reports the panel manifest as not-built.
+            try:
+                from core.runtime import panel_manifest, startup_outcome
+
+                panel_manifest.build_and_cache()
+                startup_outcome.record_success("panel_manifest")
+            except Exception as exc:
+                logger.warning("Panel manifest build skipped: %s", exc)
+                from core.runtime import startup_outcome
+
+                startup_outcome.record_failure("panel_manifest", exc)
+
             # Manifest spine slice 1 — project the just-built ledger into the
             # typed, bot-owned CommandManifest (the reliable read artifact for
             # command management; AST stays drift-detection only). Reuses the
-            # cached ledger, so no second surface walk. Non-fatal: a failure
-            # only means `!platform` reports the manifest as not-built.
+            # cached ledger, so no second surface walk; joins the panel manifest
+            # (built just above) for each command's subsystem panels. Non-fatal:
+            # a failure only means `!platform` reports the manifest as not-built.
             try:
                 from core.runtime import command_manifest, startup_outcome
 

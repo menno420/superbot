@@ -49,6 +49,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/magical-rubin-p92toz` · manifest spine **PR2** — panel registry + `PanelManifest`
+  (`core/runtime/panel_manifest.py` + `persistent_views` PANEL_ID/enumeration + command-panel join) ·
+  2026-06-17 · **PR #1019 (auto-merge on green)**
 - `claude/inspiring-wozniak-i92q58` · dashboard **Phase E** — control-API read endpoints + see-then-change
   editor · 2026-06-17 · **PR #1013 (merged)**
 - `claude/inspiring-wozniak-i92q58` · dashboard **R3** — live-surface hardening (CSRF + rate-limiting) ·

@@ -61,6 +61,7 @@ Inspect `!platform consistency` and the readiness snapshot's
 Inspect the readiness snapshot's `startup_outcomes`:
 
 - [ ] **`command_surface_ledger`** outcome.success == True
+- [ ] **`panel_manifest`** outcome.success == True
 - [ ] **`command_manifest`** outcome.success == True
 - [ ] **`settings_registry`** outcome.success == True
 - [ ] **`customization_catalogue`** outcome.success == True

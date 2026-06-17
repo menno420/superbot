@@ -29,13 +29,20 @@ and the **manifest-faithfully-projects-ledger** CI invariant (the first of the v
 reconciliation tests). Deferred fields (`source`, `panels`, `actions`, `related_settings`,
 `capability_required`) are present-but-empty so the shape is stable as the spine grows.
 
-### PR2 — panel registry + `PanelManifest`
+### PR2 — panel registry + `PanelManifest` ✅ SHIPPED (#1019)
 
-Declarative panel descriptors **beside the view classes** (`panel_id`, `view_class`, `buttons[]` with
-`action_id`/`custom_id`/`label`/`row`/`command`), built into a typed `PanelManifest`. This is "the
-first half of the L3 move-buttons work" and the prerequisite for *any* reliable panel-layout editor.
-Back-populates `CommandManifestEntry.panels` / `.actions`. Add the panel-registry-vs-view-classes
-reconciliation test (custom IDs match real components).
+`core/runtime/panel_manifest.py` projects the **persistent-view registry** (the panels with stable
+static custom_ids that survive restart — exactly the manageable ones) into a typed `PanelManifest`,
+built **at startup from the runtime registry** (mirroring PR1's "runtime truth, not AST"). Each
+registered `PersistentView` is instantiated arg-free and its real components are introspected into
+`PanelButton`s (`action_id`/`custom_id`/`label`/`row`; `command` deferred — no declared button→command
+binding yet). `persistent_views.py` gained a declarative `PANEL_ID` class var + a faithful ordered
+enumeration (`iter_registered_view_classes`) so the two `help` panels (collapsed in the subsystem-keyed
+recovery dict) both surface. `CommandManifestEntry.panels` is back-populated by a subsystem join
+(`actions` stays deferred). The **panel-registry-vs-view-classes** reconciliation test
+(`tests/unit/runtime/test_panel_manifest.py`) round-trips every manifest button against a fresh
+instantiation of its view class. Deferred: per-panel `source` (file/line, PR3 AST join), `layout_source`
+flips to `db_overlay` in PR4.
 
 ### PR3 — control-API `manifest` read + `dashboard.json` export + AST drift guard
 
@@ -47,6 +54,13 @@ reconciliation test (custom IDs match real components).
   make AST a drift-detection layer rather than a source of truth.
 - Join `source` (file/line) from the AST scanner; join `related_settings` / `capability_required` from
   `SettingSpec` / capability bindings.
+- **Cross-manifest reconciliation (the manifest's core purpose):** reconcile the command ledger's
+  `panel_action` classification against the PanelManifest's real button `action_id`s — every
+  `panel_action`-classified command should map to a real button, and (once the button→command binding
+  lands) every button's `command` should point at a real command. This is the test that turns "looks
+  like a panel command" into a *verified* "this button backs this command" — the AST `button_backed`
+  weakness the spine exists to close. Source seam for PR2's panel data: `core.runtime.persistent_views`
+  (the persistent-view registry — the panels with stable static custom_ids).
 
 ### PR4 — the panel-layout editor (H / L3 "move buttons")
 

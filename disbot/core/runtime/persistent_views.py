@@ -19,6 +19,9 @@ Subclass contract:
 Public surface:
     register(cls)              — decorator/call to register a view class
     get_view_class(subsystem)  — retrieve registered class by subsystem name
+    iter_registered_view_classes() — every registered class, in registration
+                                     order (faithful; not deduped by subsystem)
+    panel_id_of(cls)           — the manifest panel id for a class
     PersistentView             — base class to extend
 """
 
@@ -28,18 +31,42 @@ from typing import ClassVar
 
 import discord
 
+# Subsystem → class, used by restart recovery (one class per subsystem anchor).
 _REGISTRY: dict[str, type[PersistentView]] = {}
+# Registration-ordered list of *every* registered class — faithful even when two
+# panels share a subsystem (the recovery dict above collapses those). The panel
+# manifest (manifest spine PR2) enumerates this so both panels surface.
+_REGISTERED_CLASSES: list[type[PersistentView]] = []
 
 
 def register(cls: type[PersistentView]) -> type[PersistentView]:
     """Register a PersistentView subclass for restart recovery."""
     _REGISTRY[cls.SUBSYSTEM] = cls
+    if cls not in _REGISTERED_CLASSES:
+        _REGISTERED_CLASSES.append(cls)
     return cls
 
 
 def get_view_class(subsystem: str) -> type[PersistentView] | None:
     """Return the registered PersistentView class for *subsystem*, or None."""
     return _REGISTRY.get(subsystem)
+
+
+def iter_registered_view_classes() -> tuple[type[PersistentView], ...]:
+    """Every registered persistent-view class, in registration order.
+
+    Unlike :func:`get_view_class` this does **not** dedupe by subsystem, so a
+    subsystem that owns more than one persistent panel (e.g. ``help``) yields
+    all of them — the faithful enumeration the panel manifest needs.
+    """
+    return tuple(_REGISTERED_CLASSES)
+
+
+def panel_id_of(cls: type[PersistentView]) -> str:
+    """The manifest panel id for *cls* — its declared ``PANEL_ID`` or the
+    ``SUBSYSTEM`` fallback (unique when a subsystem owns one panel).
+    """
+    return cls.PANEL_ID or cls.SUBSYSTEM
 
 
 class PersistentView(discord.ui.View):
@@ -51,6 +78,13 @@ class PersistentView(discord.ui.View):
     """
 
     SUBSYSTEM: ClassVar[str] = ""
+
+    # Manifest spine (PR2): the stable id this panel is addressed by in the
+    # PanelManifest / panel-layout editor. Empty ⇒ falls back to SUBSYSTEM
+    # (unique when a subsystem owns exactly one persistent panel). Set it
+    # explicitly only when a subsystem registers more than one panel (e.g.
+    # the two ``help`` panels) so each gets a distinct manifest id.
+    PANEL_ID: ClassVar[str] = ""
 
     # RC-3 / ADR-004: when the panel's anchor row is missing we cannot verify
     # ownership.  Default False keeps today's behavior (allow).  Opt in to True
