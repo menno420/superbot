@@ -119,7 +119,9 @@ def _render(result: dict[str, object]) -> str:
         "proposed (still subject to the Q-0114 human approve/deny gate)."
         if phase == "invent"
         else "FIX-PHASE — bug/UX/docs/correctness work only; agent-originated "
-        "features stay gated until the conditions below clear."
+        "features stay gated until the conditions below clear. (This gate fences "
+        "self-invented *bot features*; read-only Q-0105 dev tooling/checks — "
+        "docs, orientation, drift guards — are free-rein and NOT gated here.)"
     )
     lines = [
         "# Autonomous-loop phase gate",

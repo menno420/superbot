@@ -52,9 +52,11 @@ Current broad captures:
   generated artifact (`env-vars.md`, the agent-context packs, …), each guarded in isolation today. One
   small `check_generated_artifacts_fresh.py` umbrella — a registry of `(generator, committed_path,
   structural-key extractor)` tuples emitting soft "N surfaces behind" warnings — generalizes the
-  manifest-spine "AST is drift-detection" philosophy so no future artifact silently rots. Captured
-  (not built): a self-invented tool, fix-phase. → relates `scripts/` tooling · the reconciliation
-  cadence pass.
+  manifest-spine "AST is drift-detection" philosophy so no future artifact silently rots.
+  **IMPLEMENTED #1027** (2026-06-17) as `scripts/check_generated_artifacts_fresh.py` — built as Q-0105
+  dev tooling (read-only/warn-only/disposable, not a bot feature so the FIX-phase gate is N/A); kept
+  manual/ad-hoc (not hard-CI-wired) with `--strict` for the reconciliation cadence pass. → relates
+  `scripts/` tooling · the reconciliation cadence pass.
 - [`routine-permission-surface-lint-2026-06-16.md`](./routine-permission-surface-lint-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the band-#990 reconciliation pass):** the routine stalled
   twice on a `permissions.ask` `rm` prompt (fixed reactively as Q-0161). A stdlib
