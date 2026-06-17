@@ -5,7 +5,7 @@
 > sector is a self-contained dispatch queue. **Last updated:** 2026-06-14 (restructured by
 > sector — the next-session brief acting on the [sector map](repo-sector-map.md)).
 >
-> **▶ The live decade queue (next ~9 PRs):**
+> **▶ The live queue (next full band — ~30 PRs, the 30-PR cadence Q-0134):**
 > [`planning/reconciliation-pass-2026-06-17-band1020.md`](planning/reconciliation-pass-2026-06-17-band1020.md)
 > §4 — set by the eleventh Q-0107 pass (issue #1021). **▶ Next ungated startable = moderation-DM config**
 > ([moderation-dm-config-plan](planning/moderation-dm-config-plan-2026-06-17.md), turn-key, Q-0147 —

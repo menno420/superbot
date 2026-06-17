@@ -6354,3 +6354,37 @@ moves cost a turn / trigger encounters · how cell yields map to the existing de
 
 **Home:** [`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md)
 § "Mine — 3D grid navigator" · this Q-block. Related: Q-0172 (fishing/open-world is the sibling Explore lane).
+
+### Q-0174 — Codex review integration: routines fix flagged-real issues first; Hermes scans PRs (issue-only) (2026-06-17)
+
+> **DIRECTED — owner-in-session, 2026-06-17:** *"make sure the routines all check the previous PRs for
+> any of codex's comments, the first priority of any routine should be to fix anything codex flagged,
+> but not blindly… hermes on a 6H timer to check PRs and open an issue if necessary… before we do this
+> we should define what a real bug is… for now until hermes has been proven… it just opens an issue and
+> only dispatches on command."*
+
+**Context:** Codex (Q-0171) is live and **catching real drift** — verified this session it flagged the
+stale `/session-close` cadence, a roadmap "~9 PRs" line, and a mis-named session-card heading
+(`Previous-slice` vs the checker-required `Previous-session`) — all real, all fixed. (The owner is
+amazed a *code* reviewer spotted *docs* drift — evidence the repo is genuinely navigable.) But Codex
+also produces **born-red false positives** (it reviews the card-first commit before the code lands) and
+can run "make changes" tasks, so the loop needs a bar + a budget-aware consumer.
+
+**Decision (plan: `planning/codex-review-integration-plan-2026-06-17.md`):**
+1. **Routines check Codex first** — every routine's first priority: scan recent PRs for unresolved
+   Codex/bot flags, **verify against source**, fix the real ones first; never blindly (Q-0120).
+2. **The "real bug" bar** — verified-against-current-source · a genuine defect/contradiction (correctness
+   · arch/ownership · docs-vs-code drift · security) · not a nitpick. Explicitly rejects the born-red
+   timing class.
+3. **Hermes 6H PR-check (spec; issue-only)** — a new `superbot-pr-check` skill (6H) opens a GitHub issue
+   per real bug; **does NOT auto-dispatch** — dispatch only on command until Hermes is a proven
+   dispatcher. **Why:** only ~15 routine fires/day (~12 dispatch, ~1–2 reconciliation) — too scarce to
+   spend on false positives. Auto-dispatch is a later, separate owner decision.
+
+**Open for the owner:** does Codex stay **comment-only**, or is its "open a fix PR" mode wanted? (Its
+auto-PRs can collide with in-flight PRs + consume review.) Complementary fix — `@codex review` on the
+**final head** (codex idea doc) — lands its *code* reviews on the complete diff, not the born-red opener.
+
+**Home:** [`planning/codex-review-integration-plan-2026-06-17.md`](../planning/codex-review-integration-plan-2026-06-17.md)
+· [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) · this
+Q-block. Related: Q-0171 (Codex live), Q-0120 (verify bot output vs source), Q-0117 (Hermes review-merge gate).

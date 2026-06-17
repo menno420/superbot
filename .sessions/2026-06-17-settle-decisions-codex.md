@@ -1,9 +1,9 @@
 # 2026-06-17 — Settle mining/seed decisions + surface Codex's reviews
 
-> **Status:** `in-progress`
-> Manual session (owner-live), context-conscious: the owner asked to **settle decisions/ideas and let
-> the routines finish the build** after the weekly reset. Docs-only. Born-red per Q-0133; flip to
-> `complete` when CI is green. (Edits `.claude/skills/session-close/SKILL.md` — a skill, not CLAUDE.md.)
+> **Status:** `complete`
+> Manual session (owner-live), context-conscious: settle decisions/ideas, let the routines finish the
+> build after the weekly reset. Docs-only. Born-red per Q-0133; flipped to `complete` after CI green +
+> the Codex-integration follow-up (Q-0174) + 3 verified Codex-flagged drift fixes landed.
 
 **Branch:** `claude/settle-decisions-codex`
 
@@ -65,10 +65,10 @@ own + recent PRs before closing**, not wait to be asked — fold a "check bot re
 
 ## 📤 Run report
 
-- **Did:** settled the seed decision (Q-0173), surfaced + verified Codex's reviews, fixed the drift Codex caught, made the buildable lanes routine-discoverable · **Outcome:** shipped
+- **Did:** settled the seed decision (Q-0173) + the **Codex-integration directive (Q-0174** — the "real bug" bar + the issue-only Hermes-PR-check spec); surfaced/verified Codex's reviews + **fixed 3 real drift items it flagged** (`/session-close` cadence · roadmap "~9 PRs" · the manifest card's `Previous-slice`→`Previous-session` heading); made the buildable lanes routine-discoverable · **Outcome:** shipped
 - **Shipped:** (this PR) — docs-only settle (Q-0173 · Codex feedback folded · session-close drift fix · roadmap homing)
 - **Run type:** `manual`
-- **⚑ Owner decisions needed:** grid-Mine design Qs + fishing design Qs still pending your answers (Q-0173/Q-0172 tails); whether to switch Codex to review-on-final-head
+- **⚑ Owner decisions needed:** grid-Mine + fishing design Qs (Q-0173/Q-0172 tails); **Codex mode** — keep it comment-only or allow its "open a fix PR" mode? (Q-0174); whether to switch Codex to review-on-final-head
 - **⚑ Owner manual steps:** (optional) set the Codex connector to review on the final head (or we add the `@codex review`-on-complete Action)
 - **⚑ Self-initiated:** `none` (both tasks were owner-asked: document decisions + surface Codex) (Q-0172)
 - **↪ Next:** routines build the queue after the weekly reset; you answer the grid-Mine / fishing design Qs when ready
