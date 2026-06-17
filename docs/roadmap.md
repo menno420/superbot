@@ -5,7 +5,7 @@
 > sector is a self-contained dispatch queue. **Last updated:** 2026-06-14 (restructured by
 > sector — the next-session brief acting on the [sector map](repo-sector-map.md)).
 >
-> **▶ The live decade queue (next ~9 PRs):**
+> **▶ The live queue (next full band — ~30 PRs, the 30-PR cadence Q-0134):**
 > [`planning/reconciliation-pass-2026-06-17-band1020.md`](planning/reconciliation-pass-2026-06-17-band1020.md)
 > §4 — set by the eleventh Q-0107 pass (issue #1021). **▶ Next ungated startable = moderation-DM config**
 > ([moderation-dm-config-plan](planning/moderation-dm-config-plan-2026-06-17.md), turn-key, Q-0147 —
@@ -595,7 +595,11 @@ condition — every sector non-empty).*
   fix the ledger, refactor the roadmap) each time merged PRs cross a **multiple of 30** (Q-0134; the
   trigger/checker **machinery is S3**, the docs it writes are S4) · the session enders (Q-0089 idea ·
   Q-0102 prev-session review · Q-0104 closing audit).
-- **Next** — the **thin architecture atlas** (PR 2 of
+- **Next** — the **procedures→skills conversion**
+  ([`procedures-to-skills-conversion-plan-2026-06-17.md`](planning/procedures-to-skills-conversion-plan-2026-06-17.md);
+  Q-0170/Q-0172 — relocate ~25% of always-loaded `CLAUDE.md` into on-demand skills; **batch 1 shipped
+  #1029**, batches 2–4 next, incorporating the PR-#1028 Codex review notes) · the **thin architecture
+  atlas** (PR 2 of
   [`extension-taxonomy-crosswalk-plan-2026-06-16.md`](planning/extension-taxonomy-crosswalk-plan-2026-06-16.md);
   Q-0151a — a companion to orientation, composing `context_map`/`wiring_map`/`review_scope` + the role
   data into one repo-wide CI-`--check` index) · idea-backlog **grooming** (Q-0015 — every idea ends

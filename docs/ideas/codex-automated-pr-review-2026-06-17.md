@@ -22,6 +22,25 @@ Codex is **enabled and working** on `menno420/superbot`. What we observed + what
   summary comment every time** (not just a reaction). If it only reacts when it has no objection, its
   reasoning is invisible; a per-PR review comment makes every verdict readable by the loop.
 
+### What Codex actually caught (2026-06-17, verified) + the born-red friction
+
+Codex moved past reactions and **left real inline review comments** (P1/P2 severity badges + a "React
+👍/👎" footer); an agent reads them directly via `get_review_comments` / `get_reviews`. Two findings:
+
+- **It catches genuine issues on docs/plan PRs.** On #1028 (the procedures-to-skills plan) it raised 4
+  still-open P2 points — two **verified correct** and fixed this session: the `/session-close` skill
+  still said "10th-PR / ~9 PRs" (stale vs. the 30-PR/full-band cadence, Q-0134/Q-0164) and the plan
+  wasn't homed on `docs/roadmap.md` (so routines wouldn't discover it). Good signal — Codex is earning
+  its keep on documentation/plan review.
+- **⚠️ The born-red flow defeats most of its *code* reviews.** Codex reviews **on PR open**, which in our
+  born-red workflow (Q-0133) is the **card-first commit — *before* the implementation lands.** So on
+  #1023/#1024/#1027 it flagged "the implementation isn't here / flip the card / the script doesn't
+  exist" — all `is_outdated` false-positives from reviewing the incomplete opening commit. **The fix to
+  decide with the owner** (it touches the Codex settings he configured): to get a useful Codex pass,
+  trigger it on the **final head** — comment `@codex review` after the code + card-flip, before merge —
+  rather than relying on the open-time auto-review. Until then, weight Codex's docs/plan catches highly
+  and treat its "missing implementation" comments on born-red code PRs as timing artifacts.
+
 ## The idea
 
 Wire **Codex (OpenAI) to automatically review pull requests** as they open/update, posting review
