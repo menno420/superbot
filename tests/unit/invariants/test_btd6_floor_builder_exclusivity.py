@@ -96,6 +96,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "what abilities does quincy have",
         "deterministic_hero_ability_roster_reply",
     ),
+    (
+        "which bosses are immune to fire",
+        "deterministic_boss_immunity_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
