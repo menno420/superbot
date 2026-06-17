@@ -54,7 +54,7 @@ logger = logging.getLogger("bot.services.settings_resolution")
 # ---------------------------------------------------------------------------
 
 
-Provenance = Literal["default", "legacy_kv"]
+Provenance = Literal["default", "legacy_kv", "global_kv"]
 
 
 @dataclass(frozen=True)
@@ -107,7 +107,7 @@ class SettingResolution:
 # ---------------------------------------------------------------------------
 
 
-_BY_PROVENANCE: dict[str, int] = {"default": 0, "legacy_kv": 0}
+_BY_PROVENANCE: dict[str, int] = {"default": 0, "legacy_kv": 0, "global_kv": 0}
 _BY_VALID: dict[str, int] = {"true": 0, "false": 0}
 _BY_UNKNOWN_SPEC: int = 0
 _CALLS_TOTAL = 0
@@ -224,7 +224,9 @@ async def _read_legacy(guild_id: int, settings_key: str) -> str:
     Routes through :func:`utils.guild_config_accessors.get_setting_value`
     so the F-1 invariant test (``test_guild_config_typed_accessors``)
     sees a single typed-accessor owner for the ``"setting:"`` cache
-    namespace.
+    namespace. A ``guild_id`` of :data:`GLOBAL_GUILD_ID` reads the global
+    row through the same cached accessor (its own ``"setting:"`` cache
+    key, distinct from any guild's).
     """
     from utils.guild_config_accessors import get_setting_value
 
@@ -236,10 +238,71 @@ async def _read_legacy(guild_id: int, settings_key: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _resolution_from_raw(
+    subsystem: str,
+    name: str,
+    spec: Any,
+    raw: str,
+    provenance: Provenance,
+) -> SettingResolution:
+    """Build a :class:`SettingResolution` from a non-empty raw KV string.
+
+    Shared by the per-guild (``"legacy_kv"``) and global (``"global_kv"``)
+    tiers so both apply identical coercion + validation: a value that
+    fails either falls back to the declared default with ``valid=False``,
+    the failure recorded in ``diagnostics`` and the originating ``raw``
+    preserved.
+    """
+    coerced, ok, diag = _coerce(raw, spec.value_type)
+    diagnostics: list[str] = []
+    if diag:
+        diagnostics.append(diag)
+    if not ok:
+        return SettingResolution(
+            subsystem=subsystem,
+            name=name,
+            value=spec.default,
+            provenance=provenance,
+            default=spec.default,
+            valid=False,
+            raw=raw,
+            diagnostics=tuple(diagnostics),
+        )
+
+    if spec.validator is not None:
+        try:
+            spec.validator(coerced)
+        except (ValueError, TypeError) as exc:
+            diagnostics.append(f"validator rejected value: {exc}")
+            return SettingResolution(
+                subsystem=subsystem,
+                name=name,
+                value=spec.default,
+                provenance=provenance,
+                default=spec.default,
+                valid=False,
+                raw=raw,
+                diagnostics=tuple(diagnostics),
+            )
+
+    return SettingResolution(
+        subsystem=subsystem,
+        name=name,
+        value=coerced,
+        provenance=provenance,
+        default=spec.default,
+        valid=True,
+        raw=raw,
+        diagnostics=tuple(diagnostics),
+    )
+
+
 async def resolve_setting(
     guild_id: int,
     subsystem: str,
     name: str,
+    *,
+    include_global: bool = True,
 ) -> SettingResolution | None:
     """Resolve a single scalar :class:`SettingSpec` to a typed value.
 
@@ -247,15 +310,36 @@ async def resolve_setting(
     :class:`SettingSpec` — callers should treat that as "no such
     setting" rather than as a missing value.
 
+    Resolution order (mirrors :mod:`core.runtime.feature_flags`):
+
+    1. the per-guild KV row → ``provenance="legacy_kv"``
+    2. the **global** KV row (``guild_id = utils.db.settings.GLOBAL_GUILD_ID``,
+       the owner's cross-server default) → ``provenance="global_kv"``
+    3. the declared :class:`SettingSpec` default → ``provenance="default"``
+
     Provenance and validity:
 
     * ``provenance="default"`` is returned when the spec has no
-      ``settings_key`` declared OR the KV row is empty.
-    * ``provenance="legacy_kv"`` is returned whenever a non-empty KV
-      row drove the value (even when coercion or validation failed —
-      that's signalled by ``valid=False`` and the value still falls
-      back to the declared default).
+      ``settings_key`` declared OR neither a per-guild nor a global KV
+      row is set.
+    * ``provenance="legacy_kv"`` / ``"global_kv"`` is returned whenever a
+      non-empty KV row at that scope drove the value (even when coercion
+      or validation failed — that's signalled by ``valid=False`` and the
+      value still falls back to the declared default).
+
+    Args:
+        guild_id: The guild whose per-guild row is consulted first.
+        subsystem: Owning subsystem name (``SUBSYSTEMS`` key).
+        name: ``SettingSpec.name`` within the subsystem.
+        include_global: When ``False``, the global tier (step 2) is
+            skipped and a per-guild miss goes straight to the declared
+            default. The mutation pipeline's ``_read_previous`` passes
+            ``False`` so a per-guild write's audit ``prev_value`` stays
+            **scope-local** (an inherited global value never leaks into a
+            per-guild write's audit trail).
     """
+    from utils.db.settings import GLOBAL_GUILD_ID
+
     spec = _find_spec(subsystem, name)
     if spec is None:
         _bump_counters(None)
@@ -277,65 +361,38 @@ async def resolve_setting(
         return resolution
 
     raw = await _read_legacy(guild_id, spec.settings_key)
-    if raw == "":
-        resolution = SettingResolution(
-            subsystem=subsystem,
-            name=name,
-            value=spec.default,
-            provenance="default",
-            default=spec.default,
-            valid=True,
-            raw=raw,
-            diagnostics=(),
-        )
+    if raw != "":
+        resolution = _resolution_from_raw(subsystem, name, spec, raw, "legacy_kv")
         _bump_counters(resolution)
         return resolution
 
-    coerced, ok, diag = _coerce(raw, spec.value_type)
-    diagnostics: list[str] = []
-    if diag:
-        diagnostics.append(diag)
-    if not ok:
-        resolution = SettingResolution(
-            subsystem=subsystem,
-            name=name,
-            value=spec.default,
-            provenance="legacy_kv",
-            default=spec.default,
-            valid=False,
-            raw=raw,
-            diagnostics=tuple(diagnostics),
-        )
-        _bump_counters(resolution)
-        return resolution
-
-    if spec.validator is not None:
-        try:
-            spec.validator(coerced)
-        except (ValueError, TypeError) as exc:
-            diagnostics.append(f"validator rejected value: {exc}")
-            resolution = SettingResolution(
-                subsystem=subsystem,
-                name=name,
-                value=spec.default,
-                provenance="legacy_kv",
-                default=spec.default,
-                valid=False,
-                raw=raw,
-                diagnostics=tuple(diagnostics),
+    # Per-guild miss → consult the global tier before the declared default.
+    # Skipped for ``include_global=False`` and for a resolve that is itself
+    # already scoped at the global sentinel (no self-inheritance).
+    if include_global and guild_id != GLOBAL_GUILD_ID:
+        global_raw = await _read_legacy(GLOBAL_GUILD_ID, spec.settings_key)
+        if global_raw != "":
+            resolution = _resolution_from_raw(
+                subsystem,
+                name,
+                spec,
+                global_raw,
+                "global_kv",
             )
             _bump_counters(resolution)
             return resolution
 
+    # Nothing set at any scope → the declared default. ``raw=raw`` (the
+    # empty per-guild read) preserves the prior contract byte-for-byte.
     resolution = SettingResolution(
         subsystem=subsystem,
         name=name,
-        value=coerced,
-        provenance="legacy_kv",
+        value=spec.default,
+        provenance="default",
         default=spec.default,
         valid=True,
         raw=raw,
-        diagnostics=tuple(diagnostics),
+        diagnostics=(),
     )
     _bump_counters(resolution)
     return resolution

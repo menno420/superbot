@@ -492,7 +492,16 @@ class SettingsMutationPipeline:
         """
         from services.settings_resolution import resolve_setting
 
-        resolution = await resolve_setting(guild.id, subsystem, name)
+        # ``include_global=False`` keeps the audit ``prev_value`` scope-local:
+        # a per-guild write records the per-guild value it replaced, never an
+        # inherited global default (the global tier is a read-time fallback,
+        # not a value this guild ever "had").
+        resolution = await resolve_setting(
+            guild.id,
+            subsystem,
+            name,
+            include_global=False,
+        )
         if resolution is None:
             # Defensive — _resolve_spec already verified the spec exists.
             return None, None
