@@ -1884,6 +1884,97 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
+# --- "Monkey Knowledge by category/tab" deterministic roster (§7.6) -----------
+# The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor: asked "what
+# Support monkey knowledges are there", the model lists the tab itself and can
+# mis-bucket a point (the owner's verbatim miss was the *inverse* — calling the
+# whole Support tab "related to the farm"). Every MK NAME is grounded, so the
+# value-only faithfulness guard never catches a wrong *grouping*; the
+# deterministic layer OWNS the labelled per-tab list. The grouping lives in
+# btd6_data_service.monkey_knowledge_by_category(). Distinct from
+# deterministic_mk_reference_reply (which owns "MK related to <tower>"): this one
+# fires only on a *category/tab* cue and defers when a tower is named, so the two
+# never both fire.
+# (category key, the cue that names that in-game tab). Order mirrors the
+# btd6_data_service tab order.
+_MK_CATEGORY_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("Primary", re.compile(r"\bprimary\b", re.I)),
+    ("Military", re.compile(r"\bmilitary\b", re.I)),
+    ("Magic", re.compile(r"\bmagic\b", re.I)),
+    ("Support", re.compile(r"\bsupport\b", re.I)),
+    ("Heroes", re.compile(r"\bheroe?s?\b", re.I)),
+    ("Powers", re.compile(r"\bpowers?\b", re.I)),
+)
+# Human label per tab for the roster header.
+_MK_CATEGORY_LABELS: dict[str, str] = {
+    "Primary": "Primary",
+    "Military": "Military",
+    "Magic": "Magic",
+    "Support": "Support",
+    "Heroes": "Heroes",
+    "Powers": "Powers",
+}
+# An enumeration shape ("which/what/list ... monkey knowledge", "how many ...") so
+# a single-MK lookup ("what does More Cash do") stays out of the roster floor.
+_MK_ROSTER_LIST_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every|how\s+many|are\s+there)\b",
+    re.I,
+)
+
+
+def _match_mk_category(text_lower: str) -> str | None:
+    """The single Monkey-Knowledge tab a roster question names, or ``None``."""
+    for category, pattern in _MK_CATEGORY_CUES:
+        if pattern.search(text_lower):
+            return category
+    return None
+
+
+def deterministic_mk_category_roster_reply(message_text: str) -> str | None:
+    """A code-built "Monkey Knowledge in the <tab>" roster, or ``None``.
+
+    The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor (sibling of the
+    relic / capability rosters). Fires on an MK cue + a named tab
+    (Primary/Military/Magic/Support/Heroes/Powers) + an enumeration cue, listing
+    that tab's points so the model can never mis-bucket the grouping. Defers
+    (``None``) for single-MK lookups (no list cue), strategy/opinion questions,
+    anything without a recognised tab, and — crucially — anything naming a
+    *tower* (that is :func:`deterministic_mk_reference_reply`'s "MK related to
+    <tower>" job, which runs first in the dispatcher), so the two MK builders
+    never both fire.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _MK_CUE_RE.search(low):
+        return None
+    if not _MK_ROSTER_LIST_RE.search(low):
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    category = _match_mk_category(low)
+    if category is None:
+        return None
+
+    from services import btd6_data_service
+
+    # A named tower means the tower-relation builder owns this — defer to it.
+    dataset = btd6_data_service.get_dataset()
+    if _scan_tower(low, dataset) is not None:
+        return None
+
+    grouped = btd6_data_service.monkey_knowledge_by_category()
+    rows = grouped.get(category, ())
+    label = _MK_CATEGORY_LABELS.get(category, category)
+    if not rows:
+        return f"**BTD6 — no Monkey Knowledge in the {label} tab.**"
+    names = ", ".join(f"**{mk.canonical}**" for mk in rows)
+    reply = f"**Monkey Knowledge in the {label} tab ({len(rows)}):** {names}"
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
 # --- "Geraldo items per level" deterministic reply (BUG-0009 slice 2) ---------
 # The model, asked "what does Geraldo unlock at each level", assembles the
 # level→item grouping itself and mislabels which item unlocks when. Every item
@@ -3264,6 +3355,7 @@ def deterministic_hero_ability_roster_reply(message_text: str) -> str | None:
 # contract, no test edit needed. Append a new list family here.
 _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_mk_reference_reply,
+    deterministic_mk_category_roster_reply,
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
     deterministic_capability_roster_reply,

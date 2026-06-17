@@ -41,6 +41,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_mk_reference_reply",
     ),
     (
+        "what support monkey knowledges are there",
+        "deterministic_mk_category_roster_reply",
+    ),
+    (
         "what does geraldo unlock at each level",
         "deterministic_geraldo_per_level_reply",
     ),

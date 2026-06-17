@@ -395,6 +395,16 @@ _REQUIRED_KNOWLEDGE_FIELDS = (
 _MK_CATEGORIES = frozenset(
     {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"},
 )
+# The in-game Monkey Knowledge tab order — used to present the category roster
+# (`monkey_knowledge_by_category`) in the order a player sees the tabs.
+_MK_CATEGORY_ORDER: tuple[str, ...] = (
+    "Primary",
+    "Military",
+    "Magic",
+    "Support",
+    "Heroes",
+    "Powers",
+)
 _REQUIRED_GERALDO_FIELDS = ("id", "canonical", "cost", "unlock_level")
 _REQUIRED_BOSS_FIELDS = ("id", "canonical")
 
@@ -1420,6 +1430,33 @@ def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
         if entry.id == knowledge_id:
             return entry
     return None
+
+
+def monkey_knowledge_by_category() -> dict[str, tuple[MonkeyKnowledgeEntry, ...]]:
+    """The catalog's Monkey Knowledge grouped by its in-game tab (``category``).
+
+    The §7.6 *Monkey-Knowledge* member of the BUG-0009 roster family — the sibling
+    of the relic / capability rosters: "what Support monkey knowledges are there?",
+    "list all Military monkey knowledge". Returns every tab in the in-game tab
+    order (:data:`_MK_CATEGORY_ORDER`) mapped to its points sorted by canonical
+    name, so the floor reply OWNS the labelled grouping instead of letting the
+    model assemble (and mis-*bucket*) the list — every MK name is individually
+    grounded, so a mis-grouping (the exact owner-reported "related to the farm"
+    miss) slips past the value-only faithfulness guard.
+
+    A tab with no points is still present (an empty tuple) so a caller can answer
+    "no X monkey knowledge" honestly. Category validity is enforced at parse time
+    (``_parse_knowledge``), so an unknown bucket can never appear here.
+    """
+    grouped: dict[str, list[MonkeyKnowledgeEntry]] = {
+        cat: [] for cat in _MK_CATEGORY_ORDER
+    }
+    for mk in get_dataset().monkey_knowledge:
+        grouped.setdefault(mk.category, []).append(mk)
+    return {
+        cat: tuple(sorted(rows, key=lambda m: m.canonical.lower()))
+        for cat, rows in grouped.items()
+    }
 
 
 # --- Monkey-Knowledge ↔ tower relation (BUG-0009) ------------------------------
