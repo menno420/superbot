@@ -58,6 +58,7 @@
           {% for s in items %}
             <form method="post" action="/admin/{{ guild.id }}/settings"
               class="grid items-end gap-3 py-3 sm:grid-cols-[1fr_auto_auto]">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
               <input type="hidden" name="subsystem" value="{{ sub }}" />
               <input type="hidden" name="name" value="{{ s.name }}" />
               <div>
@@ -105,6 +106,7 @@
       validates, and capability-gates the write.
     </p>
     <form method="post" action="/admin/{{ guild.id }}/settings" class="grid gap-3 sm:grid-cols-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
       <label class="block">
         <span class="text-xs text-slate-400">Subsystem</span>
         <input name="subsystem" list="subsystem-keys" required placeholder="moderation"
@@ -158,6 +160,7 @@
   {% endif %}
 
   <form method="post" action="/admin/{{ guild.id }}/help/overlay" class="grid gap-3 sm:grid-cols-2 mb-5">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
     <label class="block">
       <span class="text-xs text-slate-400">Entity kind</span>
       <select name="entity_kind"
@@ -200,6 +203,7 @@
       {% endif %}
     </h3>
     <form method="post" action="/admin/{{ guild.id }}/help/home" class="grid gap-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
       <label class="block">
         <span class="text-xs text-slate-400">Title</span>
         <input name="title"
@@ -247,6 +251,7 @@
               {{ 'enabled' if enabled else 'disabled' }}</span>
           </div>
           <form method="post" action="/admin/{{ guild.id }}/routing">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
             <input type="hidden" name="cog_name" value="{{ cog.cog }}" />
             <input type="hidden" name="enabled" value="{{ 'disabled' if enabled else 'enabled' }}" />
             <button type="submit"
@@ -260,6 +265,7 @@
     </div>
   {% else %}
     <form method="post" action="/admin/{{ guild.id }}/routing" class="grid gap-3 sm:grid-cols-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
       <label class="block sm:col-span-2">
         <span class="text-xs text-slate-400">Cog</span>
         <select name="cog_name" required

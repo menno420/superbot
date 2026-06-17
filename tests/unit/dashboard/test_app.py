@@ -27,12 +27,19 @@ if str(_APP.parent) not in sys.path:
     sys.path.insert(0, str(_APP.parent))
 import websession  # noqa: E402
 
+_TEST_CSRF = "test-csrf-token"
+
 
 def _login_cookie(user_id="42", guild_id="111", guild_name="My Server"):
-    """A signed session cookie for a user who administers one guild."""
+    """A signed session cookie for a user who administers one guild.
+
+    Carries a known ``csrf`` token so POST tests can submit a matching
+    ``csrf_token`` field (the R3 CSRF check); GET tests are unaffected.
+    """
     session = {
         "user": {"id": user_id, "username": "owner", "global_name": "Owner"},
         "guilds": [{"id": guild_id, "name": guild_name, "owner": True}],
+        "csrf": _TEST_CSRF,
     }
     return {websession.COOKIE_NAME: websession.encode(session)}
 
@@ -300,13 +307,75 @@ def test_admin_guild_unknown_guild_redirects(client):
 
 
 def test_admin_setting_post_when_logged_in_dormant_control(client):
-    # Logged in + valid guild → the POST is accepted, calls the (dormant) control
-    # API, and PRG-redirects back to the editor with a flash.
+    # Logged in + valid guild + valid CSRF → the POST is accepted, calls the
+    # (dormant) control API, and PRG-redirects back to the editor with a flash.
     resp = client.post(
         "/admin/111/settings",
-        data={"subsystem": "moderation", "name": "warn_threshold", "value": "3"},
+        data={
+            "subsystem": "moderation",
+            "name": "warn_threshold",
+            "value": "3",
+            "csrf_token": _TEST_CSRF,
+        },
         cookies=_login_cookie(),
         follow_redirects=False,
     )
     assert resp.status_code == 303
     assert resp.headers["location"] == "/admin/111"
+
+
+# ---------------------------------------------------------------------------
+# R3 hardening — CSRF + rate limiting
+# ---------------------------------------------------------------------------
+
+
+def test_admin_setting_post_rejects_missing_csrf(client):
+    # Logged in but no/blank csrf_token → the edit is refused before any control
+    # call; the editor reloads with a "stale form" flash (PRG back to the guild).
+    resp = client.post(
+        "/admin/111/settings",
+        data={"subsystem": "moderation", "name": "warn_threshold", "value": "3"},
+        cookies=_login_cookie(),
+        follow_redirects=True,
+    )
+    assert resp.status_code == 200
+    assert "stale" in resp.text.lower() or "expired" in resp.text.lower()
+
+
+def test_admin_setting_post_rejects_wrong_csrf(client):
+    resp = client.post(
+        "/admin/111/settings",
+        data={
+            "subsystem": "moderation",
+            "name": "warn_threshold",
+            "value": "3",
+            "csrf_token": "not-the-session-token",
+        },
+        cookies=_login_cookie(),
+        follow_redirects=True,
+    )
+    assert resp.status_code == 200
+    assert "stale" in resp.text.lower() or "expired" in resp.text.lower()
+
+
+def test_admin_edit_is_rate_limited(client, monkeypatch):
+    # Exceeding the per-user edit budget yields a "slow down" flash, not a control call.
+    appmod = sys.modules["dashboard_app_ut"]
+    appmod._EDIT_LIMITER.reset()
+    monkeypatch.setattr(appmod._EDIT_LIMITER, "max_events", 1)
+    data = {
+        "subsystem": "moderation",
+        "name": "warn_threshold",
+        "value": "3",
+        "csrf_token": _TEST_CSRF,
+    }
+    first = client.post(
+        "/admin/111/settings", data=data, cookies=_login_cookie(), follow_redirects=False
+    )
+    assert first.status_code == 303  # within budget
+    second = client.post(
+        "/admin/111/settings", data=data, cookies=_login_cookie(), follow_redirects=True
+    )
+    assert second.status_code == 200
+    assert "too many" in second.text.lower() or "slow down" in second.text.lower()
+    appmod._EDIT_LIMITER.reset()

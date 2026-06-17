@@ -14,6 +14,7 @@ Deploy: a second Railway service — see ``dashboard/README.md``.
 
 from __future__ import annotations
 
+import hmac
 import json
 import secrets
 import sys
@@ -37,7 +38,40 @@ if str(BASE_DIR) not in sys.path:
 
 import auth  # noqa: E402  - after the sys.path shim above
 import control_client  # noqa: E402  - after the sys.path shim above
+import ratelimit  # noqa: E402  - after the sys.path shim above
 import websession  # noqa: E402  - after the sys.path shim above
+
+# Abuse-brakes for the public live surface (R3 hardening). Coarse + per-process;
+# the bot still authority-checks every write, so these only blunt bursts.
+_LOGIN_LIMITER = ratelimit.SlidingWindowLimiter(max_events=10, window_seconds=300.0)
+_EDIT_LIMITER = ratelimit.SlidingWindowLimiter(max_events=40, window_seconds=60.0)
+
+
+def _client_ip(request: Request) -> str:
+    """Best-effort client IP — first ``X-Forwarded-For`` hop (Railway proxy), else peer."""
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    client = request.client
+    return client.host if client else "unknown"
+
+
+def _ensure_csrf(session: dict[str, Any]) -> str:
+    """Return the session's CSRF token, minting one into the session if absent."""
+    token = session.get("csrf")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["csrf"] = token
+    return token
+
+
+def _csrf_ok(session: dict[str, Any], submitted: str | None) -> bool:
+    """Constant-time check that ``submitted`` matches the session's CSRF token."""
+    expected = session.get("csrf")
+    if not expected or not submitted:
+        return False
+    return hmac.compare_digest(str(submitted), str(expected))
+
 
 _EMPTY: dict[str, Any] = {
     "meta": {"generated_at": "", "counts": {}},
@@ -422,6 +456,16 @@ def auth_login(request: Request):
     """Begin Discord OAuth — redirect to consent, or fall back to /admin if off."""
     if not auth.is_configured():
         return RedirectResponse("/admin", status_code=302)
+    if not _LOGIN_LIMITER.allow(_client_ip(request)):
+        session = websession.read(request)
+        session["flash"] = {
+            "ok": False,
+            "status": 429,
+            "message": "Too many sign-in attempts — wait a minute and try again.",
+        }
+        resp = RedirectResponse("/admin", status_code=302)
+        websession.write(resp, session)
+        return resp
     session = websession.read(request)
     state = secrets.token_urlsafe(16)
     session["oauth_state"] = state
@@ -521,6 +565,7 @@ async def admin_guild(request: Request, guild_id: str):
             current = await _fetch_current_state(int(guild_id), int(user["id"]))
     data = load_data()
     flash = session.pop("flash", None)
+    csrf_token = _ensure_csrf(session)
     resp = templates.TemplateResponse(
         request,
         "admin_guild.html",
@@ -534,11 +579,13 @@ async def admin_guild(request: Request, guild_id: str):
             "cogs": [c for c in data.get("cogs", []) if c.get("is_cog")],
             "catalogue": data.get("catalogue", []),
             "current": current,
+            "csrf_token": csrf_token,
             "flash": flash,
         },
     )
-    if flash is not None:
-        websession.write(resp, session)
+    # Always persist: the CSRF token (minted above) must survive to the POST, and
+    # any popped flash is consumed here.
+    websession.write(resp, session)
     return resp
 
 
@@ -547,11 +594,31 @@ async def _edit(
     guild_id: str,
     path: str,
     payload: dict[str, Any],
+    csrf_token: str | None,
 ) -> RedirectResponse:
-    """Shared editor POST: gate on session admin → control API → flash → redirect."""
+    """Shared editor POST: session admin + CSRF + rate limit → control API → flash."""
     session = websession.read(request)
     if session.get("user") is None or _find_admin_guild(session, guild_id) is None:
         return RedirectResponse("/admin", status_code=303)
+    if not _csrf_ok(session, csrf_token):
+        session["flash"] = {
+            "ok": False,
+            "status": 400,
+            "message": "Your session expired or the form was stale — reload the page and try again.",
+        }
+        resp = RedirectResponse(f"/admin/{guild_id}", status_code=303)
+        websession.write(resp, session)
+        return resp
+    actor_key = str((session.get("user") or {}).get("id") or _client_ip(request))
+    if not _EDIT_LIMITER.allow(actor_key):
+        session["flash"] = {
+            "ok": False,
+            "status": 429,
+            "message": "Too many changes too quickly — slow down a moment.",
+        }
+        resp = RedirectResponse(f"/admin/{guild_id}", status_code=303)
+        websession.write(resp, session)
+        return resp
     session["flash"] = await _control_flash(path, payload)
     resp = RedirectResponse(f"/admin/{guild_id}", status_code=303)
     websession.write(resp, session)
@@ -577,7 +644,13 @@ async def post_setting(request: Request, guild_id: str):
         "name": form.get("name", "").strip(),
         "value": form.get("value", "").strip(),
     }
-    return await _edit(request, guild_id, "/control/settings", payload)
+    return await _edit(
+        request,
+        guild_id,
+        "/control/settings",
+        payload,
+        form.get("csrf_token"),
+    )
 
 
 @app.post("/admin/{guild_id}/help/overlay")
@@ -596,7 +669,13 @@ async def post_help_overlay(request: Request, guild_id: str):
         payload["display_name"] = form["display_name"].strip()
     if form.get("description", "").strip():
         payload["description"] = form["description"].strip()
-    return await _edit(request, guild_id, "/control/help/overlay", payload)
+    return await _edit(
+        request,
+        guild_id,
+        "/control/help/overlay",
+        payload,
+        form.get("csrf_token"),
+    )
 
 
 @app.post("/admin/{guild_id}/help/home")
@@ -611,7 +690,13 @@ async def post_help_home(request: Request, guild_id: str):
         payload["title"] = form["title"].strip()
     if form.get("body", "").strip():
         payload["body"] = form["body"].strip()
-    return await _edit(request, guild_id, "/control/help/home", payload)
+    return await _edit(
+        request,
+        guild_id,
+        "/control/help/home",
+        payload,
+        form.get("csrf_token"),
+    )
 
 
 @app.post("/admin/{guild_id}/routing")
@@ -625,4 +710,10 @@ async def post_routing(request: Request, guild_id: str):
         "enabled": form.get("enabled") == "enabled",
         "scope_type": "guild",
     }
-    return await _edit(request, guild_id, "/control/routing", payload)
+    return await _edit(
+        request,
+        guild_id,
+        "/control/routing",
+        payload,
+        form.get("csrf_token"),
+    )

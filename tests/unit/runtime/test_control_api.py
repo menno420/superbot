@@ -91,6 +91,14 @@ def _bot_with_member(*, guild_id=111, user_id=222, owner_id=999, administrator=T
     return _bot(guilds={guild_id: guild}), guild, member
 
 
+@pytest.fixture(autouse=True)
+def _reset_control_write_limiter():
+    """Isolate the in-process write rate limiter across tests (R3 hardening)."""
+    control_api._reset_rate_limiter_for_tests()
+    yield
+    control_api._reset_rate_limiter_for_tests()
+
+
 # ---------------------------------------------------------------------------
 # Auth
 # ---------------------------------------------------------------------------
@@ -335,6 +343,45 @@ async def test_mutation_member_not_found_is_403(monkeypatch):
 # ---------------------------------------------------------------------------
 # Mutation: settings → SettingsMutationPipeline.set_value
 # ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_write_rate_limit_returns_429(monkeypatch):
+    monkeypatch.setenv("CONTROL_API_TOKEN", TOKEN)
+    # Tighten the per-(guild, user) write budget to 1 for the test.
+    monkeypatch.setattr(control_api._write_limiter, "max_events", 1)
+    bot, _g, _m = _bot_with_member(administrator=True)
+    body = {
+        "guild_id": 111,
+        "user_id": 222,
+        "subsystem": "moderation",
+        "name": "warn_threshold",
+        "value": 1,
+    }
+    # Stub the seam so the first (allowed) write succeeds without a DB.
+    result = SimpleNamespace(
+        mutation_id="m1",
+        subsystem="moderation",
+        name="warn_threshold",
+        settings_key="WARN_THRESHOLD",
+        old_value=1,
+        new_value=1,
+    )
+    pipeline = MagicMock()
+    pipeline.set_value = AsyncMock(return_value=result)
+    monkeypatch.setattr(
+        "services.settings_mutation.SettingsMutationPipeline",
+        lambda: pipeline,
+    )
+    first = await control_api._settings_set_handler(
+        _request(headers=_auth(), body=body, bot=bot),
+    )
+    assert first.status == 200
+    second = await control_api._settings_set_handler(
+        _request(headers=_auth(), body=body, bot=bot),
+    )
+    assert second.status == 429
+    assert "rate limit" in json.loads(second.text)["error"]
 
 
 @pytest.mark.asyncio
