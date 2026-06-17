@@ -1,7 +1,8 @@
 # 2026-06-17 — Character preview tool + vault-cap decision
 
-> **Status:** `in-progress`
-> Manual session (owner-live). **Born-red per Q-0133.** Flip to `complete` when CI is green.
+> **Status:** `complete`
+> Manual session (owner-live). Born-red per Q-0133; flipped to `complete` after the full
+> `check_quality --full` mirror passed green (the only "red" was the intended born-red gate).
 > The preview tool is **self-initiated** under the new Q-0172 gate (built to solve a pain the owner
 > described, not explicitly requested) — flagged in the run report for review.
 
@@ -72,8 +73,8 @@ not just buried in a closed card.
 
 | Metric | Value |
 |---|---|
-| PRs merged this session | 2 (#1029, #1030); this is the 3rd |
-| CI-red rounds | TBD (filled at flip-to-complete) |
+| PRs merged this session | 3 (#1029, #1030, this #1031) |
+| CI-red rounds | 0 (only red was the intended born-red gate; full suite green first try) |
 | Repo-rule trips | 0 |
 | New ideas contributed | 1 (`preview_cards.py` family) |
 | Ideas groomed | 1 (vault-cap gate resolved; sprite gate clarified to art-only) |
