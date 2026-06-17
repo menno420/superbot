@@ -1,9 +1,9 @@
 # 2026-06-17 — Open the idea→plan gate (Q-0172) + skills batch-1 slim
 
-> **Status:** `in-progress`
-> Manual, owner-directed live. **Born-red per Q-0133** — edits `.claude/CLAUDE.md` (a governance
-> change the owner directed in-session, Q-0106 → applied directly). Flip to `complete` as the final
-> step once CI is green.
+> **Status:** `complete`
+> Manual, owner-directed live. Born-red per Q-0133; flipped to `complete` after CI verified green
+> (full `check_quality --full` mirror passed; the only "red" was the intended born-red gate). The
+> Q-0172 governance change was owner-directed in-session (Q-0106 → applied directly).
 
 **Branch:** `claude/skills-batch1-reconciliation` · **PR:** #1029 (repurposed from batch-1 slim → governance)
 
@@ -97,8 +97,8 @@ into the Q-0102 review prompt, not a new doc.)
 
 | Metric | Value |
 |---|---|
-| PRs merged this session | 0 so far (this PR + the Hermes PR pending) |
-| CI-red rounds | TBD (filled at flip-to-complete) |
+| PRs merged this session | 1 (#1029; the Hermes PR follows) |
+| CI-red rounds | 0 (the only red was the intended born-red gate; full suite green first try) |
 | Repo-rule trips | 0 |
 | New ideas contributed | 1 (`check_self_initiated_flag.py`) |
 | Ideas groomed | 1 (fishing → teed up as the canonical Q-0172 promotion) |
