@@ -19,6 +19,9 @@
         {% if u.run_type == "routine" %}
           <span class="text-[10px] uppercase rounded px-2 py-0.5 bg-indigo-900 text-indigo-300" title="autonomous routine run">routine</span>
         {% endif %}
+        {% if u.self_initiated %}
+          <span class="text-[10px] uppercase rounded px-2 py-0.5 bg-amber-900 text-amber-300" title="idea promoted to plan/build with no dispatch or owner ask (Q-0172) — review">self-initiated</span>
+        {% endif %}
       </div>
       <p class="text-sm mt-0.5">{{ u.title }}</p>
     </li>

@@ -6274,14 +6274,59 @@ repo-native discovery aid is captured with a do-not-duplicate gate (must complem
 
 ### Q-0171 — Codex automated PR review: research the mechanism, then decide augment-vs-replace + merge authority (2026-06-17)
 
-> **CAPTURED (research-stage) — owner-mentioned in-session, 2026-06-17:** *"a function on ChatGPT that
-> lets codex automatically review any PRs … not entirely sure how that works."*
+> **NOW LIVE — owner enabled it in-session, 2026-06-17** (mentioned: *"a function on ChatGPT that lets
+> codex automatically review any PRs"*). The Codex GitHub connector is on and already auto-reacting on
+> PRs (validated on **#1026** — a 👍 from `chatgpt-codex-connector[bot]`).
 
-**Decision/state:** Captured as an idea. It would add a **second, different-model reviewer** (serves
-the anti-monoculture principle behind `needs-hermes-review`, Q-0117). **Next:** research the exact
-mechanism (OpenAI Codex GitHub review / an Action / `@codex` mention) + its cost/auth, then put the
-**augment-vs-replace + who-holds-merge-authority** question to the owner (the Q-0082 spend cap + the
-morning-briefing rate-limit lesson apply). No build until the mechanism + cost envelope are confirmed.
+**Decision/state:** **LIVE** — it adds a **second, different-model reviewer** (serves the
+anti-monoculture principle behind `needs-hermes-review`, Q-0117). **Observed:** a bare 👍 *reaction*
+isn't readable via `get_reviews`/`get_comments` (separate API) — but a substantive Codex *review /
+review comment* IS, and the **PR-activity subscription delivers Codex review comments into a watching
+session**, so the loop can consume + fix what Codex flags. **Next (no longer "does it exist"):** (1)
+check the connector for a "post a full review comment every time" mode (not just react) so its reasoning
+is visible to the loop; (2) the **augment-vs-replace + who-holds-merge-authority** question still stands
+for the owner (the Q-0082 spend cap + the morning-briefing rate-limit lesson apply).
 
 **Home:** [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) ·
 this Q-block. Related: Q-0117 (Hermes review-merge gate).
+
+### Q-0172 — Open the idea→plan gate: ideas may become plans/builds anytime without approval, flagged for review (2026-06-17)
+
+> **DIRECTED + APPLIED in-session (owner directive, 2026-06-17):** *"we can fix the plan shortage by
+> simply removing the 'idea gate' … ideas can just be turned into a plan at any time without my approval,
+> but it should be stated in the session log, so hermes or another chat, or me personally in the website,
+> can easily see, filter and review those implementations."* Applied directly per the CLAUDE.md
+> in-session-directive exception (Q-0106) — the owner is the live reviewer.
+
+**Context:** The owner observed the plan backlog running thin (the Q-0164 case). Root cause wasn't only
+the cadence — it was that genuine ideas (canonical example: **fishing**, the owner-ratified ecosystem-#2
+verdict) never got promoted to plans, because the old rule ("a new idea is not a new priority" + the
+Q-0114 phase gate) kept self-originated work parked behind owner approval. Mining, by contrast, is
+*built* with only owner-gated slices left — so the shortage is specifically "ideas that never became
+plans," exactly what this opens.
+
+**Decision:** The **approval gate on idea→plan→implementation is removed.** Any agent may promote an idea
+to a `docs/planning/` plan and build/ship it **at any time without owner pre-approval** — the work is
+reversible, and *ideas exist to be built*. Preserved: (1) the **focus discipline** (a mid-stream idea
+doesn't derail the *current* task — capture, finish, then promote); (2) the **classify-into-`docs/ideas/`-first**
+habit (keeps the backlog reviewable/filterable); (3) the **safety brakes** (irreversible / external /
+production stays ask-first — a *safety* brake, not the idea gate); (4) the **merge gates** (small
+self-merges on green; SUBSTANTIAL → `needs-hermes-review`). The phase gate (`check_phase_gate.py`) is
+demoted to **advisory-only** — a "bugs-first season" priority readout, never a block (this retires the
+Q-0114 approve/deny gate for self-invented features).
+
+**The one requirement — accountability:** every self-initiated promotion is flagged on the new
+**`⚑ Self-initiated:`** line of the session-log run report (`.sessions/README.md`); the **dashboard
+updates feed badges it** (`scripts/export_dashboard_data.py` → `/updates`) so Hermes, another chat, or
+the owner on the website can see, filter, and review unprompted work.
+
+**Surfaces changed:** `.claude/CLAUDE.md` (the idea bullet) · `scripts/check_phase_gate.py` (advisory
+banner) · the dispatch routine prompt + skills (`hermes-dispatch-bridge.md`, `hermes-skills/dispatch.md`,
+`scripts/hermes/skills/dispatch/SKILL.md`) · `docs/operations/autonomous-routines.md` ·
+`hermes-control-plane.md` · `hermes-terminal-cheatsheet.md` · `hermes-skills/README.md` ·
+`.sessions/README.md` (the ⚑ line) · `export_dashboard_data.py` + `dashboard/templates/updates.html`
+(parse + badge).
+
+**Home:** this Q-block · `.claude/CLAUDE.md` Working agreement. Related: Q-0114 (the retired phase gate),
+Q-0164 (PLAN BACKLOG THIN flag), Q-0165 (Run type line — the ⚑ Self-initiated line is its sibling),
+Q-0106 (in-session-directive exception).

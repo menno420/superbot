@@ -523,12 +523,14 @@ Three repo-side seams keep Hermes safe while letting it review and dispatch (Q-0
 
 - **`superbot-review`** — independent (non-Claude) critique of a plan or PR diff, with a
   plain-language maintainer summary for the approve/deny gate.
-- **`scripts/check_phase_gate.py`** — the fix-phase vs. invent-phase signal (agent-originated
-  features stay gated until correctness is done).
+- **`scripts/check_phase_gate.py`** — the fix-phase vs. invent-phase signal, **advisory-only since
+  Q-0172** (a priority readout — correctness first when bugs/Not-Done remain — not a block on
+  feature origination).
 - **`superbot-dispatch`** + [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — turns a
   work order into a Claude Code Routine `/fire` call. **Now wired** via the console **Schedule**
-  trigger (every 2h, Q-0146) — no longer pending maintainer setup. Merge gate: self-merge on green
-  CI (Q-0113); agent-originated features open a PR and wait for your approve/deny (Q-0114).
+  trigger (every ~2–3h, Q-0146) — no longer pending maintainer setup. Merge gate: self-merge on green
+  CI (Q-0113); a substantial step is labeled needs-hermes-review (Q-0117); self-initiated feature work
+  ships flagged on the run-report ⚑ Self-initiated line for review (Q-0172).
 
 ### Read-only log triage — shipped
 

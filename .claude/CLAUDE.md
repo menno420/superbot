@@ -71,12 +71,21 @@ The short version that governs how you work:
   already spotted** (owner directive Q-0166, 2026-06-17). The one exception is *benign
   newest-merge lag* (the 1–2 merges newer than the `Last reconciliation pass: #N` marker, which
   the next pass records); drift older than the marker is a bug → fix it now, don't defer it.
-- **A new idea is not a new priority.** Idea order ≠ implementation order: an idea
-  raised mid-stream is *captured and classified* (`docs/ideas/`), not promoted to active
-  work — unless the maintainer says so or it exposes a blocker, safety, or architectural
-  conflict. The maintainer thinks associatively on purpose; classify, route, then build.
-  How work flows across the AI projects (pipeline, handoffs, idea states) is
-  `docs/owner/ai-project-workflow.md`; the maintainer's working style is
+- **A new idea doesn't derail the *current* task — but it can become a plan, and ship,
+  anytime without approval (owner directive Q-0172, 2026-06-17).** Idea order ≠ implementation
+  order: an idea raised mid-stream is still *captured and classified* into `docs/ideas/` first
+  (that discipline is what keeps the backlog reviewable and filterable) and doesn't yank you off
+  the task in hand. **But the old approval gate is gone:** any agent may promote an idea → a
+  `docs/planning/` plan → an implementation **at any time, without waiting for owner approval** —
+  the maintainer's standing instruction is that *ideas exist to be built*, and the work is
+  reversible if it turns out wrong. The single requirement is **accountability — flag every
+  self-initiated promotion on the `⚑ Self-initiated:` line of the session-log run report**
+  (`.sessions/README.md`) so Hermes, another chat, or the owner on the website can see, filter,
+  and review what was built unprompted. **Safety brakes are unchanged** — genuinely irreversible /
+  external / production work still asks first (that is a *safety* brake, not the idea gate; the
+  phase gate `scripts/check_phase_gate.py` is now **advisory-only**, a "bugs-first season"
+  readout, not a block). The maintainer thinks associatively on purpose; classify, route, **then
+  build freely**. Pipeline + idea states: `docs/owner/ai-project-workflow.md`; working style:
   `docs/owner/maintainer-working-profile.md`.
 
 ## Read first — agent orientation
