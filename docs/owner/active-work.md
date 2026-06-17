@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/magical-rubin-jnpnuw` · **dashboard.json structural-drift reporter** + freshness catch-up
+  (executes the #1020 💡 idea + finding) · `scripts/check_dashboard_data.py` ·
+  `dashboard/data/dashboard.json` · tests · 2026-06-17 · **auto-merge on green**
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
