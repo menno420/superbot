@@ -66,7 +66,7 @@ the *default* work for an empty scheduled fire, not a lock.
 | # | Slice | Family | Status |
 |---|---|---|---|
 | 1 | **Hero cost comparison** | §7.5 | ✅ #1000 |
-| 2 | **Power (activated-ability) cost comparison** | §7.5 | `TODO` |
+| 2 | **Power (activated-ability) cost comparison** | §7.5 | ✅ #1008 |
 | 3 | **Relic category/effect roster** | §7.6 | `TODO` |
 | 4 | **Bloon property roster** | §7.6 | `TODO` |
 | 5 | **Hero ability roster** | §7.6 | `TODO` |
