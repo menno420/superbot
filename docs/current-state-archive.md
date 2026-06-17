@@ -86,6 +86,26 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#963 + #991 + #953 + #946 (2026-06-16, BTD6 AI floors + fixes)** — **#946**: the **first** §7.5 multi-entity comparison floor member — deterministic tower cost-comparison (`compare_crosspath_costs` + `deterministic_cost_comparison_reply`, on the `deterministic_btd6_list_reply` dispatcher) — the BUG-0009 "grounded values, wrong assembly" class; #950/#955/#962 built the difficulty/round-range/paragon members on it (**§7.5 comparison family now complete**). **#963 (BUG-0015)**: "d67 dart paragon" was misread as upgrade path "0-6-7" — fixed the parse + route + grounded a paragon *degree*; **#991** captured the BUG-0015 tail as a BTD6 shorthand-corpus eval idea (the recurring router-class guard). **#953**: current-event-first Live Events + fixed the dead event drill-down. `check_quality` green; arch 0.
+- **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **paragon** member — the last unbuilt §7.5 multi-entity comparison member (the
+  paragon-entity sibling of the #946/#950 tower cost builders): "is Glaive Dominus or Ascended Shadow
+  cheaper?" ranks the **base tier-6 build price** of **two or more** paragons (BUG-0009 wrong-assembly
+  class). `btd6_data_service.compare_paragon_costs(names, *, difficulty="medium")` resolves +
+  difficulty-prices each paragon via `paragon_math.base_price` over the committed `BASE_PRICES_MEDIUM`,
+  dedups on id, ranks ascending, fails closed (<2 distinct); a new public
+  `paragon_math.paragon_surfaces()` exposes the resolver surfaces for sentence scanning.
+  `btd6_context_service.deterministic_paragon_cost_comparison_reply` fires on an explicit `paragon`
+  token + a cost-compare cue + ≥2 resolved paragons, registered in `_BTD6_LIST_BUILDERS` **before**
+  the tower cost builders, which now defer on the paragon cue so a "dart/ninja paragon" question is
+  never priced as the base tower (exactly-one-fires invariant extended). Ships under Q-0048 (read-only
+  deterministic floor, no prod-check). `check_quality --full` green (10051); arch 0; mypy clean.
+  Tests: `tests/unit/services/test_btd6_paragon_cost_comparison.py` + the §7.5 exclusivity corpus
+  entry. **§7.5 multi-entity comparison family is now COMPLETE — all four members shipped (tower-cost
+  #946 · difficulty-cost #950 · round-range cash #955 · paragon base-cost #962).** The next AI §7
+  step is a *new* workflow family beyond §7.5 (plan-first); a paragon *degree-target* resource
+  comparison is captured as a session idea (needs design — the solver's "cash" axis ≠ real spend).
 - **#956 + #954 + #951 + #949 + #948 (2026-06-16, fixes + tooling)** — **#956**: acted on the autonomous-run review (closed flagged loops + recorded owner answers). **#954**: `scripts/extract_video_frames.py` — view maintainer-sent videos in one command. **#951**: a `!coglist` text command wired to the admin panel's 📋 Cog List button (button↔command parity); **#949 (BUG-0014)**: stopped the `!coglist` infinite "assumed from" loop (a dangling synonym→nonexistent-command reference that failed silently). **#948**: release the runtime singleton lock early on shutdown — kills ~85s deploy downtime. `check_quality` green; arch 0.
 - **#955 (2026-06-16, AI §7.5 — deterministic BTD6 round-range cash comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
