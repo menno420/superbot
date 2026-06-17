@@ -120,9 +120,7 @@ def test_tower_cue_defers_to_the_relation_builder():
     # Names a tower → the "MK related to <tower>" builder owns this; the category
     # roster must defer so the two MK builders never both fire.
     phrase = "what military monkey knowledge relate to the dart monkey"
-    assert (
-        btd6_context_service.deterministic_mk_category_roster_reply(phrase) is None
-    )
+    assert btd6_context_service.deterministic_mk_category_roster_reply(phrase) is None
     # ...and the relation builder is the one that fires.
     assert btd6_context_service.deterministic_mk_reference_reply(phrase) is not None
 

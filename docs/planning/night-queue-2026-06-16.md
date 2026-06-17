@@ -68,12 +68,15 @@ the *default* work for an empty scheduled fire, not a lock.
 | 1 | **Hero cost comparison** | §7.5 | ✅ #1000 |
 | 2 | **Power (activated-ability) cost comparison** | §7.5 | ✅ #1008 |
 | 3 | **Relic category/effect roster** | §7.6 | ✅ #1009 |
-| 4 | **Bloon property roster** | §7.6 | `NEEDS-REFRAME` (see below) |
+| 4 | **Bloon modifier explainer** (slot-4 reframe, option c) | §7.6 | ✅ #1011 |
 | 5 | **Hero ability roster** | §7.6 | ✅ #1010 |
 
-Buffer (if a fire is fast or a slice above turns out already-built): **Geraldo
-items-by-unlock-level roster** · **Monkey-Knowledge category roster** (both §7.6,
-data-complete — detailed at the foot).
+Buffer (if a fire is fast or a slice above turns out already-built): ✅ **Geraldo
+starting-kit angle** (#1011, the "what does Geraldo start with" gap the shipped
+per-level builder missed) · ✅ **Monkey-Knowledge category roster** (#1011). Both
+§7.6, data-complete — detailed at the foot. **The night queue is now fully
+consumed** — every ready slot, the slot-4 reframe, and both buffer slices have
+shipped. Next empty fire takes a fresh **plan-first** lane (see current-state ▶).
 
 ---
 
@@ -120,7 +123,18 @@ data-complete — detailed at the foot).
 - **Tests:** `tests/unit/services/test_btd6_relic_roster.py` + corpus phrase.
 - **Mirror:** #975's roster builders (`deterministic_capability_roster_reply`).
 
-### Slot 4 — Bloon property roster (§7.6) · `NEEDS-REFRAME` (not cleanly data-complete)
+### Slot 4 — Bloon modifier explainer (§7.6, reframe option c) · ✅ #1011
+
+> **2026-06-17 (the #1011 fire):** built as the **modifier explainer** (option c
+> below) — the genuinely-useful answer the data supports. The original "property
+> roster" framing stays rejected (the finding below). `deterministic_bloon_modifier_reply`
+> + `btd6_data_service.bloon_modifiers()` own the grounded camo/fortified/regrow
+> explanation off the three `category:"modifier"` marker entries, and reframe
+> "which bloons are camo?" instead of assembling the misleading `[DDT]` roster.
+> Defers whenever a tower / detection-or-pop verb / tower-subject is present (the
+> capability roster's job), so it never overlaps the bloon or capability rosters.
+
+#### Original finding (kept for context) · `NEEDS-REFRAME` (not cleanly data-complete)
 
 > **2026-06-17 finding (the #1010 fire, slot-4 pivot):** this slice is **not** as
 > data-clean as assumed — do **not** build it as written. In BTD6, **camo /
@@ -170,14 +184,17 @@ data-complete — detailed at the foot).
 
 ### Buffer slices (data-complete; promote if a fire is fast or a slot is pre-empted)
 
-- **Geraldo items-by-unlock-level roster** (§7.6) — "what does Geraldo start with?",
-  "which items unlock at level 5?". Data: `geraldo_items.json` → `unlock_level`. Sibling
-  to the shipped `deterministic_geraldo_per_level_reply` — **must defer to it** on the
-  per-level grouping cue (this is the *which-items-at-a-level* / starting-kit angle).
-- **Monkey-Knowledge category roster** (§7.6) — "what Support monkey knowledges are
-  there?". Data: `monkey_knowledge.json` → `category`. **Must defer** to the shipped
-  `deterministic_mk_reference_reply` on a *tower* cue (that builder owns "MK related to
-  <tower>") so it isn't shadowed.
+- ✅ **Geraldo items-by-unlock-level roster** (§7.6, #1011) — shipped as a focused
+  *extension* of the already-shipped `deterministic_geraldo_per_level_reply` (the
+  per-level / specific-level angles were already covered; the genuine gap was the
+  **starting-kit** phrasing "what does Geraldo start with", which the level/list cue
+  missed). A starting-kit cue now maps to his level-0 items. No redundant sibling
+  builder.
+- ✅ **Monkey-Knowledge category roster** (§7.6, #1011) — `monkey_knowledge_by_category()`
+  + `deterministic_mk_category_roster_reply`. Fires on an MK cue + a named tab
+  (Primary/Military/Magic/Support/Heroes/Powers) + an enumeration cue; **defers to**
+  the shipped `deterministic_mk_reference_reply` when a *tower* is named (that builder
+  owns "MK related to <tower>"), so the two never both fire.
 
 ### Explicitly **not** in this night queue (gated — leave for daytime/owner)
 

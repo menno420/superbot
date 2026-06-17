@@ -85,6 +85,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_bloon_roster_reply",
     ),
     (
+        "what does the camo property do",
+        "deterministic_bloon_modifier_reply",
+    ),
+    (
         "what economy relics are there",
         "deterministic_relic_roster_reply",
     ),

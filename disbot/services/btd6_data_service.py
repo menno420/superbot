@@ -1597,6 +1597,21 @@ def get_bloon(bloon_id: str) -> BloonEntry | None:
     return None
 
 
+def bloon_modifiers() -> tuple[BloonEntry, ...]:
+    """The bloon *modifier* marker entries (Camo / Fortified / Regrow property).
+
+    In BTD6 camo / fortified / regrow are **universal modifiers** applied to *any*
+    bloon, not intrinsic per-type properties — so the catalog files them as
+    ``category == "modifier"`` pseudo-entries carrying the modifier's description,
+    distinct from the real bloon types. This reader exposes exactly those entries
+    (in dataset order) for the modifier *explainer* floor: asked "what does camo
+    do?" / "which bloons are camo?" the model would otherwise either explain it
+    wrong or assemble a misleading roster ([DDT] only) — the BUG-0009 class — so
+    the deterministic layer OWNS the grounded explanation.
+    """
+    return tuple(b for b in get_dataset().bloons if b.category == "modifier")
+
+
 def resolve_bloon_id(name: str) -> str | None:
     """Map a bloon name / alias / plural to its id (``"purples"`` -> ``"purple"``).
 
