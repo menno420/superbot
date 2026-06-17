@@ -145,3 +145,59 @@ def test_live_export_has_no_integrity_errors(mod):
 
 def test_main_fresh_exits_zero(mod):
     assert mod.main(["--fresh"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# structural-drift reporter (--drift)
+# ---------------------------------------------------------------------------
+
+
+def _drift_payload(env_names, setting_keys, command_names):
+    """Minimal payload carrying just the surfaces the drift report inspects."""
+    return {
+        "cogs": [
+            {
+                "cog": "X",
+                "is_cog": True,
+                "commands": [{"name": n} for n in command_names],
+            },
+        ],
+        "env_usage": [{"name": n} for n in env_names],
+        "settings": [{"domain": "d", "keys": [{"key": k} for k in setting_keys]}],
+        "catalogue": [{"key": "economy"}],
+        "synonyms": [{"canonical": "ban"}],
+    }
+
+
+def test_structural_drift_clean_when_identical(mod):
+    payload = _drift_payload(["A_TOKEN"], ["k1"], ["ping"])
+    assert mod.check_structural_drift(payload, payload) == []
+
+
+def test_structural_drift_reports_added_and_removed(mod):
+    committed = _drift_payload(["A_TOKEN"], ["k1"], ["ping"])
+    # Fresh build gained an env var + a setting key + a command, and a stale
+    # env var that no longer exists in source was dropped.
+    fresh = _drift_payload(["B_TOKEN"], ["k1", "k2"], ["ping", "pong"])
+    issues = mod.check_structural_drift(committed, fresh)
+    # Every drift finding is a non-blocking warning, never an error.
+    assert issues, "expected drift findings"
+    assert all(i.severity == "warning" for i in issues)
+    codes = {i.code for i in issues}
+    assert "structural_drift_added" in codes  # B_TOKEN / k2 / pong are new
+    assert "structural_drift_removed" in codes  # A_TOKEN was dropped
+    # The added env var is named in a message so the report is actionable.
+    assert any("B_TOKEN" in i.message for i in issues)
+
+
+def test_drift_findings_are_only_warnings_against_live(mod):
+    # The whole point: drift between the committed file and a fresh build must
+    # never produce an error (it would gate CI on every parallel-session churn).
+    committed = mod._build_fresh()  # stand-in committed payload
+    issues = mod.check_structural_drift(committed, mod._build_fresh())
+    assert all(i.severity == "warning" for i in issues)
+
+
+def test_main_drift_exits_zero(mod):
+    # --drift reports warnings but never fails the run.
+    assert mod.main(["--drift"]) == 0

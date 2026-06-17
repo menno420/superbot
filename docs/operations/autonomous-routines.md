@@ -143,6 +143,14 @@ STEP 2 — RECONCILE (the Q-0107 pass):
   - IMPROVE THE SYSTEM: if you see a way to make the orientation / memory / tooling better for
     the next run (a confusing doc, a missing pointer, a guard that would have caught this drift),
     make that improvement too. This is the point of the loop.
+  - REGENERATE THE DASHBOARD EXPORT (cheap, on-cadence freshness): you already touch the source
+    docs this pass, so run `python3.10 scripts/export_dashboard_data.py` to refresh the committed
+    `dashboard/data/dashboard.json` (a generated artifact that silently drifts as parallel sessions
+    add cogs/settings/env-vars — it was ~3 structural surfaces stale on `main` before this was wired,
+    PR #1025). Run `python3.10 scripts/check_dashboard_data.py --drift` to see what changed first; it
+    is warn-only and never blocks. Commit the regenerated JSON with the pass. This is the
+    *cadence half* of the freshness loop — the dispatch routine carries the warn-only `--drift`
+    reporter, this routine keeps the artifact fresh without burdening every session.
   - Reset the "Last reconciliation pass: PR #N" marker in current-state.md to the latest PR
     (the trigger Action keys off it — do not skip).
 
