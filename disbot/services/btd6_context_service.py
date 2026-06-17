@@ -2544,6 +2544,46 @@ def _extract_hero_names(text_lower: str) -> list[str]:
     return names
 
 
+def _extract_power_names(text_lower: str) -> list[str]:
+    """The power ids a comparison names, in order of appearance, deduped.
+
+    Scans every power canonical (powers carry no aliases) and keeps the longest
+    surface at each span (so "monkey boost pro" wins over a bare "monkey boost"),
+    then dedups on the resolved power id. Surfaces shorter than 3 chars are
+    skipped, though every power canonical is well over that — the cost-compare cue
+    + the ≥2-powers gate already constrain this builder hard. Returns ids (the
+    ``find_power`` resolver accepts them), so the data primitive re-resolves
+    cleanly.
+    """
+    from services import btd6_data_service
+
+    powers = btd6_data_service.get_dataset().powers
+    spans: list[tuple[int, int, int, str]] = []  # (start, end, surface_len, id)
+    for power in powers:
+        surface = power.canonical.lower()
+        if len(surface) < 3:
+            continue
+        for match in re.finditer(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+            spans.append((match.start(), match.end(), len(surface), power.id))
+
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, str]] = []
+    for start, end, _slen, pid in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _p in accepted):
+            continue
+        accepted.append((start, end, pid))
+    accepted.sort(key=lambda a: a[0])
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for _start, _end, pid in accepted:
+        if pid in seen:
+            continue
+        seen.add(pid)
+        names.append(pid)
+    return names
+
+
 def _format_hero_cost_comparison(result: dict[str, Any]) -> str:
     diff = str(result["difficulty"]).capitalize()
     lines = [f"**Hero cost comparison — {diff} placement cost:**"]
@@ -2617,6 +2657,72 @@ def deterministic_hero_cost_comparison_reply(message_text: str) -> str | None:
     if not result.get("found"):
         return None
     return _format_hero_cost_comparison(result)
+
+
+def _format_power_cost_comparison(result: dict[str, Any]) -> str:
+    lines = ["**Power cost comparison — Monkey Money store price:**"]
+    for entry in result["entries"]:
+        lines.append(f"• **{entry['name']}** — **{entry['cost']:,} MM**")
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** (**{cheapest['cost']:,} MM** each).",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['name']}** is cheaper by **{result['spread']:,} MM**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['name']}** ({cheapest['cost']:,} MM). Most "
+            f"expensive: **{dearest['name']}** ({dearest['cost']:,} MM). "
+            f"Spread: **{result['spread']:,} MM**.",
+        )
+    lines.append("_(Monkey Money store price — the same on every difficulty.)_")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_power_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is Cash Drop or Monkey Boost cheaper" answer, or ``None``.
+
+    The AI §7.5 *power* member of the multi-entity cost-comparison floor — the
+    activated-ability sibling of :func:`deterministic_cost_comparison_reply`
+    (towers), :func:`deterministic_difficulty_cost_comparison_reply`,
+    :func:`deterministic_paragon_cost_comparison_reply`, and
+    :func:`deterministic_hero_cost_comparison_reply`. Ranks the **Monkey Money**
+    store price of two-or-more powers so the model can never mis-state which is
+    cheaper / by how much (the BUG-0009 "grounded values, wrong assembly" class).
+    Fires on a high-precision cost-compare cue **and** two-or-more resolved powers;
+    defers on a ``paragon`` cue (the paragon builder's job), strategy /
+    recommendation questions, and single-power lookups, which all reach the model
+    untouched. Mutually exclusive with the tower/hero/paragon builders by
+    construction — those resolve a ``(tower, crosspath)`` / hero / paragon
+    candidate, which a power name never produces.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+    # A paragon cost comparison is the paragon builder's job.
+    if _PARAGON_CUE_RE.search(low):
+        return None
+
+    names = _extract_power_names(low)
+    if len(names) < 2:
+        return None
+
+    from services import btd6_data_service
+
+    result = btd6_data_service.compare_power_costs(names)
+    if not result.get("found"):
+        return None
+    return _format_power_cost_comparison(result)
 
 
 def _format_paragon_cost_comparison(result: dict[str, Any]) -> str:
@@ -2976,6 +3082,7 @@ _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_bloon_roster_reply,
     deterministic_paragon_cost_comparison_reply,
     deterministic_hero_cost_comparison_reply,
+    deterministic_power_cost_comparison_reply,
     deterministic_cost_comparison_reply,
     deterministic_difficulty_cost_comparison_reply,
     deterministic_round_range_comparison_reply,

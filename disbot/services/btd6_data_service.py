@@ -2501,6 +2501,68 @@ def compare_hero_costs(
     }
 
 
+def compare_power_costs(names: Sequence[str]) -> dict[str, Any]:
+    """Deterministic monkey-money ranking of two-or-more activated-ability powers.
+
+    The §7.5 *power* member of the multi-entity cost-comparison primitive (the
+    sibling of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs`
+    / :func:`compare_round_ranges` / :func:`compare_paragon_costs` /
+    :func:`compare_hero_costs`). Answers "is Cash Drop or Monkey Boost cheaper?" —
+    rank each named power's in-store ``monkey_money_cost``, then rank/diff **in
+    code** so the model never assembles the comparison itself (the BUG-0009 "wrong
+    assembly" class — a mis-stated "cheaper" / wrong difference the value-only
+    faithfulness guard cannot catch).
+
+    Powers are bought with **monkey money** at a *fixed* store price — there is no
+    in-game-cash difficulty scaling — so this primitive has **no difficulty axis**
+    (the one shape difference from :func:`compare_hero_costs`). Ranked
+    **ascending** (cheapest first) with a stable tie-break on the power name (many
+    powers share a 50-MM price, so an equal-cost tie is a common real outcome).
+
+    Each name is resolved with the shared :func:`find_power` resolver (id,
+    game-native id, canonical, or unique partial) and **deduped** on the resolved
+    power id. Returns ``{"found": False, ...}`` when fewer than two distinct powers
+    resolve (an unknown name is skipped, never guessed), so a caller can fall
+    through to the model rather than answer a degenerate comparison.
+    """
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for name in names:
+        power = find_power(name)
+        if power is None:
+            continue
+        if power.id in seen:
+            continue
+        seen.add(power.id)
+        entries.append(
+            {
+                "power_id": power.id,
+                "name": power.canonical,
+                "cost": power.monkey_money_cost,
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct resolvable powers",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["cost"], e["name"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["cost"] - cheapest["cost"],
+        "all_equal": cheapest["cost"] == most_expensive["cost"],
+        "note": "power store price in monkey money; ranked ascending.",
+    }
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics
