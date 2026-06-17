@@ -207,6 +207,23 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1020 (2026-06-17, manifest spine PR3 — control-API manifest read + cross-manifest
+  reconciliation)** — scheduled dispatch, empty work order → advanced the manifest-spine thread (PR1
+  #1018 + PR2 #1019 shipped; the execution plan named PR3 next). Makes the typed manifest **readable
+  over the live control API** and **self-reconciling** (the spine's core purpose — verified, not
+  guessed, metadata): **(1)** `GET /control/manifest` on the dormant control API (token-only, global —
+  mirrors `/control/help/catalogue`) serves `CommandManifest` + `PanelManifest`, building on demand
+  when the startup cache is empty; + `control_client.get_manifest()`. **(2)** `core/runtime/manifest_reconciliation.py`
+  — a `panel_action`-classified command whose subsystem owns no registered panel is a
+  `dangling_panel_action` finding, surfaced in `CommandManifest.to_dict()["findings"]` (was reserved
+  `[]`) + the `command_manifest` diagnostics. **(3)** CI drift guard (`test_manifest_drift.py`): the
+  AST `scan_commands` `panel_action` subsystems ⊆ the runtime `PanelManifest` subsystems — the cheap
+  "AST is drift-detection" check (holds: {mining, moderation, role}). **(4)** the manifest envelope's
+  `bot_build` now defaults to the deploy SHA (`RAILWAY_GIT_COMMIT_SHA`, short) so the live read is
+  freshness-badged. `check_quality --full` green (10431, +16) · arch 0. **Deferred to PR4** (no
+  declared button→command binding yet — verified: `panel_action` cmd names ≠ button action-id
+  suffixes, so a name-level guard would be false-positive-prone, Q-0120): per-button `command` binding
+  + button-level reconciliation + the panel-layout editor (owner-paced control-API *writes*).
 - **#1018 (2026-06-17, manifest spine slice 1 — typed CommandManifest over the ledger)** — same
   dispatch fire as #1017 (continuation). Started the **manifest spine** — the dashboard vision doc's
   "key structural investment," owner-approved (Q-0162), Phase-E predecessor shipped (#1013), schema
@@ -254,10 +271,19 @@ Source code and merged PRs win over anything written here.
   from the authority bridge. New pure `_setup_health`/`_authority_preview` projections + two
   templates + nav/overview links. `check_quality --full` green (10408) · arch 0 · +12 dashboard
   tests. **Dashboard ▶ next:** R3 hardening shipped (#1014); the **Phase D manifest spine** (Q-0162,
-  gates command/panel management) is now the live ungated buildable thread — PR1 `CommandManifest`
-  (#1018) + PR2 panel registry/`PanelManifest` (#1019) shipped; **PR3** (control-API `manifest` read +
-  `dashboard.json` export + AST drift guard) is the next slice. The global-settings runtime tier
-  (Q-0157) stays its own owner-paced session.
+  gates command/panel management) — PR1 `CommandManifest` (#1018) + PR2 panel registry/`PanelManifest`
+  (#1019) + **PR3 control-API `/control/manifest` read + cross-manifest reconciliation + AST drift
+  guard + deploy-SHA badge (#1020)** all shipped. **The remaining manifest-spine work is PR4 — the
+  panel-layout editor (H / L3 "move buttons"): a declared button→command binding + button-level
+  reconciliation + the DB-backed layout overlay + the website editor.** PR4 is **owner-paced** (it is
+  a control-API *write* surface, needs `CONTROL_API_TOKEN`) **and architecturally significant** (the
+  binding must be declared across every persistent view — verified this session that `panel_action`
+  command names do NOT map to button action-ids, so it can't be inferred). So the manifest spine's
+  next pure ungated read-code is **exhausted** — a future empty fire should plan PR4 (with the owner
+  on the write-side pacing) or take a different ungated lane. The committed `dashboard.json` export of
+  the manifest was dropped from PR3: the export can't import disbot, so it stays the AST `cogs` view;
+  the live truth is `/control/manifest`. The global-settings runtime tier (Q-0157) stays its own
+  owner-paced session.
 - **#1012 (2026-06-17, AI answerability floor — boss roster + per-difficulty map filter + boss
   immunity)** — scheduled dispatch fire, no work order; night queue fully consumed + both open PRs
   (#941/#929) Hermes-gated → took a fresh slice of the proven, ungated BTD6 deterministic-floor lane
@@ -337,6 +363,10 @@ Source code and merged PRs win over anything written here.
   `check_quality --full` green (10292, +38); arch 0; mypy clean. Tests:
   `tests/unit/services/test_btd6_power_cost_comparison.py` + the §7.5 exclusivity corpus entry.
   Next night-queue `TODO` = slot 3 (relic category/effect roster).
+- **#1005 · #1006 · #1007 (2026-06-17, dashboard-vision docs + a routing-corpus test)** — the
+  dashboard finalized-vision plan review + owner panel decisions (#1005 review/close · #1006 solidify
+  with owner panel decisions) and the BTD6 community-shorthand class-guard corpus (#1007, test-only).
+  Docs/test band; no runtime change.
 - **#1000 (2026-06-16, AI §7.5 — deterministic BTD6 hero cost-comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NIGHT QUEUE, slot 1). Adds the **hero** member of the
   §7.5 multi-entity cost-comparison floor (the hero-entity sibling of the shipped paragon #962 /

@@ -25,10 +25,6 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
-  cross-manifest reconciliation (`dangling_panel_action` findings) + the AST-vs-panel-registry drift
-  guard · `disbot/control_api.py` · `disbot/core/runtime/{command_manifest,manifest_reconciliation}.py`
-  · `dashboard/control_client.py` · `tests/` · 2026-06-17
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
@@ -53,6 +49,9 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
+  cross-manifest reconciliation (`dangling_panel_action`) + AST-vs-panel-registry drift guard +
+  deploy-SHA badge · 2026-06-17 · **PR #1020 (auto-merge on green)**
 - `claude/magical-rubin-p92toz` · manifest spine **PR2** — panel registry + `PanelManifest`
   (`core/runtime/panel_manifest.py` + `persistent_views` PANEL_ID/enumeration + command-panel join) ·
   2026-06-17 · **PR #1019 (auto-merge on green)**
