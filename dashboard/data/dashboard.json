@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-17T18:15:56Z",
+    "generated_at": "2026-06-17T18:17:36Z",
     "build": {
-      "commit": "14e33efb",
-      "subject": "session card (born-red): dashboard.json structural-drift reporter + freshness catch-up",
-      "committed_at": "2026-06-17T18:09:47Z",
+      "commit": "4602c70e",
+      "subject": "chore(dashboard): warn-only structural-drift reporter + regenerate stale dashboard.json",
+      "committed_at": "2026-06-17T18:16:12Z",
       "branch": "claude/magical-rubin-jnpnuw"
     },
     "counts": {
       "functions": 33,
-      "ideas": 81,
+      "ideas": 82,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
@@ -891,6 +891,13 @@
     }
   ],
   "ideas": [
+    {
+      "file": "generated-artifact-freshness-umbrella-2026-06-17.md",
+      "title": "Generated-artifact freshness umbrella — one soft-drift reporter for every committed generated file",
+      "status": "ideas",
+      "date": "2026-06-17",
+      "summary": "PR #1025 added a **warn-only structural-drift reporter** for one committed generated artifact"
+    },
     {
       "file": "ledger-bookkeeping-tally-soft-lint-2026-06-17.md",
       "title": "Idea — soft-lint the unbounded \"running tally\" drift class",
