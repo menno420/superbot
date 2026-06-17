@@ -67,6 +67,38 @@ async def get_authority(guild_id: int, user_id: int) -> dict[str, Any] | None:
         return None
 
 
+async def get(
+    path: str,
+    params: dict[str, Any] | None = None,
+) -> tuple[int, dict[str, Any]]:
+    """GET a control-API ``path`` (e.g. ``/control/settings/current``).
+
+    Returns ``(status_code, body)``. A dormant client returns ``(503, …)``; a
+    network failure returns ``(502, …)`` so the caller can degrade to a blind
+    editor rather than erroring. The Phase E read sibling of :func:`post`.
+    """
+    config = control_config()
+    if config is None:
+        return 503, {"error": "control API not configured"}
+    import httpx
+
+    base, token = config
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(
+                f"{base}{path}",
+                params=params or {},
+                headers=_headers(token),
+            )
+        try:
+            body = resp.json()
+        except Exception:  # noqa: BLE001 - non-JSON body
+            body = {"error": resp.text[:200]}
+        return resp.status_code, body
+    except Exception as exc:  # noqa: BLE001 - bot unreachable
+        return 502, {"error": f"could not reach the bot control API: {exc}"}
+
+
 async def post(path: str, payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
     """POST ``payload`` to a control-API ``path`` (e.g. ``/control/settings``).
 

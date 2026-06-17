@@ -25,10 +25,11 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/inspiring-wozniak-i92q58` · **dashboard finalized-vision — solidify with owner panel decisions**
-  (owner directive) — apply the 8 question-panel answers to the vision doc + record provenance (Q-0162
-  DECIDED + new Q-0163). Docs only · `docs/planning/dashboard-vision-finalized-state.md` ·
-  `docs/owner/maintainer-question-router.md` · 2026-06-16 · *(PR #1002 — vision doc itself — merged)*
+- `claude/inspiring-wozniak-i92q58` · **dashboard Phase E — control-API read endpoints + see-then-change
+  editor** (owner directive, overnight) — `GET /control/settings/current` · `help/overlay` ·
+  `help/catalogue` · `routing` (dormant, read-only) + dashboard wiring + R3 hardening (rate-limit + CSRF)
+  + Phase C read workspace (server overview + authority preview). Runtime is additive/dormant ·
+  `disbot/control_api.py` · `dashboard/` · 2026-06-17
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
