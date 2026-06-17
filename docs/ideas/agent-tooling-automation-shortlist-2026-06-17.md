@@ -15,6 +15,12 @@ strategy, and several recurring multi-step chores have no skill or script. This 
 to pick from; each item is small and the owner chooses which to build. (Distinct items get their own
 idea/plan — the two biggest already do: the consistency linter and the review inbox.)
 
+> **▶ Executable plan (2026-06-17, owner-confirmed approach):** the §A skill conversion is now planned
+> in detail — [`procedures-to-skills-conversion-plan-2026-06-17.md`](../planning/procedures-to-skills-conversion-plan-2026-06-17.md)
+> (the 33-procedure inventory, the thin-pointer convention, the must-NOT-move safety list, and the
+> batched build order). Owner's framing: relocate procedures to on-demand skills (load when needed),
+> keeping a thin pointer + the binding rules in CLAUDE.md.
+
 ## A. Dedicated Claude Code skills (slash commands for recurring flows)
 
 | Skill | Wraps the recurring flow | Why |
