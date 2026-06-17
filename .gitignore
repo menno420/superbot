@@ -93,3 +93,6 @@ build/
 # only matters if BTD6_DATA_CACHE_DIR is pointed at a repo-local path.
 superbot_btd6_data/
 .btd6_data_cache/
+
+# Local Claude Code settings (personal, not committed)
+.claude/settings.local.json

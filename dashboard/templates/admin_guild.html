@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}{{ guild.name }} — Control panel — SuperBot{% endblock %}
+{% block content %}
+<div class="mb-5">
+  <a href="/admin" class="text-xs text-slate-400 hover:text-sky-300">← All servers</a>
+  <span class="text-xs text-slate-600">·</span>
+  <a href="/admin/{{ guild.id }}/overview" class="text-xs text-slate-400 hover:text-sky-300">Overview</a>
+  <h1 class="text-2xl font-bold mt-1">{{ guild.name }}</h1>
+  <p class="text-slate-500 text-xs">
+    {{ 'Owner' if guild.owner else 'Administrator' }} · guild id {{ guild.id }}
+  </p>
+</div>
+
+{% if flash %}
+  <div class="mb-5 rounded-lg border px-4 py-3 text-sm
+    {{ 'border-emerald-900/60 bg-emerald-950/40 text-emerald-200' if flash.ok
+       else 'border-rose-900/60 bg-rose-950/40 text-rose-200' }}">
+    {{ flash.message }}
+  </div>
+{% endif %}
+
+{% if not control_configured %}
+  <div class="mb-6 rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+    The dashboard isn't connected to the bot yet (<code>CONTROL_API_TOKEN</code> unset), so the editors
+    below are visible but edits can't be applied. Set the shared token on both Railway services to
+    enable live editing.
+  </div>
+{% elif authority and not authority.member_found %}
+  <div class="mb-6 rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+    The bot {{ 'is not in this server' if not authority.guild_found else "can't see your membership here" }},
+    so it can't apply edits. Invite the bot (and make sure it can see you) to manage this server.
+  </div>
+{% elif authority %}
+  <div class="mb-6 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-xs text-slate-400">
+    The bot sees you here as
+    <span class="text-slate-200">{{ authority.tier or 'member' }}</span>{% if authority.is_admin %} ·
+    <span class="text-emerald-300">administrator</span>{% endif %}. It re-checks this on every edit.
+    {% if current.reads_ok %}
+      <span class="text-emerald-300">· showing live current values</span>
+    {% elif authority.is_admin %}
+      <span class="text-amber-300">· couldn't load live values (showing blind editors)</span>
+    {% endif %}
+  </div>
+{% endif %}
+
+<!-- ===================== Settings ===================== -->
+<section class="mb-8 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+  <h2 class="text-lg font-semibold mb-1">⚙️ Settings</h2>
+  {% if current.reads_ok and current.settings %}
+    <p class="text-slate-400 text-xs mb-4">
+      Each setting shows its <span class="text-slate-200">current value</span> for this server (the bot's
+      live truth). Change one and the bot coerces, validates, capability-gates, and applies it live.
+    </p>
+    {% for sub, items in current.settings.items()|sort %}
+      <details class="mb-2 rounded-lg border border-slate-800 bg-slate-950/40">
+        <summary class="cursor-pointer select-none px-4 py-2 text-sm font-medium text-slate-200">
+          {{ sub }} <span class="text-slate-500 text-xs">· {{ items|length }} setting(s)</span>
+        </summary>
+        <div class="divide-y divide-slate-800/70 px-4 pb-3">
+          {% for s in items %}
+            <form method="post" action="/admin/{{ guild.id }}/settings"
+              class="grid items-end gap-3 py-3 sm:grid-cols-[1fr_auto_auto]">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+              <input type="hidden" name="subsystem" value="{{ sub }}" />
+              <input type="hidden" name="name" value="{{ s.name }}" />
+              <div>
+                <div class="text-sm text-slate-200">{{ s.name }}
+                  <span class="text-[10px] uppercase tracking-wide
+                    {{ 'text-amber-300' if not s.valid else
+                       ('text-emerald-300' if s.provenance != 'default' else 'text-slate-500') }}">
+                    {{ 'invalid → using default' if not s.valid else
+                       ('customised' if s.provenance != 'default' else 'default') }}</span>
+                </div>
+                {% if s.hint %}<div class="text-xs text-slate-500">{{ s.hint }}</div>{% endif %}
+                <div class="text-[11px] text-slate-600">
+                  type {{ s.value_type }} · default <code>{{ s.default }}</code>
+                  {%- if s.capability_required %} · needs <code>{{ s.capability_required }}</code>{% endif %}
+                </div>
+              </div>
+              {% if s.value_type == 'bool' %}
+                <select name="value"
+                  class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none">
+                  <option value="true" {{ 'selected' if s.value else '' }}>true</option>
+                  <option value="false" {{ 'selected' if not s.value else '' }}>false</option>
+                </select>
+              {% elif s.allowed_values %}
+                <select name="value"
+                  class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none">
+                  {% for opt in s.allowed_values %}
+                    <option value="{{ opt }}" {{ 'selected' if opt|string == s.value|string else '' }}>{{ opt }}</option>
+                  {% endfor %}
+                </select>
+              {% else %}
+                <input name="value" value="{{ s.value if s.value is not none else '' }}"
+                  class="w-40 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+              {% endif %}
+              <button type="submit"
+                class="rounded-lg bg-sky-600 hover:bg-sky-500 px-3 py-2 text-sm font-medium">Save</button>
+            </form>
+          {% endfor %}
+        </div>
+      </details>
+    {% endfor %}
+  {% else %}
+    <p class="text-slate-400 text-xs mb-4">
+      Change a per-server setting. Use the <code>subsystem</code> + setting <code>name</code> from the
+      <a href="/settings" class="underline hover:text-sky-300">Settings catalogue</a>; the bot coerces,
+      validates, and capability-gates the write.
+    </p>
+    <form method="post" action="/admin/{{ guild.id }}/settings" class="grid gap-3 sm:grid-cols-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+      <label class="block">
+        <span class="text-xs text-slate-400">Subsystem</span>
+        <input name="subsystem" list="subsystem-keys" required placeholder="moderation"
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-xs text-slate-400">Setting name</span>
+        <input name="name" required placeholder="warn_threshold"
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-xs text-slate-400">Value</span>
+        <input name="value" required placeholder="3"
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+      </label>
+      <div class="flex items-end">
+        <button type="submit"
+          class="w-full rounded-lg bg-sky-600 hover:bg-sky-500 px-3 py-2 text-sm font-medium">Save</button>
+      </div>
+    </form>
+  {% endif %}
+  <datalist id="subsystem-keys">
+    {% for c in catalogue %}<option value="{{ c.key }}"></option>{% endfor %}
+  </datalist>
+</section>
+
+<!-- ===================== Help appearance ===================== -->
+<section class="mb-8 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+  <h2 class="text-lg font-semibold mb-1">📖 Help appearance</h2>
+  <p class="text-slate-400 text-xs mb-4">
+    Hide, rename, or re-describe a hub/subsystem in <code>!help</code>, or customize the Help home
+    message. Leave a text field blank to leave it unchanged; the bot applies it live (cache invalidated).
+  </p>
+
+  {% if current.help_overlay and current.help_overlay.rows %}
+    <div class="mb-5 rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+      <h3 class="text-xs font-semibold text-slate-300 mb-2">Current overrides ({{ current.help_overlay.rows|length }})</h3>
+      <ul class="space-y-1 text-xs text-slate-400">
+        {% for r in current.help_overlay.rows %}
+          <li>
+            <span class="text-slate-200">{{ r.entity_kind }}:{{ r.entity_key }}</span>
+            {% if r.display_hidden %}<span class="text-rose-300">· hidden</span>{% endif %}
+            {% if r.display_name %}· renamed to “{{ r.display_name }}”{% endif %}
+            {% if r.description %}· re-described{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% elif current.reads_ok %}
+    <div class="mb-5 text-xs text-slate-500">No Help overrides yet — this server shows the defaults.</div>
+  {% endif %}
+
+  <form method="post" action="/admin/{{ guild.id }}/help/overlay" class="grid gap-3 sm:grid-cols-2 mb-5">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+    <label class="block">
+      <span class="text-xs text-slate-400">Entity kind</span>
+      <select name="entity_kind"
+        class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none">
+        <option value="hub">hub</option>
+        <option value="subsystem">subsystem</option>
+      </select>
+    </label>
+    <label class="block">
+      <span class="text-xs text-slate-400">Entity key</span>
+      <input name="entity_key" list="help-entity-keys" required placeholder="games"
+        class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-slate-400">Rename (display name)</span>
+      <input name="display_name" placeholder="leave blank to keep"
+        class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+    </label>
+    <label class="block">
+      <span class="text-xs text-slate-400">Description</span>
+      <input name="description" placeholder="leave blank to keep"
+        class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+    </label>
+    <label class="flex items-center gap-2 text-sm text-slate-300">
+      <input type="checkbox" name="display_hidden" class="rounded border-slate-700 bg-slate-900" />
+      Hide this entity from Help
+    </label>
+    <div class="flex items-end">
+      <button type="submit"
+        class="rounded-lg bg-sky-600 hover:bg-sky-500 px-3 py-2 text-sm font-medium">Apply</button>
+    </div>
+  </form>
+
+  <div class="border-t border-slate-800 pt-4">
+    <h3 class="text-sm font-semibold mb-2">Help home message
+      {% if current.help_overlay and current.help_overlay.home %}
+        <span class="text-[10px] uppercase tracking-wide text-emerald-300">customised</span>
+      {% elif current.reads_ok %}
+        <span class="text-[10px] uppercase tracking-wide text-slate-500">default</span>
+      {% endif %}
+    </h3>
+    <form method="post" action="/admin/{{ guild.id }}/help/home" class="grid gap-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+      <label class="block">
+        <span class="text-xs text-slate-400">Title</span>
+        <input name="title"
+          value="{{ current.help_overlay.home.title if current.help_overlay and current.help_overlay.home and current.help_overlay.home.title else '' }}"
+          placeholder="leave blank to keep"
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none" />
+      </label>
+      <label class="block">
+        <span class="text-xs text-slate-400">Body</span>
+        <textarea name="body" rows="3" placeholder="leave blank to keep"
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none">{{ current.help_overlay.home.body if current.help_overlay and current.help_overlay.home and current.help_overlay.home.body else '' }}</textarea>
+      </label>
+      <div>
+        <button type="submit"
+          class="rounded-lg bg-sky-600 hover:bg-sky-500 px-3 py-2 text-sm font-medium">Save home</button>
+      </div>
+    </form>
+  </div>
+
+  <datalist id="help-entity-keys">
+    {% if current.help_catalogue %}
+      {% for h in current.help_catalogue.hubs %}<option value="{{ h.key }}">hub · {{ h.display_name }}</option>{% endfor %}
+      {% for s in current.help_catalogue.subsystems %}<option value="{{ s.key }}">subsystem · {{ s.display_name }}</option>{% endfor %}
+    {% else %}
+      {% for c in catalogue %}<option value="{{ c.key }}"></option>{% endfor %}
+    {% endif %}
+  </datalist>
+</section>
+
+<!-- ===================== Cog routing ===================== -->
+<section class="mb-8 rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+  <h2 class="text-lg font-semibold mb-1">🧩 Cogs (enable / disable)</h2>
+  <p class="text-slate-400 text-xs mb-4">
+    Turn a cog on or off for this whole server (the bot's scope-aware
+    <code>command_routing</code>; default is enabled). Owner direction Q-0160: routing is cog-level.
+  </p>
+  {% if current.reads_ok %}
+    <div class="divide-y divide-slate-800/70">
+      {% for cog in cogs %}
+        {% set enabled = current.routing_map.get(cog.cog, true) %}
+        <div class="flex items-center justify-between py-2">
+          <div class="text-sm text-slate-200">{{ cog.cog }}
+            <span class="text-[10px] uppercase tracking-wide
+              {{ 'text-emerald-300' if enabled else 'text-rose-300' }}">
+              {{ 'enabled' if enabled else 'disabled' }}</span>
+          </div>
+          <form method="post" action="/admin/{{ guild.id }}/routing">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+            <input type="hidden" name="cog_name" value="{{ cog.cog }}" />
+            <input type="hidden" name="enabled" value="{{ 'disabled' if enabled else 'enabled' }}" />
+            <button type="submit"
+              class="rounded-lg border px-3 py-1.5 text-xs font-medium
+                {{ 'border-rose-800 text-rose-200 hover:bg-rose-950/40' if enabled
+                   else 'border-emerald-800 text-emerald-200 hover:bg-emerald-950/40' }}">
+              {{ 'Disable' if enabled else 'Enable' }}</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <form method="post" action="/admin/{{ guild.id }}/routing" class="grid gap-3 sm:grid-cols-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+      <label class="block sm:col-span-2">
+        <span class="text-xs text-slate-400">Cog</span>
+        <select name="cog_name" required
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none">
+          {% for cog in cogs %}<option value="{{ cog.cog }}">{{ cog.cog }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="block">
+        <span class="text-xs text-slate-400">State</span>
+        <select name="enabled"
+          class="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none">
+          <option value="enabled">Enabled</option>
+          <option value="disabled">Disabled</option>
+        </select>
+      </label>
+      <div class="sm:col-span-3">
+        <button type="submit"
+          class="rounded-lg bg-sky-600 hover:bg-sky-500 px-3 py-2 text-sm font-medium">Apply routing</button>
+      </div>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

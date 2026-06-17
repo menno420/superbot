@@ -1,8 +1,10 @@
 # BTD6 community-shorthand corpus eval (router-class regression guard)
 
-> **Status:** `ideas`. **Not approved for implementation, not a plan.** A captured late
-> discovery from the BUG-0015 session (2026-06-16, PR #963). Source + the binding contracts +
-> `docs/current-state.md` win over this file.
+> **Status:** `historical` ✅ **SHIPPED 2026-06-16 (PR #1007)** — the corpus class-guard test
+> landed as `tests/unit/services/test_btd6_shorthand_corpus.py` (9 shorthand positives + 5
+> conservatism negatives). The hero-per-level-stats sub-item below stays `captured` at low
+> priority. A captured late discovery from the BUG-0015 session (2026-06-16, PR #963). Source +
+> the binding contracts + `docs/current-state.md` win over this file.
 
 ## The recurring class this would guard
 

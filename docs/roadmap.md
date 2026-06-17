@@ -6,8 +6,10 @@
 > sector — the next-session brief acting on the [sector map](repo-sector-map.md)).
 >
 > **▶ The live decade queue (next ~9 PRs):**
-> [`planning/reconciliation-pass-2026-06-15-band930.md`](planning/reconciliation-pass-2026-06-15-band930.md)
-> §4 — set by the ninth Q-0107 pass (issue #931). The band-#900 queue is **nearly fully executed**:
+> [`planning/reconciliation-pass-2026-06-16-band990.md`](planning/reconciliation-pass-2026-06-16-band990.md)
+> §4 — set by the tenth Q-0107 pass (issue #961). The band-#930 queue is **fully executed** (AI §7.5/§7.6
+> floors · myprofile · security tiers · architecture-atlas); the **developer-dashboard / control-API**
+> initiative (Q-0155–Q-0160) is the active thread. _Earlier note:_ The band-#900 queue is **nearly fully executed**:
 > Forge ✅#905 · P1-3 invariants ✅#917/#918 · Railway log-triage ✅#906 · mining Home/respec/titles
 > ✅#910/#912 (**mining structures lane COMPLETE**) · BUG-0009 3/4 ✅#924/#926 · welcome phase 2
 > ✅#920; security tiers 1+2 **in flight** (#929, `needs-hermes-review`). The buildable-now `ready`

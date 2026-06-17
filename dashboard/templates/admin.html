@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Control panel — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Control panel</h1>
+<p class="text-slate-400 mb-5 text-sm">
+  Sign in with Discord to manage the servers you administer — edit settings, customize the help
+  appearance, and enable/disable cogs. Every change flows through the bot's own audited seams; the
+  website never writes the database directly, and the <strong>bot re-checks your permissions</strong>
+  on every edit.
+</p>
+
+{% if flash %}
+  <div class="mb-5 rounded-lg border px-4 py-3 text-sm
+    {{ 'border-emerald-900/60 bg-emerald-950/40 text-emerald-200' if flash.ok
+       else 'border-rose-900/60 bg-rose-950/40 text-rose-200' }}">
+    {{ flash.message }}
+  </div>
+{% endif %}
+
+{% if current_user %}
+  {% if not control_configured %}
+    <div class="mb-5 rounded-lg border border-amber-900/60 bg-amber-950/30 px-4 py-3 text-sm text-amber-200">
+      You're signed in, but the dashboard isn't connected to the bot yet
+      (<code>CONTROL_API_TOKEN</code> unset), so edits can't be applied live. The server list below is
+      still yours; connect the bot to enable editing.
+    </div>
+  {% endif %}
+  <h2 class="text-lg font-semibold mb-3">Servers you administer</h2>
+  {% if guilds %}
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {% for g in guilds %}
+        <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+          <div class="font-semibold truncate">{{ g.name }}</div>
+          <div class="text-xs text-slate-500 mt-1">
+            {{ 'Owner' if g.owner else 'Administrator' }} · id {{ g.id }}
+          </div>
+          <div class="mt-3 flex gap-2 text-xs">
+            <a href="/admin/{{ g.id }}/overview"
+               class="rounded bg-slate-700 hover:bg-slate-600 px-3 py-1">Overview</a>
+            <a href="/admin/{{ g.id }}"
+               class="rounded bg-sky-700 hover:bg-sky-600 px-3 py-1">Manage</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="mt-4 text-xs text-slate-500">
+      Only servers where you're an owner or administrator are shown. A server the bot hasn't joined
+      will say so when you open it.
+    </p>
+  {% else %}
+    <p class="text-slate-500">No servers where you have administrator permission were found.</p>
+  {% endif %}
+{% elif login_enabled %}
+  <a href="/auth/login"
+     class="inline-block rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-medium">
+    Sign in with Discord →
+  </a>
+{% else %}
+  <div class="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
+    <h2 class="text-lg font-semibold mb-2">Login isn't set up yet</h2>
+    <p class="text-slate-400 text-sm mb-3">
+      The free multi-user control panel is built and ready, but dormant. To switch it on, set these on
+      the dashboard's Railway service (the bot worker needs <code>CONTROL_API_TOKEN</code> too):
+    </p>
+    <ul class="text-sm text-slate-300 space-y-1">
+      <li><code>DISCORD_OAUTH_CLIENT_ID</code> — the Discord application's client id</li>
+      <li><code>DISCORD_OAUTH_CLIENT_SECRET</code> — the client secret (set in Railway, never in chat)</li>
+      <li><code>DISCORD_OAUTH_REDIRECT_URI</code> — <code>https://superbot-dashboard.up.railway.app/auth/callback</code></li>
+      <li><code>DASHBOARD_SESSION_SECRET</code> — a long random string for the login cookie</li>
+      <li><code>CONTROL_API_TOKEN</code> — shared secret, identical on the bot worker + this service</li>
+    </ul>
+    <p class="text-slate-500 text-xs mt-3">
+      Until then the read-only site works exactly as before. See
+      <code>docs/planning/dashboard-live-editor-plan.md</code>.
+    </p>
+  </div>
+{% endif %}
+{% endblock %}

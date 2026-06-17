@@ -86,6 +86,105 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#932 (2026-06-15, docs reconciliation — band-#930, ninth Q-0107 pass)** — ninth Q-0107 docs-only
+  reconciliation + planning pass (fired by `reconcile` issue #931). Reconciled the ledger (added the
+  #915…#928 Hermes model-swap / ops-docs band as one grouped entry; archived #862/#859/#855 to hold
+  the ratchet at 20); **FIXED a control-plane drift** (the Gates bullet still claimed the autonomous
+  loop had never self-fired — stale, since trigger issue #931 was authored by the PAT owner, which
+  only happens when `ROUTINE_PAT` is set and the loop self-fires); scored the band-#900 queue +
+  planned the next band ([`reconciliation-pass-2026-06-15-band930.md`](planning/reconciliation-pass-2026-06-15-band930.md));
+  promoted the now-ungated games-economy faucet/sink diagnostic idea to a turn-key plan; reset the
+  cadence marker #900→#930 (next at #960). Open-PR disposition (Q-0125): only #929 open
+  (`needs-hermes-review` carve-out). Docs only.
+- **#926 (2026-06-15, BUG-0009 slice 2 — deterministic "Geraldo items per level")** — the next ▶
+  startable plan slice (the live ▶ pointer's named next step), same proven shape as slice 1 (#924).
+  "what items does Geraldo unlock at each level" had the model assemble the level→item grouping
+  itself and mislabel which item unlocks when — every name grounded, so the value-only faithfulness
+  guard passed the wrong *grouping* (this class never reaches the post-hoc roster floor). Fix: the
+  deterministic layer OWNS the labelled answer. `btd6_data_service.geraldo_items_by_unlock_level()`
+  is the ascending level→items map; `btd6_context_service.deterministic_geraldo_per_level_reply`
+  detects the per-level / by-level / "level N" shape (Geraldo cue + level/list cue; `None` for
+  single-item lookups like "what does the Genie Bottle do" and strategy questions) and formats the
+  full grouping, a single level's unlocks, or an honest "no new item unlocks at level N". The same
+  PR also fixed the owner's third named mislabel (**slice 2b — game mode groupings**):
+  `btd6_data_service.modes_by_kind` + `deterministic_modes_reply` own the difficulty→mode→modifier
+  grouping (CHIMPS is a mode, not a difficulty), guarded against the qualifier over-route ("which
+  towers work on impoppable mode" defers to the model). All three BUG-0009 builders now front one
+  dispatcher `deterministic_btd6_list_reply`, served as the pre-emptive BTD6 floor in
+  `natural_language_stage` (MK → Geraldo → modes) — the last family (newest-towers, data-gated)
+  appends its builder there. `check_quality --full` green (9889); arch 0; +29 tests. One BUG-0009
+  family remains OPEN (newest-towers ordering, data-gated).
+- **#924 (2026-06-15, BUG-0009 slice 1 — deterministic "Monkey Knowledge related to <tower>")** —
+  the next ▶ startable plan slice (band-#900 decade queue slot 6; clears the headline of the OPEN
+  AI list-assembly bug). "what are all the monkey knowledges related to the farm" listed the whole
+  22-entry Support *category* and mislabeled it farm-related — every name was grounded, so the
+  value-only faithfulness guard passed the wrong *grouping* (and this class never reached the
+  post-hoc roster floor). Fix follows the proven shape (the deterministic layer OWNS the labelled
+  answer): `btd6_data_service.monkey_knowledge_referencing(tower)` derives the relation from the MK
+  description text (canonical/upgrade-path name → strong; alias → weak, suppressed when the MK
+  strongly references a *different* tower or is a Powers/Heroes-tab point), memoized per dataset
+  version; `btd6_context_service.deterministic_mk_reference_reply` detects the "which MK relate to
+  <tower>" shape (`None` for single-MK lookups / strategy / no-tower) and formats the honest list;
+  wired as a **pre-emptive floor** on the BTD6 path in `natural_language_stage` (before the model,
+  since this class passes the value guard). Farm now lists the 7 genuinely-referencing MK, not 22;
+  ordinary BTD6 questions still reach the model. Two BUG-0009 families remain OPEN (per-level item
+  lists · newest-towers). `check_quality --full` green (9863); arch 0; +14 tests.
+- **#920 (2026-06-15, welcome phase 2 — optional PIL greeting card on join)** — band-#900 decade
+  queue slot 7, the safety-lane quick-win (Q-0110). Adds a `welcome_card_enabled` setting (off by
+  default) that attaches a rendered greeting card (avatar initials-disc + greeting + member number)
+  to the join embed, degrading to embed-only when Pillow is unavailable or the toggle is off. The
+  `render_welcome_card` prototype graduated from the UX-lab gallery to the production renderer
+  `disbot/utils/welcome_render.py`; the gallery now re-exports it, so the preview and the live
+  feature share one renderer (one source of truth — the prototype/feature split is gone). Wired
+  end-to-end: settings_key → `welcome_config` default + `WelcomePolicy.card_enabled`/`show_join_card`
+  + `load_policy` read → schema `SettingSpec` → `welcome_service.handle_member_join` render+attach.
+  No-network/content-free (the embed still carries the real avatar thumbnail). `check_quality --full`
+  green (9847); arch 0; settings declared⇔consumed parity stays green (now 64 declared, 0 dead).
+- **#918 (2026-06-15, settings reverse-parity invariant — complete the declared ⇔ consumed
+  bijection)** — second slice of the #917 dispatch run, promoting that PR's Q-0089 idea straight to
+  shipped code. #917 added settings *forward* parity (every declared `SettingSpec` has a reader);
+  this adds the *reverse* direction —
+  `test_settings_declared_vs_consumed_parity.py::test_every_literal_setting_read_targets_a_declared_setting`
+  asserts every literal `resolve_value`/`resolve_setting(g, subsystem, name)` read targets a
+  *declared* setting. Closes the silent-bug class where a typo'd/stale read
+  (`resolve_value(g, "welcom", "enabld", default)`) never matches a written key and resolves to the
+  fallback forever (invisible, uncaught). 0 violations across 48 literal reads; reuses the same AST
+  walk; verified to fire. `check_quality --full` green (9811); arch 0; test-only.
+- **#917 (2026-06-15, P1-3 contract invariants — close the cross-cutting "stays fixed" layer)** —
+  the next ▶ startable plan slice (band-#900 decade queue slot 3 · hardening roadmap §P1-3). Reviewed
+  all four named tracks and closed the **two** genuine buildable-now gaps with CI-runnable AST
+  invariants, plus a [disposition doc](planning/production-readiness/p1-3-contract-invariants-disposition-2026-06-15.md)
+  closing the other two. **Settings** (the explicitly-named missing invariant — settings map
+  §Required #3 / §Bugs): `tests/unit/invariants/test_settings_declared_vs_consumed_parity.py` proves
+  every declared `SettingSpec` (63) has a runtime consumer across all four real read patterns
+  (literal `resolve_value`/`resolve_setting`, `resolve_batch`/dynamic-name whole-subsystem reads,
+  and key-constant/raw-key references incl. the binding/governance lane) — **0 dead settings**, so a
+  future editable-no-op fails CI. **Games**: a third check on `test_game_wager_write_boundary.py`
+  (`test_two_sided_economy_calls_are_accounted_for`) — the hardcoded `_WAGER_FILES` fence only caught
+  *deletion* staleness; the new check fails on a *new* two-party game pairing
+  `economy_service.credit`+`.debit` outside `game_wager_workflow` even without `allow_overdraft`
+  (the mint signature). **AI** closed (34/34 catalogue/eval ratchet); **BTD6** source-provenance
+  invariant-covered, per-derived-value attribution = design-for-review residual. Both new guards
+  verified to fire. `check_quality --full` green (9810); arch 0; test-only + docs.
+- **#912 (2026-06-15, mining Slices E + F — respec polish + skill/milestone titles)** — the last two
+  ▶ startable slices of the structures/skill-tree plan, closing the lane (D/A/B/C already shipped).
+  Built **away from** the one open PR (#911, owner's live mining-hub UX restructure on
+  `main_panel.py`/`gear_panel.py`) to avoid collision: Slice E lives in `skill_service`/`skills_panel`,
+  Slice F's title display goes on the `character_panel.py` aggregator + a `🏆 Titles` button on the
+  Skills panel (not the main hub). **Slice E (respec polish):** the Respec button now opens a confirm
+  card (cost + point preview, nothing charged until you choose) and offers a cheaper **single-branch**
+  respec (`skill_service.respec_branch`, same audited economy lane / one-transaction atomicity).
+  **Slice F (titles):** a pure `utils/mining/titles.py` catalogue whose **earned** set is *derived*
+  from existing progression (skill branch at cap · deepest biome · game level) — nothing granted on a
+  mutation path; only the equipped *choice* persists (`mining_player_state.equipped_title`, migration
+  074) via `services/title_service.py` (the `set_equipped_title` write primitive on the RS02 boundary
+  ratchet), displayed only while **still earned** (a respec silently un-displays a mastery title).
+  Surfaced via `!titles` + a `🏆 Titles` Skills-panel button + the Character embed; **additive** — no
+  title equipped → byte-identical. Depth-milestone titles are biome-*named* so they extend when the
+  **P6 grid** (owner-flagged) deepens the world. Numbers pinned in
+  [`respec-numbers-2026-06-15.md`](planning/respec-numbers-2026-06-15.md) /
+  [`titles-numbers-2026-06-15.md`](planning/titles-numbers-2026-06-15.md). `check_quality --full`
+  green (9808); arch 0.
 - **#910 (2026-06-15, mining Slice C — the Home structure: character-card backdrop)** — the next
   mining-structures slice (the plan's last startable structure), built on a fresh resume now that
   **#905 (Forge)** shipped the generic `mining_structures` foundation; zero open PRs at start (no

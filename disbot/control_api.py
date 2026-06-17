@@ -28,6 +28,7 @@ Endpoints:
 
 * ``GET  /control/ping``                 — auth smoke.
 * ``GET  /control/authority``            — the identity→authority bridge (read).
+* ``GET  /control/manifest``             — the typed command + panel manifests (token-only).
 * ``POST /control/settings``             — front ``settings_mutation`` (capability-gated).
 * ``POST /control/help/overlay``         — front ``help_overlay_mutation.set_overlay_fields``.
 * ``POST /control/help/home``            — front ``help_overlay_mutation.set_home_message``.
@@ -48,11 +49,56 @@ import hmac
 import json
 import logging
 import os
+import time
 from typing import Any
 
 from aiohttp import web
 
 logger = logging.getLogger("bot.control_api")
+
+
+# ---------------------------------------------------------------------------
+# Write rate limiting (defense-in-depth — the dashboard already rate-limits)
+#
+# The control API is private-network + token-gated and the dashboard is its only
+# caller, but the dashboard is a public live surface, so a per-(guild, user) cap
+# on writes bounds an abusive/compromised client. Coarse, in-process, best-effort
+# — never the authority gate (the audited seam stays that). Reads are unlimited.
+# ---------------------------------------------------------------------------
+
+_WRITE_LIMIT_MAX = 60
+_WRITE_LIMIT_WINDOW = 60.0
+
+
+class _SlidingWindow:
+    """Allow at most ``max_events`` per ``window`` seconds for each key."""
+
+    def __init__(self, max_events: int, window: float) -> None:
+        self.max_events = max_events
+        self.window = window
+        self._hits: dict[str, list[float]] = {}
+
+    def allow(self, key: str, *, now: float | None = None) -> bool:
+        moment = time.monotonic() if now is None else now
+        cutoff = moment - self.window
+        hits = [t for t in self._hits.get(key, ()) if t > cutoff]
+        if len(hits) >= self.max_events:
+            self._hits[key] = hits
+            return False
+        hits.append(moment)
+        self._hits[key] = hits
+        return True
+
+    def reset(self) -> None:
+        self._hits.clear()
+
+
+_write_limiter = _SlidingWindow(_WRITE_LIMIT_MAX, _WRITE_LIMIT_WINDOW)
+
+
+def _reset_rate_limiter_for_tests() -> None:
+    """Clear the write-rate-limit state (test isolation)."""
+    _write_limiter.reset()
 
 
 # ---------------------------------------------------------------------------
@@ -226,6 +272,8 @@ async def _authed_write_context(
     member = resolve_member(guild, user_id)
     if member is None:
         raise _ControlError(403, f"user {user_id} is not a member of guild {guild_id}")
+    if not _write_limiter.allow(f"{guild.id}:{member.id}"):
+        raise _ControlError(429, "rate limit exceeded — too many control-API writes")
     return guild, member, body
 
 
@@ -496,6 +544,277 @@ async def _routing_set_handler(request: web.Request) -> web.Response:
 
 
 # ---------------------------------------------------------------------------
+# Guild-scoped read handlers (Phase E — "see-then-change")
+#
+# Until these existed, the live editors POSTed a new value but never showed the
+# server's CURRENT one — they wrote blind. Each read resolves the live member and
+# requires administrator (the same surface the editors gate on); the catalogue is
+# global defaults so it is token-only. All read-only, dormant without the token.
+# ---------------------------------------------------------------------------
+
+
+async def _authed_read_context(request: web.Request) -> tuple[Any, Any]:
+    """Auth + resolve the live member for a guild-scoped GET (query params).
+
+    Returns ``(guild, member)``. Raises :class:`_ControlError` for 401 (token),
+    400 (missing/non-int ``guild_id``/``user_id``), 404 (bot not in guild), or
+    403 (user not a live member). The read mirror of :func:`_authed_write_context`.
+    """
+    if not is_authorized(request.headers.get("Authorization"), control_token()):
+        raise _ControlError(401, "unauthorized")
+    try:
+        guild_id = int(request.query["guild_id"])
+        user_id = int(request.query["user_id"])
+    except (KeyError, ValueError) as exc:
+        raise _ControlError(
+            400,
+            "guild_id and user_id are required integer query params",
+        ) from exc
+
+    from core.runtime.guild_resources import resolve_member
+
+    bot = request.app["bot"]
+    guild = bot.get_guild(guild_id)
+    if guild is None:
+        raise _ControlError(404, f"bot is not in guild {guild_id}")
+    member = resolve_member(guild, user_id)
+    if member is None:
+        raise _ControlError(403, f"user {user_id} is not a member of guild {guild_id}")
+    return guild, member
+
+
+async def _resolve_guild_settings(guild_id: int) -> dict[str, list[dict[str, Any]]]:
+    """Every subsystem's current scalar settings for ``guild_id``.
+
+    Composes the canonical read path (``settings_resolution.resolve_batch`` —
+    value · provenance · valid) with the declaring ``SettingSpec`` metadata (type
+    · default · hint · allowed-values · governing capability) so the editor renders
+    current-vs-default and the right input without a second source. Grouped by
+    subsystem; subsystems with no settings are omitted.
+    """
+    from core.runtime.subsystem_schema import get_schema
+    from services.settings_resolution import resolve_batch
+    from utils.subsystem_registry import SUBSYSTEMS
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for subsystem in sorted(SUBSYSTEMS):
+        schema = get_schema(subsystem)
+        if schema is None or not schema.settings:
+            continue
+        spec_by_name = {spec.name: spec for spec in schema.settings}
+        items: list[dict[str, Any]] = []
+        for res in await resolve_batch(guild_id, subsystem):
+            spec = spec_by_name.get(res.name)
+            items.append(
+                {
+                    "name": res.name,
+                    "settings_key": getattr(spec, "settings_key", "") or "",
+                    "value": res.value,
+                    "default": res.default,
+                    "provenance": res.provenance,
+                    "valid": res.valid,
+                    "value_type": getattr(
+                        getattr(spec, "value_type", None),
+                        "__name__",
+                        "str",
+                    ),
+                    "hint": getattr(spec, "hint", "") or "",
+                    "allowed_values": list(getattr(spec, "allowed_values", ()) or ()),
+                    "capability_required": getattr(spec, "capability_required", "")
+                    or "",
+                },
+            )
+        if items:
+            grouped[subsystem] = items
+    return grouped
+
+
+async def _settings_current_handler(request: web.Request) -> web.Response:
+    """``GET /control/settings/current?guild_id=&user_id=`` → current values.
+
+    Administrator-gated (the editor surface). Returns every subsystem's resolved
+    current scalar settings so the editor shows current-vs-default, not a blank box.
+    """
+    try:
+        _guild, member = await _authed_read_context(request)
+    except _ControlError as err:
+        return _json_response({"error": err.message}, status=err.status)
+    if not _is_admin(member):
+        return _json_response(
+            {"error": "reading server settings requires administrator"},
+            status=403,
+        )
+    guild_id = int(request.query["guild_id"])
+    try:
+        subsystems = await _resolve_guild_settings(guild_id)
+    except Exception as exc:  # noqa: BLE001 - never 500 the whole read on one bad spec
+        return _seam_error_or_500(exc, "settings_current")
+    return _json_response({"ok": True, "guild_id": guild_id, "subsystems": subsystems})
+
+
+async def _help_overlay_get_handler(request: web.Request) -> web.Response:
+    """``GET /control/help/overlay?guild_id=&user_id=`` → current help overlay.
+
+    Administrator-gated. Returns the guild's per-entity overrides + Home message
+    (``home`` is ``None`` when the default frame renders).
+    """
+    try:
+        guild, member = await _authed_read_context(request)
+    except _ControlError as err:
+        return _json_response({"error": err.message}, status=err.status)
+    if not _is_admin(member):
+        return _json_response(
+            {"error": "reading help overlay requires administrator"},
+            status=403,
+        )
+
+    from services.help_overlay import get_guild_help_overlay
+
+    try:
+        overlay = await get_guild_help_overlay(guild.id)
+    except Exception as exc:  # noqa: BLE001
+        return _seam_error_or_500(exc, "help_overlay_read")
+
+    rows = [
+        {
+            "entity_kind": r.entity_kind,
+            "entity_key": r.entity_key,
+            "display_hidden": r.display_hidden,
+            "display_name": r.display_name,
+            "description": r.description,
+        }
+        for r in overlay.rows
+    ]
+    home = (
+        {
+            "title": overlay.home.title,
+            "body": overlay.home.body,
+            "color": overlay.home.color,
+        }
+        if overlay.home is not None
+        else None
+    )
+    return _json_response(
+        {"ok": True, "guild_id": guild.id, "rows": rows, "home": home},
+    )
+
+
+async def _help_catalogue_handler(request: web.Request) -> web.Response:
+    """``GET /control/help/catalogue`` → the editable hub/subsystem targets.
+
+    Token-only (global defaults, no guild data). Lets the editor offer a real
+    target picker + show each entity's default name/description (what an override
+    deviates from).
+    """
+    if not is_authorized(request.headers.get("Authorization"), control_token()):
+        return _unauthorized()
+
+    from services.help_catalogue import build_help_catalogue
+
+    try:
+        catalogue = build_help_catalogue()
+    except Exception as exc:  # noqa: BLE001
+        return _seam_error_or_500(exc, "help_catalogue")
+
+    hubs = [
+        {
+            "key": h.key,
+            "display_name": getattr(h.entry, "display_name", h.key),
+            "purpose": getattr(h.entry, "purpose", ""),
+            "minimum_tier": getattr(h.entry, "minimum_tier", "user"),
+            "host_subsystem": h.host_subsystem,
+        }
+        for h in catalogue.hubs
+    ]
+    subsystems = [
+        {
+            "key": s.key,
+            "display_name": s.display_name,
+            "description": s.description,
+            "emoji": s.emoji,
+            "visibility_tier": s.visibility_tier,
+            "parent_hub": s.parent_hub,
+            "top_level": s.top_level,
+        }
+        for s in catalogue.subsystems
+    ]
+    return _json_response({"ok": True, "hubs": hubs, "subsystems": subsystems})
+
+
+async def _manifest_handler(request: web.Request) -> web.Response:
+    """``GET /control/manifest`` → the typed command + panel manifests.
+
+    Token-only (global data, no guild/user — mirrors ``/control/help/catalogue``):
+    the command/panel surface is the bot's, not a guild's. Serves the cached
+    startup manifests and falls back to building them on demand (so the read works
+    even if a startup build was skipped). The command manifest's ``findings`` carry
+    the cross-manifest reconciliation drift (manifest spine PR3). Read-only.
+    """
+    if not is_authorized(request.headers.get("Authorization"), control_token()):
+        return _unauthorized()
+
+    from core.runtime import command_manifest, panel_manifest
+
+    bot = request.app["bot"]
+    try:
+        commands = command_manifest.get_cached_manifest()
+        if commands is None:
+            commands = command_manifest.build_and_cache_from_bot(bot)
+        panels = panel_manifest.get_cached_manifest()
+        if panels is None:
+            panels = panel_manifest.build_and_cache()
+    except Exception as exc:  # noqa: BLE001 - never 500 a read on a build hiccup
+        return _seam_error_or_500(exc, "manifest")
+
+    return _json_response(
+        {
+            "ok": True,
+            "commands": commands.to_dict(),
+            "panels": panels.to_dict(),
+        },
+    )
+
+
+async def _routing_get_handler(request: web.Request) -> web.Response:
+    """``GET /control/routing?guild_id=&user_id=`` → current cog-routing rows.
+
+    Administrator-gated. Returns every routing row for the guild (scope-ordered)
+    so the editor shows which cogs are currently disabled and where.
+    """
+    try:
+        guild, member = await _authed_read_context(request)
+    except _ControlError as err:
+        return _json_response({"error": err.message}, status=err.status)
+    if not _is_admin(member):
+        return _json_response(
+            {"error": "reading cog routing requires administrator"},
+            status=403,
+        )
+
+    from services.command_routing import list_for_guild
+
+    try:
+        raw = await list_for_guild(guild.id)
+    except Exception as exc:  # noqa: BLE001
+        return _seam_error_or_500(exc, "routing_read")
+
+    rows = [
+        {
+            "scope_type": r.get("scope_type"),
+            "scope_id": r.get("scope_id"),
+            "cog_name": r.get("cog_name"),
+            "enabled": r.get("enabled"),
+            "actor_id": r.get("actor_id"),
+            "updated_at": (
+                r["updated_at"].isoformat() if r.get("updated_at") is not None else None
+            ),
+        }
+        for r in raw
+    ]
+    return _json_response({"ok": True, "guild_id": guild.id, "rows": rows})
+
+
+# ---------------------------------------------------------------------------
 # Registration
 # ---------------------------------------------------------------------------
 
@@ -512,14 +831,23 @@ def register_control_routes(app: web.Application, bot: Any) -> bool:
         return False
     app.router.add_get("/control/ping", _ping_handler)
     app.router.add_get("/control/authority", _authority_handler)
+    # Phase E read endpoints (current state — so the editors stop writing blind).
+    app.router.add_get("/control/settings/current", _settings_current_handler)
+    app.router.add_get("/control/help/overlay", _help_overlay_get_handler)
+    app.router.add_get("/control/help/catalogue", _help_catalogue_handler)
+    app.router.add_get("/control/routing", _routing_get_handler)
+    # Manifest spine PR3 — the typed command/panel manifests (global, token-only).
+    app.router.add_get("/control/manifest", _manifest_handler)
     app.router.add_post("/control/settings", _settings_set_handler)
     app.router.add_post("/control/help/overlay", _help_overlay_handler)
     app.router.add_post("/control/help/home", _help_home_handler)
     app.router.add_post("/control/help/reset", _help_reset_handler)
     app.router.add_post("/control/routing", _routing_set_handler)
     logger.info(
-        "control_api: enabled — ping, authority (read) + settings, help/overlay, "
-        "help/home, help/reset, routing (write; auth + per-request authority)",
+        "control_api: enabled — ping, authority, manifest + reads "
+        "(settings/current, help/overlay, help/catalogue, routing) + writes "
+        "(settings, help/overlay, help/home, help/reset, routing; "
+        "auth + per-request authority)",
     )
     return True
 

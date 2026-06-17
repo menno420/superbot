@@ -41,6 +41,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_mk_reference_reply",
     ),
     (
+        "what support monkey knowledges are there",
+        "deterministic_mk_category_roster_reply",
+    ),
+    (
         "what does geraldo unlock at each level",
         "deterministic_geraldo_per_level_reply",
     ),
@@ -65,12 +69,36 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_paragon_cost_comparison_reply",
     ),
     (
+        "is quincy or benjamin cheaper to place",
+        "deterministic_hero_cost_comparison_reply",
+    ),
+    (
+        "which power is cheaper, cash drop or monkey boost",
+        "deterministic_power_cost_comparison_reply",
+    ),
+    (
         "which towers can pop lead without upgrades",
         "deterministic_capability_roster_reply",
     ),
     (
         "what are all the moab class bloons",
         "deterministic_bloon_roster_reply",
+    ),
+    (
+        "what does the camo property do",
+        "deterministic_bloon_modifier_reply",
+    ),
+    (
+        "what economy relics are there",
+        "deterministic_relic_roster_reply",
+    ),
+    (
+        "what abilities does quincy have",
+        "deterministic_hero_ability_roster_reply",
+    ),
+    (
+        "which bosses are immune to fire",
+        "deterministic_boss_immunity_reply",
     ),
 )
 

@@ -21,10 +21,19 @@
             class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == key else 'text-slate-300' }}"
           >{{ label }}</a>
         {% endfor %}
-        <a
-          href="/bugs#report"
-          class="ml-auto text-sm rounded bg-sky-600 hover:bg-sky-500 px-3 py-1 font-medium"
-        >Report a bug</a>
+        <div class="ml-auto flex items-center gap-3">
+          {% if current_user %}
+            <a href="/me" class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == 'me' else 'text-slate-300' }}">My overview</a>
+            <a href="/admin" class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == 'admin' else 'text-slate-300' }}">Control panel</a>
+            <span class="text-xs text-slate-400">{{ current_user.global_name or current_user.username }}</span>
+            <a href="/auth/logout" class="text-sm rounded bg-slate-700 hover:bg-slate-600 px-3 py-1">Sign out</a>
+          {% elif login_enabled %}
+            <a href="/auth/login" class="text-sm rounded bg-indigo-600 hover:bg-indigo-500 px-3 py-1 font-medium">Sign in with Discord</a>
+          {% else %}
+            <a href="/admin" class="text-sm hover:text-sky-300 {{ 'text-sky-400 font-semibold' if page == 'admin' else 'text-slate-300' }}">Control panel</a>
+          {% endif %}
+          <a href="/bugs#report" class="text-sm rounded bg-sky-600 hover:bg-sky-500 px-3 py-1 font-medium">Report a bug</a>
+        </div>
       </nav>
     </header>
     <main class="mx-auto max-w-5xl w-full px-4 py-8 flex-1">

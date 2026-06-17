@@ -382,6 +382,8 @@ _REQUIRED_RELIC_FIELDS = (
     "effect",
 )
 _RELIC_CATEGORIES = frozenset({"offense", "economy", "lives", "powerup", "utility"})
+# Stable display order for the category roster (BUG-0009 §7.6 relic roster floor).
+_RELIC_CATEGORY_ORDER = ("offense", "economy", "lives", "powerup", "utility")
 _REQUIRED_POWER_FIELDS = ("id", "canonical", "power_id", "monkey_money_cost")
 _REQUIRED_KNOWLEDGE_FIELDS = (
     "id",
@@ -392,6 +394,16 @@ _REQUIRED_KNOWLEDGE_FIELDS = (
 )
 _MK_CATEGORIES = frozenset(
     {"Primary", "Military", "Magic", "Support", "Heroes", "Powers"},
+)
+# The in-game Monkey Knowledge tab order — used to present the category roster
+# (`monkey_knowledge_by_category`) in the order a player sees the tabs.
+_MK_CATEGORY_ORDER: tuple[str, ...] = (
+    "Primary",
+    "Military",
+    "Magic",
+    "Support",
+    "Heroes",
+    "Powers",
 )
 _REQUIRED_GERALDO_FIELDS = ("id", "canonical", "cost", "unlock_level")
 _REQUIRED_BOSS_FIELDS = ("id", "canonical")
@@ -1420,6 +1432,33 @@ def get_monkey_knowledge(knowledge_id: str) -> MonkeyKnowledgeEntry | None:
     return None
 
 
+def monkey_knowledge_by_category() -> dict[str, tuple[MonkeyKnowledgeEntry, ...]]:
+    """The catalog's Monkey Knowledge grouped by its in-game tab (``category``).
+
+    The §7.6 *Monkey-Knowledge* member of the BUG-0009 roster family — the sibling
+    of the relic / capability rosters: "what Support monkey knowledges are there?",
+    "list all Military monkey knowledge". Returns every tab in the in-game tab
+    order (:data:`_MK_CATEGORY_ORDER`) mapped to its points sorted by canonical
+    name, so the floor reply OWNS the labelled grouping instead of letting the
+    model assemble (and mis-*bucket*) the list — every MK name is individually
+    grounded, so a mis-grouping (the exact owner-reported "related to the farm"
+    miss) slips past the value-only faithfulness guard.
+
+    A tab with no points is still present (an empty tuple) so a caller can answer
+    "no X monkey knowledge" honestly. Category validity is enforced at parse time
+    (``_parse_knowledge``), so an unknown bucket can never appear here.
+    """
+    grouped: dict[str, list[MonkeyKnowledgeEntry]] = {
+        cat: [] for cat in _MK_CATEGORY_ORDER
+    }
+    for mk in get_dataset().monkey_knowledge:
+        grouped.setdefault(mk.category, []).append(mk)
+    return {
+        cat: tuple(sorted(rows, key=lambda m: m.canonical.lower()))
+        for cat, rows in grouped.items()
+    }
+
+
 # --- Monkey-Knowledge ↔ tower relation (BUG-0009) ------------------------------
 # A Monkey Knowledge "references" a tower when its in-game description names the
 # tower, one of its upgrades, or a recognised alias. The dataset carries NO
@@ -1556,6 +1595,21 @@ def get_bloon(bloon_id: str) -> BloonEntry | None:
         if bloon.id == bloon_id:
             return bloon
     return None
+
+
+def bloon_modifiers() -> tuple[BloonEntry, ...]:
+    """The bloon *modifier* marker entries (Camo / Fortified / Regrow property).
+
+    In BTD6 camo / fortified / regrow are **universal modifiers** applied to *any*
+    bloon, not intrinsic per-type properties — so the catalog files them as
+    ``category == "modifier"`` pseudo-entries carrying the modifier's description,
+    distinct from the real bloon types. This reader exposes exactly those entries
+    (in dataset order) for the modifier *explainer* floor: asked "what does camo
+    do?" / "which bloons are camo?" the model would otherwise either explain it
+    wrong or assemble a misleading roster ([DDT] only) — the BUG-0009 class — so
+    the deterministic layer OWNS the grounded explanation.
+    """
+    return tuple(b for b in get_dataset().bloons if b.category == "modifier")
 
 
 def resolve_bloon_id(name: str) -> str | None:
@@ -2426,9 +2480,188 @@ def compare_paragon_costs(
     }
 
 
+def compare_hero_costs(
+    names: Sequence[str],
+    *,
+    difficulty: str = "medium",
+) -> dict[str, Any]:
+    """Deterministic base-cost ranking of two-or-more heroes.
+
+    The §7.5 *hero* member of the multi-entity comparison primitive (the sibling
+    of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs` /
+    :func:`compare_round_ranges` / :func:`compare_paragon_costs`). Answers "is
+    Quincy or Benjamin cheaper?" — difficulty-scale each named hero's stored
+    Medium ``base_cost`` once via the shared :mod:`utils.btd6.difficulty_costs`
+    multipliers, then rank/diff **in code** so the model never assembles the
+    comparison itself (the BUG-0009 "wrong assembly" class — a mis-stated
+    "cheaper" / wrong difference the value-only faithfulness guard cannot catch).
+    Ranked **ascending** (cheapest first) with a stable tie-break on the hero
+    name (several heroes share a placement cost, so an equal-cost tie is a real
+    outcome).
+
+    Each name is resolved with the shared surface resolver (canonical, id, or
+    alias) and **deduped** on the resolved hero id. Returns ``{"found": False,
+    ...}`` when fewer than two distinct heroes resolve (an unknown name is
+    skipped, never guessed), so a caller can fall through to the model rather
+    than answer a degenerate comparison.
+    """
+    from utils.btd6 import difficulty_costs
+
+    try:
+        diff = difficulty_costs.normalize_difficulty(difficulty)
+    except ValueError:
+        return {"found": False, "note": f"unknown difficulty: {difficulty!r}"}
+
+    heroes = get_dataset().heroes
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for name in names:
+        hero = _find_by_surface(heroes, name)
+        if hero is None:
+            continue
+        if hero.id in seen:
+            continue
+        seen.add(hero.id)
+        entries.append(
+            {
+                "hero_id": hero.id,
+                "name": hero.canonical,
+                "base_cost": difficulty_costs.cost_for_difficulty(
+                    hero.base_cost,
+                    diff,
+                ),
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct resolvable heroes",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["base_cost"], e["name"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "difficulty": diff,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["base_cost"] - cheapest["base_cost"],
+        "all_equal": cheapest["base_cost"] == most_expensive["base_cost"],
+        "note": (f"hero base placement cost at {diff} pricing; ranked ascending."),
+    }
+
+
+def compare_power_costs(names: Sequence[str]) -> dict[str, Any]:
+    """Deterministic monkey-money ranking of two-or-more activated-ability powers.
+
+    The §7.5 *power* member of the multi-entity cost-comparison primitive (the
+    sibling of :func:`compare_crosspath_costs` / :func:`compare_difficulty_costs`
+    / :func:`compare_round_ranges` / :func:`compare_paragon_costs` /
+    :func:`compare_hero_costs`). Answers "is Cash Drop or Monkey Boost cheaper?" —
+    rank each named power's in-store ``monkey_money_cost``, then rank/diff **in
+    code** so the model never assembles the comparison itself (the BUG-0009 "wrong
+    assembly" class — a mis-stated "cheaper" / wrong difference the value-only
+    faithfulness guard cannot catch).
+
+    Powers are bought with **monkey money** at a *fixed* store price — there is no
+    in-game-cash difficulty scaling — so this primitive has **no difficulty axis**
+    (the one shape difference from :func:`compare_hero_costs`). Ranked
+    **ascending** (cheapest first) with a stable tie-break on the power name (many
+    powers share a 50-MM price, so an equal-cost tie is a common real outcome).
+
+    Each name is resolved with the shared :func:`find_power` resolver (id,
+    game-native id, canonical, or unique partial) and **deduped** on the resolved
+    power id. Returns ``{"found": False, ...}`` when fewer than two distinct powers
+    resolve (an unknown name is skipped, never guessed), so a caller can fall
+    through to the model rather than answer a degenerate comparison.
+    """
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for name in names:
+        power = find_power(name)
+        if power is None:
+            continue
+        if power.id in seen:
+            continue
+        seen.add(power.id)
+        entries.append(
+            {
+                "power_id": power.id,
+                "name": power.canonical,
+                "cost": power.monkey_money_cost,
+            },
+        )
+
+    if len(entries) < 2:
+        return {
+            "found": False,
+            "note": "need at least two distinct resolvable powers",
+            "priced": len(entries),
+        }
+
+    ranked = sorted(entries, key=lambda e: (e["cost"], e["name"]))
+    cheapest = ranked[0]
+    most_expensive = ranked[-1]
+    return {
+        "found": True,
+        "entries": ranked,
+        "cheapest": cheapest,
+        "most_expensive": most_expensive,
+        "spread": most_expensive["cost"] - cheapest["cost"],
+        "all_equal": cheapest["cost"] == most_expensive["cost"],
+        "note": "power store price in monkey money; ranked ascending.",
+    }
+
+
+def hero_abilities(name: str) -> tuple[HeroAbility, ...] | None:
+    """One hero's abilities, ascending by unlock level, or ``None`` if unknown.
+
+    The §7.6 *hero-ability* roster member of the BUG-0009 family. Each hero in
+    ``heroes.json`` carries ``abilities[{level, name, summary}]``; this returns
+    them level-sorted so the floor OWNS the labelled list rather than letting the
+    model assemble (and possibly mis-order / mislabel) it — every ability name is
+    individually grounded, so a wrong level/ordering slips past the value-only
+    faithfulness guard. The name is resolved with the shared surface resolver
+    (canonical, id, or alias); an unresolvable name returns ``None`` (never
+    guessed), so a caller can fall through to the model.
+    """
+    hero = _find_by_surface(get_dataset().heroes, name)
+    if hero is None:
+        return None
+    return tuple(sorted(hero.abilities, key=lambda ability: ability.level))
+
+
 def list_ct_relics() -> tuple[RelicEntry, ...]:
     """Every Contested Territory relic in the catalog (possibly empty)."""
     return get_dataset().ct_relics
+
+
+def relics_by_category() -> dict[str, tuple[RelicEntry, ...]]:
+    """The catalog's relics grouped by ``category``, each group name-sorted.
+
+    The §7.6 *relic* member of the BUG-0009 roster family (the sibling of the
+    capability / bloon rosters): "what economy relics are there?", "list all
+    offensive relics". Returns every known category in a fixed display order
+    (:data:`_RELIC_CATEGORY_ORDER`) mapped to its relics sorted by canonical name,
+    so the floor reply OWNS the labelled grouping instead of letting the model
+    assemble (and possibly mis-bucket) the list — every relic name is individually
+    grounded, so a mis-*grouping* slips past the value-only faithfulness guard.
+
+    A category with no relics is still present (an empty tuple) so a caller can
+    answer "no X relics" honestly. Category validity is already enforced at parse
+    time (``_parse_relic``), so an unknown bucket can never appear here.
+    """
+    grouped: dict[str, list[RelicEntry]] = {cat: [] for cat in _RELIC_CATEGORY_ORDER}
+    for relic in get_dataset().ct_relics:
+        grouped.setdefault(relic.category, []).append(relic)
+    return {
+        cat: tuple(sorted(rels, key=lambda r: r.canonical))
+        for cat, rels in grouped.items()
+    }
 
 
 def get_ct_relic(relic_id: str) -> RelicEntry | None:

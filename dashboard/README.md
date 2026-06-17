@@ -36,6 +36,24 @@ and the *code locations* that read them — it never reads, stores, or renders a
 **value**, and it never opens an `.env` file. Railway stays the single source of truth for
 the values; managed value editing (behind owner login, masked) is a later Phase 3 slice.
 
+## Control panel (Discord login + live editors)
+
+Beyond the read-only pages, the dashboard is a **free, multi-user control panel** (`/admin`): sign in
+with Discord, pick a server you administer, and edit its **settings**, **help appearance**, and
+**cog enable/disable** — applied live. Every write goes to the **bot's control API**
+(`disbot/control_api.py`) over Railway's private network, and the **bot** resolves the live member and
+writes through its existing **audited seam** (settings/help/routing). The website never writes the DB
+and never decides permissions — the browser's identity claim is re-checked by the bot on every edit.
+
+**Dormant by default.** With nothing configured, `/admin` shows setup instructions and the read-only
+site is unchanged. To switch it on, set on this service: `DISCORD_OAUTH_CLIENT_ID`,
+`DISCORD_OAUTH_CLIENT_SECRET`, `DISCORD_OAUTH_REDIRECT_URI`
+(`https://superbot-dashboard.up.railway.app/auth/callback`), `DASHBOARD_SESSION_SECRET`,
+`CONTROL_API_TOKEN` (+ `CONTROL_API_URL` if not the default `http://worker.railway.internal:8080`);
+and the **same** `CONTROL_API_TOKEN` on the bot worker. The login session is a small stdlib
+HMAC-signed cookie (`websession.py`) and forms are parsed with `urllib` — **no** `itsdangerous` /
+`python-multipart`, so the app stays verifiable with just fastapi + jinja2 + httpx.
+
 ## Run locally
 
 ```bash

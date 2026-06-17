@@ -36,6 +36,21 @@ session. The docs are not bureaucracy and they are not done — they are a livin
 system that every session is expected to leave **a little better than it found
 it**.
 
+**External grounding (Anthropic, "Agentic coding and persistent returns to
+expertise", 2026 — analysis of ~400K Claude Code sessions Oct 2025–Apr 2026):**
+the study's two headline findings are independent confirmation of this model, not
+just our preference. (1) Across sessions, humans make ~70% of *planning* decisions
+while agents make ~80% of *execution* decisions — "people decide *what*, agents
+decide *how*" — a near-verbatim match to "the maintainer designs and visualizes;
+you build" (Q-0014: approving a goal approves the path to it). (2) **Domain
+expertise predicts success more than coding background**: non-tech professionals
+reached verified success within ~4 points of software engineers (≈26% vs ≈30%),
+and clear specification is the single biggest learnable success lever. That is the
+empirical case for *this* docs/orientation system — it exists to turn the
+maintainer's domain expertise into the precise specification the agent needs,
+compensating for his being a non-coder. The reading cost above is buying the exact
+thing the data says drives outcomes.
+
 **So, to every future agent: improving the docs / orientation / tooling / journal
 is first-class work, never wasted effort and never "extra."** When you make the
 next session faster or more correct — you tighten an orientation route, capture a

@@ -25,10 +25,14 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
-- `claude/control-api-write-side` · control API **mutation endpoints** (write side, owner directive) —
-  POST over the existing audited seams (`settings_mutation` · `help_overlay_mutation` ·
-  `command_routing`); dormant-by-default + per-request live-member authority · `disbot/control_api.py` ·
-  `tests/unit/runtime/test_control_api.py` · 2026-06-16
+- `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
+  read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
+  repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
+  `docs/current-state.md` · 2026-06-16
+- `claude/dashboard-vision-review` · **review the finalized-state vision plan** (owner directive) +
+  session close — reviewer note (status correction + 4 refinements) on
+  `dashboard-vision-finalized-state.md`; fold the write-side PRs into the ledger; mark the control panel
+  LIVE · `docs/planning/` · `docs/current-state.md` · 2026-06-16
 - `claude/dashboard-data-integrity-guard` · `scripts/check_dashboard_data.py` — stdlib integrity
   guard for the exported `dashboard.json` (cog→subsystem resolution · count integrity · required
   fields) + test · `scripts/` · `tests/unit/scripts/` · 2026-06-16
@@ -45,6 +49,23 @@ living ledger (`docs/current-state.md`).
 
 ## Recently cleared
 
+- `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +
+  cross-manifest reconciliation (`dangling_panel_action`) + AST-vs-panel-registry drift guard +
+  deploy-SHA badge · 2026-06-17 · **PR #1020 (auto-merge on green)**
+- `claude/magical-rubin-p92toz` · manifest spine **PR2** — panel registry + `PanelManifest`
+  (`core/runtime/panel_manifest.py` + `persistent_views` PANEL_ID/enumeration + command-panel join) ·
+  2026-06-17 · **PR #1019 (auto-merge on green)**
+- `claude/inspiring-wozniak-i92q58` · dashboard **Phase E** — control-API read endpoints + see-then-change
+  editor · 2026-06-17 · **PR #1013 (merged)**
+- `claude/inspiring-wozniak-i92q58` · dashboard **R3** — live-surface hardening (CSRF + rate-limiting) ·
+  2026-06-17 · **PR #1014 (merged)**
+- `claude/inspiring-wozniak-i92q58` · dashboard **vision-roadmap reconcile** (Phase C read workspace was
+  built in parallel by **#1015** and merged first — authoritative; this run's duplicate was dropped) ·
+  2026-06-17 · **PR #1016**
+- `claude/health-server-ipv6-bind` · health server IPv6 dual-stack bind (Railway private networking) · 2026-06-16 · **PR #1001 (merged)**
+- `claude/inspiring-wozniak-i92q58` · dashboard finalized-state vision plan · 2026-06-16 · **PR #1002 (merged)**
+- `claude/control-panel-web` · control panel — Discord OAuth login + editors (write side step 2) · 2026-06-16 · **PR #996 (merged)**
+- `claude/control-api-write-side` · control API mutation endpoints (write side step 1) · 2026-06-16 · **PR #993 (merged)**
 - `claude/practical-turing-pnppjf` · dashboard `/commands` management surface (READ side) — Manage
   button on every command + cog, per-item panels + per-command alias box · 2026-06-16 · **PR #988 (merged)**
 - `claude/kind-carson-736rnk` · dashboard `/settings` + `/access` read-only pages + live help-editor

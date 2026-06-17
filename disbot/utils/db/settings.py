@@ -9,6 +9,14 @@ from __future__ import annotations
 
 from utils.db import pool
 
+# Canonical global-scope sentinel. A row at ``guild_id = 0`` is the
+# owner's default for every server (resolved per-guild → global → spec
+# default by :func:`services.settings_resolution.resolve_setting`). The
+# repo already uses ``guild_id = 0`` as the global/no-guild sentinel in
+# other stores (e.g. ``utils.db.games.mining``); this names it once so
+# the settings tier and the mutation pipeline share one source of truth.
+GLOBAL_GUILD_ID = 0
+
 
 async def get_setting(guild_id: int, key: str, default: str = "") -> str:
     row = await pool.fetchone(

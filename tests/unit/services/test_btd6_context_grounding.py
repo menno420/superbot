@@ -565,6 +565,47 @@ def test_deterministic_roster_reply_maps_water_land_removables():
     assert r("which water map is best for beginners") is None
 
 
+def test_deterministic_roster_reply_lists_bosses():
+    # "list all bosses" floored to the 7 grounded bosses — the model can omit or
+    # hallucinate one (BUG-0009 wrong-assembly), and there is no per-boss-cost
+    # restatement risk, only the membership of the set.
+    r = btd6_context_service.deterministic_roster_reply
+    bosses = r("list all bosses")
+    assert bosses is not None and "BTD6 Bosses (7)" in bosses
+    for name in (
+        "Blastapopoulos",
+        "Bloonarius",
+        "Diamondback",
+        "Dreadbloon",
+        "Lych",
+        "Phayze",
+        "Vortex",
+    ):
+        assert name in bosses
+    # "are there" routes it in too; a single-boss stats question still reaches
+    # the model (no list intent).
+    assert r("what bosses are there in btd6") is not None
+    assert r("how much health does Lych have") is None
+
+
+def test_deterministic_roster_reply_filters_maps_by_named_difficulty():
+    # A named difficulty filters the map roster to that tier instead of dumping
+    # all 86 grouped — the user who asked for Expert maps got the 13, not 86.
+    r = btd6_context_service.deterministic_roster_reply
+    expert = r("list all expert maps")
+    assert expert is not None and "BTD6 Expert Maps (13)" in expert
+    assert "Infernal" in expert  # an Expert map is present
+    # "what beginner maps are there" routes via "are there".
+    beginner = r("what beginner maps are there")
+    assert beginner is not None and "Beginner Maps (26)" in beginner
+    # A count question for a named difficulty answers the count alone.
+    count = r("how many expert maps are there")
+    assert count is not None and "13 Expert maps" in count
+    # No named difficulty still lists all maps grouped (unchanged behaviour).
+    everything = r("list all maps")
+    assert everything is not None and "BTD6 Maps (86)" in everything
+
+
 # --- hero per-level game descriptions (step 4b) -----------------------------
 
 
@@ -760,14 +801,12 @@ def test_deterministic_meta_reply_skips_entity_and_off_domain_questions():
         "what can we ask you",  # general — get_ai_tool_catalog owns it
         "can I ask a friend to play btd6 with me",  # ask targets a 3rd party
     ):
-        assert btd6_context_service.deterministic_meta_reply(question) is None, (
-            question
-        )
+        assert btd6_context_service.deterministic_meta_reply(question) is None, question
 
 
 @pytest.mark.asyncio
 async def test_boss_per_tier_health_grounds():
-    """"Base HP of Lych per tier" must ground the figures, not the teaser —
+    """ "Base HP of Lych per tier" must ground the figures, not the teaser —
     the old fact said "5 tier(s) on record" with no number, so a healthy
     answer had nothing to ground and the floor refused (live, 2026-06-10).
     The line is variant-labeled "Standard (non-Elite)" since BUG-0002."""
@@ -822,7 +861,7 @@ async def test_pricing_line_quantity_crosspath_production_phrasing():
 
 @pytest.mark.asyncio
 async def test_pricing_line_word_number_quantity():
-    """"five 0-2-4 dart monkeys" (the §7.5 acceptance phrasing) — word
+    """ "five 0-2-4 dart monkeys" (the §7.5 acceptance phrasing) — word
     numbers count as quantities."""
     ctx = await btd6_context_service.build(
         "how much do five 0-2-4 dart monkeys cost on hard",
@@ -844,7 +883,7 @@ async def test_pricing_line_unit_only_without_quantity():
 
 @pytest.mark.asyncio
 async def test_pricing_line_bulk_base_towers_without_crosspath():
-    """"how much do 10 despos cost" — quantity straight before the tower
+    """ "how much do 10 despos cost" — quantity straight before the tower
     name prices N base towers."""
     ctx = await btd6_context_service.build("how much do 10 despos cost on impop")
     pricing = [f for f in ctx.facts if f.startswith("[btd6_pricing]")]
@@ -870,9 +909,7 @@ async def test_boss_elite_honesty_note_when_dataset_predates_backfill(monkeypatc
     from services import btd6_data_service
 
     real = btd6_data_service.get_dataset()
-    stripped = tuple(
-        dataclasses.replace(b, elite_tiers=()) for b in real.bosses
-    )
+    stripped = tuple(dataclasses.replace(b, elite_tiers=()) for b in real.bosses)
     monkeypatch.setattr(
         btd6_data_service,
         "get_dataset",
