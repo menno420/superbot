@@ -24,6 +24,7 @@ from services import settings_resolution as sr_mod
 from services.settings_mutation import (
     EVT_SETTINGS_CHANGED,
     InvalidActorTypeError,
+    InvalidScopeError,
     SettingsCoercionError,
     SettingsMutationDisabledError,
     SettingsMutationPipeline,
@@ -1029,3 +1030,156 @@ async def test_cross_guild_actor_denied(_isolated_state):
             target, "xp", "xp_min", 5, foreign_admin
         )
     assert _isolated_state["audit_log"] == []
+
+
+# ---------------------------------------------------------------------------
+# Global scope — the owner's cross-server default (guild_id = GLOBAL_GUILD_ID)
+# ---------------------------------------------------------------------------
+
+
+_OWNER_ID = 999_000_111
+
+
+def _set_owner(monkeypatch, owner_id: int | None = _OWNER_ID) -> None:
+    """Point ``config.BOT_OWNER_USER_ID`` at a known owner for the test.
+
+    ``_validate_global_authority`` imports it function-locally, so patching
+    the ``config`` module attribute is sufficient.
+    """
+    import config
+
+    monkeypatch.setattr(config, "BOT_OWNER_USER_ID", owner_id)
+
+
+@pytest.mark.asyncio
+async def test_global_write_by_owner_lands_at_guild_zero(_isolated_state, monkeypatch):
+    _set_owner(monkeypatch)
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    owner = _FakeMember(_OWNER_ID, guild=_FakeGuild(1), tier="user")
+    result = await SettingsMutationPipeline().set_value(
+        None, "xp", "xp_min", 42, owner, scope="global"
+    )
+    assert result.new_value == 42
+    assert result.guild_id == 0  # GLOBAL_GUILD_ID
+    # The KV row + audit row both land at guild 0.
+    assert _isolated_state["kv"][(0, "XP_MIN")] == "42"
+    audit = _isolated_state["audit_log"][0]
+    assert audit["guild_id"] == 0
+    # The settings.changed event fired at the global scope id.
+    changed = [
+        e for e in _isolated_state["emitted"] if e["event"] == EVT_SETTINGS_CHANGED
+    ]
+    assert len(changed) == 1
+    assert changed[0]["guild_id"] == 0
+
+
+@pytest.mark.asyncio
+async def test_global_write_inherited_by_a_guild(_isolated_state, monkeypatch):
+    """A global write becomes the resolved value for a guild with no own row."""
+    from services.settings_resolution import resolve_setting
+
+    _set_owner(monkeypatch)
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    owner = _FakeMember(_OWNER_ID, guild=_FakeGuild(1), tier="user")
+    await SettingsMutationPipeline().set_value(
+        None, "xp", "xp_min", 42, owner, scope="global"
+    )
+    # A guild that never set xp_min now resolves to the global value.
+    res = await resolve_setting(555, "xp", "xp_min")
+    assert res is not None
+    assert res.value == 42
+    assert res.provenance == "global_kv"
+
+
+@pytest.mark.asyncio
+async def test_global_write_by_non_owner_denied(_isolated_state, monkeypatch):
+    _set_owner(monkeypatch)
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    # A *server admin* who is not the bot owner cannot write global scope.
+    not_owner = _FakeMember(7, guild=_FakeGuild(1), tier="administrator")
+    with pytest.raises(UnauthorizedSettingsMutationError):
+        await SettingsMutationPipeline().set_value(
+            None, "xp", "xp_min", 42, not_owner, scope="global"
+        )
+    assert _isolated_state["audit_log"] == []
+
+
+@pytest.mark.asyncio
+async def test_global_write_owner_unset_denied(_isolated_state, monkeypatch):
+    """With no configured owner, global scope is closed (never wide-open)."""
+    _set_owner(monkeypatch, owner_id=None)
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    someone = _FakeMember(7, guild=_FakeGuild(1), tier="administrator")
+    with pytest.raises(UnauthorizedSettingsMutationError):
+        await SettingsMutationPipeline().set_value(
+            None, "xp", "xp_min", 42, someone, scope="global"
+        )
+
+
+@pytest.mark.asyncio
+async def test_global_write_system_actor_bypasses(_isolated_state, monkeypatch):
+    _set_owner(monkeypatch, owner_id=None)  # owner unset, but system bypasses
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    result = await SettingsMutationPipeline().set_value(
+        None, "xp", "xp_min", 42, None, scope="global", actor_type="system"
+    )
+    assert result.new_value == 42
+    assert result.guild_id == 0
+
+
+@pytest.mark.asyncio
+async def test_invalid_scope_rejected(_isolated_state):
+    _register(
+        "xp",
+        SettingSpec(name="xp_min", value_type=int, default=1, settings_key="XP_MIN"),
+    )
+    guild = _FakeGuild(1)
+    actor = _FakeMember(7, guild=guild, tier="administrator")
+    with pytest.raises(InvalidScopeError):
+        await SettingsMutationPipeline().set_value(
+            guild, "xp", "xp_min", 5, actor, scope="planet"
+        )
+
+
+@pytest.mark.asyncio
+async def test_global_write_skips_ai_projection(_isolated_state, monkeypatch):
+    """A global AI write must NOT project into the per-guild ai_guild_policy."""
+    _set_owner(monkeypatch)
+    _register(
+        "ai",
+        SettingSpec(
+            name="ai_enabled",
+            value_type=bool,
+            default=False,
+            settings_key="AI_ENABLED",
+        ),
+    )
+
+    # Make the key projectable so the per-guild branch *would* fire.
+    from services import ai_policy_mutation
+
+    monkeypatch.setattr(
+        ai_policy_mutation, "projectable_keys", lambda: frozenset({"AI_ENABLED"})
+    )
+
+    owner = _FakeMember(_OWNER_ID, guild=_FakeGuild(1), tier="user")
+    await SettingsMutationPipeline().set_value(
+        None, "ai", "ai_enabled", True, owner, scope="global"
+    )
+    # No projection call for a global write.
+    assert _isolated_state["projection_calls"] == []
