@@ -57,6 +57,7 @@ GLOBAL_RESET_HOOKS: tuple[tuple[str, str], ...] = (
     ("core.runtime.settings_registry", "_reset_for_tests"),
     ("core.runtime.command_surface_ledger", "_reset_for_tests"),
     ("core.runtime.command_manifest", "_reset_for_tests"),
+    ("core.runtime.panel_manifest", "_reset_for_tests"),
     ("core.runtime.guild_config", "_reset_for_tests"),
     ("core.runtime.user_config", "_reset_for_tests"),
     ("core.runtime.scope_locks", "_reset_for_tests"),

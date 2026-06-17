@@ -60,9 +60,7 @@ def test_projects_every_ledger_entry_exactly_once():
             _e("warn", "ModCog", "moderation"),
             _e("xp", "XPCog", "xp"),
         ),
-        slash=(
-            _e("ping", "CoreCog", None, kind="slash"),
-        ),
+        slash=(_e("ping", "CoreCog", None, kind="slash"),),
     )
     manifest = cm.build_command_manifest(ledger)
     # Count parity: prefix entries + slash entries, no more, no fewer.
@@ -116,6 +114,36 @@ def test_field_mapping_from_ledger_entry():
 
 
 # ---------------------------------------------------------------------------
+# Panel join (manifest spine PR2)
+# ---------------------------------------------------------------------------
+
+
+def test_panels_joined_by_subsystem():
+    ledger = _ledger(
+        entries=(
+            _e("warn", "ModCog", "moderation"),
+            _e("ask", "AICog", "ai"),
+            _e("orphan", "MiscCog", "no_panels"),
+        ),
+    )
+    pmap = {"moderation": ("moderation",), "ai": ("ai",)}
+    manifest = cm.build_command_manifest(ledger, panels_by_subsystem=pmap)
+    by_name = {c.qualified_name: c for c in manifest.commands}
+    assert by_name["warn"].panels == ("moderation",)
+    assert by_name["ask"].panels == ("ai",)
+    # A subsystem with no panel — or no subsystem at all — joins to nothing.
+    assert by_name["orphan"].panels == ()
+    # actions stays deferred (no declared button→command binding yet).
+    assert by_name["warn"].actions == ()
+
+
+def test_panels_default_empty_without_join():
+    ledger = _ledger((_e("warn", "ModCog", "moderation"),))
+    manifest = cm.build_command_manifest(ledger)
+    assert manifest.commands[0].panels == ()
+
+
+# ---------------------------------------------------------------------------
 # Envelope + to_dict export shape
 # ---------------------------------------------------------------------------
 
@@ -133,11 +161,7 @@ def test_envelope_fields():
 
 
 def test_to_dict_schema_shape():
-    manifest = cm.build_command_manifest(
-        _ledger(
-            (_e("warn", "ModCog", "moderation"),)
-        )
-    )
+    manifest = cm.build_command_manifest(_ledger((_e("warn", "ModCog", "moderation"),)))
     d = manifest.to_dict()
     assert set(d) == {"version", "generated_at", "bot_build", "commands", "findings"}
     assert d["findings"] == []
@@ -189,12 +213,8 @@ def test_diagnostics_snapshot_built():
 
     cm.build_and_cache(
         _ledger(
-            entries=(
-                _e("warn", "ModCog", "mod"),
-            ),
-            slash=(
-                _e("ping", "C", None, kind="slash"),
-            ),
+            entries=(_e("warn", "ModCog", "mod"),),
+            slash=(_e("ping", "C", None, kind="slash"),),
         )
     )
     snap = diagnostics_service.snapshot("command_manifest")

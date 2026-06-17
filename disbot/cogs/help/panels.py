@@ -128,6 +128,9 @@ class HelpPanelView(PersistentView):
     """
 
     SUBSYSTEM = "help"
+    # Two persistent panels share the "help" subsystem; declare distinct
+    # manifest ids (manifest spine PR2) so both surface in the PanelManifest.
+    PANEL_ID = "help:nav"
 
     def __init__(
         self,
@@ -367,6 +370,8 @@ class HelpCategoryView(PersistentView):
     """
 
     SUBSYSTEM = "help"
+    # Sibling of HelpPanelView under the "help" subsystem — distinct manifest id.
+    PANEL_ID = "help:categories"
 
     def __init__(
         self,

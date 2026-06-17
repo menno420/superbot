@@ -215,8 +215,22 @@ Source code and merged PRs win over anything written here.
   `command_manifest` diagnostics provider, with the manifest-faithfully-projects-ledger CI invariant
   (the first reconciliation test that makes the metadata trustworthy). AST stays drift-detection only.
   Deferred fields (source/panels/actions/related_settings/capability_required) are shape-pinned but
-  empty. **Next: PR2** panel registry + `PanelManifest` (the L3 panel-editor prerequisite) — sequenced
-  in [`manifest-spine-execution-plan-2026-06-17.md`](planning/manifest-spine-execution-plan-2026-06-17.md).
+  empty. PR2 (panel registry + `PanelManifest`) shipped #1019.
+- **#1019 (2026-06-17, manifest spine PR2 — panel registry + PanelManifest)** — scheduled dispatch,
+  empty work order → advanced the manifest-spine thread (PR1 `CommandManifest` shipped #1018; the
+  execution plan + `current-state` named PR2 next; both open PRs Hermes-gated). `core/runtime/panel_manifest.py`
+  projects the **persistent-view registry** (the panels with stable static custom_ids that survive
+  restart — the manageable ones) into a typed `PanelManifest`, built **at startup from the runtime
+  registry** (mirroring PR1's runtime-truth, not AST): each `PersistentView` is instantiated arg-free
+  and its real components introspected into `PanelButton`s (`action_id`/`custom_id`/`label`/`row`;
+  `command` deferred). `persistent_views.py` gained a declarative `PANEL_ID` + faithful
+  `iter_registered_view_classes` so the two `help` panels (collapsed in the subsystem-keyed recovery
+  dict) both surface (10 panels, 67 buttons live). `CommandManifestEntry.panels` back-populated by a
+  subsystem join (`actions` deferred — no declared button→command binding). `panel_manifest` diagnostics
+  provider + startup_outcome phase. Reconciliation test round-trips every manifest button against a fresh
+  view-class instantiation. `check_quality --full` green (10414) · arch 0 · +20 tests. **Next: PR3** —
+  control-API `manifest` read + `dashboard.json` export + the AST drift guard (sequenced in
+  [`manifest-spine-execution-plan-2026-06-17.md`](planning/manifest-spine-execution-plan-2026-06-17.md)).
 - **#1017 (2026-06-17, settings global tier — per-guild → global → default)** — scheduled dispatch,
   empty work order → advanced the active dashboard thread's next *ungated runtime* slice (the
   live-editor plan's settings-editor phase ②, the owner's "change things globally" ask).

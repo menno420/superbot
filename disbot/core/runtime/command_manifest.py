@@ -139,7 +139,11 @@ def _qualified_name(entry: CommandSurfaceEntry) -> str:
     return entry.name
 
 
-def _entry_from_ledger(entry: CommandSurfaceEntry) -> CommandManifestEntry:
+def _entry_from_ledger(
+    entry: CommandSurfaceEntry,
+    *,
+    panels: tuple[str, ...] = (),
+) -> CommandManifestEntry:
     return CommandManifestEntry(
         qualified_name=_qualified_name(entry),
         kind=entry.kind,
@@ -151,6 +155,7 @@ def _entry_from_ledger(entry: CommandSurfaceEntry) -> CommandManifestEntry:
         aliases=entry.aliases,
         discord_hidden=entry.discord_hidden,
         runtime_verified=True,
+        panels=panels,
     )
 
 
@@ -159,6 +164,7 @@ def build_command_manifest(
     *,
     bot_build: str = "",
     now: datetime.datetime | None = None,
+    panels_by_subsystem: dict[str, tuple[str, ...]] | None = None,
 ) -> CommandManifest:
     """Project a ``CommandSurfaceLedger`` into a typed ``CommandManifest``.
 
@@ -166,10 +172,18 @@ def build_command_manifest(
     (``ledger.entries``) and slash (``ledger.slash_entries``) routes are
     projected, in that order. ``bot_build`` defaults to empty — a later
     slice will source it from the deploy SHA.
+
+    ``panels_by_subsystem`` (manifest spine PR2) is the
+    ``subsystem -> (panel_id, ...)`` map from the panel manifest: when given, a
+    command's ``panels`` is the panel ids registered under its subsystem (a
+    real, verifiable subsystem-level association). Per-button ``actions`` stay
+    deferred — there is no declared button→command binding yet.
     """
     generated_at = (now or datetime.datetime.now(datetime.timezone.utc)).isoformat()
+    pmap = panels_by_subsystem or {}
     commands = tuple(
-        _entry_from_ledger(e) for e in (*ledger.entries, *ledger.slash_entries)
+        _entry_from_ledger(e, panels=pmap.get(e.subsystem or "", ()))
+        for e in (*ledger.entries, *ledger.slash_entries)
     )
     return CommandManifest(
         version=MANIFEST_VERSION,
@@ -191,10 +205,15 @@ def build_and_cache(
     ledger: CommandSurfaceLedger,
     *,
     bot_build: str = "",
+    panels_by_subsystem: dict[str, tuple[str, ...]] | None = None,
 ) -> CommandManifest:
     """Project ``ledger`` and cache the result for diagnostics access."""
     global _CACHED
-    manifest = build_command_manifest(ledger, bot_build=bot_build)
+    manifest = build_command_manifest(
+        ledger,
+        bot_build=bot_build,
+        panels_by_subsystem=panels_by_subsystem,
+    )
     _CACHED = manifest
     return manifest
 
@@ -204,14 +223,18 @@ def build_and_cache_from_bot(bot: object, *, bot_build: str = "") -> CommandMani
 
     Prefers the already-cached ledger (the startup path builds it just
     before this) and falls back to building it, so the manifest never
-    forces a second surface walk.
+    forces a second surface walk. When the panel manifest has been built
+    (startup builds it first), its ``subsystem -> panel_ids`` map is joined
+    in so each command carries its subsystem's ``panels``.
     """
-    from core.runtime import command_surface_ledger
+    from core.runtime import command_surface_ledger, panel_manifest
 
     ledger = command_surface_ledger.get_cached_ledger()
     if ledger is None:
         ledger = command_surface_ledger.build_ledger(bot)
-    return build_and_cache(ledger, bot_build=bot_build)
+    pmf = panel_manifest.get_cached_manifest()
+    pmap = panel_manifest.panels_by_subsystem(pmf) if pmf is not None else None
+    return build_and_cache(ledger, bot_build=bot_build, panels_by_subsystem=pmap)
 
 
 def get_cached_manifest() -> CommandManifest | None:
