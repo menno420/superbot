@@ -225,6 +225,21 @@ async def _hold_then_lift(
         await _lift_lockdown(guild_id, channel, prior_slowmode)
 
 
+async def _clear_lock_after(guild_id: int, delay: float) -> None:
+    """Clear a guild's lockdown flag after ``delay`` seconds.
+
+    The alert-only and channel-missing raid paths have no slowmode to restore, so
+    nothing else carries the flag clear. Without this the guild would stay in
+    ``_locked_guilds`` for the life of the process and a later, *distinct* raid
+    would be silently suppressed until a restart. Clearing after the raid window
+    lets the dedup expire so a fresh raid re-alerts.
+    """
+    try:
+        await asyncio.sleep(delay)
+    finally:
+        _locked_guilds.discard(guild_id)
+
+
 def _raid_alert_embed(
     policy: security_config.SecurityPolicy,
     count: int,
@@ -303,6 +318,7 @@ async def _handle_raid(
         return False, count  # already locked — dedupe the alert/slowmode
 
     _locked_guilds.add(guild.id)
+    lock_clear_scheduled = False
     if policy.applies_raid_slowmode:
         channel = guild_resources.resolve_channel(
             guild,
@@ -322,12 +338,20 @@ async def _handle_raid(
                 )
             else:  # lockdown 0 = apply-and-hold-until-restart; clear the flag now
                 _locked_guilds.discard(guild.id)
+            lock_clear_scheduled = True
         else:
             logger.warning(
                 "security: raid slowmode channel %s not found in guild %s",
                 policy.raid_slowmode_channel_id,
                 guild.id,
             )
+    if not lock_clear_scheduled:
+        # Alert-only (the default) or slowmode-channel-missing: nothing above will
+        # clear the lockdown flag, so expire the dedup after the raid window — else
+        # a later, distinct raid is silently suppressed until restart.
+        asyncio.ensure_future(
+            _clear_lock_after(guild.id, float(policy.raid_window_seconds)),
+        )
     await _post_alert(guild, policy.alert_channel_id, _raid_alert_embed(policy, count))
     await _emit(
         EVT_RAID_DETECTED,

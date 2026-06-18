@@ -7,6 +7,7 @@ kick so no real I/O happens.
 
 from __future__ import annotations
 
+import asyncio
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -125,6 +126,49 @@ async def test_raid_triggers_alert_once_then_dedupes(monkeypatch):
     # (guild already locked) so only ONE alert fires.
     assert triggered == [False, False, True, False, False]
     assert alert.await_count == 1
+
+
+@pytest.mark.asyncio
+async def test_raid_lock_clears_so_a_later_distinct_raid_realerts(monkeypatch):
+    # Alert-only (the default) has no slowmode to carry the lock-clear. Regression
+    # for the bug where the guild stayed in _locked_guilds for the life of the
+    # process, silently suppressing every subsequent raid until a restart.
+    policy = security_config.SecurityPolicy(
+        enabled=True,
+        raid_enabled=True,
+        raid_join_count=3,
+        raid_window_seconds=600,
+        raid_slowmode_seconds=0,  # alert-only, no slowmode channel
+        alert_channel_id=555,
+    )
+    _patch_policy(monkeypatch, policy)
+    alert = AsyncMock()
+    monkeypatch.setattr(security_service, "_post_alert", alert)
+    monkeypatch.setattr(security_service, "_emit", AsyncMock())
+
+    # Capture the scheduled clear instead of sleeping out the real raid window.
+    scheduled: list[tuple[int, float]] = []
+
+    async def _fake_clear(guild_id, delay):
+        scheduled.append((guild_id, delay))
+
+    monkeypatch.setattr(security_service, "_clear_lock_after", _fake_clear)
+
+    for _ in range(3):
+        await security_service.handle_member_join(_make_member())
+    await asyncio.sleep(0)  # let the fire-and-forget clear task run
+
+    # First raid alerted once and scheduled a clear for the raid window.
+    assert alert.await_count == 1
+    assert scheduled == [(1, 600.0)]
+
+    # Simulate the window expiring (the scheduled clear firing).
+    security_service._locked_guilds.discard(1)
+
+    # A second, distinct raid must re-alert — previously suppressed until restart.
+    for _ in range(3):
+        await security_service.handle_member_join(_make_member())
+    assert alert.await_count == 2
 
 
 @pytest.mark.asyncio
