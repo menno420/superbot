@@ -548,6 +548,33 @@ def _is_front_truncation(node: ast.Subscript) -> bool:
     )
 
 
+def _front_truncations_with_scope(
+    tree: ast.Module,
+) -> list[tuple[ast.Subscript, str]]:
+    """Yield each front-truncation subscript with its enclosing scope qualname.
+
+    The qualname is the dotted path of the enclosing ``class``/``def`` names
+    (e.g. ``ManagementPanel._DeleteRoleSelect`` or ``_destination_options``),
+    so an allowlist entry can scope an exception to one callback via the
+    ``::Class.method`` suffix (mirroring ``rule_edit_in_place``).  Without this,
+    a file-prefix allowlist would coarsely mute every truncation in a file that
+    mixes a genuine display slice with a real paginatable select.
+    """
+    results: list[tuple[ast.Subscript, str]] = []
+
+    def visit(node: ast.AST, scope: list[str]) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.ClassDef, ast.AsyncFunctionDef, ast.FunctionDef)):
+                visit(child, [*scope, child.name])
+                continue
+            if isinstance(child, ast.Subscript) and _is_front_truncation(child):
+                results.append((child, ".".join(scope)))
+            visit(child, scope)
+
+    visit(tree, [])
+    return results
+
+
 def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[Finding]:
     """Flag a front-truncating slice in a select-building view (the #1040 class).
 
@@ -577,23 +604,22 @@ def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[F
         if not _builds_select_options(tree):
             continue
 
-        for sub in ast.walk(tree):
-            if not isinstance(sub, ast.Subscript) or not _is_front_truncation(sub):
-                continue
-            if _is_allowlisted(rel, "", cfg):
+        for sub, qualname in _front_truncations_with_scope(tree):
+            if _is_allowlisted(rel, qualname, cfg):
                 continue
             findings.append(
                 Finding(
                     file=filepath,
                     line=sub.lineno,
                     rule="select_option_truncation",
+                    qualname=qualname,
                     message=(
                         "front-truncating slice `[:N]` (N≤25) in a select-building "
                         "view silently drops options past Discord's 25-option cap "
                         "(the #1040 class) — paginate with a windowed page "
-                        "`x[start:start+N]` (see `views/setup/sections/cog_routing.py` "
-                        "`_CogPickView`), or allowlist a genuine top-N display in "
-                        "consistency_exceptions.yml"
+                        "`x[start:start+N]` (use the shared "
+                        "`views/paginated_select.py` `PaginatedSelectView`), or "
+                        "allowlist a genuine top-N display in consistency_exceptions.yml"
                     ),
                 ),
             )

@@ -46,7 +46,9 @@ _KNOWN_DIRECT_VIEW_SUBCLASSES = frozenset(
         # its own author interaction_check + on_timeout — migrate only with a
         # concrete gain.
         ("views/channels/list_panel.py", "_ChannelListPaginatorView"),
-        ("views/roles/management_panel.py", "_DeleteRoleView"),
+        # _DeleteRoleView retired 2026-06-18: the role-delete picker moved onto
+        # the shared BaseView-based PaginatedSelectView (fixes the >25-roles
+        # #1040 truncation and ratchets this debt down).
         ("views/roles/time_roles_panel.py", "_TimeRemoveView"),
         ("views/roles/xp_roles_panel.py", "_XpRemoveView"),
         ("views/settings/edit_channel.py", "ChannelSettingSelectView"),

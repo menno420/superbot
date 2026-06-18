@@ -10,6 +10,7 @@ from services.role_lifecycle_service import RoleLifecycleRequest, RoleLifecycleS
 from utils.ui_constants import ROLE_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
+from views.paginated_select import PaginatedSelectView
 from views.roles._helpers import _find_role_normalized, _parse_color
 
 
@@ -89,7 +90,7 @@ class ManagementPanel(BaseView):
                 ephemeral=True,
             )
             return
-        view = _DeleteRoleView(self, roles)
+        view = _build_delete_role_view(self, roles)
         await interaction.response.send_message(
             "Select a role to delete:",
             view=view,
@@ -172,16 +173,23 @@ class EditRoleModal(discord.ui.Modal, title="Edit Role"):  # type: ignore[call-a
             )
 
 
-class _DeleteRoleSelect(discord.ui.Select):
-    def __init__(self, parent: ManagementPanel, roles: list[discord.Role]) -> None:
-        self._panel = parent
-        options = [
-            discord.SelectOption(label=r.name[:100], value=str(r.id)) for r in roles
-        ][:25]
-        super().__init__(placeholder="Choose a role to delete…", options=options)
+def _build_delete_role_view(
+    panel: ManagementPanel,
+    roles: list[discord.Role],
+) -> PaginatedSelectView:
+    """Role-delete picker — windows the deletable roles so a guild with more
+    than 25 of them stays fully selectable (previously ``[:25]`` silently
+    dropped every role past the 25th — the #1040 class).
+    """
+    options = [discord.SelectOption(label=r.name[:100], value=str(r.id)) for r in roles]
 
-    async def callback(self, interaction: discord.Interaction) -> None:
-        role = resources.resolve_role(interaction.guild, role_id=self.values[0])
+    async def _on_role_picked(
+        interaction: discord.Interaction,
+        values: list[str],
+    ) -> None:
+        if not values:
+            return
+        role = resources.resolve_role(interaction.guild, role_id=values[0])
         if not role:
             await interaction.response.send_message(
                 "❌ Role no longer exists.",
@@ -201,10 +209,10 @@ class _DeleteRoleSelect(discord.ui.Select):
                 f"🗑️ Deleted role **{name}**.",
                 ephemeral=True,
             )
-            if self._panel.message:
-                await self._panel.message.edit(
-                    embed=await self._panel.build_embed(),
-                    view=self._panel,
+            if panel.message:
+                await panel.message.edit(
+                    embed=await panel.build_embed(),
+                    view=panel,
                 )
         else:
             await interaction.response.send_message(
@@ -212,8 +220,10 @@ class _DeleteRoleSelect(discord.ui.Select):
                 ephemeral=True,
             )
 
-
-class _DeleteRoleView(discord.ui.View):
-    def __init__(self, parent: ManagementPanel, roles: list[discord.Role]) -> None:
-        super().__init__(timeout=60)
-        self.add_item(_DeleteRoleSelect(parent, roles))
+    return PaginatedSelectView(
+        panel._author,
+        options,
+        _on_role_picked,
+        placeholder="Choose a role to delete…",
+        timeout=60,
+    )

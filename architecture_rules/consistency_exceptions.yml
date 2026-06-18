@@ -19,4 +19,49 @@ edit_in_place:
 # paginate (see `views/setup/sections/cog_routing.py` `_CogPickView`) — only
 # allowlist a deliberate display truncation.
 select_option_truncation:
-  exceptions: []
+  exceptions:
+    # --- Embed / text displays, NOT selects (the slice feeds an embed field or
+    #     a text block; the file is flagged only because it also builds selects).
+    #     Scoped by ::qualname so the file's real selects stay checked. ---
+    - pattern: views/btd6/leaderboard_browser_view.py::build_event_list_embed
+      reason: "items[:10] is a top-10 leaderboard embed field, not a select."
+    - pattern: views/btd6/live_events_view.py::build_event_list_embed
+      reason: "items[:10] is a live-events embed field, not a select."
+    - pattern: views/btd6/paragon_view.py::build_error_embed
+      reason: "valid_towers[:8] is an error-message hint list, not a select."
+    - pattern: views/diagnostic/automation_panel.py::_build_panel_embed
+      reason: "rules[:25] feeds an embed rule-line summary, not a select."
+    - pattern: views/mining/workshop_panel.py::build_workshop_embed
+      reason: "ready[:12] is a craftables embed display, not a select."
+    - pattern: views/setup/sections/preset_select.py::build_preview_embed
+      reason: "preview.operations[:10] is an op-preview embed list, not a select."
+    - pattern: views/ux_lab/compare.py::CompareView.build
+      reason: "render_pattern_preview(...)[:8] is a preview-embed slice, not a select."
+    - pattern: views/ux_lab/layout_v2.py::LayoutWingView._build_gallery
+      reason: "_AVATARS[:4] is a fixed demo avatar gallery (UX lab)."
+    # --- Bounded fixed-catalog selects: the option source is an in-repo catalog
+    #     that cannot realistically exceed 25; the [:25] slice is defensive. ---
+    - pattern: views/btd6/paragon_view.py::_ParagonSelect
+      reason: "PARAGONS is the full ~10-entry paragon catalog; cannot exceed 25."
+    - pattern: views/btd6/hero_browser_view.py::_HeroSelect
+      reason: "BTD6 hero roster (~16); bounded well under 25."
+    - pattern: views/btd6/hero_stats_view.py::_LevelSelect
+      reason: "Hero levels (≤20); bounded under 25."
+    - pattern: views/btd6/paragon_stats_view.py::_DegreeSelect
+      reason: "12 fixed degree milestones; an 'Enter degree' modal covers any 1..100 in between."
+    - pattern: views/btd6/tower_stats_view.py::_CrosspathSelect
+      reason: "A tower's crosspath codes are a bounded set well under 25."
+    - pattern: views/btd6/tower_stats_view.py::_TierSelect
+      reason: "Upgrade tiers per path (≤6); bounded under 25."
+    - pattern: views/btd6/leaderboard_browser_view.py::_EventSelect
+      reason: "Event kinds are a small fixed enum; bounded under 25."
+    - pattern: views/btd6/admin_panel.py::BTD6AdminView.create
+      reason: "keys[:25] parent-chain select with a 'Fetch All' fallback that covers every chain (documented)."
+    - pattern: views/setup/template_picker.py::_select_options
+      reason: "14 onboarding/server-pulse TEMPLATES; documented-defensive slice."
+    - pattern: views/setup/wizard.py::_JumpToSectionSelect
+      reason: "wizard.sections is the fixed setup-section registry (~10); cannot exceed 25."
+    - pattern: views/ux_lab/selects.py::SelectsWingView._ex_search_modal
+      reason: "_FAKE_ITEMS is a fixed UX-lab demo fixture."
+    - pattern: views/ux_lab/compare.py::CompareView._rebuild_items
+      reason: "specs_for(category) is the curated UX-lab pattern set; bounded under 25."
