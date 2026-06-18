@@ -1,6 +1,7 @@
 """Minimal HTTP health server for container orchestration probes.
 
-Exposes these endpoints on 0.0.0.0:8080 (configurable via HEALTH_PORT env var):
+Exposes these endpoints on ``[::]:8080`` — IPv6 dual-stack so Railway private
+networking can reach it (host/port via HEALTH_HOST / HEALTH_PORT):
 
   GET /health     — liveness probe; returns 200 while the event loop is running
   GET /ready      — readiness probe; returns 200 only when the bot is logged in
@@ -61,6 +62,12 @@ except ImportError:
 logger = logging.getLogger("bot.health")
 
 _HEALTH_PORT = int(os.environ.get("HEALTH_PORT", "8080"))
+# Bind IPv6 dual-stack (``::``) by default so the server is reachable over
+# Railway's **private network** (IPv6-only) — e.g. the dashboard control panel
+# reaching the control API at ``worker.railway.internal:8080``. On Linux ``::``
+# also accepts IPv4-mapped connections, so IPv4/local health checks keep working.
+# Kill-switch: set ``HEALTH_HOST=0.0.0.0`` if a runtime ever lacks IPv6.
+_HEALTH_HOST = os.environ.get("HEALTH_HOST", "::")
 
 
 async def _health_handler(request: web.Request) -> web.Response:
@@ -184,12 +191,22 @@ async def start_health_server(
     app.router.add_get("/lifecycle", _lifecycle_handler)
     app.router.add_get("/metrics", _metrics_handler)
 
+    # Private control API (Q-0156/Q-0159) — dormant unless CONTROL_API_TOKEN is
+    # set. Wrapped so a control-API issue can never break the health server (and
+    # thus bot startup): the orchestration probes must always come up.
+    try:
+        from control_api import register_control_routes
+
+        register_control_routes(app, bot)
+    except Exception:  # noqa: BLE001 - control API must never break health
+        logger.exception("control_api: route registration failed; continuing")
+
     runner = web.AppRunner(app, access_log=None)
     try:
         await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", _HEALTH_PORT)
+        site = web.TCPSite(runner, _HEALTH_HOST, _HEALTH_PORT)
         await site.start()
-        logger.info("Health server listening on 0.0.0.0:%d", _HEALTH_PORT)
+        logger.info("Health server listening on %s:%d", _HEALTH_HOST, _HEALTH_PORT)
         if ready_event is not None:
             ready_event.set()
         # Keep running until the task is cancelled (bot shutdown).

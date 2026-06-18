@@ -9,6 +9,28 @@
 > as the record of the diagnosis. Home: the Hermes control plane
 > ([`hermes-control-plane.md`](hermes-control-plane.md) § Model/provider).
 
+## 2026-06-16 follow-up — a SECOND, DISTINCT failure: TPM rate-limit (not context-window)
+
+This doc's 2026-06-15 issue was the **context-window / compaction-pruning** problem (fixed by the
+400K model swap). A later live incident (2026-06-16) is a **different** failure that the model swap
+*enabled*, so keep the two separate:
+
+- **Symptom:** the gateway loops on `Rate limit reached for gpt-5.4-mini … on tokens per min (TPM):
+  Limit 200000, Used …, Requested ~100k` with `Context: 79 msgs, ~110,571 tokens`, retries 3×, errors,
+  and the bot goes unresponsive (still `active (running)`).
+- **Cause:** **TPM (tokens *per minute*), not the 400K window.** A 110K session fits the window fine,
+  but every reply re-sends ~100K tokens and the OpenAI org TPM cap is **200K/min** → ~2 replies
+  saturate the minute. The session bloated to 110K because nothing reset it (the 6h reset wasn't
+  wired and `/new` wasn't being used). A `bg-review` background thread firing concurrent ~100K calls
+  compounds it.
+- **Fix direction is the OPPOSITE of this doc's:** here the window is fine, so do **not** raise
+  `compression.threshold` (don't run `apply_context_fixes.sh`). **Lower** it (`hermes config set
+  compression.threshold 0.25`) so each call stays small under the TPM budget, and/or raise the OpenAI
+  TPM tier. Immediate unstick = `/new`. There is **no clean CLI to reset the live gateway session**
+  (`gateway` = lifecycle only, restart keeps state; `sessions` = store mgmt) — `/new` or compaction.
+- **Full runbook:** [`hermes-session-reset.md`](hermes-session-reset.md) § "Root cause clarification
+  (2026-06-16)".
+
 ## The smoking gun (observed live 2026-06-14/15)
 
 Hermes `/status` after only a handful of small messages:

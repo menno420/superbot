@@ -331,3 +331,83 @@ def test_possessive_entity_tokens_route_to_btd6_answer(text):
 def test_double_cash_keyword_routes():
     decision = ai_task_router.classify("does double cash affect tower prices")
     assert decision.task is AITask.BTD6_ANSWER
+
+
+@pytest.mark.parametrize(
+    "text",
+    # BUG-0015 (live miss 2026-06-16): a paragon "degree" question carried no
+    # router cue — "paragon" is excluded as English, single-word tower "dart"
+    # is dropped — so it fell to the unguarded general path and the model
+    # misread the "d67" shorthand as the upgrade path "0-6-7". A degree token
+    # + a paragon reference (the word "paragon", or a resolving tower/paragon)
+    # must route BTD6 so the per-degree stats ground.
+    [
+        "whats the damage of a d67 dart",  # degree shorthand + tower, no "paragon"
+        "a d67 dart praragon",  # the verbatim screenshot phrasing (typo and all)
+        "dart paragon at degree 67",  # spelled "degree" + the word "paragon"
+        "glaive dominus d50 stats",  # a named paragon + the shorthand
+        "how much damage does the ace paragon do at degree 80",
+    ],
+)
+def test_paragon_degree_questions_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Conservatism: a degree token with NO paragon, or a paragon with NO degree
+    # number, must NOT route on this leg — academic/temperature "degree" and
+    # dice "d6" chatter, and conceptual paragon questions, stay general.
+    [
+        "i have a degree in computer science",  # degree, no paragon
+        "its 67 degrees outside today",  # temperature ("degrees" after the number)
+        "i rolled a d20 for initiative",  # tabletop dice, no paragon
+        "what is a paragon of virtue",  # English "paragon", no degree number
+        "how many degrees does a paragon have",  # paragon + "degrees" but no number
+    ],
+)
+def test_degree_without_paragon_or_paragon_without_degree_stays_general(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Live miss 2026-06-18: "which MK affects the sniper" routed GENERAL because
+    # single-word tower aliases (sniper, boomerang, glue) are dropped from the
+    # entity matcher, so the deterministic MK floor never ran and the model
+    # grounding-refused. The "mk"/"monkey knowledge" cue + a tower alias (even a
+    # short single word) must route BTD6 so the MK floor answers.
+    [
+        "which MK affects the sniper",
+        "Which MK affects the sniper",
+        "which monkey knowledge affects the boomerang",
+        "what mk apply to the glue gunner",  # multi-word tower, still BTD6
+        "which mk affects the dart monkey",
+    ],
+)
+def test_mk_tower_questions_route_to_btd6_answer(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.BTD6_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of BTD6_ANSWER"
+
+
+@pytest.mark.parametrize(
+    "text",
+    # Conservatism: the MK cue gate keeps non-BTD6 "mk"/tower-word chatter out.
+    [
+        "is mk11 a good game",  # "mk11" — no \bmk\b boundary, not BTD6
+        "do you like the sniper rifle in cod",  # tower word, no MK cue
+    ],
+)
+def test_mk_tower_conservatism_stays_general(text):
+    decision = ai_task_router.classify(text)
+    assert (
+        decision.task is AITask.GENERAL_NL_ANSWER
+    ), f"{text!r} routed to {decision.task!r} instead of GENERAL_NL_ANSWER"

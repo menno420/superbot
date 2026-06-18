@@ -38,7 +38,9 @@ equivalent of `.claude/CLAUDE.md`.
 
 The last two are the **autonomous-improvement-loop seams** — see
 [`hermes-dispatch-bridge.md`](../hermes-dispatch-bridge.md) for how they fit together with the
-phase gate (`scripts/check_phase_gate.py`) and the owner's merge/approve gates (Q-0113/Q-0114).
+phase gate (`scripts/check_phase_gate.py`, advisory-only since Q-0172) and the owner's merge gates
+(Q-0113 self-merge / Q-0117 hermes-review; the Q-0114 approve/deny gate is retired by Q-0172 —
+self-initiated work ships flagged ⚑ Self-initiated for review).
 
 ---
 

@@ -87,6 +87,7 @@ from utils.settings_keys.logging import (
 )
 from utils.settings_keys.moderation import (
     MOD_BAN_DELETE_MESSAGE_DAYS,
+    MOD_DM_ACTIONS,
     MOD_DM_ON_ACTION,
     MOD_DM_TEMPLATE,
     MOD_MAX_TIMEOUT_MINUTES,
@@ -186,6 +187,7 @@ __all__ = [
     "LOGGING_ROLES_ENABLED",
     "MODERATOR_TIER_ROLE_ID",
     "MOD_BAN_DELETE_MESSAGE_DAYS",
+    "MOD_DM_ACTIONS",
     "MOD_DM_ON_ACTION",
     "MOD_DM_TEMPLATE",
     "MOD_MAX_TIMEOUT_MINUTES",

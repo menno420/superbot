@@ -102,6 +102,50 @@ Hermes config/data paths shown during setup:
   note:** at $4.50/1M output a long accumulating gateway session is the real spend driver (not the
   window) — so the bounded-session / `/new`-per-task habit is now a **cost** lever, not a capability
   crutch.
+- **gpt-5-mini vs gpt-5.4-mini — does a model swap raise the TPM ceiling? No (verified 2026-06-16
+  from OpenAI's own model pages; Q-0105 — re-confirm against the dashboard before trusting).** The
+  owner asked whether dropping to `gpt-5-mini` would lift the 200K TPM wall. It would **not**: OpenAI's
+  **published per-tier rate-limit tables are identical** for both models — Tier 1 500 RPM / **500K
+  TPM**, Tier 2 5K / **2M**, Tier 3 5K / 4M, Tier 4 10K / 10M, Tier 5 30K / 180M. The 200K we hit is
+  *below* Tier 1's 500K → the limiter is the **org usage tier (or a gpt-5-family verification/rollout
+  throttle), not the model name**. Real ceiling levers, in order: **(1)** raise the usage tier — Tier
+  1→2 is 500K→**2M TPM (4×)** and dwarfs any model swap; **(2)** confirm the org isn't stuck below
+  Tier 1's 500K on the dashboard (`platform.openai.com/settings/organization/limits` — the only source
+  of the *actual* per-model cap); **(3)** lower `compression.threshold` so each call stays small (free,
+  continuous). The **one** case a swap to 5-mini helps is if OpenAI is rollout-throttling the *newer*
+  5.4-mini below its tier and 5-mini gives the full 500K — unverifiable except on that dashboard, and
+  you'd pay for it in capability:
+
+  | | **gpt-5-mini** | **gpt-5.4-mini** (current) |
+  |---|---|---|
+  | Context / max output | 400K / 128K | 400K / 128K — *same* |
+  | Input · output /1M | **$0.25 · $2.00** | $0.75 · $4.50 *(2.25–3× more)* |
+  | Knowledge cutoff | May 2024 | **Aug 2025** |
+  | Capability / speed | baseline | **"significantly improves … coding, reasoning, tool use", ~2× faster** (OpenAI) |
+  | Rate limits — **this account** (2026-06-16) | **500K TPM** | **200K TPM** *(published tiers identical; the account's per-model override differs — see below)* |
+
+  Net: 5-mini is ~2–3× cheaper but weaker/slower/staler — the model class the role left in #913→#921.
+  On OpenAI's *published* per-tier tables it does **not** change TPM (identical limits); the deciding
+  factor is the **account's actual per-model cap** (the project/org Limits page), which can differ from
+  the tables. **To switch, re-run `hermes model`** (keeps the custom OpenAI-provider routing) +
+  allowlist the exact id — **not** `hermes config set model` / `apply_context_fixes.sh --set-model`,
+  which revert routing to the Nous catalog (model-switch playbook below).
+  - **✅ CONFIRMED for this account (2026-06-16, owner's Project → Rate limits page): switching to
+    5-mini DOES lift the cap.** The page (limits inherited from the org unless overridden) showed
+    **`gpt-5-mini` 500,000 TPM** vs **`gpt-5.4-mini` 200,000 TPM** (the dated `gpt-5.4-mini-2026-03-17`
+    snapshot also 200K; `gpt-4o-mini` 200K; org **Default `*`** 250K / 3K RPM; all at 500 RPM). So the
+    200K is a **per-model throttle on the newer 5.4-mini, not an org-wide ceiling** — 5-mini gives
+    **2.5×** the per-minute budget on the same key. **Lesson (Q-0120 instinct): never reason TPM from
+    published per-tier tables — they're uniform within a model class; the project/org Limits page is the
+    only source of an account's real per-model cap.**
+  - **Decision (owner directive, 2026-06-16): switch Hermes to `gpt-5-mini` and leave compaction at its
+    default.** The 500K cap clears the wall on its own, so lowering `compression.threshold` is **not**
+    needed — and the owner explicitly declined it because aggressive compaction interrupts a task
+    mid-flow (it summarizes/prunes context the turn still needs, so the bot "can just do its tasks
+    normally without interruption"). Accept the small capability/speed drop and re-run the calibration
+    probes (above) to confirm the dispatch/review role still holds on 5-mini. To instead keep the
+    more-capable 5.4-mini, OpenAI must raise its **org** limit above 200K — the project page can't
+    override above the org-inherited cap.
 - **Recommended `config.yaml` for gpt-5.4-mini (verify key names against the installed version —
   Q-0105 unverified):** `agent.reasoning_effort: medium` (it **is** a reasoning model — never `none`,
   which was only the gpt-4o-mini workaround; the review-merge role can go `high`).
@@ -156,8 +200,9 @@ choice (mini vs. a stronger review model, Q-0117) gets decided on evidence rathe
 **Two minor caveats (operational, not capability):**
 - **200K TPM ceiling.** A single token-heavy task (loading 3 skills + ~15 searches/reads) hit the
   OpenAI per-minute token cap and the turn errored mid-way. Mitigations: **`/new` per task** (smaller
-  turns) and/or request a higher OpenAI usage-tier TPM. Not a model fault — it recovered fully on
-  "continue".
+  turns) and/or **raise the OpenAI usage tier** (Tier 1→2 is 500K→2M TPM). Switching to `gpt-5-mini`
+  does **not** help — identical TPM tiers (see § Model/provider, "gpt-5-mini vs gpt-5.4-mini"). Not a
+  model fault — it recovered fully on "continue".
 - **Over-loads skills.** It loaded 3 skills for a one-skill task (seen twice). A *"one skill per task;
   for an overlap check use `gh pr list` + grep `.sessions/`, don't deep-search"* steer (now in the
   `dispatch` skill) trims the heaviest part without dumbing it down. Consider
@@ -478,12 +523,14 @@ Three repo-side seams keep Hermes safe while letting it review and dispatch (Q-0
 
 - **`superbot-review`** — independent (non-Claude) critique of a plan or PR diff, with a
   plain-language maintainer summary for the approve/deny gate.
-- **`scripts/check_phase_gate.py`** — the fix-phase vs. invent-phase signal (agent-originated
-  features stay gated until correctness is done).
+- **`scripts/check_phase_gate.py`** — the fix-phase vs. invent-phase signal, **advisory-only since
+  Q-0172** (a priority readout — correctness first when bugs/Not-Done remain — not a block on
+  feature origination).
 - **`superbot-dispatch`** + [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) — turns a
   work order into a Claude Code Routine `/fire` call. **Now wired** via the console **Schedule**
-  trigger (every 2h, Q-0146) — no longer pending maintainer setup. Merge gate: self-merge on green
-  CI (Q-0113); agent-originated features open a PR and wait for your approve/deny (Q-0114).
+  trigger (every ~2–3h, Q-0146) — no longer pending maintainer setup. Merge gate: self-merge on green
+  CI (Q-0113); a substantial step is labeled needs-hermes-review (Q-0117); self-initiated feature work
+  ships flagged on the run-report ⚑ Self-initiated line for review (Q-0172).
 
 ### Read-only log triage — shipped
 

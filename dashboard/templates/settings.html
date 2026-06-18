@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Settings — SuperBot{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">Settings &amp; configuration catalogue</h1>
+<p class="text-slate-400 mb-2 text-sm">
+  {{ data.meta.counts.get("setting_keys", 0) }} per-server setting keys across
+  {{ data.meta.counts.get("setting_domains", 0) }} subsystems — every knob the bot exposes,
+  grouped by the subsystem that owns it.
+  {{ data.meta.counts.get("typed_settings", 0) }} carry a typed
+  <strong>SettingSpec</strong> (type · default · hint), the metadata the editable settings use.
+</p>
+<p class="text-slate-500 mb-6 text-xs rounded border border-slate-800 bg-slate-900/50 px-3 py-2">
+  🔧 Read-only static analysis (<code>scripts/scan_settings.py</code> +
+  <code>scripts/scan_setting_specs.py</code>). Shows the stable <strong>key names</strong>, their
+  type and default — not the value any server has set (those live in the bot's database). The bot
+  already has a typed, audited settings pipeline; the website editor (global + per-server) is a
+  front-end over it — see the live-editor plan.
+</p>
+
+<input
+  id="filter"
+  type="search"
+  placeholder="Filter settings…"
+  class="w-full mb-6 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 text-sm focus:border-sky-600 focus:outline-none"
+  oninput="filterSettings(this.value)"
+/>
+
+<div class="space-y-5">
+  {% for domain in data.settings %}
+    <section class="setting-domain rounded-xl border border-slate-800 bg-slate-900/50 p-4"
+             data-haystack="{{ domain.domain }} {{ domain.purpose }} {% for k in domain['keys'] %}{{ k.constant }} {{ k.key }} {% endfor %}">
+      <div class="flex items-baseline gap-2 flex-wrap">
+        <h2 class="text-lg font-semibold text-sky-300">{{ domain.domain }}</h2>
+        <span class="text-xs text-slate-500">{{ domain['keys'] | length }} key{{ '' if domain['keys']|length == 1 else 's' }}</span>
+      </div>
+      {% if domain.purpose %}<p class="text-xs text-slate-400 mb-3">{{ domain.purpose }}</p>{% endif %}
+      <div class="grid gap-1.5 sm:grid-cols-2">
+        {% for k in domain['keys'] %}
+          <div class="setting-row rounded bg-slate-950/60 px-2.5 py-1.5"
+               data-haystack="{{ k.constant }} {{ k.key }} {{ k.hint or '' }}">
+            <div class="flex items-center gap-2 flex-wrap">
+              <code class="text-xs text-slate-200">{{ k.constant }}</code>
+              {% if k.type %}<span class="text-[9px] uppercase rounded bg-indigo-900/60 text-indigo-300 px-1 py-0.5">{{ k.type }}</span>{% endif %}
+              {% if k.default is defined %}<span class="text-[10px] text-slate-500">= {{ k.default | tojson }}</span>{% endif %}
+              <code class="text-[11px] text-slate-600 ml-auto shrink-0">{{ k.key }}</code>
+            </div>
+            {% if k.hint %}<p class="mt-0.5 text-[10px] text-slate-500 leading-snug">{{ k.hint }}</p>{% endif %}
+            {% if k.allowed_values %}
+              <p class="mt-0.5 text-[10px] text-slate-500">choices: {% for v in k.allowed_values %}<code class="text-slate-400">{{ v }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% else %}
+    <p class="text-slate-500">No settings found.</p>
+  {% endfor %}
+</div>
+
+<script>
+  function filterSettings(q) {
+    const needle = q.trim().toLowerCase();
+    document.querySelectorAll('.setting-domain').forEach((section) => {
+      let anyVisible = false;
+      section.querySelectorAll('.setting-row').forEach((row) => {
+        const hit = !needle || row.dataset.haystack.toLowerCase().includes(needle)
+          || section.querySelector('h2').textContent.toLowerCase().includes(needle);
+        row.style.display = hit ? '' : 'none';
+        anyVisible = anyVisible || hit;
+      });
+      section.style.display = anyVisible ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}

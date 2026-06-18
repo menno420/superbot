@@ -127,7 +127,7 @@ bash scripts/hermes/install-skills.sh    # (Re)install the SuperBot skill pack f
 git -C /home/hermes/repos/superbot log --oneline -10   # Last 10 commits — what landed recently.
 git -C /home/hermes/repos/superbot status              # Any uncommitted local changes on the VPS clone?
 python3 scripts/check_current_state_ledger.py --strict # Is the docs ledger in sync with merged PRs? (clean = nothing to reconcile)
-python3 scripts/check_phase_gate.py --phase            # fix-phase or invent-phase? (gates new feature work)
+python3 scripts/check_phase_gate.py --phase            # fix-phase or invent-phase? (advisory priority readout since Q-0172, not a gate)
 python3 scripts/hermes/build_skills.py --check         # Are the installed skills up to date with the docs?
 ```
 

@@ -75,6 +75,10 @@ _ALLOWED_ACTOR_TYPES: frozenset[str] = frozenset(
 )
 _ALLOWED_MUTATION_TYPES: frozenset[str] = frozenset({"set_value"})
 
+# Write scopes: ``"guild"`` (per-guild, capability-gated) or ``"global"``
+# (the owner's cross-server default at GLOBAL_GUILD_ID, owner-gated).
+_ALLOWED_SCOPES: frozenset[str] = frozenset({"guild", "global"})
+
 
 # ---------------------------------------------------------------------------
 # Exceptions
@@ -130,6 +134,10 @@ class SettingsMutationDisabledError(SettingsMutationError):
 
 class InvalidActorTypeError(SettingsMutationError):
     """Raised when ``actor_type`` is not in :data:`_ALLOWED_ACTOR_TYPES`."""
+
+
+class InvalidScopeError(SettingsMutationError):
+    """Raised when ``scope`` is not in :data:`_ALLOWED_SCOPES`."""
 
 
 # ---------------------------------------------------------------------------
@@ -234,12 +242,25 @@ class SettingsMutationPipeline:
         actor: Any,
         *,
         actor_type: str = "user",
+        scope: str = "guild",
     ) -> SettingsMutationResult:
-        """Write ``value`` to ``(subsystem, name)`` on ``guild``.
+        """Write ``value`` to ``(subsystem, name)`` at the requested scope.
+
+        Two scopes:
+
+        * ``scope="guild"`` (default) — a per-guild write on ``guild``,
+          authorised by ``spec.capability_required`` (a server admin).
+        * ``scope="global"`` — the owner's cross-server default, stored at
+          ``GLOBAL_GUILD_ID`` (``guild_id = 0``) and resolved as the
+          per-guild → **global** → spec-default fallback by
+          :func:`services.settings_resolution.resolve_setting`. Authorised
+          **owner-only** (``config.BOT_OWNER_USER_ID``); ``guild`` may be
+          ``None``.
 
         Args:
             guild: A ``discord.Guild`` (typed as ``Any`` so this module
-                does not import ``discord``).
+                does not import ``discord``). May be ``None`` for a
+                ``scope="global"`` write.
             subsystem: Subsystem name from ``SUBSYSTEMS``.
             name: ``SettingSpec.name``.
             value: Incoming value (string or already-typed).  The
@@ -248,6 +269,7 @@ class SettingsMutationPipeline:
                 ``None`` for ``actor_type='system'`` writes.
             actor_type: One of the literals in
                 :data:`_ALLOWED_ACTOR_TYPES`.
+            scope: ``"guild"`` (default) or ``"global"``.
 
         Raises:
             UnknownSubsystemError: ``subsystem`` is not in
@@ -260,18 +282,29 @@ class SettingsMutationPipeline:
                 declared type.
             SettingsValidationError: ``SettingSpec.validator`` rejected
                 the coerced value.
-            UnauthorizedSettingsMutationError: ``actor`` lacks the
-                capability declared by ``spec.capability_required`` and
-                ``actor_type`` is ``'user'`` / ``'moderator'`` / ``'admin'``.
+            UnauthorizedSettingsMutationError: for ``scope="guild"``,
+                ``actor`` lacks the capability declared by
+                ``spec.capability_required``; for ``scope="global"``,
+                ``actor`` is not the bot owner.
             SettingsMutationDisabledError: an operator has turned the
                 ``SETTINGS_MUTATION_PRIMARY`` kill-switch OFF.
             InvalidActorTypeError: ``actor_type`` is not in the
                 allowed set.
+            InvalidScopeError: ``scope`` is not ``"guild"`` / ``"global"``.
         """
+        from utils.db.settings import GLOBAL_GUILD_ID
+
+        self._validate_scope(scope)
+        is_global = scope == "global"
+        effective_guild_id = GLOBAL_GUILD_ID if is_global else guild.id
+
         spec = self._resolve_spec(subsystem, name)
         self._validate_actor_type(actor_type)
-        await self._validate_authority(spec, guild, actor, actor_type)
-        await self._check_mutation_enabled(guild.id)
+        if is_global:
+            self._validate_global_authority(actor, actor_type)
+        else:
+            await self._validate_authority(spec, guild, actor, actor_type)
+        await self._check_mutation_enabled(effective_guild_id)
 
         coerced, ok, coerce_diag = _coerce_for_write(value, spec.value_type)
         if not ok:
@@ -289,7 +322,11 @@ class SettingsMutationPipeline:
                 ) from exc
 
         new_value_raw = _serialise(coerced, spec.value_type)
-        old_value, old_value_raw = await self._read_previous(guild, subsystem, name)
+        old_value, old_value_raw = await self._read_previous(
+            effective_guild_id,
+            subsystem,
+            name,
+        )
 
         mutation_id = str(uuid.uuid4())
         actor_id = getattr(actor, "id", None) if actor is not None else None
@@ -299,7 +336,7 @@ class SettingsMutationPipeline:
             from utils.db import settings_audit
 
             await settings_audit.set_value_with_audit(
-                guild_id=guild.id,
+                guild_id=effective_guild_id,
                 subsystem=subsystem,
                 name=name,
                 settings_key=spec.settings_key,
@@ -315,26 +352,29 @@ class SettingsMutationPipeline:
                 "SettingsMutationPipeline.set_value: DB transaction "
                 "failed for (guild=%d, subsystem=%r, name=%r); no cache "
                 "invalidation, no event emission.",
-                guild.id,
+                effective_guild_id,
                 subsystem,
                 name,
             )
             raise
 
         committed_at = _now_utc()
-        self._invalidate_cache(guild.id, spec.settings_key)
+        self._invalidate_cache(effective_guild_id, spec.settings_key)
 
         # Post-PR-#310 hardening: AI subsystem scalars project into the
         # typed ai_guild_policy table so the runtime resolver (which
         # reads only the typed row) tracks UI mutations. Best-effort —
         # failure is logged at WARNING with structured fields by the
         # projection helper and the legacy KV write stays authoritative.
-        if subsystem == "ai":
+        # Skipped for a global write — the AI runtime resolver is per-guild
+        # (it reads ``ai_guild_policy`` by guild_id), so a guild_id=0
+        # projection would only create a phantom row that nothing reads.
+        if subsystem == "ai" and not is_global:
             from services import ai_policy_mutation
 
             if spec.settings_key in ai_policy_mutation.projectable_keys():
                 await ai_policy_mutation.project_from_legacy_settings(
-                    guild.id,
+                    effective_guild_id,
                     actor,
                     mutation_id=mutation_id,
                 )
@@ -347,8 +387,8 @@ class SettingsMutationPipeline:
             subsystem=subsystem,
             mutation_type="set_value",
             target=f"setting:{subsystem}.{name}",
-            scope="guild",
-            guild_id=guild.id,
+            scope=scope,
+            guild_id=None if is_global else effective_guild_id,
             prev_value=old_value_raw,
             new_value=new_value_raw,
             actor_id=actor_id,
@@ -359,7 +399,7 @@ class SettingsMutationPipeline:
         # Step 10: best-effort event emission.
         event_emitted = await self._emit_event(
             mutation_id=mutation_id,
-            guild_id=guild.id,
+            guild_id=effective_guild_id,
             subsystem=subsystem,
             name=name,
             settings_key=spec.settings_key,
@@ -370,7 +410,7 @@ class SettingsMutationPipeline:
 
         return SettingsMutationResult(
             mutation_id=mutation_id,
-            guild_id=guild.id,
+            guild_id=effective_guild_id,
             subsystem=subsystem,
             name=name,
             settings_key=spec.settings_key,
@@ -424,6 +464,31 @@ class SettingsMutationPipeline:
         if actor_type not in _ALLOWED_ACTOR_TYPES:
             raise InvalidActorTypeError(
                 f"actor_type={actor_type!r} not in {sorted(_ALLOWED_ACTOR_TYPES)}",
+            )
+
+    def _validate_scope(self, scope: str) -> None:
+        if scope not in _ALLOWED_SCOPES:
+            raise InvalidScopeError(
+                f"scope={scope!r} not in {sorted(_ALLOWED_SCOPES)}",
+            )
+
+    def _validate_global_authority(self, actor: Any, actor_type: str) -> None:
+        """Step 3 (global scope): owner-only authority.
+
+        A global write sets the owner's cross-server default, so it is
+        gated to the bot owner (``config.BOT_OWNER_USER_ID``) rather than a
+        per-guild capability. ``actor_type='system'`` / ``'backfill'``
+        bypass (scripted ops / migrations), mirroring the per-guild path.
+        """
+        if actor_type in ("system", "backfill"):
+            return
+        from config import BOT_OWNER_USER_ID
+
+        actor_id = getattr(actor, "id", None) if actor is not None else None
+        if BOT_OWNER_USER_ID is None or actor_id != BOT_OWNER_USER_ID:
+            raise UnauthorizedSettingsMutationError(
+                "global settings scope is owner-only "
+                f"(actor_id={actor_id}, requires BOT_OWNER_USER_ID)",
             )
 
     async def _validate_authority(
@@ -480,7 +545,7 @@ class SettingsMutationPipeline:
 
     async def _read_previous(
         self,
-        guild: Any,
+        guild_id: int,
         subsystem: str,
         name: str,
     ) -> tuple[Any, str | None]:
@@ -488,11 +553,24 @@ class SettingsMutationPipeline:
 
         Returns ``(typed_value, raw_string_or_None)``.  ``None`` raw
         indicates no KV row existed before this mutation; the typed
-        value is the spec default in that case.
+        value is the spec default in that case. ``guild_id`` is the
+        **scope** id — the real guild for ``scope="guild"`` or
+        ``GLOBAL_GUILD_ID`` for ``scope="global"`` — so the audit reads
+        the value at the same scope it is about to write.
         """
         from services.settings_resolution import resolve_setting
 
-        resolution = await resolve_setting(guild.id, subsystem, name)
+        # ``include_global=False`` keeps the audit ``prev_value`` scope-local:
+        # a per-guild write records the per-guild value it replaced, never an
+        # inherited global default (the global tier is a read-time fallback,
+        # not a value this guild ever "had"). For a global write it reads the
+        # global row directly at GLOBAL_GUILD_ID.
+        resolution = await resolve_setting(
+            guild_id,
+            subsystem,
+            name,
+            include_global=False,
+        )
         if resolution is None:
             # Defensive — _resolve_spec already verified the spec exists.
             return None, None
@@ -562,6 +640,7 @@ def _now_utc() -> datetime:
 __all__ = [
     "EVT_SETTINGS_CHANGED",
     "InvalidActorTypeError",
+    "InvalidScopeError",
     "SettingsCoercionError",
     "SettingsMutationError",
     "SettingsMutationPipeline",

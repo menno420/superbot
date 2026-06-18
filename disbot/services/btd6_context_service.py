@@ -34,6 +34,7 @@ from utils.btd6.grounding_format import is_infinite as _is_infinite
 from utils.btd6.grounding_format import relative_time as _relative_time
 from utils.btd6.grounding_format import sanitise as _sanitise_helper
 from utils.btd6.keywords import ABR_CUE_RE as _ABR_CUE_RE
+from utils.btd6.keywords import degree_in_text as _degree_in_text
 
 logger = logging.getLogger("bot.services.btd6_context")
 
@@ -638,6 +639,55 @@ def _render_paragon_stats(tower_id: str, name: str) -> list[str]:
     return lines
 
 
+def _paragon_degree_facts(message_text: str) -> list[str]:
+    """Ground a paragon's stats at a SPECIFIC degree named in the text (BUG-0015).
+
+    Players write "d67" (or "degree 67") to ask for a paragon at a given degree —
+    only paragons have degrees (1-100). The standard paragon grounding
+    (:func:`_render_paragon_stats`) only anchors Degree 1 and Degree 100, so
+    without this leg the model has no degree-67 figure and, on the "d67"
+    shorthand, misreads it as an upgrade path "0-6-7" and refuses it exists
+    (live miss 2026-06-16). This surfaces the exact, NON-linear headline at the
+    requested degree, explicitly labelled "Degree N" — which disambiguates the
+    shorthand and hands the model the right numbers. Degree-INDEPENDENT facts
+    (income, abilities, effects) already ground via :func:`_render_paragon`.
+    """
+    degree = _degree_in_text(message_text)
+    # Degrees 1 and 100 are exactly the anchors _render_paragon_stats already
+    # emits — only an INTERMEDIATE degree adds anything new here.
+    if degree is None or degree in (1, 100):
+        return []
+
+    from services import btd6_stats_service
+    from utils.btd6 import paragon_degrees
+
+    paragon_id = btd6_stats_service.resolve_paragon(message_text)
+    if paragon_id is None:
+        return []
+    pstats = btd6_stats_service.get_paragon_stats(paragon_id)
+    if pstats is None or not pstats.has_combat_stats:
+        return []
+    bits = _paragon_main_bits(pstats.base, degree)
+    if not bits:
+        return []
+
+    src = "bloonswiki article prose" if pstats.is_prose_sourced else "BTD6 game data"
+    boss = paragon_degrees.boss_multiplier(degree)
+    power = paragon_degrees.power_for_degree(degree)
+    return [
+        _cap(
+            f"[btd6_paragon_stats degree {degree}] {pstats.canonical} at Degree "
+            f"{degree}: {_sanitise(', '.join(bits))}; boss-damage ×{boss}; "
+            f"{power:,} power (source: {src})",
+        ),
+        _cap(
+            f"[btd6_paragon_stats degree {degree}] Note: 'd{degree}' / "
+            f"'degree {degree}' is the paragon's DEGREE (1-100), NOT an "
+            "upgrade-path code — paragons are tier 6, beyond the 0-5-5 cap.",
+        ),
+    ]
+
+
 def _render_tower_stats(tower_id: str, canonical: str) -> list[str]:
     """Per-tier headline stats as ``[btd6_tower_stats normal]`` grounding lines.
 
@@ -1073,10 +1123,20 @@ def _render_fixture_round(entry: Any, *, roundset_label: str = "") -> list[str]:
             prefix = " ".join(m.capitalize() for m in modifiers)
             label = f"{prefix} {name}".strip()
             parts.append(f"{aggregated[(bloon_id, modifiers)]} {label}")
+        # Ground the total bloons that ENTER the round (sum of the spawn groups,
+        # not counting children that appear only when a parent pops — that count
+        # is the RBE above). Without this, "how many bloons spawn on rN" had no
+        # grounded number, so the model's derived total (e.g. 75 + 122 = 197)
+        # tripped the value-only faithfulness guard and got refused, while the
+        # identical "list every bloon in rN" answered fine from the per-bloon
+        # counts.
+        total_spawned = sum(aggregated.values())
         lines.append(
             _cap(
                 f"[btd6_round] {ref} composition — "
-                f"{_sanitise(', '.join(parts))} (source: {_dataset_label()})",
+                f"{_sanitise(', '.join(parts))}; {total_spawned:,} bloons enter "
+                f"this round in total (children spawned on pop are counted by the "
+                f"RBE, not here) (source: {_dataset_label()})",
             ),
         )
 
@@ -1673,6 +1733,23 @@ def deterministic_roster_reply(message_text: str) -> str | None:
             out.extend(f"• **{t.canonical}** — ${t.base_cost}" for t in group)
         return "\n".join(out)
 
+    if "boss" in text:
+        bosses = dataset.bosses
+        if not bosses:
+            return None
+        lines = [
+            (
+                f"• **{boss.canonical}** — {boss.tagline}"
+                if getattr(boss, "tagline", "")
+                else f"• **{boss.canonical}**"
+            )
+            for boss in bosses
+        ]
+        return (
+            f"**BTD6 Bosses ({len(lines)})** — the boss bloons (each scales "
+            "Tier 1–5, with an Elite variant):\n" + "\n".join(lines)
+        )
+
     if "map" in text:
         return _map_roster_reply(text, list(dataset.maps))
 
@@ -1738,6 +1815,19 @@ def _map_roster_reply(text: str, maps: list) -> str:
         )
     if sections:
         return "\n\n".join(sections)
+
+    # A named difficulty ("list all expert maps", "what beginner maps are
+    # there") filters the roster to that tier. Without this the user who asked
+    # for the 13 Expert maps got all 86 grouped by difficulty — a BUG-0009
+    # wrong-assembly miss (right values, wrong list).
+    named_diffs = [d for d in order if d.lower() in text]
+    if named_diffs:
+        subset = [m for m in maps if m.difficulty in named_diffs]
+        label = "/".join(named_diffs)
+        if wants_count:
+            return f"BTD6 has **{len(subset)} {label} maps**."
+        names = ", ".join(sorted(m.canonical for m in subset))
+        return f"**BTD6 {label} Maps ({len(subset)}):** {names}"
 
     # Generic "how many maps" / "list all maps".
     if wants_count:
@@ -1815,22 +1905,141 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     if tower is None:
         return None
 
-    rows = btd6_data_service.monkey_knowledge_referencing(tower)
-    if not rows:
+    # A complete "which MK affects <tower>" answer has two parts:
+    #   1. points that NAME the tower or one of its upgrades, and
+    #   2. CLASS-WIDE points that buff every tower in the tower's class without
+    #      naming it (e.g. "Come On Everybody!" → all Primary towers).
+    # The owner reported part 2 missing: "which MK affects the glue gunner" must
+    # include Come On Everybody (2026-06-18). Both halves are deterministic
+    # relations, so the floor owns the labelled answer.
+    tab = tower.category.title()
+    named = sorted(
+        btd6_data_service.monkey_knowledge_referencing(tower),
+        key=lambda mk: mk.canonical.lower(),
+    )
+    class_wide = sorted(
+        btd6_data_service.monkey_knowledge_class_wide(tower.category),
+        key=lambda mk: mk.canonical.lower(),
+    )
+
+    if not named and not class_wide:
         return (
-            f"**No Monkey Knowledge specifically references the "
-            f"{tower.canonical}.** Monkey Knowledge points name a tower or one "
-            "of its upgrades in their description; none currently name this one."
+            f"**No Monkey Knowledge specifically affects the "
+            f"{tower.canonical}.** No point names it or one of its upgrades, and "
+            f"no {tab}-tab point buffs the whole {tab} class."
         )
 
-    ordered = sorted(rows, key=lambda mk: mk.canonical.lower())
+    total = len(named) + len(class_wide)
     lines = [
-        f"**Monkey Knowledge that reference the {tower.canonical} "
-        f"({len(ordered)})** — these name the {tower.canonical} or one of its "
-        "upgrades:",
+        f"**Monkey Knowledge that affects the {tower.canonical} ({total})** — "
+        f"both points that name it and class-wide {tab} points that buff every "
+        f"{tab} tower:",
     ]
-    lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in ordered)
+    if named:
+        lines.append("")
+        lines.append(
+            f"__Names the {tower.canonical} or an upgrade ({len(named)}):__",
+        )
+        lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in named)
+    if class_wide:
+        lines.append("")
+        lines.append(
+            f"__Class-wide {tab} Monkey Knowledge — buffs every {tab} tower "
+            f"({len(class_wide)}):__",
+        )
+        lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in class_wide)
     reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+# --- "Monkey Knowledge by category/tab" deterministic roster (§7.6) -----------
+# The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor: asked "what
+# Support monkey knowledges are there", the model lists the tab itself and can
+# mis-bucket a point (the owner's verbatim miss was the *inverse* — calling the
+# whole Support tab "related to the farm"). Every MK NAME is grounded, so the
+# value-only faithfulness guard never catches a wrong *grouping*; the
+# deterministic layer OWNS the labelled per-tab list. The grouping lives in
+# btd6_data_service.monkey_knowledge_by_category(). Distinct from
+# deterministic_mk_reference_reply (which owns "MK related to <tower>"): this one
+# fires only on a *category/tab* cue and defers when a tower is named, so the two
+# never both fire.
+# (category key, the cue that names that in-game tab). Order mirrors the
+# btd6_data_service tab order.
+_MK_CATEGORY_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("Primary", re.compile(r"\bprimary\b", re.I)),
+    ("Military", re.compile(r"\bmilitary\b", re.I)),
+    ("Magic", re.compile(r"\bmagic\b", re.I)),
+    ("Support", re.compile(r"\bsupport\b", re.I)),
+    ("Heroes", re.compile(r"\bheroe?s?\b", re.I)),
+    ("Powers", re.compile(r"\bpowers?\b", re.I)),
+)
+# Human label per tab for the roster header.
+_MK_CATEGORY_LABELS: dict[str, str] = {
+    "Primary": "Primary",
+    "Military": "Military",
+    "Magic": "Magic",
+    "Support": "Support",
+    "Heroes": "Heroes",
+    "Powers": "Powers",
+}
+# An enumeration shape ("which/what/list ... monkey knowledge", "how many ...") so
+# a single-MK lookup ("what does More Cash do") stays out of the roster floor.
+_MK_ROSTER_LIST_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every|how\s+many|are\s+there)\b",
+    re.I,
+)
+
+
+def _match_mk_category(text_lower: str) -> str | None:
+    """The single Monkey-Knowledge tab a roster question names, or ``None``."""
+    for category, pattern in _MK_CATEGORY_CUES:
+        if pattern.search(text_lower):
+            return category
+    return None
+
+
+def deterministic_mk_category_roster_reply(message_text: str) -> str | None:
+    """A code-built "Monkey Knowledge in the <tab>" roster, or ``None``.
+
+    The §7.6 Monkey-Knowledge member of the BUG-0009 roster floor (sibling of the
+    relic / capability rosters). Fires on an MK cue + a named tab
+    (Primary/Military/Magic/Support/Heroes/Powers) + an enumeration cue, listing
+    that tab's points so the model can never mis-bucket the grouping. Defers
+    (``None``) for single-MK lookups (no list cue), strategy/opinion questions,
+    anything without a recognised tab, and — crucially — anything naming a
+    *tower* (that is :func:`deterministic_mk_reference_reply`'s "MK related to
+    <tower>" job, which runs first in the dispatcher), so the two MK builders
+    never both fire.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not _MK_CUE_RE.search(low):
+        return None
+    if not _MK_ROSTER_LIST_RE.search(low):
+        return None
+    if any(word in low for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    category = _match_mk_category(low)
+    if category is None:
+        return None
+
+    from services import btd6_data_service
+
+    # A named tower means the tower-relation builder owns this — defer to it.
+    dataset = btd6_data_service.get_dataset()
+    if _scan_tower(low, dataset) is not None:
+        return None
+
+    grouped = btd6_data_service.monkey_knowledge_by_category()
+    rows = grouped.get(category, ())
+    label = _MK_CATEGORY_LABELS.get(category, category)
+    if not rows:
+        return f"**BTD6 — no Monkey Knowledge in the {label} tab.**"
+    names = ", ".join(f"**{mk.canonical}**" for mk in rows)
+    reply = f"**Monkey Knowledge in the {label} tab ({len(rows)}):** {names}"
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
 
@@ -1853,6 +2062,15 @@ _GERALDO_LIST_RELATION_RE = re.compile(
 )
 # A specific level number ("at level 7", "lvl 12", "level-3").
 _GERALDO_LEVEL_NUM_RE = re.compile(r"\b(?:level|lvl|lv)\s*[-#]?\s*(\d{1,2})\b", re.I)
+# The "starting kit" angle ("what does Geraldo start with", "Geraldo's starting
+# items") — the buffer-slice gap the level/list cue missed. Maps to the level-0
+# items (the kit Geraldo has before any level-ups).
+_GERALDO_STARTING_RE = re.compile(
+    r"\bstart(?:s|ing|ed)?\s+(?:with|out|kit|gear|loadout|inventory|items?)\b|"
+    r"\bstarting\s+(?:items?|kit|gear|loadout|inventory)\b|"
+    r"\bbegins?\s+with\b|\bcomes?\s+with\b",
+    re.I,
+)
 
 
 def _format_geraldo_item_line(item: Any) -> str:
@@ -1881,7 +2099,8 @@ def deterministic_geraldo_per_level_reply(message_text: str) -> str | None:
     low = text.lower()
     if not _GERALDO_CUE_RE.search(low):
         return None
-    if not _GERALDO_LIST_RELATION_RE.search(low):
+    starting = bool(_GERALDO_STARTING_RE.search(low))
+    if not starting and not _GERALDO_LIST_RELATION_RE.search(low):
         return None
     if any(word in low for word in _ROSTER_STRATEGY_WORDS):
         return None
@@ -1891,6 +2110,15 @@ def deterministic_geraldo_per_level_reply(message_text: str) -> str | None:
     grouped = btd6_data_service.geraldo_items_by_unlock_level()
     if not grouped:
         return None
+
+    # The "starting kit" angle ("what does Geraldo start with") → his level-0
+    # items specifically, unless the question also names a different level.
+    if starting and not _GERALDO_LEVEL_NUM_RE.search(low):
+        items = next((rows for lvl, rows in grouped if lvl == 0), ())
+        if not items:
+            return None
+        body = "\n".join(_format_geraldo_item_line(i) for i in items)
+        return f"**Geraldo starts with ({len(items)}):**\n{body}"
 
     # A specific level was named → just that level's unlocks. (Even if zero
     # items unlock there, the deterministic "nothing new unlocks at L<n>" is the
@@ -2454,6 +2682,227 @@ def _extract_paragon_names(text_lower: str) -> list[str]:
     return names
 
 
+def _extract_hero_names(text_lower: str) -> list[str]:
+    """The hero ids a comparison names, in order of appearance, deduped.
+
+    Scans every hero surface (canonical + alias) and keeps the longest surface
+    at each span (so "striker jones" wins over a bare "striker"), then dedups on
+    the resolved hero id. Surfaces shorter than 3 chars are skipped so a stray
+    one/two-letter alias ("q", "si") never trips the floor — the cost-compare cue
+    + the ≥2-heroes gate already constrain this builder hard. Returns ids (the
+    surface resolver accepts them), so the data primitive re-resolves cleanly.
+    """
+    from services import btd6_data_service
+
+    heroes = btd6_data_service.get_dataset().heroes
+    spans: list[tuple[int, int, int, str]] = []  # (start, end, surface_len, id)
+    for hero in heroes:
+        surfaces = {hero.canonical.lower(), *(a.lower() for a in hero.aliases)}
+        for surface in surfaces:
+            if len(surface) < 3:
+                continue
+            for match in re.finditer(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+                spans.append((match.start(), match.end(), len(surface), hero.id))
+
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, str]] = []
+    for start, end, _slen, hid in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _h in accepted):
+            continue
+        accepted.append((start, end, hid))
+    accepted.sort(key=lambda a: a[0])
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for _start, _end, hid in accepted:
+        if hid in seen:
+            continue
+        seen.add(hid)
+        names.append(hid)
+    return names
+
+
+def _extract_power_names(text_lower: str) -> list[str]:
+    """The power ids a comparison names, in order of appearance, deduped.
+
+    Scans every power canonical (powers carry no aliases) and keeps the longest
+    surface at each span (so "monkey boost pro" wins over a bare "monkey boost"),
+    then dedups on the resolved power id. Surfaces shorter than 3 chars are
+    skipped, though every power canonical is well over that — the cost-compare cue
+    + the ≥2-powers gate already constrain this builder hard. Returns ids (the
+    ``find_power`` resolver accepts them), so the data primitive re-resolves
+    cleanly.
+    """
+    from services import btd6_data_service
+
+    powers = btd6_data_service.get_dataset().powers
+    spans: list[tuple[int, int, int, str]] = []  # (start, end, surface_len, id)
+    for power in powers:
+        surface = power.canonical.lower()
+        if len(surface) < 3:
+            continue
+        for match in re.finditer(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+            spans.append((match.start(), match.end(), len(surface), power.id))
+
+    spans.sort(key=lambda sp: (sp[0], -sp[2]))
+    accepted: list[tuple[int, int, str]] = []
+    for start, end, _slen, pid in spans:
+        if any(start < a_end and end > a_start for a_start, a_end, _p in accepted):
+            continue
+        accepted.append((start, end, pid))
+    accepted.sort(key=lambda a: a[0])
+
+    seen: set[str] = set()
+    names: list[str] = []
+    for _start, _end, pid in accepted:
+        if pid in seen:
+            continue
+        seen.add(pid)
+        names.append(pid)
+    return names
+
+
+def _format_hero_cost_comparison(result: dict[str, Any]) -> str:
+    diff = str(result["difficulty"]).capitalize()
+    lines = [f"**Hero cost comparison — {diff} placement cost:**"]
+    for entry in result["entries"]:
+        lines.append(f"• **{entry['name']}** — **${entry['base_cost']:,}**")
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** to place (**${cheapest['base_cost']:,}** each).",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['name']}** is cheaper by **${result['spread']:,}**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['name']}** (${cheapest['base_cost']:,}). Most "
+            f"expensive: **{dearest['name']}** (${dearest['base_cost']:,}). "
+            f"Spread: **${result['spread']:,}**.",
+        )
+    lines.append("_(Base placement cost at that difficulty — abilities are free.)_")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_hero_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is Quincy or Benjamin cheaper" answer, or ``None``.
+
+    The AI §7.5 *hero* member of the multi-entity cost-comparison floor — the
+    hero-entity sibling of :func:`deterministic_cost_comparison_reply` (towers),
+    :func:`deterministic_difficulty_cost_comparison_reply` (one tower by
+    difficulty), and :func:`deterministic_paragon_cost_comparison_reply`
+    (paragons). Ranks the **base placement cost** of two-or-more heroes so the
+    model can never mis-state which is cheaper / by how much (the BUG-0009
+    "grounded values, wrong assembly" class). Fires on a high-precision
+    cost-compare cue **and** two-or-more resolved heroes; defers on a ``paragon``
+    cue (the paragon builder's job), strategy/recommendation questions, and
+    single-hero lookups, which all reach the model untouched. Mutually exclusive
+    with the tower/difficulty builders by construction — those need a resolvable
+    ``(tower, crosspath)`` candidate, which a hero name never produces.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+    # A paragon cost comparison is the paragon builder's job.
+    if _PARAGON_CUE_RE.search(low):
+        return None
+
+    names = _extract_hero_names(low)
+    if len(names) < 2:
+        return None
+
+    difficulty = "medium"
+    diff_match = _COST_DIFFICULTY_RE.search(low)
+    if diff_match:
+        token = diff_match.group(1).lower()
+        # CHIMPS is a mode, not a pricing difficulty — its prices are Hard's.
+        difficulty = "hard" if token == "chimps" else token
+        if difficulty == "impop":
+            difficulty = "impoppable"
+
+    from services import btd6_data_service
+
+    result = btd6_data_service.compare_hero_costs(names, difficulty=difficulty)
+    if not result.get("found"):
+        return None
+    return _format_hero_cost_comparison(result)
+
+
+def _format_power_cost_comparison(result: dict[str, Any]) -> str:
+    lines = ["**Power cost comparison — Monkey Money store price:**"]
+    for entry in result["entries"]:
+        lines.append(f"• **{entry['name']}** — **{entry['cost']:,} MM**")
+    cheapest = result["cheapest"]
+    if result["all_equal"]:
+        lines.append(
+            f"→ They cost the **same** (**{cheapest['cost']:,} MM** each).",
+        )
+    elif len(result["entries"]) == 2:
+        lines.append(
+            f"→ The **{cheapest['name']}** is cheaper by **{result['spread']:,} MM**.",
+        )
+    else:
+        dearest = result["most_expensive"]
+        lines.append(
+            f"→ Cheapest: **{cheapest['name']}** ({cheapest['cost']:,} MM). Most "
+            f"expensive: **{dearest['name']}** ({dearest['cost']:,} MM). "
+            f"Spread: **{result['spread']:,} MM**.",
+        )
+    lines.append("_(Monkey Money store price — the same on every difficulty.)_")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_power_cost_comparison_reply(message_text: str) -> str | None:
+    """A code-built "is Cash Drop or Monkey Boost cheaper" answer, or ``None``.
+
+    The AI §7.5 *power* member of the multi-entity cost-comparison floor — the
+    activated-ability sibling of :func:`deterministic_cost_comparison_reply`
+    (towers), :func:`deterministic_difficulty_cost_comparison_reply`,
+    :func:`deterministic_paragon_cost_comparison_reply`, and
+    :func:`deterministic_hero_cost_comparison_reply`. Ranks the **Monkey Money**
+    store price of two-or-more powers so the model can never mis-state which is
+    cheaper / by how much (the BUG-0009 "grounded values, wrong assembly" class).
+    Fires on a high-precision cost-compare cue **and** two-or-more resolved powers;
+    defers on a ``paragon`` cue (the paragon builder's job), strategy /
+    recommendation questions, and single-power lookups, which all reach the model
+    untouched. Mutually exclusive with the tower/hero/paragon builders by
+    construction — those resolve a ``(tower, crosspath)`` / hero / paragon
+    candidate, which a power name never produces.
+    """
+    text = (message_text or "").strip()
+    if not text:
+        return None
+    low = text.lower()
+    if not (_COST_COMPARE_CUE_RE.search(low) or _COST_COMPARE_VERB_RE.search(low)):
+        return None
+    if any(word in low for word in _COST_COMPARE_STRATEGY_EXCLUDE):
+        return None
+    # A paragon cost comparison is the paragon builder's job.
+    if _PARAGON_CUE_RE.search(low):
+        return None
+
+    names = _extract_power_names(low)
+    if len(names) < 2:
+        return None
+
+    from services import btd6_data_service
+
+    result = btd6_data_service.compare_power_costs(names)
+    if not result.get("found"):
+        return None
+    return _format_power_cost_comparison(result)
+
+
 def _format_paragon_cost_comparison(result: dict[str, Any]) -> str:
     diff = str(result["difficulty"]).capitalize()
     lines = [f"**Paragon cost comparison — {diff} base price:**"]
@@ -2532,6 +2981,849 @@ def deterministic_paragon_cost_comparison_reply(message_text: str) -> str | None
     return _format_paragon_cost_comparison(result)
 
 
+# --- "which towers pop lead / see camo" capability roster (AI §7) -------------
+# A capability/property roster ("which towers pop lead without upgrades", "what
+# towers detect camo", "which monkeys pop purple") is the BUG-0009 wrong-assembly
+# class: the model assembles the roster itself and can include/exclude the wrong
+# towers, and because every tower NAME is grounded the value-only faithfulness
+# guard never catches a mis-*roster*. The authoritative answer is already derived
+# deterministically by services.btd6_capability_service (from the committed
+# per-tier stats), so the floor OWNS the labelled list.
+#
+# High-precision firing: a capability cue (camo + a detection verb, OR a pop verb
+# + a named bloon type) AND a roster discovery shape ("which/what ... towers"),
+# with strategy/opinion deferred to the model.
+_CAP_CAMO_RE = re.compile(r"\bcamo(?:flage)?\b", re.I)
+_CAP_CAMO_VERB_RE = re.compile(
+    r"\b(?:detect|detects|detecting|detection|see|sees|seeing|reveal|reveals"
+    r"|spot|spots)\b",
+    re.I,
+)
+# A popping verb is required for the bloon-immunity capabilities so a stray colour
+# word ("the white monkey", "purple is the best path") never trips the floor.
+_CAP_POP_VERB_RE = re.compile(r"\bpop(?:s|ped|ping)?\b", re.I)
+# (capability-key prefix, the bloon word that must appear with a pop verb). The
+# key matches services.btd6_capability_service.<KEY>_POPPING.
+_CAP_BLOON_KEYWORDS: tuple[tuple[str, str], ...] = (
+    ("lead", r"\blead\b"),
+    ("black", r"\bblack\b"),
+    ("white", r"\bwhite\b"),
+    ("purple", r"\bpurple\b"),
+)
+# The roster discovery shape: a "which/what/list ... tower(s)/paragon(s)/monkey(s)"
+# question, or "tower(s) ... which/that/can". Keeps single-entity lookups ("does
+# the dartling see camo") and yes/no checks out of the roster floor.
+_CAP_SHAPE_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every)\b.{0,40}"
+    r"\b(?:towers?|paragons?|monkeys?)\b|"
+    r"\b(?:towers?|paragons?|monkeys?)\b.{0,40}\b(?:which|that|can)\b",
+    re.I,
+)
+# An explicit "with upgrades / ever" signal flips the roster from the base (0-0-0)
+# default to the earliest-upgrade roster.
+_CAP_UPGRADED_RE = re.compile(
+    r"\bwith\s+upgrades?\b|\bupgraded\b|\bever\b|\beventually\b|\bany\s+tower\b|"
+    r"\bat\s+any\s+(?:tier|upgrade)\b",
+    re.I,
+)
+# Human labels for the roster header.
+_CAP_LABELS: dict[str, str] = {
+    "camo_detection": "detect Camo",
+    "lead_popping": "pop Lead",
+    "black_popping": "pop Black",
+    "white_popping": "pop White",
+    "purple_popping": "pop Purple",
+}
+
+
+def _match_capability(text_lower: str) -> str | None:
+    """Resolve the single capability key a roster question asks about, or ``None``."""
+    from services import btd6_capability_service as cap_svc
+
+    if _CAP_CAMO_RE.search(text_lower) and _CAP_CAMO_VERB_RE.search(text_lower):
+        return cap_svc.CAMO_DETECTION
+    if _CAP_POP_VERB_RE.search(text_lower):
+        pop_keys = {
+            "lead": cap_svc.LEAD_POPPING,
+            "black": cap_svc.BLACK_POPPING,
+            "white": cap_svc.WHITE_POPPING,
+            "purple": cap_svc.PURPLE_POPPING,
+        }
+        for prefix, pattern in _CAP_BLOON_KEYWORDS:
+            if re.search(pattern, text_lower):
+                return pop_keys[prefix]
+    return None
+
+
+def _format_capability_roster(
+    capability: str,
+    hits: list[Any],
+    *,
+    upgraded: bool,
+) -> str:
+    """Render the labelled tower roster for a resolved capability."""
+    label = _CAP_LABELS.get(capability, capability.replace("_", " "))
+    scope = "(any tier, earliest shown)" if upgraded else "without upgrades (base tier)"
+    if not hits:
+        return f"**BTD6 — no tower can {label} {scope}.**"
+    lines = [f"**BTD6 towers that {label} {scope} ({len(hits)}):**"]
+    lines.extend(f"• **{hit.canonical}** — {hit.detail}" for hit in hits)
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def _format_paragon_capability_roster(hits: list[Any]) -> str | None:
+    """Render the per-paragon Camo-detection roster (yes/no), or ``None`` if empty."""
+    if not hits:
+        return None
+    yes = [h for h in hits if h.has_capability]
+    no = [h for h in hits if not h.has_capability]
+    lines = [f"**BTD6 paragons and Camo detection ({len(hits)}):**"]
+    if yes:
+        names = ", ".join(f"**{h.paragon}**" for h in yes)
+        lines.append(f"__Detect Camo innately ({len(yes)})__: {names}")
+    if no:
+        names = ", ".join(f"**{h.paragon}**" for h in no)
+        lines.append(f"__Need external Camo support ({len(no)})__: {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_capability_roster_reply(message_text: str) -> str | None:
+    """A code-built "which towers have capability X" roster, or ``None``.
+
+    Fires on a clear capability-roster question — "which towers pop lead without
+    upgrades", "what towers detect camo", "which monkeys pop purple" — the
+    BUG-0009 wrong-assembly class: every tower name is grounded, so the model can
+    silently mis-*roster* (include a tower that can't, drop one that can) and the
+    value-only faithfulness guard never catches it. The roster is derived
+    deterministically by :mod:`services.btd6_capability_service` from the committed
+    per-tier stats, so the floor OWNS the labelled list.
+
+    Scope: base (0-0-0) by default — the genuinely-confused "innate" question; an
+    explicit "with upgrades / ever" signal flips it to the earliest-upgrade
+    roster. A ``paragon`` cue answers the per-paragon Camo roster (the only
+    per-paragon capability the service verifies). Returns ``None`` for
+    single-entity lookups, strategy/opinion, and anything outside the roster shape.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _CAP_SHAPE_RE.search(text):
+        return None
+
+    from services import btd6_capability_service as cap_svc
+
+    capability = _match_capability(text)
+    if capability is None:
+        return None
+
+    if _PARAGON_CUE_RE.search(text):
+        # Only Camo is verified per-paragon; defer other capabilities to the model.
+        if capability != cap_svc.CAMO_DETECTION:
+            return None
+        return _format_paragon_capability_roster(
+            cap_svc.paragons_with_capability(capability),
+        )
+
+    upgraded = bool(_CAP_UPGRADED_RE.search(text))
+    hits = cap_svc.towers_with_capability(capability, unupgraded=not upgraded)
+    return _format_capability_roster(capability, hits, upgraded=upgraded)
+
+
+# --- "which bloons are immune to X / list the MOAB-class bloons" (AI §7) -------
+# A bloon roster ("what are all the MOAB-class bloons", "which bloons are immune
+# to sharp") is the same wrong-assembly class as the tower-capability floor above,
+# on the other side of the matchup: the model assembles the bloon list itself and
+# can miscount the blimp tier or mis-state an immunity, and because every bloon
+# NAME is grounded the value-only faithfulness guard never catches a mis-roster.
+# btd6_data_service exposes the committed bloon fields (category · immune_to), so
+# the floor OWNS the labelled list. The sibling roster floor
+# (deterministic_roster_reply) covers heroes/towers/paragons/maps but NOT bloons.
+_BLOON_SUBJECT_RE = re.compile(r"\bbloons?\b|\bblimps?\b|\bmoab", re.I)
+_BLOON_MOAB_CUE_RE = re.compile(r"\bmoab[-\s]?class\b|\bblimps?\b|\bmoab\b", re.I)
+_BLOON_IMMUNE_CUE_RE = re.compile(
+    r"\bimmune\b|\bimmunit|\bresist(?:s|ant|ance)?\b|"
+    r"\bcan'?t\s+be\s+(?:popped|damaged|hurt)\b",
+    re.I,
+)
+# A strict enumeration signal for the MOAB-class list (a bare "what"/"which" is
+# NOT enough — "what is a moab" is a single lookup, not a roster).
+_BLOON_MOAB_LIST_RE = re.compile(
+    r"\blist\b|\bname\b|\ball\b|\bevery\b|\bhow many\b|\bwhich\b|\bwhat are\b|"
+    r"\bthere are\b|\bare there\b",
+    re.I,
+)
+# A looser enumeration signal for the immunity roster (the damage-keyword gate
+# already keeps single-entity "is the lead immune to sharp" out — it has no
+# which/what/list cue — so "what bloons" is safe to accept here).
+_BLOON_IMMUNE_LIST_RE = re.compile(
+    r"\bwhich\b|\bwhat\b|\blist\b|\bname\b|\ball\b|\bevery\b|\bhow many\b",
+    re.I,
+)
+# (regex over the question, the canonical immune_to damage label). Order matters:
+# the specific cold sub-types (Glacier/Frigid) are matched before generic cold/ice.
+_BLOON_DAMAGE_KEYWORDS: tuple[tuple[str, str], ...] = (
+    (r"\bexplos|\bbomb\b", "Explosion"),
+    (r"\bfire\b|\bflame\b|\bburn", "Fire"),
+    (r"\benerg", "Energy"),
+    (r"\bplasma\b", "Plasma"),
+    (r"\bglacier\b", "Glacier"),
+    (r"\bfrigid\b", "Frigid"),
+    (r"\bcold\b|\bice\b|\bfreez", "Cold"),
+    (r"\bshatter", "Shatter"),
+    (r"\bsharp", "Sharp"),
+    (r"\bacid\b", "Acid"),
+)
+
+
+def _match_bloon_damage(text_lower: str) -> str | None:
+    """The canonical immune_to damage label a question names, or ``None``."""
+    for pattern, label in _BLOON_DAMAGE_KEYWORDS:
+        if re.search(pattern, text_lower):
+            return label
+    return None
+
+
+def _format_moab_class_roster(hits: list[Any]) -> str | None:
+    if not hits:
+        return None
+    names = ", ".join(f"**{b.canonical}**" for b in hits)
+    return f"**BTD6 MOAB-class bloons ({len(hits)})** — the blimp tier: {names}."
+
+
+def _format_bloon_immunity_roster(label: str, hits: list[Any]) -> str:
+    if not hits:
+        return f"**BTD6 — no bloon is immune to {label} damage.**"
+    names = ", ".join(f"**{b.canonical}**" for b in hits)
+    return f"**BTD6 bloons immune to {label} damage ({len(hits)}):** {names}."
+
+
+def deterministic_bloon_roster_reply(message_text: str) -> str | None:
+    """A code-built bloon roster — MOAB-class list or immunity roster — or ``None``.
+
+    Fires on a clear bloon enumeration: "what are all the MOAB-class bloons /
+    blimps" (the category list) or "which bloons are immune to <damage>" (the
+    immunity roster). Same wrong-assembly class as the tower-capability floor —
+    every bloon name is grounded, so the model can miscount/mis-state and the
+    value-only guard never catches the mis-roster. Defers (``None``) for
+    single-bloon lookups ("what is a moab", "is the lead immune to sharp"),
+    strategy/opinion, and anything without a bloon subject + enumeration shape.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _BLOON_SUBJECT_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    # "modifier" rows (camo / fortified / regrow) are property markers, not bloons.
+    bloons = [
+        b for b in btd6_data_service.get_dataset().bloons if b.category != "modifier"
+    ]
+
+    if _BLOON_IMMUNE_CUE_RE.search(text):
+        if not _BLOON_IMMUNE_LIST_RE.search(text):
+            return None
+        label = _match_bloon_damage(text)
+        if label is None:
+            return None
+        hits = [b for b in bloons if label in (b.immune_to or ())]
+        return _format_bloon_immunity_roster(label, hits)
+
+    if _BLOON_MOAB_CUE_RE.search(text) and _BLOON_MOAB_LIST_RE.search(text):
+        hits = [b for b in bloons if b.category == "moab_class"]
+        return _format_moab_class_roster(hits)
+
+    return None
+
+
+# --- §7.6 bloon-modifier explainer (slot-4 reframe, BUG-0009) -----------------
+# Camo / Fortified / Regrow are universal *modifiers* applied to ANY bloon, not
+# per-type properties — so "which bloons are camo?" has no clean roster (the
+# night-queue slot-4 finding: a roster would wrongly imply only DDT can be camo),
+# and "what does camo do?" on the general path is the BUG-0009 freelance class.
+# The dataset files each modifier as a category=="modifier" marker carrying its
+# description; this floor OWNS the grounded explanation + the "it can apply to any
+# bloon" correction. Distinct from deterministic_bloon_roster_reply (which
+# EXCLUDES modifier rows and fires only on the MOAB/immunity roster shapes) and
+# from the capability roster (towers detecting camo) — it defers whenever a
+# tower, a detection/pop verb, or a tower-subject is present, so none overlap.
+_BLOON_MODIFIER_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("camo", re.compile(r"\bcamo(?:flage)?\b", re.I)),
+    ("fortified", re.compile(r"\bfortif(?:ied|y|ication)\b", re.I)),
+    ("regrow", re.compile(r"\bregrow(?:th|s|ing)?\b", re.I)),
+)
+# The generic "what are the bloon modifiers/properties" ask (no specific one).
+_BLOON_MODIFIER_GENERIC_RE = re.compile(
+    r"\bbloons?\s+(?:modifiers?|propert(?:y|ies))\b|"
+    r"\b(?:modifiers?|propert(?:y|ies))\s+(?:of|on|for)\s+(?:a\s+)?bloons?\b",
+    re.I,
+)
+# A definition/roster-attempt shape — keeps a stray modifier word inside an
+# unrelated sentence out, and is broad enough to catch both "what does camo do"
+# and the (reframed) "which bloons are camo".
+_BLOON_MODIFIER_SHAPE_RE = re.compile(
+    r"\b(?:what|which|whats|explain|describe|tell|list|mean(?:s|ing)?|"
+    r"is|are|does|do|have|property|modifier)\b",
+    re.I,
+)
+# A tower-subject cue → the question is really about a tower's capability, not the
+# modifier itself; defer to the model / capability roster.
+_BLOON_MODIFIER_TOWER_SUBJECT_RE = re.compile(
+    r"\btowers?\b|\bmonkeys?\b|\bparagons?\b|\bheroe?s?\b",
+    re.I,
+)
+
+
+def _format_bloon_modifier(entry: Any) -> str:
+    label = entry.canonical.removesuffix(" property").strip() or entry.canonical
+    return (
+        f"**{label} is a bloon modifier, not a bloon type.** {entry.description} "
+        "It can be applied to many different bloons (set by the round / game mode), "
+        "so there is no fixed list of "
+        f"“{label.lower()} bloons.”"
+    )
+
+
+def deterministic_bloon_modifier_reply(message_text: str) -> str | None:
+    """A code-built explainer for a bloon modifier (Camo/Fortified/Regrow), or ``None``.
+
+    The §7.6 slot-4 *reframe*: "what does camo do?", "which bloons are camo?",
+    "explain the regrow property" — the model either explains the modifier wrong
+    or assembles a misleading "camo bloons" roster (BUG-0009), because camo /
+    fortified / regrow are universal modifiers, not per-type properties. This
+    floor OWNS the grounded explanation from the dataset's modifier marker
+    entries. Defers (``None``) when a **tower**, a detection/pop **verb**, or a
+    tower-subject is present (those are the capability roster's / model's job),
+    on strategy/opinion, and when no modifier is named — so it never overlaps the
+    bloon roster (MOAB/immunity) or the capability roster.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    # A tower's camo-detection / popping question belongs to the capability floor.
+    if _CAP_CAMO_VERB_RE.search(text) or _CAP_POP_VERB_RE.search(text):
+        return None
+    if _BLOON_MODIFIER_TOWER_SUBJECT_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    if _scan_tower(text, btd6_data_service.get_dataset()) is not None:
+        return None
+
+    named = [key for key, pattern in _BLOON_MODIFIER_CUES if pattern.search(text)]
+    generic = bool(_BLOON_MODIFIER_GENERIC_RE.search(text))
+    if not named and not generic:
+        return None
+    if not _BLOON_MODIFIER_SHAPE_RE.search(text):
+        return None
+
+    modifiers = {m.id: m for m in btd6_data_service.bloon_modifiers()}
+    if not modifiers:
+        return None
+
+    # A single named modifier → its explanation.
+    if len(named) == 1 and named[0] in modifiers:
+        return _format_bloon_modifier(modifiers[named[0]])
+
+    # Several named, or a generic "bloon modifiers" ask → all of them.
+    wanted = [modifiers[k] for k in named if k in modifiers] or list(modifiers.values())
+    lines = [
+        "**BTD6 bloon modifiers** — these apply to bloons, they are not bloon types:",
+    ]
+    for entry in wanted:
+        label = entry.canonical.removesuffix(" property").strip() or entry.canonical
+        lines.append(f"• **{label}** — {entry.description}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+# --- §7.6 relic category/effect roster (AI §7) --------------------------------
+# "what economy relics are there", "list all offensive relics", "which relics are
+# utility" is the BUG-0009 wrong-assembly class: the model buckets the relics by
+# category itself and can mis-bucket one (every relic NAME is grounded, so the
+# value-only faithfulness guard never catches a mis-*grouping*). The authoritative
+# grouping is derived deterministically by btd6_data_service.relics_by_category, so
+# the floor OWNS the labelled list.
+_RELIC_SUBJECT_RE = re.compile(r"\brelics?\b", re.I)
+# An enumeration shape ("which/what/list ... relics", or "relics ... which/that/are
+# there"), so single-relic effect lookups ("what does the el dorado relic do") and
+# yes/no checks stay out of the roster floor.
+_RELIC_LIST_RE = re.compile(
+    r"\b(?:which|what|list|name|all|every|how\s+many)\b.{0,40}\brelics?\b|"
+    r"\brelics?\b.{0,40}\b(?:which|that|are\s+there|exist)\b",
+    re.I,
+)
+# (category key, the cue that names it). The key matches a btd6_data_service
+# relic category; the order mirrors _RELIC_CATEGORY_ORDER.
+_RELIC_CATEGORY_CUES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("offense", re.compile(r"\boffens(?:e|ive)\b|\bdamage\b|\battack(?:ing)?\b", re.I)),
+    ("economy", re.compile(r"\beconom(?:y|ic)\b|\bcash\b|\bmoney\b|\bincome\b", re.I)),
+    ("lives", re.compile(r"\blives\b|\bhealth\b|\bhp\b", re.I)),
+    ("powerup", re.compile(r"\bpower[\s-]?ups?\b|\bpowerups?\b", re.I)),
+    ("utility", re.compile(r"\butility\b|\butilit(?:ies|y)\b", re.I)),
+)
+# Human labels for the roster header.
+_RELIC_CATEGORY_LABELS: dict[str, str] = {
+    "offense": "Offense",
+    "economy": "Economy",
+    "lives": "Lives",
+    "powerup": "Power-up",
+    "utility": "Utility",
+}
+
+
+def _match_relic_category(text_lower: str) -> str | None:
+    """The single relic category a roster question names, or ``None`` for all."""
+    for category, pattern in _RELIC_CATEGORY_CUES:
+        if pattern.search(text_lower):
+            return category
+    return None
+
+
+def _mentions_specific_relic(text_lower: str) -> bool:
+    """True when the message names a specific relic (an effect lookup, not a roster).
+
+    Scans every relic surface (canonical + aliases + abbrev) so "what does the el
+    dorado relic do" — which matches the enumeration regex by accident — is
+    recognised as a single-relic lookup and deferred to the model. Surfaces under
+    3 chars are skipped so a stray short token never trips the guard.
+    """
+    from services import btd6_data_service
+
+    for relic in btd6_data_service.get_dataset().ct_relics:
+        surfaces = {
+            relic.canonical.lower(),
+            relic.abbrev.lower(),
+            *(a.lower() for a in relic.aliases),
+        }
+        for surface in surfaces:
+            if len(surface) < 3:
+                continue
+            if re.search(r"\b" + re.escape(surface) + r"s?\b", text_lower):
+                return True
+    return False
+
+
+def _format_relic_category_roster(category: str, relics: list[Any]) -> str:
+    label = _RELIC_CATEGORY_LABELS.get(category, category.capitalize())
+    if not relics:
+        return f"**BTD6 — no {label} relics in the catalog.**"
+    lines = [f"**BTD6 {label} relics ({len(relics)}):**"]
+    lines.extend(f"• **{relic.canonical}** — {relic.effect}" for relic in relics)
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def _format_all_relics_roster(grouped: dict[str, tuple[Any, ...]]) -> str:
+    total = sum(len(rels) for rels in grouped.values())
+    lines = [f"**BTD6 Contested Territory relics by category ({total}):**"]
+    for category, label in _RELIC_CATEGORY_LABELS.items():
+        rels = grouped.get(category, ())
+        if not rels:
+            continue
+        names = ", ".join(relic.canonical for relic in rels)
+        lines.append(f"__{label}__ ({len(rels)}): {names}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_relic_roster_reply(message_text: str) -> str | None:
+    """A code-built relic-by-category roster, or ``None``.
+
+    The §7.6 *relic* member of the BUG-0009 roster floor — the sibling of
+    :func:`deterministic_capability_roster_reply` (towers) and
+    :func:`deterministic_bloon_roster_reply` (bloons). Fires on a relic
+    enumeration: a named category ("what economy relics are there", "list all
+    offensive relics", "which relics are utility") lists that category's relics +
+    effects; a bare "what relics are there" / "list all relics" lists every relic
+    grouped by category. Defers (``None``) for single-relic effect lookups ("what
+    does the el dorado relic do"), strategy/opinion, and anything without the
+    relic subject + an enumeration shape — those reach the model untouched.
+    Mutually exclusive with the other floor builders by construction: it requires
+    the literal ``relic`` token, which the tower/bloon/power/comparison builders
+    never key on.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+    if not _RELIC_SUBJECT_RE.search(text):
+        return None
+    if not _RELIC_LIST_RE.search(text):
+        return None
+
+    from services import btd6_data_service
+
+    category = _match_relic_category(text)
+    grouped = btd6_data_service.relics_by_category()
+    if category is not None:
+        return _format_relic_category_roster(category, list(grouped.get(category, ())))
+    # An ungrouped "all relics" ask — but defer if it actually names one relic
+    # (an effect lookup that matched the enumeration regex by accident).
+    if _mentions_specific_relic(text):
+        return None
+    return _format_all_relics_roster(grouped)
+
+
+# --- §7.6 hero ability roster (AI §7) -----------------------------------------
+# "what abilities does Quincy have", "list Adora's abilities" is the BUG-0009
+# wrong-assembly class: the model lists a hero's abilities itself and can
+# mis-level / mislabel one (every ability NAME is grounded, so the value-only
+# faithfulness guard never catches a wrong level or ordering). The authoritative
+# per-hero list is derived deterministically by btd6_data_service.hero_abilities,
+# so the floor OWNS the labelled list.
+_ABILITY_CUE_RE = re.compile(r"\babilit(?:y|ies)\b", re.I)
+
+
+def _format_hero_abilities(canonical: str, abilities: tuple[Any, ...]) -> str:
+    if not abilities:
+        return f"**{canonical}** has no recorded activated abilities."
+    lines = [f"**{canonical} — abilities ({len(abilities)}):**"]
+    lines.extend(
+        f"• **{ability.name}** (Level {ability.level}) — {ability.summary}"
+        for ability in abilities
+    )
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_hero_ability_roster_reply(message_text: str) -> str | None:
+    """A code-built "what abilities does <hero> have" list, or ``None``.
+
+    The §7.6 *hero-ability* roster member of the BUG-0009 floor — the per-hero
+    sibling of the capability / bloon / relic rosters. Fires on an ability cue +
+    exactly one resolved hero, listing that hero's abilities (level + name +
+    summary). Defers (``None``) on a **cost** cue (the hero *cost* comparison
+    builder's job — same entity, different shape), strategy/opinion, zero heroes,
+    and two-or-more heroes (an ambiguous multi-hero ask reaches the model).
+    Mutually exclusive with the other floor builders by construction: it requires
+    the literal ``ability``/``abilities`` token, which none of them key on.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _ABILITY_CUE_RE.search(text):
+        return None
+    # A hero cost comparison is the hero-cost builder's job, not this roster.
+    if _COST_COMPARE_CUE_RE.search(text) or _COST_COMPARE_VERB_RE.search(text):
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    names = _extract_hero_names(text)
+    if len(names) != 1:
+        return None
+
+    from services import btd6_data_service
+
+    abilities = btd6_data_service.hero_abilities(names[0])
+    if not abilities:
+        return None
+    hero = btd6_data_service.get_hero(names[0])
+    canonical = hero.canonical if hero is not None else names[0]
+    return _format_hero_abilities(canonical, abilities)
+
+
+# --- §7.6 paragon ability roster (AI §7) --------------------------------------
+# "what abilities does the Ascended Shadow paragon have", "list the dart monkey
+# paragon's abilities" is the BUG-0009 wrong-assembly class for paragons: the
+# model lists a paragon's activated/passive abilities itself and can invent one,
+# mislabel activated vs passive, or drop one — and because every ability NAME is
+# grounded the value-only faithfulness guard never catches the wrong assembly. The
+# authoritative per-paragon list is the curated paragon_abilities.json (served via
+# btd6_stats_service), so the floor OWNS the labelled list. The literal "paragon"
+# token is what makes it mutually exclusive with the hero-ability roster (a hero
+# question never carries it) and the paragon-cost comparison (which needs a cost
+# cue this builder defers on).
+
+
+def _format_paragon_abilities(canonical: str, abilities: tuple[Any, ...]) -> str:
+    if not abilities:
+        return (
+            f"**{canonical}** has no special activated or passive ability — its "
+            "power is its base attack alone."
+        )
+    lines = [f"**{canonical} — abilities ({len(abilities)}):**"]
+    for ability in abilities:
+        if ability.kind == "passive":
+            tag = "passive"
+        elif ability.cooldown:
+            tag = f"activated, {ability.cooldown}s cooldown"
+        else:
+            tag = "activated"
+        lines.append(f"• **{ability.name}** ({tag}) — {ability.description}")
+    reply = "\n".join(lines)
+    return reply if len(reply) <= 1900 else reply[:1899] + "…"
+
+
+def deterministic_paragon_ability_roster_reply(message_text: str) -> str | None:
+    """A code-built "what abilities does <paragon> have" list, or ``None``.
+
+    The §7.6 *paragon-ability* roster member of the BUG-0009 floor — the paragon
+    sibling of :func:`deterministic_hero_ability_roster_reply`. Fires on an ability
+    cue + the literal ``paragon`` token + exactly one resolved paragon, listing
+    that paragon's curated activated/passive abilities (name + kind + cooldown +
+    summary). Defers (``None``) on a **cost** cue (the paragon *cost* comparison
+    builder's job — same entity, different shape), strategy/opinion phrasing, zero
+    paragons, and two-or-more paragons (an ambiguous multi-paragon ask reaches the
+    model). The ``paragon`` token keeps it mutually exclusive with the hero-ability
+    roster (a hero question never carries it). A paragon with no special ability
+    (e.g. Apex Plasma Master) still gets an explicit owned line so the model never
+    invents one.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _ABILITY_CUE_RE.search(text):
+        return None
+    if not _PARAGON_CUE_RE.search(text):
+        return None
+    # A paragon cost comparison is the paragon-cost builder's job, not this roster.
+    if _COST_COMPARE_CUE_RE.search(text) or _COST_COMPARE_VERB_RE.search(text):
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    names = _extract_paragon_names(text)
+    if len(names) != 1:
+        return None
+
+    from services import btd6_stats_service
+
+    pstats = btd6_stats_service.get_paragon_stats(names[0])
+    if pstats is None:
+        return None
+    return _format_paragon_abilities(pstats.canonical, pstats.abilities)
+
+
+# --- boss damage-immunity floor (BUG-0009) ------------------------------------
+# "what is Lych immune to" / "which bosses are immune to fire" — the model can
+# mis-state a boss's immunities (claim an immunity it doesn't have, or omit one),
+# and every damage-type name is grounded so the value-only faithfulness guard
+# can't catch the wrong *assembly*. The deterministic layer OWNS the answer off
+# bosses[].immune_to. Requires a boss reference (a named boss or the literal
+# "boss(es)" token) AND an immunity cue, so it never overlaps the bloon immunity
+# roster (which keys on a bloon/blimp/moab subject, never on "boss").
+_BOSS_IMMUNE_CUE_RE = re.compile(
+    r"\bimmun(?:e|ity|ities)\b|\bresist(?:s|ant|ance)?\b",
+    re.I,
+)
+_BOSS_SUBJECT_RE = re.compile(r"\bboss(?:es)?\b", re.I)
+
+
+def _scan_boss(text_lower: str, bosses: Any) -> Any | None:
+    """The most specific boss named in ``text_lower`` (longest canonical), or
+    ``None``. Whole-word matched; boss names carry no aliases in the dataset.
+    """
+    best = None
+    best_len = 0
+    for boss in bosses:
+        name = boss.canonical.lower()
+        if len(name) < 3:
+            continue
+        if re.search(r"\b" + re.escape(name) + r"\b", text_lower):
+            if len(name) > best_len:
+                best, best_len = boss, len(name)
+    return best
+
+
+def deterministic_boss_immunity_reply(message_text: str) -> str | None:
+    """A code-built boss damage-immunity answer, or ``None``.
+
+    Handles three shapes off ``bosses[].immune_to``: a single boss's immunities
+    ("what is Lych immune to"), a yes/no for one boss + damage ("is Blastapopoulos
+    immune to fire"), and the cross-boss roster ("which bosses are immune to
+    fire"). Fires only on a boss reference + an immunity cue, so it defers
+    (``None``) for the bloon immunity roster (bloon subject, not boss), boss HP /
+    strategy questions (no immunity cue), and anything else — which reach the model
+    or another floor builder unchanged.
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _BOSS_IMMUNE_CUE_RE.search(text):
+        return None
+    if any(word in text for word in _ROSTER_STRATEGY_WORDS):
+        return None
+
+    from services import btd6_data_service
+
+    bosses = btd6_data_service.get_dataset().bosses
+    if not bosses:
+        return None
+
+    damage = _match_bloon_damage(text)
+    named = _scan_boss(text, bosses)
+
+    if named is not None:
+        immunities = named.immune_to or ()
+        if damage is not None:
+            verdict = (
+                "**is immune to**" if damage in immunities else "is **not** immune to"
+            )
+            return f"**{named.canonical}** {verdict} {damage} damage."
+        if not immunities:
+            return (
+                f"**{named.canonical}** has no damage-type immunities — every "
+                "damage type hurts it."
+            )
+        listed = ", ".join(immunities)
+        return (
+            f"**{named.canonical} is immune to ({len(immunities)}):** {listed} damage."
+        )
+
+    # No single boss named — the cross-boss roster needs the literal "boss(es)"
+    # token plus a damage type (otherwise it is too vague to floor).
+    if _BOSS_SUBJECT_RE.search(text) and damage is not None:
+        hits = [b for b in bosses if damage in (b.immune_to or ())]
+        if not hits:
+            return f"**No BTD6 boss is immune to {damage} damage.**"
+        names = ", ".join(f"**{b.canonical}**" for b in hits)
+        return f"**BTD6 bosses immune to {damage} damage ({len(hits)}):** {names}."
+
+    return None
+
+
+# --- §7.5 boss tier-HP comparison floor (BUG-0009) ----------------------------
+# "which boss has the most health at tier 5", "is Lych or Vortex tougher at tier
+# 3" is the §7.5 comparison member of the wrong-assembly class for bosses: the
+# model ranks the bosses itself off their per-tier health and can mis-state which
+# is tougher / by how much (every HP figure is grounded, so the value-only
+# faithfulness guard never catches a wrong RANKING). The authoritative per-tier
+# health is bosses[].tiers / .elite_tiers, so the floor OWNS the ranking. A tier
+# (1-5) is REQUIRED — without one the comparison is ambiguous (a boss has five
+# different HP values), so the builder fails closed and the question reaches the
+# model. Defers on an immunity cue (the boss-immunity floor's job).
+_BOSS_HP_CUE_RE = re.compile(
+    r"\b(?:hp|health|hit\s?points?|tough\w*|tank\w*|durab\w*|sturd\w*|beef\w*)\b",
+    re.I,
+)
+_BOSS_HP_MOST_RE = re.compile(
+    r"\b(?:most|highest|toughest|strongest|tankiest|beefiest|biggest|hardest)\b",
+    re.I,
+)
+_BOSS_HP_LEAST_RE = re.compile(
+    r"\b(?:least|lowest|weakest|squishiest|smallest|frailest)\b",
+    re.I,
+)
+_BOSS_TIER_RE = re.compile(r"\btier\s*([1-5])\b|\bt([1-5])\b", re.I)
+# A narrow strategy/how-to set — kept separate from _ROSTER_STRATEGY_WORDS because
+# that set excludes "vs"/"better"/"against", which are legitimate HP-comparison
+# phrasings ("Lych vs Vortex tier 5 hp"); only true strategy intent defers here.
+_BOSS_HP_STRATEGY_EXCLUDE = ("counter", "how do i beat", "how to beat", "tier list")
+
+
+def _scan_bosses(text_lower: str, bosses: Any) -> list[Any]:
+    """Every boss named in ``text_lower``, in order of first appearance, deduped.
+
+    Whole-word matched on the canonical (bosses carry no aliases). The plural
+    sibling of :func:`_scan_boss`, used by the HP comparison floor to rank the
+    specific bosses a question names.
+    """
+    hits: list[tuple[int, Any]] = []
+    for boss in bosses:
+        name = boss.canonical.lower()
+        if len(name) < 3:
+            continue
+        match = re.search(r"\b" + re.escape(name) + r"\b", text_lower)
+        if match:
+            hits.append((match.start(), boss))
+    hits.sort(key=lambda h: h[0])
+    return [boss for _start, boss in hits]
+
+
+def _boss_tier_health(boss: Any, tier: int, *, elite: bool) -> int | None:
+    """One boss's health at ``tier`` (1-5), elite or normal, or ``None``."""
+    rows = (boss.elite_tiers if elite else boss.tiers) or ()
+    for row in rows:
+        if row.get("tier") == tier:
+            health = row.get("health")
+            return int(health) if health is not None else None
+    return None
+
+
+def deterministic_boss_hp_comparison_reply(message_text: str) -> str | None:
+    """A code-built boss tier-HP ranking, or ``None``.
+
+    The §7.5 *boss* member of the multi-entity comparison floor. Two shapes off
+    ``bosses[].tiers`` / ``.elite_tiers``: ranking the specific bosses a question
+    names ("is Lych or Vortex tougher at tier 3") and the superlative over all
+    bosses ("which boss has the most health at tier 5"). A tier (1-5) is REQUIRED —
+    without one the answer is ambiguous (five HP values per boss), so the builder
+    returns ``None`` and the model handles it. Defers (``None``) on an immunity cue
+    (the boss-immunity floor's job), a strategy/how-to-beat ask, and a single-boss
+    HP lookup (a value question the faithfulness guard already covers).
+    """
+    text = (message_text or "").strip().lower()
+    if not text:
+        return None
+    if not _BOSS_HP_CUE_RE.search(text):
+        return None
+    # An immunity question is the boss-immunity floor's job, not an HP ranking.
+    if _BOSS_IMMUNE_CUE_RE.search(text):
+        return None
+    if any(word in text for word in _BOSS_HP_STRATEGY_EXCLUDE):
+        return None
+
+    tier_match = _BOSS_TIER_RE.search(text)
+    if not tier_match:
+        return None
+    tier = int(tier_match.group(1) or tier_match.group(2))
+    elite = "elite" in text
+
+    from services import btd6_data_service
+
+    bosses = btd6_data_service.get_dataset().bosses
+    if not bosses:
+        return None
+
+    named = _scan_bosses(text, bosses)
+    superlative_most = _BOSS_HP_MOST_RE.search(text)
+    superlative_least = _BOSS_HP_LEAST_RE.search(text)
+
+    if len(named) >= 2:
+        contenders = named
+    elif (superlative_most or superlative_least) and _BOSS_SUBJECT_RE.search(text):
+        contenders = list(bosses)
+    else:
+        return None
+
+    ranked = []
+    for boss in contenders:
+        health = _boss_tier_health(boss, tier, elite=elite)
+        if health is not None:
+            ranked.append((boss, health))
+    if len(ranked) < 2:
+        return None
+
+    ascending = superlative_least is not None and superlative_most is None
+    ranked.sort(key=lambda rb: rb[1], reverse=not ascending)
+
+    label = "elite tier" if elite else "tier"
+    winner, winner_hp = ranked[0]
+    verb = "least" if ascending else "most"
+    lines = [
+        f"**Boss HP at {label} {tier} — ranked ({verb} first):**",
+    ]
+    lines.extend(f"• **{boss.canonical}** — {health:,} HP" for boss, health in ranked)
+    lines.append(
+        f"**{winner.canonical}** has the {verb} health at {label} {tier} "
+        f"({winner_hp:,} HP).",
+    )
+    return "\n".join(lines)
+
+
 # --- BUG-0009 deterministic list-answer dispatcher ----------------------------
 # The ordered floor builders the dispatcher fans out to. Each OWNS its labelled
 # answer and is narrow (returns ``None`` for anything but its exact list shape),
@@ -2543,9 +3835,20 @@ def deterministic_paragon_cost_comparison_reply(message_text: str) -> str | None
 # contract, no test edit needed. Append a new list family here.
 _BTD6_LIST_BUILDERS: tuple[Callable[[str], str | None], ...] = (
     deterministic_mk_reference_reply,
+    deterministic_mk_category_roster_reply,
     deterministic_geraldo_per_level_reply,
     deterministic_modes_reply,
+    deterministic_capability_roster_reply,
+    deterministic_bloon_roster_reply,
+    deterministic_bloon_modifier_reply,
+    deterministic_boss_immunity_reply,
+    deterministic_boss_hp_comparison_reply,
+    deterministic_relic_roster_reply,
+    deterministic_hero_ability_roster_reply,
+    deterministic_paragon_ability_roster_reply,
     deterministic_paragon_cost_comparison_reply,
+    deterministic_hero_cost_comparison_reply,
+    deterministic_power_cost_comparison_reply,
     deterministic_cost_comparison_reply,
     deterministic_difficulty_cost_comparison_reply,
     deterministic_round_range_comparison_reply,
@@ -3583,6 +4886,21 @@ async def build(
         facts.extend(_paragon_name_facts(message_text, resolved_tower_ids))
         facts.extend(_paragon_roster_facts(message_text))
         facts.extend(_entity_roster_facts(message_text))
+
+        # Pass 3b3: a paragon DEGREE named in the text ("d67 dart", "degree 67")
+        # — only paragons have degrees (1-100). The name/tower passes above
+        # ground the paragon's Degree 1/100 anchors; this adds the exact
+        # NON-linear headline at the requested intermediate degree, explicitly
+        # labelled, so the model neither interpolates nor misreads the "d67"
+        # shorthand as an upgrade path "0-6-7" (BUG-0015). Isolated like the
+        # other passes.
+        try:
+            facts.extend(_paragon_degree_facts(message_text))
+        except Exception as exc:  # noqa: BLE001 — defensive
+            logger.debug(
+                "btd6_context_service: paragon-degree grounding unavailable (%s)",
+                exc,
+            )
 
         # Pass 3b2: a minion/sub-tower named directly ("Mini Sun Avatar",
         # "Crushing Sentry", "UAV") — its stats live under the owning tier /

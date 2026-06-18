@@ -9,6 +9,12 @@ WARN_TIMEOUT_MINS = "warn_timeout_minutes"
 # ``moderation_*`` to match the modern per-subsystem naming convention and
 # keep the shared guild-settings KV namespace collision-free.
 MOD_DM_ON_ACTION = "moderation_dm_on_action"
+# Per-action allow-list for the notify-the-member DM — a comma-separated subset
+# of warn,timeout,kick,ban.  An action DMs the affected member iff the master
+# MOD_DM_ON_ACTION switch is on AND the action appears here.  Default = all four
+# notify-eligible actions, so flipping the master switch on keeps today's
+# behaviour exactly; an owner narrows the list to suppress specific actions.
+MOD_DM_ACTIONS = "moderation_dm_actions"
 MOD_DM_TEMPLATE = "moderation_dm_template"
 MOD_REQUIRE_REASON = "moderation_require_reason"
 MOD_BAN_DELETE_MESSAGE_DAYS = "moderation_ban_delete_message_days"

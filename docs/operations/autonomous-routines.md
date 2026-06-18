@@ -9,8 +9,10 @@
 Companion to [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md) (the API/`/fire`
 mechanism + the three gates Q-0113/Q-0114/phase) and `docs/owner/ai-project-workflow.md` §12
 (the loop). Each routine inherits the **same safety model**: `claude/`-branch pushes only, no
-production/Railway/DB access, the phase gate keeps agent-*originated features* out, and the
-kill switch is toggling the routine off in the console.
+production/Railway/DB access, and the kill switch is toggling the routine off in the console.
+(The phase gate no longer "keeps features out" — owner directive **Q-0172** opened
+idea->plan->ship; self-initiated feature work is now *flagged* on the run-report ⚑ Self-initiated
+line for owner review, not gated. The real brakes stay: irreversible/production is still ask-first.)
 
 **These routines ARE the self-improvement loop** (`.claude/CLAUDE.md` Working agreement:
 the real artifact is the *workflow*). So each prompt is written to do more than its narrow
@@ -25,7 +27,7 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot dispatch** — the single execution routine | **console Schedule** (every 2h, `0 */2 * * *`, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice; a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → phase gate (Q-0114) |
+| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | small → self-merge (Q-0113); substantial step → Hermes reviews + merges (Q-0117); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
@@ -68,11 +70,13 @@ routine to docs ("docs only" / "no runtime code" / "no feature scope") — that 
 what the dispatch routine may touch, and a genuinely docs-only reconciliation job is the
 *auto-triggered* reconciliation routine's work, not a hand-dispatched build order. If the
 reconciliation routine *spots* a runtime bug it appends it to `docs/health/bug-book.md` (OPEN) and
-the dispatch routine fixes it. Neither routine invents features (the phase gate holds those until
-invent-phase, and these prompts never originate them).
+the dispatch routine fixes it. The reconciliation routine never invents features (docs-only); the
+**dispatch** routine now **may** (Q-0172 opened idea->plan->ship — it captures + plans + builds the
+idea and flags it ⚑ Self-initiated for review). The phase gate no longer holds features until
+invent-phase; it is an advisory priority readout.
 
 **Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
-issue-triggered; dispatch is fired by the console Schedule every 2h) — real Stage-1 autonomy, earned by the
+issue-triggered; dispatch is fired by the console Schedule every ~2–3h) — real Stage-1 autonomy, earned by the
 Stage-0 calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
 Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
 issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.
@@ -129,20 +133,35 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     self-fired when live GitHub already proved it had). If `gh` is unavailable, do the same read
     via the GitHub MCP (`list_issues`): the *author* of the newest auto-opened trigger issue is
     the live read of ROUTINE_PAT (a real-user login = set; `github-actions[bot]` = unset).
-  - PLAN THE NEXT BAND + KEEP THE PLANS FED (owner directive Q-0144). Review the current state of
-    the executable plans (docs/planning/*, docs/roadmap.md): how much real, startable work is left?
-      · Enough work remains -> plan the next band of PRs (the upcoming ~30) — modular, each a
-        meaningful slice — into the band planning doc, highest-value first.
-      · NOT enough executable work remains -> this is the idea->plan step. Review docs/ideas/
-        (dedup-grep first), pick the best owner-aligned idea, and promote it into a FULLY COMPLETE,
-        executable plan in docs/planning/ — scoped against the repo's house style (existing
-        subsystems / folios / game cogs) so an executor can build it cold. A complete plan is the
-        goal: good enough to implement directly, or a solid structure to revise later. Index it in
-        docs/ideas/README.md + the roadmap so it becomes the executor's next ▶ Next action. This is
-        how an idea becomes a plan becomes reality with no extra owner planning.
+  - PLAN THE NEXT *FULL BAND* + KEEP THE PLANS FED (owner directives Q-0144 + Q-0164). Review the
+    executable plans (docs/planning/*, docs/roadmap.md): how much real, *buildable* work is left?
+    The bar is DEPTH >= the cadence — leave enough genuine buildable work to reach the NEXT pass
+    (~30 PRs of capacity), as larger multi-PR initiatives OR more slices, whichever keeps each a
+    real change. The old "~9 PRs" horizon drained the queue ~20 PRs before each refill (Q-0164).
+      · Enough work remains -> plan the next band into the band planning doc, highest-value first,
+        modular, each a meaningful slice. Do NOT pad to 30 with filler.
+      · NOT enough buildable work remains -> FIRST this is the idea->plan step: review docs/ideas/
+        (dedup-grep first) and promote the best owner-aligned ideas into FULLY COMPLETE, executable
+        plans in docs/planning/ — scoped against the repo's house style (existing subsystems /
+        folios / game cogs) so an executor can build them cold. Index each in docs/ideas/README.md +
+        the roadmap so it becomes a ▶ Next action.
+      · STILL can't fill the band after promoting what you honestly can -> that is the SIGNAL, not a
+        failure (Q-0164): set a loud `⚠️ PLAN BACKLOG THIN` line in current-state.md ▶ Next action
+        AND the run-report ⚑ Owner-decisions line, so the owner drops ideas or schedules a dedicated
+        planning session — never invent low-value filler to look busy. This is how an idea becomes a
+        plan becomes reality with no extra owner planning, and how the owner learns *early* that the
+        backlog needs him.
   - IMPROVE THE SYSTEM: if you see a way to make the orientation / memory / tooling better for
     the next run (a confusing doc, a missing pointer, a guard that would have caught this drift),
     make that improvement too. This is the point of the loop.
+  - REGENERATE THE DASHBOARD EXPORT (cheap, on-cadence freshness): you already touch the source
+    docs this pass, so run `python3.10 scripts/export_dashboard_data.py` to refresh the committed
+    `dashboard/data/dashboard.json` (a generated artifact that silently drifts as parallel sessions
+    add cogs/settings/env-vars — it was ~3 structural surfaces stale on `main` before this was wired,
+    PR #1025). Run `python3.10 scripts/check_dashboard_data.py --drift` to see what changed first; it
+    is warn-only and never blocks. Commit the regenerated JSON with the pass. This is the
+    *cadence half* of the freshness loop — the dispatch routine carries the warn-only `--drift`
+    reporter, this routine keeps the artifact fresh without burdening every session.
   - Reset the "Last reconciliation pass: PR #N" marker in current-state.md to the latest PR
     (the trigger Action keys off it — do not skip).
 
@@ -156,7 +175,9 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
     or missed.
   - Write a short .sessions/<date>-reconcile.md log (what changed · what's next · the Q-0089
     idea · the Q-0102 review), ending with the **📤 Run report footer** (`.sessions/README.md`) —
-    the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty).
+    the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty), and the
+    **Run type:** line set to `routine · reconciliation` (Q-0165 — the dashboard updates feed
+    badges routine vs. manual work off this line).
 
 STEP 5 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger, and
   check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
@@ -240,14 +261,17 @@ behind branch without a merge queue). They split the two cases:
 | Workflow | Trigger | Does | Net effect |
 |---|---|---|---|
 | **`pr-auto-update.yml`** | `push: main` | brings open non-draft `claude/*` PRs that are **BEHIND** up to date (`update-branch`); carve-outs (`needs-hermes-review`/`do-not-automerge`) left alone; a real conflict fails the update and falls through to the guard | **behind = handled silently** → re-tests against current main → auto-merge fires |
-| **`pr-conflict-guard.yml`** | `push: main` + `pull_request` + schedule | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap) | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
+| **`pr-conflict-guard.yml`** | `push: main` + schedule (sweep all PRs) · `pull_request` (that PR only) | posts a **red `conflict-guard` commit status** on any **DIRTY** PR, clears it on resolution (skips `UNKNOWN` to avoid flap). A PR's own push checks only itself; the all-PR sweep runs on `push: main`/schedule (when a PR can newly conflict) — keeps the noise off every PR | **conflict = loud red** → an agent / the maintainer sees it and resolves it |
 
 `push: main` is the load-bearing trigger for both: a conflict/behind state arises when *main moves*
 (another PR merges), which is not an event on the stale PR. `conflict-guard` is a **non-required**
 status (a signal, not an extra gate — a DIRTY PR already can't merge), so no branch-protection
-change is needed. Both use `ROUTINE_PAT` (already scoped Pull requests + Contents write for
-`auto-merge-enabler.yml`). Kill switch (Q-0105): delete either workflow; both are disposable
-convenience guards, and "Update branch" / the conflict banner remain available by hand.
+change is needed. **Token split (learned by dogfooding):** `auto-update` uses `ROUTINE_PAT` (it needs
+Pull requests + Contents write for `update-branch`, and PAT attribution keeps the cadence firing);
+`conflict-guard` uses the default **`GITHUB_TOKEN`** because posting a commit status needs
+`statuses: write`, which `ROUTINE_PAT` is not scoped for (that 403 failed the guard's first run).
+Kill switch (Q-0105): delete either workflow; both are disposable convenience guards, and "Update
+branch" / the conflict banner remain available by hand.
 
 ## Control-plane state (maintainer-verified) — the bits no in-repo checker can see
 
@@ -260,7 +284,7 @@ convenience guards, and "Update branch" / the conflict banner remain available b
 
 | # | Maintainer action | Why it matters | Source PR | Verified? |
 |---|---|---|---|---|
-| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active.) |
+| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active. **Re-confirmed every reconciliation pass since:** the cadence reconcile issues #931 (band-#990 era), #961, and **#1021 (band-#1020 pass, 2026-06-17)** were each auto-opened yet authored by `menno420`.) |
 | 2 | Add repo secret **`DATABASE_PUBLIC_URL`** (Railway Postgres public proxy URL) | the daily `backup-db.yml` `pg_dump` is inert without it (workflow fails + opens an issue) | #769 | ✅ **2026-06-14 — set + working.** After the PR #862 pg18-client + resolved-URL fix, the backup **succeeded at 17:41:49Z** (run history: `success` workflow_dispatch). The earlier daily "Postgres backup failed" issues (#823/#860/#861) predated the fix and were stale (failure-issues don't auto-close on success); **closed 2026-06-14.** The next *scheduled* run confirms the cron path end-to-end. |
 | 3 | Railway → **Deploy** the staged `CLAUDE_ROUTINE_*` env vars | `/bugreport` + `/dispatch` (HermesCog #757) may be inactive until the worker redeploys with the vars live | #765 | ⬜ (not verifiable from the repo) |
 | 4 | Confirm the **dispatch routine prompt** is the free-form version | the owner finished routine setup *before* the #761 free-form prompt was handed over — it may carry the older prompt | #761/#765 | ⬜ (not verifiable from the repo) |

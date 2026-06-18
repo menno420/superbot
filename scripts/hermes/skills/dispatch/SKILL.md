@@ -48,12 +48,15 @@ STEP 1b — IF I GAVE NO SPECIFIC TASK ("dispatch a continuation worker" / "pick
 
 STEP 2 — CLASSIFY (this decides the merge gate the routine will use):
   - BUG FIX / UX / DOCS / CORRECTNESS  -> the routine builds, tests, and SELF-MERGES on green CI.
-  - AGENT-ORIGINATED FEATURE           -> the routine builds and OPENS a PR but must NOT merge;
-                                          it pings me for approve/deny (Q-0114).
-  Also run the phase gate to sanity-check feature work is even in-season:
+  - AGENT-ORIGINATED FEATURE           -> the routine builds and SHIPS it (idea->plan->ship is
+                                          open, Q-0172 — no approve/deny gate); small/contained
+                                          self-merges on green, a SUBSTANTIAL step is labeled
+                                          needs-hermes-review (Q-0117). It flags the work on the
+                                          run-report ⚑ Self-initiated line for owner review.
+  The phase gate is now ADVISORY (Q-0172) — optional, a PRIORITY readout, never a block:
     python3 /home/hermes/repos/superbot/scripts/check_phase_gate.py --phase
-  If it prints `fix` and this is an agent-originated feature, STOP and tell me we're in
-  fix-phase — propose it as an idea capture instead of dispatching it.
+  If it prints `fix`, bugs/Not-Done rows remain so prefer correctness work first — but the feature
+  may still be dispatched; it is no longer held out of season.
   CLASS labels the task's NATURE (it picks the merge gate). It is NOT a scope fence, and you must
   never add one (Q-0148): never stamp a work order "docs only" / "no runtime code" / "no feature
   scope". The dispatch routine does ALL build work and builds whatever the task needs; a

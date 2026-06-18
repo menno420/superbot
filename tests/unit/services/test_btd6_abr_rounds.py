@@ -166,12 +166,29 @@ def test_round_composition_abr_carries_set_and_note():
     res = round_composition(40, roundset="abr")
     assert res["found"] is True
     assert res["roundset"] == "alternate"
+    # A human label travels with the set so an ABR round figure can never read as
+    # standard (the same round number differs between sets).
+    assert res["roundset_label"] == "alternate (ABR)"
     assert "round 3" in res["note"]
     assert res["rounds"][0]["groups"] == [{"bloon": "moab", "count": 1}]
-    # Default calls are byte-identical to before (no note, default set).
+    # Default calls keep their values; they now also carry the standard label.
     base = round_composition(40)
     assert base["roundset"] == "default"
+    assert base["roundset_label"] == "standard"
     assert "note" not in base
+
+
+def test_round_composition_grounds_total_bloons_entering():
+    # "How many bloons spawn on rN" must have a grounded total instead of
+    # forcing the model to sum the groups (which tripped the faithfulness guard).
+    res = round_composition(63)
+    assert res["found"] is True
+    first = res["rounds"][0]
+    assert first["round"] == 63
+    expected = sum(g["count"] for g in first["groups"])
+    assert first["bloons_entering"] == expected
+    # The range total is the sum of every round's entering bloons.
+    assert res["total_bloons_entering"] == expected
 
 
 def test_round_composition_rejects_unknown_set():
@@ -210,6 +227,24 @@ def test_round_cash_abr_unplayed_rounds_disclose_the_boundary():
     # range_cash still sums exactly the requested rounds' data.
     per = {p["round"]: p["cash"] for p in ranged["per_round"]}
     assert ranged["range_cash"] == round(sum(per.values()), 2)
+    # No identity sentence for an ABR range that spans the unplayed rounds 1-2:
+    # cumulative totals start at round 3, so the subtraction would omit rounds
+    # 1-2's cash and contradict range_cash (Codex P2 on PR #1035). The
+    # cumulative_note above carries the honest explanation instead.
+    assert "identity" not in ranged
+    assert "identity" not in round_cash(2, 4, roundset="abr")
+
+
+def test_round_cash_abr_played_range_keeps_a_reconciling_identity():
+    # An ABR range entirely at/after the entry round (3) has cumulative totals
+    # that bracket exactly its rounds, so the identity holds and is emitted.
+    res = round_cash(3, 10, roundset="abr")
+    assert res["found"] is True
+    assert "cumulative_note" not in res
+    assert "identity" in res
+    assert round(res["cumulative_at_end"] - res["cumulative_before_start"], 2) == (
+        res["range_cash"]
+    )
 
 
 def test_round_cash_default_behaviour_unchanged():

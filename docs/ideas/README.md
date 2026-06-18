@@ -20,6 +20,121 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`repo-consistency-linter-2026-06-17.md`](./repo-consistency-linter-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0170):** *"something like CI but specifically to find
+  inconsistencies"* — panels missing a back button, cogs not following the arch rules, cogs sending
+  ephemeral follow-ups instead of editing in place. A new `scripts/check_consistency.py` (stdlib AST,
+  the `check_architecture.py` house style) with a per-rule allowlist + warn-first graduation. **The
+  flagship buildable lane** (one rule per PR = a real slice, feeds Q-0164). Executable plan:
+  [`repo-consistency-linter-plan-2026-06-17.md`](../planning/repo-consistency-linter-plan-2026-06-17.md).
+  → relates `scripts/check_architecture.py` · `disbot/views/` · `disbot/cogs/`.
+- [`owner-review-inbox-2026-06-17.md`](./owner-review-inbox-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0169, capture-only):** a channel to **post ideas/cog-command
+  reviews** that sessions read and act on, with a visible open→resolved status (the owner forgets
+  cog-review notes mid-session and has no "is it fixed?" view). Near-term = a dashboard "Review board"
+  backed by labeled issues / a committed markdown inbox; eventual = a standalone communication site.
+  Executable plan: [`owner-review-inbox-plan-2026-06-17.md`](../planning/owner-review-inbox-plan-2026-06-17.md).
+  → relates `dashboard/` · the bug book · Q-0159.
+- [`agent-tooling-automation-shortlist-2026-06-17.md`](./agent-tooling-automation-shortlist-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0170):** a shortlist to pick from for **dedicated Claude Code
+  skills** (`/route-idea`, `/cog-review`, `/plan-band`, `/fix-drift`) + **automation scripts**
+  (`check_plan_backlog.py` for the Q-0164 flag) + a **repo-native discovery aid** (CodeGraph/Grimp
+  but domain-semantic — must complement `context_map.py`/`wiring_map.py`, not re-do them). Builds on
+  the plugins-evaluation idea. → relates `scripts/` · the existing `/pre-pr`,`/session-close` skills.
+- [`codex-automated-pr-review-2026-06-17.md`](./codex-automated-pr-review-2026-06-17.md) —
+  **owner-mentioned (2026-06-17, Q-0171, research-stage):** wire Codex (OpenAI) to auto-review PRs —
+  a second, different-model reviewer (the anti-monoculture principle behind `needs-hermes-review`).
+  Research the exact mechanism + cost/auth, then put augment-vs-replace + merge-authority to the
+  owner. No build until the mechanism + spend envelope are confirmed. → relates Q-0117 (Hermes review).
+- [`generated-artifact-freshness-umbrella-2026-06-17.md`](./generated-artifact-freshness-umbrella-2026-06-17.md) —
+  **session idea (2026-06-17, Q-0089, from the dashboard.json structural-drift reporter #1025):** the
+  warn-only structural-drift reporter just built for `dashboard.json` applies to *every* committed
+  generated artifact (`env-vars.md`, the agent-context packs, …), each guarded in isolation today. One
+  small `check_generated_artifacts_fresh.py` umbrella — a registry of `(generator, committed_path,
+  structural-key extractor)` tuples emitting soft "N surfaces behind" warnings — generalizes the
+  manifest-spine "AST is drift-detection" philosophy so no future artifact silently rots.
+  **IMPLEMENTED #1027** (2026-06-17) as `scripts/check_generated_artifacts_fresh.py` — built as Q-0105
+  dev tooling (read-only/warn-only/disposable, not a bot feature so the FIX-phase gate is N/A); kept
+  manual/ad-hoc (not hard-CI-wired) with `--strict` for the reconciliation cadence pass. → relates
+  `scripts/` tooling · the reconciliation cadence pass.
+- [`routine-permission-surface-lint-2026-06-16.md`](./routine-permission-surface-lint-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the band-#990 reconciliation pass):** the routine stalled
+  twice on a `permissions.ask` `rm` prompt (fixed reactively as Q-0161). A stdlib
+  `scripts/check_routine_permission_surface.py` would evaluate the commands the routines run against
+  the current `.claude/settings.json` `ask`/`allow` rules and **fail on any that resolve to `ask`** —
+  turning "every routine command must be `allow`, never `ask`" into a pre-flight CI guard so a settings
+  change can't silently re-introduce an unattended stall. Cheap, read-only, disposable (Q-0105). →
+  relates `.claude/settings.json` · Q-0149/Q-0161.
+- [`btd6-shorthand-corpus-eval-2026-06-16.md`](./btd6-shorthand-corpus-eval-2026-06-16.md) —
+  **SHIPPED 2026-06-16 (PR #1007)** via a Q-0015 grooming pass: the **corpus class-guard test**
+  (`tests/unit/services/test_btd6_shorthand_corpus.py`) holds the canonical community-shorthand
+  vocabulary (`despo`/`impop`/`r53`/`420 farm`/`d67`/…) and asserts each routes to
+  `AITask.BTD6_ANSWER` (+ conservatism negatives), guarding the recurring "shorthand falls to the
+  unguarded general path → model freelances" bug class (BUG-0001/0003/0004/0008/0015) against a
+  silent router regression — previously covered only by scattered per-bug tests. The *minor*
+  hero-per-level-stats sibling finding (only non-headline-level exact stats are a gap) stays
+  `captured` at low priority. → relates `services/ai_task_router.py` · `utils/btd6/keywords.py`.
+
+- [`developer-dashboard-2026-06-16.md`](./developer-dashboard-2026-06-16.md) —
+  **owner-requested + approved (2026-06-16, Q-0155):** a personal website / developer dashboard
+  deployed as a second Railway service — checklist, update tracker, bot-function catalogue,
+  ideas/bug board, **public** bug reporting (+ GitHub-issue mirror), a multi-AI **control board**
+  over the current flow, and a **secrets** zone (manage via Railway + a static "where is each env var
+  used" map). Core principle: *surface the repo's existing structured data, don't duplicate it.*
+  **Phase 1 (read-only MVP) ✅ shipped PR #967**; the **Phase 3 env-usage map ✅ shipped PR #969**
+  (`/env` page + `scripts/scan_env_usage.py` + generated `docs/operations/env-vars.md`); Phases 2/4
+  + Phase 3 value-management active. Authoritative plan:
+  [`developer-dashboard-plan.md`](../planning/developer-dashboard-plan.md). → relates `dashboard/` ·
+  `scripts/export_dashboard_data.py`.
+
+- [`env-map-deploy-readiness-cross-check-2026-06-16.md`](./env-map-deploy-readiness-cross-check-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the env-usage map #969):** the scanner now knows which env
+  vars are *required*; cross-reference that set against the names present in the target Railway service
+  (names only, never values) so the dashboard `/env` page shows a **deploy-ready / N required unset**
+  banner — turning the passive inventory into an active config check. Gated on the Phase 3 Railway-API
+  integration. → relates `scripts/scan_env_usage.py` · `dashboard/`.
+
+- [`dashboard-registry-coverage-check-2026-06-16.md`](./dashboard-registry-coverage-check-2026-06-16.md) —
+  **SHIPPED 2026-06-16 (PR #990)**, broader than sketched: `scripts/check_dashboard_data.py` validates
+  the exported `dashboard.json` — cog→subsystem resolution (with a curated allow-list) + count
+  integrity + required fields — and a unit test validates the freshly-built export, so a new
+  unregistered cog / broken join / count drift **fails CI** instead of silently degrading a page.
+  → `scripts/check_dashboard_data.py` · `tests/unit/scripts/test_check_dashboard_data.py`.
+- [`dashboard-subcog-parent-subsystem-2026-06-16.md`](./dashboard-subcog-parent-subsystem-2026-06-16.md) —
+  **mostly SHIPPED 2026-06-16 (PR #995):** `scan_commands._COG_SUBSYSTEM_OVERRIDES` maps the BTD6
+  sub-cogs → `btd6` and RPS → `rps_tournament`, so they inherit the parent's registry identity on
+  `/commands` (no more generic 🧩); the integrity guard's allow-list shrank 8 → 3. **Deferred (owner
+  intent):** `ParagonCog` / `SetupCog` / `HermesCog` stay allow-listed until a parent is confirmed.
+  → relates `scripts/scan_commands.py` · `scripts/check_dashboard_data.py`.
+- [`cog-declares-its-subsystem-2026-06-16.md`](./cog-declares-its-subsystem-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the sub-cog mapping #995):** the dashboard guesses each
+  cog's subsystem from its **class name**, propped up by three hand-maintained lists (acronym table ·
+  override map · the guard's allow-list) that drift independently — and #995 still couldn't resolve 3
+  cogs from the name alone. Replace it with an **authoritative declaration** the scanner reads (a cog
+  `SUBSYSTEM = "btd6"` class attribute, or a command-surface-ledger join), deleting the override map
+  and self-describing every cog including sub-cogs. → relates `scripts/scan_commands.py` ·
+  `core/runtime/command_surface_ledger.py` · `utils/subsystem_registry.py`.
+- [`ledger-dedup-linter-2026-06-16.md`](./ledger-dedup-linter-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the merge=union fix #1003):** #1003 made the append-only
+  ledgers (`active-work.md`, `ideas/README.md`) auto-merge via git `merge=union`, whose one downside is
+  it never deletes/dedups — so stale or duplicate claim/idea lines can accumulate. A tiny stdlib
+  `scripts/check_ledger_hygiene.py` flagging duplicate claim branches + duplicate idea-file links
+  (report-only, `--strict` fails CI) keeps the now-conflict-free ledgers *clean*. → relates
+  `docs/owner/active-work.md` · `docs/ideas/README.md` · `.gitattributes`.
+- [`success-metric-alignment-with-verified-success-2026-06-16.md`](./success-metric-alignment-with-verified-success-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the Claude Code expertise research readout):** Anthropic's
+  ~400K-session study measures **verified success** by *hard signals* (tests passing, commits,
+  explicit confirmation) — our CI-green + auto-merge + born-red gate is the same philosophy. Mostly
+  confirmatory; the contained value is naming which session *classes* should require explicit owner
+  confirmation before auto-merge vs. CI-only (the `needs-hermes-review`/`do-not-automerge` seam may
+  already cover it). → relates `docs/collaboration-model.md` · CLAUDE.md § Session workflow.
+- [`docs-ledger-parsing-helper-2026-06-16.md`](./docs-ledger-parsing-helper-2026-06-16.md) —
+  **promoted Q-0089 idea (2026-06-16, originally surfaced in #967's session log):** extract the
+  repeatedly-copied markdown-ledger regexes (Status badge / `BUG-NNNN` / idea-file parsers) into one
+  stdlib `scripts/_docs_ledger.py` so the dashboard exporter and the `check_*` scripts share one
+  source of truth (the `_STATUS_RE` "Mirrors check_session_gate.py" copy is the drift smell). Build it
+  in a session that does **not** depend on `check_session_gate` for its own merge. → relates
+  `scripts/check_session_gate.py` · `scripts/export_dashboard_data.py`.
 - [`idea-spotlight-verdict-loop-2026-06-16.md`](./idea-spotlight-verdict-loop-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the idea-spotlight skill PR #959):** the new daily
   `superbot-idea-spotlight` surfaces an idea + asks for a verdict, but the selector has no memory of
@@ -39,6 +154,21 @@ Current broad captures:
   + a root-README question → **Q-0151** (answered); count-cite guard → fold into
   `readiness-maps-cite-regen-command`. → relates `scripts/{context_map,wiring_map,review_scope}.py` ·
   `utils/subsystem_registry.py` · `architecture_rules/layers.yaml`.
+- [`sessionstart-surface-soft-check-signals-2026-06-16.md`](./sessionstart-surface-soft-check-signals-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the atlas thread #960/#964):** the repo keeps adding *soft*
+  signals that only help if run by hand (the `check_docs` ratchets + new inventory-count guard, the
+  uncommitted atlas body, the `--check` tools). Add **one SessionStart banner line** (`Docs: soft — …`)
+  backed by a `check_docs --soft-summary` mode so the soft ratchets are proactively visible, not
+  discovered by luck. Touches the SessionStart hook → owner-wires per Q-0106. → relates
+  `scripts/claude_session_start.sh` · `scripts/check_docs.py`.
+- [`deterministic-floor-catalogue-2026-06-16.md`](./deterministic-floor-catalogue-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the §7.6 capability/bloon roster-floor PR #975):** the
+  `_BTD6_LIST_BUILDERS` family grows ~one floor per dispatch, but "what's already fronted / which data
+  surface has no floor yet?" is recoverable only by grepping the dispatcher + reading each builder. A
+  tiny stdlib script that introspects the live tuple → maps each builder to its trigger phrase + the
+  service it fronts, and **flags roster-shaped surfaces with no floor** (hero capabilities, CT relics),
+  makes the next member obvious + the family's coverage legible. Decided-lane; small. → relates
+  `services/btd6_context_service.py::_BTD6_LIST_BUILDERS` · `services/btd6_capability_service.py`.
 - [`round-range-comparison-bare-range-list-2026-06-16.md`](./round-range-comparison-bare-range-list-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the §7.5 round-range comparison floor PR #955):** the new
   round-range cash comparison requires a round token before *each* range's first anchor (to keep
@@ -68,13 +198,25 @@ Current broad captures:
   known sibling gap — `SUBSYSTEMS.entry_points` → real command, which `test_entrypoints.py` documents
   as unchecked. One "what commands exist" source for every "this declaration must resolve" invariant.
   → relates `tests/unit/registry/test_entrypoints.py` · `utils/subsystem_registry.py` · `utils/synonyms.py`.
+- [`ledger-bookkeeping-tally-soft-lint-2026-06-17.md`](./ledger-bookkeeping-tally-soft-lint-2026-06-17.md) —
+  **workflow / tooling (2026-06-17, band-#1020 Q-0107 pass):** the `current-state.md` "Older merges →
+  archive" pointer had accreted a ~2,000-word per-session running tally that duplicated the archive
+  file's own record — pruned this pass. A disposable soft `check_docs` lint could flag a
+  pointer/bookkeeping line that crosses a word budget ("this is a running tally — point at the
+  authoritative record instead"). The reusable principle: *don't hand-maintain a tally of a fact that
+  already has an authoritative record.* → relates `scripts/check_docs.py` · `docs/current-state.md`.
 - [`server-owner-configurable-moderation-dms-2026-06-16.md`](./server-owner-configurable-moderation-dms-2026-06-16.md) —
   **owner policy → feature (2026-06-16, from the Q-0147 decision):** the owner's standing DM rule is
   *profile/onboarding DMs are opt-in and never on join; the only non-opt-in DMs are moderation/warning
   DMs, and only when the server owner enables them with per-action config.* The opt-in half is
-  myprofile PR C; this captures the second half — a `moderation_dm_enabled` master + per-action map
+  myprofile PR C; this captures the second half — a master toggle + per-action map
   (warn/timeout/kick/…) on the `!settings` → Moderation surface, riding the audited `moderation_service`
   seam (off by default, fail-open). → relates `services/moderation_service.py` · the settings surface.
+  **✅ PROMOTED TO A PLAN (2026-06-17, band-#1020 Q-0107 pass, Q-0144 idea→plan):**
+  [`planning/moderation-dm-config-plan-2026-06-17.md`](../planning/moderation-dm-config-plan-2026-06-17.md)
+  — scouting the seam found the DM machinery already exists (`_notify_target` + `ModerationPolicy.dm_on_action`
+  + `render_dm_message`), so the plan *extends* it (master `dm_on_action` + a `dm_actions` csv mirroring
+  `public_log_actions`), not a new subsystem. Turn-key, one PR, no migration. **This is the next ungated ▶ slice.**
 - [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
   `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an

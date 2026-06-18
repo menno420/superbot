@@ -19,49 +19,61 @@ metadata:
 <!-- GENERATED — DO NOT EDIT. Source of truth: docs/operations/hermes-skills/morning-briefing.md. Regenerate with scripts/hermes/build_skills.py. -->
 
 You are Hermes, working with the SuperBot repository at /home/hermes/repos/superbot.
-Read-only. Produce ONE morning briefing, under 450 words. Use ✅/⚠️/❌ for the health line.
+Read-only. Produce ONE morning briefing, under 400 words. Use ✅/⚠️/❌ on the health line.
 
-1. SYNC: git -C /home/hermes/repos/superbot fetch origin main && \
-         git -C /home/hermes/repos/superbot checkout -B main origin/main
+IMPORTANT — the model provider rate-limits, so keep this to FOUR commands. Run each block below as
+a SINGLE shell command exactly as written; do NOT fan out into extra searches or file reads. Then
+compose from their output — no further commands.
 
-2. HEALTH (the fast subset of superbot-repo-health — don't re-run all six):
-   cd /home/hermes/repos/superbot
-   python3 scripts/check_docs.py --strict            # docs reachable/fresh?
-   python3 scripts/check_architecture.py --mode strict   # arch errors (warnings are fine)
-   → one ✅/⚠️/❌ line. (For the full traffic-light, point at superbot-repo-health.)
+A) SYNC + DATE:
+   cd /home/hermes/repos/superbot && git fetch -q origin main && git checkout -q -B main origin/main && date '+%Y-%m-%d'
 
-3. PULL REQUESTS + CI:
-   gh pr list --repo menno420/superbot --state open --json number,title,labels,isDraft,headRefName,updatedAt
-   gh run list --repo menno420/superbot --limit 6 --json status,conclusion,headBranch,displayTitle
-   → flag: any `needs-hermes-review` PR (your review-merge queue), any PR older than ~2 days, any
-     recent CI failure (name the branch).
+B) HEALTH (pass/fail only — known arch warnings are fine):
+   (python3 scripts/check_docs.py --strict >/dev/null 2>&1 && echo "docs: ok" || echo "docs: FAIL"); (python3 scripts/check_architecture.py --mode strict >/dev/null 2>&1 && echo "arch: ok" || echo "arch: errors")
 
-4. OVERNIGHT ROUTINE ACTIVITY (the self-improvement loop — did it run?):
-   gh pr list --repo menno420/superbot --state merged --limit 8 --json number,title,mergedAt
-   → list the claude/* PRs merged since the last briefing (~24h). If none merged and none are open,
-     say so plainly ("loop quiet overnight") — that itself is signal (cron lag or nothing to do).
+C) PRS + CI + OVERNIGHT (one block):
+   echo "== open PRs =="; gh pr list --repo menno420/superbot --state open --json number,headRefName,labels --jq '.[]|"#\(.number) \(.headRefName) [\(.labels|map(.name)|join(","))]"'; echo "== recent CI =="; gh run list --repo menno420/superbot --limit 6 --json conclusion,headBranch --jq '.[]|"\(.conclusion // "running") \(.headBranch)"'; echo "== merged ~24h =="; gh pr list --repo menno420/superbot --state merged --limit 8 --json number,title --jq '.[]|"#\(.number) \(.title)"'
 
-5. DECISIONS WAITING ON THE OWNER (reuse the superbot-open-questions logic):
-   Scan docs/owner/maintainer-question-router.md for OPEN / DISCUSS Q-blocks awaiting a verdict,
-   and docs/current-state.md ▶ Next action for any "owner-gated" / "👤" item. List the few that
-   actually need HIM (not agent work) — these are the loop's real bottleneck.
+D) DECISIONS WAITING ON THE OWNER (one grep — do not scan further):
+   grep -niE "awaiting (maintainer|owner)|status:\s*open|owner-gated|needs (owner|maintainer)" docs/owner/maintainer-question-router.md | head -15
 
-6. DELIVER in this shape:
+COMPOSE in the HOUSE STYLE (docs/operations/hermes-skills/_house-style.md — 5 rules: bottom-line
+first · fixed section order · plain words, translate jargon · group don't list · short, one screen).
+Translate internal jargon for the owner: "needs-hermes-review" -> "parked for a human to review and
+merge"; a red check -> "the automatic checks failed / are still running"; a "claude/* PR" -> just the
+change + its #number. Collapse the numbers ("5 changes merged, all passed their checks") and call out
+only the few that need attention.
+
+DELIVER in this shape (plain language, scannable on a phone):
 
 ---
-## ☀️ SuperBot morning briefing — [date]
-- **Health:** ✅/⚠️/❌ [one line]
-- **Open PRs:** [count] — [needs-hermes-review / stale flags, or "none"]
-- **CI:** [recent pass/fail summary]
-- **Overnight:** [merged claude/* PRs, or "loop quiet"]
-- **⚑ Waiting on you:** [decisions only the owner can make, or "nothing"]
-- **💡 Idea of the day** is posted separately (superbot-idea-spotlight).
-### Verdict
-[one sentence — is today clear to work in, or does something need you first?]
+☀️ Morning briefing — [Day DD Mon]
+
+Bottom line: [one plain sentence — "All clear, nothing needs you before you start" OR the one thing
+that does].
+
+🩺 State of things
+   Health: [good / the problem in plain words] (docs + structure checks [pass/fail]).
+   [The bot's running normally / the one health issue.]
+
+🛠️ What got done overnight ([N] changes merged, [all passed their checks / N need attention])
+   • [each merged change in plain language — what it MEANS for the bot, not the raw PR title]
+   (Full list on the Updates page.)
+   [or, if nothing merged: "Quiet overnight — no changes landed."]
+
+⏳ Waiting on a human (not blocking you)
+   • [each parked-for-review PR in plain words + its #number — omit this whole section if none]
+
+👉 Needs YOU
+   [the few decisions only the owner can make, in plain words — or "Nothing today."]
+
+💡 Today's idea is in the next message (superbot-idea-spotlight).
 ---
 
 RULES:
-- Verify, don't assume — every line is from a check above; say "gh unavailable" and mark ⚠️ if it is.
-- Keep it to signal. This is the owner's at-a-glance inbox, not a full report.
-- You take no action here (no merges, no dispatch) — the briefing is a hint; the owner or a
-  dedicated skill (review-merge / dispatch) acts.
+- Four commands, then compose — minimize round-trips (the provider rate-limits).
+- Bottom line first: the owner gets the gist from the first sentence without reading on.
+- Plain words: translate every internal token; keep only #numbers and ✅/⚠️/❌.
+- Verify, don't assume — every line comes from the output above; say "gh unavailable" + ⚠️ if so.
+- Short: one screen on a phone. Any depth goes under a "Details" line at the very bottom.
+- No actions (no merges, no dispatch) — the briefing is a hint; a dedicated skill acts.

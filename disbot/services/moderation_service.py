@@ -246,7 +246,9 @@ async def _notify_target(
 ) -> None:
     """Best-effort DM to the member affected by *action* (PR10 config).
 
-    No-op unless ``dm_on_action`` is enabled and *target* is DM-capable —
+    No-op unless the master ``dm_on_action`` switch is enabled **and** *action*
+    is in the guild's per-action allow-list (``dm_action_set``) and *target* is
+    DM-capable —
     a user banned by bare id (a ``discord.Object`` snowflake) has no
     ``send``.  **Never raises**: a member with DMs closed, one who has
     already left, or any HTTP error is swallowed.  The audited moderation
@@ -257,7 +259,7 @@ async def _notify_target(
     DM-reachable); for ``warn`` / ``timeout`` it runs after the action,
     once it is known to have succeeded.
     """
-    if not policy.dm_on_action:
+    if not policy.dm_on_action or action not in policy.dm_action_set:
         return
     send = getattr(target, "send", None)
     if not callable(send):

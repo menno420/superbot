@@ -41,6 +41,10 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_mk_reference_reply",
     ),
     (
+        "what support monkey knowledges are there",
+        "deterministic_mk_category_roster_reply",
+    ),
+    (
         "what does geraldo unlock at each level",
         "deterministic_geraldo_per_level_reply",
     ),
@@ -64,6 +68,46 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "is the glaive dominus or ascended shadow paragon cheaper",
         "deterministic_paragon_cost_comparison_reply",
     ),
+    (
+        "is quincy or benjamin cheaper to place",
+        "deterministic_hero_cost_comparison_reply",
+    ),
+    (
+        "which power is cheaper, cash drop or monkey boost",
+        "deterministic_power_cost_comparison_reply",
+    ),
+    (
+        "which towers can pop lead without upgrades",
+        "deterministic_capability_roster_reply",
+    ),
+    (
+        "what are all the moab class bloons",
+        "deterministic_bloon_roster_reply",
+    ),
+    (
+        "what does the camo property do",
+        "deterministic_bloon_modifier_reply",
+    ),
+    (
+        "what economy relics are there",
+        "deterministic_relic_roster_reply",
+    ),
+    (
+        "what abilities does quincy have",
+        "deterministic_hero_ability_roster_reply",
+    ),
+    (
+        "what abilities does the ascended shadow paragon have",
+        "deterministic_paragon_ability_roster_reply",
+    ),
+    (
+        "which bosses are immune to fire",
+        "deterministic_boss_immunity_reply",
+    ),
+    (
+        "which boss has the most health at tier 5",
+        "deterministic_boss_hp_comparison_reply",
+    ),
 )
 
 # Ordinary BTD6 questions / strategy / single-entity lookups — zero builders fire.
@@ -75,6 +119,10 @@ _SHOULD_DEFER: tuple[str, ...] = (
     "how much cash do i earn from rounds 20-40",
     "should i play a dart monkey on easy or hard",
     "what is the navarch of the seas paragon",
+    "does the dartling gunner detect camo",
+    "which tower is best at popping lead",
+    "what is a moab",
+    "is the lead bloon immune to sharp",
 )
 
 
@@ -97,9 +145,9 @@ def _firing_builders(phrase: str) -> list[str]:
 @pytest.mark.parametrize(("phrase", "expected"), _SHOULD_FIRE)
 def test_exactly_one_builder_owns_each_should_fire_phrase(phrase: str, expected: str):
     firing = _firing_builders(phrase)
-    assert firing == [expected], (
-        f"{phrase!r}: expected only {expected} to fire, got {firing}"
-    )
+    assert firing == [
+        expected
+    ], f"{phrase!r}: expected only {expected} to fire, got {firing}"
     # The dispatcher serves that same builder's answer (order never masks it).
     assert btd6_context_service.deterministic_btd6_list_reply(phrase) is not None
 

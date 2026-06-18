@@ -5,3 +5,20 @@
 # backup. Mark it generated so GitHub collapses it in diffs and excludes it
 # from the repo's language statistics.
 disbot/data/btd6/** linguist-generated=true
+
+# Append-only coordination ledgers: every parallel session adds a line, so two
+# concurrent edits to the same region conflict and git can't auto-merge them.
+# Under the maintainer's high parallel-session velocity this caused a repeated
+# merge-conflict livelock (PR #995 hit it 3x). The `union` merge driver keeps
+# BOTH sides' lines on a conflicting hunk (no markers) instead of failing —
+# exactly right for these append-only lists. Verified with `git merge-file
+# --union`: two divergent appends merge clean (exit 0); without it, exit 1.
+#
+# Caveats (acceptable here, by their own conventions): union never deletes, so a
+# claim removed on one side survives the merge (prune the stale line — already
+# allowed); and near-identical concurrent adds yield a visible duplicate (prune
+# it). Do NOT extend this to files where order/uniqueness matters (the router's
+# Q-numbers, current-state.md prose) — there a real merge is the right behaviour.
+# Reliability (Q-0105): standard git feature; remove these lines to revert.
+docs/owner/active-work.md merge=union
+docs/ideas/README.md merge=union
