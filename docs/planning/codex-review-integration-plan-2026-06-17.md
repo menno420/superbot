@@ -42,6 +42,19 @@ comments; apply the bar above; **fix the verified-real ones first** (they jump t
 Bounded read (the recent PRs, not the whole history) to respect the token budget. A born-red
 false-positive is acknowledged-and-skipped, not "fixed."
 
+### Where Codex's edits live — read its COMMENT, don't hunt for a PR/branch (owner-confirmed 2026-06-17)
+
+**Codex cannot push a branch or open a PR autonomously** — a human must press "create PR" in the Codex
+UI for anything to land. So when its auto-review runs a "task / make changes," the result is a
+**comment**: a summary + a *proposed* diff + a `[View task →]` chatgpt.com link, describing changes in
+**Codex's own sandbox copy** — even when it says "Committed `<sha>`" / "Created PR." **Nothing reaches
+our repo.** Therefore an agent acting on a Codex flag:
+- reads the **proposed change from Codex's comment** (the diff / the `file·Lnn` references it cites),
+- **verifies each against current `main`** (the bar above),
+- **applies the real ones itself** (one writer per file — the agent's own PR),
+- does **NOT** hunt for a Codex-pushed branch or a Codex PR (there is none — that hunt was the only
+  real friction Codex caused, a verification detour on #1032).
+
 ## Part B — Hermes 6H PR-check skill (to build; spec only for now)
 
 A new hermes-skill `superbot-pr-check`, self-scheduled **every 6H** (`blueprint.schedule "0 */6 * * *"`),

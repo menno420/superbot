@@ -6381,9 +6381,13 @@ can run "make changes" tasks, so the loop needs a bar + a budget-aware consumer.
    dispatcher. **Why:** only ~15 routine fires/day (~12 dispatch, ~1–2 reconciliation) — too scarce to
    spend on false positives. Auto-dispatch is a later, separate owner decision.
 
-**Open for the owner:** does Codex stay **comment-only**, or is its "open a fix PR" mode wanted? (Its
-auto-PRs can collide with in-flight PRs + consume review.) Complementary fix — `@codex review` on the
-**final head** (codex idea doc) — lands its *code* reviews on the complete diff, not the born-red opener.
+**RESOLVED (owner, 2026-06-17/18):** the comment-only-vs-auto-PR question is **moot — Codex is
+structurally comment-only.** It cannot push a branch or open a PR autonomously (a human must press
+"create PR" in the Codex UI); its "make changes" output is a *comment* describing a sandbox diff, never
+a repo change. **Decision: trial it as-is** (auto-review on). The only safeguard needed: **agents read
+Codex's proposed edits in its *comment*, not in a phantom branch/PR** (plan Part A § "Where Codex's edits
+live"). Still open — the `@codex review`-on-**final-head** tweak (codex idea doc) to land its *code*
+reviews on the complete diff, not the born-red opener.
 
 **Home:** [`planning/codex-review-integration-plan-2026-06-17.md`](../planning/codex-review-integration-plan-2026-06-17.md)
 · [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) · this
