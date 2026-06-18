@@ -207,6 +207,13 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1032 (2026-06-17, settle seed-grid decision Q-0173 + Codex review feedback)** — resolved the
+  seed-grid open question (Q-0173) and folded in Codex's PR-review feedback.
+- **#1031 (2026-06-17, local character-render preview — self-initiated, Q-0172)** — a local
+  character-render preview tool that kills the sprite-positioning iteration loop (idea→build under the
+  open gate).
+- **#1030 (2026-06-17, Hermes plain-language house style — Q-0168)** — rolled the plain-language house
+  style out to Hermes' owner-facing skills.
 - **#1028 (2026-06-17, procedures→skills conversion plan — docs-only)** — captured the 33-procedure
   skills-conversion inventory (A/B/C buckets) as an executable plan
   (`planning/procedures-to-skills-conversion-plan-2026-06-17.md`): the thin-pointer convention, the
