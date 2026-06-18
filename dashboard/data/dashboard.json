@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T11:14:41Z",
+    "generated_at": "2026-06-18T15:51:36Z",
     "build": {
-      "commit": "f7ed6f52",
-      "subject": "Merge pull request #1045 from menno420/claude/funny-franklin-ttonj3",
-      "committed_at": "2026-06-18T13:13:54Z",
+      "commit": "ebe3e79b",
+      "subject": "Merge pull request #1048 from menno420/claude/funny-franklin-xyjake",
+      "committed_at": "2026-06-18T17:26:42Z",
       "branch": "main"
     },
     "counts": {
@@ -1672,6 +1672,22 @@
   ],
   "updates": [
     {
+      "file": "2026-06-18-standalone-select-pagination.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — Migrate standalone-ephemeral select pickers onto `PaginatedSelectView`",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-18-paginated-select-primitive.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — Paginated-select primitive (the #1040 select-truncation class, root fix)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-18-fishing-reconcile-q0175.md",
       "date": "2026-06-18",
       "title": "Session — reconcile shipped fishing v1 to the owner's design (Q-0175)",
@@ -2131,22 +2147,6 @@
       "file": "2026-06-16-hook-cwd-robust.md",
       "date": "2026-06-16",
       "title": "Session — make the settings.json hooks cwd-robust (Q-0150)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-hermes-tpm-rate-limit-docs.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — capture the Hermes TPM rate-limit finding (docs/script corrections)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-hermes-ops-docs-honcho.md",
-      "date": "2026-06-16",
-      "title": "Session — Hermes ops docs: lean-filter how-to · Honcho eval · open-steps findability",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
