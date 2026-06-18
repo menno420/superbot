@@ -86,6 +86,287 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1026 (2026-06-17, autonomous-routines review + workflow hardening)** — first-unattended-run review:
+  hardened the routine prompts (full-band planning depth + the ⚠️ PLAN BACKLOG THIN flag Q-0164;
+  drift-on-sight Q-0166; `Run type:` labels Q-0165), added the `dashboard-data-refresh` workflow (Q-0167
+  — per-source-merge regen of dashboard.json), and approved the Hermes plain-language house-style sample
+  (Q-0168). Mapped the owner's brain-dump observations to their durable homes.
+- **#1025 (2026-06-17, dashboard.json freshness reporter)** — warn-only structural-drift reporter
+  (`check_dashboard_data.py --drift`, identifier-sets only, never the volatile churn) + regenerated the
+  stale committed dashboard.json + routed the cadence-regen to the docs-reconciliation routine.
+- **#1024 (2026-06-17, BTD6 paragon-ability + boss tier-HP floors — BUG-0009 §7.5/§7.6)** — scheduled
+  dispatch, empty work order → built the two BTD6 deterministic-floor shapes current-state named as
+  still-valid empty-fire candidates (the night queue was fully consumed). **Two floor builders on the
+  `_BTD6_LIST_BUILDERS` seam:** `deterministic_paragon_ability_roster_reply` (paragon sibling of the
+  hero-ability roster — lists a paragon's curated activated/passive abilities off `paragon_abilities.json`
+  via `btd6_stats_service`, owns the empty case so Apex Plasma Master never gets an invented ability;
+  mutually exclusive via the literal `paragon` token) and `deterministic_boss_hp_comparison_reply`
+  (§7.5 comparison — ranks bosses by per-tier health off `bosses[].tiers`/`.elite_tiers`, two shapes:
+  named-boss ranking + superlative-over-all, **tier 1-5 REQUIRED** so it fails closed on an ambiguous
+  no-tier ask, elite handling, defers on an immunity cue). Each adds a `_SHOULD_FIRE` exclusivity-corpus
+  entry + a test file. The proven ungated BTD6 floor lane is now essentially exhausted (all towers/heroes/
+  paragons/bosses/MK/relics/bloons roster+comparison shapes covered). `check_quality --full` green
+  (10468) · arch 0 · check_docs ✓.
+- **#1023 (2026-06-17, moderation per-action DM policy — Q-0147)** — scheduled dispatch, empty work
+  order → built the band-#1020 §4 named ungated slice (the `moderation-dm-config` plan). Turns the
+  `dm_on_action` master switch into an owner-controlled **per-action** DM policy on the existing
+  audited `moderation_service` seam — **no migration, no new module**: new `MOD_DM_ACTIONS`
+  (`moderation_dm_actions`) key; a `dm_actions` field + validated `dm_action_set` property +
+  `parse_dm_actions` helper on `ModerationPolicy`; `_notify_target` now gates on master **and**
+  per-action membership; a `dm_actions` `SettingSpec` (csv subset of warn/timeout/kick/ban) on
+  `!settings → Moderation` + `dm_on_action` relabelled the master switch (schema v6→v7). **Deviation
+  from the plan (documented):** default = all four notify-eligible actions (not `warn,timeout`) so the
+  master switch keeps today's behaviour and an owner *narrows* it — a `warn,timeout` default would
+  silently drop kick/ban DMs for guilds that already enabled the switch; `auto_delete` is excluded
+  (never reaches `_notify_target`). `check_quality --full` green (10443) · arch 0 · check_docs ✓.
+- **#1022 (2026-06-17, eleventh Q-0107 reconciliation pass — band-#1020)** — the band #991→#1020
+  docs-only reconcile + planning pass (issue #1021): reconciled the ledger, planned the band-#1020
+  decade queue, promoted the moderation-DM-config idea → a turn-key plan, added a ledger-tally
+  soft-lint idea, and reset the marker #990→#1020.
+- **#1020 (2026-06-17, manifest spine PR3 — control-API manifest read + cross-manifest
+  reconciliation)** — scheduled dispatch, empty work order → advanced the manifest-spine thread (PR1
+  #1018 + PR2 #1019 shipped; the execution plan named PR3 next). Makes the typed manifest **readable
+  over the live control API** and **self-reconciling** (the spine's core purpose — verified, not
+  guessed, metadata): **(1)** `GET /control/manifest` on the dormant control API (token-only, global —
+  mirrors `/control/help/catalogue`) serves `CommandManifest` + `PanelManifest`, building on demand
+  when the startup cache is empty; + `control_client.get_manifest()`. **(2)** `core/runtime/manifest_reconciliation.py`
+  — a `panel_action`-classified command whose subsystem owns no registered panel is a
+  `dangling_panel_action` finding, surfaced in `CommandManifest.to_dict()["findings"]` (was reserved
+  `[]`) + the `command_manifest` diagnostics. **(3)** CI drift guard (`test_manifest_drift.py`): the
+  AST `scan_commands` `panel_action` subsystems ⊆ the runtime `PanelManifest` subsystems — the cheap
+  "AST is drift-detection" check (holds: {mining, moderation, role}). **(4)** the manifest envelope's
+  `bot_build` now defaults to the deploy SHA (`RAILWAY_GIT_COMMIT_SHA`, short) so the live read is
+  freshness-badged. `check_quality --full` green (10431, +16) · arch 0. **Deferred to PR4** (no
+  declared button→command binding yet — verified: `panel_action` cmd names ≠ button action-id
+  suffixes, so a name-level guard would be false-positive-prone, Q-0120): per-button `command` binding
+  + button-level reconciliation + the panel-layout editor (owner-paced control-API *writes*).
+- **#1018 (2026-06-17, manifest spine slice 1 — typed CommandManifest over the ledger)** — same
+  dispatch fire as #1017 (continuation). Started the **manifest spine** — the dashboard vision doc's
+  "key structural investment," owner-approved (Q-0162), Phase-E predecessor shipped (#1013), schema
+  finalized (#998). `core/runtime/command_manifest.py` projects the cached `CommandSurfaceLedger`
+  into the typed #998 command schema (no second surface walk), built+cached at startup, surfaced as a
+  `command_manifest` diagnostics provider, with the manifest-faithfully-projects-ledger CI invariant
+  (the first reconciliation test that makes the metadata trustworthy). AST stays drift-detection only.
+  Deferred fields (source/panels/actions/related_settings/capability_required) are shape-pinned but
+  empty. PR2 (panel registry + `PanelManifest`) shipped #1019.
+- **#1019 (2026-06-17, manifest spine PR2 — panel registry + PanelManifest)** — scheduled dispatch,
+  empty work order → advanced the manifest-spine thread (PR1 `CommandManifest` shipped #1018; the
+  execution plan + `current-state` named PR2 next; both open PRs Hermes-gated). `core/runtime/panel_manifest.py`
+  projects the **persistent-view registry** (the panels with stable static custom_ids that survive
+  restart — the manageable ones) into a typed `PanelManifest`, built **at startup from the runtime
+  registry** (mirroring PR1's runtime-truth, not AST): each `PersistentView` is instantiated arg-free
+  and its real components introspected into `PanelButton`s (`action_id`/`custom_id`/`label`/`row`;
+  `command` deferred). `persistent_views.py` gained a declarative `PANEL_ID` + faithful
+  `iter_registered_view_classes` so the two `help` panels (collapsed in the subsystem-keyed recovery
+  dict) both surface (10 panels, 67 buttons live). `CommandManifestEntry.panels` back-populated by a
+  subsystem join (`actions` deferred — no declared button→command binding). `panel_manifest` diagnostics
+  provider + startup_outcome phase. Reconciliation test round-trips every manifest button against a fresh
+  view-class instantiation. `check_quality --full` green (10414) · arch 0 · +20 tests. **Next: PR3** —
+  control-API `manifest` read + `dashboard.json` export + the AST drift guard (sequenced in
+  [`manifest-spine-execution-plan-2026-06-17.md`](planning/manifest-spine-execution-plan-2026-06-17.md)).
+- **#1017 (2026-06-17, settings global tier — per-guild → global → default)** — scheduled dispatch,
+  empty work order → advanced the active dashboard thread's next *ungated runtime* slice (the
+  live-editor plan's settings-editor phase ②, the owner's "change things globally" ask).
+  `services.settings_resolution.resolve_setting` now resolves **per-guild row → global row
+  (`guild_id = utils.db.settings.GLOBAL_GUILD_ID = 0`) → spec default** (new provenance `global_kv`,
+  mirroring `core.runtime.feature_flags`); an `include_global` flag keeps the mutation pipeline's
+  `_read_previous` scope-local. `SettingsMutationPipeline.set_value` gained a `scope="global"` path,
+  **owner-gated** (`config.BOT_OWNER_USER_ID`; system/backfill bypass), writing/auditing the
+  `guild_id = 0` row through the existing audited seam (scope-`global` audit, AI per-guild projection
+  skipped). An owner global write is inherited by every guild without its own row. +18 tests. The
+  **next dashboard slice is now phase ③** — `POST /control/settings/{scope}` over `set_value` + the
+  OAuth-gated editor UI with the Global/per-server scope picker.
+- **#1015 (2026-06-17, dashboard Phase C — the read workspace)** — scheduled dispatch, empty work
+  order → advanced the active dashboard thread (night/BTD6 queues consumed; R3 hardening already
+  in flight on #1014). Shipped the Phase-C slice skipped when the build jumped C-auth → F-writes,
+  all **read-only** over the shipped Phase E reads (no new bot endpoints, no `disbot/` code): **`/me`**
+  (logged-in personal overview — who you are + the servers you administer, each card linking to its
+  overview/editor; pure session data), **`/admin/{guild}/overview`** (read-only per-server
+  setup-health summary — invalid settings, customisations, help overrides, disabled cogs — from
+  `_fetch_current_state`), and an honest **authority preview** ("what you may read / change here")
+  from the authority bridge. New pure `_setup_health`/`_authority_preview` projections + two
+  templates + nav/overview links. `check_quality --full` green (10408) · arch 0 · +12 dashboard
+  tests. **Dashboard ▶ next:** R3 hardening shipped (#1014); the **Phase D manifest spine** (Q-0162,
+  gates command/panel management) — PR1 `CommandManifest` (#1018) + PR2 panel registry/`PanelManifest`
+  (#1019) + **PR3 control-API `/control/manifest` read + cross-manifest reconciliation + AST drift
+  guard + deploy-SHA badge (#1020)** all shipped. **The remaining manifest-spine work is PR4 — the
+  panel-layout editor (H / L3 "move buttons"): a declared button→command binding + button-level
+  reconciliation + the DB-backed layout overlay + the website editor.** PR4 is **owner-paced** (it is
+  a control-API *write* surface, needs `CONTROL_API_TOKEN`) **and architecturally significant** (the
+  binding must be declared across every persistent view — verified this session that `panel_action`
+  command names do NOT map to button action-ids, so it can't be inferred). So the manifest spine's
+  next pure ungated read-code is **exhausted** — a future empty fire should plan PR4 (with the owner
+  on the write-side pacing) or take a different ungated lane. The committed `dashboard.json` export of
+  the manifest was dropped from PR3: the export can't import disbot, so it stays the AST `cogs` view;
+  the live truth is `/control/manifest`. The global-settings runtime tier (Q-0157) stays its own
+  owner-paced session.
+- **#1016 + #1014 (2026-06-17, dashboard R3 hardening + vision-roadmap reconcile)** — the overnight
+  dashboard run's hardening + docs tail. **#1014 (R3 — live-surface hardening):** the finalized-vision
+  plan's reviewer note R3 (the control panel is public+live but had no rate-limiting and only
+  `SameSite=Lax`) — adds a per-session **CSRF token** (signed-cookie, hidden field, constant-time
+  reject) on every `/admin/{guild}` POST, a stdlib sliding-window **rate-limiter** (`dashboard/ratelimit.py`)
+  on `/auth/login` (per IP) + edit POSTs (per user), and a defense-in-depth per-(guild,user) write
+  limiter in `disbot/control_api.py` (HTTP 429, dormant-safe). Additive; the audited-seam write path
+  is unchanged. **#1016 (docs):** reconciled the dashboard vision roadmap (`dashboard-vision-finalized-state.md`)
+  to mark Phase E (#1013) + R3 (#1014) shipped. Dashboard read+write surfaces are now live + hardened;
+  the manifest spine (#1018–#1020) is the next structural lane (PR4 owner-paced).
+- **#1012 (2026-06-17, AI answerability floor — boss roster + per-difficulty map filter + boss
+  immunity)** — scheduled dispatch fire, no work order; night queue fully consumed + both open PRs
+  (#941/#929) Hermes-gated → took a fresh slice of the proven, ungated BTD6 deterministic-floor lane
+  (Q-0048, BUG-0009 wrong-assembly class). Closed three real gaps: **(1)** `deterministic_roster_reply`
+  never had a **boss roster** ("list all bosses" fell to the model, which can omit/add one of the 7) —
+  added a boss enumeration branch; **(2)** "list all expert maps" **dumped all 86 maps** grouped by
+  difficulty — `_map_roster_reply` now filters to a named tier (Beginner/Intermediate/Advanced/Expert);
+  **(3)** new `deterministic_boss_immunity_reply` in `_BTD6_LIST_BUILDERS` owns boss damage-immunity
+  ("what is Lych immune to" · "is Blastapopoulos immune to fire" · "which bosses are immune to fire")
+  off `bosses[].immune_to`, keyed on a boss reference + immunity cue so it never overlaps the bloon
+  immunity roster. `check_quality --full` green · arch 0 · +9 tests (boss-immunity + exclusivity
+  corpus phrase + roster/map-filter cases).
+- **#1011 (2026-06-17, AI §7.6 — night-queue buffer slices + slot-4 reframe, three floor builders)** —
+  scheduled dispatch fire, no work order → advanced the now-consumed ▶ NIGHT QUEUE. Three
+  deterministic BTD6 floor builders, all BUG-0009 wrong-assembly class, all under Q-0048
+  (read-only, no prod-check): **(1) Monkey-Knowledge category roster** —
+  `btd6_data_service.monkey_knowledge_by_category()` + `deterministic_mk_category_roster_reply`
+  buckets the 134 MK by in-game tab ("what Support monkey knowledges are there?"), deferring to the
+  shipped `deterministic_mk_reference_reply` when a tower is named so the two MK builders never both
+  fire. **(2) Slot-4 reframe — bloon *modifier explainer*** — `bloon_modifiers()` +
+  `deterministic_bloon_modifier_reply` own the grounded camo/fortified/regrow explanation off the
+  three `category:"modifier"` marker entries, reframing "which bloons are camo?" instead of
+  assembling the misleading `[DDT]` roster (the original slot-4 "property roster" stays rejected);
+  defers whenever a tower / detect-or-pop verb / tower-subject is present (the capability roster's
+  job). **(3) Geraldo starting-kit angle** — extended the shipped `deterministic_geraldo_per_level_reply`
+  (no redundant sibling) so "what does Geraldo start with" maps to his level-0 items (the gap the
+  per-level/list cue missed). The night queue is now fully consumed (every ready slot, the slot-4
+  reframe, both buffer slices). `check_quality --full` green (10344, +14) · arch 0 · exclusivity
+  invariant + per-builder tests
+  (`test_btd6_mk_category_roster.py`, `test_btd6_bloon_modifier.py`, `test_btd6_geraldo_per_level.py`).
+- **#1010 (2026-06-17, AI §7.6 — deterministic BTD6 hero ability roster floor + slot-4 reframe)** —
+  third slice of the same scheduled dispatch fire (after #1008 + #1009). Adds the **hero ability**
+  roster — the per-hero sibling of the capability / bloon / relic rosters. "what abilities does
+  Quincy have?", "list Adora's abilities" lists a hero's abilities (level + name + summary) so the
+  model can never mis-level / mislabel one (BUG-0009). `btd6_data_service.hero_abilities(name)`
+  resolves one hero via the shared surface resolver, returns abilities ascending by level, `None`
+  on miss; `btd6_context_service.deterministic_hero_ability_roster_reply` fires on an ability cue +
+  exactly one resolved hero, defers on a cost cue (the hero *cost* builder's job), strategy, and
+  zero/multi-hero asks; registered in `_BTD6_LIST_BUILDERS` after the relic roster. The "which
+  heroes have an ability at level N" cross-query was dropped (data carries only levels 3 & 10
+  uniformly → degenerate). **Also reframed night-queue slot 4** (bloon property roster) to
+  `NEEDS-REFRAME`: `properties[]` does not cleanly answer "which bloons are camo/fortified/regrow"
+  (those are universal modifiers, not per-type properties — a roster from it would be a fresh
+  BUG-0009 mis-assembly); the queue doc carries the reframe options. Ships under Q-0048.
+  `check_quality --full` green (10318, +14); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_hero_ability_roster.py` + the §7.6 exclusivity corpus entry.
+- **#1009 (2026-06-17, AI §7.6 — deterministic BTD6 relic category/effect roster floor)** —
+  same scheduled dispatch fire as #1008, continuing down the ▶ NIGHT QUEUE (slot 3) after #1008
+  merged. Adds the **relic** member of the §7.6 BUG-0009 roster floor — the Contested Territory
+  sibling of the shipped capability roster (towers) and bloon roster (#975). "what economy relics
+  are there?" / "list all offensive relics" / "which relics are utility?" buckets the 24 CT relics
+  by `category` (+ each relic's `effect`) so the model never mis-buckets the list (every relic name
+  is grounded, so a mis-*grouping* slips past the value-only faithfulness guard).
+  `btd6_data_service.relics_by_category()` groups `ct_relics.json` by category in a fixed order
+  (offense · economy · lives · powerup · utility), name-sorted within each group;
+  `btd6_context_service.deterministic_relic_roster_reply` fires on a relic subject + an enumeration
+  shape (a named category → that category's relics+effects; a bare "all relics" → every relic
+  grouped), with a `_mentions_specific_relic` guard that defers single-relic effect lookups ("what
+  does the el dorado relic do"). Registered in `_BTD6_LIST_BUILDERS` after the bloon roster.
+  Ships under Q-0048. `check_quality --full` green (10304, +12); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_relic_roster.py` + the §7.6 exclusivity corpus entry. Next
+  night-queue `TODO` = slot 4 (bloon property roster).
+- **#1008 (2026-06-17, AI §7.5 — deterministic BTD6 power cost-comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NIGHT QUEUE, slot 2). Adds the **power**
+  (activated-ability) member of the §7.5 multi-entity cost-comparison floor — the power-store
+  sibling of the shipped hero #1000 / paragon #962 / tower #946 / difficulty #950 builders.
+  "which power is cheaper, Cash Drop or Monkey Boost?" ranks the **Monkey Money** store price of
+  **two-or-more** powers — the BUG-0009 "grounded values, wrong assembly" class the value-only
+  faithfulness guard can't catch. Powers cost a *fixed* Monkey-Money price (no difficulty
+  scaling), so the primitive has **no difficulty axis** (the one shape difference from #1000).
+  `btd6_data_service.compare_power_costs(names)` resolves each power via the shared `find_power`
+  resolver, dedups on id, ranks ascending by `monkey_money_cost`, fails closed (<2 distinct);
+  `btd6_context_service.deterministic_power_cost_comparison_reply` fires on a cost-compare cue +
+  ≥2 resolved powers (defers on a `paragon` cue, strategy, single-power lookups), registered in
+  `_BTD6_LIST_BUILDERS` after the hero builder (mutually exclusive with the tower/hero/paragon
+  builders by construction). Ships under Q-0048 (read-only deterministic floor, no prod-check).
+  `check_quality --full` green (10292, +38); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_power_cost_comparison.py` + the §7.5 exclusivity corpus entry.
+  Next night-queue `TODO` = slot 3 (relic category/effect roster).
+- **#1005 · #1006 · #1007 (2026-06-17, dashboard-vision docs + a routing-corpus test)** — the
+  dashboard finalized-vision plan review + owner panel decisions (#1005 review/close · #1006 solidify
+  with owner panel decisions) and the BTD6 community-shorthand class-guard corpus (#1007, test-only).
+  Docs/test band; no runtime change.
+- **#1004 + #1003 + #997 (2026-06-16, loop-hygiene band — union-merge ledger fix + ideas + night
+  queue)** — one grouped docs/repo-infra entry (no `disbot/` runtime). **#1003 (`fix(repo)`):** set
+  `merge=union` on the append-only ledger files (`.gitattributes`) so parallel sessions stop
+  livelocking on ledger-line merge conflicts — the structural fix for the recurring conflict class
+  the reconciler used to resolve by hand. **#1004 (`docs(ideas)`):** tied off the #995 backlog-hygiene
+  grooming and filed two captured ideas. **#997 (`docs(planning)`):** seeded the grounded
+  [night-work queue](planning/night-queue-2026-06-16.md) so the overnight scheduled dispatch fires
+  advanced real BTD6 deterministic-floor work (#1008–#1012) instead of stalling on the thin `ready`
+  queue — now fully consumed.
+- **#1000 (2026-06-16, AI §7.5 — deterministic BTD6 hero cost-comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NIGHT QUEUE, slot 1). Adds the **hero** member of the
+  §7.5 multi-entity cost-comparison floor (the hero-entity sibling of the shipped paragon #962 /
+  tower #946 / difficulty #950 builders): "is Quincy or Benjamin cheaper?", "cheapest hero out of
+  Gwen, Striker, Ezili" ranks the base placement cost of **two-or-more** heroes — the BUG-0009
+  "grounded values, wrong assembly" class the value-only faithfulness guard can't catch.
+  `btd6_data_service.compare_hero_costs(names, *, difficulty="medium")` resolves each hero via the
+  shared surface resolver, dedups on id, difficulty-scales the stored Medium `base_cost`, ranks
+  ascending, fails closed (<2 distinct); `btd6_context_service.deterministic_hero_cost_comparison_reply`
+  fires on a cost-compare cue + ≥2 resolved heroes (defers on a `paragon` cue, strategy, single-hero
+  lookups), registered in `_BTD6_LIST_BUILDERS` before the tower cost builders (mutually exclusive
+  with them by construction — they need a `(tower, crosspath)` candidate a hero never yields). Ships
+  under Q-0048 (read-only deterministic floor, no prod-check). `check_quality --full` green (10262,
+  +40); arch 0; mypy clean. Tests: `tests/unit/services/test_btd6_hero_cost_comparison.py` + the
+  §7.5 exclusivity corpus entry. Next night-queue `TODO` = slot 2 (power activated-ability cost).
+- **Developer dashboard — LIVE (2026-06-16, owner-requested, Q-0155)** — a personal website /
+  developer dashboard deployed as a **second Railway service**
+  (https://superbot-dashboard.up.railway.app), auto-redeploying on merge to `main`. Shipped across
+  **#967** (read-only MVP: functions · ideas · bugs · updates · showcase), **#969** (`/env` env-usage
+  map), **#970** (deploy fix), **#972** (`/commands` cog & command explorer), **#973** (command-count
+  reconcile + bot status-embed full count), **#977** (`/settings` catalogue via `scripts/scan_settings.py`
+  + `/access` permissions map via `scripts/scan_access.py` — a verified mirror of
+  `utils.visibility_rules`; + the live help-editor design doc), **#979** (`/settings` 500 fix — Jinja
+  `domain.keys` resolved to the dict method), **#984** (`/settings` enriched with typed `SettingSpec`
+  type/default/hint/choices via `scripts/scan_setting_specs.py`), **#982** (`/aliases` suggestion form with
+  live collision check + prefilled GitHub issue), **#983** (`/games` showcase + the settings-editor design
+  Q-0157), and **#985** (`/status` build & health surface — git-derived `meta.build` deployed-version
+  banner + inventory counts + open-bug & access-tier health; the last Q-0156 *passive* read-only surface).
+  **#986** + **#987** documented the free multi-user control-panel identity/authority design + the
+  next-session handoff, and **#988** turned `/commands` into a **management surface** — a Manage panel on
+  every command and cog (current aliases · cog-routing state · per-command alias box), front-ending
+  `command_routing` + the synonym layer read-only (**Q-0160:** cog-level enable/disable now, per-command
+  later). Decoupled
+  FastAPI app under `dashboard/` fed by stdlib scanners; **never imports `disbot/`**. The Q-0156 read-only
+  surfaces are now all shipped. **Bot-side live-editor foundation started: #989** (`disbot/control_api.py`)
+  — a **dormant-by-default** private control API on the existing health server: shared-secret bearer auth
+  + the **identity→authority bridge** (`/control/authority` resolves a member's visibility tier; the bot
+  decides, never the browser). Read-only; **activates only when `CONTROL_API_TOKEN` is set** on the Railway
+  services (zero prod change otherwise). Mutation endpoints over the audited seams come next. Phases 2 (auth + checklist + public bug form) /
+  3b (Railway secret management) / 4 (multi-AI control board) remain, plus the owner-approved **live
+  help/panel editor** (Q-0156): edit help live from the website via a private bot control API over the
+  existing audited `help_overlay_mutation` seam + Discord OAuth — designed in
+  [`planning/dashboard-live-editor-plan.md`](planning/dashboard-live-editor-plan.md) (L0–L3), built next.
+  Authoritative record + handoff: [`planning/developer-dashboard-plan.md`](planning/developer-dashboard-plan.md).
+- **#994 + #964 + #960 + #958 + #957 (2026-06-16, docs/architecture maturation — collaboration-model grounding + the architecture-atlas Q-0151 arc)** — one grouped entry (all docs/tooling, no `disbot/` runtime). **#994** grounded `docs/collaboration-model.md` in the Claude Code expertise research. **The Q-0151 architecture-atlas arc** (response to the owner-uploaded outside-in repo-architecture review): **#957** captured the review + agent judgment (direction right — a *generated* atlas over a filesystem reorg — but the drift diagnosis overstated and the per-file dashboard ~80% already `context_map.py`); **#958 (Q-0151c)** shipped the genuinely-new signal, an extension-type taxonomy crosswalk (43 ext ↔ 33 subsystems) via `scripts/extension_crosswalk.py` + a CI guard; **#960 (Q-0151a)** added a thin repo-wide architecture atlas (PR 2); **#964** added a soft `check_docs` inventory-count guard and closed the Q-0151 thread.
+- **#993 + #990 + #974 (2026-06-16, developer-dashboard / control-API initiative — Q-0155…0160)** — the new owner-commissioned **personal developer dashboard** (a management website for the bot) begins. **#974**: the comprehensive dashboard plan + next-session handoff. **#990**: a `dashboard.json` integrity guard that catches export drift. **#993 (control-API write side)**: `feat(control-api)` mutation endpoints over the **audited service seams** (no DB bypass) — the write half of the dashboard's edit-settings / edit-help surfaces (Q-0156/0157). Owner decisions Q-0155–Q-0160 (dashboard shape · live editor · per-server settings · Discord-login multi-user panel · cog-level command toggles) are recorded in the router. **#995**: sub-cog→subsystem mapping (merged). **#996 (control panel — Discord OAuth login + editors)**: the multi-user `/admin` — sign in with Discord → pick a server you administer → edit settings / help appearance / cog routing **live** through the audited seams; stdlib HMAC-signed session (no `itsdangerous`/`multipart` — fewer deps to version-match). **#1001**: health server **IPv6 dual-stack bind** (`HEALTH_HOST=::`) so the dashboard reaches the control API over Railway's IPv6 private network. **#1002**: the finalized-state **vision plan** (`planning/dashboard-vision-finalized-state.md` — the north-star above the two execution plans; Q-0161/Q-0162). **🟢 The control panel is now LIVE in production (2026-06-17):** `CONTROL_API_TOKEN` + the Discord OAuth secret are set on both Railway services; owner-confirmed login + live edits, and the bot logs `control_api: enabled` / `Health server listening on :::8080`. **Next gap:** the control-API *read* endpoints so editors show each server's **current** value (today they write blind).
+- **#981 + #978 + #976 + #971 + #968 + #966 + #965 + #959 + #952 (2026-06-16, autonomous-loop ops hardening — Hermes skills + CI conflict-guard + rate-limit hygiene)** — one grouped control-plane/ops entry (docs/skill/CI/Hermes only; no `disbot/` runtime). **Hermes:** **#959** added three skills (idea-spotlight · morning-briefing · dispatch-resolve) + a 6h interactive session auto-reset (Q-0153); **#971** made morning-briefing + idea-spotlight rate-limit-lean; **#976** captured a TPM rate-limit finding + fixed reset/compaction guidance; **#978** compared gpt-5-mini vs gpt-5.4-mini + deprecated `--set-model`; **#981** added a staleness guard to `install-skills.sh` (stale-skill root cause); **#952** retried `railway_logs` on transient 5xx / connection errors. **CI conflict-guard (Q-0154):** **#965** auto-updates behind PRs + reddens on conflict, **#966** fixed its token + bash-errexit safety, **#968** scoped it to evaluate only the triggering PR (cut noise).
+- **#975 (2026-06-16, AI §7.6 — deterministic BTD6 property/capability roster floors)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT lane, "a *new* AI §7 workflow family beyond §7.5"). The
+  §7.5 *comparison* family is COMPLETE (#946/#950/#955/#962); this opens the next family — the
+  **property/capability roster** (a *list-by-property*, not a rank/diff), the same BUG-0009
+  wrong-assembly class on the roster side. **Two members shipped:** (1) `deterministic_capability_roster_reply`
+  fronts the authoritative `btd6_capability_service` ("which towers can pop lead / detect camo / pop
+  black-white-purple?") — base 0-0-0 scope by default, an explicit "with upgrades" signal flips to the
+  earliest-upgrade roster, a `paragon` cue answers the per-paragon camo roster; (2)
+  `deterministic_bloon_roster_reply` fronts the committed `bloons.json` fields ("what are all the
+  MOAB-class bloons", "which bloons are immune to sharp/cold/explosion?") via `category` + `immune_to`,
+  modifier pseudo-bloons excluded — the bloon side the sibling `deterministic_roster_reply`
+  (heroes/towers/paragons/maps) never covered. Both ride the shared `_BTD6_LIST_BUILDERS` seam (no
+  integration change), are read-only deterministic (Q-0048, no prod-check), and are held to the
+  `test_btd6_floor_builder_exclusivity.py` one-fires invariant (corpus extended for both). `check_quality
+  --full` green (10184, +40 tests); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_capability_roster.py` + `tests/unit/services/test_btd6_bloon_roster.py`.
+  The next AI §7 step is a further §7.6 roster member (e.g. hero/relic property lists) or a *new* family
+  beyond rosters+comparison (plan-first).
 - **#963 + #991 + #953 + #946 (2026-06-16, BTD6 AI floors + fixes)** — **#946**: the **first** §7.5 multi-entity comparison floor member — deterministic tower cost-comparison (`compare_crosspath_costs` + `deterministic_cost_comparison_reply`, on the `deterministic_btd6_list_reply` dispatcher) — the BUG-0009 "grounded values, wrong assembly" class; #950/#955/#962 built the difficulty/round-range/paragon members on it (**§7.5 comparison family now complete**). **#963 (BUG-0015)**: "d67 dart paragon" was misread as upgrade path "0-6-7" — fixed the parse + route + grounded a paragon *degree*; **#991** captured the BUG-0015 tail as a BTD6 shorthand-corpus eval idea (the recurring router-class guard). **#953**: current-event-first Live Events + fixed the dead event drill-down. `check_quality` green; arch 0.
 - **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).

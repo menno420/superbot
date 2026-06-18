@@ -28,6 +28,13 @@ Current broad captures:
   flagship buildable lane** (one rule per PR = a real slice, feeds Q-0164). Executable plan:
   [`repo-consistency-linter-plan-2026-06-17.md`](../planning/repo-consistency-linter-plan-2026-06-17.md).
   → relates `scripts/check_architecture.py` · `disbot/views/` · `disbot/cogs/`.
+- [`product-lanes-gated-balance-flag-2026-06-18.md`](./product-lanes-gated-balance-flag-2026-06-18.md) —
+  **session idea (2026-06-18, Q-0089, from the band-#1050 reconciliation pass):** a warn-only
+  `⚑ Product lanes gated` reporter — the **balance-axis** sibling of the Q-0164 PLAN-BACKLOG-THIN
+  (depth-axis) flag. Classifies the buildable queue by sector and flags when *every* S1/S2 product
+  lane is gated (the current standing state), so the owner-side lever (merge a `needs-hermes-review`
+  PR / decide Q-0175) surfaces automatically every pass instead of via a hand-written §3 paragraph.
+  → relates the Q-0164 flag · `check_plan_backlog.py` · `roadmap.md` sectors.
 - [`owner-review-inbox-2026-06-17.md`](./owner-review-inbox-2026-06-17.md) —
   **owner-directed (2026-06-17, Q-0169, capture-only):** a channel to **post ideas/cog-command
   reviews** that sessions read and act on, with a visible open→resolved status (the owner forgets
