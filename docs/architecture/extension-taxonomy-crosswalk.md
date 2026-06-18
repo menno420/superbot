@@ -5,7 +5,7 @@
 > `architecture_rules/extension_roles.yaml`. Sources: `disbot/config.py` (`INITIAL_EXTENSIONS`),
 > `disbot/utils/subsystem_registry.py` (`SUBSYSTEMS`), and that overlay. `--check` guards staleness.
 
-_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **44** extensions  ·  **34** registered subsystems  ·  **10** non-1:1 extensions.
+_Generator:_ `scripts/extension_crosswalk.py` `v1`  ·  **45** extensions  ·  **35** registered subsystems  ·  **10** non-1:1 extensions.
 
 Every loaded extension classified by **role** (editorial — in `architecture_rules/extension_roles.yaml`) and joined to the registry. A ✓ in *Registered* means the extension is a 1:1 subsystem identity; the non-1:1 rows are surfaces/maintenance/adapters that **back** a subsystem or the platform.
 
@@ -18,7 +18,7 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | `lab` | 1 | A development / UX laboratory surface; not a production product surface. |
 | `maintenance` | 2 | A background-loop cog (scheduled work) with no subsystem identity; runtime/ops, not a product surface. |
 | `operational_adapter` | 1 | A bridge to a control plane or external operation (not an in-guild product feature). |
-| `product_subsystem` | 24 | A feature vertical with its own owner, views, and tests. |
+| `product_subsystem` | 25 | A feature vertical with its own owner, views, and tests. |
 | `shared_platform` | 6 | A broad cross-cutting capability with high blast radius (admin, settings, AI, diagnostics, help, utility). |
 | `specialized_surface` | 5 | One of several surfaces within a single domain vertical (e.g. the BTD6 sub-cogs) — backs a registered subsystem rather than being its own. |
 
@@ -45,31 +45,32 @@ Every loaded extension classified by **role** (editorial — in `architecture_ru
 | 17 | `deathmatch` | `product_subsystem` | ✓ |  | Game (1v1 duels). |
 | 18 | `proof_channel` | `product_subsystem` | ✓ |  |  |
 | 19 | `mining` | `product_subsystem` | ✓ |  | Mining character platform (large vertical). |
-| 20 | `diagnostic` | `shared_platform` | ✓ |  | `!platform` diagnostics; broad cross-subsystem read-model surface. |
-| 21 | `health_maintenance` | `maintenance` | — | `diagnostic` | Scheduled health-findings retention loop; no subsystem identity. |
-| 22 | `ai` | `shared_platform` | ✓ |  | AI orchestration / answerability; cross-cutting. |
-| 23 | `media_maintenance` | `maintenance` | — |  | Scheduled media/YouTube cache purge loop; no subsystem identity. |
-| 24 | `btd6` | `product_subsystem` | ✓ |  | BTD6 core data / answerability vertical. |
-| 25 | `btd6_reference` | `specialized_surface` | — | `btd6` | BTD6 reference lookups. |
-| 26 | `btd6_events` | `specialized_surface` | — | `btd6` | BTD6 live-events surface. |
-| 27 | `btd6_strategy` | `specialized_surface` | — | `btd6` |  |
-| 28 | `paragon` | `specialized_surface` | — | `btd6` | BTD6 paragon grounding surface. |
-| 29 | `btd6_ops` | `specialized_surface` | — | `btd6` | BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical. |
-| 30 | `chain` | `product_subsystem` | ✓ |  | Command-chain subsystem. |
-| 31 | `general` | `product_subsystem` | ✓ |  | General-content commands. |
-| 32 | `four_twenty` | `product_subsystem` | ✓ |  | Novelty / community feature. |
-| 33 | `leaderboard` | `product_subsystem` | ✓ |  | Cross-subsystem leaderboards (reads XP/games). |
-| 34 | `settings` | `shared_platform` | ✓ |  | Settings hub; cross-cutting config surface. |
-| 35 | `logging` | `product_subsystem` | ✓ |  | Server-logging subsystem. |
-| 36 | `games` | `hub` | ✓ |  | Games hub (routes blackjack/deathmatch/counting/rps). |
-| 37 | `community` | `hub` | ✓ |  | Community hub. |
-| 38 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
-| 39 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
-| 40 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
-| 41 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
-| 42 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
-| 43 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
-| 44 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
+| 20 | `fishing` | `product_subsystem` | ✓ |  | Fishing minigame (ecosystem |
+| 21 | `diagnostic` | `shared_platform` | ✓ |  | `!platform` diagnostics; broad cross-subsystem read-model surface. |
+| 22 | `health_maintenance` | `maintenance` | — | `diagnostic` | Scheduled health-findings retention loop; no subsystem identity. |
+| 23 | `ai` | `shared_platform` | ✓ |  | AI orchestration / answerability; cross-cutting. |
+| 24 | `media_maintenance` | `maintenance` | — |  | Scheduled media/YouTube cache purge loop; no subsystem identity. |
+| 25 | `btd6` | `product_subsystem` | ✓ |  | BTD6 core data / answerability vertical. |
+| 26 | `btd6_reference` | `specialized_surface` | — | `btd6` | BTD6 reference lookups. |
+| 27 | `btd6_events` | `specialized_surface` | — | `btd6` | BTD6 live-events surface. |
+| 28 | `btd6_strategy` | `specialized_surface` | — | `btd6` |  |
+| 29 | `paragon` | `specialized_surface` | — | `btd6` | BTD6 paragon grounding surface. |
+| 30 | `btd6_ops` | `specialized_surface` | — | `btd6` | BTD6 data-ops (seed/refresh); operational flavor within the BTD6 vertical. |
+| 31 | `chain` | `product_subsystem` | ✓ |  | Command-chain subsystem. |
+| 32 | `general` | `product_subsystem` | ✓ |  | General-content commands. |
+| 33 | `four_twenty` | `product_subsystem` | ✓ |  | Novelty / community feature. |
+| 34 | `leaderboard` | `product_subsystem` | ✓ |  | Cross-subsystem leaderboards (reads XP/games). |
+| 35 | `settings` | `shared_platform` | ✓ |  | Settings hub; cross-cutting config surface. |
+| 36 | `logging` | `product_subsystem` | ✓ |  | Server-logging subsystem. |
+| 37 | `games` | `hub` | ✓ |  | Games hub (routes blackjack/deathmatch/counting/rps). |
+| 38 | `community` | `hub` | ✓ |  | Community hub. |
+| 39 | `community_spotlight` | `product_subsystem` | ✓ |  | Community Spotlight (community-hub child; registered subsystem). |
+| 40 | `welcome` | `product_subsystem` | ✓ |  | Welcome service (join embeds + optional PIL cards). |
+| 41 | `counters` | `product_subsystem` | ✓ |  | Dynamic server counters. |
+| 42 | `setup` | `bootstrap` | — | `server_management` | Guided setup wizard; lifecycle-critical, load-order sensitive. |
+| 43 | `server_management` | `hub` | ✓ |  | Routing-only hub (moderation/channels/roles/cleanup/setup); holds no capability of its own. |
+| 44 | `hermes` | `operational_adapter` | — |  | Bridge to the Hermes control plane / external operation. |
+| 45 | `ux_lab` | `lab` | ✓ |  | Zero-write UX pattern gallery (admin-gated); design vocabulary, not a product surface. |
 
 ## Non-1:1 extensions (no registry identity)
 

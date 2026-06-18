@@ -223,6 +223,7 @@ def test_advanced_top_level_set_today():
         "counters",
         "diagnostic",
         "economy",
+        "fishing",
         "games",
         "help",
         "moderation",
