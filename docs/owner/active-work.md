@@ -50,6 +50,11 @@ living ledger (`docs/current-state.md`).
 - `claude/peaceful-tesla-vvayya` · PR mergeability keepers — auto-update behind + red-on-conflict
   guard (Q-0154) · `.github/workflows/{pr-auto-update,pr-conflict-guard}.yml` · 2026-06-16
 
+- `claude/funny-franklin-lttzwy` · repo-consistency-linter **PR 2 + PR 3** (back-button +
+  panel base-class rules, warn-only, Q-0170) + #1042 ledger reconcile ·
+  `scripts/check_consistency.py` · `tests/unit/scripts/test_check_consistency.py` ·
+  `docs/current-state.md` · 2026-06-18 · **auto-merge on green**
+
 ## Recently cleared
 
 - `claude/magical-rubin-bq71go` · manifest spine **PR3** — control-API `GET /control/manifest` read +

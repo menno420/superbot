@@ -7,6 +7,11 @@ rules that no import graph can catch (owner directive Q-0170, 2026-06-17):
 
   1. **edit-in-place** — a panel button/select callback that delivers its result
      as a standalone ephemeral message instead of updating the panel in place.
+  2. **back-button** — a ``HubView`` navigation panel with its own child
+     button/select callbacks but no back/nav affordance anywhere in its module.
+  3. **panel base-class** — a view extending ``discord.ui.View`` directly outside
+     the ``views/rps``/``views/blackjack`` game-state allowlist and the framework
+     home (``views/base.py``), instead of ``BaseView``/``HubView``/``PersistentView``.
 
 It is **warn-first and disposable** (Q-0105): every finding is a warning, nothing
 fails CI yet.  A rule graduates to an error + a ``code-quality`` wire-in only once
@@ -296,7 +301,200 @@ def rule_edit_in_place(files: list[Path], exceptions: dict) -> list[Finding]:
 
 
 # ---------------------------------------------------------------------------
-# Rule registry — add a (name, fn) entry per future rule (back button, base class)
+# Rule 2 — back-button presence
+# ---------------------------------------------------------------------------
+
+
+# The shared nav helpers (``views/navigation.py``) and the per-hub wrappers
+# (``attach_back_to_community_button`` / ``attach_back_to_games_button``) — any
+# one of these in the module is a back affordance.  A button labelled/keyed
+# "back" or a back glyph counts too.
+_BACK_HELPER_PREFIXES = ("attach_back", "chain_back")
+_BACK_TOKENS = ("back", "◀", "⬅", "🔙", "↩", "←")
+
+
+def _call_name(call: ast.Call) -> str:
+    """The bare function name of a call (``attach_back_button(...)`` -> name)."""
+    func = call.func
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    return ""
+
+
+def _str_consts(node: ast.AST) -> list[str]:
+    """Lower-cased string constants anywhere under *node* (labels, custom_ids)."""
+    out: list[str] = []
+    for sub in ast.walk(node):
+        if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
+            out.append(sub.value.lower())
+    return out
+
+
+def _module_has_back_affordance(tree: ast.Module) -> bool:
+    """True if the module references any back/nav affordance.
+
+    Signals (any one suffices — kept generous because a child panel's back
+    button is very often attached *externally* by its parent, so we accept a
+    module-wide reference rather than demanding it inside the class body):
+
+    - a call to a ``attach_back*`` / ``chain_back`` helper;
+    - a ``Button``/``ui.button`` whose label or ``custom_id`` names "back" or a
+      back glyph.
+    """
+    for sub in ast.walk(tree):
+        if isinstance(sub, ast.Call):
+            name = _call_name(sub)
+            if name.startswith(_BACK_HELPER_PREFIXES):
+                return True
+            # A constructed Button(..., custom_id="...:back", label="◀ Back").
+            if name in {"Button", "button"}:
+                for text in _str_consts(sub):
+                    if any(tok in text for tok in _BACK_TOKENS):
+                        return True
+        # A @ui.button(...) decorated callback whose label/custom_id is a back.
+        if isinstance(sub, (ast.AsyncFunctionDef, ast.FunctionDef)):
+            for dec in sub.decorator_list:
+                if isinstance(dec, ast.Call) and _decorator_attr(dec) == "button":
+                    for text in _str_consts(dec):
+                        if any(tok in text for tok in _BACK_TOKENS):
+                            return True
+    return False
+
+
+def _is_hub_view_class(node: ast.ClassDef) -> bool:
+    """True if the class extends ``HubView`` (the navigation-panel base)."""
+    return any(base.rsplit(".", 1)[-1] == "HubView" for base in _class_bases(node))
+
+
+def rule_back_button(files: list[Path], exceptions: dict) -> list[Finding]:
+    """Flag a ``HubView`` navigation panel with child controls but no back affordance.
+
+    A ``HubView`` subclass that declares its own ``@ui.button``/``@ui.select``
+    callbacks is a navigable panel — it should offer a way back.  We flag it when
+    **its whole module** references no back affordance (a ``attach_back*`` /
+    ``chain_back`` helper, or a back-labelled button).
+
+    Warn-only + prone to a known false positive: a child panel whose back button
+    is attached *externally* by its parent (a different module) looks bare here —
+    allowlist those in ``consistency_exceptions.yml``.
+    """
+    cfg = exceptions.get("back_button", {})
+    findings: list[Finding] = []
+
+    for filepath in files:
+        try:
+            rel = str(filepath.relative_to(DISBOT_ROOT))
+        except ValueError:
+            continue
+        if not rel.startswith("views/") or "test" in rel.lower():
+            continue
+        try:
+            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
+        except (SyntaxError, OSError):
+            continue
+
+        if _module_has_back_affordance(tree):
+            continue
+
+        for cls in ast.walk(tree):
+            if not isinstance(cls, ast.ClassDef) or not _is_hub_view_class(cls):
+                continue
+            has_child_control = any(
+                isinstance(fn, (ast.AsyncFunctionDef, ast.FunctionDef))
+                and _is_ui_callback(fn)
+                for fn in cls.body
+            )
+            if not has_child_control:
+                continue
+            if _is_allowlisted(rel, cls.name, cfg):
+                continue
+            findings.append(
+                Finding(
+                    file=filepath,
+                    line=cls.lineno,
+                    rule="back_button",
+                    qualname=cls.name,
+                    message=(
+                        f"`{cls.name}` is a HubView panel with child controls but "
+                        "its module has no back/nav affordance — attach one via "
+                        "`views.navigation.attach_back_button(...)` (allowlist in "
+                        "consistency_exceptions.yml if the parent attaches it)"
+                    ),
+                ),
+            )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Rule 3 — panel base-class
+# ---------------------------------------------------------------------------
+
+
+# Direct ``discord.ui.View`` subclassing is sanctioned only in the framework home
+# (where ``BaseView``/``HubView`` are defined) and the game-state lifecycle lanes.
+_BASE_CLASS_ALLOWED_PATHS = ("views/rps/", "views/blackjack/", "views/base.py")
+_DIRECT_VIEW_BASES = frozenset({"discord.ui.View", "ui.View", "View"})
+
+
+def _extends_view_directly(node: ast.ClassDef) -> bool:
+    """True if a direct base is ``discord.ui.View`` (not a ``BaseView`` wrapper)."""
+    return any(base in _DIRECT_VIEW_BASES for base in _class_bases(node))
+
+
+def rule_panel_base_class(files: list[Path], exceptions: dict) -> list[Finding]:
+    """Flag a view extending ``discord.ui.View`` directly outside the allowlist.
+
+    ``docs/architecture.md`` § Views states (in prose) that UI views must extend
+    ``BaseView``/``HubView``/``PersistentView``; only game-state views in
+    ``views/rps``/``views/blackjack`` may extend ``discord.ui.View`` directly (with
+    a comment).  This makes that prose rule mechanical.  Warn-only — many existing
+    picker views extend directly for a specialized ephemeral lifecycle; triage
+    them to a base class or an allowlist entry over time.
+    """
+    cfg = exceptions.get("panel_base_class", {})
+    findings: list[Finding] = []
+
+    for filepath in files:
+        try:
+            rel = str(filepath.relative_to(DISBOT_ROOT))
+        except ValueError:
+            continue
+        if not rel.startswith("views/") or "test" in rel.lower():
+            continue
+        if rel.startswith(_BASE_CLASS_ALLOWED_PATHS):
+            continue
+        try:
+            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
+        except (SyntaxError, OSError):
+            continue
+
+        for cls in ast.walk(tree):
+            if not isinstance(cls, ast.ClassDef) or not _extends_view_directly(cls):
+                continue
+            if _is_allowlisted(rel, cls.name, cfg):
+                continue
+            findings.append(
+                Finding(
+                    file=filepath,
+                    line=cls.lineno,
+                    rule="panel_base_class",
+                    qualname=cls.name,
+                    message=(
+                        f"`{cls.name}` extends `discord.ui.View` directly — prefer "
+                        "`BaseView`/`HubView`/`PersistentView` (allowlist in "
+                        "consistency_exceptions.yml for a game-state lifecycle view)"
+                    ),
+                ),
+            )
+
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Rule registry — add a (name, fn) entry per future rule
 # ---------------------------------------------------------------------------
 
 
@@ -312,6 +510,16 @@ RULES: list[Rule] = [
         "edit_in_place",
         rule_edit_in_place,
         "panel callbacks that reply with a standalone ephemeral instead of editing in place",
+    ),
+    Rule(
+        "back_button",
+        rule_back_button,
+        "HubView navigation panels with child controls but no back/nav affordance",
+    ),
+    Rule(
+        "panel_base_class",
+        rule_panel_base_class,
+        "views extending discord.ui.View directly outside the game-state allowlist",
     ),
 ]
 

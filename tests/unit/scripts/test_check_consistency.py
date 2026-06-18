@@ -155,3 +155,160 @@ def test_real_tree_runs_clean_or_warns_only(mod):
     """The live tree must parse and produce only warnings (never errors)."""
     findings = mod.run_checks(mod._all_files(), mod._load_exceptions())
     assert all(f.severity == "warning" for f in findings)
+
+
+# ---------------------------------------------------------------------------
+# Rule 2 — back-button presence
+# ---------------------------------------------------------------------------
+
+# A HubView panel with its own child button but no back affordance (the bug).
+_HUB_NO_BACK = """\
+import discord
+
+
+class SettingsHub(HubView):
+    @discord.ui.button(label="Roles")
+    async def roles(self, interaction, button):
+        await interaction.response.edit_message(view=self)
+"""
+
+# Same panel, but the module attaches a back button via the shared helper.
+_HUB_WITH_HELPER = """\
+import discord
+
+from views.navigation import attach_back_button
+
+
+class SettingsHub(HubView):
+    @discord.ui.button(label="Roles")
+    async def roles(self, interaction, button):
+        attach_back_button(self, parent_builder=None, custom_id="settings:back")
+        await interaction.response.edit_message(view=self)
+"""
+
+# Same panel, but one of its own buttons is the back affordance.
+_HUB_WITH_BACK_BUTTON = """\
+import discord
+
+
+class SettingsHub(HubView):
+    @discord.ui.button(label="◀ Back", custom_id="settings:back")
+    async def back(self, interaction, button):
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label="Roles")
+    async def roles(self, interaction, button):
+        await interaction.response.edit_message(view=self)
+"""
+
+# A HubView with no child controls — not a navigable panel, out of scope.
+_HUB_NO_CONTROLS = """\
+import discord
+
+
+class SettingsHub(HubView):
+    async def render(self):
+        return None
+"""
+
+
+def _back_findings(mod, tmp_path, monkeypatch, src, *, rel="views/settings_hub.py"):
+    _write(mod, tmp_path, monkeypatch, rel, src)
+    return mod.rule_back_button([tmp_path / rel], {})
+
+
+def test_back_flags_hub_panel_without_affordance(mod, tmp_path, monkeypatch):
+    findings = _back_findings(mod, tmp_path, monkeypatch, _HUB_NO_BACK)
+    assert len(findings) == 1
+    assert findings[0].rule == "back_button"
+    assert findings[0].qualname == "SettingsHub"
+    assert findings[0].severity == "warning"
+
+
+def test_back_helper_call_is_clean(mod, tmp_path, monkeypatch):
+    assert _back_findings(mod, tmp_path, monkeypatch, _HUB_WITH_HELPER) == []
+
+
+def test_back_labelled_button_is_clean(mod, tmp_path, monkeypatch):
+    assert _back_findings(mod, tmp_path, monkeypatch, _HUB_WITH_BACK_BUTTON) == []
+
+
+def test_hub_without_child_controls_is_out_of_scope(mod, tmp_path, monkeypatch):
+    assert _back_findings(mod, tmp_path, monkeypatch, _HUB_NO_CONTROLS) == []
+
+
+def test_back_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):
+    _write(mod, tmp_path, monkeypatch, "views/settings_hub.py", _HUB_NO_BACK)
+    cfg = {
+        "back_button": {
+            "exceptions": [
+                {"pattern": "views/settings_hub.py::SettingsHub", "reason": "top of stack"},
+            ],
+        },
+    }
+    assert mod.rule_back_button([tmp_path / "views/settings_hub.py"], cfg) == []
+
+
+# ---------------------------------------------------------------------------
+# Rule 3 — panel base-class
+# ---------------------------------------------------------------------------
+
+# A view extending discord.ui.View directly outside the allowlist (the bug).
+_DIRECT_VIEW = """\
+import discord
+
+
+class PickerView(discord.ui.View):
+    @discord.ui.button(label="Pick")
+    async def pick(self, interaction, button):
+        await interaction.response.edit_message(view=self)
+"""
+
+# A view that correctly extends the framework base.
+_BASE_VIEW = """\
+class PickerView(BaseView):
+    pass
+"""
+
+
+def _base_findings(mod, tmp_path, monkeypatch, src, *, rel="views/picker.py"):
+    _write(mod, tmp_path, monkeypatch, rel, src)
+    return mod.rule_panel_base_class([tmp_path / rel], {})
+
+
+def test_base_flags_direct_view_subclass(mod, tmp_path, monkeypatch):
+    findings = _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW)
+    assert len(findings) == 1
+    assert findings[0].rule == "panel_base_class"
+    assert findings[0].qualname == "PickerView"
+    assert findings[0].severity == "warning"
+
+
+def test_base_view_subclass_is_clean(mod, tmp_path, monkeypatch):
+    assert _base_findings(mod, tmp_path, monkeypatch, _BASE_VIEW) == []
+
+
+def test_base_game_state_path_is_allowlisted(mod, tmp_path, monkeypatch):
+    # views/rps and views/blackjack are the game-state lifecycle allowlist.
+    assert _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/rps/x.py") == []
+    assert (
+        _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/blackjack/y.py")
+        == []
+    )
+
+
+def test_base_framework_home_is_allowlisted(mod, tmp_path, monkeypatch):
+    # views/base.py defines BaseView/HubView, which extend discord.ui.View.
+    assert _base_findings(mod, tmp_path, monkeypatch, _DIRECT_VIEW, rel="views/base.py") == []
+
+
+def test_base_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):
+    _write(mod, tmp_path, monkeypatch, "views/picker.py", _DIRECT_VIEW)
+    cfg = {
+        "panel_base_class": {
+            "exceptions": [
+                {"pattern": "views/picker.py::PickerView", "reason": "game-state lifecycle"},
+            ],
+        },
+    }
+    assert mod.rule_panel_base_class([tmp_path / "views/picker.py"], cfg) == []
