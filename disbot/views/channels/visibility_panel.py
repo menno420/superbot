@@ -1,7 +1,7 @@
 """Subsystem-visibility sub-panel + per-channel toggle grid.
 
 Two-stage flow: ``_VisibilitySubView`` multi-selects one or more channels
-via ``views.selectors.MultiSelect``; pressing "Configure Selected" opens a
+via ``views.selectors.attach_multi_select``; pressing "Configure Selected" opens a
 shared ``_SubsystemToggleView`` whose tri-state buttons apply to *every*
 chosen channel at once (audit P1-10 — the visibility sibling of the
 restrict/delete multi-select panels).
@@ -31,7 +31,7 @@ from utils.subsystem_registry import all_subsystems_sorted
 from utils.ui_constants import CHANNEL_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
-from views.selectors import MultiSelect
+from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
 
@@ -55,8 +55,10 @@ class _VisibilitySubView(BaseView):
         self.selected_channel_ids: list[int] = []
         self._option_names: dict[int, str] = {}
 
+        # Full channel list — the windowed select paginates past 25 (◀/▶ nav)
+        # instead of front-truncating (the #1040 silent-drop class).
         options: list[discord.SelectOption] = []
-        for ch in ctx.guild.text_channels[:25]:
+        for ch in ctx.guild.text_channels:
             channel_name = f"#{ch.name}"
             self._option_names[ch.id] = channel_name
             options.append(
@@ -67,14 +69,15 @@ class _VisibilitySubView(BaseView):
                 ),
             )
 
-        self.channel_select = MultiSelect(
+        attach_multi_select(
+            self,
             options,
             self._on_channels_selected,
             placeholder="Select one or more channels to configure…",
             min_values=1,
-            row=0,
+            select_row=0,
+            nav_row=2,
         )
-        self.add_item(self.channel_select)
 
         async def _build_parent(
             _interaction: discord.Interaction,
@@ -98,7 +101,7 @@ class _VisibilitySubView(BaseView):
         interaction: discord.Interaction,
         values: list[str],
     ) -> None:
-        # MultiSelect hands back option *value* strings; our options carry
+        # The windowed multi-select hands back option *value* strings; our options carry
         # int channel ids, so coerce (``_option_names`` is int-keyed).
         ids: list[int] = []
         for v in values:
@@ -129,8 +132,8 @@ class _VisibilitySubView(BaseView):
                 "to set which subsystems are visible there.\n\n"
                 "**Green** = enabled  •  **Red** = disabled  •  **Grey** = inherit  "
                 "•  **Blue** = mixed across the selection\n\n"
-                "_Showing up to 25 channels. Category and guild-scope controls "
-                "coming soon._"
+                "_Use ◀/▶ to page through channels. Category and guild-scope "
+                "controls coming soon._"
             ),
             color=CHANNEL_COLOR,
         )

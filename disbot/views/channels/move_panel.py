@@ -27,7 +27,7 @@ from services.lifecycle import SUCCESS
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
-from views.selectors import MultiSelect
+from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
 
@@ -87,14 +87,15 @@ class _MoveSubView(BaseView):
             except ValueError:
                 continue
 
-        self.channel_select = MultiSelect(
+        attach_multi_select(
+            self,
             options,
             self._on_channels_selected,
             placeholder="Select channels to move / reorder…",
             min_values=1,
-            row=0,
+            select_row=0,
+            nav_row=4,
         )
-        self.add_item(self.channel_select)
         self.add_item(
             _CategorySelect(
                 self._on_category_picked,

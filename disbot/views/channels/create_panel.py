@@ -29,7 +29,7 @@ from utils.ui_constants import ERROR_COLOR, SUCCESS_COLOR, WARNING_COLOR
 from views.base import BaseView
 from views.channels._helpers import _CATEGORY_PRESETS, _NAME_PRESETS
 from views.navigation import attach_back_button
-from views.selectors import MultiSelect
+from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
 
@@ -69,15 +69,16 @@ class _CreateSubView(BaseView):
         # Name picker is the shared multi-select primitive.  ``min_values=0``
         # so an admin can rely solely on custom names; "Create" validates
         # that the composed set is non-empty.
-        self.name_select = MultiSelect(
+        attach_multi_select(
+            self,
             [discord.SelectOption(label=p, value=p) for p in _NAME_PRESETS],
             self._on_names_selected,
             placeholder="Pick one or more channel names…",
             min_values=0,
-            row=0,
+            select_row=0,
+            nav_row=3,
         )
         self.cat_select = _CategorySelect(cat_options, self)
-        self.add_item(self.name_select)
         self.add_item(self.cat_select)
 
         async def _build_parent(

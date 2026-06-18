@@ -15,7 +15,7 @@ from views.base import BaseView
 from views.navigation import attach_back_button
 from views.paginated_select import PaginatedSelectView
 from views.roles.time_roles_panel import _row_is_stale
-from views.selectors import RoleSelector
+from views.selectors import attach_role_select
 
 logger = logging.getLogger("bot")
 
@@ -167,7 +167,7 @@ class _XpRolePickView(BaseView):
     def __init__(self, parent: XpRolesPanel, roles: list[discord.Role]) -> None:
         super().__init__(parent.ctx.author, timeout=120)
         self.parent = parent
-        self.add_item(RoleSelector(roles, self._on_select))
+        attach_role_select(self, roles, self._on_select)
 
     async def _on_select(
         self,

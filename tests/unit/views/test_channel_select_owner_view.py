@@ -11,8 +11,8 @@ callback crashed with ``AttributeError: ... has no attribute
 These pin that the back-reference no longer collides with discord.py's
 internal ``_parent``.
 
-The create panel's *name* picker is now the shared
-``views.selectors.MultiSelect`` (audit P1-10) rather than the old
+The create panel's *name* picker is now the shared windowed
+``views.selectors.attach_multi_select`` (audit P1-10) rather than the old
 single-select ``_NameSelect``; its wiring is covered by
 ``test_create_panel_multi.py``.
 """

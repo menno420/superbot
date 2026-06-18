@@ -1,14 +1,15 @@
 """Tests for the reusable views.selectors primitives (D1).
 
-The selectors are thin wrappers over ``discord.ui.Select`` that
-enforce the 25-option Discord cap and dispatch to an async callback
-with parsed identifiers.  These tests verify:
+The selectors are now ``attach_*`` helpers that attach a *windowed* select to
+a host view (``views.paginated_select.attach_windowed_select``): any-length
+collections are paginated past Discord's 25-option cap instead of
+front-truncated (the #1040 class).  These tests verify:
 
-- ChannelSelector truncates lists > 25 entries
+- a long list is windowed (page 1 caps at 25; ``page_count`` > 1) — never dropped
 - RoleSelector applies the default filter (skips @everyone)
-- ScopeSelector renders the right options for each context
+- ScopeSelector renders the right options for each context (still a plain Select)
 - SubsystemSelector pulls from the live registry and omits internal mode
-- All four selectors invoke their on_select awaitable with parsed args
+- every helper invokes its on_select awaitable with parsed args
 """
 
 from __future__ import annotations
@@ -19,17 +20,28 @@ import discord
 import pytest
 
 from views.selectors import (
-    ChannelSelector,
-    MultiChannelSelector,
-    MultiRoleSelector,
-    MultiSelect,
-    RoleSelector,
     ScopeSelector,
-    SubsystemSelector,
+    attach_channel_select,
+    attach_multi_channel_select,
+    attach_multi_role_select,
+    attach_multi_select,
+    attach_role_select,
+    attach_subsystem_select,
 )
 
+
+def _host() -> discord.ui.View:
+    """A bare host view the windowed select attaches into."""
+    return discord.ui.View()
+
+
+def _select(view: discord.ui.View) -> discord.ui.Select:
+    """The windowed ``Select`` item the helper added to ``view``."""
+    return next(c for c in view.children if isinstance(c, discord.ui.Select))
+
+
 # ---------------------------------------------------------------------------
-# ChannelSelector
+# attach_channel_select
 # ---------------------------------------------------------------------------
 
 
@@ -40,18 +52,21 @@ def _channel(cid: int, name: str = "general") -> MagicMock:
     return ch
 
 
-@pytest.mark.asyncio
-async def test_channel_selector_truncates_to_25():
+def test_channel_select_windows_long_list_without_dropping():
     channels = [_channel(i, f"c{i}") for i in range(40)]
-    sel = ChannelSelector(channels, on_select=AsyncMock())
-    assert len(sel.options) == 25
+    view = _host()
+    window = attach_channel_select(view, channels, on_select=AsyncMock())
+    # 40 options across 2 pages — none silently dropped.
+    assert window.page_count == 2
+    assert len(_select(view).options) == 25
 
 
 @pytest.mark.asyncio
-async def test_channel_selector_invokes_callback_with_int_id():
-    channels = [_channel(123, "general")]
+async def test_channel_select_invokes_callback_with_int_id():
     cb = AsyncMock()
-    sel = ChannelSelector(channels, on_select=cb)
+    view = _host()
+    attach_channel_select(view, [_channel(123, "general")], on_select=cb)
+    sel = _select(view)
     sel._values = ["123"]  # discord.ui.Select stores selection here
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -59,7 +74,7 @@ async def test_channel_selector_invokes_callback_with_int_id():
 
 
 # ---------------------------------------------------------------------------
-# RoleSelector
+# attach_role_select
 # ---------------------------------------------------------------------------
 
 
@@ -71,38 +86,42 @@ def _role(rid: int, name: str = "Member", default: bool = False) -> MagicMock:
     return r
 
 
-@pytest.mark.asyncio
-async def test_role_selector_filters_out_everyone_by_default():
+def test_role_select_filters_out_everyone_by_default():
     roles = [_role(1, "@everyone", default=True), _role(2, "Member")]
-    sel = RoleSelector(roles, on_select=AsyncMock())
-    # @everyone is filtered out; one real option remains.
-    assert len(sel.options) == 1
-    assert sel.options[0].label == "Member"
+    view = _host()
+    attach_role_select(view, roles, on_select=AsyncMock())
+    opts = _select(view).options
+    assert len(opts) == 1
+    assert opts[0].label == "Member"
 
 
-@pytest.mark.asyncio
-async def test_role_selector_truncates_to_25():
+def test_role_select_windows_long_list_without_dropping():
     roles = [_role(i, f"r{i}") for i in range(30)]
-    sel = RoleSelector(roles, on_select=AsyncMock())
-    assert len(sel.options) == 25
+    view = _host()
+    window = attach_role_select(view, roles, on_select=AsyncMock())
+    assert window.page_count == 2
+    assert len(_select(view).options) == 25
 
 
-@pytest.mark.asyncio
-async def test_role_selector_custom_filter():
+def test_role_select_custom_filter():
     roles = [_role(1, "Admin"), _role(2, "Moderator"), _role(3, "User")]
-    sel = RoleSelector(
+    view = _host()
+    attach_role_select(
+        view,
         roles,
         on_select=AsyncMock(),
         role_filter=lambda r: r.name in ("Admin", "Moderator"),
     )
-    labels = {o.label for o in sel.options}
+    labels = {o.label for o in _select(view).options}
     assert labels == {"Admin", "Moderator"}
 
 
 @pytest.mark.asyncio
-async def test_role_selector_invokes_callback():
+async def test_role_select_invokes_callback():
     cb = AsyncMock()
-    sel = RoleSelector([_role(42)], on_select=cb)
+    view = _host()
+    attach_role_select(view, [_role(42)], on_select=cb)
+    sel = _select(view)
     sel._values = ["42"]
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -110,7 +129,7 @@ async def test_role_selector_invokes_callback():
 
 
 # ---------------------------------------------------------------------------
-# ScopeSelector
+# ScopeSelector (unchanged — at most 3 fixed options, never windowed)
 # ---------------------------------------------------------------------------
 
 
@@ -154,12 +173,13 @@ async def test_scope_selector_parses_value():
 
 
 # ---------------------------------------------------------------------------
-# SubsystemSelector
+# attach_subsystem_select
 # ---------------------------------------------------------------------------
 
 
-def test_subsystem_selector_excludes_internal_when_visible_only():
-    sel = SubsystemSelector(on_select=AsyncMock(), visible_only=True)
+def test_subsystem_select_excludes_internal_when_visible_only():
+    view = _host()
+    attach_subsystem_select(view, on_select=AsyncMock(), visible_only=True)
     from utils.subsystem_registry import SUBSYSTEMS
 
     expected_visible = {
@@ -167,15 +187,17 @@ def test_subsystem_selector_excludes_internal_when_visible_only():
         for name, meta in SUBSYSTEMS.items()
         if meta.get("visibility_mode") != "internal"
     }
-    rendered = {o.value for o in sel.options}
-    # The selector caps at 25, but every option must be in the visible set.
+    rendered = {o.value for o in _select(view).options}
+    # Page 1 caps at 25, but every option must be in the visible set.
     assert rendered.issubset(expected_visible)
 
 
 @pytest.mark.asyncio
-async def test_subsystem_selector_invokes_callback_with_name():
+async def test_subsystem_select_invokes_callback_with_name():
     cb = AsyncMock()
-    sel = SubsystemSelector(on_select=cb)
+    view = _host()
+    attach_subsystem_select(view, on_select=cb)
+    sel = _select(view)
     sel._values = ["role"]
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -183,7 +205,7 @@ async def test_subsystem_selector_invokes_callback_with_name():
 
 
 # ---------------------------------------------------------------------------
-# MultiSelect (P1-10)
+# attach_multi_select (P1-10)
 # ---------------------------------------------------------------------------
 
 
@@ -191,35 +213,49 @@ def _opt(value: str, label: str | None = None) -> discord.SelectOption:
     return discord.SelectOption(label=label or value, value=value)
 
 
-def test_multiselect_defaults_max_to_all_options():
-    sel = MultiSelect([_opt("a"), _opt("b"), _opt("c")], on_select=AsyncMock())
+def test_multi_select_defaults_max_to_all_options_on_page():
+    view = _host()
+    attach_multi_select(view, [_opt("a"), _opt("b"), _opt("c")], on_select=AsyncMock())
+    sel = _select(view)
     assert sel.max_values == 3
     assert sel.min_values == 0
 
 
-def test_multiselect_truncates_options_and_clamps_max():
-    sel = MultiSelect([_opt(str(i)) for i in range(40)], on_select=AsyncMock())
+def test_multi_select_windows_long_list_and_clamps_max_per_page():
+    view = _host()
+    window = attach_multi_select(
+        view,
+        [_opt(str(i)) for i in range(40)],
+        on_select=AsyncMock(),
+    )
+    sel = _select(view)
+    assert window.page_count == 2
     assert len(sel.options) == 25
-    # max_values can never exceed the option count Discord sees.
+    # max_values can never exceed the option count Discord sees on the page.
     assert sel.max_values == 25
 
 
-def test_multiselect_explicit_max_is_clamped_to_option_count():
-    sel = MultiSelect([_opt("a"), _opt("b")], on_select=AsyncMock(), max_values=10)
-    assert sel.max_values == 2
+def test_multi_select_explicit_max_is_clamped_to_option_count():
+    view = _host()
+    attach_multi_select(view, [_opt("a"), _opt("b")], on_select=AsyncMock(), max_values=10)
+    assert _select(view).max_values == 2
 
 
-def test_multiselect_empty_options_fall_back_to_placeholder():
-    # Must not raise on an empty collection (the gap ChannelSelector has).
-    sel = MultiSelect([], on_select=AsyncMock())
+def test_multi_select_empty_options_fall_back_to_placeholder():
+    # Must not raise on an empty collection.
+    view = _host()
+    attach_multi_select(view, [], on_select=AsyncMock())
+    sel = _select(view)
     assert len(sel.options) == 1
     assert sel.max_values == 1
 
 
 @pytest.mark.asyncio
-async def test_multiselect_invokes_callback_with_selected_values():
+async def test_multi_select_invokes_callback_with_selected_values():
     cb = AsyncMock()
-    sel = MultiSelect([_opt("a"), _opt("b"), _opt("c")], on_select=cb)
+    view = _host()
+    attach_multi_select(view, [_opt("a"), _opt("b"), _opt("c")], on_select=cb)
+    sel = _select(view)
     sel._values = ["a", "c"]
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -227,32 +263,38 @@ async def test_multiselect_invokes_callback_with_selected_values():
 
 
 @pytest.mark.asyncio
-async def test_multiselect_filters_empty_guard_sentinel():
+async def test_multi_select_filters_empty_guard_sentinel():
     cb = AsyncMock()
-    sel = MultiSelect([], on_select=cb)  # only the sentinel option exists
-    sel._values = [""]  # user somehow "picked" the placeholder
+    view = _host()
+    attach_multi_select(view, [], on_select=cb)  # only the sentinel option exists
+    sel = _select(view)
+    # The sentinel value the windowing layer uses for an empty list.
+    sel._values = [sel.options[0].value]
     interaction = MagicMock()
     await sel.callback(interaction)
     cb.assert_awaited_once_with(interaction, [])
 
 
 # ---------------------------------------------------------------------------
-# MultiChannelSelector
+# attach_multi_channel_select
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
-async def test_multi_channel_selector_truncates_to_25():
+def test_multi_channel_select_windows_long_list_without_dropping():
     channels = [_channel(i, f"c{i}") for i in range(40)]
-    sel = MultiChannelSelector(channels, on_select=AsyncMock())
-    assert len(sel.options) == 25
+    view = _host()
+    window = attach_multi_channel_select(view, channels, on_select=AsyncMock())
+    assert window.page_count == 2
+    assert len(_select(view).options) == 25
 
 
 @pytest.mark.asyncio
-async def test_multi_channel_selector_invokes_callback_with_int_ids():
+async def test_multi_channel_select_invokes_callback_with_int_ids():
     channels = [_channel(11, "a"), _channel(22, "b"), _channel(33, "c")]
     cb = AsyncMock()
-    sel = MultiChannelSelector(channels, on_select=cb)
+    view = _host()
+    attach_multi_channel_select(view, channels, on_select=cb)
+    sel = _select(view)
     sel._values = ["11", "33"]
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -260,10 +302,11 @@ async def test_multi_channel_selector_invokes_callback_with_int_ids():
 
 
 @pytest.mark.asyncio
-async def test_multi_channel_selector_skips_unparseable_values():
-    channels = [_channel(11, "a")]
+async def test_multi_channel_select_skips_unparseable_values():
     cb = AsyncMock()
-    sel = MultiChannelSelector(channels, on_select=cb)
+    view = _host()
+    attach_multi_channel_select(view, [_channel(11, "a")], on_select=cb)
+    sel = _select(view)
     sel._values = ["11", "not-an-int"]
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -271,40 +314,44 @@ async def test_multi_channel_selector_skips_unparseable_values():
 
 
 # ---------------------------------------------------------------------------
-# MultiRoleSelector (PR2)
+# attach_multi_role_select (PR2)
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.asyncio
-async def test_multi_role_selector_filters_everyone_by_default():
+def test_multi_role_select_filters_everyone_by_default():
     roles = [_role(1, "@everyone", default=True), _role(2, "Member"), _role(3, "Admin")]
-    sel = MultiRoleSelector(roles, on_select=AsyncMock())
-    assert {o.label for o in sel.options} == {"Member", "Admin"}
+    view = _host()
+    attach_multi_role_select(view, roles, on_select=AsyncMock())
+    assert {o.label for o in _select(view).options} == {"Member", "Admin"}
 
 
-@pytest.mark.asyncio
-async def test_multi_role_selector_truncates_to_25():
+def test_multi_role_select_windows_long_list_without_dropping():
     roles = [_role(i, f"r{i}") for i in range(40)]
-    sel = MultiRoleSelector(roles, on_select=AsyncMock())
-    assert len(sel.options) == 25
+    view = _host()
+    window = attach_multi_role_select(view, roles, on_select=AsyncMock())
+    assert window.page_count == 2
+    assert len(_select(view).options) == 25
 
 
-@pytest.mark.asyncio
-async def test_multi_role_selector_custom_filter():
+def test_multi_role_select_custom_filter():
     roles = [_role(1, "Admin"), _role(2, "Mod"), _role(3, "User")]
-    sel = MultiRoleSelector(
+    view = _host()
+    attach_multi_role_select(
+        view,
         roles,
         on_select=AsyncMock(),
         role_filter=lambda r: r.name in ("Admin", "Mod"),
     )
-    assert {o.label for o in sel.options} == {"Admin", "Mod"}
+    assert {o.label for o in _select(view).options} == {"Admin", "Mod"}
 
 
 @pytest.mark.asyncio
-async def test_multi_role_selector_invokes_callback_with_int_ids():
+async def test_multi_role_select_invokes_callback_with_int_ids():
     roles = [_role(11, "a"), _role(22, "b"), _role(33, "c")]
     cb = AsyncMock()
-    sel = MultiRoleSelector(roles, on_select=cb)
+    view = _host()
+    attach_multi_role_select(view, roles, on_select=cb)
+    sel = _select(view)
     sel._values = ["11", "33"]
     interaction = MagicMock()
     await sel.callback(interaction)
@@ -312,10 +359,11 @@ async def test_multi_role_selector_invokes_callback_with_int_ids():
 
 
 @pytest.mark.asyncio
-async def test_multi_role_selector_skips_unparseable_values():
-    roles = [_role(11, "a")]
+async def test_multi_role_select_skips_unparseable_values():
     cb = AsyncMock()
-    sel = MultiRoleSelector(roles, on_select=cb)
+    view = _host()
+    attach_multi_role_select(view, [_role(11, "a")], on_select=cb)
+    sel = _select(view)
     sel._values = ["11", "nope"]
     interaction = MagicMock()
     await sel.callback(interaction)

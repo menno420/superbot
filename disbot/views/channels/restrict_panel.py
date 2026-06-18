@@ -4,7 +4,7 @@ Pick one or more channels, then lock (deny send_messages for @everyone)
 or unlock (restore send_messages).  Auto-returns to the manager hub
 after the action lands.
 
-The channel picker is the shared ``views.selectors.MultiSelect``
+The channel picker is the shared ``views.selectors.attach_multi_select``
 primitive (repo-wide audit P1-10): admins routinely lock/unlock a batch
 of channels at once, so forcing one-at-a-time was needless friction.
 """
@@ -26,7 +26,7 @@ from services.channel_lifecycle_service import (
 from utils.ui_constants import CHANNEL_COLOR, ERROR_COLOR, SUCCESS_COLOR
 from views.base import BaseView
 from views.navigation import attach_back_button
-from views.selectors import MultiSelect
+from views.selectors import attach_multi_select
 
 logger = logging.getLogger("bot")
 
@@ -54,14 +54,15 @@ class _RestrictSubView(BaseView):
             except ValueError:
                 continue
 
-        self.channel_select = MultiSelect(
+        attach_multi_select(
+            self,
             options,
             self._on_channels_selected,
             placeholder="Select one or more channels to manage…",
             min_values=1,
-            row=0,
+            select_row=0,
+            nav_row=3,
         )
-        self.add_item(self.channel_select)
 
         async def _build_parent(
             _interaction: discord.Interaction,
@@ -85,7 +86,7 @@ class _RestrictSubView(BaseView):
         interaction: discord.Interaction,
         values: list[str],
     ) -> None:
-        # ``MultiSelect`` hands back option *value* strings; our options
+        # The windowed multi-select hands back option *value* strings; our options
         # carry int channel ids, so coerce. ``_option_names`` is int-keyed
         # — without this the "Selected" field and result embeds fall back
         # to raw ids instead of channel names.

@@ -73,7 +73,7 @@ async def test_apply_writes_each_selected_role_through_service():
 
 @pytest.mark.asyncio
 async def test_role_picker_excludes_everyone_and_sets_selection():
-    from views.selectors import MultiRoleSelector
+    import discord
 
     everyone = SimpleNamespace(
         id=1,
@@ -89,8 +89,9 @@ async def test_role_picker_excludes_everyone_and_sets_selection():
     )
     panel = RoleExemptionsPanel(_ctx([everyone, member]))
 
-    # The bespoke native RoleSelect is gone; the shared picker excludes @everyone.
-    selector = next(c for c in panel.children if isinstance(c, MultiRoleSelector))
+    # The bespoke native RoleSelect is gone; the shared windowed picker excludes
+    # @everyone.
+    selector = next(c for c in panel.children if isinstance(c, discord.ui.Select))
     assert {o.value for o in selector.options} == {"2"}
 
     interaction = MagicMock()

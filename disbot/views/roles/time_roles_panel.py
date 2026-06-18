@@ -13,7 +13,7 @@ from views.base import BaseView
 from views.navigation import attach_back_button
 from views.paginated_select import PaginatedSelectView
 from views.roles._helpers import _DEFAULT_THRESHOLDS
-from views.selectors import RoleSelector
+from views.selectors import attach_role_select
 
 
 def _row_is_stale(guild: discord.Guild, row: dict) -> bool:
@@ -218,7 +218,7 @@ class _TimeRolePickView(BaseView):
     def __init__(self, parent: TimeRolesPanel, roles: list[discord.Role]) -> None:
         super().__init__(parent.ctx.author, timeout=120)
         self.parent = parent
-        self.add_item(RoleSelector(roles, self._on_select))
+        attach_role_select(self, roles, self._on_select)
 
     async def _on_select(
         self,

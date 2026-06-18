@@ -20,8 +20,13 @@ from core.resources.discovery import find_role_by_name
 
 
 def _build_channel_options(guild: discord.Guild) -> list[discord.SelectOption]:
-    """Back-compat shim for :func:`core.resources.channel_service.build_select_options`."""
-    return build_select_options(guild, include_voice=True, limit=25)
+    """Back-compat shim for :func:`core.resources.channel_service.build_select_options`.
+
+    Returns the *full* channel list (``limit=None``): every consumer feeds it
+    into a windowed select (``views.channels`` delete/restrict/move panels via
+    ``attach_*`` helpers), which paginates past 25 instead of front-truncating.
+    """
+    return build_select_options(guild, include_voice=True, limit=None)
 
 
 def _find_role_normalized(
