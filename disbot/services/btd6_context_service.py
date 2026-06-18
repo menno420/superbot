@@ -1123,10 +1123,20 @@ def _render_fixture_round(entry: Any, *, roundset_label: str = "") -> list[str]:
             prefix = " ".join(m.capitalize() for m in modifiers)
             label = f"{prefix} {name}".strip()
             parts.append(f"{aggregated[(bloon_id, modifiers)]} {label}")
+        # Ground the total bloons that ENTER the round (sum of the spawn groups,
+        # not counting children that appear only when a parent pops — that count
+        # is the RBE above). Without this, "how many bloons spawn on rN" had no
+        # grounded number, so the model's derived total (e.g. 75 + 122 = 197)
+        # tripped the value-only faithfulness guard and got refused, while the
+        # identical "list every bloon in rN" answered fine from the per-bloon
+        # counts.
+        total_spawned = sum(aggregated.values())
         lines.append(
             _cap(
                 f"[btd6_round] {ref} composition — "
-                f"{_sanitise(', '.join(parts))} (source: {_dataset_label()})",
+                f"{_sanitise(', '.join(parts))}; {total_spawned:,} bloons enter "
+                f"this round in total (children spawned on pop are counted by the "
+                f"RBE, not here) (source: {_dataset_label()})",
             ),
         )
 
@@ -1895,21 +1905,49 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     if tower is None:
         return None
 
-    rows = btd6_data_service.monkey_knowledge_referencing(tower)
-    if not rows:
+    # A complete "which MK affects <tower>" answer has two parts:
+    #   1. points that NAME the tower or one of its upgrades, and
+    #   2. CLASS-WIDE points that buff every tower in the tower's class without
+    #      naming it (e.g. "Come On Everybody!" → all Primary towers).
+    # The owner reported part 2 missing: "which MK affects the glue gunner" must
+    # include Come On Everybody (2026-06-18). Both halves are deterministic
+    # relations, so the floor owns the labelled answer.
+    tab = tower.category.title()
+    named = sorted(
+        btd6_data_service.monkey_knowledge_referencing(tower),
+        key=lambda mk: mk.canonical.lower(),
+    )
+    class_wide = sorted(
+        btd6_data_service.monkey_knowledge_class_wide(tower.category),
+        key=lambda mk: mk.canonical.lower(),
+    )
+
+    if not named and not class_wide:
         return (
-            f"**No Monkey Knowledge specifically references the "
-            f"{tower.canonical}.** Monkey Knowledge points name a tower or one "
-            "of its upgrades in their description; none currently name this one."
+            f"**No Monkey Knowledge specifically affects the "
+            f"{tower.canonical}.** No point names it or one of its upgrades, and "
+            f"no {tab}-tab point buffs the whole {tab} class."
         )
 
-    ordered = sorted(rows, key=lambda mk: mk.canonical.lower())
+    total = len(named) + len(class_wide)
     lines = [
-        f"**Monkey Knowledge that reference the {tower.canonical} "
-        f"({len(ordered)})** — these name the {tower.canonical} or one of its "
-        "upgrades:",
+        f"**Monkey Knowledge that affects the {tower.canonical} ({total})** — "
+        f"both points that name it and class-wide {tab} points that buff every "
+        f"{tab} tower:",
     ]
-    lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in ordered)
+    if named:
+        lines.append("")
+        lines.append(
+            f"__Names the {tower.canonical} or an upgrade ({len(named)}):__",
+        )
+        lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in named)
+    if class_wide:
+        lines.append("")
+        lines.append(
+            f"__Class-wide {tab} Monkey Knowledge — buffs every {tab} tower "
+            f"({len(class_wide)}):__",
+        )
+        lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in class_wide)
     reply = "\n".join(lines)
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 

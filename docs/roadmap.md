@@ -496,7 +496,11 @@ accepted, not a target).
   into dedicated sub-hubs (Option A — main = Mine·Harvest·Explore·Character·Gear·Workshop), the
   inventory/gear image cards render in place (PR #911), and Mine becomes a 3D grid navigator;
   Explore becomes an open-world hub. Plan + IA:
-  [`planning/mining-hub-redesign-2026-06-15.md`](planning/mining-hub-redesign-2026-06-15.md).
+  [`planning/mining-hub-redesign-2026-06-15.md`](planning/mining-hub-redesign-2026-06-15.md). The
+  **fishing + open-world expansion** (21 fish / 7 levels · unified gear-type switching · the boat & real
+  destinations) is the next big games lane —
+  [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](planning/fishing-open-world-expansion-plan-2026-06-18.md)
+  (Q-0175; **Phase 1 = fishing v1 + gear-switching is buildable**; the canonical Q-0172 self-build).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded

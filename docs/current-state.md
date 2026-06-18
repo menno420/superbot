@@ -207,13 +207,43 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
-- **#1032 (2026-06-17, settle seed-grid decision Q-0173 + Codex review feedback)** — resolved the
-  seed-grid open question (Q-0173) and folded in Codex's PR-review feedback.
-- **#1031 (2026-06-17, local character-render preview — self-initiated, Q-0172)** — a local
-  character-render preview tool that kills the sprite-positioning iteration loop (idea→build under the
-  open gate).
-- **#1030 (2026-06-17, Hermes plain-language house style — Q-0168)** — rolled the plain-language house
-  style out to Hermes' owner-facing skills.
+- **#1037 (2026-06-18, BTD6 round_cash identity ABR fix — Codex P2 on #1035)** — gated the inclusive
+  range `identity` sentence to emit only when the cumulative subtraction reconciles with `range_cash`;
+  it was contradicting `range_cash` for ABR ranges spanning the unplayed rounds 1-2 (the cumulative
+  totals start at round 3). Self-validating, so the existing `cumulative_note` covers the excluded case.
+- **#1036 (2026-06-18, fishing v1 + open-world expansion plan — Q-0175, docs-only)** — captured the
+  owner's fishing/boat brain-dump as a buildable plan: Phase 1 (fishing v1 — 21 fish, 7 levels × 3 fish,
+  reuses tier/`game_xp`; one character with named swappable gear-type loadouts, gear never required —
+  only boosts bonuses) + Phase 2+ (boat as 2nd home base · bounded travel · seed-grid destinations with
+  coordinates/biome, ties Q-0173); indexed on the roadmap.
+- **#1035 (2026-06-18, BTD6 AI answer fixes — owner live-test screenshots)** — fixed 4 owner-spotted
+  BTD6 answer bugs at the deterministic data/grounding/tool layer: MK reference reply grammar +
+  tab-wide scope note (Come On Everybody / Flanking Maneuvers disclosure); grounded the total bloons
+  entering a round so "how many bloons spawn on rN" is answerable instead of refused (the derived sum
+  tripped the value-only faithfulness guard); `round_composition` `roundset_label` so ABR vs standard
+  figures don't read as self-contradiction; `round_cash` ready-to-quote inclusive-range `identity`
+  sentence (a same-day P2 follow-up gated it to ranges where the cumulative subtraction reconciles —
+  it was emitting a contradictory identity for ABR ranges that span the unplayed rounds 1-2).
+- **#1034 (2026-06-18, Codex edits-live note — Q-0174 resolved, docs-only)** — documented that Codex
+  has no write access: its "make changes" output is a comment describing a diff in its own sandbox, so
+  agents read the proposed change from the comment, verify against `main`, and apply it themselves
+  (never hunt for a phantom Codex branch/PR); Q-0174 resolved → trial comment-only as-is.
+- **#1032 (2026-06-17, settle decisions + Codex integration — docs-only)** — settled **Q-0173** (the
+  mining grid world = a seed-deterministic procedural grid we generate, not literal Minecraft-terrain
+  replication) and **Q-0174** (Codex review integration: routines check Codex first but verify, the
+  "real bug" bar, the issue-only Hermes 6H PR-check spec); fixed 3 verified-real Codex-flagged drift
+  items (`/session-close` 10th-PR→30-PR cadence · `roadmap.md` "decade queue" → full-band wording ·
+  a session card's `Previous-slice review` → `Previous-session review`).
+- **#1031 (2026-06-17, local character-render preview tool — Q-0172, self-initiated)** —
+  `scripts/preview_character.py` renders the live V-16 compositor (`utils/character_render.py`) to a PNG
+  locally so sprite positioning is a render→look→tune-`manifest.json`→re-render loop instead of manual
+  Discord uploads; Q-0105 dev tool (stdlib + Pillow, not CI-wired, disposable). Also recorded the
+  owner's vault-cap decision (keep it soft / warning-only).
+- **#1030 (2026-06-17, Hermes plain-language house style — Q-0168)** — promoted the owner-approved
+  sample to a canonical `_house-style.md` (5 rules + the morning-briefing exemplar) and rewrote the
+  owner-facing output skills (`morning-briefing`/`repo-health`/`open-questions`/`idea-spotlight`/
+  `review-merge`) to cite it and speak plainly (jargon translated, grouped not listed); the commands +
+  rate-limit budgets are unchanged. Owner manual step: redeploy on the VPS.
 - **#1028 (2026-06-17, procedures→skills conversion plan — docs-only)** — captured the 33-procedure
   skills-conversion inventory (A/B/C buckets) as an executable plan
   (`planning/procedures-to-skills-conversion-plan-2026-06-17.md`): the thin-pointer convention, the
