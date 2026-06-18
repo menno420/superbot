@@ -94,6 +94,19 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    helper + update its ~8 consumers as one focused PR) + the per-panel embedded selects (channels
    move/visibility/create, settings subsystem_view edit/reset, setup channels, access/explorer,
    diagnostic automation). Each per-panel one is a small swap now the helper exists.
+   **Lane A1 — the `views/selectors/` API-ripple set — SHIPPED (#1054, 2026-06-18):** the 5 named
+   primitives became windowed `attach_*` helpers (`attach_channel_select` / `attach_role_select` /
+   `attach_subsystem_select` / `attach_multi_select` / `attach_multi_channel_select` /
+   `attach_multi_role_select`) over `attach_windowed_select`; all 8 consumers updated with explicit
+   `select_row`/`nav_row` to fit each host's 5-row budget; `ScopeSelector` left as a plain `Select`
+   (≤3 fixed options). **Root-fixed the upstream truncation source too** —
+   `core.resources.channel_service.build_select_options` gained a `limit=None` unbounded mode and
+   `_build_channel_options` uses it, plus dropped `visibility_panel`'s inline `text_channels[:25]`,
+   so the windowed channel panels actually reach the tail. `select_option_truncation` warn-only count
+   **15 → 7** (the remaining 7 are the **A2** per-panel embedded selects). **▶ Next = A2: migrate the
+   per-panel embedded selects** — `channels/create_panel` + `channels/move_panel` category selects,
+   `settings/subsystem_view` (×2), `setup/sections/channels`, `access/explorer`,
+   `diagnostic/automation_panel` — each a small `attach_windowed_select` swap.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
