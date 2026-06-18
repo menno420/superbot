@@ -96,3 +96,4 @@ living ledger (`docs/current-state.md`).
 - `claude/myprofile-card-pra` · myprofile PR A + B — `/myprofile` card + self-service editor · 2026-06-16 · **PR #938 / #940 (merged)**
 
 _(move claims here with their PR # as they close, then prune older entries)_
+- claude/funny-franklin-ttonj3 · fishing ecosystem #2 PR 1 (core loop) · utils/fishing/ services/fishing_workflow.py cogs/fishing_cog.py migrations/075 · 2026-06-18
