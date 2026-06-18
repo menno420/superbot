@@ -1,13 +1,15 @@
 """Regression tests for XP-role removal interaction ACK safety.
 
-Pre-fix `_XpRemoveSelect.callback` did the threshold write before
+Pre-fix the removal callback did the threshold write before
 `interaction.response.send_message`. Under DB latency the 3-second
 window expired and the admin saw "Interaction Failed". The fix wraps
 the write in `safe_defer(ephemeral=True)` so the reply routes through
 `safe_followup` once the write completes. (PR5 switched the write from
 `set_role_xp_threshold` to the field-specific `clear_role_xp_threshold`;
 Batch 3 (RS06) moved the clear behind the audited
-`role_automation.clear_xp_threshold` seam; the ACK ordering is unchanged.)
+`role_automation.clear_xp_threshold` seam; 2026-06-18 retired the bespoke
+`_XpRemoveSelect` onto the shared `PaginatedSelectView` so the callback is
+now `XpRolesPanel._remove_threshold`; the ACK ordering is unchanged.)
 """
 
 from __future__ import annotations
@@ -29,12 +31,10 @@ def _interaction() -> MagicMock:
 
 
 async def test_xp_remove_select_defers_ephemeral_before_db_write():
-    from views.roles.xp_roles_panel import _XpRemoveSelect
+    from views.roles.xp_roles_panel import XpRolesPanel
 
-    select = MagicMock()
-    select.values = ["Veteran"]
-    select._panel = MagicMock()
-    select._panel._rerender = AsyncMock()
+    panel = MagicMock()
+    panel._rerender = AsyncMock()
     interaction = _interaction()
 
     order: list[str] = []
@@ -66,7 +66,7 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
         ) as clear,
         patch("views.roles.xp_roles_panel.invalidate_xp_threshold_roles") as inval,
     ):
-        await _XpRemoveSelect.callback(select, interaction)
+        await XpRolesPanel._remove_threshold(panel, interaction, ["Veteran"])
 
     assert order == [
         "defer(ephemeral=True)",
@@ -78,5 +78,5 @@ async def test_xp_remove_select_defers_ephemeral_before_db_write():
     assert clear.await_args.kwargs["actor_id"] == 1
     defer.assert_awaited_once()
     inval.assert_called_once_with(99)
-    select._panel._rerender.assert_awaited_once()
+    panel._rerender.assert_awaited_once()
     interaction.response.send_message.assert_not_called()

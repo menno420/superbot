@@ -18,7 +18,7 @@ from utils import db as db_pkg
 from utils.db import settings as settings_db
 from utils.db import settings_audit as audit_db
 from views.settings.edit_boolean import toggle_setting
-from views.settings.edit_enum import EnumSettingSelectView
+from views.settings.edit_enum import build_enum_select_view
 from views.settings.edit_number import NumberSettingModal
 from views.settings.edit_text import TextSettingModal
 from views.settings.reset_button import reset_setting
@@ -323,11 +323,12 @@ async def test_enum_select_view_writes_chosen_value(_isolated_state):
             ),
         ),
     )
-    view = EnumSettingSelectView(
-        subsystem="cleanup",
-        setting_name="strictness",
-        allowed_values=("off", "light", "normal", "strict"),
-        current_value="normal",
+    view = build_enum_select_view(
+        _FakeMember(guild=_FakeGuild()),
+        "cleanup",
+        "strictness",
+        ("off", "light", "normal", "strict"),
+        "normal",
     )
     import discord
 
@@ -339,11 +340,12 @@ async def test_enum_select_view_writes_chosen_value(_isolated_state):
 
 
 def test_enum_select_view_marks_current_value():
-    view = EnumSettingSelectView(
-        subsystem="cleanup",
-        setting_name="strictness",
-        allowed_values=("off", "light", "normal", "strict"),
-        current_value="normal",
+    view = build_enum_select_view(
+        _FakeMember(guild=_FakeGuild()),
+        "cleanup",
+        "strictness",
+        ("off", "light", "normal", "strict"),
+        "normal",
     )
     import discord
 

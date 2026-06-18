@@ -533,9 +533,10 @@ class _EditSettingSelect(discord.ui.Select):
             await toggle_setting(interaction, self.subsystem, name, parent_msg)
             return
         if spec.value_type is str and spec.allowed_values:
-            from views.settings.edit_enum import EnumSettingSelectView
+            from views.settings.edit_enum import build_enum_select_view
 
-            view = EnumSettingSelectView(
+            view = build_enum_select_view(
+                interaction.user,
                 self.subsystem,
                 name,
                 spec.allowed_values,

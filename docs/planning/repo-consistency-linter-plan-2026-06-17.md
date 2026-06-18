@@ -69,6 +69,17 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    options) + windowed / string-limit / non-select / cogs-scope / allowlist negatives.
    *Possible follow-up:* extend rule 4 to `disbot/cogs/` (the SelectOption module-gate
    keeps leaderboard `[:10]` slices out) if a cog-level select truncation ever surfaces.
+   **Select-truncation migration — standalone pickers (#1048, 2026-06-18):** the three
+   *cleanly standalone single-select ephemeral pickers* moved onto the shared
+   `views/paginated_select.py` `PaginatedSelectView` — `EnumSettingSelectView`/`_EnumSelect`
+   (→ `build_enum_select_view`), `_TimeRemoveView`/`_TimeRemoveSelect`, and
+   `_XpRemoveView`/`_XpRemoveSelect`. Each retired **both** its `select_option_truncation`
+   and `panel_base_class` finding (counts 31→28 and 29→26) and ratcheted the
+   `baseview_inheritance` arch debt 12→9. The remaining 28 `select_option_truncation`
+   candidates are all **embedded in multi-control views** (selectors/, mining, subsystem_view,
+   channels move/visibility panels, access/explorer): `PaginatedSelectView` is a *standalone*
+   view, so they need either a new windowed-*embedded*-select helper or per-view ◀/▶ nav — a
+   design step that warrants its own focused PR.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
