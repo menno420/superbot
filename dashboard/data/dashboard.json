@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T01:46:17Z",
+    "generated_at": "2026-06-18T02:03:14Z",
     "build": {
-      "commit": "feac60fd",
-      "subject": "fix(fishing): reconcile v1 to the owner's design (Q-0175 / plan #1036)",
-      "committed_at": "2026-06-18T01:42:01Z",
+      "commit": "e4de9036",
+      "subject": "Merge pull request #1039 from menno420/claude/funny-franklin-ttonj3",
+      "committed_at": "2026-06-18T03:57:46Z",
       "branch": "claude/funny-franklin-ttonj3"
     },
     "counts": {
@@ -512,7 +512,6 @@
         "fishlog"
       ],
       "related_subsystems": [
-        "economy",
         "mining"
       ],
       "capabilities": [
@@ -1630,6 +1629,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-18-fishing-codex-followups.md",
+      "date": "2026-06-18",
+      "title": "Session — fishing post-merge fixes (Codex review on #1039)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-18-btd6-round-cash-identity-fix.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — BTD6 round_cash identity ABR fix (Codex P2 on #1035)",
@@ -2081,14 +2088,6 @@
       "file": "2026-06-16-fix-deathmatch-challenge-timer.md",
       "date": "2026-06-16",
       "title": "Session — fix BUG-0013: deathmatch 1v1 challenge timer overwrites the live duel",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-fix-coglist-resolution-loop.md",
-      "date": "2026-06-16",
-      "title": "Session — fix BUG-0014: `!coglist` infinite \"assumed from\" command-resolution loop",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
