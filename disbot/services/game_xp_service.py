@@ -80,7 +80,7 @@ _AWARDS: dict[str, int] = {
     "mine": 3,
     "harvest": 2,
     "explore": 4,
-    "fish": 3,
+    "fish": 5,
     "depth_record": 25,
     "craft": 8,
     "quick_craft": 8,

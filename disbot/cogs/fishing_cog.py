@@ -1,18 +1,22 @@
 """Fishing subsystem — Discord plumbing only (S4.1 decomposition).
 
-Ecosystem #2 (the second character-platform activity), PR 1 — the core loop.
-Domain logic, the audited write boundary, and the reward policy live in their
-own modules per ``docs/architecture.md`` §"Subsystem decomposition":
+Ecosystem #2 (the second character-platform activity), PR 1 — fishing v1 per the
+owner's design (Q-0175, ``docs/planning/fishing-open-world-expansion-plan-2026-06-18.md``):
+21 size-ranked fish, 7 levels × 3 fish (level-gated catch — your fishing level
+unlocks bigger fish), leveling reuses ``game_xp``. Fish value/use is a deferred
+owner question, so v1 has no coins — the reward is progression + the collection log.
 
-    utils/fishing/                 — pure domain (species catalog, catch roll)
+Domain logic, the audited write boundary, and the data live in their own modules:
+
+    utils/fishing/                 — pure domain (catalog, level-gated roll)
     services/fishing_workflow.py   — the audited write boundary
     utils/db/games/fishing.py      — the collection-log CRUD
+    disbot/data/fishing/fish.json  — the 21-fish dataset
 
 This file hosts only commands, the cog lifecycle, and the Help-menu hook.
-Fishing is **hub-less** for now (surfaced via its Help hook, like
-``welcome``/``counters``); the open-world Explore hub that folds ``!fish`` into
-a 🎣 button is a later plan slice
-(``docs/planning/fishing-ecosystem-plan-2026-06-18.md``).
+Fishing is **hub-less** for PR 1 (surfaced via its Help hook + the typed
+commands, like ``welcome``/``counters``); folding ``🎣 Fishing`` into the
+open-world Explore hub (currently a stub) is a later plan slice.
 """
 
 from __future__ import annotations
@@ -25,7 +29,7 @@ from discord.ext import commands
 from core.runtime import guild_resources as resources
 from services import fishing_workflow, game_xp_service
 from utils import db
-from utils.fishing.fish import SPECIES
+from utils.fishing.fish import MAX_LEVEL, SPECIES, max_size_rank_for_level
 from utils.ui_constants import INFO_COLOR
 
 logger = logging.getLogger("bot.cogs.fishing")
@@ -46,16 +50,23 @@ class FishingCog(commands.Cog):
 
     @commands.command()
     async def fish(self, ctx):
-        """Cast a line and catch a fish — earns coins and game XP."""
+        """Cast a line and catch a fish — level up to unlock bigger fish."""
         result = await fishing_workflow.fish(ctx.author.id, ctx.guild.id)
-        catch = result.catch
+        if result.catch is None:
+            await ctx.send("🎣 The fishing spot is unavailable right now — try later.")
+            return
+        species = result.catch.species
         message = (
-            f"{ctx.author.mention} 🎣 cast a line and reeled in "
-            f"{catch.species.emoji} a **{catch.species.name.title()}** "
-            f"({catch.weight} kg, *{catch.species.rarity}*) "
-            f"for **{result.coins}** 🪙! "
-            f"Balance: **{result.new_balance}** 🪙."
+            f"{ctx.author.mention} 🎣 cast a line and caught "
+            f"{species.emoji} a **{species.name.title()}**! "
+            f"(size #{species.size_rank} of {len(SPECIES)})"
         )
+        if result.unlocked_bigger:
+            cap = max_size_rank_for_level(result.fishing_level)
+            message += (
+                f"\n🌟 **Fishing level {result.fishing_level}!** "
+                f"You can now catch fish up to size #{cap}."
+            )
         if result.xp_note:
             message += "\n" + result.xp_note
         await ctx.send(message)
@@ -67,44 +78,40 @@ class FishingCog(commands.Cog):
     async def fishlog(self, ctx):
         """Show your fishing collection — every species you've caught."""
         log = await db.get_fishing_log(ctx.author.id, ctx.guild.id)
-        level, into, needed = await game_xp_service.level_info(
-            ctx.guild.id,
-            ctx.author.id,
-        )
+        xp_map = await db.get_game_xp(ctx.author.id, ctx.guild.id)
+        fishing_xp = xp_map.get(game_xp_service.GAME_FISHING, 0)
+        level = fishing_workflow.fishing_level_from_xp(fishing_xp)
+        cap = max_size_rank_for_level(level)
+
+        caught = len(log)
+        total = sum(log.values())
         embed = discord.Embed(
             title=f"🎣 {ctx.author.display_name}'s Fishing Log",
             color=_FISHING_COLOR,
         )
-        caught = len(log)
-        total_catches = sum(e["count"] for e in log.values())
-        total_value = sum(e["total_value"] for e in log.values())
         embed.description = (
             f"**{caught}/{len(SPECIES)}** species discovered · "
-            f"**{total_catches}** catches · **{total_value}** 🪙 earned · "
-            f"Game Level **{level}**"
+            f"**{total}** total catches · Fishing level **{level}/{MAX_LEVEL}** "
+            f"(can catch up to size **#{cap}**)"
         )
-        if log:
-            lines = []
-            for species in SPECIES:
-                entry = log.get(species.name)
-                if entry is None:
-                    continue
+        lines = []
+        for species in SPECIES:
+            count = log.get(species.name, 0)
+            unlocked = species.size_rank <= cap
+            if count:
                 lines.append(
-                    f"{species.emoji} **{species.name.title()}** ×{entry['count']} "
-                    f"· best {entry['best_weight']} kg · {entry['total_value']} 🪙",
+                    f"{species.emoji} **{species.name.title()}** "
+                    f"(#{species.size_rank}) ×{count}",
                 )
-            embed.add_field(
-                name="Caught",
-                value="\n".join(lines),
-                inline=False,
-            )
-        else:
-            embed.add_field(
-                name="No catches yet",
-                value="Cast your first line with `!fish`!",
-                inline=False,
-            )
-        embed.set_footer(text="!fish to cast · !fishtop for the server leaderboard")
+            elif unlocked:
+                lines.append(
+                    f"{species.emoji} {species.name.title()} (#{species.size_rank}) "
+                    "— *not yet caught*",
+                )
+            else:
+                lines.append(f"🔒 ??? (#{species.size_rank}) — *locked*")
+        embed.add_field(name="Fish", value="\n".join(lines), inline=False)
+        embed.set_footer(text="!fish to cast · !fishtop for the leaderboard")
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -112,7 +119,7 @@ class FishingCog(commands.Cog):
         aliases=["topfishers"],
     )
     async def fishtop(self, ctx):
-        """Show this server's top anglers by coins earned from fishing."""
+        """Show this server's top anglers by total fish caught."""
         rows = await db.top_fishers(ctx.guild.id)
         embed = discord.Embed(title="🎣 Top Anglers", color=_FISHING_COLOR)
         if not rows:
@@ -123,11 +130,14 @@ class FishingCog(commands.Cog):
             return
         medals = ["🥇", "🥈", "🥉"]
         lines = []
-        for rank, (user_id, caught, value) in enumerate(rows):
+        for rank, (user_id, caught, species) in enumerate(rows):
             prefix = medals[rank] if rank < len(medals) else f"**{rank + 1}.**"
             member = resources.resolve_member(ctx.guild, user_id)
             name = member.display_name if member else f"User {user_id}"
-            lines.append(f"{prefix} {name} — **{value}** 🪙 ({caught} catches)")
+            lines.append(
+                f"{prefix} {name} — **{caught}** caught "
+                f"({species}/{len(SPECIES)} species)",
+            )
         embed.description = "\n".join(lines)
         await ctx.send(embed=embed)
 
@@ -145,8 +155,9 @@ class FishingCog(commands.Cog):
         embed = discord.Embed(
             title="🎣 Fishing",
             description=(
-                "Cast a line to catch fish for coins and game XP, and fill out "
-                "your collection log.\n\n"
+                f"Cast a line to catch from **{len(SPECIES)}** size-ranked fish. "
+                "Level up your fishing to unlock bigger catches, and fill out your "
+                "collection log.\n\n"
                 "**`!fish`** — cast a line\n"
                 "**`!fishlog`** — your collection\n"
                 "**`!fishtop`** — the server leaderboard"

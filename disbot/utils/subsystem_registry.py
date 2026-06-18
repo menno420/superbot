@@ -219,7 +219,7 @@ SUBSYSTEMS: dict[str, dict] = {
     # the typed `!fish`/`!fishlog`/`!fishtop` commands, exactly like
     # `welcome`/`counters`. Folding `🎣 Fishing` into an actionable Games /
     # Explore-hub panel is a later plan slice
-    # (docs/planning/fishing-ecosystem-plan-2026-06-18.md), at which point it
+    # (docs/planning/fishing-open-world-expansion-plan-2026-06-18.md), at which point it
     # gains parent_hub + an actionable panel (the Games actionability contract).
     "fishing": {
         "display_name": "Fishing",

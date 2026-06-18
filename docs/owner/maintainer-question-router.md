@@ -6422,7 +6422,8 @@ travels), the V-13/V-14 ecosystem vision.
 ### Q-0176 — DISCUSS: should `auto-merge-enabler` skip a PR already labelled `needs-hermes-review`? (2026-06-18)
 
 > **PROPOSED — agent-surfaced (fishing dispatch run, 2026-06-18). Not applied — executable-config
-> change (the workflow), so it ships as a proposal per CLAUDE.md.**
+> change (the workflow), so it ships as a proposal per CLAUDE.md.** *(Renumbered from Q-0175 → Q-0176 to
+> avoid a collision with the owner's same-day directed Q-0175 above.)*
 
 **Context:** the fishing PR #1033 was opened via the GitHub MCP (`create_pull_request`) and labelled
 `needs-hermes-review` (Q-0117 — a substantial new ecosystem subsystem must not self-merge). Per Q-0127
