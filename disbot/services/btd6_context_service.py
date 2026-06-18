@@ -1123,10 +1123,20 @@ def _render_fixture_round(entry: Any, *, roundset_label: str = "") -> list[str]:
             prefix = " ".join(m.capitalize() for m in modifiers)
             label = f"{prefix} {name}".strip()
             parts.append(f"{aggregated[(bloon_id, modifiers)]} {label}")
+        # Ground the total bloons that ENTER the round (sum of the spawn groups,
+        # not counting children that appear only when a parent pops — that count
+        # is the RBE above). Without this, "how many bloons spawn on rN" had no
+        # grounded number, so the model's derived total (e.g. 75 + 122 = 197)
+        # tripped the value-only faithfulness guard and got refused, while the
+        # identical "list every bloon in rN" answered fine from the per-bloon
+        # counts.
+        total_spawned = sum(aggregated.values())
         lines.append(
             _cap(
                 f"[btd6_round] {ref} composition — "
-                f"{_sanitise(', '.join(parts))} (source: {_dataset_label()})",
+                f"{_sanitise(', '.join(parts))}; {total_spawned:,} bloons enter "
+                f"this round in total (children spawned on pop are counted by the "
+                f"RBE, not here) (source: {_dataset_label()})",
             ),
         )
 
@@ -1895,21 +1905,38 @@ def deterministic_mk_reference_reply(message_text: str) -> str | None:
     if tower is None:
         return None
 
+    # The in-game Monkey Knowledge tab a tower's category sits under — Primary /
+    # Military / Magic / Support tab points that buff *every* tower in the class
+    # (e.g. "Come On Everybody", "Flanking Maneuvers") affect this tower too but
+    # never name it, so they are not in the reference list. Naming the tab lets
+    # the answer disclose that scope instead of reading as a missing entry — the
+    # "why isn't Come On Everybody in the Glue Gunner list" confusion.
+    tab = tower.category.title()
+    tab_note = (
+        f"This lists only Monkey Knowledge that *names* the {tower.canonical}. "
+        f"Tab-wide points in the **{tab}** tab (which buff every {tab} tower, "
+        f"e.g. attack-speed or cost effects) also apply to it but aren't listed "
+        f"here — ask about {tab} Monkey Knowledge to see those."
+    )
+
     rows = btd6_data_service.monkey_knowledge_referencing(tower)
     if not rows:
         return (
             f"**No Monkey Knowledge specifically references the "
             f"{tower.canonical}.** Monkey Knowledge points name a tower or one "
-            "of its upgrades in their description; none currently name this one."
+            "of its upgrades in their description; none currently name this one. "
+            + tab_note
         )
 
     ordered = sorted(rows, key=lambda mk: mk.canonical.lower())
     lines = [
-        f"**Monkey Knowledge that reference the {tower.canonical} "
+        f"**Monkey Knowledge points that reference the {tower.canonical} "
         f"({len(ordered)})** — these name the {tower.canonical} or one of its "
         "upgrades:",
     ]
     lines.extend(f"• **{mk.canonical}** — {mk.description}" for mk in ordered)
+    lines.append("")
+    lines.append(tab_note)
     reply = "\n".join(lines)
     return reply if len(reply) <= 1900 else reply[:1899] + "…"
 
