@@ -65,3 +65,30 @@ select_option_truncation:
       reason: "_FAKE_ITEMS is a fixed UX-lab demo fixture."
     - pattern: views/ux_lab/compare.py::CompareView._rebuild_items
       reason: "specs_for(category) is the curated UX-lab pattern set; bounded under 25."
+    # --- BTD6 game-data rosters + the live-events feed: fixed/derived from the
+    #     pinned BTD6 dataset, bounded well under 25 (same standard as the btd6
+    #     paragon/hero/tower entries above). ---
+    - pattern: views/btd6/tower_browser_view.py::_TowerSelect.__init__
+      reason: "BTD6 base-tower roster (~23 towers); fixed game data, bounded under 25."
+    - pattern: views/btd6/live_events_view.py::_LiveOverviewSelect.__init__
+      reason: "Concurrent live BTD6 events are a small handful (race/boss/CT/odyssey); bounded feed."
+    - pattern: views/btd6/live_events_view.py::_EventSelect.__init__
+      reason: "Concurrent live BTD6 events are a small handful; bounded feed, not the #1040 class."
+    # --- Mining curated economy (Q-0075): every option source is a fixed in-repo
+    #     taxonomy / recipe catalog or one category's bounded slice of it. ---
+    - pattern: views/mining/market_panel.py::_CategorySelect.__init__
+      reason: "taxonomy.ordered_categories — the fixed mining item-category set (~10); bounded under 25."
+    - pattern: views/mining/market_panel.py::_TypeSelect.__init__
+      reason: "types within one curated category; bounded under 25."
+    - pattern: views/mining/market_panel.py::_BuySelect.__init__
+      reason: "variants of one curated base type; bounded under 25."
+    - pattern: views/mining/recipe_browser.py::_CategorySelect.__init__
+      reason: "fixed recipe-category catalog; bounded under 25."
+    - pattern: views/mining/recipe_browser.py::_TypeSelect.__init__
+      reason: "types within one recipe category; bounded under 25."
+    - pattern: views/mining/recipe_browser.py::_VariantSelect.__init__
+      reason: "variants of one curated recipe type; bounded under 25."
+    - pattern: views/mining/workshop_panel.py::MiningWorkshopView.create
+      reason: "repair/craft selects are bounded by the curated gear+recipe catalog; under 25."
+    - pattern: views/mining/gear_panel.py::_ItemSelect.__init__
+      reason: "owned items in one slot, bounded by the curated per-slot gear catalog; under 25 (24 + unequip sentinel)."

@@ -349,15 +349,15 @@ async def test_tier_select_rerenders_with_chosen_tier():
 
 @pytest.mark.asyncio
 async def test_feature_detail_select_sends_ephemeral_chain():
-    from views.server_management.access_map import _FeatureDetailSelect
+    from views.paginated_select import _WindowSelect
 
     decision = _decision("ai", "deny")
-    select = MagicMock()
-    select.values = ["ai"]
-    select._by_feature = {"ai": decision}
+    view = AccessMapView(MagicMock(id=1), (decision,))
+    select = next(c for c in view.children if isinstance(c, _WindowSelect))
     interaction = _interaction()
 
-    await _FeatureDetailSelect.callback(select, interaction)
+    # The drill-down is now an attached windowed select; dispatch a pick.
+    await select._window._dispatch(interaction, ["ai"])
 
     kwargs = interaction.response.send_message.await_args.kwargs
     assert kwargs["ephemeral"] is True

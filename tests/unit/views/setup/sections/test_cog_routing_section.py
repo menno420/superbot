@@ -98,8 +98,8 @@ def test_cog_pick_view_paginates_without_dropping_any_cog():
 
     seen: set[str] = set()
     for page in range(view.page_count):
-        view._page = page
-        view._render()
+        view._window.page = page
+        view._window.render()
         select = next(c for c in view.children if isinstance(c, _WindowSelect))
         # Discord rejects a select with more than 25 options.
         assert len(select.options) <= 25
@@ -122,7 +122,7 @@ def test_cog_pick_view_shows_nav_when_over_one_page():
     if view.page_count > 1:
         assert len(buttons) == 2
         # First page: Prev disabled, Next enabled.
-        assert view._page == 0
+        assert view._window.page == 0
         prev_btn = next(b for b in buttons if "Prev" in (b.label or ""))
         assert prev_btn.disabled is True
     else:
