@@ -1,9 +1,9 @@
 # 2026-06-18 — BTD6 round_cash identity ABR fix (Codex P2 on #1035)
 
-> **Status:** `in-progress`
-> Owner-live follow-up to #1035. Fixing the one real Codex review finding on that PR.
+> **Status:** `complete`
+> Owner-live follow-up to #1035. Fixed the one real Codex review finding on that PR.
 
-**PR:** (this PR) — gate the `round_cash` identity sentence to reconciling ranges.
+**PR:** #1037 — gate the `round_cash` identity sentence to reconciling ranges.
 **Branch:** `claude/zen-wright-77q0ru` (reset onto main after #1035 merged).
 
 ## What I'm about to do / did
