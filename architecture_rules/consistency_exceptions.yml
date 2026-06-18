@@ -1,0 +1,14 @@
+# Allowlist for scripts/check_consistency.py (the UX-consistency linter, Q-0170).
+#
+# This is the ONLY valid way to bypass a consistency rule — never suppress the
+# check itself. Each rule has an `exceptions:` list; an entry is a `pattern`
+# (a `views/...py` path matched as a prefix, optionally `::Class.method` to scope
+# it to one callback) plus a `reason`.
+#
+# Keep entries genuine: an exception documents a callback whose new ephemeral
+# message is correct (a real new message — a DM, a confirmation toast that should
+# NOT replace the panel), not a way to mute a real inconsistency that should be
+# fixed to edit in place.
+
+edit_in_place:
+  exceptions: []

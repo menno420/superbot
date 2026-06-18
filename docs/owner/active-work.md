@@ -108,4 +108,9 @@ living ledger (`docs/current-state.md`).
   routing miss · `btd6_data_service` / `btd6_context_service` / `ai_task_router` · 2026-06-18 ·
   **PR (this session)**
 
+- `claude/funny-franklin-507hdy` · repo-consistency-linter PR 1 (harness +
+  edit-in-place rule, warn-only, Q-0170) + ledger reconcile #1038–#1041 ·
+  `scripts/check_consistency.py` · `architecture_rules/consistency_exceptions.yml` ·
+  `docs/current-state.md` · 2026-06-18 · **PR #1042 (auto-merge on green)**
+
 _(move claims here with their PR # as they close, then prune older entries)_
