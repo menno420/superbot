@@ -1,24 +1,24 @@
 {
   "meta": {
-    "generated_at": "2026-06-17T22:14:12Z",
+    "generated_at": "2026-06-18T01:39:43Z",
     "build": {
-      "commit": "5a5b5b40",
-      "subject": "refactor(docs): batch 1 — slim reconciliation bullet to a thin pointer",
-      "committed_at": "2026-06-17T21:36:23Z",
-      "branch": "claude/skills-batch1-reconciliation"
+      "commit": "c40ac0c",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/hopeful-allen-1darl5",
+      "committed_at": "2026-06-18T01:34:36Z",
+      "branch": "claude/hopeful-allen-1darl5"
     },
     "counts": {
-      "functions": 33,
-      "ideas": 86,
+      "functions": 34,
+      "ideas": 87,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 40,
-      "commands": 301,
-      "setting_keys": 84,
-      "setting_domains": 13,
-      "typed_settings": 65,
-      "visible_subsystems": 33,
+      "cogs": 41,
+      "commands": 302,
+      "setting_keys": 92,
+      "setting_domains": 14,
+      "typed_settings": 73,
+      "visible_subsystems": 34,
       "synonyms": 87
     }
   },
@@ -674,6 +674,32 @@
       ]
     },
     {
+      "key": "image_moderation",
+      "display_name": "Image moderation",
+      "description": "Scan uploaded images for sexual, violent, harassment, or hate content",
+      "emoji": "🖼️",
+      "visibility_tier": "administrator",
+      "visibility_mode": "normal",
+      "category": "moderation",
+      "tags": [
+        "image",
+        "moderation",
+        "safety",
+        "nsfw",
+        "filter"
+      ],
+      "entry_points": [
+        "imagemod"
+      ],
+      "related_subsystems": [
+        "moderation",
+        "automod"
+      ],
+      "capabilities": [
+        "image_moderation.settings.configure"
+      ]
+    },
+    {
       "key": "moderation",
       "display_name": "Moderation",
       "description": "Warnings, timeouts, bans, mod logs",
@@ -1058,6 +1084,13 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "`scripts/check_current_state_ledger.py --strict` flags every recently-merged PR that is missing"
+    },
+    {
+      "file": "meter-external-moderation-calls-2026-06-16.md",
+      "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "`image_moderation` (PR #941, Q-0108) calls OpenAI's `omni-moderation-latest` endpoint **once per"
     },
     {
       "file": "reference-integrity-invariants-2026-06-16.md",
@@ -1588,6 +1621,38 @@
   ],
   "updates": [
     {
+      "file": "2026-06-18-btd6-round-cash-identity-fix.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — BTD6 round_cash identity ABR fix (Codex P2 on #1035)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-18-btd6-mk-affects-tower.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — BTD6 \"which MK affects <tower>\" — class-wide MK + routing",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-18-btd6-ai-answer-fixes.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — BTD6 AI answer fixes (owner live-test screenshots)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-17-settle-decisions-codex.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Settle mining/seed decisions + surface Codex's reviews",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-17-routine-review-and-workflow-hardening.md",
       "date": "2026-06-17",
       "title": "2026-06-17 — Routine review + autonomous-workflow hardening",
@@ -1679,7 +1744,15 @@
       "file": "2026-06-17-idea-gate-open.md",
       "date": "2026-06-17",
       "title": "2026-06-17 — Open the idea→plan gate (Q-0172) + skills batch-1 slim",
-      "status": "in-progress",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-17-hermes-house-style.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Hermes plain-language house style — rollout (Q-0168)",
+      "status": "complete",
       "run_type": "manual",
       "self_initiated": false
     },
@@ -1754,6 +1827,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-06-17-character-preview-tool.md",
+      "date": "2026-06-17",
+      "title": "2026-06-17 — Character preview tool + vault-cap decision",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-06-17-btd6-roster-floor-bosses-maps.md",
@@ -1908,6 +1989,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-16-image-moderation.md",
+      "date": "2026-06-16",
+      "title": "Session — Image moderation (Q-0108) — the safety-community family's last buildable slice",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-16-idea-platform-group-decompose.md",
       "date": "2026-06-16",
       "title": "Session — capture the diagnostic_cog platform-group decomposition idea",
@@ -2010,62 +2099,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-economy-faucet-sink-diagnostic.md",
-      "date": "2026-06-16",
-      "title": "Session — games-economy faucet/sink diagnostic (`!platform economy`)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-dispatch-never-docs-only.md",
-      "date": "2026-06-16",
-      "title": "Session — dispatch is never \"docs only\" (Q-0148)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-diagnostic-platform-group-mixin.md",
-      "date": "2026-06-16",
-      "title": "Session — extract the `!platform` command group onto a cog mixin",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-developer-dashboard-mvp.md",
-      "date": "2026-06-16",
-      "title": "Session — Developer dashboard (personal website) — design + read-only MVP",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-dashboard-vision-decisions.md",
-      "date": "2026-06-16",
-      "title": "Session (cont.) — solidify the dashboard finalized-vision plan with owner panel decisions",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-dashboard-subcog-subsystem-map.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — dashboard: map sub-cogs to their parent subsystem",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-dashboard-status-page.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — dashboard `/status` page (live status & health surface)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "env_usage": [
@@ -2135,7 +2168,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 177,
+          "line": 178,
           "layer": "config",
           "has_default": true
         },
@@ -2157,7 +2190,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 176,
+          "line": 177,
           "layer": "config",
           "has_default": true
         }
@@ -2190,7 +2223,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 160,
+          "line": 161,
           "layer": "config",
           "has_default": true
         },
@@ -2292,7 +2325,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 203,
+          "line": 204,
           "layer": "config",
           "has_default": true
         }
@@ -2308,7 +2341,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 206,
+          "line": 207,
           "layer": "config",
           "has_default": true
         }
@@ -2324,7 +2357,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 209,
+          "line": 210,
           "layer": "config",
           "has_default": true
         }
@@ -2484,7 +2517,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 102,
+          "line": 103,
           "layer": "config",
           "has_default": true
         }
@@ -2564,7 +2597,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 103,
+          "line": 104,
           "layer": "config",
           "has_default": true
         }
@@ -2573,7 +2606,7 @@
     {
       "name": "OPENAI_API_KEY",
       "required": false,
-      "usage_count": 4,
+      "usage_count": 5,
       "layers": [
         "config",
         "core",
@@ -2582,8 +2615,14 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 159,
+          "line": 160,
           "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/core/runtime/ai/providers/openai_moderation.py",
+          "line": 68,
+          "layer": "core",
           "has_default": true
         },
         {
@@ -2617,7 +2656,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 186,
+          "line": 187,
           "layer": "config",
           "has_default": true
         },
@@ -2640,7 +2679,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 190,
+          "line": 191,
           "layer": "config",
           "has_default": true
         },
@@ -2679,7 +2718,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 158,
+          "line": 159,
           "layer": "config",
           "has_default": true
         },
@@ -2703,7 +2742,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 157,
+          "line": 158,
           "layer": "config",
           "has_default": true
         },
@@ -4649,6 +4688,25 @@
           "aliases": [],
           "brief": "Send a raw Hermes work order to the Claude Code Routine (owner only).",
           "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "ImageModeration",
+      "file": "disbot/cogs/image_moderation_cog.py",
+      "subsystem": "image_moderation",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "imagemod",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show the current image-moderation policy for this server.",
+          "classification": "primary_entrypoint",
           "has_panel": false,
           "button_backed": false
         }
@@ -6863,6 +6921,76 @@
       ]
     },
     {
+      "domain": "image_moderation",
+      "purpose": "Settings keys owned by the Image-moderation subsystem (cogs.image_moderation_cog).",
+      "keys": [
+        {
+          "constant": "IMAGE_MODERATION_ENABLED",
+          "key": "image_moderation_enabled",
+          "type": "bool",
+          "hint": "",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_SEXUAL_ENABLED",
+          "key": "image_moderation_sexual_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged sexual / sexual-minors content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_VIOLENCE_ENABLED",
+          "key": "image_moderation_violence_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged violent / graphic content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_HARASSMENT_ENABLED",
+          "key": "image_moderation_harassment_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged harassment content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_HATE_ENABLED",
+          "key": "image_moderation_hate_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged hate content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_THRESHOLD_PERCENT",
+          "key": "image_moderation_threshold_percent",
+          "type": "int",
+          "hint": "Confidence (percent) a category score must reach before an image is removed.  Higher = fewer false positives (80 recommended).",
+          "allowed_values": [],
+          "default": 80
+        },
+        {
+          "constant": "IMAGE_MODERATION_EXEMPT_ROLES",
+          "key": "image_moderation_exempt_roles",
+          "type": "str",
+          "hint": "Comma-separated role ids whose members' images are never scanned (staff, trusted, …).  Leave empty for none.",
+          "allowed_values": [],
+          "default": ""
+        },
+        {
+          "constant": "IMAGE_MODERATION_EXEMPT_CHANNELS",
+          "key": "image_moderation_exempt_channels",
+          "type": "str",
+          "hint": "Comma-separated channel ids image moderation never scans (art, memes, NSFW-gated, …).  Leave empty for none.",
+          "allowed_values": [],
+          "default": ""
+        }
+      ]
+    },
+    {
       "domain": "logging",
       "purpose": "Settings keys owned by the server-logging service (services.server_logging).",
       "keys": [
@@ -7389,6 +7517,12 @@
             "display_name": "Cleanup",
             "category": "moderation",
             "emoji": "🧹"
+          },
+          {
+            "key": "image_moderation",
+            "display_name": "Image moderation",
+            "category": "moderation",
+            "emoji": "🖼️"
           }
         ]
       },
@@ -7398,7 +7532,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 33,
+    "total_visible": 34,
     "internal_count": 0
   },
   "synonyms": [
