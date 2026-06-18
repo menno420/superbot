@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T18:35:41Z",
+    "generated_at": "2026-06-18T18:51:52Z",
     "build": {
-      "commit": "3b9172bb",
-      "subject": "Merge pull request #1050 from menno420/claude/funny-franklin-xxetov",
-      "committed_at": "2026-06-18T20:27:23Z",
+      "commit": "b179e937",
+      "subject": "docs: twelfth Q-0107 reconciliation pass (band-#1050)",
+      "committed_at": "2026-06-18T18:37:32Z",
       "branch": "claude/jolly-johnson-6j0mu9"
     },
     "counts": {
       "functions": 36,
-      "ideas": 87,
+      "ideas": 88,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
@@ -969,6 +969,13 @@
   ],
   "ideas": [
     {
+      "file": "product-lanes-gated-balance-flag-2026-06-18.md",
+      "title": "Idea — a \"⚑ Product lanes gated\" balance flag (companion to PLAN-BACKLOG-THIN)",
+      "status": "ideas",
+      "date": "2026-06-18",
+      "summary": "been mostly gated (owner / creds / `needs-hermes-review` / data) and the *buffer* (S3/S4/S5"
+    },
+    {
       "file": "agent-tooling-automation-shortlist-2026-06-17.md",
       "title": "Agent tooling + automation shortlist — Claude skills, scripts, a repo-native discovery aid",
       "status": "ideas",
@@ -1680,6 +1687,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-18-reconcile-band1050.md",
+      "date": "2026-06-18",
+      "title": "Session — 2026-06-18 · twelfth Q-0107 reconciliation pass (band-#1050)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-18-paginated-select-primitive.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — Paginated-select primitive (the #1040 select-truncation class, root fix)",
@@ -2139,14 +2154,6 @@
       "file": "2026-06-16-idea-platform-group-decompose.md",
       "date": "2026-06-16",
       "title": "Session — capture the diagnostic_cog platform-group decomposition idea",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-idea-backlog-hygiene.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — idea-backlog hygiene (tie off the #995 deferrals) + validate the union fix",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

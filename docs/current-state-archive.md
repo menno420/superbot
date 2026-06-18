@@ -367,6 +367,10 @@
   `tests/unit/services/test_btd6_capability_roster.py` + `tests/unit/services/test_btd6_bloon_roster.py`.
   The next AI §7 step is a further §7.6 roster member (e.g. hero/relic property lists) or a *new* family
   beyond rosters+comparison (plan-first).
+- **#1027 (2026-06-17, generated-artifact freshness umbrella)** — generalized #1025 into
+  `scripts/check_generated_artifacts_fresh.py`, a registry-driven warn-only umbrella over all three
+  committed-generated families (dashboard.json · `env-vars.md` · `docs/agent/generated/*.context.md`);
+  Q-0105 dev tooling (read-only/stdlib/disposable), not hard-CI-wired.
 - **#963 + #991 + #953 + #946 (2026-06-16, BTD6 AI floors + fixes)** — **#946**: the **first** §7.5 multi-entity comparison floor member — deterministic tower cost-comparison (`compare_crosspath_costs` + `deterministic_cost_comparison_reply`, on the `deterministic_btd6_list_reply` dispatcher) — the BUG-0009 "grounded values, wrong assembly" class; #950/#955/#962 built the difficulty/round-range/paragon members on it (**§7.5 comparison family now complete**). **#963 (BUG-0015)**: "d67 dart paragon" was misread as upgrade path "0-6-7" — fixed the parse + route + grounded a paragon *degree*; **#991** captured the BUG-0015 tail as a BTD6 shorthand-corpus eval idea (the recurring router-class guard). **#953**: current-event-first Live Events + fixed the dead event drill-down. `check_quality` green; arch 0.
 - **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
   dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
@@ -430,6 +434,7 @@
   (titles verified against live GitHub). Docs only; no runtime code. *(Self-recorded by the next
   dispatch session #943 — a reconciliation PR doesn't add its own entry, the small recurring drift
   the strict ledger guard exists to catch.)*
+- **#941 + #929 (2026-06-18, the two `needs-hermes-review` carve-outs — image moderation + security tiers 1+2 — now MERGED)** — both Q-0117 anti-monoculture review carve-outs landed on the same day (#929 04:17, #941 04:24): **#929** = security service tiers 1+2 (raid detection + account-age filter, Q-0111); **#941** = image moderation. Recorded as shipped here (the prior passes carried them as "in flight, awaiting human merge" — that state is now stale; the band-#1050 pass corrected the ▶ Next action + plan to drop them as open gates).
 - **#940 (2026-06-16, myprofile PR B — self-service writes: the pipeline's first UI consumer)** — the
   band-#930 decade-queue slot 3 continuation (PR A read-only card shipped #938). Makes `/myprofile`
   interactive: a new `disbot/views/profile/editor.py` owner-locked ephemeral editor stack —

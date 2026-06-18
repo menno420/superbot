@@ -49,6 +49,14 @@ the strict checker's 15-PR window can't see drift older than its window but newe
 **Open-PR disposition (Q-0125):** `list_pull_requests` (state=open) returned **zero open PRs** — the
 cleanest disposition state. Nothing to close, fix, or flag.
 
+**Carve-out merge catch (Codex review on this pass's PR #1053):** the per-PR sweep also surfaced that
+the two long-carried `needs-hermes-review` carve-outs — **image-mod #941** (merged 04:24) and
+**security tiers 1+2 #929** (merged 04:17) — **both landed 2026-06-18**, yet the prior passes' prose
+(and this pass's first draft) still listed them as open gates. Recorded them as shipped (a grouped
+archive entry) and corrected §2/§3/§4/§6 + the live ▶ Next action to drop them as open gates / spent
+the "merge the two PRs" owner-lever. Verified against `git log origin/main` (Codex is input to verify,
+not an order — Q-0120; here it was correct).
+
 **Control-plane (Q-0135):** `check_loop_health.py` returned **SKIP** (`gh` unavailable in this
 container). Did the live read via the GitHub MCP instead: reconcile issue **#1051** is authored by
 **`menno420`** (a real-user login), which is the live proof `ROUTINE_PAT` is set and the loop
@@ -62,8 +70,8 @@ self-fires — appended #1051 to the row-1 re-confirmation list in the Control-p
 | 2 · Moderation-DM config (`ready`) | ✅ **#1023** |
 | 3 · Dashboard manifest spine PR4 (`owner`/`creds`) | ⬜ owner-paced (write side) — not started |
 | 4 · AI §7 next workflow family (`plan-first`) | ⬜ deterministic floors exhausted; no new family planned this band |
-| 5 · Image moderation #941 lands (`owner`/review) | ⬜ still `needs-hermes-review` |
-| 6 · Security tiers 1+2 #929 lands (`owner`/review) | ⬜ still `needs-hermes-review` |
+| 5 · Image moderation #941 lands (`owner`/review) | ✅ **MERGED #941** (2026-06-18 04:24) — the `needs-hermes-review` carve-out landed |
+| 6 · Security tiers 1+2 #929 lands (`owner`/review) | ✅ **MERGED #929** (2026-06-18 04:17) — the `needs-hermes-review` carve-out landed |
 | 7 · Hermes bug-triage `gh issue create` write (`plan-first`) | ⬜ not started |
 | 8 · P1-1 absence-guard Layer B (`creds`) | ⬜ still creds/design-gated |
 | 9 · BUG-0009 newest-towers ordering (`data`) | ⬜ still data-gated |
@@ -77,20 +85,23 @@ recurring pattern is now structural, not incidental (see §3).
 ## 3. Priorities restated — the product/tooling asymmetry (the honest read)
 
 The **bot-product sectors (S1 bot / S2 BTD6) are gated or exhausted**: the BTD6 deterministic-floor
-lane is complete; fishing is owner-design-gated (Q-0175); image-mod #941 + security tiers #929 are
-`needs-hermes-review` carve-outs awaiting a human merge; absence-guard Layer B is creds-gated;
+lane is complete; fishing is owner-design-gated (Q-0175); absence-guard Layer B is creds-gated;
 newest-towers is data-gated; the dashboard write/manifest lanes are owner-paced. **This is not a
-backlog failure — it is the correct gate state.** Those lanes genuinely need an owner decision, a
-human review, prod creds, or sourced data before more code is right.
+backlog failure — it is the correct gate state.** Those lanes genuinely need an owner decision, prod
+creds, or sourced data before more code is right. *(The two `needs-hermes-review` carve-outs that the
+prior several passes carried as open — image-mod #941 + security tiers #929 — **both MERGED
+2026-06-18**, so that lever is now spent; this pass corrected the ledger + ▶ Next action to record
+their shipped state.)*
 
 The **workflow/tooling sectors (S3 AI-Memory / S4 docs / S5 ops) are deep and ungated** — and that is
 where the next band's buildable work lives. The flagship is the consistency-linter migration; behind
 it sit two real multi-PR plans (procedures→skills, owner-review-inbox Phase 1) and a rich shortlist of
 small stdlib guards. So the band is **fillable, but it will be tooling/workflow-heavy** rather than
 bot-feature-heavy. That asymmetry is worth the owner seeing: *if you want the next band to ship more
-bot features, the highest-leverage owner action is to unblock a gated product lane* — merge the two
-`needs-hermes-review` PRs, decide the fishing Phase-1 open questions (Q-0175), or greenlight a
-dashboard write surface. Absent that, the agents will (correctly) build workflow/tooling depth.
+bot features, the highest-leverage owner action is to unblock a gated product lane* — decide the
+fishing Phase-1 open questions (Q-0175) or greenlight a dashboard write surface. (The merge-the-two-
+`needs-hermes-review`-PRs lever is now spent — #941 + #929 both landed 2026-06-18.) Absent that, the
+agents will (correctly) build workflow/tooling depth.
 
 ## 4. The next band — buildable, highest-value first
 
@@ -131,10 +142,10 @@ dashboard write surface. Absent that, the agents will (correctly) build workflow
 ([shortlist](../ideas/agent-tooling-automation-shortlist-2026-06-17.md)) — promote each to a complete
 skill spec, then build (the idea→plan gate Q-0172 lets a session do both).
 
-**Gated / owner-action (not in this band unless the owner steers — see §3):** image-mod #941 +
-security tiers #929 (`needs-hermes-review` — owner merges) · fishing Phase-1 open questions (Q-0175 —
-owner decides) · dashboard manifest PR4 write side (owner-paced) · absence-guard Layer B (creds) ·
-BUG-0009 newest-towers (data) · the substrate-kit (owner-action since band-#900).
+**Gated / owner-action (not in this band unless the owner steers — see §3):** fishing Phase-1 open
+questions (Q-0175 — owner decides) · dashboard manifest PR4 write side (owner-paced) · absence-guard
+Layer B (creds) · BUG-0009 newest-towers (data) · the substrate-kit (owner-action since band-#900).
+*(Image-mod #941 + security tiers #929 are no longer here — both MERGED 2026-06-18.)*
 
 **Depth check (Q-0164):** Lanes A–D total **~18–22 genuine `ready`/`plan-first` slices** — enough
 buildable work to reach the next cadence pass without inventing filler. **No `⚠️ PLAN BACKLOG THIN`
@@ -155,7 +166,8 @@ flag this pass** — the queue is deep on the workflow/tooling side. The honest 
 the owner the lever.** For ~6 consecutive bands the *planned product slots* have been mostly gated and
 the *buffer (workflow/tooling)* has become the band. This pass stops treating that as a per-band
 surprise and writes it into §3 as the steady state, with the explicit owner-side lever: the fastest way
-to make a band ship more bot features is to unblock one gated product lane (merge the two
-`needs-hermes-review` PRs, decide Q-0175 fishing, or greenlight a dashboard write surface). This turns a
+to make a band ship more bot features is to unblock one gated product lane (decide Q-0175 fishing or
+greenlight a dashboard write surface — the merge-the-two-`needs-hermes-review`-PRs lever was spent when
+#941 + #929 landed 2026-06-18). This turns a
 recurring observation into an actionable owner signal — the same spirit as the Q-0164 PLAN-BACKLOG-THIN
 flag, but for the *product-vs-tooling balance* rather than raw depth.

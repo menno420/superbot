@@ -59,6 +59,24 @@ the structural fix is to make the band-grep the canonical ledger check (the `--w
 the band-#1020 pass itself used) rather than the 15-window guard, which is now a documented false-green
 trap.
 
+## Codex review follow-up (PR #1053)
+
+Codex left three review comments; two were verified-correct and fixed in a follow-up commit (Q-0120 —
+verify against source, not obey):
+1. **Dashboard regenerated before the final docs inputs** (P2, correct) — I'd run the exporter before
+   adding the new idea + session files, so `dashboard.json` had ideas=87 and no reconcile update. Moved
+   the regen to the **last** step (ideas=88, reconcile update present).
+2. **#941 + #929 already merged, not open gates** (P2, correct) — `git log origin/main` confirms
+   image-mod **#941** (04:24) and security tiers **#929** (04:17) both merged 2026-06-18, yet the prior
+   passes (and my first draft) carried them as open `needs-hermes-review` gates. Added a grouped shipped
+   archive entry and corrected §2/§3/§4/§6 + the live ▶ Next action; the "merge the two PRs" owner-lever
+   is now spent. *(This is the exact drift class my own Q-0102 review flagged — passes carrying stale
+   gate-state forward; Codex caught a live instance.)*
+3. The "Codex Review" header comment needed no action.
+
+Also resynced onto `origin/main` (the #1052 dashboard-refresh merge landed mid-flight — regenerated
+`dashboard.json` resolves the conflict) and added the **#1052** ledger entry (trimming #1027 to archive).
+
 ## 📤 Run report
 
 - **Did:** twelfth Q-0107 reconcile — ledger (+#1022/#1029, trimmed 41→20), docs green, control-plane
