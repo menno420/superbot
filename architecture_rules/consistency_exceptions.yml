@@ -12,3 +12,11 @@
 
 edit_in_place:
   exceptions: []
+
+# select_option_truncation: a `views/...py` path prefix whose front-truncating
+# slice is a *genuine* top-N display (an error message intentionally listing only
+# the first few of many), NOT a select that should paginate. Fix real selects to
+# paginate (see `views/setup/sections/cog_routing.py` `_CogPickView`) — only
+# allowlist a deliberate display truncation.
+select_option_truncation:
+  exceptions: []

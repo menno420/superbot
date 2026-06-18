@@ -29,7 +29,8 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
 | 1 | **Edit-in-place** | a panel callback replying with a *new* `followup.send(ephemeral=True)` / `response.send_message` where the house pattern edits in place | the owner's headline example; allowlist genuine "new message" cases (e.g. a fresh DM, a confirmation toast) |
 | 2 | **Back-button presence** | a `HubView`/panel subclass with child buttons but no back/nav affordance | seed the "nav affordance" detector from the shared back mixin / breadcrumb composer |
 | 3 | **Panel base-class** | a button/select view extending `discord.ui.View` directly outside the `views/rps`,`views/blackjack` game-state allowlist | the arch doc states this in prose; this enforces it |
-| 4+ | (grow as the owner / reviews surface more) | … | each new mechanical-consistency rule the review inbox turns up |
+| 4 | **Select-option truncation** | a select-building view that *front-truncates* a collection (`options[:25]`, `roles[:25]`) instead of paginating — Discord caps a select at 25 options, so the slice silently drops the tail (the **#1040** class) | surfaced by #1040 + the previous session's session-idea; allowlist a genuine top-N *display* truncation |
+| 5+ | (grow as the owner / reviews surface more) | … | each new mechanical-consistency rule the review inbox turns up |
 
 ## Build order
 
@@ -54,6 +55,20 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    settings-select / btd6-admin views; the arch-doc prose rule, now mechanical). Tests:
    positive + negative (edits-via-base, path-allowlist, framework-home, no-controls, helper,
    back-button) + allowlist fixtures for each rule.
+   **PR 4 (rule 4, select-option truncation) — SHIPPED 2026-06-18** (same warn-only
+   house pattern). Scopes to `views/` files that construct at least one
+   `discord.SelectOption`; flags a *front* slice `expr[:N]` (lower `None`/`0`, upper
+   integer constant **≤ 25**, no step). **First-run count: 53** — proving the #1040
+   silent-drop is a *widespread* class, not an isolated bug (shared `selectors/`,
+   roles/channels panels, mining market, btd6 browsers, settings enum-editor all
+   truncate select options). Windowed pagination (`x[start:start+N]`, variable bounds)
+   and string-length slices (`label[:100]`, N > 25) are correctly **not** flagged. A
+   small subclass of the 53 are genuine top-N *display* truncations (e.g. a preview
+   `operations[:10]`, an error-message `valid_towers[:8]`) — allowlist those during
+   triage; the rest are real selects to paginate. Tests: positive (front-truncated
+   options) + windowed / string-limit / non-select / cogs-scope / allowlist negatives.
+   *Possible follow-up:* extend rule 4 to `disbot/cogs/` (the SelectOption module-gate
+   keeps leaderboard `[:10]` slices out) if a cog-level select truncation ever surfaces.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.

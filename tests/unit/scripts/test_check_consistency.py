@@ -312,3 +312,95 @@ def test_base_allowlist_suppresses_by_class(mod, tmp_path, monkeypatch):
         },
     }
     assert mod.rule_panel_base_class([tmp_path / "views/picker.py"], cfg) == []
+
+
+# ---------------------------------------------------------------------------
+# Rule 4 — select-option truncation
+# ---------------------------------------------------------------------------
+
+# A select-building view that front-truncates its option source (the #1040 bug).
+_TRUNCATES = """\
+import discord
+
+
+class RolePicker(discord.ui.Select):
+    def __init__(self, roles):
+        options = [discord.SelectOption(label=r.name, value=str(r.id)) for r in roles]
+        super().__init__(options=options[:25])
+"""
+
+# Same view, but it paginates with a windowed page (the correct fix) — clean.
+_WINDOWED = """\
+import discord
+
+
+class RolePicker(discord.ui.Select):
+    def __init__(self, roles, start):
+        options = [discord.SelectOption(label=r.name, value=str(r.id)) for r in roles]
+        super().__init__(options=options[start : start + 25])
+"""
+
+# A string-length slice (Discord's 100-char label limit), N > 25 — not a drop.
+_STRING_LIMIT = """\
+import discord
+
+
+class RolePicker(discord.ui.Select):
+    def __init__(self, role):
+        super().__init__(
+            options=[discord.SelectOption(label=role.name[:100], value="1")],
+        )
+"""
+
+# A non-select view that slices a list for a top-N embed — out of scope (no
+# SelectOption in the module).
+_NON_SELECT = """\
+import discord
+
+
+def build_embed(rows):
+    embed = discord.Embed(title="Top")
+    for row in rows[:10]:
+        embed.add_field(name=row.name, value=str(row.score))
+    return embed
+"""
+
+
+def _trunc_findings(mod, tmp_path, monkeypatch, src, *, rel="views/role_picker.py"):
+    _write(mod, tmp_path, monkeypatch, rel, src)
+    return mod.rule_select_option_truncation([tmp_path / rel], {})
+
+
+def test_trunc_flags_front_slice_in_select_view(mod, tmp_path, monkeypatch):
+    findings = _trunc_findings(mod, tmp_path, monkeypatch, _TRUNCATES)
+    assert len(findings) == 1
+    assert findings[0].rule == "select_option_truncation"
+    assert findings[0].severity == "warning"
+
+
+def test_trunc_windowed_pagination_is_clean(mod, tmp_path, monkeypatch):
+    assert _trunc_findings(mod, tmp_path, monkeypatch, _WINDOWED) == []
+
+
+def test_trunc_string_length_slice_is_clean(mod, tmp_path, monkeypatch):
+    assert _trunc_findings(mod, tmp_path, monkeypatch, _STRING_LIMIT) == []
+
+
+def test_trunc_non_select_view_is_out_of_scope(mod, tmp_path, monkeypatch):
+    assert _trunc_findings(mod, tmp_path, monkeypatch, _NON_SELECT) == []
+
+
+def test_trunc_only_scans_views(mod, tmp_path, monkeypatch):
+    assert _trunc_findings(mod, tmp_path, monkeypatch, _TRUNCATES, rel="cogs/x.py") == []
+
+
+def test_trunc_allowlist_suppresses_by_file_prefix(mod, tmp_path, monkeypatch):
+    _write(mod, tmp_path, monkeypatch, "views/role_picker.py", _TRUNCATES)
+    cfg = {
+        "select_option_truncation": {
+            "exceptions": [
+                {"pattern": "views/role_picker.py", "reason": "intentional top-N display"},
+            ],
+        },
+    }
+    assert mod.rule_select_option_truncation([tmp_path / "views/role_picker.py"], cfg) == []
