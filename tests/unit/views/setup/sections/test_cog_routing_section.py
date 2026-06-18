@@ -81,9 +81,53 @@ def test_operator_visible_cogs_returns_known_cog_names():
     assert "economy" in visible
 
 
-def test_operator_visible_cogs_caps_at_25():
-    visible = cog_routing._operator_visible_cogs()
-    assert len(visible) <= 25
+def test_cog_pick_view_paginates_without_dropping_any_cog():
+    """The picker pages the visible cogs into ≤25-option windows instead of
+    truncating. Regression: when the registry crossed 25 visible subsystems
+    the old ``[:25]`` cap silently dropped ``moderation``/``role``/``settings``/
+    ``xp``/… from the operator's select.
+    """
+    view = cog_routing._CogPickView(
+        SimpleNamespace(id=99),
+        scope_kind="guild",
+        scope_id=None,
+        scope_name="guild",
+    )
+    visible = set(cog_routing._operator_visible_cogs())
+
+    seen: set[str] = set()
+    for page in range(view.page_count):
+        view._page = page
+        view._render()
+        select = next(
+            c for c in view.children if isinstance(c, cog_routing._CogPickSelect)
+        )
+        # Discord rejects a select with more than 25 options.
+        assert len(select.options) <= 25
+        seen.update(o.value for o in select.options)
+
+    # Every operator-visible cog is reachable on some page — nothing truncated.
+    assert visible <= seen
+    assert {"moderation", "role", "settings", "xp"} <= seen
+
+
+def test_cog_pick_view_shows_nav_when_over_one_page():
+    """A multi-page picker exposes Prev/Next nav buttons; a single page does not."""
+    view = cog_routing._CogPickView(
+        SimpleNamespace(id=99),
+        scope_kind="guild",
+        scope_id=None,
+        scope_name="guild",
+    )
+    buttons = [c for c in view.children if isinstance(c, cog_routing._CogPageButton)]
+    if view.page_count > 1:
+        assert len(buttons) == 2
+        # First page: Prev disabled, Next enabled.
+        assert view._page == 0
+        prev_btn = next(b for b in buttons if "Prev" in (b.label or ""))
+        assert prev_btn.disabled is True
+    else:
+        assert buttons == []
 
 
 # ---------------------------------------------------------------------------
