@@ -1,9 +1,9 @@
 # 2026-06-18 — BTD6 "which MK affects <tower>" — class-wide MK + routing
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > Owner-live follow-up to #1035/#1037. Two real misses from new #general screenshots.
 
-**PR:** (this PR) — list class-wide MK + fix the sniper routing miss.
+**PR:** #1038 — list class-wide MK + fix the sniper routing miss.
 **Branch:** `claude/zen-wright-77q0ru` (reset onto main after #1037 merged).
 
 ## What I'm about to do / did
