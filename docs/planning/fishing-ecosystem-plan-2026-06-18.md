@@ -1,6 +1,6 @@
 # Fishing — ecosystem #2 (the second character-platform activity)
 
-> **Status:** `executable-plan` — promoted from idea → plan under the open
+> **Status:** `plan` — promoted from idea → plan under the open
 > idea→plan gate (Q-0172, 2026-06-17). Fishing is the **owner-ratified
 > ecosystem #2** (V-13/Q-0090, the 2026-06-10 teardown verdict). This plan
 > synthesizes the three source threads that named fishing but never gave it a

@@ -416,6 +416,42 @@ through `moderation_service` (no parallel audit path).
 23. **priority**: `P1`.
 24. **recommended_PR_phase**: S10.
 
+### fishing
+
+1. **cog_module**: `disbot/cogs/fishing_cog.py`.
+2. **subsystem**: `fishing`
+3. **current_commands**: `!fish`, `!fishlog`/`!fishdex`, `!fishtop`/`!topfishers`.
+4. **current_command_groups**: none.
+5. **current_command_panel_or_menu**: `none` (hub-less; the open-world Explore
+   panel that folds in `🎣 Fishing` is a later plan slice).
+6. **help_menu_discoverable**: Yes (static overview via `build_help_menu_view`).
+7. **dedicated_panel_command**: `none`.
+8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (static embed).
+9. **existing_SettingSpec_declarations**: none.
+10. **existing_settings_keys**: none.
+11. **existing_BindingSpec_entries**: none.
+12. **existing_ResourceRequirement_entries**: none.
+13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
+    `fishing.catch.fish`, `fishing.collection.view`.
+14. **hardcoded_or_env_only_behavior**: the species catalog (`utils/fishing/fish.py`)
+    and rarity/coin bands are pure code (one table to retune).
+15. **missing_customization_commands**: `!fishing rarity weights set ...`,
+    payout setters (future, once the economy is tuned live).
+16. **missing_settings_pages**: Settings Manager fishing page (future).
+17. **missing_menu_buttons_selects_modals**: rarity-weights list editor,
+    optional `fishing_channel` BindingSelectView (future).
+18. **setting_class_per_value**: payouts → scalar; rarity weights → list;
+    optional fishing_channel → binding.
+19. **target_Settings_Manager_page**: `!settings subsystem fishing` (future).
+20. **target_mutation_path**: `SettingsMutationPipeline` (scalars + list) if
+    payouts/weights are ever made configurable.
+21. **target_help_or_menu_route**: Help direct-nav (static); Settings tab (future).
+22. **provisionable_resources**:
+    `(fishing_channel, CHANNEL, OPTIONAL, fishing-panel, Games, public-text)`
+    (proposed for a later slice — not declared yet).
+23. **priority**: `P2`.
+24. **recommended_PR_phase**: S10.
+
 ### xp
 
 1. **cog_module**: `disbot/cogs/xp_cog.py` (+ `disbot/cogs/xp/` package with
