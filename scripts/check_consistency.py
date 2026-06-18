@@ -591,9 +591,9 @@ def rule_select_option_truncation(files: list[Path], exceptions: dict) -> list[F
                         "front-truncating slice `[:N]` (N≤25) in a select-building "
                         "view silently drops options past Discord's 25-option cap "
                         "(the #1040 class) — paginate with a windowed page "
-                        "`x[start:start+N]` (see `views/setup/sections/cog_routing.py` "
-                        "`_CogPickView`), or allowlist a genuine top-N display in "
-                        "consistency_exceptions.yml"
+                        "`x[start:start+N]` (use the shared "
+                        "`views/paginated_select.py` `PaginatedSelectView`), or "
+                        "allowlist a genuine top-N display in consistency_exceptions.yml"
                     ),
                 ),
             )

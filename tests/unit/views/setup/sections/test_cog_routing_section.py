@@ -20,6 +20,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from services.setup_sections import REGISTRY
+from views.paginated_select import _PageButton, _WindowSelect
 from views.setup.sections import cog_routing
 
 
@@ -87,7 +88,7 @@ def test_cog_pick_view_paginates_without_dropping_any_cog():
     the old ``[:25]`` cap silently dropped ``moderation``/``role``/``settings``/
     ``xp``/… from the operator's select.
     """
-    view = cog_routing._CogPickView(
+    view = cog_routing._build_cog_pick_view(
         SimpleNamespace(id=99),
         scope_kind="guild",
         scope_id=None,
@@ -99,9 +100,7 @@ def test_cog_pick_view_paginates_without_dropping_any_cog():
     for page in range(view.page_count):
         view._page = page
         view._render()
-        select = next(
-            c for c in view.children if isinstance(c, cog_routing._CogPickSelect)
-        )
+        select = next(c for c in view.children if isinstance(c, _WindowSelect))
         # Discord rejects a select with more than 25 options.
         assert len(select.options) <= 25
         seen.update(o.value for o in select.options)
@@ -113,13 +112,13 @@ def test_cog_pick_view_paginates_without_dropping_any_cog():
 
 def test_cog_pick_view_shows_nav_when_over_one_page():
     """A multi-page picker exposes Prev/Next nav buttons; a single page does not."""
-    view = cog_routing._CogPickView(
+    view = cog_routing._build_cog_pick_view(
         SimpleNamespace(id=99),
         scope_kind="guild",
         scope_id=None,
         scope_name="guild",
     )
-    buttons = [c for c in view.children if isinstance(c, cog_routing._CogPageButton)]
+    buttons = [c for c in view.children if isinstance(c, _PageButton)]
     if view.page_count > 1:
         assert len(buttons) == 2
         # First page: Prev disabled, Next enabled.
@@ -276,7 +275,10 @@ async def test_stage_populates_canonical_metadata():
     assert md["risk"] == "medium"  # disabling cogs is more impactful than bindings
     assert "Operator" in md["reason"]
     assert "games" in md["reason"]
-    assert "rollback" in md["rollback_note"].lower() or "re-stage" in md["rollback_note"].lower()
+    assert (
+        "rollback" in md["rollback_note"].lower()
+        or "re-stage" in md["rollback_note"].lower()
+    )
 
 
 @pytest.mark.asyncio
