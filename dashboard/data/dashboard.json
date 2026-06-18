@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T18:51:52Z",
+    "generated_at": "2026-06-18T22:24:55Z",
     "build": {
-      "commit": "b179e937",
-      "subject": "docs: twelfth Q-0107 reconciliation pass (band-#1050)",
-      "committed_at": "2026-06-18T18:37:32Z",
-      "branch": "claude/jolly-johnson-6j0mu9"
+      "commit": "2e0d5b5e",
+      "subject": "Merge pull request #1054 from menno420/claude/funny-franklin-y1p0k4",
+      "committed_at": "2026-06-18T23:29:09Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
@@ -1743,6 +1743,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-18-consistency-linter-selectors-windowing.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — Consistency-linter Lane A1: window the `views/selectors/` API-ripple set",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-18-consistency-linter-rules-2-3.md",
       "date": "2026-06-18",
       "title": "Session — 2026-06-18 · consistency linter PR 2 + PR 3 (back-button + panel base-class rules)",
@@ -2146,14 +2154,6 @@
       "file": "2026-06-16-image-moderation.md",
       "date": "2026-06-16",
       "title": "Session — Image moderation (Q-0108) — the safety-community family's last buildable slice",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-idea-platform-group-decompose.md",
-      "date": "2026-06-16",
-      "title": "Session — capture the diagnostic_cog platform-group decomposition idea",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
