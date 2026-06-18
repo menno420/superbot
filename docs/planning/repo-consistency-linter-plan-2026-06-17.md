@@ -43,7 +43,17 @@ of editing in place, views that should be `BaseView`/`HubView` but aren't.
    confirmed (e.g. `DiagnosticsPanel.refresh_btn` shows "list refreshed" as an ephemeral instead of
    re-rendering the panel). Tests: `tests/unit/scripts/test_check_consistency.py` (positive +
    edits-in-place/guard/non-ephemeral/non-callback negatives + allowlist + live-tree warn-only).
-2. **PR 2 — rule 2 (back button)**, same pattern; **PR 3 — rule 3 (panel base-class)**.
+2. **PR 2 (rule 2, back button) + PR 3 (rule 3, panel base-class) — SHIPPED 2026-06-18**
+   (one session, same warn-only house pattern). **Rule 2** flags a `HubView` panel that
+   declares its own `@ui.button`/`@ui.select` callbacks but whose **module** references no
+   back affordance (`views/navigation.py`'s `attach_back_*` / `chain_back` helpers, or a
+   back-labelled button) — **first-run count: 7** (mostly top-of-stack hub openers, the known
+   external-attach FP; allowlist left empty, warn-only). **Rule 3** flags a class extending
+   `discord.ui.View` **directly** outside the `views/rps`/`views/blackjack` game-state
+   allowlist + the `views/base.py` framework home — **first-run count: 30** (the AI picker /
+   settings-select / btd6-admin views; the arch-doc prose rule, now mechanical). Tests:
+   positive + negative (edits-via-base, path-allowlist, framework-home, no-controls, helper,
+   back-button) + allowlist fixtures for each rule.
 3. **Graduation:** once a rule is quiet on a clean tree, flip it to error and add it to
    `code-quality.yml` (or the pre-pr suite). Keep noisy rules warn-only. Rule 1 stays warn-only until
    the 45 candidates are triaged to real fixes / allowlist entries across a few sessions.
