@@ -6139,3 +6139,282 @@ side — control-API mutation endpoints #993 + OAuth/editors #996 — had alread
 
 **Home:** [`docs/planning/dashboard-vision-finalized-state.md`](../planning/dashboard-vision-finalized-state.md)
 § "Decisions (owner question-panel, 2026-06-16)" · this Q-block.
+
+### Q-0164 — Planning depth: reconciliation plans the *full band* (depth ≥ cadence) + a low-backlog flag (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session (`AskUserQuestion`, 2026-06-17, the first
+> unattended-routine-day review).** The owner observed routines reporting "running out of plans"
+> while the bot/website clearly have lots left to build. Root cause found this session: the
+> reconciliation pass fires every **30** PRs but planned only the next **~9** ("9 PRs" leftover from
+> the old every-10-PR cadence) — so the buildable queue drained ~20 PRs before each refill. The owner
+> chose **"plan the full band + flag when the backlog can't fill it."**
+
+**Decision:** The reconciliation pass plans **enough genuine buildable work to reach the next pass
+(depth ≥ the 30-PR cadence)** — as **larger multi-PR initiatives OR more slices**, whichever keeps
+each a real change; **never pad to 30 with filler**. **If the idea backlog genuinely can't fill the
+band**, that is the *signal*: promote what's honest, then raise a loud `⚠️ PLAN BACKLOG THIN` flag
+(current-state ▶ Next action + the run-report ⚑ Owner-decisions line) so the owner drops ideas or a
+dedicated planning session runs. This is how the owner stops needing to plan: the loop keeps itself
+fed and tells him *early* when it can't.
+
+**Home:** `.claude/CLAUDE.md` (reconciliation bullet) · `docs/operations/autonomous-routines.md`
+(reconciliation prompt PLAN step) · this Q-block. Verified-signal follow-up: a disposable
+`check_plan_backlog.py` ([agent-tooling shortlist](../ideas/agent-tooling-automation-shortlist-2026-06-17.md) §B).
+
+### Q-0165 — Routines self-label their run type in the session log; the dashboard badges it (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session, 2026-06-17.** Owner: *"make the routines list
+> whether they were a routine or not, just with a simple keyword at the end of their session log."*
+
+**Decision:** Every session log's **📤 Run report** carries a **`Run type:`** line
+(`routine · dispatch` / `routine · reconciliation` / `manual`). Both routine prompts set it; a manual
+session writes `manual`. The **dashboard updates feed badges any log whose Run type contains
+`routine`** (`scripts/export_dashboard_data.py` parses it → `/updates`), so the owner sees routine
+work at a glance — which also serves his "use updates to see the work done through the routines" ask
+(Q-0167).
+
+**Home:** `.sessions/README.md` (footer spec) · `hermes-dispatch-bridge.md` + `autonomous-routines.md`
+(both prompts) · `scripts/export_dashboard_data.py` (`_run_type`) · `dashboard/templates/updates.html` ·
+this Q-block. Related: [`routine-activity-visibility-2026-06-14.md`](../ideas/routine-activity-visibility-2026-06-14.md).
+
+### Q-0166 — Spotted docs/ledger drift is fixed on sight, not deferred to the reconciliation failsafe (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session, 2026-06-17.** Owner: multiple sessions noticed
+> "ledger drift" but declined to fix it because "that is the job of the doc reconciliation" — *"that
+> is not a reason to continue leaving the repo in a bad state."*
+
+**Decision:** **Bugs-first applies to docs.** Any session that **sees** real drift (a wrong ledger
+entry, a clearly-missing older merge, a stale pointer) **fixes it on sight**. The every-30-PR
+reconciliation pass is a **failsafe for the comprehensive sweep + planning + next-band prep — not a
+licence to leave drift already spotted**. The one exception is **benign newest-merge lag** (the 1–2
+merges newer than the `Last reconciliation pass: #N` marker, which the next pass records); drift
+*older* than the marker is a bug → fix now. (Pairs with the
+[lag-vs-drift guard idea](../ideas/ledger-guard-benign-lag-vs-drift-2026-06-14.md), which makes the
+`--strict` red unambiguous.)
+
+**Home:** `.claude/CLAUDE.md` ("Bugs first, durably") · `hermes-dispatch-bridge.md` (step 6) ·
+this Q-block.
+
+### Q-0167 — The website's updates feed must auto-refresh (dashboard.json regenerated on merge) (2026-06-17)
+
+> **DECIDED + APPLIED — owner-directed in-session, 2026-06-17.** Owner: the website's bug/idea/update
+> lists are going stale; *"the updates are not actually updating because it's still stuck at one from
+> a few days ago … this should ideally update automatically so I can also use it as a way to see the
+> work done through the routines."*
+
+**Decision (root cause + fix):** the committed `dashboard/data/dashboard.json` only regenerated at
+the every-30-PR reconciliation pass, so the feed lagged ~30 PRs. A new **`dashboard-data-refresh.yml`**
+workflow regenerates it on **every source-touching merge to `main`** (paths-gated + `[skip ci]` so it
+can't loop) and commits it back — the dashboard (a `dashboard/`-only Railway service that can't see
+the source dirs at runtime) then serves a current JSON. Disposable (Q-0105); the reconciliation regen
+stays the cadence backstop.
+
+**Home:** `.github/workflows/dashboard-data-refresh.yml` · `scripts/export_dashboard_data.py` ·
+this Q-block. Generalization: [`generated-artifact-freshness-umbrella-2026-06-17.md`](../ideas/generated-artifact-freshness-umbrella-2026-06-17.md).
+
+### Q-0168 — Hermes output → a shared plain-language house style (approved + rolled out) (2026-06-17)
+
+> **DIRECTED + APPROVED + ROLLED OUT — owner-in-session, 2026-06-17.** Owner: Hermes
+> "doesn't feel like part of the system yet," its output is "hard to read, filled with stuff that is
+> unnecessary or hard to understand," *"the biggest problem right now is the message format"* — wants
+> plain language, better grouping (some jargon fine "as long as I can understand most of it"). He
+> chose **"draft one sample, then roll out."**
+
+**Decision/state:** Root cause = **no shared house style** (each skill defines its output shape
+inline, so reports read differently and internal jargon leaks). A **sample** (the morning briefing,
+before→after, + 5 house-style rules) was drafted, **APPROVED 2026-06-17** (the owner compared it
+against that morning's live briefing — "much cleaner and easy to read with clear sections," no
+changes), then **ROLLED OUT same day**: the 5 rules are now the canonical
+[`hermes-skills/_house-style.md`](../operations/hermes-skills/_house-style.md), and the owner-facing
+output skills (morning-briefing · repo-health · open-questions · idea-spotlight · review-merge) were
+rewritten to cite it (bottom-line-first, plain words, grouped, one screen) + rebuilt
+(`scripts/hermes/build_skills.py`). **Owner manual step:** redeploy on the VPS
+(`bash scripts/hermes/install-skills.sh`).
+
+**Home:** [`hermes-skills/_house-style.md`](../operations/hermes-skills/_house-style.md) ·
+`docs/operations/hermes-skills/*.md` · this Q-block.
+
+### Q-0169 — Owner review inbox / communication website: capture-only now; dashboard board, issue-backed (2026-06-17)
+
+> **DECIDED (capture-only) — owner-in-session (`AskUserQuestion`, 2026-06-17).** Owner wants a channel
+> to **post ideas/cog-command reviews** that sessions read and act on, with a visible "is it fixed?"
+> status — *"probably a very high-leverage thing"* for reviewability + owner↔agent communication.
+> Eventually two sites (product + communication); near-term **integrate into the existing dashboard**.
+> He chose **"capture as idea + plan only"** (don't build this session).
+
+**Decision:** Captured as an idea + an executable plan. **Shape:** a dashboard **"Review board"**
+backed by the existing labeled-issue / committed-markdown rail (a review = an OPEN item sessions read
+like the bug book; resolved = closed/`RESOLVED (#PR)`). Phase 1 is read-only + zero owner setup;
+Phase 2 (post-from-dashboard) shares the owner-paced control-API/OAuth write side; Phase 3 = public
+submissions + the eventual standalone site. Also feeds the plan backlog (Q-0164).
+
+**Home:** [`owner-review-inbox-2026-06-17.md`](../ideas/owner-review-inbox-2026-06-17.md) +
+[`owner-review-inbox-plan-2026-06-17.md`](../planning/owner-review-inbox-plan-2026-06-17.md) ·
+this Q-block. Related: Q-0159 (multi-user control panel) · the developer-dashboard idea.
+
+### Q-0170 — Agent tooling: dedicated Claude skills + a UX-consistency linter + a repo-native discovery aid (2026-06-17)
+
+> **DIRECTED (capture + flagship lane) — owner-in-session, 2026-06-17 (+ two follow-up messages).**
+> Owner: we made Hermes skills but "never actually made skills for claude … a lot more is possible
+> than we currently use … because I've never explicitly asked." Plus two concrete script asks:
+> (a) *"something like CI but specifically to find inconsistencies"* — panels missing a back button,
+> cogs not following the arch rules, cogs sending ephemeral follow-ups instead of editing in place;
+> (b) *"something like codegraph or grimp but specifically built for our needs"* to help agents find
+> files/information.
+
+**Decision:** Captured as a **shortlist** an owner picks from — we *do* have `/pre-pr`,
+`/session-close`, `/architecture-review`; candidate new skills (`/route-idea`, `/cog-review`,
+`/plan-band`, `/fix-drift`) and scripts are listed. **The UX-consistency linter is the flagship
+buildable lane** (its own idea + plan — one rule per PR, real backlog-feeding work for Q-0164). The
+repo-native discovery aid is captured with a do-not-duplicate gate (must complement `context_map.py` /
+`wiring_map.py` / CodeGraph / Grimp, not re-do them) and a prototype-against-real-questions check.
+
+**Home:** [`agent-tooling-automation-shortlist-2026-06-17.md`](../ideas/agent-tooling-automation-shortlist-2026-06-17.md) ·
+[`repo-consistency-linter-2026-06-17.md`](../ideas/repo-consistency-linter-2026-06-17.md) +
+[its plan](../planning/repo-consistency-linter-plan-2026-06-17.md) · this Q-block.
+
+### Q-0171 — Codex automated PR review: research the mechanism, then decide augment-vs-replace + merge authority (2026-06-17)
+
+> **NOW LIVE — owner enabled it in-session, 2026-06-17** (mentioned: *"a function on ChatGPT that lets
+> codex automatically review any PRs"*). The Codex GitHub connector is on and already auto-reacting on
+> PRs (validated on **#1026** — a 👍 from `chatgpt-codex-connector[bot]`).
+
+**Decision/state:** **LIVE** — it adds a **second, different-model reviewer** (serves the
+anti-monoculture principle behind `needs-hermes-review`, Q-0117). **Observed:** a bare 👍 *reaction*
+isn't readable via `get_reviews`/`get_comments` (separate API) — but a substantive Codex *review /
+review comment* IS, and the **PR-activity subscription delivers Codex review comments into a watching
+session**, so the loop can consume + fix what Codex flags. **Next (no longer "does it exist"):** (1)
+check the connector for a "post a full review comment every time" mode (not just react) so its reasoning
+is visible to the loop; (2) the **augment-vs-replace + who-holds-merge-authority** question still stands
+for the owner (the Q-0082 spend cap + the morning-briefing rate-limit lesson apply).
+
+**Home:** [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) ·
+this Q-block. Related: Q-0117 (Hermes review-merge gate).
+
+### Q-0172 — Open the idea→plan gate: ideas may become plans/builds anytime without approval, flagged for review (2026-06-17)
+
+> **DIRECTED + APPLIED in-session (owner directive, 2026-06-17):** *"we can fix the plan shortage by
+> simply removing the 'idea gate' … ideas can just be turned into a plan at any time without my approval,
+> but it should be stated in the session log, so hermes or another chat, or me personally in the website,
+> can easily see, filter and review those implementations."* Applied directly per the CLAUDE.md
+> in-session-directive exception (Q-0106) — the owner is the live reviewer.
+
+**Context:** The owner observed the plan backlog running thin (the Q-0164 case). Root cause wasn't only
+the cadence — it was that genuine ideas (canonical example: **fishing**, the owner-ratified ecosystem-#2
+verdict) never got promoted to plans, because the old rule ("a new idea is not a new priority" + the
+Q-0114 phase gate) kept self-originated work parked behind owner approval. Mining, by contrast, is
+*built* with only owner-gated slices left — so the shortage is specifically "ideas that never became
+plans," exactly what this opens.
+
+**Decision:** The **approval gate on idea→plan→implementation is removed.** Any agent may promote an idea
+to a `docs/planning/` plan and build/ship it **at any time without owner pre-approval** — the work is
+reversible, and *ideas exist to be built*. Preserved: (1) the **focus discipline** (a mid-stream idea
+doesn't derail the *current* task — capture, finish, then promote); (2) the **classify-into-`docs/ideas/`-first**
+habit (keeps the backlog reviewable/filterable); (3) the **safety brakes** (irreversible / external /
+production stays ask-first — a *safety* brake, not the idea gate); (4) the **merge gates** (small
+self-merges on green; SUBSTANTIAL → `needs-hermes-review`). The phase gate (`check_phase_gate.py`) is
+demoted to **advisory-only** — a "bugs-first season" priority readout, never a block (this retires the
+Q-0114 approve/deny gate for self-invented features).
+
+**The one requirement — accountability:** every self-initiated promotion is flagged on the new
+**`⚑ Self-initiated:`** line of the session-log run report (`.sessions/README.md`); the **dashboard
+updates feed badges it** (`scripts/export_dashboard_data.py` → `/updates`) so Hermes, another chat, or
+the owner on the website can see, filter, and review unprompted work.
+
+**Surfaces changed:** `.claude/CLAUDE.md` (the idea bullet) · `scripts/check_phase_gate.py` (advisory
+banner) · the dispatch routine prompt + skills (`hermes-dispatch-bridge.md`, `hermes-skills/dispatch.md`,
+`scripts/hermes/skills/dispatch/SKILL.md`) · `docs/operations/autonomous-routines.md` ·
+`hermes-control-plane.md` · `hermes-terminal-cheatsheet.md` · `hermes-skills/README.md` ·
+`.sessions/README.md` (the ⚑ line) · `export_dashboard_data.py` + `dashboard/templates/updates.html`
+(parse + badge).
+
+**Home:** this Q-block · `.claude/CLAUDE.md` Working agreement. Related: Q-0114 (the retired phase gate),
+Q-0164 (PLAN BACKLOG THIN flag), Q-0165 (Run type line — the ⚑ Self-initiated line is its sibling),
+Q-0106 (in-session-directive exception).
+
+### Q-0173 — Mining grid world: seed-deterministic (option #1), not literal Minecraft terrain (2026-06-17)
+
+> **DIRECTED — owner-in-session, 2026-06-17:** asked *"is it possible to fetch a seed directly from
+> Minecraft and use that as our actual grid?"* After a feasibility breakdown (no API fetches terrain; a
+> seed is just a number; the spectrum = seed-as-RNG / Cubiomes biome-replication / full-block-gen), the
+> owner picked **#1: "probably the best option."**
+
+**Decision:** The grid Mine (mining-hub-redesign PR3) world model is a **seed-deterministic procedural
+grid we generate ourselves** — any number ("seed") feeds our own generator, so `seed 12345` produces
+the same world for everyone (deterministic · **shareable** · effectively infinite). This resolves the
+plan's open "fixed vs procedural/infinite" question → **procedural, seed-deterministic.** It is *not*
+literal Minecraft terrain: that would need either a reverse-engineered gen library (Cubiomes — biomes
++ structures only, a real C dependency; the *later* upgrade path if true Minecraft-shaped worlds are
+wanted) or running an actual Minecraft generator (Java server + region files — too heavy for Railway,
+rejected). Licensing stays clean — a seed is just a number; we ship no Minecraft code or assets.
+
+**Still open (owner deciding — do NOT resolve unprompted):** one shared grid vs. per-depth-level · do
+moves cost a turn / trigger encounters · how cell yields map to the existing depth bands
+(`utils/mining/world.py`, currently 1-D). These are the remaining grid-Mine design questions.
+
+**Home:** [`planning/mining-hub-redesign-2026-06-15.md`](../planning/mining-hub-redesign-2026-06-15.md)
+§ "Mine — 3D grid navigator" · this Q-block. Related: Q-0172 (fishing/open-world is the sibling Explore lane).
+
+### Q-0174 — Codex review integration: routines fix flagged-real issues first; Hermes scans PRs (issue-only) (2026-06-17)
+
+> **DIRECTED — owner-in-session, 2026-06-17:** *"make sure the routines all check the previous PRs for
+> any of codex's comments, the first priority of any routine should be to fix anything codex flagged,
+> but not blindly… hermes on a 6H timer to check PRs and open an issue if necessary… before we do this
+> we should define what a real bug is… for now until hermes has been proven… it just opens an issue and
+> only dispatches on command."*
+
+**Context:** Codex (Q-0171) is live and **catching real drift** — verified this session it flagged the
+stale `/session-close` cadence, a roadmap "~9 PRs" line, and a mis-named session-card heading
+(`Previous-slice` vs the checker-required `Previous-session`) — all real, all fixed. (The owner is
+amazed a *code* reviewer spotted *docs* drift — evidence the repo is genuinely navigable.) But Codex
+also produces **born-red false positives** (it reviews the card-first commit before the code lands) and
+can run "make changes" tasks, so the loop needs a bar + a budget-aware consumer.
+
+**Decision (plan: `planning/codex-review-integration-plan-2026-06-17.md`):**
+1. **Routines check Codex first** — every routine's first priority: scan recent PRs for unresolved
+   Codex/bot flags, **verify against source**, fix the real ones first; never blindly (Q-0120).
+2. **The "real bug" bar** — verified-against-current-source · a genuine defect/contradiction (correctness
+   · arch/ownership · docs-vs-code drift · security) · not a nitpick. Explicitly rejects the born-red
+   timing class.
+3. **Hermes 6H PR-check (spec; issue-only)** — a new `superbot-pr-check` skill (6H) opens a GitHub issue
+   per real bug; **does NOT auto-dispatch** — dispatch only on command until Hermes is a proven
+   dispatcher. **Why:** only ~15 routine fires/day (~12 dispatch, ~1–2 reconciliation) — too scarce to
+   spend on false positives. Auto-dispatch is a later, separate owner decision.
+
+**RESOLVED (owner, 2026-06-17/18):** the comment-only-vs-auto-PR question is **moot — Codex is
+structurally comment-only.** It cannot push a branch or open a PR autonomously (a human must press
+"create PR" in the Codex UI); its "make changes" output is a *comment* describing a sandbox diff, never
+a repo change. **Decision: trial it as-is** (auto-review on). The only safeguard needed: **agents read
+Codex's proposed edits in its *comment*, not in a phantom branch/PR** (plan Part A § "Where Codex's edits
+live"). Still open — the `@codex review`-on-**final-head** tweak (codex idea doc) to land its *code*
+reviews on the complete diff, not the born-red opener.
+
+**Home:** [`planning/codex-review-integration-plan-2026-06-17.md`](../planning/codex-review-integration-plan-2026-06-17.md)
+· [`codex-automated-pr-review-2026-06-17.md`](../ideas/codex-automated-pr-review-2026-06-17.md) · this
+Q-block. Related: Q-0171 (Codex live), Q-0120 (verify bot output vs source), Q-0117 (Hermes review-merge gate).
+
+### Q-0175 — Fishing v1 + the boat / open-world expansion (the unified-character world) (2026-06-18)
+
+> **DIRECTED (design brain-dump) — owner-in-session, 2026-06-18:** the fishing / open-world vision,
+> captured *"before I forget… this should give the planners something to do."* The owner is the designer;
+> the plan captures his intent faithfully — build against his answers to the open questions.
+
+**Decision (Phase 1 — buildable):**
+- **Fishing v1:** **21 fish ranked by size**, **7 levels, 3 fish/level** — the starting rod/character
+  catches the 3 smallest; each level unlocks +3 bigger fish (`3 × 7 = 21`). Scales later; leveling reuses
+  the existing tier / `game_xp` systems.
+- **Unified character + swappable gear types:** one character; **named loadout presets per activity type**
+  (mining/fishing/exploration/…), each a deterministic saved slot ("put on fishing gear" swaps to it).
+  **Gear is never required** — any activity works with any gear; matching gear only **increases bonuses**.
+
+**Captured for LATER (Phase 2+, not now):** the **boat** as a second home base (stores rods; also for
+exploration); **bounded boat travel** (short timer, locked-in — can fish, not land things, can't leave
+till arrival); **real destinations** updating **coordinates + biome** (ties the seed-grid world Q-0173),
+each with a **specialty** + bonuses, **some** location-locked eventually.
+
+**Open (owner deciding — do NOT resolve unprompted):** the catch mechanic · leveling shape (rod-tier vs
+fishing-skill) · loadout-preset UI · fish value/use (sell/cook) · boat "stuff" while traveling.
+
+**Home:** [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](../planning/fishing-open-world-expansion-plan-2026-06-18.md)
+· this Q-block. Related: Q-0172 (fishing = the canonical self-build), Q-0173 (the seed-grid world the boat
+travels), the V-13/V-14 ecosystem vision.

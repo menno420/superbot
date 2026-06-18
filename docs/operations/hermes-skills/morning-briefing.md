@@ -38,24 +38,45 @@ C) PRS + CI + OVERNIGHT (one block):
 D) DECISIONS WAITING ON THE OWNER (one grep — do not scan further):
    grep -niE "awaiting (maintainer|owner)|status:\s*open|owner-gated|needs (owner|maintainer)" docs/owner/maintainer-question-router.md | head -15
 
-DELIVER in this shape — flag any needs-hermes-review PR, any CI failure (by branch), list the merged
-claude/* PRs (or "loop quiet overnight"), and the few decisions that truly need HIM:
+COMPOSE in the HOUSE STYLE (docs/operations/hermes-skills/_house-style.md — 5 rules: bottom-line
+first · fixed section order · plain words, translate jargon · group don't list · short, one screen).
+Translate internal jargon for the owner: "needs-hermes-review" -> "parked for a human to review and
+merge"; a red check -> "the automatic checks failed / are still running"; a "claude/* PR" -> just the
+change + its #number. Collapse the numbers ("5 changes merged, all passed their checks") and call out
+only the few that need attention.
+
+DELIVER in this shape (plain language, scannable on a phone):
 
 ---
-## ☀️ SuperBot morning briefing — [date]
-- **Health:** ✅/⚠️/❌ [docs + arch, a few words]
-- **Open PRs:** [count] — [needs-hermes-review / stale flags, or "none"]
-- **CI:** [recent pass/fail summary]
-- **Overnight:** [merged claude/* PRs, or "loop quiet"]
-- **⚑ Waiting on you:** [decisions only the owner can make, or "nothing"]
-- **💡 Idea of the day** is posted separately (superbot-idea-spotlight).
-### Verdict
-[one sentence — is today clear to work in, or does something need you first?]
+☀️ Morning briefing — [Day DD Mon]
+
+Bottom line: [one plain sentence — "All clear, nothing needs you before you start" OR the one thing
+that does].
+
+🩺 State of things
+   Health: [good / the problem in plain words] (docs + structure checks [pass/fail]).
+   [The bot's running normally / the one health issue.]
+
+🛠️ What got done overnight ([N] changes merged, [all passed their checks / N need attention])
+   • [each merged change in plain language — what it MEANS for the bot, not the raw PR title]
+   (Full list on the Updates page.)
+   [or, if nothing merged: "Quiet overnight — no changes landed."]
+
+⏳ Waiting on a human (not blocking you)
+   • [each parked-for-review PR in plain words + its #number — omit this whole section if none]
+
+👉 Needs YOU
+   [the few decisions only the owner can make, in plain words — or "Nothing today."]
+
+💡 Today's idea is in the next message (superbot-idea-spotlight).
 ---
 
 RULES:
 - Four commands, then compose — minimize round-trips (the provider rate-limits).
+- Bottom line first: the owner gets the gist from the first sentence without reading on.
+- Plain words: translate every internal token; keep only #numbers and ✅/⚠️/❌.
 - Verify, don't assume — every line comes from the output above; say "gh unavailable" + ⚠️ if so.
+- Short: one screen on a phone. Any depth goes under a "Details" line at the very bottom.
 - No actions (no merges, no dispatch) — the briefing is a hint; a dedicated skill acts.
 ```
 

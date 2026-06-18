@@ -20,6 +20,43 @@ during grooming** (it stays listed here, annotated ✅) so the active backlog re
 
 Current broad captures:
 
+- [`repo-consistency-linter-2026-06-17.md`](./repo-consistency-linter-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0170):** *"something like CI but specifically to find
+  inconsistencies"* — panels missing a back button, cogs not following the arch rules, cogs sending
+  ephemeral follow-ups instead of editing in place. A new `scripts/check_consistency.py` (stdlib AST,
+  the `check_architecture.py` house style) with a per-rule allowlist + warn-first graduation. **The
+  flagship buildable lane** (one rule per PR = a real slice, feeds Q-0164). Executable plan:
+  [`repo-consistency-linter-plan-2026-06-17.md`](../planning/repo-consistency-linter-plan-2026-06-17.md).
+  → relates `scripts/check_architecture.py` · `disbot/views/` · `disbot/cogs/`.
+- [`owner-review-inbox-2026-06-17.md`](./owner-review-inbox-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0169, capture-only):** a channel to **post ideas/cog-command
+  reviews** that sessions read and act on, with a visible open→resolved status (the owner forgets
+  cog-review notes mid-session and has no "is it fixed?" view). Near-term = a dashboard "Review board"
+  backed by labeled issues / a committed markdown inbox; eventual = a standalone communication site.
+  Executable plan: [`owner-review-inbox-plan-2026-06-17.md`](../planning/owner-review-inbox-plan-2026-06-17.md).
+  → relates `dashboard/` · the bug book · Q-0159.
+- [`agent-tooling-automation-shortlist-2026-06-17.md`](./agent-tooling-automation-shortlist-2026-06-17.md) —
+  **owner-directed (2026-06-17, Q-0170):** a shortlist to pick from for **dedicated Claude Code
+  skills** (`/route-idea`, `/cog-review`, `/plan-band`, `/fix-drift`) + **automation scripts**
+  (`check_plan_backlog.py` for the Q-0164 flag) + a **repo-native discovery aid** (CodeGraph/Grimp
+  but domain-semantic — must complement `context_map.py`/`wiring_map.py`, not re-do them). Builds on
+  the plugins-evaluation idea. → relates `scripts/` · the existing `/pre-pr`,`/session-close` skills.
+- [`codex-automated-pr-review-2026-06-17.md`](./codex-automated-pr-review-2026-06-17.md) —
+  **owner-mentioned (2026-06-17, Q-0171, research-stage):** wire Codex (OpenAI) to auto-review PRs —
+  a second, different-model reviewer (the anti-monoculture principle behind `needs-hermes-review`).
+  Research the exact mechanism + cost/auth, then put augment-vs-replace + merge-authority to the
+  owner. No build until the mechanism + spend envelope are confirmed. → relates Q-0117 (Hermes review).
+- [`generated-artifact-freshness-umbrella-2026-06-17.md`](./generated-artifact-freshness-umbrella-2026-06-17.md) —
+  **session idea (2026-06-17, Q-0089, from the dashboard.json structural-drift reporter #1025):** the
+  warn-only structural-drift reporter just built for `dashboard.json` applies to *every* committed
+  generated artifact (`env-vars.md`, the agent-context packs, …), each guarded in isolation today. One
+  small `check_generated_artifacts_fresh.py` umbrella — a registry of `(generator, committed_path,
+  structural-key extractor)` tuples emitting soft "N surfaces behind" warnings — generalizes the
+  manifest-spine "AST is drift-detection" philosophy so no future artifact silently rots.
+  **IMPLEMENTED #1027** (2026-06-17) as `scripts/check_generated_artifacts_fresh.py` — built as Q-0105
+  dev tooling (read-only/warn-only/disposable, not a bot feature so the FIX-phase gate is N/A); kept
+  manual/ad-hoc (not hard-CI-wired) with `--strict` for the reconciliation cadence pass. → relates
+  `scripts/` tooling · the reconciliation cadence pass.
 - [`routine-permission-surface-lint-2026-06-16.md`](./routine-permission-surface-lint-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the band-#990 reconciliation pass):** the routine stalled
   twice on a `permissions.ask` `rm` prompt (fixed reactively as Q-0161). A stdlib
@@ -161,13 +198,25 @@ Current broad captures:
   known sibling gap — `SUBSYSTEMS.entry_points` → real command, which `test_entrypoints.py` documents
   as unchecked. One "what commands exist" source for every "this declaration must resolve" invariant.
   → relates `tests/unit/registry/test_entrypoints.py` · `utils/subsystem_registry.py` · `utils/synonyms.py`.
+- [`ledger-bookkeeping-tally-soft-lint-2026-06-17.md`](./ledger-bookkeeping-tally-soft-lint-2026-06-17.md) —
+  **workflow / tooling (2026-06-17, band-#1020 Q-0107 pass):** the `current-state.md` "Older merges →
+  archive" pointer had accreted a ~2,000-word per-session running tally that duplicated the archive
+  file's own record — pruned this pass. A disposable soft `check_docs` lint could flag a
+  pointer/bookkeeping line that crosses a word budget ("this is a running tally — point at the
+  authoritative record instead"). The reusable principle: *don't hand-maintain a tally of a fact that
+  already has an authoritative record.* → relates `scripts/check_docs.py` · `docs/current-state.md`.
 - [`server-owner-configurable-moderation-dms-2026-06-16.md`](./server-owner-configurable-moderation-dms-2026-06-16.md) —
   **owner policy → feature (2026-06-16, from the Q-0147 decision):** the owner's standing DM rule is
   *profile/onboarding DMs are opt-in and never on join; the only non-opt-in DMs are moderation/warning
   DMs, and only when the server owner enables them with per-action config.* The opt-in half is
-  myprofile PR C; this captures the second half — a `moderation_dm_enabled` master + per-action map
+  myprofile PR C; this captures the second half — a master toggle + per-action map
   (warn/timeout/kick/…) on the `!settings` → Moderation surface, riding the audited `moderation_service`
   seam (off by default, fail-open). → relates `services/moderation_service.py` · the settings surface.
+  **✅ PROMOTED TO A PLAN (2026-06-17, band-#1020 Q-0107 pass, Q-0144 idea→plan):**
+  [`planning/moderation-dm-config-plan-2026-06-17.md`](../planning/moderation-dm-config-plan-2026-06-17.md)
+  — scouting the seam found the DM machinery already exists (`_notify_target` + `ModerationPolicy.dm_on_action`
+  + `render_dm_message`), so the plan *extends* it (master `dm_on_action` + a `dm_actions` csv mirroring
+  `public_log_actions`), not a new subsystem. Turn-key, one PR, no migration. **This is the next ungated ▶ slice.**
 - [`close-timeout-align-with-platform-grace-2026-06-16.md`](./close-timeout-align-with-platform-grace-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the runtime-lock deploy-downtime fix PR #948):** make
   `LIFECYCLE_CLOSE_TIMEOUT_SECONDS` env-configurable (mirror the `RUNTIME_LOCK_BOOT_*` knobs) so an

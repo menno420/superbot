@@ -97,8 +97,16 @@ _SHOULD_FIRE: tuple[tuple[str, str], ...] = (
         "deterministic_hero_ability_roster_reply",
     ),
     (
+        "what abilities does the ascended shadow paragon have",
+        "deterministic_paragon_ability_roster_reply",
+    ),
+    (
         "which bosses are immune to fire",
         "deterministic_boss_immunity_reply",
+    ),
+    (
+        "which boss has the most health at tier 5",
+        "deterministic_boss_hp_comparison_reply",
     ),
 )
 

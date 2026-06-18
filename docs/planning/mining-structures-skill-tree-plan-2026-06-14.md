@@ -117,8 +117,10 @@ Vault"; mining is **never** blocked). The vault gets an **upgradeable capacity**
 (`mining_workflow.vault_upgrade`, migration 072 `vault_level` on `mining_player_state`). All
 **additive** (level 0 = the v1 base; nothing blocks deposits/withdrawals). Owner directive honored:
 warn at cap, no hard cap. Tests: `tests/unit/utils/test_mining_capacity.py` + vault-upgrade
-contract pins in `tests/unit/cogs/test_mining_vault.py`. **Follow-up (future slice, owner-gated):**
-hard enforcement (block a mine/deposit at cap) if the owner ever approves it.
+contract pins in `tests/unit/cogs/test_mining_vault.py`. **Follow-up — DECLINED by the owner
+(2026-06-17):** hard enforcement (block a mine/deposit at cap) was offered and the owner chose to
+**keep the soft / warning-only cap** ("just keep a warning for now") — it fits the Q-0087
+"never mandatory-feeling" rule. No hard-cap slice will be built; reopen only if the owner asks.
 
 Turns the shipped Vault from a convenience into a **real sink** (the §7.5 intent: *"inventory cap +
 safe stash"*). The active pack gets a **soft cap**; the vault is uncapped-but-built.

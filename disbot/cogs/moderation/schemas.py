@@ -20,6 +20,7 @@ from core.runtime.subsystem_schema import (
 )
 from services.moderation_config import (
     DEFAULT_BAN_DELETE_MESSAGE_DAYS,
+    DEFAULT_DM_ACTIONS,
     DEFAULT_DM_ON_ACTION,
     DEFAULT_DM_TEMPLATE,
     DEFAULT_MAX_TIMEOUT_MINUTES,
@@ -31,6 +32,7 @@ from services.moderation_config import (
     DEFAULT_WARN_ESCALATION_ACTION,
     DEFAULT_WARN_THRESHOLD,
     DEFAULT_WARN_TIMEOUT_MINUTES,
+    DM_NOTIFY_ACTIONS,
     MAX_BAN_DELETE_MESSAGE_DAYS,
     MAX_POST_ACTION_CLEANUP_LIMIT,
     MAX_TIMEOUT_MINUTES,
@@ -43,6 +45,7 @@ from services.moderation_config import (
 )
 from utils.settings_keys import (
     MOD_BAN_DELETE_MESSAGE_DAYS,
+    MOD_DM_ACTIONS,
     MOD_DM_ON_ACTION,
     MOD_DM_TEMPLATE,
     MOD_MAX_TIMEOUT_MINUTES,
@@ -125,6 +128,26 @@ def _validate_post_action_cleanup_limit(value: object) -> None:
         raise ValueError(
             "post_action_cleanup_limit must be between "
             f"{MIN_POST_ACTION_CLEANUP_LIMIT} and {MAX_POST_ACTION_CLEANUP_LIMIT}",
+        )
+
+
+def _validate_dm_actions(value: object) -> None:
+    """Accept a comma-separated subset of the notify-eligible actions.
+
+    Empty (no action DMs) is allowed; every non-empty token must be one of
+    :data:`DM_NOTIFY_ACTIONS` (warn / timeout / kick / ban).  An unknown token
+    is rejected rather than silently dropped here, so the operator gets a clear
+    error at edit time (the runtime ``parse_dm_actions`` stays fail-safe).
+    """
+    if not isinstance(value, str):
+        raise ValueError(f"expected str, got {type(value).__name__}")
+    known = set(DM_NOTIFY_ACTIONS)
+    tokens = [t.strip().lower() for t in value.split(",") if t.strip()]
+    unknown = [t for t in tokens if t not in known]
+    if unknown:
+        raise ValueError(
+            "dm_actions must be a comma-separated subset of "
+            f"{', '.join(DM_NOTIFY_ACTIONS)}; unknown: {', '.join(unknown)}",
         )
 
 
@@ -211,11 +234,27 @@ MODERATION_SETTINGS: tuple[SettingSpec, ...] = (
         settings_key=MOD_DM_ON_ACTION,
         capability_required=_MODERATION_CAPABILITY,
         hint=(
-            "DM the affected member a notice when they are warned, timed "
-            "out, kicked, or banned.  Best-effort — silently skipped when "
-            "the member has DMs closed."
+            "Master switch for notifying members by DM.  When on, the actions "
+            "listed in 'dm_actions' DM the affected member a notice (the action "
+            "+ reason) — when off, no moderation DM is ever sent.  Best-effort: "
+            "silently skipped when the member has DMs closed."
         ),
         validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="dm_actions",
+        value_type=str,
+        default=DEFAULT_DM_ACTIONS,
+        settings_key=MOD_DM_ACTIONS,
+        capability_required=_MODERATION_CAPABILITY,
+        hint=(
+            "Which actions DM the affected member when 'dm_on_action' is on: a "
+            "comma-separated subset of warn, timeout, kick, ban (default all "
+            "four).  Narrow it to suppress specific DMs — e.g. 'warn,timeout' "
+            "to notify on warnings but not on a kick or ban.  Has no effect "
+            "while the 'dm_on_action' master switch is off."
+        ),
+        validator=_validate_dm_actions,
     ),
     SettingSpec(
         name="dm_template",
@@ -405,7 +444,10 @@ MODERATION_CONFIG_SCHEMA = SubsystemSchema(
     # operator-opt-in public moderation log, delivered by services.server_logging).
     # v6 — PR10 final slice added moderator_role / trusted_role (capability-native
     # authority — a configured role grants the moderator / trusted tier; ADR-008).
-    version=6,
+    # v7 — Q-0147 added dm_actions (per-action DM allow-list gating the existing
+    # dm_on_action master switch; default = all four notify-eligible actions, so
+    # the master switch keeps today's behaviour and an owner narrows it).
+    version=7,
 )
 
 

@@ -25,6 +25,9 @@ living ledger (`docs/current-state.md`).
 
 ## Active claims
 
+- `claude/magical-rubin-jnpnuw` · **dashboard.json structural-drift reporter** + freshness catch-up
+  (executes the #1020 💡 idea + finding) · `scripts/check_dashboard_data.py` ·
+  `dashboard/data/dashboard.json` · tests · 2026-06-17 · **auto-merge on green**
 - `claude/tender-noether-h5lpp1` · **night work queue** (owner directive) — seed a grounded queue of
   read-only deterministic BTD6 floor builders (AI §7.5/§7.6 lane) for the scheduled dispatch fires +
   repoint `current-state.md` ▶ Next action · `docs/planning/night-queue-2026-06-16.md` ·
@@ -79,6 +82,7 @@ living ledger (`docs/current-state.md`).
 > Trimmed 2026-06-16 (Q-0152): stale claims whose PRs merged are dropped — the durable record is the
 > PR + the `current-state.md` ledger. Keep this to the most recent handful, newest-first.
 
+- `claude/reconcile-1021-docs` · band-#1020 Q-0107 docs reconciliation (issue #1021) — ledger fix + trim · control-plane tick · moderation-DM idea→plan · next-band plan · 2026-06-17 · **docs-only, self-merge on green**
 - `claude/gifted-noether-37tiwr` · BUG-0015 — "d67 dart paragon" misread as "0-6-7": parse + route + ground a paragon degree (1-100) · 2026-06-16 · **PR #963 (auto-merge on green)**
 - `claude/magical-rubin-u3arq6` · AI §7.5 paragon base-cost comparison floor (last unbuilt comparison member) · 2026-06-16 · **PR #962 (auto-merge on green)**
 - `claude/hopeful-meitner-772pv8` · thin architecture atlas (PR 2, Q-0151a) — `scripts/atlas.py` composer + `role` in `context_map.py` + companion doc + tests · 2026-06-16 · **PR #960 (auto-merge on green)**
@@ -95,5 +99,13 @@ living ledger (`docs/current-state.md`).
   last buildable slice (OpenAI omni-moderation, off by default, fail-open) ·
   `services/image_moderation_*` + `core/runtime/ai/providers/openai_moderation.py` +
   `cogs/image_moderation/` · 2026-06-16 · **PR #941 (open, needs-hermes-review)**
+- `claude/zen-wright-77q0ru` · BTD6 AI answer fixes (owner live-test screenshots) — MK tab-wide scope
+  wording · how-many-bloons refusal · ABR/standard RBE labeling · income-range identity ·
+  `btd6_context_service` / `btd6_data_service` / `ai_tools` · 2026-06-18 · **PR #1035 (merged)**
+- `claude/zen-wright-77q0ru` · BTD6 `round_cash` identity ABR fix (Codex P2 on #1035) — gate identity
+  to reconciling ranges · `btd6_data_service` · 2026-06-18 · **PR #1037 (merged)**
+- `claude/zen-wright-77q0ru` · BTD6 "which MK affects <tower>" — list class-wide MK + fix sniper
+  routing miss · `btd6_data_service` / `btd6_context_service` / `ai_task_router` · 2026-06-18 ·
+  **PR (this session)**
 
 _(move claims here with their PR # as they close, then prune older entries)_

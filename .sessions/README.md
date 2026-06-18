@@ -61,10 +61,26 @@ blocks up across the day, so the two ⚑ lines are **required** — write `none`
 
 - **Did:** <one line — what this run shipped> · **Outcome:** shipped / blocked / partial
 - **Shipped:** #PR — one line each (or "no PR — <why>")
+- **Run type:** `routine · dispatch` / `routine · reconciliation` / `manual` (Q-0165)
 - **⚑ Owner decisions needed:** <Q-#### + one line, or `none`>
 - **⚑ Owner manual steps:** <a thing only the owner can do, or `none`>
+- **⚑ Self-initiated:** <idea promoted to a plan/build with no dispatch or owner ask — name + link, or `none`> (Q-0172)
 - **↪ Next:** <the sharpened current-state ▶ Next action>
 ```
+
+The **`Run type`** line (Q-0165, 2026-06-17) lets the owner tell routine work from his own at a
+glance — the **dashboard updates feed badges any log whose Run type contains `routine`**
+(`scripts/export_dashboard_data.py` → `/updates`). A routine (dispatch / reconciliation) sets it
+from its prompt; a manual session writes `manual`.
+
+The **`⚑ Self-initiated`** line (Q-0172, 2026-06-17) is the accountability half of the **open
+idea→plan gate**: the maintainer removed the approval gate so any agent may promote an idea → a
+`docs/planning/` plan → an implementation **without asking first** — provided it is *flagged here*.
+List any idea built/planned **without a dispatched order or an owner request** (name + `docs/ideas/`
+or `docs/planning/` link); write `none` when the run only did dispatched / requested / bug / docs
+work. The **dashboard updates feed badges any log whose `⚑ Self-initiated` line is non-`none`**
+(`scripts/export_dashboard_data.py` → `/updates`), so the owner can see, filter, and review
+unprompted work on the website — that filterable surface is the point of the line.
 
 The `⚑ Owner manual steps` line is **not** for "deploy the fix" — **a merge to `main` auto-deploys
 to Railway** (~CI build time; a failing build never deploys; the old container stays up until the

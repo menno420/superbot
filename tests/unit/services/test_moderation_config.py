@@ -45,6 +45,28 @@ def test_default_policy_is_behaviour_preserving():
     assert policy.public_log_channel == ""
     assert policy.public_log_channel_id == 0
     assert policy.public_log_actions == "none"
+    # Per-action DM list defaults to all four notify-eligible actions, so the
+    # gate is purely the master switch until an owner narrows it (today's
+    # behaviour when DMs are turned on).
+    assert policy.dm_action_set == frozenset({"warn", "timeout", "kick", "ban"})
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("warn,timeout,kick,ban", {"warn", "timeout", "kick", "ban"}),
+        ("warn,timeout", {"warn", "timeout"}),
+        (" Warn , BAN ", {"warn", "ban"}),  # case/space tolerant
+        ("warn,warn,warn", {"warn"}),  # de-duplicated
+        ("warn,bogus,auto_delete", {"warn"}),  # unknown tokens dropped fail-safe
+        ("", set()),  # empty = no action DMs
+        ("nonsense", set()),
+    ],
+)
+def test_dm_action_set_parses_and_validates(raw, expected):
+    assert ModerationPolicy(dm_actions=raw).dm_action_set == frozenset(expected)
+    # The module-level helper is the shared source of truth.
+    assert moderation_config.parse_dm_actions(raw) == frozenset(expected)
 
 
 @pytest.mark.parametrize(
@@ -100,6 +122,7 @@ def test_effective_timeout_ceiling_clamps_into_discord_window():
 async def test_load_policy_maps_resolved_values():
     resolved = {
         "dm_on_action": True,
+        "dm_actions": "warn,ban",
         "dm_template": "bye {user}",
         "require_reason": True,
         "ban_delete_message_days": 3,
@@ -125,6 +148,7 @@ async def test_load_policy_maps_resolved_values():
 
     assert policy == ModerationPolicy(
         dm_on_action=True,
+        dm_actions="warn,ban",
         dm_template="bye {user}",
         require_reason=True,
         ban_delete_message_days=3,

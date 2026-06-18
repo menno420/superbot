@@ -49,6 +49,12 @@ this **replaces** the old linear Descend/Ascend.
 - **Open design questions:** one shared grid vs. per-level · fixed size vs. procedural/infinite ·
   do moves cost a turn / trigger encounters · how cell yields relate to the existing depth-band
   tables (`utils/mining/world.py`, currently 1-D depth).
+- **World model — DECIDED (owner, Q-0173, 2026-06-17):** a **seed-deterministic procedural grid we
+  generate ourselves** — any number ("seed") feeds our own generator, so `seed 12345` gives everyone
+  the same world (deterministic · **shareable** · effectively infinite). This resolves "fixed vs
+  procedural/infinite" above → **procedural.** NOT literal Minecraft terrain (no API fetches it;
+  replicating it needs Cubiomes for biomes — a *later* upgrade — or a Java generator, rejected as too
+  heavy for Railway). The other open questions above stay owner-pending.
 
 ## Build order
 

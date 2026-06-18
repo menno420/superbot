@@ -86,6 +86,144 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#963 + #991 + #953 + #946 (2026-06-16, BTD6 AI floors + fixes)** — **#946**: the **first** §7.5 multi-entity comparison floor member — deterministic tower cost-comparison (`compare_crosspath_costs` + `deterministic_cost_comparison_reply`, on the `deterministic_btd6_list_reply` dispatcher) — the BUG-0009 "grounded values, wrong assembly" class; #950/#955/#962 built the difficulty/round-range/paragon members on it (**§7.5 comparison family now complete**). **#963 (BUG-0015)**: "d67 dart paragon" was misread as upgrade path "0-6-7" — fixed the parse + route + grounded a paragon *degree*; **#991** captured the BUG-0015 tail as a BTD6 shorthand-corpus eval idea (the recurring router-class guard). **#953**: current-event-first Live Events + fixed the dead event drill-down. `check_quality` green; arch 0.
+- **#962 (2026-06-16, AI §7.5 — deterministic BTD6 paragon base-cost comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **paragon** member — the last unbuilt §7.5 multi-entity comparison member (the
+  paragon-entity sibling of the #946/#950 tower cost builders): "is Glaive Dominus or Ascended Shadow
+  cheaper?" ranks the **base tier-6 build price** of **two or more** paragons (BUG-0009 wrong-assembly
+  class). `btd6_data_service.compare_paragon_costs(names, *, difficulty="medium")` resolves +
+  difficulty-prices each paragon via `paragon_math.base_price` over the committed `BASE_PRICES_MEDIUM`,
+  dedups on id, ranks ascending, fails closed (<2 distinct); a new public
+  `paragon_math.paragon_surfaces()` exposes the resolver surfaces for sentence scanning.
+  `btd6_context_service.deterministic_paragon_cost_comparison_reply` fires on an explicit `paragon`
+  token + a cost-compare cue + ≥2 resolved paragons, registered in `_BTD6_LIST_BUILDERS` **before**
+  the tower cost builders, which now defer on the paragon cue so a "dart/ninja paragon" question is
+  never priced as the base tower (exactly-one-fires invariant extended). Ships under Q-0048 (read-only
+  deterministic floor, no prod-check). `check_quality --full` green (10051); arch 0; mypy clean.
+  Tests: `tests/unit/services/test_btd6_paragon_cost_comparison.py` + the §7.5 exclusivity corpus
+  entry. **§7.5 multi-entity comparison family is now COMPLETE — all four members shipped (tower-cost
+  #946 · difficulty-cost #950 · round-range cash #955 · paragon base-cost #962).** The next AI §7
+  step is a *new* workflow family beyond §7.5 (plan-first); a paragon *degree-target* resource
+  comparison is captured as a session idea (needs design — the solver's "cash" axis ≠ real spend).
+- **#956 + #954 + #951 + #949 + #948 (2026-06-16, fixes + tooling)** — **#956**: acted on the autonomous-run review (closed flagged loops + recorded owner answers). **#954**: `scripts/extract_video_frames.py` — view maintainer-sent videos in one command. **#951**: a `!coglist` text command wired to the admin panel's 📋 Cog List button (button↔command parity); **#949 (BUG-0014)**: stopped the `!coglist` infinite "assumed from" loop (a dangling synonym→nonexistent-command reference that failed silently). **#948**: release the runtime singleton lock early on shutdown — kills ~85s deploy downtime. `check_quality` green; arch 0.
+- **#955 (2026-06-16, AI §7.5 — deterministic BTD6 round-range cash comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **round-range** member of the §7.5 multi-entity comparison floor (the income sibling of
+  the #946 tower-vs-tower and #950 by-difficulty *cost* members): "which earns more cash, rounds
+  20-40 or 40-60?" ranks the total cash of **two or more** inclusive round ranges — the model would
+  otherwise assemble that ranking itself and can mis-state which range earns more / by how much (the
+  BUG-0009 "grounded values, wrong assembly" class the value-only faithfulness guard can't catch).
+  `btd6_data_service.compare_round_ranges(ranges, *, roundset="default")` prices each range once via
+  the existing `round_cash` primitive (the same owner the round-cash workflow uses, so per-round
+  figures never drift), dedups normalized ranges, ranks descending, fails closed (<2 distinct
+  priceable ranges), and is ABR-aware; `btd6_context_service.deterministic_round_range_comparison_reply`
+  fires on an earning noun (`cash`/`money`/`income`/`earn`) + a comparison signal (`more`/`vs`/`or`/
+  `compare`…) + **≥2** parsed round ranges (a round token required before each range's first anchor,
+  so crosspath codes like `5-0-0` are never mis-read as ranges), appended to the
+  `deterministic_btd6_list_reply` dispatcher. Stays non-overlapping with the single-range round-cash
+  workflow on **range count**, and the floor short-circuits before that workflow ever runs.
+  `check_quality --full` green (10008, +18); arch 0; mypy clean. Tests:
+  `tests/unit/services/test_btd6_round_range_comparison.py`. **§7.5 comparison family now covers cost
+  (tower + difficulty) + round-range cash; the one remaining member is paragon degree/resource.**
+- **#950 (2026-06-16, AI §7.5 — deterministic BTD6 difficulty cost-comparison floor)** — scheduled
+  dispatch (empty work order → the live ▶ NEXT buildable plan-first lane, the AI §7 workflow family).
+  Adds the **difficulty member** of the §7.5 multi-entity comparison floor (the sibling of the #946
+  tower-vs-tower cost comparison): "is a 0-4-1 desperado cheaper on medium or impoppable?" ranks the
+  **same** upgrade state across difficulties — a single tower, so #946's multi-tower builder defers
+  and the question would otherwise reach the model, which can mis-state which difficulty is cheaper
+  (the BUG-0009 "grounded values, wrong assembly" class the value-only faithfulness guard can't
+  catch). `btd6_data_service.compare_difficulty_costs(tower, code, difficulties)` prices the one
+  upgrade state once (`crosspath_cost` already returns every difficulty), ranks ascending, fails
+  closed (<2 distinct valid difficulties); `btd6_context_service.deterministic_difficulty_cost_comparison_reply`
+  fires on a cost-compare cue + **exactly one** resolvable `(tower, crosspath)` (≥2 is the #946
+  builder — mutually exclusive on candidate count) + **≥2** named difficulties, appended to the
+  `deterministic_btd6_list_reply` dispatcher. `check_quality --full` green (9972, +14); arch 0.
+  Tests: `tests/unit/services/test_btd6_difficulty_cost_comparison.py`. **§7.5 cost-comparison family
+  (tower + difficulty) is now complete; the remaining §7.5 members are paragon + round-range, both
+  unbuilt.**
+- **#947 + #945 + #944 (2026-06-16, routine-hardening — Q-0148/0149/0150)** — **#947 (Q-0150)**: made `settings.json` hooks **cwd-robust** (resolve `$CLAUDE_PROJECT_DIR`, not relative `scripts/`), killing the cwd-deadlock trap. **#945 (Q-0149)**: expanded the routine permission allow-list so scheduled runs don't stall on a prompt. **#944 (Q-0148)**: recorded that the dispatch routine is **never "docs only"** (it always advances the plan). Config/docs only. *(This band-#990 pass's Q-0161 further narrows the `rm` permission brake to recursive-only — the same routine-stall class.)*
+- **#942 (2026-06-16, docs(current-state): reconcile ledger — add #932–#936, #939)** — a dispatched
+  living-ledger reconciliation: added the six then-missing PRs (#932, #933, #934, #935, #936, #939)
+  to § Recently shipped and archived the eight oldest live entries to hold the ~20 soft-ratchet
+  (titles verified against live GitHub). Docs only; no runtime code. *(Self-recorded by the next
+  dispatch session #943 — a reconciliation PR doesn't add its own entry, the small recurring drift
+  the strict ledger guard exists to catch.)*
+- **#940 (2026-06-16, myprofile PR B — self-service writes: the pipeline's first UI consumer)** — the
+  band-#930 decade-queue slot 3 continuation (PR A read-only card shipped #938). Makes `/myprofile`
+  interactive: a new `disbot/views/profile/editor.py` owner-locked ephemeral editor stack —
+  `ProfileEditorHomeView` (subsystem picker) → `ProfileSubsystemEditorView` (participation opt-in/out ·
+  per-`SubscriptionSpec` toggles · visibility public/hidden · preference editors: bool→toggle,
+  enum→select, int/str/float→modal). **Every control is exactly one audited
+  `ParticipationMutationPipeline` call**, re-render from the typed accessors (cache-invalidated, so the
+  re-read is truthful — the Help-editor stack pattern); typed `ParticipationMutationError`s render as
+  ephemeral copy, never a crash. Self-scoped by construction (actor==subject; the pipeline re-validates).
+  The read-only card stays mutation-free (PR A's AST pin intact) — the `⚙️ Manage settings` button lazily
+  opens the editor. This is the **first real exercise of the shipped-but-unused pipeline** (migrations
+  027/028). The `/myprofile` lane is now buildable-complete; PR C (onboarding) is owner-gated → router
+  Q-0147. `check_quality --full` green (9933 + 13 new); arch 0; mypy clean. Tests:
+  `tests/unit/views/test_profile_editor.py` (one-call-per-action spy · typed-error copy · unauthorized
+  path · int-modal coercion/reject · enum-chooser-opens-no-write · AST pin: editor writes only through
+  the pipeline, no `utils.db` import).
+- **#939 (2026-06-16, docs(ideas): capture diagnostic_cog !platform-group extraction)** —
+  backlog-grooming ender (Q-0015). The faucet/sink diagnostic (#937) pushed `diagnostic_cog.py` to
+  799/800 LOC — the hard cog-size ceiling — and the cause + fix lived only in `.sessions/` logs
+  (which sessions don't read top-to-bottom), so the next `!platform` subcommand would hit the wall
+  cold. New idea `docs/ideas/diagnostic-cog-platform-group-extraction-2026-06-16.md`: extract the
+  `!platform` command group onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`) so
+  the surface can grow past the 800-LOC cog ceiling while the command identity stays on
+  `DiagnosticCog` (the same F-3 "surface = cog, weight = `cogs/<sub>/`" convention the embed-builder
+  extraction used). Small/safe/decided-lane pure refactor; README indexed. `check_docs --strict`
+  green; docs only.
+- **#938 (2026-06-15, myprofile PR A — read-only profile card)** — decade-queue slot 3. `views/profile/`
+  + `/myprofile` + `!myprofile`: a schema-driven read-only card composing the typed accessors over the
+  participation registry (one section per registered subsystem, every value labelled with its default,
+  Q-0058 idiom), owner-locked ephemeral, zero writes (AST-pinned). The shell + `preference_key`
+  convention PR B (#940) extends.
+- **#936 (2026-06-16, fix: counting channel selector/whitelist UI · BTD6 overview de-clutter ·
+  round-63 camo-lead data)** — three owner-reported bugs from a live manual-testing recording.
+  **(1) Counting cog** — the Counting Manager (`!countingmenu`/`!cm`) only operated on the *current*
+  channel, with no way to *select* a channel or enable counting on an existing one (a tester hit
+  exactly "where to change whitelisted channels"). Added a `ChannelSelect` picker; a mode-picker
+  that *enables counting on a non-counting channel* (the "whitelist" flow, no fresh channel); and a
+  **🛑 Disable Here** button that removes a channel from the active set without deleting it (distinct
+  from `!end_match`). Mutations route through new audited-pattern cog methods
+  (`enable_channel`/`disable_channel`/`toggle_channel_flag`/`reset_channel_count`) holding the
+  per-guild lock, in `cogs/counting/_channel_manager.py` (under the 800-LOC gate). **(2) BTD6
+  overviews** — `!btd6 tower`/`hero` overviews + the hero browser detail dumped a huge "Live data"
+  event-restriction section that the design says belongs only in the ⚠️ Event-status drill-down;
+  the three missed call-sites now match (also drops a per-lookup event-scan DB call). **(3) Round
+  63** wrongly listed "Camo Lead" (it's 75 plain Lead + 122 plain Ceramic — the only such
+  inconsistency across 140 rounds); corrected to `["Lead","Ceramic"]` + a CI guard
+  (`test_btd6_round_threat_consistency.py`) so a curated threat can never again claim a bloon
+  modifier no group carries. `check_quality --full` green (9897); arch 0.
+- **#935 (2026-06-15, ideas: re-file Honcho as a bot / AI-lane idea — per-user AI memory)** —
+  owner-requested re-file of the Honcho capture as a **bot/AI-lane** idea: give SuperBot's AI
+  **per-user memory** (remember a Discord user across conversations — the V-04 vision item) via
+  Honcho's conclusion-extraction memory (cheaper than dumping raw history under the Q-0082 AI-spend
+  ceiling). Demoted the "not for Hermes" verdict to a footnote; added a "what to look into" section
+  (scope/privacy, cost, AI-cog integration seam, alternatives) + a disposition to promote to a
+  `docs/planning/` plan when the AI lane has capacity. `check_docs --strict` green; docs/ideas only.
+- **#934 (2026-06-15, docs(journal): durable lessons from the security-tiers session)** —
+  owner-directed: after the security-tiers session (#929), recorded three lean
+  `.session-journal.md` entries — the **cwd-deadlock trap** (never `cd` in the Bash tool; the
+  persisted cwd breaks the repo-root-relative hooks and dead-locks Bash + Write/Edit for the turn;
+  avoidance = absolute paths / `python3.10 -c` from root, recovery = a worktree-isolated Agent
+  commit; durable hook fix noted as proposed Q-0106), a Quick-reference row pointing at it, and
+  "check the PR file count before declaring done" (never run black/isort over `tests/`; eyeball
+  `git diff --name-only`). `check_docs --strict` green; docs only.
+- **#933 (2026-06-15, fix(deathmatch): stop the 1v1 challenge timer on accept/decline — BUG-0013)**
+  — the first real bug caught end-to-end by the Hermes `intake` pipeline (#928): the owner reported
+  it to Hermes on Discord → `intake` routed + root-caused it → Claude Code verified the diagnosis
+  and fixed it. `_ChallengeView` (`disbot/cogs/deathmatch_cog.py`, `timeout=30.0`) never called
+  `self.stop()` on accept/decline and `on_timeout` had no answered-guard, so its 30s timeout
+  overwrote the live/finished duel message with "⚔️ Challenge Expired". Fix: a `_resolved` flag set +
+  `self.stop()` in `btn_accept`/`btn_decline`, and an early return in `on_timeout` when resolved.
+  Contained to `_ChallengeView` (no signature changes); behaviour-preserving for the genuine
+  no-answer case. `tests/unit/cogs/test_deathmatch_challenge_timeout.py` (3 tests, fail-against-old);
+  BUG-0013 recorded FIXED; `check_quality --full` green (9893); arch 0. Live on the next auto-deploy
+  (a merge to `main` auto-deploys to Railway — no manual deploy step).
+- **#928 + #927 + #925 + #923 + #921 + #919 + #916 + #915 (2026-06-15, Hermes gpt-5.4-mini model-swap + ops-docs maturation band)** — the docs/skill-only band between the BUG-0009 code work and this pass; entered as one grouped entry (all docs-only, same Hermes-operating-layer / ledger-hygiene theme). **#915** — self-healing repo sync (recover a diverged mirror clone). **#916** — recorded the model/provider decision in the ops docs. **#919 → #921 → #923** — the gpt-5.4-mini model-swap arc: model-switch playbook + the "flapping" open item → RESOLVED (the swap was slow propagation lag, gpt-5.4-mini live) → retune base + record verified specs. **#927** — recorded gpt-5.4-mini calibration outcomes + a lean dispatch overlap-check. **#928** — the Hermes `intake` skill (route inbound bugs / ideas / requests / questions to their canonical homes). **#925** — `docs(current-state)`: a scannable ▶ pointer + archived the re-accumulated `Last updated:` stamp wall. *(#930 — Hermes ops docs: lean-env filter how-to + Honcho evaluation + open-steps findability — was already entered.)* All docs/skill/ops only; no `disbot/` runtime code.
 - **#932 (2026-06-15, docs reconciliation — band-#930, ninth Q-0107 pass)** — ninth Q-0107 docs-only
   reconciliation + planning pass (fired by `reconcile` issue #931). Reconciled the ledger (added the
   #915…#928 Hermes model-swap / ops-docs band as one grouped entry; archived #862/#859/#855 to hold

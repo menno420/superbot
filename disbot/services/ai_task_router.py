@@ -173,6 +173,62 @@ def _looks_like_btd6_entity(lowered: str) -> bool:
     return bool(tokens & single)
 
 
+# Tower single-word names/aliases (sniper, boomerang, glue, dart, …) — the tokens
+# _get_entity_aliases() deliberately drops as too collision-prone to be a BTD6
+# signal on their own. They become a safe signal ONLY behind an explicit
+# Monkey-Knowledge cue: "which MK affects the sniper" is unambiguously BTD6, but
+# unguarded it routed GENERAL and the deterministic MK floor never ran (the model
+# then grounding-refused; owner live-test 2026-06-18). 4-char floor keeps the
+# ultra-short collision-prone ones (sub/ice/ace) out even with the cue.
+_tower_alias_lock = threading.Lock()
+_tower_single_aliases: frozenset[str] | None = None
+
+
+def _get_tower_single_aliases() -> frozenset[str]:
+    global _tower_single_aliases
+    if _tower_single_aliases is not None:
+        return _tower_single_aliases
+    with _tower_alias_lock:
+        if _tower_single_aliases is not None:
+            return _tower_single_aliases
+        out: set[str] = set()
+        try:
+            from services import btd6_data_service
+
+            ds = btd6_data_service.get_dataset()
+        except Exception:
+            _tower_single_aliases = frozenset()
+            return _tower_single_aliases
+        for tower in ds.towers:
+            for surface in (tower.canonical, *tower.aliases):
+                s = surface.lower()
+                if " " not in s and len(s) >= 4:
+                    out.add(s)
+        _tower_single_aliases = frozenset(out)
+        return _tower_single_aliases
+
+
+_MK_CUE_RE = re.compile(r"\bmonkey\s+knowledges?\b|\bmk\b", re.I)
+
+
+def _looks_like_mk_tower_question(lowered: str) -> bool:
+    """A Monkey-Knowledge question naming a tower — even by a short single-word
+    alias the general entity matcher drops.
+
+    Gated on the MK cue so a bare common word ("sniper", "glue") only counts as
+    BTD6 when "monkey knowledge"/"mk" is also present. Multi-word tower names and
+    hero/boss tokens already route via :func:`_looks_like_btd6_entity`; this adds
+    the dropped single-word tower aliases under the cue.
+    """
+    if not _MK_CUE_RE.search(lowered):
+        return False
+    multi, _single = _get_entity_aliases()
+    if any(phrase in lowered for phrase in multi):
+        return True
+    tokens = frozenset(re.findall(r"[a-z0-9]+", lowered))
+    return bool(tokens & _get_tower_single_aliases())
+
+
 # "r53"-style round shorthand (live miss 2026-06-11: "How much do I have on
 # r70 if I had 26932 at the end of r53" routed general — the model assembled
 # tool numbers wrongly with no number guard). The trailing \b rejects
@@ -303,6 +359,8 @@ def classify(
         looks_btd6 = _looks_like_short_alias_money(lowered)
     if not looks_btd6:
         looks_btd6 = _looks_like_paragon_degree(lowered)
+    if not looks_btd6:
+        looks_btd6 = _looks_like_mk_tower_question(lowered)
     if not looks_btd6 and conversation_btd6_context:
         looks_btd6 = via_cue = _looks_like_conversation_followup(lowered)
     if channel_is_strategy_intake and looks_btd6:

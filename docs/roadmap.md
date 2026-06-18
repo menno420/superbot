@@ -5,11 +5,14 @@
 > sector is a self-contained dispatch queue. **Last updated:** 2026-06-14 (restructured by
 > sector — the next-session brief acting on the [sector map](repo-sector-map.md)).
 >
-> **▶ The live decade queue (next ~9 PRs):**
-> [`planning/reconciliation-pass-2026-06-16-band990.md`](planning/reconciliation-pass-2026-06-16-band990.md)
-> §4 — set by the tenth Q-0107 pass (issue #961). The band-#930 queue is **fully executed** (AI §7.5/§7.6
-> floors · myprofile · security tiers · architecture-atlas); the **developer-dashboard / control-API**
-> initiative (Q-0155–Q-0160) is the active thread. _Earlier note:_ The band-#900 queue is **nearly fully executed**:
+> **▶ The live queue (next full band — ~30 PRs, the 30-PR cadence Q-0134):**
+> [`planning/reconciliation-pass-2026-06-17-band1020.md`](planning/reconciliation-pass-2026-06-17-band1020.md)
+> §4 — set by the eleventh Q-0107 pass (issue #1021). **▶ Next ungated startable = moderation-DM config**
+> ([moderation-dm-config-plan](planning/moderation-dm-config-plan-2026-06-17.md), turn-key, Q-0147 —
+> per-action moderation DMs on the existing seam, off by default). The **developer-dashboard /
+> control-API** initiative is the dominant thread but its next slice (manifest-spine PR4 panel-layout
+> editor) is **owner-paced** (control-API write side); the AI deterministic-floor family is COMPLETE
+> (#1008–#1012). The band-#990 queue is fully scored in that pass §2. _Earlier note:_ The band-#900 queue is **nearly fully executed**:
 > Forge ✅#905 · P1-3 invariants ✅#917/#918 · Railway log-triage ✅#906 · mining Home/respec/titles
 > ✅#910/#912 (**mining structures lane COMPLETE**) · BUG-0009 3/4 ✅#924/#926 · welcome phase 2
 > ✅#920; security tiers 1+2 **in flight** (#929, `needs-hermes-review`). The buildable-now `ready`
@@ -493,7 +496,11 @@ accepted, not a target).
   into dedicated sub-hubs (Option A — main = Mine·Harvest·Explore·Character·Gear·Workshop), the
   inventory/gear image cards render in place (PR #911), and Mine becomes a 3D grid navigator;
   Explore becomes an open-world hub. Plan + IA:
-  [`planning/mining-hub-redesign-2026-06-15.md`](planning/mining-hub-redesign-2026-06-15.md).
+  [`planning/mining-hub-redesign-2026-06-15.md`](planning/mining-hub-redesign-2026-06-15.md). The
+  **fishing + open-world expansion** (21 fish / 7 levels · unified gear-type switching · the boat & real
+  destinations) is the next big games lane —
+  [`planning/fishing-open-world-expansion-plan-2026-06-18.md`](planning/fishing-open-world-expansion-plan-2026-06-18.md)
+  (Q-0175; **Phase 1 = fishing v1 + gear-switching is buildable**; the canonical Q-0172 self-build).
 - **Later** — bounded deferred actionability follow-ups (inventory architecture,
   leaderboards, bot-duel stats, shared back-button adoption) from the completed
   [actionability roadmap](archive/games-actionability-roadmap.md). Low priority; pick one bounded
@@ -592,7 +599,11 @@ condition — every sector non-empty).*
   fix the ledger, refactor the roadmap) each time merged PRs cross a **multiple of 30** (Q-0134; the
   trigger/checker **machinery is S3**, the docs it writes are S4) · the session enders (Q-0089 idea ·
   Q-0102 prev-session review · Q-0104 closing audit).
-- **Next** — the **thin architecture atlas** (PR 2 of
+- **Next** — the **procedures→skills conversion**
+  ([`procedures-to-skills-conversion-plan-2026-06-17.md`](planning/procedures-to-skills-conversion-plan-2026-06-17.md);
+  Q-0170/Q-0172 — relocate ~25% of always-loaded `CLAUDE.md` into on-demand skills; **batch 1 shipped
+  #1029**, batches 2–4 next, incorporating the PR-#1028 Codex review notes) · the **thin architecture
+  atlas** (PR 2 of
   [`extension-taxonomy-crosswalk-plan-2026-06-16.md`](planning/extension-taxonomy-crosswalk-plan-2026-06-16.md);
   Q-0151a — a companion to orientation, composing `context_map`/`wiring_map`/`review_scope` + the role
   data into one repo-wide CI-`--check` index) · idea-backlog **grooming** (Q-0015 — every idea ends

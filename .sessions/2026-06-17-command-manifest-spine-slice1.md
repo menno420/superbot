@@ -62,7 +62,7 @@ matching manifest refresh *fails CI* — turning "two sources that might silentl
 them is authoritative and the other is a guard." It's the structural payoff that makes the whole spine
 trustworthy, and it's the cheapest way to keep the AST honest as the manifest grows.
 
-## ⟲ Previous-slice review (Q-0102)
+## ⟲ Previous-session review (Q-0102)
 
 The immediately-previous slice this session (#1017, the global settings tier) went well — it shipped a
 complete read+write feature with 18 tests and correctly reasoned about *not* forcing a 2nd slice when

@@ -68,8 +68,12 @@ STEP 3 — ACT ON THE VERDICT:
   - REJECT: comment why, relabel `hermes-changes-requested`, ping the maintainer. Do not merge.
   - CI not green: leave it; comment "waiting on CI" only if it has been red (not just pending).
 
-STEP 4 — REPORT: a compact summary per PR (number, verdict, action taken). End with the queue
-  state (merged / changes-requested / still-pending).
+STEP 4 — REPORT (owner-facing — use the HOUSE STYLE, docs/operations/hermes-skills/_house-style.md:
+  bottom line first, plain words). Lead with one sentence ("Reviewed N PRs — all merged" / "1 needs
+  your call"). Then per PR: the #number, the verdict in plain words (sound = "looks good, merged";
+  revise = "asked for changes: [what]"; reject = "shouldn't land: [why]"), and what you did. In
+  ADVISORY mode the verdict ping is plain too: "PR #N [plain summary] — looks good to me; want me to
+  merge it?" End with the one-line queue state (merged / changes-requested / still-pending).
 
 RULES:
 - A reviewer that rubber-stamps is worthless. Look hard; if you genuinely find nothing wrong,
