@@ -56,12 +56,24 @@ async def get_fishing_log(
     return {r["species"]: r["count"] for r in rows}
 
 
-async def top_fishers(guild_id: int, *, limit: int = 10) -> list[tuple[int, int, int]]:
-    """``[(user_id, total_caught, unique_species)]`` for *guild_id*, top by catches."""
+async def top_fishers(
+    guild_id: int,
+    known_species: list[str],
+    *,
+    limit: int = 10,
+) -> list[tuple[int, int, int]]:
+    """``[(user_id, total_caught, unique_species)]`` for *guild_id*, top by catches.
+
+    Only counts rows whose species is in *known_species* (the current catalog) so
+    legacy rows from a superseded catalog never inflate the totals (Q-0175
+    reconciliation: the interim design's `golden koi`/`ancient leviathan` etc.).
+    """
+    if not known_species:
+        return []
     rows = await pool.fetchall(
         "SELECT user_id, SUM(count) AS caught, COUNT(*) AS species "
-        "FROM fishing_catch_log WHERE guild_id=$1 "
-        "GROUP BY user_id ORDER BY caught DESC LIMIT $2",
-        (guild_id, limit),
+        "FROM fishing_catch_log WHERE guild_id=$1 AND species = ANY($2::text[]) "
+        "GROUP BY user_id ORDER BY caught DESC LIMIT $3",
+        (guild_id, known_species, limit),
     )
     return [(r["user_id"], r["caught"], r["species"]) for r in rows]

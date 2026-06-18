@@ -83,8 +83,12 @@ class FishingCog(commands.Cog):
         level = fishing_workflow.fishing_level_from_xp(fishing_xp)
         cap = max_size_rank_for_level(level)
 
-        caught = len(log)
-        total = sum(log.values())
+        # Count only current-catalog species — a player who fished under the
+        # superseded interim catalog (Q-0175 reconciliation) may have legacy rows
+        # (e.g. `golden koi`) that would otherwise show impossible progress (23/21).
+        known = {s.name for s in SPECIES}
+        caught = sum(1 for name in log if name in known)
+        total = sum(c for name, c in log.items() if name in known)
         embed = discord.Embed(
             title=f"🎣 {ctx.author.display_name}'s Fishing Log",
             color=_FISHING_COLOR,
@@ -120,7 +124,7 @@ class FishingCog(commands.Cog):
     )
     async def fishtop(self, ctx):
         """Show this server's top anglers by total fish caught."""
-        rows = await db.top_fishers(ctx.guild.id)
+        rows = await db.top_fishers(ctx.guild.id, [s.name for s in SPECIES])
         embed = discord.Embed(title="🎣 Top Anglers", color=_FISHING_COLOR)
         if not rows:
             embed.description = (

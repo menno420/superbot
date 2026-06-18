@@ -232,8 +232,11 @@ SUBSYSTEMS: dict[str, dict] = {
         "tags": ["fishing", "minigame", "activities"],
         "entry_points": ["fish", "fishlog"],
         "default_channels": ["games", "bot-commands"],
-        "related_subsystems": ["economy", "mining"],
-        "dependencies": ["economy"],
+        "related_subsystems": ["mining"],
+        # No hard dependency: fishing v1 writes only the catch log + game_xp
+        # (no coins — fish value is a deferred owner question, Q-0175), so it must
+        # not be locked out when an admin disables the economy subsystem.
+        "dependencies": [],
         "soft_dependencies": [],
         "supports_dm": False,
         "has_cleanup_rules": False,
