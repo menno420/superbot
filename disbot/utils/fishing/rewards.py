@@ -1,55 +1,33 @@
-"""Fishing loot roll — pure functions (mirrors ``utils/mining/rewards``).
+"""Fishing catch roll — level-gated, pure (owner design Q-0175).
+
+The catch mechanic is the owner's first-listed, deferrable v1 option — a
+**deterministic roll** within the player's unlocked size band (analogous to the
+``explore`` resolve seam). A future minigame is an explicitly OPEN owner question
+(Q-0175) and layers on top without changing this contract.
 
 State-in (an explicit ``random.Random`` for seed-determinism in tests),
-return-out, no Discord, no DB.  The roll is two-stage: pick a rarity tier by
-:data:`utils.fishing.fish.RARITY_ROLL_WEIGHT`, then a uniform species within
-that tier, then a uniform weight + coin value inside the species' bands.
+return-out; no Discord, no DB.
 """
 
 from __future__ import annotations
 
 import random
 
-from utils.fishing.fish import (
-    RARITY_ROLL_WEIGHT,
-    Catch,
-    FishSpecies,
-    species_by_rarity,
-)
-
-# Each +1 of rod bonus nudges the rarity roll: it shifts a slice of the common
-# weight toward the rarer tiers, so a better rod catches better fish without
-# ever removing commons entirely (additive-safe; bonus 0 == the base table).
-_ROD_TIER_SHIFT = 4.0
+from utils.fishing.fish import Catch, FishSpecies, unlocked_species
 
 
-def _weighted_tier_table(rod_bonus: int) -> dict[str, float]:
-    """The rarity-roll weights adjusted for a rod bonus (bonus 0 == base)."""
-    if rod_bonus <= 0:
-        return dict(RARITY_ROLL_WEIGHT)
-    shift = min(RARITY_ROLL_WEIGHT["common"] - 1.0, _ROD_TIER_SHIFT * rod_bonus)
-    table = dict(RARITY_ROLL_WEIGHT)
-    table["common"] -= shift
-    # Spread the freed weight across the four non-common tiers, proportionally.
-    rarer = {k: v for k, v in RARITY_ROLL_WEIGHT.items() if k != "common"}
-    rarer_total = sum(rarer.values())
-    for tier, base in rarer.items():
-        table[tier] += shift * (base / rarer_total)
-    return table
+def roll_catch(fishing_level: int, rng: random.Random | None = None) -> Catch | None:
+    """Roll one catch from the fish unlocked at *fishing_level*.
 
-
-def roll_catch(rng: random.Random | None = None, *, rod_bonus: int = 0) -> Catch:
-    """Roll one catch — a :class:`Catch` (species + weight + coin value).
-
-    *rng* lets tests pin the roll; production passes ``None`` (the module
-    ``random``).  *rod_bonus* (0 = bare hands / no rod) biases the rarity tier
-    toward rarer fish without ever excluding commons.
+    Bigger fish are rarer: within the unlocked band the pick is weighted by the
+    inverse of size rank, so the common small fish dominate and a freshly
+    unlocked big fish is a treat — without ever being unreachable. Returns
+    ``None`` only if the catalog failed to load (no fish unlocked).
     """
+    pool = unlocked_species(fishing_level)
+    if not pool:
+        return None
     r = rng or random.Random()
-    table = _weighted_tier_table(rod_bonus)
-    tier = r.choices(list(table.keys()), weights=list(table.values()), k=1)[0]
-    pool = species_by_rarity(tier)
-    species: FishSpecies = pool[r.randrange(len(pool))]
-    weight = round(r.uniform(species.weight_min, species.weight_max), 1)
-    value = r.randint(species.value_min, species.value_max)
-    return Catch(species=species, weight=weight, value=value)
+    weights = [1.0 / s.size_rank for s in pool]
+    species: FishSpecies = r.choices(pool, weights=weights, k=1)[0]
+    return Catch(species=species)

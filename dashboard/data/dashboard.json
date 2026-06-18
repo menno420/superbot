@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T00:28:11Z",
+    "generated_at": "2026-06-18T01:38:01Z",
     "build": {
-      "commit": "73838ebd",
-      "subject": "docs(fishing): plan + born-red session card for ecosystem #2 PR 1",
-      "committed_at": "2026-06-18T00:13:31Z",
+      "commit": "4969383b",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-ttonj3",
+      "committed_at": "2026-06-18T01:31:11Z",
       "branch": "claude/funny-franklin-ttonj3"
     },
     "counts": {
@@ -1617,8 +1617,32 @@
       "file": "2026-06-18-fishing-ecosystem-pr1.md",
       "date": "2026-06-18",
       "title": "Session — fishing ecosystem #2, PR 1 (the core loop)",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-18-btd6-round-cash-identity-fix.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — BTD6 round_cash identity ABR fix (Codex P2 on #1035)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-18-btd6-mk-affects-tower.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — BTD6 \"which MK affects <tower>\" — class-wide MK + routing",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-18-btd6-ai-answer-fixes.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — BTD6 AI answer fixes (owner live-test screenshots)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -2065,30 +2089,6 @@
       "file": "2026-06-16-extension-taxonomy-crosswalk.md",
       "date": "2026-06-16",
       "title": "Session — extension-taxonomy crosswalk (Q-0151c, owner-approved)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-economy-faucet-sink-diagnostic.md",
-      "date": "2026-06-16",
-      "title": "Session — games-economy faucet/sink diagnostic (`!platform economy`)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-dispatch-never-docs-only.md",
-      "date": "2026-06-16",
-      "title": "Session — dispatch is never \"docs only\" (Q-0148)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-diagnostic-platform-group-mixin.md",
-      "date": "2026-06-16",
-      "title": "Session — extract the `!platform` command group onto a cog mixin",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4478,7 +4478,7 @@
           "is_group": false,
           "parent": null,
           "aliases": [],
-          "brief": "Cast a line and catch a fish — earns coins and game XP.",
+          "brief": "Cast a line and catch a fish — level up to unlock bigger fish.",
           "classification": "",
           "has_panel": false,
           "button_backed": false
@@ -4504,7 +4504,7 @@
           "aliases": [
             "topfishers"
           ],
-          "brief": "Show this server's top anglers by coins earned from fishing.",
+          "brief": "Show this server's top anglers by total fish caught.",
           "classification": "",
           "has_panel": false,
           "button_backed": false

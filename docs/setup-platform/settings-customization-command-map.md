@@ -433,15 +433,15 @@ through `moderation_service` (no parallel audit path).
 12. **existing_ResourceRequirement_entries**: none.
 13. **current_access_policy_behavior**: `visibility_tier=user`; capabilities
     `fishing.catch.fish`, `fishing.collection.view`.
-14. **hardcoded_or_env_only_behavior**: the species catalog (`utils/fishing/fish.py`)
-    and rarity/coin bands are pure code (one table to retune).
-15. **missing_customization_commands**: `!fishing rarity weights set ...`,
-    payout setters (future, once the economy is tuned live).
+14. **hardcoded_or_env_only_behavior**: the 21-fish dataset (`data/fishing/fish.json`)
+    + the 7×3 level/size bands are committed data/code (owner design Q-0175). v1 has
+    **no coins** — fish value/use is an explicitly OPEN owner question.
+15. **missing_customization_commands**: `!fishing level award set ...` (xp pace),
+    fish-value setters (future, once the owner decides the value/cook/sell question).
 16. **missing_settings_pages**: Settings Manager fishing page (future).
-17. **missing_menu_buttons_selects_modals**: rarity-weights list editor,
+17. **missing_menu_buttons_selects_modals**: xp-pace scalar editor,
     optional `fishing_channel` BindingSelectView (future).
-18. **setting_class_per_value**: payouts → scalar; rarity weights → list;
-    optional fishing_channel → binding.
+18. **setting_class_per_value**: xp pace → scalar; optional fishing_channel → binding.
 19. **target_Settings_Manager_page**: `!settings subsystem fishing` (future).
 20. **target_mutation_path**: `SettingsMutationPipeline` (scalars + list) if
     payouts/weights are ever made configurable.
