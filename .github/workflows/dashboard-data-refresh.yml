@@ -1,39 +1,51 @@
 name: dashboard-data-refresh
 
 # Keep the committed dashboard data (dashboard/data/dashboard.json) fresh so the website's
-# Updates / Ideas / Bugs feeds reflect work as it merges, instead of lagging ~30 PRs behind the
+# Updates / Ideas / Bugs feeds reflect work as it merges, instead of lagging until the
 # every-30-PR reconciliation regen — the owner's "the updates are stuck on one from a few days
 # ago" report (Q-0167, 2026-06-17).
 #
 # Why a workflow (not the app): the dashboard is a decoupled Railway service deployed from
 # dashboard/ ONLY — it cannot see docs/, .sessions/, or disbot/ at runtime, so it serves the
-# committed JSON. This regenerates that JSON whenever a source that feeds it changes on main, and
-# commits it back if it changed.
+# committed JSON. This regenerates that JSON and lands it on main when a source that feeds it has
+# changed.
 #
-# Loop-safe: the push trigger is gated to the SOURCE paths (which do NOT include the JSON), so the
-# bot's own JSON-only commit never retriggers this workflow; [skip ci] keeps it from spinning any
-# other workflow. Uses ROUTINE_PAT (Contents: write) for push rights, the same token
-# pr-auto-update.yml uses.
+# === Why a PR, not a direct push (the 2026-06-18 fix) ===
+# The original version pushed the regenerated JSON straight to `main`. That can NEVER succeed: the
+# `main` branch ruleset requires the `code-quality` status check on any pushed commit, and a direct
+# push from a workflow carries no such check, so GitHub rejects it (GH013). The workflow therefore
+# failed on every merge — harmless on its own, but it turned each commit's CI check-suite red, and
+# Railway's "wait for CI before deploy" setting waits for the WHOLE suite, so one red check silently
+# SKIPPED every production deploy (the bot froze ~9h on a stale build). Root-caused 2026-06-18.
 #
-# Provenance + reliability (Q-0105): added 2026-06-17, owner-directed. UNVERIFIED — watch the first
-# few merges to confirm it commits a fresh JSON only on real source changes and never loops. Kill
+# The fix: land the refresh through a normal PR that AUTO-MERGES once `code-quality` is green — the
+# only path that satisfies the ruleset without a privileged push. It reuses ONE branch
+# (`bot/dashboard-refresh`), so at most one refresh PR is ever open; a later run force-updates that
+# branch rather than spawning a second PR.
+#
+# It is SCHEDULED (not per-merge): a 2-hourly cadence keeps the site fresh within the interval
+# while (a) bounding noise to at most one auto-PR per run and (b) removing the per-merge failures
+# entirely — this workflow no longer runs in any commit's check-suite, so it can never re-freeze
+# deploys even if "wait for CI" is re-enabled. `workflow_dispatch` gives an on-demand refresh.
+#
+# === Optional zero-PR upgrade (owner, GitHub setting) ===
+# If you'd rather the refresh land invisibly with NO auto-PRs, add the push identity
+# (`ROUTINE_PAT` / `superbot-dashboard-bot`) to the `main` ruleset's bypass list
+# (Settings -> Rules -> the main ruleset -> Bypass list). Then this workflow could direct-push
+# again; until then the PR-flow below is fully self-contained and needs no settings.
+#
+# Provenance + reliability (Q-0105): added 2026-06-17; rewritten to the PR-flow 2026-06-18. Kill
 # switch: delete this workflow; the reconciliation routine still regenerates on its cadence, and
 # `python3.10 scripts/export_dashboard_data.py` is always runnable by hand.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'docs/ideas/**'
-      - 'docs/health/bug-book.md'
-      - '.sessions/**'
-      - 'disbot/**'
-      - 'scripts/export_dashboard_data.py'
-      - 'scripts/scan_*.py'
+  schedule:
+    - cron: '17 */2 * * *'   # every 2 hours (offset off the hour to dodge load spikes)
   workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: dashboard-data-refresh
@@ -47,19 +59,45 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: Regenerate dashboard data and commit if changed
+      - name: Regenerate dashboard data; open an auto-merging PR if it changed
+        env:
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
         run: |
           set -uo pipefail
+          # export_dashboard_data.py is stdlib-only by design — no pip install needed.
           python3.10 scripts/export_dashboard_data.py
           if git diff --quiet -- dashboard/data/dashboard.json; then
-            echo "dashboard.json already fresh — nothing to commit."
+            echo "dashboard.json already fresh — nothing to do."
             exit 0
           fi
+          echo "dashboard.json drifted — landing a refresh via an auto-merging PR."
+
+          BRANCH=bot/dashboard-refresh
           git config user.name "superbot-dashboard-bot"
           git config user.email "noreply@github.com"
+          # Build the branch as current main + ONLY the regenerated JSON.
+          git checkout -B "$BRANCH"
           git add dashboard/data/dashboard.json
-          git commit -m "chore(dashboard): refresh generated data [skip ci]"
-          git push
+          git commit -m "chore(dashboard): refresh generated data"
+          # Bot-owned branch: force is safe (concurrency group serialises runs).
+          git push --force origin "$BRANCH"
+
+          # Open the PR once; later runs reuse it (the force-push above updates its head).
+          existing="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number' || true)"
+          if [ -z "$existing" ]; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore(dashboard): refresh generated data" \
+              --body "Automated refresh of \`dashboard/data/dashboard.json\` — a source that feeds the website's Updates/Ideas/Bugs panels changed on main. Regenerated data only (no code); auto-merges once Code Quality is green. Generated by .github/workflows/dashboard-data-refresh.yml." \
+              || echo "::warning::gh pr create failed — confirm ROUTINE_PAT has Pull requests: write."
+          else
+            echo "Reusing open refresh PR #$existing (head force-updated)."
+          fi
+
+          # Arm native auto-merge so it lands the moment Code Quality is green (the same
+          # mechanism auto-merge-enabler.yml uses for claude/* PRs).
+          gh pr merge "$BRANCH" --auto --merge --repo "$GITHUB_REPOSITORY" \
+            || echo "::warning::Could not arm auto-merge. Confirm: (1) 'Allow auto-merge' is ON, (2) main requires the 'Code Quality' check, (3) ROUTINE_PAT has Pull requests + Contents write."
