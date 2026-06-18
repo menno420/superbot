@@ -97,6 +97,8 @@ living ledger (`docs/current-state.md`).
 
 - `claude/zen-wright-77q0ru` · BTD6 AI answer fixes (owner live-test screenshots) — MK tab-wide scope
   wording · how-many-bloons refusal · ABR/standard RBE labeling · income-range identity ·
-  `btd6_context_service` / `btd6_data_service` / `ai_tools` · 2026-06-18 · **PR (this session)**
+  `btd6_context_service` / `btd6_data_service` / `ai_tools` · 2026-06-18 · **PR #1035 (merged)**
+- `claude/zen-wright-77q0ru` · BTD6 `round_cash` identity ABR fix (Codex P2 on #1035) — gate identity
+  to reconciling ranges · `btd6_data_service` · 2026-06-18 · **PR (this session)**
 
 _(move claims here with their PR # as they close, then prune older entries)_

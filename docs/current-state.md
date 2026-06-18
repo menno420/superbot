@@ -207,6 +207,23 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1036 (2026-06-18, fishing v1 + open-world expansion plan — Q-0175, docs-only)** — captured the
+  owner's fishing/boat brain-dump as a buildable plan: Phase 1 (fishing v1 — 21 fish, 7 levels × 3 fish,
+  reuses tier/`game_xp`; one character with named swappable gear-type loadouts, gear never required —
+  only boosts bonuses) + Phase 2+ (boat as 2nd home base · bounded travel · seed-grid destinations with
+  coordinates/biome, ties Q-0173); indexed on the roadmap.
+- **#1035 (2026-06-18, BTD6 AI answer fixes — owner live-test screenshots)** — fixed 4 owner-spotted
+  BTD6 answer bugs at the deterministic data/grounding/tool layer: MK reference reply grammar +
+  tab-wide scope note (Come On Everybody / Flanking Maneuvers disclosure); grounded the total bloons
+  entering a round so "how many bloons spawn on rN" is answerable instead of refused (the derived sum
+  tripped the value-only faithfulness guard); `round_composition` `roundset_label` so ABR vs standard
+  figures don't read as self-contradiction; `round_cash` ready-to-quote inclusive-range `identity`
+  sentence (a same-day P2 follow-up gated it to ranges where the cumulative subtraction reconciles —
+  it was emitting a contradictory identity for ABR ranges that span the unplayed rounds 1-2).
+- **#1034 (2026-06-18, Codex edits-live note — Q-0174 resolved, docs-only)** — documented that Codex
+  has no write access: its "make changes" output is a comment describing a diff in its own sandbox, so
+  agents read the proposed change from the comment, verify against `main`, and apply it themselves
+  (never hunt for a phantom Codex branch/PR); Q-0174 resolved → trial comment-only as-is.
 - **#1032 (2026-06-17, settle decisions + Codex integration — docs-only)** — settled **Q-0173** (the
   mining grid world = a seed-deterministic procedural grid we generate, not literal Minecraft-terrain
   replication) and **Q-0174** (Codex review integration: routines check Codex first but verify, the

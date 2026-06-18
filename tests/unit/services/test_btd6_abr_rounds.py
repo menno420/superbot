@@ -227,6 +227,24 @@ def test_round_cash_abr_unplayed_rounds_disclose_the_boundary():
     # range_cash still sums exactly the requested rounds' data.
     per = {p["round"]: p["cash"] for p in ranged["per_round"]}
     assert ranged["range_cash"] == round(sum(per.values()), 2)
+    # No identity sentence for an ABR range that spans the unplayed rounds 1-2:
+    # cumulative totals start at round 3, so the subtraction would omit rounds
+    # 1-2's cash and contradict range_cash (Codex P2 on PR #1035). The
+    # cumulative_note above carries the honest explanation instead.
+    assert "identity" not in ranged
+    assert "identity" not in round_cash(2, 4, roundset="abr")
+
+
+def test_round_cash_abr_played_range_keeps_a_reconciling_identity():
+    # An ABR range entirely at/after the entry round (3) has cumulative totals
+    # that bracket exactly its rounds, so the identity holds and is emitted.
+    res = round_cash(3, 10, roundset="abr")
+    assert res["found"] is True
+    assert "cumulative_note" not in res
+    assert "identity" in res
+    assert round(res["cumulative_at_end"] - res["cumulative_before_start"], 2) == (
+        res["range_cash"]
+    )
 
 
 def test_round_cash_default_behaviour_unchanged():

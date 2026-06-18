@@ -2008,7 +2008,18 @@ def round_cash(
     # figures that didn't match range_cash. The inclusive subtraction uses the
     # cumulative going INTO the start round (cumulative_before_start), so hand the
     # model the finished sentence rather than letting it re-derive the arithmetic.
-    if cumulative_at_end is not None:
+    #
+    # Emit it ONLY when the subtraction actually reconciles with range_cash. For
+    # an ABR range that includes the unplayed rounds 1-2 it does NOT: those rounds
+    # carry per-round cash but are not in the cumulative totals (which start at
+    # round 3), so cumulative_at_end - cumulative_before_start omits their cash
+    # and would contradict range_cash. Self-validating the identity here keeps it
+    # honest for that case (the cumulative_note below already explains it) and any
+    # future data edge — never publish a sentence the model is told to quote
+    # verbatim that the numbers disprove.
+    if cumulative_at_end is not None and (
+        round(cumulative_at_end - cumulative_before_start, 2) == range_cash
+    ):
         result["identity"] = (
             f"Earnings for rounds {lo}-{hi} (inclusive) = ${range_cash:,.2f}. "
             f"This equals the cumulative total through round {hi} "
