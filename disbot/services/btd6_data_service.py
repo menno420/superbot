@@ -1737,6 +1737,11 @@ def round_composition(
         "round_start": lo,
         "round_end": hi,
         "roundset": resolved,
+        # Human label of the round set ("standard" / "alternate (ABR)"). The same
+        # round NUMBER differs between sets (e.g. ABR round 63 is a heavier wave
+        # than standard round 63), so every round figure must travel with its set
+        # or an ABR answer reads as contradicting the standard one.
+        "roundset_label": set_label,
         "rounds_in_range": len(rounds),
     }
     if resolved == "alternate":
@@ -1778,6 +1783,12 @@ def round_composition(
                     "round": entry.round_number,
                     "rbe": entry.rbe,
                     "danger": entry.danger,
+                    # Bloons that ENTER this round (sum of the spawn groups), so
+                    # "how many bloons spawn on rN" has a grounded total and does
+                    # not depend on the model summing the groups itself.
+                    "bloons_entering": sum(
+                        int(g.get("count", 0)) for g in entry.groups
+                    ),
                     "groups": [
                         {"bloon": g.get("bloon_id"), "count": int(g.get("count", 0))}
                         for g in entry.groups
@@ -1793,6 +1804,9 @@ def round_composition(
         out.update(
             {
                 "total_rbe": sum(r.rbe or 0 for r in rounds),
+                "total_bloons_entering": sum(
+                    int(g.get("count", 0)) for r in rounds for g in r.groups
+                ),
                 "heaviest_by_rbe": heaviest[:_HEAVIEST_CAP],
                 "rounds": detail,
                 "truncated": len(rounds) > _ROUND_DETAIL_CAP,
@@ -1970,6 +1984,7 @@ def round_cash(
         }
         for r in in_range[:_ROUND_DETAIL_CAP]
     ]
+    cumulative_at_end = by_n[hi].cumulative_cash
     result = {
         "found": True,
         "roundset": resolved,
@@ -1981,12 +1996,27 @@ def round_cash(
         "rounds_counted": hi - lo + 1,
         "range_cash": range_cash,
         "cumulative_before_start": cumulative_before_start,
-        "cumulative_at_end": by_n[hi].cumulative_cash,
+        "cumulative_at_end": cumulative_at_end,
         "starting_cash": starting_cash,
         "per_round": per_round,
         "truncated": len(in_range) > _ROUND_DETAIL_CAP,
         "assumptions": assumptions,
     }
+    # A ready-to-quote correct identity. The model otherwise explained the
+    # (correct) range_cash by subtracting the cumulative AT the start round —
+    # dropping that round's own earnings from an inclusive range — and quoted
+    # figures that didn't match range_cash. The inclusive subtraction uses the
+    # cumulative going INTO the start round (cumulative_before_start), so hand the
+    # model the finished sentence rather than letting it re-derive the arithmetic.
+    if cumulative_at_end is not None:
+        result["identity"] = (
+            f"Earnings for rounds {lo}-{hi} (inclusive) = ${range_cash:,.2f}. "
+            f"This equals the cumulative total through round {hi} "
+            f"(${cumulative_at_end:,.2f}) minus the cumulative total going INTO "
+            f"round {lo} (${cumulative_before_start:,.2f}). Do NOT subtract the "
+            f"cumulative AT round {lo} — that drops round {lo}'s own earnings "
+            f"from the inclusive range. Quote range_cash as the answer."
+        )
     if resolved == "alternate" and lo < 3:
         # The range includes ABR's unplayed rounds 1-2: range_cash still sums
         # exactly the rounds asked for, but cumulative totals only describe

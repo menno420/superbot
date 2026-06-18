@@ -166,12 +166,29 @@ def test_round_composition_abr_carries_set_and_note():
     res = round_composition(40, roundset="abr")
     assert res["found"] is True
     assert res["roundset"] == "alternate"
+    # A human label travels with the set so an ABR round figure can never read as
+    # standard (the same round number differs between sets).
+    assert res["roundset_label"] == "alternate (ABR)"
     assert "round 3" in res["note"]
     assert res["rounds"][0]["groups"] == [{"bloon": "moab", "count": 1}]
-    # Default calls are byte-identical to before (no note, default set).
+    # Default calls keep their values; they now also carry the standard label.
     base = round_composition(40)
     assert base["roundset"] == "default"
+    assert base["roundset_label"] == "standard"
     assert "note" not in base
+
+
+def test_round_composition_grounds_total_bloons_entering():
+    # "How many bloons spawn on rN" must have a grounded total instead of
+    # forcing the model to sum the groups (which tripped the faithfulness guard).
+    res = round_composition(63)
+    assert res["found"] is True
+    first = res["rounds"][0]
+    assert first["round"] == 63
+    expected = sum(g["count"] for g in first["groups"])
+    assert first["bloons_entering"] == expected
+    # The range total is the sum of every round's entering bloons.
+    assert res["total_bloons_entering"] == expected
 
 
 def test_round_composition_rejects_unknown_set():

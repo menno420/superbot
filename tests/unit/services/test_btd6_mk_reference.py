@@ -106,6 +106,38 @@ def test_reply_handles_mk_abbreviation_and_relation_cue():
     assert "Just One More" not in reply
 
 
+def test_reply_header_is_grammatical_and_scopes_to_names():
+    reply = btd6_context_service.deterministic_mk_reference_reply(
+        "what monkey knowledge points apply to the glue gunner",
+    )
+    assert reply is not None
+    # "Monkey Knowledge points that reference" — not the ungrammatical
+    # "Monkey Knowledge that reference".
+    assert "Monkey Knowledge points that reference" in reply
+
+
+def test_reply_discloses_tab_wide_mk_scope():
+    """The "why isn't Come On Everybody in the Glue Gunner list" confusion: the
+    list only names the tower, so the reply must point at the category tab whose
+    tab-wide points (e.g. Come On Everybody) also apply but aren't listed."""
+    # Glue Gunner is a Primary tower.
+    reply = btd6_context_service.deterministic_mk_reference_reply(
+        "what monkey knowledge points apply to the glue gunner",
+    )
+    assert reply is not None
+    assert "Primary" in reply
+    assert "only Monkey Knowledge that *names*" in reply
+    assert "ask about Primary Monkey Knowledge" in reply.lower() or (
+        "Primary Monkey Knowledge" in reply
+    )
+    # A Military tower points at the Military tab instead.
+    sniper = btd6_context_service.deterministic_mk_reference_reply(
+        "what monkey knowledge points apply to the sniper monkey",
+    )
+    assert sniper is not None
+    assert "Military" in sniper
+
+
 @pytest.mark.parametrize(
     "text",
     [

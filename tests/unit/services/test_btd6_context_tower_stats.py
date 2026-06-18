@@ -133,6 +133,16 @@ def test_round_grounding_has_composition_and_rbe():
     assert "Lead" in blob and "Ceramic" in blob
 
 
+def test_round_grounding_states_total_bloons_entering():
+    # "How many bloons spawn on rN" had no grounded total, so the model's derived
+    # sum tripped the faithfulness guard and got refused; ground the entering
+    # total directly (entry bloons, not pop-spawned children).
+    entry = ds.get_round(63)
+    expected = sum(int(g.get("count", 0)) for g in entry.groups)
+    blob = " ".join(ctx._render_fixture_round(entry))
+    assert f"{expected:,} bloons enter this round in total" in blob
+
+
 def test_crosspaths_in_text_is_bounded():
     cx = ctx._crosspaths_in_text
     assert cx("0-2-5 ninja") == ["025"]

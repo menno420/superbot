@@ -207,6 +207,22 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1032 (2026-06-17, settle decisions + Codex integration — docs-only)** — settled **Q-0173** (the
+  mining grid world = a seed-deterministic procedural grid we generate, not literal Minecraft-terrain
+  replication) and **Q-0174** (Codex review integration: routines check Codex first but verify, the
+  "real bug" bar, the issue-only Hermes 6H PR-check spec); fixed 3 verified-real Codex-flagged drift
+  items (`/session-close` 10th-PR→30-PR cadence · `roadmap.md` "decade queue" → full-band wording ·
+  a session card's `Previous-slice review` → `Previous-session review`).
+- **#1031 (2026-06-17, local character-render preview tool — Q-0172, self-initiated)** —
+  `scripts/preview_character.py` renders the live V-16 compositor (`utils/character_render.py`) to a PNG
+  locally so sprite positioning is a render→look→tune-`manifest.json`→re-render loop instead of manual
+  Discord uploads; Q-0105 dev tool (stdlib + Pillow, not CI-wired, disposable). Also recorded the
+  owner's vault-cap decision (keep it soft / warning-only).
+- **#1030 (2026-06-17, Hermes plain-language house style — Q-0168)** — promoted the owner-approved
+  sample to a canonical `_house-style.md` (5 rules + the morning-briefing exemplar) and rewrote the
+  owner-facing output skills (`morning-briefing`/`repo-health`/`open-questions`/`idea-spotlight`/
+  `review-merge`) to cite it and speak plainly (jargon translated, grouped not listed); the commands +
+  rate-limit budgets are unchanged. Owner manual step: redeploy on the VPS.
 - **#1028 (2026-06-17, procedures→skills conversion plan — docs-only)** — captured the 33-procedure
   skills-conversion inventory (A/B/C buckets) as an executable plan
   (`planning/procedures-to-skills-conversion-plan-2026-06-17.md`): the thin-pointer convention, the
