@@ -1,11 +1,11 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T02:18:43Z",
+    "generated_at": "2026-06-18T11:14:41Z",
     "build": {
-      "commit": "82d7eb5",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/hopeful-allen-1darl5",
-      "committed_at": "2026-06-18T02:10:08Z",
-      "branch": "claude/hopeful-allen-1darl5"
+      "commit": "f7ed6f52",
+      "subject": "Merge pull request #1045 from menno420/claude/funny-franklin-ttonj3",
+      "committed_at": "2026-06-18T13:13:54Z",
+      "branch": "main"
     },
     "counts": {
       "functions": 36,
@@ -1696,6 +1696,38 @@
       "self_initiated": true
     },
     {
+      "file": "2026-06-18-dashboard-refresh-deploy-unblock.md",
+      "date": "2026-06-18",
+      "title": "Session — fix the deploy-freezing dashboard-data-refresh workflow",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-18-consistency-rule4-select-truncation.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — Consistency linter rule 4: select-option truncation",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-06-18-consistency-linter-rules-2-3.md",
+      "date": "2026-06-18",
+      "title": "Session — 2026-06-18 · consistency linter PR 2 + PR 3 (back-button + panel base-class rules)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-06-18-consistency-linter-pr1.md",
+      "date": "2026-06-18",
+      "title": "2026-06-18 — Repo consistency linter PR 1 (harness + edit-in-place rule) + ledger reconcile",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-18-cog-routing-pagination.md",
       "date": "2026-06-18",
       "title": "2026-06-18 — Setup cog-routing select: paginate instead of truncating at 25",
@@ -2115,38 +2147,6 @@
       "file": "2026-06-16-hermes-ops-docs-honcho.md",
       "date": "2026-06-16",
       "title": "Session — Hermes ops docs: lean-filter how-to · Honcho eval · open-steps findability",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-hermes-intake-skill.md",
-      "date": "2026-06-16",
-      "title": "Session — Hermes `intake` skill: route real-world inputs (bug / idea / request / question)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-hermes-gpt54mini-calibration-findings.md",
-      "date": "2026-06-16",
-      "title": "Session — gpt-5.4-mini calibration: record outcomes + tune the dispatch skill",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-hermes-efficiency-skills.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — Hermes efficiency: idea-spotlight + briefing + dispatch-resolve + 6h auto-reset",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-health-server-ipv6-bind.md",
-      "date": "2026-06-16",
-      "title": "Session — health server IPv6 dual-stack bind (Railway private networking)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
