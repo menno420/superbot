@@ -27,58 +27,45 @@ exactly (`docs/planning/fishing-ecosystem-plan-2026-06-18.md` PR 1):
 **Review gate:** a complete new ecosystem subsystem is **substantial** → label
 `needs-hermes-review`, do NOT self-merge (Q-0117), matching the sibling #929/#941.
 
-## ⚠️ Mid-session reconciliation to the owner's design (Q-0175 / plan #1036)
+## What shipped (PR #1033 — fishing ecosystem #2, PR 1)
 
-This PR was first built against my interim self-authored fishing design (14 fish,
-5 rarity tiers, a rarity-weighted roll, **coins per catch**). On resume, the merge
-surfaced that the owner had **dropped a detailed fishing design while I was building**
-— it merged as **#1036 / Q-0175** (`planning/fishing-open-world-expansion-plan-2026-06-18.md`).
-His decided Phase-1 spec differs and supersedes mine: **21 fish ranked by size · 7
-levels × 3 fish (level-gated catch) · leveling reuses `game_xp` · fish value/use is
-explicitly OPEN (so no coins yet)**. Since #1033 was still open and unmerged, I
-**reconciled the whole implementation to his spec** rather than ship code that
-contradicts his same-day design. My redundant interim plan doc was deleted; the
-owner's #1036 plan is the single authoritative design.
+A complete, rewarding fishing minigame on its own — pure additive (new cog + new
+table; no existing behaviour changes), mirroring the mining decomposition:
 
-## What shipped (PR #1033 — fishing v1, conforming to owner design Q-0175)
-
-A complete, additive fishing v1 (new cog + new table; no existing behaviour changes):
-
-- **Data** `disbot/data/fishing/fish.json` — the **21-fish, size-ranked** dataset
-  (size_rank 1=smallest … 21=largest), a committed JSON like the BTD6/gear data.
-- **Pure domain** `utils/fishing/` — `fish.py` loads + sorts the catalog and owns
-  the **7×3 level bands** (`max_size_rank_for_level`, `unlocked_species`); `rewards.py`
-  is the **level-gated deterministic roll** (`roll_catch(level)` → an unlocked fish,
-  inverse-size weighted so small fish are common; seed-deterministic).
+- **Pure domain** `utils/fishing/` — `fish.py` (a self-contained 14-species
+  catalog: rarity tiers + coin/weight bands; its own loot ladder, not a reskin)
+  + `rewards.py` (`roll_catch`, two-stage rarity-weighted roll, seed-deterministic
+  for tests, with a `rod_bonus` hook for the later rod ladder).
 - **Migration** `075_fishing_catch_log.sql` — the per-(user, guild, species)
-  **collection log** (count + first/last; **no value/coin column** — value deferred).
-- **DB** `utils/db/games/fishing.py` — conn-aware `record_catch` / `get_fishing_log`
-  / `top_fishers` (by total catches); wired into `utils/db/__init__.py`.
-- **Service** `services/fishing_workflow.py` — `fish()`: read the player's fishing
-  `game_xp` → derive the fishing level (`fishing_level_from_xp`, reuses the shared
-  level curve, capped at 7) → `roll_catch(level)` → ONE `db.transaction()` (record
-  the catch + award `GAME_FISHING` xp, **no coin leg**) → xp events post-commit;
-  flags `unlocked_bigger` when the cast crossed a fishing level.
-- **Game-XP** — `GAME_FISHING` + a `"fish"` award (5 xp) in `game_xp_service`.
-- **Cog** `cogs/fishing_cog.py` — `!fish` (cast; shows the fish, its size rank, and
-  a level-up "you can now catch bigger fish" note) · `!fishlog`/`!fishdex` (the
-  collection: X/21, unlocked vs locked by size band) · `!fishtop`/`!topfishers`
-  (by total catches) + a static Help hook. **Hub-less for PR 1** (like
-  `welcome`/`counters`); the Explore-hub panel is a later slice.
+  **collection log** (`BIGINT` identity, the `game_xp`/`mining_structures`
+  precedent; an empty table is byte-identical to the pre-fishing bot).
+- **DB** `utils/db/games/fishing.py` — conn-aware `record_catch` (upsert: bump
+  count + total value, keep best weight, stamp times) / `get_fishing_log` /
+  `top_fishers`; wired into `utils/db/__init__.py`.
+- **Service** `services/fishing_workflow.py` — `fish()`: roll → ONE
+  `db.transaction()` (record the catch + credit coins via the audited
+  `economy_service.credit_in_txn` seam + award `GAME_FISHING` XP) → balance/XP
+  events post-commit. Frozen `FishResult`.
+- **Game-XP** — `GAME_FISHING` + a `"fish"` award row in `game_xp_service`
+  (no schema change; the service is built to extend).
+- **Cog** `cogs/fishing_cog.py` — `!fish` (cast) · `!fishlog`/`!fishdex` (your
+  collection) · `!fishtop`/`!topfishers` (top anglers) + a static Help hook +
+  `setup`. **Hub-less for PR 1** (like `welcome`/`counters`) — the Games/Explore
+  actionability contract requires a games-child to own an *actionable* panel,
+  which is a later plan slice, so PR 1 stays hub-less and surfaces via the typed
+  commands + Help hook.
 - **Registration** — `subsystem_registry` (hub-less) + `config.INITIAL_EXTENSIONS`
-  + the `extension_roles.yaml` overlay + the four doc surface maps. Regenerated the
-  three committed generated artifacts (`extension-taxonomy-crosswalk.md`, `env-vars.md`,
-  `dashboard.json`).
-- **Deferred per Q-0175 (owner's OPEN questions — NOT decided here):** the catch
-  mechanic refinement (minigame vs roll), the leveling shape (rod-tier vs skill),
-  loadout-preset UI, fish value/use (sell/cook), and the boat/open-world (Phase 2+).
-- **Tests** — domain (21-fish catalog, the 7×3 bands, level-gated roll,
-  inverse-size weighting, empty-catalog safety), workflow (the level-from-xp curve,
-  both legs on one conn, **no coin event**, `unlocked_bigger`, the roll is gated by
-  the pre-read level), and every enumeration/manifest/actionability touch-point.
+  + the `extension_roles.yaml` overlay + the four doc surface maps
+  (help-command-surface-map, settings-customization-command-map, repo-navigation-map,
+  ownership). Regenerated the three committed generated artifacts that track the
+  live registries: `extension-taxonomy-crosswalk.md`, `env-vars.md`, `dashboard.json`.
+- **Tests (+33)** — domain (catalog integrity, roll determinism/distribution/bands,
+  rod-bonus redistribution), workflow (the three legs run on one conn; events emit
+  after commit; level-up note; value→both-legs), and every enumeration/manifest/
+  actionability touch-point updated.
 
-**Verification:** `check_quality --full` GREEN · `check_architecture --mode strict`
-0 errors · `check_docs` ✓ · `new_subsystem.py check` all touch-points ✓.
+**Verification:** `check_quality --full` GREEN (10521 passed) · `check_architecture
+--mode strict` 0 errors · `check_docs` ✓ · `new_subsystem.py check` all touch-points ✓.
 
 **Review gate:** opened `needs-hermes-review`; auto-merge **disarmed** (the
 auto-merge-enabler had armed it — disabled it, matching the sibling #929/#941).

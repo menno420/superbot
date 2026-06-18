@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T01:38:01Z",
+    "generated_at": "2026-06-18T01:46:17Z",
     "build": {
-      "commit": "4969383b",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/funny-franklin-ttonj3",
-      "committed_at": "2026-06-18T01:31:11Z",
+      "commit": "feac60fd",
+      "subject": "fix(fishing): reconcile v1 to the owner's design (Q-0175 / plan #1036)",
+      "committed_at": "2026-06-18T01:42:01Z",
       "branch": "claude/funny-franklin-ttonj3"
     },
     "counts": {
@@ -1614,6 +1614,14 @@
   ],
   "updates": [
     {
+      "file": "2026-06-18-fishing-reconcile-q0175.md",
+      "date": "2026-06-18",
+      "title": "Session — reconcile shipped fishing v1 to the owner's design (Q-0175)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-06-18-fishing-ecosystem-pr1.md",
       "date": "2026-06-18",
       "title": "Session — fishing ecosystem #2, PR 1 (the core loop)",
@@ -2081,14 +2089,6 @@
       "file": "2026-06-16-fix-coglist-resolution-loop.md",
       "date": "2026-06-16",
       "title": "Session — fix BUG-0014: `!coglist` infinite \"assumed from\" command-resolution loop",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-extension-taxonomy-crosswalk.md",
-      "date": "2026-06-16",
-      "title": "Session — extension-taxonomy crosswalk (Q-0151c, owner-approved)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
