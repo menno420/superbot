@@ -371,6 +371,33 @@ SUBSYSTEMS: dict[str, dict] = {
             "automod.settings.configure",
         ],
     },
+    # image moderation v1 (Q-0108) — the automated image-filter layer beneath
+    # manual moderation; the image twin of ``automod`` (auto-mod tier,
+    # message-pipeline stage, parented to the moderation hub).  Scans uploaded
+    # images via OpenAI's free omni-moderation endpoint; config is editable
+    # through the !settings widget via cogs/image_moderation/schemas.py.
+    "image_moderation": {
+        "display_name": "Image moderation",
+        "description": "Scan uploaded images for sexual, violent, harassment, or hate content",
+        "emoji": "🖼️",
+        "color": MOD_COLOR.value,
+        "visibility_tier": "administrator",
+        "visibility_mode": "normal",
+        "category": "moderation",
+        "tags": ["image", "moderation", "safety", "nsfw", "filter"],
+        "entry_points": ["imagemod"],
+        "default_channels": ["staff"],
+        "related_subsystems": ["moderation", "automod"],
+        "dependencies": [],
+        "soft_dependencies": [],
+        "supports_dm": False,
+        "has_cleanup_rules": False,
+        "ui_priority": 74,
+        "parent_hub": "moderation",
+        "capabilities": [
+            "image_moderation.settings.configure",
+        ],
+    },
     "games": {
         "display_name": "Games",
         "description": "Competitive games and channel activities",

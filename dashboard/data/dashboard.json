@@ -1,24 +1,24 @@
 {
   "meta": {
-    "generated_at": "2026-06-18T02:12:27Z",
+    "generated_at": "2026-06-18T02:18:43Z",
     "build": {
-      "commit": "b1cd329",
-      "subject": "chore(security): refresh generated artifacts after merging main",
-      "committed_at": "2026-06-18T01:43:57Z",
-      "branch": "claude/security-tiers-1-2"
+      "commit": "82d7eb5",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/hopeful-allen-1darl5",
+      "committed_at": "2026-06-18T02:10:08Z",
+      "branch": "claude/hopeful-allen-1darl5"
     },
     "counts": {
-      "functions": 35,
-      "ideas": 86,
+      "functions": 36,
+      "ideas": 87,
       "bugs": 15,
       "updates": 60,
       "env_vars": 37,
-      "cogs": 42,
-      "commands": 305,
-      "setting_keys": 95,
-      "setting_domains": 14,
-      "typed_settings": 76,
-      "visible_subsystems": 35,
+      "cogs": 43,
+      "commands": 306,
+      "setting_keys": 103,
+      "setting_domains": 15,
+      "typed_settings": 84,
+      "visible_subsystems": 36,
       "synonyms": 87
     }
   },
@@ -699,6 +699,32 @@
       ]
     },
     {
+      "key": "image_moderation",
+      "display_name": "Image moderation",
+      "description": "Scan uploaded images for sexual, violent, harassment, or hate content",
+      "emoji": "🖼️",
+      "visibility_tier": "administrator",
+      "visibility_mode": "normal",
+      "category": "moderation",
+      "tags": [
+        "image",
+        "moderation",
+        "safety",
+        "nsfw",
+        "filter"
+      ],
+      "entry_points": [
+        "imagemod"
+      ],
+      "related_subsystems": [
+        "moderation",
+        "automod"
+      ],
+      "capabilities": [
+        "image_moderation.settings.configure"
+      ]
+    },
+    {
       "key": "moderation",
       "display_name": "Moderation",
       "description": "Warnings, timeouts, bans, mod logs",
@@ -1109,6 +1135,13 @@
       "status": "ideas",
       "date": "2026-06-16",
       "summary": "`scripts/check_current_state_ledger.py --strict` flags every recently-merged PR that is missing"
+    },
+    {
+      "file": "meter-external-moderation-calls-2026-06-16.md",
+      "title": "Meter image moderation under the Q-0082 AI spend ceiling (2026-06-16)",
+      "status": "ideas",
+      "date": "2026-06-16",
+      "summary": "`image_moderation` (PR #941, Q-0108) calls OpenAI's `omni-moderation-latest` endpoint **once per"
     },
     {
       "file": "reference-integrity-invariants-2026-06-16.md",
@@ -2039,6 +2072,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-06-16-image-moderation.md",
+      "date": "2026-06-16",
+      "title": "Session — Image moderation (Q-0108) — the safety-community family's last buildable slice",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-06-16-idea-platform-group-decompose.md",
       "date": "2026-06-16",
       "title": "Session — capture the diagnostic_cog platform-group decomposition idea",
@@ -2106,14 +2147,6 @@
       "file": "2026-06-16-health-server-ipv6-bind.md",
       "date": "2026-06-16",
       "title": "Session — health server IPv6 dual-stack bind (Railway private networking)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-06-16-gitattributes-union-ledger.md",
-      "date": "2026-06-16",
-      "title": "2026-06-16 — fix the ledger-file merge-conflict livelock (.gitattributes merge=union)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -2186,7 +2219,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 179,
+          "line": 180,
           "layer": "config",
           "has_default": true
         },
@@ -2208,7 +2241,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 178,
+          "line": 179,
           "layer": "config",
           "has_default": true
         }
@@ -2241,7 +2274,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 162,
+          "line": 163,
           "layer": "config",
           "has_default": true
         },
@@ -2343,7 +2376,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 205,
+          "line": 206,
           "layer": "config",
           "has_default": true
         }
@@ -2359,7 +2392,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 208,
+          "line": 209,
           "layer": "config",
           "has_default": true
         }
@@ -2375,7 +2408,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 211,
+          "line": 212,
           "layer": "config",
           "has_default": true
         }
@@ -2535,7 +2568,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 104,
+          "line": 105,
           "layer": "config",
           "has_default": true
         }
@@ -2615,7 +2648,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 105,
+          "line": 106,
           "layer": "config",
           "has_default": true
         }
@@ -2624,7 +2657,7 @@
     {
       "name": "OPENAI_API_KEY",
       "required": false,
-      "usage_count": 4,
+      "usage_count": 5,
       "layers": [
         "config",
         "core",
@@ -2633,8 +2666,14 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 161,
+          "line": 162,
           "layer": "config",
+          "has_default": true
+        },
+        {
+          "file": "disbot/core/runtime/ai/providers/openai_moderation.py",
+          "line": 68,
+          "layer": "core",
           "has_default": true
         },
         {
@@ -2668,7 +2707,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 188,
+          "line": 189,
           "layer": "config",
           "has_default": true
         },
@@ -2691,7 +2730,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 192,
+          "line": 193,
           "layer": "config",
           "has_default": true
         },
@@ -2730,7 +2769,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 160,
+          "line": 161,
           "layer": "config",
           "has_default": true
         },
@@ -2754,7 +2793,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 159,
+          "line": 160,
           "layer": "config",
           "has_default": true
         },
@@ -4745,6 +4784,25 @@
           "aliases": [],
           "brief": "Send a raw Hermes work order to the Claude Code Routine (owner only).",
           "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        }
+      ]
+    },
+    {
+      "cog": "ImageModeration",
+      "file": "disbot/cogs/image_moderation_cog.py",
+      "subsystem": "image_moderation",
+      "is_cog": true,
+      "commands": [
+        {
+          "name": "imagemod",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [],
+          "brief": "Show the current image-moderation policy for this server.",
+          "classification": "primary_entrypoint",
           "has_panel": false,
           "button_backed": false
         }
@@ -6978,6 +7036,76 @@
       ]
     },
     {
+      "domain": "image_moderation",
+      "purpose": "Settings keys owned by the Image-moderation subsystem (cogs.image_moderation_cog).",
+      "keys": [
+        {
+          "constant": "IMAGE_MODERATION_ENABLED",
+          "key": "image_moderation_enabled",
+          "type": "bool",
+          "hint": "",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_SEXUAL_ENABLED",
+          "key": "image_moderation_sexual_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged sexual / sexual-minors content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_VIOLENCE_ENABLED",
+          "key": "image_moderation_violence_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged violent / graphic content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_HARASSMENT_ENABLED",
+          "key": "image_moderation_harassment_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged harassment content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_HATE_ENABLED",
+          "key": "image_moderation_hate_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on images flagged hate content.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "IMAGE_MODERATION_THRESHOLD_PERCENT",
+          "key": "image_moderation_threshold_percent",
+          "type": "int",
+          "hint": "Confidence (percent) a category score must reach before an image is removed.  Higher = fewer false positives (80 recommended).",
+          "allowed_values": [],
+          "default": 80
+        },
+        {
+          "constant": "IMAGE_MODERATION_EXEMPT_ROLES",
+          "key": "image_moderation_exempt_roles",
+          "type": "str",
+          "hint": "Comma-separated role ids whose members' images are never scanned (staff, trusted, …).  Leave empty for none.",
+          "allowed_values": [],
+          "default": ""
+        },
+        {
+          "constant": "IMAGE_MODERATION_EXEMPT_CHANNELS",
+          "key": "image_moderation_exempt_channels",
+          "type": "str",
+          "hint": "Comma-separated channel ids image moderation never scans (art, memes, NSFW-gated, …).  Leave empty for none.",
+          "allowed_values": [],
+          "default": ""
+        }
+      ]
+    },
+    {
       "domain": "logging",
       "purpose": "Settings keys owned by the server-logging service (services.server_logging).",
       "keys": [
@@ -7605,6 +7733,12 @@
             "emoji": "🧹"
           },
           {
+            "key": "image_moderation",
+            "display_name": "Image moderation",
+            "category": "moderation",
+            "emoji": "🖼️"
+          },
+          {
             "key": "security",
             "display_name": "Server Security",
             "category": "moderation",
@@ -7618,7 +7752,7 @@
         "subsystems": []
       }
     ],
-    "total_visible": 35,
+    "total_visible": 36,
     "internal_count": 0
   },
   "synonyms": [

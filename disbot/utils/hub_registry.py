@@ -150,6 +150,7 @@ HUBS: tuple[HubEntry, ...] = (
         # top-level overview and surface under this hub instead.
         primary_children=(
             "automod",
+            "image_moderation",
             "cleanup",
             "logging",
             "proof_channel",

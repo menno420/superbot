@@ -362,6 +362,13 @@ Current broad captures:
   command group off `DiagnosticCog` onto a `PlatformCommandsMixin` (`cogs/diagnostic/platform_group.py`);
   the cog dropped 799 → 260 LOC, clearing the 800-LOC ceiling. Pinned by
   `tests/unit/cogs/test_diagnostic_platform_group.py`.
+- [`meter-external-moderation-calls-2026-06-16.md`](./meter-external-moderation-calls-2026-06-16.md) —
+  **session idea (2026-06-16, Q-0089, from the image-moderation build #941):** image moderation
+  calls OpenAI's moderation endpoint once per uploaded image (when enabled) with **no cost
+  accounting** — the same un-metered-external-call gap the NL event scheduler (Q-0112) was told to
+  close. Route the `openai_moderation` call through the Q-0082 spend-meter and fail open when the
+  ceiling is hit. Small, reuses existing machinery; natural next-band slice once the meter seam is
+  confirmed. Small/safe grooming-lane candidate.
 - [`ledger-guard-exempt-reconciliation-prs-2026-06-16.md`](./ledger-guard-exempt-reconciliation-prs-2026-06-16.md) —
   **session idea (2026-06-16, Q-0089, from the diagnostic-mixin dispatch #943):** a
   `docs(current-state): reconcile ledger` PR structurally can't list its own (not-yet-assigned)

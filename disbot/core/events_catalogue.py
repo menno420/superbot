@@ -68,6 +68,13 @@ KNOWN_EVENTS: frozenset[str] = frozenset(
         # rule, channel_id.  Subscriber failure logged + swallowed; the action
         # is authoritative either way.  See docs/ownership.md § Event ownership.
         "automod.rule_triggered",
+        # ── Image moderation (cogs/image_moderation/listener.py, Q-0108) ──
+        # Advisory.  Emitted after a flagged image is deleted + warned (the
+        # action itself audits via moderation_service, so this is *not* a second
+        # audit path).  Payload: guild_id, user_id, category (sexual/violence/
+        # harassment/hate), channel_id.  Subscriber failure logged + swallowed;
+        # the action is authoritative either way.
+        "image_moderation.flagged",
         # ── Welcome (services/welcome_service.py, Q-0110) ─────────────────
         # Advisory.  Emitted after a join greeting is successfully posted.
         # Payload: guild_id, user_id.  The optional entry-role grant audits

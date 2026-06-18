@@ -95,6 +95,10 @@ living ledger (`docs/current-state.md`).
 - `claude/hopeful-allen-qt5ax3` · games-economy faucet/sink diagnostic (`!platform economy`) · 2026-06-16 · **PR #937 (merged)**
 - `claude/myprofile-card-pra` · myprofile PR A + B — `/myprofile` card + self-service editor · 2026-06-16 · **PR #938 / #940 (merged)**
 
+- `claude/hopeful-allen-1darl5` · Image moderation (Q-0108) — the safety-community family's
+  last buildable slice (OpenAI omni-moderation, off by default, fail-open) ·
+  `services/image_moderation_*` + `core/runtime/ai/providers/openai_moderation.py` +
+  `cogs/image_moderation/` · 2026-06-16 · **PR #941 (open, needs-hermes-review)**
 - `claude/zen-wright-77q0ru` · BTD6 AI answer fixes (owner live-test screenshots) — MK tab-wide scope
   wording · how-many-bloons refusal · ABR/standard RBE labeling · income-range identity ·
   `btd6_context_service` / `btd6_data_service` / `ai_tools` · 2026-06-18 · **PR #1035 (merged)**
